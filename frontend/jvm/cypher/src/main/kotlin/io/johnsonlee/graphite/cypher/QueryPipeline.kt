@@ -880,10 +880,13 @@ class QueryPipeline private constructor(
         if (query.limit <= 0) return CypherResult(query.columns, emptyList())
 
         var comparisons = 0
-        val comparator = Comparator<RankedProjectedRow> { left, right ->
+        fun pollComparison() {
             if (projectionCancellation != null) {
                 if ((comparisons++ and CANCELLATION_POLL_MASK) == 0) projectionCancellation()
             } else if (workTrackingEnabled) pollCancellation(comparisons++)
+        }
+        val comparator = Comparator<RankedProjectedRow> { left, right ->
+            pollComparison()
             for (sort in query.sortItems) {
                 val comparison = compareOrderValues(
                     left.row[sort.column],
@@ -907,15 +910,33 @@ class QueryPipeline private constructor(
                 topRows.add(ranked)
             }
         }
-        val streamed = projection?.forEachStringPropertyProjection(
-            query.nodeClass,
-            query.projections.map(PropertyProjection::property),
-            checkCancelled = ::checkStreamingProjectionCancelled
-        ) { projected ->
-            if (workTrackingEnabled) activeWorkTracker.get()?.consume()
-            val row = linkedMapOf<String, Any?>()
-            query.projections.forEachIndexed { index, item -> row[item.column] = projected.values[index] }
-            acceptRow(row)
+        val streamed = projection?.let { storage ->
+            val sortIndexes = IntArray(query.sortItems.size) { query.columns.indexOf(query.sortItems[it].column) }
+            fun compareProjection(values: List<String?>, ordinal: Long): Int {
+                pollComparison()
+                val worst = topRows.peek()
+                for (index in query.sortItems.indices) {
+                    val sort = query.sortItems[index]
+                    val comparison = compareOrderValues(values[sortIndexes[index]], worst.row[sort.column], sort.ascending)
+                    if (comparison != 0) return comparison
+                }
+                return ordinal.compareTo(worst.encounterOrder)
+            }
+            storage.forEachStringPropertyProjection(
+                query.nodeClass,
+                query.projections.map(PropertyProjection::property),
+                checkCancelled = ::checkStreamingProjectionCancelled
+            ) { projected ->
+                if (workTrackingEnabled) activeWorkTracker.get()?.consume()
+                val ordinal = encounterOrder++
+                if (topRows.size == query.limit && compareProjection(projected.values, ordinal) >= 0) {
+                    return@forEachStringPropertyProjection
+                }
+                val row = linkedMapOf<String, Any?>()
+                query.projections.forEachIndexed { index, item -> row[item.column] = projected.values[index] }
+                if (topRows.size == query.limit) topRows.poll()
+                topRows.add(RankedProjectedRow(row, ordinal))
+            }
         } == true
         if (!streamed) {
             for (candidate in nodeCandidates(query.nodeClass)) {

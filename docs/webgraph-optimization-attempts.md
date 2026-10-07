@@ -8053,3 +8053,31 @@ Evidence below is relative to `/tmp/sootup-recovery-sources/attempt125-build/`:
 **Decision:** KEEP_ISOLATED_PENDING_REAL_PERFORMANCE. Correctness is verified; no125 latency, CPU, RSS or allocation result exists, and no pre-upgrade acceptance is claimed. The source-only next plan uses matched parent/candidate runtimes and full real Kotlin/Tika inputs with explicit DefaultGraph construction, fixed ABBA per corpus, eight8GiB constructions and separate strict checks. The current default JavaProjectLoader/Mmap route and synthetic save benchmarks do not establish this candidate's performance. No runtime export, helper compilation, new real-graph construction or performance measurement has been executed for that plan. Root and other isolated performance candidates remain unchanged by this commit.
 
 Integration follow-up: the five production/test files and all 742 raw test results were independently rechecked before applying this attempt to the current branch. Touched APIs, serializers and dependency configuration are byte-identical between the original parent and rebased29a; intervening shared cancellation changes are separate. The source/test patch applies unchanged. The documentation append conflict was resolved by retaining both complete histories. Current cumulative CI and real-data performance remain pending; this integration makes no measured speedup or final recovery claim.
+
+
+### Attempt 118 follow-up: admit ordered rows before allocating result maps (2026-10-08)
+
+Retain the independently tested admission algorithm from isolated `dd196d92` on base
+`29a8eede3a292abb958bf6e667b7fbc112bd3235`. Compare direct string values and encounter order
+against the full heap's worst row before allocating its result map/ranked wrapper. Losing rows
+still consume their request work and check cancellation. Stable projected values remain owned
+by each callback; this does not eliminate every per-row allocation or reuse an exposed list.
+Unique-column eligibility preserves the comparison-index mapping; nulls, Unicode, mixed sort
+directions, aliases and stable ties retain the existing semantics.
+
+The four behavior tests assert concrete rows, suppressed payload reads on rejected rows,
+finite shared budgets and cancellation/storage-error identity. They passed in the combined
+query-review candidate below; this intermediate commit was not separately benchmarked.
+The complete combined gate passed **2,150 fresh tests** (core475, cypher1348, memory7,
+webgraph277, query43), with zero failure/error/skip and four module Detekt passes. Actual-agent
+Kover was core98.42294%, cypher98.07894%, webgraph98.31262%, above unchanged98% gates.
+Command: `python3 /tmp/sootup-recovery-sources/query-review-fixes-build/build.py --execute --run query-review-build1`.
+The pinned command expands to complete core/cypher/webgraph/query tests and Detekt plus
+core/cypher/webgraph Kover log/XML. JDK17, Gradle4g, max2workers, single test forks≤8g;
+filtered memory test retains256m. Publishing files and source pins were restored/verified.
+Proof `/tmp/sootup-recovery-sources/query-review-fixes-build/query-review-build1/build-proof.json` SHA256 `4f2b1b9ce94190afc1fc458a3cbac4c42a65ee894018d777542137e72cbc62b1`. No build failures occurred.
+
+**Decision: KEEP for integration.** This fixes avoidable map construction mechanically.
+No new latency/CPU/RSS measurement or main-relative gain is claimed. Existing114 real Kotlin
+scoped HTTP controls can quantify it later; synthetic correctness fixtures are not performance
+proof. Global filtered pressure cases and native queries do not execute this specific path.
