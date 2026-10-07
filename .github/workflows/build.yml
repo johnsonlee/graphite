@@ -41,6 +41,17 @@ jobs:
         JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
         JVM_OPTS:  -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
 
+    - name: Preserve failed test diagnostics
+      if: failure()
+      uses: actions/upload-artifact@v7
+      with:
+        name: failed-test-diagnostics
+        path: |
+          **/build/test-results/**/*.xml
+          build-output.txt
+        if-no-files-found: warn
+        retention-days: 7
+
     - name: Generate coverage report
       if: success() && github.event_name == 'pull_request'
       run: |

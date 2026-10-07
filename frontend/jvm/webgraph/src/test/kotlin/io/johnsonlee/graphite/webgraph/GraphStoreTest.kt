@@ -201,7 +201,10 @@ class GraphStoreTest {
         request.join(5_000)
 
         assertFalse(request.isAlive)
-        assertTrue(failure.get() is CancellationException)
+        assertTrue(
+            failure.get() is CancellationException,
+            failure.get()?.stackTraceToString() ?: "No failure was captured"
+        )
         assertEquals("CallSite string candidate match interrupted", failure.get().message)
         assertTrue(interruptedFlag.get())
         assertTrue(backgroundInterrupted.await(5, TimeUnit.SECONDS))
@@ -2273,7 +2276,10 @@ class GraphStoreTest {
                 request.interrupt()
                 request.join(5_000)
                 assertFalse(request.isAlive)
-                assertTrue(failure.get() is CancellationException)
+                assertTrue(
+                    failure.get() is CancellationException,
+                    failure.get()?.stackTraceToString() ?: "No failure was captured"
+                )
                 assertTrue(interruptedFlag.get())
                 assertFalse(loaded.isCallSiteStringIndexInitialized())
                 assertFalse(loaded.isCallSiteStringIndexLoadedFromPersistence())
@@ -2970,7 +2976,10 @@ class GraphStoreTest {
         }
 
         assertTrue(stoppedPromptly)
-        assertTrue(failure.get() is CancellationException)
+        assertTrue(
+            failure.get() is CancellationException,
+            failure.get()?.stackTraceToString() ?: "No failure was captured"
+        )
         assertTrue(interruptedFlag.get())
     }
 
@@ -3858,7 +3867,10 @@ class GraphStoreTest {
                 }
                 interruptedProjection.join(5_000)
                 assertFalse(interruptedProjection.isAlive)
-                assertTrue(interruptedProjectionFailure.get() is CancellationException)
+                assertTrue(
+                    interruptedProjectionFailure.get() is CancellationException,
+                    interruptedProjectionFailure.get()?.stackTraceToString() ?: "No failure was captured"
+                )
                 assertTrue(interruptedProjectionFlag.get())
                 assertEquals(0, loaded.callSiteScanActiveWorkers())
 
@@ -3954,7 +3966,10 @@ class GraphStoreTest {
                     }
                     interruptedRequest.join(5_000)
                     assertFalse(interruptedRequest.isAlive)
-                    assertTrue(interruptedFailure.get() is CancellationException)
+                    assertTrue(
+                        interruptedFailure.get() is CancellationException,
+                        interruptedFailure.get()?.stackTraceToString() ?: "No failure was captured"
+                    )
                     assertEquals("Mapped string-property scan interrupted", interruptedFailure.get().message)
                     assertTrue(interruptedFlag.get())
                     assertTrue(loaded.callSiteScanAbortedWorkers() in 1L..expectedWorkers.toLong())
@@ -4081,7 +4096,10 @@ class GraphStoreTest {
                 }
                 metadataInterruptedRequest.join(5_000)
                 assertFalse(metadataInterruptedRequest.isAlive)
-                assertTrue(metadataInterruption.get() is CancellationException)
+                assertTrue(
+                    metadataInterruption.get() is CancellationException,
+                    metadataInterruption.get()?.stackTraceToString() ?: "No failure was captured"
+                )
                 assertEquals("CallSite trigram metadata build interrupted", metadataInterruption.get().message)
                 assertTrue(metadataInterruptedFlag.get())
                 assertTrue(loaded.isCallSiteStringIndexInitialized())
@@ -4256,7 +4274,10 @@ class GraphStoreTest {
                     }
                     interruptedPreparation.join(5_000)
                     assertFalse(interruptedPreparation.isAlive)
-                    assertTrue(interruptedPreparationFailure.get() is CancellationException)
+                    assertTrue(
+                        interruptedPreparationFailure.get() is CancellationException,
+                        interruptedPreparationFailure.get()?.stackTraceToString() ?: "No failure was captured"
+                    )
                     assertTrue(interruptedPreparationFlag.get())
                     assertEquals(0, loaded.callSiteScanActiveWorkers())
 

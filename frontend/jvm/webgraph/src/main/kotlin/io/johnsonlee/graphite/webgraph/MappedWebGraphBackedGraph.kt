@@ -711,6 +711,9 @@ internal class MappedWebGraphBackedGraph(
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
         }
         failure?.let { error -> throw error }
+        if (Thread.currentThread().isInterrupted) {
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+        }
         val rows = ArrayList<StringPropertyDistinctRow>(targetSize)
         val seenValues = HashSet<List<String?>>()
         results.filterNotNull().sortedBy(ParallelCallSiteProjectionResult::workerIndex).forEach { result ->
@@ -1373,6 +1376,11 @@ internal class MappedWebGraphBackedGraph(
             indexReservation?.close()
             indexReservation = null
             throw error
+        }
+        if (Thread.currentThread().isInterrupted) {
+            indexReservation?.close()
+            indexReservation = null
+            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
         }
         indexReservation?.let { reservation ->
             indexReservation = null
