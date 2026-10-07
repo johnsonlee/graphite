@@ -9930,3 +9930,21 @@ Decision: retain20 as a measured positive memory increment, with its CPU/time co
 |all-slot GC request/clock extraction|`d48d020e4ef14091c58e886a7e9660d6bac3ec98c5c8cef60d1414f1594370b2`|
 
 Complete raw records and both pairs remain under `/tmp/sootup-static-review/kotlin-min-free-ratio-control/` and sibling `kotlin-min-free-ratio-control-independent-audit/`. Temporary C4 overlap diagnostic arm A validation starts only after this measurement, cleanup and independent audit; its compilation does not overlap these samples.
+
+### 2026-10-08 — C4 overlap observation binaries validated, performance measurement pending
+
+The prior process-client control did not eliminate the socket-waiting difference. Prepare a bounded native observation of the existing background C4 worker to test whether its inference spans overlap requests. This is diagnostic instrumentation, not an optimization: no queue ordering, idle threshold, permit handling, query result, feature or scheduling policy changes. All three historical arms retain their original phase instrumentation and identical temporary C4 overlay; they are preupgrade6f, JVM85-era native B and cumulative ddbee-era native C, not the latest af8d production binary.
+
+Default-off `GRAPHITE_DIAGNOSTIC_C4_OVERLAP=1` records up to64 worker/build slots, native thread IDs, inference boundaries/thread CPU samples and prune completion. Existing route-start timestamps gain a native-epoch offset. A single bounded endpoint is read after the complete query window, before shutdown. Native intervals can establish envelope overlap; they cannot identify kernel accept/connect delay or prove CPU execution during each request. Open spans stay explicitly right-censored with no fabricated CPU delta. No Python/native epoch conversion is used.
+
+All three isolated exports passed full four-crate tests using the real fixture, fmt and strict Explore Clippy: A273 tests/38 required names, B281/40, C299/57,853 total and zero failed/ignored/filtered tests. Root independently checked original raw logs, each required name, source/patch identity, command/toolchain evidence and exported binary hashes. The actual macOS CPU/thread-ID API tests passed. Native validation was serialized after the memory control; no measurement was concurrent.
+
+A's initial runner11073 exited1 after the test command passed273: a caught-panic test printed its name and final `ok` on separate lines, violating the runner's single-line lookup. Preserve this failure and original logs. A separate continuation52332 reused the verified unchanged fmt/tests and executed only previously unrun strict lint and CLI export; it exited0. The parser now checks one exact test-name block and its final result; positive/negative parser cases passed. B/C used this correction and completed once, original44857/88407 both exit0. No native source was changed to bypass the check and no passed full test suite was repeated. A continuation finished before its first PID snapshot: original tool exit0 and fresh matching-command absence are established, but numeric PID/group cleanup cannot be reconstructed. This limitation remains in its owner receipt. B/C record the runner PID/group at startup and have fresh observed-process/group absence evidence.
+
+|Arm|Export SHA256|Root independent audit SHA256|
+|---|---|---|
+|A|`3b501f0f811d916489be647069eeb9a35f69298d01e0ab13c35ef37f69761dcb`|`e7286f6c48db326b27fa3ba08c2d2ee06dd103da33726f0085ffd159c1227f82`|
+|B|`556b16d7ac82ae5b6df58842b31f660703c4a0193fc5688cc75dbed670d5441b`|`0baffcbe5e6770075cb73fa2dc0df4cba85da76a25e61c52a4580b8111f95723`|
+|C|`a4957d7c9e402a0c045c5cba6423c5d685933e773c31155d4393c685020eb931`|`5d13cec908cd38a5ab276e4ed3feb6b73d6190fb5fc81f2b96f00e36f9b83ce8`|
+
+Evidence is in `/tmp/sootup-static-review/native-cumulative/c4-overlap-probe/validation/`. Decision: use these verified temporary exports for the fixed six process-client c4 sessions ABCCBA,64 real persisted graphs,34 cases, first1/warm2/measured60,12,852 full responses and12,240 measured requests. Preserve full per-case p50/p95, resources and both pairs independently of overlap descriptions. This entry records binary validation only; no overlap result or recovered query performance is claimed.
