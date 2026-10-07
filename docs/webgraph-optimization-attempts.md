@@ -5434,3 +5434,64 @@ Independent root audit re-read all raw timing files, all30 verification reports,
 The stock Kotlin samples span0.618–4.081s, whereas the two overlay samples are0.633–0.667s. This small diagnostic reproduced one slow stock store and no slow overlay store. It does not estimate tail frequency or establish that all slow modes are fixed. Compared with the fast stock Kotlin sample, both overlay stores are slightly slower; the mean advantage is driven by the retained slow sample. Tika also favors the overlay within this two-sample series. Mean process peak RSS rises about0.5% in both corpora; these small save-only processes do not resolve the default-feature Kotlin construction RSS increase.
 
 **Decision:** retain as an external diagnostic lead; no production dependency, source, heap/feature change or binary overlay is shipped. An upstream/source-build integration and full construction comparison are prerequisites for any production proposal. The authoritative required CI at104 remains failed as documented above. This isolated parent104 comparison is not a new main/pre-upgrade end-to-end comparison and does not establish whole-product recovery. Raw ten-job evidence and independently parsed statistics: `/tmp/sootup-recovery-sources/attempt105-persisted-save-diagnostic/measurement-execution/{results.json,root-metrics-audit.json}`. Original source/plan/preparation/correctness failures and pins remain preserved.
+
+
+### 2026-10-07 — Attempt 106: Count Mmap records without decoding every node before saving
+
+**Hypothesis:** the CLI scans and deserializes every node merely to print its count before saving. Historical full-feature Kotlin scans added about0.8GB used heap, but do not prove this scan caused the observed RSS increase. Use existing Mmap node-type index lengths to obtain the exact all-record count and avoid this scan. The count deliberately includes repeated IDs, matching allNodes; the ID lookup index resolves the last record and cannot supply the count.
+
+**Changes:** MmapGraph.nodeCount(Node.class) returns the sum of record-index lengths; subtype counts remain unavailable and preserve existing lookup behavior. BuildCommand uses count metadata when available, including authoritative zero, and otherwise performs its original scan. Exposing this capability also enables existing Cypher metadata paths, so tryFastNodeCount rejects inline MATCH predicates before they could bypass filtering. No persisted format, source frontend, feature switch, heap, thread or compression setting changes. Metadata counts consume zero actual node-visit work; this follows existing capability accounting and is not a claim of identical old scan-budget counters. Entry cancellation remains checked before metadata access.
+
+**Correctness:** five new core tests cover empty/sparse IDs, repeated same/different-type IDs and a deterministic no-payload-read proof. Three new CLI-helper tests cover metadata, zero and fallback; the existing build CLI test now compares its reported count to the saved graph. Four Cypher tests cover count(*)/count(n), inline/explicit filtering, cancellation/timeout reasons, qualified provenance and graph discovery. Build1 passed core457, Cypher1336, filtered-memory7 and webgraph241 checks, then failed query-test compilation on two generic assertEquals calls. Explicit Class<*>/List<Node> assertion types preserve all expected values; build2 runs all26 query tests successfully. Thus2067 unique checks passed with0 failures/errors/skips; the2041 successful build1 checks are reused, not claimed as rerun. Detekt and both JMH artifact-isolation checks passed. Original error and packaging-path freeze stop remain archived; the latter occurred after successful compilation and was corrected to the actual slim query JAR without another build.
+
+**Frozen candidate:** `attempt106-mmap-node-count`, manifest SHA-256 `c2046b95009a19f5f294e3d528b2d3ec5762fe6346b47199c0f9da92b1bfa8de`; source parent production is104/87da90bd. Binary deltas are limited to MmapGraph and its line/debug-affected nested classes plus QueryPipeline; frontend/webgraph production classes match104. Query CLI artifact is separately pinned. Evidence `/tmp/sootup-recovery-sources/attempt106-freeze-proof.json` and `/tmp/sootup-static-review/attempt106/`.
+
+**Fixed default-feature construction protocol:** eight fresh8g JVMs in104→106→106→104 /106→104→104→106 order use the same full Kotlin compiler2.0.21 input/default features/save parameters and quiet helper boundaries as104's later construction series. The one common helper is compiled once against104; it changes only the count phase to metadata with identical scan fallback, and records the chosen mode after timing. Expected node count4,744,132 in both arms; A must scan and B must use metadata. This helper is not the literal CLI command. No original old/104 samples are pooled as fresh controls. Twenty-four separate correctness processes compare every graph's structure,13 metadata/API fingerprints and five full query results to the already-proven current reference. Output pins cover every file before and after checks.
+
+Literal commands: `/tmp/sootup-recovery-sources/attempt106-construction-proposal/commands.resolved.json`, SHA-256 `c90e1351f36b172a7fad03303b9066e7445ff7ccaa55a9f183e1292925a531cc`; preparation seal `48e047708764c1fb6314e7b92881121f39efee4a91f818145eaf78fdb1b682be`. Independent readiness audit verifies657 pins, six complete directory inventories and candidate-only substitutions in8+24+2 commands. The initial executor release-file race stopped at preflight with jobs=[] before any JVM; its empty failed directory is preserved and no performance sample was replaced.
+
+**Construction measurements — completed:** all eight fixed measurements passed the expected count/mode and input pins. These are fresh104/106 controls only. Environment and default8g feature/save configuration are identical to the prior full-construction protocol.
+
+| Run | Mode | Continuous s | Build+save s | Count s | Save s | Whole CPU s | RSS MB |
+|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin-count106-0-A | scan | 41.436124 | 41.107156 | 0.328965 | 11.291740 | 113.82 | 9578.086 |
+| kotlin-count106-1-B | metadata | 36.285041 | 36.285010 | 0.000026 | 6.905401 | 101.16 | 8511.259 |
+| kotlin-count106-2-B | metadata | 41.024079 | 41.024054 | 0.000021 | 11.166183 | 103.66 | 8526.692 |
+| kotlin-count106-3-A | scan | 36.745863 | 36.415795 | 0.330064 | 6.461291 | 97.44 | 7360.152 |
+| kotlin-count106-4-B | metadata | 41.424459 | 41.424429 | 0.000025 | 11.442687 | 107.72 | 9595.978 |
+| kotlin-count106-5-A | scan | 36.455874 | 36.112903 | 0.342968 | 6.511711 | 104.06 | 8586.805 |
+| kotlin-count106-6-A | scan | 41.440858 | 41.077563 | 0.363287 | 11.104448 | 107.96 | 9588.556 |
+| kotlin-count106-7-B | metadata | 41.021711 | 41.021690 | 0.000018 | 11.007227 | 106.89 | 9581.724 |
+
+| Metric | A mean / median [range] | B mean / median [range] | Mean B−A absolute | Mean B−A % |
+|---|---:|---:|---:|---:|
+| continuous.wallSeconds | 39.019680 / 39.090994 [36.455874, 41.440858] | 39.938822 / 41.022895 [36.285041, 41.424459] | +0.919143 | +2.356% |
+| buildPlusSave.wallSeconds | 38.678354 / 38.746679 [36.112903, 41.107156] | 39.938796 / 41.022872 [36.285010, 41.424429] | +1.260442 | +3.259% |
+| wholeCpuSeconds | 105.820000 / 106.010000 [97.440000, 113.820000] | 104.857500 / 105.275000 [101.160000, 107.720000] | -0.962500 | -0.910% |
+| peakRssMB | 8778.399744 / 9082.445824 [7360.151552, 9588.555776] | 9053.913088 / 9054.208000 [8511.258624, 9595.977728] | +275.513344 | +3.139% |
+| build.wallSeconds | 29.836056 / 29.884960 [29.601192, 29.973115] | 29.808421 / 29.919807 [29.379609, 30.014462] | -0.027635 | -0.093% |
+| cliNodeCount.wallSeconds | 0.341321 / 0.336516 [0.328965, 0.363287] | 0.000023 / 0.000023 [0.000018, 0.000026] | -0.341298 | -99.993% |
+| savePrepared.wallSeconds | 8.842298 / 8.808080 [6.461291, 11.291740] | 10.130375 / 11.086705 [6.905401, 11.442687] | +1.288077 | +14.567% |
+| savePrepared.processCpuSeconds | 16.958428 / 15.842973 [14.179359, 21.968405] | 19.407703 / 19.230024 [18.173097, 20.997666] | +2.449275 | +14.443% |
+
+| Adjacent pair | Continuous B−A s (%) | Whole CPU B−A s (%) | RSS B−A MB (%) |
+|---|---:|---:|---:|
+| [0, 1] | -5.151084 (-12.431%) | -12.660000 (-11.123%) | -1066.827776 (-11.138%) |
+| [2, 3] | +4.278216 (+11.643%) | +6.220000 (+6.383%) | +1166.540800 (+15.849%) |
+| [4, 5] | +4.968585 (+13.629%) | +3.660000 (+3.517%) | +1009.172480 (+11.753%) |
+| [6, 7] | -0.419146 (-1.011%) | -1.070000 (-0.991%) | -6.832128 (-0.071%) |
+
+
+**Decision:** reject the count-scan optimization for this construction recovery goal. The0.3413s counting phase disappears, but continuous construction is slower by2.356% on mean and4.942% on median; RSS mean is higher by3.139% while median is essentially unchanged (−0.311%). CPU mean falls only0.910%. Opposing pair directions and slow saves on both arms prevent a claim that skipping the scan caused a different tail frequency. No end-to-end or RSS benefit is demonstrated, so this local micro-optimization does not satisfy the user’s construction-first priority. All samples are retained. Numeric resource caps remain unapproved and are not needed to claim rejection here.
+
+**Final correctness and method controls — completed:** all24 untimed output verifiers passed structure,13 metadata/API fingerprints and all five ordered query reports against unchanged reference-B; all144 graph files and construction/report artifacts remained identical before/after verification. Both real-Tika Cypher JMH groups passed. Common adapted harness, same pinned3,901,103-node graph,104→106 order,2forks/method,3×1s warmup,5×1s measurement,8g and GC profiler; synthetic fixtures are not performance evidence. These persisted-backend controls already support count metadata and do not benchmark the new in-memory count capability.
+
+| Exact CypherBenchmark method | 104 us/op | 106 us/op | Change | Allocation B/op104→106 |
+|---|---:|---:|---:|---:|
+| `countStar` | 0.675231 | 0.645561 | -4.394% | 1826.8→1824.0 |
+| `nodeMatchWithWhere` | 2841.040476 | 2808.670761 | -1.139% | 3498184.1→3498181.1 |
+| `simpleNodeMatch` | 66.774058 | 66.083126 | -1.035% | 255480.9→253880.6 |
+
+Command form: `/usr/bin/time -l "$JAVA" -cp "$FROZEN_PRODUCTION_CP:$COMMON_REAL_CYPHER_HARNESS" org.openjdk.jmh.Main '^io\.johnsonlee\.graphite\.cypher\.CypherBenchmark\.(countStar|nodeMatchWithWhere|simpleNodeMatch)$' -f 2 -prof gc -foe true -rf json -rff "$OUT" -jvm "$JAVA" -jvmArgsAppend "-Xmx8g -Dcypher.benchmark.graph.path=$TIKA_GRAPH"`. Exact command arrays and all per-fork samples are preserved. Fixed-duration command CPU/RSS is not equal-work CPU/op. These small query gains do not offset the worse primary construction/RSS means and do not change the rejection decision.
+
+**Reverted:** all three production files, the modified CLI test and three added test files are restored/removed; current retained production returns to104 before the next independent frontend-lifetime experiment. Exact rejected source is preserved at `/tmp/sootup-static-review/attempt106/rejected-source/`, with verified restore proof. This is a performance-based rejection, not a correctness failure. The source/API capability and inline predicate guard are not retained as unrelated changes. Readiness, failed empty preflight, all8+24+2 jobs and original raw evidence remain available; terminal results SHA-256 `e53934a9b4282c7c1fae0944acc0a23e7853118ddf41a2a553762d58d5d1e904`. Independent raw construction/report audits are in `/tmp/sootup-static-review/attempt106/`. No additional repetitions or excluded samples were used.
