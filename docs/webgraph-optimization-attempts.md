@@ -9895,3 +9895,38 @@ Command: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/builder-id-
 All JVMs stay below8GiB: launcher1g, Gradle4g, compiler in-process, normal tests4g and the unchanged isolated memory tests256m. No test filter, threshold, cache-policy relaxation or disabled agent was introduced. The initial publishing-plugin workaround was restored byte-for-byte. Evidence: source seal `17b00f2538d5f6e9f97d6544be664bbe155d2016e2ef6b9ef7c202179c529a0f`; build proof `591da813ac28394d5813daba398d04f2be83b61ae8ba79058fad576817049aa3`; owner receipt `e9fd6803a59669a8a10aaf18f81b77c63a0b02d9fb63ef4fc05a869484dda15d`; independent validation `4f108812ff3cb69bc50f896933389ce17c5610e8456b7dc87b50e9b649edd005`.
 
 Decision: retain the validated isolated candidate for matched real Kotlin/Tika construction measurement; runtime export, latency, CPU and RSS benefit are still unmeasured. The added nullable branch and rare reverse-table reconstruction also need measurement within the declared scope. Prioritize the newly identified save-time G1 trigger rather than assuming this smaller lifetime change fixes overall memory recovery.
+
+### 2026-10-08 — Same-binary minimum-free-heap control: lower RSS, higher CPU/time
+
+Hypothesis: lowering G1's minimum-free-heap ratio can reduce the save-time capacity expansion identified above. Both arms use the same frozen current JVM85 runtime (MAIN_query88), full Kotlin2.0.21 corpus and features, Mmap builder, node counting, two-worker prepared save and source close. Only `-XX:MinHeapFreeRatio=40` versus `20` changes; `-Xmx8g`, G1, max-young30, diagnostic GC/heap/RSS sampling and every other argument match. Fixed sequence40/20/20/40, two samples per arm; no warmup, forced GC or retry. This isolates a parameter's incremental effect and is not a preupgrade acceptance comparison.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/kotlin-min-free-ratio-control/execute.py --execute-root-released`. Original98394 exited0 (tool chunk `2c1533`): all4 constructions,12 strict verifiers and original parser passed. Root independent audit exited0 (`566efa`), recomputing all metrics, complete typed reports/20 ordered queries, four unchanged graph inventories, input/command identity and all17 serialized boundaries. All17 roots and4 Java processes/groups were freshly absent. All16 JVMs respect8GiB. Keep all520 host samples and zero classified events; there is no exclusive-host claim.
+
+|Slot / ratio|Construction-through-close E2E s|Whole user+system CPU s|Process peak RSS bytes|Sampled maximum heap committed bytes|GC pause total ms / count / max ms|
+|---|---:|---:|---:|---:|---|
+|0 / 40|40.768366|100.93|7,256,113,152|6,329,204,736|1239.062 / 70 / 46.993|
+|1 / 20|41.254343|105.56|6,779,863,040|5,825,888,256|1276.534 / 77 / 42.261|
+|2 / 20|41.935596|115.20|7,733,198,848|6,916,407,296|1390.761 / 79 / 83.719|
+|3 / 40|36.748821|102.94|8,823,996,416|7,839,154,176|1242.522 / 69 / 60.919|
+
+|Metric, 20 relative to40|40 mean|20 mean|Mean change|Forward / reverse changes|
+|---|---:|---:|---:|---|
+|E2E seconds|38.758594|41.594969|+7.318%|+1.192% / +14.114%|
+|Whole CPU seconds|101.935|110.380|+8.285%|+4.587% / +11.910%|
+|Peak RSS bytes|8,040,054,784|7,256,530,944|-9.745%|-6.563% / -12.362%|
+|Prepared-save seconds|8.951523|11.397301|+27.322%|-0.311% / +72.189%|
+|GC pause total ms|1240.792|1333.6475|+7.484%|+3.024% / +11.930%|
+
+The20 arms have no minimum-free-capacity expansion requests; the40 arms have2 and4. Slot3's save GC60 at uptime30.752s again triggers minimum-free expansion, from6,329,204,736B capacity to7,839,154,176B. Slot2 at20 still expands during save through the separate pause-ratio policy: GC72 at38.147s requests1,115,684,864B and reaches6,916,407,296B. Therefore reducing this one policy removes its observed trigger, not all expansion. Retain the faster/higher-RSS slot3 and both20 samples; do not select one GC outcome. Marker UTC-minus-nanotime drift stays within1.012ms here. No new claim about retained object identity, native-memory categories or the cause of the save-time variation follows from these traces.
+
+Decision: retain20 as a measured positive memory increment, with its CPU/time costs explicit; leave production defaults unchanged pending matched old/current Kotlin and Tika validation. The+8.285% CPU above is relative to current40, **not** the preupgrade baseline used by the user's5% final resource limit. It neither proves nor disproves final acceptance. Compare old/current with identical20 settings next, retaining construction E2E/CPU/RSS boundaries and strict graph checks. Query p50/p95 and loading are not measured by this construction control and remain independently required. Existing uninstrumented full34 query failures, construction RSS overruns and Method compatibility CI failure remain open.
+
+|Evidence|SHA256|
+|---|---|
+|sealed packet|`938fa1def23ae6f5bba035e00e923054f4b443b142f88801e8f12b1a109dde72`|
+|result|`ef01ac1fed25c1e6ad719fbd29f6d3ec6a1f8a284ae8365d5cee1a117faa3420`|
+|owner terminal /12 report hashes|`8ba9c74e3e4d4c1c23d453661789b89d7fb95b19508f8c0bc97cecc92979265e`|
+|independent audit|`5210519539276c28107bf381771d44979f02dec9ee2bed8ea986d71ab3e6734d`|
+|all-slot GC request/clock extraction|`d48d020e4ef14091c58e886a7e9660d6bac3ec98c5c8cef60d1414f1594370b2`|
+
+Complete raw records and both pairs remain under `/tmp/sootup-static-review/kotlin-min-free-ratio-control/` and sibling `kotlin-min-free-ratio-control-independent-audit/`. Temporary C4 overlap diagnostic arm A validation starts only after this measurement, cleanup and independent audit; its compilation does not overlap these samples.
