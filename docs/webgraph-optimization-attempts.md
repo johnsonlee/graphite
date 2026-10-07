@@ -7211,3 +7211,23 @@ Command: `python3 /tmp/sootup-recovery-sources/attempt122-build/build.py --execu
 | Decision | Keep the requested readability refactor; cumulative performance recovery remains incomplete |
 
 Final source proof SHA256 `2e25bf5437e26f1ce38a9078ea5f72ec40d3739d25a8a3e9b7451311970d96a8`; patch `a4f0b6ac3284eb9d4c343a06c3562630f81c44a37402ebe116667b36b2424342`; source seal `19eff79c6cbf11ca303b81802a22b42d0b2b2b54221f4b588218543b7feae841`. Build proof `39ed6eb47a18989f2e41032534956d565e6e44615fc041f4e851dedaf5e5f429`; owner audit `13b523b659e2ef0ddeb1e0afc4ece042490458ef4d15156ce37e5c5aaed9acd5`; root audit `adf95eecab203d345dde4972553964ff0bd175cbde347eabc199b3e1e4d5f67e`. Raw logs, fresh test XML, genuine coverage reports and restoration receipts remain under the build packet. This preserves required behavior tests and does not establish final preupgrade performance acceptance.
+
+### 2026-10-07 — Attempt 120 follow-up: native shared graph IDs tested; performance preflight stopped
+
+**Hypothesis:** retain shared graph ID strings when assembling global native query sources, avoiding repeated string payload copies for every request. The isolated candidate at `/tmp/graphite-attempt120` is based on `5a0f69c86b14d6f981ea26dfe7d5ad9e348f413d`; only registry/routes production and behavior-test code changes. Public lease types, sorted graph order, acquisition errors and generation/lifetime behavior remain unchanged. Source patch SHA256 `f01cb7acb92e0826fc1ec2438c533f7c94da1e5f9425f2cd3365b5d879664fbf`. Source assembly crosses the internal guard-timer boundary, so only complete HTTP timing may support a benefit.
+
+**Correctness:** all117 explore library tests passed against the real persisted Tika shard, including four new cases covering shared identity/order, errors/cancellation, reload/removal/restore lifetime, complete HTTP response parity and guard rejection/release. Strict release Clippy on pinned Rust1.93 failed at unchanged `backend/explore/src/mcp.rs:802` (`nonminimal_bool`); the original failure remains retained. That identical source passed the separate Rust1.99 Linux CI job, but host/profile/features also differ; this does not establish local lint success or the cause. A separate CLI build succeeded, exporting binary SHA256 `69946d8a0b5aa40b95c9e6d96c70fe82a23836d399c7169fc58fdf8fa78a37fa`. Candidate code remains isolated and unintegrated.
+
+**Prespecified performance series:** macOS/M3 Max, frozen Rust1.93 arm64 release binaries, the same64 persisted real graphs and34 complete-response oracle cases. A=preupgrade6f498, B=currentdb713 (native source identical to candidate parent), C=120. Concurrency1 then4, each in ABCCBA order; each process has one first-use, two warmup and60 measured cycles. Planned budget:12 processes,25,704 requests,24,480 measured. Per-case nearest-rank p50/p95 use ranks30/57; both C/B and C/A pairs and means are retained separately. No case pooling, resampling, JVM, cache flush or profiler. Whole-process CPU/RSS include startup and shutdown and do not prove per-case resource limits.
+
+Root independently checked174 input pins and eight harness mocks before sealing. Command: `python3 /tmp/sootup-static-review/attempt120/server-request-packet/run.py --plan /tmp/sootup-static-review/attempt120/server-request-packet/plan.sealed.json --execute-root-released`. Sealed plan SHA256 `649bf64d94c2e69bfe8266a49f4d9ee4cfad17510814fc111d5e3f4db5428b9e`.
+
+**Actual outcome:** the one invocation exited1 during fixed preflight, before launching any native lifecycle or issuing any HTTP request. Twelve observer snapshots retained four new external processes,21 positive-CPU observations,16 CPU increments (35.02s accumulated), two disappeared processes/incomplete observations and two Gradle build events from an unrelated fold verification. The prespecified diagnostic allowed observed activity but rejected incomplete startup observations. No foreign process was signalled; no retry or changed acceptance policy replaced this failure.
+
+| Dimension | Result |
+|---|---|
+| Correctness | 117 library tests passed; strict local lint remains unresolved |
+| Query p50/p95, E2E, CPU/RSS | Not measured: zero native sessions and zero requests |
+| Decision | Keep the isolated candidate active for measurement; no performance gain or cumulative acceptance claimed |
+
+All commands, source/binary pins, failures and observer evidence remain under `/tmp/sootup-static-review/attempt120/`. The failed series is immutable; source-only independent response/statistics audit preparation did not run against nonexistent performance data.
