@@ -7967,3 +7967,49 @@ Mean is the predeclared comparison statistic; all samples, medians and ranges re
 - `/tmp/sootup-static-review/attempt130/loading-three-arm/root-audit.json` SHA256 `ccc7db672aa4a9e4b00bde59229268a3241902976cafcc8b8aee0f30cc646ab2`
 - `/tmp/sootup-static-review/attempt130/publish-dry-run/terminal-proof.json` SHA256 `8bc555a669b75fc179f78705722a28606f74676c1959f168df726ddf608d2c39`
 - `/tmp/sootup-static-review/attempt130/publish-dry-run/status-08.json` SHA256 `ecf5678222a18a60d3ca514c79e262459b624250045cc2603f680f6fdb813a4f`
+
+### 2026-10-07 — Attempt 129: select entry methods before constructing streaming wrappers
+
+Base: `33f35a37c77acd8873a06b9df38b77c6a010c07f`; isolated branch `codex/attempt129-streaming-method-selection`, worktree `/tmp/graphite-attempt129`. This addresses the remaining repeated-method-wrapper portion of PR171 discussion `4204059173`. This record describes source preparation only.
+
+Hypothesis: `findEntryPoints` needs methods named `main` with the static flag, and the only `firstMethod` caller needs a static `<clinit>`. On our `GraphiteAsmClassSource`, inspecting the source name and ASM static bit first avoids constructing unrelated `JavaSootMethod` wrappers and converting their annotation/exception metadata. Matching methods still use the original `asStreamingMethod`, including the memoized signature and full metadata conversion; this intentionally does not replace successful method conversion with signature-only admission.
+
+The selected-method helper is limited to the adapter's own parsed ASM source. `GraphiteClassNode.visitMethod` constructs each `AsmMethodSource` with the same name/access/descriptor exposed by the raw fields, and production code does not subsequently rewrite those fields. SootUp 3.0.1's memoized signature captures that constructor name/descriptor; its static modifier uses the same ASM bit. Custom, overriding, annotation and other sources keep the previous method-based path. No method/class corpus cache is added, and the existing current-pass cache ownership remains unchanged.
+
+Every visited source has conversion scratch released in `finally`, including non-matches and failed selected conversions. The small selected list is completed before a caller takes its first element, so cleanup is not suspended at a sequence yield. Matching conversion exceptions and OOM handling remain unchanged. The specialized `findStaticMethod` retains the original class-resolution fallback when no streaming wrapper survives, including its errors; missing `<clinit>` therefore still incurs that fallback. Unrelated metadata is no longer converted, so its conversion failure and corresponding verbose skip diagnostic are deliberately no longer triggered during these lookups. This is not a claim of identical diagnostics for unselected malformed metadata.
+
+Four focused correctness cases are prepared in `StreamingMethodSelectionTest`: exact static `main` overload signatures and non-static exclusion, failure to convert a matching annotation, zero annotation reads for unrelated methods, memoized signature identity, no persistent method-cache access or retained class cache during successful selection, exact initializer annotations/exceptions/modifiers/body, independent wrapper body caches, immediate scratch cleanup, and preserved ordinary-bytecode/missing/failed initializer fallback. Existing rich-annotation, streaming-body, enum and fake-source tests are unchanged. Bytecode fixtures are correctness fixtures only.
+
+| Check / metric | Source-preparation result |
+|---|---|
+| Correctness / stability | Tests written; not compiled or executed. Static source review only. |
+| Query p50 / p95 | Not measured; no query implementation changed. |
+| Construction end-to-end | Not measured. Relevant representative inputs remain full Tika 2.9.2 and Kotlin JAR corpora used in the retained construction packets. |
+| Loading end-to-end | Not measured; no persisted format or reader changed. |
+| CPU / peak RSS | Not measured; source-level avoidance is not evidence of resource improvement. |
+| Heap | No JVM launched. Future comparison must use matching heaps no greater than 8 GiB. |
+
+Decision: retain as an isolated, unvalidated candidate pending the full sootup correctness/lint/coverage suite and a fixed matched real-corpus construction comparison. No performance benefit or final recovery is claimed. Source patch and hashes: `/tmp/sootup-static-review/attempt129/`.
+
+Source-only continuation after main rebase: the original33f worktree and proof remain unchanged. The exact production and four-test bytes were migrated onto `29a8eede3a292abb958bf6e667b7fbc112bd3235` in `/tmp/graphite-attempt129-rebased29a`, branch `codex/attempt129-streaming-selection-rebased29a`. SootUpAdapter bytes at33f and29a are identical before the patch; no change was needed to the candidate. The new full-suite plan includes the565-test rebased baseline plus4 new cases and the original real98% Kover gate. Existing case names use the exact successful XML names without an added `()` suffix. No candidate compilation, tests or performance have run; benefit is still unmeasured.
+
+#### Attempt 129 validation on the rebased candidate
+
+The candidate now preserves the selected-method behavior with an eager `mapNotNull` collection and a single lazy class-resolution fallback expression. Only matching static `main` or `<clinit>` sources are wrapped; their full signature, exception and annotation conversion still runs. Every source, including skipped nonmatches, executes the original `finally` cleanup. A failed matching conversion remains excluded, and a missing/failed initializer still invokes the prior class-resolution fallback. Nonmatching metadata is intentionally not converted, so diagnostics from that unused conversion are not promised to remain identical. No corpus-wide method cache or metadata feature is removed.
+
+All failed executions remain archived under `/tmp/sootup-recovery-sources/attempt129-rebased29a-build/`: build1 stopped at detekt ReturnCount in two helpers; build2 stopped at NestedBlockDepth after the first control-flow adjustment. Neither run is credited with executed tests. Build3 ran569 tests with568 passing: the only failure was an existing reflection test still naming the removed private `firstMethod`; all four new cases passed. The existing null-result assertion was migrated to `findStaticMethod(SootClass, String)` with a nonmatching name. No assertion, test, lint rule, timeout, feature setting or coverage threshold was removed or relaxed. Production changes after the initial candidate were limited to the equivalent eager collection/fallback control flow required by the existing lint rules.
+
+Final build4, original execution handle29582, terminated with exit0. Its complete56 fresh XML files contain569 passing tests and zero failures/errors/skips, including all four new `StreamingMethodSelectionTest` cases and43 explicitly required cases across10 classes. Full SootUp detekt and Kover verification passed; the real agent produced3875 covered and77 missed lines, **98.051619%**, exceeding the unchanged98% gate. An independent raw owner audit matched XML hashes, exact required names, source restoration and coverage counters. All temporarily adjusted publishing scripts were restored byte-for-byte and the full sealed source was verified after restoration. No owned validation process remained.
+
+Exact invocation: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/attempt129-rebased29a-build/build.py --execute --run attempt129-rebased-build4`. Full tasks were `:sootup:test :sootup:detekt :sootup:koverLog :sootup:koverXmlReport :sootup:koverHtmlReport :sootup:koverVerify`, with no test filter. macOS/arm64, OpenJDK17, two Gradle workers, in-process Kotlin, launcher1g/child-default2g, explicit Gradle4g and test4g heaps; all launcher/fork maxima remain below the hard8GiB limit. Synthetic bytecode fixtures verify correctness only. No JMH, runtime export, server/query or real-corpus performance run was performed by this validation.
+
+| Metric / check | Result |
+|---|---|
+| Correctness / stability |569/569 tests PASS, no skips; matching metadata errors, scratch cleanup, signature identity, independent bodies, static filtering and fallback behavior verified. |
+| Lint / real coverage |detekt PASS;3875/3952 lines=98.051619%; original98% gate PASS. |
+| Query p50/p95 |Not measured; no recovery claim. |
+| Construction / loading end-to-end |Not measured; this review fix still needs matched full Kotlin/Tika JAR construction evidence before any speedup claim. |
+| CPU / peak RSS |Not measured; no change to the independent+5% pre-regression acceptance limits. |
+| Decision |Keep the validated review fix as an isolated attempt for integration review. The tested avoidance of unrelated metadata conversion is not a measured latency/CPU/RSS improvement or final recovery. |
+
+Evidence: final build proof SHA256 `62d21a91364aa9908153f2e2e2e0f86ddf08b7e63059dff41ed87f2bae279854`; raw build log `e9fa9e0c03dfc3d674a95eb70debd4f7b91b311edc5f6445139ec5ada70de796`; owner audit `bac736290cfc15269490e08b8e7ed556300b3e4c808a1e0f578c573abbc3fbb3`. Original33f worktree and all earlier preparation/failed-run artifacts remain unchanged. This change addresses the repeated-wrapper review discussion4204059173; publishing or resolving the PR thread waits for integration of this validated source.

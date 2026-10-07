@@ -866,10 +866,10 @@ class SootUpAdapterInternalCoverageTest {
         assertNull(
             invokePrivate<Any?>(
                 adapter,
-                "firstMethod",
-                arrayOf(sootup.core.model.SootClass::class.java, kotlin.jvm.functions.Function1::class.java),
+                "findStaticMethod",
+                arrayOf(sootup.core.model.SootClass::class.java, String::class.java),
                 listBundle,
-                { _: Any? -> false }
+                "missingStaticMethod"
             )
         )
         assertNull(

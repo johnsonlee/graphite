@@ -589,7 +589,7 @@ class SootUpAdapter(
         val className = enumClass.type.fullyQualifiedName
         log { "Processing enum class: $className" }
 
-        val clinit = firstMethod(enumClass) { it.name == "<clinit>" && it.isStatic }
+        val clinit = findStaticMethod(enumClass, "<clinit>")
         if (clinit == null) {
             log { "  No <clinit> found for $className" }
             return
@@ -2549,9 +2549,14 @@ class SootUpAdapter(
         // Find main methods and other entry points
         val entryPoints = mutableListOf<MethodSignature>()
         view.classes.forEach { sootClass ->
-            forEachMethod(sootClass) { method ->
-                if (method.name == "main" && method.isStatic) {
-                    entryPoints.add(method.signature)
+            val selected = streamingStaticMethodsOrNull(sootClass, "main")
+            if (selected != null) {
+                selected.mapTo(entryPoints) { it.signature }
+            } else {
+                forEachMethod(sootClass) { method ->
+                    if (method.name == "main" && method.isStatic) {
+                        entryPoints.add(method.signature)
+                    }
                 }
             }
         }
@@ -2562,9 +2567,43 @@ class SootUpAdapter(
         streamMethodsOrNull(sootClass)?.forEach(action) ?: resolveMethodsOrEmpty(sootClass).forEach(action)
     }
 
-    private fun firstMethod(sootClass: SootClass, predicate: (SootMethod) -> Boolean): SootMethod? {
-        streamMethodsOrNull(sootClass)?.firstOrNull(predicate)?.let { return it }
-        return resolveMethodsOrEmpty(sootClass).firstOrNull(predicate)
+    private fun findStaticMethod(sootClass: SootClass, name: String): SootMethod? {
+        val selected = streamingStaticMethodsOrNull(sootClass, name)
+        val streamed = if (selected != null) {
+            selected.firstOrNull()
+        } else {
+            streamMethodsOrNull(sootClass)?.firstOrNull { it.name == name && it.isStatic }
+        }
+        // Preserve the existing fallback, including resolution failures, when no wrapper survived.
+        return streamed ?: resolveMethodsOrEmpty(sootClass).firstOrNull { it.name == name && it.isStatic }
+    }
+
+    /**
+     * Only our parsed ASM sources keep name/access unchanged from method construction. Select
+     * those fields before wrapping, but still convert all metadata for a selected method so a
+     * failing annotation cannot introduce an entry point previously skipped by streaming.
+     */
+    private fun streamingStaticMethodsOrNull(sootClass: SootClass, name: String): List<SootMethod>? {
+        if (sootClass !is JavaSootClass) return null
+        return streamingSources(sootClass)?.mapNotNull { source ->
+            try {
+                if (source.name == name && (source.access and Opcodes.ACC_STATIC) != 0) {
+                    source.asStreamingMethod(sootClass.type)
+                } else {
+                    null
+                }
+            } catch (oom: OutOfMemoryError) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                System.gc()
+                null
+            } catch (e: Exception) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                null
+            } finally {
+                // Run even for non-matches, and before a caller can stop after its first match.
+                releaseConversionState(source)
+            }
+        }
     }
 
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
