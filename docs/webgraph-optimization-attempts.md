@@ -6770,3 +6770,60 @@ HTTP results SHA256 `ace8750b9a3868839a6f72ecde69c411be35931a85e471b552713f4e0e3
 summary `2548f736f6f347c648c681deb3418d5d042079aa05cadb0329c7b58e3b43e4ad`;
 independent audit `f08aa8104eb0fa1c4ee01bb6c0ed13df037efa637ba95c7ec6d876a5f3ff4908`;
 full report `ce084e7f087e5044410c43fc84fd0328ce717f0574e75d6a0f867c2b222b72ca`.
+
+### 2026-10-07 — Offline allocation analysis of the retained Tika phase diagnostic
+
+This completes analysis of the already recorded old6f498/cumulative341 diagnostic pair above;
+it is not another measurement, optimization attempt or repetition selected after seeing results.
+The two retained selected-event JSON exports were parsed serially with Python/SQLite, without
+starting a JVM, changing inputs or rehashing the multi-GB exports. Commands:
+
+```text
+python3 /tmp/sootup-static-review/tika341-memory-next/offline-jfr/analyze.py --execute-reviewed --input /tmp/sootup-static-review/tika341-memory-next/execution-packet/execution/run0 --output /tmp/sootup-static-review/tika341-memory-next/offline-jfr/run0-analysis
+python3 /tmp/sootup-static-review/tika341-memory-next/offline-jfr/analyze.py --execute-reviewed --input /tmp/sootup-static-review/tika341-memory-next/execution-packet/execution/run1 --output /tmp/sootup-static-review/tika341-memory-next/offline-jfr/run1-analysis
+```
+
+Both commands exited zero and input size/mtime remained unchanged. The streaming parser had
+previously failed a chunk-boundary whitespace fixture; the original failure and source were
+retained, and the corrected parser passed boundary/truncation tests before either real export
+was processed. Observed pending buffers stayed below197KB; this is not a process-memory cap.
+Root independently reconciled every phase/event count and allocation-weight sum across SQLite
+dimensions with the JSON report, phase rates with monotonic marker intervals, all selected-event
+totals, and the GC interval crossing finalization. This output audit did not reparse the raw exports.
+
+| Phase | Old /341 duration (s) | Old /341 allocation weight (decimal GB) | Old /341 weight rate (GB/s) |
+|---|---:|---:|---:|
+| Enumeration and indexing |1.421592 /1.542269|1.770420 /1.875276|1.245378 /1.215920|
+| Frontend pass1 |0.687209 /0.341107|0.474192 /0.354643|0.690025 /1.039684|
+| Frontend pass2 and linking |100.966572 /19.565299|116.616217 /32.496644|1.154998 /1.660933|
+| Graph finalization |0.638546 /0.701825|0.448536 /0.445355|0.702434 /0.634567|
+| CLI node count |0.354348 /0.406240|0.461144 /0.637214|1.301389 /1.568564|
+| Prepared save |5.410756 /5.356845|3.511008 /3.368368|0.648894 /0.628797|
+
+Weights estimate sample-represented allocation volume, **not retained bytes, exact allocation,
+peak heap or RSS**. Including startup and post-construction events, old/current totals are
+123.306622/39.205729GB, from30,891/7,533 allocation samples; execution samples are5,485/1,136.
+The lower pass2 total accompanies a higher represented allocation rate. Finalization weights
+are similar, so this pair does not support a larger current finalization allocation-volume peak.
+The increased CLI count weight remains visible; it cannot be removed from the E2E boundary.
+
+Current gcId39 spans pass2 and finalization:07:19:23.220192667Z–07:19:24.546319584Z.
+Its1.326-second G1Old collection interval is not pause time and cannot all be assigned to
+finalization. Concurrent allocation also prevents treating its after-GC occupancy as a retained
+live-set measurement. Combined with the earlier heap/RSS timeline, this directs investigation
+toward allocation rate and heap residency across the boundary, rather than attributing the peak
+to finalization solely from its timestamp. It does not prove cache retention or a GC-tuning fix.
+
+Missing allocation stacks old/current are21/16; truncated allocation stacks3,682/34 and
+truncated execution stacks1,496/0. All six selected event types are present, without missing
+timestamps or weights. Sampling weights can represent allocation before their event timestamps,
+and short phases without samples are not proof of zero work. The quiet-primary Tika RSS
+regression remains **+25.15%**; none of these diagnostic quantities replace that acceptance result.
+
+Evidence: `/tmp/sootup-static-review/tika341-memory-next/offline-jfr/`, including both
+`analysis.json`/`aggregates.sqlite` outputs, `comparison.json`, `report.md`, `execution-proof.json`
+and `root-output-audit.json`. Parser SHA256
+`d52ec64a26e08154b30152251aee98ecb1832ebd4879f6e682bef700aef193ba`;
+report `0dadb85bc51e132597f5984817d4a3e4d9348ce2c9c294305974da0f80daec88`;
+old analysis `71c62edfbee8fc4e1c98e0a3e4787ff2e24672022d53517436ef34b7795b6769`;
+current analysis `56ec868e0ead11d2f6600ca3741425ad12e071ce57db0c86c889f5ab3896557c`.
