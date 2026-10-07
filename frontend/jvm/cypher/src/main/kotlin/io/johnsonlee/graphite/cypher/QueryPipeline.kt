@@ -870,7 +870,7 @@ class QueryPipeline private constructor(
     private fun tryFastOrderedPropertyLimit(clauses: List<CypherClause>): CypherResult? {
         tryFastOrderedDistinctGraphIdLimit(clauses)?.let { return it }
         val query = OrderedPropertyLimitQuery.compile(clauses) ?: return null
-        val projection = if (!qualified && sources.size == 1 && !workTrackingEnabled &&
+        val projection = if (!qualified && sources.size == 1 &&
             query.nodeClass == CallSiteNode::class.java &&
             query.projections.all { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
         ) graph as? StreamingStringPropertyProjection else null
@@ -911,6 +911,7 @@ class QueryPipeline private constructor(
             query.projections.map(PropertyProjection::property),
             checkCancelled = ::checkStreamingProjectionCancelled
         ) { projected ->
+            if (workTrackingEnabled) activeWorkTracker.get()?.consume()
             val row = linkedMapOf<String, Any?>()
             query.projections.forEachIndexed { index, item -> row[item.column] = projected.values[index] }
             acceptRow(row)

@@ -6422,3 +6422,169 @@ Additional exact measurement/audit SHA-256 pins:
 - Parent341 runtime: `5a64dcf9415e5745e6877e9c028b4ba2a0e972f674a9f12cb2713267aedd5fcc`; requests34: `484660b6edd3b0da6a1bac9fed14c4d8317da369c19683554ce07fb536175410`; HTTP oracle: `fb0b50c1bd61dd47dbb7a02189c4e8b3b260374a27e7ae677f706a5e8875e83e`.
 
 The request p50/p95 priority, end-to-end priority next, independent CPU/RSS≤5% versus pre-upgrade, maximum8GiB Java heap, correctness and stability remain unchanged. This local candidate commit retains code and evidence for further evaluation; it is not a root integration or a final acceptance claim.
+
+### 2026-10-07 — Attempt 114: preserve work tracking in scoped ordered CallSite projection
+
+**Hypothesis:** let single-graph HTTP ORDER BY top-k use the retained104 direct-string projection without weakening its work budget or cancellation. The scoped route creates an unqualified executor but always supplies a tracked context; the previous `!workTrackingEnabled` guard therefore excluded the HTTP request even though the equivalent untracked CLI query used104. This is a new isolated candidate from `c7f68173526dcd4c248feb4dd8fe306a2c274464` (production cumulative341), not a stack on113. No global prepared-query scheduling, DISTINCT, feature, heap, GC or cache changes are included.
+
+**Change:** admit the same supported tracked projection shapes and consume exactly one work unit at the beginning of each projected-row callback, before row creation/ranking. Reuse the active request tracker so earlier executions in the same context remain charged. Do not pass the tracker into the raw scanner: its batching could defer exhaustion and alter exception ordering. Unsupported shapes, qualified/global sources and other projection types keep the ordinary path; zero LIMIT, sorting/ties and final cancellation checks remain intact.
+
+A projection-only preflight is also necessary for supported graphs created through the public MmapGraphBuilder: reusing one NodeID across types can leave an older typed-index entry pointing to the current different node. The generic ordinary sequence does not guarantee a runtime CallSite cast, so silently skipping that entry would change fallback properties. Before any projection callback or charge, validate every typed ID's current offset/header/type. A missing/invalid ID or non-CallSite header returns unsupported with zero callbacks and the original path handles the entire query. Valid duplicate CallSite IDs still project and charge repeatedly. All other raw-scan consumers remain unchanged. The prepass adds one full ID/header pass; it checks thread interruption every1024 entries. Signal-only cancellation may wait for the prepass, because the callback cannot run before a possible unsupported return; request cancellation is checked on entry and after successful preflight. HTTP guards interrupt their worker, but this does not erase the signal-only API latency limitation. As with104, unprojected payloads remain undecoded; equivalent exceptions for arbitrary corruption of those payloads are not claimed.
+
+**Correctness and build:** build1 compiled production but failed compilation of the new persistence test because `builder.build()` has static type Graph, which is not a Closeable `use` receiver. The only correction was an explicit MmapGraph cast before `use`, preserving close and every assertion. Original source/proof/patch and build1 logs remain archived; this was not a successful test run.
+
+Build2 independently passed1649 fresh checks:1336 Cypher tests,7 filtered-relationship memory tests,263 webgraph tests and43 query tests, with zero failures/errors/skips. Detekt, required packaging/isolation and runtime exports passed. Cypher Kover reports6515 covered/130 missed lines, **98.0436418359669%**, above the unchanged98% gate. Nine frozen classpath roles include MAIN/TEST/JMH for webgraph and Cypher, MAIN/TEST_query and MAIN_explore. Test heaps are4g, with the existing filtered-memory task256m; no heap exceeds8g.
+
+Six new behavior tests plus adjacent expanded assertions cover exact tracked diagnostics at budget1/N−1/N/N+1, a preconsumed shared context, zero/empty and unsupported fallback, storage errors/cancellation/interruption, and persisted sparse mixed data with same-type duplicate IDs. A late cross-type duplicate created through the public builder proves preflight emits no partial callbacks/charges before full fallback. Ordinary node decoding is forbidden in the supported projection fixture. The tests do not substitute for performance evidence.
+
+**Real HTTP protocol:** A is frozen pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`, MAIN_query84; B is frozen cumulative341, MAIN_query88; C is this114 runtime, MAIN_query88. A/C is old-relative evidence for these four operations; B/C isolates114. All arms read the same complete19-file validated full-feature Kotlin2.0.21 graph,4,744,132 nodes/2,251,811 CallSites, at `/tmp/sootup-recovery-sources/merged-construction-reference-protocol/results/merged/graph`. Its ordinal and string sidecars are retained. Frozen inventories are checked, files sequentially pre-read before each process and checked afterward, outside measurement. This is a repeatable pre-read policy, not cold OS-cache evidence.
+
+The host is an Apple M3 Max (16 cores, 64 GiB), macOS 14.3 arm64. Each fresh server uses pinned JDK17.0.20.1, `-Xmx8g`, MAPPED load, its matching MAIN_query runtime, a fresh data directory, maximum concurrent Cypher4 and timeout60000ms. Actual old/current CLI serve code configures **Long.MAX_VALUE work units**, while still tracking work. The deprecated ignored work-budget flag is absent. HTTP results therefore do not certify finite-budget exhaustion; the dedicated tests above do. No profiler, forced GC, injected JVM flags, retries or replacement samples are permitted.
+
+POST `/api/graphs/kotlin-full/cypher?limit=20` exercises four fully ordered requests:
+
+|Case|Projection and ordering|
+|---|---|
+|callee-asc20|callee class/name ascending|
+|callee-desc20|callee class/name descending|
+|caller-asc20|caller class/name ascending|
+|four-fields-duplicate20|all four direct strings plus repeated callee class under another alias; order by callee class/name then caller class/name|
+
+One separate old-server correctness preparation exported four complete typed HTTP bodies. Root reviewed columns, row order, values/types, UTF16 ordering, duplicate projections and raw digests. The first ASC request also matches all20 rows of the established mapped/fallback engine oracle. The other three use the frozen old HTTP response as reference; no separate engine execution is claimed. All measured responses must match their full reviewed oracle, with no metadata/value normalization.
+
+The fixed schedule is **ABC then CBA at concurrency1, followed by ABC then CBA at concurrency4**,12 fresh servers. Every server performs one first-use cycle, two warmup cycles and30 measured cycles of four rotating cases:132 requests/process,1584 total,1440 measured. At concurrency4 the four different cases share a drained wave. The independent four-request oracle preparation is separate, so total preparation plus measurement is13 server JVMs/1588 requests. No additional sample is authorized here.
+
+Latency covers request submission through complete response-body reading; validation and body-file output follow it. Each case/process has30 measured values for nearest-rank p50/p95, arithmetic request mean and maximum. Report both process summaries per arm/concurrency, their mean/median/range and both ABC/CBA block comparisons. Individual first-use values have only n2 per arm/concurrency and are not a tail estimate; retain both warm cycles separately. Earlier requests may initialize shared state.
+
+Measured-window server process CPU includes validation/logging gaps between the30 cycles; client CPU is separate. Whole `/usr/bin/time -l` CPU and peak RSS include server startup, mapped load, first-use, warmup, measured requests, drain and exit. They cannot certify per-case CPU or query-only RSS, and peak RSS values must not be subtracted to infer allocation. Request p50/p95 is primary; separate old-relative CPUtotal/RSS+5% and hard8GiB heap constraints remain. A favorable mixture cannot hide adverse cases.
+
+**Performance and independent verification — complete:** the fixed12 series terminated successfully with all1584 raw responses,20 rows each, matching the reviewed oracle byte-hash and complete typed columns/ordered rows/provenance. Independent audit re-read every response, recomputed per-case30-sample nearest-rank p50/p95, actual request means, all ABC/CBA comparisons and three-arm aggregates; published statistics matched. All twelve origin/MAIN_query/8g/readiness receipts and nineteen-file pre/post inventories matched. The audit did not independently reread graph/JAR binaries; their executor receipts remain the pinned evidence. No replacement, retry or extra performance request occurred.
+
+All eight case/concurrency groups improve measured request p50/p95 versus both old and341, in both ABC/CBA blocks. Mean-of-run p95 versusold improves45.03%–72.08%, versus34151.61%–76.71%. Every declared individual first-use/warmup paired latency also improves; no adverse latency case is omitted. These results include the preflight cost. They do not show that all per-row allocation is gone: the existing projection list/row/map construction remains.
+
+C versusold lifetimeCPU improves64.44%(c1)/63.51%(c4), measured-windowCPU65.26%/64.57%; mean processpeakRSS improves0.69%/1.21%, with all four old/candidate RSS pair deltas negative. This shows no resource cap overrun for the defined combined process/session samples; it cannot establish separate per-case resource caps. **Retained adverse:** C versus341 c4peakRSS increases3.36% inmean, including one+11.23% pair and one−3.37% pair. Old-relative improvement does not erase that parent-relative variation. OriginalB versusold CPU overruns are retained in the tables. All raw mean/median/range/max and absolute deltas remain in the independent JSON.
+
+#### Full8case groups
+
+|Concurrency / case|A p50/p95 ms|B p50/p95 ms|C p50/p95 ms|C/A p50 / p95|C/B p50 / p95|
+|---|---:|---:|---:|---:|---:|
+|1 / callee-asc20|1355.144 / 1369.305|1532.515 / 1547.832|378.958 / 387.448|-72.04% / -71.70%|-75.27% / -74.97%|
+|1 / callee-desc20|1355.340 / 1369.633|1537.665 / 1547.971|375.139 / 391.202|-72.32% / -71.44%|-75.60% / -74.73%|
+|1 / caller-asc20|1356.128 / 1376.787|1529.586 / 1545.774|375.547 / 384.391|-72.31% / -72.08%|-75.45% / -75.13%|
+|1 / four-fields-duplicate20|1459.910 / 1478.309|1634.219 / 1649.440|782.872 / 798.206|-46.38% / -46.01%|-52.10% / -51.61%|
+|4 / callee-asc20|1426.219 / 1450.008|1733.483 / 1757.348|406.966 / 419.205|-71.47% / -71.09%|-76.52% / -76.15%|
+|4 / callee-desc20|1429.024 / 1457.548|1734.813 / 1755.635|410.892 / 423.412|-71.25% / -70.95%|-76.31% / -75.88%|
+|4 / caller-asc20|1427.875 / 1449.305|1718.591 / 1741.333|399.959 / 405.565|-71.99% / -72.02%|-76.73% / -76.71%|
+|4 / four-fields-duplicate20|1494.979 / 1521.530|1788.741 / 1809.484|820.828 / 836.322|-45.09% / -45.03%|-54.11% / -53.78%|
+
+#### Actual requestmeans and both block p95 changes
+
+|Concurrency / case|A mean ms|B mean ms|C mean ms|C/A p95 block1,2|C/B p95 block1,2|
+|---|---:|---:|---:|---:|---:|
+|1 / callee-asc20|1355.642|1534.727|378.815|-73.32%, -69.85%|-76.41%, -73.31%|
+|1 / callee-desc20|1358.030|1537.527|377.127|-72.94%, -69.72%|-76.10%, -73.16%|
+|1 / caller-asc20|1358.516|1531.227|376.346|-73.90%, -70.02%|-76.85%, -73.17%|
+|1 / four-fields-duplicate20|1461.947|1635.610|784.297|-49.85%, -41.56%|-54.93%, -47.78%|
+|4 / callee-asc20|1430.865|1737.048|409.746|-65.61%, -75.37%|-75.20%, -77.10%|
+|4 / callee-desc20|1433.146|1737.761|412.306|-66.05%, -74.84%|-75.03%, -76.73%|
+|4 / caller-asc20|1431.501|1721.514|400.474|-67.12%, -75.84%|-76.23%, -77.20%|
+|4 / four-fields-duplicate20|1497.904|1792.641|821.642|-36.90%, -51.55%|-53.30%, -54.28%|
+
+#### All12 resource rows
+
+WindowserverCPU surrounds30cycles including gaps; lifetimeCPU/RSS include startup/load/first/warm/measured/drain/exit. ClientCPU separate. No percaseCPU/RSS claim or subtraction of peaks.
+
+|Run|WindowserverCPU s|LifetimeCPU s|PeakRSS MB decimal|Lifetimewall s|WindowclientCPU s|
+|---|---:|---:|---:|---:|---:|
+|c1-0-A|179.62|199.51|1178.780|197.12|0.9637|
+|c1-1-B|202.58|225.43|1230.979|222.65|0.9726|
+|c1-2-C|58.57|66.62|1175.962|65.79|0.9859|
+|c1-3-C|58.52|66.71|1175.175|65.64|0.9701|
+|c1-4-B|177.00|197.42|1233.224|194.30|0.9778|
+|c1-5-A|157.40|175.42|1188.758|172.78|0.9757|
+|c4-0-A|154.17|172.44|1422.164|45.82|0.9640|
+|c4-1-B|211.24|236.11|1251.394|61.60|0.9610|
+|c4-2-C|64.14|73.35|1391.919|29.58|0.9565|
+|c4-3-C|59.54|68.76|1413.726|28.23|0.9555|
+|c4-4-B|209.60|234.42|1462.960|60.41|0.9535|
+|c4-5-A|194.89|217.00|1417.986|56.54|0.9674|
+
+#### Resource comparisons (means; paired variations retained)
+
+|Concurrency / comparator|WindowCPU Δ|LifetimeCPU Δ|PeakRSS Δ|Both peakRSS pairs|
+|---|---:|---:|---:|---:|
+|1 / AB|+12.63%|+12.78%|+4.08%|+4.43%, +3.74%|
+|1 / BC|-69.15%|-68.47%|-4.59%|-4.47%, -4.71%|
+|1 / AC|-65.26%|-64.44%|-0.69%|-0.24%, -1.14%|
+|4 / AB|+20.56%|+20.82%|-4.43%|-12.01%, +3.17%|
+|4 / BC|-70.61%|-69.80%|+3.36%|+11.23%, -3.37%|
+|4 / AC|-64.57%|-63.51%|-1.21%|-2.13%, -0.30%|
+
+Full run-level mean/median/min/max and absolute byte/second deltas are in audit.json; the chosen display does not replace them or define a new acceptance statistic.
+
+#### First-use and both warmup cycles, every case
+
+Each cell lists the two process observations in ms. First-use is cycle0, not a guarantee of independent cache state per case. No p95 from two observations.
+
+|Concurrency / cycle / case|A individual ms|B individual ms|C individual ms|C/A mean Δ|C/B mean Δ|
+|---|---:|---:|---:|---:|---:|
+|1 / 0 / callee-asc20|1639.102, 1446.147|1997.034, 1740.348|574.924, 568.046|-62.95%|-69.42%|
+|1 / 0 / callee-desc20|1436.119, 1294.472|1643.249, 1475.841|387.661, 400.424|-71.14%|-74.73%|
+|1 / 0 / caller-asc20|1436.204, 1277.989|1650.188, 1430.637|383.863, 391.711|-71.43%|-74.83%|
+|1 / 0 / four-fields-duplicate20|1553.067, 1372.438|1752.076, 1531.470|798.040, 797.065|-45.48%|-51.42%|
+|1 / 1 / callee-asc20|1434.241, 1264.010|1647.877, 1428.946|391.543, 385.287|-71.21%|-74.75%|
+|1 / 1 / callee-desc20|1432.340, 1265.022|1645.806, 1429.016|375.349, 376.426|-72.13%|-75.55%|
+|1 / 1 / caller-asc20|1428.891, 1273.911|1637.246, 1416.554|374.725, 369.933|-72.45%|-75.62%|
+|1 / 1 / four-fields-duplicate20|1570.941, 1365.607|1752.068, 1518.201|791.654, 791.800|-46.08%|-51.58%|
+|1 / 2 / callee-asc20|1432.685, 1262.954|1630.336, 1445.143|381.420, 380.477|-71.74%|-75.23%|
+|1 / 2 / callee-desc20|1443.859, 1263.505|1638.520, 1428.149|377.494, 373.317|-72.27%|-75.52%|
+|1 / 2 / caller-asc20|1447.687, 1280.170|1628.917, 1430.210|379.462, 378.701|-72.21%|-75.22%|
+|1 / 2 / four-fields-duplicate20|1558.134, 1358.069|1759.452, 1527.956|777.627, 784.431|-46.44%|-52.48%|
+|4 / 0 / callee-asc20|1453.987, 1768.477|2076.209, 2074.447|620.495, 643.891|-60.76%|-69.54%|
+|4 / 0 / callee-desc20|1454.507, 1768.158|2075.633, 2074.184|620.716, 643.571|-60.77%|-69.53%|
+|4 / 0 / caller-asc20|1454.208, 1768.449|2075.963, 2074.295|620.970, 652.833|-60.47%|-69.31%|
+|4 / 0 / four-fields-duplicate20|1547.147, 1846.480|2076.233, 2074.431|1031.055, 1062.231|-38.32%|-49.57%|
+|4 / 1 / callee-asc20|1275.674, 1590.025|1758.933, 1756.305|468.879, 426.622|-68.75%|-74.53%|
+|4 / 1 / callee-desc20|1276.199, 1598.890|1758.811, 1756.457|477.517, 428.083|-68.50%|-74.24%|
+|4 / 1 / caller-asc20|1275.902, 1590.054|1759.001, 1756.085|458.609, 434.595|-68.83%|-74.59%|
+|4 / 1 / four-fields-duplicate20|1339.991, 1701.983|1896.274, 1868.409|888.913, 838.740|-43.21%|-54.11%|
+|4 / 2 / callee-asc20|1295.681, 1597.499|1731.493, 1745.088|446.555, 383.811|-71.30%|-76.12%|
+|4 / 2 / callee-desc20|1295.790, 1597.282|1739.118, 1763.289|446.917, 383.845|-71.28%|-76.28%|
+|4 / 2 / caller-asc20|1295.692, 1597.545|1730.345, 1703.329|442.072, 384.888|-71.42%|-75.92%|
+|4 / 2 / four-fields-duplicate20|1368.109, 1657.877|1815.048, 1775.124|873.479, 804.662|-44.54%|-53.26%|
+
+
+#### Resource run-level aggregates
+
+Each arm has two process replicates, so its median equals the displayed arithmetic mean. Ranges retain both samples; no mean/max choice is used to hide a cap overrun. CPU seconds; RSS decimal MB.
+
+|Concurrency / arm|WindowCPU mean [min–max] s|LifetimeCPU mean [min–max] s|PeakRSS mean [min–max] MB|
+|---|---:|---:|---:|
+|1 / A|168.510 [157.400–179.620]|187.465 [175.420–199.510]|1183.769 [1178.780–1188.758]|
+|1 / B|189.790 [177.000–202.580]|211.425 [197.420–225.430]|1232.101 [1230.979–1233.224]|
+|1 / C|58.545 [58.520–58.570]|66.665 [66.620–66.710]|1175.568 [1175.175–1175.962]|
+|4 / A|174.530 [154.170–194.890]|194.720 [172.440–217.000]|1420.075 [1417.986–1422.164]|
+|4 / B|210.420 [209.600–211.240]|235.265 [234.420–236.110]|1357.177 [1251.394–1462.960]|
+|4 / C|61.840 [59.540–64.140]|71.055 [68.760–73.350]|1402.823 [1391.919–1413.726]|
+
+**Decision: KEEP and integrate 114 as a verified positive increment in the cumulative implementation.** Scoped ordered-query latency, actual first-use/warmup, CPU and old-relative sessionRSS evidence support retaining this change. The integrated four source files exactly match the tested source hashes below. Integration does not establish that the entire user goal is complete; the required CI gate must also pass on the new PR head. It covers four selected direct-string ORDER BY requests on one real Kotlin graph; arbitrary queries, global workloads, productionpopulation tail precision and independent per-case CPU/RSS remain outside these measurements. Two server replicates and30 requests percase provide coarse empirical p95 only. Budget/cancellation correctness is supported separately by tests, not by the CLI's Long.MAX_VALUE work setting. Attempts112/113/115 remain separate and are not credited with these results.
+
+**Reproduction and evidence:** the exact literal server/client argv and input/runtime/source pins are in `/tmp/sootup-static-review/attempt114/scoped-http-packet/plan.sealed.json`. Invocation: `python3 /tmp/sootup-static-review/attempt114/scoped-http-packet/run.py --plan /tmp/sootup-static-review/attempt114/scoped-http-packet/plan.sealed.json --execute-root-released`. The separate correctness command was `python3 /tmp/sootup-static-review/attempt114/scoped-http-packet/run_oracle.py --execute-root-released`. The record reports the completed frozen execution, not additional measurements.
+
+- `/tmp/sootup-static-review/attempt114/source-proof.json` SHA256 `30d2958fa643510ba51f38945e518db58aff4129c834f7eefe82b46930ce45ad`.
+- `/tmp/sootup-static-review/attempt114/candidate.patch` SHA256 `2c9bd78b3b2e5b4d5666d980e5a8dd646fc3d4098fff779ba6153e80c4e6457a`.
+- `/tmp/sootup-static-review/attempt114/build2-independent-audit.json` SHA256 `2cf549b2226023a4b56fb813e377777b26ed1afde2de3c2039d54f2eed24c12f`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/plan.sealed.json` SHA256 `f5defc71c6ba737e7b691bb1ac58bb231a614f5a2c45172f57bc86ced12e73f2`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/oracle/root-review.json` SHA256 `8cae91be137826a3a388f884b2354ae3b811933793ff641ce502c17751a5ffa4`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/oracle/old-four/client/oracle.reviewed.json` SHA256 `e4d811189cfd4aacf18093f7e4b00f4846a6b9458305729f3788b50c67749acd`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/execution/results.json` SHA256 `1253808b5db7d04f34d70924baefd35adf856c3fa58b84a849ee9e19f08ef8cf`.
+- `/tmp/sootup-recovery-sources/attempt114-build/attempt114-build2/snapshot/runtime.json` SHA256 `f9b38dced732d0078b662ec51e63e3de001eb7fbd8ed65518e1b957ff071483e`.
+
+The frozen source proof pins QueryPipeline `8a9374242500ac5bd1646ca9596e7face647ea93f964dcce3a4edb2c8db582f2`, StreamingOrderedPropertyProjectionTest `2a5b82e12b9214cd154610db4b745f49b811aa0fbe062796cd3bab0f445c26d0`, MappedWebGraphBackedGraph `9a44cfc0af2c3ba1cfb80c17319b9a41e4d25e36892315835183d1c7e16f7ceb`, and MappedTrackedOrderedProjectionTest `1fcabad86779ec72804f436e2c321962ab01ed82b7ad41967ffc2cf1d7609d02`. The historical source-only proof's pending-test text is preparation provenance, not the final build status. The final performance and audit pins below supersede preparation-only pending status; failed build1 evidence remains unchanged.
+
+Additional completed measurement/audit SHA-256 pins:
+
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/execution/summary.json`: `ded38daf18e61064b1a408049d721e8f18efc615719d4c584ac51bbafc964885`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/audit.json`: `951e6ffb35dbb6d03600e91bf9ed018e450740a60e565cef90e893cec2020ca7`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/report.md`: `ada884c5d3423bde02e4da4cf6363cf885f4018b190e8120874317bd004d016c`.
+- `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/audit-proof.json`: `92d4f560a4d9d2a6e0494ef2a3982bf7772ecfcf4b10770a8e9e78b73b303e66`.

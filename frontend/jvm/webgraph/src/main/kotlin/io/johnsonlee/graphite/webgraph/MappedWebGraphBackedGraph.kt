@@ -804,6 +804,7 @@ internal class MappedWebGraphBackedGraph(
         if (type != CallSiteNode::class.java || projectedProperties.isEmpty() ||
             projectedProperties.any { !supportsRawStringProperty(type, it) }
         ) return false
+        if (!canStreamCallSiteProjection()) return false
         val propertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
         fun checkProjectionCancellation() {
             checkCancelled()
@@ -823,6 +824,22 @@ internal class MappedWebGraphBackedGraph(
             }))
         }
         checkProjectionCancellation()
+        return true
+    }
+
+    private fun canStreamCallSiteProjection(): Boolean {
+        var index = 0
+        // Reused IDs may leave a typed entry pointing at a different current record. Refuse
+        // before either callback so the ordinary node path retains its value and work semantics.
+        for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
+            if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
+                throw CancellationException("Mapped CallSite projection preflight interrupted")
+            }
+            if (nodeId < 0 || nodeId >= nodeOffsets.size) return false
+            val offset = nodeOffsets.offset(nodeId)
+            if (offset < 0L || offset > mappedNodeData.limit() - NODE_HEADER_BYTES) return false
+            if (mappedNodeData.get(offset.toInt() + Int.SIZE_BYTES).toInt() != NodeSerializer.TAG_CALL_SITE_NODE) return false
+        }
         return true
     }
 

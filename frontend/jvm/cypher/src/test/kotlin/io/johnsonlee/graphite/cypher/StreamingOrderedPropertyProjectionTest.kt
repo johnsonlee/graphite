@@ -94,7 +94,7 @@ class StreamingOrderedPropertyProjectionTest {
     }
 
     @Test
-    fun `qualified sources retain provenance and tracked requests retain exact work accounting`() {
+    fun `qualified sources retain provenance and tracked requests retain qualified fallback`() {
         val projected = ProjectionGraph(base, calls)
         val qualified = listOf(CypherGraph("one", projected), CypherGraph("two", projected))
         val oracle = listOf(CypherGraph("one", base), CypherGraph("two", base))
@@ -104,13 +104,114 @@ class StreamingOrderedPropertyProjectionTest {
         for (budget in listOf(2L, 100L)) {
             val expectedTracker = CypherWorkTracker(CypherExecutionBudget(budget))
             val actualTracker = CypherWorkTracker(CypherExecutionBudget(budget))
-            val expected = runCatching { QueryPipeline(base, true).execute(query(), expectedTracker) }
-            val actual = runCatching { QueryPipeline(projected, true).execute(query(), actualTracker) }
+            val expected = runCatching { QueryPipeline(oracle.take(1), true).execute(query(), expectedTracker) }
+            val actual = runCatching { QueryPipeline(qualified.take(1), true).execute(query(), actualTracker) }
             assertEquals(expected.exceptionOrNull()?.javaClass, actual.exceptionOrNull()?.javaClass)
             assertEquals(expected.getOrNull()?.rows, actual.getOrNull()?.rows)
             assertEquals(expectedTracker.diagnostics(), actualTracker.diagnostics())
             assertEquals(0, projected.scans)
         }
+    }
+
+    @Test
+    fun `tracked streaming charges every typed node before accepting rows even with small top k`() {
+        for (budget in listOf(1L, 4L, 5L, 6L)) {
+            val projected = ProjectionGraph(base, calls, forbidNodes = true)
+            val expectedTracker = CypherWorkTracker(CypherExecutionBudget(budget))
+            val actualTracker = CypherWorkTracker(CypherExecutionBudget(budget))
+            val expected = runCatching { QueryPipeline(base, true).execute(query(limit = 1), expectedTracker) }
+            val actual = runCatching { QueryPipeline(projected, true).execute(query(limit = 1), actualTracker) }
+            assertEquals(expected.exceptionOrNull()?.javaClass, actual.exceptionOrNull()?.javaClass)
+            assertEquals(expectedTracker.diagnostics(), actualTracker.diagnostics())
+            assertEquals(minOf(budget, calls.size.toLong()), actualTracker.diagnostics().workUnitsConsumed)
+            assertEquals(minOf(budget, calls.size.toLong()).toInt(), projected.emitted)
+            assertEquals(1, projected.scans)
+            if (budget < calls.size) {
+                assertEquals(budget, (actual.exceptionOrNull() as CypherBudgetExceededException).maxWorkUnits)
+            } else {
+                assertEquals(expected.getOrThrow().rows, actual.getOrThrow().rows)
+                assertEquals(listOf(mapOf("p0" to "A", "p1" to "a", "p2" to "three")), actual.getOrThrow().rows)
+            }
+        }
+    }
+
+    @Test
+    fun `tracked streaming shares a request budget already consumed by an earlier query`() {
+        val ordered = "MATCH (n:CallSiteNode) RETURN n.callee_class AS p0, n.callee_name AS p1, " +
+            "n.caller_name AS p2 ORDER BY p0, p1 DESC LIMIT 1"
+        for (budget in listOf(6L, 7L)) {
+            val expectedContext = CypherExecutionContext(CypherExecutionBudget(budget))
+            val actualContext = CypherExecutionContext(CypherExecutionBudget(budget))
+            val prefix = "MATCH (n:CallSiteNode) RETURN n.caller_name AS caller LIMIT 2"
+            val prefixRows = listOf(mapOf("caller" to "zero"), mapOf("caller" to "first"))
+            assertEquals(prefixRows, CypherExecutor(base, expectedContext).execute(prefix).rows)
+            assertEquals(prefixRows, CypherExecutor(base, actualContext).execute(prefix).rows)
+            assertEquals(2L, actualContext.diagnostics.workUnitsConsumed)
+            val projected = ProjectionGraph(base, calls, forbidNodes = true)
+            val expected = runCatching { CypherExecutor(base, expectedContext).execute(ordered) }
+            val actual = runCatching { CypherExecutor(projected, actualContext).execute(ordered) }
+            assertEquals(expected.exceptionOrNull()?.javaClass, actual.exceptionOrNull()?.javaClass)
+            assertEquals(expected.getOrNull()?.rows, actual.getOrNull()?.rows)
+            assertEquals(expectedContext.diagnostics, actualContext.diagnostics)
+            assertEquals(budget, actualContext.diagnostics.workUnitsConsumed)
+            assertEquals(1, projected.scans)
+            assertEquals((budget - 2).toInt(), projected.emitted)
+        }
+    }
+
+    @Test
+    fun `tracked unsupported capability and zero limit do not double charge work`() {
+        val refusing = ProjectionGraph(base, calls, supported = false)
+        val expectedTracker = CypherWorkTracker(CypherExecutionBudget(5))
+        val actualTracker = CypherWorkTracker(CypherExecutionBudget(5))
+        assertEquals(QueryPipeline(base, true).execute(query(), expectedTracker).rows,
+            QueryPipeline(refusing, true).execute(query(), actualTracker).rows)
+        assertEquals(expectedTracker.diagnostics(), actualTracker.diagnostics())
+        assertEquals(5L, actualTracker.diagnostics().workUnitsConsumed)
+        assertEquals(1, refusing.scans)
+        assertEquals(0, refusing.emitted)
+        val zeroTracker = CypherWorkTracker(CypherExecutionBudget(1))
+        val zero = ProjectionGraph(base, calls, forbidNodes = true)
+        assertEquals(emptyList(), QueryPipeline(zero, true).execute(query(limit = 0), zeroTracker).rows)
+        assertEquals(0L, zeroTracker.diagnostics().workUnitsConsumed)
+        assertEquals(0, zero.scans)
+        val empty = ProjectionGraph(orderedGraph(emptyList()), emptyList(), forbidNodes = true)
+        assertEquals(emptyList(), QueryPipeline(empty, true).execute(query(), zeroTracker).rows)
+        assertEquals(0L, zeroTracker.diagnostics().workUnitsConsumed)
+        assertEquals(1, empty.scans)
+    }
+
+    @Test
+    fun `tracked projection preserves cancellation and failure without charging or decoding later nodes`() {
+        val signal = CypherCancellationSignal()
+        val reason = CypherQueryCancelledException("tracked projection cancelled")
+        val tracker = CypherWorkTracker(CypherExecutionBudget(5), signal)
+        val cancelled = ProjectionGraph(base, calls, forbidNodes = true, beforeEmit = { index ->
+            if (index == 2) signal.cancel(reason)
+        })
+        assertSame(reason, assertFailsWith<CypherQueryCancelledException> {
+            QueryPipeline(cancelled, true).execute(query(), tracker)
+        })
+        assertEquals(2, cancelled.emitted)
+        assertEquals(2L, tracker.diagnostics().workUnitsConsumed)
+        val failure = IllegalStateException("tracked storage failed")
+        val failureTracker = CypherWorkTracker(CypherExecutionBudget(5))
+        val failed = ProjectionGraph(base, calls, forbidNodes = true, beforeEmit = { index ->
+            if (index == 2) throw failure
+        })
+        assertSame(failure, assertFailsWith<IllegalStateException> {
+            QueryPipeline(failed, true).execute(query(), failureTracker)
+        })
+        assertEquals(2, failed.emitted)
+        assertEquals(2L, failureTracker.diagnostics().workUnitsConsumed)
+        val afterSignal = CypherCancellationSignal()
+        val afterTracker = CypherWorkTracker(CypherExecutionBudget(5), afterSignal)
+        val after = ProjectionGraph(base, calls, forbidNodes = true, afterScan = { afterSignal.cancel(reason) })
+        assertSame(reason, assertFailsWith<CypherQueryCancelledException> {
+            QueryPipeline(after, true).execute(query(), afterTracker)
+        })
+        assertEquals(calls.size, after.emitted)
+        assertEquals(5L, afterTracker.diagnostics().workUnitsConsumed)
     }
 
     @Test
@@ -146,6 +247,12 @@ class StreamingOrderedPropertyProjectionTest {
             assertEquals(0, projected.emitted)
         }
         assertEquals(emptyList(), QueryPipeline(base, false).execute(query(limit = 0), tracker).rows)
+        val trackedZero = ProjectionGraph(base, calls, forbidNodes = true)
+        assertFailsWith<CypherQueryCancelledException> {
+            QueryPipeline(trackedZero, true).execute(query(limit = 0), tracker)
+        }
+        assertEquals(0, trackedZero.scans)
+        assertEquals(0L, tracker.diagnostics().workUnitsConsumed)
         val active = ProjectionGraph(base, calls, forbidNodes = true)
         assertEquals(emptyList(), QueryPipeline(active).execute(query(limit = 0)).rows)
         assertEquals(0, active.scans)
@@ -158,7 +265,7 @@ class StreamingOrderedPropertyProjectionTest {
     }
 
     @Test
-    fun `interruption aborts an untracked scan and leaves interrupt status set`() {
+    fun `interruption aborts tracked and untracked scans and leaves interrupt status set`() {
         val projected = ProjectionGraph(base, calls, forbidNodes = true, beforeEmit = { index ->
             if (index == 1) Thread.currentThread().interrupt()
         })
@@ -166,6 +273,18 @@ class StreamingOrderedPropertyProjectionTest {
             assertFailsWith<CancellationException> { QueryPipeline(projected).execute(query()) }
             assertTrue(Thread.currentThread().isInterrupted)
             assertEquals(1, projected.emitted)
+        } finally {
+            Thread.interrupted()
+        }
+        val tracked = ProjectionGraph(base, calls, forbidNodes = true, beforeEmit = { index ->
+            if (index == 1) Thread.currentThread().interrupt()
+        })
+        val tracker = CypherWorkTracker(CypherExecutionBudget(5))
+        try {
+            assertFailsWith<CancellationException> { QueryPipeline(tracked, true).execute(query(), tracker) }
+            assertTrue(Thread.currentThread().isInterrupted)
+            assertEquals(1, tracked.emitted)
+            assertEquals(1L, tracker.diagnostics().workUnitsConsumed)
         } finally {
             Thread.interrupted()
         }
