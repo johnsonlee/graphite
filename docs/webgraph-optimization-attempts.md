@@ -6260,3 +6260,165 @@ Kotlin build wall improves71.855%, but prepared-save wall increases38.038% (6.57
 **Reproduction and evidence:** `/tmp/sootup-recovery-sources/cumulative341-old-construction-pilot/execute.py --execute-root-released` (run with Python3). `commands.json` SHA256 `6eeeb28063bd6ec20097102495d657276a550a503905d6658e8f6d502b266430`; runner `6278bce58c97a623ce7057592bfe16b7623e4064b5e441c01effcf5ca3df23c3`. All raw properties, time-l logs, inventories, reports and phase/resource statistics are preserved in that directory. Independent root recomputation checked all eight raw time/property files and every summary mean/pair against `execution/summary.json`, SHA256 `b1bb8d14e78010b181e0abb4c9ccef435b6b9166a11ef0d5ec5037d92e1e3818`; proof `/tmp/sootup-static-review/cumulative341-construction-review/phase-audit.json`.
 
 Final executor result SHA256 `6bff72a5f85f2ad7c3c69f0337866f45cc83c8f23236648a343f73d1de8735f6`; independent report audit `/tmp/sootup-static-review/cumulative341-construction-review/final-audit.json`, SHA256 `f96c5b7007ac4de6bf3524298fd486eaa26ec39c95e26204067215b63b10c7f9`. Both graph-inventory files have SHA256 `dc1311bca9ecbe492002352fcb422d34d5e463ee39f8d8d9f61db4bfac2c4008`. Root rechecked report bytes and recorded inventories; graph bytes were rehashed by the sole executor, avoiding duplicate scans during the next JVM workload.
+
+### 2026-10-07 — Attempt 113: keep overlapping prepared queries off the graph-worker queue
+
+**Hypothesis:** the preceding real64 HTTP measurements show that some zero-hit request tails coincide with targeted requests in the same concurrency4 wave. The same association also occurs in pre-upgrade samples, so it is not proof of a regression introduced by cumulative341. In the current prepared global path, each query holds a fixed graph-worker cohort on the shared executor while its source-ordered queues advance. Let overlapping eligible requests execute their graph tasks on their own request thread to test whether this queue interaction contributes to tails, while preserving standalone graph parallelism.
+
+**Base and scope:** isolated `/tmp/graphite-attempt113` is based on `c7f68173526dcd4c248feb4dd8fe306a2c274464`, whose production is cumulative341, including110/111 and excluding isolated112. Only `QueryPipeline.kt` changes production. A single existing eligibility traversal distinguishes strict prepared capability from legacy batching. The new dispatch applies only to the default-configuration, global non-DISTINCT path with known node counts, no serial-preference-only shortcut, and prepared capability for relevant nonempty types. Unknown counts, explicit configuration, serial-preference-only, unprepared/no-sidecar fallbacks and DISTINCT keep their existing dispatch. Serial preference still short-circuits the sidecar readiness call. Leading-source/LIMIT behavior is retained.
+
+The first active eligible query retains the fixed balanced graph workers. Other eligible queries execute the same scanners and source-ordered merge inline, preserving the captured work consumer and segment-worker budget. Cancellation is checked around tasks and after the final merge; interruption remains set. Runtime exceptions and errors preserve identity, checked failures preserve their wrapped cause, and `finally` restores the worker ThreadLocal and decrements the active-query counter. No feature, work limit, timeout, heap or cancellation check is removed.
+
+**Scope limitations:** prepared capability means a persisted sidecar is available, not that the mapped index is already initialized. A cold first lookup with a sidecar can take the inline path when it overlaps another eligible request; first-use observations must remain visible. The active counter includes inline queries. Under continuous arrivals, the cohort may never reach zero after its original fixed-worker query finishes, so later eligible requests may all remain inline. This is intentional for this candidate, but a wave-based pilot with gaps cannot establish sustained throughput or resource behavior. If retained, the next validation must include a fixed continuous closed-loop concurrency4 run on the same real graphs/workload, with complete response/provenance validation and CPU/RSS boundaries retained. A fixed-owner-only CAS policy would be a different hypothesis and is not implemented here.
+
+**Correctness:** six focused tests verify complete ordered projected rows, graph provenance and LIMIT; execution of every second-query storage call on its requesting thread while the first query remains blocked; exactly one readiness probe per graph; shared-budget failure and exact consumed work; cancellation of an empty lookup before another graph; preserved interruption; runtime/error identity and checked failure cause; worker/counter reuse after success and failures; and serial-preference readiness short-circuit plus mixed unprepared fallback. Caller-thread assertions prevent low-core CI machines from passing merely because the first query did not occupy the full shared pool. Existing standalone balanced-worker, explicit-policy and cancellation-join tests remain unchanged.
+
+The first build stopped at the external task-set guard because Kover also scheduled the existing `:cypher:filteredRelationshipMemoryTest`. Gradle's JVM started, but compilation/tests did not execute. The failure is preserved in `attempt113-build1/build.log`; it is not a candidate test failure. Build2 corrected only that guard and retained the special test's256MiB heap. Candidate source/test hashes stayed unchanged. Build2 passed **1649 fresh tests**:1338 Cypher,7 filtered-relationship memory,261 webgraph and43 query; zero failures/errors/skips. All three module Detekt tasks and both JMH isolation checks passed. Actual Cypher Kover coverage is **98.0392%**,6550 covered/131 missed lines, with the98% threshold unchanged. The successful build used JDK17.0.20.1, serialized two-worker Gradle,4GiB ordinary test heaps and the256MiB specialized task; temporary publishing edits were restored and source pins rechecked. No performance claim follows from these tests.
+
+**Fixed real-data HTTP pilot:** A is frozen cumulative341; B is113. Both use matching `MAIN_query` runtime roles on the same M3 Max16-core/macOS14.3 host and JDK17.0.20.1, the same64 persisted real JAR-shard graphs and34-query full-response oracle. Eight fresh servers run concurrency1 ABBA, then concurrency4 ABBA. Every process uses `-Xmx8g`, mapped loading, max-concurrent-cypher4 and timeout60000ms, with unchanged default work limits. One first-use cycle, two warmup cycles and30 measured cycles give1122 requests per process,8976 total and30 measured observations per case. Source order rotates by cycle, with bounded request waves and a new connection per request. No sample was replaced or added. All8976 full typed, ordered responses and provenance match the oracle; readiness and before/after64-graph inventories pass. Independent audit re-read all raw response bodies and arithmetic; it relied on retained lifecycle hashes for the large graph/runtime payloads rather than rereading them.
+
+Request latency spans HTTP send through full response-body read; validation/reporting occur between waves. Tables use arithmetic means of two process-level nearest-rank percentiles, not pooled population estimates. With30 observations per process, p95 is the second-largest sample and tail precision is limited. All raw samples, ranges, paired differences and descriptive request means remain in the complete artifacts.
+
+CPU seconds; peakRSS decimalMB. Measured-window serverCPU spans30cycles including validation/logging gaps. Lifetime serverCPU/RSS includes startup/load/first-use/warm/measured/shutdown. ClientCPU is separate.
+
+|Run|Window serverCPU s|Lifetime serverCPU s|Lifetime wall s|PeakRSS MB|Window clientCPU s|
+|---|---:|---:|---:|---:|---:|
+|c1-0-A|6.170|19.440|19.990|5807.144960|8.869437|
+|c1-1-B|6.100|19.520|19.940|5096.046592|8.871275|
+|c1-2-B|6.060|19.380|19.920|5258.805248|8.859575|
+|c1-3-A|6.120|19.120|19.510|5500.715008|8.879677|
+|c4-0-A|6.370|19.640|13.370|5060.280320|8.597493|
+|c4-1-B|6.130|19.500|13.610|5012.242432|8.629540|
+|c4-2-B|6.070|19.760|13.420|5398.331392|8.546475|
+|c4-3-A|6.390|19.650|13.650|5772.279808|8.646283|
+
+Concurrency1 mean resource differences: measuredWindowServerCpuSeconds: 6.145000→6.080000 (-1.058%), serverLifetimeCpuSeconds: 19.280000→19.450000 (+0.882%), serverLifetimeWallSeconds: 19.750000→19.930000 (+0.911%), serverLifetimePeakRssBytes: 5653929984.000000→5177425920.000000 (-8.428%), measuredWindowClientCpuSeconds: 8.874557→8.865425 (-0.103%).
+Pair c1-0-A→c1-1-B: measuredWindowServerCpuSeconds -1.135%, serverLifetimeCpuSeconds +0.412%, serverLifetimeWallSeconds -0.250%, serverLifetimePeakRssBytes -12.245%, measuredWindowClientCpuSeconds +0.021%.
+Pair c1-3-A→c1-2-B: measuredWindowServerCpuSeconds -0.980%, serverLifetimeCpuSeconds +1.360%, serverLifetimeWallSeconds +2.101%, serverLifetimePeakRssBytes -4.398%, measuredWindowClientCpuSeconds -0.226%.
+
+Concurrency4 mean resource differences: measuredWindowServerCpuSeconds: 6.380000→6.100000 (-4.389%), serverLifetimeCpuSeconds: 19.645000→19.630000 (-0.076%), serverLifetimeWallSeconds: 13.510000→13.515000 (+0.037%), serverLifetimePeakRssBytes: 5416280064.000000→5205286912.000000 (-3.896%), measuredWindowClientCpuSeconds: 8.621888→8.588007 (-0.393%).
+Pair c4-0-A→c4-1-B: measuredWindowServerCpuSeconds -3.768%, serverLifetimeCpuSeconds -0.713%, serverLifetimeWallSeconds +1.795%, serverLifetimePeakRssBytes -0.949%, measuredWindowClientCpuSeconds +0.373%.
+Pair c4-3-A→c4-2-B: measuredWindowServerCpuSeconds -5.008%, serverLifetimeCpuSeconds +0.560%, serverLifetimeWallSeconds -1.685%, serverLifetimePeakRssBytes -6.478%, measuredWindowClientCpuSeconds -1.154%.
+
+**All68 measured case comparisons:** A is parent341 and B is113. These tables retain the four raw run-level p50/p95 values, mean changes and both p95 pairs; no adverse control is omitted. Units are milliseconds.
+
+Concurrency1
+
+|Case|Parent0 p50/p95|113-1 p50/p95|113-2 p50/p95|Parent3 p50/p95|Mean p50Δ|Mean p95Δ|AB p95Δ|BA p95Δ|
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+|global-wide-four-properties-zero|0.956666/1.312042|0.955750/2.157167|1.017417/1.449625|0.965500/1.467500|+2.653%|+29.762%|+64.413%|-1.218%|
+|global-wide-four-properties-targeted|1.331042/1.718500|1.327250/1.855958|1.336875/1.783375|1.366417/2.055250|-1.236%|-3.562%|+7.999%|-13.228%|
+|global-wide-four-properties-dense|0.978041/1.315083|0.924416/1.303083|0.971958/1.396334|0.991625/1.335875|-3.721%|+1.828%|-0.912%|+4.526%|
+|global-wide-class-pair-zero|0.919791/1.340667|0.937167/1.405417|0.928792/1.295500|0.930083/1.800000|+0.870%|-14.002%|+4.830%|-28.028%|
+|global-wide-class-pair-targeted|1.351334/1.691291|1.288208/1.709042|1.367958/1.648584|1.355250/1.933000|-1.863%|-7.358%|+1.050%|-14.714%|
+|global-wide-class-pair-dense|0.830834/1.261583|0.825333/1.201750|0.868875/1.216084|0.913417/1.286833|-2.869%|-5.124%|-4.743%|-5.498%|
+|global-wide-name-pair-zero|0.909375/1.297459|0.864916/1.363916|0.897250/1.323209|0.963667/1.420208|-5.920%|-1.124%|+5.122%|-6.830%|
+|global-wide-name-pair-targeted|1.497292/1.983792|1.434917/1.898125|1.484625/1.973208|1.530208/2.056208|-3.566%|-4.175%|-4.318%|-4.037%|
+|global-wide-name-pair-dense|0.828250/1.238167|0.815958/1.290917|0.858500/1.218250|0.869333/1.293333|-1.362%|-0.882%|+4.260%|-5.805%|
+|global-wide-caller-class-zero|0.936750/1.253167|0.874667/1.398916|0.919625/1.390042|0.975750/1.419916|-6.181%|+4.335%|+11.630%|-2.104%|
+|global-wide-caller-class-targeted|1.223334/2.112458|1.148708/1.541625|1.192667/1.735833|1.210083/2.065958|-3.782%|-21.562%|-27.022%|-15.979%|
+|global-wide-caller-class-dense|0.774833/1.266083|0.739791/1.276125|0.787709/1.242709|0.814125/1.282000|-3.868%|-1.148%|+0.793%|-3.065%|
+|global-wide-callee-class-zero|0.904500/1.359417|0.866375/1.333000|0.931084/1.382250|0.939334/1.367042|-2.515%|-0.411%|-1.943%|+1.112%|
+|global-wide-callee-class-targeted|1.126375/1.726875|1.149166/1.622625|1.131042/1.722625|1.185792/1.702084|-1.382%|-2.441%|-6.037%|+1.207%|
+|global-wide-callee-class-dense|0.743750/1.168084|0.736291/1.142875|0.777375/1.204250|0.761833/1.156583|+0.537%|+0.966%|-2.158%|+4.121%|
+|global-wide-provenance-zero|0.878917/1.333667|0.868042/1.296708|0.878958/1.419167|0.937500/1.633833|-3.822%|-8.479%|-2.771%|-13.139%|
+|global-wide-provenance-targeted|1.409458/1.936042|1.407333/2.131125|1.447625/2.104708|1.435875/2.381792|+0.338%|-1.899%|+10.076%|-11.633%|
+|global-wide-provenance-dense|0.981875/1.530541|0.985334/1.428125|1.032042/1.490292|1.067959/1.518667|-1.583%|-4.289%|-6.691%|-1.868%|
+|global-wide-aliased-zero|0.902708/1.340334|0.886042/1.232375|0.983500/1.371209|0.942166/1.302042|+1.337%|-1.468%|-8.055%|+5.312%|
+|global-wide-aliased-targeted|1.584959/1.954750|1.532041/1.872750|1.568292/2.248583|1.661459/2.095291|-4.500%|+1.760%|-4.195%|+7.316%|
+|global-wide-aliased-dense|0.947250/1.353000|0.918209/1.326334|1.010750/1.436000|0.996000/1.453333|-0.735%|-1.568%|-1.971%|-1.193%|
+|global-wide-parameterized-zero|0.933500/1.203708|0.903666/1.513791|0.924583/1.629750|0.976125/1.297792|-4.261%|+25.666%|+25.761%|+25.579%|
+|global-wide-parameterized-targeted|1.274416/1.597333|1.260375/1.612666|1.284042/1.655625|1.294375/1.717625|-0.949%|-1.408%|+0.960%|-3.610%|
+|global-wide-parameterized-dense|0.917417/1.515000|0.931791/1.424375|0.980125/1.527833|0.967542/1.590333|+1.430%|-4.931%|-5.982%|-3.930%|
+|global-wide-wrapped-case-insensitive-zero|0.890250/1.407125|0.887458/1.694041|0.956792/1.397500|0.941125/1.508083|+0.703%|+6.049%|+20.390%|-7.333%|
+|global-wide-wrapped-case-insensitive-targeted|1.229292/1.820750|1.220875/1.994083|1.289084/1.896625|1.288042/1.810583|-0.293%|+7.143%|+9.520%|+4.752%|
+|global-wide-wrapped-case-insensitive-dense|0.934250/1.657041|0.920209/1.705708|0.999750/1.774709|0.983125/1.671583|+0.135%|+4.560%|+2.937%|+6.169%|
+|global-wide-wrapped-case-insensitive-distinct-zero|0.923250/2.610833|0.964334/3.914291|0.980583/2.760875|1.017375/2.995917|+0.221%|+19.056%|+49.925%|-7.845%|
+|global-wide-wrapped-case-insensitive-distinct-targeted|1.635584/2.250291|1.619292/2.162208|1.662208/2.372459|1.654833/2.289833|-0.271%|-0.120%|-3.914%|+3.608%|
+|global-wide-wrapped-case-insensitive-distinct-dense|7.093667/8.283167|6.976667/8.258958|7.061833/8.066709|7.195208/8.412000|-1.752%|-2.213%|-0.292%|-4.105%|
+|global-wide-distribution-broad-all-64|1.124333/1.527958|1.059500/1.879125|1.112917/1.622209|1.161583/1.523125|-4.965%|+14.757%|+22.983%|+6.505%|
+|global-wide-distribution-localized-early|1.032708/1.372792|0.997125/1.445417|1.008625/1.563291|1.051875/1.380292|-3.782%|+9.285%|+5.290%|+13.258%|
+|global-wide-distribution-localized-late|1.971167/2.543333|1.869709/2.377792|1.923333/6.478166|2.005666/2.314750|-4.622%|+82.293%|-6.509%|+179.865%|
+|global-wide-distribution-localized-middle|1.762084/2.195125|1.734500/2.189333|1.755584/2.415625|1.853833/2.318791|-3.480%|+2.017%|-0.264%|+4.176%|
+
+Concurrency4
+
+|Case|Parent0 p50/p95|113-1 p50/p95|113-2 p50/p95|Parent3 p50/p95|Mean p50Δ|Mean p95Δ|AB p95Δ|BA p95Δ|
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+|global-wide-four-properties-zero|2.057209/4.431042|1.550167/2.203708|1.536375/2.394334|1.997417/5.711333|-23.876%|-54.665%|-50.267%|-58.077%|
+|global-wide-four-properties-targeted|2.281750/6.248334|2.924625/6.777208|3.035542/6.265416|2.352708/5.575000|+28.605%|+10.313%|+8.464%|+12.384%|
+|global-wide-four-properties-dense|1.388750/2.087708|1.466917/2.099500|1.511000/1.989750|1.516875/2.144667|+2.488%|-3.382%|+0.565%|-7.223%|
+|global-wide-class-pair-zero|1.659334/4.231416|1.354458/2.335667|1.410083/2.058375|1.715333/4.736166|-18.080%|-51.001%|-44.802%|-56.539%|
+|global-wide-class-pair-targeted|2.216583/7.491375|3.031042/7.815167|3.182917/9.458583|2.273500/7.262709|+38.393%|+17.078%|+4.322%|+30.235%|
+|global-wide-class-pair-dense|1.275042/2.031167|1.353000/2.279667|1.278959/2.228958|1.318000/1.995917|+1.501%|+11.958%|+12.234%|+11.676%|
+|global-wide-name-pair-zero|1.773500/4.525541|1.430708/2.453792|1.390292/2.188125|1.756750/4.447875|-20.091%|-48.270%|-45.779%|-50.805%|
+|global-wide-name-pair-targeted|2.506250/5.897084|4.779042/7.092000|4.167250/6.897583|2.448041/5.841500|+80.577%|+19.176%|+20.263%|+18.079%|
+|global-wide-name-pair-dense|1.241541/2.448958|1.251708/1.982208|1.194750/2.311917|1.250625/2.040916|-1.834%|-4.360%|-19.059%|+13.278%|
+|global-wide-caller-class-zero|1.783250/4.085458|1.387209/2.353041|1.378333/2.698959|1.811209/4.720834|-23.061%|-42.632%|-42.404%|-42.829%|
+|global-wide-caller-class-targeted|1.928125/6.083458|2.701458/8.040125|2.554875/5.813334|1.983167/8.004416|+34.389%|-1.664%|+32.164%|-27.373%|
+|global-wide-caller-class-dense|1.213667/1.838084|1.106708/1.968292|1.127917/2.180708|1.193375/1.939584|-7.163%|+9.830%|+7.084%|+12.432%|
+|global-wide-callee-class-zero|1.738583/3.738041|1.328291/2.434833|1.248667/2.734500|1.705750/4.636125|-25.183%|-38.270%|-34.863%|-41.018%|
+|global-wide-callee-class-targeted|1.925250/4.088708|2.441917/6.140125|2.281291/4.793458|1.871458/4.993333|+24.403%|+20.387%|+50.173%|-4.003%|
+|global-wide-callee-class-dense|1.158750/1.804625|1.163792/2.138167|1.093709/2.166750|1.200541/1.548041|-4.314%|+28.403%|+18.483%|+39.967%|
+|global-wide-provenance-zero|1.604166/6.873458|1.482125/2.904958|1.388667/2.942917|1.882292/3.382375|-17.659%|-42.980%|-57.737%|-12.993%|
+|global-wide-provenance-targeted|2.566042/6.877083|3.719208/6.051875|3.630917/6.023500|2.507291/5.167750|+44.878%|+0.254%|-11.999%|+16.559%|
+|global-wide-provenance-dense|1.539500/2.507209|1.534291/3.114250|1.503375/3.020375|1.497459/3.443500|+0.023%|+3.091%|+24.212%|-12.288%|
+|global-wide-aliased-zero|1.606875/5.541958|1.492708/1.896708|1.366541/2.047458|1.820083/4.891500|-16.566%|-62.197%|-65.775%|-58.143%|
+|global-wide-aliased-targeted|2.509167/6.859209|3.912583/6.703250|4.091542/7.320166|2.404750/10.075958|+62.887%|-17.194%|-2.274%|-27.350%|
+|global-wide-aliased-dense|1.415791/2.254792|1.483375/2.066208|1.386500/2.106041|1.408625/2.218917|+1.610%|-6.738%|-8.364%|-5.087%|
+|global-wide-parameterized-zero|1.734542/4.906416|1.507791/2.058500|1.444792/2.091917|1.734458/7.188292|-14.887%|-65.684%|-58.045%|-70.898%|
+|global-wide-parameterized-targeted|1.986375/5.470542|2.880750/7.186167|3.068417/6.339833|2.051042/7.864791|+47.351%|+1.430%|+31.361%|-19.390%|
+|global-wide-parameterized-dense|1.407625/2.628792|1.414791/2.280250|1.402542/2.338291|1.480375/2.443542|-2.447%|-8.946%|-13.259%|-4.307%|
+|global-wide-wrapped-case-insensitive-zero|1.736500/4.976625|1.415334/2.036334|1.309000/1.980041|2.050625/7.451291|-28.063%|-67.683%|-59.082%|-73.427%|
+|global-wide-wrapped-case-insensitive-targeted|1.922000/9.318333|2.485917/8.410833|2.356583/5.989667|1.953042/6.908917|+24.966%|-11.257%|-9.739%|-13.305%|
+|global-wide-wrapped-case-insensitive-dense|1.317500/2.420417|1.451792/2.189000|1.355542/2.156000|1.455583/2.851541|+1.235%|-17.583%|-9.561%|-24.392%|
+|global-wide-wrapped-case-insensitive-distinct-zero|1.790709/6.395875|1.681500/4.925083|1.686000/3.050584|1.875583/7.086500|-8.150%|-40.844%|-22.996%|-56.952%|
+|global-wide-wrapped-case-insensitive-distinct-targeted|3.289750/10.408875|3.265042/8.926083|3.094959/8.673084|3.376458/10.193833|-4.593%|-14.578%|-14.245%|-14.918%|
+|global-wide-wrapped-case-insensitive-distinct-dense|7.555375/9.503916|7.518416/9.276834|7.604417/9.084542|7.858500/9.947833|-1.888%|-5.606%|-2.389%|-8.678%|
+|global-wide-distribution-broad-all-64|1.455458/2.430083|1.457834/2.561583|1.512292/2.493125|1.466958/2.596583|+1.633%|+0.558%|+5.411%|-3.984%|
+|global-wide-distribution-localized-early|1.598250/2.310125|1.542917/2.394500|1.532000/2.186375|1.595417/2.229667|-3.718%|+0.905%|+3.652%|-1.942%|
+|global-wide-distribution-localized-late|3.813250/11.082833|3.936459/8.126542|4.218958/9.938292|3.559541/10.079041|+10.615%|-14.635%|-26.675%|-1.396%|
+|global-wide-distribution-localized-middle|3.771750/9.024208|4.047750/8.226500|4.450417/10.056625|4.303500/9.823542|+5.237%|-2.996%|-8.840%|+2.373%|
+
+**First-use and warmup limits:** these were predeclared supplements. Each case has only two first-use observations per arm/concurrency, so the following are means of individual latencies, not first-use p95 estimates. Sidecar files exist at startup and earlier cases may initialize overlapping state; “first-use” is not a guarantee of an uncached index for every case. Both warm cycles remain separate and are not pooled into measured results. The largest first-use adverse cases include:
+
+|Concurrency|Case|A0 ms|B1 ms|B2 ms|A3 ms|Mean change|
+|---|---|---:|---:|---:|---:|---:|
+|1|global-wide-class-pair-targeted|7.784000|7.744958|7.521875|5.953500|+11.133%|
+|1|global-wide-callee-class-dense|2.305250|2.428834|2.587375|2.312625|+8.626%|
+|1|global-wide-name-pair-targeted|5.089208|5.398625|5.396417|5.118250|+5.756%|
+|1|global-wide-wrapped-case-insensitive-dense|3.311334|3.665041|3.152083|3.149750|+5.511%|
+|4|global-wide-parameterized-targeted|5.395166|16.654417|15.865833|5.879250|+188.443%|
+|4|global-wide-provenance-targeted|5.826500|5.896958|8.918333|6.536208|+19.839%|
+|4|global-wide-caller-class-zero|4.488916|4.374333|7.031666|5.247791|+17.144%|
+|4|global-wide-caller-class-targeted|7.832084|8.026042|7.351666|5.339292|+16.751%|
+
+Concurrency4 parameterized-targeted first-use therefore rises5.637208→16.260125ms (**+188.443%**), pairs+208.691%/+169.862%. That is two observed requests per arm, not a stable tail estimate. The complete first-use and two warm-cycle tables, all measured request means and per-process maxima remain in [the independent full report](/tmp/sootup-static-review/attempt113/server-request-packet/independent-audit/report.md), [summary.json](/tmp/sootup-static-review/attempt113/server-request-packet/execution/summary.json), [comparison-complete.json](/tmp/sootup-static-review/attempt113/server-request-packet/execution/comparison-complete.json) and [all-case-percentiles.md](/tmp/sootup-static-review/attempt113/server-request-packet/execution/all-case-percentiles.md). No per-case CPU or GC/JIT cause is inferred.
+
+**Interpretation and decision: keep113 as an ACTIVE isolated positive candidate; do not integrate it yet.** Concurrency4 wrapped case-insensitive zero-hit p95 improves6.213958→2.008188ms (**−67.683%**), with both pairs−59.082%/−73.427%; several other zero-hit cases improve in both pairs. Preserve that positive evidence. However, targeted name-pair p50 worsens2.477145→4.473146ms (**+80.577%**), pairs+90.685%/+70.228%, and p95 worsens19.176% in both pairs. Parameterized-targeted p50 also worsens47.351%, both pairs adverse. Concurrency1 localized-late p95 increases82.293%, with unequal pairs−6.509%/+179.865%. These costs are not compensated away by lower session CPU/RSS or favorable cases. DISTINCT remains a control path; its observed changes cannot automatically be attributed to this dispatch code. Sustained-cohort behavior remains unvalidated. This parent-relative pilot neither certifies old-relative CPU/RSS caps nor establishes whole-server throughput or overall recovery.112 remains active and isolated separately.
+
+**Reproduction:** `python3 /tmp/sootup-static-review/attempt113/server-request-packet/run.py --plan /tmp/sootup-static-review/attempt113/server-request-packet/plan.sealed.json --execute-root-released` executes the sealed eight-server sequence. Literal per-server/client argv are in that plan and raw command receipts. The server form is `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$FROZEN_MAIN_QUERY_CP" io.johnsonlee.graphite.cli.MainKt serve --data "$RUN/data" --port "$PORT" --load-mode MAPPED --max-concurrent-cypher 4 --cypher-max-timeout-ms 60000` followed by the fixed64 `--graph id:path` arguments. No CI dispatch or performance profiler was added.
+
+**Evidence and pins:** the successful build command, environment, fresh XML hashes, coverage and frozen runtime are recorded in `/tmp/sootup-recovery-sources/attempt113-build/attempt113-build2/build-proof.json`. Its command runs `:cypher:test :cypher:detekt :webgraph:test :webgraph:detekt :query:test :query:detekt :cypher:koverLog :cypher:koverXmlReport`, JMH packaging/isolation and runtime exports through the sealed external init script. Failed build1 remains alongside it.
+
+- Production `QueryPipeline.kt`: `62660bd8d1bd1ad6b8200f93bd91bd79c6241710f3b0b2f16f5ace14191409f7`.
+- `PreparedQueryOverlapTest.kt`: `2ce0bae751b9a66114f17def60eb848dfaa59cc526c85638bbf6686d15980751`.
+- Original source review proof `/tmp/sootup-static-review/attempt113/source-proof.json`: `8ea1fa76cfe360bcd1cf608144e39b3050db82ac2187106d70eb058eb73d8518`.
+- Build2 source seal: `1f7aa374a390503eeed725f2dc6dd2954eab1b325b908d51c9ea20c823e85998`.
+- Build2 proof: `b8cbcb74f8df7ac29c048eb526bfe870262da24554ca2d1e3634e5d1989a7a41`.
+- Frozen113 runtime `/tmp/sootup-recovery-sources/attempt113-build/attempt113-build2/snapshot/runtime.json`: `6ca4f283cb4ea1465de3eb3eb7ce7ffc701da1c371a841a75a0f3776216af7b8`.
+- Coverage XML: `0cc73a8aaa06224e7fa1b6e98376b93ea4745841d5913c082fca94b1c7fae10e`.
+
+
+Additional exact measurement/audit SHA-256 pins:
+
+- `plan.sealed.json`: `15cf66ce2f307bb37b34d09a326d1cae924f6c1403c9d02c12236a82c828cb01`.
+- `execution/results.json`: `3afa8ce6f1b66256f3534671af3fef9913a24c6ed45174b77e4af48e3377dd45`.
+- `execution/summary.json`: `ccc6a60709b6979a20eefc37ce46c589aa511edd896db190f17a2cbf5e572568`.
+- `execution/comparison-complete.json`: `2151a3de1957e266268a38423b9265eb5f4eb75fc2853261f32d1c444174546d`.
+- `execution/all-case-percentiles.md`: `2a1d6ceb63777957344b19d65e6c2a28bda21209337b3b936d187792b6abc18f`.
+- `independent-audit/audit.json`: `39e5a48f1b9e1ad8814c5a9e3acbe855aef11e439d92806885a7a9567c8e8b48`.
+- `independent-audit/report.md`: `d4f551b48558bb62d951ca44a1c5a7dc29ce8a5f11d5f8981b0b1a00ac532ee0`.
+- Parent341 runtime: `5a64dcf9415e5745e6877e9c028b4ba2a0e972f674a9f12cb2713267aedd5fcc`; requests34: `484660b6edd3b0da6a1bac9fed14c4d8317da369c19683554ce07fb536175410`; HTTP oracle: `fb0b50c1bd61dd47dbb7a02189c4e8b3b260374a27e7ae677f706a5e8875e83e`.
+
+The request p50/p95 priority, end-to-end priority next, independent CPU/RSS≤5% versus pre-upgrade, maximum8GiB Java heap, correctness and stability remain unchanged. This local candidate commit retains code and evidence for further evaluation; it is not a root integration or a final acceptance claim.
