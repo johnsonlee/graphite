@@ -566,10 +566,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 run.unsupported[index].add(UnsupportedFoldSite(render(builder.methodSignature), reason))
                 return false
             }
-            builder.controlFlowGraph.replaceNode(stmt, replacement)
             // A constant or a nop throws nothing: the handler the call could reach is reachable
             // only through the statements that can still throw.
-            builder.controlFlowGraph.clearExceptionalEdges(replacement)
+            replaceWithNonThrowingStmt(builder.controlFlowGraph, stmt, replacement)
             return true
         }
     }
@@ -587,8 +586,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
      * fold: a surviving invoke that reads a folded local is a new statement object, and the key
      * that names it must still name it.
      */
-    private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt) {
-        builder.controlFlowGraph.replaceNode(old, new)
+    private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt, throwsNothing: Boolean = false) {
+        if (throwsNothing) replaceWithNonThrowingStmt(builder.controlFlowGraph, old, new)
+        else builder.controlFlowGraph.replaceNode(old, new)
         preFoldOrdinals[builder.methodSignature]?.let { ordinals -> ordinals.remove(old)?.let { ordinals[new] = it } }
     }
 
@@ -596,13 +596,15 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             val graph = builder.controlFlowGraph
             do {
-                val unboxed = foldUnboxing(builder)
+                var callsFolded = foldUnboxing(builder)
                 val propagated = propagateConstants(builder) or foldComparisons(builder)
-                val folded = foldConstantBranches(graph, enumReads(builder, view))
+                val enums = enumReads(builder, view)
+                callsFolded = foldEnumEquals(builder, enums) || callsFolded
+                val folded = foldConstantBranches(graph, enums)
                 // Pruned per round: a definition on the side just removed must not keep a local
                 // from being read as its one remaining constant in the next round.
-                if (folded || unboxed) removeUnreachable(graph)
-            } while (unboxed || propagated || folded)
+                if (folded || callsFolded) removeUnreachable(graph)
+            } while (callsFolded || propagated || folded)
         }
 
         /** The assignment that defines each local with exactly one definition, when that definition is an assignment. */
@@ -636,8 +638,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             }
             unboxed.forEach { (assign, constant) ->
                 val replacement = assign.withRValue(constant)
-                replace(builder, assign, replacement)
-                graph.clearExceptionalEdges(replacement)
+                replace(builder, assign, replacement, throwsNothing = true)
             }
             return unboxed.isNotEmpty()
         }
@@ -675,6 +676,37 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 casts.forEach { (local, assign) -> reads[local] = reads.getValue((assign.rightOp as JCastExpr).op as Local) }
             } while (casts.isNotEmpty())
             return reads
+        }
+
+        /**
+         * Enum.equals(Object) is final and compares identity. Fold only with a known non-null
+         * enum receiver and an enum constant or null argument; an unknown receiver may throw
+         * or dispatch to user code. Overloads named equals have no such guarantee.
+         */
+        private fun foldEnumEquals(builder: Body.BodyBuilder, enums: Map<Local, JStaticFieldRef>): Boolean {
+            val graph = builder.controlFlowGraph
+            val folded = graph.nodes.toList().mapNotNull { stmt ->
+                val invoke = invokeExprOf(stmt) as? AbstractInstanceInvokeExpr ?: return@mapNotNull null
+                val signature = invoke.methodSignature
+                if (signature.name != "equals" || signature.type.toString() != BOOLEAN_TYPE ||
+                    signature.parameterTypes.singleOrNull()?.toString() != OBJECT_CLASS
+                ) return@mapNotNull null
+                val receiver = enums[invoke.base] ?: return@mapNotNull null
+                val argument = invoke.args.singleOrNull() ?: return@mapNotNull null
+                val other = enums[argument]
+                val equal = when {
+                    argument is NullConstant -> false
+                    other != null -> receiver.fieldSignature == other.fieldSignature
+                    else -> return@mapNotNull null
+                }
+                val replacement = if (stmt is JInvokeStmt) JNopStmt(stmt.positionInfo)
+                else (stmt as JAssignStmt).withRValue(IntConstant.getInstance(if (equal) 1 else 0))
+                stmt to replacement
+            }
+            folded.forEach { (stmt, replacement) ->
+                replace(builder, stmt, replacement, throwsNothing = true)
+            }
+            return folded.isNotEmpty()
         }
 
         /**

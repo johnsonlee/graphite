@@ -30,7 +30,8 @@ and only there, the chain continues:
    `java.lang.Boolean` or a `void` for a boolean rule, say) is left alone and reported, the
    discarded call too: the rule names another call, and deleting this one would delete its
    effects. A folded call throws nothing, so its exceptional edges go with it and a handler
-   only it could reach is removed. A value written as `EnumConstant {enum_type, name}` becomes
+   only it could reach is removed; neighbouring calls retain their exceptional edges even
+   when they share a basic block with the folded call. A value written as `EnumConstant {enum_type, name}` becomes
    the read of that static field, which is what the constant is in bytecode; the method must
    return that enum and the enum must declare that constant. A call whose return type is
    erased to `java.lang.Object` (`Supplier.get`, `Function.apply`, Kotlin's `Function1.invoke`)
@@ -68,9 +69,42 @@ from a string; any reference or array type from `null`; an enum type from one of
 constants; `java.lang.Object` from any of these, boxed as above. A `java.lang.Boolean` or
 other boxed return type is not an erased one and is reported. `null == null` and `null != null` fold; `null` against a non-null reference, such
 as `Boolean.TRUE` read from a field, does not, because a field is not a constant. An enum
-constant folds `==` and `!=` against another enum constant or `null`; a `switch` on it goes
+constant folds `==` and `!=` against another enum constant or `null`. `equals(Object)` also
+folds when its receiver is a known enum constant and its argument is another enum constant
+or `null`: Java's final `Enum.equals` compares identity. An unknown or null receiver, an
+unknown argument, and custom `equals` implementations or overloads remain calls. A `switch` on it goes
 through `ordinal()` and a synthetic lookup array and is not folded, where a `switch` on a
 folded `int` is.
+
+## Partially constant experiment predicates
+
+For a predicate with a runtime condition, put the rule on the option lookup whose value is
+known for the experiment, rather than on the whole predicate:
+
+```java
+boolean isGroupA() { return inScope() && ABTestOption.A.equals(getAbOption()); }
+boolean isGroupB() { return inScope() && ABTestOption.B.equals(getAbOption()); }
+```
+
+```yaml
+version: 1
+folds:
+  - match:
+      CallSite: { callee_class: com.example.Experiment, callee_name: getAbOption }
+    value: { EnumConstant: { enum_type: com.example.ABTestOption, name: A } }
+```
+
+With this assumption, `isGroupA` still depends on `inScope()`; its result cannot be replaced
+by either boolean constant. The comparison in `isGroupB` becomes false, but evaluation of
+`inScope()` is retained, including its possible effects and exceptions. Branches in the same
+body that depend on the folded comparison are simplified. Calls to these wrapper methods
+in other bodies are not automatically inlined or folded.
+
+The rule asserts the lookup's value; Graphite does not infer which enum represents control
+or which experiment a shared lookup serves. Scope a rule with call-site properties, constant
+arguments, or a `select` query when only some lookups have that value. A direct rule on
+`isGroupA()` with `value: true` or `value: false` would replace the entire call and lose its
+runtime condition.
 
 ## The file
 
