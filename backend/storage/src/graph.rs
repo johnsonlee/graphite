@@ -308,8 +308,8 @@ impl Graph {
             .bytes("graph.callsite-ordinals")
             .map_err(io)?
             .and_then(|bytes| {
-                crate::node::CallSiteOrdinals::parse(
-                    &bytes,
+                crate::node::CallSiteOrdinals::parse_bytes(
+                    bytes,
                     metadata.call_site_ordinal_digest.as_ref(),
                 )
             })
