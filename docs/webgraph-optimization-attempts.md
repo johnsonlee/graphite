@@ -8711,3 +8711,8 @@ All predeclared arithmetic means and both forward/reverse pairs are retained; su
 Evidence: sealed loading plan `be2d255556481c479ec8b042e097aa0622c6e09cdd1b885602c444505fc2359d`; raw result `0a0766c5e968e7d272772bed3231b22f487f440f8760fe65875a8530281381d6`; summary `e431722c3ee08d8f97527a0e563eb807e2955aa1166c0cf5d109dfa71d4690d0`; owner terminal `fa2489c115045d326a4a5e5bdea83afa8af232795388c86f13184f46b7ff36f0`. All files remain under `/tmp/sootup-static-review/attempt133/loading-three-arm/`. Source-only log preimage is archived before appending results; production source and frozen measured binary remain byte-identical. One isolated source+log commit, no root worktree change or push.
 
 Root independently audited the complete fixed12 loading reports/statistics and retained all adverse samples: PASS receipt SHA `d1d9a270624a183127a09ff38bace15f5ce938e68765e4816601a8b862c5c53a`.
+
+
+### 2026-10-08 — Rust 1.93 strict Explore lint follow-up
+
+The isolated134 full four-crate suite passed285 tests, but strict storage+Explore Clippy stopped at the existing `mcp.rs:802` nonminimal_bool expression. Original failure remains at `/tmp/sootup-static-review/attempt134/validation2/execution/2.log`; no package or warning was suppressed. Apply the exact Clippy equivalent `!(is_notification || id.is_string() || id.is_number())`, preserving the same short-circuit evaluation order and accepted JSON-RPC ID domain. This one-line compatibility fix is separate from134 mapped-byte accounting; no performance claim. Complete285 tests, unchanged strict lint and CLI export will run in validation3 before134 is retained.
