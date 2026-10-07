@@ -40,7 +40,7 @@ val frontendCorrectnessKotlinFixtures = sourceSets.create("frontendCorrectnessKo
 }
 extensions.getByType(KotlinJvmProjectExtension::class.java).sourceSets
     .getByName(frontendCorrectnessKotlinFixtures.name)
-    .kotlin.setSrcDirs(listOf("src/frontendCorrectnessKotlinFixtures/kotlin"))
+    .kotlin.setSrcDirs(listOf("src/fixtures/kotlin"))
 
 dependencies {
     api(project(":core"))
