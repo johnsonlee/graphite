@@ -6013,3 +6013,89 @@ These rows also supply the report's paired P95 values. The base-first pair now w
 Routing request-selected P95 also worsens23.42% (P50+4.83%), despite no reported advisory errors; startup-prepared graphId P95 improves to1.04x. The separate Rust artifact has identical actual base/candidate binary hashes and cannot explain away the JVM results.
 
 Independent review re-read the three dense-DISTINCT raw TSV pairs and verified latency arithmetic, result digests, row counts and work counts. The terminal report and five artifacts are retained at `/tmp/sootup-static-review/ci-cdc85935/`; `terminal-report.md` SHA-256 is `cb87a2a11f969bcdbc56ec755bcc8d66163580dfa036c857994678393758a410`. PR171 remains draft and its updated body explicitly records these limits; its exact readback and hashes are archived in `pr-update-proof.json`. No CI rerun or sample replacement was performed. Full recovery remains unproved.
+
+
+### 2026-10-07 — Attempt 112: skip repeated decoding of accepted DISTINCT projection tuples
+
+**Hypothesis and scope:** the raw serial and split-worker CallSite DISTINCT loops decode projected strings and allocate a list for each matched node before deduplicating it. Add a worker-local content-keyed `IntArray` set for tuples that already produced an accepted row. Reuse a scratch probe; copy it only when a row is accepted, so retained keys are bounded by the requested result limit. Keep the existing string-value `seenValues` set authoritative: different loaded string IDs may contain equal text. Selected-value filtering, first encounter offsets, scan work accounting, cancellation, worker joining and cross-graph provenance remain intact. Low-repeat inputs pay extra key hashing, accepted-key copies and table storage; benefit was not assumed. This existing decoding cost is present in upgraded main too, so it is a recovery opportunity, not a demonstrated cause of the recurring CI regression.
+
+Parent A is frozen109, committed `cdc85935ada041ebf995ada534f636c4822112e1`; B is isolated112 from that exact parent. Neither110 nor111 is included in either measured arm. Production changes only `MappedWebGraphBackedGraph.kt`, SHA-256 `02aae75fad36d1513ddb372aca260061bd034b4615c96cba401305ee8a227ef7`. The source remains isolated at `/tmp/graphite-attempt112` for further evaluation.
+
+**Correctness and first failure:** build1 compiled and passed lint, then one of the five new tests failed: expected first offsets `[8,63512,106093]`, actual `[8,106,106093]`. The fixture incorrectly equated increasing NodeID with physical encounter order. `GraphStore` preserves original NodeIDs but writes nodes in `DefaultGraph`'s hash-map iteration order; another beta node was physically encountered before ID3000. Only the fixture was corrected to explicitly enumerate nodes by ID, preserving the intended long consecutive duplicate runs and the concrete first-ID/offset expectations. Production was not sorted or changed, and the failed XML/source are retained. Corrected test SHA-256 `91cb490752b5b32dfeeb51d992cc4bffd76edf85b9168ea9a7a72880b79fa13a`.
+
+Build2 passed304 fresh tests (261 webgraph,43 query; zero failures/errors/skips), both module Detekt checks and both JMH isolation checks. The five focused tests assert first offsets and full serial/split rows, multiple/null/repeated projected columns, selected values, distinct IDs with equal loaded text, and duplicate-run budget/cancellation behavior with released workers. Existing provenance, budget and cancellation coverage remains enabled. Publishing files were restored. Build proof: `/tmp/sootup-recovery-sources/attempt112-build/attempt112-build2/build-proof.json`.
+
+**Real64 diagnostic protocol:** one existing `Fixture64GraphPreparation --verify` preflight, then exactly four fresh ABBA replay forks, no retries or sample replacement. The common frozen109 `LargeBroadQueryPressureBenchmark.replayBroadQueries` runs all34 `global-wide` cases with `graphCount=64`, `indexState=cold`, `timeoutMillis=300000`, zero warmup, one single-shot iteration, one thread/fork, fail-on-error and `-prof gc`. Both production classpaths use matching `TEST_webgraph`57-entry roles ahead of the same common JMH jar. Launcher and fork explicitly use8g, on the same local macOS/JDK17.0.20.1+0 host,16 available processors. Cold denotes the harness index state, not cold OS pages: every command has the same sequential graph read/hash conditioning outside timing. No feature, cancellation or resource-budget reduction was introduced.
+
+The fixture is the exact cdc CI shared artifact11460362339:64 distinct real class shards from pinned Android14, Tika2.9.2, Hive4.0.0 and Kotlin compiler2.0.21 JARs. Archive713,650,469 bytes, extracted1,220 files/10,428,802,366 bytes. Safe extraction rejected absolute/traversing/symlink paths; archive/API SHA, all file pins,64 CallSite-index hashes, four source-JAR identities, framed workload identities and manifest/provenance/reproducibility evidence matched. Physical paths alone were relocated. The runtime preflight subsequently passed; this is not a synthetic scalability fixture. Every measured replay validated all34 complete result records, ordered row digests and provenance against the existing oracle (136 measured records total); all work/path counters remain in raw TSVs. All five recorded post-run inventories equal the sealed graph hashes.
+
+**All query observations:** ms, execution order A0/B1/B2/A3. Row labels omit the common `global-wide-` prefix only. Each entry is one execution of that case per fresh replay, not repeated samples of one server endpoint.
+
+| Case | A0 | B1 | B2 | A3 | Mean B vs A |
+|---|---:|---:|---:|---:|---:|
+| four-properties-zero | 153.609250 | 165.452083 | 170.042459 | 164.871833 | +5.342% |
+| four-properties-targeted | 11.370792 | 13.006709 | 11.855666 | 12.448625 | +4.379% |
+| four-properties-dense | 3.871750 | 3.665333 | 3.984459 | 3.742500 | +0.467% |
+| class-pair-zero | 3.250833 | 1.838416 | 2.134417 | 2.544541 | -31.448% |
+| class-pair-targeted | 4.615709 | 3.188500 | 5.405125 | 4.226250 | -2.809% |
+| class-pair-dense | 0.877958 | 0.990458 | 1.045125 | 0.870208 | +16.441% |
+| name-pair-zero | 1.836459 | 2.366500 | 1.751417 | 1.294875 | +31.507% |
+| name-pair-targeted | 5.031375 | 3.656333 | 3.182000 | 3.429084 | -19.173% |
+| name-pair-dense | 0.608417 | 0.571458 | 0.625792 | 0.666875 | -6.120% |
+| caller-class-zero | 1.799500 | 1.070291 | 1.038292 | 1.078958 | -26.746% |
+| caller-class-targeted | 4.581875 | 2.072375 | 2.419583 | 2.366500 | -35.352% |
+| caller-class-dense | 0.688750 | 0.530250 | 0.546000 | 0.549250 | -13.065% |
+| callee-class-zero | 1.008167 | 1.038792 | 0.995209 | 1.043834 | -0.877% |
+| callee-class-targeted | 2.224167 | 2.083000 | 2.105000 | 1.929917 | +0.816% |
+| callee-class-dense | 0.574000 | 0.539917 | 0.435750 | 0.458250 | -5.482% |
+| provenance-zero | 0.868000 | 0.864541 | 0.955917 | 1.002500 | -2.675% |
+| provenance-targeted | 2.721625 | 2.429959 | 2.604292 | 2.501666 | -3.619% |
+| provenance-dense | 0.876500 | 0.936334 | 0.961416 | 0.867958 | +8.787% |
+| aliased-zero | 0.994959 | 1.069166 | 0.943084 | 1.014458 | +0.141% |
+| aliased-targeted | 3.169500 | 2.942125 | 3.157500 | 3.090917 | -2.568% |
+| aliased-dense | 0.816416 | 0.877458 | 0.801750 | 0.822333 | +2.469% |
+| parameterized-zero | 0.958000 | 1.121209 | 0.955292 | 1.085625 | +1.609% |
+| parameterized-targeted | 1.953791 | 2.092375 | 2.185042 | 1.801041 | +13.918% |
+| parameterized-dense | 0.793584 | 0.672583 | 0.759041 | 0.778708 | -8.947% |
+| wrapped-case-insensitive-zero | 1.029458 | 0.990833 | 1.025750 | 1.000625 | -0.665% |
+| wrapped-case-insensitive-targeted | 1.971042 | 1.879459 | 2.249375 | 1.877167 | +7.292% |
+| wrapped-case-insensitive-dense | 1.501959 | 1.396042 | 2.676666 | 1.450334 | +37.951% |
+| wrapped-case-insensitive-distinct-zero | 3.099083 | 3.774084 | 3.256042 | 3.505250 | +6.447% |
+| wrapped-case-insensitive-distinct-targeted | 33.557167 | 32.043833 | 44.795125 | 30.898667 | +19.212% |
+| wrapped-case-insensitive-distinct-dense | 45.619917 | 46.105750 | 39.943666 | 43.749708 | -3.715% |
+| distribution-broad-all-64 | 0.764542 | 0.903209 | 0.786125 | 0.787250 | +8.863% |
+| distribution-localized-early | 1.364208 | 1.302042 | 1.277625 | 1.284291 | -2.599% |
+| distribution-localized-late | 3.635833 | 3.605250 | 3.733958 | 3.687209 | +0.221% |
+| distribution-localized-middle | 2.522833 | 2.560542 | 2.217667 | 2.260542 | -0.108% |
+
+The target dense wrapped DISTINCT mean is44.684813→43.024708ms (**−3.715%**), with mixed adjacent pairs **+1.065% / −8.700%**. Its targeted control instead rises32.227917→38.419479ms (**+19.212%**), pairs−4.510% / +44.974%. Zero-hit and non-DISTINCT controls above are retained. There is no matched-tuple/duplicate-count profile proving how much decoding was avoided or assigning any time difference to that mechanism.
+
+**Resource and timing boundaries:** internal `wallNanos`/`processCpuNanos` cover the instrumented complete replay; per-case wall is separate. Whole-command `/usr/bin/time -l` includes launcher/fork startup, fixture setup and correctness/reporting. Its CPU is user+sys and RSS is whole-process peak, not per-query CPU/RSS. JMH's primary single-shot duration also includes work outside the inner replay timer; none of these boundaries is silently substituted for another.
+
+| Order | Internal replay wall s | Internal process CPU s | JMH single-shot s/op | Whole wall s | Whole CPU s | Peak RSS GB (decimal) |
+|---|---:|---:|---:|---:|---:|---:|
+| run0-A | 0.399359 | 2.541376 | 0.418170 | 8.61 | 12.23 | 5.041160 |
+| run1-B | 0.381076 | 2.918254 | 0.398698 | 8.66 | 12.75 | 5.154832 |
+| run2-B | 0.394535 | 3.081147 | 0.415048 | 8.86 | 13.00 | 5.278958 |
+| run3-A | 0.375599 | 2.701649 | 0.391753 | 8.78 | 12.64 | 5.001937 |
+
+Arithmetic-mean internal replay wall is0.387479→0.387805s (**+0.084%**), with pairs−4.578%/+5.042%. Internal process CPU is2.621512→2.999701s (**+14.426%**), and both CPU pairs worsen (+14.830%/+14.047%). Whole CPU12.435→12.875s (**+3.538%**), whole wall8.695→8.760s (+0.748%) and peak RSS5.021549→5.216895GB (**+3.890%**). The second RSS pair worsens5.538%; it is not hidden by the mean. Lower diluted whole-command CPU growth does not erase the internal replay increase. With two observations per arm, the median equals the mean; raw minima/maxima/ranges and both pair differences remain in the summary. None establishes old-relative resource acceptance.
+
+GC-profiler allocation is4,860,937,308→4,861,895,156 B/op (+0.019705%); all four values are4,860,976,064 /4,860,788,528 /4,863,001,784 /4,860,898,552. Reported GC counts are17/18/18/17, GC elapsed70/65/66/72ms. These profiler statistics neither measure retained memory nor isolate the projection cache. No causal GC/JIT explanation is asserted. The report's cross-case P50 points are1.836459/1.838416/2.105000/1.450334ms (candidate mean+19.978%), P95 points45.619917/46.105750/44.795125/43.749708ms (+1.713%). Those percentiles describe different query cases in one replay; **they are not repeated HTTP server-request p50/p95** and cannot establish the user's first-priority server goal.
+
+**Evidence and independent audit:** literal commands and artifact/source/fixture/JDK pins are in `/tmp/sootup-static-review/attempt112/replay-packet/commands.json` and `seal.json`. The measured form is `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$FROZEN_TEST_WEBGRAPH_CP:$COMMON109_JMH" org.openjdk.jmh.Main '^io\.johnsonlee\.graphite\.webgraph\.LargeBroadQueryPressureBenchmark\.replayBroadQueries$' -p graphCount=64 -p coverageFamily=global-wide -p indexState=cold -p timeoutMillis=300000 -wi 0 -i 1 -f 1 -to 30m -foe true -prof gc -rf json -rff "$RESULT" -jvmArgs "-Xmx8g -Dgraphite.broad.pressure.graphs=$MANIFEST -Dgraphite.broad.pressure.correctness.mode=verify -Dgraphite.broad.pressure.correctness.oracle=$ORACLE -Dgraphite.broad.pressure.observations.output=$TSV"`. No CI dispatch or publication wrapper was run.
+
+Authoritative SHA-256 pins:
+
+- Parent109 runtime: `9dc3514f1125bbdfeb634104737f8e9d19445db71a444ab5e9e11d9682d5c5fb`.
+- Candidate112 runtime: `d6a05ff5b92b7f1efffaa33f66e8604a2067e0d15f0b5995c9be79ea1b04d6f4`.
+- Common109 `webgraph-jmh.jar`: `3a65e7ddedc053f49988fd1a72929be649144e24663f737e8b05cc7cb247ce1b`.
+- Fixture archive: `b7e233cb1c5bb27306ccb0ee518a7b5b37fb84bc3a6a00e31115b2550684c01a`; extracted inventory: `a5ad960c424ce9d04ca02ad50c88e648be13bcaf99f39af19712e3bc4c65ad80`.
+- Local manifest: `19c6b2bda4644583bdc11cc493ea4e6167871b38b7adca7870df4e58f693359b`; full34-query oracle: `0b762ca78cd9be246ad32710eafdd1ddaebac25f56102410564c194f4c4de487`.
+- Commands: `04e972b9d68c18b7a3786b69fde889fb02ce19f458ea74f13bcec779fbccd752`; seal: `2686df31885734b1d519cbd535a1559b8dad349039853a4a6b0844f0f67dfb4c`.
+- Raw `execution/results.json`: `80d97c3baed9c343cdb4cb0a64db3f50c704c35c1dbf956e72d6896a2a22a3a1`; summary: `3f83e8310bd3daa1562f327f02a92d2e00426103765018138da5a5e83f30cc5f`.
+- Independent `/tmp/sootup-static-review/attempt112/independent-audit/audit.json`: `1b877cebb8af5035445523d5087eb8f6aebe5fe12a23e5d5e51969902bc0ab5a`.
+
+The independent audit rehashed raw outputs and command/manifest pins, re-read all136 TSV rows against the oracle, recomputed every reported query/resource statistic from raw JSON/time logs, and checked archived XML hashes/timestamps/totals for all304 fresh tests. It compared all five recorded graph inventories to sealed extracted hashes; it did not repeat a10.43GB graph read while other work was queued. This is bounded evidence, not a new universal equivalence claim.
+
+**Decision: retain112 as an active isolated candidate for targeted request-level verification.** The local dense-DISTINCT mean benefit is positive and correctness passes; preserve that increment for evaluation rather than rejecting it because overall recovery remains incomplete. The mixed target pairs, targeted regression, internal CPU increase, allocation and adverse controls remain explicit. Do not integrate112 as an established fix or claim server/overall recovery from this pilot. Next evaluation must measure repeated real server requests with a fixed mix/concurrency and stated first-use/warm boundaries, full result/provenance checks, and matched old/current server runtimes. The user prioritizes server-request p50/p95, then end-to-end latency; independent operation CPU/RSS≤5% versus pre-upgrade, maximum8GiB Java heap, correctness and stability remain unchanged. APK remains deferred.
