@@ -8113,3 +8113,194 @@ no executable code changed. Original118/119 historical artifacts remain preserve
 **Decision: KEEP for integration.** This addresses repeated preflight scans, missing cold work
 accounting and repeated tracker lookup without weakening budgets or cancellation. Performance
 magnitude has not been measured; no claim of final latency/CPU/RSS acceptance is made.
+
+### Attempt 125 follow-up: isolate packed saving in one binary (2026-10-08)
+
+The original parent9aae8ff/candidate6302c6de fixed8 comparison completed all eight real
+constructions. Kotlin save averaged12.153→17.272s (+42.11%), whole CPU+8.32%, RSS+3.15%;
+Tika save+5.19%, whole CPU+0.93%, RSS+0.74%. Preserve these adverse samples. The subsequent
+verification runner stopped on a cross-output metadata hash mismatch: four verifier jobs
+passed, the fifth JVM passed its metadata assertions but the runner's byte comparison failed,
+and19verifiers remain unexecuted. Offline diagnosis found annotation/method enumeration order
+and a19-field ID permutation; it does not retroactively turn that failed run into a pass.
+
+At the user's request, add a temporary diagnostic patch on exact
+`f7d40f324b7bbf908ba680a37cabc4a7f879c626` in `/tmp/graphite-default-packed-diagnostic`.
+`-Dgraphite.diagnostic.defaultGraphPacked=false` makes both DefaultGraph packed interfaces
+return null; true preserves their original behavior. Both arms use exactly one frozen runtime
+and helper, fresh JVMs, JDK17 on the same Apple Silicon host, `-Xmx8g`, default GC,
+DefaultGraph, all default frontend features, two compression threads and the prepared index.
+Real inputs are kotlin-compiler-embeddable2.0.21 (4,744,132nodes) and tika-app2.9.2
+(4,620,490nodes). Fixed order: Kotlin ON/OFF/ON/OFF, Tika OFF/ON/OFF/ON. No replacements,
+quiet-window selection, forced GC or JFR. The diagnostic patch remains outside production.
+
+Source tracing found no public metadata-view access before save. Runtime evidence confirmed
+both lazy views uninitialized before save in all eight samples. ON actually selected packed
+for both interfaces and left the views uninitialized; OFF selected public fallback and
+initialized both. Buffered snapshots measure wall, main-thread CPU, process CPU, GC count
+and collector elapsed time at build/node-count/save/release and natural save subphase boundaries.
+
+| Real corpus | ON save samples (s) | OFF save samples (s) | ON vs OFF mean whole CPU | ON vs OFF mean peak RSS |
+|---|---|---|---|---|
+| Kotlin | 11.072,11.569 | 11.914,16.029 | +3.22% | −0.075% |
+| Tika | 9.722,9.460 | 9.517,9.809 | +1.91% | +3.44% |
+
+Kotlin's second OFF sample explains most of the save mean difference: BVGraph took5.699s
+instead of0.994–1.013s, with main-thread CPU0.079s, process CPU7.013s instead of2.122–2.604s,
+and zero additional GC collections/time in that interval. This identifies the slow phase and
+additional CPU outside the main thread; it does not distinguish compression workers from JIT
+or other threads, prove an I/O cause, or establish the cause of the old cross-binary result.
+Do not attribute the entire mean save reduction (Kotlin18.98%, Tika0.75%) to packed conversion.
+
+The directly observed local-definition conversion is consistently faster: Kotlin ON8.82ms
+vs OFF38.65ms, Tika5.99ms vs14.56ms. Branch-scope conversion is Kotlin95.26vs110.80ms,
+but Tika111.55vs108.42ms. Whole construction means are Kotlin−4.27%, Tika+0.39%; Tika's
+first RSS pair is+9.34% despite the mean+3.44%. Retain these mixed and adverse measurements.
+These are n2/arm diagnostic observations, not server p50/p95 or final resource-cap acceptance.
+f7 also includes129, unlike original6302; this instrumented comparison neither recreates all
+earlier binary differences nor proves packed can never interact with later work.
+
+Validation:748 fresh tests (core480/webgraph268), zero failures/errors/skips, both Detekt gates
+and four new diagnostic behavior tests passed. Initial diagnostic lint failures and a subsequent
+pre-JVM source-pin preparation failure are preserved. The final fixed8 runner exited0; raw
+reports, commands, path assertions and summary means were independently audited. Saved-output
+presence/node counts are not a new exhaustive graph-semantic verification. No extra workload ran.
+
+Reproduce the fixed protocol with the literal commands in
+`/tmp/sootup-static-review/attempt125/same-binary-diagnostic/measurement/plan.sealed.json`;
+runner command was `env -u MallocNanoZone python3 /tmp/sootup-static-review/attempt125/same-binary-diagnostic/measurement/execute.py --execute-root-released`.
+The runner intentionally refuses to overwrite the completed execution.
+Runtime SHA256 `6428b95fae37ca79b97a0ebba892e5f3e9ea7aec9443a6a6ab9e256eba8392b2`;
+plan `3407db7fb3da84de237f35f1f0db32b793c9f7b63b9270a25e95ab61c419ce18`;
+raw results `27fb30108c368f59b7f729fa0b1fd10e904f07ecf7e17d6b545c15dcec7c9321`;
+summary `b8533b5b1c9b2bb16ef0a9374f98fbf092d48c31ce52816902aed2c09945b9e1`.
+Receipts and raw samples are in that directory's `execution/`, including `root-independent-audit.json`.
+
+**Decision: retain the packed implementation and its measured conversion benefit; continue
+isolated diagnosis of BVGraph's long interval.** The evidence does not support assigning the
+old+42% directly to packed conversion. The original failed verification remains open; neither
+this toggle experiment nor current main-relative CI establishes pre-upgrade recovery.
+
+Read-only follow-up on the actual WebGraph3.6.12 source: this call submits two compression
+workers, waits for their futures, then merges temporary bitstreams and writes properties on the
+main thread. The measured BVGraph interval includes all of these operations. A subsequent
+diagnostic should measure each compression task's CPU before its thread exits and separate
+wait/merge/properties boundaries. OFF#3 had the same node/arc counts and encoding parameters,
+but slightly different compression statistics and a one-byte larger forward.graph; this is not
+evidence of full byte/semantic parity. Background apps were active in the observed window;
+the monitor does not establish them as the cause. No further workload was run.
+
+Review follow-up: the reviewer accepted the controlled conversion result in
+PR171 discussion4209791437 and explicitly separated the metadata/worker investigations from
+the original implementation suggestion. The DefaultGraph review thread was then resolved;
+a fresh complete thread query returned zero unresolved threads. The separate verification
+and overall performance work remain pending.
+
+### Attempts 118/119 follow-up: real scoped-server latency and resources (2026-10-08)
+
+Measure the integrated query changes against both their exact parent and the pre-upgrade
+runtime. A=`6f498705009689551c92c6d1ca92f67252ef77c4`, B=`f7d40f324b7bbf908ba680a37cabc4a7f879c626`,
+C=`85becae5b4dc1f7cf15c356efbdf377539b14c0d`. B already includes125/129, so C/B isolates
+the top-k admission and accounted/cached projection-preflight changes. Use one immutable
+19-file full-feature real Kotlin graph (4,744,132nodes;2,251,811CallSites), JDK17 on Apple
+Silicon, MAPPED JVM server, explicit8GiB maximum heap, max concurrent Cypher4, timeout60s
+and unchanged Long.MAX_VALUE server work budget. Each fresh process performs four scoped
+ordered LIMIT20 requests: callee ASC, callee DESC, caller ASC and four direct string fields
+with a repeated alias. No WHERE/DISTINCT/global wrapper bypasses the changed path.
+
+Fixed schedule: ABCCBA at concurrency1, then ABCCBA at concurrency4;12 fresh JVMs,
+one first-use cycle, two warm cycles and30 measured cycles each. All1,584 complete typed
+HTTP responses match the previously reviewed old-runtime oracle;1,440 are measured.
+Client latency ends after complete response-body consumption, with all issued requests
+drained before CPU-heavy validation. Whole-process CPU/RSS includes load, first/warm/measured
+queries and shutdown; client/supervisor CPU is separate. Graph pre-reads occur outside each
+JVM lifetime, so this is warm OS-page, fresh-process evidence rather than cold-disk loading.
+
+The following are arithmetic means of two process-level percentiles, in milliseconds;
+each process has30 measured requests per case, nearest-rank p50=15 and p95=29. Cases and
+processes are not pooled into a purported production-wide percentile.
+
+| Concurrency | Query | A p50/p95 | B p50/p95 | C p50/p95 |
+|---|---|---|---|---|
+| 1 | callee-asc20 | 1259.5/1275.9 | 390.1/399.7 | 292.4/298.1 |
+| 1 | callee-desc20 | 1259.0/1280.9 | 387.2/401.0 | 292.3/299.2 |
+| 1 | caller-asc20 | 1258.7/1285.8 | 389.4/396.0 | 297.3/304.0 |
+| 1 | four-fields-duplicate20 | 1354.6/1369.9 | 841.2/858.0 | 646.8/655.8 |
+| 4 | callee-asc20 | 1495.2/1518.8 | 387.3/398.6 | 314.4/327.0 |
+| 4 | callee-desc20 | 1495.4/1512.0 | 388.4/402.4 | 314.6/326.1 |
+| 4 | caller-asc20 | 1496.2/1519.5 | 383.0/398.1 | 316.5/327.7 |
+| 4 | four-fields-duplicate20 | 1567.7/1584.3 | 782.3/798.7 | 659.2/678.1 |
+
+| Concurrency | A/B/C whole CPU (s) | C vs B / A CPU | A/B/C peak RSS (MiB) | C vs B / A RSS |
+|---|---|---|---|---|
+| 1 | 174.630 / 69.855 / 53.460 | −23.47% / −69.39% | 1145.16 / 1118.18 / 1110.87 | −0.65% / −2.99% |
+| 4 | 203.905 / 68.045 / 56.780 | −16.56% / −72.15% | 1357.84 / 1367.25 / 1273.86 | −6.83% / −6.18% |
+
+C/B improves all eight case/concurrency mean p50/p95 results by15.11–25.42%; C/A improves
+them by52.13–78.97%. Full raw request values, both chronological pairs, maxima, first-use
+and separate warm-cycle observations are retained; first-use n2 is not a p95. The mapped
+preflight cache is graph-wide: c1's later first-cycle cases may already be warm, while c4
+first requests can independently race through cold checks. No favorable sample selection,
+replacement, extra warmup, source change or threshold relaxation occurred.
+
+Both chronological pairs improve every case's measured p50/p95 against B and A; all whole
+and measured-window CPU pairs improve. Preserve the resource exception: c4's first C pair
+has RSS+0.54% versus B and+1.56% versus A, while the reverse pair is−14.26%/−13.93%.
+The lower aggregate RSS is therefore not uniform. All96 individual first-use/warm-cycle
+C/B and C/A case comparisons improve, but remain single observations, not cold-tail estimates.
+
+Execution passed12/12, with strict typed body equality, unchanged complete fixture inventories
+before/after every session and all owned servers terminated by SIGTERM with the expected
+wrapper143 and no cleanup errors. Root independently decoded/rechecked every raw response,
+recomputed all per-case percentiles and CPU/RSS aggregate means, and verified all24 fixture
+inventory receipts. The execution owner confirmed all24 Java/time PIDs gone. Background
+activity remains observed rather than assumed absent. This demonstrates retained gains for
+these four scoped JVM queries; it is not native-server coverage, arbitrary-query acceptance,
+Tika loading acceptance, or completion of the overall pre-upgrade recovery objective.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/query-review-fixes/scoped-http-packet/run.py --plan /tmp/sootup-static-review/query-review-fixes/scoped-http-packet/plan.sealed.json --execute-root-released`.
+Plan SHA256 `548e9b742168bc6f4cbba7efc572794e7d41a2daf0f0f3b463ab3b3e492e7093`;
+raw results `517fe46075cde2d4a533507001bb399f8335316c520a489a74bcd102000a53fa`;
+summary `42e3a5be606bb624e02acabef3fe70e902aa85d68ff81d900e009d24a4d7b09e`.
+All evidence, including `root-independent-audit.json`, is in that packet's `execution/`.
+Current85 CI separately passed JVM/Rust and all required main-relative benchmark gates versus
+f7106817 (workflow37650041736); that comparison is not relabelled as this pre-upgrade test.
+
+**Decision: KEEP both integrated increments with measured latency and resource benefit.**
+Continue construction, loading and the remaining query families independently; query gains
+do not compensate for their outstanding regressions or unexecuted correctness checks.
+
+
+### Attempt 125 follow-up: finish the interrupted correctness checks (2026-10-08)
+
+The original fixed8 execution remains failed at its raw metadata SHA comparison. Run only
+its19 previously unexecuted verifier commands against the original eight saved graphs; no
+construction samples or first-five verifier JVMs are rerun. The first preparation attempt
+stopped before starting a JVM because `/tmp` and `/private/tmp` parent paths compared unequal;
+preserve that failure and normalize only path identity before the released execution.
+
+All19 new verifier JVMs exited0 and passed. The five original verifier reports also pass the
+explicit supplemental semantic checks, giving complete shape/metadata/query coverage of all
+eight original outputs. Root independently checked all24 reports, all19 stdout/stderr hashes,
+plan/runner/evidence pins, exact22 shape and13 metadata keys, all five ordered queries and
+seven unchanged packed fields. Each raw metadata hash still matches its own original graph.
+The stored before/after inventories equal the original eight complete graph inventories, and
+all19 owned JVM PIDs are absent. Root did not rehash the large graphs while the next experiment
+was running; the original continuation owner performed those before/after inventories.
+
+This amendment is bounded: method/annotation enumeration and the verified19-field descriptor
+mapping explain the cross-output metadata differences. Independent direct node-record checks
+confirm that mapping, and the complete229,981-scope reproduction preserves ordered scopes,
+conditions, method IDs, operators, comparands, side membership and definition bindings. It does
+not promise stable numeric field IDs or byte-identical metadata. Original raw-byte failure,
+all adverse performance samples and the zero-JVM preparation failure remain preserved.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/attempt125/default-save-packet/final-fixed8/remaining19/run.py --execute-root-released`.
+Every verifier uses `-Xmx8g` with the original runtime and arguments except relocated report
+paths. Original owner session68162 exited0. Plan SHA256
+`ab23a500dd2778385d8cb22b7e11446d9b33f9d8da1d921664a70e06234c7bd1`;
+results `ac09ae918cfab82105da896613007f178e5785a4544ad308397d328737b47dc8`.
+Independent reproduction is `remaining19/audit-root.py`; receipt is
+`remaining19/root-independent-audit.json`. **Decision: supplemental correctness complete;
+retain125 and continue performance diagnosis.** This adds no latency or resource observation
+and does not reclassify the original strict run as passed.
