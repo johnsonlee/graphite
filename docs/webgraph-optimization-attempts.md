@@ -7157,3 +7157,39 @@ MB is decimal. The snapshot CPU has0.01s reporting resolution and is cumulative 
 The monitor retained25 snapshots and three preflight events from the existing external JVM; no native-session/between-session event was logged. This does not upgrade the prespecified observed-background diagnostic to an exclusive/quiet measurement. Native/I/O/subsecond interference and observer overhead remain limitations; foreign processes were untouched.
 
 Command: `python3 /tmp/sootup-static-review/native-own-graph-loading/loading-fixed8/run.py --plan /tmp/sootup-static-review/native-own-graph-loading/loading-fixed8/plan.sealed.json --execute-root-released`. Exact argv, source/reference/binary pins, graph inventories, all readiness probes/failures, resource snapshots and overheads remain in that directory. Sealed plan SHA256 `e5a10baa42ca0954a7f6b026808d4e716afeec911e8361a1809ee1947e1abe36`; result `9f20373ba806172d6987508adbf8d5f4004fe40cb2f744e8e6a103b803730742`; summary `c45cc6c9d6a149750a32f050e25e55f26c3d00b230417bf58c1e7e414a6d2955`; owner raw audit `50f78952be2d14cf83a5744f21217fd013a4e627dde87e1041849866b96a6a29`; independent root raw audit `b40ac950e411b08c979093314ad9731641581667c70d5443e3eee27322a3cb4e`.
+
+### 2026-10-07 — Matched cap30 quiet-helper construction: Tika benefit, Kotlin RSS unresolved
+
+**Hypothesis and protocol:** validate the retained G1 young-cap candidate on both full Kotlin and Tika JAR workloads without the previous heap sampler or debug GC logging. The unchanged quiet `CliConstruction` helper builds full features, counts nodes, prepares/saves a usable graph and closes the source. Both old6f498 TEST54 and current116 TEST57 use the same JDK17.0.20.1, `-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30`. Existing effective-flag receipts are reused; no new flag preflight, warmup, forced GC, Xms override, profiler or compiler is part of this series. On macOS/M3 Max the predeclared order is Kotlin ABBA then Tika ABBA, followed by24 separate own-version strict validators. “Quiet-helper” describes absence of diagnostic instrumentation, not an exclusive host.
+
+All eight builds and24 complete shape/metadata/five-query validators passed, including current ordinal sidecar/binding checks and old-format absence. The148 generated graph files have matching before/after verification inventories. Root independently reconstructed every raw phase, user+system CPU, RSS, summary mean/range/pair and complete actual/reference report. Existing old/current graph-count differences remain explicit; own-version equivalence does not prove cross-version graph isomorphism.
+
+| Fixed session | Build → usable saved graph E2E s | Save phase s | Whole CPU s | Peak RSS GB |
+|---|---:|---:|---:|---:|
+| kotlin-0-A | 111.995173 | 6.446834 | 182.480 | 7.280722 |
+| kotlin-1-B | 38.458665 | 7.571900 | 101.350 | 8.530461 |
+| kotlin-2-B | 42.451952 | 11.832841 | 103.520 | 7.115080 |
+| kotlin-3-A | 128.596680 | 11.526617 | 201.170 | 7.231259 |
+| tika-0-A | 126.136479 | 5.655800 | 191.290 | 7.446594 |
+| tika-1-B | 29.989965 | 5.752341 | 84.860 | 6.194725 |
+| tika-2-B | 29.200852 | 5.520849 | 87.200 | 6.119735 |
+| tika-3-A | 124.703950 | 5.565422 | 186.190 | 7.182369 |
+
+GB is decimal. E2E includes build, production-style node count, prepared save and source close. Whole CPU and peak RSS span the complete process; heap size, sampled used/committed heap and RSS are not interchangeable. All launchers/verifiers also retain the8GiB maximum-heap ceiling. Phase and whole-process metrics remain separate.
+
+| Workload/metric | Old mean | Current116 mean | Mean change | Adjacent AB / BA changes |
+|---|---:|---:|---:|---|
+| kotlin E2E s | 120.295927 | 40.455309 | -66.370% | -65.660% / -66.988% |
+| kotlin save s | 8.986725 | 9.702371 | +7.963% | +17.451% / +2.657% |
+| kotlin whole CPU s | 191.825000 | 102.435000 | -46.600% | -44.460% / -48.541% |
+| kotlin RSS GB | 7.255990 | 7.822770 | +7.811% | +17.165% / -1.607% |
+| tika E2E s | 125.420214 | 29.595408 | -76.403% | -76.224% / -76.584% |
+| tika save s | 5.610611 | 5.636595 | +0.463% | +1.707% / -0.801% |
+| tika whole CPU s | 188.740000 | 86.030000 | -54.419% | -55.638% / -53.166% |
+| tika RSS GB | 7.314481 | 6.157230 | -15.821% | -16.811% / -14.795% |
+
+**Interpretation and decision:** retain cap30 as a mixed configuration candidate. Tika has lower E2E, CPU and RSS in both pairs under matching settings; this is a positive increment worth following. Kotlin still exceeds the5% RSS allowance on the mean and first pair, while its second pair is lower. The two current Kotlin RSS observations are8.530461/7.115080GB; the old Kotlin final E2E128.596680s and save11.526617s remain included. Neither an adverse pair erases the Tika evidence nor the positive Tika result establishes Kotlin acceptance. No production default is changed. Two observations per arm and host activity do not establish a repeatable population effect or final caps. These tuned old/current pairs do not silently replace the historical default-setting baseline, compare directly with the instrumented cap60 series, or establish native loading/query recovery.
+
+The observer retained1322 snapshots. During construction it recorded24 external accumulated-CPU increments (approximately0.24s), seven positive-CPU observations and one disappeared external process/incomplete observation. Verification recorded13 new external processes,210 positive-CPU observations,196 increments (approximately273.62s),11 disappearances and21 Gradle build events. All events and incomplete observations are preserved. Verification happens after the measured construction block; its activity cannot be retroactively described as zero or used as a measured construction effect. No foreign process was signalled, and no sample was replaced. The original observed-background diagnostic classification remains unchanged.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/old116-g1-cap30-quiet/execute.py --execute-root-released`. Sealed commands SHA256 `b3635db50112c6ceb2278a54dac79139770dd273581b4bd8c0ce44c45c3aa3ef`; runner `718a4d8b635969b679fda870dfae6980da5484a9519f441261f5f5f191187299`; final result `f6bba8ee8589efcf3a668b9cb3e33783497bc22d6b1a8dbb9bb09d4c26d21c98`; summary `258106850c3801b772c4aadccdbeb7410d0ffcdfbc5b54e7c450ac34709fd7f8`. Evidence remains under that packet: all32 literal argv, source/runtime/helper/reference pins, raw properties and complete reports, retained process/resource logs, host events and graph inventories. Owner audit SHA256 `fe0c1da25587988b57ec1ffbc20bf7800368d344e8e8955fcfa5dcc4f3bba795`; root audit `7844312c703560c284619ba9f39cb18a020997555ccd4ac1da2edd85747f8f4c`. A local owner-audit Path/string error was corrected offline with its failed source retained; no measured data or verifier was changed.
