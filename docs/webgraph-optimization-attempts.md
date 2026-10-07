@@ -6945,3 +6945,71 @@ The monitor recorded944 snapshots. Across the construction block, the two reside
 
 Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/attempt116/construction-packet/execute.py --execute-root-released`. Environment remains JDK17.0.20.1/M3 Max/macOS; exact source, runtime, flags, input, reference and environment identities are in the sealed packet. Evidence: `execution/{results.json,summary.json,graph-pins-before-verification.json,graph-pins-after-verification.json}`, `host-observation/` (initial failure), `host-observation-diagnostic/`, and `independent-audit/{audit.py,audit.json}`. Result SHA256 `1e1021627140f80a25443c43d4ed26d377b6a2c7f81580a6c4d815a7eef6368f`; summary SHA256 `fcb6557ed402fb5419156c815cc0b1ff1978e36d3e8c66e8a6c19bbcb87a59ef`.
 Root audit SHA256 `a7757261e381cc9e0b2cb098a7c1b4566d009d31ed95395592b2b090e0c57a82`.
+
+### 2026-10-07 — Native server fixed request diagnostic: mixed per-case latency
+
+**Protocol:** preupgrade Rust6f498 versus current Rustdb713 on the same unchanged64 real persisted graph shards and34 requests. These are the native binaries inspected above; later root commits change JVM correctness/docs only. On macOS/M3 Max, eight fresh servers ran c1 ABBA then c4 ABBA. Each process performed one first-use cycle, two warmup cycles and30 measured cycles, with case order rotated by cycle:8,976 total requests,8,160 measured. Each request opens a connection, consumes its complete HTTP body and validates the frozen native oracle. Per-case p50/p95 use nearest ranks15/29 of30; aggregate workload distributions remain separate. Two run-level quantiles per arm do not establish a precise population tail. No sample was replaced.
+
+**Correctness:** all8,976 complete typed bodies, native total metadata, ordered rows/columns and provenance match the preupgrade oracle. All eight native/time processes terminated by owned SIGTERM with reviewed-15 wrapper status, and clients/lifecycle processes exited0. All1216 fixture stat identities remained unchanged. Root independently reread all8,976 bodies and request hashes, recomputed per-case quantiles and paired/run-level statistics, checked lifecycle cleanup and raw time-l CPU/RSS. Two path/order assumptions in the offline root audit were corrected against the archived client source (bodies subdirectory and prespecified cycle rotation); no measured data or oracle was changed.
+
+**All raw process resources:** wall is the entire server lifetime, including load, client validation gaps and shutdown; it is not graph-loading E2E or per-case latency. Whole CPU includes user+system; RSS is decimal GB. The measured-window CPU counter is a separate native-process counter with0.01s resolution, including client gaps, not CPU attributed to individual queries.
+
+| Session | Lifetime wall s | Whole CPU s | Peak RSS GB | Measured-window CPU s |
+|---|---:|---:|---:|---:|
+| c1-0-A | 45.530 | 38.120 | 6.564413 | 2.970 |
+| c1-1-B | 45.750 | 38.680 | 6.611173 | 2.960 |
+| c1-2-B | 46.440 | 39.400 | 6.608962 | 2.940 |
+| c1-3-A | 46.700 | 39.640 | 6.569263 | 2.950 |
+| c4-0-A | 41.040 | 38.870 | 6.581649 | 2.140 |
+| c4-1-B | 41.140 | 39.060 | 6.631571 | 2.140 |
+| c4-2-B | 41.040 | 38.900 | 6.629229 | 2.050 |
+| c4-3-A | 41.070 | 38.980 | 6.589350 | 2.150 |
+
+**Per-case changes:** percentages compare the arithmetic mean of the two current run-level quantiles with the two old run-level quantiles. Positive means slower. Every case is shown; individual AB/BA pairs and all30 raw observations per process remain in the sealed results.
+
+| Query case (global-wide prefix omitted) | c1 p50 | c1 p95 | c4 p50 | c4 p95 |
+|---|---:|---:|---:|---:|
+| four-properties-zero | +1.114% | +7.797% | +7.035% | +2.929% |
+| four-properties-targeted | +1.483% | +4.205% | -0.007% | -55.954% |
+| four-properties-dense | +1.840% | +8.991% | -2.363% | -35.967% |
+| class-pair-zero | +1.781% | +0.043% | +0.157% | +4.650% |
+| class-pair-targeted | -0.034% | -2.236% | +2.678% | +0.285% |
+| class-pair-dense | +2.968% | +0.144% | -2.085% | +6.258% |
+| name-pair-zero | +0.293% | +9.074% | +1.992% | -5.426% |
+| name-pair-targeted | +0.146% | +4.034% | -0.152% | -4.613% |
+| name-pair-dense | +0.492% | -0.212% | -2.181% | -6.148% |
+| caller-class-zero | +1.636% | +5.397% | -4.791% | -4.538% |
+| caller-class-targeted | +1.057% | -0.603% | -5.558% | -5.066% |
+| caller-class-dense | -0.609% | +0.277% | -0.849% | -3.093% |
+| callee-class-zero | +3.339% | -1.343% | -4.959% | -4.548% |
+| callee-class-targeted | +3.809% | -0.641% | -0.077% | +7.338% |
+| callee-class-dense | -0.189% | -1.531% | -2.350% | -0.688% |
+| provenance-zero | +0.414% | +3.795% | -2.975% | +5.516% |
+| provenance-targeted | -0.674% | -0.223% | -1.941% | +3.946% |
+| provenance-dense | +1.290% | -4.409% | +2.620% | -5.693% |
+| aliased-zero | +1.005% | +0.269% | -2.413% | -4.868% |
+| aliased-targeted | -0.670% | -4.769% | -1.339% | -8.248% |
+| aliased-dense | +0.873% | -2.456% | -3.420% | -14.227% |
+| parameterized-zero | +2.330% | -0.367% | -1.909% | +6.119% |
+| parameterized-targeted | -1.770% | -2.981% | +4.305% | +5.315% |
+| parameterized-dense | -0.996% | -3.724% | -7.586% | -2.072% |
+| wrapped-case-insensitive-zero | +0.902% | -8.901% | +1.104% | -10.393% |
+| wrapped-case-insensitive-targeted | -0.826% | -3.790% | -1.549% | -2.056% |
+| wrapped-case-insensitive-dense | +0.722% | +8.911% | -0.288% | +101.896% |
+| wrapped-case-insensitive-distinct-zero | +0.694% | -5.342% | -1.098% | -3.851% |
+| wrapped-case-insensitive-distinct-targeted | -3.238% | -10.283% | -5.865% | -0.178% |
+| wrapped-case-insensitive-distinct-dense | -1.985% | -2.409% | -3.461% | -0.205% |
+| distribution-broad-all-64 | -1.472% | -2.585% | -0.756% | -6.675% |
+| distribution-localized-early | +1.330% | -0.718% | -0.449% | +6.774% |
+| distribution-localized-late | -3.418% | -3.854% | -0.648% | +7.286% |
+| distribution-localized-middle | -3.400% | +5.728% | +5.228% | -10.408% |
+
+c1 has13/34 lower p50 means and21/34 lower p95 means; c4 has26/34 and22/34. Cases slower in both pairs remain: c1 p50 has12, p95 has6; c4 p50 has5, p95 has8. For example, c4 localized-late p95 is +7.286% (pairs +7.200/+7.381%), localized-early +6.774% (+7.182/+6.357%), and class-pair-dense +6.258% (+9.861/+2.640%). The largest adverse mean, c4 wrapped-case-insensitive-dense p95, rises1.686646→3.405271ms (+101.896%); its two pair changes are +218.961% and -4.064%. That disagreement is retained and does not prove a repeatable doubling or justify dropping the spike.
+
+Whole-process CPU means change +0.412% at c1 and +0.141% at c4; peak RSS +0.658% and +0.682%. Each resource pair stays within +5% in this series. Those observed values are not final cap acceptance: the protocol was diagnostic from outset, loading/startup dominates lifetime CPU, and no per-case resource attribution is available.
+
+**Background observations and limits:** the monitor retained346 snapshots,23 external accumulated-CPU increment events and seven positive-CPU observations. One observation was incomplete when the existing external Kotlin daemon disappeared during a native session; this is retained, not converted to zero activity. No foreign process was signalled. The series remains `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`, with observer overhead and unobserved native/I/O/subsecond activity limitations. It cannot prove isolated causal differences or final resource compliance.
+
+**Decision:** preserve the complete native baseline, investigate the concrete adverse cases and native old/current source differences, and keep JVM optimization gains separate. Shared-fixture native response correctness now has repeated-request evidence; native latency recovery is still incomplete. This does not validate loading of separate old/current full generated graphs or new semantic features.
+
+Command: `python3 /tmp/sootup-static-review/native-server-request-baseline/run.py --plan /tmp/sootup-static-review/native-server-request-baseline/plan.sealed.json --execute-root-released`. Exact eight argv, binaries, fixture, oracle, methods, ports and all metrics are frozen in plan SHA256 `5d0a204e1af3deed52d2594bfb5ce16a26006c0d9b843e581ca24321dc928e64`. Results `execution/results.json` SHA256 `2abea57f8a74a95c3b4c2ff6fb200574805b54ac0903256c0cf11a407f0f3a33`; summary `99520d361455b731aa45f99f1251c351bbd54ca8cb58169edfb3b11881636bd4`; independent audit `ccea243cecbd23f0679cc69b9563a46e4f40cebb8e4bb3c2cbed152d1110d5be`.
