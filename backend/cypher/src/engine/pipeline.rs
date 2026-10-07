@@ -922,6 +922,10 @@ fn bounded_order_capacity(
     {
         return None;
     }
+    // Str also forms a total order with Int/null (UTF-16 within strings, fixed
+    // cross-type rank). String properties remain on the full-sort path because
+    // this initial specialization was scoped to ordinal/id/line queries; admitting
+    // them is a separate eligibility extension, not a comparator safety issue.
     let int_or_null = |expr: &Expr| match expr {
         Expr::Literal(Literal::Int(_) | Literal::Null) => true,
         Expr::Property { expr, key } => {
@@ -1004,21 +1008,39 @@ impl BoundedOrderedRows {
         a.encounter.cmp(&b.encounter)
     }
 
+    fn key<'a>(&self, row: &'a Row, index: usize) -> &'a Value {
+        let (stash, alias, _) = &self.order[index];
+        row.get(stash)
+            .or_else(|| alias.as_ref().and_then(|name| row.get(name)))
+            .unwrap_or(&Value::Null)
+    }
+
+    fn compare_borrowed(&self, row: &Row, encounter: usize, b: &OrderedCandidate) -> Ordering {
+        for (i, (_, _, descending)) in self.order.iter().enumerate() {
+            let cmp = compare_order_values(self.key(row, i), &b.keys[i]);
+            let cmp = if *descending { cmp.reverse() } else { cmp };
+            if cmp != Ordering::Equal {
+                return cmp;
+            }
+        }
+        encounter.cmp(&b.encounter)
+    }
+
     fn push(&mut self, row: Row) {
         let encounter = self.encounter;
         self.encounter += 1;
         if self.capacity == 0 {
             return;
         }
-        let keys = self
-            .order
-            .iter()
-            .map(|(stash, alias, _)| {
-                row.get(stash)
-                    .or_else(|| alias.as_ref().and_then(|name| row.get(name)))
-                    .cloned()
-                    .unwrap_or(Value::Null)
-            })
+        // Projection and its errors have already happened. A full-heap loser
+        // needs neither an owned key vector nor cloned key values.
+        if self.heap.len() == self.capacity
+            && self.compare_borrowed(&row, encounter, &self.heap[0]) != Ordering::Less
+        {
+            return;
+        }
+        let keys = (0..self.order.len())
+            .map(|i| self.key(&row, i).clone())
             .collect();
         let candidate = OrderedCandidate {
             keys,
@@ -1036,7 +1058,7 @@ impl BoundedOrderedRows {
                 self.heap.swap(at, parent);
                 at = parent;
             }
-        } else if self.compare(&candidate, &self.heap[0]) == Ordering::Less {
+        } else {
             self.heap[0] = candidate;
             let mut at = 0;
             loop {
@@ -2097,6 +2119,89 @@ mod bounded_order_tests {
                 assert_eq!(QueryResult::graph_ids(&actual[0]), ["a"]);
             }
         }
+    }
+
+    #[test]
+    fn borrowed_order_keys_preserve_stash_precedence_alias_and_missing_null() {
+        let (_, shape) = query_shape(
+            "MATCH (n:CallSiteNode) RETURN n.id AS id ORDER BY id, n.ordinal DESC LIMIT 2",
+        );
+        let top = BoundedOrderedRows::new(2, shape.order.as_deref().unwrap());
+        let mut row = Row::new();
+        row.insert("id".into(), Value::Int(99));
+        let stash = format!("{ORDER_STASH_PREFIX}0");
+        row.insert(stash.clone(), Value::Int(-7));
+        assert!(std::ptr::eq(top.key(&row, 0), &row[&stash]));
+        assert!(matches!(top.key(&row, 0), Value::Int(-7)));
+        row.shift_remove(&stash);
+        assert!(std::ptr::eq(top.key(&row, 0), &row["id"]));
+        assert!(matches!(top.key(&row, 0), Value::Int(99)));
+        row.shift_remove("id");
+        assert!(top.key(&row, 0).is_null());
+        // A property expression has only its evaluated stash, not an alias lookup.
+        row.insert("n.ordinal".into(), Value::Int(42));
+        assert!(top.key(&row, 1).is_null());
+        let stash = format!("{ORDER_STASH_PREFIX}1");
+        row.insert(stash.clone(), Value::Null);
+        assert!(std::ptr::eq(top.key(&row, 1), &row[&stash]));
+    }
+
+    #[test]
+    fn full_heap_borrowed_admission_discards_losers_and_later_ties_but_keeps_better_rows() {
+        let (_, shape) = query_shape(
+            "MATCH (n:CallSiteNode) RETURN n.id AS id ORDER BY id, n.ordinal DESC LIMIT 2",
+        );
+        let order = shape.order.as_deref().unwrap();
+        let make_row = |id: Value, ordinal: Value, payload: &str| {
+            let payload: Arc<str> = Arc::from(payload);
+            let weak = Arc::downgrade(&payload);
+            let mut row = Row::new();
+            row.insert("id".into(), id);
+            row.insert(format!("{ORDER_STASH_PREFIX}1"), ordinal);
+            row.insert("payload".into(), Value::Str(payload));
+            add_provenance_id(&mut row, Arc::from("real-source"));
+            (row, weak)
+        };
+        let mut top = BoundedOrderedRows::new(2, order);
+        let (first, first_payload) = make_row(Value::Int(2), Value::Int(5), "first");
+        top.push(first);
+        let (best, best_payload) = make_row(Value::Int(1), Value::Null, "best");
+        top.push(best);
+        for (id, ordinal, payload) in [
+            (Value::Int(3), Value::Int(100), "worse"),
+            (Value::Int(2), Value::Int(5), "later-tie"),
+            (Value::Null, Value::Int(100), "null-id"),
+        ] {
+            let (row, weak) = make_row(id, ordinal, payload);
+            top.push(row);
+            assert!(weak.upgrade().is_none(), "Rejected row must be released");
+            assert_eq!(top.heap.len(), 2);
+            assert!(first_payload.upgrade().is_some());
+            assert!(best_payload.upgrade().is_some());
+        }
+        let (mut row, weak) = make_row(Value::Int(-10), Value::Int(100), "stash-loser");
+        row.insert(format!("{ORDER_STASH_PREFIX}0"), Value::Int(4));
+        top.push(row);
+        assert!(weak.upgrade().is_none(), "Stashed key overrides the alias");
+        let (winner, winner_payload) = make_row(Value::Int(2), Value::Int(9), "winner");
+        top.push(winner);
+        assert!(
+            first_payload.upgrade().is_none(),
+            "Replaced row is released"
+        );
+        assert!(winner_payload.upgrade().is_some());
+        assert_eq!(top.encounter, 7, "Losing rows still count as encounters");
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let rows = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+        assert_eq!(
+            rows.iter()
+                .map(|r| r["payload"].as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["best", "winner"]
+        );
+        assert_eq!(QueryResult::graph_ids(&rows[0]), ["real-source"]);
+        assert_eq!(QueryResult::graph_ids(&rows[1]), ["real-source"]);
     }
 
     #[test]
