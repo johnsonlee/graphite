@@ -3,6 +3,10 @@ package io.johnsonlee.graphite.webgraph
 import java.nio.ByteBuffer
 import java.nio.file.Files
 import java.security.MessageDigest
+import java.util.logging.Handler
+import java.util.logging.Level
+import java.util.logging.LogRecord
+import java.util.logging.Logger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -109,6 +113,48 @@ class CallSiteOrdinalsTest {
             Files.setLastModifiedTime(file, modified)
             assertEquals(0, CallSiteOrdinals.load(file, encoded.digest).size, "replaced in place")
         } finally {
+            dir.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `malformed bound sidecar warns once while valid absent and unbound sidecars stay quiet`() {
+        val dir = Files.createTempDirectory("call-site-ordinal-warning")
+        val file = dir.resolve("graph.callsite-ordinals")
+        val encoded = NodeSerializer.encodeCallSiteOrdinals(intArrayOf(7), intArrayOf(3), intArrayOf(NO_ORIGIN))
+        val logger = Logger.getLogger(CallSiteOrdinals::class.java.name)
+        val previousLevel = logger.level
+        val records = mutableListOf<LogRecord>()
+        val handler = object : Handler() {
+            override fun publish(record: LogRecord) {
+                if (record.message.contains(dir.toString())) records.add(record)
+            }
+            override fun flush() = Unit
+            override fun close() = Unit
+        }
+        logger.addHandler(handler)
+        logger.level = Level.ALL
+        try {
+            assertEquals(0, CallSiteOrdinals.load(file, encoded.digest).size)
+            val validFile = dir.resolve("valid-ordinals")
+            Files.write(validFile, encoded.bytes)
+            val valid = CallSiteOrdinals.load(validFile, encoded.digest)
+            assertEquals(1, valid.size)
+            assertEquals(3, valid[7])
+            Files.write(file, byteArrayOf(1, 2, 3))
+            assertEquals(0, CallSiteOrdinals.load(file, null).size)
+            assertTrue(records.isEmpty(), "Missing, valid and unbound files must not warn")
+            val rejected = CallSiteOrdinals.load(file, encoded.digest)
+            assertEquals(0, rejected.size)
+            assertNull(rejected[7])
+            val warning = records.single()
+            assertEquals(Level.WARNING, warning.level)
+            assertEquals(CallSiteOrdinals::class.java.name, warning.loggerName)
+            assertEquals("Ignoring $file: not the call-site ordinal sidecar graph.metadata binds", warning.message)
+        } finally {
+            logger.removeHandler(handler)
+            logger.level = previousLevel
+            handler.close()
             dir.toFile().deleteRecursively()
         }
     }

@@ -5937,7 +5937,62 @@ The eager-load mean worsens7.473%, including the parent's faster2.819s fork; no 
 - `/tmp/sootup-recovery-sources/attempt111-jmh/execution/results.json` — SHA-256 `09f2345f05aa32665b2bd8ef6efd8b32f4cc0adbf62063dafc27f7dcdc3dca38`.
 - `/tmp/sootup-recovery-sources/attempt111-jmh/execution/summary.json` — SHA-256 `4f3692ce7c3fa52fb21a1550413b8443f6ff297406c9ef82034bc9371a43bc78`.
 
-**Decision:** retain111 as an isolated candidate, not yet integrated. Direct-operation loading shows a small incremental benefit, while eager-load JMH and group resource evidence remain unresolved; this is not a claim that all performance controls passed. The candidate is not rejected merely because overall recovery is incomplete, and no general recovery or final acceptance is asserted. Attempt110 continues from retained109 so that111’s unresolved change does not enter its attribution. The user’s independent +5% whole CPU/peak-RSS limits versus pre-upgrade and8GiB heap ceiling remain; all earlier construction and pressure evidence is retained. APK work remains deferred.
+**Initial decision before the eager12 follow-up:** retain111 as an isolated candidate, not yet integrated. Direct-operation loading shows a small incremental benefit, while eager-load JMH and group resource evidence remain unresolved; this is not a claim that all performance controls passed. The candidate is not rejected merely because overall recovery is incomplete, and no general recovery or final acceptance is asserted. Attempt110 continues from retained109 so that111’s unresolved change does not enter its attribution. The user’s independent +5% whole CPU/peak-RSS limits versus pre-upgrade and8GiB heap ceiling remain; all earlier construction and pressure evidence is retained. APK work remains deferred.
+
+**Eager12 follow-up: missing independent operation evidence.** The preceding mapped-only direct protocol and parent-comparison JMH did not establish eager loading against pre-upgrade. Run exactly12 fresh JVMs on the same full real Kotlin graph: A=pre-upgrade, B=109, C=111, fixed `ABC / CBA / BAC / CAB`, four samples each. All use matching `TEST_webgraph` runtime roles, one common helper compiled once against A, explicit8GiB heap, and new private copies of all19 identical files (578,075,575 bytes), including ordinal/index sidecars. Every copy is sequentially read and hashed immediately before its JVM. No profiling, forced GC, warmup, retries, dropped samples or graph substitutions were used. This is a fixed pre-read policy, not disk-cold loading.
+
+The primary loading boundary is `GraphStore.load(EAGER)` start through return, when all nodes are decoded by the loader. A separate validation phase reads metadata node/CallSite counts and two existing values; it performs no query or full enumeration. Backward/branch query views retain their API's lazy behavior. Eager `WebGraphBackedGraph` has no close API in all three variants: the helper records a conditional no-op and normal JVM process exit releases state. No nonexistent close-cleanup cost is claimed. The complete internal session includes validation and the conditional lifecycle check; outer time-l CPU/RSS additionally include startup, reporting and exit. Operation CPU, session CPU and whole CPU remain distinct, with no subtraction of peak RSS.
+
+All12 actual samples (seconds; decimal MB), in their fixed order:
+
+| Order / variant | Eager load wall | Eager load process CPU | Internal session wall | Whole CPU | Peak RSS MB |
+|---|---:|---:|---:|---:|---:|
+| eager-open-00-A | 4.825314 | 17.384225 | 4.827476 | 18.80 | 7370.408 |
+| eager-open-01-B | 5.289560 | 23.915921 | 5.291656 | 24.87 | 6407.176 |
+| eager-open-02-C | 5.414338 | 23.966313 | 5.416350 | 24.15 | 6855.606 |
+| eager-open-03-C | 4.781810 | 17.122054 | 4.783717 | 18.77 | 7381.762 |
+| eager-open-04-B | 5.010433 | 23.132663 | 5.012428 | 23.98 | 6410.813 |
+| eager-open-05-A | 5.054480 | 21.566486 | 5.056401 | 23.05 | 6657.393 |
+| eager-open-06-B | 5.290974 | 22.824363 | 5.292958 | 24.01 | 6536.479 |
+| eager-open-07-A | 5.106215 | 22.745792 | 5.108174 | 23.86 | 6346.867 |
+| eager-open-08-C | 4.984606 | 17.642388 | 4.986436 | 17.70 | 7024.525 |
+| eager-open-09-C | 5.384180 | 22.766359 | 5.386211 | 24.55 | 6362.612 |
+| eager-open-10-A | 5.019932 | 22.075425 | 5.021942 | 23.59 | 6662.701 |
+| eager-open-11-B | 5.328436 | 22.843095 | 5.330335 | 23.17 | 6597.935 |
+
+Predeclared arithmetic means:
+
+| Metric | A pre-upgrade | B109 | C111 | C vs A | C vs B |
+|---|---:|---:|---:|---:|---:|
+| Load-return wall s | 5.001485 | 5.229851 | 5.141233 | +2.794% | -1.694% |
+| Load-return process CPU s | 20.942982 | 23.179011 | 20.374278 | -2.715% | -12.100% |
+| Internal session wall s | 5.003498 | 5.231844 | 5.143178 | +2.792% | -1.695% |
+| Internal session process CPU s | 20.961396 | 23.189210 | 20.377809 | -2.784% | -12.124% |
+| Whole command wall s | 5.525000 | 5.567500 | 5.512500 | -0.226% | -0.988% |
+| Whole command CPU s | 22.325000 | 24.007500 | 21.292500 | -4.625% | -11.309% |
+| Peak RSS MB | 6759.342080 | 6488.100864 | 6906.126336 | +2.172% | +6.443% |
+
+Distribution summaries are retained rather than replacing the primary mean:
+
+| Metric | A median [min, max] | B median [min, max] | C median [min, max] |
+|---|---:|---:|---:|
+| Load-return wall s | 5.037206 [4.825314, 5.106215] | 5.290267 [5.010433, 5.328436] | 5.184393 [4.781810, 5.414338] |
+| Whole CPU s | 23.320000 [18.800000, 23.860000] | 23.995000 [23.170000, 24.870000] | 21.460000 [17.700000, 24.550000] |
+| Peak RSS MB | 6660.046848 [6346.866688, 7370.407936] | 6473.646080 [6407.176192, 6597.935104] | 6940.065792 [6362.611712, 7381.762048] |
+
+C's mean eager latency improves88.618ms (-1.694%) versus109, but remains139.748ms (+2.794%) above pre-upgrade. Mean whole CPU decreases2.715s (-11.309%) versus109 and1.0325s (-4.625%) versus old. RSS increases418.025MB (+6.443%) versus109 and146.784MB (+2.172%) versus old. The parent-relative RSS increase is adverse and retained; it is not itself the user-defined old-relative cap comparison. The old-relative resource means are within5% in this packet, but wide CPU/RSS ranges and mixed individual triplets remain: no stable cap guarantee or tail-frequency conclusion follows from four samples. Every triplet and both fixed six-JVM block comparisons remain in `summary.json`; no mean/median/max was selected after seeing results. The original eager JMH +7.473%, mapped JMH +0.600% and high four-method-group RSS samples above remain unchanged. These protocols have different warmup/repetition/session boundaries; the follow-up does not erase or causally explain the earlier results.
+
+All12 bounded output checks passed:4,744,132 nodes,2,251,811 CallSites, first IntConstant value1, first callee name`<init>`, expected eager implementation and exact runtime origins. Actual max heap is8,589,934,592 bytes with only `-Xmx8g`; no extra query or warmup occurred. The independent audit rehashed every input-seal artifact, all19 actual files in each of the12 private copies and the original graph, verified report/stdout/time-log hashes, recomputed every phase/whole metric and all summary statistics, and checked origins against pinned classpaths. File contents were unchanged. These bounded eager checks supplement existing full reference shape/metadata/query/ordinal proofs; they do not claim new exhaustive eager graph equivalence.
+
+Evidence is `/tmp/sootup-static-review/attempt111-eager12/`: `LoadingQueryOperation.java`, `commands.draft.json`, `execution-seal.json`, compile-once receipts and every raw output. The measured command is `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$COMMON_EAGER_HELPER:$FROZEN_TEST_WEBGRAPH_CP" LoadingQueryOperation eager-open "$PRIVATE_GRAPH" "$REPORT"`. Literal commands, runner, source/class/JDK/fixture pins and all12 order entries are sealed. Authoritative hashes:
+
+- `execution/results.json` — SHA-256 `5f5812fe7f6da3bb2ed3f13ed4b7e8927614637c9b95642c6aa22e77bc9df659`.
+- `execution/summary.json` — SHA-256 `815d16171d68614c11703d144c98c32f54e5829bd48b3a0f534cfd3f0a7bf941`.
+- `execution-seal.json` — SHA-256 `938631d65191c2cee65d1ac2c96b05d9fa6c7508ff48004bc2fdf4cb88196e71`.
+- `independent-audit/audit.json` — SHA-256 `536c2396c266fae09ab954217ee0839f15c0cccf7fdf7bf681a3fc3979a4568d`.
+
+**Updated decision: retain111 and include its exact tested production/test change in the cumulative recovery plan.** Both direct mapped and eager loading provide an incremental parent-relative latency gain; the user requires retaining verified positive work rather than rejecting it because overall recovery is unfinished. Root owns source integration and commit; this record does not claim that integration has already happened. Attempt110's preceding experiment remains based on109, preserving its attribution. Eager latency versus old is still2.794% higher, and adverse JMH/resource samples remain unresolved work. Final acceptance still requires independent construction/loading/query evidence under the5% CPU/RSS and8GiB constraints. Server-query request-level p50/p95 is the user's first priority: neither this eager protocol nor the CI percentile across different query cases measures that repeated-request distribution. Any later server acceptance must state request mix, concurrency and cold/warm boundaries and retain request-level latency samples. APK remains deferred; no general recovery is claimed.
+
 
 ### 2026-10-07 — Retained109 exact-head CI: passing gates with recurring pressure regressions
 

@@ -123,7 +123,7 @@ class CallSiteOrdinals internal constructor(
 
     companion object {
         val EMPTY = CallSiteOrdinals(ByteBuffer.allocate(0), 0, 0, IntBuffer.allocate(0), ByteBuffer.allocate(0))
-        private val logger = Logger.getLogger(CallSiteOrdinals::class.java.name)
+        private val logger by lazy { Logger.getLogger(CallSiteOrdinals::class.java.name) }
         private const val PREAMBLE_BYTES = NodeSerializer.CALL_SITE_ORDINALS_PREAMBLE_BYTES
         private const val HEADER_BYTES = NodeSerializer.CALL_SITE_ORDINALS_HEADER_BYTES
         private const val ENTRY_BYTES = NodeSerializer.CALL_SITE_ORDINAL_ENTRY_BYTES
