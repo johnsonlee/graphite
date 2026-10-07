@@ -8498,3 +8498,143 @@ All comparisons retain the predeclared arithmetic means and both pairs; raw medi
 All12readiness bodies, source/receipt pins and graph stat inventories passed. Original summary recomputation agrees, all24owned native/time PID/process groups were absent after SIGTERM/−15, no cleanup error occurred, and no sample was replaced. The26monitor snapshots retain two external CPU-counter increment events; this remains observed-background diagnostic evidence. Sealed plan `77a61ad429dfa2b1767d56d09c853d273cfe7b5b9b73f4a37f3317c414b1445c`; raw result `a299ac072698ed58d2fe91f1fdfc9326def975abfe3cc2e5da8661d733cc65f5`; summary `ed703991298b1fa5a416065379f850f09a1f4ef59c21bb93a7419de6937fd346`; terminal receipt `e9d8a9df4a79528afb88d6fd391ff5fa8d57d2344daa2f120978046242e42e64`; independent root audit `28a07600fb9ccfdbae9726f4d811e80ac1c4372a1ba632fe90d76078eeea7dff`.
 
 **Decision: KEEP ISOLATED as a positive/mixed candidate, not overall recovery.** Ordered top32 latency and whole-query CPU improve in these fixed comparisons, and Tika loading RSS improves C/B−5.664% in both pairs. Kotlin loading time is effectively unchanged C/B−0.085% with opposite pair signs; Tika whole-loading CPU increases+0.680%. The large Kotlin c1 projection p95 regression, Kotlin c4 query RSS+8.084%, every other adverse pair and background limitations remain unresolved evidence. The bitmap and retained-byte changes were measured together, so these results do not establish a bitmap-only cause. No construction measurement, native end-to-end recovery, JVM compatibility performance, or final preupgrade latency/CPU/RSS acceptance is claimed. No JVM was launched; the separate8GiB JVM hard ceiling is unchanged. Source, tests and this complete chronological record are preserved in one isolated attempt commit, without pushing or changing root.
+
+
+### 2026-10-08 — Attempt 132: bounded native ordered rows with a proven integer sort domain (source only)
+
+**Hypothesis.** The native non-aggregated ordered projection currently retains all projected rows and then constructs all sort keys before applying LIMIT. Keeping at most literal SKIP + LIMIT rows can reduce retained query memory while still scanning and evaluating every match. Attempt131's roughly10GB Kotlin c4 lifetime RSS includes loading, background C4, all five queries and shutdown; it does not attribute that peak to top32 or prove this hypothesis.
+
+**Base and scope.** Isolated `/tmp/graphite-attempt132`, branch `codex/attempt132-native-bounded-order`, based exactly on attempt131 `6af7b7a2`. Only `backend/cypher/src/engine/pipeline.rs` changes. The heap is enabled only for terminal fused, non-DISTINCT, non-aggregated explicit RETURN with one empty seed, one CallSiteNode binding, unique non-internal output names and nonnegative literal counts whose checked sum is at most65,536. Every sort expression must statically produce Int/null: the bound node's id/ordinal/line, an Int/null literal, or an output alias resolving to those expressions. Other features and value domains take their complete existing path before any row is discarded. No re-scan fallback is introduced.
+
+The domain restriction is necessary: existing ORDER BY compares Node/Method pairs equal while two different Nodes compare unequal; Float(-0.0)/Int(0)/Float(+0.0) also violates transitive equivalence. Reusing that comparator in a general heap would not preserve stable-sort results. This attempt does not change the comparator, numeric semantics or unsupported shapes.
+
+**Behavior.** Every accepted match still executes the existing full `project_row`, including all projection expressions, order stashes and provenance, even if its row loses or LIMIT is zero. The heap ranks already evaluated keys with encounter ordinal as a stable tie breaker. Retained rows return to encounter order before the original `finish_fused` handles ORDER BY, SKIP/LIMIT, hidden columns and the HTTP probe. Existing scan/matcher cancellation remains; extra cancellation checks run every1,024 offered rows and before finalization. Native's existing row-limit scan budget is not shortened; the JVM graph-work accounting API is unrelated and unchanged.
+
+**Correctness preparation, not validation.** Seven new tests cover the static eligibility/fallback boundary; concrete nontransitive comparator counterexamples and mixed numeric fallback; bounded retention versus full stable sort including nulls, extreme integers, aliases, order stashes, ties and provenance; late failing payload expressions after a winning row and with LIMIT0; and exact real-core-fixture full-row comparisons against the unchanged unbounded fused collector, two graph sources, SKIP, empty matches and HTTP probe. Two additional real-Executor tests compare late loser / LIMIT0 expression failures with the full-sort oracle and preserve cancelled/timeout token failures. Standalone rustfmt and git diff --check passed; compilation, tests and lint have not run. Existing tests remain intact.
+
+**Planned real-data verification.** Use the already produced real core fixture `/tmp/sootup-static-review/attempt121/core-fixture/execution/fixture-graph` for the full cypher behavior suite. After correctness, retain the exact five ordinal diagnostic requests, full current Kotlin/Tika graphs, complete typed independent oracles, first1 + warm2 + measured30 cycles, c1/c4 and all16 fixed sessions; compare this candidate with the frozen131 binary on identical inputs. Record every failure and all pair statistics. The top32 request remains `MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY ordinal, id LIMIT 32`. No synthetic performance evidence is permitted. The preupgrade-compatible query suite and final preupgrade acceptance remain separate requirements.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / stability | Source draft only; no executed evidence yet |
+| Query p50 / p95 | Unmeasured |
+| Query end-to-end / total CPU / peak RSS | Unmeasured; retained-row hypothesis only |
+| Construction / loading | Unmeasured; no changes or recovery claimed |
+| Heap ceiling | Native candidate launches no JVM;8GiB JVM ceiling unchanged |
+
+**Decision.** Preserve the isolated draft for review and subsequent authorized correctness verification. No root integration, benchmark claim or final acceptance claim.
+
+**Executed correctness and fixed16 query follow-up (2026-10-08).** The source-only state above is historical. Rust1.93.0 on aarch64-apple-darwin, jobs2, the real core fixture and unchanged source passed fmt; complete storage/CLI/cypher/explore release tests (35+31+111+113 plus1 resident integration =291, zero failures/ignored/filtered/fixture skips); strict storage+cypher Clippy; and CLI release export. No JVM or synthetic performance measurement was used. Commands:
+
+```text
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo fmt --all --check
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage -p graphite-cli -p graphite-cypher -p graphite-explore -- --nocapture --test-threads=1
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo clippy --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage -p graphite-cypher --all-targets --all-features -- -D warnings
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo build --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli
+```
+
+Validation receipt `9d15184b14ddc18f76349aab641353387108d7947c29746d300ff8f9fc66c912`; independent correctness audit `f8733f46c341790bc19f5b11543a9fbbc18425af485082c6226aabee053c582d`. Source pipeline SHA `aabe8e1c2098a457da11d05c8adbd3e5d0f114331efd8aa1387e3813e1a0a22d` remains exactly the tested/exported source. B is frozen131 `bccc8fce346e35cf1a7b0135ef1329cefbd4f630cbda1b4a89b9ccd949cdd741`; C is frozen132 `d559cde73e6556b19fd4755e3292e16b942a19017d3ea9a7599597359b97965d`. Both share the retained ordinal bitmap/storage implementation; only the bounded ORDER BY successor is under comparison, with no preupgrade arm.
+
+**Protocol and correctness.** The existing131 client/lifecycle/monitor/summarizer, five queries and independent full typed121 HTTP oracles were reused byte for byte. Identical full current116 graphs: Kotlin `/tmp/sootup-static-review/attempt116/construction-packet/results/kotlin-1-B/graph` and Tika `.../tika-1-B/graph`. Fixed Kotlin c1 BCCB, Kotlin c4 BCCB, Tika c1 BCCB, Tika c4 BCCB, ports19701–19716. Each process performed1 first-use +2 warm +30 measured cycles, rotating all five cases with c4 batches4+1:165 responses/server,2640 total,2400 measured. No oracle recapture, extra sample, replacement or retry. Invocation:
+
+```text
+/opt/homebrew/opt/python@3.14/bin/python3.14 /private/tmp/sootup-static-review/attempt132/ordinal-query-diagnostic/run.py --plan /private/tmp/sootup-static-review/attempt132/ordinal-query-diagnostic/measurement.plan.sealed.json --execute-root-released
+```
+
+Original owner32334 terminated0. All2640 complete bodies passed strict typed/order/metadata/provenance/total equality; independent root audit recomputed all2400 measured latencies,16 resource receipts and32 graph stat inventories against the sealed baseline. All16 native processes received owned SIGTERM, wrappers exited−15, cleanupErrors were empty, and all32 native/time PIDs plus16 groups were absent. No production integration occurred.
+
+**Latency.** Each process contributes n30 nearest-rank p50/p95 (ranks15/29). The displayed B/C values are arithmetic means of the two process quantiles, not pooled query or population quantiles. Pairs compare C1/B0 and C2/B3; all five cases remain, including prior adverse projection/materialization/line paths. Case abbreviations below map exactly to the original raw-negative-ordinal-count, bounded-ordinal-projection, ordered-ordinal-top32, bounded-callsite-materialization and legacy-line-projection-control; line reads ordinals indirectly and is not an unaffected control.
+
+| Group | Case | B p50 ms | C p50 ms | Mean Δ | p50 pair1 / pair2 | B p95 ms | C p95 ms | Mean Δ | p95 pair1 / pair2 |
+|---|---|---:|---:|---:|---|---:|---:|---:|---|
+| kotlin c1 | count | 208.112500 | 207.066771 | -0.502% | +0.019% / -1.019% | 212.964271 | 209.312500 | -1.715% | -1.167% / -2.254% |
+| kotlin c1 | projection | 0.869104 | 0.874208 | +0.587% | +1.034% / +0.139% | 2.205563 | 0.960896 | -56.433% | -9.818% / -71.952% |
+| kotlin c1 | top32 | 1908.716458 | 1263.733271 | -33.791% | -33.858% / -33.725% | 1983.998229 | 1272.706062 | -35.851% | -36.131% / -35.568% |
+| kotlin c1 | materialization | 0.567167 | 0.615875 | +8.588% | +8.856% / +8.315% | 0.630501 | 0.697313 | +10.597% | +13.678% / +7.609% |
+| kotlin c1 | line | 0.787896 | 0.782625 | -0.669% | -0.324% / -1.012% | 0.967959 | 0.944542 | -2.419% | -2.730% / -2.104% |
+| kotlin c4 | count | 212.739584 | 210.871271 | -0.878% | +0.048% / -1.794% | 228.534437 | 214.636271 | -6.081% | -2.206% / -9.709% |
+| kotlin c4 | projection | 3.134959 | 3.138625 | +0.117% | -5.739% / +5.984% | 8.474084 | 4.438604 | -47.621% | -6.641% / -63.539% |
+| kotlin c4 | top32 | 1957.664438 | 1265.492146 | -35.357% | -35.400% / -35.314% | 2056.887083 | 1286.051979 | -37.476% | -37.229% / -37.726% |
+| kotlin c4 | materialization | 0.736938 | 0.707438 | -4.003% | -5.406% / -2.419% | 4.031500 | 4.084187 | +1.307% | -0.121% / +2.694% |
+| kotlin c4 | line | 2.882250 | 1.947124 | -32.444% | -8.745% / -56.491% | 5.413250 | 4.552396 | -15.903% | -29.218% / +2.744% |
+| tika c1 | count | 110.664084 | 109.641688 | -0.924% | -1.360% / -0.484% | 115.894520 | 113.248396 | -2.283% | -5.386% / +0.923% |
+| tika c1 | projection | 0.849812 | 0.846562 | -0.382% | -0.078% / -0.689% | 2.759354 | 0.925375 | -66.464% | -62.416% / -69.915% |
+| tika c1 | top32 | 1460.221730 | 959.613396 | -34.283% | -34.313% / -34.254% | 1493.551958 | 965.088438 | -35.383% | -35.291% / -35.476% |
+| tika c1 | materialization | 0.572730 | 0.599042 | +4.594% | +4.818% / +4.374% | 0.654312 | 0.733062 | +12.036% | +14.820% / +9.201% |
+| tika c1 | line | 0.773771 | 0.785396 | +1.502% | +1.420% / +1.586% | 0.913334 | 0.947395 | +3.729% | +5.850% / +1.577% |
+| tika c4 | count | 112.734500 | 112.380229 | -0.314% | -1.318% / +0.705% | 117.888979 | 115.191562 | -2.288% | -3.639% / -0.901% |
+| tika c4 | projection | 2.653021 | 2.362563 | -10.948% | -11.343% / -10.549% | 5.538812 | 3.624438 | -34.563% | -11.459% / -49.462% |
+| tika c4 | top32 | 1486.958687 | 963.942208 | -35.174% | -35.276% / -35.072% | 1554.940229 | 971.796145 | -37.503% | -37.037% / -37.962% |
+| tika c4 | materialization | 0.772229 | 0.787542 | +1.983% | +19.090% / -14.047% | 3.143021 | 3.018375 | -3.966% | -8.280% / +0.778% |
+| tika c4 | line | 2.874958 | 2.496563 | -13.162% | -16.291% / -9.771% | 5.867646 | 3.892000 | -33.670% | -6.248% / -50.423% |
+
+**Resources, all raw processes.** time-l CPU is user+system; peakRSS is bytes. Whole lifetime includes startup/load/default C4, all first/warm/measured requests, validation gaps and cleanup. Measured-window native PID CPU uses0.01s process-counter resolution and includes between-request validation gaps; it is neither client CPU nor per-case CPU. No CPU subtraction is attributed to GC or IO.
+
+| Run | Whole wall s | Whole CPU s | PeakRSS bytes | Measured native CPU s |
+|---|---:|---:|---:|---:|
+| 00-kotlin-c1-0-B | 72.88 | 72.99 | 3628384256 | 65.29 |
+| 01-kotlin-c1-1-C | 51.49 | 51.42 | 714424320 | 45.73 |
+| 02-kotlin-c1-2-C | 51.03 | 51.23 | 709394432 | 45.65 |
+| 03-kotlin-c1-3-B | 72.81 | 72.94 | 2891120640 | 65.23 |
+| 04-kotlin-c4-0-B | 70.41 | 75.47 | 9290252288 | 67.39 |
+| 05-kotlin-c4-1-C | 46.60 | 51.75 | 788529152 | 46.09 |
+| 06-kotlin-c4-2-C | 46.23 | 51.35 | 747339776 | 45.71 |
+| 07-kotlin-c4-3-B | 70.01 | 75.12 | 9541992448 | 67.08 |
+| 08-tika-c1-0-B | 54.22 | 53.95 | 2954330112 | 48.30 |
+| 09-tika-c1-1-C | 37.61 | 37.44 | 556433408 | 33.31 |
+| 10-tika-c1-2-C | 37.64 | 37.41 | 550387712 | 33.30 |
+| 11-tika-c1-3-B | 54.33 | 54.11 | 2224357376 | 48.39 |
+| 12-tika-c4-0-B | 52.61 | 55.36 | 7212974080 | 49.40 |
+| 13-tika-c4-1-C | 34.87 | 37.59 | 613892096 | 33.46 |
+| 14-tika-c4-2-C | 34.95 | 37.74 | 583761920 | 33.58 |
+| 15-tika-c4-3-B | 52.83 | 55.55 | 7171244032 | 49.62 |
+
+| Group | Metric | B mean | C mean | Mean Δ | Pair1 / pair2 |
+|---|---|---:|---:|---:|---|
+| kotlin c1 | wallSeconds | 72.845 | 51.260000000000005 | -29.631% | -29.350% / -29.913% |
+| kotlin c1 | cpuSeconds | 72.965 | 51.324999999999996 | -29.658% | -29.552% / -29.764% |
+| kotlin c1 | peakRssBytes | 3259752448.0 | 711909376.0 | -78.161% | -80.310% / -75.463% |
+| kotlin c1 | measuredWindowServerCpuSeconds | 65.25999999999999 | 45.69 | -29.988% | -29.959% / -30.017% |
+| kotlin c4 | wallSeconds | 70.21000000000001 | 46.415 | -33.891% | -33.816% / -33.967% |
+| kotlin c4 | cpuSeconds | 75.295 | 51.55 | -31.536% | -31.430% / -31.643% |
+| kotlin c4 | peakRssBytes | 9416122368.0 | 767934464.0 | -91.844% | -91.512% / -92.168% |
+| kotlin c4 | measuredWindowServerCpuSeconds | 67.235 | 45.9 | -31.732% | -31.607% / -31.857% |
+| tika c1 | wallSeconds | 54.275 | 37.625 | -30.677% | -30.634% / -30.720% |
+| tika c1 | cpuSeconds | 54.03 | 37.425 | -30.733% | -30.602% / -30.863% |
+| tika c1 | peakRssBytes | 2589343744.0 | 553410560.0 | -78.627% | -81.165% / -75.256% |
+| tika c1 | measuredWindowServerCpuSeconds | 48.345 | 33.30500000000001 | -31.110% | -31.035% / -31.184% |
+| tika c4 | wallSeconds | 52.72 | 34.91 | -33.782% | -33.720% / -33.844% |
+| tika c4 | cpuSeconds | 55.455 | 37.665 | -32.080% | -32.099% / -32.061% |
+| tika c4 | peakRssBytes | 7192109056.0 | 598827008.0 | -91.674% | -91.489% / -91.860% |
+| tika c4 | measuredWindowServerCpuSeconds | 49.510000000000005 | 33.519999999999996 | -32.297% | -32.267% / -32.326% |
+
+**First-use and warm cycles, separate descriptive points.** The following records both paired percentage changes for every case and each of the three non-measured cycles. All underlying absolute nanoseconds remain in `measurement-summary.json:firstWarmSeparate`; there is no first-use p95 inference from two processes and these values are not mixed into steady quantiles.
+
+| Group | Case | First pair1 / pair2 | Warm1 pair1 / pair2 | Warm2 pair1 / pair2 |
+|---|---|---|---|---|
+| kotlin c1 | count | -3.517% / -8.030% | +2.168% / -0.505% | -0.133% / -1.357% |
+| kotlin c1 | projection | +1.430% / +12.230% | +0.579% / -10.930% | -0.304% / +9.095% |
+| kotlin c1 | top32 | -35.813% / -37.480% | -34.533% / -34.286% | -34.418% / -33.860% |
+| kotlin c1 | materialization | +5.971% / +5.804% | +11.460% / +28.792% | -1.150% / +10.219% |
+| kotlin c1 | line | +13.136% / -0.181% | -1.875% / -11.532% | -4.432% / +0.531% |
+| kotlin c4 | count | -7.148% / -8.991% | +2.021% / -1.308% | +1.090% / -2.329% |
+| kotlin c4 | projection | +57.572% / +4.032% | +12.951% / -5.739% | -0.712% / +15.460% |
+| kotlin c4 | top32 | -37.845% / -38.639% | -37.333% / -37.370% | -37.794% / -36.037% |
+| kotlin c4 | materialization | +104.507% / -14.700% | +33.662% / +11.739% | +88.145% / +44.516% |
+| kotlin c4 | line | +11.544% / -4.940% | -14.972% / -28.749% | +43.627% / +33.392% |
+| tika c1 | count | -6.138% / -7.581% | +14.233% / -1.406% | +1.164% / -0.009% |
+| tika c1 | projection | -3.569% / -7.914% | +1.119% / +8.628% | +3.864% / +15.219% |
+| tika c1 | top32 | -36.426% / -35.675% | -34.055% / -35.451% | -32.686% / -34.417% |
+| tika c1 | materialization | +1.493% / +1.668% | +21.837% / -19.000% | -9.428% / -7.246% |
+| tika c1 | line | -81.866% / -82.883% | -0.566% / +5.428% | +0.599% / +7.304% |
+| tika c4 | count | -9.328% / -5.746% | -0.484% / +2.545% | -2.367% / -0.118% |
+| tika c4 | projection | +39.030% / -17.215% | +14.410% / +40.255% | +4.755% / +6.906% |
+| tika c4 | top32 | -37.047% / -38.011% | -36.937% / -36.330% | -36.270% / -35.700% |
+| tika c4 | materialization | +29.655% / +5.143% | +53.786% / +30.834% | +127.429% / -9.561% |
+| tika c4 | line | +11.634% / +10.735% | +7.930% / +40.205% | +8.032% / -1.346% |
+
+**Evidence and limits.** The monitor retained817 process snapshots, with no classified events or incomplete external lifetimes. Its status remains `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`: absence of classified events does not prove an exclusive window or rule out unknown/subsecond native work/IO. All samples are preserved. Native RSS is not a JVM heap; no JVM launched and the8GiB JVM ceiling remains unchanged. Full raw responses, request records, per-process n30 distributions, means/maxima, first/warm points, monitor snapshots, frozen inputs and resource receipts remain at `/tmp/sootup-static-review/attempt132/ordinal-query-diagnostic/`.
+
+Sealed plan `4d9c1b4216e36c8f521b5f342d7a90d4c773ef2370933cd20781611420140a9e`; raw result `c37309868ddec9810046b0531bf86bd34cde1743021ec4cd389609893480d4a9`; unchanged full-response summary `efe86d855f93ef42b831e3216c021e29c6f47328bd3aab61d069fa5abc5e91ce`; terminal cleanup `66483524eb89fb022061a887cde393feea4462ce226a9d669a116cb23b51301d`; independent root full-body/statistics audit `96b95ce2680df6fa2e0bf4a3e1164e71892472130e7288ae19772063714347a9`. The original draft is retained; sealing changed only release status and a stale131-versus130 explanatory limitation, not the protocol.
+
+**Decision: KEEP ISOLATED as a verified positive/mixed successor.** All four groups improve top32 mean p95 by35.38–37.50%, with both pairs positive. Whole CPU falls29.66–32.08% and peakRSS falls78.16–91.84%, with both resource pairs improving. This does not erase adverse small-query evidence: Kotlin c1 materialization mean p50/p95 increases8.588%/10.597%, Tika c1 increases4.594%/12.036%, Tika c1 line p95 increases3.729%, and Kotlin c4 materialization p95 increases1.307%; all opposing pairs are above. Projection p95 improves in all groups while Kotlin mean p50 slightly increases. No causal attribution to background activity is asserted. Preserve this source/tests/log in one isolated attempt commit; do not integrate root or claim overall recovery. This is B131-relative query evidence, not preupgrade acceptance, a construction/loading result, a JVM comparison, or proof of every query shape.
