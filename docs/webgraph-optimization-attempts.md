@@ -9948,3 +9948,32 @@ A's initial runner11073 exited1 after the test command passed273: a caught-panic
 |C|`a4957d7c9e402a0c045c5cba6423c5d685933e773c31155d4393c685020eb931`|`5d13cec908cd38a5ab276e4ed3feb6b73d6190fb5fc81f2b96f00e36f9b83ce8`|
 
 Evidence is in `/tmp/sootup-static-review/native-cumulative/c4-overlap-probe/validation/`. Decision: use these verified temporary exports for the fixed six process-client c4 sessions ABCCBA,64 real persisted graphs,34 cases, first1/warm2/measured60,12,852 full responses and12,240 measured requests. Preserve full per-case p50/p95, resources and both pairs independently of overlap descriptions. This entry records binary validation only; no overlap result or recovered query performance is claimed.
+
+### 2026-10-08 — C4 overlap diagnostic: no inference ran during the query cohort
+
+Executed the preceding reviewed three-arm diagnostic once, process clients at c4 in fixed ABCCBA order,64 real persisted graphs,34 unchanged queries and first1/warm2/measured60. Command: `python3.14 /tmp/sootup-static-review/native-cumulative/c4-overlap-probe/measurement/run.py --plan /tmp/sootup-static-review/native-cumulative/c4-overlap-probe/measurement/measurement.plan.sealed.json --execute-root-released`. macOS ARM host and historical instrumented A6f/B85/Cddbee artifacts remain as declared above. Original14428 exited0 (`72095b`), all6 sessions and12,852 complete responses passed, including12,240 measured responses and6 post-window control snapshots. All54 observed lifecycle/native/time/client-worker/tracker PIDs and18 groups were freshly absent. No reruns or replacement samples.
+
+Four offline summaries completed serially (30422, exit0). Root independently checked every typed response against the unchanged oracle, all timing samples, per-case nearest-rank p50/p95 at30/57 of60, pairs, resources, native/client identities and cleanup (14619, exit0). A separate independent audit reconstructed the native snapshots and all12,852 request/15-phase intersections (`41effb`, exit0). All six servers recorded exactly **zero C4 build attempts**, with no unpublished or open build records. The background worker existed throughout the measured requests, but its lifetime is not evidence of active inference. Thus C4 inference competing with queries does not explain this cohort's remaining delay. This does not exclude other scheduling, transport or pre-handler causes, or establish behavior for a future workload that triggers inference.
+
+|Historical diagnostic C relative to A|Mean comparison / scope|Both fixed pairs|
+|---|---|---|
+|Per-case request p50|32/34 cases higher; worst +8.449%|26/34 higher,0/34 lower|
+|Per-case request p95|22/34 cases higher; worst +10.511%|16/34 higher,4/34 lower|
+|Measured-window native CPU|4.300s to4.255s, -1.047%|+2.387% / -4.308%|
+|Whole native lifetime CPU|40.200s to23.165s, -42.376%|Includes loading; cannot offset query CPU|
+|Whole native lifetime peak RSS|6,585,851,904B to6,628,769,792B, +0.652%|+0.568% / +0.736%; not query-only peak|
+|Whole native lifetime wall time|56.350s to39.645s, -29.645%|Includes loading/shutdown; not query latency|
+
+The descriptive per-case socket-connect p50 wall-time difference remains positive in34/34 cases (+9.313 to+56.667 microseconds); wall-minus-thread-CPU is also positive in34/34 (+4.146 to+54.062 microseconds). Client-minus-observed-route p50 is higher in34/34 (+5.021 to+48.042 microseconds), while observed route p50 is higher in17/34. These distinct distribution summaries cannot be added or subtracted to assign causal fractions. Instrumented historical comparisons remain diagnostic, not acceptance of the latest cumulative candidate. Keep all mixed/adverse outcomes and observed host activity; no exclusive-host or final resource-cap claim.
+
+Decision: close the hypothesis that C4 **inference overlap** caused this cohort's request slowdown; retain the instrumentation outside production for bounded future diagnosis. Honor the user's Query priority by deferring additional construction/memory runs and measuring the latest uninstrumented cumulative native candidate against A next. Latest native source at5461f59e matches all115 files of the previously validated135+136+123 export; the export keeps its historical build identity. Shared-fixture query evidence will not replace full Kotlin/Tika materialization or ordinal workload acceptance.
+
+|Evidence|SHA256|
+|---|---|
+|sealed six-session plan|`56793e520a775ea1a8644bec7f62146acade0c741daed6eaf8e2de9971d71a77`|
+|owner terminal / all54 owned PIDs cleanup|`292d98ce8082e7f5e9cb57517e706b002d05dc3fbd515182041bc46ea28dcc03`|
+|raw aggregate results|`8a8e8b0ffa5b195e2fa4e62f1af2041c92c57723715590410ee88d61cc49cb44`|
+|independent body/timing/resource audit|`c1908b8247645d73bce1b312270920db4658bda65e94dbe58a2ee0679532144e`|
+|independent native overlap audit|`26ad5b956f7e4f52f314d0ba8a73238bc848421888cb2c7cf3729ea5ff5e67cb`|
+
+Raw evidence remains in `/tmp/sootup-static-review/native-cumulative/c4-overlap-probe/measurement/execution/`; independent reconstruction is in sibling `c4-overlap-independent-audit/`.
