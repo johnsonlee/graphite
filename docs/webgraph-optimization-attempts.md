@@ -5636,3 +5636,153 @@ Within this fixed follow-up, the candidate method mean is 11.890% lower, CPU 3.9
 **Keep decision:** retain the compact ordinal collection as incremental progress based on the full-feature construction/save improvement, preserved format/semantics and the absence of a repeatable adverse direction in the separate control. The modest and variable RSS reduction is not a solution to the outstanding memory regression. The reduced-feature control remains uncertain, rather than claimed as a proven gain. Evaluate the cumulative implementation against pre-upgrade, including independent loading and query resources; all hard correctness/heap constraints remain in force. Integration does not constitute final recovery acceptance.
 
 **Combined validation:** the retained 108 implementation plus the final-accounting cancellation fix passed 252 fresh webgraph tests, 43 fresh query tests, webgraph Detekt and both JMH artifact-isolation checks, with no failures/errors/skips. Root independently checked all test XML counts and hashes. Publishing files were restored byte-for-byte. The frozen combined runtime is `/tmp/sootup-recovery-sources/combined108-build/combined108-build1/snapshot/runtime.json`, SHA-256 `39fd360457890bfea77a7cf0755a7aa1390bc3540f14564c704e992823b89d32`; it is the candidate for subsequent independent loading/query measurements. No earlier parent-only measurement is relabeled as this combined artifact.
+
+
+### 2026-10-07 — Cumulative validation at 9cf1b5ff: separate loading and ordered-query resources
+
+**Status:** correctness PASS; loading acceptance NOT MET. This validates the cumulative retained implementation at `9cf1b5ff` (including the combined cancellation fix), not a new optimization attempt or an isolated effect of108. A is frozen pre-upgrade `6f498705`; B is the combined runtime manifest `39fd360457890bfea77a7cf0755a7aa1390bc3540f14564c704e992823b89d32`. No parent-only result is substituted for B.
+
+**Fixed protocol:** exactly24 fresh measured JVMs, three operations in the order below, each `ABBABAAB` (four samples per runtime). A separate combined-B five-query oracle passed first; there were no retries, replacement samples, compilation or excluded measurements. Same M3 Max / macOS14.3 / JDK17.0.20.1 host, `-Xmx8g` for every JVM, no profiler, forced GC or heap/feature changes. Recorded JVM arguments are exactly `[-Xmx8g]`; JVM/classpath override variables are absent, and the recorded inherited `MallocNanoZone=0` is unchanged. The common `LoadingQueryOperation.class` is reused unchanged (SHA-256 `7bf8281f68311bb353ae858a60d5e747162ba857a4ada611d1f4514da01e2313`).
+
+Both runtimes read private complete copies of the same validated merged Kotlin compiler2.0.21 graph:19 files,578,075,575 bytes,4,744,132 nodes and2,251,811 CallSites, including ordinal/origin and prepared-string-index sidecars. Each copy is sequentially read and hashed immediately before its JVM, outside timing. This is a specified cache-preparation policy, not a claim of cold disk or guaranteed full page-cache residency. The copies and original retain their file inventories after all checks. This compares readers on identical current-format bytes; it does not compare separately generated old/current graph sizes or claim that old readers expose the new ordinal API.
+
+Command form: `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$EXISTING_HELPER_CLASSES:$FROZEN_RUNTIME_CP" LoadingQueryOperation "$MODE" "$PRIVATE_GRAPH" "$NEW_REPORT_DIR"`. Literal arrays, copy commands and all pins are in `/tmp/sootup-static-review/loading-query-operation-protocol/primary24-draft/commands.resolved.json` (SHA-256 `ff98002ac7f2a02b3066212813825b801722b84f5140968a8bd590af96bc6861`). A uses the pinned old runtime classpath; B uses combined `MAIN_query`. The historical old manifest's “android-proof” label does not make this an Android workload.
+
+**Measurement boundaries:** `mapped-open` loads the mapped graph, decodes the first real node and closes it. `first-ordered` opens, fully consumes one ordered query and closes. `warm-ordered` opens, fully consumes one warmup request, measures ten further requests, then closes. The exact query is `MATCH (n:CallSiteNode) RETURN n.callee_class AS className, n.callee_name AS methodName ORDER BY className, methodName LIMIT 20`. Request clocks include complete typed-result traversal, canonicalization and hashing; batch clocks also include request bookkeeping. Continuous session clocks include mapped loading, any deferred query work, warmup where specified and close. Phase/session CPU uses the JVM process CPU clock, including concurrent JVM threads. Whole-command CPU is `/usr/bin/time` user+system, including startup and report/teardown; its peak RSS is whole-process high-water memory, **not query-only RSS**. Copying and post-run verification are outside both measured boundaries.
+
+All24 raw samples follow, in execution order. CPU columns are seconds; RSS is decimal MB. Unrounded values, phase clocks and individual warm requests remain in the raw reports.
+
+| Operation / order / runtime | Session wall s | Session CPU s | Whole CPU s | Peak RSS MB |
+|---|---:|---:|---:|---:|
+| mapped-open / 0 / A | 0.224805 | 0.490272 | 0.53 | 179.208192 |
+| mapped-open / 1 / B | 0.243988 | 0.578710 | 0.63 | 191.381504 |
+| mapped-open / 2 / B | 0.245245 | 0.560622 | 0.61 | 185.286656 |
+| mapped-open / 3 / A | 0.219694 | 0.474052 | 0.52 | 180.584448 |
+| mapped-open / 4 / B | 0.251563 | 0.587685 | 0.64 | 192.036864 |
+| mapped-open / 5 / A | 0.228350 | 0.489542 | 0.54 | 180.191232 |
+| mapped-open / 6 / A | 0.227817 | 0.486635 | 0.53 | 178.683904 |
+| mapped-open / 7 / B | 0.243330 | 0.486284 | 0.53 | 182.206464 |
+| first-ordered / 0 / A | 1.674499 | 2.402917 | 2.46 | 1130.954752 |
+| first-ordered / 1 / B | 0.827252 | 1.517915 | 1.57 | 1128.284160 |
+| first-ordered / 2 / B | 0.800922 | 1.494959 | 1.54 | 1125.761024 |
+| first-ordered / 3 / A | 1.518871 | 2.156970 | 2.21 | 1105.133568 |
+| first-ordered / 4 / B | 0.822443 | 1.530628 | 1.58 | 1125.728256 |
+| first-ordered / 5 / A | 1.677429 | 2.370612 | 2.41 | 1120.305152 |
+| first-ordered / 6 / A | 1.702448 | 2.471253 | 2.52 | 1131.708416 |
+| first-ordered / 7 / B | 0.836655 | 1.512093 | 1.57 | 1121.239040 |
+| warm-ordered / 0 / A | 14.235863 | 15.187744 | 15.25 | 1114.816512 |
+| warm-ordered / 1 / B | 4.685130 | 5.443668 | 5.49 | 1104.740352 |
+| warm-ordered / 2 / B | 4.465889 | 5.477072 | 5.54 | 1134.133248 |
+| warm-ordered / 3 / A | 13.738220 | 14.766630 | 14.82 | 1117.863936 |
+| warm-ordered / 4 / B | 4.562302 | 5.510469 | 5.57 | 1135.968256 |
+| warm-ordered / 5 / A | 14.231863 | 15.237549 | 15.29 | 1130.430464 |
+| warm-ordered / 6 / A | 13.891721 | 14.910117 | 14.97 | 1124.777984 |
+| warm-ordered / 7 / B | 4.770507 | 5.725276 | 5.79 | 1126.383616 |
+
+**Predeclared arithmetic-mean comparisons, A→B:**
+
+| Operation | Session wall s (change) | Session CPU s (change) | Whole CPU s (change) | Mean peak RSS MB (change) |
+|---|---:|---:|---:|---:|
+| Mapped open + first node + close | 0.225167→0.246031 (+9.266%) | 0.485125→0.553325 (+14.058%) | 0.5300→0.6025 (+13.679%) | 179.666944→187.727872 (+4.487%) |
+| First ordered query session | 1.643312→0.821818 (−49.990%) | 2.350438→1.513899 (−35.591%) | 2.4000→1.5650 (−34.792%) | 1122.025472→1125.253120 (+0.288%) |
+| Warm ordered session, one warmup + ten requests | 14.024417→4.620957 (−67.051%) | 15.025510→5.539121 (−63.135%) | 15.0825→5.5975 (−62.888%) | 1121.972224→1125.306368 (+0.297%) |
+
+First-request batch wall is1.417032→0.592051s (−58.219%) and CPU1.863339→1.002306s (−46.209%). The ten measured warm requests together take12.372170→3.795294s (−69.324%) and12.706680→4.071871 CPU seconds (−67.955%); these are batch totals, not individual request latency. Query-session RSS includes opening the graph and JVM state. These bounded query improvements do not compensate for loading regressions.
+
+**Adverse loading result:** all four adjacent session-wall comparisons worsen (+8.533%, +11.630%, +10.165%, +6.809%). Whole-command CPU pairs are+18.868%, +17.308%, +18.519% and0.000%; the mean exceeds the user's separate+5% limit, and session CPU independently shows the same adverse direction. Session-wall median rises8.089%; whole-CPU median rises16.981%. Mean RSS is within+5% but median rises4.805%, maximum observed peak rises6.342%, and adjacent RSS changes are+6.793%, +2.604%, +6.574% and+1.971%. Four samples do not establish a population bound or justify choosing only favorable pairs. The `loadMapped` phase alone rises2.776% in mean wall time; first-node touch rises3.273→17.984ms and11.224→63.500ms process CPU. That localizes much of the observed extra work to first-use readiness without identifying its cause. Reporting only the open call would hide deferred loading work.
+
+**Independent validation:** all25 recorded command arrays match the sealed plan; stdout/stderr/report hashes,24 raw time/RSS parses, every phase/session metric and every summary mean/median/min/max/range/pair/block calculation were rechecked. All1465 input pins and five classpath-directory inventories still match. The combined oracle equals the complete five-query reference (row counts20/20/100/99/50, with full values/types/order retained). All96 primary query responses, including warmups, match the typed20-row reference; mapped-open runs decode the expected `IntConstant`. All25 saved post-run graph inventories match the same19-file reference. The runner stops on failure and executes serially; all jobs passed without an extra JVM.
+
+Evidence: `primary24-draft/execution/results.json`, SHA-256 `b54b2139c2fefa4ec84eb374926b719fafe97171d8b45b89e33c3f5895e8e2f2`; `summary.json`, SHA-256 `a7a2a6098d90592ac79a4a16caae278489985a91ba82f371b8bb2a6e065e2c52`. Raw per-run outputs are in the sibling `results/` directories. The summary retains every metric and both four-run block comparisons; no operations are pooled.
+
+**Host-observation limitation found afterward:** the macOS `ps` command placed `comm` before numeric columns, allowing executable paths to be truncated. Its Java-name filter therefore cannot independently prove the absence of other JVMs. The executor ran the prescribed jobs serially and was the only agent authorized to run JVMs; that coordination is distinct from a complete process inventory. Subsequent runs use wide output with `comm` last and match Java at end of line. Original observations and measurements are retained without claiming stronger host isolation than they establish.
+
+**Classpath comparability correction:** subsequent inspection found that A's 54-entry frozen classpath comes from `TEST_webgraph`, whereas B's 88-entry `MAIN_query` also includes the explore application, Javalin/Jetty and other application dependencies absent from A. The measured totals above remain valid for those exact commands, but cold class loading and whole-command CPU may be affected by this mismatch; the table does not independently prove an intrinsic loading regression or establish the requested matched-baseline acceptance result. The effect size of the mismatch is not yet measured. A fresh, fixed comparison will use the same Gradle configuration on both sides (`TEST_webgraph`; the candidate has 57 entries, including dependency changes required by SootUp 3). Original results are retained rather than replaced or pooled. This correction also applies to the old-versus-current comparisons in attempt 109's initial 36-run batch; its parent-versus-candidate comparison uses matching `MAIN_query` configurations and remains an incremental comparison.
+
+**Remaining work:** diagnose the measured loading/first-touch overhead; preserve the query gains while evaluating each operation separately. This ordered-query case does not cover eager loading, first access to all deferred metadata/backward indexes, own-version outputs, other corpora or the broader filter/count/DISTINCT/relationship/name-pair workloads. Prior dense wrapped-DISTINCT and name-pair pressure results remain adverse evidence, not replaced by this favorable ordered projection. Construction RSS and exact-head CI remain separate acceptance requirements. Overall recovery is incomplete; no CPU/RSS allowance is inferred from startup dilution, one small query result or a near-cap RSS mean.
+
+
+### 2026-10-07 — Attempt 109: defer ordinal sidecar loading until a CallSite is decoded
+
+**Hypothesis and change:** `MappedWebGraphBackedGraph.readNodeAt` evaluated `callSiteOrdinals.value` for every node, although `NodeSerializer` reads ordinal/origin metadata only for the CallSite tag. Inspect the existing five-byte node header and pass `CallSiteOrdinals.EMPTY` for other tags; initialize the existing lazy sidecar only for a CallSite. This removes avoidable first-use work; it does not assert that this was the sole cause of the earlier loading difference. The isolated candidate is based on `9cf1b5ff8ef52f824bdc71467cabf6ba8411cdbd`, with no other production change.
+
+The guard preserves node-format and bounds/error handling: malformed headers still reach the serializer, unknown tags retain its error, and invalid/missing IDs retain their existing behavior. Real CallSites still use the same ordinal decoder, binding validation and derived-origin lookup. Corrupt sidecar validation/warnings are deferred until a CallSite needs the sidecar; they are not removed. Non-CallSite access still references `EMPTY`, so this is not a claim of eliminating all ordinal-class initialization.
+
+**Correctness:** 299 fresh tests passed (256 webgraph, 43 query; zero failures/errors/skips), both module Detekt gates passed, and both JMH artifacts passed test-class isolation checks. Four new tests cover non-CallSite direct/typed/query access without initializing the lazy value, first ordinary and first derived CallSites with exact ordinal/origin fields, complete node/query enumeration, and missing-sidecar behavior. Publishing build files were restored byte-for-byte. Build/source proof is `/tmp/sootup-recovery-sources/attempt109-build/attempt109-build1/build-proof.json`; frozen runtime `snapshot/runtime.json` SHA-256 is `9dc3514f1125bbdfeb634104737f8e9d19445db71a444ab5e9e11d9682d5c5fb`. Source seal SHA-256 is `3294b734b19eb3ec413ae367eed0bc0eed3ca9a79f928c08c3e9437cfb676bc7`.
+
+**Initial 36 direct-JVM measurements:** A is frozen pre-upgrade, B the combined 9cf parent, C109. Each of mapped-open, first-ordered and warm-ordered uses the fixed order `ABCCBABACCAB` (four samples each), with the common helper, exact ordered query and phase boundaries of the preceding cumulative record. All use `-Xmx8g`, private complete copies of the same real merged Kotlin compiler2.0.21 graph, and a sequential hash/read before each JVM outside timing. The graph has 4,744,132 nodes and 2,251,811 CallSites, including current ordinal/origin sidecars. All36 measurements and the separate five-query oracle passed; complete query values/order and post-run graph inventories were retained. No retries or excluded samples.
+
+Arithmetic means below retain all three variants. Wall/CPU are seconds; RSS is decimal MB. CPU is whole-command user+system; session CPU remains separately recorded in the raw summary.
+
+| Operation | Session wall A / B / C | Whole CPU A / B / C | Peak RSS A / B / C |
+|---|---:|---:|---:|
+| mapped-open | 0.231030 / 0.249216 / 0.240251 | 0.522500 / 0.615000 / 0.595000 | 179.560448 / 185.589760 / 185.196544 |
+| first-ordered | 1.803801 / 0.820870 / 0.834482 | 2.420000 / 1.465000 / 1.477500 | 1097.482240 / 1112.510464 / 1108.500480 |
+| warm-ordered | 15.981227 / 4.769203 / 4.756247 | 16.855000 / 5.625000 / 5.587500 | 1109.057536 / 1110.306816 / 1110.065152 |
+
+The matching-role B→C comparison shows mapped-session wall −3.597% (249.216→240.251ms), session CPU −4.511%, whole CPU −3.252% and RSS −0.212%. All four B/C loading-wall pairs improve. First-query session wall instead rises 1.658%, session CPU 1.054% and whole CPU 0.853%; warm-session wall falls only 0.272%, whole CPU 0.667%. These small query differences are retained, not claimed as stable gains.
+
+**Classpath qualification:** A uses 54-entry `TEST_webgraph`; B and C use matching 88-entry `MAIN_query`, including application/server dependencies absent from A. Both A/B and A/C cold-process comparisons are therefore confounded by classpath role. This also qualifies the preceding initial24 cumulative table; neither batch independently establishes an intrinsic old/current loading CPU regression or final matched-baseline acceptance. B/C remains an incremental matching-role comparison. Changing role in a later batch is not an isolated experiment proving the size or cause of the classpath effect.
+
+**Relevant JMH controls:** four complete seven-method groups ran B→C→C→B, one fresh fork per method per group, `-prof gc`, average time, fail-on-error, launcher and every fork `-Xmx8g`. Load methods use one 1s warmup and two 1s measurement iterations; query methods use two 1s warmups and three 1s measurements. This separate real persisted Kotlin fixture is the reduced-feature graph from frozen102: 3,292,214 nodes, 922,876 CallSites, 17 files, without the newer ordinal sidecars. B/C full shape bags match and graph inventories remain pinned. Consequently these controls exercise missing-sidecar compatibility and relevant load/query paths, but do not replace the full-feature direct-JVM measurements or prove ordinal-rich eager-load behavior.
+
+All four group scores are shown in execution order, in ms/op; each score averages that fork's measurement iterations.
+
+| Method | B0 | C1 | C2 | B3 | Mean B→C | Change |
+|---|---:|---:|---:|---:|---:|---:|
+| eager_load | 3276.485416 | 3219.638126 | 2786.273000 | 3324.293688 | 3300.389552→3002.955563 | -9.012% |
+| mapped_load | 73.726952 | 74.747698 | 74.472878 | 73.650266 | 73.688609→74.610288 | +1.251% |
+| mapped_simpleNodeMatch | 0.052328 | 0.052418 | 0.050179 | 0.050516 | 0.051422→0.051299 | -0.240% |
+| mapped_intConstantFilter | 0.043090 | 0.041132 | 0.043426 | 0.043551 | 0.043320→0.042279 | -2.404% |
+| mapped_singleHopRelationship | 0.279808 | 0.281287 | 0.280758 | 0.273462 | 0.276635→0.281022 | +1.586% |
+| mapped_orderedCallSitePropertyLimit | 182.946410 | 178.254600 | 188.421900 | 185.758055 | 184.352233→183.338250 | -0.550% |
+| mapped_orderedIntConstantPropertyLimit | 0.384769 | 0.362730 | 0.388109 | 0.390329 | 0.387549→0.375419 | -3.130% |
+
+GC-profiler allocation is bytes/op, not live heap or RSS. All four fork scores are retained:
+
+| Method | B0 | C1 | C2 | B3 | Mean B→C | Change |
+|---|---:|---:|---:|---:|---:|---:|
+| eager_load | 6049207656.00 | 6043215616.00 | 5953120372.00 | 6043215600.00 | 6046211628.00→5998167994.00 | -0.794607% |
+| mapped_load | 41233931.71 | 41232707.71 | 41232667.71 | 41234027.71 | 41233979.71→41232687.71 | -0.003133% |
+| mapped_simpleNodeMatch | 232737.12 | 232768.48 | 232768.46 | 232736.46 | 232736.79→232768.47 | +0.013611% |
+| mapped_intConstantFilter | 103824.40 | 103872.87 | 103840.40 | 103824.81 | 103824.60→103856.64 | +0.030853% |
+| mapped_singleHopRelationship | 353962.56 | 354442.59 | 352525.72 | 353962.52 | 353962.54→353484.15 | -0.135152% |
+| mapped_orderedCallSitePropertyLimit | 567744100.44 | 567744099.11 | 567744099.11 | 567744132.44 | 567744116.44→567744099.11 | -0.000003% |
+| mapped_orderedIntConstantPropertyLimit | 1545726.96 | 1545730.21 | 1545704.33 | 1545703.20 | 1545715.08→1545717.27 | +0.000142% |
+
+Mapped-load method latency worsens 1.251%, and the single-hop control worsens 1.586%; small positive allocation deltas for simple match, Int filtering and ordered Int remain visible. Eager-load mean improves 9.012%, but the two candidate fork scores differ substantially. These are two forks per variant, not evidence of stable tail frequency or a blanket query improvement.
+
+| Whole seven-method group | Wall s | CPU s | Peak RSS GB (decimal) |
+|---|---:|---:|---:|
+| run0-B | 43.11 | 86.91 | 6.858228 |
+| run1-C | 42.73 | 82.84 | 9.008218 |
+| run2-C | 41.65 | 76.83 | 6.602670 |
+| run3-B | 43.15 | 86.82 | 8.756969 |
+
+Whole-group RSS ranges overlap broadly, including the candidate's 9.008GB high sample. These figures include launcher/fork startup, warmup, setup and multiple methods; fixed-duration methods execute unequal operation counts. They are not method CPU/op or isolated query RSS and do not certify the user's operation resource caps. An 8GiB heap ceiling does not imply an 8GiB process-RSS ceiling.
+
+**Exact commands and pins:** direct measurements use `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$COMMON_HELPER:$FROZEN_CP" LoadingQueryOperation "$MODE" "$PRIVATE_GRAPH" "$REPORT"`. JMH uses `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$FROZEN_RUNTIME_AND_COMMON_JMH_CP" org.openjdk.jmh.Main "$ANCHORED_SEVEN_METHOD_REGEX" -p corpus=KOTLIN_COMPILER -f 1 -prof gc -foe true -rf json -rff "$RESULT" -jvm "$JAVA17" -jvmArgsAppend "-Dkotlin.compiler.graph.path=$PRIVATE_GRAPH"`; the common benchmark metadata supplies the 8g fork heap and iteration settings. Literal arrays, exact regex, classpaths, fixture/file hashes and JVM arguments are preserved in the files below. Host is the same M3 Max/macOS14.3/JDK17.0.20.1; no profiler other than JMH GC metrics, forced GC or changed heap/features were introduced. These command boundaries are distinct from construction/save timing.
+
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt109-primary36/commands.resolved.json` — SHA-256 `e310e0ce2d93f327d2795994ea287f1e7d05b4e6346b0d30fc037cb6184be885`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt109-primary36/execution/results.json` — SHA-256 `58f54c6cdf728e2f3a92dae4ed801a5af665026215479509d25c452fb327b9bc`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt109-primary36/execution/summary.json` — SHA-256 `27bb787e8aa5dd0e775eb46f05faed2977d11691defff1e1e2c504d98e48b693`.
+- `/tmp/sootup-recovery-sources/attempt109-jmh/commands.json` — SHA-256 `6815fc19b12c8b2df3bf5a8812e6bd47ba57071d6d64ecf4ec511817162edeb1`.
+- `/tmp/sootup-recovery-sources/attempt109-jmh/seal.json` — SHA-256 `04c155c6f01382437bb50741d8ea7addae95b3624696f307d91977755f1bb69c`.
+- `/tmp/sootup-recovery-sources/attempt109-jmh/execution/results.json` — SHA-256 `319404bfc88b01944c427ce9c74a5dea7d68dd22eb29571face3aaa0db33fa90`.
+- `/tmp/sootup-recovery-sources/attempt109-jmh/execution/summary.json` — SHA-256 `a3cb13340dc853626ad4ebfc3f95809c760005de9525c14d855d0a1af3300685`.
+
+**Corrected matching-role cumulative24, completed:** the fresh fixed `ABBABAAB` sequence for each operation now uses `TEST_webgraph` on both sides (54 old entries, 57 current entries with required dependency-version changes). A is pre-upgrade and B is109 in this separate batch. The same helper, full-feature graph copies, query, phase clocks, 8g limit and pre-JVM sequential-read policy are unchanged. All24 measurements plus the separate oracle passed. They are not pooled with either earlier batch. Independent review checked report hashes and means.
+
+| Operation | Mean session wall s (old→109) | Mean session CPU s | Mean whole CPU s | Mean peak RSS MB |
+|---|---:|---:|---:|---:|
+| mapped-open | 0.227913→0.234285 (+2.796%) | 0.494473→0.499343 (+0.985%) | 0.535000→0.540000 (+0.935%) | 179.257344→179.900416 (+0.359%) |
+| first-ordered | 1.613169→0.800644 (-50.368%) | 2.284169→1.417583 (-37.939%) | 2.330000→1.465000 (-37.124%) | 1113.931776→1116.180480 (+0.202%) |
+| warm-ordered | 15.115090→4.968518 (-67.129%) | 16.086278→5.848461 (-63.643%) | 16.137500→5.897500 (-63.455%) | 1122.131968→1123.684352 (+0.138%) |
+
+Mapped-session latency still rises 6.372ms (+2.796%; median +3.534%, maximum observed +0.509%). Its four adjacent wall changes are +6.266%, −0.672%, +1.582% and +4.210%. Whole CPU mean rises 0.935% (median +2.830%, maximum unchanged); RSS mean rises 0.359% (+0.643MB), median 0.696%, maximum falls 0.462%. The earlier CPU overrun is absent in this matching-role batch. This does not retroactively erase earlier measurements or prove classpath mismatch alone caused them. All raw rows, ranges, pairs and blocks remain in the summary; four samples do not establish a population bound. First/warm ordered sessions retain large cumulative latency/CPU gains, with small RSS increases; those gains are not attributed solely to109.
+
+- `/tmp/sootup-static-review/loading-query-operation-protocol/primary24-role-matched109/commands.resolved.json` — SHA-256 `70d6bf2742d15aa14b8c6b0b56bd24503fff9d36190201c958c42501d6f516e5`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/primary24-role-matched109/execution/results.json` — SHA-256 `e4149693e12c61355749871fd2aa7906202911a2d32f997fe869570a4c530db5`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/primary24-role-matched109/execution/summary.json` — SHA-256 `142a4b42d56eb6676a958912ee0931dffad01ce39cbc3fad8af23e2a63840490`.
+
+**Decision:** retain109 as a bounded incremental improvement: it avoids unnecessary sidecar work, preserves tested node/ordinal semantics, and improves matching-parent loading readiness while retaining the adverse controls. It does not establish full recovery. Matching pre-upgrade loading latency is still slower, construction memory remains a separate unresolved requirement, and eager/full-metadata/other-query operations require their own relevant evidence. The user's separate +5% CPU and peak-RSS limits and 8GiB heap ceiling remain unchanged; query gains cannot compensate for another operation's regression. APK work remains deferred.

@@ -2083,6 +2083,8 @@ internal class MappedWebGraphBackedGraph(
 
     internal fun isMetadataInitialized(): Boolean = metadata.isInitialized()
 
+    internal fun isCallSiteOrdinalsInitialized(): Boolean = callSiteOrdinals.isInitialized()
+
     internal fun isMethodIndexInitialized(): Boolean = methodIndex != null
 
     internal fun clearStringPropertyIndexes() {
@@ -2630,8 +2632,13 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private fun readNodeAt(offset: Long): Node {
-        val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
-        return NodeSerializer.readNode(input, stringTable, nodeDataVersion, callSiteOrdinals.value)
+        val position = offset.toInt()
+        // A malformed header still goes through the serializer's EOF/unknown-tag validation.
+        val isCallSite = position >= 0 && position <= mappedNodeData.limit() - NODE_HEADER_BYTES &&
+            mappedNodeData.get(position + Int.SIZE_BYTES).toInt() == NodeSerializer.TAG_CALL_SITE_NODE
+        val ordinals = if (isCallSite) callSiteOrdinals.value else CallSiteOrdinals.EMPTY
+        val input = ByteBufferDataInput(mappedNodeData, position)
+        return NodeSerializer.readNode(input, stringTable, nodeDataVersion, ordinals)
     }
 }
 
