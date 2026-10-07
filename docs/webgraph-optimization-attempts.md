@@ -9805,3 +9805,58 @@ Decision: retain and integrate135 as a verified positive increment, preserving t
 |owner terminal/cleanup|`4fa75d0dc4aa106bd54ff58b6767e414d6657cee36f81c295d2cab29f65efec8`|
 |complete summary|`c1cba535df3ddd54ef1f37eb2aa2fdee58634485237d1a3623aec0463bce688e`|
 |independent audit|`41ba9b7444b0fcccfbf33f7076936cc6f01f07e748af7ac8a3ca066a0a5fe365`|
+
+### 2026-10-08 — Client-process control: socket waiting persists with separate interpreters
+
+This diagnostic tests whether the previously observed socket-connect waiting difference depends on four clients sharing one Python interpreter. It does not change production or establish a performance gain. Reuse the same three instrumented historical exports as the preceding connect-split experiment: A preupgrade6f (`a86a1dfbbaba8484c147ad0e399b1751556e7e002bd6fc24ff0d1c1b7d9e1563`), B85 (`3261ff8845914cf841b3e03b6c5ec3ef3640eeeb467bac91b9dbae4dc3dc1b7a`), Cddbee (`dfe7774c29a988d7baec14f9c391e658f22d53956e44d88c409cd48d8bb03d35`). These are not af8d binaries.
+
+The fixed twelve-server sequence is T(A), P(A), T(B), P(B), T(C), P(C), P(C), T(C), P(B), T(B), P(A), T(A), where T uses four threads and P four spawned processes. Both modes retain the same64 real persisted graphs,34 cases, first1/warm2/measured60 requests, complete-response timer, typed oracle, phase/transport/connect clocks and resource boundaries. Worker pools are ready before native startup; no additional HTTP warmup or retry. Process IPC is outside the HTTP timer but can change sibling arrivals and cache effects. This is a client-process architecture control, not a pure GIL intervention. Native startup C4 work is still not barriered.
+
+Original measurement76997 and offline summaries61067 exited0. Independent audit73369 exited0, verifying all25,704 full bodies,24,480 measured samples, ranks30/57, all per-case statistics/both pairs, four summaries, sender/process identities and cleanup. All78 owned PIDs and24 related groups were freshly absent. The complete evidence is under `/tmp/sootup-static-review/native-cumulative/c4-client-architecture-diagnostic/`; independent checks and all34-case derived scope differences are in sibling `c4-client-architecture-independent-audit/`. No original adverse sample is replaced.
+
+|Mode / comparison|p50 lower mean / lower both / higher both (of34)|p95 lower mean / lower both / higher both (of34)|Whole CPU mean Δ%, forward/reverse|Peak RSS mean Δ%, forward/reverse|Query-window CPU mean Δ%, forward/reverse|
+|---|---|---|---:|---:|---:|
+|Thread C/B|16 / 9 / 6|16 / 7 / 13|-0.382 (+0.640/-1.395)|+0.014 (-0.008/+0.037)|-0.115 (+2.320/-2.517)|
+|Thread C/A|6 / 3 / 20|13 / 5 / 15|-41.705 (-40.096/-43.247)|+0.664 (+0.650/+0.678)|+0.580 (+1.613/-0.467)|
+|Process C/B|27 / 11 / 4|25 / 22 / 3|-0.697 (-1.758/+0.384)|+0.023 (+0.021/+0.024)|-1.481 (-4.194/+1.412)|
+|Process C/A|6 / 2 / 19|18 / 14 / 10|-42.714 (-42.320/-43.102)|+0.732 (+0.788/+0.677)|-2.590 (+0.463/-5.482)|
+
+Whole wall C/A is −30.918% in thread mode and −31.609% in process mode, including loading; whole CPU is likewise not query-only. Client process-mode coordinator CPU excludes worker CPU; reaped-child CPU includes preparation/shutdown/helper processes, so it cannot be presented as measured query-worker CPU. No exclusive-host or final resource acceptance claim is made.
+
+The socket-connect waiting difference remains in process mode. C/A socket-connect wall p50 is higher in all34 case means and31 cases in both pairs (+9.875 to +50.542µs); wall minus thread CPU is higher in all34 means and32 cases in both pairs (+7.271 to +42.855µs). Connect thread CPU is mixed (18 higher means,12 higher both pairs; −5.688 to +4.104µs). Route p50 is higher in only7 means/3 both pairs, while HTTP-minus-route p50 is higher in all34 means/32 both pairs. Thread mode also retains higher socket waiting in32 means/25 both pairs.
+
+Equal-weight additive mean C/A differences across all34 cases, in µs:
+
+|Mode / pair|Full HTTP|Route|Socket-connect wall|Socket-connect thread CPU|Socket-connect wall minus CPU|
+|---|---:|---:|---:|---:|---:|
+|Thread forward|+23.024|+0.377|+11.342|-0.010|+11.352|
+|Thread reverse|+34.095|+10.078|+13.828|-1.248|+15.076|
+|Process forward|+5.155|-7.403|+17.937|+0.088|+17.850|
+|Process reverse|+37.564|-12.764|+21.197|-0.085|+21.282|
+
+Decision: shared-client GIL contention alone is insufficient to explain the observed waiting. This does not identify kernel scheduling, server accept, or C4 as its cause. Investigate actual background-work/accept timing before changing production. Retain the uninstrumented cumulative full34 failures and all construction RSS overruns; instrumented cross-cohort differences are not an optimization or recovery claim.
+
+|Evidence|SHA256|
+|---|---|
+|sealed plan|`d0279eab125acb19594a158a28419fd400d71288866d64db89b4d6bd1c9a8a18`|
+|measurement result|`e6354ee47d6d92d478bb518ca0e03ffa8aed12b583029aa0bf2f01147b028724`|
+|owner terminal|`c295b3e2ae6e388aff8fe9650d9d54038c4f7351cac987ab50fc11a17a8a2783`|
+|complete summary|`e39149423399710b0ab98693e81b237cf73fbca415f4e3b76b506779d289f681`|
+|independent audit|`c83520c0bea0b22b3c24b71af47e240f355db66eab57e9d14390060c3a1601af`|
+|all-case mode analysis|`3b15a87247502d3fecbb9e27cd49ee6e31d58082c7dd8b60ed2b74bb69cc261c`|
+
+### 2026-10-08 — Memory diagnostic correction: page queries do not provide an RSS partition
+
+The matched-XNU follow-up corrects the prior capability record's proposed next step: ordinary `mach_vm_page_range_query`, single-page queries and JNI `mincore` also report backing-object/shadow residency, not target-task RSS. A hidden footprint mode has different synthetic accounting and is not a general RSS decomposition either. No further task-port, private-mode, compiler or JVM probe was run. Preserve task RSS, heap used/committed and VM-object counters as separate quantities; do not subtract committed heap from RSS or invent a page-size conversion.
+
+Decision: proceed with the previously validated GC/heap/RSS timeline helper on four fixed Kotlin A/B/B/A cap30 constructions and12 strict saved-graph verifications, all JVMs ≤8GiB. This establishes when occupancy/GC/RSS changes, without claiming memory categories. The source-only follow-up is `kotlin-memory-category-capability/independent-api-review/page-query-followup.md` (SHA `73a30d3e82e3cab2785970048dac95bac707a060260b36ecf350c0710c22b5f6`), with proof `d39f8af7127d1af61e3dc327f4c4d6b299e77955bb966057d2e095b07bf30d7e`.
+
+The timeline packet (`20d0a37fab4223e71a42faff2119ca9f5c3a4cc222be03ca9a4f0c99de2e7828`) retains two preparation corrections before execution: create the sibling verification-report directory once before verification; canonicalize two symbolic fixture pins to their unchanged actual paths/hashes. The original pre-seal pin check failed before any JVM launched. All271 corrected input pins and five classpath inventories then passed, with independent review; the failure remains in `kotlin-cap30-memory-timeline/fixture-pin-schema-correction.json`. Original execution66451 is in progress at this entry; no result is claimed yet.
+
+### 2026-10-08 — Exact af8d CI: main aggregate passes; Method latency fails
+
+At exact `af8d63242d60b1626c5569064b5a0fe31ef56c41`, [JVM tests](https://github.com/johnsonlee/graphite/actions/runs/37697404841) and [Rust checks](https://github.com/johnsonlee/graphite/actions/runs/37697404786) passed. [Benchmark run37697404801](https://github.com/johnsonlee/graphite/actions/runs/37697404801) is failed even though method-level, large-corpus, native latency and its required `benchmark-regression-gate` job113058453250 passed. The separate Method compatibility shard4-position and aggregate failed.
+
+The base-owned unchanged15% gate reports `MethodDiscoveryCompatibilityBenchmark.methodScenarioGate[graphCount=4,scenario=middle]` wall time382.512907→445.892532ms (+16.569277%), then355.909343→427.954448ms (+20.242544%) in its declared reverse confirmation. Early and zero cases passed. Root independently compared all three normalized result fingerprints in both orders; outputs agree. This is a measured latency failure, not a result mismatch or build failure. The test measures a single-shot batch of scoped/root method requests plus validation, not server request p50/p95.
+
+The JVM source, benchmark workflow and scripts are byte-unchanged from previously successful8b6694f4, as verified with `git diff --quiet`; the latest production edit is Rust display properties. That narrows change attribution but does not explain or erase the new failure. Preserve both rounds and investigate before claiming all CI green. No manual rerun, selected replacement sample, threshold change or merge occurred. The26-file original shard artifact and hashes are retained in `/tmp/sootup-static-review/af8d-ci-method-position/`; PR171 now distinguishes this failure from the successful main aggregate and historical8b checks.
