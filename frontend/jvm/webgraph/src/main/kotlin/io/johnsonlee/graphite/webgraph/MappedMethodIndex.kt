@@ -169,7 +169,7 @@ internal class MappedMethodIndex private constructor(
             val result = ArrayList<MethodDescriptor>(minOf(methodCount, limit))
             repeat(methodCount) { index ->
                 if ((index and BUILD_INTERRUPTION_POLL_MASK) == 0) {
-                    checkMappedThreadInterrupted("Mapped method scan interrupted")
+                    checkThreadInterrupted("Mapped method scan interrupted")
                 }
                 scanConsumer?.inspect()
                 val declaringClassId = input.readInt()
@@ -226,7 +226,7 @@ internal class MappedMethodIndex private constructor(
 
             repeat(methodCount) { index ->
                 if ((index and BUILD_INTERRUPTION_POLL_MASK) == 0) {
-                    checkMappedThreadInterrupted("Mapped method-index build interrupted")
+                    checkThreadInterrupted("Mapped method-index build interrupted")
                 }
                 val declaringClassId = input.readInt()
                 declaringClassIds[index] = declaringClassId

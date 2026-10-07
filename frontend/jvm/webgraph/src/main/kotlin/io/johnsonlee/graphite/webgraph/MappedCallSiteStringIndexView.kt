@@ -547,7 +547,7 @@ private fun binarySearch(
 }
 
 private fun checkViewInterrupted() {
-    checkMappedThreadInterrupted("Mapped CallSite string index view interrupted")
+    checkThreadInterrupted("Mapped CallSite string index view interrupted")
 }
 
 private data class MappedPredicateKey(

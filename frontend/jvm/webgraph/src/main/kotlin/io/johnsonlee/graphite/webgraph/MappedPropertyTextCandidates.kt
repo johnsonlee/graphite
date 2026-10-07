@@ -26,7 +26,7 @@ internal class MappedPropertyTextCandidates(
         var inspected = 0
         for (id in types.ids(type)) {
             if ((inspected++ and CANCELLATION_MASK) == 0) {
-                checkMappedThreadInterrupted("Property text scan interrupted")
+                checkThreadInterrupted("Property text scan interrupted")
             }
             work?.consume()
             val offset = offsets.offset(id).toInt()

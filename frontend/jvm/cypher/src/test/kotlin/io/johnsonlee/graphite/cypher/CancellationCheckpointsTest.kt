@@ -8,15 +8,15 @@ import kotlin.test.assertTrue
 class CancellationCheckpointsTest {
     @Test
     fun `query checkpoints preserve default and explicit reasons without consuming interruption`() {
-        checkQueryThreadInterrupted()
+        checkThreadInterrupted()
         try {
             Thread.currentThread().interrupt()
-            val default = assertFailsWith<CypherQueryCancelledException> { checkQueryThreadInterrupted() }
+            val default = assertFailsWith<CypherQueryCancelledException> { checkThreadInterrupted() }
             assertEquals(CypherQueryCancelledException::class.java, default.javaClass)
             assertEquals("Cypher query cancelled", default.message)
             assertTrue(Thread.currentThread().isInterrupted)
             val explicit = assertFailsWith<CypherQueryCancelledException> {
-                checkQueryThreadInterrupted("String projection interrupted")
+                checkThreadInterrupted("String projection interrupted")
             }
             assertEquals(CypherQueryCancelledException::class.java, explicit.javaClass)
             assertEquals("String projection interrupted", explicit.message)
