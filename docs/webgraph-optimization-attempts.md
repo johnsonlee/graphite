@@ -6827,3 +6827,59 @@ and `root-output-audit.json`. Parser SHA256
 report `0dadb85bc51e132597f5984817d4a3e4d9348ce2c9c294305974da0f80daec88`;
 old analysis `71c62edfbee8fc4e1c98e0a3e4787ff2e24672022d53517436ef34b7795b6769`;
 current analysis `56ec868e0ead11d2f6600ca3741425ad12e071ce57db0c86c889f5ab3896557c`.
+
+### 2026-10-07 — Clarify JVM and native-server acceptance boundaries
+
+The local HTTP experiments recorded above launch the **JVM compatibility server**, using the
+frozen `MAIN_query` runtime. Their response checks and incremental results remain evidence for
+that implementation. They do not establish performance recovery for native `graphite serve`,
+which dispatches to Rust in both pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4` and
+current source. The JVM API and `java -jar graphite.jar serve` remain supported and must retain
+their behavior; neither runtime's results can silently substitute for the other's.
+
+The required `db713c98` native latency CI did send real HTTP requests and read complete bodies.
+Its comparison is upgraded main `02b853b7`, however, and each case has five sequential samples.
+Case scores use their median; the reported aggregate p50/p95 summarizes different query cases,
+not a repeated-request p95 for each case. It has no concurrency4 or separate server-readiness,
+CPU and peak-RSS acceptance evidence. Both arms use the same candidate-generated fixture64.
+The latency gate's digest excludes row `$metadata`, checks repeatability within each arm, and
+is not itself a full cross-version typed-response/provenance oracle. Other gates retain their
+own contracts; a green latency report does not acquire their coverage automatically.
+
+Rust backend/CLI source matches upgraded main but differs from the pre-upgrade revision,
+including ordinal-sidecar loading and related query properties. Cargo.lock and workspace
+Cargo.toml files are unchanged. Source equality with main cannot prove that graphs produced by
+different frontend revisions have identical loading or query costs. Native acceptance still
+requires an explicit old-relative response oracle, per-case request p50/p95, declared concurrency,
+and independently bounded loading/CPU/RSS evidence. Existing JVM gains are retained and labeled,
+while native coverage is prepared separately. No new latency samples or acceptance claim arise
+from this source/CI audit.
+
+Evidence: `/tmp/sootup-static-review/native-runtime-acceptance-scope/{report.md,source-identities.json}`;
+report SHA256 `faadbe29478d4b652130b16f00f3e7246f04393e0cbd455d9524f166056ec727`.
+
+### 2026-10-07 — G1 region evidence narrows the retained Tika RSS hypothesis
+
+The existing diagnostic `gc.log`, phase markers and heap samples were analyzed without a new
+JVM or measurement. Both arms used4MiB regions, a1GiB initial heap and an8GiB maximum. Old
+committed capacity reaches5,516MiB; cumulative341 reaches7,320MiB at GC39's remark, about26ms
+after finalization begins, and keeps that capacity through later reclamation.
+
+At the first save GC, old GC100 has263 populated Eden regions; current GC42 has629, a difference
+of1,464MiB of region capacity. After those collections, survivor+old+humongous regions total
+981 versus972: current occupied-region capacity is36MiB smaller, despite1,804MiB more committed
+heap. Root independently checked those counts against the original log lines. These are
+phase-comparable collection points, not simultaneous measurements or retained/live-object sizes.
+Current save remark later lowers used heap from3,910 to2,778MiB while committed remains7,320MiB.
+The observed larger capacity therefore cannot be described simply as more occupied old regions.
+
+**Next hypothesis:** adaptive young-generation sizing and persistent committed/resident headroom
+may explain a substantial part of the extra late-save RSS. The logs lack the complete ergonomic
+decision trace and an OS residency breakdown, so this is not proven RSS attribution. It does
+not establish a cache leak, justify forced GC, or permit a larger heap. Any discriminating tuning
+experiment must predeclare a bounded, symmetric old/current comparison and retain all original
+features and boundaries; adopting defaults would still require query p50/p95, E2E, CPU and RSS
+acceptance. No GC policy or production setting was changed here.
+
+Evidence: `/tmp/sootup-static-review/tika341-memory-next/gc-region-analysis/{report.md,analysis.json,root-region-audit.json}`;
+report SHA256 `734bbc06c963294307716797c972baae2ddedd87884e24ea58ddab7ae2bfb749`.
