@@ -5837,3 +5837,74 @@ Evidence pins:
 The old/current count differences therefore also exist between the pre-upgrade version and upgraded main; they are not count losses introduced by the retained optimization chain. This does not explain every semantic difference between SootUp versions or turn differing old/current outputs into identical graphs. The separate references are n=1 observations, not additional acceptance samples or replacements for the preceding four measurements.
 
 The common quiet helper, default features, `TEST_webgraph` runtime role, two-thread prepared save and8GiB heap setting were retained. Frozen main runtime manifest SHA-256 is `185bdb48e8da1d47528c23e6439a11b24a9b5fd4fd0932f22732cee83e03d770`. Exact commands: `/tmp/sootup-recovery-sources/main02-tika-hive-reference109/commands.json`, SHA-256 `8e503a05a19a5c331cbaee8b52f21bfc53a90a15e01f494b6bf3103fd833001f`. Terminal results: `execution/results.json`, SHA-256 `6a96aaf8d166b9a6f6c5a91000055b41690bfe8fed3a793483a0af10e108bf6e`. All failures would stop the packet; no mismatch, retry or oracle relaxation occurred.
+
+
+### 2026-10-07 — Attempt 110: compact branch metadata persistence (source prepared; measurement pending)
+
+**Hypothesis:** saving a fresh `MmapGraph` currently expands packed branch/local definitions into query-view objects and immediately repacks them. An optional compact persistence capability could avoid that overlap while preserving grouping, set deduplication/order, nulls, duplicate triples and consumer-owned arrays. Already-materialized mutable public views must retain the original fallback. This may reduce save-phase allocation/retention; it is not a proven explanation or solution for the earlier construction RSS peak.
+
+The isolated four-file implementation and four focused tests are prepared in `/tmp/graphite-attempt110`, now based on committed109. Tests propose exact metadata/branchdefs byte and decoded-value comparison against capability-hidden generic fallback, interleaved scope grouping, defensive ownership, materialized-view mutation, duplicate triples and malformed lengths. Source proof: `/tmp/sootup-static-review/attempt110/readiness.json`; subsequent base/preservation proof: `rebase-on109/proof.json`. No compilation, test execution or performance measurement of110 has occurred at this entry. No production integration or keep decision is claimed. This chronological slot precedes111 because110 source preparation started first; its own later experiment record/commit will complete the evidence.
+
+### 2026-10-07 — Attempt 111: initialize the ordinal warning logger only when needed
+
+**Hypothesis and change:**109 avoids sidecar loading on a non-CallSite read, but obtaining `CallSiteOrdinals.EMPTY` still initializes the class and eagerly creates its JUL logger. Change that logger to Kotlin `by lazy`, leaving warning text, level, logger name and all ordinal validation unchanged. The parent is committed109 `cdc85935ada041ebf995ada534f636c4822112e1`; the isolated candidate changes only this production declaration. This is a first-use initialization hypothesis, not a general query or construction optimization.
+
+**Correctness and provenance:**300 fresh tests passed (257 webgraph,43 query; zero failures/errors/skips), both module Detekt gates and both JMH isolation checks passed. The added test asserts exact valid ordinal lookup, quiet absent/valid/unbound sidecars, and exactly one warning with the expected level/name/message for a malformed bound sidecar. Before compilation, review corrected the test to use a separate `validFile`: it must not truncate an already mapped valid input. The original source proof with stale test hash is archived; reviewed pins and actual passing source are authoritative. No failed-test claim or oracle relaxation is inferred from that source correction. Production SHA-256 `a442b5ae38fd3e361f54ddff13f22e70a9edc1afd4a72187d6228aa7000450e6`, test SHA-256 `dffc93adbf1cf341add93f777e1426739411e948163e51c6201c0d2da126de44`. Build proof is `/tmp/sootup-recovery-sources/attempt111-build/attempt111-build1/build-proof.json`; frozen runtime SHA-256 `a55c3e5d18e8784359dd00bfee311d995b3644fd4d076b02d9e95314feb4722f`. Publishing files were restored byte-for-byte.
+
+**Fixed primary36:** three operation groups, each `ABCCBABACCAB`, four fresh JVMs per variant. A is frozen pre-upgrade, B frozen109, C111. All use matching `TEST_webgraph` classpath roles, the same compiled `LoadingQueryOperation` helper,8g heap, and private complete copies of the same merged Kotlin compiler2.0.21 full-feature graph (4,744,132 nodes,2,251,811 CallSites,19 files including ordinal/origin and prepared string-index sidecars). Each copy is sequentially read/hashed before its JVM outside timing. All36 measurements and the candidate five-query oracle passed; query values/order and graph inventories remain preserved. No retries or substituted samples.
+
+Boundaries remain those defined in the cumulative loading record: mapped-open includes first-node decode and close; first-ordered includes a fully consumed ordered request; warm-ordered includes one warmup and ten measured requests. Session wall/process CPU and whole-command time-l CPU/RSS are distinct. RSS includes JVM startup/loading and session work; it is not incremental query RSS. This is a specified page-cache preparation policy, not cold disk. Same M3 Max/macOS14.3/JDK17.0.20.1 host and unchanged8GiB limit.
+
+All arithmetic means are shown (seconds; decimal MB):
+
+| Operation | Session wall A / B / C | Session CPU A / B / C | Whole CPU A / B / C | Peak RSS A / B / C |
+|---|---:|---:|---:|---:|
+| mapped-open | 0.230351 / 0.232798 / 0.229768 | 0.488802 / 0.502410 / 0.499206 | 0.532500 / 0.542500 / 0.540000 | 180.043776 / 181.137408 / 181.161984 |
+| first-ordered | 1.681860 / 0.818979 / 0.813265 | 2.317871 / 1.417866 / 1.479836 | 2.370000 / 1.470000 / 1.532500 | 1107.656704 / 1112.170496 / 1123.176448 |
+| warm-ordered | 16.141259 / 4.806791 / 4.784650 | 16.980231 / 5.581594 / 5.588122 | 17.030000 / 5.637500 / 5.642500 | 1110.376448 / 1106.489344 / 1111.863296 |
+
+Incremental B→C mapped-session wall falls1.302% (−3.030ms), whole CPU0.461%, while RSS rises0.014%. First-node wall is5.924→3.891ms (old3.213ms). First-query session wall falls0.698%, but process CPU rises4.371%, whole CPU4.252% (+0.0625s) and RSS0.990% (+11.006MB). Warm-session wall falls0.461%, whole CPU rises0.089% and RSS0.486%. These adverse first-query resources remain part of the decision.
+
+Against pre-upgrade, mapped-session mean wall is only0.253% lower (−0.584ms); median instead rises1.012% and maximum observed rises1.147%. Its whole CPU mean is+1.408%, RSS+0.621% (+1.118MB). First/warm session whole CPU means are−35.338%/−66.867%, RSS+1.401%/+0.134%; the large query gains are cumulative, not111-only. This small loading mean is not proof of general recovery or a stable population cap. All raw rows, ranges, pair/block results and individual request metrics remain in the primary summary, and other workloads/operations remain separate.
+
+**Four-method JMH control:** fixed B→C→C→B groups, one cold fork per method per group, `-prof gc`, average time, fail-on-error, launcher and forks8g. Load methods use1×1s warmup/2×1s measurement; query methods2×1s warmup/3×1s measurement. All four groups completed successfully; this is execution status, not numerical acceptance. As in109, the separate real persisted reduced-feature Kotlin graph has3,292,214 nodes/922,876 CallSites/17 files and no newer ordinal sidecar. These warm method controls are not pooled with full-feature primary sessions and do not directly measure first-use logger initialization.
+
+All four scores in execution order, ms/op:
+
+| Method | B0 | C1 | C2 | B3 | Mean B→C | Change |
+|---|---:|---:|---:|---:|---:|---:|
+| eager_load | 3251.887958 | 3179.937667 | 3344.745500 | 2819.125812 | 3035.506885→3262.341584 | +7.473% |
+| mapped_load | 73.094591 | 74.068754 | 74.798115 | 74.885040 | 73.989815→74.433435 | +0.600% |
+| mapped_simpleNodeMatch | 0.051855 | 0.050837 | 0.052054 | 0.051507 | 0.051681→0.051446 | -0.455% |
+| mapped_orderedCallSitePropertyLimit | 192.072646 | 186.616127 | 189.276896 | 186.869368 | 189.471007→187.946512 | -0.805% |
+
+GC-profiler bytes/op, all four scores (allocation is neither retained heap nor RSS):
+
+| Method | B0 | C1 | C2 | B3 | Mean B→C | Change |
+|---|---:|---:|---:|---:|---:|---:|
+| eager_load | 6049207656.00 | 6043215600.00 | 6043215600.00 | 6568574256.00 | 6308890956.00→6043215600.00 | -4.211126% |
+| mapped_load | 41232702.29 | 41232817.71 | 41232753.71 | 41232705.14 | 41232703.71→41232785.71 | +0.000199% |
+| mapped_simpleNodeMatch | 232737.14 | 232737.12 | 235937.13 | 232737.13 | 232737.14→234337.13 | +0.687467% |
+| mapped_orderedCallSitePropertyLimit | 567744247.11 | 567744215.11 | 567744247.11 | 567744247.11 | 567744247.11→567744231.11 | -0.000003% |
+
+| Whole four-method group | Wall s | CPU s | Peak RSS GB (decimal) |
+|---|---:|---:|---:|
+| run0-B | 26.29 | 61.18 | 6.686163 |
+| run1-C | 26.14 | 57.51 | 7.378387 |
+| run2-C | 26.40 | 64.02 | 8.854061 |
+| run3-B | 24.65 | 57.16 | 7.073759 |
+
+The eager-load mean worsens7.473%, including the parent's faster2.819s fork; no sample is dropped. Mapped-load worsens0.600%. Simple-match latency is nearly flat but its allocation rises0.687%; ordered-query latency falls0.805%. Candidate whole-group RSS samples7.378/8.854GB exceed both parent6.686/7.074GB samples; whole-group CPU is mixed. Those high-water figures span four methods, setup, warmup, teardown and unequal fixed-duration operation counts. They neither quantify each operation's CPU/RSS nor justify ignoring the adverse direction. Two forks per variant do not establish causality or stable tail behavior. No automatic recovery conclusion follows from successful exits.
+
+**Exact reproduction and evidence:** primary command form is `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$COMMON_HELPER:$FROZEN_TEST_WEBGRAPH_CP" LoadingQueryOperation "$MODE" "$PRIVATE_GRAPH" "$REPORT"`. JMH uses `/usr/bin/time -l "$JAVA17" -Xmx8g -cp "$FROZEN_RUNTIME_AND_COMMON_JMH_CP" org.openjdk.jmh.Main "$ANCHORED_FOUR_METHOD_REGEX" -p corpus=KOTLIN_COMPILER -f 1 -prof gc -foe true -rf json -rff "$RESULT" -jvm "$JAVA17" -jvmArgsAppend "-Dkotlin.compiler.graph.path=$PRIVATE_GRAPH"`, with unchanged8g fork/iteration metadata. The four methods are exactly the table's `LargeCorpusLoadBenchmark` load methods and `LargeCorpusQueryBenchmark` query methods. Literal arrays/regex/classpaths, source/runtime/JDK/graph pins and every raw sample follow:
+
+- `/tmp/sootup-recovery-sources/attempt111-build/reviewed-source-pins.json` — SHA-256 `673153e59fd6b0527dd2a51e182e31f7449db5b0e1dedd3e094529440a74b91f`.
+- `/tmp/sootup-recovery-sources/attempt111-build/attempt111-build1/build-proof.json` — SHA-256 `e0a4786ab89361b8c55b28b8810b1dd209645a57f079093999794292ff1263ef`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt111-primary36/commands.resolved.json` — SHA-256 `37da17c39a2bdbde3ecdbf6ddc42b3bfe501cf062c16c1fbe6f81ff1430f730f`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt111-primary36/execution/results.json` — SHA-256 `bd9e983fa8c7e82372e6447ae2d43b51eafe346ad3753dc2fbed9966f64944b2`.
+- `/tmp/sootup-static-review/loading-query-operation-protocol/attempt111-primary36/execution/summary.json` — SHA-256 `9cb5014d5d9f83b4461d7d674c16c017022fca9da29b232e10711c6cf54043ad`.
+- `/tmp/sootup-recovery-sources/attempt111-jmh/commands.json` — SHA-256 `d254157258c6128c29db178ae9e1c1e82bbed3eecc14bd6bbbd6b37e3fe926f0`.
+- `/tmp/sootup-recovery-sources/attempt111-jmh/execution/results.json` — SHA-256 `09f2345f05aa32665b2bd8ef6efd8b32f4cc0adbf62063dafc27f7dcdc3dca38`.
+- `/tmp/sootup-recovery-sources/attempt111-jmh/execution/summary.json` — SHA-256 `4f3692ce7c3fa52fb21a1550413b8443f6ff297406c9ef82034bc9371a43bc78`.
+
+**Decision:** retain111 as an isolated candidate, not yet integrated. Direct-operation loading shows a small incremental benefit, while eager-load JMH and group resource evidence remain unresolved; this is not a claim that all performance controls passed. The candidate is not rejected merely because overall recovery is incomplete, and no general recovery or final acceptance is asserted. Attempt110 continues from retained109 so that111’s unresolved change does not enter its attribution. The user’s independent +5% whole CPU/peak-RSS limits versus pre-upgrade and8GiB heap ceiling remain; all earlier construction and pressure evidence is retained. APK work remains deferred.
