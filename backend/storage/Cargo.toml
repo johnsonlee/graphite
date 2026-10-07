@@ -11,3 +11,7 @@ sha2.workspace = true
 crc32fast = "1"
 rayon.workspace = true
 parking_lot.workspace = true
+
+# Use platform CPU detection and software fallback on supported ARM64 targets.
+[target.'cfg(all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos")))'.dependencies]
+sha2 = { workspace = true, features = ["asm"] }

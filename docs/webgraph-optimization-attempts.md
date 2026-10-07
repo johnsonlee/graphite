@@ -7757,3 +7757,112 @@ Conclusion: versus120, c1 has33/34 lower mean p50 and26/34 lower mean p95; c4 ha
 The monitor retained609 snapshots,24 positive-CPU observations and48 CPU increments totaling0.77s, with0 incomplete external lifetimes. This is not an exclusive/quiet host. All first-use and warmup values, per-case extrema, fixed-mix descriptive values and raw HTTP bodies remain available; none substitutes for server per-case p50/p95 acceptance. Decision: retain123 isolated for continued composition; no full native-server recovery claim.
 
 Evidence directory: `/tmp/sootup-static-review/attempt123/server-request-packet/`. Frozen plan SHA256 `9b850a5183784e080ecd3ea0d65737bb7d19f2d92c51fb0fd430b1ae459cc11c`; result `b19c0f4f669d6dde4eabd0fca582887362b7eefde7f9d95bae586438d2750aef`; summary `5d6e84e42af1052594b95023d26d5ffec20f86a8528514a54b5aefa1ae9eeebb`; independent audit `2ae3fa6407257bcbe1c98f28f35f545bd903eccf307e2c28d997be38ac3c4b78`. The exact invocation and server argument lists are retained in the sealed plan and result. Client/lifecycle/monitor/summarizer were identical to120;25 pure checks and all200 source/runtime/fixture pins passed before execution. Root previously inspected the independent auditor, and has now rechecked its summary/result hashes before generating this complete table.
+
+### 2026-10-07 — Attempt 127: enable the existing SHA-2 ARM64 backend
+
+**Hypothesis and identity:** native loading includes full-directory SHA-256 fingerprinting and ordinal block validation. Pinned `sha2`0.10.9 selects its ARM64 accelerated backend only with the existing `asm` feature; the previous ARM64 release artifacts had only `default/std`. Enabling that backend could reduce the cost of the required hashes without removing or deferring any validation. Isolated branch `codex/attempt127-native-arm-sha2`, worktree `/tmp/graphite-attempt127`, base `c454e195f282e18ab50beac9e9606365d0ec7848`; no121 ordinal representation change,124 CRC change, or other isolated candidate is composed. This is not measured CPU attribution or a performance result.
+
+**Change and target scope:** only `backend/storage/Cargo.toml` and `Cargo.lock` change outside this log. An aarch64 target dependency enables workspace `sha2`'s `asm` feature; normal/default use remains. Cargo resolver2's actual target-filtered trees show `asm/default/sha2-asm/std` for `aarch64-apple-darwin` and only `default/std` for `x86_64-apple-darwin`. The lock adds only `sha2-asm`0.6.4 and the optional dependency edge; sha2 remains0.10.9, and every pre-existing locked package record is unchanged otherwise. The library's existing ARM64 build script supports Apple-specific and other ARM64 assembly. No global target-cpu/RUSTFLAGS, format, API, checksum, file read, manifest, readiness, cancellation or budget behavior changes.
+
+**Platform qualification:** sha2's aarch64 dispatcher retains its `cpufeatures` check and software fallback. On pinned cpufeatures0.2.17, Apple ARM64 SHA2 support is assumed from the platform guarantee; Linux/Android use HWCAP detection. This host verification does not execute or certify a missing-instruction software fallback. The existing dependency source and exact build script were read before compiling and are preserved in `/tmp/sootup-static-review/attempt127/dependency-review/`.
+
+**Preparation failure retained:** first `cargo info sha2-asm` failed101 before rustc execution because rustc was absent from the inherited PATH. Its original log is preserved. Setting the same task-local explicit toolchain PATH fixed that environment condition; the next metadata fetch/tree resolution succeeded. No Rust source or check was weakened, and no performance sample existed. Cargo resolved sha2-asm0.6.4 from its compatible range, with the registry checksum retained in Cargo.lock.
+
+**Correctness/build:** root authorized the sole correctness slot after123/124 terminal. Original handle81335 exited0: fmt, all25 graphite-storage tests (0 failed/ignored/filtered), storage-only strict Clippy, and CLI ARM64 release export passed. Required tests include ordinal parsing, real persisted CallSite index reconstruction, real directory/container graph equivalence, directory/packed fingerprint equality, full pack/CRC verification, and existing corruption behavior. `GRAPHITE_INDEX_FIXTURE` points to the already generated real core graph `/tmp/sootup-static-review/attempt121/core-fixture/execution/fixture-graph`; it was not rebuilt. All source/fixture-stat/frozen-baseline continuity checks passed. This suite does not include121/124's uncomposed tests and is not whole-workspace lint.
+
+Exact commands used the explicit Rust1.93.0 toolchain (`254b59607`, LLVM21.1.8), arm64, jobs2, cleaned task-local build environment and serially reused Cargo target; all original argv/output is retained:
+
+```text
+cargo fmt --all --check
+cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage -- --nocapture --test-threads=1
+cargo clippy --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage --all-targets --all-features -- -D warnings
+cargo build --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli
+```
+
+**Independent digest values:** a small external correctness helper linked the actual ARM64 `sha2` rlib whose compiled feature receipt contains asm/default/sha2-asm/std. Empty input, `abc`, and a deterministic1MiB+17-byte sequence matched fixed SHA-256 goldens, both as one buffer and63-byte incremental chunks. Expected values were independently established with Python hashlib. No repository test/source was added for the helper; no throughput or duration is used as performance evidence. Its compile/verification both exited0. No JVM or real server was launched.
+
+| Evidence | SHA256 |
+|---|---|
+| storage Cargo.toml | `709ca32961823591dd833b043b089b58468138d80b8fc8b28d678ba9d888823a` |
+| Cargo.lock | `2a54c68867dc75f79f44b41872321a1a309ba1add26509a95b8116d5fc0e9c93` |
+| validation plan | `0585ee75b84c16e8a7b192d09787b62f4a8e595c5152591e2e9ac241e200546c` |
+| raw validation result | `006f1ea2e269c6c74f1448c8cc7dc18e6f7482570404194aa11787bd9a2e5e70` |
+| exported CLI binary | `774c9ad8f9302642414b19b94739bfce31579cff1a1a451167364e45f943e426` |
+| golden compile/verification result | `786c8357bd456e7fa493b4e4547df368eca6edbc9a4e86c78df1217d71b1e8cd` |
+| dependency/feature review | `b6cbd97cba89963ab0e5fcb93b1b9cf55530a6c42a4d55e18b9723df6597a363` |
+
+Artifacts are under `/tmp/sootup-static-review/attempt127/`. **Decision:** keep isolated after correctness validation, pending representative matched loading and repeated-request evidence. Latency, CPU, RSS and query p50/p95 are not measured for127. No overall recovery, final resource-cap acceptance, integration or push is claimed. Required main-relative CI remains separate from these local correctness checks. All owned compiler/helper processes have terminated; no further workload is scheduled by this record.
+
+
+**Fixed loading follow-up (same127 source, no rebuild):** after root128 verification terminated and root released the local workload slot, the sealed diagnostic ran exactly12 fresh native processes: Kotlin A/B/C/C/B/A followed by Tika A/B/C/C/B/A. A is frozen preupgrade `6f498705009689551c92c6d1ca92f67252ef77c4` binary `2bf3cd50…` on its own old-built graph; **B is frozen db713 current** `db713c98e6754cade89e91613ae74e10aac91510` binary `d5f3a9c1…`, not121 or124; C is127 binary `774c9ad8…` on the same current116-built full graph asB. No121 ordinal representation or124CRC removal is composed. Complete identities/files are bound in `/tmp/sootup-static-review/attempt127/loading-three-arm/plan.sealed.json`. Kotlin uses the full19-file current graph and18-file old graph; Tika uses its matching full current/old artifacts. Inputs and feature coverage are preserved, with old/current node differences explicit below.
+
+The executor, strict readiness validator, lifecycle, monitor and summarizer were byte-identical to the reviewed121/124 protocol. All17 pure mocks passed before execution,80 source/receipt/binary pins and4 graph stat inventories were checked; no new graph-content scan or compatibility/query batch was added. Fixed ports19220–19231, `serve --load-mode MAPPED`, defaultC4, unchanged fastpath/Rayon environment restrictions, fixed10s observed-background preflight. Exact command: `python3 /tmp/sootup-static-review/attempt127/loading-three-arm/run.py --plan /tmp/sootup-static-review/attempt127/loading-three-arm/plan.sealed.json --execute-root-released`. Original handle46079 terminated0; all12 sessions passed metadata/identity/stat checks, all native processes received owned SIGTERM with wrapper−15, all24 native/time PIDs and12 groups were absent afterwards. There were0 Cypher requests, no replacement, rerun, cache reset or quiet-window selection. Owner audit recomputed raw wall, ps CPU identity/counters, time-l resources, means and both pairs. Root independent raw audit subsequently passed every complete metadata body, native PID identity, readiness timestamp, time-l CPU/RSS, mean and both pairs; its source is byte-identical to the121 auditor. Loading audit SHA256 `7c2198bc83091f4084f8f3c357ae81acfa91c5db0ae839ae26e29410012adf4d`; separate root correctness audit `/tmp/sootup-static-review/attempt127/root-correctness-audit.json` SHA256 `b1d507a30da333e851d961bb720f8502088bc8798c8ce22aa32111d17d1d7201`. Root also rechecked all24 native/time PIDs absent. These audits validate the recorded results and boundaries, not quiet-host or final acceptance claims.
+
+Ready wall ends at the fully consumed first valid `/api/graphs` body; HTTP strictly checks the existing schema/counts/path/mode/timestamp and does **not** expose a fingerprint value. Full SHA/fingerprint work still precedes readiness; digest equivalence comes from correctness tests/source, not a nonexistent HTTP field. CPU-at-ready is a nativePID cumulative ps snapshot after validation at0.01s resolution. Whole native user+system CPU and peakRSS run from launch through immediate shutdown, including startup/validation/snapshot gaps; RSS is not an isolated incremental heap measure. C4 completion and deferred first-use/query costs are not measured. Signed whole-minus-snapshot discrepancies remain; they cannot be subtracted to estimate observer CPU. MB below is decimal; all raw values, mean/median/min/max, overheads and failure histories remain in the summary/audit.
+
+| Session | Nodes | CallSites | Ready wall s | CPU at post-ready snapshot s | Whole CPU s | Whole RSS MB | Ready→reaped ms | Whole minus snapshot CPU s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 00-kotlin-old | 4657648 | 2173010 | 2.204635917 | 1.98 | 1.97 | 379.043840 | 7.841 | -0.01 |
+| 01-kotlin-current | 4744132 | 2251811 | 2.379201958 | 2.16 | 2.16 | 379.961344 | 14.688 | -0.00 |
+| 02-kotlin-candidate | 4744132 | 2251811 | 1.487210208 | 1.07 | 1.06 | 365.821952 | 14.976 | -0.01 |
+| 03-kotlin-candidate | 4744132 | 2251811 | 1.081738417 | 1.10 | 1.09 | 366.182400 | 19.615 | -0.01 |
+| 04-kotlin-current | 4744132 | 2251811 | 2.183055459 | 2.21 | 2.20 | 366.411776 | 15.667 | -0.01 |
+| 05-kotlin-old | 4657648 | 2173010 | 1.935985375 | 1.94 | 1.93 | 367.034368 | 14.266 | -0.01 |
+| 06-tika-old | 4673289 | 1758353 | 1.696206708 | 1.61 | 1.60 | 250.314752 | 7.577 | -0.01 |
+| 07-tika-current | 4620490 | 1705428 | 1.743098042 | 1.63 | 1.63 | 281.870336 | 7.850 | +0.00 |
+| 08-tika-candidate | 4620490 | 1705428 | 0.789146125 | 0.79 | 0.78 | 280.510464 | 7.828 | -0.01 |
+| 09-tika-candidate | 4620490 | 1705428 | 0.771314584 | 0.79 | 0.78 | 284.246016 | 8.080 | -0.01 |
+| 10-tika-current | 4620490 | 1705428 | 1.615245250 | 1.64 | 1.62 | 281.542656 | 7.821 | -0.02 |
+| 11-tika-old | 4673289 | 1758353 | 1.541247208 | 1.57 | 1.56 | 249.200640 | 8.043 | -0.01 |
+
+| Workload | Metric | Comparison | Reference mean | C mean | Absolute delta | Mean delta | Pair1 | Pair2 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin | loadToReadySeconds | C/B | 2.281129 | 1.284474 | -0.996654 | -43.6913% | -37.4912% | -50.4484% |
+| kotlin | loadToReadySeconds | C/A | 2.070311 | 1.284474 | -0.785836 | -37.9574% | -32.5417% | -44.1247% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/B | 2.185000 | 1.085000 | -1.100000 | -50.3432% | -50.4630% | -50.2262% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/A | 1.960000 | 1.085000 | -0.875000 | -44.6429% | -45.9596% | -43.2990% |
+| kotlin | wholeLifetimeCpuSeconds | C/B | 2.180000 | 1.075000 | -1.105000 | -50.6881% | -50.9259% | -50.4545% |
+| kotlin | wholeLifetimeCpuSeconds | C/A | 1.950000 | 1.075000 | -0.875000 | -44.8718% | -46.1929% | -43.5233% |
+| kotlin | wholeLifetimePeakRssMB | C/B | 373.186560 | 366.002176 | -7.184384 | -1.9251% | -3.7213% | -0.0626% |
+| kotlin | wholeLifetimePeakRssMB | C/A | 373.039104 | 366.002176 | -7.036928 | -1.8864% | -3.4882% | -0.2321% |
+| tika | loadToReadySeconds | C/B | 1.679172 | 0.780230 | -0.898941 | -53.5348% | -54.7274% | -52.2478% |
+| tika | loadToReadySeconds | C/A | 1.618727 | 0.780230 | -0.838497 | -51.7998% | -53.4758% | -49.9552% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/B | 1.635000 | 0.790000 | -0.845000 | -51.6820% | -51.5337% | -51.8293% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/A | 1.590000 | 0.790000 | -0.800000 | -50.3145% | -50.9317% | -49.6815% |
+| tika | wholeLifetimeCpuSeconds | C/B | 1.625000 | 0.780000 | -0.845000 | -52.0000% | -52.1472% | -51.8519% |
+| tika | wholeLifetimeCpuSeconds | C/A | 1.580000 | 0.780000 | -0.800000 | -50.6329% | -51.2500% | -50.0000% |
+| tika | wholeLifetimePeakRssMB | C/B | 281.706496 | 282.378240 | +0.671744 | +0.2385% | -0.4824% | +0.9602% |
+| tika | wholeLifetimePeakRssMB | C/A | 249.757696 | 282.378240 | +32.620544 | +13.0609% | +12.0631% | +14.0631% |
+
+
+B/A reference changes (same fixed samples):
+
+| Workload | Metric | B/A mean | Pair1 | Pair2 |
+|---|---|---:|---:|---:|
+| kotlin | loadToReadySeconds | +10.1829% | +7.9181% | +12.7620% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | +11.4796% | +9.0909% | +13.9175% |
+| kotlin | wholeLifetimeCpuSeconds | +11.7949% | +9.6447% | +13.9896% |
+| kotlin | wholeLifetimePeakRssBytes | +0.0395% | +0.2421% | -0.1696% |
+| tika | loadToReadySeconds | +3.7341% | +2.7645% | +4.8012% |
+| tika | nativeCpuAtReadySnapshotSeconds | +2.8302% | +1.2422% | +4.4586% |
+| tika | wholeLifetimeCpuSeconds | +2.8481% | +1.8750% | +3.8462% |
+| tika | wholeLifetimePeakRssBytes | +12.7919% | +12.6064% | +12.9783% |
+
+**Background/observer limitations:** all32 snapshots and events are retained:67 positive-percent-CPU observations,52 external CPU-time increments,8 newly observed external processes,8 disappearances, and1 CPU-counter regression (PID61657 during a native session);9 observations were marked incomplete. Event phases were48 preflight,85 native-session and3 offline-summary. These are observed-background diagnostics, not an exclusive/quiet run; the counter regression weakens observer coverage, and external lifetimes/CPU activity cannot be assigned a causal latency share. No event or affected sample was discarded. The result's completed protocol status is not a guarantee of uncontaminated performance or final caps.
+
+**Decision: KEEP the positive127 candidate for cumulative work.** Both Kotlin C/B wall pairs improve (−37.491%/−50.448%) and both wholeCPU pairs improve (−50.926%/−50.455%); Tika likewise improves wall (−54.727%/−52.248%) and CPU (−52.147%/−51.852%). Mean loading/CPU improvements over old are substantial in these diagnostics. RSS is mixed: Kotlin C/B−1.925% and C/A−1.886%; Tika C/B+0.238% with opposite pair signs, and **Tika C/A+13.061% (+32.620544MB), both pairs+12.063%/+14.063%, still exceed the user's5% allowance**. Query p50/p95 and construction were not measured, and no final recovery/acceptance is claimed. Two samples per arm plus observer limitations do not establish production confidence. This does not dispose of the positive but separately unresolved121 memory/query tradeoff.
+
+Sealed plan `48955fa3ffd5a5292d3be4aa713d70b5baf78ba85ae0091ce64a27c4f06b665b`; raw result `4d0d29fd04ffaba7fef3a51d74a65036da0413978a89cf86e5f7c7406a94edc3`; summary `fd862670ef39df1e0b94d3eb07e57f229aa5f6569f2d830572603854e1672b0d`; owner audit `5e40a8b6ff0b569ce88bd96ac6c4cae901fd10b1610bc1b1f9fbe3210c2957c2`; owned cleanup `97d387ba816d972394af9499083c5149eaf27611ffe3ba9d730eb7fb5cf0788c`. The pre-result log bytes pinned by execution are archived under `/tmp/sootup-static-review/attempt127/before-loading-results-log/`; this subsequent documentation append is not runtime source drift. Cargo manifests/lock and exported binary remain unchanged.
+
+**Platform follow-up pending:** the measured revision enables asm on all aarch64. `sha2-asm`0.6.4's build script distinguishes Apple but otherwise selects GNU-style AArch64 assembly and `-march=armv8-a+crypto`; it has no Windows ARM64 path. That creates a source-build portability risk, not an observed Windows failure. Published ARM targets currently cover Linux musl/macOS, and the Windows check is host-default rather than explicit ARM64. Restricting the feature to `all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos"))` is recommended before integration, preserving the original backend on other ARM64 targets. The comment should say platform CPU detection; Apple SHA2 is a platform-guaranteed true value. No cfg/source change or rebuild was made during/after this frozen series; a later scoped revision must verify target feature selection separately without relabelling these macOS samples.
+
+
+**Final platform restriction and revalidation:** after the loading series was complete, root authorized narrowing the target dependency to `all(target_arch = "aarch64", any(target_os = "linux", target_os = "macos"))`. The comment now describes platform CPU detection. Other architectures/operating systems retain their original SHA backend, avoiding the unverified Windows ARM64 assembly path. Cargo.lock is byte-identical to the measured revision. Original source, log and patch are preserved in `/tmp/sootup-static-review/attempt127/before-platform-restriction/`; all original binaries and loading samples remain untouched.
+
+Actual locked Cargo feature trees select asm for macOS ARM64 and Linux musl ARM64, and no asm for Windows ARM64, macOS x86_64 or Windows x86_64. This is target dependency resolution, not cross-compilation certification. The macOS tree is identical to the measured tree after excluding its initial Cargo lock-update notice. Apple SHA2 detection remains a platform guarantee; the library's Linux capability detection/software fallback is unchanged.
+
+With the same Rust1.93.0 ARM64 toolchain, jobs2, real fixture and exact four commands above, original handle20254 terminated0: fmt, all25 storage tests (0 failures/ignored/filtered), strict storage Clippy and CLI release export passed. This reused the serial Cargo target and does not claim a clean rebuild. The newly exported CLI is **byte-for-byte identical** to the measured CLI, SHA256 `774c9ad8f9302642414b19b94739bfce31579cff1a1a451167364e45f943e426`; no performance samples were rerun or relabelled. Tests/goldens and source preserve complete SHA/CRC work and readiness boundaries. No query or unsupported-platform performance claim follows from this result.
+
+Final storage manifest SHA256 `54975a7f5269a1fddaf9ac211bf95fed02c7e6371b51a0e0b9ad86d4bf4045f8`; unchanged lock SHA256 `2a54c68867dc75f79f44b41872321a1a309ba1add26509a95b8116d5fc0e9c93`. New evidence is isolated under `/tmp/sootup-static-review/attempt127/platform-revision/`: plan `e33857a28e06d67adbf4d7bfffb57c02c10a20430311629f7c8187665b524eef`, feature receipt `dbce658e2613b6f4e168f68f72d493c0e96a01a6fe1ac5a607b104e564088c1c`, validation result `f2be6f1fe3fb4c442703795f29f31e9b07782b424940547fc71c677f4e8ba606`. All checks retained their original standards. The positive candidate remains isolated pending root integration; the Tika RSS and unmeasured query limitations above remain unchanged.
+
+Root integration: final manifest/lock hashes match the validated candidate exactly; all other native/backend sources and the workspace manifest match its c454e195 base. Root independently rehashed the final four validation logs and five feature-tree receipts and compared both exported binaries byte-for-byte. Retain this measured ARM64 loading improvement while continuing the separate Tika RSS and query p50/p95 recovery work.
