@@ -31,14 +31,16 @@ val asmVersion = libs.versions.asm.get()
 // outside the test runtime classpath so the only way the test can observe them is through the
 // frontend under test. Their expected semantics live in a separate, hand-authored manifest.
 val frontendCorrectnessJavaFixtures = sourceSets.create("frontendCorrectnessJavaFixtures")
-val frontendCorrectnessAndroidFixtures = sourceSets.create("frontendCorrectnessAndroidFixtures")
+val frontendCorrectnessAndroidFixtures = sourceSets.create("frontendCorrectnessAndroidFixtures") {
+    java.setSrcDirs(listOf("src/fixtures/android/java"))
+}
 val frontendCorrectnessKotlinFixtures = sourceSets.create("frontendCorrectnessKotlinFixtures") {
     java.setSrcDirs(emptyList<String>())
     resources.setSrcDirs(emptyList<String>())
 }
 extensions.getByType(KotlinJvmProjectExtension::class.java).sourceSets
     .getByName(frontendCorrectnessKotlinFixtures.name)
-    .kotlin.setSrcDirs(listOf("src/frontendCorrectnessKotlinFixtures/kotlin"))
+    .kotlin.setSrcDirs(listOf("src/fixtures/kotlin"))
 
 dependencies {
     api(project(":core"))

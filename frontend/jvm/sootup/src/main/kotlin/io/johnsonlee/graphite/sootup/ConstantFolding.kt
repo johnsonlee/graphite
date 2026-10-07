@@ -122,6 +122,8 @@ private const val CALLER_SIGNATURE = "caller_signature"
  * `if (gate) work(); tail();` loses `tail()` and fails SootUp's own validation (see
  * `ConditionalBranchFolderTest`).
  */
+// Keep failed-run cleanup beside the folding state whose lifecycle it owns.
+@Suppress("TooManyFunctions")
 internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** What the fold pass recorded for one body, consumed by the accounting pass at the chain's end. */
@@ -131,7 +133,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private val renderedDeclaring = ConcurrentHashMap<MethodSignature, String>()
 
     /** What one resolution of one body found for the rules, keyed by rule index; replaces the previous resolution's. */
-    private class BodyRun(size: Int) {
+    private class BodyRun(size: Int, val reportSharedSelection: Boolean = true) {
         val calls = IntArray(size)
         val keys = List(size) { ArrayList<CallSiteKey>() }
         val unsupported = List(size) { ArrayList<UnsupportedFoldSite>() }
@@ -153,6 +155,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** Per rule, per calling method, the keys of the calls its latest resolution folded. */
     private val folded = List(folds.size) { Collections.synchronizedMap(LinkedHashMap<String, List<CallSiteKey>>()) }
+
+    /** Selected calls still present in a retained body whose interception failed. */
+    private val refused = List(folds.size) { Collections.synchronizedMap(LinkedHashMap<String, List<CallSiteKey>>()) }
 
     /** Per rule, per calling method, the calls its latest resolution matched but could not fold. */
     private val unsupported = List(folds.size) { Collections.synchronizedMap(LinkedHashMap<String, List<UnsupportedFoldSite>>()) }
@@ -193,6 +198,28 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
      */
     fun ordinalsBeforeFolding(signature: MethodSignature): Map<Stmt, Int>? = preFoldOrdinals[signature]
 
+    /** A failed APK interception keeps the original body, so none of this run's folds survive. */
+    fun discard(builder: Body.BodyBuilder) {
+        marked.remove(builder)
+        val signature = builder.methodSignature
+        val identity = signature.toString()
+        preFoldOrdinals.remove(signature)
+        methods.remove(identity)
+        for (index in folds.indices) {
+            sites[index].remove(identity)
+            folded[index].remove(identity)
+            refused[index].remove(identity)
+            unsupported[index].remove(identity)
+            misses[index].remove(identity)
+        }
+    }
+
+    /** Clear abandoned transformations, then explain the requested folds in the body actually retained. */
+    fun discard(builder: Body.BodyBuilder, retained: Body.BodyBuilder, view: View, reason: String) {
+        discard(builder)
+        Fold().refuse(retained, view, reason)
+    }
+
     fun report(): FoldReport = FoldReport(
         folds.indices.map { index ->
             FoldOutcome(
@@ -210,7 +237,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         val fold = folds[index]
         val hints = LinkedHashMap<String, Int>()
         if (fold is FoldSites) {
-            val seen = synchronized(folded[index]) { folded[index].values.flatten().toSet() }
+            val seen = synchronized(folded[index]) { folded[index].values.flatten().toSet() } +
+                synchronized(refused[index]) { refused[index].values.flatten().toSet() }
             fold.selected.orEmpty().filter { it !in seen }.take(MAX_HINTS).forEach { key ->
                 hints["selected call site $key is not in this build"] = 0
             }
@@ -227,6 +255,48 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** Replace every matching call expression by its constant and mark the body for the clean-up passes. */
     private inner class Fold : BodyInterceptor {
+        // Reporting must not repeat a failing eligibility lookup and lose the recovered body.
+        @Suppress("TooGenericExceptionCaught")
+        fun refuse(builder: Body.BodyBuilder, view: View, reason: String) {
+            val run = BodyRun(folds.size, reportSharedSelection = false)
+            val identity = builder.methodSignature.toString()
+            val caller = render(builder.methodSignature)
+            val ordinals = callOrdinals(builder.stmts) { signature ->
+                renderedDeclaring.getOrPut(signature) { render(declaringSignature(view, signature)) }
+            }
+            for (stmt in builder.stmts) {
+                val invoke = invokeExprOf(stmt) ?: continue
+                val callee = declaringSignature(view, invoke.methodSignature)
+                val key = CallSiteKey(
+                    caller, descriptorOf(builder.methodSignature), render(callee), descriptorOf(callee), ordinals.getValue(stmt)
+                )
+                folds.forEachIndexed { index, fold ->
+                    if (fold is FoldSites && key in fold.selected.orEmpty()) run.keys[index].add(key)
+                }
+                val matched = try {
+                    select(run, builder, invoke, key, view, callee)
+                } catch (failure: Exception) {
+                    val properties = callSiteProperties(callee, builder.methodSignature, key)
+                    folds.forEachIndexed { index, fold ->
+                        val relevant = if (fold is FoldSites) key in fold.selected.orEmpty()
+                        else (fold as ConstantFold).mismatch(properties) == null
+                        if (relevant) run.unsupported[index].add(UnsupportedFoldSite(
+                            caller, "body interception failed; fold eligibility could not be checked: $reason; ${failure.message}"
+                        ))
+                    }
+                    null
+                }
+                matched?.let { index ->
+                    run.unsupported[index].add(UnsupportedFoldSite(caller, "body interception failed; call retained: $reason"))
+                }
+            }
+            for (index in folds.indices) {
+                if (run.keys[index].isNotEmpty()) refused[index][identity] = run.keys[index]
+                if (run.unsupported[index].isNotEmpty()) unsupported[index][identity] = run.unsupported[index]
+                if (run.misses[index].isNotEmpty()) misses[index][identity] = run.misses[index]
+            }
+        }
+
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             val run = BodyRun(folds.size)
             val foldedLocals = HashSet<Local>()
@@ -256,6 +326,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 }
             }
             for (index in folds.indices) {
+                refused[index].remove(identity)
                 if (run.keys[index].isEmpty()) {
                     folded[index].remove(identity)
                 } else {
@@ -382,7 +453,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             view: View
         ): Outcome {
             val callee = properties.getValue(CALLEE_SIGNATURE)
-            if (fold.arguments.isEmpty() && fold.receiverArguments.isEmpty()) {
+            if (run.reportSharedSelection && fold.arguments.isEmpty() && fold.receiverArguments.isEmpty()) {
                 sharedThrough(builder, invoke, callee)?.let { run.miss(index, it) }
             }
             for (position in fold.arguments.keys.sorted()) {
@@ -863,6 +934,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** Runs [delegate] only on a body the fold pass marked. */
     private inner class Gated(private val delegate: BodyInterceptor) : BodyInterceptor {
+        override fun toString(): String = "Gated(${delegate.javaClass.simpleName})"
+
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             if (builder in marked) delegate.interceptBody(builder, view)
         }
