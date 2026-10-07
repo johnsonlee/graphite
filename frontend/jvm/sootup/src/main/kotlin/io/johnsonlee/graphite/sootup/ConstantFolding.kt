@@ -72,7 +72,6 @@ import sootup.interceptors.NopEliminator
 
 private const val STRING_CLASS = "java.lang.String"
 private const val OBJECT_CLASS = "java.lang.Object"
-private const val BOOLEAN_BOX = "java.lang.Boolean"
 private const val VALUE_OF = "valueOf"
 private const val CONSTRUCTOR = "<init>"
 private const val COMPUTED_AT_RUN_TIME = "computed at run time"
@@ -84,17 +83,6 @@ private const val LONG_TYPE = "long"
 private const val FLOAT_TYPE = "float"
 private const val DOUBLE_TYPE = "double"
 
-/** Each primitive type's box and the method that unboxes it, as `javac` and `kotlinc` emit them. */
-private val BOXES: Map<String, Pair<String, String>> = mapOf(
-    BOOLEAN_TYPE to (BOOLEAN_BOX to "booleanValue"),
-    "byte" to ("java.lang.Byte" to "byteValue"),
-    "short" to ("java.lang.Short" to "shortValue"),
-    "char" to ("java.lang.Character" to "charValue"),
-    INT_TYPE to ("java.lang.Integer" to "intValue"),
-    LONG_TYPE to ("java.lang.Long" to "longValue"),
-    FLOAT_TYPE to ("java.lang.Float" to "floatValue"),
-    DOUBLE_TYPE to ("java.lang.Double" to "doubleValue")
-)
 private const val MAX_HINTS = 8
 private const val CALLEE_CLASS = "callee_class"
 private const val CALLEE_NAME = "callee_name"
@@ -137,7 +125,7 @@ private const val CALLER_SIGNATURE = "caller_signature"
 internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** What the fold pass recorded for one body, consumed by the accounting pass at the chain's end. */
-    private class Marked(val statementsBefore: Int, val calls: IntArray)
+    private class Marked(val statementsBefore: Int, val calls: IntArray, val dependencies: FoldDependencies)
 
     /** The rendered declaring signature of each callee, shared by every body the pass numbers. */
     private val renderedDeclaring = ConcurrentHashMap<MethodSignature, String>()
@@ -180,6 +168,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     /** Methods that share a rendered signature and descriptor with another of their class, by signature. */
     private val collidingOverloads = ConcurrentHashMap<MethodSignature, List<String>>()
     private val enumConstants = HashMap<Pair<ClassType, String>, Boolean>()
+    private val enumInitialization = EnumInitializationSafety()
 
     /**
      * [defaults], the chain the input location runs without folding, followed by the fold pass
@@ -240,6 +229,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private inner class Fold : BodyInterceptor {
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             val run = BodyRun(folds.size)
+            val foldedLocals = HashSet<Local>()
             val statementsBefore = builder.controlFlowGraph.nodes.size
             val caller = render(builder.methodSignature)
             val callerDescriptor = descriptorOf(builder.methodSignature)
@@ -260,6 +250,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 val index = select(run, builder, invoke, key, view, callee)
                 val resultType = index?.let { (folds[it] as? FoldSites)?.resultTypes?.get(key) }
                 if (index != null && foldCall(run, builder, stmt, invoke, index, view, resultType)) {
+                    (stmt.def.orElse(null) as? Local)?.let(foldedLocals::add)
                     run.calls[index]++
                     run.keys[index].add(key)
                 }
@@ -287,7 +278,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 // A folded call throws nothing: a handler only it could reach has lost its last
                 // predecessor and goes now, before SootUp validates the graph.
                 removeUnreachable(builder.controlFlowGraph)
-                marked[builder] = Marked(statementsBefore, run.calls)
+                marked[builder] = Marked(
+                    statementsBefore, run.calls, FoldDependencies(builder.controlFlowGraph.nodes, foldedLocals)
+                )
                 preFoldOrdinals[builder.methodSignature] = IdentityHashMap(ordinals)
             }
         }
@@ -566,10 +559,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 run.unsupported[index].add(UnsupportedFoldSite(render(builder.methodSignature), reason))
                 return false
             }
-            builder.controlFlowGraph.replaceNode(stmt, replacement)
             // A constant or a nop throws nothing: the handler the call could reach is reachable
             // only through the statements that can still throw.
-            builder.controlFlowGraph.clearExceptionalEdges(replacement)
+            replaceWithNonThrowingStmt(builder.controlFlowGraph, stmt, replacement)
             return true
         }
     }
@@ -587,8 +579,10 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
      * fold: a surviving invoke that reads a folded local is a new statement object, and the key
      * that names it must still name it.
      */
-    private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt) {
-        builder.controlFlowGraph.replaceNode(old, new)
+    private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt, throwsNothing: Boolean = false) {
+        if (throwsNothing) replaceWithNonThrowingStmt(builder.controlFlowGraph, old, new)
+        else builder.controlFlowGraph.replaceNode(old, new)
+        marked[builder]?.dependencies?.replace(old, new, builder.controlFlowGraph.nodes)
         preFoldOrdinals[builder.methodSignature]?.let { ordinals -> ordinals.remove(old)?.let { ordinals[new] = it } }
     }
 
@@ -596,13 +590,15 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             val graph = builder.controlFlowGraph
             do {
-                val unboxed = foldUnboxing(builder)
+                var callsFolded = foldUnboxing(builder)
                 val propagated = propagateConstants(builder) or foldComparisons(builder)
-                val folded = foldConstantBranches(graph, enumReads(builder, view))
+                val enums = enumReads(builder, view)
+                callsFolded = foldConstantEquals(builder, enums) || callsFolded
+                val folded = foldConstantBranches(graph, enums)
                 // Pruned per round: a definition on the side just removed must not keep a local
                 // from being read as its one remaining constant in the next round.
-                if (folded || unboxed) removeUnreachable(graph)
-            } while (unboxed || propagated || folded)
+                if (folded || callsFolded) removeUnreachable(graph)
+            } while (callsFolded || propagated || folded)
         }
 
         /** The assignment that defines each local with exactly one definition, when that definition is an assignment. */
@@ -636,8 +632,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             }
             unboxed.forEach { (assign, constant) ->
                 val replacement = assign.withRValue(constant)
-                replace(builder, assign, replacement)
-                graph.clearExceptionalEdges(replacement)
+                replace(builder, assign, replacement, throwsNothing = true)
             }
             return unboxed.isNotEmpty()
         }
@@ -661,10 +656,15 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
          * neither is `null`.
          */
         private fun enumReads(builder: Body.BodyBuilder, view: View): Map<Local, JStaticFieldRef> {
+            if (builder.methodSignature.name == "<clinit>") return emptyMap()
             val definitions = singleDefinitions(builder.controlFlowGraph.nodes.toList())
             val reads = HashMap<Local, JStaticFieldRef>()
             definitions.forEach { (local, assign) ->
-                (assign.rightOp as? JStaticFieldRef)?.takeIf { isEnumConstant(view, it) }?.let { reads[local] = it }
+                val field = assign.rightOp as? JStaticFieldRef ?: return@forEach
+                val owner = field.fieldSignature.declClassType
+                if (owner != builder.methodSignature.declClassType && isEnumConstant(view, field) &&
+                    enumInitialization.isNonReentrant(view, owner)
+                ) reads[local] = field
             }
             // An erased call folded to an enum constant reaches its test through a cast:
             // `$r = E.A; $e = (E) $r; if $e == E.B`.
@@ -675,6 +675,25 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 casts.forEach { (local, assign) -> reads[local] = reads.getValue((assign.rightOp as JCastExpr).op as Local) }
             } while (casts.isNotEmpty())
             return reads
+        }
+
+        /** Evaluate known library equality only when an operand originates in a configured replacement. */
+        private fun foldConstantEquals(builder: Body.BodyBuilder, enums: Map<Local, JStaticFieldRef>): Boolean {
+            val graph = builder.controlFlowGraph
+            val dependencies = marked.getValue(builder).dependencies
+            val equality = ConstantEquality(singleDefinitions(graph.nodes.toList()), enums)
+            val folded = graph.nodes.toList().mapNotNull { stmt ->
+                if (stmt !in dependencies) return@mapNotNull null
+                val invoke = invokeExprOf(stmt) ?: return@mapNotNull null
+                val equal = equality.evaluate(invoke) ?: return@mapNotNull null
+                val replacement = if (stmt is JInvokeStmt) JNopStmt(stmt.positionInfo)
+                else (stmt as JAssignStmt).withRValue(IntConstant.getInstance(if (equal) 1 else 0))
+                stmt to replacement
+            }
+            folded.forEach { (stmt, replacement) ->
+                replace(builder, stmt, replacement, throwsNothing = true)
+            }
+            return folded.isNotEmpty()
         }
 
         /**
@@ -983,6 +1002,11 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun constantFor(type: Type, pattern: ConstantPattern, view: View): Value? {
         if (pattern.label == ConstantPattern.NULL) return nullFor(type)
         if (pattern.label == ConstantPattern.ENUM) return enumConstantFor(type, pattern, view)
+        val primitive = BOXES.entries.firstOrNull { it.value.first == type.toString() }?.key
+        if (primitive != null) {
+            return constantFor(view.identifierFactory.getType(primitive), pattern, view)
+                ?.let { boxed(primitive, it as Immediate, view) }
+        }
         val value = pattern.scalar
         if (type is VoidType || value == null) return null
         return when (pattern.label) {
@@ -1105,7 +1129,8 @@ private fun intLikeConstant(type: Type, value: Long): Value? =
  * [value] at `float` precision, or `null` when a `float` cannot carry it: a finite double
  * past `Float.MAX_VALUE` (`1e308`) narrows to an infinity, a value that was not written.
  */
-private fun floatConstant(value: Double): Value? = value.toFloat().takeIf(Float::isFinite)?.let(FloatConstant::getInstance)
+private fun floatConstant(value: Double): Value? =
+    value.toFloat().takeIf { it.isFinite() || !value.isFinite() }?.let(FloatConstant::getInstance)
 
 private fun nullFor(type: Type): Value? =
     if (type is ClassType || type.toString().endsWith("[]")) NullConstant.getInstance() else null
@@ -1226,26 +1251,6 @@ internal fun callOrdinals(statements: Iterable<Stmt>, declaring: (MethodSignatur
 
 /** The graph's rendering of a method signature (`pkg.Cls.name(p1,p2)`), as [callOrdinals] keys it. */
 internal fun renderSignature(signature: MethodSignature): String = render(signature)
-
-/** The box and the constant behind `Boolean.TRUE` / `Boolean.FALSE`, or `null`. */
-private fun booleanBoxOf(field: JStaticFieldRef): Pair<String, Constant>? {
-    val signature = field.fieldSignature
-    return when {
-        signature.declClassType.fullyQualifiedName != BOOLEAN_BOX -> null
-        signature.name == "TRUE" -> BOOLEAN_BOX to IntConstant.getInstance(1)
-        signature.name == "FALSE" -> BOOLEAN_BOX to IntConstant.getInstance(0)
-        else -> null
-    }
-}
-
-/** The box and the constant behind `Integer.valueOf(3)` and its kin, or `null`. */
-private fun valueOfBoxOf(invoke: JStaticInvokeExpr): Pair<String, Constant>? {
-    val signature = invoke.methodSignature
-    val box = signature.declClassType.fullyQualifiedName
-    val primitive = signature.parameterTypes.singleOrNull()?.toString()
-    val constant = invoke.args.singleOrNull() as? Constant
-    return if (signature.name == VALUE_OF && constant != null && BOXES[primitive]?.first == box) box to constant else null
-}
 
 /** `pkg.Cls.name(p1,p2)`, the signature as the graph's `callee_signature` and `caller_signature` spell it. */
 private fun render(signature: MethodSignature): String {
