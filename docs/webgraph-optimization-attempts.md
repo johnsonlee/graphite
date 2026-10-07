@@ -9753,3 +9753,55 @@ Evidence directory: `/tmp/sootup-static-review/kotlin-memory-category-capability
 |owner terminal and cleanup|`ea0b2ea3c2abfbacc91ddf75b2afed8233cb539879c840d937031e6e93095012`|
 |independent raw-output semantic audit|`8e1f632d4416e0854a1f5a74844dbeb7a921e7aa02a1b867e2d1454bef53053d`|
 |matched-release independent API report|`70fcd620a2907aba5d64dbfc9276c1c7bc018367a4694f4523c803a5c6e27153`|
+
+### 2026-10-08 — Retained135 cumulative measurement: display-property allocation reduction
+
+Candidate135 is composed on exact8b6694f4 (cumulative136+123); intervening root commits change documentation only. Frozen B299 export SHA `2c2b92a54393b821ba45835a330659c7bfb20ce7a5f5f5fb1194a654cc1c4e64`; C303 SHA `0d639648ae1e53dbf933931e4f8b2436739fa88298db15dd73d1e17c6b8e102e`. The preceding record retains the initial test-only Clippy failure and corrective full303/63-required-case/fmt/strict-lint/export pass. All115 native source/manifest/test files in the integrated tree match that validated candidate exactly; no production edits were made after validation.
+
+Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-cumulative-135/ordinal-query-diagnostic/run.py --plan /tmp/sootup-static-review/native-cumulative-135/ordinal-query-diagnostic/measurement.plan.sealed.json --execute-root-released`. Same M3 Max/macOS host, Rust1.93 ARM64 release, default native runtime settings, full persisted current116 Kotlin/Tika graphs and frozen121 full typed oracles. Fixed Kotlin c1 BCCB, Kotlin c4 BCCB, Tika c1 BCCB, Tika c4 BCCB; first1/warm2/measured30, five rotated cases,16 fresh servers,2640 full responses/2400 measured. No retry, replacement, new oracle, feature reduction or changed budget. Request timing spans send through full response consumption; node materialization is included.
+
+Original14940 exited0 with all16 sessions PASS; original summary25102 exited0. Independent audit (original tool chunk `dd59d5`, exit0) verified all2640 complete typed bodies,2400 samples, ranks15/29, first/warm/max/means, both fixed pairs, all20 case groups, resource counters and input stat continuity. All64 lifecycle/time/native/client PIDs and groups were freshly absent. The results below are parent-relative attribution, not preupgrade recovery or a production-tail confidence interval. Means are arithmetic means of two process quantiles, never pooled request percentiles.
+
+|Workload / concurrency|Case|p50 mean Δ%, forward/reverse pairs|p95 mean Δ%, forward/reverse pairs|
+|---|---|---:|---:|
+|kotlin-current / 1|raw-negative-ordinal-count|+1.181 (+0.089/+2.267)|+1.568 (-0.024/+3.161)|
+|kotlin-current / 1|bounded-ordinal-projection|+1.748 (+2.199/+1.307)|+0.465 (-1.046/+1.962)|
+|kotlin-current / 1|ordered-ordinal-top32|+1.180 (+1.148/+1.211)|+1.796 (+1.602/+1.990)|
+|kotlin-current / 1|bounded-callsite-materialization|-0.270 (-0.690/+0.136)|-5.818 (-5.797/-5.838)|
+|kotlin-current / 1|legacy-line-projection-control|-0.410 (-0.546/-0.275)|+0.696 (+3.868/-2.369)|
+|kotlin-current / 4|raw-negative-ordinal-count|+0.207 (-0.004/+0.419)|+1.919 (+2.120/+1.716)|
+|kotlin-current / 4|bounded-ordinal-projection|+0.577 (-4.250/+6.321)|+5.067 (+7.520/+2.553)|
+|kotlin-current / 4|ordered-ordinal-top32|+0.160 (+0.564/-0.244)|+0.351 (+0.869/-0.169)|
+|kotlin-current / 4|bounded-callsite-materialization|-2.078 (-2.258/-1.888)|+3.739 (+0.672/+6.778)|
+|kotlin-current / 4|legacy-line-projection-control|+27.457 (-25.226/+88.979)|+7.900 (+13.278/+2.576)|
+|tika-current / 1|raw-negative-ordinal-count|-0.391 (+0.032/-0.812)|+0.026 (+1.175/-1.102)|
+|tika-current / 1|bounded-ordinal-projection|+0.396 (-0.234/+1.031)|-3.695 (-7.446/+0.217)|
+|tika-current / 1|ordered-ordinal-top32|+0.709 (+0.495/+0.925)|+0.432 (+0.764/+0.104)|
+|tika-current / 1|bounded-callsite-materialization|-9.211 (-11.377/-6.894)|+3.508 (-2.195/+9.258)|
+|tika-current / 1|legacy-line-projection-control|+1.486 (-0.110/+3.157)|+0.565 (-0.040/+1.157)|
+|tika-current / 4|raw-negative-ordinal-count|+0.346 (+0.677/+0.015)|+0.595 (+1.097/+0.090)|
+|tika-current / 4|bounded-ordinal-projection|+5.496 (+5.559/+5.436)|+0.268 (+0.425/+0.112)|
+|tika-current / 4|ordered-ordinal-top32|+0.254 (+0.007/+0.502)|+0.050 (+0.248/-0.150)|
+|tika-current / 4|bounded-callsite-materialization|-9.102 (+0.407/-17.630)|-1.438 (-6.627/+4.201)|
+|tika-current / 4|legacy-line-projection-control|+3.705 (-12.632/+15.611)|+1.650 (-4.408/+8.131)|
+
+|Workload / concurrency|Whole wall Δ%, pairs|Whole CPU Δ%, pairs|Peak RSS Δ%, pairs|Query-window CPU Δ%, pairs|
+|---|---:|---:|---:|---:|
+|kotlin-current / 1|+1.530 (+1.698/+1.362)|+1.318 (+1.331/+1.305)|-0.618 (-0.472/-0.764)|+1.236 (+1.121/+1.351)|
+|kotlin-current / 4|+0.023 (+0.461/-0.415)|+0.093 (+0.515/-0.329)|-0.397 (-2.334/+1.646)|+0.116 (+0.532/-0.301)|
+|tika-current / 1|+0.439 (-0.085/+0.967)|+0.609 (+0.339/+0.879)|-0.762 (+1.475/-2.946)|+0.590 (+0.446/+0.734)|
+|tika-current / 4|+0.262 (+0.062/+0.463)|+0.240 (+0.085/+0.396)|-0.425 (+1.282/-2.169)|+0.254 (+0.063/+0.446)|
+
+Only bounded-callsite-materialization directly reaches the changed display/result-property path. Its Kotlin c1 p95 changes0.689375→0.649271ms (−5.818%, both pairs), Kotlin c4 p50 changes0.749959→0.734375ms (−2.078%, both pairs), and Tika c1 p50 changes0.602792→0.547271ms (−9.211%, both pairs). Adverse direct-path evidence remains: Kotlin c4 p95 +3.739% in both pairs; Tika c1 p95 +3.508% mean with mixed pairs. Tika c4 p50 −9.102% and p95 −1.438% means have mixed pairs. The scalar controls also regress in several groups, including Tika c4 projection p50 +5.496% and Kotlin c4 line p95 +7.900%, both pairs. No causal mechanism is assigned to the control regressions from this small fixed series.
+
+Whole-lifetime CPU/RSS includes loading, first/warm requests, default lazy/background work, recording gaps and shutdown. Query-window CPU includes gaps and background work and is not per-case. All four whole CPU means are +0.093% to +1.318%; RSS means are −0.397% to −0.762%, with adverse individual pairs retained. These parent-relative observations do not certify the independent +5% limits against preupgrade.
+
+Decision: retain and integrate135 as a verified positive increment, preserving the mixed latency results for further cumulative work. Do not discard the benefit because overall targets remain unmet, and do not claim every p50/p95 improved. The full34 uninstrumented preupgrade latency failures and construction RSS failures remain open; this five-case parent comparison does not replace them. Current cumulative CI must run separately.
+
+|Evidence|SHA256|
+|---|---|
+|sealed plan|`2f4856dae6c3c123a01990b21e7f50d672086ff20499826f436b06015b6c8e1c`|
+|measurement result|`1e55cb6aae8732dd8d51343606064a0c4efa4e18da4d4f1bb0fd013fba0ee56e`|
+|owner terminal/cleanup|`4fa75d0dc4aa106bd54ff58b6767e414d6657cee36f81c295d2cab29f65efec8`|
+|complete summary|`c1cba535df3ddd54ef1f37eb2aa2fdee58634485237d1a3623aec0463bce688e`|
+|independent audit|`41ba9b7444b0fcccfbf33f7076936cc6f01f07e748af7ac8a3ca066a0a5fe365`|

@@ -229,6 +229,23 @@ pub fn annotation_values_to_string(g: &Graph, values: &[(StrId, AnyValue)]) -> S
 
 /// `getAllProperties(node)` — fixed map including `id`, excluding `type`.
 pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
+    node_properties_impl(g, node, true)
+}
+
+fn check_method_detail_strings(g: &Graph, method: &MethodDesc) {
+    // Formatting the discarded signature/descriptor used to read these IDs.
+    // Preserve their bounds failures, in the same order, without building strings.
+    for &parameter in &method.parameter_types {
+        let _ = g.str(parameter);
+    }
+    let _ = g.str(method.return_type);
+}
+
+fn node_properties_impl(
+    g: &Graph,
+    node: &Node,
+    include_call_site_method_details: bool,
+) -> IndexMap<String, Value> {
     let mut m = IndexMap::new();
     m.insert("id".to_string(), Value::Int(node.id as i64));
     let mut put = |k: &str, v: Value| {
@@ -244,18 +261,26 @@ pub fn node_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
         } => {
             put("callee_class", s(g, callee.declaring_class));
             put("callee_name", s(g, callee.name));
-            put("callee_signature", sig(g, callee));
-            put(
-                "callee_descriptor",
-                Value::str(callee.descriptor(&g.strings)),
-            );
+            if include_call_site_method_details {
+                put("callee_signature", sig(g, callee));
+                put(
+                    "callee_descriptor",
+                    Value::str(callee.descriptor(&g.strings)),
+                );
+            } else {
+                check_method_detail_strings(g, callee);
+            }
             put("caller_class", s(g, caller.declaring_class));
             put("caller_name", s(g, caller.name));
-            put("caller_signature", sig(g, caller));
-            put(
-                "caller_descriptor",
-                Value::str(caller.descriptor(&g.strings)),
-            );
+            if include_call_site_method_details {
+                put("caller_signature", sig(g, caller));
+                put(
+                    "caller_descriptor",
+                    Value::str(caller.descriptor(&g.strings)),
+                );
+            } else {
+                check_method_detail_strings(g, caller);
+            }
             put(
                 "line",
                 line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
@@ -383,7 +408,9 @@ pub fn node_result_properties(g: &Graph, node: &Node) -> IndexMap<String, Value>
 /// so `graphite query` prints `line=null` in its text and CSV output. The two views come
 /// apart only here.
 pub fn node_display_properties(g: &Graph, node: &Node) -> IndexMap<String, Value> {
-    let mut m = node_properties(g, node);
+    let mut m = node_properties_impl(g, node, false);
+    // Annotation values can also use these names; retain the existing filtering
+    // for dynamic keys even though CallSite fields are no longer constructed.
     m.shift_remove("caller_signature");
     m.shift_remove("callee_signature");
     m.shift_remove("caller_descriptor");
@@ -500,3 +527,7 @@ pub fn method_property(g: &Graph, m: &MethodDesc, key: &str, graph_id: Option<&s
 
 #[allow(dead_code)]
 fn _unused(_: NodeRef, _: MethodRef, _: Arc<str>) {}
+
+#[cfg(test)]
+#[path = "props_tests.rs"]
+mod tests;
