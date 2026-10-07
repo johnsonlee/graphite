@@ -1071,7 +1071,7 @@ class QueryPipeline private constructor(
         val match = clauses[0] as? CypherClause.Match ?: return null
         val ret = clauses[1] as? CypherClause.Return ?: return null
         val limit = clauses[2] as? CypherClause.Limit ?: return null
-        if (match.optional || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+        if (match.optional || match.where != null || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
 
         val pattern = match.patterns.single()
         if (pattern.pathVariable != null || pattern.elements.size != 1) return null
