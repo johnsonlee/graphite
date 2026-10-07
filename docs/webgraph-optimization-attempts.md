@@ -3786,3 +3786,97 @@ The JAR method-level measurement is essentially unchanged (+0.18% in this
 single-shot comparison); the dex-only chain does not modify that input path.
 The PR benchmark comment is the authoritative separate CI method-level and
 end-to-end `LargeCorpusPerformanceGateTest` comparison.
+
+### 2026-10-07 — Attempt 095: Recover dex interception with one backup
+
+**Question:** can the recovery boundary retain its exception isolation without
+copying every successful body back or validating between passes that may need
+to repair each other's intermediate graphs?
+
+**Change:** keep one independent raw-body backup and run the primary chain in
+place. Validate once at the end, matching the dex frontend's chain contract;
+SootUp's own final build still validates the returned body. Only a failure
+restores blocks, successor indices, traps, locals, modifiers and position from
+the backup. Every retry receives fresh mutable sets. The successful path keeps
+its existing graph blocks instead of reconstructing them.
+
+`LocalSplitter` now precedes the dex defaults. A failed folding chain retries
+split defaults without folding; a failed split chain retries defaults alone.
+There is no production fallback to raw dex constants: exhausted defaults, or
+an unexpected failure while restoring the graph, throws `BodyRecoveryException`.
+This deliberately is not `IllegalStateException`, which the adapter catches
+while resolving class methods and would otherwise turn into a silently empty
+class. VM errors retain their existing propagation behavior.
+
+Each successful recovery is counted and warned about even without `--verbose`.
+Failed folds are reported as unsupported with the failure reason against the
+body actually retained. Selected calls present in that body are not reported as
+missing; truly absent selected keys still are. Failed applied-fold accounting
+and call ordinals are cleared. Loader tests inject failures through per-loader
+hooks, without changing the JVM-global `DexBodyInterceptors.Default` enum.
+
+The review's numeric/null example is not evidence of a new regression in this
+PR: the actual SootUp 3.0.1 default transformers discard the immutable statements
+returned by several `withRValue`/`withOp` methods. A direct probe against the
+bundled dependency, with an unknown local assigned the bits of `1.5f` and used
+as a float argument, still yields `IntConstant(1069547520)` after the defaults;
+the analogous object argument still yields `IntConstant(0)`. Preserving the
+default chain is the recovery contract, not a claim that this upstream constant
+decoding defect has been fixed here.
+
+**Fixture and revisions:** the same Coupang APK, SDK, host, JDK, JVM flags,
+commands and measurements as Attempt 094. The fresh base is the pre-review PR
+revision `aa2d4949985a0918bc9698cab03b77711b0932c5`; the candidate is the commit
+containing this attempt. Both are based on `main` at
+`f710681749349e43cd6221be53c65932cc692165`. APK builds and then the real Android
+JAR JMH measurements run sequentially, base before candidate, in fresh JVMs.
+
+**Correctness:** twenty focused recovery, DEX, fold-report and frontend-contract
+tests pass with the module lint gate. They cover a temporarily invalid graph
+repaired by a later pass, precise final-validation diagnostics, staged retry
+order, snapshot isolation across failed retries, retained switch/trap structure,
+an unchanged successful graph, visible warnings without verbose logging, and
+exhaustion escaping the adapter as an explicit build failure. Fold-report tests
+cover failures before folding and after accounting, selected-present versus
+selected-missing calls, later successful resolution, shared selections, and a
+second exception during diagnostic eligibility checks. The original two-lambda
+and 66-lambda dispatch regressions remain covered.
+
+**Results:**
+
+| Full APK build and save | Pre-review PR `aa2d4949` | Candidate | Change |
+|-------------------------|------------------------:|----------:|-------:|
+| Wall | 135.18 s | 130.83 s | -3.22% |
+| CPU (user + system) | 365.32 s | 354.70 s | -2.91% |
+| Maximum post-GC heap | 10,347 MiB | 9,524 MiB | -7.95% |
+| Maximum RSS | 17,863,000,064 bytes | 17,150,459,904 bytes | -3.99% |
+| Nodes | 12,833,807 | 12,932,727 | +98,920 |
+| `LocalVariable` | 6,184,079 | 6,184,079 | unchanged |
+| `CallSiteNode` | 3,281,123 | 3,380,043 | +98,920 |
+| Direct calls (no origin) | 2,244,024 | 2,244,024 | unchanged |
+| Derived calls (with origin) | 1,037,099 | 1,136,019 | +98,920 |
+| Persisted graph | 1,298,067,807 bytes | 1,310,312,680 bytes | +0.94% |
+| Interceptor fallbacks | 0 | 0 | unchanged |
+
+All fifteen non-call node-type counts match, and the call-site sidecar confirms
+that the count change is entirely in derived calls. The pre-review measurement
+also differs from Attempt 094's candidate by 99,299 derived calls, despite the
+same adapter/loader/recovery code and folding being disabled. This is consistent
+with the existing arrival-order sensitivity of capped dispatch documented in
+Attempt 093: the APK method set is not ordered, and saturation stops later
+propagation without retracting earlier derived calls. These counts do not prove
+complete graph equivalence or establish a unique cause for the variation.
+
+| Method-level benchmark | Pre-review PR `aa2d4949` | Candidate | Change |
+|------------------------|------------------------:|----------:|-------:|
+| `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig` | 20,350.388 ms/op | 20,258.958 ms/op | -0.45% |
+| Allocated bytes | 37,601,930,936 B/op | 37,630,952,656 B/op | +0.08% |
+| GC count / time | 39 / 982 ms | 38 / 1,008 ms | — |
+
+**Conclusion:** kept. The recovery contract and diagnostics are corrected, and
+the common path avoids the extra graph reconstruction and intermediate
+validations. The paired APK run is 3.22% faster and the method-level JAR result is
+essentially unchanged; these single-shot results are not a stable-speedup claim.
+The APK still pays the correctness cost of splitting locals relative to unsplit
+`main` in Attempt 094. CI's current-base method-level and end-to-end conclusions
+remain separate and are reported in the PR benchmark comment.

@@ -61,17 +61,25 @@ private fun createApkInputLocations(
     path: Path,
     config: LoaderConfig,
     folding: ConstantFolding?,
+    interceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor>,
     onFallback: (String) -> Unit,
     log: (String) -> Unit
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
     // Dex registers hold unrelated values over time: split them before functional dispatch.
     // TypeAssigner also needs the Android platform hierarchy, which APK-only views omit.
-    val dexInterceptors = DexBodyInterceptors.Default.bodyInterceptors() + LocalSplitter()
+    val defaults = DexBodyInterceptors.Default.bodyInterceptors()
+    val dexInterceptors = listOf(LocalSplitter()) + defaults
+    val recoveries = buildList {
+        if (folding != null) add(BodyRecoveryChain("split dex defaults without constant folding", dexInterceptors))
+        add(BodyRecoveryChain("dex defaults without splitting or constant folding", defaults))
+    }
     val guarded = RecoveringBodyInterceptor(
-        folding?.bodyInterceptors(dexInterceptors) ?: dexInterceptors,
+        interceptorFactory(folding?.bodyInterceptors(dexInterceptors) ?: dexInterceptors),
         onFallback,
-        { builder -> folding?.discard(builder) }
+        { builder -> folding?.discard(builder) },
+        recoveries.map { it.copy(interceptors = interceptorFactory(it.interceptors)) },
+        { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) }
     )
     val apkLocation = ApkAnalysisInputLocation(
         path,
@@ -287,6 +295,12 @@ class JavaProjectLoader(
     var bodyInterceptionFallbackCount: Int = 0
         private set
 
+    /** Per-loader seam for exercising failures at the APK frontend's interception boundary. */
+    internal var apkInterceptorFactory: (List<BodyInterceptor>) -> List<BodyInterceptor> = { it }
+
+    /** Warning destination when verbose logging is disabled; independent for each loader. */
+    internal var warningSink: (String) -> Unit = { System.err.println(it) }
+
     override fun load(path: Path): Graph {
         bodyInterceptionFallbackCount = 0
         val folding = config.folding?.let { ConstantFolding(it.rules) }
@@ -305,7 +319,7 @@ class JavaProjectLoader(
         )
         val graph = adapter.buildGraph()
         if (bodyInterceptionFallbackCount > 0) {
-            log("Kept $bodyInterceptionFallbackCount APK method body/bodies without interception after interceptor failures")
+            warn("Recovered $bodyInterceptionFallbackCount APK method body/bodies after interceptor failures")
         }
         if (folding != null) {
             config.folding?.onReport?.invoke(folding.report())
@@ -332,10 +346,13 @@ class JavaProjectLoader(
     private fun createInputLocations(path: Path, folding: ConstantFolding?): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
-            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, folding, { message ->
-                bodyInterceptionFallbackCount++
-                log(message)
-            }, ::log)
+            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(
+                path, config, folding, apkInterceptorFactory,
+                { message ->
+                    bodyInterceptionFallbackCount++
+                    warn(message)
+                }, ::log
+            )
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> {
@@ -578,6 +595,11 @@ class JavaProjectLoader(
 
     private fun log(message: String) {
         config.verbose?.invoke(message)
+    }
+
+    private fun warn(message: String) {
+        val warning = "Warning: $message"
+        config.verbose?.invoke(warning) ?: warningSink(warning)
     }
 
     /**

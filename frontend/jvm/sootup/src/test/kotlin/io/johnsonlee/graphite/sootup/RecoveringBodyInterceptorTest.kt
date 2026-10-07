@@ -19,6 +19,7 @@ import sootup.core.jimple.Jimple
 import sootup.core.jimple.basic.StmtPositionInfo
 import sootup.core.jimple.common.constant.IntConstant
 import sootup.core.jimple.common.stmt.JReturnStmt
+import sootup.core.jimple.common.stmt.BranchingStmt
 import sootup.core.model.Body
 import sootup.core.model.SourceType
 import sootup.java.core.views.JavaView
@@ -98,16 +99,18 @@ class RecoveringBodyInterceptorTest {
         val original = builder.build().toString()
         val successors = graph.nodes.associateWith { graph.successors(it).toList() }
         val exceptional = graph.nodes.associateWith { graph.exceptionalSuccessors(it).toMap() }
+        val blocks = graph.blocks.toList()
         assertTrue(exceptional.values.any { it.isNotEmpty() }, "fixture must contain trap edges")
         assertTrue(successors.values.any { it.size > it.toSet().size }, "fixture must have duplicate switch targets")
         RecoveringBodyInterceptor(listOf(BodyInterceptor { _, _ -> }), { error(it) }).interceptBody(builder, view)
         assertEquals(original, builder.build().toString())
         assertEquals(successors, graph.nodes.associateWith { graph.successors(it).toList() })
         assertEquals(exceptional, graph.nodes.associateWith { graph.exceptionalSuccessors(it).toMap() })
+        graph.blocks.zip(blocks).forEach { (after, before) -> assertSame(before, after, "success must not copy the graph back") }
     }
 
     @Test
-    fun `successful interception preserves successors when blocks precede their predecessors`() {
+    fun `recovery preserves successors when blocks precede their predecessors`() {
         val (_, view) = fixture()
         val position = StmtPositionInfo.getNoStmtPositionInfo()
         val first = Jimple.newNopStmt(position)
@@ -119,10 +122,15 @@ class RecoveringBodyInterceptorTest {
         (graph.getBlockOf(first) as MutableBasicBlock).linkSuccessor(0, graph.getBlockOf(branch) as MutableBasicBlock)
         graph.setStartingStmt(first)
         val builder = Body.builder(graph).setMethodSignature(method(view, "value").methodSignature)
-        RecoveringBodyInterceptor(listOf(BodyInterceptor { _, _ -> }), { error(it) }).interceptBody(builder, view)
+        val failures = mutableListOf<String>()
+        RecoveringBodyInterceptor(listOf(BodyInterceptor { candidate, _ ->
+            candidate.controlFlowGraph.blocks.toList().forEach(candidate.controlFlowGraph::removeBlock)
+            error("force reversed-block recovery")
+        }), failures::add).interceptBody(builder, view)
         assertEquals(listOf(branch), graph.successors(first))
         assertEquals(listOf(returned), graph.successors(branch))
         assertEquals(listOf(first, branch, returned), builder.build().stmts)
+        assertEquals(1, failures.size)
     }
 
     @Test
@@ -137,19 +145,102 @@ class RecoveringBodyInterceptorTest {
         }), failures::add).interceptBody(builder, view)
         assertEquals(original, builder.build().toString())
         assertEquals(1, failures.size)
+        assertTrue(failures.single().contains("body validation failed"), failures.single())
     }
 
     @Test
-    fun `OOM propagates without counting or retaining a partially intercepted body`() {
+    fun `OOM propagates without counting or attempting an allocating recovery`() {
         val (builder, view) = fixture()
-        val original = builder.build().toString()
         val failure = OutOfMemoryError("test allocation failure")
         val guard = RecoveringBodyInterceptor(listOf(BodyInterceptor { candidate, _ ->
             candidate.locals.clear()
             throw failure
         }), { error("OOM must not be reported as an interceptor fallback") })
         assertSame(failure, assertFailsWith<OutOfMemoryError> { guard.interceptBody(builder, view) })
-        assertEquals(original, builder.build().toString())
+        assertTrue(builder.locals.isEmpty(), "VM errors propagate without allocating a replacement graph")
+    }
+
+    @Test
+    fun `temporary invalidity repaired by a later pass does not cause a fallback`() {
+        val (builder, view) = fixture()
+        val graph = builder.controlFlowGraph
+        val branch = graph.nodes.filterIsInstance<BranchingStmt>().first { graph.successors(it).size > 1 }
+        val successors = graph.successors(branch).toList()
+        val breakFlow = BodyInterceptor { active, _ ->
+            assertSame(builder, active, "the normal chain runs in place")
+            successors.forEach { active.controlFlowGraph.removeEdge(branch, it) }
+        }
+        val repairFlow = BodyInterceptor { active, _ -> active.controlFlowGraph.setEdges(branch, successors) }
+        RecoveringBodyInterceptor(listOf(breakFlow, repairFlow), { error(it) }).interceptBody(builder, view)
+        assertEquals(successors, builder.build().controlFlowGraph.successors(branch))
+    }
+
+    @Test
+    fun `each recovery starts from fresh snapshot sets and retains required normalization`() {
+        val (_, view) = fixture()
+        val builder = method(view, "folded")
+        val originalLocals = builder.locals.toSet()
+        assertTrue(originalLocals.isNotEmpty())
+        val attempts = mutableListOf<String>()
+        fun failing(name: String) = BodyInterceptor { active, _ ->
+            assertEquals(originalLocals, active.locals, "$name must see the preserved locals")
+            attempts.add(name)
+            active.locals.clear()
+            error("$name failure")
+        }
+        val normalize = BodyInterceptor { active, _ ->
+            assertEquals(originalLocals, active.locals)
+            attempts.add("defaults")
+            val returned = active.stmts.filterIsInstance<JReturnStmt>().single()
+            active.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
+        }
+        val warnings = mutableListOf<String>()
+        RecoveringBodyInterceptor(
+            listOf(failing("primary")), warnings::add,
+            recoveryChains = listOf(
+                BodyRecoveryChain("split defaults", listOf(failing("splitter"))),
+                BodyRecoveryChain("defaults", listOf(normalize))
+            )
+        ).interceptBody(builder, view)
+        assertEquals(listOf("primary", "splitter", "defaults"), attempts)
+        assertEquals(IntConstant.getInstance(42), builder.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single().contains("using defaults"))
+    }
+
+    @Test
+    fun `stronger successful recovery keeps splitting instead of retrying defaults alone`() {
+        val (_, view) = fixture()
+        val builder = method(view, "value")
+        val normalize = BodyInterceptor { active, _ ->
+            val returned = active.stmts.filterIsInstance<JReturnStmt>().single()
+            active.controlFlowGraph.replaceNode(returned, returned.withReturnValue(IntConstant.getInstance(42)))
+        }
+        val warnings = mutableListOf<String>()
+        RecoveringBodyInterceptor(
+            listOf(BodyInterceptor { _, _ -> error("fold failed") }), warnings::add,
+            recoveryChains = listOf(
+                BodyRecoveryChain("split defaults", listOf(normalize)),
+                BodyRecoveryChain("defaults", listOf(BodyInterceptor { _, _ -> error("weaker retry must not run") }))
+            )
+        ).interceptBody(builder, view)
+        assertEquals(IntConstant.getInstance(42), builder.build().stmts.filterIsInstance<JReturnStmt>().single().op)
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single().contains("using split defaults"))
+    }
+
+    @Test
+    fun `essential normalization failure aborts instead of returning raw dex constants`() {
+        val (_, view) = fixture()
+        val builder = method(view, "value")
+        val fail = BodyInterceptor { _, _ -> error("cannot normalize constants") }
+        val guard = RecoveringBodyInterceptor(
+            listOf(fail), { error("failed retries must not be counted as recovery") },
+            recoveryChains = listOf(BodyRecoveryChain("required defaults", listOf(fail)))
+        )
+        val failure = assertFailsWith<BodyRecoveryException> { guard.interceptBody(builder, view) }
+        assertTrue(failure.message!!.contains("required dex normalization failed"))
+        assertEquals("cannot normalize constants", failure.cause!!.message)
     }
 
     @Test

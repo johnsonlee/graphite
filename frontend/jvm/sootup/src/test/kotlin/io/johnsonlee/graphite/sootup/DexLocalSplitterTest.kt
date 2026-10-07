@@ -9,6 +9,7 @@ import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.test.assertFailsWith
 import sootup.apk.frontend.ApkAnalysisInputLocation
 import sootup.apk.frontend.DexBodyInterceptors
 import sootup.apk.frontend.main.AndroidVersionInfo
@@ -21,6 +22,7 @@ import sootup.core.jimple.common.stmt.JAssignStmt
 import sootup.core.jimple.common.stmt.InvokableStmt
 import sootup.core.jimple.common.stmt.Stmt
 import sootup.java.core.views.JavaView
+import sootup.interceptors.LocalSplitter
 
 class DexLocalSplitterTest {
     @Test
@@ -32,38 +34,51 @@ class DexLocalSplitterTest {
             JarOutputStream(Files.newOutputStream(platform.resolve("android.jar"))).use { }
             val messages = mutableListOf<String>()
             val loader = JavaProjectLoader(LoaderConfig(
+                androidSdk = sdk, buildCallGraph = false
+            ), useMmapBuilder = false)
+            loader.warningSink = messages::add
+            loader.apkInterceptorFactory = { chain ->
+                chain + BodyInterceptor { builder, _ ->
+                    if (builder.methodSignature.name == "pair" && chain.any { it is LocalSplitter }) {
+                        builder.locals.clear()
+                        error("injected dex failure")
+                    }
+                }
+            }
+            val graph = loader.load(apk)
+            assertEquals(1, loader.bodyInterceptionFallbackCount)
+            val calls = graph.nodes<CallSiteNode>().filter {
+                it.callee.declaringClass.className == "java.lang.Runnable" && it.callee.name == "run"
+            }.toList()
+            assertEquals(2, calls.count { it.caller.name == "pair" }, "failed method keeps its calls")
+            assertEquals(66, calls.count { it.caller.name == "saturated" }, "sibling method still builds")
+            assertEquals(1, messages.count { "Recovered body" in it && "injected dex failure" in it })
+            assertTrue(messages.any { "Warning: Recovered 1 APK method body/bodies" in it })
+            val failingFactory = loader.apkInterceptorFactory
+            loader.apkInterceptorFactory = { it }
+            messages.clear()
+            loader.load(apk)
+            assertEquals(0, loader.bodyInterceptionFallbackCount)
+            assertTrue(messages.none { "Warning:" in it })
+            val verboseLoader = JavaProjectLoader(LoaderConfig(
                 androidSdk = sdk, buildCallGraph = false, verbose = messages::add
             ), useMmapBuilder = false)
-            val defaults = DexBodyInterceptors.Default
-            // Inject at the actual upstream boundary, without adding a production configuration
-            // option just for tests. Restore the enum's chain even if the load/assertions fail.
-            val field = defaults.javaClass.getDeclaredField("bodyInterceptors").apply { isAccessible = true }
-            synchronized(defaults) {
-                val original = defaults.bodyInterceptors()
-                try {
-                    field.set(defaults, original + BodyInterceptor { builder, _ ->
-                        if (builder.methodSignature.name == "pair") {
-                            builder.locals.clear()
-                            error("injected dex failure")
-                        }
-                    })
-                    val graph = loader.load(apk)
-                    assertEquals(1, loader.bodyInterceptionFallbackCount)
-                    val calls = graph.nodes<CallSiteNode>().filter {
-                        it.callee.declaringClass.className == "java.lang.Runnable" && it.callee.name == "run"
-                    }.toList()
-                    assertEquals(2, calls.count { it.caller.name == "pair" }, "failed method keeps its original calls")
-                    assertEquals(66, calls.count { it.caller.name == "saturated" }, "sibling method still builds")
-                    assertEquals(1, messages.count { "Keeping unintercepted body" in it && "injected dex failure" in it })
-                    assertTrue(messages.any { "Kept 1 APK method body/bodies" in it })
-                } finally {
-                    field.set(defaults, original)
+            verboseLoader.apkInterceptorFactory = failingFactory
+            verboseLoader.warningSink = { error("verbose logger already receives the warning") }
+            verboseLoader.load(apk)
+            assertEquals(1, messages.count { "Warning: Recovered body" in it })
+            assertEquals(1, messages.count { "Warning: Recovered 1 APK method body/bodies" in it })
+
+            loader.apkInterceptorFactory = { chain ->
+                chain + BodyInterceptor { builder, _ ->
+                    if (builder.methodSignature.name == "pair") error("essential normalization failed")
                 }
-                messages.clear()
-                loader.load(apk)
-                assertEquals(0, loader.bodyInterceptionFallbackCount)
-                assertTrue(messages.none { "Keeping unintercepted body" in it || "body/bodies without interception" in it })
             }
+            messages.clear()
+            val failure = assertFailsWith<BodyRecoveryException> { loader.load(apk) }
+            assertTrue(failure.message!!.contains("required dex normalization failed"))
+            assertEquals(0, loader.bodyInterceptionFallbackCount)
+            assertTrue(messages.none { "Recovered body" in it }, "exhausted retries must not silently drop the class")
         } finally {
             sdk.toFile().deleteRecursively()
         }
