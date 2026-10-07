@@ -8794,3 +8794,206 @@ Whole-process CPU includes startup, load, first/warm/measured queries and shutdo
 Command: `python3 /tmp/sootup-static-review/attempt132/same-binary-top32-diagnostic/measurement/run.py --plan /tmp/sootup-static-review/attempt132/same-binary-top32-diagnostic/measurement/measurement.plan.sealed.json --execute-root-released`. Environment: original pinned Rust1.93/aarch64 release binary on macOS, native MAPPED full Kotlin/Tika graphs, c1, unchanged native concurrency4/timeout60000, observed page cache, no JVM. This isolates ON/OFF at132; main-relative gate results are reported above and are a different comparison.
 
 Evidence: raw result `e703093647e9e492bfb7057e4e5faa7920125a0918b5bced3af07eabc6fff6cd`; summary `8c2c8e70a31d1bc4cdef51b37b19f84af678ee6376eee8f99655b81cfc1c72a8`; root audit `e30f44405bd4f74b49ce3d0b571b9039cb44ecd4fa41c46ab30b70bc8215061a`; owner terminal `2809c6ab517271a4ef28500ce75be9b56f937e5ae902be0cd353ab18ad4439b4`. All raw responses, first/warm samples, complete inventories and diagnostics remain in the execution packet.
+
+
+### 2026-10-08 — Cumulative native full34 query comparison against pre-upgrade
+
+**Scope and execution:** A=actual pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`, frozen binary2bf3cd50; B=historical PR85 native implementation, frozen130 binary11e43104; C=cumulative production `ddbee105`, frozen804eca1e. Documentation-only `8e35e129` changes none of these production inputs. B has the explicitly audited single trailing-LF storage manifest exception; decoded dependencies and all native implementation files match its source identity. Actual candidate-specific compiler paths, source continuity, embedded binary source paths and export time windows support B/C provenance; original logs do not provide exhaustive per-rustc-unit attestation. No frozen binary was replaced.
+
+Reuse the original120 protocol exactly:64 real Android/Tika/Hive/Kotlin graph shards,1216 immutable files,34 complete typed-response cases; c1 ABCCBA then c4 ABCCBA,12 fresh native servers, first1/warm2/measured60 cycles,25,704 total responses and24,480 measured. MacOS ARM64/M3 Max, pinned Rust1.93 release, MAPPED, default native concurrency4/timeout60000, observed OS page cache. No JVM, artificial cache flush, favorable rerun or case omission. All12 sessions and the original summarizer completed in owner87377 exit0; all36 native/time/client PIDs were absent after cleanup. Independent root audit71918 exit0 decoded all25,704 bodies, checked exact JSON types/columns/ordered rows/total/provenance, fixture stat continuity, raw CPU identities/counters and all quantiles/means/pairs.475 observer snapshots had no classified event; no exclusive-host claim follows.
+
+Per-process p50/p95 are nearest ranks30/57 of60; the following A/B/C values are means of the two process quantiles, not pooled p95. Each percentage cell gives the mean change followed by both fixed pair changes. IDs omit only the common `global-wide-` prefix. All68 case/concurrency groups are retained.
+
+| c | Case | A p50/p95 ms | B p50/p95 ms | C p50/p95 ms | C/B p50 Δ% (pairs) | C/B p95 Δ% (pairs) | C/A p50 Δ% (pairs) | C/A p95 Δ% (pairs) |
+|---|---|---:|---:|---:|---:|---:|---:|---:|
+| 1 | four-properties-zero | 0.363687/0.436959 | 0.370417/0.458375 | 0.361770/0.438854 | -2.334 (+0.716/-5.318) | -4.259 (+2.286/-10.138) | -0.527 (-1.513/+0.520) | +0.434 (+0.871/-0.010) |
+| 1 | four-properties-targeted | 0.613792/0.709271 | 0.612292/0.702729 | 0.609167/0.697604 | -0.510 (+1.869/-2.794) | -0.729 (+1.252/-2.564) | -0.754 (-1.439/-0.055) | -1.645 (-7.618/+4.879) |
+| 1 | four-properties-dense | 1.096042/1.243458 | 1.087646/1.280729 | 1.090042/1.252376 | +0.220 (+0.626/-0.178) | -2.214 (-2.729/-1.712) | -0.547 (-2.300/+1.252) | +0.717 (-2.002/+3.486) |
+| 1 | class-pair-zero | 0.370875/0.436958 | 0.375417/0.452188 | 0.369188/0.450896 | -1.659 (+2.532/-5.631) | -0.286 (+5.998/-5.877) | -0.455 (-1.512/+0.657) | +3.190 (-1.041/+7.808) |
+| 1 | class-pair-targeted | 0.771833/0.946104 | 0.762187/0.960250 | 0.775667/0.928646 | +1.769 (+1.884/+1.653) | -3.291 (+2.926/-9.145) | +0.497 (-1.707/+2.797) | -1.845 (-2.785/-0.823) |
+| 1 | class-pair-dense | 1.064938/1.217208 | 1.052375/1.239729 | 1.043896/1.211270 | -0.806 (+1.659/-3.178) | -2.296 (-0.661/-3.825) | -1.976 (-3.045/-0.871) | -0.488 (+1.622/-2.445) |
+| 1 | name-pair-zero | 0.366333/0.433771 | 0.371167/0.442229 | 0.360896/0.463562 | -2.767 (+0.356/-5.756) | +4.824 (-0.620/+10.297) | -1.484 (-2.606/-0.313) | +6.868 (+0.772/+13.063) |
+| 1 | name-pair-targeted | 0.765875/0.958417 | 0.794958/0.941354 | 0.771166/0.907854 | -2.993 (-2.494/-3.492) | -3.559 (+5.892/-12.232) | +0.691 (-0.027/+1.427) | -5.276 (-0.035/-10.472) |
+| 1 | name-pair-dense | 1.055687/1.250458 | 1.082500/1.224250 | 1.042542/1.162041 | -3.691 (-3.967/-3.418) | -5.081 (-7.836/-2.190) | -1.245 (-3.350/+0.916) | -7.071 (-5.497/-8.576) |
+| 1 | caller-class-zero | 0.366958/0.424146 | 0.369750/0.446375 | 0.363042/0.419959 | -1.814 (+1.796/-5.274) | -5.918 (+1.725/-12.426) | -1.067 (-1.745/-0.360) | -0.987 (-0.909/-1.064) |
+| 1 | caller-class-targeted | 0.690813/0.788563 | 0.689042/0.819208 | 0.688104/0.793250 | -0.136 (+2.353/-2.548) | -3.169 (-5.842/-0.330) | -0.392 (+0.108/-0.896) | +0.594 (-1.559/+2.852) |
+| 1 | caller-class-dense | 1.031833/1.163709 | 1.033396/1.184187 | 1.028625/1.171001 | -0.462 (+0.053/-0.963) | -1.114 (-0.445/-1.779) | -0.311 (-1.923/+1.327) | +0.627 (-0.032/+1.299) |
+| 1 | callee-class-zero | 0.363083/0.439875 | 0.358834/0.435250 | 0.356229/0.429958 | -0.726 (+4.083/-5.226) | -1.216 (+3.242/-5.091) | -1.888 (-2.509/-1.241) | -2.255 (-4.503/-0.028) |
+| 1 | callee-class-targeted | 0.595854/0.653583 | 0.598958/0.666875 | 0.590812/0.665479 | -1.360 (+1.415/-4.044) | -0.209 (+4.022/-4.227) | -0.846 (-1.728/+0.071) | +1.820 (+1.085/+2.590) |
+| 1 | callee-class-dense | 1.032063/1.210542 | 1.038520/1.200938 | 1.028042/1.186438 | -1.009 (-1.164/-0.853) | -1.207 (-3.292/+0.809) | -0.390 (+0.476/-1.243) | -1.991 (-6.160/+2.221) |
+| 1 | provenance-zero | 0.366584/0.432479 | 0.367771/0.449062 | 0.358750/0.405938 | -2.453 (-1.129/-3.761) | -9.603 (-3.180/-15.568) | -2.137 (-3.569/-0.640) | -6.137 (-4.785/-7.535) |
+| 1 | provenance-targeted | 0.714417/0.819125 | 0.716750/0.809437 | 0.693354/0.782479 | -3.264 (+1.009/-7.274) | -3.330 (+2.271/-8.606) | -2.948 (-2.768/-3.131) | -4.474 (-3.214/-5.766) |
+| 1 | provenance-dense | 1.088791/1.238854 | 1.089792/1.278125 | 1.068562/1.279854 | -1.948 (-1.867/-2.028) | +0.135 (+2.356/-1.962) | -1.858 (-3.139/-0.568) | +3.310 (+0.890/+5.812) |
+| 1 | aliased-zero | 0.370542/0.429812 | 0.373625/0.455041 | 0.363146/0.449688 | -2.805 (+1.162/-6.533) | -1.176 (-2.003/-0.385) | -1.996 (-3.087/-0.860) | +4.624 (-1.929/+11.654) |
+| 1 | aliased-targeted | 0.679416/0.774604 | 0.685063/0.797875 | 0.678188/0.769979 | -1.004 (+0.535/-2.507) | -3.496 (+3.169/-9.438) | -0.181 (-2.168/+1.904) | -0.597 (-2.441/+1.349) |
+| 1 | aliased-dense | 1.093458/1.244749 | 1.079125/1.286437 | 1.091917/1.223771 | +1.185 (+2.507/-0.111) | -4.871 (-6.373/-3.258) | -0.141 (-0.156/-0.126) | -1.685 (-1.002/-2.386) |
+| 1 | parameterized-zero | 0.367791/0.437083 | 0.379521/0.466458 | 0.368459/0.463438 | -2.915 (-1.317/-4.486) | -0.648 (+0.674/-1.987) | +0.181 (-2.022/+2.525) | +6.030 (+3.911/+8.329) |
+| 1 | parameterized-targeted | 0.662979/0.747687 | 0.662292/0.747708 | 0.647166/0.731355 | -2.284 (+0.147/-4.650) | -2.187 (+1.700/-5.923) | -2.385 (-5.106/+0.563) | -2.184 (-5.219/+1.181) |
+| 1 | parameterized-dense | 1.078083/1.197375 | 1.107563/1.224646 | 1.065646/1.223521 | -3.785 (-2.215/-5.313) | -0.092 (+1.842/-1.932) | -1.154 (-2.230/-0.047) | +2.184 (+1.365/+3.006) |
+| 1 | wrapped-case-insensitive-zero | 0.370020/0.437333 | 0.374271/0.442625 | 0.359125/0.450041 | -4.047 (-1.609/-6.402) | +1.676 (-2.233/+5.779) | -2.945 (-5.258/-0.477) | +2.906 (-3.545/+10.047) |
+| 1 | wrapped-case-insensitive-targeted | 0.615958/0.689416 | 0.630147/0.720958 | 0.618167/0.695770 | -1.901 (+0.408/-4.160) | -3.494 (-4.083/-2.925) | +0.359 (-1.321/+2.140) | +0.922 (-3.258/+5.259) |
+| 1 | wrapped-case-insensitive-dense | 1.251167/1.417291 | 1.236729/1.423271 | 1.235396/1.383125 | -0.108 (+2.197/-2.363) | -2.821 (-3.803/-1.789) | -1.261 (+0.519/-3.019) | -2.411 (-2.567/-2.249) |
+| 1 | wrapped-case-insensitive-distinct-zero | 0.409896/0.481396 | 0.411542/0.478542 | 0.404104/0.479667 | -1.807 (-1.467/-2.144) | +0.235 (+2.111/-1.574) | -1.413 (-4.199/+1.524) | -0.359 (+0.252/-0.964) |
+| 1 | wrapped-case-insensitive-distinct-targeted | 0.643833/0.735708 | 0.650354/0.741042 | 0.623333/0.712604 | -4.155 (-3.843/-4.465) | -3.838 (-5.324/-2.335) | -3.184 (-3.657/-2.706) | -3.140 (-4.339/-1.936) |
+| 1 | wrapped-case-insensitive-distinct-dense | 3.125646/3.260729 | 3.119208/3.370875 | 3.131937/3.359521 | +0.408 (-0.077/+0.896) | -0.337 (-0.593/-0.080) | +0.201 (+1.226/-0.798) | +3.030 (+3.667/+2.403) |
+| 1 | distribution-broad-all-64 | 1.253708/1.417250 | 1.282896/1.422228 | 1.249187/1.387250 | -2.628 (-2.718/-2.537) | -2.459 (-5.057/+0.261) | -0.361 (-1.114/+0.401) | -2.117 (-1.101/-3.104) |
+| 1 | distribution-localized-early | 0.511312/0.616083 | 0.514354/0.600708 | 0.510021/0.598667 | -0.842 (+1.475/-3.082) | -0.340 (-1.887/+1.230) | -0.253 (-2.107/+1.697) | -2.827 (-5.604/+0.069) |
+| 1 | distribution-localized-late | 0.703812/0.819979 | 0.697812/0.812750 | 0.697375/0.801334 | -0.063 (+0.228/-0.351) | -1.405 (-0.195/-2.553) | -0.915 (-1.538/-0.285) | -2.274 (-4.455/-0.056) |
+| 1 | distribution-localized-middle | 0.694208/0.799604 | 0.687979/0.794520 | 0.684458/0.794854 | -0.512 (-0.157/-0.871) | +0.042 (+2.299/-2.110) | -1.404 (-0.701/-2.111) | -0.594 (+0.406/-1.571) |
+| 4 | four-properties-zero | 0.554562/0.727563 | 0.671729/0.957417 | 0.656542/0.868626 | -2.261 (-2.505/-2.020) | -9.274 (-0.974/-16.044) | +18.389 (+16.065/+20.775) | +19.388 (+16.068/+22.767) |
+| 4 | four-properties-targeted | 0.846333/1.097166 | 0.963291/1.367208 | 0.972313/1.291313 | +0.936 (+0.074/+1.780) | -5.551 (-4.060/-6.947) | +14.885 (+9.567/+20.512) | +17.695 (+14.214/+21.262) |
+| 4 | four-properties-dense | 1.166624/1.473396 | 1.287875/1.653687 | 1.292854/1.595229 | +0.387 (+3.664/-2.697) | -3.535 (-4.041/-3.013) | +10.820 (+10.246/+11.401) | +8.269 (+7.474/+9.093) |
+| 4 | class-pair-zero | 0.561562/0.742750 | 0.663791/0.910334 | 0.685125/0.939937 | +3.214 (-1.582/+8.200) | +3.252 (+14.971/-6.439) | +22.003 (+19.000/+24.987) | +26.548 (+25.658/+27.466) |
+| 4 | class-pair-targeted | 1.072563/1.287521 | 1.195396/1.464208 | 1.187062/1.454146 | -0.697 (-7.475/+6.698) | -0.687 (-0.776/-0.601) | +10.675 (+6.232/+15.235) | +12.942 (+12.252/+13.620) |
+| 4 | class-pair-dense | 1.239188/1.524145 | 1.371333/1.613500 | 1.343355/1.608979 | -2.040 (+0.779/-4.787) | -0.280 (-3.287/+2.746) | +8.406 (+8.780/+8.023) | +5.566 (+0.414/+10.958) |
+| 4 | name-pair-zero | 0.558729/0.726708 | 0.661416/0.887208 | 0.630646/0.835208 | -4.652 (-5.734/-3.575) | -5.861 (-9.368/-2.217) | +12.871 (+13.601/+12.171) | +14.930 (+10.587/+19.449) |
+| 4 | name-pair-targeted | 1.150875/1.357230 | 1.204730/1.450208 | 1.223500/1.451792 | +1.558 (+0.885/+2.226) | +0.109 (+2.918/-2.724) | +6.310 (+2.780/+10.013) | +6.967 (+8.883/+4.996) |
+| 4 | name-pair-dense | 1.229521/1.468125 | 1.334667/1.623916 | 1.284292/1.522584 | -3.774 (-3.651/-3.898) | -6.240 (-2.760/-9.658) | +4.455 (+7.496/+1.566) | +3.709 (+8.515/-0.929) |
+| 4 | caller-class-zero | 0.558937/0.725562 | 0.646521/0.890875 | 0.640188/0.821041 | -0.980 (+0.813/-2.739) | -7.839 (-4.351/-11.030) | +14.537 (+19.589/+9.818) | +13.159 (+15.264/+11.163) |
+| 4 | caller-class-targeted | 1.021834/1.276855 | 1.150062/1.392041 | 1.128104/1.370396 | -1.909 (+4.063/-7.446) | -1.555 (+0.840/-3.855) | +10.400 (+14.534/+6.397) | +7.326 (+8.931/+5.757) |
+| 4 | caller-class-dense | 1.169895/1.441042 | 1.261750/1.552855 | 1.267437/1.543770 | +0.451 (+3.614/-2.676) | -0.585 (+0.797/-1.929) | +8.338 (+12.459/+4.314) | +7.129 (+4.770/+9.594) |
+| 4 | callee-class-zero | 0.554771/0.653124 | 0.645146/0.880187 | 0.637688/0.825917 | -1.156 (-3.639/+1.440) | -6.166 (-9.721/-2.640) | +14.946 (+16.746/+13.212) | +26.456 (+22.482/+30.346) |
+| 4 | callee-class-targeted | 0.932146/1.165312 | 1.051541/1.322355 | 1.047479/1.337354 | -0.386 (-1.177/+0.393) | +1.134 (-0.293/+2.592) | +12.373 (+7.900/+17.082) | +14.764 (+11.642/+18.039) |
+| 4 | callee-class-dense | 1.150812/1.424854 | 1.311479/1.548126 | 1.278917/1.619917 | -2.483 (-0.149/-4.728) | +4.637 (+9.698/-0.197) | +11.132 (+11.546/+10.717) | +13.690 (+14.074/+13.289) |
+| 4 | provenance-zero | 0.536833/0.701792 | 0.657917/0.883813 | 0.651625/0.846666 | -0.956 (-0.507/-1.393) | -4.203 (-3.187/-5.141) | +21.383 (+21.421/+21.346) | +20.644 (+12.257/+29.781) |
+| 4 | provenance-targeted | 1.014292/1.199021 | 1.163833/1.394854 | 1.110437/1.379959 | -4.588 (-3.065/-6.118) | -1.068 (-3.471/+1.306) | +9.479 (+12.452/+6.557) | +15.090 (+14.072/+16.066) |
+| 4 | provenance-dense | 1.213478/1.471416 | 1.320167/1.579333 | 1.296396/1.590021 | -1.801 (-1.209/-2.380) | +0.677 (+0.550/+0.806) | +6.833 (+6.304/+7.363) | +8.061 (+9.655/+6.492) |
+| 4 | aliased-zero | 0.540771/0.733541 | 0.664272/0.871917 | 0.632020/0.811250 | -4.855 (-6.395/-3.214) | -6.958 (-3.295/-10.490) | +16.874 (+20.314/+13.528) | +10.594 (+12.293/+8.877) |
+| 4 | aliased-targeted | 1.026917/1.254709 | 1.121292/1.417917 | 1.152042/1.427437 | +2.742 (+3.405/+2.093) | +0.671 (-5.068/+6.596) | +12.185 (+12.039/+12.329) | +13.766 (+9.284/+18.225) |
+| 4 | aliased-dense | 1.188083/1.370500 | 1.294771/1.534271 | 1.283167/1.620270 | -0.896 (-0.645/-1.149) | +5.605 (+4.719/+6.564) | +8.003 (+7.771/+8.239) | +18.225 (+21.893/+14.560) |
+| 4 | parameterized-zero | 0.544458/0.714500 | 0.664084/0.830959 | 0.651396/0.870625 | -1.911 (+1.210/-5.001) | +4.774 (-0.636/+10.552) | +19.641 (+21.092/+18.147) | +21.851 (+20.512/+23.164) |
+| 4 | parameterized-targeted | 0.982876/1.177563 | 1.102458/1.379104 | 1.086042/1.444687 | -1.489 (+5.461/-8.010) | +4.756 (+8.046/+1.536) | +10.496 (+12.863/+8.059) | +22.685 (+25.345/+20.032) |
+| 4 | parameterized-dense | 1.172354/1.411208 | 1.273124/1.597875 | 1.282188/1.630500 | +0.712 (-0.065/+1.507) | +2.042 (+7.635/-3.449) | +9.369 (+9.998/+8.741) | +15.539 (+21.285/+9.844) |
+| 4 | wrapped-case-insensitive-zero | 0.557625/0.730104 | 0.671376/0.908500 | 0.643104/0.875104 | -4.211 (-4.589/-3.841) | -3.676 (-1.845/-5.372) | +15.329 (+11.259/+19.571) | +19.860 (+20.810/+18.961) |
+| 4 | wrapped-case-insensitive-targeted | 0.851042/1.112167 | 0.974750/1.216271 | 0.969167/1.320229 | -0.573 (-1.940/+0.820) | +8.547 (+11.422/+5.715) | +13.880 (+15.860/+11.984) | +18.708 (+16.535/+21.051) |
+| 4 | wrapped-case-insensitive-dense | 1.392875/1.632000 | 1.474187/1.805020 | 1.434959/1.748687 | -2.661 (-2.376/-2.947) | -3.121 (-1.931/-4.285) | +3.021 (+3.165/+2.878) | +7.150 (+5.638/+8.709) |
+| 4 | wrapped-case-insensitive-distinct-zero | 0.579458/0.772125 | 0.705271/0.946063 | 0.653333/0.841666 | -7.364 (-7.274/-7.454) | -11.035 (-6.859/-14.965) | +12.749 (+10.850/+14.705) | +9.007 (+11.385/+6.659) |
+| 4 | wrapped-case-insensitive-distinct-targeted | 0.845083/1.072958 | 0.952708/1.280792 | 0.927167/1.209104 | -2.681 (+0.497/-5.823) | -5.597 (-15.363/+5.347) | +9.713 (+12.426/+6.990) | +12.689 (+4.703/+20.998) |
+| 4 | wrapped-case-insensitive-distinct-dense | 3.272667/3.553542 | 3.436520/3.804562 | 3.389874/3.691000 | -1.357 (-2.517/-0.181) | -2.985 (-3.681/-2.270) | +3.581 (+1.932/+5.269) | +3.868 (+3.060/+4.699) |
+| 4 | distribution-broad-all-64 | 1.413625/1.665062 | 1.511833/1.826604 | 1.541083/1.778334 | +1.935 (+1.981/+1.889) | -2.643 (-1.516/-3.743) | +9.016 (+6.171/+11.972) | +6.803 (+5.280/+8.370) |
+| 4 | distribution-localized-early | 0.706729/0.861229 | 0.820604/1.098000 | 0.795396/1.005646 | -3.072 (-6.497/+0.388) | -8.411 (-14.150/-2.300) | +12.546 (+8.859/+16.250) | +16.769 (+12.981/+20.550) |
+| 4 | distribution-localized-late | 0.949792/1.169062 | 1.067980/1.371438 | 1.057312/1.258916 | -0.999 (-4.847/+2.885) | -8.205 (-7.036/-9.360) | +11.320 (+6.245/+16.516) | +7.686 (+7.732/+7.640) |
+| 4 | distribution-localized-middle | 0.934583/1.170167 | 1.064375/3.927792 | 1.011354/1.265416 | -4.981 (-2.021/-7.783) | -67.783 (-5.596/-80.447) | +8.214 (+5.556/+11.026) | +8.140 (+9.657/+6.688) |
+
+| Run | Whole wall s | Whole CPU s | Peak RSS bytes | Measured-window CPU s |
+|---|---:|---:|---:|---:|
+| c1-0-A | 58.19 | 41.62 | 6561824768 | 5.96 |
+| c1-1-B | 40.66 | 24.96 | 6610944000 | 6.03 |
+| c1-2-C | 41.17 | 25.32 | 6611550208 | 6.00 |
+| c1-3-C | 40.68 | 25.23 | 6607929344 | 6.00 |
+| c1-4-B | 40.75 | 25.15 | 6612828160 | 5.98 |
+| c1-5-A | 58.35 | 42.74 | 6568558592 | 6.01 |
+| c4-0-A | 45.24 | 40.94 | 6582943744 | 4.22 |
+| c4-1-B | 27.84 | 23.04 | 6629048320 | 3.97 |
+| c4-2-C | 27.82 | 23.48 | 6630981632 | 4.25 |
+| c4-3-C | 27.71 | 23.46 | 6631309312 | 4.23 |
+| c4-4-B | 27.92 | 23.17 | 6630817792 | 4.17 |
+| c4-5-A | 45.16 | 40.71 | 6588416000 | 4.01 |
+
+Whole CPU/RSS include startup, loading, first/warm/measured requests and shutdown. Query-window CPU includes inter-request client validation/logging gaps and is not per-case CPU. Whole-process savings must not be presented as query CPU savings.
+
+| c | Comparison | Whole CPU Δ% (pairs) | RSS Δ% (pairs) | Query-window CPU Δ% (pairs) |
+|---|---|---:|---:|---:|
+| 1 | C_vs_B | +0.878 (+1.442/+0.318) | -0.032 (+0.009/-0.074) | -0.083 (-0.498/+0.334) |
+| 1 | C_vs_A | -40.078 (-39.164/-40.969) | +0.679 (+0.758/+0.599) | +0.251 (+0.671/-0.166) |
+| 4 | C_vs_B | +1.580 (+1.910/+1.252) | +0.018 (+0.029/+0.007) | +4.177 (+7.053/+1.439) |
+| 4 | C_vs_A | -42.511 (-42.648/-42.373) | +0.690 (+0.730/+0.651) | +3.038 (+0.711/+5.486) |
+
+**Decision: retain cumulative positive increments, final server recovery fails this comparison.** Versus pre-upgrade at c4, all34 p50 means and both pairs worsen; all34 p95 means worsen, with33 worsening in both pairs. Worst mean p50 is+22.003% and worst mean p95+26.548% (`class-pair-zero`). Whole-process CPU falls42.511% and peakRSS rises0.690%, but query-window CPU rises3.038% (pairs+0.711/+5.486%): most CPU savings lie outside the measured query window. These resource improvements cannot compensate for the primary latency regression. At c1,29/34 p50 and20/34 p95 means improve; six p95 cases worsen in both pairs and remain unresolved. Relative to historical85, cumulative c4 has26/34 lower p50 and23/34 lower p95 means, while four cases of each metric worsen in both pairs. No case is discarded or accepted on the strength of the overall mean.
+
+The next investigation prioritizes the shared c4 request path. Old→85 route/guard/registry/server source files are unchanged, so a source edit in those files cannot be asserted as the cause. Actual phase/thread evidence is still missing. Previously retained123 request-local graph-ID work remains a separate positive/mixed candidate for composition, not a new discovery or proof of causality. Own-built construction/loading and arbitrary query families remain separate acceptance requirements.
+
+Command: `python3 /tmp/sootup-static-review/native-cumulative/server-request-full34/run.py --plan /tmp/sootup-static-review/native-cumulative/server-request-full34/plan.sealed.json --execute-root-released`. Main-relative gates for the same production code passed as recorded above; this actual pre-upgrade comparison nevertheless shows unresolved server p50/p95 regressions.
+
+Evidence root `/tmp/sootup-static-review/native-cumulative/server-request-full34`: plan `a92e96ad177c4ba77148b97fb07468f9320874860f1a421e661d3a2171e10c1b`; results `28f82defeb0dd0cdffc0ace35432eb8b1836bbfc0cf9faf2df971198fe0dc55f`; original summary `6a6561a61b2a565ffd70ea54cf84ed024a57d79681caf34e47159c09076f4b8f`; independent full-body/statistics audit `02e62058e880d68ad1cbebd831d04087f340985dd3686eec28cd8d497a74044d`; owner terminal `44ea1101b23721f9fca76e0d5a812fb99f33a47274e6a09d475930d584e2b230`. Every first-use/warmup sample, raw response, full60 samples per case, maxima, ranges and failure/cleanup evidence remain in the packet.
+
+
+### 2026-10-08 — Cumulative JVM85: final production-style construction versus preupgrade
+
+**Result and scope.** The fixed old/current comparison completes with all8 constructions and24 strict own-version semantic verifiers passing. Continuous construction improves substantially, but the resource goal is **not met**: Kotlin mean whole-process peakRSS increases **24.019%**, and Tika increases **11.237%**, with both pairs adverse. Preserve these mixed results; faster elapsed time and lower CPU do not waive the old-relative +5%RSS requirement. This is independent construction evidence, not loading or repeated-request p50/p95 acceptance.
+
+A is preupgrade6f498705009689551c92c6d1ca92f67252ef77c4, frozen production MAIN_query84 manifest `efa32041186b9a0dec4776e0208158cbf11f309cce0637a7126b6df02d3ec52c`; B is85becae5b4dc1f7cf15c356efbdf377539b14c0d, MAIN_query88 manifest `c703b6eb5ee9f183edc456c189cb6327527b6e81cab72590c803831048314337`. Root ddbee105 and85 have identical frontend/jvm tree `7c5b4d1e922fdb24b259dec0b368cf1fe9f4204e`; their complete diff contains only Rust files and the log. Both arms use matching MAIN roles, not the older TEST role mix. Selected classfile ABI checks and actual complete execution establish helper applicability; a legacy unused ProductionPipeline.main constructor reference remains documented rather than silently rewritten.
+
+**Fixed protocol.** Kotlin compiler-embeddable2.0.21 ABBA, then Tika-app2.9.2 ABBA:8 fresh JVMs. Same pinned JDK17.0.20.1, explicit -Xmx8g, default GC,2 save-compression threads; full default LoaderConfig assertions, MmapGraphBuilder as in production JavaProjectLoader, no forcedDefaultGraph diagnostic, profiling, forcedGC, cap30 override, warming, retry or replacement. Six implicit JVM/tool option variables and classpath/dyld injection are rejected; MallocNanoZone is uniformly removed by the launcher.542 canonical content pins were fully read and matched before status-only sealing; all inputs/receipts and classpath inventories remained checked by the reviewed executor.
+
+```text
+env -u MallocNanoZone python3 /tmp/sootup-static-review/final-construction-old-vs85/execute.py --execute-root-released
+```
+
+The unchanged compiled CliConstruction helper (`406db55c1efa12c64826c9c088200544efcbdaa65e0d63e511aa69cff52cc546`) measures continuous build→full CLI node enumeration→prepared save→source close. This is the production-style operation plus explicit source close, not literal CLI process invocation. **Continuous E2E** below excludes JVM startup/report/teardown; **whole wall/CPU/RSS** from time-l includes them. Internal phase CPU is process CPU, not the main thread alone. Verifiers, graph hashes and count receipts are outside construction timers. No claim of cold OS cache or zero internally swallowed frontend skip warnings follows from quiet helper output.
+
+| Run | Continuous E2E s | Whole wall s | Whole CPU s | PeakRSS bytes | Nodes | CallSites |
+|---|---:|---:|---:|---:|---:|---:|
+| kotlin-0-A | 113.947681 | 114.10 | 197.02 | 7820165120 | 4657648 | 2173010 |
+| kotlin-1-B | 37.119937 | 37.26 | 107.56 | 9655058432 | 4744132 | 2251811 |
+| kotlin-2-B | 37.381577 | 37.54 | 102.90 | 9656500224 | 4744132 | 2251811 |
+| kotlin-3-A | 115.296870 | 115.44 | 187.64 | 7751237632 | 4657648 | 2173010 |
+| tika-0-A | 108.328484 | 108.46 | 174.38 | 7291813888 | 4673289 | 1758353 |
+| tika-1-B | 28.091682 | 28.22 | 93.69 | 8314454016 | 4620490 | 1705428 |
+| tika-2-B | 27.865089 | 28.00 | 83.43 | 8587509760 | 4620490 | 1705428 |
+| tika-3-A | 108.746420 | 108.87 | 172.30 | 7902724096 | 4673289 | 1758353 |
+
+All means are the prespecified arithmetic means of two processes/arm/corpus; pair1 is A0/B1 and pair2 A3/B2. Raw medians, ranges and maxima remain in summary.json. Internal values below are seconds; RSS rows are decimal MB. There is no n2p95 or pooled corpus result.
+
+| Corpus | Metric | Old mean | Current mean | Mean Δ | Pair1 | Pair2 |
+|---|---|---:|---:|---:|---:|---:|
+| kotlin | phase.build.wallNs | 105.558534 | 30.098134 | -71.487% | -71.968% | -70.990% |
+| kotlin | phase.build.processCpuNs | 175.408284 | 88.529484 | -49.529% | -50.565% | -48.406% |
+| kotlin | phase.cliNodeCount.wallNs | 0.383686 | 0.454158 | +18.367% | -2.526% | +43.559% |
+| kotlin | phase.cliNodeCount.processCpuNs | 1.107401 | 1.572769 | +42.023% | -31.815% | +119.758% |
+| kotlin | phase.savePrepared.wallNs | 8.680051 | 6.698461 | -22.829% | +5.404% | -38.975% |
+| kotlin | phase.savePrepared.processCpuNs | 15.676219 | 14.971866 | -4.493% | +24.445% | -25.357% |
+| kotlin | phase.closeSource.wallNs | 0.000004 | 0.000004 | -6.996% | -8.824% | -5.094% |
+| kotlin | phase.closeSource.processCpuNs | 0.000012 | 0.000012 | +4.348% | -18.750% | +57.143% |
+| kotlin | phase.continuous.wallNs | 114.622275 | 37.250757 | -67.501% | -67.424% | -67.578% |
+| kotlin | phase.continuous.processCpuNs | 192.191915 | 105.074131 | -45.329% | -45.452% | -45.199% |
+| kotlin | phase.buildPlusSave.wallNs | 114.238585 | 36.796595 | -67.790% | -67.663% | -67.914% |
+| kotlin | phase.buildPlusSave.processCpuNs | 191.084503 | 103.501350 | -45.835% | -45.531% | -46.153% |
+| kotlin | outer.wallSeconds | 114.770000 | 37.400000 | -67.413% | -67.344% | -67.481% |
+| kotlin | outer.cpuSeconds | 192.330000 | 105.230000 | -45.287% | -45.407% | -45.161% |
+| kotlin | outer.peakRssBytes | 7785.701376 | 9655.779328 | +24.019% | +23.464% | +24.580% |
+| tika | phase.build.wallNs | 102.746964 | 22.001848 | -78.586% | -78.330% | -78.842% |
+| tika | phase.build.processCpuNs | 156.670796 | 74.085494 | -52.713% | -50.516% | -54.932% |
+| tika | phase.cliNodeCount.wallNs | 0.337067 | 0.346447 | +2.783% | +5.227% | +0.345% |
+| tika | phase.cliNodeCount.processCpuNs | 0.608691 | 0.630205 | +3.534% | +6.891% | +0.300% |
+| tika | phase.savePrepared.wallNs | 5.453417 | 5.630087 | +3.240% | +0.639% | +5.876% |
+| tika | phase.savePrepared.processCpuNs | 15.930578 | 13.713755 | -13.916% | -7.217% | -20.822% |
+| tika | phase.closeSource.wallNs | 0.000004 | 0.000005 | +19.672% | +10.536% | +29.534% |
+| tika | phase.closeSource.processCpuNs | 0.000010 | 0.000012 | +15.000% | +11.111% | +18.182% |
+| tika | phase.continuous.wallNs | 108.537452 | 27.978386 | -74.222% | -74.068% | -74.376% |
+| tika | phase.continuous.processCpuNs | 173.210075 | 88.429466 | -48.947% | -46.299% | -51.626% |
+| tika | phase.buildPlusSave.wallNs | 108.200381 | 27.631935 | -74.462% | -74.315% | -74.609% |
+| tika | phase.buildPlusSave.processCpuNs | 172.601374 | 87.799250 | -49.132% | -46.482% | -51.813% |
+| tika | outer.wallSeconds | 108.665000 | 28.110000 | -74.132% | -73.981% | -74.281% |
+| tika | outer.cpuSeconds | 173.340000 | 88.560000 | -48.910% | -46.273% | -51.579% |
+| tika | outer.peakRssBytes | 7597.268992 | 8450.981888 | +11.237% | +14.024% | +8.665% |
+
+**Correctness and semantic boundaries.** Every output passed its own-runtime22-field shape,13-field metadata, and all five complete typed ordered query reports, including optimized/fallback result parity:24 reports and40 query reports, not count-only checks. Old/current counts are deliberately different: Kotlin old4,657,648/2,173,010 nodes/CallSites versus current4,744,132/2,251,811; Tika old4,673,289/1,758,353 versus current4,620,490/1,705,428. Existing old references and current-family merged/main02 references remain exact; they were not regenerated to fit these results. This is own-version parity, not proof of cross-version graph identity. Old ordinal sidecars remained absent under the old format; current sidecar bytes and36-byte GRB2 bindings matched their exact references.
+
+The four old outputs each have18files and four current outputs19:148 full output-file inventories/hashes were identical before/after verification. Their hashes protect each output against mutation; a cross-graph raw graph.metadata hash was **not** substituted for semantic equivalence. The separate125 metadata-byte mismatch, field-label/serialization-order investigation and completed remaining19 checks remain retained; no strict semantic field or ordinal check was waived here.
+
+**Variability, background and acceptance.** Kotlin continuous means are114.622275s→37.250757s (−67.501%); Tika108.537452s→27.978386s (−74.222%). Whole CPU falls45.287%/48.910%. Kotlin RSS rises7,785.701376→9,655.779328MB, Tika7,597.268992→8,450.981888MB. Both RSS pairs exceed5%; raw pair values above remain decisive, not hidden by CPU benefit. Kotlin old save times6.315761/11.044342s versus current6.657085/6.739838s retain a slow old reverse sample; do not attribute its complete difference to the new save implementation. Phase/processCPU is not subtracted from wall to invent IO or GC causality.
+
+The monitor retains1,258 snapshots with no classified external events/incomplete lifetimes. It still declares DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY and exclusiveWindowClaim=false: subsecond/unknown native work/IO can be missed. Its historical native-session phase label here denotes the eight owned construction JVM commands; verifier work is separately labelled. All32 owned roots ended0, were absent after original60522 authoritatively returned0, and no matching Java command remained. No later workload was started by this owner.
+
+**Independent audit and retained tooling failure.** Root independently recomputed32 jobs,24 exact reports,40 full query reports,148 inventories and all statistics. Its first offline audit attempt failed only because the copied116 audit expected the old monitor schema and an events file that is absent when there are no events. The original script/initial-audit-failure are retained. After checking the pinned new monitor schema (allEvents/nativeSession), root corrected the offline parser and audited the same raw output successfully. No JVM, construction sample, verifier or performance series was rerun for that tool correction.
+
+Commands: `d7e30f80048f573aea85a30a21bafda6f3b4841545c0666ccff8298e4c3df0e3`.
+Runner: `2f495a00553e88fd9b211ea2f95392722b8fae5f957be6e059f2a28d35352ea7`.
+Raw results: `3319dda83222cef3bd74cd5e1de78a1cd90cc78a48f2d8492cb6cc0c88c31b2f`.
+Statistics: `04d3305b947237bb785bde481eaeac0703c58c68b48157e7b8c961c32f11fe7e`.
+Owner terminal/cleanup: `e950e9b76afb91b4d3c5dff210beb4014ca871a1d3edc9cb0cb12a14257077ec`.
+Root independent audit: `b6496a542d2c294712ec33b4e754e8d595a3a16f9f73b67dd5cad2c3b92ba395`.
+
+All raw outputs and the independent audit are under `/tmp/sootup-static-review/final-construction-old-vs85/`. **Decision:** retain the measured construction gains and all adverse evidence; overall construction resource recovery remains incomplete due to RSS. A previously retained G1MaxNewSizePercent30 candidate may receive a separately fixed future protocol; it was not applied to this default-GC series, and neither parameters nor old-relative acceptance were changed after seeing these results.
+
+
+### 2026-10-08 — Retained123 composed onto cumulative native ddbee: correctness verification
+
+The request-local graph-ID candidate from123 remains a positive/mixed retained increment, not a new hypothesis. Compose its exact final registry/routes changes from original27e90959 onto productionddbee105 in `/tmp/graphite-native-cumulative-123`. Registry bytes equal the tested123 source; routes differ from123 only by the retained134 mapped-byte HELP assertion. The shared checkpoint, bounded sorting, ordinal ownership/rank, loading source drops and MCP lint fix remain intact. Public GraphLease String IDs and selective routes remain unchanged; only the all-graphs route creates request-local Source IDs directly. Existing five behavior tests are preserved, covering snapshot order, request-local identity, compact/provenance ownership, reload/remove lifetime, full response serialization and guard refusal.
+
+Original owner5407 completed once with exit0. Full297 tests passed (storage36,CLI31,Cypher111,Explore118,integration1), all57 specified behavior names, fmt, strict storage/Cypher/Explore all-target/all-feature Clippy and CLI export. The real persisted core fixture was enabled; no failure/ignore/filter/skip. Four workspace packages were explicitly cleaned and recompiled from the candidate worktree before the tests, avoiding the previously observed cross-worktree Cargo artifact reuse. Root independently checked all raw test-name blocks, logs, source hashes, compilation paths, fixture setting and exported binary. No build process remained at cleanup.
+
+Command: `python3 /tmp/sootup-static-review/native-cumulative-123/validation/run.py --execute-root-released`. Pinned Rust1.93/macOS ARM64/jobs2 and the unchanged19-file real core fixture. Plan SHA `e5e477773a2d8ca9f206a61652bc0584f681905f93ef0da1dee522800195dfda`; result `77dba50f161548d099e736d405cbef6df429d0efe6a1e631f2cf3bd17613e22f`; frozen executable `5099bc26b2d66a44d6a832e936f412816ffc0db0308b5e8f0b4ca66d4af020c4`; owner terminal `e1ec6701bcd37302668e050f908624573df5db0a214ef0c5575c261e41e0ebf0`.
+
+**Decision:** retain this validated cumulative candidate for performance comparison. It remains isolated, not yet pushed as production code. The original123 cohort's mixed positive measurements remain as recorded; they are not relabelled as measurements of this new combination. No new latency/CPU/RSS result or recovered c4 latency is claimed from these correctness tests. The separate temporary request-phase diagnostic will locate the observed broad c4 regression without discarding either this candidate or the cumulative loading/sorting gains.
