@@ -5576,3 +5576,63 @@ Command: `python3 /tmp/sootup-recovery-sources/merged-construction-memory-plan/e
 **Next hypothesis:** ordinal persistence currently materializes/sorts all decoded CallSites before emitting primitive arrays. Capturing compact ordinal/origin records during the existing node-data write pass may remove that retention and redundant decode work. This is source-supported but causality/performance remains unproven; it requires its own correctness and real-data comparison. No optimization was accepted from this diagnostic pair. Full analysis: `/tmp/sootup-static-review/merged-memory-analysis/report.md` and `results.json`.
 
 **CI at `ca659c65`:** JVM, Rust and required benchmark regression workflows all passed, including run 37560173922 and its exact-head [benchmark comment](https://github.com/johnsonlee/graphite/pull/171#issuecomment-6025051872). Actual base `02b853b7` and candidate Rust executables are byte-identical (SHA-256 29524a0205ff1a2b1a0df82f550257e36a631dab59f093e43a37dbe4660add94); the earlier `87da90bd` failure remains in history. Preserve adverse results despite the gate's PASS: Kotlin save 9,541→15,886ms initially and 9,648→10,841ms on reverse confirmation; global-wide pressure pair 2 P95 +144.0% and replay CPU +6.44%, with name-pair zero/targeted rows adverse in two pairs. These gates have different boundaries/thresholds and do not prove the user's per-operation latency/CPU/RSS constraints. CI heap arguments were not explicitly capped for every direct launcher; no historical >8 GiB violation is inferred from missing arguments.
+
+
+### 2026-10-07 — Attempt 108: Collect primitive call ordinals during node persistence
+
+**Status:** RETAINED AS AN INCREMENTAL CHANGE, not accepted as complete recovery. All primary and follow-up runs completed. The initial rejection was reconsidered after the user clarified that verified incremental gains may accumulate; an individual attempt need not independently reach the final pre-upgrade targets. The measured implementation is integrated with the separately tested cancellation fix; combined validation passed.
+
+**Hypothesis:** the old save path decodes, retains and sorts every ordinal-bearing CallSite before copying its ID, ordinal and origin into primitive arrays. Count the ordinal-bearing calls in the existing counting pass, allocate the arrays just before node-data writing, and populate them during that write pass. Preserve the encoder, sidecar format, metadata binding and readers. Already ordered streams require no sort; other streams sort aligned primitive fields with encounter-order tie breaking. This removes the dedicated CallSite scan and object retention without reducing graph coverage, changing heap size or forcing GC.
+
+**Correctness:** isolated parent `ca659c65` plus this candidate passed 250 fresh webgraph tests and 43 fresh query tests, with zero failures/errors/skips, webgraph Detekt and both JMH artifact-isolation checks. The four added tests compare the unchanged reference encoder byte-for-byte and cover shuffled sparse IDs across sidecar blocks, extreme/nullable ordinals, origins, stable equal-ID ordering, eager/mapped decoding and stale-sidecar removal. The first build failed Detekt's constructor parameter limit; related CallSite writer fields were grouped without changing execution order. The second failed compilation of the new test; a nullable property was cached locally and the delegation expression parenthesized. Both failures remain archived; only build3 supplies the test pass.
+
+Candidate runtime manifest SHA-256 `0ca5a6c12cf227262a2f8c12b18ebe89bd5e04f21ee439b9265ca37654937ec9`; build evidence `/tmp/sootup-recovery-sources/attempt108-build/attempt108-build3/`. Publishing configuration was restored after each build. Root independently checked the fresh XML counts and content hashes.
+
+**Predeclared real-data comparison:** exactly four full-feature Kotlin compiler 2.0.21 constructions, parent A then candidate B in ABBA order, on the same M3 Max / macOS 14.3 / JDK 17.0.20.1 host. Both use the same compiled CLI-like helper, default features, Mmap builder, full node-count scan, prepared two-thread save, explicit source close and `-Xmx8g`. Whole-process user+system CPU and peak RSS are collected separately from internal phase clocks. All samples, failures and mean/median/range/pair deltas are retained. This n=2-per-arm parent comparison cannot establish recovery against pre-upgrade or standalone loading/query acceptance.
+
+All four output graphs must pass the existing shape, metadata and five-query reports; sidecar bytes and metadata binding must match the validated merged reference. The first candidate additionally compares every normalized CallSite ordinal/origin record against that reference. Separate reduced-feature controls use the unchanged common `GraphEndToEndBenchmark.kotlinCompiler_build_save_load_query`, parent then candidate, two fresh forks each, zero warmup, one single shot, matching 4 GiB launchers/forks. Their fused boundaries cannot replace full-feature construction or independent loading/query evidence.
+
+Exact command arrays and raw results: `/tmp/sootup-recovery-sources/attempt108-performance-pilot/`; resolved command SHA-256 `3c32d093b3c8a9ebbf6159ee14684efcb6b1c82006bb78f40f294c28ab5a3503`. No synthetic performance benchmark is used.
+
+**Completed primary construction samples:** all four runs exited successfully with 4,744,132 nodes. All subsequent output verification and separate JMH controls also completed successfully; successful execution is distinct from a favorable performance result.
+
+| Order / variant | Continuous construction s | Whole CPU s | Peak RSS GB | Save s |
+|---|---:|---:|---:|---:|
+| run0-A | 37.310826 | 103.40 | 9.629909 | 6.920126 |
+| run1-B | 36.867443 | 104.47 | 9.072099 | 6.676781 |
+| run2-B | 36.990654 | 103.13 | 9.667215 | 6.631487 |
+| run3-A | 37.434450 | 103.51 | 9.642033 | 6.921217 |
+
+Mean continuous construction is 37.372638→36.929048s (**−1.187%**), whole-command CPU 103.455→103.800s (**+0.333%**), and peak RSS 9.635971→9.369657GB (**−2.764% / −266.314MB**). Save falls 6.920671→6.654134s (−3.851%). The candidate RSS samples differ by 595.116MB; one candidate peak (9.667215GB) exceeds both parent samples. These are modest local point estimates, not proof of repeatable memory improvement or compliance with the pre-upgrade +5% cap. No sample has been excluded or replaced.
+
+**Completed correctness:** all 12 separate shape/metadata/query verifier JVMs passed. All four ordinal sidecars and metadata bindings match the reference byte-for-byte; all 2,251,811 normalized CallSite records and 1,329,249 origins match the reference in the exact disk-backed comparison. Every output graph retains its original file hashes after verification. All 20 planned jobs completed, with no retry or excluded sample. Terminal results SHA-256 `28d08fde29b0eeaa208b78e73c5f0fbecd8d6be954dbb2f3594e1b1e1eea3d77`.
+
+**Independent reduced-feature JMH control:** same exact Kotlin pipeline method and common harness, parent A then candidate B, two fresh forks each, 4 GiB launcher/forks, zero warmup, one single shot per fork. These runs disable call graph, annotations and cross-method tracking; CPU/RSS below cover the whole command including orchestration and both forks, not isolated method CPU/op.
+
+| Runtime | Fork 1 ms/op | Fork 2 ms/op | Mean ms/op | Whole command CPU s | Peak RSS GB |
+|---|---:|---:|---:|---:|---:|
+| A | 18920.519709 | 16956.807250 | 17938.663479 | 112.61 | 5.006344 |
+| B | 20230.965792 | 16757.364708 | 18494.165250 | 120.63 | 4.998545 |
+
+Candidate method mean is **+3.097%**, command CPU **+7.122%**, and RSS **−0.156%** relative to the parent. The second candidate fork is faster while the first is slower; both are retained. Two forks do not establish a stable intrinsic regression or its cause. This parent-only comparison also cannot establish a violation of the user's resource cap relative to pre-upgrade.
+
+**Initial disposition, superseded:** the change was rejected because its small full-feature gain did not resolve the memory regression and the independent 4 GiB control had adverse point estimates. Sources were archived and the isolated tree restored; the original archive and restoration proof remain at `/tmp/sootup-static-review/attempt108/rejected-source/`.
+
+**Revised decision:** preserve the measured implementation as an isolated candidate and investigate the conflicting 4 GiB result. Requiring every individual attempt to recover all final metrics would discard potentially useful cumulative improvements. Parent-relative CPU +7.122% is not the same comparison as the user's pre-upgrade +5% cap; two forks also do not establish a stable intrinsic regression. Neither the favorable 8 GiB point estimates nor the adverse 4 GiB estimates are discarded. A follow-up must distinguish repeatable tradeoffs from variation and evaluate the cumulative candidate against the accepted pre-upgrade baseline. Correctness and maximum heap remain hard constraints at every step. Restored sources match the measured hashes exactly (`/tmp/sootup-static-review/attempt108/reopened-proof.json`); no rerun, replacement sample or final acceptance is implied. Construction/loading/query recovery remains incomplete.
+
+**Predeclared follow-up after reopening:** run exactly four new outer JMH groups in BAAB order, one fresh fork per group, with the same frozen A/B runtimes, real Kotlin method, 4 GiB launcher/fork, zero warmup and one single shot. This changes the process grouping to balance ordering; original two-fork-group CPU/RSS remain a separate dataset. Retain every original and new result, including failures; no reruns or selected replacement samples. The purpose is to investigate the conflicting control, not require the incremental attempt to complete the entire recovery. Commands: `/tmp/sootup-recovery-sources/attempt108-jmh-baab/commands.json`, SHA-256 `a177857d7c1a0030f33ccc6bb1b371abf9d240e2324cb5981650b069e0d4639f`.
+
+**Completed fixed follow-up:** all four one-fork groups passed. These are separate outer-process resource measurements from the earlier two-fork groups.
+
+| Order / runtime | JMH ms/op | Whole command CPU s | Peak RSS GB |
+|---|---:|---:|---:|
+| run0-B | 16128.318541 | 57.48 | 4.998922 |
+| run1-A | 16647.118125 | 59.45 | 4.952556 |
+| run2-A | 20156.443291 | 59.59 | 4.548559 |
+| run3-B | 16299.401500 | 56.89 | 4.325261 |
+
+Within this fixed follow-up, the candidate method mean is 11.890% lower, CPU 3.923% lower and RSS 1.862% lower. The slow parent shot is retained, as are the earlier slow candidate shot and adverse two-fork CPU result. This reversal leaves the reduced-feature 4 GiB effect uncertain; it does not justify selecting either batch as the stable effect or pooling their different outer-command CPU boundaries. Full raw results: `/tmp/sootup-recovery-sources/attempt108-jmh-baab/results.json`, SHA-256 `a263804ccca060242d1ffb2100625c624409a7e4f4f8d76eb5342fbb608893c8`.
+
+**Keep decision:** retain the compact ordinal collection as incremental progress based on the full-feature construction/save improvement, preserved format/semantics and the absence of a repeatable adverse direction in the separate control. The modest and variable RSS reduction is not a solution to the outstanding memory regression. The reduced-feature control remains uncertain, rather than claimed as a proven gain. Evaluate the cumulative implementation against pre-upgrade, including independent loading and query resources; all hard correctness/heap constraints remain in force. Integration does not constitute final recovery acceptance.
+
+**Combined validation:** the retained 108 implementation plus the final-accounting cancellation fix passed 252 fresh webgraph tests, 43 fresh query tests, webgraph Detekt and both JMH artifact-isolation checks, with no failures/errors/skips. Root independently checked all test XML counts and hashes. Publishing files were restored byte-for-byte. The frozen combined runtime is `/tmp/sootup-recovery-sources/combined108-build/combined108-build1/snapshot/runtime.json`, SHA-256 `39fd360457890bfea77a7cf0755a7aa1390bc3540f14564c704e992823b89d32`; it is the candidate for subsequent independent loading/query measurements. No earlier parent-only measurement is relabeled as this combined artifact.

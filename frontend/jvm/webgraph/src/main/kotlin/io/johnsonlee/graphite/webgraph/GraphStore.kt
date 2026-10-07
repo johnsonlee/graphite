@@ -383,8 +383,13 @@ private class NodeDataWriteContext(
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
     val classOverviewEdges: ClassOverviewEdgeBuilder,
-    val callSiteIdentity: MessageDigest,
-    val callSiteIndexInput: CallSiteIndexPersistenceInput?
+    val callSites: CallSiteWriteContext
+)
+
+private class CallSiteWriteContext(
+    val identity: MessageDigest,
+    val indexInput: CallSiteIndexPersistenceInput?,
+    val ordinalInput: CallSiteOrdinalPersistenceInput
 )
 
 private fun MessageDigest.updateContentInt(value: Int) {
@@ -568,21 +573,6 @@ object GraphStore {
 
     private fun notDirectoryMessage(dir: Path): String = "$NOT_A_DIRECTORY_PREFIX $dir"
 
-    /**
-     * The `graph.callsite-ordinals` sidecar for every call site that has an ordinal, ascending by
-     * node id, with the digest `graph.metadata` binds to it; `null` when no call site has one (a
-     * graph built by an older frontend), in which case the save writes no sidecar and no binding,
-     * and the sidecar an earlier save left in the directory was already removed when the save began.
-     */
-    private fun encodeCallSiteOrdinals(graph: Graph): NodeSerializer.EncodedCallSiteOrdinals? {
-        val sites = graph.nodes(CallSiteNode::class.java).filter { it.ordinal != null }.sortedBy { it.id.value }.toList()
-        if (sites.isEmpty()) return null
-        val ids = IntArray(sites.size) { sites[it].id.value }
-        val ordinals = IntArray(sites.size) { sites[it].ordinal!! }
-        val origins = IntArray(sites.size) { sites[it].origin?.value ?: NO_ORIGIN }
-        return NodeSerializer.encodeCallSiteOrdinals(ids, ordinals, origins)
-    }
-
     private fun readMetadataMethodCount(metadataFile: Path): Long =
         DataInputStream(BufferedInputStream(metadataFile.toFile().inputStream())).use { dis ->
             NodeSerializer.readMetadataMethodCount(dis).toLong()
@@ -622,6 +612,7 @@ object GraphStore {
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
         var nodeCount = 0
+        var ordinalCount = 0
         val allStrings = mutableSetOf<String>()
         val nodeTypeCounts = IntArray(UByte.MAX_VALUE.toInt() + 1)
         val classOverviewBuilder = ClassOverviewBuilder()
@@ -632,6 +623,7 @@ object GraphStore {
             collectSingleNodeStrings(node, allStrings)
             if (node is CallSiteNode) {
                 classOverviewBuilder.add(node)
+                if (node.ordinal != null) ordinalCount++
             }
         }
         val classOverviewCounts = classOverviewBuilder.topClassCounts(ClassOverviewStore.MAX_PERSISTED_CLASSES)
@@ -684,7 +676,8 @@ object GraphStore {
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
 
-        // 6. Write nodedata + nodeindex simultaneously
+        // 6. Write nodedata + nodeindex and capture compact ordinal fields in the same pass.
+        val ordinalInput = CallSiteOrdinalPersistenceInput(ordinalCount)
         writeNodeDataAndIndex(
             graph,
             dir,
@@ -694,13 +687,14 @@ object GraphStore {
             classOverviewBuilder.callSiteCount().toInt(),
             stringTable,
             classOverviewEdges,
-            callSiteIndexInput
+            callSiteIndexInput,
+            ordinalInput
         )
 
         // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
         //    the binding of the call-site ordinal sidecar, then the two sidecars.
         val branchDefinitions = NodeSerializer.encodeBranchDefinitions(metadata.branchScopes, metadata.localDefinitions)
-        val callSiteOrdinals = encodeCallSiteOrdinals(graph)
+        val callSiteOrdinals = ordinalInput.encode()
         DataOutputStream(BufferedOutputStream(dir.resolve(METADATA_FILE).toFile().outputStream())).use { dos ->
             NodeSerializer.saveMetadata(metadata, dos, stringTable)
             NodeSerializer.writeMetadataTrailer(dos, branchDefinitions.payloadDigest)
@@ -740,7 +734,8 @@ object GraphStore {
         callSiteCount: Int,
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
-        callSiteIndexInput: CallSiteIndexPersistenceInput?
+        callSiteIndexInput: CallSiteIndexPersistenceInput?,
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput
     ) {
         val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
             update(stringTable.contentIdentity())
@@ -761,7 +756,8 @@ object GraphStore {
                     cos,
                     stringTable,
                     classOverviewEdges,
-                    callSiteIndexInput
+                    callSiteIndexInput,
+                    callSiteOrdinals
                 )
             }
         }
@@ -781,7 +777,8 @@ object GraphStore {
         cos: CountingOutputStream,
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
-        callSiteIndexInput: CallSiteIndexPersistenceInput?
+        callSiteIndexInput: CallSiteIndexPersistenceInput?,
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput
     ) {
         NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
             TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
@@ -799,8 +796,7 @@ object GraphStore {
                         cos,
                         stringTable,
                         classOverviewEdges,
-                        callSiteIdentity,
-                        callSiteIndexInput
+                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals)
                     )
                 )
             }
@@ -818,17 +814,18 @@ object GraphStore {
             context.typeIndexWriter.write(tag, node.id.value)
             if (node is CallSiteNode) {
                 context.classOverviewEdges.add(node)
-                context.callSiteIdentity.updateContentInt(node.id.value)
-                context.callSiteIdentity.updateContentLong(offset)
-                context.callSiteIdentity.updateContentInt(
+                context.callSites.identity.updateContentInt(node.id.value)
+                context.callSites.identity.updateContentLong(offset)
+                context.callSites.identity.updateContentInt(
                     context.stringTable.indexOf(node.caller.declaringClass.className)
                 )
-                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.caller.name))
-                context.callSiteIdentity.updateContentInt(
+                context.callSites.identity.updateContentInt(context.stringTable.indexOf(node.caller.name))
+                context.callSites.identity.updateContentInt(
                     context.stringTable.indexOf(node.callee.declaringClass.className)
                 )
-                context.callSiteIdentity.updateContentInt(context.stringTable.indexOf(node.callee.name))
-                context.callSiteIndexInput?.add(node, context.stringTable)
+                context.callSites.identity.updateContentInt(context.stringTable.indexOf(node.callee.name))
+                context.callSites.indexInput?.add(node, context.stringTable)
+                context.callSites.ordinalInput.add(node)
             }
         }
     }
