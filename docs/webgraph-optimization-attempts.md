@@ -9483,3 +9483,123 @@ Correctness and stability passed this finite fixed series; graph construction an
 Independent root full-body/statistics audit: original79826 exit0, SHA d9ccff5e9212eaee68a8aa8efb30a4aae8874093f9d299114974a67c76a36cc6; all25704 typed responses/24480 measured ranks/pairs/resources/owned cleanup PASS. [Audit](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/independent-audit/audit.json). [Complete raw-linked report](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/results-report.md), [all-case digest](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/results-digest.json).
 
 Execution receipt hashes: summary5ffba7e621cd8aa35599da707f3cce1748f4cdbfa8f4a066f01caebe22157a4e; results cff8c239b17089f1ae16877e29ff9cef96931195a6a4b84c58fdea0762b3ca0f; original65853 owner-terminal493829bb3d1a04e3900ae8868b46668144ad5f6f5884067b75c2a4df8248ce43. All artifacts retained under /tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/.
+
+### 2026-10-08 — Matched cap30 construction versus preupgrade: RSS remains above the limit
+
+Original session15543 terminal exit0; fixed Kotlin ABBA then Tika ABBA. A=preupgrade6f498 MAIN_query84, B=current85 MAIN_query88. Both construction arms use the identical explicit G1/experimental unlock/G1MaxNewSizePercent30 flags with -Xmx8g. All24 verifier JVMs retain original -Xmx8g/default flags. No samples replaced.
+
+All8 constructions and24 strict own-version shape/metadata/five-query validators passed. All148 output file hashes/inventories unchanged before/after verification; old18/current19 files per graph. Current ordinal sidecar and GRB2binding checks passed; old ordinal absence preserved. This does not assert cross-version graph equality.
+
+**RSS still exceeds the +5% old-relative target in both corpora and both pairs.** Preserve the retained cap30 candidate and the previous default-GC negative results; these separate series cannot establish a causal cap30 effect. No product default changes or final acceptance follow.
+
+#### All8 raw construction results
+
+|Run|Continuous E2E s|Whole wall s|Whole CPU s|Peak RSS MiB|
+|---|---:|---:|---:|---:|
+|kotlin-0-A|118.169987|118.350000|189.680000|6772.593750|
+|kotlin-1-B|41.568165|41.700000|105.470000|8214.796875|
+|kotlin-2-B|41.787475|41.930000|107.470000|8819.750000|
+|kotlin-3-A|118.187004|118.300000|188.090000|6593.656250|
+|tika-0-A|108.376074|108.490000|168.510000|6511.953125|
+|tika-1-B|28.039772|28.160000|89.800000|7044.078125|
+|tika-2-B|27.333600|27.460000|89.060000|7468.687500|
+|tika-3-A|106.107053|106.230000|173.820000|6976.937500|
+
+#### All metrics: arm means and both fixed pairs
+
+Time values below are seconds; RSS values are MiB; node counts remain counts. Pair1=A0/B1 and pair2=A3/B2. Percentage deltas are B/A−1. Tiny close/count intervals remain reported and are not promoted as substantive gains.
+
+|Corpus|Metric|A mean|B mean|Mean Δ%|Pair1 Δ%|Pair2 Δ%|
+|---|---|---:|---:|---:|---:|---:|
+|kotlin|phase.sourceNodes|4657648.000000|4744132.000000|+1.856817|+1.856817|+1.856817|
+|kotlin|phase.build.wallNs|106.850855|30.001417|-71.922156|-71.996506|-71.847647|
+|kotlin|phase.build.processCpuNs|169.656958|83.237854|-50.937553|-52.021538|-49.840527|
+|kotlin|phase.cliNodeCount.wallNs|0.333937|0.353139|+5.750088|-3.266335|+14.898121|
+|kotlin|phase.cliNodeCount.processCpuNs|0.900778|1.341604|+48.938362|-16.014006|+128.604515|
+|kotlin|phase.savePrepared.wallNs|10.993700|11.323260|+2.997718|+3.863973|+2.150898|
+|kotlin|phase.savePrepared.processCpuNs|18.209688|21.749644|+19.439957|+26.499062|+12.628025|
+|kotlin|phase.closeSource.wallNs|0.000004|0.000005|+25.875862|+29.418408|+22.491909|
+|kotlin|phase.closeSource.processCpuNs|0.000013|0.000015|+7.407407|+16.666667|+0.000000|
+|kotlin|phase.continuous.wallNs|118.178496|41.677820|-64.733161|-64.823416|-64.642919|
+|kotlin|phase.continuous.processCpuNs|188.767437|106.329116|-43.671897|-44.424072|-42.913467|
+|kotlin|phase.buildPlusSave.wallNs|117.844555|41.324677|-64.932892|-64.999134|-64.866664|
+|kotlin|phase.buildPlusSave.processCpuNs|187.866646|104.987498|-44.115946|-44.573606|-43.654912|
+|kotlin|outer.wallSeconds|118.325000|41.815000|-64.660892|-64.765526|-64.556213|
+|kotlin|outer.userSeconds|185.900000|103.260000|-44.454008|-45.317350|-43.581702|
+|kotlin|outer.systemSeconds|2.985000|3.210000|+7.537688|+16.666667|-0.634921|
+|kotlin|outer.cpuSeconds|188.885000|106.470000|-43.632369|-44.395825|-42.862459|
+|kotlin|outer.peakRssBytes|6683.125000|8517.273438|+27.444473|+21.294694|+33.761144|
+|tika|phase.sourceNodes|4673289.000000|4620490.000000|-1.129804|-1.129804|-1.129804|
+|tika|phase.build.wallNs|101.404648|21.800860|-78.501124|-78.574405|-78.426095|
+|tika|phase.build.processCpuNs|156.113705|72.577840|-53.509629|-53.496661|-53.522497|
+|tika|phase.cliNodeCount.wallNs|0.333599|0.355634|+6.605117|+13.367038|-0.063645|
+|tika|phase.cliNodeCount.processCpuNs|0.598931|0.857471|+43.166909|+84.838225|+1.030047|
+|tika|phase.savePrepared.wallNs|5.503313|5.530188|+0.488342|+4.330272|-3.274346|
+|tika|phase.savePrepared.processCpuNs|14.326890|15.871313|+10.779887|+32.290637|-5.363374|
+|tika|phase.closeSource.wallNs|0.000004|0.000005|+19.904499|+15.070968|+24.491795|
+|tika|phase.closeSource.processCpuNs|0.000012|0.000015|+20.833333|-7.692308|+54.545455|
+|tika|phase.continuous.wallNs|107.241564|27.686686|-74.182877|-74.127341|-74.239601|
+|tika|phase.continuous.processCpuNs|171.039538|89.306638|-47.785969|-46.743464|-48.796681|
+|tika|phase.buildPlusSave.wallNs|106.907961|27.331048|-74.434974|-74.395618|-74.475176|
+|tika|phase.buildPlusSave.processCpuNs|170.440595|88.449152|-48.105583|-47.215764|-48.968140|
+|tika|outer.wallSeconds|107.360000|27.810000|-74.096498|-74.043691|-74.150428|
+|tika|outer.userSeconds|168.625000|86.935000|-48.444774|-47.378255|-49.477616|
+|tika|outer.systemSeconds|2.540000|2.495000|-1.771654|-3.861004|+0.401606|
+|tika|outer.cpuSeconds|171.165000|89.430000|-47.752169|-46.709394|-48.763088|
+|tika|outer.peakRssBytes|6744.445312|7256.382812|+7.590506|+8.171512|+7.048221|
+
+Continuous E2E is graph construction→CLI count→prepared save→close. Whole wall/user+system CPU/peak RSS includes JVM startup/report/teardown, and is reported independently. Full148file checks and24 verifier workloads are outside performance timers. Xmx8g is a heap ceiling, not a process RSS ceiling.
+
+Monitor:1266 process metadata samples, no classified activity events or external-lifetime limitations, but the predeclared label remains DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY and exclusiveWindowClaim=false. Sampling may miss short/subresolution or unclassified native/I/O activity. No quiet/exclusive or final resource-cap claim. Each corpus has only two observations per arm.
+
+Original32 boundary PIDs are absent and no matching Java commands remain. Owner receipt is owner-terminal.json; raw results/summary and complete percentiles-free construction metrics are retained under execution/. Independent audit is recorded separately; this owner summary does not substitute for that audit.
+
+#### Frozen execution and evidence
+
+Exact owner command (once, original session15543):
+
+```sh
+env -u MallocNanoZone python3 /tmp/sootup-static-review/final-construction-old-vs85-cap30/execute.py --execute-root-released
+```
+
+All8 construction JVM argv insert exactly `-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30` after the same `-Xmx8g`; no new flag-preflight JVM, warmup, profiler, forced GC, retry or extra construction. The earlier actual JDK flag-preflight receipt is pinned (`b161c5489ce443850be3f0c8f29e7fe81a223f50238e6b30670fc3a929f42575`).
+
+JDK executable: `/opt/homebrew/Cellar/openjdk@17/17.0.20.1/libexec/openjdk.jdk/Contents/Home/bin/java`; SHA `e801ad940c712ae69235e2ab6b5869c5ac72a26f3d5591c13f6ce6ed3b0fcc93`. Same frozen HotSpot17.0.20.1 for every arm; allfeatures/default production Mmap JavaProjectLoader, prepared-save compression threads2, no forced DefaultGraph.
+
+|Input|Identity|SHA256|
+|---|---|---|
+|kotlin|`/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.jetbrains.kotlin/kotlin-compiler-embeddable/2.0.21/79346ed53db48b18312a472602eb5c057070c54d/kotlin-compiler-embeddable-2.0.21.jar`|`9fa8cdd1de0dccffe154c997d423ec6b5f53cd6d9177e3a77a9b0de03fb1bc81`|
+|tika|`/Users/johnsonlee/.gradle/caches/modules-2/files-2.1/org.apache.tika/tika-app/2.9.2/5b685f50714f83068eb1ed4780eb6b29db4efc84/tika-app-2.9.2.jar`|`87e06f88c801fcb2beae5f15e707241edb14da468a154ad78be4e31ff982c3da`|
+
+|Runtime|Source|Manifest SHA256|
+|---|---|---|
+|A 84 MAIN_query entries|`6f498705009689551c92c6d1ca92f67252ef77c4`|`efa32041186b9a0dec4776e0208158cbf11f309cce0637a7126b6df02d3ec52c`|
+|B 88 MAIN_query entries|`85becae5b4dc1f7cf15c356efbdf377539b14c0d`|`c703b6eb5ee9f183edc456c189cb6327527b6e81cab72590c803831048314337`|
+
+|Corpus/arm|Source nodes|Call sites|Graph files|
+|---|---:|---:|---:|
+|kotlin/A|4657648|2173010|18|
+|kotlin/B|4744132|2251811|19|
+|tika/A|4673289|1758353|18|
+|tika/B|4620490|1705428|19|
+
+Preparation failures were prevented before execution: the source review found176 duplicated `-cap30-cap30` output-directory components and corrected only that exact path component; original draft is retained in `before-path-fix/`. The deferred sealer initially assumed the predecessor owner receipt had a `records` field and a list of runs. Actual terminal65853 uses integer runs/responses plus36 lifecycle/native/time PIDs; its12 client PIDs are in per-run reports. The original script and read-only mismatch record are retained in `before-predecessor-schema-fix/`; the corrected validator checked actual12/25704/24480 and all48 PID/groups absent. Neither issue was an executed performance-sample failure. No samples were replaced.
+
+The one-time content seal, original43908 exit0, rehashed543 canonical unique pins and five classpath inventories. Its plan delta was only status/preparationOnly; fixed32 argv were unchanged. Root reviewed and explicitly released the resulting command/runner hashes.
+
+|Evidence under packet root|SHA256|
+|---|---|
+|`commands.resolved.json`|`b360ece2c69e5bc7981f6cd74f6067663085930e1220071f115035c1f6e200bf`|
+|`execute.py`|`88fe7a3a9edabb8c5b7effd96fccff09852609a88f67ad94140675b8b84df6a0`|
+|`seal.json`|`ddeaedd17f7590d8b59e3e3690c265edef5e4cc01b9d96b99f14513fbfea42ca`|
+|`content-preflight.json`|`76b08f8f3283a14ff0f349625f3364ef294759e7c3dd5cfca30acb2cd0ff7217`|
+|`owner-terminal.json`|`d1614a03ce4eb97a628b1b79eca0ae9dfad9550f338de8c44816d9f6205403c6`|
+|`execution/results.json`|`e70425d37926c2911558b4fa497043b3e4507a4d1bb9dd4ea554ddc1df7973ba`|
+|`execution/summary.json`|`13f968592605177c59e5f45393dc3d46e32ace8dc1a5668bf7972da7948e1023`|
+|`host-observation-diagnostic/summary.json`|`9ab29e71f7f421ab1c807d8311c8b3135ede762c286a6d1077d78d1429efc901`|
+
+Packet: `/tmp/sootup-static-review/final-construction-old-vs85-cap30/`. The default-GC predecessor remains `/tmp/sootup-static-review/final-construction-old-vs85/`: its KotlinRSS+24.019% and TikaRSS+11.237% failures are retained. Cross-series changes are descriptive only; this fixed comparison isolates old/current under the same cap30 setting, not cap30 versus defaultGC within one randomized factorial design. Keep retained positive construction throughput evidence and resource adverse evidence together; do not change the product GC default or claim final acceptance.
+
+Independent audit completed with original tool exit0 (chunk `16dd88`), checking all32 jobs,24 strict reports,40 complete ordered queries,148 file inventories,ordinal binding, raw timing/CPU/RSS, all means and both fixed pairs. Audit SHA256 `9c53048ee559ab79ffd50c0aa466d558a76d6820d66999f06719a2b298867279`; root separately checked all32 owned PIDs absent. The36 displayed metric rows were independently checked against original summary values before appending.
+
+At exact production head `8b6694f41f65a33616dbf1ecb4fb5e1452bed1c6`, JVM run37689239312, Rust run37689239328 and Benchmark regression run37689239281 all completed successfully, including required `benchmark-regression-gate` job113030760561. This main-relative CI does not replace preupgrade query or construction resource acceptance.
