@@ -493,29 +493,7 @@ class SootUpAdapter(
                 if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
                     log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
                 }
-                if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
-                    val className = sootClass.type.fullyQualifiedName
-                    extractAnnotations(sootClass.annotations, className, "<class>")
-                    sootClass.fields.forEach { field ->
-                        extractAnnotations(field.annotations, className, field.name)
-                    }
-                }
-
-                activeSyntheticClass = SyntheticIdentity.isSyntheticClass(sootClass)
-                if (activeSyntheticClass) {
-                    syntheticIdentities.addClass(sootClass)
-                }
-                forEachMethod(sootClass) { method ->
-                    processMethod(method)
-                    if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
-                        extractAnnotations(method.annotations, sootClass.type.fullyQualifiedName, method.name)
-                    }
-                }
-
-                visitFieldsForClass(sootClass)
-                extensions.forEach { it.visit(sootClass, extensionContext) }
-                bytecodeMethodsCache.remove(sootClass)
-                streamingSourcesCache.remove(sootClass)
+                processClassWithMethodCache(sootClass, extensionContext)
             }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
@@ -553,6 +531,37 @@ class SootUpAdapter(
         graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
+        }
+    }
+
+    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext) {
+        methodCacheOwner = sootClass as? JavaSootClass
+        try {
+            if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
+                val className = sootClass.type.fullyQualifiedName
+                extractAnnotations(sootClass.annotations, className, "<class>")
+                sootClass.fields.forEach { field ->
+                    extractAnnotations(field.annotations, className, field.name)
+                }
+            }
+
+            activeSyntheticClass = SyntheticIdentity.isSyntheticClass(sootClass)
+            if (activeSyntheticClass) {
+                syntheticIdentities.addClass(sootClass)
+            }
+            forEachMethod(sootClass) { method ->
+                processMethod(method)
+                if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
+                    extractAnnotations(method.annotations, sootClass.type.fullyQualifiedName, method.name)
+                }
+            }
+
+            visitFieldsForClass(sootClass)
+            extensions.forEach { it.visit(sootClass, extensionContext) }
+        } finally {
+            bytecodeMethodsCache.clear()
+            streamingSourcesCache.clear()
+            methodCacheOwner = null
         }
     }
 
@@ -2578,10 +2587,18 @@ class SootUpAdapter(
         }
     }
 
+    // Only the current pass-2 class may populate the sorted-method caches. Ancestor lookups,
+    // enum discovery and post-pass call-graph cleanup must not retain a corpus-wide index.
+    private var methodCacheOwner: JavaSootClass? = null
+
     private val streamingSourcesCache = IdentityHashMap<JavaSootClass, List<AsmMethodSource>?>()
 
     private fun streamingSources(sootClass: JavaSootClass): List<AsmMethodSource>? =
-        streamingSourcesCache.getOrPut(sootClass) { sootClass.classSource.streamingMethodSources() }
+        if (sootClass === methodCacheOwner) {
+            streamingSourcesCache.getOrPut(sootClass) { sootClass.classSource.streamingMethodSources() }
+        } else {
+            sootClass.classSource.streamingMethodSources()
+        }
 
     private fun streamMethods(sootClass: JavaSootClass, sources: List<AsmMethodSource>): Sequence<SootMethod> = sequence {
         for (source in sources) {
@@ -2645,13 +2662,18 @@ class SootUpAdapter(
      * here for a deterministic walk; `null` for a class that did not come from bytecode.
      */
     private fun bytecodeMethods(sootClass: JavaSootClass): List<JavaSootMethod>? =
-        bytecodeMethodsCache.getOrPut(sootClass) { resolveBytecodeMethods(sootClass) }
+        if (sootClass === methodCacheOwner) {
+            bytecodeMethodsCache.getOrPut(sootClass) { resolveBytecodeMethods(sootClass) }
+        } else {
+            resolveBytecodeMethods(sootClass)
+        }
 
     /**
      * [bytecodeMethods] per class while the class is being processed: `resolveMethods()`
      * converts every method's descriptor into a signature on each call, and a class is asked
      * for its methods more than once in a pass (its graph, its declared sub-signatures). The
-     * entry is dropped once the class's pass is over, so the cache holds one class at a time.
+     * entry is dropped in finally once that class's pass is over. Other classes and phases
+     * resolve without insertion, so the cache holds at most the active class.
      */
     private val bytecodeMethodsCache = IdentityHashMap<JavaSootClass, List<JavaSootMethod>?>()
 
