@@ -7252,3 +7252,160 @@ Command: `python3 /tmp/sootup-static-review/attempt121/core-fixture/run.py --exe
 | Decision | Retain isolated candidate for full-graph correctness and matched loading/query measurements; unintegrated |
 
 Core execution receipt SHA256 `6bbd7c452ca644a96eb49acb90f38df3a78697b270e0713e1d9aa93a8b3aaff0`; exact commands, preserved predecessor failures, source pins, raw stdout/stderr, eligibility bodies and root audit remain under `/tmp/sootup-static-review/attempt121/`. Tests prove the stated behavior scope, not preupgrade performance recovery.
+
+### 2026-10-07 — Attempt 120 follow-up: native shared graph IDs, fixed three-arm HTTP diagnostic
+
+**Hypothesis and scope:** reuse the registry’s existing `Arc<str>` graph identities when assembling global native query sources instead of copying each ID payload per request. Base `5a0f69c86b14d6f981ea26dfe7d5ad9e348f413d` plus the isolated registry/routes patch `f01cb7acb92e0826fc1ec2438c533f7c94da1e5f9425f2cd3365b5d879664fbf`; candidate binary `69946d8a0b5aa40b95c9e6d96c70fe82a23836d399c7169fc58fdf8fa78a37fa`. Public lease types, sorted sources, reload/removal generation/lifetime, provenance, guard rejection and cancellation are preserved. Source assembly crosses the internal guard-timer boundary, so this record uses complete HTTP latency, not internal guard timing. This is native code evidence, not an attribution to JVM optimizations.
+
+**Retained correctness and failures:** 117 real-fixture explore tests passed, including four new behavior tests. Local pinned Rust1.93 strict release Clippy still failed on the unchanged `mcp.rs:802` Boolean condition; the identical source passed separate Rust1.99 CI with different host/profile/features, which does not establish local lint success. The original sealed HTTP launch exited1 before any server/request because two external-process exits made lifetime observations incomplete. That zero-sample failure remains untouched. A separately reviewed successor treats external starts/exits and incomplete external lifetimes as diagnostic limitations while retaining true observer/read/gap/log failures as preflight blockers. It performs fixed10s observation once, does not wait for quiet or signal foreign processes, and does not replace any performance sample.
+
+**Fixed protocol:** macOS/M3 Max, matched pinned Rust1.93 arm64 release binaries; A=actual preupgrade `6f498705009689551c92c6d1ca92f67252ef77c4`, B=frozen `db713c98e6754cade89e91613ae74e10aac91510` native parent (source identical to the candidate base), C=120. The same64 persisted real graphs, manifest order and unchanged34-case full native-response oracle are used for all variants. Concurrency1 then4, each **ABCCBA**, ports18701–18712; one first-use, two warmup and60 measured cycles/process, rotating the original case order by cycle. All12 fresh server processes completed: **25,704 requests**, including24,480 measured,816 warmup and408 first-use. All full typed responses, columns, ordered rows, `total` and provenance matched the oracle; fixture stat continuity and all12 owned SIGTERM/-15 cleanup outcomes passed. Root independently audited all25,704 raw bodies and recomputed statistics. No failure, replacement, selective exclusion, pool with previous cohorts or extra request was introduced.
+
+Per-case p50/p95 are nearest ranks30/57 among60 requests within each process. Tables below compare the arithmetic mean of the two process-level statistics for each arm/concurrency; they are not pooled percentiles. Both forward/reverse pairs remain: C2/B1 and C3/B4; C2/A0 and C3/A5. Two process observations and observed background activity do not establish precise production p95 confidence or final resource acceptance. First-use means fresh process, not guaranteed cold OS pages.
+
+**Measured latency:** negative deltas favor C. Counts are out of34 cases; “both pairs” requires the same sign in each fixed block.
+
+| Concurrency | Comparison | Metric | Lower mean | Higher mean | Both pairs lower | Both pairs higher |
+|---|---|---|---:|---:|---:|---:|
+| 1 | C_vs_B | p50 | 31 | 3 | 19 | 1 |
+| 1 | C_vs_B | p95 | 28 | 6 | 21 | 0 |
+| 1 | C_vs_A | p50 | 31 | 3 | 13 | 0 |
+| 1 | C_vs_A | p95 | 33 | 1 | 16 | 0 |
+| 4 | C_vs_B | p50 | 15 | 19 | 9 | 8 |
+| 4 | C_vs_B | p95 | 16 | 18 | 8 | 8 |
+| 4 | C_vs_A | p50 | 24 | 10 | 17 | 7 |
+| 4 | C_vs_A | p95 | 20 | 14 | 8 | 7 |
+
+All68 case/concurrency groups follow. Case IDs omit their common `global-wide-` prefix. Percent changes are relative to B or A; exact absolute nanoseconds, all raw samples, arithmetic means/ranges and both pairs are retained in `summary.json` and the independent audit.
+
+| Concurrency | Case | C/B p50 | C/B p95 | C/A p50 | C/A p95 |
+|---:|---|---:|---:|---:|---:|
+| 1 | four-properties-zero | -2.175% | -5.325% | -3.136% | -2.245% |
+| 1 | four-properties-targeted | -1.506% | -5.905% | -1.756% | -5.440% |
+| 1 | four-properties-dense | -0.454% | -5.057% | -2.409% | -0.380% |
+| 1 | class-pair-zero | -2.725% | -5.020% | -3.307% | -4.897% |
+| 1 | class-pair-targeted | -1.815% | +2.574% | +0.374% | +1.889% |
+| 1 | class-pair-dense | -0.041% | -2.063% | -0.029% | -2.432% |
+| 1 | name-pair-zero | -3.568% | -6.569% | -4.390% | -7.519% |
+| 1 | name-pair-targeted | -2.359% | -2.646% | -2.133% | -3.256% |
+| 1 | name-pair-dense | -3.290% | +0.633% | -0.833% | -1.605% |
+| 1 | caller-class-zero | -4.490% | -11.618% | -2.083% | -10.608% |
+| 1 | caller-class-targeted | -2.472% | -3.146% | -2.560% | -5.506% |
+| 1 | caller-class-dense | -1.967% | -4.613% | -1.356% | -5.011% |
+| 1 | callee-class-zero | -3.419% | -6.538% | -5.353% | -3.398% |
+| 1 | callee-class-targeted | -2.358% | -3.755% | -1.499% | -5.188% |
+| 1 | callee-class-dense | -0.492% | -3.422% | -2.549% | -6.869% |
+| 1 | provenance-zero | +0.366% | -1.481% | -1.707% | -6.603% |
+| 1 | provenance-targeted | -2.469% | -1.467% | -3.217% | -4.770% |
+| 1 | provenance-dense | -1.390% | -0.479% | -1.989% | -2.964% |
+| 1 | aliased-zero | -0.459% | -6.847% | +0.219% | -12.012% |
+| 1 | aliased-targeted | -4.132% | -4.557% | -1.909% | -2.242% |
+| 1 | aliased-dense | -0.245% | -4.882% | -2.251% | -6.871% |
+| 1 | parameterized-zero | -2.769% | -4.736% | -4.459% | -6.983% |
+| 1 | parameterized-targeted | -0.456% | -4.124% | -0.706% | -1.593% |
+| 1 | parameterized-dense | -0.401% | -2.395% | -1.968% | -5.250% |
+| 1 | wrapped-case-insensitive-zero | -2.189% | -9.208% | -4.506% | -6.002% |
+| 1 | wrapped-case-insensitive-targeted | +1.723% | +0.441% | -1.146% | -2.616% |
+| 1 | wrapped-case-insensitive-dense | -1.104% | +1.657% | -0.228% | -1.553% |
+| 1 | wrapped-case-insensitive-distinct-zero | -2.961% | -4.675% | -1.710% | -5.700% |
+| 1 | wrapped-case-insensitive-distinct-targeted | -1.789% | -8.975% | -3.809% | -9.971% |
+| 1 | wrapped-case-insensitive-distinct-dense | +0.556% | +0.279% | +1.242% | -2.519% |
+| 1 | distribution-broad-all-64 | -0.867% | -1.707% | -1.296% | -3.220% |
+| 1 | distribution-localized-early | -1.965% | -5.032% | -2.920% | -4.827% |
+| 1 | distribution-localized-late | -0.915% | -12.192% | -1.950% | -5.422% |
+| 1 | distribution-localized-middle | -0.479% | +0.300% | -0.072% | -3.562% |
+| 4 | four-properties-zero | -1.445% | +4.660% | -4.968% | +1.850% |
+| 4 | four-properties-targeted | -1.604% | -4.506% | -3.158% | -5.789% |
+| 4 | four-properties-dense | -1.208% | -0.825% | -1.450% | -2.830% |
+| 4 | class-pair-zero | -3.311% | -3.711% | -2.259% | -0.019% |
+| 4 | class-pair-targeted | +0.037% | -1.309% | -5.001% | -4.311% |
+| 4 | class-pair-dense | -2.235% | -3.598% | +0.174% | -0.457% |
+| 4 | name-pair-zero | -3.955% | -1.876% | -1.744% | -0.026% |
+| 4 | name-pair-targeted | +1.881% | +1.819% | -0.289% | -2.752% |
+| 4 | name-pair-dense | -1.504% | +2.422% | -3.700% | +2.866% |
+| 4 | caller-class-zero | +4.071% | -2.655% | -2.191% | -3.201% |
+| 4 | caller-class-targeted | +1.436% | +1.510% | +0.180% | +0.368% |
+| 4 | caller-class-dense | -0.626% | +3.508% | -2.437% | +0.100% |
+| 4 | callee-class-zero | +0.616% | -2.612% | -3.415% | +2.243% |
+| 4 | callee-class-targeted | +1.014% | +2.685% | -0.385% | +1.525% |
+| 4 | callee-class-dense | -3.670% | -0.632% | -3.118% | -5.992% |
+| 4 | provenance-zero | -1.646% | -4.629% | -5.212% | +0.180% |
+| 4 | provenance-targeted | -3.323% | -2.812% | -1.348% | -1.046% |
+| 4 | provenance-dense | +3.194% | +5.405% | +0.490% | +3.182% |
+| 4 | aliased-zero | +5.173% | +3.609% | +5.325% | +0.655% |
+| 4 | aliased-targeted | -1.005% | +7.298% | -0.714% | +9.287% |
+| 4 | aliased-dense | +0.800% | +0.687% | -0.712% | +2.055% |
+| 4 | parameterized-zero | -5.317% | +2.477% | -5.356% | -2.979% |
+| 4 | parameterized-targeted | +1.653% | +2.415% | +3.113% | -0.648% |
+| 4 | parameterized-dense | +1.234% | -1.663% | +0.550% | -1.731% |
+| 4 | wrapped-case-insensitive-zero | +3.801% | -3.231% | +8.077% | +3.687% |
+| 4 | wrapped-case-insensitive-targeted | -0.828% | +0.919% | -0.080% | -1.027% |
+| 4 | wrapped-case-insensitive-dense | +0.410% | +4.100% | -0.993% | -3.944% |
+| 4 | wrapped-case-insensitive-distinct-zero | +0.109% | -1.012% | +4.557% | +1.111% |
+| 4 | wrapped-case-insensitive-distinct-targeted | -0.026% | +1.380% | -2.757% | -4.254% |
+| 4 | wrapped-case-insensitive-distinct-dense | +0.883% | -0.067% | +0.717% | -0.356% |
+| 4 | distribution-broad-all-64 | +1.282% | +0.666% | -0.169% | -1.407% |
+| 4 | distribution-localized-early | +2.050% | +2.408% | -2.323% | +2.058% |
+| 4 | distribution-localized-late | +1.706% | +4.280% | -3.024% | -2.061% |
+| 4 | distribution-localized-middle | +1.352% | -1.818% | +1.860% | -1.749% |
+
+Selected positive/adverse p95 pairs illustrate variation; these are descriptive examples, not selected replacement results.
+
+| Concurrency | Comparison / case | Reference→C mean p95 (ms) | Mean change | Forward pair | Reverse pair |
+|---:|---|---:|---:|---:|---:|
+| 1 | C_vs_B / distribution-localized-late | 1.016542→0.892604 | -12.192% | -9.408% | -14.806% |
+| 1 | C_vs_B / caller-class-zero | 0.587979→0.519667 | -11.618% | -13.980% | -9.253% |
+| 1 | C_vs_B / class-pair-targeted | 1.009084→1.035062 | +2.574% | -1.967% | +7.148% |
+| 4 | C_vs_B / provenance-zero | 0.885333→0.844353 | -4.629% | -6.708% | -2.538% |
+| 4 | C_vs_B / aliased-targeted | 1.393125→1.494792 | +7.298% | -1.855% | +17.151% |
+| 4 | C_vs_A / aliased-targeted | 1.367771→1.494792 | +9.287% | +2.294% | +16.467% |
+| 4 | C_vs_A / callee-class-dense | 1.623292→1.526021 | -5.992% | +3.127% | -13.803% |
+
+**Resources and boundaries:** native measured-window CPU includes60 measured cycles and their validation/logging gaps. All four counter reads per process retain the same actual native PID/start identity; cumulative `ps TIME` is monotonic at0.01s reported resolution, and start/end deltas and comparison means/pairs were rechecked. Sub-resolution CPU differences are not precise effects. Whole native lifetime wall/CPU/RSS include startup/loading, first-use/warmup, measured requests and shutdown; CPU is user+system, RSS is process peak. Client and supervisor/monitor CPU are separate. These are not per-case CPU/RSS, incremental query RSS or standalone loading acceptance; startup overhead can dilute percentage changes. All12 raw process rows follow (RSS uses decimalGB).
+
+| Session | Lifetime wall (s) | Native CPU (s) | Peak RSS (GB) | Measured-window native CPU (s) |
+|---|---:|---:|---:|---:|
+| c1-0-A | 59.300 | 42.260 | 6.569296 | 6.140 |
+| c1-1-B | 59.040 | 43.050 | 6.612517 | 6.160 |
+| c1-2-C | 59.790 | 43.490 | 6.611894 | 6.230 |
+| c1-3-C | 59.330 | 43.310 | 6.607995 | 6.190 |
+| c1-4-B | 59.630 | 43.240 | 6.612091 | 6.240 |
+| c1-5-A | 60.100 | 43.400 | 6.565167 | 6.230 |
+| c4-0-A | 46.010 | 41.390 | 6.582567 | 4.340 |
+| c4-1-B | 46.020 | 41.340 | 6.624248 | 4.330 |
+| c4-2-C | 46.260 | 41.590 | 6.627885 | 4.360 |
+| c4-3-C | 46.330 | 41.600 | 6.624903 | 4.330 |
+| c4-4-B | 45.990 | 41.500 | 6.627967 | 4.390 |
+| c4-5-A | 46.000 | 41.290 | 6.590120 | 4.330 |
+
+| Concurrency / comparison | Whole CPU mean reference→C (s) | CPU change | Peak RSS mean reference→C (MB) | RSS change | Window CPU change |
+|---|---:|---:|---:|---:|---:|
+| 1 / C_vs_B | 43.145→43.400 (+0.255s) | +0.591% | 6612.304→6609.945 (-2.359MB) | -0.036% | +0.161% |
+| 1 / C_vs_A | 42.830→43.400 (+0.570s) | +1.331% | 6567.231→6609.945 (+42.713MB) | +0.650% | +0.404% |
+| 4 / C_vs_B | 41.420→41.595 (+0.175s) | +0.423% | 6626.107→6626.394 (+0.287MB) | +0.004% | -0.344% |
+| 4 / C_vs_A | 41.340→41.595 (+0.255s) | +0.617% | 6586.343→6626.394 (+40.051MB) | +0.608% | +0.231% |
+
+**First-use/warmup:** all individual first-use and both separate warmup-cycle values remain in the raw reports and summary, with both pairs; no first-use p95 is claimed. The table retains lower/higher mean case counts and the largest percentage increase for each supplemental boundary.
+
+| Concurrency / comparison | Phase | Lower / higher cases | Largest increase case | Reference→C mean (ms) | Change |
+|---|---|---:|---|---:|---:|
+| 1 / C_vs_B | first-use | 18 / 16 | class-pair-targeted | 0.901875→1.070271 | +18.672% |
+| 1 / C_vs_B | warmup1 | 16 / 18 | callee-class-dense | 1.045084→1.192250 | +14.082% |
+| 1 / C_vs_B | warmup2 | 15 / 19 | name-pair-zero | 0.386375→0.457750 | +18.473% |
+| 1 / C_vs_A | first-use | 21 / 13 | class-pair-targeted | 0.921416→1.070271 | +16.155% |
+| 1 / C_vs_A | warmup1 | 18 / 16 | distribution-localized-middle | 0.684625→0.801709 | +17.102% |
+| 1 / C_vs_A | warmup2 | 21 / 13 | caller-class-dense | 0.983187→1.144770 | +16.435% |
+| 4 / C_vs_B | first-use | 16 / 18 | wrapped-case-insensitive-zero | 0.718708→0.943604 | +31.292% |
+| 4 / C_vs_B | warmup1 | 21 / 13 | wrapped-case-insensitive-zero | 0.581584→0.718480 | +23.538% |
+| 4 / C_vs_B | warmup2 | 18 / 16 | callee-class-dense | 1.131083→1.377666 | +21.801% |
+| 4 / C_vs_A | first-use | 16 / 18 | caller-class-zero | 0.595021→0.791520 | +33.024% |
+| 4 / C_vs_A | warmup1 | 21 / 13 | distribution-localized-late | 0.830479→1.031354 | +24.188% |
+| 4 / C_vs_A | warmup2 | 16 / 18 | caller-class-targeted | 0.796687→1.346542 | +69.018% |
+
+The observer retained622 snapshots:21 positive external-CPU observations and65 accumulated-CPU increments totaling0.78s, involving resident Gradle/Kotlin PIDs99636/99650. During native sessions there were20 positive-CPU events and62 increments; preflight retained one positive-CPU event and three increments. There were no new-process, disappearance, Gradle-build-marker, gap or incomplete events in this successor. That observation does not prove complete host inactivity: subsecond activity, unrelated native work/I/O and monitor resolution remain limitations. All background data are retained, no foreign process was signalled, and the classification stays diagnostic—not quiet or final-cap accepted.
+
+**Interpretation and decision:** retain Attempt120 as an active isolated incremental candidate. The concurrency1 data show positive latency results worth preserving:31/34 p50 means and28/34 p95 means improve versus B, including21 p95 cases improving in both pairs. Concurrency4 is mixed:16 p95 means improve and18 worsen versus B, with eight cases better in both pairs and eight worse in both. The worst mean p95 increase is aliased-targeted +7.298% versus B (+9.287% versus A), including substantial reverse-pair variation. These results do not justify a uniform speedup, overall recovery or integration approval, and the positive cases are not discarded because other cases remain adverse. Mean whole-process CPU/RSS changes are below5% in this particular diagnostic series, but session scope, two samples and observed background do not certify final operation-level resource limits. Local strict lint remains unresolved. No JVM/native loading or construction recovery follows from this shared-graph HTTP comparison.
+
+Command: `python3 /tmp/sootup-static-review/attempt120/server-request-observed-background/run.py --plan /tmp/sootup-static-review/attempt120/server-request-observed-background/plan.sealed.json --execute-root-released`. No metrics flag, fastpath/Rayon override, JVM, profiler, forcedGC, cache flush, or switch-interval change. The exact Python/GIL/environment observations and all request bodies/statuses/native process logs are retained. Root verified190 pins and25 pure harness mocks before release. Session9466 exited0.
+
+Evidence root: `/tmp/sootup-static-review/attempt120/server-request-observed-background/`. Sealed plan SHA256 `0ea6b93af14a1b40fb355dadd6da310bd59745a59112a1a6281998cf782211a8`; final result `4c55a4c86c15c2da9edbb30990105e867074505c36fd40036245bb73791b9cfa`; summary `5ec25edd7811fb635a88efcc16f311196de308ac2a3b63ef14e3439f81c781fc`; independent full-body/statistics audit `18f1d83030dcf1e732d9a09d26f56af2e015fa43df65862bf7ac825f8bd74318`; owner record/rank/cleanup audit `96b4a78279be6d3601fd597baf8a9ba5eb84f3df8093906ff47bd3dcb32c0265`. The original zero-sample failure under `../server-request-packet/` and all earlier native series remain immutable and unpooled.
