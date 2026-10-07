@@ -6588,3 +6588,72 @@ Additional completed measurement/audit SHA-256 pins:
 - `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/audit.json`: `951e6ffb35dbb6d03600e91bf9ed018e450740a60e565cef90e893cec2020ca7`.
 - `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/report.md`: `ada884c5d3423bde02e4da4cf6363cf885f4018b190e8120874317bd004d016c`.
 - `/tmp/sootup-static-review/attempt114/scoped-http-packet/independent-audit/audit-proof.json`: `92d4f560a4d9d2a6e0494ef2a3982bf7772ecfcf4b10770a8e9e78b73b303e66`.
+
+### 2026-10-07 — Cumulative 341: Tika memory phases
+
+**Question declared before execution:** does frontend/finalization work establish a larger resident heap high-water mark that persists into count/save, even after natural GC reduces occupancy, overlapping mapped graph data?
+This is a diagnostic attribution hypothesis, not an assertion that a particular cache retains the excess or that earlier GC is a fix.
+The quiet primary full-feature Tika series already showed old peak RSS 6.4532/7.2943 GB versus cumulative341 8.5728/8.6318 GB: mean **+25.1465%**, paired +32.8454/+18.3354%.
+Those primary adverse samples remain unchanged; diagnostic measurements cannot replace them or certify the +5% resource caps.
+
+**Protocol:** two fixed fresh construction JVMs, old6f498 then cumulative341, followed by six strict verification JVMs and two JFR-export JVMs; no added sample or replacement.
+Use matching TEST_webgraph roles (54/57 entries), the same real Tika fixture/JDK, default full features, Mmap builder, complete source-node scan, prepared save with two compression threads, and source close.
+Construction and verification use `-Xmx8g`; both `jfr print` tools explicitly use `JAVA_TOOL_OPTIONS=-Xmx1g`.
+Reuse the pinned ConstructionMemoryDiagnostic helper, buffered phase callback, 250 ms heap MXBean sampler and approximately 100 ms external RSS sampling.
+Both construction JVMs use identical startup JFR profile and GC logging; no forced GC, NMT, feature/cache changes or heap adjustment.
+All timings below are instrumented diagnostic observations, excluded from performance acceptance.
+
+**Preserved first failure:** execution stopped before any JVM because tooling inherited `MallocNanoZone=0`, violating the sealed no-injected-environment check.
+The receipt records exit1, `jvmStarted=false` and zero measured samples; it remains in `execution-packet/preflight-failure1.json`.
+After review, launch used `env -u MallocNanoZone python3 .../execute.py --execute-root-released` for all children, with packet/runner bytes unchanged.
+`clean-environment-launch.json` records that correction and binds the original failure receipt; it is not a replacement of a measured sample.
+
+**Terminal evidence:** `PASS_DIAGNOSTIC2_STRICT6_EXPORT2`; all ten JVMs and the offline Python phase parser exited zero.
+The two completed constructions reported the expected old/current source counts 4,673,289/4,620,490 and CallSites 1,758,353/1,705,428.
+Old shape22, metadata13 and five complete typed query reports exactly match the old references; current reports exactly match current main02 semantic references.
+These are per-version correctness checks, not cross-version graph equality.
+Executor evidence preserves old ordinal-sidecar absence, current exact ordinal sidecar/binding, and identical complete graph inventories before/after verification.
+The independent bounded audit rechecked all six full reports, 56 small output hashes and raw heap/RSS/GC aggregation; it compared the inventory receipts without rereading large graph/JAR files.
+
+| Diagnostic process | Whole wall s | Whole CPU s | Peak RSS GB |
+|---|---:|---:|---:|
+| old6f498 | 109.77 | 174.99 | 6.651003 |
+| cumulative341 | 28.21 | 87.18 | 8.630206 |
+
+Peak RSS rises **1.979204 GB (+29.758%)** in this one pair. GB/MB in this record are decimal; GC-log M values below are MiB.
+Current has 52,799 fewer source nodes, so node count alone does not explain the direction.
+
+| Phase | Old sampled RSS max GB | Current sampled RSS max GB | Old committed heap GB | Current committed heap GB |
+|---|---:|---:|---:|---:|
+| Frontend enumeration/indexing | 1.762034 | 1.973322 | 1.082130–2.583691 | 1.082130–2.688549 |
+| Frontend pass1 | 2.313699 | 2.259845 | 3.787457 | 3.816817 |
+| Frontend pass2/linking | 6.312018 | 6.590710 | 3.787457–5.783945 | 3.816817–6.085935 |
+| Graph finalization | 6.367019 | 6.939492 | 5.783945 | 7.675576 |
+| CLI node count | 6.437945 | 7.321600 | 5.783945 | 7.675576 |
+| Prepared save | 6.649577 | 8.628797 | 5.783945 | 7.675576 |
+
+**Finding:** the phase-level high-water/overlap hypothesis is supported, with a boundary qualification: the large commitment expansion occurs around finalization, not proven to originate in enumeration or a specific frontend cache.
+Current GC(39) remark completes at uptime21665 ms, only26 ms after the finalization marker21639 ms, reporting7320 MiB commitment.
+Buffered callbacks and sequential samples cannot establish the exact allocation/GC cause inside that boundary.
+The excess is already visible before save, and both versions retain their respective commitment through save; save adds further resident pressure.
+Thus the result is neither a save-only increase with equal pre-save commitment nor proof that every excess resident byte was resident before save.
+
+During current save, GC(42) reports6221→3888 MiB and GC(43) remark3910→2778 MiB; commitment remains7320 MiB.
+At uptime25576 ms, sampled used heap is2.919849 GB and commitment7.675576 GB; the nearest RSS observation about2.6 ms earlier is8.548729 GB.
+This supports continued high residency/commitment after occupancy falls, not a retained-live object census.
+Old late-save young-GC occupancy is about4309 MiB; different collection types/times prevent a comparable full-GC retained-live conclusion.
+Save mapped capacity maxima are313.430/321.703 MB, only8.274 MB apart, but mapped capacity is not resident mapped-file pages.
+Heap commitment is not residency; RSS minus heap used/committed is not native-memory accounting.
+
+RSS samples miss the independent time-l peak by1.425 MB(old)/1.409 MB(current); observations and phase labels are not atomic.
+Both time-l reports record zero swaps, which does not establish a paging/GC cause or eliminate scheduling effects.
+The pair is n=1 per version, old first, with callback/JFR/sampler perturbation; no repeatability, exact causal ownership or cap acceptance follows.
+
+**JFR boundary:** both selected-event exports succeeded, but their2.905 GB/375 MB JSON bodies were not parsed in this bounded small-file audit.
+No missing-event-as-zero inference or allocation-stack attribution is made. JFR allocation samples/weights would describe sampled allocation activity, not retained bytes.
+A separately authorized streaming analysis of existing events could localize activity around finalization without another JVM; it would still not identify retained roots by itself.
+**Next action116:** inspect/test the bounded cache-lifecycle change as an independent hypothesis. This diagnostic does not prove that cache is the RSS cause or that116 will reduce the primary peak.
+
+Evidence: `/tmp/sootup-static-review/tika341-memory-next/{review.md,execution-packet,independent-audit}`.
+Terminal results SHA256 `995cd5485822c9153b5555b27b5251c4a917447f9f2b45ec0377e6fe45c02cfb`; phase-analysis SHA256 `e737b380b721a5e8e499eafd96f058a1ee6f9ebefb8c9bac0ab7b95847bd3c8d`.
+Independent audit SHA256 `a4f7aaebb1b0ed39afbd5b6c3007996970eb3946275fbcdd0eaa2379c42b1533`; report SHA256 `31c54e7543b84643f3c791094c9de97af67d90cadf87c716423f930a1beb90a8`.
