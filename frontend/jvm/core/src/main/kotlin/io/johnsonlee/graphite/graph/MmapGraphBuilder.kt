@@ -436,7 +436,9 @@ class MmapGraphBuilder(
                     val receiver = s.readInt().let { if (it == -1) null else NodeId(it) }
                     val argCount = s.readInt()
                     val args = (0 until argCount).map { NodeId(s.readInt()) }
-                    CallSiteNode(id, caller, callee, line, receiver, args)
+                    val ordinal = s.readInt().let { if (it == Int.MIN_VALUE) null else it }
+                    val origin = s.readInt().let { if (it == -1) null else NodeId(it) }
+                    CallSiteNode(id, caller, callee, line, receiver, args, ordinal, origin)
                 }
                 TAG_ANNOTATION_NODE -> {
                     val name = readString(s)
@@ -686,6 +688,8 @@ class MmapGraphBuilder(
                 dos.writeInt(node.receiver?.value ?: -1)
                 dos.writeInt(node.arguments.size)
                 node.arguments.forEach { dos.writeInt(it.value) }
+                dos.writeInt(node.ordinal ?: Int.MIN_VALUE)
+                dos.writeInt(node.origin?.value ?: -1)
             }
             is AnnotationNode -> {
                 dos.writeByte(TAG_ANNOTATION_NODE)

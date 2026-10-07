@@ -79,7 +79,7 @@ internal fun comparisonForEdge(
     version: Int,
     lookup: BranchComparisonLookup
 ): BranchComparison? {
-    val familyMask = if (version >= NodeSerializer.FORMAT_VERSION) V3_EDGE_FAMILY_MASK else V2_EDGE_FAMILY_MASK
+    val familyMask = if (version >= NodeSerializer.LABELLED_EDGE_FORMAT_VERSION) V3_EDGE_FAMILY_MASK else V2_EDGE_FAMILY_MASK
     if ((label and familyMask) != EDGE_FAMILY_CONTROL_FLOW) return null
     val key = from.toLong() shl INT_BITS or (to.toLong() and UNSIGNED_INT_MASK)
     return lookup.find(key)

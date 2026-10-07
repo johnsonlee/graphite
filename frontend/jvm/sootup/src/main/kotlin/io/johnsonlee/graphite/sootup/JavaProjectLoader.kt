@@ -12,6 +12,8 @@ import sootup.apk.frontend.DexBodyInterceptors
 import sootup.apk.frontend.main.AndroidVersionInfo
 import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.model.SourceType
+import sootup.core.interceptor.BodyInterceptor
+import sootup.interceptors.BytecodeBodyInterceptors
 import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
 import sootup.java.core.views.JavaView
 import java.io.File
@@ -44,16 +46,28 @@ private data class InputLocations(
     val sources: Map<AnalysisInputLocation, String>
 )
 
+/**
+ * The Android platform jar a build of [input] with [config] reads as a library (`includeLibraries`),
+ * `null` when the input is not an APK or the build reads no library: the external input, besides
+ * the APK itself, that decides which classes the graph has, for a fold selection's provenance.
+ */
+fun androidPlatformJar(input: Path, config: LoaderConfig): Path? {
+    if (!config.includeLibraries || input.extension.lowercase() != APK_EXTENSION_NAME) return null
+    return resolveAndroidJar(input, resolveAndroidPlatformsPath(config))
+}
+
 private fun createApkInputLocations(
     path: Path,
     config: LoaderConfig,
+    folding: ConstantFolding?,
     log: (String) -> Unit
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
+    val dexInterceptors = DexBodyInterceptors.Default.bodyInterceptors()
     val apkLocation = ApkAnalysisInputLocation(
         path,
         AndroidVersionInfo(path, platforms.toString()),
-        DexBodyInterceptors.Default.bodyInterceptors()
+        folding?.bodyInterceptors(dexInterceptors) ?: dexInterceptors
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
@@ -61,7 +75,9 @@ private fun createApkInputLocations(
     if (config.includeLibraries) {
         val androidJar = resolveAndroidJar(path, platforms)
         val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
-        val androidJarLocation = JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
+        val androidJarLocation = folding?.let {
+            JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library, bytecodeInterceptors(it))
+        } ?: JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
         locations.add(androidJarLocation)
         sources[androidJarLocation] = sourceName
         log("  + Loading Android platform: $sourceName")
@@ -69,6 +85,14 @@ private fun createApkInputLocations(
 
     return InputLocations(locations, sources)
 }
+
+/**
+ * SootUp's default bytecode interceptors with the fold passes, for the Android platform jar:
+ * `JavaClassPathAnalysisInputLocation(path, type)` installs `BytecodeBodyInterceptors.Default`
+ * when given no chain, so the fold chain builds on the same one.
+ */
+private fun bytecodeInterceptors(folding: ConstantFolding): List<BodyInterceptor> =
+    folding.bodyInterceptors(BytecodeBodyInterceptors.Default.bodyInterceptors)
 
 private fun resolveAndroidPlatformsPath(config: LoaderConfig): Path {
     val configured = config.androidSdk ?: findAndroidSdkRootFromEnvironment()
@@ -238,8 +262,22 @@ class JavaProjectLoader(
         graphBuilderFactory = if (useMmapBuilder) ({ MmapGraphBuilder() }) else ({ DefaultGraph.Builder() })
     )
 
+    /**
+     * The interceptor chain of the load in progress when it folds constants, `null` for the
+     * frontend's own chain. A loader serves one load at a time.
+     *
+     * `PathBasedAnalysisInputLocation.create(path, type)` runs no body interceptor at all (the
+     * ASM frontend's Jimple, locals typed and named as it emits them), so the fold passes go on
+     * an empty chain: a body no rule touches is then the one a build without rules produces,
+     * byte for byte. `BytecodeBodyInterceptors.Default` would add `LocalSplitter` and the
+     * rest to every method and change graphs the rules never named.
+     */
+    private var foldInterceptors: List<BodyInterceptor>? = null
+
     override fun load(path: Path): Graph {
-        val inputLocations = createInputLocations(path)
+        val folding = config.folding?.let { ConstantFolding(it.rules) }
+        foldInterceptors = folding?.bodyInterceptors(emptyList())
+        val inputLocations = createInputLocations(path, folding)
         val view = JavaView(inputLocations.locations)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path)
@@ -248,9 +286,14 @@ class JavaProjectLoader(
             resourceAccessor = resourceAccessor,
             inputLocationSources = inputLocations.sources,
             singleArtifactSource = singleArtifactSource(path),
-            graphBuilder = graphBuilderFactory()
+            graphBuilder = graphBuilderFactory(),
+            preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
         )
-        return adapter.buildGraph()
+        val graph = adapter.buildGraph()
+        if (folding != null) {
+            config.folding?.onReport?.invoke(folding.report())
+        }
+        return graph
     }
 
     private fun singleArtifactSource(path: Path): String? =
@@ -269,10 +312,10 @@ class JavaProjectLoader(
         return ext in listOf(JAR_EXTENSION_NAME, WAR_EXTENSION_NAME, ZIP_EXTENSION_NAME, APK_EXTENSION_NAME)
     }
 
-    private fun createInputLocations(path: Path): InputLocations {
+    private fun createInputLocations(path: Path, folding: ConstantFolding?): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
-            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, ::log)
+            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, folding, ::log)
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> {
@@ -286,12 +329,12 @@ class JavaProjectLoader(
     }
 
     /**
-     * An input location whose classes this frontend parses once each, in parallel, and hands to
-     * the view behind SootUp's lazy class source ([ParsedClassLocation]), with the frontend's own
-     * (empty) interceptor chain.
+     * An input location with the frontend's own (empty) interceptor chain, or with the fold chain
+     * when folding: the classes parsed here, in parallel, rather than by SootUp one at a time
+     * ([ParsedClassLocation]).
      */
     private fun inputLocation(path: Path, sourceType: SourceType): AnalysisInputLocation =
-        ParsedClassLocation(path, sourceType, emptyList())
+        ParsedClassLocation(path, sourceType, foldInterceptors ?: emptyList())
 
     private fun createDirectoryInputLocations(path: Path): InputLocations {
         val locations = mutableListOf<AnalysisInputLocation>()

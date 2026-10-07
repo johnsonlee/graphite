@@ -2825,7 +2825,7 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     // main the base digest no longer matches and the transition can never be selected again.
     assert.equal(
         pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "9c8c2e5dd79b1bbaa1fa0c7fc67b1deb41ae2149907941dffbc7afbc7872e86c"
+        "3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419"
     );
     assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
 
@@ -2939,11 +2939,13 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
             const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
             assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
         }
-        // The typed locals change no graph shape; they only grow the string table, hence the persisted size.
+        // The call-site ordinal sidecar changes no graph shape; it adds eight bytes per call site
+        // (node id and ordinal), 36 bytes of index per block of 256, its header and binding to the
+        // persisted size.
         for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
             assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
         }
-        assert.ok(transition.persistedBytesDelta > 0, corpus);
+        assert.ok(transition.persistedBytesDelta > 8 * transition.candidate.callSites, corpus);
     }
 });
 

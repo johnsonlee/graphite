@@ -245,6 +245,172 @@ Graphite searches in this order:
    - Windows: `%USERPROFILE%\AppData\Local\Android\Sdk`
 3. SDK roots inferred from `adb`, `emulator`, or `sdkmanager` on `PATH`.
 
+### Folding gates while the graph is built
+
+A PR that puts new code behind a feature flag or experiment changes the graph even when the
+flag is off. `--fold` names call sites whose every match becomes a constant while the graph is
+built, before any node exists: the branches that test the value fold, the side they rule out
+is removed, and a gated block whose gate folds to `false` leaves nothing in the graph whatever
+its shape (`if (gate) { ... }`, `if (!gate) return;`, `x = a && gate()`). Build base and head
+with the same file and the gated code is invisible to a diff of the two graphs.
+
+```bash
+graphite build app.jar -o /data/app-graph --include com.example --fold folds.yml
+```
+
+#### The fold file
+
+A rule is written the way a Cypher `MATCH` names a node, in the graph's own vocabulary: the
+`CallSite` properties to match, the constant that must flow into each argument, and the
+constant the call becomes. Where the properties and the argument constants cannot say which
+calls to fold, a rule is a Cypher query instead (`select`, below). JSON and YAML carry the
+same keys.
+
+```yaml
+# folds.yml
+version: 1
+folds:
+  # Flags.isEnabled("new_checkout") is false everywhere
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: isEnabled }
+    args:
+      0: new_checkout
+    value: false
+
+  # Flags.isEnabled(Flag.DARK_MODE) is true, but only in the checkout package
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: isEnabled, caller_class: "com.example.checkout.*" }
+    args:
+      0: { EnumConstant: { enum_type: com.example.Flag, name: DARK_MODE } }
+    value: true
+
+  # Experiments.variant(<any string>, 7L) is 0; the labels pin the kinds
+  - match:
+      CallSite: { callee_signature: com.example.Experiments.variant(java.lang.String,long) }
+    args:
+      0: { StringConstant: {} }
+      1: { LongConstant: { value: 7 } }
+    value: { IntConstant: { value: 0 } }
+
+  # every call of Flags.limit(), whatever its arguments
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: limit }
+    value: 3
+```
+
+| Key | Meaning |
+|---|---|
+| `version` | `1` |
+| `folds` | The rules, in order. The first rule a call matches is the one applied |
+| `match` | The one label `CallSite` with the properties the call site must have. Every listed property must match; `*` in a value matches any run of characters |
+| `args` | Optional. Argument index (`0` is the first) to the constant node that must flow into that argument. An index the call does not have never matches |
+| `select` | Instead of `match`: a Cypher query over a graph built without rules, returning the `CallSite` nodes to fold. Every selected call folds, whoever calls the method around it; `args` (as on `match`) and `receiver_args` (the constants the call that produced the receiver must pass: `Box a = boxed(1234); if (a.isOn())` with `receiver_args: {0: 1234}`) are extra conditions, and a call they cannot be shown to hold on is reported and left alone |
+| `value` | The constant the call becomes |
+| `frontend` | Optional. A rule naming another frontend (`jvm`, `swift`, `js`) is skipped by the others |
+
+`CallSite` properties are the ones queries use: `callee_class`, `callee_name`,
+`callee_signature` (`pkg.Cls.name(p1,p2)`, which picks one overload), `callee_descriptor` (the
+JVM descriptor, `(Ljava/lang/String;)Z`, return type included), `caller_class`, `caller_name`,
+`caller_signature`, `caller_descriptor` and `ordinal`. At least one `callee_*` property is required.
+As in the graph, `callee_class` is the class that declares the method: a call spelled
+`Sub.isEnabled()` for a method `Base` declares is `callee_class: Base`. `ordinal` counts the
+invokes of that callee in the calling method's bytecode, in statement order from `0`, every
+invoke, including the boxing and unboxing calls the graph shows as dataflow rather than as
+call sites, so
+`{caller_signature, caller_descriptor, callee_signature, callee_descriptor, ordinal}` names one
+call site, and the key a `select` query reads off a graph built without rules folds exactly
+that call on the same input.
+
+A constant node is a scalar or `{Label: {properties}}`:
+
+| Written as | Matches |
+|---|---|
+| `new_checkout`, `7`, `true`, `0.5` | A constant of any label with that value; numbers compare as numbers whatever their width, so `7` matches `7L`, integers exactly (every bit of a `long`), floating-point as IEEE 754 does (`-0.0` matches `0.0`, `NaN` matches nothing) |
+| `null` | `NullConstant` |
+| `{StringConstant: {value: "checkout_*"}}` | A string constant; the value is a glob too |
+| `{BooleanConstant: {value: true}}`, `{IntConstant: {value: 7}}`, `{LongConstant: {value: 7}}`, `{FloatConstant: {value: 1.5}}`, `{DoubleConstant: {value: 0.5}}` | A constant of exactly that kind and value |
+| `{StringConstant: {}}`, `{LongConstant: {}}`, ... | Any constant of that kind |
+| `{EnumConstant: {enum_type: com.example.Flag, name: DARK_MODE}}` | The enum constant, a field the enum declares as one (`ACC_ENUM`; an enum's other static fields are `FieldNode`s). As a `value`, the call becomes that constant (the method must return the enum), and `==`/`!=` against enum constants fold |
+| `{FieldNode: {class: com.example.Flags, name: MARKER}}` | Any other static field read |
+
+An argument matches where it is a constant: a literal, a `static final` the compiler inlined,
+or an enum constant. A key that reaches the call through a parameter, a field or a computation
+is not one; the call is reported, not folded. `value` as a scalar is carried by whatever the
+return type is (`false` on a `boolean`, `3` on an `int`, `long`, `float` or `double`, `null` on
+any reference); as a labelled constant it must fit the return type exactly. A call whose
+return type cannot carry the value is reported, not changed.
+
+YAML 1.1 reads a bare `on`, `off`, `yes` or `no` as a boolean: quote a method or key of that name.
+
+#### Selecting call sites with Cypher
+
+A `match` sees one call: its properties and the constants that reach its arguments. A gate
+whose key is built elsewhere (`getAbTestOption(fn)` where `fn` returns
+`ABTest.of(ImmutableList.of(ABKey.of(1234)))` from a helper) is not one call's business; it
+is a path through the graph, and Cypher already says it. A `select` rule is that query:
+
+```yaml
+version: 1
+folds:
+  # every getAbTestOption(...) call that the constant 1234 reaches, through any helpers
+  - select: >
+      MATCH (k:IntConstant {value: 1234})-[:DATAFLOW*1..8]->(cs:CallSite {callee_name: 'getAbTestOption'})
+      RETURN cs
+    value: { EnumConstant: { enum_type: com.example.ABTestOption, name: CONTROL } }
+```
+
+Strings inside the query are Cypher strings and take quotes, unlike the bare scalars of a
+`match`. `graphite build` resolves it: it builds the graph without rules into a staging directory
+next to the output, runs every `select` on that graph with the Rust engine, reads the stable
+key of each `CallSite` row (`caller_signature`, `callee_signature`, `ordinal`), and builds
+again with those call sites folded. The query must return one column of `CallSite` nodes
+(`RETURN cs`); a query that returns a property, several columns or another node is refused
+with the row and what it held. A rule whose query selected nothing is reported like a `match`
+that matched nothing, and `--fold-strict` fails on it. The report repeats the query under
+`select` and the keys under `selected`; a file with `selected` already filled in (the report's
+own `folds`, or keys written by hand from `RETURN cs.caller_signature, cs.callee_signature,
+cs.ordinal`) builds in one pass, on the CLI and on `graphite.jar build` alike. `graphite.jar
+build` alone refuses an unresolved `select`, since it has no graph to run it on.
+
+Keys are stable because `ordinal` ranks the call among the caller's invokes of that callee in
+statement order (the graph and the fold pass count them with one function over the same body),
+which moves only when a call of the same callee is added or removed earlier in the same method; a call the fold pass removes leaves a gap, the calls that survive it keep the ordinal the bytecode gave them, so a key read off a folded graph names the same call; a derived call (a lambda body reached through a function value) counts
+from `-1` downwards and is never a gate: a query that returns one is refused, select the call
+on the function value instead. The selection is made on the graph built without
+rules and applied to the same bytecode, so it names the same calls.
+
+#### What the build tells you
+
+The file is validated before any bytecode is read. Every error names the file, the rule, the
+key and what to write instead:
+
+```
+folds.yml: folds[0]: unknown CallSite property 'callee_clas' (did you mean 'callee_class'?); use callee_class, callee_name, callee_signature, caller_class, caller_name, caller_signature or ordinal
+folds.yml: folds[1]: 'args.0': unknown constant label 'String' (did you mean 'StringConstant'?); use BooleanConstant, Constant, DoubleConstant, EnumConstant, FieldNode, FloatConstant, IntConstant, LongConstant, NullConstant or StringConstant
+folds.yml: folds[2]: 'match.CallSite.callee_name' must be a string, got boolean true (YAML reads a bare on, off, yes or no as a boolean: quote it)
+```
+
+The build prints one line per rule. A rule that folded nothing gets a warning with the nearest
+calls, so a wrong class, a wrong key or a gate scoped to the wrong callers is visible at once,
+and the Cypher query that previews the rule on a graph built without it:
+
+```
+fold CallSite {callee_class: com.example.Flags, callee_name: isEnabled} [0: "new_checkout"] = false: 0 call(s) in 0 method(s), 0 statement(s) removed, 1 unsupported
+  warning: this rule folded nothing, no call matched; the nearest are:
+    com.example.Flags.isEnabled(java.lang.String) is called with argument 0 = StringConstant {value: "new-checkout"} (12 call(s))
+    com.example.Flags.isEnabled(java.lang.String) is called with argument 0 = not a constant (1 call(s))
+    preview on a built graph: MATCH (cs:CallSite {callee_class: "com.example.Flags", callee_name: "isEnabled"}), (a0:Constant {value: "new_checkout"})-[:DATAFLOW*1..2]->(cs) RETURN cs.caller_signature AS caller, count(cs) AS calls
+Warning: no fold rule folded any call; the graph is the same as a build without --fold
+```
+
+`--fold-strict` turns a rule that matched no call into a build failure. `graph.folds.json` in
+the output directory repeats every rule in the file's own shape and adds, per rule, the
+preview query, the calls folded, the calling methods with their statement counts before and
+after, the calls it matched but could not fold with the reason, and the near misses; it is
+itself a fold file (`--fold graph.folds.json` reads the rules and drops the rest). Methods
+no rule touches go through the frontend's default passes unchanged, so a fold changes only
+the methods that call a folded method. See `docs/constant-folding.md` for what the passes do.
+
 ## Kotlin API
 
 ### Build & Query

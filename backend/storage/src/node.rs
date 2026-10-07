@@ -2,6 +2,7 @@
 
 use crate::io::{Cursor, Truncated};
 use crate::strings::StringTable;
+use sha2::{Digest, Sha256};
 
 /// Index into the graph string table.
 pub type StrId = u32;
@@ -23,6 +24,7 @@ pub const TAG_CALL_SITE_NODE: u8 = 12;
 pub const TAG_ANNOTATION_NODE: u8 = 13;
 pub const TAG_RESOURCE_VALUE_NODE: u8 = 14;
 pub const TAG_RESOURCE_FILE_NODE: u8 = 15;
+
 pub const TAG_COUNT: usize = 16;
 
 /// Node record header: int32 id + tag byte.
@@ -61,6 +63,20 @@ impl MethodDesc {
         out
     }
 
+    /// The JVM method descriptor, `(Ljava/lang/String;)Z` — the Kotlin
+    /// `MethodDescriptor.descriptor`, built from the same type names. The signature leaves
+    /// the return type out; the descriptor keeps it.
+    pub fn descriptor(&self, s: &StringTable) -> String {
+        let mut out = String::with_capacity(32);
+        out.push('(');
+        for p in &self.parameter_types {
+            push_type_descriptor(s.get(*p as usize), &mut out);
+        }
+        out.push(')');
+        push_type_descriptor(s.get(self.return_type as usize), &mut out);
+        out
+    }
+
     pub fn signature_into(&self, s: &StringTable, out: &mut String) {
         out.push_str(s.get(self.declaring_class as usize));
         out.push('.');
@@ -73,6 +89,36 @@ impl MethodDesc {
             out.push_str(s.get(*p as usize));
         }
         out.push(')');
+    }
+}
+
+/// One JVM field descriptor per type name: `int` is `I`, `java.lang.String[]` is
+/// `[Ljava/lang/String;` — the Kotlin `jvmTypeDescriptor`.
+pub fn push_type_descriptor(type_name: &str, out: &mut String) {
+    let mut base = type_name;
+    while let Some(element) = base.strip_suffix("[]") {
+        out.push('[');
+        base = element;
+    }
+    let primitive = match base {
+        "boolean" => Some('Z'),
+        "byte" => Some('B'),
+        "char" => Some('C'),
+        "short" => Some('S'),
+        "int" => Some('I'),
+        "long" => Some('J'),
+        "float" => Some('F'),
+        "double" => Some('D'),
+        "void" => Some('V'),
+        _ => None,
+    };
+    match primitive {
+        Some(c) => out.push(c),
+        None => {
+            out.push('L');
+            out.extend(base.chars().map(|c| if c == '.' { '/' } else { c }));
+            out.push(';');
+        }
     }
 }
 
@@ -169,6 +215,11 @@ pub enum NodeKind {
         line: Option<i32>,
         receiver: Option<NodeId>,
         arguments: Vec<NodeId>,
+        /// Which call of `callee` in `caller` this is, counted in statement order from
+        /// `0`; a call the frontend derived rather than read from the bytecode counts
+        /// from `-1` downwards. Not part of the record: `Graph::node` fills it from the
+        /// `graph.callsite-ordinals` sidecar, and it is `None` for a graph without one.
+        ordinal: Option<i32>,
     },
     Annotation {
         name: StrId,
@@ -335,6 +386,7 @@ impl Node {
                         Some(receiver as u32)
                     },
                     arguments,
+                    ordinal: None,
                 }
             }
             TAG_ANNOTATION_NODE => {
@@ -420,5 +472,266 @@ pub fn read_call_site_strings(data: &[u8], record_pos: usize) -> CallSiteStrings
         caller_name,
         callee_class,
         callee_name,
+    }
+}
+
+/// The `graph.callsite-ordinals` sidecar: the ordinal of every call site that has one, and
+/// the call site a derived one was resolved from, by node id. Layout: `int32 header = "GRQ"
+/// | 4`, a copy of the 32-byte binding digest, then the index the binding is the SHA-256 of
+/// (`int32 count`, `int32 originCount`, the node id heading each block of 256 ordinal pairs,
+/// and the SHA-256 of each 2048-byte block of the entries), then the entries: `count` pairs
+/// of `int32 nodeId, int32 ordinal` ascending by node id, then `originCount` pairs of `int32
+/// nodeId, int32 origin`, one per derived call site resolved from another, ascending by node
+/// id. The origins sit apart so that reading an ordinal, on the decode path of every call
+/// site, costs what it did before they existed, and the index lets the mapped Kotlin reader
+/// prove a block of entries on its first touch rather than hash the whole file per mapping;
+/// this reader holds the entries in memory and proves every block when it parses them. A
+/// file of its own so that a reader which predates it reads the graph exactly as before; the
+/// binding is also the last section of `graph.metadata`, which binds the sidecar to the graph
+/// it describes: a writer that does not know the sidecar rewrites the metadata without it.
+#[derive(Debug, Default, Clone, PartialEq)]
+pub struct CallSiteOrdinals {
+    ids: Vec<u32>,
+    ordinals: Vec<i32>,
+    origin_ids: Vec<u32>,
+    origins: Vec<u32>,
+}
+
+pub const MAGIC_CALL_SITE_ORDINALS: i32 = 0x47525100;
+pub const CALL_SITE_ORDINALS_VERSION: u8 = 4;
+pub const CALL_SITE_ORDINAL_ENTRY_BYTES: usize = 8;
+/// Ordinal pairs per block head; the block digests cover the same bytes, 2048 per block.
+pub const CALL_SITE_ORDINAL_BLOCK_ENTRIES: usize = 256;
+pub const CALL_SITE_ORDINAL_BLOCK_BYTES: usize =
+    CALL_SITE_ORDINAL_BLOCK_ENTRIES * CALL_SITE_ORDINAL_ENTRY_BYTES;
+/// Header and the copy of the binding, before the index.
+pub const CALL_SITE_ORDINALS_PREAMBLE_BYTES: usize = 4 + 32;
+
+impl CallSiteOrdinals {
+    pub fn empty() -> CallSiteOrdinals {
+        CallSiteOrdinals::default()
+    }
+
+    /// Parse the sidecar bound by `binding`, the digest `graph.metadata` ends with; `None`
+    /// when there is no binding or the bytes are not that sidecar (wrong header, cut short,
+    /// longer than its counts, an index that does not hash to the binding, a block of entries
+    /// that does not hash to its digest in the index, a head that is not the first id of its
+    /// block), in which case the graph is read without ordinals, as a reader without the
+    /// sidecar does.
+    pub fn parse(data: &[u8], binding: Option<&[u8; 32]>) -> Option<CallSiteOrdinals> {
+        let binding = binding?;
+        let mut c = Cursor::new(data);
+        let header = c.i32().ok()?;
+        if header & !0xFF != MAGIC_CALL_SITE_ORDINALS
+            || (header & 0xFF) as u8 != CALL_SITE_ORDINALS_VERSION
+        {
+            return None;
+        }
+        if c.bytes(32).ok()? != binding {
+            return None;
+        }
+        let count = usize::try_from(c.i32().ok()?).ok()?;
+        let origin_count = usize::try_from(c.i32().ok()?).ok()?;
+        let heads = count.div_ceil(CALL_SITE_ORDINAL_BLOCK_ENTRIES);
+        let entry_bytes = count
+            .checked_add(origin_count)?
+            .checked_mul(CALL_SITE_ORDINAL_ENTRY_BYTES)?;
+        let blocks = entry_bytes.div_ceil(CALL_SITE_ORDINAL_BLOCK_BYTES);
+        let digests_at = CALL_SITE_ORDINALS_PREAMBLE_BYTES
+            .checked_add(8)?
+            .checked_add(heads.checked_mul(4)?)?;
+        let entries_at = digests_at.checked_add(blocks.checked_mul(32)?)?;
+        if data.len() != entries_at.checked_add(entry_bytes)? {
+            return None;
+        }
+        // The index is what the binding covers: the digest copied into the header says
+        // nothing about the bytes behind it. The index then vouches for every block of
+        // entries, each hashed before any ordinal is exposed.
+        if Sha256::digest(&data[CALL_SITE_ORDINALS_PREAMBLE_BYTES..entries_at])[..] != binding[..] {
+            return None;
+        }
+        let entries = &data[entries_at..];
+        for (block, digest) in data[digests_at..entries_at].chunks(32).enumerate() {
+            let from = block * CALL_SITE_ORDINAL_BLOCK_BYTES;
+            let to = (from + CALL_SITE_ORDINAL_BLOCK_BYTES).min(entries.len());
+            if Sha256::digest(&entries[from..to])[..] != digest[..] {
+                return None;
+            }
+        }
+        let mut c = Cursor::new(entries);
+        let mut ids = Vec::with_capacity(count);
+        let mut ordinals = Vec::with_capacity(count);
+        for _ in 0..count {
+            ids.push(c.u32().ok()?);
+            ordinals.push(c.i32().ok()?);
+        }
+        let mut origin_ids = Vec::with_capacity(origin_count);
+        let mut origins = Vec::with_capacity(origin_count);
+        for _ in 0..origin_count {
+            origin_ids.push(c.u32().ok()?);
+            origins.push(c.u32().ok()?);
+        }
+        let mut h = Cursor::new(&data[CALL_SITE_ORDINALS_PREAMBLE_BYTES + 8..digests_at]);
+        for block in 0..heads {
+            if h.u32().ok()? != ids[block * CALL_SITE_ORDINAL_BLOCK_ENTRIES] {
+                return None;
+            }
+        }
+        Some(CallSiteOrdinals {
+            ids,
+            ordinals,
+            origin_ids,
+            origins,
+        })
+    }
+
+    pub fn len(&self) -> usize {
+        self.ids.len()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.ids.is_empty()
+    }
+
+    /// The ordinal of node `id`, `None` when the sidecar has none for it.
+    pub fn get(&self, id: NodeId) -> Option<i32> {
+        self.ids.binary_search(&id).ok().map(|i| self.ordinals[i])
+    }
+
+    /// The call sites derived from call site `origin`, in node id order.
+    pub fn derived_from(&self, origin: NodeId) -> impl Iterator<Item = NodeId> + '_ {
+        self.origin_ids
+            .iter()
+            .zip(&self.origins)
+            .filter(move |(_, o)| **o == origin)
+            .map(|(id, _)| *id)
+    }
+
+    /// The call site node `id` was derived from (a call on a function value resolved to a
+    /// lambda body), `None` when it was not derived from one or the sidecar has no entry for it.
+    pub fn origin(&self, id: NodeId) -> Option<NodeId> {
+        let i = self.origin_ids.binary_search(&id).ok()?;
+        Some(self.origins[i])
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A CallSite record as the Kotlin writer lays it out: id, tag, caller and callee
+    /// descriptors (class, name, parameter count, parameters, return type), line,
+    /// receiver, argument count, arguments.
+    fn call_site_record() -> Vec<u8> {
+        let mut out = Vec::new();
+        let i32 = |out: &mut Vec<u8>, v: i32| out.extend_from_slice(&v.to_be_bytes());
+        i32(&mut out, 7);
+        out.push(TAG_CALL_SITE_NODE);
+        for desc in [[0, 1], [2, 3]] {
+            for v in [desc[0], desc[1], 1, 4, 5] {
+                i32(&mut out, v);
+            }
+        }
+        for v in [-1, -1, 2, 11, 12] {
+            i32(&mut out, v);
+        }
+        out
+    }
+
+    #[test]
+    fn a_call_site_record_carries_no_ordinal_of_its_own() {
+        let node = Node::read(&call_site_record(), 0, 3).unwrap();
+        assert_eq!(node.id, 7);
+        match &node.kind {
+            NodeKind::CallSite {
+                arguments, ordinal, ..
+            } => {
+                assert_eq!(arguments, &vec![11, 12]);
+                assert_eq!(*ordinal, None);
+            }
+            other => panic!("not a call site: {other:?}"),
+        }
+    }
+
+    /// The sidecar as the Kotlin writer lays it out: header, the binding's copy, the index
+    /// (counts, block heads, block digests), then the entries.
+    fn encoded(pairs: &[(i32, i32)], origins: &[(i32, i32)]) -> (Vec<u8>, [u8; 32]) {
+        let i32 = |out: &mut Vec<u8>, v: i32| out.extend_from_slice(&v.to_be_bytes());
+        let mut entries = Vec::new();
+        for (id, value) in pairs.iter().chain(origins) {
+            i32(&mut entries, *id);
+            i32(&mut entries, *value);
+        }
+        let mut index = Vec::new();
+        i32(&mut index, pairs.len() as i32);
+        i32(&mut index, origins.len() as i32);
+        for block in pairs.chunks(CALL_SITE_ORDINAL_BLOCK_ENTRIES) {
+            i32(&mut index, block[0].0);
+        }
+        for block in entries.chunks(CALL_SITE_ORDINAL_BLOCK_BYTES) {
+            index.extend_from_slice(&Sha256::digest(block));
+        }
+        let digest: [u8; 32] = Sha256::digest(&index).into();
+        let mut bytes = Vec::new();
+        i32(
+            &mut bytes,
+            MAGIC_CALL_SITE_ORDINALS | i32::from(CALL_SITE_ORDINALS_VERSION),
+        );
+        bytes.extend_from_slice(&digest);
+        bytes.extend_from_slice(&index);
+        bytes.extend_from_slice(&entries);
+        (bytes, digest)
+    }
+
+    #[test]
+    fn the_ordinal_sidecar_parses_and_answers_by_node_id() {
+        // One derived call site, 9, resolved from 4.
+        let (bytes, digest) = encoded(&[(4, 0), (9, -1), (12, 2)], &[(9, 4)]);
+        let sidecar = CallSiteOrdinals::parse(&bytes, Some(&digest)).unwrap();
+        assert_eq!(sidecar.len(), 3);
+        assert_eq!(sidecar.get(4), Some(0));
+        assert_eq!(sidecar.get(9), Some(-1));
+        assert_eq!(sidecar.get(12), Some(2));
+        assert_eq!(sidecar.get(5), None);
+        assert_eq!(sidecar.origin(9), Some(4));
+        assert_eq!(sidecar.origin(4), None);
+        assert_eq!(sidecar.origin(5), None);
+        assert_eq!(sidecar.derived_from(4).collect::<Vec<_>>(), vec![9]);
+        assert_eq!(sidecar.derived_from(9).count(), 0);
+        // No binding, another graph's binding: the sidecar describes another graph.
+        assert!(CallSiteOrdinals::parse(&bytes, None).is_none());
+        assert!(CallSiteOrdinals::parse(&bytes, Some(&[0u8; 32])).is_none());
+        // Cut short, trailing bytes, wrong header, wrong version: not a sidecar.
+        assert!(CallSiteOrdinals::parse(&bytes[..bytes.len() - 2], Some(&digest)).is_none());
+        let mut longer = bytes.clone();
+        longer.push(0);
+        assert!(CallSiteOrdinals::parse(&longer, Some(&digest)).is_none());
+        assert!(CallSiteOrdinals::parse(&[1, 2, 3, 4, 0, 0, 0, 0], Some(&digest)).is_none());
+        let mut wrong = bytes.clone();
+        wrong[3] = 1;
+        assert!(CallSiteOrdinals::parse(&wrong, Some(&digest)).is_none());
+        // An entry flipped behind an intact index: every block is hashed against the index,
+        // and the index against the binding, not the header's copy.
+        let mut tampered = bytes.clone();
+        let last = tampered.len() - 1;
+        tampered[last] ^= 1;
+        assert!(CallSiteOrdinals::parse(&tampered, Some(&digest)).is_none());
+        let head_at = CALL_SITE_ORDINALS_PREAMBLE_BYTES + 8;
+        let mut other_head = bytes.clone();
+        other_head[head_at + 3] = 5;
+        assert!(CallSiteOrdinals::parse(&other_head, Some(&digest)).is_none());
+        assert!(CallSiteOrdinals::empty().is_empty());
+        // Blocks: 300 pairs span two heads and, with their origins, two blocks of entries.
+        let pairs: Vec<(i32, i32)> = (0..300).map(|i| (i * 2, i)).collect();
+        let origins: Vec<(i32, i32)> = (0..100).map(|i| (i * 6, i * 6 - 2)).collect();
+        let (bytes, digest) = encoded(&pairs, &origins);
+        let sidecar = CallSiteOrdinals::parse(&bytes, Some(&digest)).unwrap();
+        assert_eq!(sidecar.len(), 300);
+        assert_eq!(sidecar.get(598), Some(299));
+        assert_eq!(sidecar.origin(594), Some(592));
+        let entries_at = bytes.len() - 400 * CALL_SITE_ORDINAL_ENTRY_BYTES;
+        let mut other_block = bytes.clone();
+        other_block[entries_at + CALL_SITE_ORDINAL_BLOCK_BYTES + 7] ^= 1;
+        assert!(CallSiteOrdinals::parse(&other_block, Some(&digest)).is_none());
     }
 }

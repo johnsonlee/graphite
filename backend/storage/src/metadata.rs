@@ -81,6 +81,10 @@ pub struct Metadata {
     /// key "$class#$member" -> [(annotation fqn, [(attr, value)])]
     pub member_annotations: Vec<(StrId, Vec<MemberAnnotation>)>,
     pub branch_scopes: Vec<BranchScope>,
+    /// SHA-256 of the `graph.callsite-ordinals` entries this metadata was written with, from
+    /// the binding section it ends with; `None` for a graph saved without ordinals or by a
+    /// writer that predates them.
+    pub call_site_ordinal_digest: Option<[u8; 32]>,
     // Lookup maps
     pub supertypes_index: HashMap<StrId, usize>,
     pub subtypes_index: HashMap<StrId, usize>,
@@ -190,6 +194,7 @@ impl Metadata {
                 false_branch,
             });
         }
+        m.call_site_ordinal_digest = read_optional_sections(&mut c);
         for (i, (k, _)) in m.supertypes.iter().enumerate() {
             m.supertypes_index.insert(*k, i);
         }
@@ -208,6 +213,41 @@ impl Metadata {
         Ok(m)
     }
 }
+
+/// The optional sections after the fixed metadata, in the order the writer appends them: the
+/// trailer that binds the branch-definition sidecar (`GRX`, a 32-byte digest), the synthetic
+/// identities (`GRS`, a count of 20-byte entries) and, last, the binding of the call-site
+/// ordinal sidecar (`GRB`, a 32-byte digest). Reading stops at the end of the file, at a
+/// section cut short or at a header that is none of these, and returns the ordinal binding.
+fn read_optional_sections(c: &mut Cursor) -> Option<[u8; 32]> {
+    let mut binding = None;
+    while let Ok(header) = c.i32() {
+        let (magic, version) = (header & !0xFF, (header & 0xFF) as u8);
+        let read = match (magic, version) {
+            (MAGIC_METADATA_TRAILER, 1) => c.skip(32),
+            (MAGIC_SYNTHETIC_IDENTITIES, 1) => c.i32().and_then(|count| {
+                c.skip(
+                    usize::try_from(count)
+                        .unwrap_or(usize::MAX)
+                        .saturating_mul(20),
+                )
+            }),
+            (MAGIC_CALL_SITE_ORDINALS_BINDING, 2) => c.bytes(32).map(|bytes| {
+                binding = <[u8; 32]>::try_from(bytes).ok();
+            }),
+            _ => break,
+        };
+        if read.is_err() {
+            break;
+        }
+    }
+    binding
+}
+
+/// Appended to `graph.metadata` by the Kotlin writer, see `read_optional_sections`.
+pub const MAGIC_METADATA_TRAILER: i32 = 0x47525800;
+pub const MAGIC_SYNTHETIC_IDENTITIES: i32 = 0x47525300;
+pub const MAGIC_CALL_SITE_ORDINALS_BINDING: i32 = 0x47524200;
 
 /// `graph.comparisons`: sorted (key, comparison) where key = from<<32 | to.
 pub struct Comparisons {

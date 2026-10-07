@@ -117,13 +117,16 @@ counts exactly, and persisted size must change by the pinned per-corpus delta wi
 tolerance. Timing, heap, and CallSite-index lifecycle checks are unchanged. Any other combination
 falls through to the base-owned or legacy controls. The base pin names the pre-transition harness, so
 once the transition merges the base digest no longer matches and the branch is never selected again.
-The current transition appends the synthetic identity section to `graph.metadata` (a 128-bit
-fingerprint per compiler-numbered synthetic member, keyed by class name or method signature, which also
-adds the method keys to the string table): node, edge, method and call-site counts are identical, and
-the persisted size grows by the section and those strings (Tika +1,818,775, Hive +10,577,222, Kotlin
-compiler +9,958,925 bytes).
+The current transition moves the JVM frontend to SootUp 3.0.1, whose type assigner gives every local
+a concrete type where 2.0.0 left `unknown`, and writes the `graph.callsite-ordinals` sidecar (node id and
+ordinal per call site, and an origin table that these builds, without dispatch resolution, leave empty): node, edge,
+method and call-site counts are identical, and the persisted size grows
+by the sidecar: eight bytes per call site, 36 bytes of index per block of 256 call sites, its header and
+its binding (Tika +8,190,900, Hive +11,754,172, Kotlin compiler +7,512,796 bytes). The synthetic identity transition before it appended the synthetic
+identity section to `graph.metadata` (Tika +1,818,775, Hive +10,577,222, Kotlin compiler +9,958,925
+bytes), again with every count unchanged.
 
-The lambda-shape transition before it moved the wrapped-query fixture graphs, which only the candidate builds and every
+The lambda-shape transition before those moved the wrapped-query fixture graphs, which only the candidate builds and every
 revision (reference, base, candidate) then queries. Their base-owned harnesses pin that graph's node
 counts (`BenchmarkCorpus.kt`) and search-target distributions and total node count
 (`AllFixtureWrappedDiscoveryLatencyBenchmark.kt`), so they would reject the candidate's graph. For

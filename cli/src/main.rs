@@ -5,7 +5,8 @@
 //!
 //! - `build` is a shell over the JVM frontend (`graphite.jar build`, the SootUp
 //!   analysis): every argument is passed through, and the frontend is found as
-//!   `frontend.rs` describes.
+//!   `frontend.rs` describes. A `--fold` file with `select` rules makes it build twice,
+//!   resolving the queries on the first graph (`fold.rs`).
 //! - `query` is reproduced byte for byte: output of all three formats, the verbose lines,
 //!   the error text and the exit codes are compared against the Kotlin binary by
 //!   `backend/bench/parity-cli.py`.
@@ -14,6 +15,7 @@
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
+mod fold;
 mod frontend;
 mod install;
 mod pack;

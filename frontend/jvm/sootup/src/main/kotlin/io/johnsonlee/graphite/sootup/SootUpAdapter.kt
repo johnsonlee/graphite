@@ -257,10 +257,14 @@ class SootUpAdapter(
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
     private val singleArtifactSource: String? = null,
-    private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder()
+    private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
+    /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
+    private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
 ) {
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
+    /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */
+    private val interprocedural = if (config.interproceduralDataflow) InterproceduralDataflow() else null
 
     private class LocalKey(val method: MethodDescriptor, val name: String) {
         override fun equals(other: Any?): Boolean =
@@ -358,6 +362,21 @@ class SootUpAdapter(
     private val bundleControlSpecsByLocal = mutableMapOf<LocalKey, BundleControlSpec>()
 
     private val resolvedMethodCache = mutableMapOf<MethodSignature, MethodSignature>()
+
+    /** The rendered declaring signature of each callee, for the call-site ordinals of every body. */
+    /**
+     * The graph's rendering of each callee the ordinal pass resolved, by the resolved signature's
+     * identity: `resolvedMethodCache` hands back one instance per callee, so no signature is
+     * hashed or compared here.
+     */
+    private val renderedDefiningClass = IdentityHashMap<MethodSignature, String>()
+
+    /**
+     * The callee each invoke of the current body resolves to, by the identity of the invoke's own
+     * signature object: the ordinal pass resolves every invoke once, and the call-site pass reads
+     * the same object off the same expression, so the body's callees are resolved once, not twice.
+     */
+    private var bodyResolvedCallees: IdentityHashMap<MethodSignature, MethodSignature> = IdentityHashMap()
     private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()
     private val typeDescriptorCache = identityMutableMap<Type, TypeDescriptor>()
     private val declaredMethodSubSignaturesByClass = mutableMapOf<String, Set<String>>()
@@ -393,6 +412,18 @@ class SootUpAdapter(
     private var stmtIdentityWrites = identityMutableMap<Stmt, String>()
     private var activeMethod: MethodDescriptor? = null
     private var activeMethodLocals = mutableListOf<LocalKey>()
+    /**
+     * `CallSite.ordinal` of every invoke of the active method's body, by statement: computed once
+     * from the unfiltered body by [callOrdinals], the function the fold pass reads a rule's keys
+     * with, so a boxing call this adapter turns into a dataflow edge rather than a call site
+     * still takes its number and a key read off the graph names the same invoke in both.
+     */
+    private var bodyCallOrdinals: Map<Stmt, Int> = emptyMap()
+    /**
+     * Derived calls of each callee per caller: these are also created after the caller's pass,
+     * when cross-method dispatch resolves, so they are counted per caller for the whole build.
+     */
+    private val derivedCallOrdinals = HashMap<String, Int>()
     private var activeLocalKeysByName = mutableMapOf<String, LocalKey>()
     private var activeMethodParameters = mutableListOf<ParameterBinding>()
     private var activeParameterBindingsByIndex = mutableMapOf<Int, ParameterBinding>()
@@ -492,6 +523,11 @@ class SootUpAdapter(
         // Pass 2B: Resolve cross-method functional interface dispatch
         if (trackCrossMethodFunctionalDispatch) {
             resolveFunctionalDispatch()
+        }
+
+        interprocedural?.let { calls ->
+            val edges = calls.link(::overridesOf) { graphBuilder.addEdge(it) }
+            log { "Linked $edges interprocedural dataflow edge(s)" }
         }
 
         // Build call graph if configured
@@ -768,9 +804,11 @@ class SootUpAdapter(
         )
         methodReturnNodes[methodDescriptor] = returnNode
         graphBuilder.addNode(returnNode)
+        interprocedural?.method(methodDescriptor, returnNode.id)
 
         activeMethod = methodDescriptor
         activeMethodLocals = mutableListOf()
+        bodyCallOrdinals = emptyMap()
         activeLocalKeysByName = mutableMapOf()
         activeMethodParameters = mutableListOf()
         activeParameterBindingsByIndex = mutableMapOf()
@@ -801,6 +839,14 @@ class SootUpAdapter(
     private fun processMethodBody(method: SootMethod, methodDescriptor: MethodDescriptor) {
         val stmtGraph = method.body.controlFlowGraph
         val statements = stmtGraph.stmts
+        // A body a rule folded in keeps the numbering it had before the fold, so a surviving call's
+        // ordinal is the one the unfolded graph gave it; every other body is numbered as it stands.
+        bodyResolvedCallees = IdentityHashMap(statements.size)
+        bodyCallOrdinals = preFoldOrdinals(method.signature) ?: callOrdinals(statements) { signature ->
+            val resolved = resolveMethodDefiningClass(signature)
+            bodyResolvedCallees[signature] = resolved
+            renderedDefiningClass.getOrPut(resolved) { renderSignature(resolved) }
+        }
 
         // Reset per-method stmt tracking
         stmtNodeIds = identityMutableMap()
@@ -852,7 +898,7 @@ class SootUpAdapter(
     }
 
     private fun processParameters(method: SootMethod, methodDescriptor: MethodDescriptor) {
-        method.parameterTypes.forEachIndexed { index, paramType ->
+        val nodes = method.parameterTypes.mapIndexed { index, paramType ->
             val paramNode = ParameterNode(
                 id = nextNodeId("param"),
                 index = index,
@@ -861,7 +907,9 @@ class SootUpAdapter(
             )
             parameterNodes[parameterBinding(methodDescriptor, index)] = paramNode
             graphBuilder.addNode(paramNode)
+            paramNode.id
         }
+        interprocedural?.parameters(methodDescriptor, nodes)
     }
 
     private fun processStatement(stmt: Stmt, method: MethodDescriptor) {
@@ -1050,7 +1098,7 @@ class SootUpAdapter(
         resultNode: ValueNode?,
         stmt: Stmt? = null
     ) {
-        val calleeSignature = resolveMethodDefiningClass(invokeExpr.methodSignature)
+        val calleeSignature = bodyResolvedCallees[invokeExpr.methodSignature] ?: resolveMethodDefiningClass(invokeExpr.methodSignature)
         val callee = toMethodDescriptor(calleeSignature)
 
         // Create argument nodes and track dataflow
@@ -1120,12 +1168,15 @@ class SootUpAdapter(
             callee = callee,
             lineNumber = null, // SootUp may provide position info
             receiver = receiverNode?.id,
-            arguments = argNodeIds
+            arguments = argNodeIds,
+            ordinal = stmt?.let(bodyCallOrdinals::get)
         )
         graphBuilder.addNode(callSite)
         if (stmt != null) {
             recordStmtNode(stmt, callSite.id)
         }
+        val virtual = invokeExpr is AbstractInstanceInvokeExpr && invokeExpr !is JSpecialInvokeExpr
+        interprocedural?.call(callee, virtual, argNodeIds, resultNode?.id)
         val resourceRelevantCall = isResourceRelevantCall(calleeSignature)
         if (resourceRelevantCall) {
             linkResourceReads(callSite, calleeSignature, invokeExpr)
@@ -1265,7 +1316,8 @@ class SootUpAdapter(
                 callee = target,
                 lineNumber = null,
                 receiver = if (kind == HandleKind.INSTANCE) argNodeIds.firstOrNull() else null,
-                arguments = if (kind == HandleKind.INSTANCE) argNodeIds.drop(1) else argNodeIds
+                arguments = if (kind == HandleKind.INSTANCE) argNodeIds.drop(1) else argNodeIds,
+                ordinal = nextDerivedCallOrdinal(caller, target)
             )
             graphBuilder.addNode(callSite)
             if (stmt != null) {
@@ -1338,7 +1390,8 @@ class SootUpAdapter(
                 callee = callee,
                 lineNumber = null,
                 receiver = null,
-                arguments = argNodeIds
+                arguments = argNodeIds,
+                ordinal = stmt?.let(bodyCallOrdinals::get)
             )
             graphBuilder.addNode(callSite)
             if (stmt != null) {
@@ -1947,9 +2000,12 @@ class SootUpAdapter(
             callee = resolved.method,
             lineNumber = callSite.lineNumber,
             receiver = resolved.receiver,
-            arguments = resolved.arguments
+            arguments = resolved.arguments,
+            ordinal = nextDerivedCallOrdinal(callSite.caller, resolved.method),
+            origin = callSite.id
         )
         graphBuilder.addNode(resolvedCallSite)
+        interprocedural?.call(resolved.method, false, resolved.arguments, result)
         // Both the call on the function value and the resolved call are dynamic dispatch
         graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
         graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))
@@ -2214,7 +2270,8 @@ class SootUpAdapter(
                     callee = callee,
                     lineNumber = null,
                     receiver = receiver,
-                    arguments = emptyList()
+                    arguments = emptyList(),
+                    ordinal = nextDerivedCallOrdinal(method, callee)
                 )
                 graphBuilder.addNode(callSite)
                 recordStmtNode(stmt, callSite.id)
@@ -3943,6 +4000,7 @@ class SootUpAdapter(
         stmtIdentityWrites.clear()
         activeMethod = null
         activeMethodLocals = mutableListOf()
+        bodyCallOrdinals = emptyMap()
         activeLocalKeysByName = mutableMapOf()
         activeMethodParameters = mutableListOf()
         activeParameterBindingsByIndex = mutableMapOf()
@@ -3955,11 +4013,8 @@ class SootUpAdapter(
                     className = type.fullyQualifiedName,
                     typeArguments = emptyList() // Base type without generics
                 )
-                is ArrayType -> TypeDescriptor(
-                    className = "${toTypeDescriptor(type.baseType).className}[]"
-                )
-                is PrimitiveType -> TypeDescriptor(className = type.toString())
-                else -> TypeDescriptor(className = type.toString())
+                // One naming rule with the fold pass, whose keys must match the graph's.
+                else -> TypeDescriptor(className = graphTypeName(type))
             }
         }
     }
@@ -4018,6 +4073,14 @@ class SootUpAdapter(
     private fun toMethodDescriptor(method: SootMethod): MethodDescriptor {
         return toMethodDescriptor(method.signature)
     }
+
+    /**
+     * The ordinal of the next call of [callee] in [caller] that the frontend derived rather than
+     * read from the bytecode: `-1`, `-2`, ... per caller and callee, apart from the bytecode's own
+     * calls so that those keep the ordinals a pass over the body computes.
+     */
+    private fun nextDerivedCallOrdinal(caller: MethodDescriptor, callee: MethodDescriptor): Int =
+        -derivedCallOrdinals.merge("${caller.signature}\u0000${callee.signature}", 1, Int::plus)!!
 
     private fun toMethodDescriptor(sig: MethodSignature): MethodDescriptor {
         return methodDescriptorCache.getOrPut(sig) {

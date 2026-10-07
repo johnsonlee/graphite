@@ -48,6 +48,10 @@ import java.io.OutputStream
 import java.io.RandomAccessFile
 import java.nio.BufferUnderflowException
 import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardOpenOption
 import java.security.MessageDigest
 
 /**
@@ -87,6 +91,8 @@ internal object NodeSerializer {
     internal const val MAGIC_BRANCHDEFS  = 0x47524400  // "GRD"
     internal const val MAGIC_METADATA_TRAILER = 0x47525800  // "GRX", appended to graph.metadata
     internal const val MAGIC_SYNTHETIC_IDENTITIES = 0x47525300  // "GRS", appended to graph.metadata
+    internal const val MAGIC_CALL_SITE_ORDINALS = 0x47525100  // "GRQ", the graph.callsite-ordinals sidecar
+    internal const val MAGIC_CALL_SITE_ORDINALS_BINDING = 0x47524200  // "GRB", the last section of graph.metadata
 
     /** Format version of the synthetic identity section, independent of [FORMAT_VERSION]. */
     internal const val SYNTHETIC_IDENTITIES_VERSION: Int = 1
@@ -107,7 +113,12 @@ internal object NodeSerializer {
     const val FORMAT_VERSION: Int = 3
     private const val LEGACY_FORMAT_VERSION: Int = 1
     private const val TRANSITIONAL_FORMAT_VERSION: Int = 2
+    /** Version 3 introduced the labelled edge families and the artifact metadata. */
+    const val LABELLED_EDGE_FORMAT_VERSION: Int = 3
     private const val ARTIFACT_METADATA_FORMAT_VERSION: Int = 3
+    /** Format version of the optional `graph.callsite-ordinals` sidecar, independent of [FORMAT_VERSION]. */
+    internal const val CALL_SITE_ORDINALS_VERSION: Int = 4
+    internal const val CALL_SITE_ORDINALS_BINDING_VERSION: Int = 2
 
     /** Write a 4-byte file header: 3-byte magic prefix | 1-byte version. */
     fun writeHeader(dos: DataOutputStream, magic: Int) {
@@ -139,13 +150,9 @@ internal object NodeSerializer {
     }
 
     private fun validateVersion(version: Int, expectedMagic: Int) {
-        require(
-            version == LEGACY_FORMAT_VERSION ||
-                version == TRANSITIONAL_FORMAT_VERSION ||
-                version == FORMAT_VERSION
-        ) {
+        require(version in LEGACY_FORMAT_VERSION..FORMAT_VERSION) {
             "Unsupported GraphStore format version $version for 0x${expectedMagic.toString(HEX_RADIX)}. " +
-                "This build supports versions $LEGACY_FORMAT_VERSION, $TRANSITIONAL_FORMAT_VERSION and $FORMAT_VERSION."
+                "This build supports versions $LEGACY_FORMAT_VERSION to $FORMAT_VERSION."
         }
     }
 
@@ -215,7 +222,11 @@ internal object NodeSerializer {
         comparison: BranchComparison? = null,
         version: Int = FORMAT_VERSION
     ): Edge {
-        return if (version >= FORMAT_VERSION) decodeEdgeV3(label, from, to, comparison) else decodeEdgeV2(label, from, to, comparison)
+        return if (version >= LABELLED_EDGE_FORMAT_VERSION) {
+            decodeEdgeV3(label, from, to, comparison)
+        } else {
+            decodeEdgeV2(label, from, to, comparison)
+        }
     }
 
     private fun decodeEdgeV2(label: Int, from: NodeId, to: NodeId, comparison: BranchComparison?): Edge {
@@ -514,7 +525,16 @@ internal object NodeSerializer {
         return tag
     }
 
-    fun readNode(dis: DataInput, strings: StringTable, formatVersion: Int = FORMAT_VERSION): Node {
+    /**
+     * The node at the input's position. [ordinals] is the graph's `graph.callsite-ordinals` sidecar,
+     * consulted once per call site so the node is built with its ordinal rather than copied after.
+     */
+    fun readNode(
+        dis: DataInput,
+        strings: StringTable,
+        formatVersion: Int = FORMAT_VERSION,
+        ordinals: CallSiteOrdinals = CallSiteOrdinals.EMPTY
+    ): Node {
         val id = NodeId(dis.readInt())
         return when (val tag = dis.readByte().toInt()) {
             TAG_INT_CONSTANT -> IntConstant(id, dis.readInt())
@@ -578,7 +598,10 @@ internal object NodeSerializer {
                 val receiver = dis.readInt().let { if (it == -1) null else NodeId(it) }
                 val argCount = dis.readInt()
                 val arguments = (0 until argCount).map { NodeId(dis.readInt()) }
-                CallSiteNode(id, caller, callee, lineNumber, receiver, arguments)
+                val ordinal = ordinals[id.value]
+                // Only a derived call site (ordinal below zero) can have an origin.
+                val origin = if (ordinal != null && ordinal < 0) ordinals.origin(id.value) else null
+                CallSiteNode(id, caller, callee, lineNumber, receiver, arguments, ordinal, origin)
             }
             TAG_ANNOTATION_NODE -> {
                 val name = strings.get(dis.readInt())
@@ -698,6 +721,136 @@ internal object NodeSerializer {
         }
     }
 
+    /** The `graph.callsite-ordinals` sidecar's bytes and the digest `graph.metadata` binds to it. */
+    class EncodedCallSiteOrdinals(val bytes: ByteArray, val digest: ByteArray)
+
+    /**
+     * Encode the `graph.callsite-ordinals` sidecar: `int32 header = MAGIC_CALL_SITE_ORDINALS |
+     * CALL_SITE_ORDINALS_VERSION`, a copy of the binding digest, then the index the binding
+     * covers (`int32 count`, `int32 originCount`, the node id heading each block of
+     * [CALL_SITE_ORDINAL_BLOCK_ENTRIES] ordinal entries, and the SHA-256 of each
+     * [CALL_SITE_ORDINAL_BLOCK_BYTES]-byte block of the entries), then the entries: per call site
+     * `int32 nodeId, int32 ordinal`, ascending by node id, then per derived call site resolved
+     * from another `int32 nodeId, int32 origin` (`CallSiteNode.origin`), ascending by node id.
+     * The origins sit apart from the ordinals so that decoding a call site, which reads its
+     * ordinal, searches no more than it did before origins existed. The binding is the SHA-256
+     * of the index, so a reader proves the index on open at a cost of one block digest per
+     * block of entries, and each block of entries on the first touch: a fresh mapping of a
+     * graph with a million call sites hashed eight megabytes before it could read one ordinal,
+     * which the cold rows of the slow-query-shapes gate paid on every query (15–20%), while
+     * the index is a sixty-fourth of that. A file of its own rather than a field of the
+     * CallSite record or a metadata section, so a reader that predates it, the base revision of
+     * a benchmark comparison included, reads the graph exactly as before and sees no ordinal.
+     * The digest is also the last section of `graph.metadata` ([writeCallSiteOrdinalBinding]):
+     * a writer that does not know the sidecar rewrites the metadata without it, and the sidecar
+     * it left behind, whose ordinals would attach to the reused node ids of another graph, no
+     * longer binds.
+     */
+    fun encodeCallSiteOrdinals(ids: IntArray, ordinals: IntArray, origins: IntArray): EncodedCallSiteOrdinals {
+        require(ids.size == ordinals.size && ids.size == origins.size)
+        val derived = ids.indices.filter { origins[it] != NO_ORIGIN }
+        val entries = ByteBuffer.allocate((ids.size + derived.size) * CALL_SITE_ORDINAL_ENTRY_BYTES)
+        for (index in ids.indices) {
+            entries.putInt(ids[index])
+            entries.putInt(ordinals[index])
+        }
+        for (index in derived) {
+            entries.putInt(ids[index])
+            entries.putInt(origins[index])
+        }
+        val heads = callSiteOrdinalBlocks(ids.size.toLong(), CALL_SITE_ORDINAL_BLOCK_ENTRIES)
+        val blocks = callSiteOrdinalBlocks(entries.capacity().toLong(), CALL_SITE_ORDINAL_BLOCK_BYTES)
+        val index = ByteBuffer.allocate(2 * Int.SIZE_BYTES + heads * Int.SIZE_BYTES + blocks * DIGEST_BYTES)
+        index.putInt(ids.size)
+        index.putInt(derived.size)
+        for (block in 0 until heads) index.putInt(ids[block * CALL_SITE_ORDINAL_BLOCK_ENTRIES])
+        val blockDigest = MessageDigest.getInstance(DIGEST_ALGORITHM)
+        for (block in 0 until blocks) {
+            val from = block * CALL_SITE_ORDINAL_BLOCK_BYTES
+            blockDigest.update(entries.array(), from, minOf(from + CALL_SITE_ORDINAL_BLOCK_BYTES, entries.capacity()) - from)
+            index.put(blockDigest.digest())
+        }
+        val digest = MessageDigest.getInstance(DIGEST_ALGORITHM).digest(index.array())
+        val bytes = ByteBuffer.allocate(CALL_SITE_ORDINALS_PREAMBLE_BYTES + index.capacity() + entries.capacity())
+        bytes.putInt(MAGIC_CALL_SITE_ORDINALS or CALL_SITE_ORDINALS_VERSION)
+        bytes.put(digest)
+        bytes.put(index.array())
+        bytes.put(entries.array())
+        return EncodedCallSiteOrdinals(bytes.array(), digest)
+    }
+
+    /** The number of blocks of [blockSize] that cover [length] units. */
+    internal fun callSiteOrdinalBlocks(length: Long, blockSize: Int): Int = ((length + blockSize - 1) / blockSize).toInt()
+
+    /**
+     * Append the binding of the `graph.callsite-ordinals` sidecar to `graph.metadata`: the
+     * section's header and the sidecar's digest, [CALL_SITE_ORDINALS_BINDING_BYTES] in all. It
+     * is written last, after the trailer and the synthetic identities, so a reader finds it by
+     * looking at the file's tail ([readCallSiteOrdinalBinding]) without parsing the metadata,
+     * and a reader that predates it stops at its header.
+     */
+    fun writeCallSiteOrdinalBinding(dos: DataOutputStream, digest: ByteArray) {
+        require(digest.size == DIGEST_BYTES) { "Expected a SHA-256 digest, got ${digest.size} bytes" }
+        dos.writeInt(MAGIC_CALL_SITE_ORDINALS_BINDING or CALL_SITE_ORDINALS_BINDING_VERSION)
+        dos.write(digest)
+    }
+
+    /**
+     * The sidecar digest `graph.metadata` ends with, or `null` when the file does not end with
+     * the binding section: a graph saved without ordinals, or re-saved by a writer that predates
+     * them, whose sidecar, if one is left, must not be attached.
+     */
+    fun readCallSiteOrdinalBinding(metadata: Path): ByteArray? {
+        val tail = metadataTail(metadata) ?: return null
+        val header = tail.getInt()
+        val bound = header and HEADER_MAGIC_MASK == MAGIC_CALL_SITE_ORDINALS_BINDING &&
+            header and BYTE_MASK == CALL_SITE_ORDINALS_BINDING_VERSION
+        return if (bound) ByteArray(DIGEST_BYTES).also { tail.get(it) } else null
+    }
+
+    /** The last [CALL_SITE_ORDINALS_BINDING_BYTES] of [metadata], or `null` when the file is missing or shorter. */
+    private fun metadataTail(metadata: Path): ByteBuffer? {
+        if (!Files.isRegularFile(metadata) || Files.size(metadata) < CALL_SITE_ORDINALS_BINDING_BYTES) return null
+        val tail = ByteBuffer.allocate(CALL_SITE_ORDINALS_BINDING_BYTES)
+        FileChannel.open(metadata, StandardOpenOption.READ).use { channel ->
+            channel.position(channel.size() - CALL_SITE_ORDINALS_BINDING_BYTES)
+            while (tail.hasRemaining() && channel.read(tail) >= 0) Unit
+        }
+        return if (tail.hasRemaining()) null else tail.flip()
+    }
+
+    /**
+     * The sidecar in [bytes], the whole file, or `null` when the header is not the sidecar's,
+     * the length is not what its counts say (cut short, or trailing bytes), or the index does
+     * not hash to [binding], the digest `graph.metadata` ends with: the sidecar then describes
+     * another graph, or no metadata binds it. The digest copied into the header is not trusted
+     * for that; the index is hashed, and the index holds the digest of every block of entries,
+     * which the sidecar checks on the first touch of that block ([CallSiteOrdinals]), since the
+     * entries are what the binding claims to cover and what a `select` folds by.
+     */
+    fun callSiteOrdinalsOf(bytes: ByteBuffer, binding: ByteArray?): CallSiteOrdinals? {
+        if (binding == null || bytes.limit() < CALL_SITE_ORDINALS_HEADER_BYTES) return null
+        val header = bytes.getInt(0)
+        val isSidecar = header and HEADER_MAGIC_MASK == MAGIC_CALL_SITE_ORDINALS && header and BYTE_MASK == CALL_SITE_ORDINALS_VERSION
+        val digest = ByteArray(DIGEST_BYTES).also { bytes.duplicate().position(Int.SIZE_BYTES).get(it) }
+        return if (isSidecar && digest.contentEquals(binding)) CallSiteOrdinals.entries(bytes, binding) else null
+    }
+
+    /** SHA-256 of [bytes] from its position to its limit, read through the buffer, so a mapped file is not copied. */
+    internal fun digestOf(bytes: ByteBuffer): ByteArray =
+        MessageDigest.getInstance(DIGEST_ALGORITHM).also { it.update(bytes) }.digest()
+
+    /** Header and the copy of the binding digest, before the sidecar's index. */
+    internal const val CALL_SITE_ORDINALS_PREAMBLE_BYTES = Int.SIZE_BYTES + DIGEST_BYTES
+    /** Preamble, count and origin count, before the block heads. */
+    internal const val CALL_SITE_ORDINALS_HEADER_BYTES = CALL_SITE_ORDINALS_PREAMBLE_BYTES + 2 * Int.SIZE_BYTES
+    internal const val CALL_SITE_ORDINAL_ENTRY_BYTES = 2 * Int.SIZE_BYTES
+    /** Entries per block head: a lookup searches one block, verified on its first touch. */
+    internal const val CALL_SITE_ORDINAL_BLOCK_ENTRIES = 256
+    /** Bytes per verified block of entries: the ordinal entries' blocks line up with their heads. */
+    internal const val CALL_SITE_ORDINAL_BLOCK_BYTES = CALL_SITE_ORDINAL_BLOCK_ENTRIES * CALL_SITE_ORDINAL_ENTRY_BYTES
+    internal const val CALL_SITE_ORDINALS_BINDING_BYTES = Int.SIZE_BYTES + DIGEST_BYTES
+
     /**
      * Read the optional sections that follow the fixed metadata sections in any order: the
      * trailer that binds `graph.metadata` to its sidecar and the synthetic identities. Reading
@@ -705,6 +858,7 @@ internal object NodeSerializer {
      */
     fun readMetadataOptionalSections(dis: DataInput, strings: StringTable, metadata: GraphMetadata): GraphMetadata {
         var digest: ByteArray? = null
+        var ordinalBinding: ByteArray? = null
         var identities: Map<String, String> = emptyMap()
         var header = readOptionalHeader(dis)
         while (header != null) {
@@ -724,10 +878,14 @@ internal object NodeSerializer {
                         readOptionalHeader(dis)
                     }
                 }
+                magic == MAGIC_CALL_SITE_ORDINALS_BINDING && version == CALL_SITE_ORDINALS_BINDING_VERSION -> {
+                    ordinalBinding = readTrailerDigest(dis)
+                    if (ordinalBinding == null) null else readOptionalHeader(dis)
+                }
                 else -> null
             }
         }
-        return metadata.copy(branchDefinitionDigest = digest, syntheticIdentities = identities)
+        return metadata.copy(branchDefinitionDigest = digest, syntheticIdentities = identities, callSiteOrdinalDigest = ordinalBinding)
     }
 
     private fun readTrailerDigest(dis: DataInput): ByteArray? = try {
@@ -1306,7 +1464,9 @@ data class GraphMetadata(
     /** SHA-256 of the `graph.branchdefs` payload this metadata was written with, from its trailer; load side only. */
     val branchDefinitionDigest: ByteArray? = null,
     /** Stable identities of synthetic members, see [io.johnsonlee.graphite.graph.Graph.syntheticIdentities]. */
-    val syntheticIdentities: Map<String, String> = emptyMap()
+    val syntheticIdentities: Map<String, String> = emptyMap(),
+    /** SHA-256 of the `graph.callsite-ordinals` entries this metadata was written with, from its last section; load side only. */
+    val callSiteOrdinalDigest: ByteArray? = null
 )
 
 /**

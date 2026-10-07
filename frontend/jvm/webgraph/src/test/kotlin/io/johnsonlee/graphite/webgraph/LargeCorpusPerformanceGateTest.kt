@@ -99,7 +99,11 @@ data class CorpusBaseline(
  * Counts measured on SootUp 3.0.1, whose type assigner gives every local a concrete type where 2.0.0
  * left `unknown`: node, edge, method and call-site counts are identical to the 2.0.0 build, and only
  * the string table, hence the persisted size, grows (Tika +6,166, Hive +3,870, Kotlin compiler
- * +10,705 bytes).
+ * +10,705 bytes). With call-site ordinals, the `graph.callsite-ordinals` sidecar adds eight bytes
+ * per call site, a 44-byte header, 36 bytes of index per block of 256 call sites (the block's first
+ * node id and the SHA-256 of its entries, so a mapped graph proves a block on its first touch rather
+ * than hash the whole sidecar per mapping) and the 36-byte binding at the end of `graph.metadata`
+ * (Tika +8,190,900, Hive +11,754,172, Kotlin compiler +7,512,796 bytes), again with every count unchanged.
  */
 private object CorpusBaselines {
     val tika = CorpusBaseline(
