@@ -7119,3 +7119,41 @@ The launch receipt records Python3.14.7, switch interval0.005s and GIL enabled; 
 Command: `python3 /tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/run.py --plan /tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/plan.sealed.json --execute-root-released`. Corrected client SHA256 `313f38aa148debbe36053480ed2c91b47e7470972305db4862c4695fa1c64d48`; requests34 `484660b6edd3b0da6a1bac9fed14c4d8317da369c19683554ce07fb536175410`; native oracle `1edcb2815cebb8b43f435c0f5d7c9de92a9f641df890fe121dfe2697efbf7387`. All300 raw latencies/case/process, first/warm cycles, body hashes, lifetime/window/client CPU, run-level ranges and paired statistics remain archived.
 
 Sealed plan SHA256 `0ca18bfff0b6e492569e94d6499d3d8583edff64d1625ff21f890d841ba9e703`; result `acf8026371f736409a57535254d97f02110d23e24fcc791b8301be125501e216`; summary `1e26da0a33ff9ca3ba5dc4d84f4ecbf6f15d3dacc8d83eb66b90d8312875fd46`; independent audit `e0348146f698f780412a4628676f0b77a448a24ffd3e2aa4b7ad86d8b8da5e38`. Evidence: `/tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/{execution/results.json,execution/summary.json,execution/launch-environment.json,independent-audit/audit.json}`. **Decision:** retain all four-case results and the corrected drain contract; make no production change or global acceptance claim from this cohort alone.
+
+### 2026-10-07 — Native own-built loading diagnostic: Kotlin CPU and Tika RSS remain adverse
+
+**Protocol:** eight fresh native processes, Kotlin ABBA then Tika ABBA, using the four complete own-version graphs and frozen preupgrade6f498/currentdb713 binaries from the compatibility entry above. The upgraded graphs were constructed with116. Each process loads one graph as `own` in MAPPED mode, retains default features/C4 background activity, and runs no Cypher queries. All three fastpath/Rayon overrides are absent. macOS/M3 Max, Rust1.93 arm64 release binaries, Python3.14.7; ports18900–18907. Existing compatibility reads mean this is observed-cache repeated process startup, not cold OS cache or guaranteed warm residency.
+
+Primary time runs from immediately before launching the owned time/exec wrapper to complete consumption of the first strictly valid `/api/graphs` body. Validation completion, a single actual-native-PID CPU/identity snapshot, immediate owned SIGTERM and reap have separate monotonic timestamps. Whole-process user+system CPU and peak RSS extend through validation/snapshot/shutdown; RSS is not an exact readiness-only peak. API readiness does not establish completion of C4 warm-up or deferred first-query work. Those later costs remain explicitly uncovered rather than disabled or moved outside a claimed complete pipeline.
+
+**Correctness and boundary checks:** all eight complete metadata envelopes match their own graph references, including paths, IDs and node/edge/method/CallSite counts. Every process identity, native PID/parent/group/start time/executable, monotonic boundary chain, raw time-l resource record, environment and unchanged graph stat inventory passed. Every lifecycle exited0 and every owned native/time wrapper ended with the reviewed SIGTERM/-15 status. No sample was retried or replaced. Root independently reread all eight raw metadata bodies, CPU snapshots and time-l files and reconstructed all reported means/pairs. Ten source-only mock tests passed independently before release.
+
+| Fixed session | Launch → readiness s | CPU at post-ready snapshot s | Whole CPU s | Peak RSS MB | Ready → reap ms |
+|---|---:|---:|---:|---:|---:|
+| 00-kotlin-old | 1.734768 | 1.750 | 1.740 | 364.904448 | 7.141 |
+| 01-kotlin-current | 1.894809 | 1.900 | 1.890 | 369.623040 | 13.410 |
+| 02-kotlin-current | 1.878759 | 1.910 | 1.900 | 366.804992 | 13.267 |
+| 03-kotlin-old | 1.773266 | 1.780 | 1.770 | 366.034944 | 7.309 |
+| 04-tika-old | 1.455967 | 1.450 | 1.440 | 250.314752 | 7.453 |
+| 05-tika-current | 1.472044 | 1.490 | 1.470 | 280.576000 | 7.184 |
+| 06-tika-current | 1.487265 | 1.500 | 1.480 | 284.229632 | 7.457 |
+| 07-tika-old | 1.427207 | 1.430 | 1.420 | 250.281984 | 7.192 |
+
+MB is decimal. The snapshot CPU has0.01s reporting resolution and is cumulative from process creation, not a delta beginning after loading. It exceeds the separately rounded time-l user+system sum by0.01–0.02s in these runs; all negative differences are retained, not interpreted as negative shutdown work. Ready→reap overhead is7.141–13.410ms and includes validation/observation/native shutdown activity.
+
+| Workload/metric | Old mean | Current mean | Change | Adjacent AB / BA changes |
+|---|---:|---:|---:|---|
+| kotlin readiness s | 1.754017 | 1.886784 | +7.569% | +9.226% / +5.949% |
+| kotlin snapshot CPU s | 1.765000 | 1.905000 | +7.932% | +8.571% / +7.303% |
+| kotlin whole CPU s | 1.755000 | 1.895000 | +7.977% | +8.621% / +7.345% |
+| kotlin RSS MB | 365.469696 | 368.214016 | +0.751% | +1.293% / +0.210% |
+| tika readiness s | 1.441587 | 1.479654 | +2.641% | +1.104% / +4.208% |
+| tika snapshot CPU s | 1.440000 | 1.495000 | +3.819% | +2.759% / +4.895% |
+| tika whole CPU s | 1.430000 | 1.475000 | +3.147% | +2.083% / +4.225% |
+| tika RSS MB | 250.298368 | 282.402816 | +12.826% | +12.089% / +13.564% |
+
+**Decision:** loading recovery is not established. Kotlin readiness and whole CPU increase in both pairs, with CPU beyond the allowed5%; Tika RSS increases beyond5% in both pairs. These are diagnostic signals from two observations per arm, not a new accepted baseline or a precise population estimate. Faster construction cannot compensate for them. Investigate native loading allocations, including eagerly copied ordinal sidecar entries, while preserving complete validation and ordinal/origin semantics; the observed differences do not by themselves prove that allocation is the cause. Keep native query p50/p95 acceptance separate.
+
+The monitor retained25 snapshots and three preflight events from the existing external JVM; no native-session/between-session event was logged. This does not upgrade the prespecified observed-background diagnostic to an exclusive/quiet measurement. Native/I/O/subsecond interference and observer overhead remain limitations; foreign processes were untouched.
+
+Command: `python3 /tmp/sootup-static-review/native-own-graph-loading/loading-fixed8/run.py --plan /tmp/sootup-static-review/native-own-graph-loading/loading-fixed8/plan.sealed.json --execute-root-released`. Exact argv, source/reference/binary pins, graph inventories, all readiness probes/failures, resource snapshots and overheads remain in that directory. Sealed plan SHA256 `e5a10baa42ca0954a7f6b026808d4e716afeec911e8361a1809ee1947e1abe36`; result `9f20373ba806172d6987508adbf8d5f4004fe40cb2f744e8e6a103b803730742`; summary `c45cc6c9d6a149750a32f050e25e55f26c3d00b230417bf58c1e7e414a6d2955`; owner raw audit `50f78952be2d14cf83a5744f21217fd013a4e627dde87e1041849866b96a6a29`; independent root raw audit `b40ac950e411b08c979093314ad9731641581667c70d5443e3eee27322a3cb4e`.
