@@ -58,6 +58,9 @@ class EnumEqualsFoldTest {
                 public static void objectReceiver() {
                     Object value = option(); if (value.equals(Option.A)) work(); else other(); tail();
                 }
+                public static void castReceiver() {
+                    Object value = option(); if (((Option) value).equals(Option.A)) work(); else other(); tail();
+                }
                 public static void discarded() { option().equals(Option.A); tail(); }
                 public static void equalityBeforeThrowingCall() {
                     try { option().equals(Option.A); other(); }
@@ -65,6 +68,9 @@ class EnumEqualsFoldTest {
                 }
                 public static void overloadedEquals() {
                     option(); if (Overloaded.A.equals(Overloaded.B)) work(); else other();
+                }
+                public static void unrelatedEquals() {
+                    option(); if (Option.A.equals(Option.B)) work(); else other();
                 }
                 public static void nullArgument() { if (option().equals(null)) work(); else other(); }
                 public static void nullReceiver() {
@@ -149,7 +155,7 @@ class EnumEqualsFoldTest {
         val classes = compile()
         for ((option, kept) in listOf("A" to "work", "B" to "other")) {
             val bodies = bodies(classes, option)
-            for (method in listOf("receiver", "objectReceiver")) {
+            for (method in listOf("receiver", "objectReceiver", "castReceiver")) {
                 assertEquals(listOf(kept, "tail").sorted(), bodies.getValue(method).calls(), "$method with $option")
                 assertTrue(bodies.getValue(method).stmts.none { it is JIfStmt }, "$method has no remaining condition")
             }
@@ -186,7 +192,8 @@ class EnumEqualsFoldTest {
             "the original null equality has an exception handler"
         )
         val bodies = bodies(classes, "A")
-        for (method in listOf("nullReceiver", "unknownReceiver", "unknownArgument", "customEquals", "overloadedEquals")) {
+        val preserved = listOf("nullReceiver", "unknownReceiver", "unknownArgument", "customEquals", "overloadedEquals", "unrelatedEquals")
+        for (method in preserved) {
             val body = bodies.getValue(method)
             assertEquals(listOf("equals", "other", "work"), body.calls(), method)
             assertTrue(body.stmts.any { it is JIfStmt }, "$method retains its runtime test")

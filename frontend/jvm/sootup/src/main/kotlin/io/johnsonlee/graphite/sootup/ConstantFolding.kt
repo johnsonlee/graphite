@@ -137,7 +137,7 @@ private const val CALLER_SIGNATURE = "caller_signature"
 internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** What the fold pass recorded for one body, consumed by the accounting pass at the chain's end. */
-    private class Marked(val statementsBefore: Int, val calls: IntArray)
+    private class Marked(val statementsBefore: Int, val calls: IntArray, val dependencies: FoldDependencies)
 
     /** The rendered declaring signature of each callee, shared by every body the pass numbers. */
     private val renderedDeclaring = ConcurrentHashMap<MethodSignature, String>()
@@ -180,6 +180,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     /** Methods that share a rendered signature and descriptor with another of their class, by signature. */
     private val collidingOverloads = ConcurrentHashMap<MethodSignature, List<String>>()
     private val enumConstants = HashMap<Pair<ClassType, String>, Boolean>()
+    private val enumInitialization = EnumInitializationSafety()
 
     /**
      * [defaults], the chain the input location runs without folding, followed by the fold pass
@@ -240,6 +241,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private inner class Fold : BodyInterceptor {
         override fun interceptBody(builder: Body.BodyBuilder, view: View) {
             val run = BodyRun(folds.size)
+            val foldedLocals = HashSet<Local>()
             val statementsBefore = builder.controlFlowGraph.nodes.size
             val caller = render(builder.methodSignature)
             val callerDescriptor = descriptorOf(builder.methodSignature)
@@ -260,6 +262,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 val index = select(run, builder, invoke, key, view, callee)
                 val resultType = index?.let { (folds[it] as? FoldSites)?.resultTypes?.get(key) }
                 if (index != null && foldCall(run, builder, stmt, invoke, index, view, resultType)) {
+                    (stmt.def.orElse(null) as? Local)?.let(foldedLocals::add)
                     run.calls[index]++
                     run.keys[index].add(key)
                 }
@@ -287,7 +290,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 // A folded call throws nothing: a handler only it could reach has lost its last
                 // predecessor and goes now, before SootUp validates the graph.
                 removeUnreachable(builder.controlFlowGraph)
-                marked[builder] = Marked(statementsBefore, run.calls)
+                marked[builder] = Marked(
+                    statementsBefore, run.calls, FoldDependencies(builder.controlFlowGraph.nodes, foldedLocals)
+                )
                 preFoldOrdinals[builder.methodSignature] = IdentityHashMap(ordinals)
             }
         }
@@ -589,6 +594,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt, throwsNothing: Boolean = false) {
         if (throwsNothing) replaceWithNonThrowingStmt(builder.controlFlowGraph, old, new)
         else builder.controlFlowGraph.replaceNode(old, new)
+        marked[builder]?.dependencies?.replace(old, new)
         preFoldOrdinals[builder.methodSignature]?.let { ordinals -> ordinals.remove(old)?.let { ordinals[new] = it } }
     }
 
@@ -662,10 +668,15 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
          * neither is `null`.
          */
         private fun enumReads(builder: Body.BodyBuilder, view: View): Map<Local, JStaticFieldRef> {
+            if (builder.methodSignature.name == "<clinit>") return emptyMap()
             val definitions = singleDefinitions(builder.controlFlowGraph.nodes.toList())
             val reads = HashMap<Local, JStaticFieldRef>()
             definitions.forEach { (local, assign) ->
-                (assign.rightOp as? JStaticFieldRef)?.takeIf { isEnumConstant(view, it) }?.let { reads[local] = it }
+                val field = assign.rightOp as? JStaticFieldRef ?: return@forEach
+                val owner = field.fieldSignature.declClassType
+                if (owner != builder.methodSignature.declClassType && isEnumConstant(view, field) &&
+                    enumInitialization.isNonReentrant(view, owner)
+                ) reads[local] = field
             }
             // An erased call folded to an enum constant reaches its test through a cast:
             // `$r = E.A; $e = (E) $r; if $e == E.B`.
@@ -685,7 +696,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
          */
         private fun foldEnumEquals(builder: Body.BodyBuilder, enums: Map<Local, JStaticFieldRef>): Boolean {
             val graph = builder.controlFlowGraph
+            val dependencies = marked.getValue(builder).dependencies
             val folded = graph.nodes.toList().mapNotNull { stmt ->
+                if (stmt !in dependencies) return@mapNotNull null
                 val invoke = invokeExprOf(stmt) as? AbstractInstanceInvokeExpr ?: return@mapNotNull null
                 val signature = invoke.methodSignature
                 if (signature.name != "equals" || signature.type.toString() != BOOLEAN_TYPE ||

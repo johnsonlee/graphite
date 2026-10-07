@@ -71,10 +71,19 @@ other boxed return type is not an erased one and is reported. `null == null` and
 as `Boolean.TRUE` read from a field, does not, because a field is not a constant. An enum
 constant folds `==` and `!=` against another enum constant or `null`. `equals(Object)` also
 folds when its receiver is a known enum constant and its argument is another enum constant
-or `null`: Java's final `Enum.equals` compares identity. An unknown or null receiver, an
+or `null`, and an operand originates in a rule replacement (including through copies or
+casts): Java's final `Enum.equals` compares identity. Unrelated constant equality calls in
+the same body remain calls. An unknown or null receiver, an
 unknown argument, and custom `equals` implementations or overloads remain calls. A `switch` on it goes
 through `ordinal()` and a synthetic lookup array and is not folded, where a `switch` on a
 folded `int` is.
+
+An enum field is not necessarily non-null during initialization. Enum identity comparisons
+and `equals` therefore require a verified initialization sequence that cannot call back into
+application code; class initializers and methods declared by the enum itself are excluded.
+Enums with constructor callbacks, external initialization dependencies, interfaces or constant
+subclasses are conservatively left to runtime. This also protects readers in external helpers
+called by an enum constructor, where an unassigned constant can still be null.
 
 ## Partially constant experiment predicates
 
