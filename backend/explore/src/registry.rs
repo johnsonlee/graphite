@@ -4,6 +4,7 @@
 //! their lease and run to completion against the old snapshot, while new requests see
 //! the replacement. The old graph is released when its last lease closes.
 
+use graphite_cypher::engine::Source;
 use graphite_storage::Graph;
 use parking_lot::Mutex;
 use serde_json::{json, Value as J};
@@ -208,7 +209,7 @@ impl GraphRegistry {
     /// the removal fails.
     pub fn take(&self, id: &str) -> Result<Option<Arc<ServedGraph>>, String> {
         let id = validate_graph_id(id)?;
-        Ok(self.graphs.lock().remove(&id))
+        Ok(self.graphs.lock().remove(id.as_str()))
     }
 
     /// Put a removed graph back under its id, keeping its generation.
@@ -218,7 +219,7 @@ impl GraphRegistry {
 
     pub fn describe(&self, id: &str) -> Result<Option<Arc<ServedGraph>>, String> {
         let id = validate_graph_id(id)?;
-        Ok(self.graphs.lock().get(&id).cloned())
+        Ok(self.graphs.lock().get(id.as_str()).cloned())
     }
 
     pub fn list(&self) -> Vec<Arc<ServedGraph>> {
@@ -236,7 +237,7 @@ impl GraphRegistry {
     /// Lease one graph by id. `Ok(None)` means the id is valid but not loaded.
     pub fn acquire(&self, id: &str) -> Result<Option<GraphLease>, String> {
         let id = validate_graph_id(id)?;
-        Ok(self.graphs.lock().get(&id).map(|s| GraphLease {
+        Ok(self.graphs.lock().get(id.as_str()).map(|s| GraphLease {
             id: s.id.clone(),
             graph: s.graph.clone(),
             stats: s.stats,
@@ -258,6 +259,20 @@ impl GraphRegistry {
             .collect()
     }
 
+    /// Snapshot all query sources in sorted id order, with request-local ID Arcs.
+    /// The graph Arc keeps a removed or replaced snapshot alive just like a lease.
+    /// Public leases retain their String ids for API compatibility.
+    pub(crate) fn acquire_all_sources(&self) -> Vec<Source> {
+        self.graphs
+            .lock()
+            .iter()
+            .map(|(id, served)| Source {
+                id: Arc::from(id.as_str()),
+                graph: served.graph.clone(),
+            })
+            .collect()
+    }
+
     /// Lease the named graphs, preserving caller order and dropping duplicates.
     pub fn acquire_ids(&self, ids: &[String]) -> Result<Vec<GraphLease>, GraphAcquireError> {
         let map = self.graphs.lock();
@@ -268,7 +283,7 @@ impl GraphRegistry {
             if !seen.insert(id.clone()) {
                 continue;
             }
-            match map.get(&id) {
+            match map.get(id.as_str()) {
                 Some(s) => out.push(GraphLease {
                     id: s.id.clone(),
                     graph: s.graph.clone(),
@@ -342,6 +357,174 @@ pub fn format_instant(t: chrono::DateTime<chrono::Utc>) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    // These are persisted-graph correctness checks, not timing/allocation benchmarks.
+    // Run with GRAPHITE_INDEX_FIXTURE, like the existing Explorer graph tests.
+    fn fixture_registry() -> Option<(GraphRegistry, PathBuf)> {
+        let Some(path) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return None;
+        };
+        let path = PathBuf::from(path);
+        Some((GraphRegistry::new(path.clone(), LoadMode::Mapped), path))
+    }
+
+    #[test]
+    fn query_sources_isolate_request_ids_and_preserve_sorted_snapshot_order() {
+        let Some((registry, path)) = fixture_registry() else {
+            return;
+        };
+        assert!(registry.acquire_all_sources().is_empty());
+        registry.load("z", &path, None).unwrap();
+        registry.load(" a ", &path, None).unwrap();
+        let first = registry.acquire_all_sources();
+        let second = registry.acquire_all_sources();
+        assert_eq!(
+            first.iter().map(|s| s.id.as_ref()).collect::<Vec<_>>(),
+            vec!["a", "z"]
+        );
+        assert_eq!(registry.ids(), vec!["a".to_string(), "z".to_string()]);
+        for (a, b) in first.iter().zip(&second) {
+            assert_eq!(a.id, b.id);
+            assert!(
+                !Arc::ptr_eq(&a.id, &b.id),
+                "Separate requests own separate ID counters"
+            );
+            assert!(Arc::ptr_eq(&a.graph, &b.graph));
+            let served = registry.describe(&a.id).unwrap().unwrap();
+            assert_eq!(served.id, a.id.as_ref());
+            assert!(Arc::ptr_eq(&a.graph, &served.graph));
+        }
+        let ids = vec!["z".into(), " a ".into(), "z".into()];
+        let leases = match registry.acquire_ids(&ids) {
+            Ok(leases) => leases,
+            Err(_) => panic!("Known IDs must be acquired"),
+        };
+        assert_eq!(
+            leases.iter().map(|l| l.id.as_str()).collect::<Vec<_>>(),
+            vec!["z", "a"]
+        );
+        // Existing field types remain usable without conversions by public callers.
+        let _: &String = &leases[0].id;
+        assert!(matches!(
+            registry.acquire_ids(&["missing".into()]),
+            Err(GraphAcquireError::NotLoaded(id)) if id == "missing"
+        ));
+        assert!(registry.acquire("missing").unwrap().is_none());
+        assert!(registry.acquire("bad id").is_err());
+        let cancel = graphite_cypher::engine::CancelToken::new();
+        cancel.cancel();
+        let executor = graphite_cypher::engine::Executor::new(second, true)
+            .with_cancel(cancel)
+            .with_compact()
+            .with_probe();
+        assert!(matches!(
+            executor.execute("MATCH (n) RETURN n LIMIT 1", Some(1)),
+            Err(graphite_cypher::CypherError::Cancelled)
+        ));
+    }
+
+    #[test]
+    fn compact_rows_share_their_request_source_id_without_sharing_across_requests() {
+        use graphite_cypher::{engine::Executor, value::Value};
+
+        let Some((registry, path)) = fixture_registry() else {
+            return;
+        };
+        let served = registry.load("g", &path, None).unwrap();
+        assert!(
+            served.stats.call_sites >= 3,
+            "Fixture needs three CallSites"
+        );
+        let first = registry.acquire_all_sources();
+        let second = registry.acquire_all_sources();
+        assert!(Arc::ptr_eq(&first[0].graph, &second[0].graph));
+        assert!(!Arc::ptr_eq(&first[0].id, &second[0].id));
+        let mut retained_ids = Vec::new();
+        for sources in [first, second] {
+            let source_id = sources[0].id.clone();
+            let ex = Executor::new(sources, true).with_compact().with_probe();
+            let result = ex
+                .execute(
+                    "MATCH (n:CallSiteNode) WHERE n.graphId = 'g' RETURN n.graphId AS graphId LIMIT 2",
+                    Some(2),
+                )
+                .unwrap();
+            assert_eq!(result.columns, vec!["graphId"]);
+            assert!(result.more, "The third CallSite supplies the probe row");
+            assert!(result.rows.is_empty());
+            let compact = result
+                .compact
+                .as_ref()
+                .expect("Compact projection required");
+            assert_eq!(compact.values.len(), 2);
+            assert_eq!(compact.graph_ids.len(), 2);
+            for (values, provenance) in compact.values.iter().zip(&compact.graph_ids) {
+                assert_eq!(values.len(), 1);
+                let Value::Str(projected_id) = &values[0] else {
+                    panic!("graphId must remain a string");
+                };
+                assert_eq!(projected_id.as_ref(), "g");
+                assert_eq!(provenance.as_ref(), "g");
+                assert!(Arc::ptr_eq(projected_id, &source_id));
+                assert!(Arc::ptr_eq(provenance, &source_id));
+            }
+            retained_ids.push(compact.graph_ids[0].clone());
+            drop(result);
+            drop(ex);
+            assert_eq!(source_id.as_ref(), "g");
+        }
+        assert_eq!(retained_ids[0], retained_ids[1]);
+        assert!(!Arc::ptr_eq(&retained_ids[0], &retained_ids[1]));
+    }
+
+    #[test]
+    fn shared_sources_keep_old_graphs_alive_across_reload_and_remove() {
+        let Some((registry, path)) = fixture_registry() else {
+            return;
+        };
+        let initial = registry.load("g", &path, None).unwrap();
+        let generation = initial.generation;
+        let old_graph = Arc::downgrade(&initial.graph);
+        let old_lease = registry.acquire("g").unwrap().unwrap();
+        let sources = registry.acquire_all_sources();
+        drop(initial);
+        let replacement = registry.load("g", &path, None).unwrap();
+        assert!(replacement.generation > generation);
+        assert_eq!(old_lease.generation, generation);
+        assert!(Arc::ptr_eq(&old_lease.graph, &sources[0].graph));
+        assert!(!Arc::ptr_eq(&replacement.graph, &sources[0].graph));
+        assert_eq!(
+            registry.catalog_version().get("g"),
+            Some(&replacement.generation)
+        );
+        let fresh = registry.acquire_all_sources();
+        assert!(Arc::ptr_eq(&fresh[0].graph, &replacement.graph));
+        assert_eq!(fresh[0].id.as_ref(), "g");
+        assert_eq!(sources[0].id.as_ref(), "g");
+        drop(old_lease);
+        assert!(
+            old_graph.upgrade().is_some(),
+            "Source holds the retired graph"
+        );
+        drop(sources);
+        assert!(
+            old_graph.upgrade().is_none(),
+            "Retired graph releases with last source"
+        );
+        let removed = registry.take("g").unwrap().unwrap();
+        assert!(registry.acquire_all_sources().is_empty());
+        assert!(registry.acquire("g").unwrap().is_none());
+        assert!(Arc::ptr_eq(&fresh[0].graph, &removed.graph));
+        registry.restore(removed);
+        let restored = registry.acquire_all_sources();
+        assert_eq!(restored[0].id.as_ref(), "g");
+        assert!(Arc::ptr_eq(&restored[0].graph, &fresh[0].graph));
+        assert_eq!(
+            registry.catalog_version().get("g"),
+            Some(&replacement.generation)
+        );
+    }
 
     #[test]
     fn graph_ids_are_validated() {

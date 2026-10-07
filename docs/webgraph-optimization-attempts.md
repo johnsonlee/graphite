@@ -9335,3 +9335,151 @@ Original validation46043 completed with authoritative exit0. All299 tests passed
 Command: `python3 /tmp/sootup-static-review/native-cumulative-136-123/validation/run.py --execute-root-released`. Plan SHA256 `3eea91e258c06aac271e0c302836affce28c6542bba48807d900315e72c64f1e`; result `9a846013553881bc6642bad563e9691fdb8bac6fd1e481decf248ce2d01493b5`; owner terminal `f0276fe7ab252996f1f4ed0e4c54f06eb52825c1a7e4353c973927eaa1e62161`; root audit `a7bd3fc5ee63a54893e90f36d13c796de6c959ba4276b1f94e75ff0291bedb7c`; frozen binary `2c2b92a54393b821ba45835a330659c7bfb20ce7a5f5f5fb1194a654cc1c4e64`.
 
 Decision: retain the validated combination for a fixed full34 old/136/136+123 comparison. No latency/CPU/RSS result or production integration is claimed for this combination yet. The planned c1/c4 ABCCBA comparison preserves all34 real mixed-query cases,64 persisted graphs, first1/warm2/measured60,25,704 complete responses, both chronological pairs and every adverse result. These34 queries contain no ORDER BY, so that cohort cannot replace the separate ordinal workload. Earlier positive123 and136 series are not pooled into a claim of cumulative recovery.
+
+### 2026-10-08 — Retained123 on retained136: cumulative full34 results
+
+Decision: retain and integrate this mixed positive increment, continuing recovery work. C/B c4 improves p50 in18/34 cases and p95 in22/34;8 cases per metric improve in both pairs. c1 has substantial adverse controls. C/A c4 remains slower in all34 cases for both p50 and p95 and both pairs: final server-latency recovery has not passed. Positive increments are retained without discarding negative samples or expanding acceptance allowances.
+
+Single composition under test: retained136 borrowed full-heap admission plus123 direct request-local global query-source snapshot (avoiding intermediate String-ID leases/conversion while preserving public leases, graph snapshot lifetime, sorted order and the query guard), no135 display-property optimization and no temporary diagnostic toggle. Base ddbee105e52c9df1c5e7f9a6e474f2dff194ae10 + cumulative patch06cab571cdb647696bc87a0637c104b438d25d5aa2ab9a9529260f6b0fb4ddfe. A actual preupgrade6f binary2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b; B exact validated136 binary500751470e1fd861aeb883f56a2cd91932325c69de84ab05d296136bc21973ee; C2c2b92a54393b821ba45835a330659c7bfb20ce7a5f5f5fb1194a654cc1c4e64. This measures cumulative C against retained B and accepted old A; it does not attribute a 136 parent delta from old historical runs.
+
+Correctness/build: Rust1.93.0 explicit aarch64-apple-darwin release, --locked --jobs2, actual real core fixture. Forced workspace clean and exact-tree compilation;299 tests (31 CLI,113 Cypher,118 Explore,1 integration,36 storage),59 required named cases, zero failures/ignored/filtered, fmt and strict storage/Cypher/Explore --all-targets --all-features -D warnings and frozen export PASS. Original46043 exit0,114 native source pins plus independent root audit; owner f0276fe7ab252996f1f4ed0e4c54f06eb52825c1a7e4353c973927eaa1e62161, root audit a7bd3fc5ee63a54893e90f36d13c796de6c959ba4276b1f94e75ff0291bedb7c.
+
+Exact invocation: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/run.py --plan /tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/plan.sealed.json --execute-root-released`. Same reviewed12 scripts,261 validated pins,64 persisted graphs/1216 file-stat inventory; no graph regeneration/pre-read/cache reset. Shared Android/Tika/Hive/Kotlin16 each, original manifest order. Same fixed c1 ABCCBA then c4 ABCCBA;34 cases rotated bycycle, first1/warm2/measured60;2142 requests/server. No additional oracle calls, selective retries or replaced failures. Native default features/concurrency/timeout and absent fastpath/Rayon overrides; no JVM, so8GiB JVM maxheap is not a nativeRSS limit.
+
+Requests SHA484660b6edd3b0da6a1bac9fed14c4d8317da369c19683554ce07fb536175410; frozen typed native oracle SHA1edcb2815cebb8b43f435c0f5d7c9de92a9f641df890fe121dfe2697efbf7387. All25704 responses retain complete ordered columns/rows/types/null distinctions/total/provenance;24480 measured records. Original first/warm samples and maximums remain separate in summary. Full response body consumption uses the unchanged original client boundary before validation/write; all issued futures drain before canonical batch verification. No pooled case/run p95. Perprocess p50 rank30,p95 rank57,n60; arithmetic means of two process quantiles only.
+
+C/B benefits present in both measured pairs include c1 parameterized-targeted p50−2.555% (−1.135/−3.944), class-pair-zero p95−5.149% (−7.486/−2.676); c4 wrapped-case-insensitive-distinct-zero p50−4.922% (−3.677/−6.164) and name-pair-dense p95−17.639% (−7.045/−26.267). The largest apparent c4 p95 improvement, distribution-localized-early−58.569%, has pairs−75.048%/+4.466% and is explicitly mixed, not a robust gain.
+
+Adverse C/B cases retained: c1 callee-class-zero p95+13.240% (both pairs+19.202/+7.067), caller-class-zero p50+2.863% (+1.809/+3.953); c4 provenance-dense p50+3.977% (+4.774/+3.206), callee-class-targeted p95+5.908% (+5.416/+6.440). Against A, c4 class-pair-zero p50+27.281% (+22.383/+32.547) and callee-class-zero p95+22.831% (+19.139/+26.496) are the largest regressions. Every other case is shown below; case counts do not weight severity or establish final recovery.
+
+Original65853 terminal0; all12 PASS,25704 complete responses/24480 measured; no retries or replacements. Original unchanged summarizer completed.36 lifecycle/native/time PIDs and groups absent,12 clients exit0 and owned SIGTERM exits−15, no cleanup errors. A=actual preupgrade6f frozen2bf3; B=retained136 frozen500751; C=validated299 cumulative136+123 frozen2c2b92. This full34 has no ORDER BY and does not replace ordinal acceptance.
+
+|Concurrency|Comparison|Metric|lowerMean/34|lowerBoth/34|higherBoth/34|
+|---|---|---|---:|---:|---:|
+|c1|C_vs_B|p50Ns|10|4|15|
+|c1|C_vs_B|p95Ns|13|6|12|
+|c1|C_vs_A|p50Ns|3|0|28|
+|c1|C_vs_A|p95Ns|6|4|18|
+|c4|C_vs_B|p50Ns|18|8|8|
+|c4|C_vs_B|p95Ns|22|8|3|
+|c4|C_vs_A|p50Ns|0|0|34|
+|c4|C_vs_A|p95Ns|0|0|34|
+
+All68 groups below: absolute A/B/C mean process quantiles in ms; each delta cell gives mean delta%(pair1,pair2). C/B fixed pairs B1→C2,B4→C3; C/A A0→C2,A5→C3. First-use/warm and all raw/means/max remain in original summary.
+
+|c|Case|p50 A/B/C ms|p50 C/B % (pairs)|p50 C/A % (pairs)|p95 A/B/C ms|p95 C/B % (pairs)|p95 C/A % (pairs)|
+|---|---|---:|---:|---:|---:|---:|---:|
+|c1|global-wide-four-properties-zero|0.359583/0.366000/0.370875|+1.332 (+2.016,+0.648)|+3.140 (+1.600,+4.748)|0.434354/0.469208/0.440563|-6.105 (+0.426,-11.880)|+1.429 (-1.668,+4.754)|
+|c1|global-wide-four-properties-targeted|0.602834/0.610875/0.616187|+0.870 (+1.396,+0.342)|+2.215 (+3.540,+0.907)|0.695375/0.702604/0.745583|+6.117 (+6.514,+5.733)|+7.220 (+3.690,+10.906)|
+|c1|global-wide-four-properties-dense|1.098021/1.086521/1.108041|+1.981 (+1.914,+2.049)|+0.913 (+0.446,+1.390)|1.253854/1.273250/1.280166|+0.543 (+0.600,+0.488)|+2.099 (+0.825,+3.371)|
+|c1|global-wide-class-pair-zero|0.362562/0.377521/0.374584|-0.778 (-1.609,+0.067)|+3.316 (+1.114,+5.615)|0.434333/0.461646/0.437875|-5.149 (-7.486,-2.676)|+0.815 (+2.033,-0.380)|
+|c1|global-wide-class-pair-targeted|0.771917/0.766042/0.773438|+0.965 (+2.375,-0.427)|+0.197 (+1.119,-0.722)|0.923021/0.926146/0.941958|+1.707 (+0.386,+3.067)|+2.052 (+1.593,+2.515)|
+|c1|global-wide-class-pair-dense|1.040520/1.063812/1.079187|+1.445 (-0.104,+3.054)|+3.716 (+4.248,+3.186)|1.203334/1.230917/1.236625|+0.464 (+4.359,-3.261)|+2.767 (+6.774,-1.063)|
+|c1|global-wide-name-pair-zero|0.361459/0.369937/0.372729|+0.755 (+0.561,+0.950)|+3.118 (+0.991,+5.347)|0.424270/0.431083/0.444375|+3.083 (+3.651,+2.518)|+4.739 (+0.858,+8.962)|
+|c1|global-wide-name-pair-targeted|0.765667/0.783292/0.781563|-0.221 (+1.705,-2.117)|+2.076 (+4.065,+0.119)|0.946542/0.941063/0.939521|-0.164 (+0.840,-1.182)|-0.742 (-0.830,-0.650)|
+|c1|global-wide-name-pair-dense|1.033500/1.046792/1.057146|+0.989 (+2.722,-0.699)|+2.288 (+3.067,+1.514)|1.187833/1.193979/1.236666|+3.575 (+9.939,-2.407)|+4.111 (+6.823,+1.386)|
+|c1|global-wide-caller-class-zero|0.353563/0.362416/0.372791|+2.863 (+1.809,+3.953)|+5.438 (+6.479,+4.405)|0.446042/0.440937/0.444125|+0.723 (+3.197,-1.717)|-0.430 (+8.633,-8.350)|
+|c1|global-wide-caller-class-targeted|0.691604/0.690833/0.701458|+1.538 (+1.916,+1.154)|+1.425 (+2.075,+0.769)|0.762000/0.799813/0.812458|+1.581 (+1.576,+1.587)|+6.622 (+8.385,+4.899)|
+|c1|global-wide-caller-class-dense|1.018771/1.034355/1.045208|+1.049 (+0.362,+1.739)|+2.595 (+2.756,+2.437)|1.170604/1.147292/1.244063|+8.435 (+5.164,+11.588)|+6.275 (+2.721,+9.725)|
+|c1|global-wide-callee-class-zero|0.354500/0.361770/0.366229|+1.233 (+1.403,+1.059)|+3.309 (+3.347,+3.269)|0.428729/0.414000/0.468812|+13.240 (+19.202,+7.067)|+9.349 (+20.141,-0.910)|
+|c1|global-wide-callee-class-targeted|0.575083/0.601604/0.608500|+1.146 (-0.068,+2.414)|+5.811 (+5.747,+5.876)|0.645000/0.694229/0.714792|+2.962 (-0.592,+6.764)|+10.820 (+7.706,+14.106)|
+|c1|global-wide-callee-class-dense|1.020271/1.022833/1.052021|+2.854 (+1.538,+4.216)|+3.112 (+2.427,+3.812)|1.155959/1.174166/1.263084|+7.573 (+7.810,+7.334)|+9.267 (+9.389,+9.144)|
+|c1|global-wide-provenance-zero|0.360208/0.363916/0.367375|+0.950 (+1.748,+0.139)|+1.990 (+3.955,+0.035)|0.423687/0.450833/0.431271|-4.339 (-0.076,-8.342)|+1.790 (+4.564,-0.901)|
+|c1|global-wide-provenance-targeted|0.688105/0.725834/0.712916|-1.780 (-2.257,-1.298)|+3.606 (+4.926,+2.319)|0.794188/0.802604/0.804833|+0.278 (+0.309,+0.247)|+1.340 (+3.059,-0.292)|
+|c1|global-wide-provenance-dense|1.076208/1.094375/1.103395|+0.824 (+1.860,-0.201)|+2.526 (+4.135,+0.950)|1.200416/1.259271/1.250250|-0.716 (+2.967,-4.156)|+4.151 (+4.845,+3.464)|
+|c1|global-wide-aliased-zero|0.360312/0.369354/0.374333|+1.348 (+2.003,+0.675)|+3.891 (+5.551,+2.218)|0.409958/0.455562/0.434646|-4.591 (-3.538,-5.657)|+6.022 (+9.239,+2.889)|
+|c1|global-wide-aliased-targeted|0.677937/0.693416/0.687417|-0.865 (-0.891,-0.839)|+1.398 (+1.482,+1.314)|0.750396/0.781021/0.768896|-1.552 (-6.807,+4.167)|+2.465 (+0.066,+4.915)|
+|c1|global-wide-aliased-dense|1.086125/1.095708/1.088354|-0.671 (-3.110,+1.872)|+0.205 (+0.429,-0.015)|1.260709/1.287646/1.221396|-5.145 (-6.809,-3.493)|-3.118 (-2.991,-3.240)|
+|c1|global-wide-parameterized-zero|0.366250/0.368042/0.375479|+2.021 (+3.451,+0.580)|+2.520 (+3.183,+1.841)|0.442479/0.451958/0.447333|-1.023 (+1.721,-3.605)|+1.097 (-0.298,+2.521)|
+|c1|global-wide-parameterized-targeted|0.647250/0.668542/0.651458|-2.555 (-1.135,-3.944)|+0.650 (-0.476,+1.810)|0.713041/0.780625/0.748209|-4.153 (-5.022,-3.241)|+4.932 (+7.484,+2.430)|
+|c1|global-wide-parameterized-dense|1.061625/1.079438/1.095500|+1.488 (+1.555,+1.420)|+3.191 (+3.921,+2.455)|1.167209/1.239855/1.242083|+0.180 (+0.638,-0.270)|+6.415 (+6.391,+6.438)|
+|c1|global-wide-wrapped-case-insensitive-zero|0.359395/0.368188/0.378458|+2.790 (+3.854,+1.710)|+5.304 (+6.917,+3.684)|0.422855/0.426501/0.453729|+6.384 (+7.554,+5.101)|+7.301 (+10.644,+3.782)|
+|c1|global-wide-wrapped-case-insensitive-targeted|0.601333/0.610604/0.612021|+0.232 (-0.027,+0.495)|+1.777 (+1.165,+2.404)|0.692438/0.696646/0.705083|+1.211 (+2.958,-0.546)|+1.826 (+4.757,-1.056)|
+|c1|global-wide-wrapped-case-insensitive-dense|1.240750/1.239708/1.234687|-0.405 (-0.812,+0.007)|-0.489 (-0.971,+0.000)|1.432979/1.364917/1.387708|+1.670 (+0.848,+2.504)|-3.159 (-2.427,-3.880)|
+|c1|global-wide-wrapped-case-insensitive-distinct-zero|0.401000/0.413917/0.413333|-0.141 (-1.353,+1.100)|+3.075 (+2.110,+4.058)|0.476958/0.498312/0.495875|-0.489 (-4.089,+3.261)|+3.966 (+0.897,+7.120)|
+|c1|global-wide-wrapped-case-insensitive-distinct-targeted|0.625688/0.637396/0.638230|+0.131 (-0.071,+0.337)|+2.004 (+3.191,+0.824)|0.705708/0.717125/0.722541|+0.755 (-0.643,+2.189)|+2.385 (-0.448,+5.376)|
+|c1|global-wide-wrapped-case-insensitive-distinct-dense|3.090667/3.088812/3.082625|-0.200 (+0.951,-1.323)|-0.260 (+1.719,-2.160)|3.291374/3.353959/3.269062|-2.531 (-3.004,-2.059)|-0.678 (-1.108,-0.249)|
+|c1|global-wide-distribution-broad-all-64|1.231604/1.247833/1.255313|+0.599 (-0.260,+1.461)|+1.925 (+0.724,+3.138)|1.380833/1.386271/1.408479|+1.602 (+7.250,-3.866)|+2.002 (+9.188,-4.767)|
+|c1|global-wide-distribution-localized-early|0.497437/0.516334/0.513792|-0.492 (-0.747,-0.235)|+3.288 (+3.113,+3.464)|0.582563/0.589437/0.597167|+1.311 (+2.676,+0.014)|+2.507 (+1.157,+3.859)|
+|c1|global-wide-distribution-localized-late|0.699167/0.693708/0.698041|+0.625 (-0.364,+1.628)|-0.161 (+0.566,-0.874)|0.791687/0.780208/0.789229|+1.156 (-1.253,+3.553)|-0.311 (-3.596,+3.021)|
+|c1|global-wide-distribution-localized-middle|0.686292/0.690521/0.708229|+2.564 (+3.708,+1.423)|+3.197 (+3.408,+2.981)|0.794562/0.814250/0.813167|-0.133 (+0.454,-0.710)|+2.341 (+0.667,+4.063)|
+|c4|global-wide-four-properties-zero|0.568250/0.665188/0.652312|-1.936 (-6.614,+2.870)|+14.793 (+7.400,+22.666)|0.749750/0.941105/0.885292|-5.931 (-3.979,-7.662)|+18.078 (+10.520,+26.029)|
+|c4|global-wide-four-properties-targeted|0.835916/0.944167/0.963291|+2.026 (+2.242,+1.810)|+15.238 (+12.498,+18.128)|1.063500/1.244876/1.276333|+2.527 (+2.148,+2.892)|+20.013 (+16.490,+23.590)|
+|c4|global-wide-four-properties-dense|1.165500/1.284583/1.291375|+0.529 (+3.481,-2.341)|+10.800 (+12.734,+8.876)|1.450229/1.595000/1.611833|+1.055 (+5.514,-3.110)|+11.143 (+12.402,+9.891)|
+|c4|global-wide-class-pair-zero|0.535479/0.658250/0.681562|+3.542 (+4.220,+2.876)|+27.281 (+22.383,+32.547)|0.734000/0.883584/0.876667|-0.783 (+0.926,-2.337)|+19.437 (+18.301,+20.525)|
+|c4|global-wide-class-pair-targeted|1.072625/1.209854/1.198459|-0.942 (+1.556,-3.397)|+11.731 (+14.205,+9.286)|1.294625/1.481041/1.469854|-0.755 (+1.711,-3.221)|+13.535 (+15.254,+11.784)|
+|c4|global-wide-class-pair-dense|1.222896/1.344521/1.384583|+2.980 (+2.232,+3.724)|+13.222 (+9.925,+16.658)|1.458959/1.602250/1.642021|+2.482 (-1.696,+6.761)|+12.547 (+7.688,+17.549)|
+|c4|global-wide-name-pair-zero|0.541167/0.664896/0.663084|-0.273 (-0.899,+0.341)|+22.528 (+17.488,+27.840)|0.710854/0.887188/0.844250|-4.840 (-5.871,-3.746)|+18.766 (+18.524,+19.017)|
+|c4|global-wide-name-pair-targeted|1.083521/1.229104/1.213979|-1.231 (-0.747,-1.713)|+12.040 (+12.213,+11.867)|1.288146/1.496395/1.474166|-1.486 (-4.784,+1.962)|+14.441 (+14.993,+13.907)|
+|c4|global-wide-name-pair-dense|1.215042/1.341104/1.277146|-4.769 (-7.391,-2.044)|+5.111 (+3.728,+6.508)|1.415938/1.849438/1.523208|-17.639 (-7.045,-26.267)|+7.576 (+7.619,+7.532)|
+|c4|global-wide-caller-class-zero|0.544667/0.649104/0.652500|+0.523 (+2.346,-1.236)|+19.798 (+22.781,+16.955)|0.744479/0.947334/0.849896|-10.285 (+2.330,-20.456)|+14.160 (+14.809,+13.494)|
+|c4|global-wide-caller-class-targeted|1.006709/1.126250/1.118313|-0.705 (-0.891,-0.515)|+11.086 (+12.340,+9.843)|1.220166/1.476646/1.365604|-7.520 (+0.185,-14.643)|+11.919 (+16.015,+7.790)|
+|c4|global-wide-caller-class-dense|1.167458/1.292437/1.258709|-2.610 (-3.828,-1.349)|+7.816 (+8.571,+7.065)|1.431563/1.615625/1.546709|-4.266 (+2.343,-9.975)|+8.043 (+6.604,+9.495)|
+|c4|global-wide-callee-class-zero|0.537333/0.655605/0.661458|+0.893 (+1.571,+0.194)|+23.100 (+26.784,+19.472)|0.718604/0.862812/0.882667|+2.301 (-2.169,+6.868)|+22.831 (+19.139,+26.496)|
+|c4|global-wide-callee-class-targeted|0.915520/1.002646/1.021583|+1.889 (+2.241,+1.526)|+11.585 (+12.122,+11.034)|1.229188/1.255292/1.329459|+5.908 (+5.416,+6.440)|+8.158 (+8.082,+8.238)|
+|c4|global-wide-callee-class-dense|1.145729/1.296437/1.275833|-1.589 (+2.060,-5.039)|+11.356 (+11.459,+11.251)|1.406104/1.535000/1.525771|-0.601 (+1.852,-2.946)|+8.511 (+10.215,+6.853)|
+|c4|global-wide-provenance-zero|0.540208/0.669521/0.653999|-2.318 (-1.275,-3.314)|+21.064 (+13.203,+29.851)|0.714313/0.835187/0.827750|-0.891 (-0.787,-0.990)|+15.881 (+11.534,+20.369)|
+|c4|global-wide-provenance-targeted|1.011750/1.125729/1.118854|-0.611 (-0.251,-0.974)|+10.586 (+9.987,+11.202)|1.253250/1.348271/1.388270|+2.967 (+7.498,-1.597)|+10.774 (+19.134,+2.833)|
+|c4|global-wide-provenance-dense|1.227562/1.300646/1.352375|+3.977 (+4.774,+3.206)|+10.168 (+8.123,+12.253)|1.402667/1.595500/1.603333|+0.491 (+1.133,-0.152)|+14.306 (+17.495,+11.244)|
+|c4|global-wide-aliased-zero|0.540041/0.638667/0.637771|-0.140 (-2.112,+1.897)|+18.097 (+14.957,+21.387)|0.709854/0.874605/0.859479|-1.729 (-0.911,-2.505)|+21.078 (+23.834,+18.538)|
+|c4|global-wide-aliased-targeted|1.040355/1.133083/1.140541|+0.658 (+3.186,-1.759)|+9.630 (+8.612,+10.672)|1.229416/1.419437/1.435979|+1.165 (+2.707,-0.297)|+16.802 (+14.261,+19.397)|
+|c4|global-wide-aliased-dense|1.174562/1.293583/1.288687|-0.378 (+0.647,-1.395)|+9.716 (+11.091,+8.361)|1.376937/1.576625/1.538771|-2.401 (+3.217,-7.236)|+11.753 (+7.812,+15.807)|
+|c4|global-wide-parameterized-zero|0.546125/0.661375/0.666041|+0.706 (-2.563,+3.994)|+21.958 (+17.683,+26.281)|0.721063/0.852604/0.875021|+2.629 (+4.770,+0.616)|+21.352 (+21.687,+21.025)|
+|c4|global-wide-parameterized-targeted|0.972480/1.103792/1.120208|+1.487 (+0.942,+2.031)|+15.191 (+16.421,+14.004)|1.205583/1.346625/1.352666|+0.449 (+3.735,-2.714)|+12.200 (+18.665,+6.260)|
+|c4|global-wide-parameterized-dense|1.164333/1.262146/1.281521|+1.535 (+0.223,+2.867)|+10.065 (+10.972,+9.182)|1.441312/1.589542/1.561438|-1.768 (+0.688,-4.126)|+8.334 (+8.598,+8.070)|
+|c4|global-wide-wrapped-case-insensitive-zero|0.545583/0.648250/0.671458|+3.580 (-0.852,+8.180)|+23.072 (+20.945,+25.165)|0.718708/0.857875/0.855375|-0.291 (-0.679,+0.081)|+19.016 (+10.055,+29.020)|
+|c4|global-wide-wrapped-case-insensitive-targeted|0.854792/0.975521/0.972396|-0.320 (+1.570,-2.144)|+13.758 (+14.568,+12.959)|1.125395/1.240833/1.265479|+1.986 (-3.226,+7.480)|+12.447 (+7.812,+17.232)|
+|c4|global-wide-wrapped-case-insensitive-dense|1.365209/1.489958/1.495126|+0.347 (+2.340,-1.600)|+9.516 (+12.311,+6.817)|1.601500/1.782042/1.738542|-2.441 (+0.166,-4.980)|+8.557 (+10.135,+6.984)|
+|c4|global-wide-wrapped-case-insensitive-distinct-zero|0.581145/0.700438/0.665959|-4.922 (-3.677,-6.164)|+14.594 (+20.204,+9.372)|0.761708/0.895188/0.865250|-3.344 (-6.100,-0.261)|+13.593 (+12.875,+14.360)|
+|c4|global-wide-wrapped-case-insensitive-distinct-targeted|0.856417/0.953897/0.947730|-0.647 (+1.727,-3.004)|+10.662 (+14.199,+7.203)|1.039167/1.184437/1.133542|-4.297 (-4.511,-4.077)|+9.082 (+5.896,+12.546)|
+|c4|global-wide-wrapped-case-insensitive-distinct-dense|3.267876/3.366166/3.375542|+0.279 (+1.646,-1.077)|+3.295 (+3.547,+3.039)|3.547729/3.644229/3.667083|+0.627 (-1.628,+2.949)|+3.364 (+2.391,+4.340)|
+|c4|global-wide-distribution-broad-all-64|1.435501/1.530312/1.525833|-0.293 (+2.531,-2.976)|+6.293 (+5.734,+6.860)|1.668979/1.858437/1.765021|-5.027 (-9.187,-0.532)|+5.755 (+3.397,+8.188)|
+|c4|global-wide-distribution-localized-early|0.687083/0.801708/0.792188|-1.188 (-4.203,+1.845)|+15.297 (+7.871,+23.331)|0.852896/2.414958/1.000541|-58.569 (-75.048,+4.466)|+17.311 (+10.661,+24.126)|
+|c4|global-wide-distribution-localized-late|0.945001/1.053667/1.038583|-1.432 (-2.797,-0.105)|+9.903 (+7.452,+12.324)|1.127938/1.329708/1.329625|-0.006 (-0.614,+0.596)|+17.881 (+18.965,+16.839)|
+|c4|global-wide-distribution-localized-middle|0.907479/1.017771/1.021645|+0.381 (-2.903,+3.729)|+12.581 (+8.313,+16.979)|1.155209/1.319750/1.289729|-2.275 (-4.569,+0.200)|+11.645 (+13.117,+10.171)|
+
+|c|Comparison|Resource|Reference→C|Delta % (pair1,pair2)|
+|---|---|---|---:|---:|
+|c1|C_vs_B|wallSeconds|40.605000→40.610000|+0.012 (+1.392,-1.342)|
+|c1|C_vs_B|cpuSeconds|25.260000→25.045000|-0.851 (-0.080,-1.612)|
+|c1|C_vs_B|peakRssBytes (MB)|6610.419712→6610.845696|+0.006 (-0.015,+0.028)|
+|c1|C_vs_B|measuredNativeCpuSeconds|6.010000→6.030000|+0.333 (+0.333,+0.333)|
+|c1|C_vs_A|wallSeconds|56.970000→40.610000|-28.717 (-26.729,-30.616)|
+|c1|C_vs_A|cpuSeconds|42.045000→25.045000|-40.433 (-39.130,-41.682)|
+|c1|C_vs_A|peakRssBytes (MB)|6569.033728→6610.845696|+0.637 (+0.694,+0.579)|
+|c1|C_vs_A|measuredNativeCpuSeconds|6.060000→6.030000|-0.495 (-0.495,-0.495)|
+|c4|C_vs_B|wallSeconds|28.035000→28.005000|-0.107 (+0.358,-0.569)|
+|c4|C_vs_B|cpuSeconds|23.645000→23.575000|-0.296 (-0.127,-0.466)|
+|c4|C_vs_B|peakRssBytes (MB)|6627.614720→6630.875136|+0.049 (-0.031,+0.130)|
+|c4|C_vs_B|measuredNativeCpuSeconds|4.235000→4.235000|+0.000 (+0.714,-0.703)|
+|c4|C_vs_A|wallSeconds|45.150000→28.005000|-37.973 (-37.978,-37.969)|
+|c4|C_vs_A|cpuSeconds|40.835000→23.575000|-42.268 (-42.158,-42.377)|
+|c4|C_vs_A|peakRssBytes (MB)|6584.377344→6630.875136|+0.706 (+0.619,+0.794)|
+|c4|C_vs_A|measuredNativeCpuSeconds|4.125000→4.235000|+2.667 (+2.670,+2.663)|
+
+|Run|Lifetime wall s|Lifetime CPU s|Peak RSS MB|Measured native CPU s|Measured client CPU s|
+|---|---:|---:|---:|---:|---:|
+|c1-0-A|55.670|41.170|6567.182336|6.060|18.713219|
+|c1-1-B|40.230|25.080|6613.712896|6.010|19.139440|
+|c1-2-C|40.790|25.060|6612.746240|6.030|19.356035|
+|c1-3-C|40.430|25.030|6608.945152|6.030|19.534535|
+|c1-4-B|40.980|25.440|6607.126528|6.010|19.606239|
+|c1-5-A|58.270|42.920|6570.885120|6.060|19.523109|
+|c4-0-A|45.210|40.870|6584.516608|4.120|17.107962|
+|c4-1-B|27.940|23.670|6627.328000|4.200|17.084060|
+|c4-2-C|28.040|23.640|6625.247232|4.230|17.158082|
+|c4-3-C|27.970|23.510|6636.503040|4.240|17.150806|
+|c4-4-B|28.130|23.620|6627.901440|4.270|17.204998|
+|c4-5-A|45.090|40.800|6584.238080|4.130|17.067145|
+
+Measured native CPU includes60-cycle client validation/logging gaps, not per-case; lifetime CPU/RSS includes loading/startup/deferred work/first/warm/measured/drain/shutdown and is not query-only.472 monitor samples, no reported activity events, but no quiet/exclusive-window claim; short-lived/subresolution activity/unknown I/O may be missed. All samples/adverse results retained. Two processes/arm/concurrency do not provide precise production confidence. Construction/loading separately remain unmeasured by this query experiment. CPU/RSS+5% and latency recovery cannot be inferred from favorable subsets.
+
+Source evidence: plan.sealed.json SHA81896da4360ee97da84c690158ce2164faac487fd00baaa6fa86b792f11d47f8; full immutable original execution/summary.json, execution/results.json, execution/owner-terminal.json and all raw bodies retained.
+
+Resource conclusion: C/B lifetimeCPU−0.851% c1 /−0.296% c4; measured-windowCPU+0.333% c1 /approximately unchanged c4, and RSS+0.006%/+0.049%. C/A lifetimeCPU−40.433%/−42.268%, RSS+0.637%/+0.706%, while measured-windowCPU−0.495%/+2.667%. Large lifetime CPU reductions include startup/loading and cannot be claimed as equivalent per-query CPU recovery or standalone loading acceptance. Both resource pairs remain explicit above. Query p50/p95 remains primary, and favorable resource numbers cannot compensate for the observed latency regressions.
+
+Correctness and stability passed this finite fixed series; graph construction and own-fullgraph loading require their separate acceptance evidence. All full34 requests lack ORDER BY, so136 ordinal performance evidence remains separate. The original client timing boundary is retained for comparability, with causal client/server boundary questions still investigated independently; do not pool diagnostic cohorts or retroactively adjust these samples.
+
+Independent root full-body/statistics audit: original79826 exit0, SHA d9ccff5e9212eaee68a8aa8efb30a4aae8874093f9d299114974a67c76a36cc6; all25704 typed responses/24480 measured ranks/pairs/resources/owned cleanup PASS. [Audit](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/independent-audit/audit.json). [Complete raw-linked report](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/results-report.md), [all-case digest](/tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/results-digest.json).
+
+Execution receipt hashes: summary5ffba7e621cd8aa35599da707f3cce1748f4cdbfa8f4a066f01caebe22157a4e; results cff8c239b17089f1ae16877e29ff9cef96931195a6a4b84c58fdea0762b3ca0f; original65853 owner-terminal493829bb3d1a04e3900ae8868b46668144ad5f6f5884067b75c2a4df8248ce43. All artifacts retained under /tmp/sootup-static-review/native-cumulative-136-123/server-request-full34/.
