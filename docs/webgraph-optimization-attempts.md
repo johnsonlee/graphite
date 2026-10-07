@@ -7070,3 +7070,52 @@ Two other available references—unordered `simpleNodeMatch LIMIT100` and `singl
 Command: `python3 /tmp/sootup-static-review/native-own-graph-loading/compatibility/run.py --plan /tmp/sootup-static-review/native-own-graph-loading/compatibility/plan.sealed.json --execute-root-released`. Literal per-session argv, source/binary/graph/report identities, expected envelopes and all raw bodies remain in that packet. Old binary SHA256 `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b`; current binary `d5f3a9c1b2744391fef90963ac4f27ccc848421c1378f7c2526ba056f128e770`.
 
 Sealed plan SHA256 `f7b582d65d3e005d7db7f32130c6d1e34be103d63ed452b967cf2a675aa6c8ac`; result `67285110b4f15bf7076ad5c86a20ead25beb26505bbb6a9456546ca0c57283aa`; independent audit `6181aaa5e890f96ad4cd802c48b4cd840b1f06a99b09008829afa0b62215bb49`. Evidence: `/tmp/sootup-static-review/native-own-graph-loading/compatibility/{execution/results.json,independent-audit/audit.json}`. **Decision:** preserve this compatibility pass and its explicit two-query gap; proceed separately with bounded loading measurement, without treating these correctness lifetimes as a performance baseline.
+
+### 2026-10-07 — Native corrected-client four-case cohort: full-response pass, mixed latency
+
+**Change and protocol:** the original Python coordinator validated each issued-order future while other responses could still be read. The revised client first drains every issued future's result/error, preserving its completion timestamp, then validates all complete bodies. Five mock-only ordering/failure checks passed before execution. Worker-side hashing/body writes still occur after each worker's endNs and can contend with other workers. The change removes coordinator-validation overlap; it does not prove the cause of the earlier approximately5ms tail.
+
+Four new native processes ran c4 ABBA: A=preupgrade6f498, B=frozen native db713, on the same unchanged64 real graph shards and existing native oracle. Fixed submission order is parameterized-dense, wrapped-case-insensitive-zero, wrapped-case-insensitive-targeted, wrapped-case-insensitive-dense; the dense wrapped case stays in slot3. Parameterized-dense is the literal-equivalent HTTP request, not proof of a distinct parameter-binding engine path. Each server ran one first-use, two warmup and300 measured four-request cycles:1,212 responses/server,4,848 total,4,800 measured. No extra requests, replacement samples, compiler, metrics endpoint, profiler, new oracle or scheduling change.
+
+All4,848 complete typed native responses matched the unchanged oracle, including total metadata, ordered columns/rows and provenance. Root independently reread every body/request identity and rebuilt all statistics and resource values; all1216 fixture stat identities remained unchanged. All four clients/lifecycles exited0 and owned servers were reaped by reviewed SIGTERM/time-wrapper−15. First-use and the two warmup cycles remain separate raw observations and are not folded into measured quantiles.
+
+**Every case:** values below are milliseconds. Each arm value is the arithmetic mean of its two run-level nearest-rank quantiles (p50 rank150/300, p95 rank285/300), not a pooled quantile. Positive changes mean slower; pairs are first AB and final BA, respectively. The fixed four-case scope and two processes/arm do not yield precise production-tail confidence.
+
+| Case (global-wide prefix omitted) | p50 old → current ms | p50 mean change | p50 pair changes | p95 old → current ms | p95 mean change | p95 pair changes |
+|---|---:|---:|---|---:|---:|---|
+| parameterized-dense | 1.256208 → 1.257063 | +0.068% | +0.790% / -0.671% | 1.512312 → 1.534625 | +1.475% | +2.071% / +0.878% |
+| wrapped-case-insensitive-zero | 0.538709 → 0.538438 | -0.050% | -0.383% / +0.275% | 0.702917 → 0.706271 | +0.477% | -0.293% / +1.234% |
+| wrapped-case-insensitive-targeted | 0.827750 → 0.831499 | +0.453% | +1.508% / -0.591% | 1.156480 → 1.145375 | -0.960% | +0.407% / -2.350% |
+| wrapped-case-insensitive-dense | 1.236479 → 1.233083 | -0.275% | +1.726% / -2.282% | 1.443688 → 1.449938 | +0.433% | +1.055% / -0.205% |
+
+Mean latency and maximum latency remain separate statistics; a lower p50 does not discard adverse maxima. These are means of the two corresponding run-level values, not a new tail percentile.
+
+| Case | Mean latency old → current ms | Mean change | Mean of run maxima old → current ms | Maximum-statistic change |
+|---|---:|---:|---:|---:|
+| parameterized-dense | 1.269307 → 1.268392 | -0.072% | 2.385083 → 2.065292 | -13.408% |
+| wrapped-case-insensitive-zero | 0.541552 → 0.541778 | +0.042% | 0.822522 → 1.085583 | +31.982% |
+| wrapped-case-insensitive-targeted | 0.852667 → 0.858989 | +0.741% | 1.508063 → 1.669917 | +10.733% |
+| wrapped-case-insensitive-dense | 1.248848 → 1.244080 | -0.382% | 2.786709 → 1.737625 | -37.646% |
+
+**All process resources:** wall spans the entire server lifetime, including loading, all cycles, client gaps and shutdown; it is not loading E2E. CPU is native user+system; RSS is decimal GB. The measured-window CPU counter spans300 cycles plus validation/logging gaps, has0.01s resolution, and cannot be attributed per query. Client/supervisor/observer CPU is outside native counters and is preserved separately.
+
+| Session | Lifetime wall s | Whole CPU s | Peak RSS GB | Measured-window CPU s |
+|---|---:|---:|---:|---:|
+| c4-0-A | 40.460 | 37.860 | 6.565347 | 2.830 |
+| c4-1-B | 40.500 | 38.410 | 6.609601 | 2.860 |
+| c4-2-B | 41.260 | 39.020 | 6.611321 | 2.630 |
+| c4-3-A | 41.230 | 39.100 | 6.566855 | 2.630 |
+
+| Resource | Old mean | Current mean | Mean change | Pair changes |
+|---|---:|---:|---:|---|
+| Lifetime wall s | 40.845000 | 40.880000 | +0.086% | +0.099% / +0.073% |
+| Whole CPU s | 38.480000 | 38.715000 | +0.611% | +1.453% / -0.205% |
+| Peak RSS GB | 6.566101 | 6.610461 | +0.676% | +0.674% / +0.677% |
+
+**Interpretation:** all four p50 mean changes lie within roughly±0.46%; p95 changes range from−0.960% to+1.475%. No case improves in both p50 pairs; parameterized-dense p95 is higher in both pairs. Wrapped-zero's mean of run maxima increases31.982%, and targeted increases10.733%; these adverse observations remain. Wrapped-dense mean p95 is1.449938ms, but this cannot be causally compared with the earlier rotated34-case client series: client validation order, case mix/order and measured sample count all changed together. The original8-process/8,976-response evidence is neither replaced nor pooled. A changed-client/GIL causal claim is not supported.
+
+The launch receipt records Python3.14.7, switch interval0.005s and GIL enabled; none was changed. Native binaries, Rust toolchain and macOS/M3 Max match the compatibility entries above. Fastpath/Rayon override variables were absent, native timeout/concurrency defaults retained, and `--metrics` absent. The deprecated native work-budget option is not described as enforced. Ports18601–18604 were used serially. The monitor retained169 snapshots, with six external CPU increments and one positive-CPU observation during sessions; no exclusive-window or zero-interference claim follows. The whole series remains observed-background diagnostic evidence, not final CPU/RSS+5% acceptance, all34-case recovery or own-built fullgraph loading evidence.
+
+Command: `python3 /tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/run.py --plan /tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/plan.sealed.json --execute-root-released`. Corrected client SHA256 `313f38aa148debbe36053480ed2c91b47e7470972305db4862c4695fa1c64d48`; requests34 `484660b6edd3b0da6a1bac9fed14c4d8317da369c19683554ce07fb536175410`; native oracle `1edcb2815cebb8b43f435c0f5d7c9de92a9f641df890fe121dfe2697efbf7387`. All300 raw latencies/case/process, first/warm cycles, body hashes, lifetime/window/client CPU, run-level ranges and paired statistics remain archived.
+
+Sealed plan SHA256 `0ca18bfff0b6e492569e94d6499d3d8583edff64d1625ff21f890d841ba9e703`; result `acf8026371f736409a57535254d97f02110d23e24fcc791b8301be125501e216`; summary `1e26da0a33ff9ca3ba5dc4d84f4ecbf6f15d3dacc8d83eb66b90d8312875fd46`; independent audit `e0348146f698f780412a4628676f0b77a448a24ffd3e2aa4b7ad86d8b8da5e38`. Evidence: `/tmp/sootup-static-review/native-client-batch-drain/cohort-diagnostic/{execution/results.json,execution/summary.json,execution/launch-environment.json,independent-audit/audit.json}`. **Decision:** retain all four-case results and the corrected drain contract; make no production change or global acceptance claim from this cohort alone.
