@@ -41,6 +41,7 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.StreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -172,6 +173,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareStringPropertyDisjunctionLookup,
     WorkAwareStringPropertyDisjunctionAggregation,
     StringPropertyDisjunctionProjection,
+    StreamingStringPropertyProjection,
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
     PreparedStringPropertyDisjunctionLookup,
@@ -788,6 +790,37 @@ internal class MappedWebGraphBackedGraph(
         } finally {
             accounting.flush()
         }
+    }
+
+    override fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean {
+        if (type != CallSiteNode::class.java || projectedProperties.isEmpty() ||
+            projectedProperties.any { !supportsRawStringProperty(type, it) }
+        ) return false
+        val propertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
+        fun checkProjectionCancellation() {
+            checkCancelled()
+            if (Thread.currentThread().isInterrupted) throw CancellationException("Mapped CallSite projection interrupted")
+        }
+        checkProjectionCancellation()
+        forEachRawCallSiteStringIds(null) { _, callerClass, callerName, calleeClass, calleeName ->
+            checkProjectionCancellation()
+            consumer(StringPropertyProjectionRow(propertyIndexes.map { propertyIndex ->
+                val stringId = when (propertyIndex) {
+                    CALLER_CLASS_PROPERTY_INDEX -> callerClass
+                    CALLER_NAME_PROPERTY_INDEX -> callerName
+                    CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
+                    else -> calleeName
+                }
+                stringTable.get(stringId)
+            }))
+        }
+        checkProjectionCancellation()
+        return true
     }
 
     override fun projectStringPropertyDisjunction(

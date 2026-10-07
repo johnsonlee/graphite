@@ -210,6 +210,14 @@ open class LargeCorpusQueryBenchmark {
     @Benchmark
     fun mapped_returnDistinct(state: LargeCorpusMappedQueryBenchmarkState) = state.graph.query(DISTINCT_QUERY)
 
+    @Benchmark
+    fun mapped_orderedCallSitePropertyLimit(state: LargeCorpusMappedQueryBenchmarkState) =
+        state.graph.query(ORDERED_CALL_SITE_PROPERTY_QUERY)
+
+    @Benchmark
+    fun mapped_orderedIntConstantPropertyLimit(state: LargeCorpusMappedQueryBenchmarkState) =
+        state.graph.query(ORDERED_INT_CONSTANT_PROPERTY_QUERY)
+
     private companion object {
         const val SIMPLE_NODE_QUERY = "MATCH (n:CallSiteNode) RETURN n.callee_name LIMIT 100"
         const val INT_CONSTANT_QUERY = "MATCH (n:IntConstant) WHERE n.value = 0 RETURN n.id LIMIT 100"
@@ -217,6 +225,12 @@ open class LargeCorpusQueryBenchmark {
         const val SINGLE_HOP_QUERY =
             "MATCH (c:IntConstant)-[:DATAFLOW]->(cs:CallSiteNode) RETURN c.value, cs.callee_name LIMIT 20"
         const val DISTINCT_QUERY = "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_class LIMIT 20"
+        const val ORDERED_CALL_SITE_PROPERTY_QUERY =
+            "MATCH (n:CallSiteNode) " +
+                "RETURN n.callee_class AS className, n.callee_name AS methodName " +
+                "ORDER BY className, methodName LIMIT 20"
+        const val ORDERED_INT_CONSTANT_PROPERTY_QUERY =
+            "MATCH (n:IntConstant) RETURN n.value AS value ORDER BY value LIMIT 20"
     }
 }
 
