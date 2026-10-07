@@ -8997,3 +8997,184 @@ Original owner5407 completed once with exit0. Full297 tests passed (storage36,CL
 Command: `python3 /tmp/sootup-static-review/native-cumulative-123/validation/run.py --execute-root-released`. Pinned Rust1.93/macOS ARM64/jobs2 and the unchanged19-file real core fixture. Plan SHA `e5e477773a2d8ca9f206a61652bc0584f681905f93ef0da1dee522800195dfda`; result `77dba50f161548d099e736d405cbef6df429d0efe6a1e631f2cf3bd17613e22f`; frozen executable `5099bc26b2d66a44d6a832e936f412816ffc0db0308b5e8f0b4ca66d4af020c4`; owner terminal `e1ec6701bcd37302668e050f908624573df5db0a214ef0c5575c261e41e0ebf0`.
 
 **Decision:** retain this validated cumulative candidate for performance comparison. It remains isolated, not yet pushed as production code. The original123 cohort's mixed positive measurements remain as recorded; they are not relabelled as measurements of this new combination. No new latency/CPU/RSS result or recovered c4 latency is claimed from these correctness tests. The separate temporary request-phase diagnostic will locate the observed broad c4 regression without discarding either this candidate or the cumulative loading/sorting gains.
+
+### 2026-10-08 — Cumulative native: matched full34 request-phase diagnostic
+
+**Diagnostic only; no production change or final acceptance.** Temporary, identically instrumented A preupgrade6f498705009689551c92c6d1ca92f67252ef77c4 / B85becae5 / Cddbee105 answer the same pinned64 real graphs and34 native-oracle cases. Each c1/c4 uses ABCCBA,12 fresh servers total; each case has1 first-use,2 warmups,60 measured cycles,25,704 complete requests and24,480 measured. No retries/replacements/cache flush/quiet selection. Per-case nearest ranks30/57; compare means of two run quantiles and both fixed pairs, never pooled cross-case p95 or production confidence.
+
+Original A validation session86415 passed268 tests then failed existing strict MCP nonminimal_bool lint; retained without export. The A/B one-line equivalent boolean normalization preserves short-circuit order and all8 truth cases, matching C existing bytes. Independent A2/B/C rebuilds then passed268/276/294 tests including33/35/52 explicitly required names, strict Explore Clippy and CLI export; root independently checked all three. Serial four-workspace-package cleaning prevents reused target artifacts substituting another arm. Thus all measured arms include temporary tracing plus equivalent normalization, not byte-identical original acceptance binaries.
+
+|Arm|Base source commit|Instrumented binary SHA256|Validation handle|
+|---|---|---|---|
+|A|6f498705009689551c92c6d1ca92f67252ef77c4|`a86a1dfbbaba8484c147ad0e399b1751556e7e002bd6fc24ff0d1c1b7d9e1563`|46807 exit0|
+|B|85becae5b4dc1f7cf15c356efbdf377539b14c0d|`3261ff8845914cf841b3e03b6c5ec3ef3640eeeb467bac91b9dbae4dc3dc1b7a`|74223 exit0|
+|C|ddbee105e52c9df1c5e7f9a6e474f2dff194ae10|`dfe7774c29a988d7baec14f9c391e658f22d53956e44d88c409cd48d8bb03d35`|82303 exit0|
+
+Exact validation argv (same Rust1.93 ARM toolchain, jobs2, each own pinned source cwd; actual clean/tool/environment receipts retained under validation/A2,B,C):
+
+```text
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo fmt --all --check
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage -p graphite-cli -p graphite-cypher -p graphite-explore -- --nocapture --test-threads=1
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo clippy --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-explore --all-targets --all-features -- -D warnings
+/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin/cargo build --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli
+```
+
+The unchanged request JSON/typed oracle/provenance and batch-drain validator were retained. Complete-body endNs precedes diagnostic header access; all issued requests drain before JSON/phase validation. Eight pure mocks verify schema/order and readable/partial HTTP failures. IncompleteRead preserves only exception-available partial bytes and marks incompleteness; unrecoverable bytes are explicitly unavailable, never successful timing samples. The original draft/client/A failure remain archived.
+
+Exact fixed measurement/offline commands:
+
+```text
+python3 /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/run.py --plan /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/measurement.plan.sealed.json --execute-root-released
+python3 /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/phase_summary.py /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/measurement.plan.sealed.json /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/phase-summary.json
+```
+
+Original measurement handle5745 terminalexit0; all12 PASS, full25,704 typed bodies and correlated phase headers independently audited; all12 actualownedSIGTERM/wrapper-15/empty cleanupErrors and24 native/time PIDs/groups absent. Root independent audit handle64871 terminalexit0.
+
+|Concurrency|Comparison|p50 lower /34|p95 lower /34|p50 range %|p95 range %|Both-pair p50/p95 adverse cases|
+|---|---|---:|---:|---|---|---|
+|1|C_vs_B|29|23|-5.869…+1.319|-18.219…+2.758|5/6|
+|1|C_vs_A|14|19|-1.416…+3.489|-10.258…+10.070|10/10|
+|4|C_vs_B|17|18|-4.967…+6.358|-35.431…+10.378|13/10|
+|4|C_vs_A|0|1|+2.240…+25.512|-1.169…+28.548|34/33|
+
+C4 C/A is adverse in both pairs for all34 p50 and33 p95 cases. Largest mean p95 adverse: name-pair-zero+28.548%; C/B wrapped-case-insensitive-zero+10.378%. C1 and C/B positives remain preserved, not rejected because the overall target is incomplete. Full68 case rows and paired deltas: /private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/owner-report.md.
+
+|Run|Lifetime wall s|Lifetime native CPU s|Peak RSS bytes|Measured-window native CPU s|
+|---|---:|---:|---:|---:|
+|c1-0-A|66.450|41.240|6570770432|6.280|
+|c1-1-B|50.820|25.350|6612172800|6.290|
+|c1-2-C|50.990|25.190|6611009536|6.320|
+|c1-3-C|50.670|25.290|6613811200|6.270|
+|c1-4-B|51.200|25.500|6609977344|6.280|
+|c1-5-A|68.930|42.990|6565494784|6.240|
+|c4-0-A|48.140|40.980|6586761216|4.280|
+|c4-1-B|30.970|23.460|6625984512|4.190|
+|c4-2-C|30.550|23.310|6630637568|4.180|
+|c4-3-C|30.550|23.320|6632341504|4.180|
+|c4-4-B|30.940|23.490|6626492416|4.130|
+|c4-5-A|48.030|40.810|6582894592|4.170|
+
+|c|Comparison|Lifetime CPU %|Peak RSS %|Native window CPU %|
+|---|---|---:|---:|---:|
+|1|C_vs_B|-0.7276|+0.0202|+0.1591|
+|1|C_vs_A|-40.0689|+0.6741|+0.5591|
+|4|C_vs_B|-0.6816|+0.0792|+0.4808|
+|4|C_vs_A|-42.9881|+0.7086|-1.0651|
+
+Lifetime includes startup/load/all cycles/gaps/shutdown; lower total CPU is not per-query evidence. Native window ps counter has0.01s resolution, checks PID identity and includes measured-cycle validation gaps; client/observer CPU separate. No per-case CPU/RSS or final+5% acceptance claim.
+
+Complete phase range/count table: absolute microsecond change of the two-run mean p50/p95 across34 cases; “positive” counts are positive differences/34. Adjacent durations and residuals were computed **per request before ranks**. Ranges across quantiles are descriptive, not additive attribution. Stage numbers refer to boundaries0 traceStart,1 acquireStart,2 acquireEnd,3 runCypherCall,4 guardStart,5 guardEnd,6 blockCall,7 blockEntered,8 sourcesReady,9 executorReady,10 executeEnd,11 blockReturned,12 bodyStart,13 bodyEnd,14 responseBuilt,15 resultDropped.
+
+|c|Comparison|Stage/scope|p50 positive /34|p50 Δ range μs|p95 positive /34|p95 Δ range μs|
+|---|---|---|---:|---|---:|---|
+|1|C_vs_B|0→1|20|-0.271…+0.271|13|-2.105…+3.312|
+|1|C_vs_B|1→2|22|-0.520…+2.917|24|-2.084…+2.833|
+|1|C_vs_B|2→3|1|-0.041…+0.021|5|-0.041…+0.021|
+|1|C_vs_B|3→4|2|-0.001…+0.001|9|-0.021…+0.041|
+|1|C_vs_B|4→5|0|-0.021…+0.000|18|-0.167…+0.104|
+|1|C_vs_B|5→6|0|+0.000…+0.000|9|-0.062…+0.042|
+|1|C_vs_B|6→7|32|-0.062…+0.354|34|+0.333…+3.125|
+|1|C_vs_B|7→8|7|-0.062…+0.062|14|-0.875…+1.562|
+|1|C_vs_B|8→9|2|-0.041…+0.021|17|-0.103…+1.958|
+|1|C_vs_B|9→10|33|-7.104…+20.541|26|-34.709…+62.145|
+|1|C_vs_B|10→11|8|-0.021…+0.021|18|-0.167…+0.125|
+|1|C_vs_B|11→12|9|-0.104…+0.062|10|-0.208…+0.230|
+|1|C_vs_B|12→13|15|-3.166…+2.208|22|-1.458…+6.437|
+|1|C_vs_B|13→14|4|-0.062…+0.020|10|-0.396…+1.292|
+|1|C_vs_B|14→15|13|-0.396…+2.438|21|-2.708…+6.271|
+|1|C_vs_B|fullHttpNs|5|-30.063…+21.938|11|-118.480…+74.666|
+|1|C_vs_B|routeObservedNs|34|+0.771…+26.438|24|-32.875…+64.541|
+|1|C_vs_B|clientMinusRouteNs|0|-31.416…-9.500|6|-119.709…+104.604|
+|1|C_vs_A|0→1|4|-0.208…+0.229|13|-2.812…+1.603|
+|1|C_vs_A|1→2|21|-0.688…+2.208|21|-0.979…+2.208|
+|1|C_vs_A|2→3|0|-0.021…+0.000|4|-0.042…+0.021|
+|1|C_vs_A|3→4|1|-0.001…+0.001|9|-0.042…+0.041|
+|1|C_vs_A|4→5|11|+0.000…+0.021|11|-0.167…+0.084|
+|1|C_vs_A|5→6|0|+0.000…+0.000|7|-0.062…+0.042|
+|1|C_vs_A|6→7|28|-0.062…+0.291|33|-0.042…+3.146|
+|1|C_vs_A|7→8|2|-0.146…+0.021|12|-2.896…+1.541|
+|1|C_vs_A|8→9|3|-0.042…+0.021|14|-1.750…+1.937|
+|1|C_vs_A|9→10|31|-10.896…+42.270|27|-24.291…+73.917|
+|1|C_vs_A|10→11|4|-0.021…+0.021|14|-0.084…+0.084|
+|1|C_vs_A|11→12|8|-0.062…+0.042|11|-0.188…+0.230|
+|1|C_vs_A|12→13|18|-2.083…+1.833|19|-0.375…+4.042|
+|1|C_vs_A|13→14|0|-0.104…-0.042|4|-0.459…+1.479|
+|1|C_vs_A|14→15|12|-0.396…+1.417|21|-3.624…+4.688|
+|1|C_vs_A|fullHttpNs|20|-7.271…+43.646|15|-99.751…+133.333|
+|1|C_vs_A|routeObservedNs|31|-6.042…+46.020|27|-22.895…+76.250|
+|1|C_vs_A|clientMinusRouteNs|11|-15.312…+5.562|10|-112.730…+63.148|
+|4|C_vs_B|0→1|11|-0.353…+0.146|16|-2.667…+1.584|
+|4|C_vs_B|1→2|23|-1.542…+1.958|16|-5.896…+3.229|
+|4|C_vs_B|2→3|4|-0.041…+0.021|9|-0.062…+0.042|
+|4|C_vs_B|3→4|8|-0.001…+0.001|11|-0.062…+0.062|
+|4|C_vs_B|4→5|0|-0.021…+0.000|14|-0.208…+0.145|
+|4|C_vs_B|5→6|0|-0.021…+0.000|7|-0.042…+0.021|
+|4|C_vs_B|6→7|8|-0.229…+0.125|13|-2.312…+1.042|
+|4|C_vs_B|7→8|10|-0.062…+0.062|18|-1.333…+2.187|
+|4|C_vs_B|8→9|23|-0.001…+0.001|23|-0.062…+0.188|
+|4|C_vs_B|9→10|16|-24.959…+18.188|20|-78.791…+41.375|
+|4|C_vs_B|10→11|8|-0.021…+0.021|13|-0.104…+0.251|
+|4|C_vs_B|11→12|7|-0.042…+0.021|9|-0.292…+0.499|
+|4|C_vs_B|12→13|15|-0.271…+0.313|11|-3.188…+1.958|
+|4|C_vs_B|13→14|2|-0.083…+0.021|7|-0.396…+0.354|
+|4|C_vs_B|14→15|11|-0.770…+0.314|14|-3.251…+2.063|
+|4|C_vs_B|fullHttpNs|17|-51.438…+52.375|16|-929.292…+89.500|
+|4|C_vs_B|routeObservedNs|17|-29.541…+23.062|20|-76.251…+43.062|
+|4|C_vs_B|clientMinusRouteNs|21|-26.561…+45.980|16|-108.979…+111.834|
+|4|C_vs_A|0→1|15|-0.145…+0.188|11|-2.583…+1.603|
+|4|C_vs_A|1→2|21|-1.188…+1.374|23|-3.396…+4.479|
+|4|C_vs_A|2→3|8|-0.021…+0.041|19|-0.042…+0.061|
+|4|C_vs_A|3→4|9|-0.001…+0.001|8|-0.062…+0.021|
+|4|C_vs_A|4→5|0|+0.000…+0.000|20|-0.145…+0.167|
+|4|C_vs_A|5→6|0|+0.000…+0.000|6|-0.041…+0.021|
+|4|C_vs_A|6→7|11|-0.167…+0.146|17|-2.208…+2.292|
+|4|C_vs_A|7→8|17|-0.062…+0.063|17|-1.021…+2.354|
+|4|C_vs_A|8→9|25|-0.001…+0.001|14|-2.958…+0.145|
+|4|C_vs_A|9→10|21|-29.042…+30.312|13|-60.209…+36.001|
+|4|C_vs_A|10→11|15|-0.021…+0.021|11|-0.187…+0.167|
+|4|C_vs_A|11→12|15|-0.042…+0.042|13|-0.541…+1.083|
+|4|C_vs_A|12→13|26|-0.354…+1.771|18|-2.771…+1.833|
+|4|C_vs_A|13→14|8|-0.062…+0.083|11|-0.250…+0.709|
+|4|C_vs_A|14→15|18|-0.562…+0.396|14|-4.938…+3.146|
+|4|C_vs_A|fullHttpNs|34|+48.124…+151.375|33|-16.812…+209.542|
+|4|C_vs_A|routeObservedNs|19|-23.750…+29.771|14|-65.209…+37.020|
+|4|C_vs_A|clientMinusRouteNs|34|+58.126…+146.667|34|+22.647…+207.520|
+
+Representative c4 zero cases, arithmetic mean microseconds (means add: full=route+per-request residual; **not** a subtraction of percentiles):
+
+|Case|Arm|Full HTTP mean μs|Route mean μs|Residual mean μs|
+|---|---|---:|---:|---:|
+|global-wide-name-pair-zero|A|577.200|42.783|534.417|
+|global-wide-name-pair-zero|B|827.910|44.649|783.261|
+|global-wide-name-pair-zero|C|751.001|44.606|706.394|
+|global-wide-wrapped-case-insensitive-zero|A|592.504|44.214|548.290|
+|global-wide-wrapped-case-insensitive-zero|B|656.178|44.279|611.899|
+|global-wide-wrapped-case-insensitive-zero|C|787.958|45.100|742.858|
+
+All12 runtimes report20 workers; all25,704 request traces have zero within-request route/block/return ThreadId transitions; all24,480 measured residuals nonnegative. Rust ThreadId is process-local, not OS TID; unchanged identity does not rule out scheduling of other tasks. Residual includes pre-handler/extractor, header formatting after mark15, transport/body delivery and client scheduling. It does not identify network or queue time. Registry timing combines lock/lease work; block_in_place marks do not measure a spawn_blocking queue or handoff of other tasks. Instrumentation/header overhead and binary layout remain confounders.
+
+First-use and each warmup remain separate, two observations/arm/concurrency, all adverse pairs retained in summary.json; no first-use p95. Background monitor549 samples recorded no events/lifetime limitations, but one-second metadata can miss brief CPU/I/O; this is observed-background diagnostic, not guaranteed quiet/exclusive. No sample filtering.
+
+**Interpretation/next boundary:** the broad c4 old-relative full-HTTP increase mostly appears outside traced route work in representative zero cases (name-pair: full+173.801μs versus route+1.823μs; wrapped zero: full+195.454μs versus route+0.886μs). This supports investigating the next unmeasured pre-handler/response-delivery/client-scheduling boundary before changing engine code; it does not establish which component causes the gap. Wrapped dense also retains smaller measured executor growth. No production fix or additional experiment is claimed or launched.
+
+Evidence SHA256:
+
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/measurement.plan.sealed.json`: `4dce5b07072e6ffd794f42b7200e7840b9833c95d3dfd56a9525a357b16b4b26`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/validated-exports.json`: `922ab1672bec51325baf87fb930347f35d38e6de8ed1e7347919a11004139737`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/results.json`: `9c3b35b22bc68c43ccbf4e49eb97cc20045567f3b1e4c3c4f074e40208f176d9`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/summary.json`: `f6cc70ad4370444c68a8c28bded5389aa90152ef311ee1a917f936fcf1f94d1c`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/phase-summary.json`: `f006552da11e24a3c3fceb589251cc4b67765bca2a4189a7b52eb947cef40968`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/execution/owner-terminal.json`: `f7525903ca9047d7f789cfe25cc6094bc26233fb13edb3d53f2972092d908bf3`
+- `/private/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/independent-audit/audit.json`: `dc2acb8ab2742f596767e168f3427c107dbeb9684a1c20ca60850e6bb859bc9d`
+
+A subsequent source-only review of the same raw timestamps found that the c4 residual difference remains positive at every within-batch request-start rank; the initial send-start skew is similar across arms. This is descriptive stratification of the original samples, not a new acceptance statistic. Locally cached Axum/Hyper/Tokio sources and lock checksums match across A/C. The trace excludes handler extraction, diagnostic-header formatting, permit/request cleanup, Hyper response delivery and client status/header parsing; no full-graph destructor or waiting semaphore path was found outside the trace. The next diagnostic will bracket the existing client's connect/request/header/body boundaries using the same binaries and full fixed workload. No server optimization or causal claim follows from this source review. Report: `/tmp/sootup-static-review/native-cumulative/c4-phase-diagnostic/residual-boundary-review/REPORT.md`.
+
+### 2026-10-08 — Attempt136: borrowed bounded-sort admission, correctness verification
+
+The isolated ddbee105-based candidate compares borrowed stash/alias/null keys against the full heap before allocating an owned key vector. Rejected rows still perform projection and expression evaluation; DESC, stable encounter ties, missing/null keys, work accounting, cancellation and row ownership remain unchanged. The source also explains that string keys are excluded only by the initial ordinal/id/line experiment scope, not comparator safety. String eligibility is not expanded. The original seven bounded-sort tests are unchanged; two new tests check key precedence, released losing/replaced rows, retained payloads and provenance.
+
+Original validation29660 completed with exit0: all294 tests (CLI31, Cypher113, Explore113, integration1, storage36),54 required names, rustfmt, strict storage/Cypher/Explore all-target/all-feature Clippy and CLI export passed. The real persisted core fixture was enabled with no ignored, filtered or skipped tests. Four workspace packages were cleaned and rebuilt from the candidate checkout; root independently checked the raw test blocks, logs, source/patch identity and frozen executable. All compiler/native processes were absent at cleanup.
+
+Command: `python3 /tmp/sootup-static-review/attempt136/validation/run.py --execute-root-released`. Plan SHA `a5c060ee358b1d267be1e34dc7d962dbc3f55a5708acec5ede264596ff52f4ca`; result `522abb89220377d454cddf01a4a3ce500b2d95fb90459c78bebe88e039adb6f6`; frozen binary `500751470e1fd861aeb883f56a2cd91932325c69de84ab05d296136bc21973ee`; owner terminal `e21645302e2f0eb901c43af3f91a08c24b718753a0ef6050521f04468601f015`.
+
+**Decision:** retain the validated isolated candidate for the predeclared parent-relative real-query comparison. This proves correctness/build validation, not a measured latency, CPU or RSS benefit. No production integration or pre-upgrade recovery is claimed. The fixed Kotlin/Tika × c1/c4 BCCB series has16 fresh servers, five unchanged real query cases,1 first-use +2 warmup +30 measured cycles,2,640 full responses and2,400 measured responses. Its original typed oracles, both directions and all adverse outcomes remain mandatory.
