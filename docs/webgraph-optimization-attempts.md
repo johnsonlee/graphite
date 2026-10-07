@@ -7899,3 +7899,71 @@ The original127 empty/abc/1MiB+17 SHA-256 constants also passed bulk and63-byte-
 | JVM heap |No JVM launched;8GiB remains the hard limit for later JVM work |
 
 **Evidence/decision:** retain the correctness-verified upgrade. Corrected packet `/tmp/sootup-static-review/attempt130/validation-after-hex/`, plan SHA256 `51f205fbd29ef261a1908f3368966c430693e0317231a7b35e967e487fef140a`; export `execution/graphite` SHA256 `11e4310489091ea1d34ab7deb232358c146756cf78ec27dd0e5cd9f2f8954077`; golden receipt `45a2a97e6dce666fc99d009b282632aab0e72b3b47fb475f6e2e03398c1c3934`. The user then requested rebasing onto main: performance was held pending native source continuity, rather than measuring a potentially obsolete tree. The intended next comparison reuses127's fixed12 old/127/130 own-fullgraph loading plan, keeping127's measured acceleration distinct from any further0.11 gain. No current performance or final preupgrade recovery claim.
+
+### Attempt 130 follow-up: sha2 0.11 loading and release dry-run validation
+
+The validated sha2 0.11.0 upgrade is integrated at `10d04ec56a97c72c9d94d47f02ab0c7b622f1dd2`, rebased on main `f710681749349e43cd6221be53c65932cc692165`. This new fixed loading series measures the upgraded binary directly; earlier attempt127 performance is retained as historical evidence, not relabeled as attempt130.
+
+**Declared comparison and boundary.** A is pre-upgrade6f498 native `2bf3cd50…` on its own full saved graph. B is frozen127 sha20.10.9 ARM asm binary `774c9ad8…`. C is130 sha20.11.0 binary `11e43104…`. B/C use exactly the same full current116 Kotlin/Tika graphs; no121/124/126 changes are composed. Fixed Kotlin ABCCBA then Tika ABCCBA, two processes per arm/workload, no retries or replacement samples. Wall time runs from launch through complete consumption of the first strictly valid `/api/graphs` body. Actual native PID CPU is sampled after validation at0.01s resolution. Whole-process `time -l` CPU=user+system and peakRSS extend through immediate owned shutdown and include validation/snapshot/shutdown overhead. C4 retains default behavior and is not claimed complete; no first-use or other Cypher query work is measured. Native has no JVM heap; no JVM was launched.
+
+**Execution and correctness.** Original handle83452 reached terminal exit0; all12 sessions passed complete metadata, receipt hashes, unchanged graph stat inventories, source/runtime pins, boundary ordering, environment absence checks, and owned SIGTERM/-15 cleanup. All24 recorded native/time PIDs were absent after completion. The unchanged127 summarizer produced all statistics; owner raw audit and independently reused root audit passed. No failures or samples were discarded.
+
+| Session | Nodes | Call sites | Ready wall s | CPU snapshot s | Whole CPU s | Whole peak RSS MB | Ready→reaped ms | Whole−snapshot CPU s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 00-kotlin-old | 4657648 | 2173010 | 2.076756583 | 1.82 | 1.81 | 379.011072 | 7.269 | -0.01 |
+| 01-kotlin-current | 4744132 | 2251811 | 1.446961042 | 1.04 | 1.02 | 369.999872 | 13.643 | -0.02 |
+| 02-kotlin-candidate | 4744132 | 2251811 | 1.205486292 | 1.03 | 1.02 | 369.344512 | 12.812 | -0.01 |
+| 03-kotlin-candidate | 4744132 | 2251811 | 0.943210708 | 0.98 | 0.98 | 366.755840 | 7.089 | +0.00 |
+| 04-kotlin-current | 4744132 | 2251811 | 0.949284167 | 0.98 | 0.97 | 366.116864 | 7.159 | -0.01 |
+| 05-kotlin-old | 4657648 | 2173010 | 1.765921541 | 1.80 | 1.78 | 364.511232 | 12.649 | -0.02 |
+| 06-tika-old | 4673289 | 1758353 | 1.536273750 | 1.45 | 1.44 | 250.249216 | 7.228 | -0.01 |
+| 07-tika-current | 4620490 | 1705428 | 0.713090125 | 0.73 | 0.72 | 281.919488 | 7.172 | -0.01 |
+| 08-tika-candidate | 4620490 | 1705428 | 0.707359375 | 0.73 | 0.73 | 280.494080 | 6.916 | +0.00 |
+| 09-tika-candidate | 4620490 | 1705428 | 0.724948042 | 0.73 | 0.73 | 280.510464 | 7.328 | +0.00 |
+| 10-tika-current | 4620490 | 1705428 | 0.717689167 | 0.73 | 0.72 | 282.361856 | 7.390 | -0.01 |
+| 11-tika-old | 4673289 | 1758353 | 1.414559917 | 1.44 | 1.43 | 250.232832 | 7.302 | -0.01 |
+
+Mean is the predeclared comparison statistic; all samples, medians and ranges remain in `summary.json`. Adjacent/reverse-order pairs are B/A=(1,0),(4,5), C/A=(2,0),(3,5), C/B=(2,1),(3,4) within each six-session block. Workloads are never pooled.
+
+| Workload | Metric | Comparison | Reference mean | Candidate mean | Mean change | Pair1 | Pair2 |
+|---|---|---|---:|---:|---:|---:|---:|
+| kotlin | loadToReadySeconds | B/A | 1.921339 | 1.198123 | -37.6413% | -30.3259% | -46.2443% |
+| kotlin | loadToReadySeconds | C/A | 1.921339 | 1.074348 | -44.0833% | -41.9534% | -46.5882% |
+| kotlin | loadToReadySeconds | C/B | 1.198123 | 1.074348 | -10.3307% | -16.6884% | -0.6398% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | B/A | 1.810000 | 1.010000 | -44.1989% | -42.8571% | -45.5556% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/A | 1.810000 | 1.005000 | -44.4751% | -43.4066% | -45.5556% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/B | 1.010000 | 1.005000 | -0.4950% | -0.9615% | +0.0000% |
+| kotlin | wholeLifetimeCpuSeconds | B/A | 1.795000 | 0.995000 | -44.5682% | -43.6464% | -45.5056% |
+| kotlin | wholeLifetimeCpuSeconds | C/A | 1.795000 | 1.000000 | -44.2897% | -43.6464% | -44.9438% |
+| kotlin | wholeLifetimeCpuSeconds | C/B | 0.995000 | 1.000000 | +0.5025% | +0.0000% | +1.0309% |
+| kotlin | wholeLifetimePeakRssMB | B/A | 371.761152 | 368.058368 | -0.9960% | -2.3776% | +0.4405% |
+| kotlin | wholeLifetimePeakRssMB | C/A | 371.761152 | 368.050176 | -0.9982% | -2.5505% | +0.6158% |
+| kotlin | wholeLifetimePeakRssMB | C/B | 368.058368 | 368.050176 | -0.0022% | -0.1771% | +0.1745% |
+| tika | loadToReadySeconds | B/A | 1.475417 | 0.715390 | -51.5127% | -53.5831% | -49.2641% |
+| tika | loadToReadySeconds | C/A | 1.475417 | 0.716154 | -51.4609% | -53.9562% | -48.7510% |
+| tika | loadToReadySeconds | C/B | 0.715390 | 0.716154 | +0.1068% | -0.8037% | +1.0114% |
+| tika | nativeCpuAtReadySnapshotSeconds | B/A | 1.445000 | 0.730000 | -49.4810% | -49.6552% | -49.3056% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/A | 1.445000 | 0.730000 | -49.4810% | -49.6552% | -49.3056% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/B | 0.730000 | 0.730000 | +0.0000% | +0.0000% | +0.0000% |
+| tika | wholeLifetimeCpuSeconds | B/A | 1.435000 | 0.720000 | -49.8258% | -50.0000% | -49.6503% |
+| tika | wholeLifetimeCpuSeconds | C/A | 1.435000 | 0.730000 | -49.1289% | -49.3056% | -48.9510% |
+| tika | wholeLifetimeCpuSeconds | C/B | 0.720000 | 0.730000 | +1.3889% | +1.3889% | +1.3889% |
+| tika | wholeLifetimePeakRssMB | B/A | 250.241024 | 282.140672 | +12.7476% | +12.6555% | +12.8397% |
+| tika | wholeLifetimePeakRssMB | C/A | 250.241024 | 280.502272 | +12.0928% | +12.0859% | +12.0998% |
+| tika | wholeLifetimePeakRssMB | C/B | 282.140672 | 280.502272 | -0.5807% | -0.5056% | -0.6557% |
+
+**Interpretation by workload.** Relative to127, Kotlin ready wall decreases10.3307% (both pairs improve, by16.6884% and0.6398%); whole CPU increases0.5025%, RSS is effectively unchanged (−0.0022%, mixed pair signs). Tika ready wall is effectively unchanged (+0.1068%, mixed pairs), whole CPU increases1.3889%, and RSS decreases0.5807% (both pairs). Relative to the pre-upgrade own-graph baseline, Kotlin ready wall/wholeCPU/RSS are−44.0833%/−44.2897%/−0.9982%. Tika ready wall/wholeCPU are−51.4609%/−49.1289%, but RSS is **+12.0928%**, both pairs+12.0859%/+12.0998%, 250.241024→280.502272MB (+30.261248MB). **Tika RSS remains above the independent +5% cap; loading recovery is not accepted.** C/A also includes historical graph/format differences; C/B is the matched-current-graph binary comparison.
+
+**Limits and retained uncertainty.** Observed-cache repeated process startup, not a cold-cache claim. Monitor retained27 snapshots,6 external CPU-time increments and1 positive-percent-CPU observation,0 incomplete events; no quiet-host claim. Two samples per arm do not establish final acceptance or precise speedup magnitude. Signed wholeCPU-minus-snapshot differences (0 to−0.02s) are retained because the counter/readout boundaries and rounding differ; they are not clamped or used to subtract observer overhead. Query p50/p95, deferred query costs, C4 completion and full recovery are unmeasured. Correctness and stability passed only the declared readiness/controlled-lifecycle checks here; the prior56 real storage/CLI tests and independent SHA goldens remain separate correctness evidence.
+
+**Release dry run.** [Run37640049063](https://github.com/johnsonlee/graphite/actions/runs/37640049063), exact head `10d04ec56a97c72c9d94d47f02ab0c7b622f1dd2`, completed successfully:9 jobs success,1 expected Homebrew tap update skipped. Both Linux/macOS ARM and x86 release builds, MavenLocal, release assets, local Homebrew tap formula install/frontend checks/brew test, and container build/smoke passed. This was a dry run: Sonatype/GitHub Release uploads and registry logins were skipped, Docker push=false, tap update skipped, and no tag was created. Prior failed run37635792076 remains preserved. This validates packaging and the exercised target paths, not performance or every CPU fallback.
+
+**Evidence.** Full raw artifacts: `/tmp/sootup-static-review/attempt130/loading-three-arm/execution/`; frozen protocol/source reuse: sibling `plan.sealed.json`, `source-proof.json`, `plan-reuse.diff`. No source/old log changes were needed for measurement.
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/plan.sealed.json` SHA256 `a7b34516f0b52439924efa163b6aa211f42bad5129f8f858ef5bd55ac3838e08`
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/execution/results.json` SHA256 `7e00292dc0825fa35bf186160c33190759c92d1f5148c3c7c32f8ce97b6d30c5`
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/execution/summary.json` SHA256 `757f951db37ca4ebb6af4c1503ddcfb819fc7d778747a7ab27e140dccbfab3c3`
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/execution/owner-audit.json` SHA256 `fc0e9c9d28b9165087266beda03c94dc1e0421479c26ee2c763ac4b2ffc6d832`
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/execution/terminal-receipt.json` SHA256 `f31139c2470c5033191e8ec5d6a1772626ae86a376a68c1c0bca0c83e1a015e1`
+- `/tmp/sootup-static-review/attempt130/loading-three-arm/root-audit.json` SHA256 `ccc7db672aa4a9e4b00bde59229268a3241902976cafcc8b8aee0f30cc646ab2`
+- `/tmp/sootup-static-review/attempt130/publish-dry-run/terminal-proof.json` SHA256 `8bc555a669b75fc179f78705722a28606f74676c1959f168df726ddf608d2c39`
+- `/tmp/sootup-static-review/attempt130/publish-dry-run/status-08.json` SHA256 `ecf5678222a18a60d3ca514c79e262459b624250045cc2603f680f6fdb813a4f`
