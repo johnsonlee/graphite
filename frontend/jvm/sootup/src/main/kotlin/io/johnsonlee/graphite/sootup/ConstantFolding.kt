@@ -122,6 +122,8 @@ private const val CALLER_SIGNATURE = "caller_signature"
  * `if (gate) work(); tail();` loses `tail()` and fails SootUp's own validation (see
  * `ConditionalBranchFolderTest`).
  */
+// Keep failed-run cleanup beside the folding state whose lifecycle it owns.
+@Suppress("TooManyFunctions")
 internal class ConstantFolding(private val folds: List<FoldRule>) {
 
     /** What the fold pass recorded for one body, consumed by the accounting pass at the chain's end. */
@@ -192,6 +194,21 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
      * same call as one read off the graph built without rules.
      */
     fun ordinalsBeforeFolding(signature: MethodSignature): Map<Stmt, Int>? = preFoldOrdinals[signature]
+
+    /** A failed APK interception keeps the original body, so none of this run's folds survive. */
+    fun discard(builder: Body.BodyBuilder) {
+        marked.remove(builder)
+        val signature = builder.methodSignature
+        val identity = signature.toString()
+        preFoldOrdinals.remove(signature)
+        methods.remove(identity)
+        for (index in folds.indices) {
+            sites[index].remove(identity)
+            folded[index].remove(identity)
+            unsupported[index].remove(identity)
+            misses[index].remove(identity)
+        }
+    }
 
     fun report(): FoldReport = FoldReport(
         folds.indices.map { index ->

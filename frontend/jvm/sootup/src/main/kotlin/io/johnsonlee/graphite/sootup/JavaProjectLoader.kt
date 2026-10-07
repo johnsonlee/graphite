@@ -14,6 +14,7 @@ import sootup.core.inputlocation.AnalysisInputLocation
 import sootup.core.model.SourceType
 import sootup.core.interceptor.BodyInterceptor
 import sootup.interceptors.BytecodeBodyInterceptors
+import sootup.interceptors.LocalSplitter
 import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
 import sootup.java.core.views.JavaView
 import java.io.File
@@ -60,14 +61,22 @@ private fun createApkInputLocations(
     path: Path,
     config: LoaderConfig,
     folding: ConstantFolding?,
+    onFallback: (String) -> Unit,
     log: (String) -> Unit
 ): InputLocations {
     val platforms = resolveAndroidPlatformsPath(config)
-    val dexInterceptors = DexBodyInterceptors.Default.bodyInterceptors()
+    // Dex registers hold unrelated values over time: split them before functional dispatch.
+    // TypeAssigner also needs the Android platform hierarchy, which APK-only views omit.
+    val dexInterceptors = DexBodyInterceptors.Default.bodyInterceptors() + LocalSplitter()
+    val guarded = RecoveringBodyInterceptor(
+        folding?.bodyInterceptors(dexInterceptors) ?: dexInterceptors,
+        onFallback,
+        { builder -> folding?.discard(builder) }
+    )
     val apkLocation = ApkAnalysisInputLocation(
         path,
         AndroidVersionInfo(path, platforms.toString()),
-        folding?.bodyInterceptors(dexInterceptors) ?: dexInterceptors
+        listOf(guarded)
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
@@ -274,7 +283,12 @@ class JavaProjectLoader(
      */
     private var foldInterceptors: List<BodyInterceptor>? = null
 
+    /** Number of APK method bodies kept without interception during the latest load. */
+    var bodyInterceptionFallbackCount: Int = 0
+        private set
+
     override fun load(path: Path): Graph {
+        bodyInterceptionFallbackCount = 0
         val folding = config.folding?.let { ConstantFolding(it.rules) }
         foldInterceptors = folding?.bodyInterceptors(emptyList())
         val inputLocations = createInputLocations(path, folding)
@@ -290,6 +304,9 @@ class JavaProjectLoader(
             preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
         )
         val graph = adapter.buildGraph()
+        if (bodyInterceptionFallbackCount > 0) {
+            log("Kept $bodyInterceptionFallbackCount APK method body/bodies without interception after interceptor failures")
+        }
         if (folding != null) {
             config.folding?.onReport?.invoke(folding.report())
         }
@@ -315,7 +332,10 @@ class JavaProjectLoader(
     private fun createInputLocations(path: Path, folding: ConstantFolding?): InputLocations {
         return when {
             path.isDirectory() -> createDirectoryInputLocations(path)
-            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, folding, ::log)
+            path.extension.lowercase() == APK_EXTENSION_NAME -> createApkInputLocations(path, config, folding, { message ->
+                bodyInterceptionFallbackCount++
+                log(message)
+            }, ::log)
             isSpringBootJar(path) -> createSpringBootInputLocations(path)
             isWarFile(path) -> createWarInputLocations(path)
             else -> {

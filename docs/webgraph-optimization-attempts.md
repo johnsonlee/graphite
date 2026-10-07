@@ -3678,3 +3678,111 @@ resolved to more than 64 implementations, which the previous output expressed
 as thousands of call sites per call. The remaining 16 s over 2.8.0 is the
 resolution itself (930k resolved dispatch call sites that 2.8.0 did not have,
 since D8 lambda classes were not function values before #162).
+
+### 2026-10-07 — Attempt 094: Split dex registers before functional dispatch
+
+**Question:** can APK calls resolve each function value independently instead of
+combining every value ever held in a reused dex register, without requiring the
+Android platform hierarchy in the application view? Follow-up to #167 and #168.
+
+**Change:** append `LocalSplitter` to the dex defaults, before any configured
+constant-folding passes. Leave `TypeAssigner` out: it requires the platform
+hierarchy that an APK-only view does not contain. Run each method's complete dex
+interceptor chain on a copied body, validate each pass, and install the result
+only after the chain succeeds. An interceptor exception retains the original
+body, clears that method's fold accounting and call ordinals, and increments
+`JavaProjectLoader.bodyInterceptionFallbackCount`. Verbose output identifies
+each fallback and prints a build summary. Errors such as `OutOfMemoryError`
+retain their existing behavior. Recovery belongs at this boundary because
+SootUp 3 materializes dex bodies while enumerating a class's methods, before
+`SootUpAdapter.processMethod` can catch an exception.
+
+**Fixture and revisions:** `coupang-9-3-9.apk` (185,686,651 bytes, SHA-256
+`892cf8b57498196dfb453557ff92337f4e5fc82838821c5509f304015878a139`), Android
+platforms from `~/Library/Android/sdk/platforms`. Measured base is `main` at
+`02b853b7e5588034274d292163b79495a9ef8743`; measured candidate is
+`ecccf867a42be333610885fad2fa688a87c74064`, before rebasing this change onto
+`f710681749349e43cd6221be53c65932cc692165` (#172). That intervening change affects
+optional constant folding, which neither local benchmark enables; CI compares
+the rebased PR against the updated base. Both local runs use Apple M3 Max /
+64 GiB / macOS 14.3 / OpenJDK 17.0.20.1.
+The APK measurement is one fresh JVM per revision, `-Xmx16g
+-XX:+UseParallelGC`, including graph build and save. Maximum live heap is the
+largest post-GC value in `-Xlog:gc`; CPU and RSS come from `/usr/bin/time -l`.
+Node-type counts are read independently from the persisted `graph.typeindex`;
+persisted bytes sum the graph's regular files. The old #167 figures are historical
+context, not the comparator: the current-main graph already differs from that
+older revision.
+
+**Validation commands:** run in ordinary clones if the publication plugin cannot
+open a linked worktree's Git metadata.
+
+```bash
+./gradlew :query:shadowJar :sootup:jmhJar
+/usr/bin/time -l java -Xmx16g -XX:+UseParallelGC -Xlog:gc \
+  -jar frontend/jvm/query/build/libs/graphite.jar \
+  build ~/Downloads/coupang-9-3-9.apk \
+  --android-sdk ~/Library/Android/sdk -o /tmp/graphite-168-REVISION-graph -v
+java -jar frontend/jvm/sootup/build/libs/sootup-1.0.0-SNAPSHOT-jmh.jar \
+  'io.johnsonlee.graphite.sootup.GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig$' \
+  -prof gc -rf json -rff /tmp/graphite-168-REVISION-jmh.json
+./gradlew check koverLog
+```
+
+The method-level JMH comparison uses `android-all-14-robolectric-10818077.jar`
+and the benchmark's existing defaults: single shot, no warmup, one measurement,
+one fork, `-Xmx8g`. All four fixture properties (`android.jar.path`,
+`tika.jar.path`, `hive.jar.path`, `kotlin.compiler.jar.path`) point to the same
+cached Android, Tika 2.9.2, Hive 4.0.0 and Kotlin compiler 2.0.21 artifacts in both
+runs. These local single-shot measurements describe this run, not a statistical
+performance guarantee. The PR's `benchmark-regression-gate` comment supplies
+the standard CI method-level and build/save/load/query comparison.
+
+**Correctness:** the D8 fixture proves that the old dex chain reuses one register
+for two distinct lambdas, and for 66 distinct lambdas beyond `MAX_TARGETS`.
+Each call must resolve to the exact lambda allocated for it, in call order.
+Removing only `LocalSplitter` fails both controls: a two-lambda call resolves to
+two targets, while the saturated call resolves to zero. Transaction tests cover
+rollback after mutation, successful processing of the next method, switch
+successor order and duplicate targets, trap edges, reverse block insertion,
+invalid graphs, error propagation, and failed-fold metadata cleanup. A loader
+test injects a failing dex pass and checks retained calls, the fallback count
+and summary, and count reset on the next load.
+
+**Results:**
+
+| Full APK build and save | Measured `main` | Candidate | Change |
+|-------------------------|---------------:|----------:|-------:|
+| Wall | 104.28 s | 142.31 s | +36.47% |
+| CPU (user + system) | 303.13 s | 359.28 s | +18.52% |
+| Maximum post-GC heap | 10,351 MiB | 9,433 MiB | -8.87% |
+| Maximum RSS | 16,935,501,824 bytes | 17,112,383,488 bytes | +1.04% |
+| Nodes | 8,541,084 | 12,933,106 | +4,392,022 |
+| `LocalVariable` | 2,571,471 | 6,184,079 | +3,612,608 |
+| `CallSiteNode` | 2,601,008 | 3,380,422 | +779,414 |
+| Direct calls (no origin) | 2,244,024 | 2,244,024 | unchanged |
+| Derived calls (with origin) | 356,984 | 1,136,398 | +779,414 |
+| Persisted graph | 964,514,140 bytes | 1,310,359,525 bytes | +35.86% |
+| Interceptor fallbacks | not guarded | 0 | all bodies intercepted |
+
+The call-site sidecar independently confirms that the increase is entirely in
+derived dispatch calls; the direct call count is unchanged. Unlike the earlier
+#167 experiment, splitting produces a net increase in resolved calls on current
+main, so the historical claim of 220k fewer calls does not apply to this pair.
+
+| Method-level benchmark | Measured `main` | Candidate | Change |
+|------------------------|---------------:|----------:|-------:|
+| `GraphBuildBenchmark.buildAndroidSdkGraphEndToEndConfig` | 20,349.162 ms/op | 20,385.158 ms/op | +0.18% |
+| Allocated bytes | 37,464,485,944 B/op | 37,488,884,560 B/op | +0.07% |
+| GC count / time | 37 / 882 ms | 38 / 861 ms | — |
+| Process CPU | 76.36 s | 74.16 s | -2.88% |
+| Process maximum RSS | 9,165,602,816 bytes | 9,132,261,376 bytes | -0.36% |
+
+**Conclusion:** kept for correctness. The APK build/save path has an explicit
+36.47% latency regression and a 35.86% persisted-size increase in exchange for
+separate function values and restored dispatch beyond register saturation.
+It still fits the 16 GiB heap, with lower measured live heap and no fallback.
+The JAR method-level measurement is essentially unchanged (+0.18% in this
+single-shot comparison); the dex-only chain does not modify that input path.
+The PR benchmark comment is the authoritative separate CI method-level and
+end-to-end `LargeCorpusPerformanceGateTest` comparison.
