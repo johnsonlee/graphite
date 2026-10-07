@@ -6689,3 +6689,84 @@ Command: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/attempt116-
 
 Evidence: `/tmp/sootup-static-review/attempt116/{source-proof.json,root-build3-audit.json,build1-source,build2-source,construction-packet}` and `/tmp/sootup-recovery-sources/attempt116-build/attempt116-build{1,2,3}`.
 Build3 result SHA256 `e63cea756c3e4d21af31e7d72dca750d0986523c5853120dda862eb8f27965e4`; production SHA256 `6385800d5f13f06d0f346af4d24c9ca479486eb29e20cac0d357eec87a3bb84f`; test SHA256 `218451004af8be96694a7c47e6db8d5d27451c1289218398bce9e4f8e084fedb`.
+
+### 2026-10-07 — Attempt 115: reacquire prepared-query workers after overlapping inline work
+
+**Hypothesis and isolated scope:** attempt113 counts inline requests as active prepared queries, so an
+overlapping request can keep later graph suffixes inline even after the worker owner has finished.
+Candidate115 uses an owner-only lease and retries acquisition before each unexecuted suffix,
+retaining graph encounter order, existing scanners and result merging. Its parent is the retained
+113 commit `77b85a7bd9d9d21b830b0f88f78c30aae7dd1b85`, not cumulative341 or the current PR head.
+It does not contain114/116/117. Lease acquisition is not fair and bounded worker speculation can
+exceed serial113's actual work; no claim of identical total speculative work is made.
+
+**Validation history:** build1 failed the unchanged NestedBlockDepth lint rule in a new test.
+Extracting the same test coordination into a helper preserved its assertions. Build2 exposed a
+real coordinator-interruption defect: `outcomes.take()` cleared the interrupt flag. The final
+candidate restores the coordinator flag before propagating that exception; it does not interpret
+a worker's interruption as a coordinator interruption. The original failing assertion remains.
+Build3 passed **1,656 fresh tests** (1,345 Cypher, seven filtered memory checks, 261 webgraph and
+43 query), zero failures/errors/skips, including the original113 and new115 concurrency cases.
+Detekt passed and real Kover reported6,558 covered/129 missed lines (**98.0708838%**), above the
+unchanged98% requirement. Runtime-role separation, source pins and publishing-file restoration
+were independently audited. Both failed builds and their exact source snapshots remain retained.
+
+**Fixed real HTTP experiment:** A is actual pre-upgrade `6f498` (`MAIN_query`,84 entries),
+B is113 (`MAIN_query`,88), and C is115 build3 (`MAIN_query`,88). The unchanged real64 fixture
+contains class shards from Android14, Tika2.9.2, Hive4 and Kotlin2.0.21 JARs; all64 graphs are
+loaded in manifest order. The same34 requests and complete typed-response oracle used for113
+are retained. Previously parameterized engine cases use the same reviewed literal-equivalent
+HTTP requests. The fixed order is c1 ABCCBA, then c4 ABCCBA, on ports18301–18312. Each process
+runs one first-use cycle, two warmup cycles and30 measured cycles: **13,464 total responses,
+12,240 measured**. All first-use, warmup, measured samples and adverse results remain present.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/attempt115/server-request-packet/run.py --plan /tmp/sootup-static-review/attempt115/server-request-packet/plan.sealed.json --execute-root-released`.
+The sealed packet contains the full server/client argv. Environment is M3 Max16-core/64GiB,
+macOS14.3, JDK17.0.20.1, mapped loading, `-Xmx8g`, default tracked `Long.MAX_VALUE` work limit,
+60-second timeout and maximum concurrency4. Percentiles use nearest rank on30 samples per
+case/process; the table below summarizes arithmetic means of two process-level observations,
+not pooled p95 or a precise production-tail estimate. Whole CPU includes user plus system for
+the server lifetime; peak RSS includes loading, first/warm requests and shutdown. Neither is
+per-case resource evidence. Complete per-case, paired, first-use/warmup and resource tables are
+retained in the independent report.
+
+**Correctness PASS; performance isolation FAIL.** All13,464 full response bodies, columns,
+typed ordered rows, graphCount64 and provenance match the oracle. Independent recomputation
+also agrees with every per-case statistic, pair and resource calculation. However, foreign
+Gradle and Kotlin JVMs started after the initial idle check. Logged builds in another worktree
+and subsequently `graphite-fold-verify` overlap six estimated server lifetimes:
+c1-0-A, c1-3-C, c1-4-B, c4-0-A, c4-3-C and c4-4-B. The other runs have no matching logged
+build interval, but cannot be certified clean: the daemons remained resident and their historical
+CPU activity is unavailable. Whole-second process start timestamps bound the lifetime estimates;
+individual requests have monotonic timings without exact UTC boundaries. Terminal0% CPU does
+not establish earlier idleness. No subset was selected as clean and no sample was replaced.
+
+| Concurrency / comparison | Cases with lower / higher p50 | Cases with lower / higher p95 | Whole CPU | Peak RSS |
+|---|---:|---:|---:|---:|
+| c1,115 versus113 |31 /3|22 /12|−0.25%|−9.34%|
+| c1,115 versus old |28 /6|23 /11|−0.56%|−4.72%|
+| c4,115 versus113 |30 /4|26 /8|+3.14%|−5.01%|
+| c4,115 versus old |25 /9|23 /11|+2.18%|−8.94%|
+
+These are **confounded descriptive observations**, not verified causal gains or proof of the
+5% resource caps. For example, c4 name-pair-targeted p50 is38.65% lower than113, while
+c4 caller-class-targeted p95 is3.77% higher; c1 wrapped DISTINCT-zero p95 is15.14% higher.
+Against old, c4 wrapped DISTINCT-zero p95 is24.56% higher and localized-middle p50 is12.13%
+higher. The complete report retains all68 case groups and every process pair rather than using
+the favorable counts to declare recovery.
+
+**Decision: RETAIN ISOLATED, performance validation incomplete.** Preserve the candidate and
+verified concurrency/error behavior; do not integrate it on the strength of contaminated timing
+data, discard it for missing global acceptance, or replace only unfavorable samples. A subsequent
+performance replication requires a separately declared complete fixed series and a confirmed
+measurement window. Existing Tika RSS, eager-loading and per-case query regressions remain open.
+
+Evidence: `/tmp/sootup-static-review/attempt115/{source-proof.json,build1-source,build2-source,build3-independent-audit,server-request-packet}`
+and `/tmp/sootup-recovery-sources/attempt115-build/attempt115-build3`.
+Candidate patch SHA256 `66e335ed307c69d129ff489bd81e60e3c0c79c537fc9677ab185aefb45b68db2`;
+source proof `fd2c98348df55f149d8efc41dad1961534e11817c2adbbcbbfa0fab035193289`;
+build audit `f65797356b6140f96c0d2c979748408128dd034cd403cb6e1ec9b387aa069863`.
+HTTP results SHA256 `ace8750b9a3868839a6f72ecde69c411be35931a85e471b552713f4e0e36a133`;
+summary `2548f736f6f347c648c681deb3418d5d042079aa05cadb0329c7b58e3b43e4ad`;
+independent audit `f08aa8104eb0fa1c4ee01bb6c0ed13df037efa637ba95c7ec6d876a5f3ff4908`;
+full report `ce084e7f087e5044410c43fc84fd0328ce717f0574e75d6a0f867c2b222b72ca`.
