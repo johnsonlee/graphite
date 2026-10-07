@@ -7013,3 +7013,39 @@ Whole-process CPU means change +0.412% at c1 and +0.141% at c4; peak RSS +0.658%
 **Decision:** preserve the complete native baseline, investigate the concrete adverse cases and native old/current source differences, and keep JVM optimization gains separate. Shared-fixture native response correctness now has repeated-request evidence; native latency recovery is still incomplete. This does not validate loading of separate old/current full generated graphs or new semantic features.
 
 Command: `python3 /tmp/sootup-static-review/native-server-request-baseline/run.py --plan /tmp/sootup-static-review/native-server-request-baseline/plan.sealed.json --execute-root-released`. Exact eight argv, binaries, fixture, oracle, methods, ports and all metrics are frozen in plan SHA256 `5d0a204e1af3deed52d2594bfb5ce16a26006c0d9b843e581ca24321dc928e64`. Results `execution/results.json` SHA256 `2abea57f8a74a95c3b4c2ff6fb200574805b54ac0903256c0cf11a407f0f3a33`; summary `99520d361455b731aa45f99f1251c351bbd54ca8cb58169edfb3b11881636bd4`; independent audit `ccea243cecbd23f0679cc69b9563a46e4f40cebb8e4bb3c2cbed152d1110d5be`.
+
+### 2026-10-07 — G1 young-generation cap diagnostic: retained mixed candidate
+
+**Hypothesis and fixed protocol:** test whether adaptive young sizing/committed capacity contributes to the Tika RSS regression. The same pinned HotSpot17.0.20.1 binary runs the preupgrade6f498 TEST54 and current116 TEST57 runtimes on full Tika2.9.2. The sole parameter is experimental `G1MaxNewSizePercent=60` versus30; both arms explicitly select G1, unlock experimental options and retain `-Xmx8g`. Two finite flag-only JVMs verified all effective flags: only that percentage and its derived MaxNewSize differ. Both use initial1GiB/min8MiB/max8GiB,4MiB regions,13 parallel/3 concurrent/13 refinement workers and minimum young5. No Xms, forcedGC, feature reduction or pause/worker change was introduced.
+
+The eight prespecified cells are old60/current60/current30/old30/old30/current30/current60/old60. The existing full build/count/prepared-save/close helper records250ms heap/buffer samples; an unchanged external sampler records100ms RSS and independent process time-l. Every JVM records debug GC logs; none records JFR. These instrumentation differences prohibit treating the earlier quiet or JFR pairs as matched controls. All eight builds precede24 own-version strict validators. All samples, including adverse/high-variance values, are retained.
+
+**Correctness:** eight builds,24 strict validators and the offline phase parser all passed. Every generated graph matches its own version's complete shape/metadata/five query references; current ordinal sidecar/binding checks and old-format absence checks passed. The eight graph inventories match before/after verification. Static classfile review matched all16 direct helper member references in116; actual completion verifies the invoked ABI/default-feature assertions. Root independently reconstructed all eight time-l/phase/heap/GC metrics and compared all24 complete actual/reference reports. No cross-version graph isomorphism is claimed.
+
+| Fixed run | Version/cap | Build→saved graph E2E s | Whole CPU s | Peak RSS GB | Sampled committed max GB | Completed GC pause total ms |
+|---|---|---:|---:|---:|---:|---:|
+| 0 | old/60 | 109.616094 | 207.370 | 8.892563 | 7.927235 | 1473.581 |
+| 1 | current116/60 | 27.924471 | 86.560 | 8.564883 | 7.675576 | 914.876 |
+| 2 | current116/30 | 28.065773 | 85.010 | 6.975029 | 6.123684 | 984.908 |
+| 3 | old/30 | 110.158691 | 176.730 | 7.465091 | 6.639583 | 1811.951 |
+| 4 | old/30 | 107.198059 | 175.160 | 7.203357 | 7.230980 | 1795.027 |
+| 5 | current116/30 | 28.281880 | 86.040 | 6.966297 | 6.132072 | 1008.920 |
+| 6 | current116/60 | 28.111146 | 86.370 | 6.799737 | 5.922357 | 969.934 |
+| 7 | old/60 | 109.978637 | 179.330 | 7.326990 | 7.012876 | 1710.320 |
+
+GB is decimal. CPU is complete process user+system. Sampled committed/used heap is neither retained live memory nor RSS; completed pause totals exclude concurrent GC work and include distinct remark/cleanup pauses sharing a GC identifier. All raw helper phases, GC events, process wall times, peaks and paired changes remain archived.
+
+| Prespecified comparison | E2E mean change | CPU mean change | RSS mean change | RSS pair changes |
+|---|---:|---:|---:|---|
+| oldVsCurrent60 | -74.482% | -55.281% | -5.271% | -3.685% / -7.196% |
+| oldVsCurrent30 | -74.076% | -51.391% | -4.957% | -6.565% / -3.291% |
+| currentPolicyEffect | +0.557% | -1.087% | -9.263% | -18.562% / +2.450% |
+| oldPolicyEffect | -1.019% | -9.002% | -9.563% | -16.052% / -1.687% |
+
+**Interpretation:** current116 cap30 has E2E28.173827s, CPU85.525s and RSS6.970663GB means. Against old under the same30 setting, E2E is -74.076%, CPU -51.391%, RSS -4.957%; both resource pairs decrease. Against current60, E2E is +0.557%, CPU -1.087%, RSS -9.263% on means, but RSS pairs disagree (-18.562%/+2.450%). Current60 peaks are8.564883/6.799737GB, while current30 peaks are6.975029/6.966297GB. Current60's sampled committed maxima also vary strongly (7.675576/5.922357GB), so the mean alone does not prove a repeatable GC-policy benefit or causal explanation. Old60's first207.37 CPU-second/8.892563GB sample is retained. The current60-versus-old60 comparison in this instrumented series itself differs from the earlier quiet regression; it does not supersede that baseline.
+
+**Decision:** retain cap30 as a mixed configuration candidate for matched full-workload validation, not as an adopted production default or completed recovery. Its observed Tika values justify continuing; one adverse pair does not erase the positive evidence, and a favorable mean does not establish the +5% cap. Kotlin construction and any affected launch configuration still need validation. Native Rust server behavior is independent of these JVM flags. Existing quiet preupgrade evidence and all global query/loading gaps remain authoritative.
+
+The host observer retained1117 snapshots: construction29 external CPU-increment/14 positive-CPU events; verification19/5. No new external JVM, logged build or incomplete observation was detected. The entire protocol remains `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`, not exclusive or causal evidence. Subsecond/native/I/O activity remains unobserved; the final subsecond construction tail can be classified under verification at the phase switch. All owned JVMs and observers ended; foreign processes were untouched.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/tika-g1-young-cap/execute.py --execute-root-released`. Sealed packet SHA256 `d318aa9ffc1078ab9604d60b75e02ce82e7e969ee6bc4f1be06c312c550c89bd`; result `654414829fc7fab5d342182f4cb6e102e7f79ad451c73021f690896eca1c66a8`; independent audit `a784fd853ebd1d3af6039b70db7a67e10e640b4baf886913c0b36824887434f9`. Exact34 total JVM argv (two flag preflights plus8+24), source/runtime/input/reference identities, all bodies/reports, heap/RSS/GC traces and failure handling are preserved under that directory.
