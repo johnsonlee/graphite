@@ -7409,3 +7409,73 @@ The observer retained622 snapshots:21 positive external-CPU observations and65 a
 Command: `python3 /tmp/sootup-static-review/attempt120/server-request-observed-background/run.py --plan /tmp/sootup-static-review/attempt120/server-request-observed-background/plan.sealed.json --execute-root-released`. No metrics flag, fastpath/Rayon override, JVM, profiler, forcedGC, cache flush, or switch-interval change. The exact Python/GIL/environment observations and all request bodies/statuses/native process logs are retained. Root verified190 pins and25 pure harness mocks before release. Session9466 exited0.
 
 Evidence root: `/tmp/sootup-static-review/attempt120/server-request-observed-background/`. Sealed plan SHA256 `0ea6b93af14a1b40fb355dadd6da310bd59745a59112a1a6281998cf782211a8`; final result `4c55a4c86c15c2da9edbb30990105e867074505c36fd40036245bb73791b9cfa`; summary `5ec25edd7811fb635a88efcc16f311196de308ac2a3b63ef14e3439f81c781fc`; independent full-body/statistics audit `18f1d83030dcf1e732d9a09d26f56af2e015fa43df65862bf7ac825f8bd74318`; owner record/rank/cleanup audit `96b4a78279be6d3601fd597baf8a9ba5eb84f3df8093906ff47bd3dcb32c0265`. The original zero-sample failure under `../server-request-packet/` and all earlier native series remain immutable and unpooled.
+
+### 2026-10-07 — Attempt 121 follow-up: native ordinal bytes, complete full-graph correctness and loading diagnostic
+
+**Hypothesis and source:** retain the eagerly validated immutable ordinal-sidecar bytes instead of allocating four copied columns during native load. Candidate base `13163ddb2671417c9acdaf9ffe4ae29a3bb14874` plus isolated patch `f005763869e467b86f5d4578e8ed988afce32a094254de534c23f1a41549e8c3`; frozen binary `fb122db2ad71e7b21d9583b6ca866b45ee5dc353e097fbe86d13916bd3c9eee4`. Header/binding/block validation remains eager; missing/invalid fallback, owned lifetime and ordinal/origin values are preserved. The direct-decode query tradeoff remains unmeasured by these readiness-only sessions.
+
+**Correctness prerequisites and retained failures:** complete corrected core-fixture testing passed279 tests; the initial format failure, three original shard-fixture prerequisite failures and strict local Rust1.93 Clippy failure at unchanged `mcp.rs:802` remain preserved. The first external full-graph probe compile failed with E0463 for `graphite_storage`; the same probe was compiled with the additional host dependency search directory, without changing candidate production code. Session69317 then passed all four old/current real Kotlin/Tika checks: every capacity ID ordinal/origin, every current sidecar CallSite decode, old first/last16 decoded CallSites, and bounded first16/last16/largest16 reverse origins plus a known absent origin. This is not an exhaustive reverse-origin test. Session98940 subsequently passed two strict full-current readiness metadata checks and six reusable full typed query/ordered-or-bag/provenance contracts. Root independently compared all six bodies with the existing current references. All correctness processes ended before the loading series.
+
+**Protocol:** macOS/M3 Max and matched pinned Rust1.93 arm64 release binaries. A=preupgrade6f498 on its own previously verified old-built graph; B=db713 native reader on the frozen116 own-current graph; C=121 on that exact B graph. Kotlin then Tika, each ABCCBA, two processes per arm, matching MAPPED/default native server settings and predetermined distinct ports. API readiness ends at complete first strictly valid `/api/graphs` body. No Cypher request, deliberate extra warmup, profiler, cache flush, JVM or query-p95 estimate is included. Existing graph reads mean observed-cache repeated startup, not a guaranteed cold-cache result. No full graph content hash sweep occurred during measurement. The original strict lifecycle and timing boundaries were reused unchanged with the reviewed observed-background monitor; no sample was retried or replaced.
+
+All12 sessions passed strict readiness, unchanged graph stat inventories, runtime pins, and owned SIGTERM/-15 cleanup. No Cypher requests were issued. All values are retained; two processes per arm/workload, observed-cache/background diagnostic, no final acceptance. A uses its own old graph; B and C use identical full current116 graphs. C/B isolates the native binary change, while C/A includes old/current graph differences.
+
+| Session | Nodes | CallSites | Ready wall s | CPU at post-ready snapshot s | Whole CPU s | Whole RSS MB | Ready→reaped ms | Whole minus snapshot CPU s |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| 00-kotlin-old | 4657648 | 2173010 | 1.757113666 | 1.78 | 1.77 | 365.068288 | 7.500 | -0.01 |
+| 01-kotlin-current | 4744132 | 2251811 | 1.915152750 | 1.95 | 1.94 | 364.478464 | 13.359 | -0.01 |
+| 02-kotlin-candidate | 4744132 | 2251811 | 1.912467458 | 1.94 | 1.92 | 364.806144 | 13.493 | -0.02 |
+| 03-kotlin-candidate | 4744132 | 2251811 | 1.894103917 | 1.93 | 1.92 | 366.084096 | 7.511 | -0.01 |
+| 04-kotlin-current | 4744132 | 2251811 | 1.927491625 | 1.95 | 1.93 | 369.491968 | 13.618 | -0.02 |
+| 05-kotlin-old | 4657648 | 2173010 | 1.775103750 | 1.79 | 1.78 | 366.362624 | 7.560 | -0.01 |
+| 06-tika-old | 4673289 | 1758353 | 1.457719417 | 1.47 | 1.46 | 253.444096 | 7.173 | -0.01 |
+| 07-tika-current | 4620490 | 1705428 | 1.501149625 | 1.52 | 1.52 | 280.805376 | 7.492 | +0.00 |
+| 08-tika-candidate | 4620490 | 1705428 | 1.494359833 | 1.51 | 1.50 | 264.404992 | 7.494 | -0.01 |
+| 09-tika-candidate | 4620490 | 1705428 | 1.493728625 | 1.52 | 1.52 | 262.144000 | 7.321 | +0.00 |
+| 10-tika-current | 4620490 | 1705428 | 1.481633916 | 1.51 | 1.50 | 281.411584 | 12.370 | -0.01 |
+| 11-tika-old | 4673289 | 1758353 | 1.442222250 | 1.47 | 1.46 | 251.641856 | 7.355 | -0.01 |
+
+| Workload | Metric | Comparison | Reference mean | C mean | Absolute delta | Mean delta | Pair1 | Pair2 |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin | loadToReadySeconds | C/B | 1.921322 | 1.903286 | -0.018037 | -0.9388% | -0.1402% | -1.7322% |
+| kotlin | loadToReadySeconds | C/A | 1.766109 | 1.903286 | +0.137177 | +7.7672% | +8.8414% | +6.7038% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/B | 1.950000 | 1.935000 | -0.015000 | -0.7692% | -0.5128% | -1.0256% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | C/A | 1.785000 | 1.935000 | +0.150000 | +8.4034% | +8.9888% | +7.8212% |
+| kotlin | wholeLifetimeCpuSeconds | C/B | 1.935000 | 1.920000 | -0.015000 | -0.7752% | -1.0309% | -0.5181% |
+| kotlin | wholeLifetimeCpuSeconds | C/A | 1.775000 | 1.920000 | +0.145000 | +8.1690% | +8.4746% | +7.8652% |
+| kotlin | wholeLifetimePeakRssMB | C/B | 366.985216 | 365.445120 | -1.540096 | -0.4197% | +0.0899% | -0.9223% |
+| kotlin | wholeLifetimePeakRssMB | C/A | 365.715456 | 365.445120 | -0.270336 | -0.0739% | -0.0718% | -0.0760% |
+| tika | loadToReadySeconds | C/B | 1.491392 | 1.494044 | +0.002652 | +0.1779% | -0.4523% | +0.8163% |
+| tika | loadToReadySeconds | C/A | 1.449971 | 1.494044 | +0.044073 | +3.0396% | +2.5135% | +3.5713% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/B | 1.515000 | 1.515000 | +0.000000 | +0.0000% | -0.6579% | +0.6623% |
+| tika | nativeCpuAtReadySnapshotSeconds | C/A | 1.470000 | 1.515000 | +0.045000 | +3.0612% | +2.7211% | +3.4014% |
+| tika | wholeLifetimeCpuSeconds | C/B | 1.510000 | 1.510000 | +0.000000 | +0.0000% | -1.3158% | +1.3333% |
+| tika | wholeLifetimeCpuSeconds | C/A | 1.460000 | 1.510000 | +0.050000 | +3.4247% | +2.7397% | +4.1096% |
+| tika | wholeLifetimePeakRssMB | C/B | 281.108480 | 263.274496 | -17.833984 | -6.3442% | -5.8405% | -6.8468% |
+| tika | wholeLifetimePeakRssMB | C/A | 252.542976 | 263.274496 | +10.731520 | +4.2494% | +4.3248% | +4.1734% |
+
+Monitor: 32 snapshots; event counts {'EXTERNAL_CPU_TIME_INCREMENT': 4, 'EXTERNAL_POSITIVE_PERCENT_CPU': 1}; incomplete observations 0. All raw events remain. Absence of a particular observed event does not prove quiet or exclusive host activity.
+
+The positive increment is Tika RSS: mean281.108480→263.274496MB, −17.833984MB (−6.3442%), with both pairs lower. Tika wall has a small mixed change (+0.1779%); cumulative candidate versus old is +3.0396% wall/+3.4247% wholeCPU/+4.2494% RSS. Kotlin mean wall improves1.921322188→1.903285687s (−0.9388%) relative to B, with both pairs lower, but versus old remains+7.7672% wall/+8.1690% wholeCPU. **Decision:** retain this positive candidate in isolation for further composition and query validation; do not discard the Tika memory improvement because cumulative recovery remains incomplete. No source integration or final acceptance is claimed. Tika candidate/old RSS pairs are+4.3248%/+4.1734%, versus parent/old+10.7958%/+11.8302%; the diagnostic values move inside the numeric5% limit but two observed-background samples do not certify final caps. Kotlin old-relative CPU remains above5%, and server query p50/p95—including the deferred decoding tradeoff—remains pending.
+
+Boundary: ready wall ends at full first strictly valid /api/graphs body. CPU snapshot is sampled after validation at0.01s reporting resolution; whole native time-l CPU/RSS extends through immediate shutdown and includes sampling/validation overhead. Whole CPU can differ by0.01–0.02s from ps sampling due counter/reporting boundaries; signed discrepancies above remain, not clamped or subtracted. C4 completion and deferred first-use/query costs are outside this readiness-only boundary.
+
+Result SHA `eb069e7c4c6ed5d4f6883d966f86fcccbb96495c16ec160084f56ff7e250d9c2`; summary `b26fd50148f23d5b862b0792c11d6a7e937c3fabb9e7880426c39937603a8048`; owner audit `d1ffc47e612abb3e549119ba33deeea64fc250c6d9a9081c45a76113f2db619f`. All raw rows, medians/min/max, pairs and overhead intervals remain in summary/owner audit. No rerun, replacement, cache reset or graph content hash sweep during measurement.
+
+Command: `python3 /tmp/sootup-static-review/attempt121/loading-three-arm/run.py --plan /tmp/sootup-static-review/attempt121/loading-three-arm/plan.sealed.json --execute-root-released`. Session41015 terminal exit0; all12 native/time process pairs were reaped,72 final pins and strict metadata/stat continuity passed. Shared observer retained32 snapshots, four external-CPU increments and one positive-CPU observation; no incomplete event. All background evidence remains diagnostic, never a quiet-window claim.
+
+Evidence under `/tmp/sootup-static-review/attempt121/`:
+
+| Receipt | SHA256 |
+|---|---|
+| `core-fixture/execution/result.json` | `6bbd7c452ca644a96eb49acb90f38df3a78697b270e0713e1d9aa93a8b3aaff0` |
+| `core-fixture/root-audit.json` | `656ef87cf621a2adb6e3f2464d2bd048697988d7fa4dc5b5e9eb41f89531db8b` |
+| `fullgraph-ordinal-proof/execution/result.json` | `dbf3ee817041bab79457b2ef186116faf690ba35417ebad228bbde8ce3acf780` |
+| `fullgraph-ordinal-proof/execution-after-link-path/result.json` | `ca0a06d32924439fde5c49b19246da62c4913930e1303cc64324fe0fb805e113` |
+| `fullgraph-ordinal-proof/terminal-audit.json` | `1958c58b9c2f12f450a1a37d862dc98751cd81696b42eb5447623d6d71765f56` |
+| `fullgraph-ordinal-proof/root-audit.json` | `f47eaf74cb4e2a5bac88f6cf4196ea9755cf9367c3932824ee87255be5ab5485` |
+| `current-compatibility/execution/results.json` | `9379194a2a8fd47d267faed0a13820e2a63cc84fa3e7bb39d66023b1544afb4a` |
+| `current-compatibility/terminal-audit.json` | `58059b3f0bc136ded349ec6a660262f65f42592372793cef657eaf7cfe5a7b51` |
+| `current-compatibility/root-audit.json` | `6579a75b23679f9205f411d8ae1781ac1b7ad97f8c0f58191fdf939eda976123` |
+| `loading-three-arm/plan.sealed.json` | `c706228c406c0f34c50d8046f0efe0a4d2c2bd0ab339c55e30108bd579d8ccd3` |
+| `loading-three-arm/root-audit.json` | `67856deec7296b118693410a433f925fa53fa0d8eebbacd4222247725b1e5865` |
