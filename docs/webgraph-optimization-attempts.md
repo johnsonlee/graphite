@@ -8081,3 +8081,35 @@ Proof `/tmp/sootup-recovery-sources/query-review-fixes-build/query-review-build1
 No new latency/CPU/RSS measurement or main-relative gain is claimed. Existing114 real Kotlin
 scoped HTTP controls can quantify it later; synthetic correctness fixtures are not performance
 proof. Global filtered pressure cases and native queries do not execute this specific path.
+
+
+### Attempt 119 follow-up: cache complete projection checks and account for cold work (2026-10-08)
+
+On the preceding118 admission follow-up `786a6e773acb415a5af9879f8a999a889dff3760`, retain119's complete structural eligibility
+cache while extending the optional projection capability with existing `GraphWorkConsumer`.
+The original interface remains available to existing providers. Mapped cold validation charges
+one unit before inspecting each typed ID's offset/header; accepted cold N-row queries now cost
+**2N**, warm queries **N**. A structural refusal charges inspected IDs before separately charged
+fallback; unsupported shapes charge nothing and emit no callbacks. This corrects previously
+hidden work, and intentionally does not claim unchanged cold-budget totals.
+
+Only complete true/false decisions enter a volatile Boolean cache. Exceptions/partial scans
+publish nothing; cold concurrent callers do their own accounted scans without a monitor wait.
+A completed structural result survives a later row failure. No request consumer is retained by
+the graph. QueryPipeline captures the request tracker once for this serial projection, preserving
+nested tracker ownership, explicit untracked cancellation and exact per-row work/cancellation.
+Existing shared interruption helper, polling masks, standalone provider checks, empty callback
+precedence, final sorting checks and callback-value lifetime remain intact.
+
+Sixteen combined behavior tests passed:118's four plus nested/untracked tracker tests and ten
+mapped preflight tests. These cover cold2N pass/2N−1 fail, warmN pass/N−1 fail, failed-preflight
+retry, cached true/false, charged refusal/fallback, sparse/reused IDs, callback exception identity,
+interrupt preservation and latch-controlled independent cold cancellation. Existing finite-budget
+projection tests remain unchanged. Full combined module verification and hashes are in the118
+follow-up above: **2,150 fresh tests**, Detekt and all three original98% actual-agent gates PASS.
+After verification only the preflight comment was corrected to describe separately charged IDs;
+no executable code changed. Original118/119 historical artifacts remain preserved.
+
+**Decision: KEEP for integration.** This addresses repeated preflight scans, missing cold work
+accounting and repeated tracker lookup without weakening budgets or cancellation. Performance
+magnitude has not been measured; no claim of final latency/CPU/RSS acceptance is made.

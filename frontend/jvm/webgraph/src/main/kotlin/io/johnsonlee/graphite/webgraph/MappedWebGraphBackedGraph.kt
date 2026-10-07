@@ -42,7 +42,7 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
-import io.johnsonlee.graphite.graph.StreamingStringPropertyProjection
+import io.johnsonlee.graphite.graph.WorkAwareStreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -174,7 +174,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareStringPropertyDisjunctionLookup,
     WorkAwareStringPropertyDisjunctionAggregation,
     StringPropertyDisjunctionProjection,
-    StreamingStringPropertyProjection,
+    WorkAwareStreamingStringPropertyProjection,
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
     PreparedStringPropertyDisjunctionLookup,
@@ -794,11 +794,19 @@ internal class MappedWebGraphBackedGraph(
         projectedProperties: List<String>,
         checkCancelled: () -> Unit,
         consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean = forEachStringPropertyProjection(type, projectedProperties, null, checkCancelled, consumer)
+
+    override fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        preflightWorkConsumer: GraphWorkConsumer?,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
     ): Boolean {
         if (type != CallSiteNode::class.java || projectedProperties.isEmpty() ||
             projectedProperties.any { !supportsRawStringProperty(type, it) }
         ) return false
-        if (!canStreamCallSiteProjection()) return false
+        if (!canStreamCallSiteProjection(preflightWorkConsumer)) return false
         val propertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
         fun checkProjectionCancellation() {
             checkCancelled()
@@ -821,14 +829,35 @@ internal class MappedWebGraphBackedGraph(
         return true
     }
 
-    private fun canStreamCallSiteProjection(): Boolean {
+    // Publish only completed immutable structural decisions. Cold callers may validate concurrently;
+    // none waits on a cancelled initializer, and no request's work consumer is retained by the graph.
+    @Volatile
+    private var callSiteProjectionSupported: Boolean? = null
+
+    private fun canStreamCallSiteProjection(workConsumer: GraphWorkConsumer?): Boolean {
+        checkCallSiteProjectionPreflightInterrupted()
+        return callSiteProjectionSupported ?: validateCallSiteProjection(workConsumer).also {
+            callSiteProjectionSupported = it
+        }
+    }
+
+    private fun checkCallSiteProjectionPreflightInterrupted() {
+        // Empty scans retain the projection callback's original precedence over the thread flag.
+        if (nodeTypeIndex.count(CallSiteNode::class.java) > 0L) {
+            checkThreadInterrupted { CancellationException("Mapped CallSite projection preflight interrupted") }
+        }
+    }
+
+    private fun validateCallSiteProjection(workConsumer: GraphWorkConsumer?): Boolean {
         var index = 0
         // Reused IDs may leave a typed entry pointing at a different current record. Refuse
-        // before either callback so the ordinary node path retains its value and work semantics.
+        // before row/cancellation callbacks so fallback never receives partial rows.
+        // Inspected structural candidates are charged separately.
         for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
             if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
                 checkThreadInterrupted { CancellationException("Mapped CallSite projection preflight interrupted") }
             }
+            workConsumer?.consume()
             if (nodeId < 0 || nodeId >= nodeOffsets.size) return false
             val offset = nodeOffsets.offset(nodeId)
             if (offset < 0L || offset > mappedNodeData.limit() - NODE_HEADER_BYTES) return false

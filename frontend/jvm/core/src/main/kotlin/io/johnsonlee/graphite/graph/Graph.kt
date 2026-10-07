@@ -254,6 +254,23 @@ interface StreamingStringPropertyProjection {
     ): Boolean
 }
 
+/**
+ * Projection capability that also charges structural preflight work. Each inspected preflight
+ * node consumes one unit before its header is read; cached decisions consume no preflight work.
+ * Unsupported shapes consume nothing. A structural refusal may consume preflight work before
+ * returning false, but still invokes neither the cancellation callback nor the row consumer. Exceptions propagate
+ * without publishing an incomplete decision. Row accounting remains the consumer's responsibility.
+ */
+interface WorkAwareStreamingStringPropertyProjection : StreamingStringPropertyProjection {
+    fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        preflightWorkConsumer: GraphWorkConsumer?,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean
+}
+
 /** Optional capability for projecting bounded string matches without materializing full nodes. */
 interface StringPropertyDisjunctionProjection {
     fun projectStringPropertyDisjunction(

@@ -3,8 +3,10 @@ package io.johnsonlee.graphite.cypher
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.WorkAwareStreamingStringPropertyProjection
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
@@ -87,6 +89,59 @@ class OrderedProjectionAdmissionTest {
         } finally {
             Thread.interrupted()
         }
+    }
+
+    @Test
+    fun `nested projection keeps preflight row work and cancellation attached to its own request`() {
+        val outer = CypherWorkTracker(CypherExecutionBudget(6))
+        val inner = CypherWorkTracker(CypherExecutionBudget(6))
+        val cancelledSignal = CypherCancellationSignal()
+        val reason = CypherQueryCancelledException("nested request cancelled")
+        val cancelled = CypherWorkTracker(CypherExecutionBudget(6), cancelledSignal)
+        var nested = false
+        lateinit var pipeline: QueryPipeline
+        val rows = RowsGraph(listOf(values("A", "a", "first"), values("Z", "z", "second"), values("Z", "z", "third"))) {
+            if (!nested) {
+                nested = true
+                assertEquals(listOf(row("A", "a", "first")), pipeline.execute(query(1), inner).rows)
+                cancelledSignal.cancel(reason)
+                assertSame(reason, assertFailsWith<CypherQueryCancelledException> { pipeline.execute(query(1), cancelled) })
+            }
+        }
+        val graph = object : Graph by rows, WorkAwareStreamingStringPropertyProjection {
+            override fun forEachStringPropertyProjection(
+                type: Class<out Node>, projectedProperties: List<String>, checkCancelled: () -> Unit,
+                consumer: (StringPropertyProjectionRow) -> Unit
+            ): Boolean = error("Tracked query must use the work-aware capability")
+
+            override fun forEachStringPropertyProjection(
+                type: Class<out Node>, projectedProperties: List<String>, preflightWorkConsumer: GraphWorkConsumer?,
+                checkCancelled: () -> Unit, consumer: (StringPropertyProjectionRow) -> Unit
+            ): Boolean {
+                repeat(3) { preflightWorkConsumer?.consume() }
+                return rows.forEachStringPropertyProjection(type, projectedProperties, checkCancelled, consumer)
+            }
+        }
+        pipeline = QueryPipeline(graph, true)
+        assertEquals(listOf(row("A", "a", "first")), pipeline.execute(query(1), outer).rows)
+        assertEquals(6L, outer.diagnostics().workUnitsConsumed)
+        assertEquals(6L, inner.diagnostics().workUnitsConsumed)
+        assertEquals(0L, cancelled.diagnostics().workUnitsConsumed)
+    }
+
+    @Test
+    fun `untracked projection still observes an explicitly supplied cancellation tracker`() {
+        val signal = CypherCancellationSignal()
+        val reason = CypherQueryCancelledException("untracked caller cancellation")
+        val tracker = CypherWorkTracker(CypherExecutionBudget(1), signal)
+        val graph = RowsGraph(listOf(values("A", "a", "first"), values("Z", "z", "later"))) {
+            if (it == 1) signal.cancel(reason)
+        }
+        assertSame(reason, assertFailsWith<CypherQueryCancelledException> {
+            QueryPipeline(graph).execute(query(1), tracker)
+        })
+        assertEquals(1, graph.emitted)
+        assertEquals(0L, tracker.diagnostics().workUnitsConsumed)
     }
 
     private fun query(

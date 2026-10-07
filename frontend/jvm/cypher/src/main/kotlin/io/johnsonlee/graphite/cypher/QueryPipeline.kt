@@ -50,6 +50,8 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StreamingStringPropertyProjection
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.WorkAwareStreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
@@ -875,7 +877,9 @@ class QueryPipeline private constructor(
             query.nodeClass == CallSiteNode::class.java &&
             query.projections.all { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
         ) graph as? StreamingStringPropertyProjection else null
-        val projectionCancellation = projection?.let { { checkStreamingProjectionCancelled() } }
+        val projectionTracker = projection?.let { activeWorkTracker.get() }
+        val projectionWorkConsumer = projectionTracker.takeIf { workTrackingEnabled }
+        val projectionCancellation = projection?.let { { checkStreamingProjectionCancelled(projectionTracker) } }
         projectionCancellation?.invoke()
         if (query.limit <= 0) return CypherResult(query.columns, emptyList())
 
@@ -922,20 +926,23 @@ class QueryPipeline private constructor(
                 }
                 return ordinal.compareTo(worst.encounterOrder)
             }
-            storage.forEachStringPropertyProjection(
-                query.nodeClass,
-                query.projections.map(PropertyProjection::property),
-                checkCancelled = ::checkStreamingProjectionCancelled
-            ) { projected ->
-                if (workTrackingEnabled) activeWorkTracker.get()?.consume()
+            val consumeRow: (StringPropertyProjectionRow) -> Unit = consumeRow@{ projected ->
+                projectionWorkConsumer?.consume()
                 val ordinal = encounterOrder++
                 if (topRows.size == query.limit && compareProjection(projected.values, ordinal) >= 0) {
-                    return@forEachStringPropertyProjection
+                    return@consumeRow
                 }
                 val row = linkedMapOf<String, Any?>()
                 query.projections.forEachIndexed { index, item -> row[item.column] = projected.values[index] }
                 if (topRows.size == query.limit) topRows.poll()
                 topRows.add(RankedProjectedRow(row, ordinal))
+            }
+            val properties = query.projections.map(PropertyProjection::property)
+            val cancellation = checkNotNull(projectionCancellation)
+            if (storage is WorkAwareStreamingStringPropertyProjection) {
+                storage.forEachStringPropertyProjection(query.nodeClass, properties, projectionWorkConsumer, cancellation, consumeRow)
+            } else {
+                storage.forEachStringPropertyProjection(query.nodeClass, properties, cancellation, consumeRow)
             }
         } == true
         if (!streamed) {
@@ -959,8 +966,8 @@ class QueryPipeline private constructor(
         return result
     }
 
-    private fun checkStreamingProjectionCancelled() {
-        activeWorkTracker.get()?.checkCancelled()
+    private fun checkStreamingProjectionCancelled(tracker: CypherWorkTracker?) {
+        tracker?.checkCancelled()
         checkThreadInterrupted { CypherQueryCancelledException("String projection interrupted") }
     }
 
