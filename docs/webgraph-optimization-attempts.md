@@ -7479,3 +7479,87 @@ Evidence under `/tmp/sootup-static-review/attempt121/`:
 | `current-compatibility/root-audit.json` | `6579a75b23679f9205f411d8ae1781ac1b7ad97f8c0f58191fdf939eda976123` |
 | `loading-three-arm/plan.sealed.json` | `c706228c406c0f34c50d8046f0efe0a4d2c2bd0ab339c55e30108bd579d8ccd3` |
 | `loading-three-arm/root-audit.json` | `67856deec7296b118693410a433f925fa53fa0d8eebbacd4222247725b1e5865` |
+
+### 2026-10-07 — Attempt 121 follow-up: ordinal-heavy native query tradeoff
+
+Question: does the retained-byte sidecar loading RSS benefit degrade server p50/p95? This fixed same-current-graph diagnostic observed query regressions; it does not establish latency preservation or final recovery. Retain the verified loading increment for further composition, while keeping this query tradeoff unresolved. No integration or preupgrade acceptance is implied.
+
+B = frozen current native db713 binary `d5f3a9c1b2744391fef90963ac4f27ccc848421c1378f7c2526ba056f128e770`; C = isolated121 binary `fb122db2ad71e7b21d9583b6ca866b45ee5dc353e097fbe86d13916bd3c9eee4`, source patch `f005763869e467b86f5d4578e8ed988afce32a094254de534c23f1a41549e8c3`. Both use the identical own-built current116 complete Kotlin/Tika graph. Old sidecar-absent artifacts are not equivalent ordinal-work controls; compatible34-query preupgrade/cumulative acceptance remains separate.
+
+Protocol: Kotlin c1 BCCB, Kotlin c4 BCCB, Tika c1 BCCB, Tika c4 BCCB; sixteen fresh native servers, five fixed cases, one first-use + two warmup + thirty measured cycles per case/process. Total2,640 requests,2,400 measured. Rotate cases by cycle modulo5; c4 batches4+1. Full HTTP body consumption timed; every raw body, status and error retained; no replacements or selected subsets. Each process/case uses nearest-rank p50/p95 (ranks15/29). Means below are descriptive arithmetic means of the two process quantiles, not pooled request quantiles; both forward/reverse C/B changes are shown. First-use/warmup and all raw30 samples remain in the summary.
+
+Correctness: parent-only oracle stage session78586 exit0 produced10 full responses on two servers. Independent literal-v4 sidecar hashes/index/all-blocks/heads, every returned ordinal, complete sorted top32 and negative counts1,358,502/719,353 passed. Actual rows per graph1/512/32/32/512; totals1eq/513gte/33gte/33gte/513gte. Measurement session46272 exit0,16/16 PASS; existing summary session73886 exit0 revalidated all2,640 raw responses against frozen parent typed rows, columns, order/multiplicity, total, provenance and hashes. Root separately checked all bodies against parent raw responses and recomputed statistics, PASS. All sixteen owned native processes ended via SIGTERM with wrapper−15/no cleanup errors; all native/time PIDs and groups gone before handing real-workload slot to124.
+
+Preparation failures: first pure-mock invocation13PASS/1FAIL exposed `/tmp` versus `/private/tmp` cwd metadata mismatch; fixed recorded and actual cwd together, no assertion weakened, then14/14 mocks PASS. No oracle or measured request/server failure, selective retry or changed timeout/case/sample budget.
+
+Latency: positive percent is slower. Case abbreviations: count=negative ordinal count; projection=id+ordinal LIMIT512; top32=full ordinal/id sort LIMIT32; node=CallSite materialization LIMIT32; line=id+line control LIMIT512.
+
+| Workload | c | Case | p50 B→C ms | mean Δ% | forward/reverse Δ% | p95 B→C ms | mean Δ% | forward/reverse Δ% |
+|---|---:|---|---:|---:|---:|---:|---:|---:|
+| kotlin | 1 | count | 215.121→218.360 | +1.51 | +1.60/+1.42 | 222.279→230.554 | +3.72 | +2.32/+5.09 |
+| kotlin | 1 | projection | 0.964→0.967 | +0.32 | +0.14/+0.51 | 2.654→2.696 | +1.58 | +229.33/-69.86 |
+| kotlin | 1 | top32 | 2049.047→2118.404 | +3.38 | +4.75/+2.06 | 2159.452→2237.947 | +3.63 | +4.48/+2.82 |
+| kotlin | 1 | node | 0.644→0.654 | +1.64 | +3.66/-0.41 | 0.766→0.757 | -1.17 | +0.16/-2.43 |
+| kotlin | 1 | line | 0.885→0.918 | +3.73 | +3.43/+4.03 | 2.121→2.918 | +37.60 | +125.76/+9.35 |
+| kotlin | 4 | count | 219.052→222.338 | +1.50 | +2.17/+0.83 | 237.447→240.808 | +1.42 | -0.71/+3.46 |
+| kotlin | 4 | projection | 3.582→3.233 | -9.75 | -1.53/-16.36 | 8.053→8.866 | +10.10 | +46.74/-14.72 |
+| kotlin | 4 | top32 | 2096.019→2126.062 | +1.43 | +1.77/+1.09 | 2201.441→2227.254 | +1.17 | +3.57/-1.17 |
+| kotlin | 4 | node | 0.892→0.838 | -5.98 | -6.94/-4.97 | 5.297→8.294 | +56.56 | +269.56/+3.05 |
+| kotlin | 4 | line | 2.651→3.035 | +14.46 | +29.03/+4.52 | 9.842→11.184 | +13.63 | -9.58/+34.45 |
+| tika | 1 | count | 113.136→115.655 | +2.23 | +2.49/+1.96 | 115.759→126.914 | +9.64 | +14.24/+5.03 |
+| tika | 1 | projection | 0.929→0.937 | +0.81 | -3.78/+5.93 | 1.827→2.317 | +26.80 | +36.29/+2.04 |
+| tika | 1 | top32 | 1531.861→1575.439 | +2.84 | +2.09/+3.61 | 1564.320→1631.046 | +4.27 | +3.40/+5.16 |
+| tika | 1 | node | 0.613→0.601 | -2.02 | -0.65/-3.50 | 0.697→0.715 | +2.69 | +3.11/+2.26 |
+| tika | 1 | line | 0.837→0.852 | +1.86 | +0.66/+3.10 | 1.035→1.881 | +81.85 | +137.98/+17.50 |
+| tika | 4 | count | 116.288→117.003 | +0.61 | +0.59/+0.63 | 123.004→126.231 | +2.62 | +10.21/-4.58 |
+| tika | 4 | projection | 2.752→2.726 | -0.93 | -0.66/-1.20 | 5.921→9.396 | +58.68 | +92.21/+23.39 |
+| tika | 4 | top32 | 1535.550→1570.402 | +2.27 | +2.58/+1.96 | 1598.192→1634.610 | +2.28 | +3.42/+1.15 |
+| tika | 4 | node | 0.692→0.769 | +11.08 | +17.59/+4.94 | 4.627→5.437 | +17.50 | -25.42/+84.14 |
+| tika | 4 | line | 2.617→2.252 | -13.92 | +14.02/-38.72 | 5.910→8.764 | +48.30 | +56.67/+40.10 |
+
+Both full-scan cases have slower p50 in every paired comparison (eight pairs per case). Several short cases improve p50, but their p95 often worsens; high percentages on sub-millisecond/millisecond requests and opposing pairs expose variability rather than a stable common gain. Do not substitute mean latency, a faster case, or loading RSS for p50/p95 acceptance.
+
+All raw process resources follow. CPU window = actual native PID user+system over the30 measured cycles, including inter-request verification/persistence gaps and overlapping native background work; snapshot resolution0.01s. Lifetime time-l CPU/RSS includes load, first/warm/measured requests, background C4/lazy work, idle/drain and shutdown. RSS is not loading-only or query-only. Native is not governed by a JVM heap-size setting; no JVM or heap increase was used.
+
+| Run | lifetime wall s | lifetime CPU s | peak RSS bytes | measured-window CPU s |
+|---|---:|---:|---:|---:|
+| 00-kotlin-c1-0-B | 77.90 | 78.94 | 3842097152 | 69.85 |
+| 01-kotlin-c1-1-C | 81.02 | 83.14 | 3852648448 | 73.70 |
+| 02-kotlin-c1-2-C | 81.50 | 83.28 | 3860758528 | 73.77 |
+| 03-kotlin-c1-3-B | 80.00 | 80.88 | 4826988544 | 71.55 |
+| 04-kotlin-c4-0-B | 75.91 | 81.79 | 9523445760 | 72.27 |
+| 05-kotlin-c4-1-C | 77.42 | 84.38 | 9773350912 | 74.55 |
+| 06-kotlin-c4-2-C | 76.14 | 83.33 | 9439002624 | 73.80 |
+| 07-kotlin-c4-3-B | 75.23 | 81.61 | 9063612416 | 72.22 |
+| 08-tika-c1-0-B | 57.92 | 58.49 | 2945040384 | 51.69 |
+| 09-tika-c1-1-C | 59.17 | 60.30 | 3649503232 | 53.36 |
+| 10-tika-c1-2-C | 59.34 | 60.43 | 2959949824 | 53.43 |
+| 11-tika-c1-3-B | 57.30 | 57.91 | 2230190080 | 51.09 |
+| 12-tika-c4-0-B | 55.04 | 58.62 | 7334461440 | 51.67 |
+| 13-tika-c4-1-C | 56.43 | 60.75 | 7314915328 | 53.55 |
+| 14-tika-c4-2-C | 56.15 | 60.47 | 7338262528 | 53.30 |
+| 15-tika-c4-3-B | 55.37 | 59.05 | 7305478144 | 52.07 |
+
+Resource mean changes and both fixed pairs (positive means higher):
+
+| Workload/c | lifetime CPU Δ%; pairs | peak RSS Δ%; pairs | window CPU Δ%; pairs |
+|---|---:|---:|---:|
+| kotlin/c1 | +4.13; +5.32/+2.97 | -11.02; +0.27/-20.02 | +4.29; +5.51/+3.10 |
+| kotlin/c4 | +2.64; +3.17/+2.11 | +3.36; +2.62/+4.14 | +2.67; +3.15/+2.19 |
+| tika/c1 | +3.72; +3.09/+4.35 | +27.71; +23.92/+32.72 | +3.90; +3.23/+4.58 |
+| tika/c4 | +3.02; +3.63/+2.40 | +0.09; -0.27/+0.45 | +3.00; +3.64/+2.36 |
+
+Background: monitor retained 1050 snapshots; `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`, no exclusive-window claim. Native-session events: {"EXTERNAL_CPU_TIME_INCREMENT": 150, "EXTERNAL_POSITIVE_PERCENT_CPU": 107, "EXTERNAL_PROCESS_DISAPPEARED": 6, "GRADLE_BUILD_EVENT": 12, "NEW_EXTERNAL_PROCESS": 6}. Six external process lifetimes are explicitly incomplete. Fixed10s preflight observed activity rather than waiting for quiet. One-second metadata can miss brief/unknown native work; CPU/observer gaps cannot quantify causal delays. Every sample remains included. These limitations do not erase the observed regressions or authorize calling them noise.
+
+Conclusion by operation: prior loading-only Tika RSS improvement remains a positive increment. Query p50/p95 preservation is not established and this diagnostic observes consistent full-scan slowdowns plus mixed short-query tails. Whole-query-session resources differ materially from readiness-only loading; Tika c1 lifetime RSS rises in both pairs (+23.92/+32.72%), and Kotlin c1 forward lifetime CPU +5.32% (window +5.51%) must remain visible even though its two-run mean is lower. No matched preupgrade ordinal-work control exists here, so neither parent-relative resource means nor background-diagnostic limits establish the final independent+5% constraints. Correctness/stability checks passed within this finite protocol; cancellation/work-budget correctness is not newly proven by successful requests. Retain121 isolated benefit, investigate lookup cost without weakening accepted format behavior, and keep final recovery open.
+
+Evidence directory: `/tmp/sootup-static-review/attempt121/ordinal-query-diagnostic/`.
+- `measurement.plan.sealed.json` SHA256 `a4a54ac89f2595a0edf43d5929d3b7a3704d5681ba6ae6568c07bec2dfd07e8f`
+- `measurement-execution/results.json` SHA256 `4c8790212f25774309669fab3f34b50fe18e8a0ff1421c056092f12ca4baa86a`
+- `measurement-terminal-cleanup.json` SHA256 `69c53278a82a69cabbea9423f2203fcefe0900547170a0de924f6dc5b058fa0f`
+- `measurement-summary.json` SHA256 `3fbcc8eccaad1418fbc300e9fe073ec71812a53486d405eae64a13b8cbe90209`
+- `oracle-terminal-audit.json` SHA256 `f436ddd0ef235253eec809fcd112c087d8a5c3706d74bf3baa59cd900c7592e3`
+- `mock-tests.log` SHA256 `7e4c19448236caafcb68e6b10d4e2a70449ca54e821a968a6b016b235d99dc68`
+- `root-audit.json` SHA256 `329f59deb726cf099b685d8d63d4021f0991e057224a83524f90ca4978e55715`
+
+Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /private/tmp/sootup-static-review/attempt121/ordinal-query-diagnostic/run.py --plan /private/tmp/sootup-static-review/attempt121/ordinal-query-diagnostic/measurement.plan.sealed.json --execute-root-released`. Runtime: macOS/M3 Max, pinned Rust 1.93 arm64 release binaries, default MAPPED native server settings, observed-cache/background diagnostic. Source candidate remains isolated in commit `41b7b5ce7a6acd22d13aa3682d440964dd72cd5b`; later candidate124 adds only the separately tested fingerprint CRC optimization and does not resolve this query tradeoff.
