@@ -330,8 +330,13 @@ A constant node is a scalar or `{Label: {properties}}`:
 | `{StringConstant: {value: "checkout_*"}}` | A string constant; the value is a glob too |
 | `{BooleanConstant: {value: true}}`, `{IntConstant: {value: 7}}`, `{LongConstant: {value: 7}}`, `{FloatConstant: {value: 1.5}}`, `{DoubleConstant: {value: 0.5}}` | A constant of exactly that kind and value |
 | `{StringConstant: {}}`, `{LongConstant: {}}`, ... | Any constant of that kind |
-| `{EnumConstant: {enum_type: com.example.Flag, name: DARK_MODE}}` | The enum constant, a field the enum declares as one (`ACC_ENUM`; an enum's other static fields are `FieldNode`s). As a `value`, the call becomes that constant (the method must return the enum), and `==`/`!=` against enum constants fold, as does `equals(Object)` with a known enum receiver and an enum constant or null argument |
+| `{EnumConstant: {enum_type: com.example.Flag, name: DARK_MODE}}` | The enum constant, a field the enum declares as one (`ACC_ENUM`; an enum's other static fields are `FieldNode`s). As a `value`, the call becomes that constant (the method must return the enum), and `==`/`!=` against enum constants fold, as does `equals(Object)` with known operands and a nonnull enum receiver |
 | `{FieldNode: {class: com.example.Flags, name: MARKER}}` | Any other static field read |
+
+After a rule replaces a lookup, known String and primitive-wrapper `equals(Object)` comparisons
+also fold. `Objects.equals(Object, Object)` and Kotlin's object `Intrinsics.areEqual` handle
+known values and nulls. Runtime scope conditions remain intact; unknown values and custom
+`equals` implementations remain calls.
 
 An argument matches where it is a constant: a literal, a `static final` the compiler inlined,
 or an enum constant. A key that reaches the call through a parameter, a field or a computation

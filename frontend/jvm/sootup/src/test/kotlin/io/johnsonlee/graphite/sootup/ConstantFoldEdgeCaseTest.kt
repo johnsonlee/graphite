@@ -253,13 +253,13 @@ class ConstantFoldEdgeCaseTest {
     fun `a discarded call folds only when its return type carries the value`() {
         val classes = compile()
         var report: FoldReport? = null
-        val graph = load(classes, gate("touch", false), gate("boxed", false)) { report = it }
+        val graph = load(classes, gate("touch", false), gate("boxed", 3)) { report = it }
         assertEquals(listOf("boxed", "tail", "touch"), graph.callees("discarded"), "neither call is deleted")
         val (touch, boxed) = report!!.outcomes
         assertEquals(0, touch.matched)
         assertEquals(listOf("return type void cannot carry false"), touch.unsupported.map { it.reason }.distinct())
         assertEquals(0, boxed.matched)
-        assertEquals(listOf("return type java.lang.Boolean cannot carry false"), boxed.unsupported.map { it.reason }.distinct())
+        assertEquals(listOf("return type java.lang.Boolean cannot carry 3"), boxed.unsupported.map { it.reason }.distinct())
     }
 
     @Test

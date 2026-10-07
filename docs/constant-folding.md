@@ -27,7 +27,7 @@ and only there, the chain continues:
 1. **Fold**: every call expression a rule matches, call-site properties and argument constants
    both, becomes the rule's constant. An assignment keeps its local (`$z = 0`); a call whose
    result is discarded becomes a `nop`. A call whose return type cannot carry the value (a
-   `java.lang.Boolean` or a `void` for a boolean rule, say) is left alone and reported, the
+   `java.lang.String` or a `void` for a boolean rule, say) is left alone and reported, the
    discarded call too: the rule names another call, and deleting this one would delete its
    effects. A folded call throws nothing, so its exceptional edges go with it and a handler
    only it could reach is removed; neighbouring calls retain their exceptional edges even
@@ -66,17 +66,23 @@ and only there, the chain continues:
 Supported constants per return type: `boolean`, `int`, `short`, `byte`, `char` from a boolean
 or integer; `long` from an integer; `float` and `double` from any number; `java.lang.String`
 from a string; any reference or array type from `null`; an enum type from one of its
-constants; `java.lang.Object` from any of these, boxed as above. A `java.lang.Boolean` or
-other boxed return type is not an erased one and is reported. `null == null` and `null != null` fold; `null` against a non-null reference, such
+constants; each primitive wrapper from a value its primitive type can carry;
+`java.lang.Object` from any of these, boxed as above. `null == null` and `null != null` fold; `null` against a non-null reference, such
 as `Boolean.TRUE` read from a field, does not, because a field is not a constant. An enum
 constant folds `==` and `!=` against another enum constant or `null`. `equals(Object)` also
-folds when its receiver is a known enum constant and its argument is another enum constant
-or `null`, and an operand originates in a rule replacement (including through copies or
-casts): Java's final `Enum.equals` compares identity. Unrelated constant equality calls in
-the same body remain calls. An unknown or null receiver, an
-unknown argument, and custom `equals` implementations or overloads remain calls. A `switch` on it goes
-through `ordinal()` and a synthetic lookup array and is not folded, where a `switch` on a
-folded `int` is.
+folds for a known String, primitive wrapper, or verified enum receiver with a known argument
+(including `null`), when an operand originates in a rule replacement through copies, casts,
+or primitive boxing. Strings compare contents, wrappers require the same wrapper type and
+value, and enums compare identity. `Float.equals` and `Double.equals` treat NaNs as equal
+and distinguish positive and negative zero, unlike primitive `==`.
+
+The static `Objects.equals(Object, Object)` and Kotlin `Intrinsics.areEqual(Object, Object)`
+helpers use the same known values and also handle null receivers. Kotlin's typed Float/Double
+`areEqual` overloads have different numeric semantics and remain calls. Unrelated equality
+calls in the same body, unknown values, null instance receivers, custom `equals`, and overloads
+remain calls. Casts and preceding argument evaluation keep their exception behavior.
+An enum `switch` goes through `ordinal()` and a synthetic lookup array and is not folded,
+where a `switch` on a folded `int` is.
 
 An enum field is not necessarily non-null during initialization. Enum identity comparisons
 and `equals` therefore require a verified initialization sequence that cannot call back into
@@ -202,9 +208,10 @@ JSON carries the same keys. On the JVM:
   call is reported as unsupported (`argument 0 of ... is not a constant`) under the first rule
   whose call site matched.
 - `value` as a scalar is carried by whatever the return type is, when it can be (the table
-  above); as a labelled constant it must fit the return type exactly (`LongConstant` on a
-  `long`, `StringConstant` on a `java.lang.String`), otherwise the call is reported. A
-  `float` carries a number at `float` precision only while it stays finite: `1e308` is a
+  above); as a labelled constant it must fit the return type or its primitive wrapper
+  (`LongConstant` on `long` or `java.lang.Long`, `StringConstant` on `java.lang.String`),
+  otherwise the call is reported. A
+  `float` carries a finite number at `float` precision only while it stays finite: `1e308` is a
   finite double and an infinity as a float, so the call is reported, not folded to a value
   nobody wrote. A `byte`, a `short` and a `char` carry only their own range (`128`, `32768`
   and `-1` are reported), although Jimple spells all three as an `int`. An argument pattern

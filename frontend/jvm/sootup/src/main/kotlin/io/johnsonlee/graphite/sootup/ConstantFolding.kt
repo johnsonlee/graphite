@@ -72,7 +72,6 @@ import sootup.interceptors.NopEliminator
 
 private const val STRING_CLASS = "java.lang.String"
 private const val OBJECT_CLASS = "java.lang.Object"
-private const val BOOLEAN_BOX = "java.lang.Boolean"
 private const val VALUE_OF = "valueOf"
 private const val CONSTRUCTOR = "<init>"
 private const val COMPUTED_AT_RUN_TIME = "computed at run time"
@@ -84,17 +83,6 @@ private const val LONG_TYPE = "long"
 private const val FLOAT_TYPE = "float"
 private const val DOUBLE_TYPE = "double"
 
-/** Each primitive type's box and the method that unboxes it, as `javac` and `kotlinc` emit them. */
-private val BOXES: Map<String, Pair<String, String>> = mapOf(
-    BOOLEAN_TYPE to (BOOLEAN_BOX to "booleanValue"),
-    "byte" to ("java.lang.Byte" to "byteValue"),
-    "short" to ("java.lang.Short" to "shortValue"),
-    "char" to ("java.lang.Character" to "charValue"),
-    INT_TYPE to ("java.lang.Integer" to "intValue"),
-    LONG_TYPE to ("java.lang.Long" to "longValue"),
-    FLOAT_TYPE to ("java.lang.Float" to "floatValue"),
-    DOUBLE_TYPE to ("java.lang.Double" to "doubleValue")
-)
 private const val MAX_HINTS = 8
 private const val CALLEE_CLASS = "callee_class"
 private const val CALLEE_NAME = "callee_name"
@@ -594,7 +582,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun replace(builder: Body.BodyBuilder, old: Stmt, new: Stmt, throwsNothing: Boolean = false) {
         if (throwsNothing) replaceWithNonThrowingStmt(builder.controlFlowGraph, old, new)
         else builder.controlFlowGraph.replaceNode(old, new)
-        marked[builder]?.dependencies?.replace(old, new)
+        marked[builder]?.dependencies?.replace(old, new, builder.controlFlowGraph.nodes)
         preFoldOrdinals[builder.methodSignature]?.let { ordinals -> ordinals.remove(old)?.let { ordinals[new] = it } }
     }
 
@@ -605,7 +593,7 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 var callsFolded = foldUnboxing(builder)
                 val propagated = propagateConstants(builder) or foldComparisons(builder)
                 val enums = enumReads(builder, view)
-                callsFolded = foldEnumEquals(builder, enums) || callsFolded
+                callsFolded = foldConstantEquals(builder, enums) || callsFolded
                 val folded = foldConstantBranches(graph, enums)
                 // Pruned per round: a definition on the side just removed must not keep a local
                 // from being read as its one remaining constant in the next round.
@@ -689,29 +677,15 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             return reads
         }
 
-        /**
-         * Enum.equals(Object) is final and compares identity. Fold only with a known non-null
-         * enum receiver and an enum constant or null argument; an unknown receiver may throw
-         * or dispatch to user code. Overloads named equals have no such guarantee.
-         */
-        private fun foldEnumEquals(builder: Body.BodyBuilder, enums: Map<Local, JStaticFieldRef>): Boolean {
+        /** Evaluate known library equality only when an operand originates in a configured replacement. */
+        private fun foldConstantEquals(builder: Body.BodyBuilder, enums: Map<Local, JStaticFieldRef>): Boolean {
             val graph = builder.controlFlowGraph
             val dependencies = marked.getValue(builder).dependencies
+            val equality = ConstantEquality(singleDefinitions(graph.nodes.toList()), enums)
             val folded = graph.nodes.toList().mapNotNull { stmt ->
                 if (stmt !in dependencies) return@mapNotNull null
-                val invoke = invokeExprOf(stmt) as? AbstractInstanceInvokeExpr ?: return@mapNotNull null
-                val signature = invoke.methodSignature
-                if (signature.name != "equals" || signature.type.toString() != BOOLEAN_TYPE ||
-                    signature.parameterTypes.singleOrNull()?.toString() != OBJECT_CLASS
-                ) return@mapNotNull null
-                val receiver = enums[invoke.base] ?: return@mapNotNull null
-                val argument = invoke.args.singleOrNull() ?: return@mapNotNull null
-                val other = enums[argument]
-                val equal = when {
-                    argument is NullConstant -> false
-                    other != null -> receiver.fieldSignature == other.fieldSignature
-                    else -> return@mapNotNull null
-                }
+                val invoke = invokeExprOf(stmt) ?: return@mapNotNull null
+                val equal = equality.evaluate(invoke) ?: return@mapNotNull null
                 val replacement = if (stmt is JInvokeStmt) JNopStmt(stmt.positionInfo)
                 else (stmt as JAssignStmt).withRValue(IntConstant.getInstance(if (equal) 1 else 0))
                 stmt to replacement
@@ -1028,6 +1002,11 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
     private fun constantFor(type: Type, pattern: ConstantPattern, view: View): Value? {
         if (pattern.label == ConstantPattern.NULL) return nullFor(type)
         if (pattern.label == ConstantPattern.ENUM) return enumConstantFor(type, pattern, view)
+        val primitive = BOXES.entries.firstOrNull { it.value.first == type.toString() }?.key
+        if (primitive != null) {
+            return constantFor(view.identifierFactory.getType(primitive), pattern, view)
+                ?.let { boxed(primitive, it as Immediate, view) }
+        }
         val value = pattern.scalar
         if (type is VoidType || value == null) return null
         return when (pattern.label) {
@@ -1150,7 +1129,8 @@ private fun intLikeConstant(type: Type, value: Long): Value? =
  * [value] at `float` precision, or `null` when a `float` cannot carry it: a finite double
  * past `Float.MAX_VALUE` (`1e308`) narrows to an infinity, a value that was not written.
  */
-private fun floatConstant(value: Double): Value? = value.toFloat().takeIf(Float::isFinite)?.let(FloatConstant::getInstance)
+private fun floatConstant(value: Double): Value? =
+    value.toFloat().takeIf { it.isFinite() || !value.isFinite() }?.let(FloatConstant::getInstance)
 
 private fun nullFor(type: Type): Value? =
     if (type is ClassType || type.toString().endsWith("[]")) NullConstant.getInstance() else null
@@ -1271,26 +1251,6 @@ internal fun callOrdinals(statements: Iterable<Stmt>, declaring: (MethodSignatur
 
 /** The graph's rendering of a method signature (`pkg.Cls.name(p1,p2)`), as [callOrdinals] keys it. */
 internal fun renderSignature(signature: MethodSignature): String = render(signature)
-
-/** The box and the constant behind `Boolean.TRUE` / `Boolean.FALSE`, or `null`. */
-private fun booleanBoxOf(field: JStaticFieldRef): Pair<String, Constant>? {
-    val signature = field.fieldSignature
-    return when {
-        signature.declClassType.fullyQualifiedName != BOOLEAN_BOX -> null
-        signature.name == "TRUE" -> BOOLEAN_BOX to IntConstant.getInstance(1)
-        signature.name == "FALSE" -> BOOLEAN_BOX to IntConstant.getInstance(0)
-        else -> null
-    }
-}
-
-/** The box and the constant behind `Integer.valueOf(3)` and its kin, or `null`. */
-private fun valueOfBoxOf(invoke: JStaticInvokeExpr): Pair<String, Constant>? {
-    val signature = invoke.methodSignature
-    val box = signature.declClassType.fullyQualifiedName
-    val primitive = signature.parameterTypes.singleOrNull()?.toString()
-    val constant = invoke.args.singleOrNull() as? Constant
-    return if (signature.name == VALUE_OF && constant != null && BOXES[primitive]?.first == box) box to constant else null
-}
 
 /** `pkg.Cls.name(p1,p2)`, the signature as the graph's `callee_signature` and `caller_signature` spell it. */
 private fun render(signature: MethodSignature): String {

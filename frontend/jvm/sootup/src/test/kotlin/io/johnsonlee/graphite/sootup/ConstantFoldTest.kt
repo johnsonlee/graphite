@@ -204,7 +204,7 @@ class ConstantFoldTest {
     @Test
     fun `a return type that cannot carry the value is reported, not folded`() {
         var report: FoldReport? = null
-        val graph = load(compile(), gate("enabledObject", false)) { report = it }
+        val graph = load(compile(), gate("enabledObject", 3)) { report = it }
         assertEquals(listOf("enabledObject", "tail", "work"), graph.callees("objectGate"))
         val outcome = report!!.outcomes.single()
         assertEquals(0, outcome.matched)
