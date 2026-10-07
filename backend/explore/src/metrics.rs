@@ -372,7 +372,7 @@ pub fn render(state: &AppState, fmt: &dyn Fn(f64) -> String) -> String {
     );
     gauge(
         "graphite_graph_mapped_bytes",
-        "Bytes of served graphs that are memory-mapped rather than owned",
+        "Logical bytes of retained mapped graph entry ranges, not unique mappings or resident memory",
         fmt(graphs.iter().map(|g| g.graph.mapped_bytes()).sum::<u64>() as f64),
     );
     let http = &state.http_metrics;

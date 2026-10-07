@@ -120,6 +120,29 @@ mod tests {
         assert_eq!(a.edge_count(), b.edge_count());
         assert_eq!(a.strings.len(), b.strings.len());
         assert_eq!(a.call_site_index().is_some(), b.call_site_index().is_some());
+        let mut expected_mapped = std::fs::metadata(dir.join("graph.nodedata")).unwrap().len()
+            + std::fs::metadata(dir.join("graph.nodeoffsets"))
+                .unwrap()
+                .len();
+        if dir.join("graph.callsite-string-index").is_file() {
+            expected_mapped += std::fs::metadata(dir.join("graph.callsite-string-index"))
+                .unwrap()
+                .len();
+        }
+        if dir.join("graph.callsite-ordinals").is_file() {
+            let bytes = std::fs::read(dir.join("graph.callsite-ordinals")).unwrap();
+            if crate::node::CallSiteOrdinals::parse(
+                &bytes,
+                a.metadata.call_site_ordinal_digest.as_ref(),
+            )
+            .is_some()
+            {
+                expected_mapped += bytes.len() as u64;
+            }
+        }
+        assert_eq!(a.mapped_bytes(), expected_mapped);
+        assert_eq!(b.mapped_bytes(), expected_mapped);
+        assert!(expected_mapped < std::fs::metadata(&file).unwrap().len());
         for tag in 0..crate::node::TAG_COUNT as u8 {
             assert_eq!(a.count_by_tag(tag), b.count_by_tag(tag), "tag {tag}");
         }

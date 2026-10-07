@@ -2805,6 +2805,7 @@ mod tests {
             "graphite_graphs_loaded 0.0",
             "graphite_graph_nodes 0.0",
             "graphite_graph_mapped_bytes 0.0",
+            "# HELP graphite_graph_mapped_bytes Logical bytes of retained mapped graph entry ranges, not unique mappings or resident memory",
             "# TYPE http_server_requests_active gauge",
             // The scrape itself is in flight while it is answered.
             "http_server_requests_active 1.0",

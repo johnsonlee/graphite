@@ -611,6 +611,15 @@ impl CallSiteOrdinals {
         CallSiteOrdinals::default()
     }
 
+    /// Logical bytes of the retained mapped entry, excluding owned data and the rank index.
+    /// A container slice counts only its range, not the entire shared mapping or resident pages.
+    pub(crate) fn mapped_bytes(&self) -> u64 {
+        match self.data.as_ref() {
+            Some(data @ Bytes::Mapped { .. }) => data.len() as u64,
+            _ => 0,
+        }
+    }
+
     /// Parse the sidecar bound by `binding`, the digest `graph.metadata` ends with; `None`
     /// when there is no binding or the bytes are not that sidecar (wrong header, cut short,
     /// longer than its counts, an index that does not hash to the binding, a block of entries
@@ -984,6 +993,57 @@ mod tests {
         assert_eq!(clone.get(320), None);
         assert_eq!(clone.origin(256), Some(0));
         assert_eq!(clone.derived_from(0).collect::<Vec<_>>(), vec![64, 256]);
+    }
+
+    #[test]
+    fn mapped_ordinal_bytes_count_only_the_retained_entry_range() {
+        assert_eq!(CallSiteOrdinals::default().mapped_bytes(), 0);
+        for pairs in [Vec::new(), (0..320).map(|id| (id, -id - 1)).collect()] {
+            let (bytes, digest) = encoded(&pairs, &[(256, 0)]);
+            let borrowed = CallSiteOrdinals::parse(&bytes, Some(&digest)).unwrap();
+            let owned =
+                CallSiteOrdinals::parse_bytes(Bytes::owned(bytes.clone()), Some(&digest)).unwrap();
+            assert_eq!(borrowed.mapped_bytes(), 0);
+            assert_eq!(owned.mapped_bytes(), 0);
+
+            let start = 17;
+            let end = start + bytes.len();
+            let mut map = memmap2::MmapMut::map_anon(end + 4096).unwrap();
+            map[start..end].copy_from_slice(&bytes);
+            let map = Arc::new(map.make_read_only().unwrap());
+            let range = Bytes::Mapped { map, start, end };
+            let mapped = CallSiteOrdinals::parse_bytes(range.clone(), Some(&digest)).unwrap();
+            assert_eq!(mapped.mapped_bytes(), bytes.len() as u64);
+            assert_eq!(mapped, borrowed);
+            let clone = mapped.clone();
+            drop(mapped);
+            assert_eq!(clone.mapped_bytes(), bytes.len() as u64);
+            assert_eq!(clone.get(0), pairs.first().map(|pair| pair.1));
+            assert_eq!(clone.origin(256), Some(0));
+            assert_eq!(clone.derived_from(0).collect::<Vec<_>>(), vec![256]);
+            assert_eq!(
+                CallSiteOrdinals::parse_bytes(range.clone(), Some(&[0u8; 32]))
+                    .unwrap_or_default()
+                    .mapped_bytes(),
+                0
+            );
+            assert_eq!(
+                CallSiteOrdinals::parse_bytes(range, None)
+                    .unwrap_or_default()
+                    .mapped_bytes(),
+                0
+            );
+        }
+        let (bytes, digest) = encoded(&[], &[]);
+        let mut map = memmap2::MmapMut::map_anon(bytes.len()).unwrap();
+        map.copy_from_slice(&bytes);
+        let empty = CallSiteOrdinals::parse_bytes(
+            Bytes::whole(map.make_read_only().unwrap()),
+            Some(&digest),
+        )
+        .unwrap();
+        assert_eq!(empty, CallSiteOrdinals::default());
+        assert_eq!(empty.mapped_bytes(), bytes.len() as u64);
     }
 
     #[test]
