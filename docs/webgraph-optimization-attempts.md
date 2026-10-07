@@ -9258,3 +9258,80 @@ Evidence:
 - `measurement-summary.json` SHA256 `4385d82d6ae61c83bc99984ff9a274b48cab6cfec2c2b172a4ffc220921805de`
 
 All 16 raw resource rows and complete unabridged paired summary remain in [results-report.md](/tmp/sootup-static-review/attempt136/ordinal-query-diagnostic/results-report.md); root independently validated all 2640 responses, 2400 measured records and statistics in [independent-query-audit/audit.json](/tmp/sootup-static-review/attempt136/independent-query-audit/audit.json). Query correctness/stability PASS in this finite run; construction and loading were not measured by this experiment.
+
+### 2026-10-08 — Cumulative native: client connection boundary diagnostic
+
+**Diagnostic completed; the concurrent HTTP regression remains, and this is not preupgrade acceptance.** This client-only amendment reused the three already validated phase binaries. A2 (`6f498705`): `a86a1dfbbaba8484c147ad0e399b1751556e7e002bd6fc24ff0d1c1b7d9e1563`; B (`85becae5`): `3261ff8845914cf841b3e03b6c5ec3ef3640eeeb467bac91b9dbae4dc3dc1b7a`; C (`ddbee105`): `dfe7774c29a988d7baec14f9c391e658f22d53956e44d88c409cd48d8bb03d35`. No native source or binary changed. The original uninstrumented and prior phase series are preserved.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/native-cumulative/c4-client-boundary-diagnostic/run.py --plan /tmp/sootup-static-review/native-cumulative/c4-client-boundary-diagnostic/measurement.plan.sealed.json --execute-root-released`. Original owner session77617 reached authoritative exit0. All12 servers passed,25,704 full typed responses were retained (24,480 measured), and all36 native/time/client PIDs were absent after12 SIGTERM exits−15 with empty cleanup errors. Offline phase/transport summary owner14812 also terminated0. Root independently audited all bodies, raw ranks/means/pairs,18 server/aggregate scopes,11 transport/aggregate scopes and resources; audit84135 terminal0 PASS.
+
+Protocol: same64 real persisted graphs, all34 cases including zero-result cases, c1 ABCCBA then c4 ABCCBA, one first-use +two warm +60 measured cycles, full-body consumption, original oracle/timeout/concurrency/order/failure rules. Nearest-rank p50/p95 use ranks30/57 per case/process, two process repetitions per arm. First/warm remain separate; no pooled quantile, discarded adverse case, retry, replacement, new oracle or feature/configuration change. Whole CPU/RSS includes startup/loading/deferred work/first/warm/measured/drain/shutdown; measured-window CPU includes inter-request validation/logging and is not per-case.
+
+Instrumentation: module-level HTTPConnection/HTTPHandler subclasses keep per-request trace state and delegate the unchanged super connect/request/getresponse path. Imports are outside the threadpool; no global monkeypatch or lock. Original latency start/end remain unchanged. Success requires exactly one HTTP connection and request/connect/getresponse call with nested monotonic stamps; this does **not** establish one low-level address/socket attempt. All partial errors retain stamps. Eight disjoint intervals sum to each original HTTP latency; request contains connect and is not added twice. openReturn is after context __enter__; body-end excludes later context __exit__, though read may close its internal stream. getresponse includes status/header I/O and Python parsing/GIL; connect includes resolver/socket/setup/syscall/return scheduling. No interval is a pure network or kernel measurement.
+
+The first offline summary draft incorrectly compared substituted8 transport phases with the original15 server-phase object. It was corrected before any measurement: original server/transport receipts are validated first, then only a local report object substitutes intervals. The flawed draft/source and earlier per-request-class draft remain archived.16 pure mocks passed, including full fabricated12-run/all34-case/60-measured summary/ranks/pairs and partial failures; these mocks are correctness checks only.
+
+c4 C/A: all34 HTTP p50 means adverse,31 adverse in both pairs; connect p50 means adverse in all34 (+28.105..92.354µs),33 adverse in both pairs. Residual mean-of-process p50 differences are+9.333..107.083µs across all34. Stage percentile differences must not be added. Complete c1/c4 C/A and C/B per-case p50/p95/mean and both pairs are retained in [all34-ranks-means-bothpairs.csv](/tmp/sootup-static-review/native-cumulative/c4-client-boundary-diagnostic/connect-review/all34-ranks-means-bothpairs.csv); every case-pair additive mean decomposition is in [all34-mean-decomposition.csv](/tmp/sootup-static-review/native-cumulative/c4-client-boundary-diagnostic/connect-review/all34-mean-decomposition.csv). No favorable subset is selected.
+
+Equal34-case **mean** deltas (µs) are additive because each case has60 observations. These are not differences of pooled quantiles.
+
+|c4 pair|Connect|Other7 intervals|HTTP|Route|Residual|
+|---|---:|---:|---:|---:|---:|
+|c4-0-A→c4-2-C|+136.630|-2.202|+134.428|-2.104|+136.532|
+|c4-5-A→c4-3-C|+111.468|+1.980|+113.449|+1.068|+112.380|
+|c4-1-B→c4-2-C|+29.449|-18.211|+11.238|-10.997|+22.235|
+|c4-4-B→c4-3-C|+14.585|+8.086|+22.670|+1.489|+21.182|
+
+All resource rows (RSS decimal MB):
+
+|Run|Lifetime wall s|CPU s|Peak RSS MB|Measured-window wall s|Native CPU s|Client CPU s|
+|---|---:|---:|---:|---:|---:|---:|
+|c1-0-A|71.020|41.210|6566.821888|35.614962|6.270|34.003527|
+|c1-1-B|56.020|25.430|6609.567744|36.181862|6.290|34.572240|
+|c1-2-C|56.040|25.410|6617.759744|36.474738|6.330|34.887343|
+|c1-3-C|56.020|25.430|6612.795392|36.413953|6.330|34.768090|
+|c1-4-B|56.670|25.850|6610.206720|36.575052|6.320|34.972021|
+|c1-5-A|73.640|43.020|6563.217408|36.387501|6.320|34.799836|
+|c4-0-A|48.970|41.100|6584.664064|12.068910|4.340|19.174856|
+|c4-1-B|31.470|23.580|6629.965824|12.083419|4.370|19.179195|
+|c4-2-C|31.270|23.150|6631.505920|12.112631|4.210|19.206657|
+|c4-3-C|31.250|23.080|6627.622912|12.072716|4.250|19.151442|
+|c4-4-B|31.430|23.310|6630.195200|12.023083|4.180|19.113459|
+|c4-5-A|48.710|40.710|6580.273152|12.036876|4.210|19.163215|
+
+Mean percentage change (both fixed pair percentages in parentheses):
+
+|Concurrency/comparison|Lifetime wall Δ % (pairs)|Lifetime CPU Δ % (pairs)|Peak RSS Δ % (pairs)|Measured native CPU Δ % (pairs)|
+|---|---:|---:|---:|---:|
+|c1/C_vs_A|-22.536 (-21.093,-23.927)|-39.641 (-38.340,-40.888)|+0.766 (+0.776,+0.755)|+0.556 (+0.957,+0.158)|
+|c1/C_vs_B|-0.559 (+0.036,-1.147)|-0.858 (-0.079,-1.625)|+0.082 (+0.124,+0.039)|+0.397 (+0.636,+0.158)|
+|c4/C_vs_A|-35.995 (-36.145,-35.845)|-43.491 (-43.674,-43.306)|+0.715 (+0.711,+0.720)|-1.053 (-2.995,+0.950)|
+|c4/C_vs_B|-0.604 (-0.636,-0.573)|-1.408 (-1.824,-0.987)|-0.008 (+0.023,-0.039)|-1.053 (-3.661,+1.675)|
+
+Observed-background monitor retained582 samples with no reported events, but no guaranteed exclusive/quiet window or final resource-cap claim. Short-lived/sub-resolution activity can be missed. Observer/client work lies outside native counters and is not subtracted.
+
+Source/raw interpretation: the same Python3.14.7 connect method calls an audit event, socket.create_connection (getaddrinfo, socket setup, socket.connect), TCP_NODELAY and an optional tunnel. These runs use numeric127.0.0.1 with no proxy/tunnel, but getaddrinfo still executes. The request is sent only after its own connect returns, so its own query cannot directly run inside that connect span; other concurrent requests and client scheduling remain possible interactions. All four actual start-rank groups and both two-request tail positions remain adverse in both C/A pairs. GIL is enabled, but no GIL-wait/accept/handshake/kernel-only duration has been measured. The next proposed split is getaddrinfo versus each low-level socket.connect, preserving all stdlib fallback/error semantics; no such experiment is run by this entry. See [connect-review/REPORT.md](/tmp/sootup-static-review/native-cumulative/c4-client-boundary-diagnostic/connect-review/REPORT.md).
+
+Evidence (full SHA256):
+
+- `measurement.plan.sealed.json`: `8ade3f9d329e346a743ea6e882bc2686f9c6b34c6c344f394ac39d31a743ea63`
+- `execution/results.json`: `a836365419d640e91395abd356e172cb568c75144a7dc38e51e3f7179b050002`
+- `execution/owner-terminal.json`: `0f0a8d2cac9d44f57f61e08ea91b26169b050cf2602bdd959af0ee36a8f89e10`
+- `execution/summary.json`: `825d9cb0ad06cc962ad59aab6899ff9afc26b13a2b22781292161f56381ab901`
+- `execution/phase-summary.json`: `eb410b1d0eb36f62d876c8025c0fd08af75ee148e5507ff28848587e5e58c45a`
+- `execution/transport-summary.json`: `2aea1639f0e001336754c650fefc4d98f6f171e5a4ad1c627ba26e69930c233f`
+- `execution/offline-summaries-receipt.json`: `0403ba0a19842b2b006f98713717583d9ac49871949878149b5000e922aa963b`
+- `independent-audit/audit.json`: `724df0a5e3ec5f2790b856d9b0e4bd430ce81b15e40eabc02e64f8689abe3c98`
+- `connect-review/analysis.json`: `62fb510ea95e018bab03b692bafdc5c9e4444541a597331ec3a7a9688ff6b544`
+- `connect-review/all34-ranks-means-bothpairs.csv`: `8cffc17b8f235530b5c10d9d433d475683a866dfe0aa134ee255d8e5ccc9f26e`
+- `connect-review/all34-mean-decomposition.csv`: `e084fe09e6ced681485adc3aca12c464702e645d541291721734fe0d9b7cb068`
+
+### 2026-10-08 — Retained123 on retained136: cumulative correctness verification
+
+Compose the already retained request-local graph-ID source construction from123 with tested136 borrowed bounded-sort admission. This adds no new optimization hypothesis. The isolated checkout is based on ddbee105; its pipeline matches tested136 byte-for-byte and its registry/routes match previously validated cumulative123. All114 native files in current production0d798a5d match tested136; the new cumulative candidate differs from production only in registry/routes. Public GraphLease String IDs, sorted source order, removed/reloaded snapshot lifetime, full result/provenance and guard rejection remain covered. This source composition does not establish combined performance.
+
+Original validation46043 completed with authoritative exit0. All299 tests passed (CLI31, Cypher113, Explore118, integration1, storage36), including all59 mandatory cases and the five retained123 plus two136 tests; no filtered, ignored or skipped tests. Rust1.93.0/aarch64 release, four-workspace-package clean and actual candidate compilation paths, full real persisted core fixture, fmt, strict storage/Cypher/Explore all-target/all-feature Clippy and frozen CLI export passed. Root independently verified original logs/counts/names, source/patch identity, all114 native source pins,19 fixture-stat entries and export identity. All observed owned PIDs and process group56724 were absent at cleanup.
+
+Command: `python3 /tmp/sootup-static-review/native-cumulative-136-123/validation/run.py --execute-root-released`. Plan SHA256 `3eea91e258c06aac271e0c302836affce28c6542bba48807d900315e72c64f1e`; result `9a846013553881bc6642bad563e9691fdb8bac6fd1e481decf248ce2d01493b5`; owner terminal `f0276fe7ab252996f1f4ed0e4c54f06eb52825c1a7e4353c973927eaa1e62161`; root audit `a7bd3fc5ee63a54893e90f36d13c796de6c959ba4276b1f94e75ff0291bedb7c`; frozen binary `2c2b92a54393b821ba45835a330659c7bfb20ce7a5f5f5fb1194a654cc1c4e64`.
+
+Decision: retain the validated combination for a fixed full34 old/136/136+123 comparison. No latency/CPU/RSS result or production integration is claimed for this combination yet. The planned c1/c4 ABCCBA comparison preserves all34 real mixed-query cases,64 persisted graphs, first1/warm2/measured60,25,704 complete responses, both chronological pairs and every adverse result. These34 queries contain no ORDER BY, so that cohort cannot replace the separate ordinal workload. Earlier positive123 and136 series are not pooled into a claim of cumulative recovery.
