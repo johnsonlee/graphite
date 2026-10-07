@@ -417,11 +417,16 @@ jobs:
         FORMULA="$PWD/dry-run/formula/Formula/graphite.rb"
         sed -i '' "s|https://github.com/johnsonlee/graphite/releases/download/v${RELEASE_VERSION}|file://${ASSETS}|g" "${FORMULA}"
         grep -c 'file://' "${FORMULA}"
-        brew install --formula "${FORMULA}"
+        # Homebrew requires formulae to belong to a tap. Keep this tap local to
+        # the disposable runner and select its formula explicitly, avoiding core.
+        DRY_RUN_TAP="graphite/dry-run-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+        brew tap-new "${DRY_RUN_TAP}"
+        cp "${FORMULA}" "$(brew --repository "${DRY_RUN_TAP}")/Formula/graphite.rb"
+        brew install --formula "${DRY_RUN_TAP}/graphite"
         graphite --version | grep -F "${RELEASE_VERSION}"
         graphite frontend list
         graphite frontend describe jvm
-        brew test graphite
+        brew test "${DRY_RUN_TAP}/graphite"
 
   # ---- Docker image ----
   # Takes the Linux binaries from the published GitHub Release, so it can be re-run
