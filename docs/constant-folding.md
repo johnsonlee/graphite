@@ -81,9 +81,11 @@ folded `int` is.
 An enum field is not necessarily non-null during initialization. Enum identity comparisons
 and `equals` therefore require a verified initialization sequence that cannot call back into
 application code; class initializers and methods declared by the enum itself are excluded.
-Enums with constructor callbacks, external initialization dependencies, interfaces or constant
-subclasses are conservatively left to runtime. This also protects readers in external helpers
-called by an enum constructor, where an unassigned constant can still be null.
+The compiler-generated `EnumEntriesKt.enumEntries(Enum[])` call used by Kotlin enums is
+recognized as safe. Enums with constructor callbacks, other external initialization dependencies
+(including static lookup maps built during initialization), interfaces or constant subclasses
+are conservatively left to runtime. This also protects readers in external helpers called by
+an enum constructor, where an unassigned constant can still be null.
 
 ## Partially constant experiment predicates
 

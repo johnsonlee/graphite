@@ -11,6 +11,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import sootup.core.jimple.common.stmt.JAssignStmt
+import sootup.core.jimple.common.stmt.JInvokeStmt
 import sootup.core.model.SourceType
 import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.views.JavaView
@@ -46,6 +47,13 @@ class EnumInitializationSafetyTest {
                     A, B;
                     static { External.touch(); }
                 }
+                public enum EntriesProviderOverload {
+                    A, B;
+                    static {
+                        // A null provider isolates the overload without adding a lambda allocation/call.
+                        kotlin.enums.EnumEntriesKt.enumEntries((kotlin.jvm.functions.Function0<EntriesProviderOverload[]>) null);
+                    }
+                }
                 public enum FieldTriggersInitialization {
                     A(Trigger.VALUE), B(0);
                     FieldTriggersInitialization(int value) { }
@@ -75,7 +83,10 @@ class EnumInitializationSafetyTest {
             }
         """.trimIndent())
         val classes = root.resolve("classes").also { Files.createDirectories(it) }
-        assertEquals(0, ToolProvider.getSystemJavaCompiler().run(null, null, null, "-d", classes.toString(), source.toString()))
+        val stdlib = Path.of(Unit::class.java.protectionDomain.codeSource.location.toURI())
+        assertEquals(0, ToolProvider.getSystemJavaCompiler().run(
+            null, null, null, "-classpath", stdlib.toString(), "-d", classes.toString(), source.toString()
+        ))
         return classes
     }
 
@@ -86,11 +97,16 @@ class EnumInitializationSafetyTest {
         val prefix = "sample.enuminit.Shapes\$"
         assertTrue(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Plain")))
         val unsafe = listOf(
-            "ConstructorCallsOut", "InitializerCallsOut", "FieldTriggersInitialization", "ImplementsDefault", "ConstantSubclass"
+            "ConstructorCallsOut", "InitializerCallsOut", "EntriesProviderOverload", "FieldTriggersInitialization",
+            "ImplementsDefault", "ConstantSubclass"
         )
         for (name in unsafe) {
             assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + name)), name)
         }
+        val provider = view.getClass(view.identifierFactory.getClassType(prefix + "EntriesProviderOverload")).get()
+        val providerCall = provider.methods.single { it.name == "<clinit>" }.body.stmts.filterIsInstance<JInvokeStmt>()
+            .single { it.invokeExpr.get().methodSignature.name == "enumEntries" }.invokeExpr.get()
+        assertEquals(listOf("kotlin.jvm.functions.Function0"), providerCall.methodSignature.parameterTypes.map { it.toString() })
         assertFalse(safety.isNonReentrant(view, view.identifierFactory.getClassType(prefix + "Missing")))
     }
 

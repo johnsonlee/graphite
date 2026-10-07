@@ -75,10 +75,27 @@ internal class EnumInitializationSafety {
         return when {
             signature.declClassType.fullyQualifiedName == ENUM_BASE_CLASS ->
                 invoke is JSpecialInvokeExpr && signature.name == ENUM_CONSTRUCTOR
+            isKotlinEnumEntriesFactory(invoke) -> true
             signature.declClassType != declared.type -> false
             invoke is JSpecialInvokeExpr -> target?.name == ENUM_CONSTRUCTOR
             invoke is JStaticInvokeExpr -> target?.let(::isValuesFactory) == true
             else -> false
         }
+    }
+
+    /**
+     * Kotlin 1.9+ enum initializers wrap their generated values array for the entries property.
+     * The stdlib array overload only null-checks and stores that array in EnumEntriesList;
+     * its constructor chain cannot call application code. The Function0 overload invokes a
+     * provider, so matching the exact descriptor is essential. Verified against 2.0.21:
+     * https://github.com/JetBrains/kotlin/blob/v2.0.21/libraries/stdlib/src/kotlin/enums/EnumEntries.kt
+     */
+    private fun isKotlinEnumEntriesFactory(invoke: AbstractInvokeExpr): Boolean {
+        val signature = invoke.methodSignature
+        return invoke is JStaticInvokeExpr &&
+            signature.declClassType.fullyQualifiedName == "kotlin.enums.EnumEntriesKt" &&
+            signature.name == "enumEntries" &&
+            signature.parameterTypes.singleOrNull()?.toString() == "java.lang.Enum[]" &&
+            signature.type.toString() == "kotlin.enums.EnumEntries"
     }
 }
