@@ -9730,3 +9730,26 @@ Commands: `python3 /tmp/sootup-static-review/native-cumulative-135/validation/ru
 |frozen export|`0d639648ae1e53dbf933931e4f8b2436739fa88298db15dd73d1e17c6b8e102e`|
 
 Decision: preserve the corrected validated source candidate for matched real-query measurement. It is not yet integrated or claimed to improve server p50/p95; retain the current construction RSS and full34 latency failures.
+
+
+### 2026-10-08 — Construction memory capability: raw observation works; RSS attribution rejected
+
+Before running another large corpus, a bounded owned-JVM capability probe checked NMT detail through DiagnosticCommandMBean and SDK-typed libproc region reads. Original30705 exited0; javac used `-J-Xmx8g`, Java used exactly `-Xmx8g -XX:NativeMemoryTracking=detail`, and the program retained/touched one8MiB array. All four compiler/Java/collector processes and groups were independently absent afterward. No corpus, forced GC, heap dump, attach, performance comparison or optimization gain is claimed. Sources and raw output remain unchanged.
+
+The collector returned381 top-level regions, including7 unresolved submaps, with stable target identity and process RSS72,286,208 bytes before/after. Multiplying regional residency by the observed16KiB page size produces289,112,064 bytes, including after removing submaps; a single modules mapping contributes128,761,856. These counters cannot be used as additive components of task RSS. Dividing everything by four would nearly match RSS but is unsupported: the first private heap region has514 resident/dirty units, consistent with the retained8MiB array at16KiB, while a4KiB assumption would make the entire heap smaller than that array.
+
+Independent review of Apple's matching `xnu-10002.81.5` release source establishes the mechanism: ordinary `vm_map_region_look_for_page` counts pages found in the VM object/shadow chain without checking target pmap residency; `fill_taskprocinfo` reads task RSS from the separate phys_mem ledger. Cached file-object pages therefore need not belong to this task's RSS. This explains how the counters can differ, not the allocation of the entire observed difference. Exact kernel build configuration, nested submap coverage and the complete physical accounting remain unverified.
+
+Two other interpretation defects were confirmed. `proc_regionfilename` may return a later vnode-backed mapping and discards that returned range, so its path cannot label the requested anonymous region; a successor should retain range identity with `PROC_PIDREGIONPATHINFO`. C CLOCK_MONOTONIC and Python macOS monotonic also use different domains; retain explicitly named clocks and bracketed anchors rather than joining their raw timestamps. Zero/EINVAL after381 monotonic regions is consistent with top-level exhaustion, not proof of complete nested traversal.
+
+Decision: retain the raw capability evidence but reject the proposed heap/file/native RSS decomposition. Path/clock repairs alone do not fix residency semantics. Any successor should first check task-present page-disposition capability on the known heap and one file range, with errors/unknowns preserved, before another Kotlin category series. Construction RSS failures and the8GiB ceiling remain unchanged; no production source or GC default changed.
+
+Evidence directory: `/tmp/sootup-static-review/kotlin-memory-category-capability/`.
+
+|Artifact|SHA256|
+|---|---|
+|sealed capability plan|`569dbcd1f17c9000c5c9c1979fc78251136b61dd4132e5042933f5b3bec68eb3`|
+|raw execution result|`1cb20e629bb74b572a99d0eb6c7431b31f7d84267728dd701f2c40abe702aedc`|
+|owner terminal and cleanup|`ea0b2ea3c2abfbacc91ddf75b2afed8233cb539879c840d937031e6e93095012`|
+|independent raw-output semantic audit|`8e1f632d4416e0854a1f5a74844dbeb7a921e7aa02a1b867e2d1454bef53053d`|
+|matched-release independent API report|`70fcd620a2907aba5d64dbfc9276c1c7bc018367a4694f4523c803a5c6e27153`|
