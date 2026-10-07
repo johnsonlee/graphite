@@ -50,7 +50,7 @@
     <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun shouldAnalyzeType(className: String): Boolean</ID>
     <ID>ReturnCount:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis$private fun traceTypeFromNode( nodeId: NodeId, contextMethod: MethodDescriptor, structures: MutableSet&lt;TypeStructure>, visited: MutableSet&lt;NodeId>, depth: Int )</ID>
     <ID>ReturnCount:TypeStructure.kt$TypeStructure$fun formatTypeName(): String</ID>
-    <ID>TooManyFunctions:MmapGraph.kt$MmapGraph : GraphCloseable</ID>
+    <ID>TooManyFunctions:MmapGraph.kt$MmapGraph : GraphCloseablePackedBranchMetadataSource</ID>
     <ID>TooManyFunctions:TypeHierarchyAnalysis.kt$TypeHierarchyAnalysis</ID>
   </CurrentIssues>
 </SmellBaseline>

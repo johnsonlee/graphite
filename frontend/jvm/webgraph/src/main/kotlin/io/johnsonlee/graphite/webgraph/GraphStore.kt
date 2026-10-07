@@ -28,6 +28,7 @@ import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraph
+import io.johnsonlee.graphite.graph.PackedBranchMetadataSource
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.webgraph.BVGraph
 import it.unimi.dsi.webgraph.ImmutableGraph
@@ -1428,7 +1429,13 @@ object GraphStore {
             ?: collectMemberAnnotations()
 
         // Collect branch scopes
-        val branchScopes = graph.branchScopes().map { bs ->
+        val packedSource = graph as? PackedBranchMetadataSource
+        val branchScopes = packedSource?.packedBranchScopes()?.map { scope ->
+            BranchScopeData(
+                scope.conditionNodeId, scope.method, scope.comparison,
+                scope.trueBranchNodeIds, scope.falseBranchNodeIds, scope.trueDefinitions, scope.falseDefinitions
+            )
+        }?.toList() ?: graph.branchScopes().map { bs ->
             BranchScopeData(
                 conditionNodeId = bs.conditionNodeId.value,
                 method = bs.method,
@@ -1440,9 +1447,10 @@ object GraphStore {
             )
         }.toList()
 
-        val localDefinitions = graph.localDefinitions().entries.associate { (localId, definitions) ->
-            localId.value to BranchScope.packDefinitions(definitions)
-        }
+        val localDefinitions = packedSource?.packedLocalDefinitions()
+            ?: graph.localDefinitions().entries.associate { (localId, definitions) ->
+                localId.value to BranchScope.packDefinitions(definitions)
+            }
 
         return GraphMetadata(
             methods = methods,
