@@ -5908,3 +5908,23 @@ The eager-load mean worsens7.473%, including the parent's faster2.819s fork; no 
 - `/tmp/sootup-recovery-sources/attempt111-jmh/execution/summary.json` — SHA-256 `4f3692ce7c3fa52fb21a1550413b8443f6ff297406c9ef82034bc9371a43bc78`.
 
 **Decision:** retain111 as an isolated candidate, not yet integrated. Direct-operation loading shows a small incremental benefit, while eager-load JMH and group resource evidence remain unresolved; this is not a claim that all performance controls passed. The candidate is not rejected merely because overall recovery is incomplete, and no general recovery or final acceptance is asserted. Attempt110 continues from retained109 so that111’s unresolved change does not enter its attribution. The user’s independent +5% whole CPU/peak-RSS limits versus pre-upgrade and8GiB heap ceiling remain; all earlier construction and pressure evidence is retained. APK work remains deferred.
+
+### 2026-10-07 — Retained109 exact-head CI: passing gates with recurring pressure regressions
+
+Head `cdc85935ada041ebf995ada534f636c4822112e1`, base `02b853b7e5588034274d292163b79495a9ef8743`: Benchmark37569675281, JVM37569675293 and Rust37569675274 completed successfully. All41 enabled benchmark jobs passed, including required gate112629135345. The [standard benchmark comment](https://github.com/johnsonlee/graphite/pull/171#issuecomment-6025051872) records this comparison; its mutable contents are archived under `/tmp/sootup-static-review/ci-cdc85935/`. Neither isolated110 nor111 is included in this head.
+
+All14 method rows passed; the largest adverse result was `nodeMatchWithWhere` +3.1%. Reduced-feature4GiB real-corpus pipeline changes versus upgraded main were Tika−10.1%, Hive+1.3%, Kotlin−10.3%. Hive build+2.7%, save+4.5%, mapped load+2.7% and branch definitions+5.4% remain recorded. These pipeline/heap observations do not establish separate operation CPU/RSS acceptance against pre-upgrade.
+
+The64-fixture global-wide JVM replay again showed unfavorable dense wrapped case-insensitive DISTINCT results. All three pairs return the same200 rows and complete-result digest, with matching graph-work counts:
+
+| Pair / execution order | Base latency ms | Candidate latency ms | Change |
+|---|---:|---:|---:|
+| 1 / candidate-base | 176.028528 | 309.427591 | +75.783% |
+| 2 / base-candidate | 148.189034 | 235.964693 | +59.232% |
+| 3 / candidate-base | 190.455357 | 308.485323 | +61.973% |
+
+These rows also supply the report's paired P95 values. The base-first pair now worsens too: the earlier9cf order pattern cannot explain these results by itself. Whole-replay CPU is4.22→5.01s in pair1 (+18.72%),4.15→4.20s in pair2 and4.03→4.16s in pair3; pair3 peak RSS is5,138,542,592→5,919,449,088 bytes (+15.20%). Four-properties/zero and localized-late/dense are also repeatedly adverse. Correctness/integrity are required here, while numerical performance is advisory; job success does not resolve these regressions. Recurrence does not establish that109 caused them. No new causal profiling evidence is available.
+
+Routing request-selected P95 also worsens23.42% (P50+4.83%), despite no reported advisory errors; startup-prepared graphId P95 improves to1.04x. The separate Rust artifact has identical actual base/candidate binary hashes and cannot explain away the JVM results.
+
+Independent review re-read the three dense-DISTINCT raw TSV pairs and verified latency arithmetic, result digests, row counts and work counts. The terminal report and five artifacts are retained at `/tmp/sootup-static-review/ci-cdc85935/`; `terminal-report.md` SHA-256 is `cb87a2a11f969bcdbc56ec755bcc8d66163580dfa036c857994678393758a410`. PR171 remains draft and its updated body explicitly records these limits; its exact readback and hashes are archived in `pr-update-proof.json`. No CI rerun or sample replacement was performed. Full recovery remains unproved.
