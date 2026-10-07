@@ -7866,3 +7866,36 @@ With the same Rust1.93.0 ARM64 toolchain, jobs2, real fixture and exact four com
 Final storage manifest SHA256 `54975a7f5269a1fddaf9ac211bf95fed02c7e6371b51a0e0b9ad86d4bf4045f8`; unchanged lock SHA256 `2a54c68867dc75f79f44b41872321a1a309ba1add26509a95b8116d5fc0e9c93`. New evidence is isolated under `/tmp/sootup-static-review/attempt127/platform-revision/`: plan `e33857a28e06d67adbf4d7bfffb57c02c10a20430311629f7c8187665b524eef`, feature receipt `dbce658e2613b6f4e168f68f72d493c0e96a01a6fe1ac5a607b104e564088c1c`, validation result `f2be6f1fe3fb4c442703795f29f31e9b07782b424940547fc71c677f4e8ba606`. All checks retained their original standards. The positive candidate remains isolated pending root integration; the Tika RSS and unmeasured query limitations above remain unchanged.
 
 Root integration: final manifest/lock hashes match the validated candidate exactly; all other native/backend sources and the workspace manifest match its c454e195 base. Root independently rehashed the final four validation logs and five feature-tree receipts and compared both exported binaries byte-for-byte. Retain this measured ARM64 loading improvement while continuing the separate Tika RSS and query p50/p95 recovery work.
+
+### 2026-10-07 — Attempt 130: upgrade to released sha2 0.11.0
+
+**Intent and identity:** adopt the released stable implementation as requested. Isolated worktree `/tmp/graphite-attempt130`, branch `codex/attempt130-sha2-011`, exact base `8a2dd08da072b90d6193dc66c7af5b15a408b744`. Workspace dependency becomes `sha2 = "0.11.0"`; remove127's target-specific `asm` feature table because upstream removed that feature. This does not compose121/124/126 into the root-derived candidate. No measured improvement is claimed.
+
+**Official source review:** [crates.io metadata](https://crates.io/api/v1/crates/sha2/0.11.0) confirms release2026-03-25, not yanked, crate checksum `446ba717509524cb3f22f17ecc096f10f4822d76ab5c0b9822c5f9c284e825f4`. The verified0.11.0 source declares edition2024/MSRV1.85, digest0.11, and removes asm/std/compress features; normal Digest new/update/digest/finalize APIs remain. The project has edition2021, no declared rust-version, and CIstable. Actual checks use pinnedRust1.93. All seven newly selected crypto crates declare MSRV1.85; dependencies can use their own edition without changing the workspace edition. Upstream allows patch-level MSRV bumps, so retain the tested lock.
+
+Default SHA-256 uses runtime CPU detection for ARM/x86 hardware acceleration and software fallback; no forced ISA/backend setting is added. cpufeatures0.3.1 returns false where ARM runtime detection is unavailable, includingWindows. No externalsha2-asm package is needed. These are official source findings, not claims that every platform or software fallback was executed locally. Existing public outputs are String/byte arrays, with no exposed cross-crate Digest generic constraint. Source archives/metadata are in `/tmp/sootup-static-review/attempt130/dependency-review/`.
+
+**Lock resolution:** original82460 exited0 for explicitRust1.93 `cargo update -p sha2 --precise 0.11.0`. Exactly ten crypto-subtree package records change: sha2 .10.9→.11.0, digest .10.7→.11.3, block-buffer .10.4→.12.1, crypto-common .1.7→.2.2, cpufeatures .2.17→.3.1; add const-oid .10.2 and hybrid-array .4.15; remove generic-array .14.7, sha2-asm .6.4 and version_check .9.5. Every other locked package record is identical.
+
+**Required API migration and retained failure:** original46704 failed at CLI compilation with E0277: digest0.11's output Array no longer implements LowerHex for `format!("{:x}", Sha256::digest(bytes))`. Formatting had passed; no tests are credited to that failed run. The complete failure remains in `validation/execution`. Only `cli/src/install.rs` changes: write the32 digest bytes to one preallocated64-character lowercase hex String, preserving padding, checksum output and file/error behavior. Existingabc reference digest and all test assertions stay unchanged. No helper dependency/public storage API or unrelated storage hex optimization is added.
+
+**Verification:** corrected original39786 terminated0. With Rust1.93/arm64/jobs2 and the existing real core fixture through GRAPHITE_INDEX_FIXTURE, fmt,31CLI tests,25storage tests, strict storage Clippy and arm64CLI export all passed (0 failed/ignored/filtered). Exact commands:
+
+```text
+cargo fmt --all --check
+cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage -p graphite-cli -- --nocapture --test-threads=1
+cargo clippy --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-storage --all-targets --all-features -- -D warnings
+cargo build --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli
+```
+
+The original127 empty/abc/1MiB+17 SHA-256 constants also passed bulk and63-byte-chunk streaming with the actual0.11rlib. Only the helper's LowerHex display was migrated; no constants changed. Synthetic inputs are correctness evidence only. Owner audit rehashed all four logs/export and checked all56 test names, realfixture stats, source identity and ten lock changes. Its first offline parser assumed inline `ok`; six CLI tests print intermediate logs, so the parser was corrected to read complete test blocks, without rerunning tests. After validation, only this log and the final blank line left by removing the manifest table changed; parsed manifest content and all Rust/lock bytes remain identical to the tested version.
+
+| Metric | Result |
+|---|---|
+| Correctness / stability within tests |56 tests, strictstorage lint, arm64 export and3 bulk/streaming goldens passed; original compile failure retained |
+| Construction / loading end-to-end |Not measured |
+| Query p50 / p95 |Not measured |
+| CPU / peak RSS |Not measured; no127 orpreupgrade comparison claimed |
+| JVM heap |No JVM launched;8GiB remains the hard limit for later JVM work |
+
+**Evidence/decision:** retain the correctness-verified upgrade. Corrected packet `/tmp/sootup-static-review/attempt130/validation-after-hex/`, plan SHA256 `51f205fbd29ef261a1908f3368966c430693e0317231a7b35e967e487fef140a`; export `execution/graphite` SHA256 `11e4310489091ea1d34ab7deb232358c146756cf78ec27dd0e5cd9f2f8954077`; golden receipt `45a2a97e6dce666fc99d009b282632aab0e72b3b47fb475f6e2e03398c1c3934`. The user then requested rebasing onto main: performance was held pending native source continuity, rather than measuring a potentially obsolete tree. The intended next comparison reuses127's fixed12 old/127/130 own-fullgraph loading plan, keeping127's measured acceleration distinct from any further0.11 gain. No current performance or final preupgrade recovery claim.
