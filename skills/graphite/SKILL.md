@@ -30,8 +30,9 @@ Pick whichever is available, in this order:
    `WEB-INF/lib`/`BOOT-INF/lib` jars or Android platform classes; APKs need
    `--android-sdk` or `ANDROID_HOME`). Then either query with the CLI or
    `graphite serve --id app app.graphite --port 8080` for HTTP + MCP at `/mcp`.
-   Large inputs (for example `android-all`) need a larger heap; set it through
-   `JAVA_OPTS`, e.g. `JAVA_OPTS=-Xmx16g graphite build ...`.
+   For large inputs (for example `android-all`), set the heap through `JAVA_OPTS`,
+   e.g. `JAVA_OPTS=-Xmx8g graphite build ...`. Keep the maximum heap at or below
+   8 GiB; an out-of-memory failure does not authorize raising this ceiling.
 
 A graph reflects the artifact it was built from, not your working tree. If the
 question concerns uncommitted code, say so or rebuild.

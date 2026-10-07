@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 1, time = 1)
 @Measurement(iterations = 3, time = 1)
-@Fork(1, jvmArgs = ["-Xmx16g"])
+@Fork(1, jvmArgs = ["-Xmx8g"])
 open class AndroidSchemaDiscoveryBenchmark {
     private lateinit var mappedGraph: Graph
     private lateinit var budgetedExecutor: CypherExecutor

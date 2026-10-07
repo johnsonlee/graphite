@@ -14,6 +14,8 @@ concurrency:
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  # Cap direct Java launchers and inherited forks; explicit per-task heaps take precedence.
+  JAVA_TOOL_OPTIONS: -Xmx2g
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
