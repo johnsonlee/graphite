@@ -2,11 +2,13 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
 import java.nio.ByteBuffer
 import java.util.regex.Pattern
+import java.util.concurrent.CancellationException
 
 /**
  * Compact, order-preserving view of the method descriptors at the start of graph metadata.
@@ -169,7 +171,7 @@ internal class MappedMethodIndex private constructor(
             val result = ArrayList<MethodDescriptor>(minOf(methodCount, limit))
             repeat(methodCount) { index ->
                 if ((index and BUILD_INTERRUPTION_POLL_MASK) == 0) {
-                    checkThreadInterrupted("Mapped method scan interrupted")
+                    checkThreadInterrupted { CancellationException("Mapped method scan interrupted") }
                 }
                 scanConsumer?.inspect()
                 val declaringClassId = input.readInt()
@@ -226,7 +228,7 @@ internal class MappedMethodIndex private constructor(
 
             repeat(methodCount) { index ->
                 if ((index and BUILD_INTERRUPTION_POLL_MASK) == 0) {
-                    checkThreadInterrupted("Mapped method-index build interrupted")
+                    checkThreadInterrupted { CancellationException("Mapped method-index build interrupted") }
                 }
                 val declaringClassId = input.readInt()
                 declaringClassIds[index] = declaringClassId

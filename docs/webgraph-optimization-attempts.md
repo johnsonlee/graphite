@@ -7563,3 +7563,32 @@ Evidence directory: `/tmp/sootup-static-review/attempt121/ordinal-query-diagnost
 - `root-audit.json` SHA256 `329f59deb726cf099b685d8d63d4021f0991e057224a83524f90ca4978e55715`
 
 Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /private/tmp/sootup-static-review/attempt121/ordinal-query-diagnostic/run.py --plan /private/tmp/sootup-static-review/attempt121/ordinal-query-diagnostic/measurement.plan.sealed.json --execute-root-released`. Runtime: macOS/M3 Max, pinned Rust 1.93 arm64 release binaries, default MAPPED native server settings, observed-cache/background diagnostic. Source candidate remains isolated in commit `41b7b5ce7a6acd22d13aa3682d440964dd72cd5b`; later candidate124 adds only the separately tested fingerprint CRC optimization and does not resolve this query tradeoff.
+
+
+### 2026-10-07 — Attempt 128: share the interruption checkpoint and finish worker cleanup
+
+Base: `c454e195f282e18ab50beac9e9606365d0ec7848`; candidate: the source tree recorded in `/tmp/sootup-static-review/attempt128/source-proof.json` (SHA256 `d4397834ac315e366ea8cd8a904a1add85625e07405466f2f869490b6ff42059`). This addresses PR171 discussions `4206944433` / `4206953368` and `4206945222`. Renaming the two module-local helpers in `9aae8ff0` did not remove their duplication.
+
+Replace those helpers with one public inline `core.checkThreadInterrupted(exception: () -> CancellationException)`. Cypher and webgraph call sites supply their original exception types and messages; the factory runs only on interruption. Polling positions, callback ordering, work accounting and the interrupt flag remain unchanged. Both scan workers and index-build workers share one abort/interruption check, retaining their existing polling masks and the distinction that only scan workers increment the scan-abort counter. The persistence eligibility branch that reads `!isInterrupted` remains a branch.
+
+After all submitted scan workers have been drained, a `finally` releases a reservation unless ownership has been passed to the index builder. Publication keeps its existing ownership and failure handling. Independent review identified that wrapping submission as well could release a reservation before partially submitted workers finished; the final change deliberately starts the cleanup block after the existing drain loop. This does not claim to fix partial-submission lifecycle handling.
+
+Validation ran on macOS/arm64, OpenJDK17, with launcher `-Xmx1g`, child defaults `-Xmx2g`, Gradle/test heaps at most `-Xmx4g`, in-process Kotlin and two Gradle workers. The existing filtered-relationship memory test remains at 256 MiB. Real Kover agents and all original assertions, timeouts and thresholds stayed enabled. Existing suite fixtures were used for correctness only; no synthetic or real performance result is inferred from these tests.
+
+| Check | Result |
+|---|---|
+| Core full test suite | 475 passed |
+| Cypher full test suite | 1,342 passed |
+| Cypher filtered-relationship memory suite | 7 passed |
+| Webgraph full test suite | 267 passed |
+| Failures / errors / skipped | 0 / 0 / 0 |
+| Core / Cypher / webgraph detekt and KoverVerify | All passed |
+| Core line coverage | 2,746 / 2,790 = 98.422939% |
+| Cypher line coverage | 6,517 / 6,645 = 98.073740% |
+| Webgraph line coverage | 6,401 / 6,511 = 98.310551% |
+
+The two new core cases verify lazy factory invocation, exact exception identity/type/message/cause and repeated checks without clearing the flag. Existing query cancellation and final-flush tests remain active. Strengthened GraphStore assertions verify that index-preparation failure/interruption does not increment scan-abort counts, leaves no active workers or published index and returns reserved budget. Independent source review and a separate root audit of all fresh XML hashes, test counts, required cases and coverage counters passed. All five temporarily adjusted publishing scripts were restored byte-for-byte; the full source seal was verified after restoration.
+
+Exact invocation: `env -u MallocNanoZone python3 /tmp/sootup-recovery-sources/attempt128-build/build.py --execute --run attempt128-build1`. The recorded Gradle command runs full `test`, `detekt`, `koverLog`, `koverXmlReport` and `koverVerify` tasks for core, Cypher and webgraph. Evidence: `/tmp/sootup-recovery-sources/attempt128-build/attempt128-build1/build-proof.json` SHA256 `57ca5d422e49b37414ad070b807369f65dd6bda786d7125a5b5cfd871154bf24`; independent XML audit: adjacent `root-audit.json`. Authoritative execution exited 0.
+
+Decision: keep the verified refactor. Query p50/p95, construction/loading end-to-end time, CPU and RSS were not measured by this attempt; no performance recovery claim. This resolves the two cancellation-code review issues, not the separate method-wrapper, projection-allocation, DefaultGraph packed-save or preflight/accounting experiments. Required CI must run on the pushed candidate; the preceding `9aae8ff0` passed its full CI and benchmark-regression-gate.

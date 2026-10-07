@@ -4241,6 +4241,7 @@ class GraphStoreTest {
                     }
                     assertEquals("parallel preparation budget failure", preparationFailure.message)
                     assertEquals(0, loaded.callSiteScanActiveWorkers())
+                    assertEquals(0L, loaded.callSiteScanAbortedWorkers())
                     assertFalse(loaded.isCallSiteStringIndexInitialized())
                     assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
@@ -4280,6 +4281,9 @@ class GraphStoreTest {
                     )
                     assertTrue(interruptedPreparationFlag.get())
                     assertEquals(0, loaded.callSiteScanActiveWorkers())
+                    assertEquals(0L, loaded.callSiteScanAbortedWorkers())
+                    assertFalse(loaded.isCallSiteStringIndexInitialized())
+                    assertEquals(budgetBeforeFailedHandoff, MappedCallSiteStringIndexMemoryBudget.retainedBytes())
 
                     assertTrue(loaded.prepareCallSiteStringIndex())
                     assertTrue(loaded.isCallSiteStringIndexInitialized())

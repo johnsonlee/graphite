@@ -21,6 +21,7 @@ import java.nio.file.StandardOpenOption
 import java.util.PriorityQueue
 import java.util.concurrent.CancellationException
 import java.util.zip.CRC32
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 
 internal interface CallSiteStringIdMembership {
     fun containsPropertyStringId(
@@ -547,7 +548,7 @@ private fun binarySearch(
 }
 
 private fun checkViewInterrupted() {
-    checkThreadInterrupted("Mapped CallSite string index view interrupted")
+    checkThreadInterrupted { CancellationException("Mapped CallSite string index view interrupted") }
 }
 
 private data class MappedPredicateKey(

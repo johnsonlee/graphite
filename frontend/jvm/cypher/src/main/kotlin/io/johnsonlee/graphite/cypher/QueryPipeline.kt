@@ -26,6 +26,7 @@ import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
 import java.util.function.IntPredicate
@@ -939,7 +940,7 @@ class QueryPipeline private constructor(
 
     private fun checkStreamingProjectionCancelled() {
         activeWorkTracker.get()?.checkCancelled()
-        checkThreadInterrupted("String projection interrupted")
+        checkThreadInterrupted { CypherQueryCancelledException("String projection interrupted") }
     }
 
     private data class RankedProjectedRow(
@@ -1241,7 +1242,7 @@ class QueryPipeline private constructor(
             ExpressionEvaluator(
                 parameterResolver = parameters::get,
                 checkCancelled = {
-                    checkThreadInterrupted()
+                    checkThreadInterrupted { CypherQueryCancelledException() }
                 }
             )
         } else {
@@ -1264,7 +1265,7 @@ class QueryPipeline private constructor(
                 if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
             }
             if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
-                checkThreadInterrupted()
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
         }
         return FilteredStringCountPartial(source.id, count, distinctValues, matchedWhere)
@@ -1513,7 +1514,7 @@ class QueryPipeline private constructor(
                         parameterResolver = stringParameters::get,
                         checkCancelled = {
                             tracker?.checkCancelled()
-                            checkThreadInterrupted()
+                            checkThreadInterrupted { CypherQueryCancelledException() }
                         }
                     )
                     val predicate: (Node) -> Boolean = { node ->
@@ -2873,7 +2874,7 @@ class QueryPipeline private constructor(
         private fun pollInterrupted() {
             inspected++
             if ((inspected and CANCELLATION_POLL_MASK) == 0) {
-                checkThreadInterrupted()
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
         }
     }
@@ -3016,7 +3017,7 @@ class QueryPipeline private constructor(
         var inspected = 0
         for (value in values) {
             if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
-                checkThreadInterrupted()
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
             yield(value)
         }
@@ -3696,7 +3697,7 @@ class QueryPipeline private constructor(
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = parameters::get,
                         checkCancelled = {
-                            checkThreadInterrupted()
+                            checkThreadInterrupted { CypherQueryCancelledException() }
                         }
                     )
                     val bindings = mutableMapOf<String, Any?>(variable to null)
