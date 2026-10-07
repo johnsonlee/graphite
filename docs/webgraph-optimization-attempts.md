@@ -9603,3 +9603,130 @@ Packet: `/tmp/sootup-static-review/final-construction-old-vs85-cap30/`. The defa
 Independent audit completed with original tool exit0 (chunk `16dd88`), checking all32 jobs,24 strict reports,40 complete ordered queries,148 file inventories,ordinal binding, raw timing/CPU/RSS, all means and both fixed pairs. Audit SHA256 `9c53048ee559ab79ffd50c0aa466d558a76d6820d66999f06719a2b298867279`; root separately checked all32 owned PIDs absent. The36 displayed metric rows were independently checked against original summary values before appending.
 
 At exact production head `8b6694f41f65a33616dbf1ecb4fb5e1452bed1c6`, JVM run37689239312, Rust run37689239328 and Benchmark regression run37689239281 all completed successfully, including required `benchmark-regression-gate` job113030760561. This main-relative CI does not replace preupgrade query or construction resource acceptance.
+
+### 2026-10-08 — Cumulative native: local socket connection wall/CPU diagnostic
+
+Fixed c1 ABCCBA then c4 ABCCBA, same64 real persisted graphs and all34 mixed query cases, first1/warm2/measured60,12 fresh servers,25,704 full responses/24,480 measured; nearest ranks30/57, per-process metrics and both chronological pairs. Python3.14.7, Rust1.93 ARM64 frozen phase binaries on the same macOS/M3 Max host. A6f SHA `a86a1dfbbaba8484c147ad0e399b1751556e7e002bd6fc24ff0d1c1b7d9e1563`; B85 `3261ff8845914cf841b3e03b6c5ec3ef3640eeeb467bac91b9dbae4dc3dc1b7a`; Cddbee `dfe7774c29a988d7baec14f9c391e658f22d53956e44d88c409cd48d8bb03d35`. These are instrumented historical source versions, not the current cumulative136+123 executable. No Java or new native compilation in this measurement.
+
+The installed CPython create_connection loop is copied with local wall/thread-CPU observations around address lookup, socket creation/timeout/bind, socket.connect and failed-attempt close. Original address order/fallback/exception behavior is retained and pure AST/mocks check that removal of observation statements recovers the installed loop. The existing HTTPConnection still calls super.connect, including audit/NODELAY. No global monkeypatch, forced single-address assumption, persistent connection, result reduction, changed work budget or sample replacement. Original request start/full-body end remain unchanged.29 pre-execution pure checks passed; the independent auditor adds seven separate clock/sequence/statistics mocks. A pre-execution nonpositive-reference percentage correction is archived: only the new connect summary returns null percent when reference<=0, retaining raw/difference values. Earlier summaries and all measured scripts remained frozen.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/native-cumulative/c4-connect-split-diagnostic/run.py --plan /tmp/sootup-static-review/native-cumulative/c4-connect-split-diagnostic/measurement.plan.sealed.json --execute-root-released`. Original9462 exited0; original10415 completed the three declared offline summaries with exit0; original59786 independent audit exited0. All48 lifecycle/native/time/client PIDs and process groups were absent in both owner and root fresh checks. The auditor reconstructed every body,18 server/aggregate scopes,11 transport/aggregate scopes and15 local clock/stage scopes plus fullHTTP/route/residual; all60 samples, means/ranks and both pairs matched. Root independently recomputed144 additive mean comparisons from audited per-run metrics.
+
+
+All25704 responses passed independent full-body/phase/transport/clock/statistics verification. Instrumented A6f/B85/Cddbee; no production change. Identical native binaries to the preceding client-boundary diagnostic; only local create_connection observations added. Cross-series latency differences are not an optimization gain or controlled attribution of observer overhead.
+
+#### All18 scopes against preupgrade: p50 differences
+
+Each range spans34 separate cases after taking the mean of each arm’s two process p50s. Counts are cases, not requests. No pooled percentile or percentile addition. All scopes/statistics/cases and both pairs are in all-cases-scopes.csv.
+
+|Concurrency|Scope|p50 difference range, µs|Higher mean cases|Higher in both pairs|
+|---|---|---:|---:|---:|
+|1|wallNs.getaddrinfo|-0.396 to +0.750|14/34|6/34|
+|1|wallNs.socketSetup|-1.958 to +1.167|22/34|9/34|
+|1|wallNs.socketConnect|-15.979 to +20.897|21/34|18/34|
+|1|wallNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|1|wallNs.otherConnect|-0.437 to +0.417|16/34|6/34|
+|1|threadCpuNs.getaddrinfo|-0.416 to +0.688|13/34|7/34|
+|1|threadCpuNs.socketSetup|-1.772 to +1.271|23/34|10/34|
+|1|threadCpuNs.socketConnect|-0.584 to +2.104|29/34|17/34|
+|1|threadCpuNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|1|threadCpuNs.otherConnect|-0.208 to +0.250|21/34|6/34|
+|1|wallMinusThreadCpuNs.getaddrinfo|-0.021 to +0.021|12/34|1/34|
+|1|wallMinusThreadCpuNs.socketSetup|-0.082 to +0.001|3/34|0/34|
+|1|wallMinusThreadCpuNs.socketConnect|-11.584 to +21.146|25/34|20/34|
+|1|wallMinusThreadCpuNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|1|wallMinusThreadCpuNs.otherConnect|-0.083 to +0.106|27/34|16/34|
+|1|fullHttpNs|-21.709 to +83.166|25/34|16/34|
+|1|routeObservedNs|-3.624 to +73.020|27/34|19/34|
+|1|clientMinusRouteNs|-21.666 to +19.959|16/34|9/34|
+|4|wallNs.getaddrinfo|-1.334 to -0.042|0/34|0/34|
+|4|wallNs.socketSetup|-17.395 to +11.707|12/34|2/34|
+|4|wallNs.socketConnect|+16.957 to +68.542|34/34|32/34|
+|4|wallNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|4|wallNs.otherConnect|-0.477 to +0.291|14/34|6/34|
+|4|threadCpuNs.getaddrinfo|-1.355 to -0.063|0/34|0/34|
+|4|threadCpuNs.socketSetup|-4.730 to +2.417|7/34|4/34|
+|4|threadCpuNs.socketConnect|-3.917 to +2.542|8/34|5/34|
+|4|threadCpuNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|4|threadCpuNs.otherConnect|-0.271 to +0.292|16/34|9/34|
+|4|wallMinusThreadCpuNs.getaddrinfo|+0.000 to +0.021|12/34|0/34|
+|4|wallMinusThreadCpuNs.socketSetup|-15.334 to +18.271|14/34|5/34|
+|4|wallMinusThreadCpuNs.socketConnect|+16.812 to +67.106|34/34|32/34|
+|4|wallMinusThreadCpuNs.failedAttemptClose|+0.000 to +0.000|0/34|0/34|
+|4|wallMinusThreadCpuNs.otherConnect|-0.144 to +0.064|9/34|5/34|
+|4|fullHttpNs|-27.105 to +84.395|28/34|17/34|
+|4|routeObservedNs|-27.291 to +28.833|17/34|10/34|
+|4|clientMinusRouteNs|-20.520 to +55.395|29/34|20/34|
+
+#### Additive means: both chronological pairs
+
+Equal weight across34 cases, each with60 measured requests. These arithmetic mean differences add; quantiles do not. All values below are µs.
+
+|Concurrency / comparison / pair|Full HTTP|Connect wall|Connect thread CPU|Connect wall minus CPU|socket.connect wall|socket.connect CPU|Route|
+|---|---:|---:|---:|---:|---:|---:|---:|
+|1 / C_vs_A / c1-0-A→c1-2-C|+4.913|+2.398|+0.530|+1.868|+1.431|+0.370|+10.634|
+|1 / C_vs_A / c1-5-A→c1-3-C|+16.231|+4.782|+0.141|+4.641|+7.631|+0.682|+7.957|
+|1 / C_vs_B / c1-1-B→c1-2-C|+5.454|+4.669|+0.046|+4.623|+2.691|-0.336|+2.670|
+|1 / C_vs_B / c1-4-B→c1-3-C|+6.453|+3.357|-0.709|+4.066|+6.006|+0.141|+4.595|
+|4 / C_vs_A / c4-0-A→c4-2-C|+13.599|+25.301|-2.065|+27.366|+22.643|-0.558|-7.673|
+|4 / C_vs_A / c4-5-A→c4-3-C|+39.965|+40.120|-2.780|+42.900|+31.307|-1.213|+2.048|
+|4 / C_vs_B / c4-1-B→c4-2-C|-2.947|-4.717|-0.658|-4.060|-1.927|-0.144|+1.214|
+|4 / C_vs_B / c4-4-B→c4-3-C|-22.679|-20.091|-3.339|-16.752|-9.795|-2.345|+1.475|
+
+#### Full HTTP and native resources
+
+|Concurrency / comparison|p50 lower mean / lower both / higher both|p95 lower mean / lower both / higher both|Whole CPU Δ%, pairs|Peak RSS Δ%, pairs|Query-window CPU Δ%, pairs|
+|---|---|---|---|---|---|
+|1 / C_vs_B|11/34 / 6/34 / 13/34|20/34 / 11/34 / 5/34|-0.604 (-0.390/-0.818)|-0.032 (-0.057/-0.006)|+0.000 (-0.926/+0.936)|
+|1 / C_vs_A|9/34 / 4/34 / 16/34|18/34 / 4/34 / 11/34|-39.647 (-38.413/-40.836)|+0.666 (+0.677/+0.655)|+0.389 (-0.311/+1.094)|
+|4 / C_vs_B|22/34 / 13/34 / 7/34|22/34 / 8/34 / 2/34|-1.052 (-0.988/-1.116)|-0.025 (-0.140/+0.090)|-0.703 (-0.939/-0.468)|
+|4 / C_vs_A|6/34 / 1/34 / 17/34|12/34 / 4/34 / 11/34|-43.794 (-43.742/-43.846)|+0.652 (+0.522/+0.782)|-2.419 (-2.765/-2.074)|
+
+No recovered multi-address connection or negative otherConnect CPU remainder occurred in this series; the validators retain support for both. Whole CPU includes loading; query-window CPU includes validation/recording gaps and internal background work. Neither is per-case CPU.
+
+Socket-connect wall minus thread CPU combines blocking syscalls, descheduling, possible GIL reacquisition and clock/observer effects. It is not pure network or GIL time. The request bytes are sent only after that request’s connect returns, so its own query cannot have executed inside its connect span; other concurrent requests and background work can interact.
+
+Decision: narrow the remaining diagnostic target to waiting within socket.connect. Do not change server query code or claim recovery from this instrumented series. Retain every original uninstrumented adverse result. Next distinguish client concurrency/scheduling sensitivity from server/kernel interaction with a separately declared matched control.
+
+The observer retained743 process samples and zero classified events; unknown/subsecond activity remains possible, with no exclusive-host claim. All1216 graph-file stats remained unchanged; original first-use/warm samples and per-case maxima remain in the raw/full summary. This finite two-process-per-arm diagnostic is not a production confidence interval or a final CPU/RSS acceptance run.
+
+A source review found identical server runtime/listener setup and transport dependency versions between preupgrade and current production. C4 startup/idle/build code is also identical across6f/ddbee/8b. Readiness does not wait for C4, and an already started inference does not pause for later traffic. A separate offline check merged all2142 request intervals per run: no>=2s gaps in any run, maximum gaps55.746–69.491ms and maximum adjacent-batch conservative activity spans64.759–74.662ms. This removes large between-request idle opportunities in the observed sequence, but cannot exclude work started during startup; the stderr announcement only states the graph queue count, not actual inference start/end. No C4 cause is claimed.
+
+Evidence under `/tmp/sootup-static-review/native-cumulative/c4-connect-split-diagnostic/`:
+
+|Artifact|SHA256|
+|---|---|
+|`measurement.plan.sealed.json`|`964e082d797d81e1e672a01ca62ef666f4f970ba3d17c9230015bf39f27999bb`|
+|`execution/results.json`|`e7c1618ca7fc6e989ab2243a67f702e34f17ffc88a389b51ecdf51a31a8478b6`|
+|`execution/owner-terminal.json`|`2a9eb2e722401c1c9e612818cb9277c5cb88f2fb4d331a4d1d307653dfc1dd6e`|
+|`execution/summary.json`|`aeced671eae74de54de6ad23776210b01d2b41448191f0004c06200d8a398c2d`|
+|`execution/phase-summary.json`|`bce63f556d1ae9c9e9cf3b636497719f720d0c2c268937179bf11d9aeca4d3f5`|
+|`execution/transport-summary.json`|`cf0651c0c39c6766288613d8a1e313fc3216021887c71ef2151241e470392659`|
+|`execution/connect-summary.json`|`5f369b03ecb507d88740341fa08b5c33af1310dfaa680b0e675f27ce67418c6b`|
+|`independent-audit/audit.json`|`27da5ff6d697a099745c49aefa4a6ace8689c8edd28db44cae9584fe27b9ceaa`|
+|`connect-review/analysis.json`|`7b4134b5e1b4a5890d1bf6efcfcb768964a93ca6f2d4a30b14b04a1d78fd7d7f`|
+|`connect-review/all-cases-scopes.csv`|`57ff2e9b76ef0ac95105fb4fe87a899cf655c377af275373c2596519cab4aee4`|
+|`connect-review/root-derived-check.json`|`f7d203dc7fddfc58fccf09e46ea6320cedcf14298554625a8ae606252339d8b8`|
+
+All7,344 case/scope/statistic/comparison rows are retained in the CSV, rather than selecting only positive cases. The no-gap evidence is `c4-warm-source-review/connect-split-gaps.json` (SHA `7c61916618825324dfbb65b01ffa933a5eb89cca5ee39231aca580a66150f73a`).
+
+### 2026-10-08 — Retained135 on cumulative136+123: full303 verification and test-only lint correction
+
+The isolated cumulative135 checkout keeps production props.rs byte-identical to the proposed display/result optimization: avoid constructing the four caller/callee signature/descriptor strings that are discarded from returned CallSite nodes, while preserving original malformed-string access/failure order, all public full-property/direct access, annotation key collisions and result field ordering. It is based on exact8b6694f4; later b044a2c1 changes only documentation. This record establishes correctness/build evidence, not latency or resource benefit. Full34 scalar projections do not directly exercise this path; the existing real Kotlin/Tika five-case protocol includes RETURN n LIMIT32 and will be used separately.
+
+Original94520: fmt and all303 tests/63 required cases passed; strict Clippy failed on nonminimal_bool in the new test oracle. No frozen export or performance measurement followed. Preserve that entire failure. The sole correction rewrites test predicate `!A && !(B && C)` to `!(A || B && C)`, retaining truth values and short-circuit order; no production source or assertion is removed or weakened. The follow-up runner differs only in its output directory, with the same four-crate clean, expected303/63, real fixture and narrow parser for the existing caught-panic test.
+
+Corrective original81235 exited0: fmt, all303 unfiltered tests (CLI31/Cypher117/Explore118/integration1/storage36), all63 required tests, strict storage/Cypher/Explore all-target/all-feature Clippy with -Dwarnings, and CLI export passed. The real persisted fixture was enabled; zero failed/ignored/measured/filtered/skipped tests. Independent review checked every named case, all115 source files, actual candidate Compiling paths, four raw logs,19 fixture-stat entries, patch/tool/receipt/export identity and prior failure. The expected malformed-StrId test retains21 caught-panic hooks and an outer ok result. All owned processes/groups were absent at cleanup.
+
+Commands: `python3 /tmp/sootup-static-review/native-cumulative-135/validation/run.py --execute-root-released` (retained lint failure); `python3 /tmp/sootup-static-review/native-cumulative-135/validation-lint-fix/run.py --execute-root-released` (corrective pass). Rust1.93.0/aarch64 release, --locked --jobs2, same graph fixture and constraints.
+
+|Evidence|SHA256|
+|---|---|
+|failed result|`30d37f11223b2f8fc513b83c3d351ffe154172d3a40fa832712d1e044ed0bc06`|
+|corrective plan|`dc89a126c38665cd4042bf832b0b2a5b2cec39b597cca8c148dfef218e010795`|
+|corrective result|`93032e5b8758339fbdddab5933a08c58a0858c155bfec5786c3fa1f58b4bc499`|
+|corrective owner terminal|`e21a3b7f547be495dafb3da0043514f915242ee67deece32c1cfa3a7b496aa99`|
+|independent audit|`dc6da91e1437571130b97fc7ca1ba8e4d0bce6cbf7f402354316dd0d8df62c3c`|
+|frozen export|`0d639648ae1e53dbf933931e4f8b2436739fa88298db15dd73d1e17c6b8e102e`|
+
+Decision: preserve the corrected validated source candidate for matched real-query measurement. It is not yet integrated or claimed to improve server p50/p95; retain the current construction RSS and full34 latency failures.
