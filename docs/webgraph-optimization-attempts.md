@@ -8638,3 +8638,76 @@ Original owner32334 terminated0. All2640 complete bodies passed strict typed/ord
 Sealed plan `4d9c1b4216e36c8f521b5f342d7a90d4c773ef2370933cd20781611420140a9e`; raw result `c37309868ddec9810046b0531bf86bd34cde1743021ec4cd389609893480d4a9`; unchanged full-response summary `efe86d855f93ef42b831e3216c021e29c6f47328bd3aab61d069fa5abc5e91ce`; terminal cleanup `66483524eb89fb022061a887cde393feea4462ce226a9d669a116cb23b51301d`; independent root full-body/statistics audit `96b95ce2680df6fa2e0bf4a3e1164e71892472130e7288ae19772063714347a9`. The original draft is retained; sealing changed only release status and a stale131-versus130 explanatory limitation, not the protocol.
 
 **Decision: KEEP ISOLATED as a verified positive/mixed successor.** All four groups improve top32 mean p95 by35.38–37.50%, with both pairs positive. Whole CPU falls29.66–32.08% and peakRSS falls78.16–91.84%, with both resource pairs improving. This does not erase adverse small-query evidence: Kotlin c1 materialization mean p50/p95 increases8.588%/10.597%, Tika c1 increases4.594%/12.036%, Tika c1 line p95 increases3.729%, and Kotlin c4 materialization p95 increases1.307%; all opposing pairs are above. Projection p95 improves in all groups while Kotlin mean p50 slightly increases. No causal attribution to background activity is asserted. Preserve this source/tests/log in one isolated attempt commit; do not integrate root or claim overall recovery. This is B131-relative query evidence, not preupgrade acceptance, a construction/loading result, a JVM comparison, or proof of every query shape.
+
+### 2026-10-08 — Attempt 133: release fully decoded loading source mappings (source only)
+
+**Hypothesis:** after forward CSR labels and metadata have been fully copied/decoded into owned structures, releasing their source mappings at their last use may reduce overlap with subsequent loading allocations and eager ordinal validation. This isolated candidate is based on retained131 commit `6af7b7a2997eae7c80b9ff89cafcd2e209ae8df7`; it changes only two `drop` sites in `backend/storage/src/graph.rs`, keeping final graph/query structures and all validation unchanged. The directory source maps each file independently; container ranges share an `Arc<Mmap>`, so dropping a temporary container range does not invalidate another range and is not expected to reclaim the whole shared mapping.
+
+**Real-data evidence motivating the attempt:**131's fixed12 own-fullgraph loading diagnostic retained all samples. Tika oldA peak RSS was249,315,328/250,544,128 bytes, currentB130280,559,616/280,625,152, and C131263,503,872/265,895,936. C131 mean264,699,904 versus old249,929,728 adds14,770,176 bytes (+5.9097316%), exceeding the +5% cap by2,273,689.6 bytes. The two C/A pairs separately exceed their caps by1,722,777.6 and2,824,601.6 bytes (+5.6910%/+6.1274%). All adverse samples remain. C/B improves RSS in both pairs, but that does not settle C/A acceptance. C/A loading readiness/wholeCPU improve−50.8308%/−49.6599%; C/B ready−0.4479% has opposite pair signs and wholeCPU increases+0.6803%. Loading does not supply server-query p50/p95 evidence.
+
+Current Tika's fully decoded labels source is5,786,368 file bytes and metadata source29,722,272 bytes. Their sum35,508,640 is a mapped-size/lifetime observation, **not measured resident bytes or a promised saving**. Native loading has no GC; this investigation does not invent one. Existing whole-process RSS cannot identify which load phase peaks.131 additionally retains a19,566,116-byte ordinal/origin map plus a requested865,880-byte bitmap/rank allocation, while oldA has no ordinal sidecar and different graph content. These facts cannot be added mechanically to reproduce RSS. Complete raw rows, file-size deltas, source ownership/error-path analysis and minimal validation design are retained at `/tmp/sootup-static-review/attempt133/{loading-memory-evidence.json,source-review.txt}`; only60sidecar bytes were read, not a large scan/hash.
+
+**Correctness and validation status:** source review confirms CSR labels are owned `Vec<u8>`, metadata owns all vectors/maps/scalars and its copied ordinal binding, and later loading/query operations do not borrow either source buffer. Error propagation and shared-container ownership are preserved. No build/test/Clippy/benchmark has run for133, and no source or root integration is claimed. After the released workload slot becomes available, reuse131's full real-fixture storage/Cypher/Explore/CLI correctness and strict storage lint, followed by unchanged real fullgraph/query oracles and fixed loading/query protocols. Do not substitute a unit test that mirrors the drop implementation or synthetic performance data.
+
+**Decision:** retain isolated source candidate pending verification. Construction, loading end-to-end/CPU/RSS, query p50/p95, and stability are all unmeasured for133; neither final recovery nor meeting the resource cap is claimed. No JVM or native workload ran during preparation; the separate8GiB JVM ceiling remains unchanged.
+
+
+**Validation and fixed loading follow-up (2026-10-08):** the original source-only state above precedes this execution. No product/test correction was needed. After132 authoritative cleanup,133 used the existing pinned Rust1.93 explicit `aarch64-apple-darwin` release target, `--locked`, jobs2 and real core fixture `/tmp/sootup-static-review/attempt121/core-fixture/execution/fixture-graph`. One invocation ran fmt; complete storage35 + CLI31 + Cypher104 + Explore113 + resident-footprint1 = **284 tests**, no failed/ignored/filtered/skipped, all43 required names; strict storage all-targets/all-features Clippy `-D warnings`; and CLI release export. Directory/container graph parity, labels/edges/node values, missing/empty sources, malformed/truncated/corrupt containers and retained ordinal ownership cases all remained in their suites. Existing unrelated MCP lint was not suppressed or mixed into this storage lint gate. `python3 /tmp/sootup-static-review/attempt133/validation/run.py --execute-root-released` original session35211 exited0. Source/fixture/tool/baseline checks passed before and after. Frozen133 CLI SHA `4091148f569282ff1abbc4a1cf8bda2186b9052c833e1728ab04e7e86b7bf036`; validation result `22eda9150a992dc1298616a287e3dd3240c49b29d5877e1abbf849fd8aaecc1c`; root independent audit `6e17c7f610c449cded618572126e46ed5d7e74eb83c23666e959f7080ea9d5a2`. The independent audit corrected its handling of eight nocapture output blocks; tests/raw logs were not rerun or changed.
+
+Loading preparation preserved one file-only alias failure: binding the newly released validation plan via `/private/tmp` left an old `/tmp` key. The failed resolved draft and resolver were archived, then matching resolved paths updated that original key; this launched no process and altered no measurement argv. Final draft resolution and all three frozen binary hashes passed.
+
+**Fixed actual comparison:** A is preupgrade6f498 frozen `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b` on its own old full graphs; B is131 `bccc8fce346e35cf1a7b0135ef1329cefbd4f630cbda1b4a89b9ccd949cdd741`; C is133 above. B/C share exact full current116 Kotlin/Tika graphs at `/tmp/sootup-static-review/attempt116/construction-packet/results/{kotlin-1-B,tika-1-B}/graph`. A uses `/tmp/sootup-recovery-sources/cumulative341-old-construction-pilot/results/{kotlin-0-A,tika-0-A}/graph`. Persisted files, semantic readiness oracles and all original boundaries remain unchanged; old/current graph counts differ and C/A is not the same-data attribution supplied by C/B. No132 ORDER BY or other candidate was composed.
+
+Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/attempt133/loading-three-arm/run.py --plan /tmp/sootup-static-review/attempt133/loading-three-arm/plan.sealed.json --execute-root-released`. KotlinABCCBA followed TikaABCCBA, ports19820–19831,12 fresh native sessions, **zero query requests**, no replacement or extra warming. Original session48197 exited0, all12 PASS, all24 native/time PIDs absent after SIGTERM/−15 and no cleanup errors. Every complete `/api/graphs` response passed the strict counts/path/load-mode oracle, and before/after inventories plus post source/receipt/binary pins matched. The unchanged summarizer reproduced the saved summary exactly.
+
+Loading latency ends after complete readiness-body read; nativeCPU-at-ready is sampled after strict validation at0.01s resolution. Whole time-l CPU/RSS includes startup/load/readiness validation/snapshot/immediate shutdown; it is not incremental graph memory or a query resource measure. This is observed-cache repeated startup, not cold-disk loading or deferred first-use work. The fixed10s background observer recorded26 snapshots and no detected events; the policy still labels the series diagnostic, never reserved/guaranteed quiet. One-second sampling can miss activity, and no cause is assigned to the slow Kotlin candidate sample.
+
+| Run | Load-ready s | Native CPU-ready s | Whole CPU s | Peak RSS bytes |
+|---|---:|---:|---:|---:|
+| 00-kotlin-old | 1.902758166 | 1.79 | 1.78 | 368590848 |
+| 01-kotlin-current | 0.956162792 | 0.98 | 0.96 | 366018560 |
+| 02-kotlin-candidate | 1.285169208 | 1.00 | 0.99 | 365166592 |
+| 03-kotlin-candidate | 0.944669042 | 0.97 | 0.97 | 365314048 |
+| 04-kotlin-current | 0.949276167 | 0.97 | 0.96 | 365707264 |
+| 05-kotlin-old | 1.734308375 | 1.76 | 1.76 | 366526464 |
+| 06-tika-old | 1.533503166 | 1.44 | 1.43 | 250707968 |
+| 07-tika-current | 0.719121792 | 0.73 | 0.72 | 263356416 |
+| 08-tika-candidate | 0.714850666 | 0.73 | 0.72 | 233373696 |
+| 09-tika-candidate | 0.713938834 | 0.73 | 0.72 | 235618304 |
+| 10-tika-current | 0.709745458 | 0.73 | 0.72 | 262914048 |
+| 11-tika-old | 1.411778334 | 1.44 | 1.43 | 249348096 |
+
+All predeclared arithmetic means and both forward/reverse pairs are retained; summary also keeps raw median/min/max and all snapshot/shutdown overheads.
+
+| Workload | Metric | Comparison | Mean delta | Pair1 | Pair2 |
+|---|---|---|---:|---:|---:|
+| kotlin | loadToReadySeconds | currentVsOld | -47.6106% | -49.7486% | -45.2649% |
+| kotlin | loadToReadySeconds | candidateVsOld | -38.6913% | -32.4576% | -45.5305% |
+| kotlin | loadToReadySeconds | candidateVsCurrent | +17.0249% | +34.4090% | -0.4853% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | currentVsOld | -45.0704% | -45.2514% | -44.8864% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | candidateVsOld | -44.5070% | -44.1341% | -44.8864% |
+| kotlin | nativeCpuAtReadySnapshotSeconds | candidateVsCurrent | +1.0256% | +2.0408% | +0.0000% |
+| kotlin | wholeLifetimeCpuSeconds | currentVsOld | -45.7627% | -46.0674% | -45.4545% |
+| kotlin | wholeLifetimeCpuSeconds | candidateVsOld | -44.6328% | -44.3820% | -44.8864% |
+| kotlin | wholeLifetimeCpuSeconds | candidateVsCurrent | +2.0833% | +3.1250% | +1.0417% |
+| kotlin | wholeLifetimePeakRssBytes | currentVsOld | -0.4614% | -0.6979% | -0.2235% |
+| kotlin | wholeLifetimePeakRssBytes | candidateVsOld | -0.6307% | -0.9290% | -0.3308% |
+| kotlin | wholeLifetimePeakRssBytes | candidateVsCurrent | -0.1702% | -0.2328% | -0.1075% |
+| tika | loadToReadySeconds | currentVsOld | -51.4862% | -53.1059% | -49.7268% |
+| tika | loadToReadySeconds | candidateVsOld | -51.4889% | -53.3845% | -49.4298% |
+| tika | loadToReadySeconds | candidateVsCurrent | -0.0054% | -0.5939% | +0.5908% |
+| tika | nativeCpuAtReadySnapshotSeconds | currentVsOld | -49.3056% | -49.3056% | -49.3056% |
+| tika | nativeCpuAtReadySnapshotSeconds | candidateVsOld | -49.3056% | -49.3056% | -49.3056% |
+| tika | nativeCpuAtReadySnapshotSeconds | candidateVsCurrent | +0.0000% | +0.0000% | +0.0000% |
+| tika | wholeLifetimeCpuSeconds | currentVsOld | -49.6503% | -49.6503% | -49.6503% |
+| tika | wholeLifetimeCpuSeconds | candidateVsOld | -49.6503% | -49.6503% | -49.6503% |
+| tika | wholeLifetimeCpuSeconds | candidateVsCurrent | +0.0000% | +0.0000% | +0.0000% |
+| tika | wholeLifetimePeakRssBytes | currentVsOld | +5.2423% | +5.0451% | +5.4406% |
+| tika | wholeLifetimePeakRssBytes | candidateVsOld | -6.2121% | -6.9141% | -5.5063% |
+| tika | wholeLifetimePeakRssBytes | candidateVsCurrent | -10.8838% | -11.3848% | -10.3820% |
+
+**Decision: KEEP ISOLATED, positive/mixed loading candidate.** Tika C/B peakRSS falls10.8838% on the mean and11.3848%/10.3820% in both pairs; C/A falls6.2121% (6.9141%/5.5063%). Tika wholeCPU is unchanged and readiness has opposite small pair directions. Kotlin C/B RSS falls0.1702% in this small sample, but readiness mean rises17.0249% because pairs are+34.4090%/−0.4853%, and wholeCPU rises2.0833% (+3.1250%/+1.0417%). The adverse sample remains and is not explained away as noise. These n2 resource point gains justify retaining the candidate for cumulative review; they do not certify stable latency or final preupgrade acceptance. Container memory savings were not measured. No server query p50/p95, construction, JVM performance or end-to-end recovery is claimed; native loading has no GC and the independent8GiB JVM ceiling is unchanged. No additional measurement follows this decision.
+
+Evidence: sealed loading plan `be2d255556481c479ec8b042e097aa0622c6e09cdd1b885602c444505fc2359d`; raw result `0a0766c5e968e7d272772bed3231b22f487f440f8760fe65875a8530281381d6`; summary `e431722c3ee08d8f97527a0e563eb807e2955aa1166c0cf5d109dfa71d4690d0`; owner terminal `fa2489c115045d326a4a5e5bdea83afa8af232795388c86f13184f46b7ff36f0`. All files remain under `/tmp/sootup-static-review/attempt133/loading-three-arm/`. Source-only log preimage is archived before appending results; production source and frozen measured binary remain byte-identical. One isolated source+log commit, no root worktree change or push.
+
+Root independently audited the complete fixed12 loading reports/statistics and retained all adverse samples: PASS receipt SHA `d1d9a270624a183127a09ff38bace15f5ce938e68765e4816601a8b862c5c53a`.

@@ -270,6 +270,8 @@ impl Graph {
 
         let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
+        // The CSR owns its copied labels; release the source map before further loading.
+        drop(labels);
         drop(bv);
         let backward = build_backward_csr(&forward);
 
@@ -279,6 +281,8 @@ impl Graph {
         };
         let metadata_bytes = src.require("graph.metadata").map_err(io)?;
         let metadata = Metadata::parse(&metadata_bytes)?;
+        // Parsed metadata owns every value, including the optional ordinal binding.
+        drop(metadata_bytes);
         let class_overview = match src.bytes("graph.classoverview").map_err(io)? {
             Some(bytes) => Some(ClassOverview::parse(&bytes)?),
             None => None,
