@@ -46,7 +46,7 @@ class DefaultGraph private constructor(
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>>,
     private val edgeCount: Long
-) : Graph {
+) : Graph, PackedBranchMetadataSource {
 
     /**
      * Compact storage for branch scope data, used until [branchScopes] or
@@ -79,7 +79,7 @@ class DefaultGraph private constructor(
     }
 
     /** Materialised on first access from [rawBranchScopes]. */
-    private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
+    private val branchScopeIndex = lazy {
         rawBranchScopes.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
     }
 
@@ -158,16 +158,26 @@ class DefaultGraph private constructor(
     override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
 
     override fun branchScopes(): Sequence<BranchScope> =
-        branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
+        branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
-        branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
+        branchScopeIndex.value[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
-    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+    private val localDefinitionIndex = lazy {
         BranchScope.unpackDefinitionTable(rawLocalDefinitions)
     }
 
-    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex.value
+
+    override fun packedBranchScopes(): Sequence<PackedBranchScope>? {
+        if (branchScopeIndex.isInitialized()) return null
+        return rawBranchScopes.asIterable().packedBranchScopeSnapshot()
+    }
+
+    override fun packedLocalDefinitions(): Map<Int, IntArray>? {
+        if (localDefinitionIndex.isInitialized()) return null
+        return rawLocalDefinitions.packedLocalDefinitionSnapshot()
+    }
 
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 

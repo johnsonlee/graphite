@@ -20,7 +20,6 @@ import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.input.ResourceAccessor
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import java.io.Closeable
 import java.io.DataInput
 import java.io.DataInputStream
@@ -215,36 +214,12 @@ class MmapGraph internal constructor(
 
     override fun packedBranchScopes(): Sequence<PackedBranchScope>? {
         if (branchScopeIndex.isInitialized()) return null
-        return branchScopeData.groupBy { scope ->
-            validatePackedDefinitions(scope.trueDefinitions)
-            validatePackedDefinitions(scope.falseDefinitions)
-            scope.conditionNodeId
-        }.values.asSequence().flatMap { group ->
-            group.asSequence().map { scope ->
-                PackedBranchScope(
-                    scope.conditionNodeId, scope.method, scope.comparison,
-                    IntOpenHashSet(scope.trueBranchNodeIds).toIntArray(),
-                    IntOpenHashSet(scope.falseBranchNodeIds).toIntArray(),
-                    copyPackedDefinitions(scope.trueDefinitions), copyPackedDefinitions(scope.falseDefinitions)
-                )
-            }
-        }
+        return branchScopeData.packedBranchScopeSnapshot()
     }
 
     override fun packedLocalDefinitions(): Map<Int, IntArray>? {
         if (localDefinitionIndex.isInitialized()) return null
-        return localDefinitionData.mapValues { (_, definitions) -> copyPackedDefinitions(definitions) }
-    }
-
-    private fun copyPackedDefinitions(definitions: IntArray): IntArray {
-        validatePackedDefinitions(definitions)
-        return if (definitions.isEmpty()) BranchScope.EMPTY_DEFINITIONS else definitions.copyOf()
-    }
-
-    private fun validatePackedDefinitions(definitions: IntArray) {
-        require(definitions.size % BranchScope.DEFINITION_STRIDE == 0) {
-            "Packed definitions length ${definitions.size} is not a multiple of ${BranchScope.DEFINITION_STRIDE}"
-        }
+        return localDefinitionData.packedLocalDefinitionSnapshot()
     }
 
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()

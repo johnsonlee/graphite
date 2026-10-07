@@ -8,6 +8,7 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import java.io.Closeable
 import java.nio.file.Files
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
@@ -146,11 +147,44 @@ class PackedBranchMetadataSourceTest {
         }
     }
 
+    @Test
+    fun `a malformed later scope fails before snapshot consumption and remains invalid on retry`() = withGraph(configure = {
+        addBranchScope(NodeId(2), method, comparison, intArrayOf(6), intArrayOf())
+        addBranchScope(NodeId(1), method, comparison, intArrayOf(3), intArrayOf(), intArrayOf(2, 3), intArrayOf())
+    }) { graph ->
+        repeat(2) {
+            val error = assertFailsWith<IllegalArgumentException> { graph.packedBranchScopes() }
+            assertEquals("Packed definitions length 2 is not a multiple of 3", error.message)
+        }
+        val public = assertFailsWith<IllegalArgumentException> { graph.branchScopes() }
+        assertEquals("Packed definitions length 2 is not a multiple of 3", public.message)
+    }
+
+    @Test
+    fun `local snapshots preserve every key and return independent arrays for every entry`() = withGraph(configure = {
+        addLocalDefinitions(NodeId(6), intArrayOf(9, 6, 0))
+        addLocalDefinitions(NodeId(3), packedDefinitions)
+    }) { graph ->
+        val first = assertNotNull(graph.packedLocalDefinitions())
+        assertEquals(setOf(3, 6), first.keys)
+        assertContentEquals(intArrayOf(9, 6, 0), first.getValue(6))
+        assertContentEquals(packedDefinitions, first.getValue(3))
+        first.values.forEach { it.fill(99) }
+        val next = assertNotNull(graph.packedLocalDefinitions())
+        assertContentEquals(intArrayOf(9, 6, 0), next.getValue(6))
+        assertContentEquals(packedDefinitions, next.getValue(3))
+        val public = graph.localDefinitions()
+        assertEquals(public.keys.map { it.value }.toSet(), next.keys)
+        assertEquals(listOf(LocalDefinition(9, NodeId(6), NodeId(0))), public.getValue(NodeId(6)))
+        assertEquals(definitions, public.getValue(NodeId(3)))
+        assertNull(graph.packedLocalDefinitions())
+    }
+
     private fun assertMalformedScope(trueDefinitions: IntArray, falseDefinitions: IntArray) {
         withGraph(configure = {
             addBranchScope(NodeId(1), method, comparison, intArrayOf(3), intArrayOf(), trueDefinitions, falseDefinitions)
         }) { graph ->
-            val packed = assertFailsWith<IllegalArgumentException> { graph.packedBranchScopes()?.toList() }
+            val packed = assertFailsWith<IllegalArgumentException> { graph.packedBranchScopes() }
             val public = assertFailsWith<IllegalArgumentException> { graph.branchScopes().toList() }
             val length = if (trueDefinitions.isNotEmpty()) trueDefinitions.size else falseDefinitions.size
             assertEquals("Packed definitions length $length is not a multiple of 3", packed.message)
@@ -158,7 +192,7 @@ class PackedBranchMetadataSourceTest {
         }
     }
 
-    private fun fixture(builder: MmapGraphBuilder) {
+    private fun fixture(builder: FullGraphBuilder) {
         builder.addBranchScope(
             NodeId(1), method, comparison, intArrayOf(6, 3, 6), intArrayOf(3, 3),
             packedDefinitions, intArrayOf(7, 3, -1)
@@ -170,19 +204,30 @@ class PackedBranchMetadataSourceTest {
         builder.addLocalDefinitions(NodeId(3), packedDefinitions)
     }
 
-    private fun withGraph(configure: MmapGraphBuilder.() -> Unit = { fixture(this) }, action: (MmapGraph) -> Unit) {
-        val directory = Files.createTempDirectory("packed-branch-core")
-        try {
-            val builder = MmapGraphBuilder(directory)
-            builder.addMethod(method)
-            builder.addNode(IntConstant(NodeId(0), 0))
-            listOf(1, 2, 3, 6).forEach { id ->
-                builder.addNode(LocalVariable(NodeId(id), "local$id", TypeDescriptor("int"), method))
+    private class TestGraph(private val delegate: Graph) :
+        Graph by delegate,
+        PackedBranchMetadataSource by (delegate as PackedBranchMetadataSource),
+        Closeable {
+        override fun close() {
+            (delegate as? Closeable)?.close()
+        }
+    }
+
+    private fun withGraph(configure: FullGraphBuilder.() -> Unit = { fixture(this) }, action: (TestGraph) -> Unit) {
+        for (mapped in listOf(false, true)) {
+            val directory = Files.createTempDirectory("packed-branch-core-$mapped")
+            try {
+                val builder: FullGraphBuilder = if (mapped) MmapGraphBuilder(directory) else DefaultGraph.Builder()
+                builder.addMethod(method)
+                builder.addNode(IntConstant(NodeId(0), 0))
+                listOf(1, 2, 3, 6).forEach { id ->
+                    builder.addNode(LocalVariable(NodeId(id), "local$id", TypeDescriptor("int"), method))
+                }
+                builder.configure()
+                TestGraph(builder.build()).use(action)
+            } finally {
+                directory.toFile().deleteRecursively()
             }
-            builder.configure()
-            (builder.build() as MmapGraph).use(action)
-        } finally {
-            directory.toFile().deleteRecursively()
         }
     }
 }

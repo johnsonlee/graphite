@@ -9,9 +9,12 @@ import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
-import io.johnsonlee.graphite.graph.MmapGraph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
+import io.johnsonlee.graphite.graph.PackedBranchMetadataSource
+import java.io.Closeable
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.test.Test
@@ -31,9 +34,9 @@ class PackedBranchPersistenceTest {
     )
 
     @Test
-    fun `compact save preserves exact bytes and grouped scope order without initializing query views`() = withDirectory { dir ->
-        fixture(dir.resolve("compact-source")).use { compact ->
-            fixture(dir.resolve("fallback-source")).use { fallback ->
+    fun `compact save preserves exact bytes and grouped scope order without initializing query views`() = withDirectory { dir, mapped ->
+        fixture(dir.resolve("compact-source"), mapped).use { compact ->
+            fixture(dir.resolve("fallback-source"), mapped).use { fallback ->
                 val compactDir = dir.resolve("compact")
                 val fallbackDir = dir.resolve("fallback")
                 GraphStore.save(compact, compactDir)
@@ -49,13 +52,16 @@ class PackedBranchPersistenceTest {
                 assertEquals(listOf(definitions[1]), scopes[0].trueDefinitions)
                 assertEquals(listOf(definitions[2]), scopes[0].falseDefinitions)
                 assertEquals(listOf(definitions[0]), scopes[1].trueDefinitions)
+                assertEquals(listOf(LocalDefinition(9, NodeId(6), NodeId(4))), scopes[2].trueDefinitions)
+                val locals = GraphStore.load(compactDir, GraphStore.LoadMode.EAGER).localDefinitions()
+                assertEquals(listOf(LocalDefinition(9, NodeId(6), NodeId(4))), locals.getValue(NodeId(6)))
             }
         }
     }
 
     @Test
-    fun `snapshot arrays are owned and cannot modify later persistence or public query views`() = withDirectory { dir ->
-        fixture(dir.resolve("source")).use { graph ->
+    fun `snapshot arrays are owned and cannot modify later persistence or public query views`() = withDirectory { dir, mapped ->
+        fixture(dir.resolve("source"), mapped).use { graph ->
             val first = assertNotNull(graph.packedBranchScopes()).first()
             first.trueBranchNodeIds.fill(99)
             first.falseBranchNodeIds.fill(99)
@@ -74,8 +80,8 @@ class PackedBranchPersistenceTest {
     }
 
     @Test
-    fun `materialized mutations use public views independently for scopes and local definitions`() = withDirectory { dir ->
-        fixture(dir.resolve("source")).use { graph ->
+    fun `materialized mutations use public views independently for scopes and local definitions`() = withDirectory { dir, mapped ->
+        fixture(dir.resolve("source"), mapped).use { graph ->
             val scope = graph.branchScopesFor(NodeId(1)).first()
             assertNull(graph.packedBranchScopes())
             assertNotNull(graph.packedLocalDefinitions())
@@ -93,7 +99,7 @@ class PackedBranchPersistenceTest {
             assertEquals(listOf(replacement), actual.trueDefinitions)
             assertEquals(listOf(definitions[0], replacement, definitions[2]), loaded.localDefinitions().getValue(NodeId(3)))
         }
-        fixture(dir.resolve("locals-first")).use { graph ->
+        fixture(dir.resolve("locals-first"), mapped).use { graph ->
             assertEquals(definitions, graph.localDefinitions().getValue(NodeId(3)))
             assertNull(graph.packedLocalDefinitions())
             assertNotNull(graph.packedBranchScopes())
@@ -101,23 +107,29 @@ class PackedBranchPersistenceTest {
     }
 
     @Test
-    fun `compact definitions preserve duplicate triples and reject malformed packed lengths like public views`() = withDirectory { dir ->
-        fixture(dir.resolve("duplicates"), duplicateDefinitions = true).use { graph ->
-            val packed = BranchScope.packDefinitions(listOf(definitions[1], definitions[1]))
-            assertContentEquals(packed, assertNotNull(graph.packedBranchScopes()).first().trueDefinitions)
-            assertEquals(listOf(definitions[1], definitions[1]), graph.branchScopes().first().trueDefinitions)
+    fun `compact definitions preserve duplicate triples and reject malformed packed lengths like public views`() =
+        withDirectory { dir, mapped ->
+            fixture(dir.resolve("duplicates"), mapped, duplicateDefinitions = true).use { graph ->
+                val packed = BranchScope.packDefinitions(listOf(definitions[1], definitions[1]))
+                assertContentEquals(packed, assertNotNull(graph.packedBranchScopes()).first().trueDefinitions)
+                assertEquals(listOf(definitions[1], definitions[1]), graph.branchScopes().first().trueDefinitions)
+            }
+            fixture(dir.resolve("malformed"), mapped, malformedDefinitions = true).use { graph ->
+                val compact = assertFailsWith<IllegalArgumentException> { assertNotNull(graph.packedBranchScopes()).toList() }
+                val fallback = assertFailsWith<IllegalArgumentException> { graph.branchScopes().toList() }
+                assertEquals(fallback.message, compact.message)
+                assertTrue(compact.message.orEmpty().contains("not a multiple of 3"))
+            }
         }
-        fixture(dir.resolve("malformed"), malformedDefinitions = true).use { graph ->
-            val compact = assertFailsWith<IllegalArgumentException> { assertNotNull(graph.packedBranchScopes()).toList() }
-            val fallback = assertFailsWith<IllegalArgumentException> { graph.branchScopes().toList() }
-            assertEquals(fallback.message, compact.message)
-            assertTrue(compact.message.orEmpty().contains("not a multiple of 3"))
-        }
-    }
 
-    private fun fixture(dir: Path, duplicateDefinitions: Boolean = false, malformedDefinitions: Boolean = false): MmapGraph {
+    private fun fixture(
+        dir: Path,
+        mapped: Boolean,
+        duplicateDefinitions: Boolean = false,
+        malformedDefinitions: Boolean = false
+    ): TestGraph {
         Files.createDirectories(dir)
-        val builder = MmapGraphBuilder(dir)
+        val builder: FullGraphBuilder = if (mapped) MmapGraphBuilder(dir) else DefaultGraph.Builder()
         builder.addMethod(method)
         listOf(1, 2, 3, 6).forEach { id ->
             builder.addNode(LocalVariable(NodeId(id), "local$id", TypeDescriptor("int"), method))
@@ -134,13 +146,16 @@ class PackedBranchPersistenceTest {
             NodeId(1), method, comparison, intArrayOf(6, 3, 6), intArrayOf(3),
             trueDefinitions, BranchScope.packDefinitions(listOf(definitions[2]))
         )
-        builder.addBranchScope(NodeId(2), method, comparison, intArrayOf(5), intArrayOf())
+        builder.addBranchScope(
+            NodeId(2), method, comparison, intArrayOf(5), intArrayOf(), intArrayOf(9, 6, 4)
+        )
         builder.addBranchScope(
             NodeId(1), method, comparison, intArrayOf(3), intArrayOf(),
             BranchScope.packDefinitions(listOf(definitions[0])), BranchScope.EMPTY_DEFINITIONS
         )
         builder.addLocalDefinitions(NodeId(3), BranchScope.packDefinitions(definitions))
-        return builder.build() as MmapGraph
+        builder.addLocalDefinitions(NodeId(6), intArrayOf(9, 6, 4))
+        return TestGraph(builder.build())
     }
 
     private fun assertSamePersistence(actual: Path, expected: Path, source: Graph) {
@@ -153,12 +168,23 @@ class PackedBranchPersistenceTest {
         }
     }
 
-    private fun withDirectory(action: (Path) -> Unit) {
-        val dir = Files.createTempDirectory("packed-branch-persistence")
-        try {
-            action(dir)
-        } finally {
-            dir.toFile().deleteRecursively()
+    private class TestGraph(private val delegate: Graph) :
+        Graph by delegate,
+        PackedBranchMetadataSource by (delegate as PackedBranchMetadataSource),
+        Closeable {
+        override fun close() {
+            (delegate as? Closeable)?.close()
+        }
+    }
+
+    private fun withDirectory(action: (Path, Boolean) -> Unit) {
+        for (mapped in listOf(false, true)) {
+            val dir = Files.createTempDirectory("packed-branch-persistence-$mapped")
+            try {
+                action(dir, mapped)
+            } finally {
+                dir.toFile().deleteRecursively()
+            }
         }
     }
 }
