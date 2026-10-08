@@ -25,6 +25,10 @@ on:
         description: 'Release tag to rehearse (v-prefixed, e.g. v2.5.0-rc.1)'
         required: true
         type: string
+      calibrate_apple:
+        description: 'Collect real-corpus Apple frontend samples from release artifacts (no performance acceptance)'
+        type: boolean
+        default: false
 
 env:
   RELEASE_TAG: ${{ inputs.tag || github.event.client_payload.tag || github.ref_name }}
@@ -52,8 +56,10 @@ jobs:
       run: |
         python3 .github/scripts/release-version.py --self-test
         python3 .github/scripts/release-version.py "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
-    - name: Test release smoke validation
-      run: python3 .github/scripts/test_verify_apple_release.py
+    - name: Test release smoke validation and real-source preparation
+      run: |
+        python3 .github/scripts/test_verify_apple_release.py
+        python3 -m unittest discover -s backend/bench -p test_prepare_apple_corpus.py
 
   # ---- Maven Central (Sonatype) ----
   maven:
@@ -507,6 +513,154 @@ jobs:
           ${{ runner.temp }}/apple-release-check/*.csv
           ${{ runner.temp }}/apple-release-check/*.graphite
         if-no-files-found: warn
+
+  # Optional calibration uses the same pinned-source preparation recipe as the PR gate.
+  # It gathers observations for unmeasured manifests; it never invokes the comparator or
+  # turns a missing base/shape/ceiling into a performance acceptance result.
+  apple-corpus-calibration:
+    name: apple-corpus-calibration (${{ matrix.corpus }})
+    needs: [validate, apple-frontend, release]
+    if: github.event_name == 'workflow_dispatch' && inputs.calibrate_apple && github.repository_owner == 'johnsonlee'
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    timeout-minutes: 120
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - corpus: swiftformat
+            os: ubuntu-latest
+            container: swift:6.1.3
+            target: x86_64-unknown-linux-gnu
+            manifest: apple-frontend-corpus.json
+            input: package
+            static: --static-swift-stdlib
+          - corpus: swift-package-manager
+            os: ubuntu-latest
+            container: swift:6.1.3
+            target: x86_64-unknown-linux-gnu
+            manifest: apple-frontend-corpus-large.json
+            input: package
+            static: --static-swift-stdlib
+          - corpus: signal-ios
+            os: macos-15
+            target: aarch64-apple-darwin
+            manifest: apple-frontend-corpus-xcode.json
+            input: xcodeproj
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+      JAVA_TOOL_OPTIONS: -Xmx2g
+      BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+    steps:
+    - name: Install preparation dependencies on Linux
+      if: matrix.container != ''
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+    - name: Select the corpus compiler
+      if: matrix.input == 'xcodeproj'
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.4'
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: actions/download-artifact@v8
+      with:
+        name: release-${{ env.RELEASE_TAG }}
+        path: dry-run
+    - name: Verify and unpack the final frontend release asset
+      shell: bash
+      run: |
+        set -euo pipefail
+        ASSETS="$PWD/dry-run/release-assets"
+        ASSET="graphite-frontend-apple-${RELEASE_VERSION}-${{ matrix.target }}.tar.gz"
+        (cd "${ASSETS}" && shasum -a 256 -c "${ASSET}.sha256" graphite.jar.sha256)
+        mkdir -p "${RUNNER_TEMP}/calibration-frontend" calibration-results
+        tar -xzf "${ASSETS}/${ASSET}" -C "${RUNNER_TEMP}/calibration-frontend"
+        cp "backend/bench/${{ matrix.manifest }}" calibration-results/corpus.json
+        python3 - <<'PY'
+        import json, os, pathlib
+        original = json.loads(pathlib.Path("calibration-results/corpus.json").read_text())
+        unpinned = {**original, "shape": None, "files": None, "ceilings": None, "baselineShapes": {}}
+        pathlib.Path("calibration-results/unpinned-corpus.json").write_text(json.dumps(unpinned, indent=2) + "\n")
+        pathlib.Path("calibration-results/scope.json").write_text(json.dumps({
+            "purpose": "real-source calibration only", "performanceAcceptance": False,
+            "revision": os.environ["GITHUB_SHA"], "releaseVersion": os.environ["RELEASE_VERSION"],
+            "baseline": os.environ["BASELINE_SHA"], "baselinePurpose": "shape calibration only; no paired acceptance", "timedBoundary": "existing compiler index store through IR emission",
+            "excluded": ["compilation", "import/save timing", "graph load", "server query latency"],
+        }, indent=2) + "\n")
+        PY
+    - name: Prepare the pinned real source corpus
+      shell: bash
+      run: |
+        set -euo pipefail
+        python3 backend/bench/prepare-apple-corpus.py \
+          --corpus "backend/bench/${{ matrix.manifest }}" --out "${RUNNER_TEMP}/corpus" \
+          --derived-data "${RUNNER_TEMP}/derived-data" --log calibration-results/prepare.log
+    - name: Record raw calibration samples without an acceptance verdict
+      shell: bash
+      env:
+        CORPUS_INPUT: ${{ matrix.input }}
+        MANIFEST: ${{ matrix.manifest }}
+      run: |
+        set -euo pipefail
+        CORPUS=calibration-results/unpinned-corpus.json
+        if [[ "${CORPUS_INPUT}" = package ]]; then
+          INPUT=(--package "${RUNNER_TEMP}/corpus")
+        else
+          PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")
+          INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")
+        fi
+        python3 backend/bench/apple-frontend.py \
+          --frontend "${RUNNER_TEMP}/calibration-frontend/graphite-frontend-apple" \
+          "${INPUT[@]}" --corpus "${CORPUS}" --repetitions 5 --warmup 1 \
+          --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \
+          --log calibration-results/candidate-frontend.log --out calibration-results/candidate-samples.json
+
+    - name: Checkout the fixed pre-fix baseline for shape calibration
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ env.BASELINE_SHA }}
+        path: calibration-baseline
+        persist-credentials: false
+    - name: Build the baseline frontend
+      shell: bash
+      run: |
+        set -euo pipefail
+        test "$(git -C calibration-baseline rev-parse HEAD)" = "${BASELINE_SHA}"
+        calibration-baseline/frontend/apple/swift.sh build -c release --jobs 4 ${{ matrix.static }} \
+          > calibration-results/baseline-build.log 2>&1
+    - name: Record baseline shape and raw samples on the same prepared corpus
+      shell: bash
+      env:
+        CORPUS_INPUT: ${{ matrix.input }}
+        MANIFEST: ${{ matrix.manifest }}
+      run: |
+        set -euo pipefail
+        CORPUS=calibration-results/unpinned-corpus.json
+        if [[ "${CORPUS_INPUT}" = package ]]; then
+          INPUT=(--package "${RUNNER_TEMP}/corpus")
+        else
+          PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")
+          INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")
+        fi
+        python3 backend/bench/apple-frontend.py \
+          --frontend calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple \
+          "${INPUT[@]}" --corpus "${CORPUS}" --baseline-revision "${BASELINE_SHA}" --repetitions 5 --warmup 1 \
+          --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \
+          --log calibration-results/baseline-frontend.log --out calibration-results/baseline-samples.json
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: apple-corpus-calibration-${{ matrix.corpus }}-${{ env.RELEASE_TAG }}
+        path: calibration-results/
+        if-no-files-found: error
+        retention-days: 30
 
   # ---- Homebrew tap ----
   # Runs after the release is published and can be re-run on its own: the formula was

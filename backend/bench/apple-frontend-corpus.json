@@ -1,5 +1,5 @@
 {
-  "schema": "graphite-apple-frontend-corpus-v1",
+  "schema": "graphite-apple-frontend-corpus-v2",
   "label": "swiftformat",
   "repository": "https://github.com/nicklockwood/SwiftFormat.git",
   "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9",
@@ -20,5 +20,7 @@
     "nodes": 32530,
     "edges": 14655,
     "strings": 7173
-  }
+  },
+  "kind": "real-source",
+  "input": "package"
 }

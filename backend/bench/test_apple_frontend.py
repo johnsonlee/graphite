@@ -143,6 +143,12 @@ class EndToEnd(unittest.TestCase):
     def setUp(self):
         self.directory = tempfile.TemporaryDirectory()
         self.root = pathlib.Path(self.directory.name)
+        subprocess.run(["git", "init", "-q", str(self.root)], check=True)
+        (self.root / "source.swift").write_text("func example() {}\n")
+        subprocess.run(["git", "-C", str(self.root), "add", "source.swift"], check=True)
+        subprocess.run(["git", "-C", str(self.root), "-c", "user.name=Harness Test", "-c", "user.email=test@example.invalid",
+                        "commit", "-qm", "Fixture identity for harness correctness tests"], check=True)
+        self.commit = subprocess.check_output(["git", "-C", str(self.root), "rev-parse", "HEAD"], text=True).strip()
 
     def tearDown(self):
         self.directory.cleanup()
@@ -163,18 +169,21 @@ class EndToEnd(unittest.TestCase):
 
     def manifest(self, **extra):
         path = self.root / "corpus.json"
-        path.write_text(json.dumps({"schema": "graphite-apple-frontend-corpus-v1", "label": "stub", "repository": "r", "commit": "c",
+        path.write_text(json.dumps({"schema": "graphite-apple-frontend-corpus-v2", "kind": "real-source", "label": "stub", "repository": "r", "commit": self.commit,
                                     "files": 4, "ceilings": {"wallMs": 5000, "rssMiB": 512}, **extra}))
         return path
 
-    def run_harness(self, frontend, corpus, repetitions=2, corpus_arguments=None, verify=None):
-        out = self.root / "rows.json"
+    def run_harness(self, frontend, corpus, repetitions=2, corpus_arguments=None, verify=None, baseline_revision=None):
+        run = self.root / f"run-{len(list(self.root.glob('run-*')))}"
+        run.mkdir()
+        out = run / "rows.json"
         result = subprocess.run(
             [sys.executable, str(HERE / "apple-frontend.py"), "--frontend", str(frontend),
              *(corpus_arguments or ["--package", str(self.root)]),
              "--corpus", str(corpus), "--repetitions", str(repetitions), "--warmup", "1",
              *([] if verify is None else ["--verify", verify]),
-             "--log", str(self.root / "run.log"), "--out", str(out)],
+             *([] if baseline_revision is None else ["--baseline-revision", baseline_revision]),
+             "--log", str(run / "run.log"), "--out", str(out)],
             capture_output=True, text=True,
         )
         return result, out
@@ -195,6 +204,10 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(rows[0]["primaryMetric"]["scoreUnit"], "ms/op")
         self.assertEqual(rows[1]["primaryMetric"]["scoreUnit"], "MiB")
         self.assertEqual(len(rows[0]["primaryMetric"]["rawData"][0]), 2)
+        samples = [json.loads(line) for line in pathlib.Path(rows[0]["samples"]).read_text().splitlines()]
+        self.assertEqual([sample["warmup"] for sample in samples], [True, False, False])
+        self.assertTrue(all(sample["status"] == "valid-ir" and sample["shape"] == shape() for sample in samples))
+        self.assertTrue(all(sample["cpuMs"] >= 0 and sample["peakRssBytes"] > 0 for sample in samples))
         self.assertIn("stub: 4 files, 3 nodes, 2 edges", result.stdout)
 
     def test_a_truncated_ir_is_refused_whatever_the_summary_says(self):
@@ -215,7 +228,7 @@ class EndToEnd(unittest.TestCase):
         # The pinned file count is checked too.
         result, _ = self.run_harness(self.stub(stream(), shape(files=5)), self.manifest())
         self.assertEqual(result.returncode, 2)
-        self.assertIn("has 5 Swift files, the manifest pins 4", result.stderr)
+        self.assertIn("has 5 source files, the manifest pins 4", result.stderr)
 
     def test_a_project_corpus_is_measured_through_its_derived_data(self):
         manifest = self.manifest(input="xcodeproj")
@@ -227,7 +240,7 @@ class EndToEnd(unittest.TestCase):
         self.assertTrue(calls[0].startswith(f"build --project {self.root / 'App.xcodeproj'} --derived-data {self.root / 'derived'} --skip-build --out "), calls[0])
         rows = json.loads(out.read_text())
         self.assertEqual(rows[0]["input"], "xcodeproj")
-        self.assertEqual(rows[0]["corpus"], {"repository": "r", "commit": "c"})
+        self.assertEqual(rows[0]["corpus"], {"kind": "real-source", "repository": "r", "commit": self.commit})
         # The package path and a project manifest never mix, in either direction.
         result, _ = self.run_harness(self.recording_stub(), manifest)
         self.assertEqual(result.returncode, 2)
@@ -239,14 +252,30 @@ class EndToEnd(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("--project needs --derived-data", result.stderr)
 
-    def test_a_generated_corpus_records_its_generator(self):
+    def test_a_generated_corpus_is_refused_before_running(self):
         generator = {"script": "generate-apple-corpus.py", "seed": 1, "files": 4, "modules": 1, "layout": "package", "name": "Demo"}
         manifest = self.manifest(generator=generator)
-        result, out = self.run_harness(self.stub(stream(), shape()), manifest)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        rows = json.loads(out.read_text())
-        self.assertEqual(rows[0]["input"], "package")
-        self.assertEqual(rows[0]["corpus"], {"generator": generator})
+        result, out = self.run_harness(self.recording_stub(), manifest)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("generated corpora are correctness-only", result.stderr)
+        self.assertFalse((self.root / "args").exists())
+        self.assertFalse(out.exists())
+
+    def test_changed_sources_and_wrong_revision_are_refused(self):
+        frontend = self.recording_stub()
+        result, _ = self.run_harness(frontend, self.manifest(commit="0" * 40))
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("does not match its pinned commit", result.stderr)
+        (self.root / "source.swift").write_text("func changed() {}\n")
+        result, _ = self.run_harness(frontend, self.manifest())
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("tracked changes", result.stderr)
+        self.assertFalse((self.root / "args").exists())
+
+    def test_dependency_lock_mismatch_is_refused(self):
+        result, _ = self.run_harness(self.recording_stub(), self.manifest(dependencyLock={"path": "fixture/Package.resolved", "sha256": "0" * 64}))
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn("dependency pin", result.stderr)
 
     def test_the_production_reader_verifies_the_last_measured_ir(self):
         # The verify command sees the IR the last run wrote, at the path in {ir}, and an {out}.
@@ -272,18 +301,72 @@ class EndToEnd(unittest.TestCase):
         self.assertIn("not verified by the production reader", result.stdout)
         # A refusal by the reader refuses the snapshot, with the reader's output.
         refusing = f"{sys.executable} -c \"import sys; print('Error: IR node 0 has no kind', file=sys.stderr); sys.exit(1)\" {{ir}} {{out}}"
-        result, _ = self.run_harness(self.stub(stream(), shape()), self.manifest(), verify=refusing)
+        result, out = self.run_harness(self.stub(stream(), shape()), self.manifest(), verify=refusing)
         self.assertEqual(result.returncode, 2)
         self.assertIn("the production reader refused the measured IR (exit 1)", result.stderr)
         self.assertIn("IR node 0 has no kind", result.stderr)
+        verification = json.loads(pathlib.Path(str(out) + ".verification.json").read_text())
+        self.assertFalse(verification["passed"])
+        self.assertEqual(verification["exitCode"], 1)
+        self.assertIn("IR node 0 has no kind", verification["stderr"])
+
+    def test_each_run_must_print_its_own_summary(self):
+        script = self.stub(stream(), shape())
+        script.write_text(script.read_text().replace("import shutil, sys", "import shutil, sys, pathlib")
+                          .replace("sys.stderr.write(", f"counter = pathlib.Path({str(self.root / 'count')!r})\n"
+                                   "seen = counter.exists()\ncounter.touch()\nif not seen: sys.stderr.write("))
+        result, out = self.run_harness(script, self.manifest())
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("printed no summary", result.stderr)
+        samples = [json.loads(line) for line in pathlib.Path(str(out) + ".samples.jsonl").read_text().splitlines()]
+        self.assertEqual([row["status"] for row in samples], ["valid-ir", "failed"])
+        self.assertTrue(samples[0]["warmup"])
+        self.assertFalse(samples[1]["warmup"])
+
+    def test_reusing_evidence_paths_cannot_destroy_or_relabel_a_previous_run(self):
+        script = self.stub(stream(), shape())
+        corpus = self.manifest()
+        first, out = self.run_harness(script, corpus)
+        self.assertEqual(first.returncode, 0, first.stderr)
+        sample_path = pathlib.Path(str(out) + ".samples.jsonl")
+        original = {path: path.read_bytes() for path in [out, sample_path, out.parent / "run.log"]}
+        again = subprocess.run([sys.executable, str(HERE / "apple-frontend.py"), "--frontend", str(script),
+                                "--package", str(self.root), "--corpus", str(corpus),
+                                "--log", str(out.parent / "run.log"), "--out", str(out)], capture_output=True, text=True)
+        self.assertEqual(again.returncode, 2)
+        self.assertIn("evidence path already exists", again.stderr)
+        self.assertEqual({path: path.read_bytes() for path in original}, original)
+
+    def test_baseline_shape_transition_requires_exact_revision_and_reason(self):
+        baseline = "b" * 40
+        changed = {**shape(), "files": 5}
+        corpus = self.manifest(shape=changed, files=5, baselineShapes={baseline: {"shape": shape(), "reason": "candidate discovers the package header"}})
+        script = self.stub(stream(), shape())
+        result, out = self.run_harness(script, corpus, baseline_revision=baseline)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        rows = json.loads(out.read_text())
+        self.assertEqual(rows[0]["baselineRevision"], baseline)
+        self.assertEqual(rows[0]["shape"], shape())
+        candidate, _ = self.run_harness(script, corpus)
+        self.assertEqual(candidate.returncode, 2)
+        wrong_revision, _ = self.run_harness(script, corpus, baseline_revision="c" * 40)
+        self.assertEqual(wrong_revision.returncode, 2)
+        missing_reason = self.manifest(shape=changed, files=5, baselineShapes={baseline: {"shape": shape()}})
+        refused, _ = self.run_harness(script, missing_reason, baseline_revision=baseline)
+        self.assertEqual(refused.returncode, 2)
+        self.assertIn("explicit reason", refused.stderr)
 
     def test_a_failing_frontend_is_refused(self):
         script = self.root / "failing"
         script.write_text("#!/bin/sh\necho 'error: no' >&2\nexit 3\n")
         script.chmod(script.stat().st_mode | stat.S_IEXEC)
-        result, _ = self.run_harness(script, self.manifest())
+        result, out = self.run_harness(script, self.manifest())
         self.assertEqual(result.returncode, 2)
         self.assertIn("frontend exited with status 3", result.stderr)
+        samples = [json.loads(line) for line in pathlib.Path(str(out) + ".samples.jsonl").read_text().splitlines()]
+        self.assertEqual(len(samples), 1)
+        self.assertEqual(samples[0]["exitCode"], 3)
+        self.assertEqual(samples[0]["status"], "failed")
 
 
 if __name__ == "__main__":

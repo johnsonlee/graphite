@@ -119,22 +119,16 @@ class Rendering(unittest.TestCase):
 
 
 class Manifests(unittest.TestCase):
-    def test_the_pinned_manifests_describe_the_corpora_they_pin(self):
+    def test_performance_manifests_are_real_source_and_not_generator_inputs(self):
         for name in ["apple-frontend-corpus-large.json", "apple-frontend-corpus-xcode.json"]:
             with self.subTest(manifest=name):
                 manifest = json.loads((HERE / name).read_text())
-                corpus = generator.corpus_from_manifest(manifest)
-                self.assertEqual(corpus.files, manifest["files"])
-                self.assertEqual(corpus.layout, manifest["generator"]["layout"])
-                self.assertEqual(manifest["input"], "package" if corpus.layout == "package" else "xcodeproj")
-                files = generator.render(corpus)
-                swift = sum(1 for path in files if path.endswith(".swift") and path != "Package.swift")
-                self.assertEqual(swift, manifest["files"])
-        large = json.loads((HERE / "apple-frontend-corpus-large.json").read_text())
-        xcode = json.loads((HERE / "apple-frontend-corpus-xcode.json").read_text())
-        # The same sources in both layouts.
-        self.assertEqual({k: v for k, v in large["generator"].items() if k != "layout"},
-                         {k: v for k, v in xcode["generator"].items() if k != "layout"})
+                self.assertEqual(manifest["schema"], "graphite-apple-frontend-corpus-v2")
+                self.assertEqual(manifest["kind"], "real-source")
+                self.assertRegex(manifest["commit"], r"^[0-9a-f]{40}$")
+                self.assertNotIn("generator", manifest)
+                with self.assertRaises(ValueError):
+                    generator.corpus_from_manifest(manifest)
 
     def test_a_manifest_without_a_matching_generator_is_refused(self):
         with self.assertRaises(ValueError):

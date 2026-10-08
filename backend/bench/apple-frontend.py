@@ -5,8 +5,8 @@ Xcode project.
 The benchmark gate (`.github/workflows/benchmark.yml`, jobs `apple-frontend` and
 `apple-frontend-xcode`) runs this against the base and the candidate `graphite-frontend-apple`
 on a pinned corpus: `apple-frontend-corpus.json` (a real 181-file package, the fast smoke),
-`apple-frontend-corpus-large.json` (a generated package at iOS-app scale, Linux) and
-`apple-frontend-corpus-xcode.json` (the same scale as an iOS `.xcodeproj`, macOS). Every
+`apple-frontend-corpus-large.json` (Swift Package Manager, Linux) and
+`apple-frontend-corpus-xcode.json` (Signal's mixed-language workspace, macOS). Every
 repetition is one `build --package <dir> --skip-build` or `build --project <xcodeproj>
 --derived-data <dir> --skip-build` invocation: the index store already exists, so the
 measurement is the frontend's own work (source discovery through `swift package describe` or
@@ -45,7 +45,10 @@ refused) is handed to the command with `{ir}` and `{out}` substituted, normally
 under test; a non-zero exit refuses the snapshot, and the rows record the verification the
 comparator requires.
 """
-import argparse, hashlib, json, os, pathlib, re, resource, statistics, subprocess, sys, tempfile, time
+import argparse, hashlib, json, os, pathlib, re, resource, shlex, statistics, subprocess, sys, tempfile, time
+
+# graphite-apple-real-source-v1: transition marker for base-owned CI controls.
+CORPUS_SCHEMA = "graphite-apple-frontend-corpus-v2"
 
 BENCHMARK_PREFIX = "apple.frontend."
 MODE = "sequential-run"
@@ -64,10 +67,19 @@ class InvalidIR(Exception):
     pass
 
 
+class SnapshotRefused(SystemExit):
+    def __init__(self, message):
+        super().__init__(2)
+        self.message = message
+
+    def __str__(self):
+        return self.message
+
+
 def fail(message):
-    """A refused snapshot: the reason on stderr, exit 2 like the other harnesses."""
+    """A refused snapshot: retain the reason in the journal and exit 2."""
     print(message, file=sys.stderr)
-    sys.exit(2)
+    raise SnapshotRefused(message)
 
 
 def read_varint(data, at):
@@ -154,9 +166,12 @@ def validate_ir(path, shape):
     return counted
 
 
-def parse_summary(log):
+def parse_summary(log, start_offset=0):
     """The frontend's summary line as a shape dict, or an InvalidIR when it printed none."""
-    matches = [SUMMARY.search(line) for line in pathlib.Path(log).read_text(errors="replace").splitlines()]
+    with open(log, "rb") as source:
+        source.seek(start_offset)
+        lines = source.read().decode(errors="replace").splitlines()
+    matches = [SUMMARY.search(line) for line in lines]
     matches = [m for m in matches if m]
     if not matches:
         raise InvalidIR(f"the frontend printed no summary line; see {log}")
@@ -174,31 +189,73 @@ def input_arguments(args):
 
 
 def corpus_reference(corpus):
-    """What the rows record about where the corpus came from: a repository at a commit, or
-    the generator block a generated corpus is reproduced from."""
-    if "generator" in corpus:
-        return {"generator": corpus["generator"]}
-    return {"repository": corpus["repository"], "commit": corpus["commit"]}
+    """Bind measurements to actual application sources, never a generated graph."""
+    if corpus.get("schema") != CORPUS_SCHEMA or corpus.get("kind") != "real-source" or "generator" in corpus:
+        fail("performance measurements require a v2 real-source corpus; generated corpora are correctness-only")
+    if not corpus.get("repository") or not re.fullmatch(r"[0-9a-f]{40}", corpus.get("commit", "")):
+        fail("the real-source corpus must pin a repository and full commit SHA")
+    return {key: corpus[key] for key in ("kind", "repository", "commit", "submodules", "dependencyLock") if key in corpus}
 
 
-def run_once(frontend, corpus_arguments, out, log):
+def verify_source(corpus, root):
+    """Check the actual checkout before timing, including pinned dependency sources."""
+    def git(*args):
+        result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+        if result.returncode:
+            fail(f"cannot verify corpus checkout: {result.stderr.strip()}")
+        return result.stdout.strip()
+    if git("rev-parse", "HEAD") != corpus["commit"]:
+        fail("the corpus checkout does not match its pinned commit")
+    if git("status", "--porcelain", "--untracked-files=no", "--ignore-submodules=untracked"):
+        fail("the corpus has tracked changes; performance requires the pinned sources")
+    for path, commit in corpus.get("submodules", {}).items():
+        if git("-C", path, "rev-parse", "HEAD") != commit:
+            fail(f"corpus submodule {path} does not match its pinned commit")
+    if corpus.get("dependencyLock"):
+        lock = pathlib.Path(root) / "Package.resolved"
+        if not lock.is_file() or hashlib.sha256(lock.read_bytes()).hexdigest() != corpus["dependencyLock"]["sha256"]:
+            fail("the corpus Package.resolved does not match its dependency pin")
+
+
+def expected_shape(corpus, baseline_revision):
+    if baseline_revision is None:
+        return corpus.get("shape"), corpus.get("files")
+    if not re.fullmatch(r"[0-9a-f]{40}", baseline_revision):
+        fail("baseline revision must be a full commit SHA")
+    transition = corpus.get("baselineShapes", {}).get(baseline_revision)
+    if transition is None:
+        return corpus.get("shape"), corpus.get("files")
+    shape = transition.get("shape")
+    if not transition.get("reason") or not isinstance(shape, dict) or any(
+            not isinstance(shape.get(key), int) or isinstance(shape[key], bool) or shape[key] < 0 for key in SHAPE_KEYS):
+        fail("a baseline shape transition requires a complete measured shape and explicit reason")
+    return shape, shape["files"]
+
+
+def run_once(frontend, corpus_arguments, out, log, report=lambda sample: None):
     """One skip-build run: wall milliseconds, peak RSS bytes, graph shape, IR sha256.
     The IR is validated against the shape the frontend reported before it counts."""
     started = time.perf_counter()
     with open(log, "ab") as sink:
+        log_start = sink.tell()
         process = subprocess.Popen(
             [frontend, "build", *corpus_arguments, "--skip-build", "--out", str(out)],
             stdout=sink, stderr=sink,
         )
         _, status, usage = os.wait4(process.pid, 0)
+        process.returncode = os.waitstatus_to_exitcode(status)
     wall_ms = (time.perf_counter() - started) * 1000
     code = os.waitstatus_to_exitcode(status)
+    # Retained even for a failed process or invalid output. RSS is the waited
+    # process's high-water mark, not a sampled allocation or JVM heap size.
+    max_rss = usage.ru_maxrss * (1 if sys.platform == "darwin" else 1024)
+    report({"wallMs": wall_ms, "cpuMs": (usage.ru_utime + usage.ru_stime) * 1000,
+            "userMs": usage.ru_utime * 1000, "systemMs": usage.ru_stime * 1000,
+            "peakRssBytes": max_rss, "exitCode": code})
     if code != 0:
         fail(f"frontend exited with status {code}; see {log}")
-    # Linux reports kilobytes, macOS bytes.
-    max_rss = usage.ru_maxrss * (1 if sys.platform == "darwin" else 1024)
     try:
-        shape = parse_summary(log)
+        shape = parse_summary(log, log_start)
         validate_ir(out, shape)
     except InvalidIR as error:
         fail(f"the measured IR is not valid Graphite IR: {error}")
@@ -206,12 +263,14 @@ def run_once(frontend, corpus_arguments, out, log):
     return wall_ms, max_rss, shape, digest
 
 
-def verify(command, ir, scratch):
+def verify(command, ir, scratch, report=lambda result: None):
     """Runs the production reader over a measured IR: `{ir}` and `{out}` are substituted, a
     non-zero exit refuses the snapshot with the reader's last lines of output."""
     out = pathlib.Path(scratch) / "verified-graph"
-    rendered = command.replace("{ir}", str(ir)).replace("{out}", str(out))
+    rendered = command.replace("{ir}", shlex.quote(str(ir))).replace("{out}", shlex.quote(str(out)))
     completed = subprocess.run(rendered, shell=True, capture_output=True, text=True)
+    report({"command": command, "renderedCommand": rendered, "exitCode": completed.returncode,
+            "stdout": completed.stdout, "stderr": completed.stderr, "passed": completed.returncode == 0})
     if completed.returncode != 0:
         tail = "\n".join((completed.stdout + completed.stderr).strip().splitlines()[-20:])
         fail(f"the production reader refused the measured IR (exit {completed.returncode}): {rendered}\n{tail}")
@@ -235,27 +294,51 @@ def main():
     corpus_input.add_argument("--project", help=".xcodeproj or .xcworkspace, already built with xcodebuild into --derived-data")
     parser.add_argument("--derived-data", help="the derived data directory of the xcodebuild of --project (its index store is read)")
     parser.add_argument("--corpus", required=True, help="corpus manifest (apple-frontend-corpus*.json)")
+    parser.add_argument("--baseline-revision", help="full baseline commit SHA; selects only its explicitly pinned baselineShapes entry")
     parser.add_argument("--repetitions", type=int, default=5)
-    parser.add_argument("--warmup", type=int, default=1, help="unrecorded runs before the repetitions")
+    parser.add_argument("--warmup", type=int, default=1, help="runs retained in the journal but excluded from metric aggregation")
     parser.add_argument("--verify", help="a command run over the last measured IR with {ir} and {out} substituted, e.g. "
                         "'java -jar graphite.jar import {ir} -o {out}'; a non-zero exit refuses the snapshot")
     parser.add_argument("--log", required=True, help="where the frontend's stderr of every run goes")
     parser.add_argument("--out", required=True, help="result rows (JSON)")
     args = parser.parse_args()
     corpus = json.load(open(args.corpus))
+    reference = corpus_reference(corpus)
+    pinned, expected_files = expected_shape(corpus, args.baseline_revision)
     label = corpus["label"]
     kind, corpus_arguments = input_arguments(args)
     expected_input = corpus.get("input", "package")
     if expected_input != kind:
         fail(f"the manifest is a {expected_input} corpus, the harness was given a {kind}")
-    pathlib.Path(args.log).write_bytes(b"")
+    if args.repetitions < 1 or args.warmup < 0:
+        fail("repetitions must be positive and warmup nonnegative")
+    root = pathlib.Path(args.package) if args.package else pathlib.Path(args.project).parent
+    verify_source(corpus, root)
+    samples_path = pathlib.Path(str(args.out) + ".samples.jsonl")
+    verification_path = pathlib.Path(str(args.out) + ".verification.json")
+    for path in [pathlib.Path(args.out), pathlib.Path(args.log), samples_path, verification_path]:
+        if path.exists():
+            fail(f"evidence path already exists; use fresh output/log paths: {path}")
+    pathlib.Path(args.log).open("xb").close()
+    samples_path.open("x").close()
     walls, rsses, shapes, digests = [], [], [], set()
     verified = None
     with tempfile.TemporaryDirectory(prefix="apple-frontend-bench-") as scratch:
         out = pathlib.Path(scratch) / "corpus.graphite-ir"
         runs = args.warmup + args.repetitions
         for index in range(runs):
-            wall, rss, shape, digest = run_once(args.frontend, corpus_arguments, out, args.log)
+            sample = {"run": index, "warmup": index < args.warmup, "corpus": reference,
+                      "command": [args.frontend, "build", *corpus_arguments, "--skip-build", "--out", str(out)],
+                      "status": "failed", "baselineRevision": args.baseline_revision}
+            try:
+                wall, rss, shape, digest = run_once(args.frontend, corpus_arguments, out, args.log, sample.update)
+                sample.update({"status": "valid-ir", "shape": shape, "sha256": digest})
+            except BaseException as error:
+                sample["error"] = str(error)
+                raise
+            finally:
+                with samples_path.open("a") as sink:
+                    sink.write(json.dumps(sample) + "\n")
             if index < runs - 1:
                 out.unlink()
             if shape not in shapes:
@@ -270,13 +353,12 @@ def main():
         if len(shapes) != 1:
             fail(f"the graph shape changed between runs: {shapes}")
         if args.verify:
-            verified = verify(args.verify, out, scratch)
+            verified = verify(args.verify, out, scratch,
+                              lambda result: verification_path.write_text(json.dumps(result, indent=2) + "\n"))
     (shape,) = shapes
     count = shape["files"]
-    expected = corpus.get("files")
-    if expected is not None and count != expected:
-        fail(f"the corpus has {count} Swift files, the manifest pins {expected}")
-    pinned = corpus.get("shape")
+    if expected_files is not None and count != expected_files:
+        fail(f"the corpus has {count} source files, the manifest pins {expected_files}")
     if pinned is not None and any(shape.get(key) != pinned.get(key) for key in SHAPE_KEYS):
         changed = ", ".join(f"{key} {pinned.get(key)} -> {shape.get(key)}" for key in SHAPE_KEYS if shape.get(key) != pinned.get(key))
         fail(f"the graph shape differs from the corpus pin ({changed}); pin the new shape in the manifest if the change is intended")
@@ -289,13 +371,16 @@ def main():
         "determinism": {"identical": True, "sha256": digest},
         "input": kind,
         "verified": verified,
-        "corpus": corpus_reference(corpus),
+        "corpus": reference,
+        "samples": str(samples_path),
+        "baselineRevision": args.baseline_revision,
     }
     rows = [
         {"benchmark": BENCHMARK_PREFIX + "wall", "primaryMetric": metric(walls, "ms/op"), **common},
         {"benchmark": BENCHMARK_PREFIX + "rss", "primaryMetric": metric(rsses, "MiB"), **common},
     ]
-    json.dump(rows, open(args.out, "w"), indent=2)
+    with open(args.out, "x") as destination:
+        json.dump(rows, destination, indent=2)
     print(f"{label}: {count} files, {shape['nodes']} nodes, {shape['edges']} edges, wall {rows[0]['primaryMetric']['score']} ms, "
           f"peak RSS {rows[1]['primaryMetric']['score']} MiB over {args.repetitions} runs (+{args.warmup} warm-up), IR sha256 {digest[:12]}"
           + (", verified by the production reader" if verified else ", not verified by the production reader"))

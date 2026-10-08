@@ -1,0 +1,64 @@
+{
+  "sources": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "readiness": {
+    "name": "all-graph-node-census",
+    "query": "MATCH (n) RETURN n.graphId AS graph, count(n) AS nodes ORDER BY graph",
+    "scope": [
+      "signal-ios",
+      "swiftpm",
+      "signal-server"
+    ],
+    "row_order": "ordered",
+    "limit": 10000
+  },
+  "cases": [
+    {
+      "name": "network-message-call-scan",
+      "query": "MATCH (c:CallSite) WHERE toLower(coalesce(c.caller_class, '')) CONTAINS 'message' OR toLower(coalesce(c.callee_class, '')) CONTAINS 'request' RETURN c.graphId AS graph, count(c) AS calls ORDER BY graph",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    },
+    {
+      "name": "literal-call-provenance",
+      "query": "MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite) RETURN c.graphId AS graph, c.callee_class AS callee, c.callee_name AS method, count(s) AS literalArguments ORDER BY literalArguments DESC, graph, callee, method LIMIT 100",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    },
+    {
+      "name": "field-type-inventory",
+      "query": "MATCH (f:Field) RETURN f.graphId AS graph, f.type AS fieldType, count(f) AS fields ORDER BY fields DESC, graph, fieldType LIMIT 100",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    },
+    {
+      "name": "shared-wire-literals-prefiltered",
+      "query": "MATCH (a:StringConstant) WHERE a.value IN ['application/json', 'Content-Type', 'GET', 'POST'] WITH a MATCH (b:StringConstant) WHERE a.graphId <> b.graphId AND a.value = b.value RETURN a.graphId AS leftGraph, b.graphId AS rightGraph, a.value AS wireLiteral, count(*) AS pairs ORDER BY leftGraph, rightGraph, wireLiteral",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    }
+  ]
+}

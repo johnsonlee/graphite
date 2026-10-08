@@ -20,21 +20,21 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
   LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: 3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419
   LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
   WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256: 5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
-  BENCHMARK_REPORT_TRANSITION_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
+  BENCHMARK_REPORT_TRANSITION_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -43,12 +43,12 @@ env:
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
   SLOW_QUERY_SHAPES_CONTROLS_SHA256: 65e0ea91022cdb9a667a98589251dcca761565f74044cceeffac4a0e6c43e446
-  APPLE_FRONTEND_TRANSITION_HARNESS_SHA256: 53c548630e56869c7c5199de24af9d8d2a17c658477a7bebd0640d299e3dd039
-  APPLE_FRONTEND_TRANSITION_CORPUS_SHA256: cbc80b8a7c5ff9212442e07f72a3add4e990b3f886ee115123b64857f701acfe
-  APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256: bbc3d06008b7870146e3056d3064d946610c6c70538970465e23f35c75a93f24
-  APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256: 271cc58d6d1bd76888077cc8d8d7368f576b9172f2f5fcbe8c2543997875ffc4
-  APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256: 5d6c5405f4a249d12bd9471b975b88524a39c0615a2cfd2fac86b817c8a210d9
-  APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256: 3c96ed934415b8c46bd2f49e1bedaa3ae57b5e216ae9e18f1ae83a7867d141e2
+  APPLE_FRONTEND_TRANSITION_PREPARE_SHA256: 2b2c317790c99326b4d16f3a6590671ac2f39eb21830abd66ce98f7434cf6c29
+  APPLE_FRONTEND_TRANSITION_HARNESS_SHA256: 14337d22955729bf066de263c36318e08f1cbd4afdbfb926842441981babae27
+  APPLE_FRONTEND_TRANSITION_CORPUS_SHA256: 7280eed74d0299f207f9d06e4e3470e381742cc2a8bc51e47c564216ce5f9ed9
+  APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
+  APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256: 83750efdb4b016bf19362d73571a1d4f4b68060167d53e49575240c2ca462b30
+  APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256: 916463cfe6dca62ce9696d367b573acdac52bbfae76ad8a367fc8d9082b6624b
 
 jobs:
   candidate-gate-tests:
@@ -3284,15 +3284,14 @@ jobs:
     needs: [candidate-gate-tests, build-graphite-jar]
     runs-on: ubuntu-latest
     # Two release builds of the Swift frontend, the pinned corpus built once (cached by commit
-    # or generator and toolchain), then each frontend indexes it without building; a regression
-    # candidate repeats both in reverse order. One leg per SwiftPM corpus: the 181-file
-    # SwiftFormat package as a fast smoke, and the generated 2500-file package at iOS-app scale
-    # (`apple-frontend-xcode` below measures the same sources as an .xcodeproj on macOS).
+    # and toolchain), then each frontend indexes it without building; a regression
+    # candidate repeats both in reverse order. SwiftFormat is the real-source smoke;
+    # Swift Package Manager and the Signal workspace exercise larger upstream sources.
     timeout-minutes: 90
     permissions:
       contents: read
     container:
-      image: swift:6.1
+      image: swift:6.1.3
     strategy:
       fail-fast: false
       matrix:
@@ -3308,7 +3307,7 @@ jobs:
 
     steps:
     # The swift image has the toolchain and little else: the checkout action needs git and
-    # curl, the corpus clone git, the manifest jq, the harness and the generator python3, the
+    # curl, the corpus clone git, the manifest jq, the harness python3, the
     # production reader (graphite.jar) a Java runtime.
     - name: Install git, curl, jq, python3 and a Java runtime
       run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates jq python3 openjdk-17-jre-headless
@@ -3373,10 +3372,10 @@ jobs:
         test -s jar/graphite.jar
         java -jar jar/graphite.jar --help 2>&1 | grep -qi import
 
-    # The harness, the corpus pin, the generator and the comparator are base-owned; until main
-    # carries them the candidate copies stand in, pinned to the reviewed hashes and only after
+    # Real-source controls are base-owned. Legacy synthetic controls cannot authorize
+    # these workloads; candidate replacements are hash-pinned and selected only after
     # the candidate's own tests passed.
-    - name: Select the base-owned harness, corpus pin, generator and comparator
+    - name: Select the base-owned real-source harness, corpus pin and comparator
       id: controls
       shell: bash
       env:
@@ -3386,47 +3385,43 @@ jobs:
       run: |
         set -euo pipefail
         HARNESS=base/backend/bench/apple-frontend.py
-        if [[ ! -f "${HARNESS}" ]]; then
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'graphite-apple-real-source-v1' "${HARNESS}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/backend/bench/apple-frontend.py | cut -d' ' -f1)" = \
             "${APPLE_FRONTEND_TRANSITION_HARNESS_SHA256}"
           HARNESS=candidate/backend/bench/apple-frontend.py
         fi
+        PREPARE=base/backend/bench/prepare-apple-corpus.py
+        if [[ ! -f "${PREPARE}" ]] || ! grep -q 'graphite-apple-real-source-v1' "${PREPARE}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/backend/bench/prepare-apple-corpus.py | cut -d' ' -f1)" = "${APPLE_FRONTEND_TRANSITION_PREPARE_SHA256}"
+          PREPARE=candidate/backend/bench/prepare-apple-corpus.py
+        fi
         CORPUS="base/backend/bench/${MANIFEST}"
-        if [[ ! -f "${CORPUS}" ]]; then
+        if [[ ! -f "${CORPUS}" ]] || ! jq -e '.schema == "graphite-apple-frontend-corpus-v2" and .kind == "real-source" and .generator == null' "${CORPUS}" >/dev/null; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum "candidate/backend/bench/${MANIFEST}" | cut -d' ' -f1)" = \
             "${!CORPUS_PIN}"
           CORPUS="candidate/backend/bench/${MANIFEST}"
         fi
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-apple-frontend' "${COMPARATOR}"; then
+        if ! grep -q 'graphite-apple-real-source-v1' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
           COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         fi
-        jq -e '.schema == "graphite-apple-frontend-corpus-v1" and (.input // "package") == "package"' "${CORPUS}" >/dev/null
-        if jq -e '.generator' "${CORPUS}" >/dev/null; then
-          GENERATOR=base/backend/bench/generate-apple-corpus.py
-          if [[ ! -f "${GENERATOR}" ]]; then
-            test "${CANDIDATE_GATE_TEST_JOB}" = success
-            test "$(sha256sum candidate/backend/bench/generate-apple-corpus.py | cut -d' ' -f1)" = \
-              "${APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256}"
-            GENERATOR=candidate/backend/bench/generate-apple-corpus.py
-          fi
-          jq -e '.generator.script == "generate-apple-corpus.py" and (.generator.seed | type) == "number"' "${CORPUS}" >/dev/null
-          echo "kind=generated" >> "${GITHUB_OUTPUT}"
-          echo "generator=${GENERATOR}" >> "${GITHUB_OUTPUT}"
-          echo "cache-key=apple-frontend-gate-corpus-v1-swift6.1-generated-$(cat "${GENERATOR}" "${CORPUS}" | sha256sum | cut -c1-16)" >> "${GITHUB_OUTPUT}"
-        else
-          jq -e '(.commit | length) >= 8' "${CORPUS}" >/dev/null
-          echo "kind=git" >> "${GITHUB_OUTPUT}"
-          echo "commit=$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
-          echo "repository=$(jq -r .repository "${CORPUS}")" >> "${GITHUB_OUTPUT}"
-          echo "cache-key=apple-frontend-gate-corpus-v1-swift6.1-$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        jq -e '.schema == "graphite-apple-frontend-corpus-v2" and .kind == "real-source" and .generator == null and .input == "package" and (.commit | test("^[0-9a-f]{40}$"))' "${CORPUS}" >/dev/null
+        echo "commit=$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        echo "repository=$(jq -r .repository "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        echo "cache-key=apple-frontend-real-corpus-v2-swift6.1-$(sha256sum "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+        if jq -e '.dependencyLock' "${CORPUS}" >/dev/null; then
+          LOCKFILE="$(dirname "${CORPUS}")/$(jq -r .dependencyLock.path "${CORPUS}")"
+          test "$(sha256sum "${LOCKFILE}" | cut -d' ' -f1)" = "$(jq -r .dependencyLock.sha256 "${CORPUS}")"
+          echo "lockfile=${LOCKFILE}" >> "${GITHUB_OUTPUT}"
         fi
         echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
+        echo "prepare=${PREPARE}" >> "${GITHUB_OUTPUT}"
         echo "corpus=${CORPUS}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
 
@@ -3437,59 +3432,20 @@ jobs:
         path: corpus
         key: ${{ steps.controls.outputs.cache-key }}
 
-    # The corpus at its pinned commit, built once so the index store exists: the measured
-    # runs skip the build.
-    - name: Clone and build the corpus
-      if: steps.corpus-cache.outputs.cache-hit != 'true' && steps.controls.outputs.kind == 'git'
+    - name: Prepare the real corpus with the shared recipe
+      if: steps.corpus-cache.outputs.cache-hit != 'true'
       shell: bash
       env:
-        REPOSITORY: ${{ steps.controls.outputs.repository }}
-        COMMIT: ${{ steps.controls.outputs.commit }}
-      run: |
-        set -euo pipefail
-        rm -rf corpus
-        git clone --quiet --no-checkout "${REPOSITORY}" corpus
-        git -C corpus checkout --quiet "${COMMIT}"
-        (cd corpus && swift build -c debug)
-        test -d corpus/.build/debug/index/store
-
-    # The generated corpus from the manifest's generator block, built once the same way.
-    - name: Generate and build the corpus
-      if: steps.corpus-cache.outputs.cache-hit != 'true' && steps.controls.outputs.kind == 'generated'
-      shell: bash
-      env:
-        GENERATOR: ${{ steps.controls.outputs.generator }}
+        PREPARE: ${{ steps.controls.outputs.prepare }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
-      run: |
-        set -euo pipefail
-        rm -rf corpus
-        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus
-        (cd corpus && swift build -c debug 2>&1 | tail -20)
-        test -d corpus/.build/debug/index/store
+      run: python3 "${PREPARE}" --corpus "${CORPUS}" --out corpus --log benchmark-results/prepare.log
 
-    # A cached corpus is trusted only when it is the pinned one: the git checkout must be at
-    # the pinned commit, and a generated corpus must equal what the generator writes now.
-    - name: Verify the corpus pin
+    - name: Verify the cached source and index pins
       shell: bash
       env:
-        KIND: ${{ steps.controls.outputs.kind }}
-        COMMIT: ${{ steps.controls.outputs.commit }}
-        GENERATOR: ${{ steps.controls.outputs.generator }}
+        PREPARE: ${{ steps.controls.outputs.prepare }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
-      run: |
-        set -euo pipefail
-        if [[ "${KIND}" = git ]]; then
-          HEAD=$(git -C corpus rev-parse HEAD)
-          case "${HEAD}" in "${COMMIT}"*) ;; *) echo "corpus is at ${HEAD}, not ${COMMIT}"; exit 1;; esac
-          echo "corpus ${HEAD}"
-        else
-          rm -rf corpus-expected
-          python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus-expected
-          diff -r --exclude=.build corpus-expected corpus
-          test "$(find corpus -name '*.swift' -not -path '*/.build/*' -not -name Package.swift | wc -l)" = "$(jq -r .files "${CORPUS}")"
-          echo "corpus matches the generator"
-        fi
-        test -d corpus/.build/debug/index/store
+      run: python3 "${PREPARE}" --corpus "${CORPUS}" --out corpus --log benchmark-results/prepare.log --verify-only
 
     - name: Measure base then PR
       shell: bash
@@ -3504,9 +3460,11 @@ jobs:
         for REVISION in base candidate; do
           FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
           [[ -x "${FRONTEND}" ]] || continue
+          BASELINE=()
+          [[ "${REVISION}" != base ]] || BASELINE=(--baseline-revision "$(git -C base rev-parse HEAD)")
           python3 "${HARNESS}" \
             --frontend "${FRONTEND}" --package corpus --corpus "${CORPUS}" \
-            --repetitions "${REPETITIONS}" --warmup 1 \
+            --repetitions "${REPETITIONS}" --warmup 1 ${BASELINE[@]+"${BASELINE[@]}"} \
             --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
             --log "benchmark-results/${REVISION}-${COMPONENT}.log" \
             --out "benchmark-results/${REVISION}-${COMPONENT}.json"
@@ -3535,9 +3493,11 @@ jobs:
           for REVISION in candidate base; do
             FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
             [[ -x "${FRONTEND}" ]] || continue
+            BASELINE=()
+            [[ "${REVISION}" != base ]] || BASELINE=(--baseline-revision "$(git -C base rev-parse HEAD)")
             python3 "${HARNESS}" \
               --frontend "${FRONTEND}" --package corpus --corpus "${CORPUS}" \
-              --repetitions "${REPETITIONS}" --warmup 1 \
+              --repetitions "${REPETITIONS}" --warmup 1 ${BASELINE[@]+"${BASELINE[@]}"} \
               --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
               --log "benchmark-results/${REVISION}-${COMPONENT}-confirmation.log" \
               --out "benchmark-results/${REVISION}-${COMPONENT}-confirmation.json"
@@ -3565,15 +3525,20 @@ jobs:
   apple-frontend-xcode:
     name: apple-frontend-xcode-gate
     needs: [candidate-gate-tests, build-graphite-jar]
-    runs-on: macos-latest
-    # The iOS path of `graphite build`: the generated 2500-file application as an .xcodeproj,
-    # built once with xcodebuild for the simulator (cached by Xcode version and generator),
+    runs-on: macos-15
+    # The iOS path of `graphite build`: the real Signal workspace and pinned Pods,
+    # built once with xcodebuild for the simulator (cached by Xcode version and manifest),
     # then each frontend reads its derived data without building.
     timeout-minutes: 120
     permissions:
       contents: read
 
     steps:
+    - name: Select the corpus compiler
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.4'
+
     - name: Checkout base
       uses: actions/checkout@v7
       with:
@@ -3626,7 +3591,7 @@ jobs:
         test -s jar/graphite.jar
         java -jar jar/graphite.jar --help 2>&1 | grep -qi import
 
-    - name: Select the base-owned harness, corpus pin, generator and comparator
+    - name: Select the base-owned real-source harness, corpus pin and comparator
       id: controls
       shell: bash
       env:
@@ -3636,37 +3601,37 @@ jobs:
         set -euo pipefail
         sha256() { shasum -a 256 "$@" | cut -d' ' -f1; }
         HARNESS=base/backend/bench/apple-frontend.py
-        if [[ ! -f "${HARNESS}" ]] || ! grep -q -- '--derived-data' "${HARNESS}"; then
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'graphite-apple-real-source-v1' "${HARNESS}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256 candidate/backend/bench/apple-frontend.py)" = "${APPLE_FRONTEND_TRANSITION_HARNESS_SHA256}"
           HARNESS=candidate/backend/bench/apple-frontend.py
         fi
+        PREPARE=base/backend/bench/prepare-apple-corpus.py
+        if [[ ! -f "${PREPARE}" ]] || ! grep -q 'graphite-apple-real-source-v1' "${PREPARE}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256 candidate/backend/bench/prepare-apple-corpus.py)" = "${APPLE_FRONTEND_TRANSITION_PREPARE_SHA256}"
+          PREPARE=candidate/backend/bench/prepare-apple-corpus.py
+        fi
         CORPUS="base/backend/bench/${MANIFEST}"
-        if [[ ! -f "${CORPUS}" ]]; then
+        if [[ ! -f "${CORPUS}" ]] || ! jq -e '.schema == "graphite-apple-frontend-corpus-v2" and .kind == "real-source" and .generator == null' "${CORPUS}" >/dev/null; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256 "candidate/backend/bench/${MANIFEST}")" = "${APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256}"
           CORPUS="candidate/backend/bench/${MANIFEST}"
         fi
-        GENERATOR=base/backend/bench/generate-apple-corpus.py
-        if [[ ! -f "${GENERATOR}" ]]; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256 candidate/backend/bench/generate-apple-corpus.py)" = "${APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256}"
-          GENERATOR=candidate/backend/bench/generate-apple-corpus.py
-        fi
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-apple-frontend' "${COMPARATOR}"; then
+        if ! grep -q 'graphite-apple-real-source-v1' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256 candidate/.github/scripts/benchmark-gate.mjs)" = "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
           COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         fi
-        jq -e '.schema == "graphite-apple-frontend-corpus-v1" and .input == "xcodeproj" and .generator.layout == "xcodeproj" and .generator.script == "generate-apple-corpus.py"' "${CORPUS}" >/dev/null
+        jq -e '.schema == "graphite-apple-frontend-corpus-v2" and .kind == "real-source" and .generator == null and .input == "xcodeproj" and (.commit | test("^[0-9a-f]{40}$")) and (.submodules.Pods | test("^[0-9a-f]{40}$"))' "${CORPUS}" >/dev/null
         XCODE=$(xcodebuild -version | tr '\n' ' ' | tr -c 'A-Za-z0-9.' '-')
         echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
+        echo "prepare=${PREPARE}" >> "${GITHUB_OUTPUT}"
         echo "corpus=${CORPUS}" >> "${GITHUB_OUTPUT}"
-        echo "generator=${GENERATOR}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
-        echo "name=$(jq -r .generator.name "${CORPUS}")" >> "${GITHUB_OUTPUT}"
-        echo "cache-key=apple-frontend-gate-xcode-v1-${XCODE}-$(cat "${GENERATOR}" "${CORPUS}" | sha256 | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+        echo "project=$(jq -r .project "${CORPUS}")" >> "${GITHUB_OUTPUT}"
+        echo "cache-key=apple-frontend-real-xcode-v2-${XCODE}-$(sha256 "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
 
     # The sources and the index store of their build are cached together: the store keys its
     # units by the source paths, which are the same on every hosted runner.
@@ -3679,59 +3644,38 @@ jobs:
           derived-data/Index.noindex
         key: ${{ steps.controls.outputs.cache-key }}
 
-    # The same xcodebuild the frontend runs when it builds itself: one scheme, Debug, the
-    # simulator destination, the index store forced on and code signing off.
-    - name: Generate and build the corpus
+    - name: Prepare the real workspace with the shared recipe
       if: steps.corpus-cache.outputs.cache-hit != 'true'
       shell: bash
       env:
-        GENERATOR: ${{ steps.controls.outputs.generator }}
+        PREPARE: ${{ steps.controls.outputs.prepare }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
-        NAME: ${{ steps.controls.outputs.name }}
-      run: |
-        set -euo pipefail
-        rm -rf corpus derived-data
-        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus
-        if ! xcodebuild -project "corpus/${NAME}.xcodeproj" -scheme "${NAME}" -configuration Debug \
-          -derivedDataPath derived-data -destination 'generic/platform=iOS Simulator' build \
-          COMPILER_INDEX_STORE_ENABLE=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY= \
-          > xcodebuild.log 2>&1; then
-          grep -E 'error:|\*\* BUILD' xcodebuild.log | head -50
-          tail -30 xcodebuild.log
-          exit 1
-        fi
-        tail -3 xcodebuild.log
-        test -d derived-data/Index.noindex/DataStore
+      run: python3 "${PREPARE}" --corpus "${CORPUS}" --out corpus --derived-data derived-data --log benchmark-results/prepare.log
 
-    - name: Verify the corpus pin
+    - name: Verify the cached source and index pins
       shell: bash
       env:
-        GENERATOR: ${{ steps.controls.outputs.generator }}
+        PREPARE: ${{ steps.controls.outputs.prepare }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
-      run: |
-        set -euo pipefail
-        rm -rf corpus-expected
-        python3 "${GENERATOR}" --manifest "${CORPUS}" --out corpus-expected
-        diff -r --exclude=project.xcworkspace --exclude=xcuserdata corpus-expected corpus
-        echo "corpus matches the generator"
-        test -d derived-data/Index.noindex/DataStore
-        test "$(find corpus -name '*.swift' | wc -l | tr -d ' ')" = "$(jq -r .files "${CORPUS}")"
+      run: python3 "${PREPARE}" --corpus "${CORPUS}" --out corpus --derived-data derived-data --log benchmark-results/prepare.log --verify-only
 
     - name: Measure base then PR
       shell: bash
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
-        NAME: ${{ steps.controls.outputs.name }}
+        PROJECT: ${{ steps.controls.outputs.project }}
       run: |
         set -euo pipefail
         mkdir -p benchmark-results
         for REVISION in base candidate; do
           FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
           [[ -x "${FRONTEND}" ]] || continue
+          BASELINE=()
+          [[ "${REVISION}" != base ]] || BASELINE=(--baseline-revision "$(git -C base rev-parse HEAD)")
           python3 "${HARNESS}" \
-            --frontend "${FRONTEND}" --project "corpus/${NAME}.xcodeproj" --derived-data derived-data --corpus "${CORPUS}" \
-            --repetitions 3 --warmup 1 \
+            --frontend "${FRONTEND}" --project "corpus/${PROJECT}" --derived-data derived-data --corpus "${CORPUS}" \
+            --repetitions 3 --warmup 1 ${BASELINE[@]+"${BASELINE[@]}"} \
             --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
             --log "benchmark-results/${REVISION}-apple-frontend-xcode.log" \
             --out "benchmark-results/${REVISION}-apple-frontend-xcode.json"
@@ -3743,7 +3687,7 @@ jobs:
         HARNESS: ${{ steps.controls.outputs.harness }}
         CORPUS: ${{ steps.controls.outputs.corpus }}
         COMPARATOR: ${{ steps.controls.outputs.comparator }}
-        NAME: ${{ steps.controls.outputs.name }}
+        PROJECT: ${{ steps.controls.outputs.project }}
       run: |
         set -euo pipefail
         # Bash 3.2 (macOS's /bin/bash) treats an empty array expansion as unbound under set -u,
@@ -3761,9 +3705,11 @@ jobs:
           for REVISION in candidate base; do
             FRONTEND="${REVISION}/frontend/apple/.build/release/graphite-frontend-apple"
             [[ -x "${FRONTEND}" ]] || continue
+            BASELINE=()
+            [[ "${REVISION}" != base ]] || BASELINE=(--baseline-revision "$(git -C base rev-parse HEAD)")
             python3 "${HARNESS}" \
-              --frontend "${FRONTEND}" --project "corpus/${NAME}.xcodeproj" --derived-data derived-data --corpus "${CORPUS}" \
-              --repetitions 3 --warmup 1 \
+              --frontend "${FRONTEND}" --project "corpus/${PROJECT}" --derived-data derived-data --corpus "${CORPUS}" \
+              --repetitions 3 --warmup 1 ${BASELINE[@]+"${BASELINE[@]}"} \
               --verify 'java -jar jar/graphite.jar import {ir} -o {out}' \
               --log "benchmark-results/${REVISION}-apple-frontend-xcode-confirmation.log" \
               --out "benchmark-results/${REVISION}-apple-frontend-xcode-confirmation.json"
@@ -3981,7 +3927,7 @@ jobs:
           grep -q '"rust-latency"' "${COMPARATOR}"
         fi
         # Until main carries the Apple frontend gate, the reviewed candidate reporter aggregates it.
-        if ! grep -q '"apple-frontend"' "${COMPARATOR}"; then
+        if ! grep -q 'graphite-apple-real-source-v1' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256}"
