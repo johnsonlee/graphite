@@ -874,6 +874,10 @@ impl Executor {
             }
             consume(r)
         };
+        if let Some(plan) = super::id_candidate::IdCandidatePlan::build(patterns, where_clause, row)
+        {
+            return plan.run(self, &mut emit);
+        }
         matcher.match_patterns(row, patterns, &mut emit)
     }
 }

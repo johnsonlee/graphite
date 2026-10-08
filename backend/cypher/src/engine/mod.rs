@@ -2,6 +2,7 @@
 
 pub mod fastpath;
 pub mod hop;
+mod id_candidate;
 pub mod matching;
 pub mod partition;
 pub mod pipeline;

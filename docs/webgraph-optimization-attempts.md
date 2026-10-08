@@ -10853,3 +10853,87 @@ Background: {"performanceAttributionStatus": "DIAGNOSTIC_WITH_OBSERVED_BACKGROUN
 Root independently reconciled all440 raw response hashes and full typed bodies, all per-process nearest-rank quantiles, the four metrics windows, and raw CPU/peak-RSS values. Decision: **retain and integrate** the verified seconds-scale sorting improvement. Both paired p50/p95 comparisons improve materially and the declared mixed-workload CPU/RSS decrease. Preserve the mixed control results, including ID p95 +7.488ms with opposing pair directions; do not claim those paths were independently optimized or resample the small changes. ID lookup remains a substantive ~5.6-second target. Empirical n20 tails, this five-case workload and whole-process resources do not prove complete query, loading or construction recovery against the pre-upgrade baseline.
 
 At integration preparation, d0fc's JVM unit tests and Rust checks pass. Its new broad native CI measurement remains active and is allowed to finish before another push; the base-only JVM capacity third fork failed its four-permit overlap assertion (peak3), an explicitly advisory result retained in run37721037996. Do not call that failure a pass or attribute it to this native-only candidate.
+
+
+### Attempt144 — filter exact local node-ID candidates before row construction
+
+Date: 2026-10-08. Attempt142's real64 diagnosis identified `MATCH (n) WHERE id(n) = 4101 RETURN n` as a substantive slow query (current140 5373.551 ms in the one-observation diagnosis); Attempt143 retained roughly 5.6-second mixed-workload ID latency. These observations motivate the hypothesis, not an improvement claim for this candidate: reject nonmatching type-index IDs before constructing `NodeRef`, Row, provenance and expression arguments.
+
+Composition: isolated `/tmp/graphite-attempt144` starts from `cdad29186f10d397d0551f2605fb99b99d0b5838`. The candidate adds the private `id_candidate` module and its tests, registers the module and inserts one narrow dispatch in the existing fused stream's generic fallback. Storage, loading, offset tables and HTTP serialization are unchanged. This remains a linear scan of existing type-index IDs, not an O(1) lookup or a new index, and adds no loading work.
+
+Eligibility requires an empty seed, exactly one unlabelled node, no property map, path or relationship, and a whole WHERE expression that is `id(variable) = integer literal` or the reverse equality. The integer must fit the complete u32 domain; the function has exactly one variable argument and no DISTINCT modifier. Parameters, floats, negative/out-of-range integers, compound AND/OR predicates, extra arguments, labels and previously bound rows retain the original path. `GRAPHITE_NO_FASTPATH` still disables the optimization. RETURN DISTINCT is handled by the unchanged downstream pipeline rather than the rejected DISTINCT modifier inside `id()`.
+
+Node IDs remain local to each graph. The scan retains source order and the original type-index candidate domain, including repeated IDs, cross-tag duplicates, unsorted lists, phantom IDs and IDs absent from the type index despite an available record. Within one source all matching candidates have the same `NodeRef`, so replacing `MergedWalk` interleaving with tag-order filtering preserves the observable sequence of accepted bindings and their multiplicity. The original WHERE evaluation, projection/error behavior, provenance, full-node materialization, limit injection and extra-row probe remain downstream of the filter.
+
+Cancellation boundary: every inspected ID still calls `tick()`, and each source now starts with `cancel.check()`. Tag traversal replaces `MergedWalk`, so the IDs inspected before LIMIT stops the stream, and consequently the number/order of ticks before that stop, can differ. This is not a claim of identical per-tick execution. Source transitions, already-cancelled/deadline errors and downstream early stop are tested; no timeout, concurrency or result limit is increased.
+
+#### Correctness and retained failures
+
+- The original `validation/` attempt failed formatting: the existing pipeline file's new if-let needed wrapping. The standalone formatter had covered only the new files. The failure is retained; pinned `cargo fmt --all` corrected formatting without changing behavior.
+- `validation2/`, original session77541, exited101 with 125/129 Cypher tests passing and four failing. Both new test helpers incorrectly expected ordinary WHERE inside `Match.where_clause`; the parser emits a separate `Clause::Where`. No parser or production change was made to satisfy the tests. The corrected helpers assert `Match { optional:false, where_clause:None }`, then standalone WHERE and RETURN; the concrete `id(n)=4101` AST is asserted. The generic oracle changes only that predicate to `original AND true`, asserts both operands and all untouched clauses, and confirms that the new plan rejects the oracle shape. Prior helper/source artifacts remain in `id-candidate-filter/before-parser-helper-fix/`.
+- `validation3/`, original session78647, ended exit0 (tool receipt dd7dbf). All **129** `graphite-cypher` release tests pass: zero failures, ignored or filtered tests, with no fixture-skip messages. All five new named tests pass, covering exact eligibility, complete typed/materialized multi-graph rows and provenance, reversed equality, DISTINCT return, missing/mixed-source results, copied malformed type indexes, LIMIT/SKIP/probe, errors, parameter/float fallback, cancellation and timeout. A structural callback test verifies that nonmatching IDs never cross into the sole Row-construction callback, every inspected ID polls and downstream stop prevents further traversal.
+- Format check, strict Cypher clippy for all targets/features and CLI release export pass. This validation ran the complete Cypher module; it does not claim a new full-workspace test run. The real persisted core fixture is `/tmp/sootup-static-review/attempt121/core-fixture/execution/fixture-graph`. Temporary malformed variants copy files without hard links. The runner verifies all 80 Rust/Cargo input hashes and all 19 original fixture content hashes before/after; its manifest includes the two new files. These are content checks, not a separately archived inode-stat continuity audit.
+
+Command: `python3 /tmp/sootup-static-review/attempt144/validate3.py`, in the isolated worktree. It prepends `/Users/johnsonlee/.rustup/toolchains/stable-aarch64-apple-darwin/bin` to PATH, sets `GRAPHITE_INDEX_FIXTURE` to the real core fixture above and `CARGO_TARGET_DIR=/tmp/sootup-static-review/native-runtime-build-preparation/cargo-target-current`, and rejects injected Rust flags/wrappers and the fast-path disable flag. The fixed commands are:
+
+```text
+cargo fmt --all --check
+cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cypher -- --nocapture --test-threads=1
+cargo clippy --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cypher --all-targets --all-features -- -D warnings
+cargo build --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli
+```
+
+Source/evidence SHA-256:
+
+- `id_candidate.rs`: `8c7036d688fad00f26db0a3f8f7bb021a3f689c2165bfcc14fc613e22f1caf77`
+- `id_candidate_tests.rs`: `9490627c8c0f316693a2fd36feb844b1112305889c2392e73a4fe8f46c3f98f3`
+- `engine/mod.rs`: `964313765e43e6d7a4cc2d7753a0b4696e754c186a1a7a4f3633b00fbf20e391`
+- `pipeline.rs`: `eb32015b15e9a875d8c2c192b3ef0443d5ea5238951754309e879f63bdf61605`
+- `validate3.py`: `ef50b88dc749a2fb804297dd5b9c0bd23b10898f5a0b2dcf91fcdbd29133f361`
+- `validation3/result.json`: `76c653346f2cffe94584cdd131c3358ab8586b2fe78c7b418724411620d5b445`
+- `validation3/graphite` exported binary: `95311156d18c9a068c91f1129477df4d062fcc82557ee08224db20d4f94f96fa`
+
+#### Performance and decision
+
+Original session25962 terminal0 /e8a7a9;4/4 servers,440/440 complete typed bodies,400 measured,8 raw metrics captures PASS. Owner terminal SHA `a07fb6acd118ac4d41d13573f40bc00d5eb22d8e502a3707dae39c0e870e4924`. No retry, replacement, HTTP failure or rejected request. Sixteen owned PIDs and four time groups absent.
+
+A: parent143 `2d63c5dc…`; B:144 `95311156…`. Same64 graphs, MAPPED/defaultC4/default fastpath and Rayon. Each process:2 warmups and20 measured requests per case; rolling four requests, mixed case queue, no batch barrier.900s total client budget,60s query timeout.
+
+Per-process n20 nearest-rank p50=rank10, p95=rank19; arm values below are the mean of two process quantiles. Absolute ms first; no case pooling.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 3069.209 | 3075.477 | 6.267 | 3122.414 | 3094.329 | -28.085 | +17.960/-28.452 | -5.425/-27.718 |
+| order-by-desc | 3021.350 | 3060.978 | 39.627 | 3070.317 | 3124.861 | 54.544 | +54.690/+78.552 | +24.564/+30.536 |
+| canonical-order-by | 3069.853 | 3076.626 | 6.772 | 3121.382 | 3101.763 | -19.619 | +17.983/+0.445 | -4.438/-39.683 |
+| id-lookup | 5567.838 | 38.491 | -5529.347 | 5632.740 | 39.703 | -5593.036 | -5537.180/-5593.459 | -5521.513/-5592.613 |
+| wide-contains | 0.669 | 0.585 | -0.084 | 0.910 | 0.651 | -0.259 | -0.095/-0.256 | -0.073/-0.263 |
+
+Raw process quantiles remain in execution/results.json and this report's summary.json, alongside all warmup values. Warmups are excluded from measured statistics. At n20 these are empirical tails, not a production SLA.
+
+| Process | Query-window CPU s | Whole CPU s | Whole wall s | Whole peak RSS MB | HTTP mixed mean ms | Guard mixed mean ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 0-A | 294.620 | 342.520 | 107.500 | 7531.004 | 2949.783 | 2949.702 |
+| 1-B | 185.700 | 223.270 | 71.990 | 7532.823 | 1859.354 | 1859.288 |
+| 2-B | 184.530 | 222.020 | 71.430 | 7542.686 | 1847.461 | 1847.393 |
+| 3-A | 295.000 | 343.300 | 106.650 | 7534.215 | 2953.967 | 2953.884 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 294.810 | 185.115 | -109.695 | -37.209% | -108.920 | -110.470 |
+| whole CPU s | 342.910 | 222.645 | -120.265 | -35.072% | -119.250 | -121.280 |
+| whole wall s | 107.075 | 71.710 | -35.365 | -33.028% | -35.510 | -35.220 |
+| whole peak RSS MB | 7532.610 | 7537.754 | +5.145 | +0.068% | +1.819 | +8.471 |
+
+HTTP/guard means use sum/count for100 mixed requests per process; not per-case or p95. Every metrics window shows100 successful outcomes, zero rejected/failed/cancelled/timeout/budget-exceeded.10ms first bucket cannot supply precise submillisecond quantiles. Query CPU includes the measured queue, response validation/checkpoint gaps and executor shutdown; ps counter0.01s. Whole resource scope additionally includes loading, warmups and shutdown; no per-case resource attribution.
+
+Changing the literal-id lookup case changes the mixed queue's interference for controls. Lower control times therefore do not prove a changed control algorithm; any control regression is also retained. This is a closed-loop c4 mixed workload, not a fixed-arrival saturated benchmark. Parent-relative only, not preupgrade/main acceptance.
+
+Background: {"performanceAttributionStatus": "DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY", "nativeSessionCommandsStarted": 4, "diagnosticOnly": true, "sampleStatus": "RETAIN_ALL_STARTED_SAMPLES", "nativeSessionEvents": [], "betweenSessionEvents": [], "preflightEvents": [], "allEvents": [], "externalLifetimeLimitations": [], "sampleCount": 354, "exclusiveWindowClaim": false, "limits": ["One-second process metadata can miss short-lived/sub-resolution activity and unknown native builds/I/O.", "Observer/supervisor overhead is outside native time-l/CPU counters and applies to both arms; ps child CPU is not separately attributed. No causal delay quantification or guaranteed exclusive window.", "All samples retained; no clean subset selection or automatic resampling."]}.
+
+
+Root independently rehashed and compared all440 full raw JSON responses with their original captures, preserving JSON types, and recomputed every per-process p50/p95 and raw CPU/RSS value. The integrated80 Rust/Cargo inputs match the validated candidate. Released plan SHA `9bca07230cfe5ce85f745655abc3422504a7a755e52c521f9356d1a2c2e0f822`; results report SHA `7eb0fba78cacb392883e5db560b91b0dad8f9d9a4b7b2b53e0fbefa0e8ae8618`. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/attempt144/measurement/run.py --execute-root-released`.
+
+Decision: **retain and integrate the positive ID-query increment**, while preserving mixed control results. Both paired ID p50/p95 comparisons improve by more than5.5 seconds. Query CPU decreases in both pairs; whole peak RSS increases5.145MB/+0.068% on average. Descending sort p50 increases39.627ms and p95 increases54.544ms, with both pair directions adverse; do not dismiss this as noise or claim every query improved. This experiment changes the mixed queue's interference and does not establish the cause of the control change. Keep these observations for cumulative acceptance instead of repeatedly sampling them or discarding the ID gain. Parent-relative resources do not substitute for the matching pre-upgrade +5% constraints. Construction/loading and complete cumulative query recovery remain unaccepted.
+
+Coverage CI history: d0fc run37721037996 completed with the native gate failing `shape-function-calls`: initial median5.512→26.201ms and reverse median14.441→18.915ms against main502e. All73 complete query responses matched across the four snapshots. Preserve the failed gate; these five-pass medians are not request p95. At144 integration, parent143 run37723533113 is still running its native latency comparison; JVM and Rust tests pass. Do not cancel this paired run with an early push or describe it as passing.
