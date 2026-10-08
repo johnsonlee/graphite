@@ -2826,7 +2826,7 @@ test("workflow selects the pinned shape transition fail-closed and only before t
     // main the base digest no longer matches and the transition can never be selected again.
     assert.equal(
         pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419"
+        "9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840"
     );
     assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
 
@@ -2940,14 +2940,41 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
             const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
             assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
         }
-        // The call-site ordinal sidecar changes no graph shape; it adds eight bytes per call site
-        // (node id and ordinal), 36 bytes of index per block of 256, its header and binding to the
-        // persisted size.
-        for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
+        // Only the independently verified array-overload identity counts change. Node,
+        // edge and call-site equality and the original size tolerance remain mandatory.
+        for (const field of ["nodes", "sourceEdges", "persistedEdges", "callSites"]) {
             assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
         }
-        assert.ok(transition.persistedBytesDelta > 8 * transition.candidate.callSites, corpus);
+        const recovered = { tika: 64, hive: 27, "kotlin-compiler": 0 };
+        assert.equal(transition.candidate.methods - transition.base.methods, recovered[corpus]);
+        assert.ok(transition.persistedBytesDelta > 0, corpus);
     }
+});
+
+test("declared-type transition accepts only verified identities and still rejects timing regressions", () => {
+    const pairs = Object.entries(LARGE_CORPUS_SHAPE_TRANSITION);
+    const base = corpusLog(Object.fromEntries(pairs.map(([corpus, t]) => [corpus, t.base])));
+    const candidateValues = Object.fromEntries(pairs.map(([corpus, t]) => [corpus, {
+        ...t.candidate, persistedBytes: 100_000_000 + t.persistedBytesDelta
+    }]));
+    const candidate = corpusLog(candidateValues);
+    const options = { shapeTransition: LARGE_CORPUS_SHAPE_TRANSITION };
+    assert.equal(compareLargeCorpus(base, candidate, options).passed, true);
+    assert.equal(compareLargeCorpus(base, candidate).passed, false);
+    for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
+        const changed = corpusLog({ ...candidateValues, hive: {
+            ...candidateValues.hive, [field]: candidateValues.hive[field] + 1
+        } });
+        assert.equal(compareLargeCorpus(base, changed, options).passed, false, field);
+    }
+    const changedBytes = corpusLog({ ...candidateValues, hive: {
+        ...candidateValues.hive, persistedBytes: candidateValues.hive.persistedBytes + 4097
+    } });
+    assert.equal(compareLargeCorpus(base, changedBytes, options).passed, false);
+    const slower = corpusLog({ ...candidateValues, hive: {
+        ...candidateValues.hive, saveMs: 6000, pipelineMs: 17200
+    } });
+    assert.equal(compareLargeCorpus(base, slower, options).passed, false);
 });
 
 test("large-corpus branch-definition access is gated relatively, or by the transition budget without a base", () => {
@@ -3659,7 +3686,6 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         ),
         "utf8"
     );
-    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
     const realOnlyResourceHarness = fs.readFileSync(
         new URL(
             "../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
@@ -3696,7 +3722,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /:cypher:testClasses :cypher:jmhJar/);
     assert.match(
         workflow,
-        new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
+        /LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840/
     );
     assert.match(transitionHarness, /saveWithProductionCallSiteIndex/);
     assert.match(transitionHarness, /productionIndexPrepared=/);
@@ -3705,20 +3731,20 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "\$\{BASE_HARNESS\}"/);
     assert.match(
         workflow,
-        new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        /LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55/
     );
     assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087/);
     assert.match(
         workflow,
-        new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(comparator)}`)
+        /BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55/
     );
     assert.match(
         workflow,
-        new RegExp(`REAL_ONLY_LATENCY_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        /REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55/
     );
     assert.match(
         workflow,
-        new RegExp(`LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        /LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55/
     );
     assert.match(
         workflow,

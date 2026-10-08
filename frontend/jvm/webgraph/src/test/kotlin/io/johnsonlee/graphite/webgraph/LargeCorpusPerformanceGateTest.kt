@@ -116,7 +116,7 @@ private object CorpusBaselines {
         nodeCount = 3_901_103,
         sourceEdgeCount = 4_510_016,
         persistedEdgeCount = 4_353_588,
-        methodCount = 312_788,
+        methodCount = 312_852,
         callSiteCount = 1_006_172,
         maxPipelineMillis = 120_000
     )
@@ -130,7 +130,7 @@ private object CorpusBaselines {
         nodeCount = 5_992_914,
         sourceEdgeCount = 6_597_267,
         persistedEdgeCount = 6_376_682,
-        methodCount = 404_016,
+        methodCount = 404_043,
         callSiteCount = 1_443_886,
         maxPipelineMillis = 180_000
     )
