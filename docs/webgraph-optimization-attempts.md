@@ -11044,3 +11044,21 @@ Original session84080 ended exit0/tool7f4eac. All4 sessions passed,1216 fixture 
 Plan SHA `48cf530ada790f8fe8ff40ec9aab1df637caa99fab0deea71e9f28df98d33058`; results SHA `18f5eca634ce041653b9883060e05617956c306cc3a3530e484cd1a7b96cc561`; summary SHA `c884bbb573631d7121083fd84c0802bef633f039c303608105cbf4e6419ecbf1`; owner SHA `7fd88bcde89802dfa0c680f2a18d2919662406ab8183972b2f2af35b708fcb13`. Raw evidence and all overheads remain under `/tmp/sootup-static-review/native-real64-loading144`.
 
 Conclusion: retain the cumulative loading gains. Both paired wall/CPU observations improve and both RSS increases remain below the independent5% cap for this declared workload. Two samples per arm do not establish all-workload or cold-cache acceptance. Native RSS is separate from JVM heap, construction and JVM/own-writer loading remain unaccepted, and this result neither supplies query p50/p95 nor resolves the separate UNION gate failure.
+
+### 2026-10-08 — Cumulative144 UNION boundary diagnosis, no repeated sampling
+
+The confirmed main-relative CI UNION failure remains unresolved. Source review found that CI's five observations are separated by entire73-case passes, not five consecutive UNION calls. The UNION split/merge and per-segment LIMIT path are unchanged, the new ID/ORDER optimizations are ineligible, Method.id remains null, and the101 returned rows do not imply visiting all methods or all64 graphs. Existing logs announce queued C4 warming but contain no actual build-start/end evidence. Do not attribute the regression to C4 or allocation scheduling without measurement.
+
+Test only whether repeated UNION itself reproduces the later-request delay: one fresh current144 process, same real64 graphs, exactly five consecutive serial original urllib calls, full101-row typed response contract,60s/request and120s total client budget including metrics, no warmup or retry. Capture `/metrics` before and after every request. This diagnostic enables metrics whereas archived Linux CI did not; it runs on macOS and omits the intervening73-query history. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/attempt144/union-boundary-diagnostic/run.py --plan /tmp/sootup-static-review/attempt144/union-boundary-diagnostic/plan.json --execute-root-released`.
+
+| Request | Client full-body ms | HTTP duration ms | Guard duration ms |
+|---|---:|---:|---:|
+| 1 | 8.094041 | 0.571541 | 0.459000 |
+| 2 | 0.428584 | 0.186542 | 0.153083 |
+| 3 | 0.394875 | 0.140500 | 0.112458 |
+| 4 | 0.378500 | 0.137291 | 0.108667 |
+| 5 | 0.382125 | 0.136250 | 0.109042 |
+
+Original97299 terminal0/ff404e; all5 complete typed bodies and10 raw metrics pass, each window has exactly one successful request and no errors/rejections. Root independently rechecked every response against the frozen full oracle, reparsed all metrics windows and reconciled client durations. Four observed PIDs and one time group were absent after cleanup. Plan SHA `d7d08f3ac4c76a0d4e5922e3fc2be80614b3c8695ff096cd583b43db1e2bf2b5`; owner SHA `6883e4c79ec05df58f658f2d91fae1f05480952fdd1f31aa96b9339e9791918b`. Evidence remains under `/tmp/sootup-static-review/attempt144/union-boundary-diagnostic`.
+
+The20–43ms later-request CI behavior did not reproduce. Preserve this negative diagnostic and do not repeat the same short-query sampling. It cannot exonerate Linux CI or accumulated query history. No p50/p95, optimization gain or gate recovery is inferred. HTTP ends at Response construction and guard before serialization; both exclude final network delivery. Actual C4 build counters are unavailable, not zero. No production change or feature disabling was made.
