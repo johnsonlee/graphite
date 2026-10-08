@@ -11612,3 +11612,29 @@ Observed owned PIDs (including supervisor monitoring children) and the recorded 
 | independent-audit.json | `0b5511e0c6b37a506b5fd4a7e332c75285ac6df352b97cc6e49558b41240233c` |
 
 The exactba91 JVM workflow37756679804 also succeeded. Its Benchmark37756680076 remains in progress at this record, so no final-head method/E2E claim is made here. A final test-only review nit changes the three mutex acquisitions to recover their guard after poisoning: the first panicking test still fails, while later tests can run and report their own outcomes. Production source is unchanged. The normal parallel41CLI tests, formatting and strict all-target/all-feature Clippy pass again; logs are under `/tmp/sootup-static-review/cli-spawn-race-fix/poison-followup/`. A new commit's required CI remains authoritative; earlier green checks are not relabeled as its result.
+
+
+### Attempt150 — compact mapped declared-type loading (2026-10-08)
+
+Hypothesis: retaining decoded strings, type objects and three declaration maps for every loaded graph causes the new independent type table to exceed the heap budget on large multi-graph workloads. Keep the existing v1 wire format and eager integrity validation, but retain mapped bytes with primitive row offsets and collision-safe key indexes. Decode rows only when accessed, without a decoded-object cache. Map membership does not decode values, and value iteration does not allocate declaration keys. Saving a mapped table writes a sibling temporary file before replacement so it cannot truncate its own source mapping.
+
+Parent is `7e321fc97d13148454914c34e4d3133659b51024`. The measured initial arm uses frozen `d8a5dd497751dc0f64e3ea13b766989ff6d1e4ff`; intervening7e changes corpus audits/gates only. Production runtime comparison differs solely in DeclaredTypeStore. Candidate source patch SHA256 is `5f3e3ca5d210e8f7de6a6393ad2e3a4563027f95a82149d27846cab632d6fd70`, frozen at `/tmp/graphite-mapped-types-runtime/`. The subsequently discovered direct-filter correctness fix is not part of either measured runtime.
+
+Matched real fixtures are the same three candidate Hive, Tika and Kotlin compiler graphs under `/tmp/graphite-types-corpus-audit/candidate/graphs/`. Fresh server processes run one ABBA series, two observations per arm, JDK17, MAPPED, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`. Every runtime and fixture byte is SHA256-read before each launch outside timing: this is a warm-filesystem loading comparison, not cold-cache evidence. Readiness spans process launch through full `/api/graphs` verification of all three graph identities/counts/mapped modes, including synchronous table hash and full record/shape/reference/cycle/expansion validation. CPU is cumulative process user+system at readiness (0.01s precision); RSS is sampled every5ms through readiness and its observed peak is a lower bound. Exact time-l lifecycle measurements separately include three subsequent metadata queries and shutdown.
+
+| Metric | Initial → compact mean | Absolute delta | Change |
+|---|---:|---:|---:|
+| Loading readiness wall ms | 3140.864 → 2819.990 | -320.874 | -10.22% |
+| Loading readiness CPU s | 5.370 → 4.420 | -0.950 | -17.69% |
+| Loading observed peak RSS bytes | 1981857792 → 859750400 | -1122107392 | -56.62% |
+| Full lifecycle wall s | 3.730 → 3.365 | -0.365 | -9.79% |
+| Full lifecycle CPU s | 5.585 → 4.595 | -0.990 | -17.73% |
+| Full lifecycle peak RSS bytes | 2030239744 → 899424256 | -1130815488 | -55.70% |
+
+Both directional pairs improve loading wall, CPU and RSS independently. All four processes verify three complete generic type/string results against independently decoded table bytes (12 checks), with unchanged fixtures/runtime pins. The 76.775→76.988ms post-readiness verification interval is diagnostic only, not query performance evidence. The complete webgraph suite passes289tests and detekt, with98.3343% line coverage. Tests include hash collisions, Unicode, map equality/iteration, no decoded caching, same-directory save and all malformed-data validation. Root independently recomputed reported loading means from retained observations.
+
+The original Attempt150 first initial-arm process loaded successfully but failed a direct generic-string filter sample. This exposed an existing graph-context bug in the initial implementation, recorded separately for correction. The v2 regex protocol was sealed but never launched. v3 selects known erased field identities and compares exact declared values; it does not claim the failing filter was repaired by the loader. All earlier failures remain preserved.
+
+Decision: **retain the verified loading increment**. These two observations per arm establish neither pre-feature recovery nor confidence-based stability. Query p50/p95, construction, 36-graph heap stability and loading acceptance against pre-feature4f remain open. The global dynamic-property full-scan regression is still present; no deferred validation or query-cost transfer is credited as recovery. CPU and RSS improve against the immediate implementation, but their separate +5% constraints against the accepted pre-feature baseline still require matched measurements.
+
+Evidence: `/tmp/graphite-declared-load-attempt150-v3/` contains protocol SHA256 `bceb6779bf90e21f471b353ac0440bcca401baea0284d5cfc2d03154f2c2dadd`, seal, independent sample extractor/oracles, all raw responses/resource samples, summary/report and final identity verification. Validation logs are `/tmp/graphite-mapped-types-targeted2.log` and `/tmp/graphite-mapped-types-webgraph.log`. All four measured servers terminated; no failing sample was replaced.

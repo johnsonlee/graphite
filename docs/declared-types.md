@@ -98,8 +98,10 @@ shapes, duplicate declaration keys and expression cycles before exposing the tab
 Nesting beyond 256 expression levels is rejected. Expanded projections are limited
 to 100,000 expression nodes and 1,000,000 UTF-8 bytes of type text to reject small
 DAGs whose recursive expansion would consume unbounded memory. A referenced but missing
-or invalid table is a load error; an absent binding is the supported legacy case. This validation and
-loading occur during graph loading, not during the first generic query.
+or invalid table is a load error; an absent binding is the supported legacy case. All integrity validation occurs during graph loading, before the first generic query.
+The JVM reader retains mapped table bytes and compact offsets/indexes; it decodes
+individual type and declaration objects on access without retaining a decoded cache.
+Rendering and structured projections are produced when requested.
 
 ## Verification
 

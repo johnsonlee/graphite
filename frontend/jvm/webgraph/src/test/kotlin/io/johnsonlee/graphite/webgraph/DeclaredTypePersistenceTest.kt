@@ -1,14 +1,18 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.cypher.CypherExecutor
+import io.johnsonlee.graphite.graph.ClassTypes
 import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
+import io.johnsonlee.graphite.graph.TypeParameter
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
+import java.io.DataOutputStream
 import java.nio.ByteBuffer
+import java.nio.charset.CharacterCodingException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
@@ -17,10 +21,12 @@ import java.util.jar.JarEntry
 import java.util.jar.JarOutputStream
 import javax.tools.ToolProvider
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNotSame
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -48,6 +54,143 @@ class DeclaredTypePersistenceTest {
         assertEquals("java.util.List<java.lang.String>", restored.render(1))
         DeclaredTypeStore.save(DeclaredTypeTable.EMPTY, dir)
         assertFalse(Files.exists(dir.resolve(DeclaredTypeStore.FILE_NAME)))
+    }
+
+    @Test
+    fun `mapped collections decode rows on demand and resolve colliding Unicode keys`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        val names = listOf("Aa", "BB", "泛型\uD83D\uDE80")
+        val keys = names.map { MemberTypeKey("sample.Holder", it, "Ljava/lang/Object;") }
+        assertEquals(keys[0].hashCode(), keys[1].hashCode())
+        val expected = DeclaredTypeTable(
+            listOf(DeclaredType("class", "java.lang.Object"), DeclaredType("class", "java.lang.String")),
+            keys.mapIndexed { index, key -> key to index.mod(2) }.toMap(),
+            keys.mapIndexed { index, key -> key to MethodTypes(listOf(index.mod(2)), index.mod(2)) }.toMap(),
+            names.mapIndexed { index, name ->
+                name to ClassTypes(listOf(TypeParameter("T", "class:$name", listOf(index.mod(2)))), index.mod(2), listOf(0))
+            }.toMap()
+        )
+        DeclaredTypeStore.save(expected, dir)
+        val restored = DeclaredTypeStore.load(dir)
+        assertEquals(expected, restored)
+        assertEquals(restored, expected)
+        assertEquals(expected.hashCode(), restored.hashCode())
+        assertNotSame(restored.types[0], restored.types[0])
+        assertNotSame(restored.methods[keys[0]], restored.methods[keys[0]])
+        assertNotSame(restored.classes[names[0]], restored.classes[names[0]])
+        assertEquals(keys, restored.fields.keys.toList())
+        assertEquals(keys, restored.methods.keys.toList())
+        assertEquals(names, restored.classes.keys.toList())
+        assertEquals(expected.methods.values.toList(), restored.methods.values.toList())
+        assertEquals(expected.classes.values.toList(), restored.classes.values.toList())
+        for (key in keys) {
+            assertTrue(restored.fields.containsKey(key))
+            assertEquals(expected.fields[key], restored.fields[key])
+            assertEquals(expected.methods[key], restored.methods[key])
+        }
+        for (name in names) assertEquals(expected.classes[name], restored.classes[name])
+        val missing = keys[0].copy(name = "C#")
+        assertEquals(keys[0].hashCode(), missing.hashCode())
+        assertFalse(restored.fields.containsKey(missing))
+        assertNull(restored.methods[missing])
+        assertNull(restored.classes[missing.name])
+        assertFailsWith<IndexOutOfBoundsException> { restored.types[-1] }
+        assertFailsWith<IndexOutOfBoundsException> { restored.types[restored.types.size] }
+        val iterator = restored.methods.entries.iterator()
+        repeat(keys.size) { iterator.next() }
+        assertFalse(iterator.hasNext())
+        assertFailsWith<NoSuchElementException> { iterator.next() }
+    }
+
+    @Test
+    fun `mapped table can be saved over its own file without changing IDs or bytes`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        DeclaredTypeStore.save(table, dir)
+        val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
+        val mapped = DeclaredTypeStore.load(dir)
+        DeclaredTypeStore.save(mapped, dir)
+        assertContentEquals(original, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
+        assertEquals(table, DeclaredTypeStore.load(dir))
+        assertEquals(table, mapped)
+        inDirectory { other ->
+            Files.copy(dir.resolve("graph.metadata"), other.resolve("graph.metadata"))
+            DeclaredTypeStore.save(mapped, other)
+            assertContentEquals(original, Files.readAllBytes(other.resolve(DeclaredTypeStore.FILE_NAME)))
+            assertEquals(table, DeclaredTypeStore.load(other))
+        }
+    }
+
+    @Test
+    fun `mapped indexes reject duplicate field method and class keys before returning`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        val first = MemberTypeKey("Owner", "Aa", "I")
+        val second = first.copy(name = "BB")
+        val base = DeclaredTypeTable(listOf(DeclaredType("primitive", "int")), emptyMap(), emptyMap(), emptyMap())
+        val cases = listOf(
+            base.copy(fields = linkedMapOf(first to 0, second to 0)) to "field",
+            base.copy(methods = linkedMapOf(first to MethodTypes(emptyList(), 0), second to MethodTypes(emptyList(), 0))) to "method",
+            base.copy(classes = listOf("Aa", "BB").associateWith { ClassTypes(emptyList(), null, emptyList()) }) to "class"
+        )
+        for ((value, section) in cases) {
+            DeclaredTypeStore.save(value, dir)
+            val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
+            val bytes = Files.readAllBytes(path)
+            val positions = (0 until bytes.size - 1).filter { bytes[it] == 'B'.code.toByte() && bytes[it + 1] == 'B'.code.toByte() }
+            assertEquals(1, positions.size)
+            val position = positions.single()
+            bytes[position] = 'A'.code.toByte()
+            bytes[position + 1] = 'a'.code.toByte()
+            Files.write(path, bytes)
+            rebind(dir)
+            assertEquals("Duplicate $section in graph.types", assertFailsWith<IllegalArgumentException> {
+                DeclaredTypeStore.load(dir)
+            }.message)
+        }
+    }
+
+    @Test
+    fun `mapped tables reject malformed UTF8 shape and references during load`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        DeclaredTypeStore.save(table, dir)
+        val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
+        val valid = Files.readAllBytes(path)
+        // First type kind starts after header, metadata hash, type count and string length.
+        val invalidUtf8 = valid.copyOf().also { it[44] = 0xff.toByte() }
+        Files.write(path, invalidUtf8)
+        rebind(dir)
+        assertFailsWith<CharacterCodingException> { DeclaredTypeStore.load(dir) }
+        val invalidShape = valid.copyOf().also { "array".toByteArray().copyInto(it, 44) }
+        Files.write(path, invalidShape)
+        rebind(dir)
+        assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
+        DeclaredTypeStore.save(table.copy(methods = emptyMap()), dir)
+        val fieldTable = Files.readAllBytes(path)
+        // Final field reference is followed by the empty method and class counts.
+        ByteBuffer.wrap(fieldTable).putInt(fieldTable.size - 12, table.types.size)
+        Files.write(path, fieldTable)
+        rebind(dir)
+        assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
+    }
+
+    @Test
+    fun `mapped table validates cycles depth and expansion before any projection`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        val cycle = listOf(DeclaredType("array", component = 0))
+        val tooDeep = listOf(DeclaredType("class", "A")) +
+            List(DeclaredTypeTable.MAX_DEPTH) { DeclaredType("array", component = it) }
+        val tooManyNodes = listOf(DeclaredType("class", "A")) +
+            List(16) { DeclaredType("class", "A", arguments = listOf(it, it)) }
+        val tooManyBytes = listOf(DeclaredType("variable", "T", scope = "class:" + "\u754c".repeat(1_000))) +
+            List(9) { DeclaredType("class", "A", arguments = listOf(it, it)) }
+        for (types in listOf(cycle, tooDeep, tooManyNodes, tooManyBytes)) {
+            writeUncheckedTypes(dir, types)
+            assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
+        }
+        val forwardReferences = listOf(DeclaredType("array", component = 1), DeclaredType("class", "A"))
+        writeUncheckedTypes(dir, forwardReferences)
+        val restored = DeclaredTypeStore.load(dir)
+        assertEquals(forwardReferences, restored.types)
+        assertEquals("A[]", restored.render(0))
     }
 
     @Test
@@ -218,6 +361,34 @@ class DeclaredTypePersistenceTest {
     private fun inDirectory(block: (Path) -> Unit) {
         val dir = Files.createTempDirectory("declared-type-test")
         try { block(dir) } finally { dir.toFile().deleteRecursively() }
+    }
+
+    /** Emit the documented wire format directly so malformed expressions bypass save-time validation. */
+    private fun writeUncheckedTypes(dir: Path, types: List<DeclaredType>) {
+        DataOutputStream(Files.newOutputStream(dir.resolve(DeclaredTypeStore.FILE_NAME))).use { out ->
+            fun text(value: String) {
+                val bytes = value.toByteArray(Charsets.UTF_8)
+                out.writeInt(bytes.size)
+                out.write(bytes)
+            }
+            out.writeInt(0x47545901)
+            out.write(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(dir.resolve("graph.metadata"))))
+            out.writeInt(types.size)
+            for (type in types) {
+                text(type.kind)
+                text(type.name)
+                text(type.scope)
+                out.writeInt(type.owner ?: -1)
+                out.writeInt(type.component ?: -1)
+                text(type.variance)
+                out.writeInt(type.arguments.size)
+                type.arguments.forEach(out::writeInt)
+            }
+            out.writeInt(0) // fields
+            out.writeInt(0) // methods
+            out.writeInt(0) // classes
+        }
+        rebind(dir)
     }
 
     private fun rebind(dir: Path) {
