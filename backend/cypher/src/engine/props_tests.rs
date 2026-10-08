@@ -141,7 +141,7 @@ fn declaration_keys_use_exact_binding_without_projecting_type_values() {
     );
     // A source-access assertion: bindings suffice for keys. Any expansion of the
     // type values would access this deliberately unavailable test-only backing.
-    graph.declared_types.as_mut().unwrap().types.clear();
+    graph.update_declared_types(|table| table.as_mut().unwrap().types.clear());
     assert_eq!(
         node_keys(&graph, &field),
         [
@@ -162,7 +162,7 @@ fn declaration_keys_use_exact_binding_without_projecting_type_values() {
         node_keys(&graph, &parameter(method.clone(), 0)),
         ["id", "index", "type", "method", "generic_type", "type_info"]
     );
-    graph.declared_types = None;
+    graph.update_declared_types(|table| *table = None);
     assert_eq!(
         node_keys(&graph, &returned(method)),
         ["id", "method", "actual_type"]
@@ -177,20 +177,13 @@ fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() 
     let path = std::path::Path::new(&dir);
     let original = Graph::load(path).unwrap();
     let mut partial = Graph::load(path).unwrap();
-    partial
-        .declared_types
-        .as_mut()
-        .unwrap()
-        .fields
-        .retain(|(_, name, _), _| name != "first");
-    partial
-        .declared_types
-        .as_mut()
-        .unwrap()
-        .methods
-        .retain(|(_, name, _), _| name != "echo");
+    partial.update_declared_types(|table| {
+        let table = table.as_mut().unwrap();
+        table.fields.retain(|(_, name, _), _| name != "first");
+        table.methods.retain(|(_, name, _), _| name != "echo");
+    });
     let mut legacy = Graph::load(path).unwrap();
-    legacy.declared_types = None;
+    legacy.update_declared_types(|table| *table = None);
     let sources: Vec<Source> = [
         ("original", original),
         ("partial", partial),
@@ -228,6 +221,88 @@ fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() 
             None
         )
         .is_err());
+}
+
+#[test]
+fn declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        return;
+    };
+    let dir = std::path::Path::new(&dir);
+    // Alter only type-index traversal order in a private copy of the real fixture.
+    // The declaration table stays digest-bound to its unchanged metadata/properties.
+    struct FixtureCopy(std::path::PathBuf);
+    impl Drop for FixtureCopy {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.0);
+        }
+    }
+    let copy = FixtureCopy(
+        std::env::temp_dir().join(format!("graphite-declaration-order-{}", std::process::id())),
+    );
+    std::fs::create_dir_all(&copy.0).unwrap();
+    for entry in std::fs::read_dir(dir).unwrap() {
+        let entry = entry.unwrap();
+        if entry.file_type().unwrap().is_file() {
+            std::fs::copy(entry.path(), copy.0.join(entry.file_name())).unwrap();
+        }
+    }
+    let index = copy.0.join("graph.typeindex");
+    let mut bytes = std::fs::read(&index).unwrap();
+    let entries = i32::from_be_bytes(bytes[4..8].try_into().unwrap()) as usize;
+    for entry in 0..entries {
+        let pos = 8 + entry * 13;
+        if [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE].contains(&bytes[pos]) {
+            let count = i32::from_be_bytes(bytes[pos + 1..pos + 5].try_into().unwrap()) as usize;
+            let offset = i64::from_be_bytes(bytes[pos + 5..pos + 13].try_into().unwrap()) as usize;
+            let mut ids: Vec<[u8; 4]> = bytes[offset..offset + count * 4]
+                .chunks_exact(4)
+                .map(|id| id.try_into().unwrap())
+                .collect();
+            ids.reverse();
+            for (slot, id) in bytes[offset..offset + count * 4]
+                .chunks_exact_mut(4)
+                .zip(ids)
+            {
+                slot.copy_from_slice(&id);
+            }
+        }
+    }
+    std::fs::write(index, bytes).unwrap();
+    for path in [dir, copy.0.as_path()] {
+        let mut graph = Graph::load(path).unwrap();
+        graph.update_declared_types(|table| {
+            table
+                .as_mut()
+                .unwrap()
+                .fields
+                .retain(|(_, name, _), _| name != "first");
+        });
+        assert_eq!(
+            graph.declared_key_partitions(TAG_FIELD_NODE).is_some(),
+            path == dir
+        );
+        let field_id = graph.ids_by_tag(TAG_FIELD_NODE)[0];
+        let source = Source {
+            id: Arc::from("fixture"),
+            graph: Arc::new(graph),
+        };
+        let fast = Executor::new(vec![source.clone()], true);
+        let plain = Executor::new(vec![source], true).without_partitioning();
+        for query in [
+            "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c ORDER BY c DESC LIMIT 50".to_string(),
+            "MATCH (n) RETURN keys(n) AS k, count(*) AS c LIMIT 1".to_string(),
+            "MATCH (n:FieldNode) RETURN n.class AS owner, keys(n) AS k, count(*) AS c".to_string(),
+            "MATCH (n:FieldNode) WHERE n.name = 'first' RETURN keys(n) AS k, count(*) AS c".to_string(),
+            "MATCH (n:FieldNode) WHERE NOT ('generic_type' IN keys(n)) RETURN keys(n) AS k, count(*) AS c".to_string(),
+            format!("MATCH (n) WHERE id(n) = {field_id} UNWIND keys(n) AS k RETURN k, count(*) AS c"),
+        ] {
+            let expected = plain.execute(&query, None).unwrap();
+            let actual = fast.execute(&query, None).unwrap();
+            assert_eq!(actual.columns, expected.columns, "{path:?}: {query}");
+            assert_eq!(actual.rows.iter().map(ordered_values).collect::<Vec<_>>(), expected.rows.iter().map(ordered_values).collect::<Vec<_>>(), "{path:?}: {query}");
+        }
+    }
 }
 
 fn call_site(g: &Graph) -> Node {
@@ -292,10 +367,10 @@ fn call_site_display_keeps_values_order_and_direct_method_details() {
             ]
         );
         for (key, expected) in [
-            ("callee_signature", callee.signature(&g.strings)),
-            ("callee_descriptor", callee.descriptor(&g.strings)),
-            ("caller_signature", caller.signature(&g.strings)),
-            ("caller_descriptor", caller.descriptor(&g.strings)),
+            ("callee_signature", callee.signature(g.strings())),
+            ("callee_descriptor", callee.descriptor(g.strings())),
+            ("caller_signature", caller.signature(g.strings())),
+            ("caller_descriptor", caller.descriptor(g.strings())),
         ] {
             assert_eq!(full[key].as_str(), Some(expected.as_str()));
             assert_eq!(
@@ -323,7 +398,7 @@ fn discarded_method_details_preserve_invalid_string_id_panics_and_first_failure_
 
     let Some(g) = fixture() else { return };
     let original = call_site(&g);
-    let bad = u32::try_from(g.strings.len())
+    let bad = u32::try_from(g.strings().len())
         .unwrap()
         .checked_add(10)
         .unwrap();
@@ -453,7 +528,7 @@ fn display_and_result_filter_oracle_covers_every_node_kind() {
         if matches!(node.kind, NodeKind::LocalVariable { .. }) {
             assert_eq!(
                 node_property(&g, &node, "method").as_str(),
-                Some(caller.signature(&g.strings).as_str())
+                Some(caller.signature(g.strings()).as_str())
             );
             assert!(node_properties(&g, &node).contains_key("method"));
             assert_eq!(
@@ -559,7 +634,7 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
     };
     let path = std::path::Path::new(&dir);
     let graph = Graph::load(path).unwrap();
-    assert!(graph.declared_types.is_some());
+    assert!(graph.declared_types().is_some());
     let method = graph
         .methods()
         .iter()
@@ -674,14 +749,15 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
     // A separate graph has the same local IDs and member identities, but a
     // different type table. Query source identity must select the right table.
     let mut other = Graph::load(path).unwrap();
-    let table = other.declared_types.as_mut().unwrap();
-    for ty in &mut table.types {
-        if ty.name == "java.lang.String" {
-            ty.name = "example.Other".into();
+    other.update_declared_types(|table| {
+        for ty in &mut table.as_mut().unwrap().types {
+            if ty.name == "java.lang.String" {
+                ty.name = "example.Other".into();
+            }
         }
-    }
+    });
     let mut legacy = Graph::load(path).unwrap();
-    legacy.declared_types = None;
+    legacy.update_declared_types(|table| *table = None);
     for key in ["generic_type", "type_info"] {
         assert!(node_property(&legacy, &field, key).is_null());
         assert!(!node_properties(&legacy, &field).contains_key(key));
@@ -693,9 +769,11 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
         assert!(!method_properties(&legacy, &method, None).contains_key(key));
     }
     let mut partial = Graph::load(path).unwrap();
-    let table = partial.declared_types.as_mut().unwrap();
-    table.fields.retain(|(_, name, _), _| name != "first");
-    table.methods.retain(|(_, name, _), _| name != "echo");
+    partial.update_declared_types(|table| {
+        let table = table.as_mut().unwrap();
+        table.fields.retain(|(_, name, _), _| name != "first");
+        table.methods.retain(|(_, name, _), _| name != "echo");
+    });
     assert!(!node_properties(&partial, &field).contains_key("generic_type"));
     assert!(!method_properties(&partial, &method, None).contains_key("generic_return_type"));
     let partial = Executor::new(

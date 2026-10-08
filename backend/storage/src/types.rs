@@ -113,6 +113,66 @@ impl<'a> Reader<'a> {
     }
 }
 impl DeclaredTypes {
+    /// Member lookup boundary independent of the table's physical key storage.
+    pub fn field_type(&self, owner: &str, name: &str, descriptor: &str) -> Option<usize> {
+        self.fields
+            .get(&(owner.into(), name.into(), descriptor.into()))
+            .copied()
+    }
+
+    pub fn method_types(&self, owner: &str, name: &str, descriptor: &str) -> Option<&MethodTypes> {
+        self.methods
+            .get(&(owner.into(), name.into(), descriptor.into()))
+    }
+
+    /// Exact erased member identity shared by projections and load-time key summaries.
+    pub fn method<'a>(
+        &'a self,
+        method: &crate::node::MethodDesc,
+        strings: &crate::strings::StringTable,
+    ) -> Option<&'a MethodTypes> {
+        self.method_types(
+            strings.get(method.declaring_class as usize),
+            strings.get(method.name as usize),
+            &method.descriptor(strings),
+        )
+    }
+
+    pub fn node_type_id(
+        &self,
+        node: &crate::node::Node,
+        strings: &crate::strings::StringTable,
+    ) -> Option<usize> {
+        use crate::node::NodeKind;
+        match &node.kind {
+            NodeKind::Field {
+                declaring_class,
+                name,
+                field_type,
+                ..
+            } => {
+                let mut descriptor = String::new();
+                crate::node::push_type_descriptor(
+                    strings.get(*field_type as usize),
+                    &mut descriptor,
+                );
+                self.field_type(
+                    strings.get(*declaring_class as usize),
+                    strings.get(*name as usize),
+                    &descriptor,
+                )
+            }
+            NodeKind::Parameter { method, index, .. } => {
+                self.method(method, strings).and_then(|m| {
+                    usize::try_from(*index)
+                        .ok()
+                        .and_then(|i| m.parameters.get(i).copied())
+                })
+            }
+            NodeKind::Return { method, .. } => self.method(method, strings).map(|m| m.returns),
+            _ => None,
+        }
+    }
     pub fn load(source: &GraphSource) -> Result<Option<Self>, TypeError> {
         // This declaration is authoritative: older BVGraph writers replace
         // forward.properties, so an orphaned table cannot survive their saves.

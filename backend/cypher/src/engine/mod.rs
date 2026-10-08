@@ -359,7 +359,7 @@ impl GraphContext for Executor {
         let g = self.graph(m.source);
         g.methods()
             .get(m.index as usize)
-            .map(|md| md.signature(&g.strings))
+            .map(|md| md.signature(g.strings()))
             .unwrap_or_default()
     }
     fn check_cancelled(&self) -> CypherResult<()> {

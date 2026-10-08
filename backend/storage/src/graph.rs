@@ -210,10 +210,17 @@ impl Csr {
     }
 }
 
+/// One key-set partition: a representative node and its multiplicity.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct DeclaredKeyPartition {
+    pub first: NodeId,
+    pub count: usize,
+}
+
 pub struct Graph {
     pub dir: PathBuf,
-    pub node_version: u8,
-    pub strings: StringTable,
+    node_version: u8,
+    strings: StringTable,
     nodedata: Bytes,
     node_count: usize,
     node_offsets: Bytes,
@@ -227,7 +234,10 @@ pub struct Graph {
     pub class_overview: Option<ClassOverview>,
     pub resources: Option<Resources>,
     /// Optional, deduplicated declaration types; never changes erased identities.
-    pub declared_types: Option<crate::types::DeclaredTypes>,
+    declared_types: Option<crate::types::DeclaredTypes>,
+    // Field/Parameter/Return, each [unbound, bound]. Only ascending ID lists have
+    // summaries: replacing an unsorted walk by first representatives changes order.
+    declared_key_partitions: [Option<[DeclaredKeyPartition; 2]>; 3],
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
     /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
@@ -341,6 +351,7 @@ impl Graph {
             class_overview,
             resources,
             declared_types,
+            declared_key_partitions: [None; 3],
             call_site_index,
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
@@ -348,6 +359,9 @@ impl Graph {
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
         };
+        // New load work, completed before readiness: bind declaration-bearing
+        // records once. The fixed-size summaries retain no per-node membership.
+        graph.rebuild_declared_key_partitions();
         if graph.call_site_index.is_none() && graph.count_by_tag(TAG_CALL_SITE_NODE) > 0 {
             // No persisted index: build the same structure in memory, as the Kotlin
             // server does for a graph written before the index existed.
@@ -372,6 +386,144 @@ impl Graph {
             graph.call_site_index = Some(built);
         }
         Ok(graph)
+    }
+
+    /// Decoding inputs are immutable once loaded; derived indexes rely on them.
+    pub fn strings(&self) -> &StringTable {
+        &self.strings
+    }
+
+    pub fn node_version(&self) -> u8 {
+        self.node_version
+    }
+
+    pub fn declared_types(&self) -> Option<&crate::types::DeclaredTypes> {
+        self.declared_types.as_ref()
+    }
+
+    /// Mutations cannot leave derived key partitions stale, including unwinding
+    /// from the updater: invalidate first and rebuild only after normal return.
+    pub fn update_declared_types(
+        &mut self,
+        update: impl FnOnce(&mut Option<crate::types::DeclaredTypes>),
+    ) {
+        self.declared_key_partitions = [None; 3];
+        update(&mut self.declared_types);
+        self.rebuild_declared_key_partitions();
+    }
+
+    pub fn declared_key_partitions(&self, tag: u8) -> Option<&[DeclaredKeyPartition; 2]> {
+        let index = usize::from(tag.checked_sub(crate::node::TAG_FIELD_NODE)?);
+        self.declared_key_partitions.get(index)?.as_ref()
+    }
+
+    fn rebuild_declared_key_partitions(&mut self) {
+        use crate::node::{NodeKind, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
+        self.declared_key_partitions = [None; 3];
+        let Some(table) = self.declared_types.as_ref() else {
+            return;
+        };
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            if (tag == TAG_FIELD_NODE && table.fields.is_empty())
+                || (tag != TAG_FIELD_NODE && table.methods.is_empty())
+            {
+                continue;
+            }
+            let ids = self.ids_by_tag(tag);
+            if ids.windows(2).any(|pair| pair[0] > pair[1]) {
+                continue;
+            }
+            let mut partitions = [DeclaredKeyPartition::default(); 2];
+            // One previous-method binding is sufficient for adjacent parameter
+            // records. It is scratch for this load, never a retained method cache.
+            let mut previous_method: Option<(MethodDesc, Option<usize>)> = None;
+            let mut complete = true;
+            for &id in ids {
+                let Some(node) = self.declared_summary_node(id, tag) else {
+                    complete = false;
+                    break;
+                };
+                // Summaries are optional accelerators. An undecodable binding
+                // leaves the existing query path in charge of malformed input.
+                // Do not allocate an unbounded temporary descriptor/key during
+                // startup. Oversized identities use the unchanged query fallback.
+                let mut key_bytes = 0usize;
+                let mut valid_string = |id: StrId| {
+                    if (id as usize) >= self.strings.len() {
+                        return false;
+                    }
+                    key_bytes = key_bytes
+                        .saturating_add(self.strings.get(id as usize).len().saturating_add(2));
+                    key_bytes <= 1_000_000
+                };
+                let valid_binding = match &node.kind {
+                    NodeKind::Field {
+                        declaring_class,
+                        name,
+                        field_type,
+                        ..
+                    } => [*declaring_class, *name, *field_type]
+                        .into_iter()
+                        .all(&mut valid_string),
+                    NodeKind::Parameter { method, .. } | NodeKind::Return { method, .. } => {
+                        [method.declaring_class, method.name, method.return_type]
+                            .into_iter()
+                            .all(&mut valid_string)
+                            && method
+                                .parameter_types
+                                .iter()
+                                .copied()
+                                .all(&mut valid_string)
+                    }
+                    _ => false,
+                };
+                if !valid_binding {
+                    complete = false;
+                    break;
+                }
+                let bound = match &node.kind {
+                    NodeKind::Parameter { method, index, .. } => {
+                        let count = match &previous_method {
+                            Some((previous, count)) if previous == method => *count,
+                            _ => {
+                                let count = table
+                                    .method(method, &self.strings)
+                                    .map(|m| m.parameters.len());
+                                previous_method = Some((method.clone(), count));
+                                count
+                            }
+                        };
+                        count.is_some_and(|count| usize::try_from(*index).is_ok_and(|i| i < count))
+                    }
+                    _ => table.node_type_id(&node, &self.strings).is_some(),
+                };
+                let partition = &mut partitions[usize::from(bound)];
+                if partition.count == 0 {
+                    partition.first = id;
+                }
+                partition.count += 1;
+            }
+            if complete {
+                self.declared_key_partitions[usize::from(tag - TAG_FIELD_NODE)] = Some(partitions);
+            }
+        }
+    }
+
+    fn declared_summary_node(&self, id: NodeId, tag: u8) -> Option<Node> {
+        if id as usize >= self.node_capacity {
+            return None;
+        }
+        let slot = (id as usize).checked_mul(8)?.checked_add(8)?;
+        let offset = i64::from_be_bytes(
+            self.node_offsets
+                .get(slot..slot.checked_add(8)?)?
+                .try_into()
+                .ok()?,
+        );
+        let offset = usize::try_from(offset.checked_sub(1)?).ok()?;
+        // Slice first: the cursor starts at zero, so malformed offsets cannot
+        // overflow its arithmetic. Only these three flat layouts are decoded.
+        decode_declared_summary_node(self.nodedata.get(offset..)?, id, tag)
     }
 
     /// The persisted CallSite string accelerator, when the graph directory carries one.
@@ -648,6 +800,63 @@ impl Graph {
     }
 }
 
+/// Optional-summary decoder, deliberately bounded independently of file counts.
+/// Declining an unsupported record keeps the normal query path authoritative.
+fn decode_declared_summary_node(data: &[u8], id: NodeId, tag: u8) -> Option<Node> {
+    use crate::node::{NodeKind, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
+    fn method(c: &mut Cursor<'_>) -> Option<MethodDesc> {
+        let declaring_class = c.u32().ok()?;
+        let name = c.u32().ok()?;
+        let count = usize::try_from(c.i32().ok()?).ok()?;
+        // JVM descriptors have at most255 parameter slots. Higher counts need
+        // no startup allocation; they simply cannot use this optional summary.
+        if count > 256 || count > c.remaining().saturating_sub(4) / 4 {
+            return None;
+        }
+        let parameter_types = (0..count)
+            .map(|_| c.u32().ok())
+            .collect::<Option<Vec<_>>>()?;
+        let return_type = c.u32().ok()?;
+        Some(MethodDesc {
+            declaring_class,
+            name,
+            parameter_types,
+            return_type,
+        })
+    }
+    let mut c = Cursor::new(data);
+    if c.u32().ok()? != id || c.u8().ok()? != tag {
+        return None;
+    }
+    let kind = match tag {
+        TAG_FIELD_NODE => NodeKind::Field {
+            declaring_class: c.u32().ok()?,
+            name: c.u32().ok()?,
+            field_type: c.u32().ok()?,
+            is_static: c.bool().ok()?,
+        },
+        TAG_PARAMETER_NODE => NodeKind::Parameter {
+            index: c.i32().ok()?,
+            param_type: c.u32().ok()?,
+            method: method(&mut c)?,
+        },
+        TAG_RETURN_NODE => {
+            let method = method(&mut c)?;
+            let actual_type = if c.bool().ok()? {
+                Some(c.u32().ok()?)
+            } else {
+                None
+            };
+            NodeKind::Return {
+                method,
+                actual_type,
+            }
+        }
+        _ => return None,
+    };
+    Some(Node { id, kind })
+}
+
 fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
     if data.len() < 8 {
         return Err(GraphError::BadHeader("graph.typeindex"));
@@ -756,3 +965,165 @@ fn read_int_constant_value(data: &[u8], offset: usize) -> Option<i32> {
 #[cfg(test)]
 #[path = "int_constant_tests.rs"]
 mod int_constant_tests;
+
+#[cfg(test)]
+mod declared_key_tests {
+    use super::*;
+    use crate::node::{NodeKind, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
+
+    fn fixture() -> Option<Graph> {
+        let path = std::env::var_os("GRAPHITE_TYPES_FIXTURE")?;
+        Some(Graph::load(Path::new(&path)).unwrap())
+    }
+
+    #[test]
+    fn summary_decoder_bounds_counts_and_never_decodes_other_tags() {
+        let record = |count: i32, parameters: &[u32]| {
+            let mut bytes = 7u32.to_be_bytes().to_vec();
+            bytes.push(TAG_RETURN_NODE);
+            for value in [1u32, 2u32] {
+                bytes.extend(value.to_be_bytes());
+            }
+            bytes.extend(count.to_be_bytes());
+            for value in parameters {
+                bytes.extend(value.to_be_bytes());
+            }
+            bytes.extend(4u32.to_be_bytes());
+            bytes.push(0);
+            bytes
+        };
+        let valid = record(1, &[3]);
+        assert_eq!(
+            decode_declared_summary_node(&valid, 7, TAG_RETURN_NODE),
+            Some(Node {
+                id: 7,
+                kind: NodeKind::Return {
+                    method: MethodDesc {
+                        declaring_class: 1,
+                        name: 2,
+                        parameter_types: vec![3],
+                        return_type: 4,
+                    },
+                    actual_type: None
+                },
+            })
+        );
+        for count in [-1, 257, i32::MAX] {
+            assert!(
+                decode_declared_summary_node(&record(count, &[]), 7, TAG_RETURN_NODE).is_none()
+            );
+        }
+        for end in 0..valid.len() {
+            assert!(decode_declared_summary_node(&valid[..end], 7, TAG_RETURN_NODE).is_none());
+        }
+        assert!(decode_declared_summary_node(&valid, 8, TAG_RETURN_NODE).is_none());
+        let mut wrong_tag = valid;
+        wrong_tag[4] = crate::node::TAG_ANNOTATION_NODE;
+        assert!(decode_declared_summary_node(&wrong_tag, 7, TAG_RETURN_NODE).is_none());
+        assert!(
+            decode_declared_summary_node(&wrong_tag, 7, crate::node::TAG_ANNOTATION_NODE).is_none()
+        );
+    }
+
+    #[test]
+    fn declaration_summary_declines_invalid_offsets_without_changing_query_decoder() {
+        let Some(mut graph) = fixture() else {
+            return;
+        };
+        let id = graph.ids_by_tag(TAG_FIELD_NODE)[0];
+        let slot = 8 + id as usize * 8;
+        let original = graph.node_offsets.to_vec();
+        for offset in [0, -1, i64::MIN, i64::MAX] {
+            let mut offsets = original.clone();
+            offsets[slot..slot + 8].copy_from_slice(&offset.to_be_bytes());
+            graph.node_offsets = Bytes::owned(offsets);
+            graph.rebuild_declared_key_partitions();
+            assert!(graph.declared_key_partitions(TAG_FIELD_NODE).is_none());
+        }
+        graph.node_offsets = Bytes::owned(original[..slot + 7].to_vec());
+        graph.rebuild_declared_key_partitions();
+        assert!(graph.declared_key_partitions(TAG_FIELD_NODE).is_none());
+    }
+
+    #[test]
+    fn declaration_key_summary_tracks_exact_binding_updates_and_first_nodes() {
+        let Some(mut graph) = fixture() else {
+            return;
+        };
+        let field = graph.ids_by_tag(TAG_FIELD_NODE).iter().copied().find(|id| {
+            matches!(graph.node(*id).unwrap().kind, NodeKind::Field { name, .. } if graph.str(name) == "first")
+        }).unwrap();
+        let before = *graph.declared_key_partitions(TAG_FIELD_NODE).unwrap();
+        assert!(before[1].count > 1);
+        let parameters = *graph.declared_key_partitions(TAG_PARAMETER_NODE).unwrap();
+        let returns = *graph.declared_key_partitions(TAG_RETURN_NODE).unwrap();
+        graph.update_declared_types(|table| {
+            let table = table.as_mut().unwrap();
+            table.fields.retain(|(_, name, _), _| name != "first");
+            table.methods.retain(|(_, name, _), _| name != "echo");
+        });
+        let after = graph.declared_key_partitions(TAG_FIELD_NODE).unwrap();
+        assert_eq!(after[1].count, before[1].count - 1);
+        assert_eq!(after[0].count, before[0].count + 1);
+        assert_eq!(
+            after[0].first,
+            if before[0].count == 0 {
+                field
+            } else {
+                before[0].first.min(field)
+            }
+        );
+        assert_eq!(
+            graph.declared_key_partitions(TAG_PARAMETER_NODE).unwrap()[1].count,
+            parameters[1].count - 1
+        );
+        assert_eq!(
+            graph.declared_key_partitions(TAG_RETURN_NODE).unwrap()[1].count,
+            returns[1].count - 1
+        );
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            let summary = graph.declared_key_partitions(tag).unwrap();
+            assert_eq!(
+                summary.iter().map(|p| p.count).sum::<usize>(),
+                graph.count_by_tag(tag)
+            );
+            for (bound, partition) in summary.iter().enumerate().filter(|(_, p)| p.count > 0) {
+                let node = graph.node(partition.first).unwrap();
+                assert_eq!(
+                    graph
+                        .declared_types()
+                        .unwrap()
+                        .node_type_id(&node, &graph.strings)
+                        .is_some(),
+                    bound == 1
+                );
+            }
+        }
+        graph.update_declared_types(|table| *table = None);
+        assert!(graph.declared_types().is_none());
+        assert!(graph.declared_key_partitions(TAG_FIELD_NODE).is_none());
+    }
+
+    #[test]
+    fn declaration_key_summary_declines_unsorted_lists_and_unwound_updates() {
+        let Some(mut graph) = fixture() else {
+            return;
+        };
+        assert!(graph.type_index[TAG_FIELD_NODE as usize].len() > 1);
+        graph.type_index[TAG_FIELD_NODE as usize].reverse();
+        graph.rebuild_declared_key_partitions();
+        assert!(graph.declared_key_partitions(TAG_FIELD_NODE).is_none());
+        assert!(graph.declared_key_partitions(TAG_PARAMETER_NODE).is_some());
+        let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            graph.update_declared_types(|table| {
+                table.as_mut().unwrap().fields.clear();
+                panic!("updater did not complete");
+            });
+        }));
+        assert!(result.is_err());
+        assert!(graph.declared_types().unwrap().fields.is_empty());
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            assert!(graph.declared_key_partitions(tag).is_none());
+        }
+    }
+}

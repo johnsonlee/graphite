@@ -13,7 +13,7 @@ fn main() {
         g.node_capacity(),
         g.edge_count(),
         g.method_count(),
-        g.strings.len(),
+        g.strings().len(),
         g.count_by_tag(TAG_CALL_SITE_NODE)
     );
     for tag in 0..16u8 {
@@ -44,8 +44,8 @@ fn main() {
         {
             println!(
                 "  cs {id}: {} -> {} line={:?} out={} in={}",
-                caller.signature(&g.strings),
-                callee.signature(&g.strings),
+                caller.signature(g.strings()),
+                callee.signature(g.strings()),
                 line,
                 g.out_degree(id),
                 g.in_degree(id)
@@ -57,8 +57,8 @@ fn main() {
     }
     println!(
         "identity ok = {:?}",
-        g.strings
+        g.strings()
             .identity()
-            .map(|i| *i == g.strings.compute_identity())
+            .map(|i| *i == g.strings().compute_identity())
     );
 }

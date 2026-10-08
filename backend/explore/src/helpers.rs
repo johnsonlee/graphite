@@ -66,8 +66,8 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
         NodeKind::CallSite { caller, callee, .. } => {
             m.insert("type".into(), json!("CallSiteNode"));
             m.insert("id".into(), id);
-            m.insert("caller".into(), json!(caller.signature(&g.strings)));
-            m.insert("callee".into(), json!(callee.signature(&g.strings)));
+            m.insert("caller".into(), json!(caller.signature(g.strings())));
+            m.insert("callee".into(), json!(callee.signature(g.strings())));
             m.insert(
                 "label".into(),
                 json!(format!(
@@ -222,13 +222,13 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert("index".into(), json!(index));
             m.insert("paramType".into(), s(*param_type));
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), json!(format!("param#{index}")));
         }
         NodeKind::Return { method, .. } => {
             m.insert("type".into(), json!("ReturnNode"));
             m.insert("id".into(), id);
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), json!("return"));
         }
         NodeKind::LocalVariable {
@@ -240,7 +240,7 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert("name".into(), s(*name));
             m.insert("varType".into(), s(*var_type));
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), s(*name));
         }
         NodeKind::Annotation {
