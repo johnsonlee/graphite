@@ -12,6 +12,9 @@ on:
       - 'frontend/jvm/ir/**'
       - 'frontend/jvm/query/**'
       - 'cli/**'
+      - 'backend/bench/fixtures/apple-service/**'
+      - '.github/scripts/verify-apple-cross-graph.py'
+      - '.github/scripts/test_verify_apple_cross_graph.py'
       - '.github/workflows/apple.yml'
   pull_request:
     branches: [ '**' ]
@@ -21,6 +24,9 @@ on:
       - 'frontend/jvm/ir/**'
       - 'frontend/jvm/query/**'
       - 'cli/**'
+      - 'backend/bench/fixtures/apple-service/**'
+      - '.github/scripts/verify-apple-cross-graph.py'
+      - '.github/scripts/test_verify_apple_cross_graph.py'
       - '.github/workflows/apple.yml'
 
 permissions:
@@ -77,6 +83,9 @@ jobs:
       run: |
         ./gradlew :query:shadowJar --no-daemon
         cargo build --release --locked -p graphite-cli
+
+    - name: Test the mixed-language correctness assertions
+      run: python3 .github/scripts/test_verify_apple_cross_graph.py
 
     # The container's default shell is sh; the steps use bash for pipefail.
     - name: Index the fixture, import it and query the graph
@@ -176,21 +185,51 @@ jobs:
         if-no-files-found: error
         retention-days: 1
 
-    - name: Serve the graph
+    - name: Build the JVM endpoint matching the Swift client
+      shell: bash
+      env:
+        GRAPHITE_FRONTEND_JVM: frontend/jvm/query/build/libs/graphite.jar
+      run: |
+        set -euo pipefail
+        mkdir -p "${RUNNER_TEMP}/payment-service-classes"
+        javac --release 17 -d "${RUNNER_TEMP}/payment-service-classes" \
+          backend/bench/fixtures/apple-service/src/com/acme/payments/PaymentService.java
+        jar --create --file "${RUNNER_TEMP}/payment-service.jar" \
+          --main-class com.acme.payments.PaymentService -C "${RUNNER_TEMP}/payment-service-classes" .
+        ./target/release/graphite build --lang jvm "${RUNNER_TEMP}/payment-service.jar" \
+          --include com.acme.payments -o "${RUNNER_TEMP}/payment-service.graphite"
+        ./target/release/graphite verify "${RUNNER_TEMP}/payment-service.graphite"
+
+    - name: Serve both languages and verify the cross-graph route join
       shell: bash
       run: |
         set -euo pipefail
-        ./target/release/graphite serve --graph acme:"${RUNNER_TEMP}/acme.graphite" --port 18095 > "${RUNNER_TEMP}/serve.log" 2>&1 &
+        ./target/release/graphite serve \
+          --graph swift:"${RUNNER_TEMP}/acme.graphite" \
+          --graph backend:"${RUNNER_TEMP}/payment-service.graphite" \
+          --port 18095 > "${RUNNER_TEMP}/serve.log" 2>&1 &
         SERVER=$!
+        trap 'kill "${SERVER}" 2>/dev/null || true' EXIT
         for _ in $(seq 1 60); do
           curl -sf http://localhost:18095/api/graphs > "${RUNNER_TEMP}/graphs.json" && break
           sleep 1
         done
-        curl -sf -X POST http://localhost:18095/api/graphs/acme/cypher -H 'Content-Type: application/json' \
+        curl -sf -X POST http://localhost:18095/api/graphs/swift/cypher -H 'Content-Type: application/json' \
           -d '{"query":"MATCH (c:CallSite) RETURN count(c) AS calls"}' > "${RUNNER_TEMP}/calls.json"
-        kill "${SERVER}"
-        python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert [g["id"] for g in d["graphs"]]==["acme"], d' "${RUNNER_TEMP}/graphs.json"
         python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert d["rows"][0]["calls"] >= 15, d' "${RUNNER_TEMP}/calls.json"
+        python3 .github/scripts/verify-apple-cross-graph.py http://localhost:18095 \
+          --evidence "${RUNNER_TEMP}/apple-cross-graph.json"
+
+    - name: Upload mixed-language correctness evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: apple-cross-graph-correctness
+        path: |
+          ${{ runner.temp }}/apple-cross-graph.json
+          ${{ runner.temp }}/serve.log
+        if-no-files-found: ignore
+        retention-days: 7
 
   # The documented entry point on macOS: swift.sh under the system Bash 3.2, the Xcode
   # toolchain's IndexStoreDB and swift-demangle, the fixture end to end.
