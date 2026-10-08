@@ -1,0 +1,15 @@
+{
+  "purpose": "real-source calibration only",
+  "performanceAcceptance": false,
+  "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+  "releaseVersion": "2.11.3-apple-validation.3",
+  "baseline": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+  "baselinePurpose": "shape calibration only; no paired acceptance",
+  "timedBoundary": "existing compiler index store through IR emission",
+  "excluded": [
+    "compilation",
+    "import/save timing",
+    "graph load",
+    "server query latency"
+  ]
+}

@@ -1,0 +1,1024 @@
+{
+  "query": "MATCH (f:Field) RETURN f.graphId AS graph, f.type AS fieldType, count(f) AS fields ORDER BY fields DESC, graph, fieldType LIMIT 100",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "columns": [
+    "graph",
+    "fieldType",
+    "fields"
+  ],
+  "rows": [
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Bool",
+      "fields": 3182,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "",
+      "fields": 3102,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.String",
+      "fields": 2065,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Swift.String",
+      "fields": 761,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.String?",
+      "fields": 739,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "java.lang.String",
+      "fields": 586,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "",
+      "fields": 530,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "CoreFoundation.CGFloat",
+      "fields": 487,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Swift.Bool",
+      "fields": 365,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Foundation.Data",
+      "fields": 362,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Int",
+      "fields": 357,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Foundation.Data?",
+      "fields": 331,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Swift.String?",
+      "fields": 289,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.UInt64",
+      "fields": 274,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIView",
+      "fields": 233,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SwiftProtobuf._NameMap",
+      "fields": 219,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIColor",
+      "fields": 218,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.UInt32",
+      "fields": 213,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.SDSColumnMetadata",
+      "fields": 203,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Basics.AbsolutePath",
+      "fields": 187,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SwiftProtobuf.UnknownStorage",
+      "fields": 180,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "[Swift.String]",
+      "fields": 180,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "int",
+      "fields": 173,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SwiftProtobuf.UnknownStorage?",
+      "fields": 155,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UILabel",
+      "fields": 144,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.UInt",
+      "fields": 142,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Swift.Int",
+      "fields": 130,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Double",
+      "fields": 121,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Basics.AbsolutePath?",
+      "fields": 110,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "[Swift.UInt32 : Foundation.Data]",
+      "fields": 109,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.UInt64?",
+      "fields": 104,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.UInt32?",
+      "fields": 97,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "BOOL",
+      "fields": 94,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIView?",
+      "fields": 88,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.SDSKeyValueStore",
+      "fields": 87,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIStackView",
+      "fields": 87,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Foundation.URL",
+      "fields": 85,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "long",
+      "fields": 78,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "boolean",
+      "fields": 77,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Void",
+      "fields": 74,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.CGSize",
+      "fields": 74,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Int64",
+      "fields": 71,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "NSString * _Nullable",
+      "fields": 70,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "[Swift.String]",
+      "fields": 66,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Foundation.Date",
+      "fields": 65,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Set<Swift.String>",
+      "fields": 64,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "org.slf4j.Logger",
+      "fields": 64,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "ArgumentParser.CommandConfiguration",
+      "fields": 64,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "java.util.List",
+      "fields": 61,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.DB",
+      "fields": 58,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.NSLayoutConstraint?",
+      "fields": 58,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Foundation.Date?",
+      "fields": 57,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Bool?",
+      "fields": 57,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIFont",
+      "fields": 57,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIButton",
+      "fields": 56,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "TSCBasic.FileSystem",
+      "fields": 56,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.NSNotificationName",
+      "fields": 55,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIImageView",
+      "fields": 55,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "CoreCommands.GlobalOptions",
+      "fields": 55,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Basics.ObservabilityScope",
+      "fields": 53,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.NSTimer?",
+      "fields": 51,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.OS_dispatch_queue",
+      "fields": 50,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "NSString *const _Nonnull",
+      "fields": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalUI.OWSStackView.Config",
+      "fields": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "Swift.Int64?",
+      "fields": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIColor?",
+      "fields": 48,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "NSString * _Nonnull",
+      "fields": 47,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.KeyValueStore",
+      "fields": 47,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.TSAccountManager",
+      "fields": 46,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "[Basics.AbsolutePath]",
+      "fields": 46,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "(() -> ())?",
+      "fields": 45,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "CGRect",
+      "fields": 45,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.TSThread",
+      "fields": 45,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalUI.CVLabel",
+      "fields": 44,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalUI.ManualStackView",
+      "fields": 44,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "PackageModel.ToolsVersion",
+      "fields": 44,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "io.micrometer.core.instrument.Timer",
+      "fields": 43,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "com.codahale.metrics.Meter",
+      "fields": 42,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "java.util.Map",
+      "fields": 42,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UIImage?",
+      "fields": 41,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "[Swift.UInt8]",
+      "fields": 41,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "A",
+      "fields": 40,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.UnfairLock",
+      "fields": 40,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "CoreFoundation.CGFloat?",
+      "fields": 39,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.Schedulers",
+      "fields": 38,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.SignalServiceAddress",
+      "fields": 38,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "byte[]",
+      "fields": 38,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "CGSize",
+      "fields": 37,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "LibSignalClient.Aci",
+      "fields": 36,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.SDSTableMetadata",
+      "fields": 36,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "fieldType": "java.time.Duration",
+      "fields": 36,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "[Swift.String]?",
+      "fields": 34,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.AtomicBool",
+      "fields": 32,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalUI.SpoilerRenderState",
+      "fields": 32,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.NSLayoutConstraint",
+      "fields": 32,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "Foundation.URL",
+      "fields": 32,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "fieldType": "__C.NSLock",
+      "fields": 32,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "SignalServiceKit.SDSDatabaseStorage",
+      "fields": 31,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "UIInterfaceOrientationMask",
+      "fields": 31,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "fieldType": "__C.CGPoint",
+      "fields": 31,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    }
+  ],
+  "graphs": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "mode": "cross-graph",
+  "rowCount": 100,
+  "error": null,
+  "digest": "6d42d8021b55e1593507d3a27527bfb81c1c80cbc2c56459acf40bee71058308"
+}

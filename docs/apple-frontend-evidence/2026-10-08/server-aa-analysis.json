@@ -1,0 +1,1711 @@
+{
+  "purpose": "Independent same-candidate-binary A/A diagnosis only. Does not replace, invalidate, or establish recovery from failed original A/B.",
+  "sourceFiles": {
+    "samples": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-query-aa-diagnostic/samples.jsonl",
+    "protocol": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-query-aa-diagnostic/protocol.json",
+    "summary": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-query-aa-diagnostic/summary.json",
+    "originalAB": "/Users/johnsonlee/.codex/benchmarks/apple-validation/server-analysis.json",
+    "contention": "/Users/johnsonlee/.codex/benchmarks/apple-validation/server-diagnostic-aa-contention.jsonl",
+    "environment": "/Users/johnsonlee/.codex/benchmarks/apple-validation/server-diagnostic-aa-early-environment.json"
+  },
+  "sampling": "3 paired rounds AB,BA,AB; 6 fresh instances of same candidate; 4 cases; 5 warmups per case; 100 measured requests/case/concurrency at1,4. Nearest-rank pooled p50/p95 and separate process/round distributions. CPU uses emitted corrected counters, independently checked against raw Mach ticks.",
+  "binary": {
+    "sameVariantConfig": true,
+    "sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6",
+    "path": "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+    "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+    "buildRevision": "77ec (earlier local native CLI build)",
+    "sourceEquivalence": "No Rust/Cargo source changes from77ec through357a6206; final Apple frontend is357a6206, a separate binary. Exact native artifact identity is its SHA256, not the final frontend revision.",
+    "codegenEvidence": "/Users/johnsonlee/.codex/benchmarks/apple-validation/server-codegen-diagnosis.json"
+  },
+  "identicalThreeGraphFingerprintsWithinAAAndToOriginalAB": true,
+  "counts": {
+    "measured": 4800,
+    "warmup": 120,
+    "batches": 48,
+    "processes": 6,
+    "requestsByPhaseAndStatus": {
+      "readiness:False": 15,
+      "readiness:True": 6,
+      "warmup:True": 120,
+      "measured:True": 4800
+    }
+  },
+  "parity": [
+    {
+      "case": "all-graph-node-census",
+      "digest": "645af5357c007ea45b6e065dc7ca7d12c9f502e3790efc74dc0843c79e23bf08",
+      "rowCount": 3,
+      "allSuccessfulRequestsAndOriginalABMatch": true
+    },
+    {
+      "case": "field-type-inventory",
+      "digest": "948967cbffeab7ec1574e2bbf2a2b9f282cfb803cdf70c35cc38d14dede01b63",
+      "rowCount": 100,
+      "allSuccessfulRequestsAndOriginalABMatch": true
+    },
+    {
+      "case": "literal-call-provenance",
+      "digest": "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+      "rowCount": 100,
+      "allSuccessfulRequestsAndOriginalABMatch": true
+    },
+    {
+      "case": "network-message-call-scan",
+      "digest": "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+      "rowCount": 3,
+      "allSuccessfulRequestsAndOriginalABMatch": true
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "digest": "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+      "rowCount": 12,
+      "allSuccessfulRequestsAndOriginalABMatch": true
+    }
+  ],
+  "failures": {
+    "readinessFailures": [
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472224492991000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 0,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472224480747000,
+        "variant": "baseline",
+        "wall_ms": 12.220874894410372
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472224548378000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 0,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472224548077000,
+        "variant": "baseline",
+        "wall_ms": 0.2852089237421751
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472322542708000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 0,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472322542296000,
+        "variant": "candidate",
+        "wall_ms": 0.38724998012185097
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472322598119000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 0,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472322597800000,
+        "variant": "candidate",
+        "wall_ms": 0.30141696333885193
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472322653570000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 0,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472322653209000,
+        "variant": "candidate",
+        "wall_ms": 0.3427499905228615
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472420229241000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 1,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472420228822000,
+        "variant": "candidate",
+        "wall_ms": 0.396916875615716
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472420279738000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 1,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472420279468000,
+        "variant": "candidate",
+        "wall_ms": 0.25595794431865215
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472420335167000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 1,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472420334840000,
+        "variant": "candidate",
+        "wall_ms": 0.2982919104397297
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472518033182000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 1,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472518032783000,
+        "variant": "baseline",
+        "wall_ms": 0.3778750542551279
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472518088552000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 1,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472518088271000,
+        "variant": "baseline",
+        "wall_ms": 0.26904186233878136
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472610885095000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 2,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472610884712000,
+        "variant": "baseline",
+        "wall_ms": 0.3602919168770313
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472610940478000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 2,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472610940182000,
+        "variant": "baseline",
+        "wall_ms": 0.27866591699421406
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472706668425000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 2,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472706667967000,
+        "variant": "candidate",
+        "wall_ms": 0.4305001348257065
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472706723880000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 2,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472706723539000,
+        "variant": "candidate",
+        "wall_ms": 0.3225419204682112
+      },
+      {
+        "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+        "case": "all-graph-node-census",
+        "error": "<urlopen error [Errno 61] Connection refused>",
+        "kind": "request",
+        "ok": false,
+        "operation": "query",
+        "phase": "readiness",
+        "recorded_ns": 1791472706779344000,
+        "response_bytes": 0,
+        "response_error_body": "",
+        "response_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "round": 2,
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "started_ns": 1791472706778991000,
+        "variant": "candidate",
+        "wall_ms": 0.32875011675059795
+      }
+    ],
+    "unexpectedRequestFailures": [],
+    "otherFailedRecords": []
+  },
+  "queryCases": [
+    {
+      "case": "network-message-call-scan",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 6.411500042304397,
+        "pooled_p95_ms": 7.1317090187221766,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 6.188167026266456,
+            "p95_ms": 6.60379184409976,
+            "cpu_seconds": 0.6061519166666672,
+            "batch_wall_ms": 631.5584999974817,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472228755830000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 6.600165972486138,
+            "p95_ms": 7.321250159293413,
+            "cpu_seconds": 0.6539172916666672,
+            "batch_wall_ms": 675.808124942705,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472522482986000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 6.421749945729971,
+            "p95_ms": 6.976541830226779,
+            "cpu_seconds": 0.6338417499999994,
+            "batch_wall_ms": 653.7145420443267,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472615207497000
+          }
+        ],
+        "cpu_median_seconds": 0.6338417499999994
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 7.436499930918217,
+        "pooled_p95_ms": 9.810500079765916,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 7.333790883421898,
+            "p95_ms": 8.031457895413041,
+            "cpu_seconds": 0.7265806666666664,
+            "batch_wall_ms": 750.7789582014084,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472327281778000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 7.036374881863594,
+            "p95_ms": 8.0207500141114,
+            "cpu_seconds": 0.6973109583333338,
+            "batch_wall_ms": 717.1097919344902,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472424914502000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 9.23758395947516,
+            "p95_ms": 10.01387508586049,
+            "cpu_seconds": 0.9114585833333333,
+            "batch_wall_ms": 940.8748329151422,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472711869389000
+          }
+        ],
+        "cpu_median_seconds": 0.7265806666666664
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": 1.1456238571554422,
+          "p95_ms": 1.427666051313281,
+          "cpu_seconds": 0.1204287499999992,
+          "batch_wall_ms": 119.22045820392668
+        },
+        {
+          "round": 1,
+          "p50_ms": 0.4362089093774557,
+          "p95_ms": 0.6994998548179865,
+          "cpu_seconds": 0.04339366666666655,
+          "batch_wall_ms": 41.30166699178517
+        },
+        {
+          "round": 2,
+          "p50_ms": 2.8158340137451887,
+          "p95_ms": 3.037333255633712,
+          "cpu_seconds": 0.27761683333333387,
+          "batch_wall_ms": 287.1602908708155
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 1.02499988861382,
+        "p95_ms": 2.6787910610437393
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 6.188167026266456,
+          "max": 9.23758395947516,
+          "span": 3.049416933208704
+        },
+        "p95_ms": {
+          "min": 6.60379184409976,
+          "max": 10.01387508586049,
+          "span": 3.4100832417607307
+        },
+        "cpu_seconds": {
+          "min": 0.6061519166666672,
+          "max": 0.9114585833333333,
+          "span": 0.30530666666666606
+        },
+        "batch_wall_ms": {
+          "min": 631.5584999974817,
+          "max": 940.8748329151422,
+          "span": 309.3163329176605
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 6.628332892432809,
+        "candidate_p50_ms": 8.136625168845057,
+        "baseline_p95_ms": 7.797457976266742,
+        "candidate_p95_ms": 9.8277498036623,
+        "p95_delta_ms": 2.0302918273955584,
+        "cpu_delta_percent": 22.274252171073037,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "network-message-call-scan",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 7.65354186296463,
+        "pooled_p95_ms": 8.969082962721586,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 8.112124865874648,
+            "p95_ms": 9.137124987319112,
+            "cpu_seconds": 0.7985330000000127,
+            "batch_wall_ms": 209.6858338918537,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472303271223000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 7.358958013355732,
+            "p95_ms": 8.784666890278459,
+            "cpu_seconds": 0.7369757499999958,
+            "batch_wall_ms": 190.1468748692423,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472592307953000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 7.359167095273733,
+            "p95_ms": 8.788625011220574,
+            "cpu_seconds": 0.738354583333334,
+            "batch_wall_ms": 191.54516700655222,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472687836926000
+          }
+        ],
+        "cpu_median_seconds": 0.738354583333334
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 7.850833004340529,
+        "pooled_p95_ms": 9.364250116050243,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 7.905999897047877,
+            "p95_ms": 8.798416936770082,
+            "cpu_seconds": 0.781235874999983,
+            "batch_wall_ms": 204.1010418906808,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472401088253000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 7.855958072468638,
+            "p95_ms": 9.5208331476897,
+            "cpu_seconds": 0.7856430833333305,
+            "batch_wall_ms": 204.76816711016,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472499141811000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 7.739791180938482,
+            "p95_ms": 9.492875076830387,
+            "cpu_seconds": 0.7965642083333382,
+            "batch_wall_ms": 210.69499989971519,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472790251754000
+          }
+        ],
+        "cpu_median_seconds": 0.7856430833333305
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": -0.20612496882677078,
+          "p95_ms": -0.3387080505490303,
+          "cpu_seconds": -0.017297125000029667,
+          "batch_wall_ms": -5.5847920011729
+        },
+        {
+          "round": 1,
+          "p50_ms": 0.49700005911290646,
+          "p95_ms": 0.7361662574112415,
+          "cpu_seconds": 0.04866733333333473,
+          "batch_wall_ms": 14.621292240917683
+        },
+        {
+          "round": 2,
+          "p50_ms": 0.38062408566474915,
+          "p95_ms": 0.7042500656098127,
+          "cpu_seconds": 0.05820962500000415,
+          "batch_wall_ms": 19.149832893162966
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 0.19729114137589931,
+        "p95_ms": 0.39516715332865715
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 7.358958013355732,
+          "max": 8.112124865874648,
+          "span": 0.7531668525189161
+        },
+        "p95_ms": {
+          "min": 8.784666890278459,
+          "max": 9.5208331476897,
+          "span": 0.7361662574112415
+        },
+        "cpu_seconds": {
+          "min": 0.7369757499999958,
+          "max": 0.7985330000000127,
+          "span": 0.06155725000001688
+        },
+        "batch_wall_ms": {
+          "min": 190.1468748692423,
+          "max": 210.69499989971519,
+          "span": 20.548125030472875
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 7.003207923844457,
+        "candidate_p50_ms": 7.257417077198625,
+        "baseline_p95_ms": 8.520083036273718,
+        "candidate_p95_ms": 8.725249907001853,
+        "p95_delta_ms": 0.2051668707281351,
+        "cpu_delta_percent": -0.7693438615432258,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "literal-call-provenance",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 24.855458876118064,
+        "pooled_p95_ms": 29.32837512344122,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 26.490667136386037,
+            "p95_ms": 30.022582970559597,
+            "cpu_seconds": 2.5945232916666665,
+            "batch_wall_ms": 2740.692500025034,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472231496763000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 24.898167001083493,
+            "p95_ms": 28.23120797984302,
+            "cpu_seconds": 2.4950382083333333,
+            "batch_wall_ms": 2599.2533748503774,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472525082472000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 24.568915832787752,
+            "p95_ms": 26.436000131070614,
+            "cpu_seconds": 2.428045,
+            "batch_wall_ms": 2522.1178331412375,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472617729837000
+          }
+        ],
+        "cpu_median_seconds": 2.4950382083333333
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 27.720707934349775,
+        "pooled_p95_ms": 32.06712496466935,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 27.47720805928111,
+            "p95_ms": 28.826917055994272,
+            "cpu_seconds": 2.701447916666667,
+            "batch_wall_ms": 2795.5843328963965,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472330077579000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 26.010166155174375,
+            "p95_ms": 29.076207894831896,
+            "cpu_seconds": 2.593851583333333,
+            "batch_wall_ms": 2687.239042017609,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472427601950000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 30.99587489850819,
+            "p95_ms": 32.83262508921325,
+            "cpu_seconds": 3.025115791666667,
+            "batch_wall_ms": 3131.578416097909,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472715001250000
+          }
+        ],
+        "cpu_median_seconds": 2.701447916666667
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": 0.9865409228950739,
+          "p95_ms": -1.1956659145653248,
+          "cpu_seconds": 0.10692462500000044,
+          "batch_wall_ms": 54.89183287136257
+        },
+        {
+          "round": 1,
+          "p50_ms": 1.1119991540908813,
+          "p95_ms": 0.8449999149888754,
+          "cpu_seconds": 0.09881337499999976,
+          "batch_wall_ms": 87.98566716723144
+        },
+        {
+          "round": 2,
+          "p50_ms": 6.426959065720439,
+          "p95_ms": 6.396624958142638,
+          "cpu_seconds": 0.5970707916666669,
+          "batch_wall_ms": 609.4605829566717
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 2.8652490582317114,
+        "p95_ms": 2.7387498412281275
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 24.568915832787752,
+          "max": 30.99587489850819,
+          "span": 6.426959065720439
+        },
+        "p95_ms": {
+          "min": 26.436000131070614,
+          "max": 32.83262508921325,
+          "span": 6.396624958142638
+        },
+        "cpu_seconds": {
+          "min": 2.428045,
+          "max": 3.025115791666667,
+          "span": 0.5970707916666669
+        },
+        "batch_wall_ms": {
+          "min": 2522.1178331412375,
+          "max": 3131.578416097909,
+          "span": 609.4605829566717
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 23.308458039537072,
+        "candidate_p50_ms": 28.368292143568397,
+        "baseline_p95_ms": 27.628042036667466,
+        "candidate_p95_ms": 31.48895804770291,
+        "p95_delta_ms": 3.8609160110354424,
+        "cpu_delta_percent": 17.671676806234828,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "literal-call-provenance",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 27.072833850979805,
+        "pooled_p95_ms": 29.02958309277892,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 27.528833132237196,
+            "p95_ms": 30.07650002837181,
+            "cpu_seconds": 2.6343365833333268,
+            "batch_wall_ms": 714.2675840295851,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472303985643000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 26.903999969363213,
+            "p95_ms": 28.617250034585595,
+            "cpu_seconds": 2.5743178750000033,
+            "batch_wall_ms": 700.6655000150204,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472593008808000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 26.792208896949887,
+            "p95_ms": 28.7428330630064,
+            "cpu_seconds": 2.5670621250000067,
+            "batch_wall_ms": 696.3840001262724,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472688533482000
+          }
+        ],
+        "cpu_median_seconds": 2.5743178750000033
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 27.96458313241601,
+        "pooled_p95_ms": 29.694207943975925,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 27.53675007261336,
+            "p95_ms": 28.71745894663036,
+            "cpu_seconds": 2.6308945416666853,
+            "batch_wall_ms": 714.5419998560101,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472401803013000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 28.34408381022513,
+            "p95_ms": 29.863416217267513,
+            "cpu_seconds": 2.7022673333333342,
+            "batch_wall_ms": 732.1460000239313,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472499874140000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 28.156042098999023,
+            "p95_ms": 29.98908399604261,
+            "cpu_seconds": 2.6946537500000045,
+            "batch_wall_ms": 735.3762921411544,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472790987319000
+          }
+        ],
+        "cpu_median_seconds": 2.6946537500000045
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": 0.007916940376162529,
+          "p95_ms": -1.3590410817414522,
+          "cpu_seconds": -0.0034420416666414155,
+          "batch_wall_ms": 0.2744158264249563
+        },
+        {
+          "round": 1,
+          "p50_ms": 1.4400838408619165,
+          "p95_ms": 1.2461661826819181,
+          "cpu_seconds": 0.12794945833333093,
+          "batch_wall_ms": 31.480500008910894
+        },
+        {
+          "round": 2,
+          "p50_ms": 1.3638332020491362,
+          "p95_ms": 1.2462509330362082,
+          "cpu_seconds": 0.12759162499999777,
+          "batch_wall_ms": 38.99229201488197
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 0.8917492814362049,
+        "p95_ms": 0.6646248511970043
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 26.792208896949887,
+          "max": 28.34408381022513,
+          "span": 1.5518749132752419
+        },
+        "p95_ms": {
+          "min": 28.617250034585595,
+          "max": 30.07650002837181,
+          "span": 1.4592499937862158
+        },
+        "cpu_seconds": {
+          "min": 2.5670621250000067,
+          "max": 2.7022673333333342,
+          "span": 0.1352052083333275
+        },
+        "batch_wall_ms": {
+          "min": 696.3840001262724,
+          "max": 735.3762921411544,
+          "span": 38.99229201488197
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 24.903415935114026,
+        "candidate_p50_ms": 25.861292146146297,
+        "baseline_p95_ms": 27.629374992102385,
+        "candidate_p95_ms": 29.07158387824893,
+        "p95_delta_ms": 1.4422088861465454,
+        "cpu_delta_percent": 0.6710830964540504,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "field-type-inventory",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 18.135540885850787,
+        "pooled_p95_ms": 19.683249993249774,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 18.77808291465044,
+            "p95_ms": 20.019666058942676,
+            "cpu_seconds": 1.839630541666666,
+            "batch_wall_ms": 1927.6078331749886,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472233424583000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 17.982083139941096,
+            "p95_ms": 18.385207979008555,
+            "cpu_seconds": 1.7544541666666658,
+            "batch_wall_ms": 1835.4650831315666,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472526918133000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 18.08483386412263,
+            "p95_ms": 19.12870816886425,
+            "cpu_seconds": 1.7696372500000004,
+            "batch_wall_ms": 1852.7684579603374,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472619582834000
+          }
+        ],
+        "cpu_median_seconds": 1.7696372500000004
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 19.517167005687952,
+        "pooled_p95_ms": 20.962459035217762,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 19.274791004136205,
+            "p95_ms": 20.182082895189524,
+            "cpu_seconds": 1.8887110833333318,
+            "batch_wall_ms": 1971.319624921307,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472332049126000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 18.961124820634723,
+            "p95_ms": 20.434665959328413,
+            "cpu_seconds": 1.870400041666668,
+            "batch_wall_ms": 1951.9015830010176,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472429554066000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 20.46629204414785,
+            "p95_ms": 21.358625032007694,
+            "cpu_seconds": 1.9936781249999993,
+            "batch_wall_ms": 2090.1405410841107,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472717091634000
+          }
+        ],
+        "cpu_median_seconds": 1.8887110833333318
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": 0.4967080894857645,
+          "p95_ms": 0.1624168362468481,
+          "cpu_seconds": 0.049080541666665756,
+          "batch_wall_ms": 43.71179174631834
+        },
+        {
+          "round": 1,
+          "p50_ms": 0.9790416806936264,
+          "p95_ms": 2.0494579803198576,
+          "cpu_seconds": 0.1159458750000022,
+          "batch_wall_ms": 116.43649986945093
+        },
+        {
+          "round": 2,
+          "p50_ms": 2.38145818002522,
+          "p95_ms": 2.229916863143444,
+          "cpu_seconds": 0.22404087499999892,
+          "batch_wall_ms": 237.37208312377334
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 1.3816261198371649,
+        "p95_ms": 1.279209041967988
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 17.982083139941096,
+          "max": 20.46629204414785,
+          "span": 2.4842089042067528
+        },
+        "p95_ms": {
+          "min": 18.385207979008555,
+          "max": 21.358625032007694,
+          "span": 2.973417052999139
+        },
+        "cpu_seconds": {
+          "min": 1.7544541666666658,
+          "max": 1.9936781249999993,
+          "span": 0.23922395833333354
+        },
+        "batch_wall_ms": {
+          "min": 1835.4650831315666,
+          "max": 2090.1405410841107,
+          "span": 254.6754579525441
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 17.330792034044862,
+        "candidate_p50_ms": 19.45875003002584,
+        "baseline_p95_ms": 19.657042110338807,
+        "candidate_p95_ms": 21.510208025574684,
+        "p95_delta_ms": 1.853165915235877,
+        "cpu_delta_percent": 12.688616525933183,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "field-type-inventory",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 19.762499956414104,
+        "pooled_p95_ms": 21.154416957870126,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 19.751375075429678,
+            "p95_ms": 21.23779198154807,
+            "cpu_seconds": 1.9117182500000012,
+            "batch_wall_ms": 508.4307910874486,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472304494231000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 19.8859591037035,
+            "p95_ms": 21.164999809116125,
+            "cpu_seconds": 1.9043441666666627,
+            "batch_wall_ms": 514.654542086646,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472593523640000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 19.61641712114215,
+            "p95_ms": 20.90250002220273,
+            "cpu_seconds": 1.8944275416666545,
+            "batch_wall_ms": 508.03962512873113,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472689041712000
+          }
+        ],
+        "cpu_median_seconds": 1.9043441666666627
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 20.047666039317846,
+        "pooled_p95_ms": 21.581208100542426,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 19.972458016127348,
+            "p95_ms": 21.486790850758553,
+            "cpu_seconds": 1.8986901250000037,
+            "batch_wall_ms": 520.3740419819951,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472402323599000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 20.10320802219212,
+            "p95_ms": 21.41937497071922,
+            "cpu_seconds": 1.922572958333329,
+            "batch_wall_ms": 520.1508339960128,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472500394483000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 20.06008313037455,
+            "p95_ms": 21.789166843518615,
+            "cpu_seconds": 1.9470468333333317,
+            "batch_wall_ms": 522.6922908332199,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472791510179000
+          }
+        ],
+        "cpu_median_seconds": 1.922572958333329
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": 0.22108294069766998,
+          "p95_ms": 0.24899886921048164,
+          "cpu_seconds": -0.013028124999997504,
+          "batch_wall_ms": 11.943250894546509
+        },
+        {
+          "round": 1,
+          "p50_ms": 0.2172489184886217,
+          "p95_ms": 0.25437516160309315,
+          "cpu_seconds": 0.018228791666666355,
+          "batch_wall_ms": 5.496291909366846
+        },
+        {
+          "round": 2,
+          "p50_ms": 0.44366600923240185,
+          "p95_ms": 0.8866668213158846,
+          "cpu_seconds": 0.052619291666677226,
+          "batch_wall_ms": 14.652665704488754
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 0.2851660829037428,
+        "p95_ms": 0.42679114267230034
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 19.61641712114215,
+          "max": 20.10320802219212,
+          "span": 0.4867909010499716
+        },
+        "p95_ms": {
+          "min": 20.90250002220273,
+          "max": 21.789166843518615,
+          "span": 0.8866668213158846
+        },
+        "cpu_seconds": {
+          "min": 1.8944275416666545,
+          "max": 1.9470468333333317,
+          "span": 0.052619291666677226
+        },
+        "batch_wall_ms": {
+          "min": 508.03962512873113,
+          "max": 522.6922908332199,
+          "span": 14.652665704488754
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 19.31308303028345,
+        "candidate_p50_ms": 19.692332949489355,
+        "baseline_p95_ms": 20.32450004480779,
+        "candidate_p95_ms": 22.063415963202715,
+        "p95_delta_ms": 1.7389159183949232,
+        "cpu_delta_percent": 1.2575487711186772,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 662.8652501385659,
+        "pooled_p95_ms": 750.5249581299722,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 695.2953329309821,
+            "p95_ms": 723.7172080203891,
+            "cpu_seconds": 69.18928795833332,
+            "batch_wall_ms": 69635.08395804092,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472303061356000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 650.2117079216987,
+            "p95_ms": 665.6424161046743,
+            "cpu_seconds": 64.84658566666667,
+            "batch_wall_ms": 65197.81862501986,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472592117515000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 661.3767500966787,
+            "p95_ms": 762.5978749711066,
+            "cpu_seconds": 67.67664545833333,
+            "batch_wall_ms": 68060.68762508221,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472687645155000
+          }
+        ],
+        "cpu_median_seconds": 67.67664545833333
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 694.6208749432117,
+        "pooled_p95_ms": 762.6640421804041,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 685.7141249347478,
+            "p95_ms": 709.8030839115381,
+            "cpu_seconds": 68.56274475000001,
+            "batch_wall_ms": 68833.15383293666,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472400883948000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 693.0422091390938,
+            "p95_ms": 708.5944591090083,
+            "cpu_seconds": 69.11791220833334,
+            "batch_wall_ms": 69381.03233301081,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472498936770000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 727.3253749590367,
+            "p95_ms": 781.4040000084788,
+            "cpu_seconds": 72.64994833333333,
+            "batch_wall_ms": 72947.45633308776,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472790040868000
+          }
+        ],
+        "cpu_median_seconds": 69.11791220833334
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": -9.581207996234298,
+          "p95_ms": -13.914124108850956,
+          "cpu_seconds": -0.6265432083333167,
+          "batch_wall_ms": -801.9301251042634
+        },
+        {
+          "round": 1,
+          "p50_ms": 42.83050121739507,
+          "p95_ms": 42.95204300433397,
+          "cpu_seconds": 4.271326541666667,
+          "batch_wall_ms": 4183.213707990944
+        },
+        {
+          "round": 2,
+          "p50_ms": 65.94862486235797,
+          "p95_ms": 18.806125037372112,
+          "cpu_seconds": 4.973302875000002,
+          "batch_wall_ms": 4886.7687080055475
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 31.755624804645777,
+        "p95_ms": 12.139084050431848
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 650.2117079216987,
+          "max": 727.3253749590367,
+          "span": 77.11366703733802
+        },
+        "p95_ms": {
+          "min": 665.6424161046743,
+          "max": 781.4040000084788,
+          "span": 115.76158390380442
+        },
+        "cpu_seconds": {
+          "min": 64.84658566666667,
+          "max": 72.64994833333333,
+          "span": 7.803362666666658
+        },
+        "batch_wall_ms": {
+          "min": 65197.81862501986,
+          "max": 72947.45633308776,
+          "span": 7749.637708067894
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 637.7083749976009,
+        "candidate_p50_ms": 682.8508342150599,
+        "baseline_p95_ms": 714.5656668581069,
+        "candidate_p95_ms": 753.8224998861551,
+        "p95_delta_ms": 39.25683302804828,
+        "cpu_delta_percent": 9.308438327122204,
+        "status": "not-passed"
+      }
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "pooled_p50_ms": 700.8625839371234,
+        "pooled_p95_ms": 742.2220418229699,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 711.7857909761369,
+            "p95_ms": 754.0866669733077,
+            "cpu_seconds": 71.41897733333333,
+            "batch_wall_ms": 18032.314291922376,
+            "processIdentity": "26070654236676",
+            "batchEndNs": 1791472322527079000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 687.9428750835359,
+            "p95_ms": 721.6931660659611,
+            "cpu_seconds": 68.92261504166665,
+            "batch_wall_ms": 17345.52774997428,
+            "processIdentity": "26077699352013",
+            "batchEndNs": 1791472610869700000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 697.3090420942754,
+            "p95_ms": 734.3247500248253,
+            "cpu_seconds": 69.88442141666667,
+            "batch_wall_ms": 17610.478000016883,
+            "processIdentity": "26079927749591",
+            "batchEndNs": 1791472706652738000
+          }
+        ],
+        "cpu_median_seconds": 69.88442141666667
+      },
+      "candidate": {
+        "samples": 300,
+        "pooled_p50_ms": 710.098166950047,
+        "pooled_p95_ms": 746.5472500771284,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 705.2889170590788,
+            "p95_ms": 742.7828749641776,
+            "cpu_seconds": 70.74667124999999,
+            "batch_wall_ms": 17889.027499826625,
+            "processIdentity": "26073007673264",
+            "batchEndNs": 1791472420213191000
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 697.2051251213998,
+            "p95_ms": 734.9274170119315,
+            "cpu_seconds": 69.96350387499999,
+            "batch_wall_ms": 17622.546000173315,
+            "processIdentity": "26075352098944",
+            "batchEndNs": 1791472518017556000
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 720.6857500132173,
+            "p95_ms": 767.1520840376616,
+            "cpu_seconds": 71.91830212500001,
+            "batch_wall_ms": 18274.391749873757,
+            "processIdentity": "26082226497138",
+            "batchEndNs": 1791472809785122000
+          }
+        ],
+        "cpu_median_seconds": 70.74667124999999
+      },
+      "pairedDeltas": [
+        {
+          "round": 0,
+          "p50_ms": -6.49687391705811,
+          "p95_ms": -11.30379200913012,
+          "cpu_seconds": -0.6723060833333392,
+          "batch_wall_ms": -143.28679209575057
+        },
+        {
+          "round": 1,
+          "p50_ms": 9.26225003786385,
+          "p95_ms": 13.234250945970416,
+          "cpu_seconds": 1.0408888333333408,
+          "batch_wall_ms": 277.0182501990348
+        },
+        {
+          "round": 2,
+          "p50_ms": 23.376707918941975,
+          "p95_ms": 32.82733401283622,
+          "cpu_seconds": 2.033880708333342,
+          "batch_wall_ms": 663.9137498568743
+        }
+      ],
+      "pooledLabelDelta": {
+        "p50_ms": 9.235583012923598,
+        "p95_ms": 4.325208254158497
+      },
+      "sixProcessRange": {
+        "p50_ms": {
+          "min": 687.9428750835359,
+          "max": 720.6857500132173,
+          "span": 32.74287492968142
+        },
+        "p95_ms": {
+          "min": 721.6931660659611,
+          "max": 767.1520840376616,
+          "span": 45.45891797170043
+        },
+        "cpu_seconds": {
+          "min": 68.92261504166665,
+          "max": 71.91830212500001,
+          "span": 2.9956870833333653
+        },
+        "batch_wall_ms": {
+          "min": 17345.52774997428,
+          "max": 18274.391749873757,
+          "span": 928.8639998994768
+        }
+      },
+      "originalAB": {
+        "baseline_p50_ms": 669.994292082265,
+        "candidate_p50_ms": 686.1296249553561,
+        "baseline_p95_ms": 771.7135408893228,
+        "candidate_p95_ms": 834.1354171279818,
+        "p95_delta_ms": 62.421876238659024,
+        "cpu_delta_percent": 2.8057698326682257,
+        "status": "not-passed"
+      }
+    }
+  ],
+  "processResources": [
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 154.597249,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 265453568,
+      "recorded_ns": 1791472322539726000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 0,
+      "system_seconds": 0.319162,
+      "user_seconds": 154.278087,
+      "variant": "baseline",
+      "wall_ms": 98059.45337493904
+    },
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 153.855372,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 276316160,
+      "recorded_ns": 1791472420225859000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 0,
+      "system_seconds": 0.284829,
+      "user_seconds": 153.570543,
+      "variant": "candidate",
+      "wall_ms": 97683.65179211833
+    },
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 153.555306,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 268206080,
+      "recorded_ns": 1791472518030298000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 1,
+      "system_seconds": 0.272374,
+      "user_seconds": 153.282932,
+      "variant": "candidate",
+      "wall_ms": 97801.61341605708
+    },
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 147.631481,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 238436352,
+      "recorded_ns": 1791472610882319000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 1,
+      "system_seconds": 0.30147399999999996,
+      "user_seconds": 147.330007,
+      "variant": "baseline",
+      "wall_ms": 92849.50762498192
+    },
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 151.23977000000002,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 241123328,
+      "recorded_ns": 1791472706665389000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 2,
+      "system_seconds": 0.30496599999999996,
+      "user_seconds": 150.934804,
+      "variant": "baseline",
+      "wall_ms": 95780.66879184917
+    },
+    {
+      "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+      "cpu_seconds": 160.119565,
+      "exit_code": -15,
+      "kind": "server_resources",
+      "ok": true,
+      "operation": "query",
+      "peak_process_rss_bytes": 261668864,
+      "recorded_ns": 1791472809797776000,
+      "resource_boundary": "whole server lifetime including startup, requests, warmup if any, shutdown",
+      "round": 2,
+      "system_seconds": 0.328689,
+      "user_seconds": 159.790876,
+      "variant": "candidate",
+      "wall_ms": 103129.78279194795
+    }
+  ],
+  "contentionEvidence": [
+    {
+      "observedAt": "2026-10-08T15:16:55.608790+00:00",
+      "processes": [
+        {
+          "pid": 20608,
+          "ppid": 17770,
+          "cpuPct": 97.1,
+          "comm": "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+          "cwdOutput": "p20608\nfcwd\nn/Users/johnsonlee/.codex/worktrees/19db/graphite\n",
+          "cwdExit": 0
+        }
+      ],
+      "note": "Read-only live snapshot during A/A; ps CPU is decaying average, not a benchmark counter. Does not establish whether original A/B had contention."
+    },
+    {
+      "event": "earlier-observation-transcription",
+      "timestampAccuracy": "Exact observation time unavailable; after process start 2026-10-08T15:11:43Z and before 2026-10-08T15:16:00Z compaction resume.",
+      "observations": [
+        {
+          "pid": 18757,
+          "comm": "parent-graphite",
+          "psCpuPct": 102.4,
+          "state": "Observed running; exited before follow-up lsof"
+        },
+        {
+          "pid": 18755,
+          "ppid": 18477,
+          "comm": "Python",
+          "psCpuPct": 3.1,
+          "startLocal": "Fri Oct 9 00:11:43 2026 Asia/Seoul",
+          "cwd": "/Users/johnsonlee/.codex/worktrees/ce28/graphite",
+          "cwdSource": "lsof -a -p18757,18755 -d cwd -Fn"
+        }
+      ],
+      "interpretation": "Competing benchmark activity was observed during the A/A run. Its parent process directory differs from this task. We did not alter it. This does not show whether original A/B was affected.",
+      "observedAt": null
+    }
+  ],
+  "environmentEvidence": {
+    "recordedAt": "2026-10-08T15:11:09.613880+00:00",
+    "phase": "early-run snapshot; not a pre-start CPU snapshot",
+    "preStartBackgroundCPU": null,
+    "earlierPreStartThermalToolObservation": "No thermal/performance warning or CPU power status had been recorded",
+    "currentThermal": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+    "psDecayingCPUPercentTotal": 294.40000000000003,
+    "psDecayingCPUPercentExcludingGraphite": 196.60000000000002,
+    "overrides": {
+      "MALLOC_CONF": null,
+      "_RJEM_MALLOC_CONF": null,
+      "TOKIO_WORKER_THREADS": null,
+      "RAYON_NUM_THREADS": null,
+      "DYLD_INSERT_LIBRARIES": null,
+      "RUSTFLAGS": null,
+      "GRAPHITE_CYPHER_MAX_TIMEOUT_MS": null
+    }
+  },
+  "limitations": [
+    "Concurrent unrelated benchmark activity was observed during this A/A; no quiet-host claim is supported. Exact overlap for every request is unknown.",
+    "The contention observations do not establish that original A/B experienced contention.",
+    "Identical executable A/A spread includes process/run/environment effects. It neither measures a code change nor proves main/candidate equivalence.",
+    "Do not pool with original A/B, discard unfavorable rounds, subtract measured spread from regressions, or substitute the best A/A run. Original acceptance remains not passed.",
+    "Six-process min/max spread is descriptive, not a confidence interval or adjustment factor for the earlier A/B deltas."
+  ],
+  "independentRecomputationMatchesHarnessSummary": true
+}

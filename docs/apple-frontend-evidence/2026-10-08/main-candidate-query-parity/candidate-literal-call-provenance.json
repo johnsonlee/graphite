@@ -1,0 +1,1125 @@
+{
+  "query": "MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite) RETURN c.graphId AS graph, c.callee_class AS callee, c.callee_name AS method, count(s) AS literalArguments ORDER BY literalArguments DESC, graph, callee, method LIMIT 100",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "columns": [
+    "graph",
+    "callee",
+    "method",
+    "literalArguments"
+  ],
+  "rows": [
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "OWSLocalizedString(_:tableName:value:comment:)",
+      "literalArguments": 6271,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "owsFailDebug(_:file:function:line:)",
+      "literalArguments": 2628,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.OWSAssertionError",
+      "method": "init(_:file:function:line:)",
+      "literalArguments": 844,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SwiftProtobuf._NameMap.NameDescription",
+      "method": "same(proto:)",
+      "literalArguments": 796,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.Logger",
+      "method": "info(_:file:function:line:)",
+      "literalArguments": 748,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift",
+      "method": "fatalError(_:file:line:)",
+      "literalArguments": 386,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "owsFail(_:file:function:line:)",
+      "literalArguments": 336,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.Logger",
+      "method": "warn(_:file:function:line:)",
+      "literalArguments": 308,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "java.util.Map",
+      "method": "of",
+      "literalArguments": 301,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.TableDefinition",
+      "method": "column(_:_:)",
+      "literalArguments": 223,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSDeserialization",
+      "method": "required(_:name:_:_:_:)",
+      "literalArguments": 215,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSColumnMetadata",
+      "method": "init(columnName:columnType:isOptional:isUnique:skipSelect:)",
+      "literalArguments": 203,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.Database",
+      "method": "create(index:on:columns:options:condition:)",
+      "literalArguments": 154,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSDeserialization",
+      "method": "optionalUnarchive(_:name:)",
+      "literalArguments": 152,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.AbsolutePath",
+      "method": "appending(_:)",
+      "literalArguments": 152,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.BidirectionalCollection< where A.Element == Swift.String>",
+      "method": "joined(separator:)",
+      "literalArguments": 152,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.OWSTableItem",
+      "method": "init(title:actionBlock:)",
+      "literalArguments": 149,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.Logger",
+      "method": "error(_:file:function:line:)",
+      "literalArguments": 137,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.TableAlteration",
+      "method": "add(column:_:)",
+      "literalArguments": 132,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.Logger",
+      "method": "debug(_:file:function:line:)",
+      "literalArguments": 132,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "ArgumentParser.NameSpecification",
+      "method": "customLong(_:withSingleDash:)",
+      "literalArguments": 119,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.UIImage",
+      "method": "init(imageLiteralResourceName:)",
+      "literalArguments": 113,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.UIView",
+      "method": "accessibilityIdentifier(in:name:)",
+      "literalArguments": 113,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Foundation",
+      "method": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+      "literalArguments": 106,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "UIImage",
+      "method": "init(named:)",
+      "literalArguments": 103,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.PrefixedLogger",
+      "method": "warn(_:flushImmediately:file:function:line:)",
+      "literalArguments": 96,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "owsAssertDebug(_:_:file:function:line:)",
+      "literalArguments": 95,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.Database",
+      "method": "alter(table:body:)",
+      "literalArguments": 94,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.PrefixedLogger",
+      "method": "info(_:flushImmediately:file:function:line:)",
+      "literalArguments": 91,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSKeyValueStore",
+      "method": "init(collection:)",
+      "literalArguments": 91,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift.BidirectionalCollection< where A.Element == Swift.String>",
+      "method": "joined(separator:)",
+      "literalArguments": 90,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "org.slf4j.Logger",
+      "method": "warn",
+      "literalArguments": 90,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.AbsolutePath",
+      "method": "appending(components:)",
+      "literalArguments": 89,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.StringProtocol",
+      "method": "hasPrefix(_:)",
+      "literalArguments": 76,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.NSNotificationName",
+      "method": "init(_:)",
+      "literalArguments": 73,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "ArgumentParser.CommandConfiguration",
+      "method": "init(commandName:abstract:usage:discussion:version:shouldDisplay:subcommands:defaultSubcommand:helpNames:aliases:)",
+      "literalArguments": 73,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.InternalError",
+      "method": "init(_:)",
+      "literalArguments": 72,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "SourceControl.GitRepository",
+      "method": "callGit(_:environment:failureMessage:progress:)",
+      "literalArguments": 70,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "TSCBasic.StringError",
+      "method": "init(_:)",
+      "literalArguments": 70,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift.Array",
+      "method": "append(_:)",
+      "literalArguments": 68,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "owsFailBeta(_:file:function:line:)",
+      "literalArguments": 66,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "",
+      "method": "LocalizationNotNeeded(_:)",
+      "literalArguments": 63,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Foundation.URL",
+      "method": "init(string:)",
+      "literalArguments": 63,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.OWSGenericError",
+      "method": "init(_:)",
+      "literalArguments": 60,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.ParamParser",
+      "method": "required(key:)",
+      "literalArguments": 60,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.ActionSheetAction",
+      "method": "init(title:accessibilityIdentifier:style:handler:)",
+      "literalArguments": 60,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.ManualStackView",
+      "method": "init(name:arrangedSubviews:)",
+      "literalArguments": 57,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "PackageDescription.(AppleOSVersion in _EA5579823E05354E291299F0EC3450AA)",
+      "method": "init(string:)",
+      "literalArguments": 57,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.Database",
+      "method": "execute(sql:arguments:)",
+      "literalArguments": 53,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "PackageModel.SourceCodeFragment",
+      "method": "init(key:enum:subnodes:multiline:)",
+      "literalArguments": 53,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.PrefixedLogger",
+      "method": "error(_:flushImmediately:file:function:line:)",
+      "literalArguments": 47,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.OWSTableItem",
+      "method": "copyableItem(label:value:pasteboardValue:accessibilityIdentifier:)",
+      "literalArguments": 47,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift",
+      "method": "print(_:separator:terminator:)",
+      "literalArguments": 47,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.KeyedEncodingContainer",
+      "method": "encode(_:forKey:)",
+      "literalArguments": 45,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.TSRequest",
+      "method": "init(url:method:parameters:)",
+      "literalArguments": 44,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift",
+      "method": "fatalError(_:file:line:)",
+      "literalArguments": 44,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "io.micrometer.core.instrument.Tag",
+      "method": "of",
+      "literalArguments": 43,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.ColumnDefinition",
+      "method": "references(_:column:onDelete:onUpdate:deferred:)",
+      "literalArguments": 42,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.OS_dispatch_queue",
+      "method": "init(label:qos:attributes:autoreleaseFrequency:target:)",
+      "literalArguments": 40,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSDeserialization",
+      "method": "optionalNumericAsNSNumber(_:name:conversion:)",
+      "literalArguments": 38,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SwiftProtobuf._NameMap.NameDescription",
+      "method": "standard(proto:)",
+      "literalArguments": 38,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.HTTPClientHeaders",
+      "method": "add(name:value:)",
+      "literalArguments": 38,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "PackageModel.(Error in _B8CBFF9934AD0AC12B989CBC3491BC07)",
+      "method": "disallowedPropertyInTarget(targetName:propertyName:)",
+      "literalArguments": 38,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.StringProtocol",
+      "method": "replacingOccurrences(of:with:options:range:)",
+      "literalArguments": 36,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.Database",
+      "method": "create(table:options:body:)",
+      "literalArguments": 35,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "java.util.Map",
+      "method": "get",
+      "literalArguments": 34,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.PrefixedLogger",
+      "method": "init(prefix:suffix:)",
+      "literalArguments": 33,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.UIView",
+      "method": "accessibilityIdentifier(containerName:name:)",
+      "literalArguments": 32,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.Collection< where A.Element: Swift.Equatable>",
+      "method": "split(separator:maxSplits:omittingEmptySubsequences:)",
+      "literalArguments": 32,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift.StringProtocol",
+      "method": "replacingOccurrences(of:with:options:range:)",
+      "literalArguments": 31,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.InMemoryFileSystem",
+      "method": "init(emptyFiles:)",
+      "literalArguments": 31,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.Array",
+      "method": "append(_:)",
+      "literalArguments": 31,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.String",
+      "method": "hasPrefix(_:)",
+      "literalArguments": 31,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.DiagnosticsEmitterProtocol",
+      "method": "emit(warning:metadata:underlyingError:)",
+      "literalArguments": 30,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "PackageModel.TargetDescription",
+      "method": "init(name:dependencies:path:url:exclude:sources:resources:publicHeadersPath:type:packageAccess:pkgConfig:providers:pluginCapability:settings:checksum:pluginUsages:)",
+      "literalArguments": 30,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "XCBuildSupport.PIF.PlatformFilter",
+      "method": "init(platform:environment:)",
+      "literalArguments": 30,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.KeyValueStoreFactory",
+      "method": "keyValueStore(collection:)",
+      "literalArguments": 29,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.SDSDeserialization",
+      "method": "unarchive(_:name:_:_:_:)",
+      "literalArguments": 29,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.ObservabilityScope",
+      "method": "makeChildScope(description:metadata:)",
+      "literalArguments": 29,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.OWSTableItem",
+      "method": "item(icon:tintColor:name:subtitle:maxNameLines:textColor:accessoryText:accessoryType:accessoryContentView:accessibilityIdentifier:actionBlock:)",
+      "literalArguments": 28,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "__C.UIImageView",
+      "method": "setTemplateImageName(_:tintColor:)",
+      "literalArguments": 28,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "com.codahale.metrics.SharedMetricRegistries",
+      "method": "getOrCreate",
+      "literalArguments": 28,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "java.util.Map",
+      "method": "put",
+      "literalArguments": 28,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit",
+      "method": "owsAssert(_:_:file:function:line:)",
+      "literalArguments": 27,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "ArgumentParser.CommandConfiguration",
+      "method": "init(commandName:_superCommandName:abstract:usage:discussion:version:shouldDisplay:subcommands:defaultSubcommand:helpNames:aliases:)",
+      "literalArguments": 27,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "PackageModel.SourceCodeFragment",
+      "method": "init(key:string:)",
+      "literalArguments": 27,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Signal.CVMessageAction",
+      "method": "init(title:accessibilityIdentifier:action:)",
+      "literalArguments": 26,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalUI.ManualLayoutView",
+      "method": "init(name:)",
+      "literalArguments": 25,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift.String",
+      "method": "init(format:_:)",
+      "literalArguments": 25,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "CALayer",
+      "method": "add(_:forKey:)",
+      "literalArguments": 23,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Basics.AsyncProcess",
+      "method": "checkNonZeroExit(args:environment:loggingHandler:)",
+      "literalArguments": 22,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.Sequence< where A.Element: Swift.Equatable>",
+      "method": "starts(with:)",
+      "literalArguments": 22,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "TSCBasic.WritableByteStream",
+      "method": "send(_:)",
+      "literalArguments": 22,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.TableDefinition",
+      "method": "autoIncrementedPrimaryKey(_:onConflict:)",
+      "literalArguments": 21,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "Swift.String",
+      "method": "hasPrefix(_:)",
+      "literalArguments": 21,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "org.slf4j.Logger",
+      "method": "info",
+      "literalArguments": 21,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "callee": "Swift.String",
+      "method": "append(_:)",
+      "literalArguments": 21,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "GRDB.Column",
+      "method": "init(_:)",
+      "literalArguments": 20,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-ios",
+      "callee": "SignalServiceKit.ParamParser",
+      "method": "optional(key:)",
+      "literalArguments": 20,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "callee": "java.lang.IllegalArgumentException",
+      "method": "<init>",
+      "literalArguments": 20,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    }
+  ],
+  "graphs": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "mode": "cross-graph",
+  "rowCount": 100,
+  "error": null,
+  "digest": "01ca18a0b8ea4ea1d655579b19553699b3cfc7984598e0491c80dff264cbd221"
+}

@@ -1,0 +1,96 @@
+{
+  "kind": "real-source",
+  "repository": "https://github.com/signalapp/Signal-Server",
+  "tag": "v6.99.1",
+  "commit": "9c62622733de2d4f067d9f8094e7542e8bf0c700",
+  "source_path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server",
+  "jar_path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server/service/target/TextSecureServer-6.99.1.jar",
+  "jar_sha256": "99472a768fdd687e2bf8f361e971869ce85b260bcf80f8c97681b8c7bdf5ce2e",
+  "jar_bytes": 989030,
+  "class_entries": 555,
+  "artifact_scope": "Exact default Maven service application artifact; optional dependency-shading profile not enabled; no Graphite include/exclude class filters and no --include-libs. Other Maven modules and third-party dependency bytecode are not embedded in this application artifact.",
+  "maven_command": [
+    "apache-maven-3.9.9/bin/mvn",
+    "-B",
+    "-DskipTests",
+    "-Dmaven.test.skip=true",
+    "package"
+  ],
+  "java_version": "openjdk version \"17.0.20.1\" 2026-08-18\nOpenJDK Runtime Environment Homebrew (build 17.0.20.1+0)\nOpenJDK 64-Bit Server VM Homebrew (build 17.0.20.1+0, mixed mode, sharing)\n",
+  "manifest": "Manifest-Version: 1.0\r\nCreated-By: Maven Jar Plugin 3.2.0\r\nBuild-Jdk-Spec: 17\r\nImplementation-Title: service\r\nImplementation-Version: 6.99.1\r\n\r\n",
+  "graph_path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph",
+  "graphite_jar_sha256": "b96693a6c53bb2ac0a1503e9cdb75a680d1be5b008559f297afb311904901d6e",
+  "graph_build_log": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph-build.log",
+  "correctness_checks": {
+    "nodes": {
+      "query": "MATCH (n) RETURN count(n) AS nodes",
+      "result": {
+        "columns": [
+          "nodes"
+        ],
+        "rows": [
+          {
+            "nodes": 54571
+          }
+        ],
+        "rowCount": 1
+      }
+    },
+    "calls": {
+      "query": "MATCH (c:CallSite) RETURN count(c) AS callSites",
+      "result": {
+        "columns": [
+          "callSites"
+        ],
+        "rows": [
+          {
+            "callSites": 15032
+          }
+        ],
+        "rowCount": 1
+      }
+    },
+    "message_endpoint": {
+      "query": "MATCH (c:CallSite) WHERE c.caller_class = 'org.whispersystems.textsecuregcm.controllers.MessageController' AND c.caller_name = 'sendMessage' AND c.callee_class = 'org.whispersystems.textsecuregcm.push.MessageSender' RETURN c.caller_name AS caller, c.callee_name AS callee",
+      "result": {
+        "columns": [
+          "caller",
+          "callee"
+        ],
+        "rows": [
+          {
+            "caller": "sendMessage",
+            "callee": "sendMessage"
+          },
+          {
+            "caller": "sendMessage",
+            "callee": "sendMessage"
+          }
+        ],
+        "rowCount": 2
+      }
+    }
+  },
+  "performance_measurements": false,
+  "graph_build_command": [
+    "/opt/homebrew/Cellar/openjdk@17/17.0.20.1/libexec/openjdk.jdk/Contents/Home/bin/java",
+    "-Xmx8g",
+    "-jar",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+    "build",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server/service/target/TextSecureServer-6.99.1.jar",
+    "-o",
+    "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+  ],
+  "graph_shape": {
+    "query_visible_nodes": 54571,
+    "call_sites": 15032,
+    "persisted_adjacency_arcs": 55420
+  },
+  "source_endpoint": {
+    "http_method": "PUT",
+    "path": "/v1/messages/{destination}",
+    "file": "service/src/main/java/org/whispersystems/textsecuregcm/controllers/MessageController.java",
+    "method": "sendMessage"
+  }
+}

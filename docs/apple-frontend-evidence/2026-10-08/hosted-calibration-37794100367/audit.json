@@ -1,0 +1,22 @@
+{
+  "run": 37794100367,
+  "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+  "releaseDryRun": "success for every non-calibration job, tap intentionally skipped",
+  "performanceAcceptance": false,
+  "calibration": {
+    "swiftformat": "success; verified 6 raw records per revision, deterministic, imported by production jar; existing shape/ceilings applicable to measured samples",
+    "swift-package-manager": {
+      "status": "source-build-failure",
+      "error": "swift-llbuild/lib/Core/SQLiteBuildDB.cpp:28 sqlite3.h not found",
+      "fix": "Install libsqlite3-dev and pkg-config in calibration and gate Linux containers",
+      "samples": 0
+    },
+    "signal-ios": {
+      "status": "source-build-failure",
+      "error": "MobileCoin FogView+TxOutFetcher.swift:104 Result<UInt64?, ConnectionError> passed as UInt64 under Xcode16.4/Swift6.1.2",
+      "fixCandidate": "Signal7.70.1.917 (4193fd427eeae9d9a8c704e60958463342b7e1cc), Pods c65dd3f33daaa96582de97296e480f5a3aecc04d; upstream explicitly uses Xcode16.4 and fixes affected flatMap",
+      "candidateNotBuilt": true,
+      "samples": 0
+    }
+  }
+}

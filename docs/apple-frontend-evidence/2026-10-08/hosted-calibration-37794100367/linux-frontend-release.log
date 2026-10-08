@@ -1,0 +1,461 @@
+﻿2026-10-08T14:38:43.9269538Z Current runner version: '2.337.0'
+2026-10-08T14:38:43.9304348Z ##[group]Runner Image Provisioner
+2026-10-08T14:38:43.9306101Z Hosted Compute Agent
+2026-10-08T14:38:43.9307099Z Version: 20261002.596
+2026-10-08T14:38:43.9308121Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T14:38:43.9309468Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T14:38:43.9310617Z Worker ID: {82f3880f-50ea-4b03-bc41-73fda8e09b7f}
+2026-10-08T14:38:43.9311971Z Region: eastus
+2026-10-08T14:38:43.9312977Z Cloud: Azure
+2026-10-08T14:38:43.9313851Z ##[endgroup]
+2026-10-08T14:38:43.9316650Z ##[group]Operating System
+2026-10-08T14:38:43.9317674Z Ubuntu
+2026-10-08T14:38:43.9318712Z 24.04.5
+2026-10-08T14:38:43.9319654Z LTS
+2026-10-08T14:38:43.9320513Z ##[endgroup]
+2026-10-08T14:38:43.9321533Z ##[group]Runner Image
+2026-10-08T14:38:43.9322559Z Image: ubuntu-24.04
+2026-10-08T14:38:43.9324040Z Version: 20261004.327.1
+2026-10-08T14:38:43.9326474Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T14:38:43.9329264Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T14:38:43.9330969Z ##[endgroup]
+2026-10-08T14:38:43.9332837Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T14:38:43.9336056Z Contents: read
+2026-10-08T14:38:43.9337172Z Metadata: read
+2026-10-08T14:38:43.9338084Z ##[endgroup]
+2026-10-08T14:38:43.9341244Z Secret source: Actions
+2026-10-08T14:38:43.9342780Z Cache mode: write
+2026-10-08T14:38:43.9344302Z Prepare workflow directory
+2026-10-08T14:38:44.0189200Z Prepare all required actions
+2026-10-08T14:38:44.0264379Z Getting action download info
+2026-10-08T14:38:44.2347059Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T14:38:44.3282806Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+2026-10-08T14:38:44.4271022Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-08T14:38:44.6826329Z Complete job name: apple-frontend (ubuntu-latest, x86_64-unknown-linux-gnu, swift:6.1.3, --static-swift-stdlib)
+2026-10-08T14:38:44.7321896Z ##[group]Checking docker version
+2026-10-08T14:38:44.7335797Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+2026-10-08T14:38:44.8299870Z '1.48'
+2026-10-08T14:38:44.8317547Z Docker daemon API version: '1.48'
+2026-10-08T14:38:44.8318386Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+2026-10-08T14:38:44.8485564Z '1.48'
+2026-10-08T14:38:44.8498202Z Docker client API version: '1.48'
+2026-10-08T14:38:44.8503870Z ##[endgroup]
+2026-10-08T14:38:44.8507476Z ##[group]Clean up resources from previous jobs
+2026-10-08T14:38:44.8513507Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=541721"
+2026-10-08T14:38:44.8658793Z ##[command]/usr/bin/docker network prune --force --filter "label=541721"
+2026-10-08T14:38:44.8800308Z ##[endgroup]
+2026-10-08T14:38:44.8801182Z ##[group]Create local container network
+2026-10-08T14:38:44.8815080Z ##[command]/usr/bin/docker network create --label 541721 github_network_758f4302b14542929b26fd857dbcb078
+2026-10-08T14:38:44.9429911Z 5873928b1f2115195e5c3dc247ae1f4d87d2e7bd09552ca3dbb200358313dcb5
+2026-10-08T14:38:44.9450346Z ##[endgroup]
+2026-10-08T14:38:44.9475842Z ##[group]Starting job container
+2026-10-08T14:38:44.9498107Z ##[command]/usr/bin/docker pull swift:6.1.3
+2026-10-08T14:38:45.2330942Z 6.1.3: Pulling from library/swift
+2026-10-08T14:38:45.2989514Z a60ef8ec184e: Already exists
+2026-10-08T14:38:45.3036033Z 6d384ac63da7: Pulling fs layer
+2026-10-08T14:38:45.3037076Z 23c386ab9005: Pulling fs layer
+2026-10-08T14:38:45.3039781Z 934353e7332e: Pulling fs layer
+2026-10-08T14:38:45.3518669Z 934353e7332e: Download complete
+2026-10-08T14:38:45.9378527Z 6d384ac63da7: Verifying Checksum
+2026-10-08T14:38:45.9385640Z 6d384ac63da7: Download complete
+2026-10-08T14:38:48.4633120Z 23c386ab9005: Verifying Checksum
+2026-10-08T14:38:48.4634343Z 23c386ab9005: Download complete
+2026-10-08T14:38:53.8657323Z 6d384ac63da7: Pull complete
+2026-10-08T14:39:09.3110409Z 23c386ab9005: Pull complete
+2026-10-08T14:39:09.3246348Z 934353e7332e: Pull complete
+2026-10-08T14:39:09.3290481Z Digest: sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db
+2026-10-08T14:39:09.3300891Z Status: Downloaded newer image for swift:6.1.3
+2026-10-08T14:39:09.3308303Z docker.io/library/swift:6.1.3
+2026-10-08T14:39:09.3395501Z ##[command]/usr/bin/docker create --name 05701d68b3794eea92088fa55d06469a_swift613_b51701 --label 541721 --workdir /__w/graphite/graphite --network github_network_758f4302b14542929b26fd857dbcb078  -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/2.337.0/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" swift:6.1.3 "-f" "/dev/null"
+2026-10-08T14:39:09.3735556Z 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:39:09.3760082Z ##[command]/usr/bin/docker start 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:39:09.5917375Z 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:39:09.5942376Z ##[command]/usr/bin/docker ps --all --filter id=59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+2026-10-08T14:39:09.6074015Z 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d Up Less than a second
+2026-10-08T14:39:09.6095359Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:39:09.6225909Z HOME=/github/home
+2026-10-08T14:39:09.6226317Z GITHUB_ACTIONS=true
+2026-10-08T14:39:09.6226552Z CI=true
+2026-10-08T14:39:09.6226874Z PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+2026-10-08T14:39:09.6228087Z SWIFT_SIGNING_KEY=52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
+2026-10-08T14:39:09.6228795Z SWIFT_PLATFORM=ubuntu24.04
+2026-10-08T14:39:09.6229243Z SWIFT_BRANCH=swift-6.1.3-release
+2026-10-08T14:39:09.6229711Z SWIFT_VERSION=swift-6.1.3-RELEASE
+2026-10-08T14:39:09.6230410Z SWIFT_WEBROOT=https://download.swift.org
+2026-10-08T14:39:09.6250596Z ##[endgroup]
+2026-10-08T14:39:09.6260352Z ##[group]Waiting for all services to be ready
+2026-10-08T14:39:09.6262030Z ##[endgroup]
+2026-10-08T14:39:09.6572228Z ##[group]Run actions/checkout@v7
+2026-10-08T14:39:09.6572919Z with:
+2026-10-08T14:39:09.6573180Z   ref: 357a6206a8a13fa2491d5ecaae16801493a89448
+2026-10-08T14:39:09.6573504Z   repository: johnsonlee/graphite
+2026-10-08T14:39:09.6576377Z   token: ***
+2026-10-08T14:39:09.6576608Z   ssh-strict: true
+2026-10-08T14:39:09.6576822Z   ssh-user: git
+2026-10-08T14:39:09.6577065Z   persist-credentials: true
+2026-10-08T14:39:09.6577311Z   clean: true
+2026-10-08T14:39:09.6577523Z   sparse-checkout-cone-mode: true
+2026-10-08T14:39:09.6577779Z   fetch-depth: 1
+2026-10-08T14:39:09.6577980Z   fetch-tags: false
+2026-10-08T14:39:09.6578198Z   show-progress: true
+2026-10-08T14:39:09.6578403Z   lfs: false
+2026-10-08T14:39:09.6578587Z   submodules: false
+2026-10-08T14:39:09.6578795Z   set-safe-directory: true
+2026-10-08T14:39:09.6579040Z   allow-unsafe-pr-checkout: false
+2026-10-08T14:39:09.6579967Z env:
+2026-10-08T14:39:09.6580221Z   RELEASE_TAG: v2.11.3-apple-validation.3
+2026-10-08T14:39:09.6580551Z   DRY_RUN: true
+2026-10-08T14:39:09.6580778Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+2026-10-08T14:39:09.6581053Z ##[endgroup]
+2026-10-08T14:39:09.6647098Z ##[command]/usr/bin/docker exec  59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T14:39:10.0686472Z Syncing repository: johnsonlee/graphite
+2026-10-08T14:39:10.0688329Z ##[group]Getting Git version info
+2026-10-08T14:39:10.0688688Z Working directory is '/__w/graphite/graphite'
+2026-10-08T14:39:10.0689195Z [command]/usr/bin/git version
+2026-10-08T14:39:10.0753151Z git version 2.43.0
+2026-10-08T14:39:10.0803080Z ##[endgroup]
+2026-10-08T14:39:10.0812221Z Temporarily overriding HOME='/__w/_temp/b0fbdc66-59c4-4760-9e1c-3dff4fedd8c0' before making global git config changes
+2026-10-08T14:39:10.0815171Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T14:39:10.0819677Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+2026-10-08T14:39:10.0858425Z Deleting the contents of '/__w/graphite/graphite'
+2026-10-08T14:39:10.0863196Z ##[group]Determining repository object format
+2026-10-08T14:39:10.0865822Z ##[endgroup]
+2026-10-08T14:39:10.0866855Z ##[group]Initializing the repository
+2026-10-08T14:39:10.0870809Z [command]/usr/bin/git init /__w/graphite/graphite
+2026-10-08T14:39:10.0909833Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T14:39:10.0921248Z hint: is subject to change. To configure the initial branch name to use in all
+2026-10-08T14:39:10.0922597Z hint: of your new repositories, which will suppress this warning, call:
+2026-10-08T14:39:10.0923454Z hint: 
+2026-10-08T14:39:10.0924099Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T14:39:10.0925064Z hint: 
+2026-10-08T14:39:10.0926496Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T14:39:10.0927689Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T14:39:10.0929955Z hint: 
+2026-10-08T14:39:10.0930636Z hint: 	git branch -m <name>
+2026-10-08T14:39:10.0938301Z Initialized empty Git repository in /__w/graphite/graphite/.git/
+2026-10-08T14:39:10.0940027Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T14:39:10.0972531Z ##[endgroup]
+2026-10-08T14:39:10.0973678Z ##[group]Disabling automatic garbage collection
+2026-10-08T14:39:10.0975316Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T14:39:10.1010109Z ##[endgroup]
+2026-10-08T14:39:10.1011125Z ##[group]Setting up auth
+2026-10-08T14:39:10.1011816Z Removing SSH command configuration
+2026-10-08T14:39:10.1015562Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T14:39:10.1049366Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T14:39:10.1740006Z Removing HTTP extra header
+2026-10-08T14:39:10.1743490Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T14:39:10.1778762Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T14:39:10.2009540Z Removing includeIf entries pointing to credentials config files
+2026-10-08T14:39:10.2014281Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T14:39:10.2052415Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T14:39:10.2287357Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T14:39:10.2334168Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git.path /__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:39:10.2371622Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git/worktrees/*.path /__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:39:10.2415543Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:39:10.2451600Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:39:10.2484015Z ##[endgroup]
+2026-10-08T14:39:10.2484930Z ##[group]Fetching the repository
+2026-10-08T14:39:10.2492011Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 357a6206a8a13fa2491d5ecaae16801493a89448
+2026-10-08T14:39:11.1954308Z From https://github.com/johnsonlee/graphite
+2026-10-08T14:39:11.1955426Z  * branch            357a6206a8a13fa2491d5ecaae16801493a89448 -> FETCH_HEAD
+2026-10-08T14:39:11.1978794Z [command]/usr/bin/git rev-parse --verify --quiet 357a6206a8a13fa2491d5ecaae16801493a89448^{object}
+2026-10-08T14:39:11.2008820Z 357a6206a8a13fa2491d5ecaae16801493a89448
+2026-10-08T14:39:11.2013431Z ##[endgroup]
+2026-10-08T14:39:11.2014804Z ##[group]Determining the checkout info
+2026-10-08T14:39:11.2021049Z ##[endgroup]
+2026-10-08T14:39:11.2021985Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T14:39:11.2066730Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T14:39:11.2101179Z ##[group]Checking out the ref
+2026-10-08T14:39:11.2104371Z [command]/usr/bin/git checkout --progress --force 357a6206a8a13fa2491d5ecaae16801493a89448
+2026-10-08T14:39:11.3035067Z Note: switching to '357a6206a8a13fa2491d5ecaae16801493a89448'.
+2026-10-08T14:39:11.3035767Z 
+2026-10-08T14:39:11.3036221Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T14:39:11.3037308Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T14:39:11.3038462Z state without impacting any branches by switching back to a branch.
+2026-10-08T14:39:11.3039183Z 
+2026-10-08T14:39:11.3039628Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T14:39:11.3040837Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T14:39:11.3041522Z 
+2026-10-08T14:39:11.3041785Z   git switch -c <new-branch-name>
+2026-10-08T14:39:11.3042353Z 
+2026-10-08T14:39:11.3042630Z Or undo this operation with:
+2026-10-08T14:39:11.3043067Z 
+2026-10-08T14:39:11.3043306Z   git switch -
+2026-10-08T14:39:11.3043596Z 
+2026-10-08T14:39:11.3044080Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T14:39:11.3045611Z 
+2026-10-08T14:39:11.3046116Z HEAD is now at 357a620 Resolve copied framework headers and Swift sendable signatures
+2026-10-08T14:39:11.3048580Z ##[endgroup]
+2026-10-08T14:39:11.3088260Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T14:39:11.3121961Z 357a6206a8a13fa2491d5ecaae16801493a89448
+2026-10-08T14:39:11.3475252Z ##[group]Run apt-get update -q && apt-get install -y -q --no-install-recommends ca-certificates
+2026-10-08T14:39:11.3476069Z [36;1mapt-get update -q && apt-get install -y -q --no-install-recommends ca-certificates[0m
+2026-10-08T14:39:11.3479306Z shell: sh -e {0}
+2026-10-08T14:39:11.3479535Z env:
+2026-10-08T14:39:11.3479754Z   RELEASE_TAG: v2.11.3-apple-validation.3
+2026-10-08T14:39:11.3480076Z   DRY_RUN: true
+2026-10-08T14:39:11.3480310Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+2026-10-08T14:39:11.3480590Z ##[endgroup]
+2026-10-08T14:39:12.4928885Z Get:1 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+2026-10-08T14:39:12.5013956Z Get:2 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2026-10-08T14:39:12.6000157Z Get:3 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2026-10-08T14:39:12.6117992Z Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2026-10-08T14:39:12.9512411Z Get:5 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+2026-10-08T14:39:13.0116099Z Get:6 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+2026-10-08T14:39:13.1721607Z Get:7 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+2026-10-08T14:39:13.1819260Z Get:8 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1545 kB]
+2026-10-08T14:39:13.4009154Z Get:9 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+2026-10-08T14:39:13.4036662Z Get:10 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [67.4 kB]
+2026-10-08T14:39:13.4038543Z Get:11 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2177 kB]
+2026-10-08T14:39:13.4134733Z Get:12 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2166 kB]
+2026-10-08T14:39:13.4251541Z Get:13 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1702 kB]
+2026-10-08T14:39:13.4317570Z Get:14 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+2026-10-08T14:39:13.4324031Z Get:15 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+2026-10-08T14:39:13.4328900Z Get:16 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [671 B]
+2026-10-08T14:39:13.7504199Z Get:17 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1998 kB]
+2026-10-08T14:39:13.9211771Z Get:18 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [50.0 kB]
+2026-10-08T14:39:13.9223213Z Get:19 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1362 kB]
+2026-10-08T14:39:14.4023872Z Fetched 33.4 MB in 2s (15.5 MB/s)
+2026-10-08T14:39:15.2026435Z Reading package lists...
+2026-10-08T14:39:16.0266383Z Reading package lists...
+2026-10-08T14:39:16.2257149Z Building dependency tree...
+2026-10-08T14:39:16.2257664Z Reading state information...
+2026-10-08T14:39:16.4305610Z ca-certificates is already the newest version (20260601~24.04.1).
+2026-10-08T14:39:16.4306384Z ca-certificates set to manually installed.
+2026-10-08T14:39:16.4307019Z 0 upgraded, 0 newly installed, 0 to remove and 4 not upgraded.
+2026-10-08T14:39:16.4412562Z ##[group]Run frontend/apple/swift.sh build -c release --static-swift-stdlib
+2026-10-08T14:39:16.4413171Z [36;1mfrontend/apple/swift.sh build -c release --static-swift-stdlib[0m
+2026-10-08T14:39:16.4413644Z shell: sh -e {0}
+2026-10-08T14:39:16.4413859Z env:
+2026-10-08T14:39:16.4414083Z   RELEASE_TAG: v2.11.3-apple-validation.3
+2026-10-08T14:39:16.4414374Z   DRY_RUN: true
+2026-10-08T14:39:16.4414986Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+2026-10-08T14:39:16.4415277Z ##[endgroup]
+2026-10-08T14:39:17.4923366Z Fetching https://github.com/apple/swift-argument-parser.git
+2026-10-08T14:39:17.4924753Z Fetching https://github.com/apple/swift-protobuf.git
+2026-10-08T14:39:17.4925742Z Fetching https://github.com/swiftlang/swift-syntax.git
+2026-10-08T14:39:17.7742501Z [1/19096] Fetching swift-argument-parser
+2026-10-08T14:39:18.4918012Z [19097/99477] Fetching swift-argument-parser, swift-syntax
+2026-10-08T14:39:18.5903804Z [26332/154287] Fetching swift-argument-parser, swift-syntax, swift-protobuf
+2026-10-08T14:39:23.8365913Z Fetched https://github.com/swiftlang/swift-syntax.git from cache (6.34s)
+2026-10-08T14:39:23.8397890Z Fetching https://github.com/swiftlang/indexstore-db.git
+2026-10-08T14:39:24.1399851Z [1/6125] Fetching indexstore-db
+2026-10-08T14:39:24.4545269Z Fetched https://github.com/swiftlang/indexstore-db.git from cache (0.61s)
+2026-10-08T14:39:25.8807420Z Fetched https://github.com/apple/swift-argument-parser.git from cache (8.39s)
+2026-10-08T14:39:25.9547393Z Fetched https://github.com/apple/swift-protobuf.git from cache (8.46s)
+2026-10-08T14:39:25.9587667Z Creating working copy for https://github.com/apple/swift-protobuf.git
+2026-10-08T14:39:26.4252572Z Working copy of https://github.com/apple/swift-protobuf.git resolved at 1.38.1
+2026-10-08T14:39:26.4289476Z Creating working copy for https://github.com/swiftlang/indexstore-db.git
+2026-10-08T14:39:26.5652339Z Working copy of https://github.com/swiftlang/indexstore-db.git resolved at release/6.1 (54212fc)
+2026-10-08T14:39:26.5689591Z Creating working copy for https://github.com/apple/swift-argument-parser.git
+2026-10-08T14:39:26.6335750Z Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+2026-10-08T14:39:26.6371963Z Creating working copy for https://github.com/swiftlang/swift-syntax.git
+2026-10-08T14:39:26.8508515Z Working copy of https://github.com/swiftlang/swift-syntax.git resolved at 601.0.1
+2026-10-08T14:39:41.7444385Z [1/1] Compiling plugin GenerateManual
+2026-10-08T14:39:42.6996144Z [2/2] Compiling plugin GenerateDoccReference
+2026-10-08T14:39:43.4892118Z [3/3] Compiling plugin SwiftProtobufPlugin
+2026-10-08T14:39:43.4892566Z Building for production...
+2026-10-08T14:39:43.5216162Z [3/105] Write sources
+2026-10-08T14:39:43.7930177Z [11/105] Compiling _SwiftSyntaxCShims dummy.c
+2026-10-08T14:39:43.7931436Z [12/105] Write swift-version-24593BA9C3E375BF.txt
+2026-10-08T14:39:43.8371538Z [13/105] Compiling IndexStoreDB_Support Logging-NonMac.cpp
+2026-10-08T14:39:44.1367856Z [15/106] Compiling SwiftSyntax601 Empty.swift
+2026-10-08T14:39:44.4156339Z [16/107] Compiling SwiftSyntax600 Empty.swift
+2026-10-08T14:39:44.5310596Z [16/107] Compiling IndexStoreDB_Support PatternMatching.cpp
+2026-10-08T14:39:44.6961725Z [18/109] Compiling SwiftSyntax510 Empty.swift
+2026-10-08T14:39:44.8015719Z [19/109] Compiling SwiftSyntax509 Empty.swift
+2026-10-08T14:39:45.3795580Z [19/111] Compiling IndexStoreDB_Support Path.cpp
+2026-10-08T14:39:45.3981072Z [20/111] Compiling IndexStoreDB_Support Logging.cpp
+2026-10-08T14:39:45.4008988Z [21/111] Compiling IndexStoreDB_Support Logging-Mac.mm
+2026-10-08T14:39:46.5206512Z [22/111] Compiling IndexStoreDB_Support Concurrency-Mac.cpp
+2026-10-08T14:39:47.1276879Z [23/111] Compiling IndexStoreDB_Support FilePathWatcher.cpp
+2026-10-08T14:39:48.3766104Z [24/111] Compiling raw_ostream.cpp
+2026-10-08T14:39:48.8385698Z [25/111] Compiling circular_raw_ostream.cpp
+2026-10-08T14:39:51.5538014Z [26/111] Compiling YAMLTraits.cpp
+2026-10-08T14:39:52.6736524Z [27/111] Compiling WithColor.cpp
+2026-10-08T14:39:52.7121773Z [28/111] Compiling Watchdog.cpp
+2026-10-08T14:39:54.2535790Z [29/111] Compiling VersionTuple.cpp
+2026-10-08T14:39:54.3142135Z [30/111] Compiling Valgrind.cpp
+2026-10-08T14:39:54.6766774Z [31/111] Compiling UnicodeCaseFold.cpp
+2026-10-08T14:39:55.9837429Z [32/111] Compiling YAMLParser.cpp
+2026-10-08T14:39:56.9591217Z [33/111] Compiling Unicode.cpp
+2026-10-08T14:39:58.0776135Z [34/111] Compiling Twine.cpp
+2026-10-08T14:40:00.6485700Z [35/111] Compiling ToolOutputFile.cpp
+2026-10-08T14:40:00.9907560Z [36/111] Compiling Triple.cpp
+2026-10-08T14:40:02.6866735Z [37/111] Compiling Threading.cpp
+2026-10-08T14:40:04.2009074Z [38/111] Compiling TargetParser.cpp
+2026-10-08T14:40:04.2909174Z [39/111] Compiling Timer.cpp
+2026-10-08T14:40:05.6386262Z [40/111] Compiling StringSaver.cpp
+2026-10-08T14:40:06.3661495Z [41/111] Compiling StringRef.cpp
+2026-10-08T14:40:07.0618308Z [42/111] Compiling StringMap.cpp
+2026-10-08T14:40:07.7525449Z [43/111] Compiling StringExtras.cpp
+2026-10-08T14:40:10.3487238Z [44/111] Compiling Statistic.cpp
+2026-10-08T14:40:11.2475468Z [45/111] Compiling SmallVector.cpp
+2026-10-08T14:40:11.3718193Z [46/111] Compiling SourceMgr.cpp
+2026-10-08T14:40:12.6036444Z [47/111] Compiling SmallPtrSet.cpp
+2026-10-08T14:40:12.6186051Z [48/111] Compiling Signposts.cpp
+2026-10-08T14:40:15.2358167Z [49/111] Compiling Program.cpp
+2026-10-08T14:40:15.4458501Z [50/111] Compiling Signals.cpp
+2026-10-08T14:40:16.7768456Z [51/111] Compiling PrettyStackTrace.cpp
+2026-10-08T14:40:17.7349427Z [52/111] Compiling Process.cpp
+2026-10-08T14:40:19.3377346Z [53/111] Compiling Options.cpp
+2026-10-08T14:40:20.4747045Z [54/111] Compiling Optional.cpp
+2026-10-08T14:40:20.9788738Z [55/111] Compiling Path.cpp
+2026-10-08T14:40:21.9877688Z [56/111] Compiling NativeFormatting.cpp
+2026-10-08T14:40:22.1798076Z [57/111] Compiling Mutex.cpp
+2026-10-08T14:40:23.6172142Z [58/111] Compiling Memory.cpp
+2026-10-08T14:40:24.0703664Z [59/111] Compiling MathExtras.cpp
+2026-10-08T14:40:24.3427692Z [60/111] Compiling MemoryBuffer.cpp
+2026-10-08T14:40:25.3097789Z [61/111] Compiling ManagedStatic.cpp
+2026-10-08T14:40:25.9356760Z [62/111] Compiling MD5.cpp
+2026-10-08T14:40:26.4427249Z [63/111] Compiling Locale.cpp
+2026-10-08T14:40:27.7516922Z [64/111] Compiling LineIterator.cpp
+2026-10-08T14:40:30.3376601Z [65/111] Compiling JSON.cpp
+2026-10-08T14:40:31.0774804Z [66/111] Compiling Host.cpp
+2026-10-08T14:40:31.9486181Z [67/111] Compiling Hashing.cpp
+2026-10-08T14:40:33.9996732Z [68/111] Compiling FormatVariadic.cpp
+2026-10-08T14:40:35.1460115Z [69/111] Compiling FoldingSet.cpp
+2026-10-08T14:40:38.2709477Z [70/111] Compiling FileUtilities.cpp
+2026-10-08T14:40:38.6066548Z [71/111] Compiling ErrorHandling.cpp
+2026-10-08T14:40:40.3579472Z [72/111] Compiling Errno.cpp
+2026-10-08T14:40:41.1402359Z [73/111] Compiling Error.cpp
+2026-10-08T14:40:42.3787308Z [74/111] Compiling Debug.cpp
+2026-10-08T14:40:42.4242897Z [75/111] Compiling DJB.cpp
+2026-10-08T14:40:43.0075160Z [76/111] Compiling ConvertUTF.cpp
+2026-10-08T14:40:43.8486572Z [77/111] Compiling ConvertUTFWrapper.cpp
+2026-10-08T14:40:45.3746851Z [78/111] Compiling Chrono.cpp
+2026-10-08T14:40:45.7394164Z [79/111] Compiling Atomic.cpp
+2026-10-08T14:40:46.9691577Z [80/111] Compiling Allocator.cpp
+2026-10-08T14:40:48.8596257Z [81/111] Compiling ARMTargetParser.cpp
+2026-10-08T14:40:49.5217890Z [82/111] Compiling CommandLine.cpp
+2026-10-08T14:40:49.6967117Z [84/111] Compiling SwiftProtobuf AnyMessageStorage.swift
+2026-10-08T14:40:50.0936782Z [84/111] Compiling APSInt.cpp
+2026-10-08T14:40:51.6367055Z [85/111] Compiling AArch64TargetParser.cpp
+2026-10-08T14:40:53.6726627Z [86/111] Compiling APFloat.cpp
+2026-10-08T14:40:55.3466697Z [87/111] Compiling APInt.cpp
+2026-10-08T14:40:55.8218084Z [88/111] Compiling IndexStoreDB_Index SymbolIndex.cpp
+2026-10-08T14:40:56.8187177Z [89/111] Compiling IndexStoreDB_Index StoreSymbolRecord.cpp
+2026-10-08T14:40:57.5307921Z [90/111] Compiling IndexStoreDB_Index IndexStoreLibraryProvider.cpp
+2026-10-08T14:40:59.6696860Z [91/111] Compiling IndexStoreDB_Index FileVisibilityChecker.cpp
+2026-10-08T14:40:59.8767870Z [92/111] Compiling IndexStoreDB_Index IndexSystem.cpp
+2026-10-08T14:41:00.0308868Z [93/111] Compiling midl.c
+2026-10-08T14:41:02.6273439Z [94/111] Compiling mdb.c
+2026-10-08T14:41:02.6448820Z [95/111] Compiling IndexStoreDB_Index FilePathIndex.cpp
+2026-10-08T14:41:04.3808329Z [96/111] Compiling IndexStoreDB_Index IndexDatastore.cpp
+2026-10-08T14:41:05.4048480Z [97/111] Compiling IndexStoreDB_Database ReadTransaction.cpp
+2026-10-08T14:41:05.5436798Z [98/111] Compiling IndexStoreDB_Database DatabaseError.cpp
+2026-10-08T14:41:05.7799267Z [99/111] Compiling IndexStoreDB_Database ImportTransaction.cpp
+2026-10-08T14:41:07.0056737Z [100/111] Compiling IndexStoreDB_Core Symbol.cpp
+2026-10-08T14:41:07.0071934Z [101/111] Write sources
+2026-10-08T14:41:08.2465497Z [104/112] Compiling IndexStoreDB_CIndexStoreDB CIndexStoreDB.cpp
+2026-10-08T14:41:08.2466324Z [104/112] Write sources
+2026-10-08T14:41:08.2738493Z [107/112] Compiling IndexStoreDB_Database Database.cpp
+2026-10-08T14:41:11.2178062Z [109/114] Compiling ArgumentParserToolInfo ToolInfo.swift
+2026-10-08T14:41:12.1618879Z [110/115] Compiling IndexStoreDB IndexDelegate.swift
+2026-10-08T14:41:12.1619700Z <module-includes>:1:10: note: in file included from <module-includes>:1:
+2026-10-08T14:41:12.1620398Z 1 | #include "CIndexStoreDB.h"
+2026-10-08T14:41:12.1620929Z   |          `- note: in file included from <module-includes>:1:
+2026-10-08T14:41:12.1621477Z 2 | 
+2026-10-08T14:41:25.7997488Z [111/115] Compiling GraphiteIR IRWriter.swift
+2026-10-08T14:41:34.8528981Z [112/115] Compiling ArgumentParser BashCompletionsGenerator.swift
+2026-10-08T14:45:01.4641929Z [113/115] Compiling SwiftSyntax AbsolutePosition.swift
+2026-10-08T14:45:47.0415611Z [114/116] Compiling SwiftParser Attributes.swift
+2026-10-08T14:45:58.7531820Z [115/117] Compiling GraphiteFrontend ClangUSR.swift
+2026-10-08T14:45:59.5510022Z [116/118] Compiling graphite_frontend_apple main.swift
+2026-10-08T14:45:59.5575744Z [116/118] Write Objects.LinkFileList
+2026-10-08T14:46:01.6095164Z /usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x250b): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+2026-10-08T14:46:01.6100937Z /usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x25a8): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+2026-10-08T14:46:01.6106204Z /usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x25ef): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+2026-10-08T14:46:01.6111671Z /usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x268e): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+2026-10-08T14:46:01.6117372Z /usr/lib/swift_static/linux/libFoundationEssentials.a(Data+Writing.swift.o):_ThreadLocal.swift.o:function $s20FoundationEssentials19createTemporaryFile33_FC9EC52B075D2ACCFF86F1C9F84293BELL2at6inPath6prefix7options7variants5Int32V_SStSS_AA0Q5OrURLOSSAA4DataV14WritingOptionsVSSSgtKFTf4nnndn_n:(.text+0x26df): warning: the use of `mktemp' is dangerous, better use `mkstemp' or `mkdtemp'
+2026-10-08T14:46:01.6120245Z [117/118] Linking graphite-frontend-apple
+2026-10-08T14:46:01.6136252Z Build complete! (404.13s)
+2026-10-08T14:46:01.6279623Z ##[group]Run ASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"
+2026-10-08T14:46:01.6280401Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"[0m
+2026-10-08T14:46:01.6280994Z [36;1mBIN="frontend/apple/.build/release/graphite-frontend-apple"[0m
+2026-10-08T14:46:01.6281384Z [36;1m"${BIN}" version[0m
+2026-10-08T14:46:01.6281672Z [36;1m"${BIN}" describe | grep -F '"ir_schema": [1]'[0m
+2026-10-08T14:46:01.6282016Z [36;1mmkdir -p release-assets[0m
+2026-10-08T14:46:01.6282457Z [36;1mtar -czf "release-assets/${ASSET}" -C "$(dirname "${BIN}")" graphite-frontend-apple[0m
+2026-10-08T14:46:01.6283031Z [36;1m(cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")[0m
+2026-10-08T14:46:01.6283449Z [36;1mcat "release-assets/${ASSET}.sha256"[0m
+2026-10-08T14:46:01.6285919Z shell: bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T14:46:01.6286275Z env:
+2026-10-08T14:46:01.6286527Z   RELEASE_TAG: v2.11.3-apple-validation.3
+2026-10-08T14:46:01.6286815Z   DRY_RUN: true
+2026-10-08T14:46:01.6287051Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+2026-10-08T14:46:01.6287342Z ##[endgroup]
+2026-10-08T14:46:01.6880554Z 0.1.0
+2026-10-08T14:46:01.6951868Z {"name": "graphite-frontend-apple", "version": "0.1.0", "ir_schema": [1], "inputs": ["Package.swift", "xcodeproj", "xcworkspace", "index-store"], "aliases": {"swift": "apple", "ios": "apple", "macos": "apple"}, "indexable": ["swift"]}
+2026-10-08T14:46:08.0554386Z 90b008ed84e31867160f79a74fa78aefb8005401821c412514bd6e2b7d16af06  graphite-frontend-apple-2.11.3-apple-validation.3-x86_64-unknown-linux-gnu.tar.gz
+2026-10-08T14:46:08.0651724Z ##[group]Run actions/upload-artifact@v7
+2026-10-08T14:46:08.0652028Z with:
+2026-10-08T14:46:08.0652260Z   name: apple-frontend-x86_64-unknown-linux-gnu
+2026-10-08T14:46:08.0652559Z   path: release-assets/*
+2026-10-08T14:46:08.0652788Z   if-no-files-found: error
+2026-10-08T14:46:08.0653202Z   compression-level: 6
+2026-10-08T14:46:08.0653408Z   overwrite: false
+2026-10-08T14:46:08.0653617Z   include-hidden-files: false
+2026-10-08T14:46:08.0653846Z   archive: true
+2026-10-08T14:46:08.0654027Z env:
+2026-10-08T14:46:08.0654222Z   RELEASE_TAG: v2.11.3-apple-validation.3
+2026-10-08T14:46:08.0654735Z   DRY_RUN: true
+2026-10-08T14:46:08.0655034Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+2026-10-08T14:46:08.0655302Z ##[endgroup]
+2026-10-08T14:46:08.0659072Z ##[command]/usr/bin/docker exec  59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T14:46:08.3009354Z With the provided path, there will be 2 files uploaded
+2026-10-08T14:46:08.3015946Z Artifact name is valid!
+2026-10-08T14:46:08.3016962Z Root directory input is valid!
+2026-10-08T14:46:08.5095815Z Uploading artifact: apple-frontend-x86_64-unknown-linux-gnu.zip
+2026-10-08T14:46:08.5147402Z Beginning upload of artifact content to blob storage
+2026-10-08T14:46:09.1034353Z Uploaded bytes 8388608
+2026-10-08T14:46:09.3083648Z Uploaded bytes 16777216
+2026-10-08T14:46:09.6868951Z Uploaded bytes 25165824
+2026-10-08T14:46:09.9078704Z Uploaded bytes 33554432
+2026-10-08T14:46:10.1008595Z Uploaded bytes 41277067
+2026-10-08T14:46:10.1172228Z Finished uploading artifact content to blob storage!
+2026-10-08T14:46:10.1178735Z SHA256 digest of uploaded artifact is 15fc08cc8e3fccbb3d3a6c18853c864cfd240e3781bc77978402ac60abd25360
+2026-10-08T14:46:10.1181188Z Finalizing artifact upload
+2026-10-08T14:46:10.3809867Z Artifact apple-frontend-x86_64-unknown-linux-gnu successfully finalized. Artifact ID 11558775106
+2026-10-08T14:46:10.3811687Z Artifact apple-frontend-x86_64-unknown-linux-gnu has been successfully uploaded! Final size is 41277067 bytes. Artifact ID is 11558775106
+2026-10-08T14:46:10.3815561Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37794100367/artifacts/11558775106
+2026-10-08T14:46:10.4053402Z Post job cleanup.
+2026-10-08T14:46:10.4061126Z ##[command]/usr/bin/docker exec  59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d sh -c "cat /etc/*release | grep ^ID"
+2026-10-08T14:46:10.5806152Z [command]/usr/bin/git version
+2026-10-08T14:46:10.5844435Z git version 2.43.0
+2026-10-08T14:46:10.5889263Z Temporarily overriding HOME='/__w/_temp/63658d1b-2055-49a7-b470-6c027920ea6d' before making global git config changes
+2026-10-08T14:46:10.5891004Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T14:46:10.5894807Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+2026-10-08T14:46:10.5931589Z Removing SSH command configuration
+2026-10-08T14:46:10.5938205Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T14:46:10.6025783Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T14:46:10.6314432Z Removing HTTP extra header
+2026-10-08T14:46:10.6316077Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T14:46:10.6357860Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T14:46:10.6669190Z Removing includeIf entries pointing to credentials config files
+2026-10-08T14:46:10.6677234Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T14:46:10.6711262Z includeif.gitdir:/__w/graphite/graphite/.git.path
+2026-10-08T14:46:10.6712547Z includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+2026-10-08T14:46:10.6713653Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T14:46:10.6715877Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T14:46:10.6725012Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git.path
+2026-10-08T14:46:10.6760395Z /__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:46:10.6777285Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git.path \/__w\/_temp\/git\-credentials\-58840fd1\-ab67\-42bc\-8f38\-a442e1b9bbfe\.config
+2026-10-08T14:46:10.6852244Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+2026-10-08T14:46:10.6888547Z /__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:46:10.6908347Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-58840fd1\-ab67\-42bc\-8f38\-a442e1b9bbfe\.config
+2026-10-08T14:46:10.6977305Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T14:46:10.7031971Z /github/runner_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:46:10.7051874Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-58840fd1\-ab67\-42bc\-8f38\-a442e1b9bbfe\.config
+2026-10-08T14:46:10.7098804Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T14:46:10.7139539Z /github/runner_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config
+2026-10-08T14:46:10.7149839Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-58840fd1\-ab67\-42bc\-8f38\-a442e1b9bbfe\.config
+2026-10-08T14:46:10.7194081Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T14:46:10.7434206Z Removing credentials config '/__w/_temp/git-credentials-58840fd1-ab67-42bc-8f38-a442e1b9bbfe.config'
+2026-10-08T14:46:10.7585303Z Stop and remove container: 05701d68b3794eea92088fa55d06469a_swift613_b51701
+2026-10-08T14:46:10.7589721Z ##[command]/usr/bin/docker rm --force 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:46:11.0717748Z 59485cdbc09a662f08056a23cd792588170ac7b2deffcaecf75de4c7e811231d
+2026-10-08T14:46:11.0806078Z Remove container network: github_network_758f4302b14542929b26fd857dbcb078
+2026-10-08T14:46:11.0810347Z ##[command]/usr/bin/docker network rm github_network_758f4302b14542929b26fd857dbcb078
+2026-10-08T14:46:11.1891206Z github_network_758f4302b14542929b26fd857dbcb078
+2026-10-08T14:46:11.1963505Z Cleaning up orphan processes

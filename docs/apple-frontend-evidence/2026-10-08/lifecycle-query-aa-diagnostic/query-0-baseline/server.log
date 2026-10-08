@@ -1,0 +1,11 @@
+Loaded graph 'signal-ios' from /Users/johnsonlee/.codex/benchmarks/apple-validation/signal-fixed-graph using MAPPED mode
+Loaded graph 'swiftpm' from /Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph using MAPPED mode
+Loaded graph 'signal-server' from /Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph using MAPPED mode
+Web UI: http://localhost:61548
+MCP: http://localhost:61548/mcp
+Data: /Users/johnsonlee/.codex/worktrees/19db/graphite
+Loaded graphs: signal-ios, signal-server, swiftpm
+Topology: 3 graphs, 0 relations
+Cypher limits: 4 concurrent, 60000ms maximum timeout
+C4 views: inferring 3 graph(s) in the background
+Press Ctrl+C to stop
