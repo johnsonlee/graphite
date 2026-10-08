@@ -40,7 +40,8 @@ The digest covers columns, rows and row graph provenance, excluding outer timing
 unordered cases sort rows without discarding duplicates. p50/p95 use nearest rank
 within EACH repeated-request case/concurrency/round, with pooled results and per-round
 range retained. Fixed batches are not sustained saturation evidence. Query CPU is the live server user+system delta around each measured batch, using
-macOS proc_pid_rusage V2 nanosecond counters or Linux /proc/PID/stat clock ticks.
+macOS proc_pid_rusage V2 Mach ticks converted with mach_timebase_info, or Linux
+/proc/PID/stat clock ticks.
 Query RSS is the conservative wait4 process lifetime high-water including warmup;
 a 10 ms current-RSS sampler reports an additional lower bound, never a replacement.
 Results give evidence/parity, not automatic regression acceptance or performance claims.
@@ -283,7 +284,8 @@ def request(base, case, timeout, journal, **context):
 
 
 class MacUsageV2(ctypes.Structure):
-    # Xcode SDK sys/resource.h: rusage_info_v2; CPU fields are nanoseconds.
+    # Xcode SDK sys/resource.h: rusage_info_v2. CPU fields are Mach absolute
+    # ticks (XNU fill_task_rusage -> task_power_info_locked), not nanoseconds.
     _fields_ = [("ri_uuid", ctypes.c_uint8 * 16)] + [(name, ctypes.c_uint64) for name in [
         "ri_user_time", "ri_system_time", "ri_pkg_idle_wkups", "ri_interrupt_wkups",
         "ri_pageins", "ri_wired_size", "ri_resident_size", "ri_phys_footprint",
@@ -300,6 +302,35 @@ def linux_usage(stat, ticks, page_size):
 
 
 _MAC_PROC = None
+_MAC_TIMEBASE = None
+
+
+class MachTimebaseInfo(ctypes.Structure):
+    _fields_ = [("numer", ctypes.c_uint32), ("denom", ctypes.c_uint32)]
+
+
+def mac_timebase():
+    global _MAC_TIMEBASE
+    if _MAC_TIMEBASE is None:
+        get_timebase = ctypes.CDLL("/usr/lib/libSystem.B.dylib").mach_timebase_info
+        get_timebase.argtypes = [ctypes.POINTER(MachTimebaseInfo)]
+        get_timebase.restype = ctypes.c_int
+        info = MachTimebaseInfo()
+        require(get_timebase(ctypes.byref(info)) == 0 and info.numer > 0 and info.denom > 0,
+                "cannot obtain Mach timebase for CPU accounting")
+        _MAC_TIMEBASE = (info.numer, info.denom)
+    return _MAC_TIMEBASE
+
+
+def mac_usage(usage, timebase):
+    numer, denom = timebase
+    require(numer > 0 and denom > 0, "invalid Mach timebase")
+    return {"user_seconds": usage.ri_user_time * numer / denom / 1e9,
+            "system_seconds": usage.ri_system_time * numer / denom / 1e9,
+            "raw_cpu_ticks": {"user": usage.ri_user_time, "system": usage.ri_system_time},
+            "mach_timebase": {"numer": numer, "denom": denom},
+            "resident_bytes": usage.ri_resident_size, "identity": str(usage.ri_proc_start_abstime),
+            "cpu_counter": "proc_pid_rusage-v2-mach-ticks-converted-to-seconds"}
 
 
 def process_usage(pid):
@@ -312,9 +343,7 @@ def process_usage(pid):
         usage = MacUsageV2()
         if _MAC_PROC(pid, 2, ctypes.byref(usage)) != 0:
             raise OSError(ctypes.get_errno(), "proc_pid_rusage failed")
-        return {"user_seconds": usage.ri_user_time / 1e9, "system_seconds": usage.ri_system_time / 1e9,
-                "resident_bytes": usage.ri_resident_size, "identity": str(usage.ri_proc_start_abstime),
-                "cpu_counter": "proc_pid_rusage-v2-nanoseconds"}
+        return mac_usage(usage, mac_timebase())
     if sys.platform.startswith("linux"):
         return linux_usage(Path(f"/proc/{pid}/stat").read_text(), os.sysconf("SC_CLK_TCK"), os.sysconf("SC_PAGE_SIZE"))
     raise Invalid("live CPU accounting requires macOS or Linux")
@@ -440,7 +469,8 @@ def server_run(variant_config, protocol, folder, journal, operation, **context):
             usage = process_usage(child.process.pid)
             journal.write(kind="load", **context, ok=True, wall_ms=(time.perf_counter() - child.started) * 1000,
                           user_seconds=usage["user_seconds"], system_seconds=usage["system_seconds"],
-                          cpu_seconds=usage["user_seconds"] + usage["system_seconds"], cpu_counter=usage["cpu_counter"])
+                          cpu_seconds=usage["user_seconds"] + usage["system_seconds"], cpu_counter=usage["cpu_counter"],
+                          cpu_usage=usage)
         else:
             for case in protocol["cases"]:
                 for index in range(protocol["warmup_requests"]):
