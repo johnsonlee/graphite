@@ -10631,3 +10631,139 @@ This supersedes the performance-evidence interpretation of the historical full-K
 The original fixed c1/c4 and close/keep cohorts use drained request batches with validation gaps. They provide latency for their declared workload, not sustained saturation latency or maximum throughput. Future reports must state the actual graph scope and load-generation behavior, not imply that loading many graphs makes a single-graph query a multi-graph benchmark.
 
 Attempt141 correctly remains a multi-graph full34 candidate. Its isolated registry-snapshot change passed actual correctness session71154 (terminal0/toolb77c8e),311 tests/71 required names, formatting, strict lint and CLI export. Independent raw auditc77888 passes (SHA18cfa7a95b0010f83d5065f097121acf785e30884472f8d2e19cb5cba82c8544); binary59c908d551d18a96b906038db0d99ae6751f3f0f47d88f69afa17adfc6442ac9. The earlier setsid launcher error happened before the runner or Cargo started and is retained separately. No141 performance result exists yet.
+
+### Attempt141 — registry snapshot: isolated, not integrated; no substantive recovery
+
+Measurement failures0; all8 sessions passed without retry or replacement. Candidate remains isolated and is not integrated. No substantive query recovery established. Close is mostly slower; keep is mixed, with tiny absolute changes. No additional sampling or small-overhead diagnostic is proposed. This is a batch comparison, not sustained saturation; it does not test140 Int.value and cannot validate that optimization. Historical single-graph data is diagnostic only.
+
+A=frozen140 e2d9e405; B=frozen141 59c908d5. Same64 graphs/all34 full typed contracts, c4 A-close,A-keep,B-keep,B-close,B-close,B-keep,A-keep,A-close; first1/warm2/measured60.17136 complete responses,16320 measured,16 originalmetrics scrapes, all independently PASS. Each case uses ranks30/57 within each process, then the mean of two process quantiles; no pooled cases. Original38505 terminal0/7ffe91 includes automatic summary once; independent audit57497 terminal0/ea166e. All32 owned PIDs/8 actual time groups freshly absent. No retries/replacements.
+
+| Mode | Lower mean p50/p95 cases | p50 Δms range | p95 Δms range |
+|---|---:|---:|---:|
+| close | 1/34; 3/34 | -0.005437…+0.084833 | -0.047105…+0.159375 |
+| keep | 16/34; 14/34 | -0.028250…+0.025958 | -0.051062…+0.074229 |
+
+Worst absolute p95 adverse: close caller-class-dense1.215480→1.374854ms (+0.159375ms,+13.112%, both pairs slower); keep aliased-dense1.026542→1.100771ms (+0.074229ms,+7.231%, mixed pairs). Percentages alone overstate the practical size of these changes.
+
+#### All34 cases per mode
+
+A/B and Δ are milliseconds; percent follows absolute difference. Pair Δms order is first A→first B, last A→last B. Every case and both adverse directions are retained.
+
+##### close
+
+| Case (global-wide prefix omitted) | p50 A→B | Δms (%) | Pair Δms | p95 A→B | Δms (%) | Pair Δms |
+|---|---:|---:|---:|---:|---:|---:|
+| four-properties-zero | 0.458146→0.505126 | +0.046980 (+10.254%) | -0.007167 / +0.101126 | 0.600313→0.662063 | +0.061750 (+10.286%) | +0.010250 / +0.113250 |
+| four-properties-targeted | 0.750417→0.784500 | +0.034083 (+4.542%) | -0.004000 / +0.072166 | 0.985250→1.024396 | +0.039146 (+3.973%) | -0.024292 / +0.102584 |
+| four-properties-dense | 1.090396→1.124188 | +0.033793 (+3.099%) | -0.019499 / +0.087084 | 1.314396→1.362146 | +0.047750 (+3.633%) | -0.025875 / +0.121375 |
+| class-pair-zero | 0.451750→0.497084 | +0.045333 (+10.035%) | +0.007083 / +0.083584 | 0.594167→0.639292 | +0.045125 (+7.595%) | +0.002458 / +0.087792 |
+| class-pair-targeted | 0.979271→1.001500 | +0.022229 (+2.270%) | -0.006459 / +0.050916 | 1.238374→1.219853 | -0.018521 (-1.496%) | -0.202875 / +0.165833 |
+| class-pair-dense | 1.141562→1.158333 | +0.016772 (+1.469%) | -0.031166 / +0.064709 | 1.359917→1.401501 | +0.041584 (+3.058%) | -0.039333 / +0.122500 |
+| name-pair-zero | 0.434354→0.483375 | +0.049021 (+11.286%) | +0.007876 / +0.090166 | 0.572167→0.642271 | +0.070104 (+12.252%) | -0.007584 / +0.147792 |
+| name-pair-targeted | 0.994708→1.039562 | +0.044854 (+4.509%) | +0.013208 / +0.076500 | 1.224771→1.245770 | +0.021000 (+1.715%) | -0.070043 / +0.112042 |
+| name-pair-dense | 1.104958→1.154708 | +0.049750 (+4.502%) | +0.026083 / +0.073417 | 1.326062→1.357167 | +0.031105 (+2.346%) | -0.055291 / +0.117501 |
+| caller-class-zero | 0.430917→0.478042 | +0.047124 (+10.936%) | +0.019833 / +0.074416 | 0.558729→0.649459 | +0.090730 (+16.239%) | +0.014209 / +0.167250 |
+| caller-class-targeted | 0.892104→0.944312 | +0.052208 (+5.852%) | +0.023250 / +0.081167 | 1.055751→1.172541 | +0.116791 (+11.062%) | +0.061249 / +0.172333 |
+| caller-class-dense | 1.047834→1.100563 | +0.052729 (+5.032%) | +0.021083 / +0.084375 | 1.215480→1.374854 | +0.159375 (+13.112%) | +0.088583 / +0.230166 |
+| callee-class-zero | 0.425250→0.469542 | +0.044291 (+10.415%) | +0.018750 / +0.069833 | 0.570458→0.622563 | +0.052104 (+9.134%) | +0.049125 / +0.055083 |
+| callee-class-targeted | 0.740916→0.811104 | +0.070187 (+9.473%) | +0.024875 / +0.115500 | 1.010708→1.081000 | +0.070292 (+6.955%) | +0.065000 / +0.075584 |
+| callee-class-dense | 1.059667→1.115500 | +0.055833 (+5.269%) | +0.000124 / +0.111542 | 1.293625→1.349063 | +0.055438 (+4.285%) | -0.021458 / +0.132333 |
+| provenance-zero | 0.444625→0.480438 | +0.035812 (+8.055%) | -0.002000 / +0.073625 | 0.592291→0.613166 | +0.020875 (+3.524%) | +0.023250 / +0.018500 |
+| provenance-targeted | 0.883771→0.968604 | +0.084833 (+9.599%) | +0.049583 / +0.120083 | 1.087209→1.171334 | +0.084125 (+7.738%) | +0.002958 / +0.165291 |
+| provenance-dense | 1.098542→1.146834 | +0.048292 (+4.396%) | +0.009293 / +0.087291 | 1.409271→1.362167 | -0.047105 (-3.342%) | -0.143125 / +0.048916 |
+| aliased-zero | 0.440812→0.479417 | +0.038604 (+8.757%) | -0.006583 / +0.083791 | 0.572751→0.601604 | +0.028854 (+5.038%) | -0.027042 / +0.084750 |
+| aliased-targeted | 0.899125→0.949376 | +0.050250 (+5.589%) | -0.000541 / +0.101042 | 1.115646→1.181875 | +0.066229 (+5.936%) | +0.048167 / +0.084291 |
+| aliased-dense | 1.065125→1.113083 | +0.047959 (+4.503%) | +0.001667 / +0.094250 | 1.266771→1.310417 | +0.043645 (+3.445%) | -0.024334 / +0.111625 |
+| parameterized-zero | 0.439896→0.479854 | +0.039958 (+9.084%) | +0.000583 / +0.079333 | 0.580291→0.603771 | +0.023480 (+4.046%) | -0.003166 / +0.050126 |
+| parameterized-targeted | 0.855917→0.850480 | -0.005437 (-0.635%) | -0.024291 / +0.013416 | 1.069604→1.117875 | +0.048271 (+4.513%) | +0.041792 / +0.054750 |
+| parameterized-dense | 1.088688→1.106896 | +0.018208 (+1.673%) | -0.010667 / +0.047084 | 1.296126→1.368958 | +0.072832 (+5.619%) | +0.036874 / +0.108791 |
+| wrapped-case-insensitive-zero | 0.449124→0.475187 | +0.026063 (+5.803%) | +0.009084 / +0.043042 | 0.601396→0.601437 | +0.000041 (+0.007%) | -0.010542 / +0.010624 |
+| wrapped-case-insensitive-targeted | 0.698562→0.742626 | +0.044063 (+6.308%) | +0.010209 / +0.077917 | 0.948834→0.998354 | +0.049520 (+5.219%) | -0.013084 / +0.112124 |
+| wrapped-case-insensitive-dense | 1.283833→1.329479 | +0.045646 (+3.555%) | +0.010376 / +0.080917 | 1.538271→1.505896 | -0.032375 (-2.105%) | -0.091667 / +0.026918 |
+| wrapped-case-insensitive-distinct-zero | 0.471458→0.519895 | +0.048438 (+10.274%) | +0.016709 / +0.080166 | 0.602812→0.612021 | +0.009208 (+1.528%) | -0.053083 / +0.071500 |
+| wrapped-case-insensitive-distinct-targeted | 0.698145→0.761646 | +0.063501 (+9.096%) | +0.026584 / +0.100417 | 0.856521→0.946813 | +0.090292 (+10.542%) | +0.026709 / +0.153875 |
+| wrapped-case-insensitive-distinct-dense | 3.091667→3.155292 | +0.063626 (+2.058%) | -0.003833 / +0.131084 | 3.334896→3.368583 | +0.033688 (+1.010%) | -0.058042 / +0.125417 |
+| distribution-broad-all-64 | 1.333459→1.364208 | +0.030750 (+2.306%) | -0.012750 / +0.074250 | 1.562000→1.595667 | +0.033667 (+2.155%) | -0.050459 / +0.117792 |
+| distribution-localized-early | 0.580291→0.630730 | +0.050438 (+8.692%) | +0.011001 / +0.089875 | 0.724292→0.768917 | +0.044624 (+6.161%) | -0.019375 / +0.108624 |
+| distribution-localized-late | 0.811854→0.852396 | +0.040542 (+4.994%) | -0.028166 / +0.109250 | 1.020979→1.042833 | +0.021854 (+2.141%) | -0.057875 / +0.101584 |
+| distribution-localized-middle | 0.798521→0.850333 | +0.051812 (+6.488%) | +0.010708 / +0.092916 | 1.004876→1.060167 | +0.055292 (+5.502%) | +0.043333 / +0.067250 |
+
+##### keep
+
+| Case (global-wide prefix omitted) | p50 A→B | Δms (%) | Pair Δms | p95 A→B | Δms (%) | Pair Δms |
+|---|---:|---:|---:|---:|---:|---:|
+| four-properties-zero | 0.202604→0.203667 | +0.001063 (+0.524%) | -0.000292 / +0.002417 | 0.291770→0.303291 | +0.011521 (+3.949%) | +0.020333 / +0.002709 |
+| four-properties-targeted | 0.483396→0.476104 | -0.007292 (-1.508%) | -0.013958 / -0.000625 | 0.710500→0.674729 | -0.035770 (-5.035%) | -0.052375 / -0.019166 |
+| four-properties-dense | 0.812312→0.809416 | -0.002897 (-0.357%) | -0.022376 / +0.016583 | 1.046021→1.045937 | -0.000083 (-0.008%) | -0.029376 / +0.029209 |
+| class-pair-zero | 0.194750→0.188376 | -0.006375 (-3.273%) | -0.010292 / -0.002458 | 0.308312→0.317271 | +0.008958 (+2.906%) | -0.014875 / +0.032792 |
+| class-pair-targeted | 0.712812→0.714646 | +0.001834 (+0.257%) | +0.014667 / -0.011000 | 0.882041→0.940770 | +0.058729 (+6.658%) | +0.080000 / +0.037459 |
+| class-pair-dense | 0.871021→0.874896 | +0.003875 (+0.445%) | +0.000125 / +0.007625 | 1.041146→1.063459 | +0.022312 (+2.143%) | +0.001541 / +0.043083 |
+| name-pair-zero | 0.190438→0.184812 | -0.005626 (-2.954%) | -0.006751 / -0.004500 | 0.306312→0.307562 | +0.001250 (+0.408%) | -0.022792 / +0.025292 |
+| name-pair-targeted | 0.740105→0.744479 | +0.004374 (+0.591%) | +0.006291 / +0.002458 | 0.950917→0.949562 | -0.001355 (-0.142%) | -0.066375 / +0.063666 |
+| name-pair-dense | 0.846271→0.836812 | -0.009458 (-1.118%) | -0.002292 / -0.016625 | 1.019813→0.994979 | -0.024834 (-2.435%) | -0.059292 / +0.009625 |
+| caller-class-zero | 0.195166→0.198709 | +0.003542 (+1.815%) | -0.001666 / +0.008750 | 0.270271→0.295854 | +0.025583 (+9.466%) | +0.034375 / +0.016792 |
+| caller-class-targeted | 0.654604→0.674604 | +0.020000 (+3.055%) | -0.003750 / +0.043750 | 0.835626→0.863229 | +0.027604 (+3.303%) | +0.031500 / +0.023708 |
+| caller-class-dense | 0.815271→0.803167 | -0.012104 (-1.485%) | -0.022084 / -0.002124 | 0.998917→1.014541 | +0.015624 (+1.564%) | +0.028958 / +0.002291 |
+| callee-class-zero | 0.182458→0.189125 | +0.006666 (+3.653%) | +0.007499 / +0.005833 | 0.255958→0.270750 | +0.014792 (+5.779%) | +0.035875 / -0.006291 |
+| callee-class-targeted | 0.509020→0.511625 | +0.002605 (+0.512%) | +0.014167 / -0.008958 | 0.730833→0.721625 | -0.009208 (-1.260%) | -0.028500 / +0.010083 |
+| callee-class-dense | 0.815729→0.817187 | +0.001458 (+0.179%) | -0.006333 / +0.009250 | 0.992645→0.972937 | -0.019709 (-1.985%) | +0.009292 / -0.048709 |
+| provenance-zero | 0.182938→0.190292 | +0.007354 (+4.020%) | +0.010125 / +0.004584 | 0.262979→0.291208 | +0.028229 (+10.734%) | +0.032833 / +0.023624 |
+| provenance-targeted | 0.653438→0.667687 | +0.014250 (+2.181%) | +0.012957 / +0.015542 | 0.828416→0.869395 | +0.040980 (+4.947%) | +0.060209 / +0.021750 |
+| provenance-dense | 0.826896→0.847584 | +0.020688 (+2.502%) | +0.004501 / +0.036875 | 1.013854→1.019750 | +0.005896 (+0.582%) | -0.019999 / +0.031791 |
+| aliased-zero | 0.199042→0.196542 | -0.002500 (-1.256%) | -0.006459 / +0.001459 | 0.279042→0.265812 | -0.013230 (-4.741%) | -0.002542 / -0.023918 |
+| aliased-targeted | 0.653334→0.667354 | +0.014020 (+2.146%) | -0.005667 / +0.033708 | 0.845395→0.859083 | +0.013688 (+1.619%) | -0.077749 / +0.105125 |
+| aliased-dense | 0.828542→0.822333 | -0.006209 (-0.749%) | -0.020375 / +0.007957 | 1.026542→1.100771 | +0.074229 (+7.231%) | -0.053709 / +0.202167 |
+| parameterized-zero | 0.195438→0.197521 | +0.002083 (+1.066%) | +0.004083 / +0.000083 | 0.284834→0.280396 | -0.004438 (-1.558%) | +0.004082 / -0.012958 |
+| parameterized-targeted | 0.611291→0.594083 | -0.017209 (-2.815%) | -0.018250 / -0.016167 | 0.889667→0.838604 | -0.051062 (-5.740%) | -0.160625 / +0.058500 |
+| parameterized-dense | 0.813875→0.807521 | -0.006354 (-0.781%) | -0.019583 / +0.006875 | 1.027667→1.092105 | +0.064437 (+6.270%) | +0.010917 / +0.117958 |
+| wrapped-case-insensitive-zero | 0.190688→0.186417 | -0.004271 (-2.240%) | -0.002959 / -0.005583 | 0.258979→0.273979 | +0.015000 (+5.792%) | +0.013333 / +0.016666 |
+| wrapped-case-insensitive-targeted | 0.470459→0.476480 | +0.006021 (+1.280%) | -0.006208 / +0.018250 | 0.706062→0.694334 | -0.011728 (-1.661%) | -0.002541 / -0.020916 |
+| wrapped-case-insensitive-dense | 1.020063→1.046021 | +0.025958 (+2.545%) | -0.000124 / +0.052041 | 1.195229→1.246375 | +0.051146 (+4.279%) | +0.057875 / +0.044416 |
+| wrapped-case-insensitive-distinct-zero | 0.210646→0.231980 | +0.021334 (+10.128%) | +0.013459 / +0.029209 | 0.301812→0.327104 | +0.025292 (+8.380%) | +0.044333 / +0.006250 |
+| wrapped-case-insensitive-distinct-targeted | 0.472000→0.463250 | -0.008750 (-1.854%) | -0.005167 / -0.012334 | 0.590708→0.548396 | -0.042313 (-7.163%) | -0.039625 / -0.045000 |
+| wrapped-case-insensitive-distinct-dense | 2.878729→2.850479 | -0.028250 (-0.981%) | -0.032792 / -0.023708 | 3.158750→3.125687 | -0.033063 (-1.047%) | -0.038709 / -0.027417 |
+| distribution-broad-all-64 | 1.092791→1.075541 | -0.017250 (-1.579%) | +0.001458 / -0.035958 | 1.284542→1.264584 | -0.019959 (-1.554%) | -0.117750 / +0.077833 |
+| distribution-localized-early | 0.344708→0.346896 | +0.002188 (+0.635%) | -0.000500 / +0.004875 | 0.446729→0.479625 | +0.032896 (+7.364%) | +0.052626 / +0.013166 |
+| distribution-localized-late | 0.574105→0.555063 | -0.019042 (-3.317%) | -0.019750 / -0.018334 | 0.721021→0.691334 | -0.029687 (-4.117%) | -0.032041 / -0.027334 |
+| distribution-localized-middle | 0.552167→0.541667 | -0.010500 (-1.902%) | -0.014667 / -0.006333 | 0.726521→0.769292 | +0.042771 (+5.887%) | +0.069458 / +0.016084 |
+
+#### Resources
+
+Query CPU is the2040 mixed-query measured-window native counter delta (ps0.01s resolution), not per-case CPU. Whole CPU/RSS includes load/first/warm and deferred work; decimal MB.
+
+| Mode | Metric | A→B | Absolute Δ (%) | Pair absolute Δ |
+|---|---|---:|---:|---:|
+| close | query CPU s | 4.085000→4.070000 | -0.015000 (-0.367%) | -0.050000 / +0.020000 |
+| close | whole CPU s | 23.065000→22.955000 | -0.110000 (-0.477%) | -0.010000 / -0.210000 |
+| close | whole peak RSS MB | 6632.210432→6629.621760 | -2.588672 (-0.039%) | +4.325376 / -9.502720 |
+| close | whole wall s | 22.615000→22.490000 | -0.125000 (-0.553%) | +0.060000 / -0.310000 |
+| keep | query CPU s | 4.015000→4.000000 | -0.015000 (-0.374%) | -0.070000 / +0.040000 |
+| keep | whole CPU s | 22.950000→22.885000 | -0.065000 (-0.283%) | +0.040000 / -0.170000 |
+| keep | whole peak RSS MB | 6629.138432→6632.833024 | +3.694592 (+0.056%) | -0.655360 / +8.044544 |
+| keep | whole wall s | 22.190000→22.510000 | +0.320000 (+1.442%) | +0.570000 / +0.070000 |
+
+#### Connection reuse and server metrics
+
+Both modes use unchanged http.client/timers. Eachclose server used2142 connection objects; eachkeep server used4 worker connections, with zero reconnects. Keep is faster than close within both binaries across all34 mean p50/p95 values, but this client-mode effect is not a141 server improvement. The140→141 difference under keep remains mixed; this does not explain away adverseclose samples or justify a recovery claim.
+
+| Mode | Server mixed34 metric | A→B mean ms | Δms (%) | Pair Δms |
+|---|---|---:|---:|---:|
+| close | HTTP | 0.481642→0.481526 | -0.000117 (-0.024%) | -0.004719 / +0.004486 |
+| close | guard | 0.422157→0.421706 | -0.000450 (-0.107%) | -0.003459 / +0.002559 |
+| keep | HTTP | 0.484495→0.492661 | +0.008166 (+1.685%) | -0.001333 / +0.017665 |
+| keep | guard | 0.422592→0.426588 | +0.003996 (+0.946%) | -0.004359 / +0.012352 |
+
+Raw before/after metrics independently confirm2040 successful queries per window with zero failed/rejected; first histogram bucket10ms covers these requests. Sum/count is a mixed mean, not per-case or p95. HTTP includes response construction, excludes final network transmission; guard ends before serialization. Parent/candidate share the timer boundary; registry snapshot work remains before guard.
+
+All first-use/warmup values, raw60 samples, max/mean and both connection-mode contrasts remain in execution/summary.json and the independently checked raw client records. No sample is removed for an unfavorable result. Observer retained187 snapshots with0 classifiedevents/0 external-lifetime limitations; diagnostic label remains observed-background, exclusiveWindowClaim=false. Subsecond/unknown activity may be missed.
+
+#### Evidence
+
+- `plan.sealed.json` SHA `28573f6c3dc97ef37dcbcce3f6bc1275c43e7c2c4817e1189e4c2c2b34aeeea7`
+- `execution/owner-terminal.json` SHA `5d90ca7b92e84f07d28c4afc64298f20be6cef5629463a841ff9746644e080bc`
+- `execution/results.json` SHA `e82cdf8c9c7896e019f967df0608ec1754a7240ac05bbd63ab61536d57b8e939`
+- `execution/summary.json` SHA `0593ce2389ffc77bdf525782f0bdd676494de49bbeac2b6cebae498baf567a92`
+- `independent-audit/audit.json` SHA `4bbe3588e75fcbd749b50db513744a2a616ad3e685b39c278c77371d4ccce587`
+
+
+Decision: keep Attempt141 isolated with its source and full observations, do not integrate the registry change, and do not add sampling to stabilize tiny differences. No material multi-graph recovery was demonstrated. Next query diagnosis uses the existing broad multi-graph shape suite, preserving absolute times and complete responses, rather than repeating the narrow fast-path cohort.
