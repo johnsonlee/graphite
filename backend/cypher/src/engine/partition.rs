@@ -171,6 +171,8 @@ struct TagCtx<'a> {
     tag: Option<u8>,
     /// The keys a node of the type exposes (`keys(n)`), read off one node.
     keys: &'a [String],
+    /// Declaration properties may be present on only some nodes of this tag.
+    declared_keys: bool,
     columns: &'a [(&'static str, StringField)],
 }
 
@@ -293,7 +295,7 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
                     // An annotation's values add keys of their own: its key set is
                     // read off each node, and partitions the type by itself.
                     Some(ctx) => match ctx.tag {
-                        Some(t) if t != TAG_ANNOTATION_NODE => Dep::TAG,
+                        Some(t) if t != TAG_ANNOTATION_NODE && !ctx.declared_keys => Dep::TAG,
                         Some(_) => Dep::KEYS,
                         None => Dep::CONTENT,
                     },
@@ -414,6 +416,9 @@ fn property_dep(ctx: &TagCtx, key: &str, cross: bool) -> Dep {
     }
     if tag == TAG_ANNOTATION_NODE {
         // Values and the keys they add.
+        return Dep::CONTENT;
+    }
+    if ctx.declared_keys && matches!(key, "generic_type" | "type_info") {
         return Dep::CONTENT;
     }
     if ctx.keys.iter().any(|k| k == key) {
@@ -723,6 +728,7 @@ impl PartitionPlan {
                 let end = TagCtx {
                     tag: None,
                     keys: &[],
+                    declared_keys: false,
                     columns: &[],
                 };
                 let mut nodes = Vec::new();
@@ -757,12 +763,10 @@ impl PartitionPlan {
                 let scan = ScanPlan::build(patterns, where_clause.as_ref());
                 let columns: Vec<Vec<(&'static str, StringField)>> =
                     (0..TAG_COUNT as u8).map(tag_columns).collect();
-                // What the segment reads of a type is decided by the type, not the
-                // graph: a type's key set is fixed by its kind (an annotation's is
-                // not, and its properties read the record whatever the keys), so the
-                // analysis runs once per type present anywhere and every graph reuses
-                // it. `None` declines the segment.
-                let mut by_tag: [Option<Option<Strategy>>; TAG_COUNT] = [None; TAG_COUNT];
+                // Reuse analysis per tag and declaration availability. Optional
+                // declarations make keys vary within a tag, like annotation keys;
+                // legacy graphs retain their whole-tag partition. `None` declines.
+                let mut by_tag: [[Option<Option<Strategy>>; TAG_COUNT]; 2] = [[None; TAG_COUNT]; 2];
                 let mut strategies = Vec::with_capacity(ex.sources.len());
                 let mut any_partitioned = false;
                 let mut reads_graph = false;
@@ -772,7 +776,8 @@ impl PartitionPlan {
                         let Some(&first) = s.graph.ids_by_tag(tag).first() else {
                             continue;
                         };
-                        let strategy = match by_tag[tag as usize] {
+                        let declared_keys = super::props::has_declared_types_for_tag(&s.graph, tag);
+                        let strategy = match by_tag[declared_keys as usize][tag as usize] {
                             Some(decided) => decided,
                             None => {
                                 let keys: Vec<String> = ex
@@ -786,6 +791,7 @@ impl PartitionPlan {
                                 let ctx = TagCtx {
                                     tag: Some(tag),
                                     keys: &keys,
+                                    declared_keys,
                                     columns: &columns[tag as usize],
                                 };
                                 let mut scope = Scope {
@@ -818,7 +824,7 @@ impl PartitionPlan {
                                     }
                                     _ => Some(Strategy::Whole),
                                 };
-                                by_tag[tag as usize] = Some(decided);
+                                by_tag[declared_keys as usize][tag as usize] = Some(decided);
                                 decided
                             }
                         };
@@ -1423,6 +1429,7 @@ mod tests {
         TagCtx {
             tag: Some(TAG_CALL_SITE_NODE),
             keys,
+            declared_keys: false,
             columns,
         }
     }
@@ -1599,12 +1606,32 @@ mod tests {
     }
 
     #[test]
+    fn optional_declarations_partition_keys_only_when_available_in_the_source() {
+        use graphite_storage::node::TAG_FIELD_NODE;
+        let columns = tag_columns(TAG_FIELD_NODE);
+        let mut context = TagCtx {
+            tag: Some(TAG_FIELD_NODE),
+            keys: &[],
+            declared_keys: false,
+            columns: &columns,
+        };
+        assert_eq!(classify("keys(n)", true, &context), Dep::TAG);
+        assert_eq!(classify("n.generic_type", true, &context), Dep::TAG);
+        context.declared_keys = true;
+        assert_eq!(classify("keys(n)", true, &context), Dep::KEYS);
+        assert_eq!(classify("n.generic_type", true, &context), Dep::CONTENT);
+        assert_eq!(classify("n.type_info", true, &context), Dep::CONTENT);
+        assert_eq!(classify("labels(n)", true, &context), Dep::TAG);
+    }
+
+    #[test]
     fn annotation_keys_and_hop_ends_are_not_decided_by_the_type_alone() {
         let keys = keys();
         let cols = tag_columns(TAG_ANNOTATION_NODE);
         let annotation = TagCtx {
             tag: Some(TAG_ANNOTATION_NODE),
             keys: &keys,
+            declared_keys: false,
             columns: &cols,
         };
         assert_eq!(classify("keys(n)", true, &annotation), Dep::KEYS);
@@ -1621,6 +1648,7 @@ mod tests {
         let end = TagCtx {
             tag: None,
             keys: &[],
+            declared_keys: false,
             columns: &[],
         };
         assert_eq!(classify("keys(n)", true, &end), Dep::CONTENT);

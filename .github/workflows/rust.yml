@@ -280,6 +280,20 @@ jobs:
         set -e
         test "${STATUS}" -eq 2
 
+    - name: Declared types JVM-to-native interoperability
+      env:
+        GRAPHITE_TYPES_FIXTURE: ${{ runner.temp }}/declared-types-graph
+        JAVA_TOOL_OPTIONS: -Xmx4g
+      run: |
+        # The test compiles a Java JAR and saves a graph through the JVM writer.
+        # Rerun this task so Gradle's cached success cannot omit the temp fixture.
+        ./gradlew :webgraph:test --tests '*DeclaredTypePersistenceTest' --rerun --no-daemon -q
+        test -f "${GRAPHITE_TYPES_FIXTURE}/graph.types"
+        grep -E '^graphite\.declaredTypes\.sha256=[[:xdigit:]]{64}$' "${GRAPHITE_TYPES_FIXTURE}/forward.properties"
+        cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture
+        GRAPHITE_INDEX_FIXTURE="${GRAPHITE_TYPES_FIXTURE}" cargo test --release --locked -p graphite-storage a_packed_graph_is_the_same_graph_as_its_directory -- --nocapture
+        GRAPHITE_INDEX_FIXTURE="${GRAPHITE_TYPES_FIXTURE}" cargo test --release --locked -p graphite-explore schema_describes_a_loaded_graph -- --nocapture
+
     - name: Persisted-index equivalence and relaxed scan plans against the real fixture
       env:
         GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph

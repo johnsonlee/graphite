@@ -381,6 +381,9 @@ interface StringPropertyLookupOrder {
  */
 @Suppress("TooManyFunctions")
 interface Graph {
+    /** Declared generic types; old graphs have no declaration metadata. */
+    fun declaredTypes(): DeclaredTypeTable = DeclaredTypeTable.EMPTY
+
     /**
      * Get a node by its ID
      */

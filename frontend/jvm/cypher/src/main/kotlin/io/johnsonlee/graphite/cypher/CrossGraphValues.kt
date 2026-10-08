@@ -31,7 +31,8 @@ data class CypherGraph(
 /** Virtual node backed by the method metadata index rather than the graph node store. */
 internal data class MethodValue(
     val graphId: String?,
-    val method: MethodDescriptor
+    val method: MethodDescriptor,
+    val graph: Graph? = null
 ) {
     fun property(name: String): Any? = when (name) {
         METHOD_SIGNATURE_PROPERTY -> method.signature
@@ -40,16 +41,22 @@ internal data class MethodValue(
         METHOD_PARAMETER_TYPES_PROPERTY -> method.parameterTypes.map { it.className }
         METHOD_RETURN_TYPE_PROPERTY -> method.returnType.className
         GRAPH_ID_PROPERTY -> graphId
-        else -> null
+        else -> DeclaredTypeProperties.methodProperty(method, name, graph)
     }
 
-    fun properties(): Map<String, Any?> = linkedMapOf(
+    override fun equals(other: Any?): Boolean =
+        other is MethodValue && graphId == other.graphId && method == other.method
+
+    override fun hashCode(): Int = 31 * (graphId?.hashCode() ?: 0) + method.hashCode()
+
+    fun properties(): Map<String, Any?> = linkedMapOf<String, Any?>(
         METHOD_SIGNATURE_PROPERTY to method.signature,
         METHOD_CLASS_PROPERTY to method.declaringClass.className,
         METHOD_NAME_PROPERTY to method.name,
         METHOD_PARAMETER_TYPES_PROPERTY to method.parameterTypes.map { it.className },
         METHOD_RETURN_TYPE_PROPERTY to method.returnType.className
     ).apply {
+        putAll(DeclaredTypeProperties.methodProperties(method, graph))
         if (graphId != null) put(GRAPH_ID_PROPERTY, graphId)
     }
 }

@@ -67,8 +67,11 @@ class MmapGraph internal constructor(
     private val branchScopeData: List<DefaultGraph.RawBranchScope>,
     private val localDefinitionData: Map<Int, IntArray>,
     incomingIndex: EdgeOffsetIndex?,
-    override val resources: ResourceAccessor
+    override val resources: ResourceAccessor,
+    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
 ) : Graph, Closeable, PackedBranchMetadataSource {
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+
 
     private val nodeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use {
         it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())

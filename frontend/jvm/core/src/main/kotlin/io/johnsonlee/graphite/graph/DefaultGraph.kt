@@ -45,8 +45,11 @@ class DefaultGraph private constructor(
     override val resources: ResourceAccessor,
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>>,
-    private val edgeCount: Long
+    private val edgeCount: Long,
+    private val declaredTypeTable: DeclaredTypeTable
 ) : Graph, PackedBranchMetadataSource {
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+
 
     /**
      * Compact storage for branch scope data, used until [branchScopes] or
@@ -202,6 +205,12 @@ class DefaultGraph private constructor(
         private val branchScopes = ObjectArrayList<RawBranchScope>()
         private val localDefinitions = Int2ObjectOpenHashMap<IntArray>()
         private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
+        private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+
+        override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
+            declaredTypeTable = table
+            return this
+        }
 
         override fun addNode(node: Node): FullGraphBuilder {
             nodes.put(node.id.value, node)
@@ -318,6 +327,7 @@ class DefaultGraph private constructor(
                 rawBranchScopes = branchScopes.toTypedArray(),
                 rawLocalDefinitions = localDefinitions,
                 resources = resourceAccessor,
+                declaredTypeTable = declaredTypeTable,
                 nodesByType = nodesByType,
                 edgeCount = edgeCount
             )

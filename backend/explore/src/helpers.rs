@@ -264,6 +264,33 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             }
         }
     }
+    if matches!(
+        node.kind,
+        NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+    ) {
+        // Declared type projections contain only nulls, strings, lists and maps.
+        fn declared_json(v: &graphite_cypher::Value) -> J {
+            use graphite_cypher::Value;
+            match v {
+                Value::Str(s) => json!(s.as_ref()),
+                Value::List(items) => J::Array(items.iter().map(declared_json).collect()),
+                Value::Map(items) => J::Object(
+                    items
+                        .iter()
+                        .map(|(key, value)| (key.clone(), declared_json(value)))
+                        .collect(),
+                ),
+                _ => J::Null,
+            }
+        }
+        for key in ["generic_type", "type_info"] {
+            put(
+                &mut m,
+                key,
+                declared_json(&graphite_cypher::engine::props::node_property(g, node, key)),
+            );
+        }
+    }
     J::Object(m)
 }
 

@@ -27,6 +27,8 @@ pub enum GraphError {
     Strings(#[from] StringTableError),
     #[error(transparent)]
     Metadata(#[from] MetadataError),
+    #[error(transparent)]
+    Types(#[from] crate::types::TypeError),
     #[error("bad header in {0}")]
     BadHeader(&'static str),
     #[error("unsupported format version {0} in {1}")]
@@ -224,6 +226,8 @@ pub struct Graph {
     pub metadata: Metadata,
     pub class_overview: Option<ClassOverview>,
     pub resources: Option<Resources>,
+    /// Optional, deduplicated declaration types; never changes erased identities.
+    pub declared_types: Option<crate::types::DeclaredTypes>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
     /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
@@ -320,6 +324,7 @@ impl Graph {
             })
             .unwrap_or_default();
 
+        let declared_types = crate::types::DeclaredTypes::load(&src)?;
         let mut graph = Graph {
             dir,
             node_version,
@@ -335,6 +340,7 @@ impl Graph {
             metadata,
             class_overview,
             resources,
+            declared_types,
             call_site_index,
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),

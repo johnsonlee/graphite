@@ -119,6 +119,18 @@ mod tests {
         assert_eq!(a.node_capacity(), b.node_capacity());
         assert_eq!(a.edge_count(), b.edge_count());
         assert_eq!(a.strings.len(), b.strings.len());
+        match (&a.declared_types, &b.declared_types) {
+            (Some(left), Some(right)) => {
+                assert_eq!(left.fields, right.fields);
+                assert_eq!(left.methods.len(), right.methods.len());
+                assert_eq!(left.types.len(), right.types.len());
+                for id in 0..left.types.len() {
+                    assert_eq!(left.render(id), right.render(id));
+                }
+            }
+            (None, None) => {}
+            _ => panic!("packed graph lost its declared types"),
+        }
         assert_eq!(a.call_site_index().is_some(), b.call_site_index().is_some());
         let mut expected_mapped = std::fs::metadata(dir.join("graph.nodedata")).unwrap().len()
             + std::fs::metadata(dir.join("graph.nodeoffsets"))

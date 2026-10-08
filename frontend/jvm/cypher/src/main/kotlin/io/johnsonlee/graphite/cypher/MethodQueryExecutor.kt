@@ -678,7 +678,7 @@ internal object MethodQueryExecutor {
 
         fun binding(source: CypherGraph, method: MethodDescriptor): MutableMap<String, Any?> =
             mutableMapOf<String, Any?>(
-                variable to MethodValue(source.id.takeIf { qualified }, method)
+                variable to MethodValue(source.id.takeIf { qualified }, method, source.graph)
             ).apply {
                 if (qualified) put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
             }

@@ -971,7 +971,12 @@ fn schema_payload(
             .get(&row[0].to_string())
             .cloned()
             .unwrap_or_else(|| json!([]));
-        json!({ "labels": row[0], "count": row[1], "keys": keys })
+        let declared = row[0].as_array().is_some_and(|labels| labels.iter().any(|label| matches!(label.as_str(), Some("FieldNode" | "ParameterNode" | "ReturnNode"))));
+        let mut node = json!({ "labels": row[0], "count": row[1], "keys": keys });
+        if declared {
+            node["properties"] = json!({ "generic_type": { "type": "String", "nullable": true }, "type_info": { "type": "Map", "nullable": true } });
+        }
+        node
     })
     .collect();
     let relationships: Vec<J> = run(
@@ -989,6 +994,17 @@ fn schema_payload(
     .collect();
     Ok(json!({
         "nodes": nodes,
+        "virtual_nodes": [{
+            "labels": ["Method"],
+            "keys": ["signature", "class", "name", "parameter_types", "return_type", "generic_return_type", "generic_parameter_types", "return_type_info", "parameter_type_info", "type_parameters"],
+            "properties": {
+                "generic_return_type": { "type": "String", "nullable": true },
+                "generic_parameter_types": { "type": "List<String>", "nullable": true },
+                "return_type_info": { "type": "Map", "nullable": true },
+                "parameter_type_info": { "type": "List<Map>", "nullable": true },
+                "type_parameters": { "type": "List<Map>", "nullable": true }
+            }
+        }],
         "relationships": relationships,
         "patterns": patterns,
     }))
@@ -2446,6 +2462,21 @@ mod tests {
         let v: J = serde_json::from_str(&body).unwrap();
         let nodes = v["nodes"].as_array().unwrap();
         assert!(!nodes.is_empty());
+        assert_eq!(v["virtual_nodes"][0]["labels"], json!(["Method"]));
+        assert_eq!(
+            v["virtual_nodes"][0]["properties"]["generic_return_type"],
+            json!({"type":"String", "nullable":true})
+        );
+        for node in nodes {
+            if node["labels"].as_array().unwrap().iter().any(|label| {
+                matches!(
+                    label.as_str(),
+                    Some("FieldNode" | "ParameterNode" | "ReturnNode")
+                )
+            }) {
+                assert_eq!(node["properties"]["type_info"]["nullable"], json!(true));
+            }
+        }
         let lease = state.registry.acquire("core").unwrap().unwrap();
         let total: i64 = nodes.iter().map(|n| n["count"].as_i64().unwrap()).sum();
         assert_eq!(total, lease.graph.node_count() as i64);
