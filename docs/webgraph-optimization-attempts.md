@@ -10037,6 +10037,8 @@ The user asked how latency was calculated and why the existing `/metrics` endpoi
 
 Source inspection confirms that `--metrics` enables `http_server_requests_seconds`, measured by `metrics::record_http` around `next.run(req).await`. On this query route that includes response serialization but ends before final network delivery. `graphite_cypher_query_duration_seconds` records the inner execute interval; `guard.finish` precedes `result_body`, so it excludes materialization/serialization and earlier registry/request work. These boundaries must be reported separately. The native old/current timing implementations and bucket ladder are unchanged; the metrics source delta is only a mapped-bytes HELP clarification.
 
+The unchanged timer calls do not mean identical work remains inside every timer. A subsequent `6f498705..HEAD` source comparison confirms that the global-query route now creates `Source` values and request-local ID Arcs in `acquire_all_sources`, before acquiring the guard permit and starting its timer. The old route first acquired leases, then converted them to Sources inside the timed blocking execution. The outer HTTP timer includes that preparation in both versions. Therefore, a reduction in the guard mean can partly reflect work moved across its boundary and cannot by itself prove an engine speedup; compare the outer HTTP scope and complete-response latency as well. This caveat applies to the common-five and connection-reuse follow-ups.
+
 The current histogram's first finite bucket is10ms, followed by50/100/500ms and1/5/30/120s. It cannot identify an accurate submillisecond p50/p95 within the first bucket. HTTP labels aggregate by route/method/status, and Cypher labels by outcome; the mixed-query workload cannot produce per-case quantiles from those aggregates. Sum/count provides the window mean, not a percentile. Native process CPU/RSS metrics are Linux-only, so the macOS experiment still needs its existing external resource counters.
 
 Correction: use matching metrics-enabled arms and retain before/after raw scrapes, count/outcome consistency and histogram deltas alongside complete-response client latency. For measured requests, scrape after warmup before the measurement CPU window, then after all measured requests drain and the CPU window ends. Report the server scopes and client scope separately; finer server distribution evidence remains necessary for submillisecond p50/p95. Do not silently interpolate the10ms bucket into precise latency or treat coarse means as satisfying the primary query percentile requirement. The full-JAR compatibility source preparation is being updated to exercise the endpoint first; no new server or metrics result had run at this entry.
@@ -10052,3 +10054,83 @@ Root independently revalidated all10 complete response bodies, request identitie
 The server HTTP timer includes response construction/serialization; the Cypher timer ends before result serialization. Neither includes complete network-body delivery. The existing first10ms bucket still cannot establish precise submillisecond p50/p95, and these route/outcome series combine different query cases. No percentile or performance-recovery conclusion is derived from this correctness capture. Subsequent matched measurements must enable metrics in both arms, capture outside measured request/CPU windows, and retain client complete-response latency separately.
 
 Evidence is under `/tmp/sootup-static-review/native-cumulative-135/full-jar-common5/correctness/`. Sealed plan SHA256 `e64b6482eb5b1c6f5317d397cafcb34d622c939d4c408da2b6713cb6b146f8c1`; original terminal/cleanup receipt `bad74e0e48dde476c5c409d70ffedc3ef7f2dd95d0f65b7d442c335219101852`; independent actual audit `e6b3cdd638405bc1a0a5a6ad85bf31e42fef13d8f859f18b20554e49162d74b0`.
+
+### 2026-10-08 — Full Kotlin/Tika common-query comparison with server metrics: recovery remains incomplete
+
+Original measurement session26191: terminal exit0, toolchunk80f9f9. Summary session83742: terminal0/c62aed. Independent raw audit session84607: terminal0/f1aa24. All16 servers,2640 complete typed responses,2400 measured requests,32 metrics scrapes PASS. All64 lifecycle/native/time/client PIDs and16 actual time groups fresh absent. No retry/replacement.
+
+A=preupgrade6f498 native (SHA2bf3cd50…), B=current retained cumulative135 (SHA0d639648…). Both query the identical current full Kotlin/Tika saved artifacts, not own-old graph construction. Each artifact/concurrency runs ABBA; each server has first1+warm2+measured30 rotated cycles of five queries. Per-server p50/p95 are nearest ranks15/29; table old/current values are means of the two server quantiles, not pooled quantiles. Pairs are forward0→1 and reverse3→2. Positive percentages mean slower/higher.
+
+Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-cumulative-135/full-jar-common5/measurement/run.py --plan /tmp/sootup-static-review/native-cumulative-135/full-jar-common5/measurement/measurement.plan.sealed.json --execute-root-released`. Environment: macOS/M3 Max, Rust1.93 ARM64 release exports, Python3.14.7; no JVM. Data: unchanged full current116 Kotlin graph (4,744,132 nodes, 2,251,811 CallSites) and Tika graph (4,620,490 nodes, 1,705,428 CallSites). These preupgrade comparisons remain separate from the main502e-relative CI results recorded above. Two processes per arm and30 measured samples per case/process are descriptive finite samples; particularly variable short-query tails and RSS pairs do not justify precise production confidence or causal claims.
+
+**Per-query HTTP latency — milliseconds**
+
+| Artifact/c | Query | p50 old→current ms | Δ% | Both pair Δ% | p95 old→current ms | Δ% | Both pair Δ% |
+|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin-current/c1 | legacy-line-projection-control | 0.7851→0.8377 | +6.700 | +9.812/+3.917 | 1.2885→1.8433 | +43.061 | +120.290/+3.371 |
+| kotlin-current/c1 | bounded-callsite-materialization | 0.4776→0.5164 | +8.113 | +14.022/+3.246 | 0.5681→0.6249 | +10.004 | +21.376/+1.476 |
+| kotlin-current/c1 | mapped_orderedCallSitePropertyLimit | 4107.1035→4289.2322 | +4.434 | +7.280/+1.788 | 4309.9080→4568.1914 | +5.993 | +10.027/+2.279 |
+| kotlin-current/c1 | mapped_orderedIntConstantPropertyLimit | 4.1395→4.3102 | +4.124 | +4.127/+4.122 | 5.6761→5.8150 | +2.447 | +12.331/-6.897 |
+| kotlin-current/c1 | nodeMatchWithWhere | 2.7203→3.0187 | +10.972 | +12.752/+9.415 | 3.7138→4.2490 | +14.410 | +12.847/+15.972 |
+| kotlin-current/c4 | legacy-line-projection-control | 1.2444→1.2466 | +0.181 | -1.878/+2.270 | 3.4896→2.9933 | -14.222 | -29.806/+2.629 |
+| kotlin-current/c4 | bounded-callsite-materialization | 0.7405→0.7244 | -2.169 | -6.121/+2.078 | 1.0756→2.0078 | +86.674 | +161.712/+18.495 |
+| kotlin-current/c4 | mapped_orderedCallSitePropertyLimit | 4245.4834→4269.6449 | +0.569 | +0.308/+0.828 | 4497.3794→4511.5396 | +0.315 | -1.260/+1.927 |
+| kotlin-current/c4 | mapped_orderedIntConstantPropertyLimit | 4.5815→4.6479 | +1.451 | +0.083/+2.863 | 6.2405→5.9860 | -4.078 | +10.189/-16.843 |
+| kotlin-current/c4 | nodeMatchWithWhere | 3.2018→3.3593 | +4.920 | +3.824/+6.042 | 4.8374→5.1949 | +7.392 | +7.467/+7.315 |
+| tika-current/c1 | legacy-line-projection-control | 0.9143→0.9623 | +5.245 | +7.016/+3.478 | 3.3316→2.4685 | -25.906 | -13.418/-36.777 |
+| tika-current/c1 | bounded-callsite-materialization | 0.5568→0.5478 | -1.609 | -2.862/-0.352 | 0.6350→0.6036 | -4.941 | -7.955/-1.797 |
+| tika-current/c1 | mapped_orderedCallSitePropertyLimit | 2702.8668→2731.0624 | +1.043 | +2.092/+0.007 | 2743.6640→2855.9518 | +4.093 | +5.917/+2.299 |
+| tika-current/c1 | mapped_orderedIntConstantPropertyLimit | 24.2969→24.8565 | +2.303 | +1.940/+2.671 | 27.9224→28.8040 | +3.157 | -6.403/+13.880 |
+| tika-current/c1 | nodeMatchWithWhere | 14.1643→14.5988 | +3.068 | +2.916/+3.222 | 16.6911→17.5532 | +5.165 | +5.515/+4.782 |
+| tika-current/c4 | legacy-line-projection-control | 1.1961→1.1066 | -7.485 | -11.491/-3.093 | 4.8037→3.0290 | -36.944 | -23.227/-52.648 |
+| tika-current/c4 | bounded-callsite-materialization | 0.7180→0.6914 | -3.702 | -8.113/+1.559 | 2.3007→1.8399 | -20.028 | +127.770/-72.447 |
+| tika-current/c4 | mapped_orderedCallSitePropertyLimit | 2649.9450→2631.4332 | -0.699 | -2.344/+1.022 | 2775.7461→2754.7046 | -0.758 | -3.147/+1.758 |
+| tika-current/c4 | mapped_orderedIntConstantPropertyLimit | 24.8634→24.5603 | -1.219 | -2.667/+0.319 | 28.1725→28.3065 | +0.476 | -0.334/+1.307 |
+| tika-current/c4 | nodeMatchWithWhere | 14.0192→14.5738 | +3.956 | +2.522/+5.453 | 16.1627→17.7696 | +9.942 | +6.171/+14.129 |
+
+The CallSite string ORDER BY query is seconds long (Kotlin about4.1–4.6s, Tika about2.6–2.9s); the short line/materialization controls are submillisecond to a few milliseconds. These are separate per-request measurements. The mixed-five server means below are dominated by the long sorting query.
+
+**Resource scopes**
+
+| Artifact/c | Measured native CPU old→current s | Δ% (both pairs) | Whole native CPU old→current s | Δ% (both pairs) | Whole peak RSS old→current MiB | Δ% (both pairs) |
+|---|---:|---:|---:|---:|---:|---:|
+| kotlin-current/c1 | 124.165→128.720 | +3.669 (+6.320/+1.211) | 138.865→142.905 | +2.909 (+5.459/+0.548) | 3860.656→3896.305 | +0.923 (-13.015/+14.767) |
+| kotlin-current/c4 | 128.200→128.465 | +0.207 (-0.289/+0.701) | 143.145→142.670 | -0.332 (-0.825/+0.161) | 8232.195→7767.500 | -5.645 (-6.061/-5.227) |
+| tika-current/c1 | 82.075→83.315 | +1.511 (+2.809/+0.230) | 91.575→92.140 | +0.617 (+1.846/-0.597) | 2736.953→2973.531 | +8.644 (-22.388/+49.035) |
+| tika-current/c4 | 80.660→80.470 | -0.236 (-2.035/+1.651) | 90.160→89.465 | -0.771 (-2.290/+0.817) | 7896.797→7867.438 | -0.372 (+0.068/-0.811) |
+
+Measured native CPU is the same PID/lstart ps counter delta (0.01s resolution), encompassing all150 measured requests and intervening measured-window work. Whole user+system CPU and peak RSS are native /usr/bin/time -l lifetime values, including startup/loading and first/warm requests; they exclude client/monitor CPU. Peak RSS is not a query-window peak.
+
+**Server metrics — mixed-five sum/count means, milliseconds**
+
+| Artifact/c | Scope | Old→current mean ms | Δ% | Both pair Δ% |
+|---|---|---:|---:|---:|
+| kotlin-current/c1 | HTTP | 830.2195→861.9093 | +3.817 | +6.652/+1.199 |
+| kotlin-current/c1 | guard | 829.5759→861.2546 | +3.819 | +6.651/+1.203 |
+| kotlin-current/c4 | HTTP | 858.6495→860.2229 | +0.183 | -0.366/+0.731 |
+| kotlin-current/c4 | guard | 857.9014→859.5001 | +0.186 | -0.361/+0.732 |
+| tika-current/c1 | HTTP | 549.2405→556.6932 | +1.357 | +2.587/+0.143 |
+| tika-current/c1 | guard | 548.6332→556.0953 | +1.360 | +2.593/+0.143 |
+| tika-current/c4 | HTTP | 539.3585→537.5597 | -0.334 | -2.218/+1.649 |
+| tika-current/c4 | guard | 538.7065→536.9634 | -0.324 | -2.210/+1.660 |
+
+All32 raw scrapes were independently parsed (not accepted solely from producer validation): each measured window contains150 HTTP SUCCESS and150 guard successes; failure/rejection increments0; active0. All histogram cumulative bucket/count/sum deltas and scrape ordering matched. First/warm remain separate, all retained in raw/client/summary/audit.
+
+HTTP metric ends after Response construction, before final network transmission. Guard ends before serialization; additionally old Source/ID Arc assembly occurs inside guard timing while current acquire_all_sources performs it before guard timing. Thus guard is not an identical-work pure-engine comparison; HTTP includes both arrangements. The first histogram bucket is10ms: no precise submillisecond p50/p95 is inferred from buckets. Client percentiles above come from individual request clocks.
+
+**Interpretation and retained limits**
+
+Mixed results remain: Kotlin/c1 all five mean p50 and p95 rise; Kotlin/c4 materialization p95 rises86.674% with both pairs adverse (+161.712/+18.495), while line p95 and whole peak RSS improve. Tika/c4 line p50/p95 improve in both pairs; predicate p50/p95 regress in both pairs. Tika/c1 whole peak RSS rises8.644% with divergent pairs (-22.388/+49.035); no cap acceptance. Full all-case and both-pair table above preserves every adverse result.
+
+Monitor recorded1816 process metadata samples and no listed events, but retains DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY/exclusiveWindowClaim=false: one-second sampling misses short activity, unknown I/O and sub-resolution changes. No quiet-window, causality or final production acceptance claim. No samples were dropped or resampled.
+
+**Evidence**
+
+- Sealed plan: `07f44218d7e3862f7cd3d76e8d87b10ff8bf5506601d989fc6e225d3efdddb55`
+- Owner receipt: `measurement-execution/owner-terminal.json` SHA `baebad143b7f744801f90f739e47a4fc0ede6f2cf76dc9070c430af864c61b55`
+- Result: `measurement-execution/results.json` SHA `63adbcea4269789c5389e6cfaec8d71ea51dc609326893d84df0a3dd707d5d66`
+- Summary: `measurement-summary.json` SHA `17b9d53740c7e5e17853139cff203f780a4aa20eb15a02be0cb0ba1ea0bd0be2`
+- Independent audit: `independent-audit/audit.json` SHA `9bb989ad3adb8bb17809db859e63c5aa03231a5036e2ec1b04a898f5e5e3a6a7`
+- Auditor source: `independent-audit/audit.py` SHA `27ce7f06e4b9cd7eeb0cc33bd89194eb26de62b9f43932e286e61e1c529e2c01`
+
+Decision: retain the verified positive increments, including Tika/c4 line projection, but do not accept overall Query recovery. The next optimization candidate is Attempt138 string bounded-order retention, which targets the seconds-long sorting case without skipping scan/evaluation work. It still needs correctness and performance verification. Existing construction/loading regressions and the separate Kotlin save CI failure remain open.
