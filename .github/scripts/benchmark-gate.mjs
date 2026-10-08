@@ -3768,6 +3768,7 @@ function confirmAppleFrontendCommand(args) {
         threshold: initial.threshold,
         corpus: initial.corpus,
         baseline: initial.baseline,
+        ...(initial.baselineTransition === undefined ? {} : { baselineTransition: initial.baselineTransition }),
         ...(initial.baseShape === undefined ? {} : { baseShape: initial.baseShape })
     };
     writeFile(requireArg(args, "report"), renderAppleFrontendReport(comparison));

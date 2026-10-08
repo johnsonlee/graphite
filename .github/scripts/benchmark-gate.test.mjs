@@ -3630,6 +3630,41 @@ test("Apple frontend commands write the report and status the aggregate consumes
     }
 });
 
+test("Apple confirmation retains the reviewed coverage transition for both outcomes", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-apple-transition-"));
+    const script = fileURLToPath(new URL("./benchmark-gate.mjs", import.meta.url));
+    try {
+        const write = (name, value) => { const file = path.join(directory, name); fs.writeFileSync(file, JSON.stringify(value)); return file; };
+        const baselineRevision = "332c0d8a6fec650a6e7979e3dce37aa1a891c03a";
+        const reason = "candidate discovers copied framework header declarations";
+        const oldShape = { ...appleShape, strings: appleShape.strings - 1 };
+        const baseRows = appleSnapshot().map(row => ({ ...row, baselineRevision, shape: oldShape }));
+        const corpus = { ...appleCorpus, baselineShapes: { [baselineRevision]: { shape: oldShape, reason } } };
+        const initial = compareAppleFrontend(baseRows, appleSnapshot(2), corpus);
+        assert.equal(initial.passed, false);
+        const initialFile = write("initial.json", initial);
+        const baseFile = write("base.json", baseRows);
+        const corpusFile = write("corpus.json", corpus);
+        for (const [scale, expectedPass] of [[1, true], [2, false]]) {
+            const reportFile = path.join(directory, `report-${scale}.md`);
+            const statusFile = path.join(directory, `status-${scale}.json`);
+            const result = spawnSync(process.execPath, [script, "confirm-apple-frontend",
+                "--initial", initialFile, "--base", baseFile,
+                "--candidate", write(`candidate-${scale}.json`, appleSnapshot(scale)), "--corpus", corpusFile,
+                "--report", reportFile, "--status", statusFile], { encoding: "utf8" });
+            assert.equal(result.status, expectedPass ? 0 : 1, result.stderr);
+            const status = JSON.parse(fs.readFileSync(statusFile, "utf8"));
+            assert.equal(status.passed, expectedPass);
+            assert.equal(status.baseline, "ceilings");
+            assert.equal(status.rows[0].blocked, !expectedPass);
+            assert.deepEqual(status.baselineTransition, { revision: baselineRevision, reason });
+            assert.ok(fs.readFileSync(reportFile, "utf8").includes(`Reviewed transition at \`${baselineRevision}\`: ${reason}.`));
+        }
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
 test("pull-request workflow runs the Apple frontend gate on the pinned corpus and enforces it", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = workflow.match(/^  apple-frontend:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
