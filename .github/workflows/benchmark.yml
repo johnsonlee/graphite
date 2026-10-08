@@ -3632,10 +3632,12 @@ jobs:
         echo "corpus=${CORPUS}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
         echo "project=$(jq -r .project "${CORPUS}")" >> "${GITHUB_OUTPUT}"
-        echo "cache-key=apple-frontend-real-xcode-v2-${XCODE}-$(sha256 "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+        echo "cache-key=apple-frontend-real-xcode-v3-${XCODE}-$(sha256 "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
 
-    # The sources and the index store of their build are cached together: the store keys its
-    # units by the source paths, which are the same on every hosted runner.
+    # Index records also name copied framework headers in Build/Products and generated
+    # headers in Build/Intermediates.noindex. Keep the full Build tree, including symlink
+    # targets, so cached runs enrich the same declarations as a fresh build. The store
+    # keys its units by source paths, which are the same on every hosted runner.
     - name: Restore the built corpus
       id: corpus-cache
       uses: actions/cache@v4
@@ -3643,6 +3645,7 @@ jobs:
         path: |
           corpus
           derived-data/Index.noindex
+          derived-data/Build
         key: ${{ steps.controls.outputs.cache-key }}
 
     - name: Prepare the real workspace with the shared recipe

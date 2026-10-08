@@ -3740,6 +3740,51 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
 
 });
 
+test("Xcode corpus cache restores copied and generated header paths used by the index", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const xcode = workflow.match(/^  apple-frontend-xcode:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const cache = xcode.match(/    - name: Restore the built corpus\n[\s\S]*?(?=    - name:)/)?.[0] ?? "";
+    const paths = cache.match(/        path: \|\n((?:          [^\n]+\n)+)/)?.[1]
+        .trim().split("\n").map((entry) => entry.trim()) ?? [];
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "apple-index-cache-"));
+    try {
+        const fresh = path.join(directory, "fresh");
+        const restored = path.join(directory, "restored");
+        const copied = "derived-data/Build/Products/Debug/Model.framework/Headers/Model.h";
+        const generated = "derived-data/Build/Intermediates.noindex/GeneratedHeaders/Model-Swift.h";
+        const linkedHeaders = "derived-data/Build/Products/Debug/Generated.framework/Headers";
+        const contents = new Map([
+            ["corpus/Model.m", "@implementation Model\n@end\n"],
+            ["derived-data/Index.noindex/DataStore/record", copied + "\n" + generated],
+            [copied, "- (long)copiedValue;\n"],
+            [generated, "- (int)generatedValue;\n"],
+        ]);
+        for (const [relative, content] of contents) {
+            fs.mkdirSync(path.dirname(path.join(fresh, relative)), { recursive: true });
+            fs.writeFileSync(path.join(fresh, relative), content);
+        }
+        fs.mkdirSync(path.dirname(path.join(fresh, linkedHeaders)), { recursive: true });
+        fs.symlinkSync("../../../Intermediates.noindex/GeneratedHeaders", path.join(fresh, linkedHeaders));
+        for (const relative of paths) {
+            fs.mkdirSync(path.dirname(path.join(restored, relative)), { recursive: true });
+            fs.cpSync(path.join(fresh, relative), path.join(restored, relative), {
+                recursive: true, verbatimSymlinks: true,
+            });
+        }
+        // Read the exact declaration paths retained by the restored index, not just
+        // similarly named headers under the source checkout.
+        const indexed = fs.readFileSync(path.join(restored, "derived-data/Index.noindex/DataStore/record"), "utf8").split("\n");
+        for (const relative of indexed) {
+            assert.equal(fs.readFileSync(path.join(restored, relative), "utf8"), contents.get(relative));
+        }
+        assert.equal(fs.readFileSync(path.join(restored, linkedHeaders, "Model-Swift.h"), "utf8"), contents.get(generated));
+        assert.ok(fs.lstatSync(path.join(restored, linkedHeaders)).isSymbolicLink());
+        assert.doesNotMatch(xcode, /cache-key=apple-frontend-real-xcode-v2-/, "invalidate earlier incomplete caches");
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
 test("Apple performance evidence rejects generated sources, unpinned work and foreign revisions", () => {
     const compare = (corpus, rows = appleSnapshot()) => compareAppleFrontend(appleSnapshot(), rows, corpus);
     const generated = compare({ ...appleCorpus, generator: { script: "generate-apple-corpus.py" } });
