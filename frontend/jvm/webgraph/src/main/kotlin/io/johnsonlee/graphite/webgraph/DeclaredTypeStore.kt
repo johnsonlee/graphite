@@ -190,7 +190,14 @@ internal object DeclaredTypeStore {
     }
 
     /** Read-only views keep offsets and primitive hash indexes, never decoded declarations. */
-    private class MappedTypes(private val bytes: ByteBuffer, private val offsets: IntArray) : AbstractList<DeclaredType>() {
+    private class MappedTypes(private val bytes: ByteBuffer, private val offsets: IntArray) :
+        AbstractList<DeclaredType>(), DeclaredTypeAtoms {
+        override fun typeOffset(index: Int): Int {
+            checkElementIndex(index, size)
+            return offsets[index]
+        }
+        override fun atomInt(offset: Int): Int = bytes.getInt(offset)
+        override fun atomByte(offset: Int): Byte = bytes.get(offset)
         override val size: Int get() = offsets.size
         override fun get(index: Int): DeclaredType {
             checkElementIndex(index, size)
