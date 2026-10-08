@@ -301,6 +301,62 @@ class SootUpAdapterInternalCoverageTest {
     }
 
     @Test
+    fun `fallback methods visit every signature once in deterministic order`() {
+        val methods = fallbackSyntheticMethods()
+        val expected = methods.map { it.signature.toString() }.sorted()
+        for (ordered in listOf(methods, methods.reversed())) {
+            val (visited, _) = collectFallbackSyntheticIdentities(ordered)
+            assertEquals(expected, visited)
+            assertEquals(expected.associateWith { 1 }, visited.groupingBy { it }.eachCount())
+        }
+    }
+
+    @Test
+    fun `fallback method order preserves complete synthetic class and constructor identities`() {
+        val methods = fallbackSyntheticMethods()
+        val (_, forward) = collectFallbackSyntheticIdentities(methods)
+        val (_, reversed) = collectFallbackSyntheticIdentities(methods.reversed())
+        val className = methods.first().declaringClassType.fullyQualifiedName
+        assertEquals(setOf(className, "$className.<init>($className)"), forward.keys)
+        forward.values.forEach { assertEquals(32, it.length) }
+        assertEquals(forward, reversed)
+    }
+
+    private fun fallbackSyntheticMethods(): List<SootMethod> {
+        val className = "sample.fake.Owner\$\$ExternalSyntheticLambda0"
+        val run = object : FakeSootMethod(identifierFactory.getMethodSignature(className, "run", "void", emptyList())) {
+            override fun hasBody(): Boolean = false
+        }
+        // The self-typed parameter makes the constructor depend on the class fingerprint.
+        val constructor = object : FakeSootMethod(
+            identifierFactory.getMethodSignature(className, "<init>", "void", listOf(className)),
+            listOf(MethodModifier.SYNTHETIC)
+        ) {
+            override fun hasBody(): Boolean = false
+        }
+        return listOf(run, constructor)
+    }
+
+    private fun collectFallbackSyntheticIdentities(methods: List<SootMethod>): Pair<List<String>, Map<String, String>> {
+        val adapter = createAdapter()
+        val sootClass = FakeSootClass(methods.first().declaringClassType, methods = methods.toCollection(LinkedHashSet()))
+        assertTrue(SyntheticIdentity.isSyntheticClass(sootClass))
+        assertNull(invokePrivate<Sequence<SootMethod>?>(adapter, "streamMethodsOrNull", arrayOf(SootClass::class.java), sootClass))
+        val collector = SyntheticIdentity.Collector()
+        collector.addClass(sootClass)
+        val visited = mutableListOf<String>()
+        val action: (SootMethod) -> Unit = { method ->
+            visited.add(method.signature.toString())
+            val key = "${method.declaringClassType.fullyQualifiedName}.${method.name}(${method.parameterTypes.joinToString(",")})"
+            collector.addMethod(method, key, SyntheticIdentity.isSyntheticMethod(method))
+        }
+        invokePrivate<Unit>(adapter, "forEachMethod", arrayOf(SootClass::class.java, Function1::class.java), sootClass, action)
+        val identities = collector.resolve()
+        assertEquals(0, collector.skipped)
+        return visited to identities
+    }
+
+    @Test
     fun `method resolution fallbacks handle missing bodies and failing classes`() {
         val adapter = createAdapter()
         val enumType = identifierFactory.getClassType("sample.fake.EmptyEnum")
@@ -866,10 +922,10 @@ class SootUpAdapterInternalCoverageTest {
         assertNull(
             invokePrivate<Any?>(
                 adapter,
-                "firstMethod",
-                arrayOf(sootup.core.model.SootClass::class.java, kotlin.jvm.functions.Function1::class.java),
+                "findStaticMethod",
+                arrayOf(sootup.core.model.SootClass::class.java, String::class.java),
                 listBundle,
-                { _: Any? -> false }
+                "missingStaticMethod"
             )
         )
         assertNull(

@@ -67,3 +67,44 @@ cd bench && python3 bench.py            # latency comparison
 
 `parity.py` and `bench.py` both expect a Kotlin server on port 18081 and a Rust server
 on port 18080, serving the same graph under the id `app`.
+
+## Multi-graph query benchmarks
+
+Use the real 64-graph corpus for query performance comparisons. The original
+string-search suite does not cover sorting, aggregation, traversal, WITH pipelines
+or ID lookups. The broad suite reuses the 36 query shapes in `bench/shapes.py` and
+the three schema queries; `all` also retains the original string-search controls.
+
+```bash
+python3 backend/bench/snapshot.py --manifest /path/to/graphs.tsv \
+  --binary ./target/release/graphite --suite all --repetitions 5 \
+  --timeout 60 --overall-timeout 600 \
+  --responses-dir benchmark-results/responses --out benchmark-results/snapshot.json
+```
+
+CI runs the same reviewed query definitions against both revisions, preserves
+complete responses, and rejects missing cases or changed results as well as
+confirmed latency regressions. Reports show absolute milliseconds before relative
+changes. `fixture64` preserves the historical search-plus-schema plan; `fast34`
+selects only searches, and `broad` selects the 36 shapes plus schema queries.
+
+These serial passes report per-case medians. The aggregate p50/p95 rows describe
+different queries within a pass, not repeated-request server percentiles or
+sustained load. Single-graph query timings are diagnostic only. Repeated-request
+p50/p95 under a declared multi-graph workload and concurrency remain separate
+acceptance evidence; loading 64 graphs alone does not prove every limited query
+actually scans them all.
+
+For server/client boundary diagnosis, add `--diagnostic-metrics-case shape-union`
+to the same command and use a new output directory. This enables `/metrics`,
+records request wall and calling-thread CPU clocks, and retains metrics before
+and after that case in each pass. The strict metrics check requires the default
+four-query guard and one successful query per window. HTTP duration ends at
+response construction; guard duration ends before serialization; client latency
+includes the complete response read. Metrics sum/count is not a p95 estimate.
+
+After a confirmed broad-shape CI failure, CI performs this diagnosis once for the
+case with the largest absolute regression, keeping the complete 73-query order
+and five passes. Results go under `rust-failure-diagnostic`, separately from the
+unchanged failed gate. Enabling metrics and inserting scrapes changes execution
+history, so a successful diagnostic does not clear the original regression.

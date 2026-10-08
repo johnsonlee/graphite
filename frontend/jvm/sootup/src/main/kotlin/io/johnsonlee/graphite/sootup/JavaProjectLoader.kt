@@ -16,7 +16,6 @@ import sootup.core.interceptor.BodyInterceptor
 import sootup.interceptors.BytecodeBodyInterceptors
 import sootup.interceptors.LocalSplitter
 import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
-import sootup.java.core.views.JavaView
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -306,7 +305,7 @@ class JavaProjectLoader(
         val folding = config.folding?.let { ConstantFolding(it.rules) }
         foldInterceptors = folding?.bodyInterceptors(emptyList())
         val inputLocations = createInputLocations(path, folding)
-        val view = JavaView(inputLocations.locations)
+        val view = createJavaView(inputLocations.locations)
 
         val resourceAccessor = ArchiveResourceAccessor.create(path)
         val adapter = SootUpAdapter(
@@ -366,9 +365,9 @@ class JavaProjectLoader(
     }
 
     /**
-     * An input location with the frontend's own (empty) interceptor chain, or with the fold chain
-     * when folding: the classes parsed here, in parallel, rather than by SootUp one at a time
-     * ([ParsedClassLocation]).
+     * An input location whose classes this frontend parses once each and hands to the view
+     * behind SootUp's lazy class source ([ParsedClassLocation]), with the frontend's empty
+     * interceptor chain or the fold chain when folding.
      */
     private fun inputLocation(path: Path, sourceType: SourceType): AnalysisInputLocation =
         ParsedClassLocation(path, sourceType, foldInterceptors ?: emptyList())

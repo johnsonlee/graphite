@@ -26,6 +26,7 @@ import io.johnsonlee.graphite.core.ResourceValueNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
 import java.util.function.IntPredicate
@@ -48,6 +49,9 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionLookupStrategy
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionAggregation
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
+import io.johnsonlee.graphite.graph.StreamingStringPropertyProjection
+import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.WorkAwareStreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookup
 import io.johnsonlee.graphite.graph.TransformedStringPropertyLookup
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
@@ -869,11 +873,24 @@ class QueryPipeline private constructor(
     private fun tryFastOrderedPropertyLimit(clauses: List<CypherClause>): CypherResult? {
         tryFastOrderedDistinctGraphIdLimit(clauses)?.let { return it }
         val query = OrderedPropertyLimitQuery.compile(clauses) ?: return null
+        val projection = if (!qualified && sources.size == 1 &&
+            query.nodeClass == CallSiteNode::class.java &&
+            query.projections.all { it.property in CALL_SITE_DIRECT_STRING_PROPERTIES }
+        ) graph as? StreamingStringPropertyProjection else null
+        val projectionTracker = projection?.let { activeWorkTracker.get() }
+        val projectionWorkConsumer = projectionTracker.takeIf { workTrackingEnabled }
+        val projectionCancellation = projection?.let { { checkStreamingProjectionCancelled(projectionTracker) } }
+        projectionCancellation?.invoke()
         if (query.limit <= 0) return CypherResult(query.columns, emptyList())
 
         var comparisons = 0
+        fun pollComparison() {
+            if (projectionCancellation != null) {
+                if ((comparisons++ and CANCELLATION_POLL_MASK) == 0) projectionCancellation()
+            } else if (workTrackingEnabled) pollCancellation(comparisons++)
+        }
         val comparator = Comparator<RankedProjectedRow> { left, right ->
-            if (workTrackingEnabled) pollCancellation(comparisons++)
+            pollComparison()
             for (sort in query.sortItems) {
                 val comparison = compareOrderValues(
                     left.row[sort.column],
@@ -888,14 +905,7 @@ class QueryPipeline private constructor(
         }
         val topRows = PriorityQueue(query.limit, comparator.reversed())
         var encounterOrder = 0L
-        for (candidate in nodeCandidates(query.nodeClass)) {
-            val row = linkedMapOf<String, Any?>()
-            for (projection in query.projections) {
-                row[projection.column] = nodeProperty(candidate, projection.property)
-            }
-            val provenance = provenanceOf(candidate)
-            if (provenance.isNotEmpty()) row[INTERNAL_PROVENANCE_KEY] = provenance
-
+        fun acceptRow(row: MutableMap<String, Any?>) {
             val ranked = RankedProjectedRow(row, encounterOrder++)
             if (topRows.size < query.limit) {
                 topRows.add(ranked)
@@ -904,11 +914,61 @@ class QueryPipeline private constructor(
                 topRows.add(ranked)
             }
         }
+        val streamed = projection?.let { storage ->
+            val sortIndexes = IntArray(query.sortItems.size) { query.columns.indexOf(query.sortItems[it].column) }
+            fun compareProjection(values: List<String?>, ordinal: Long): Int {
+                pollComparison()
+                val worst = topRows.peek()
+                for (index in query.sortItems.indices) {
+                    val sort = query.sortItems[index]
+                    val comparison = compareOrderValues(values[sortIndexes[index]], worst.row[sort.column], sort.ascending)
+                    if (comparison != 0) return comparison
+                }
+                return ordinal.compareTo(worst.encounterOrder)
+            }
+            val consumeRow: (StringPropertyProjectionRow) -> Unit = consumeRow@{ projected ->
+                projectionWorkConsumer?.consume()
+                val ordinal = encounterOrder++
+                if (topRows.size == query.limit && compareProjection(projected.values, ordinal) >= 0) {
+                    return@consumeRow
+                }
+                val row = linkedMapOf<String, Any?>()
+                query.projections.forEachIndexed { index, item -> row[item.column] = projected.values[index] }
+                if (topRows.size == query.limit) topRows.poll()
+                topRows.add(RankedProjectedRow(row, ordinal))
+            }
+            val properties = query.projections.map(PropertyProjection::property)
+            val cancellation = checkNotNull(projectionCancellation)
+            if (storage is WorkAwareStreamingStringPropertyProjection) {
+                storage.forEachStringPropertyProjection(query.nodeClass, properties, projectionWorkConsumer, cancellation, consumeRow)
+            } else {
+                storage.forEachStringPropertyProjection(query.nodeClass, properties, cancellation, consumeRow)
+            }
+        } == true
+        if (!streamed) {
+            for (candidate in nodeCandidates(query.nodeClass)) {
+                val row = linkedMapOf<String, Any?>()
+                for (item in query.projections) {
+                    row[item.column] = nodeProperty(candidate, item.property)
+                }
+                val provenance = provenanceOf(candidate)
+                if (provenance.isNotEmpty()) row[INTERNAL_PROVENANCE_KEY] = provenance
+                acceptRow(row)
+            }
+        }
         checkCancelled()
-        return CypherResult(
+        projectionCancellation?.invoke()
+        val result = CypherResult(
             columns = query.columns,
             rows = topRows.toList().sortedWith(comparator).map(RankedProjectedRow::row)
         )
+        projectionCancellation?.invoke()
+        return result
+    }
+
+    private fun checkStreamingProjectionCancelled(tracker: CypherWorkTracker?) {
+        tracker?.checkCancelled()
+        checkThreadInterrupted { CypherQueryCancelledException("String projection interrupted") }
     }
 
     private data class RankedProjectedRow(
@@ -990,7 +1050,7 @@ class QueryPipeline private constructor(
                 val ret = clauses[1] as? CypherClause.Return ?: return null
                 val orderBy = clauses[2] as? CypherClause.OrderBy ?: return null
                 val limit = clauses[3] as? CypherClause.Limit ?: return null
-                if (match.optional || match.patterns.size != 1 || ret.distinct || ret.items.isEmpty()) return null
+                if (match.optional || match.where != null || match.patterns.size != 1 || ret.distinct || ret.items.isEmpty()) return null
 
                 val pattern = match.patterns.single()
                 if (pattern.pathVariable != null || pattern.elements.size != 1) return null
@@ -1040,7 +1100,7 @@ class QueryPipeline private constructor(
         val match = clauses[0] as? CypherClause.Match ?: return null
         val ret = clauses[1] as? CypherClause.Return ?: return null
         val limit = clauses[2] as? CypherClause.Limit ?: return null
-        if (match.optional || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
+        if (match.optional || match.where != null || !ret.distinct || match.patterns.size != 1 || ret.items.size != 1) return null
 
         val pattern = match.patterns.single()
         if (pattern.pathVariable != null || pattern.elements.size != 1) return null
@@ -1210,7 +1270,7 @@ class QueryPipeline private constructor(
             ExpressionEvaluator(
                 parameterResolver = parameters::get,
                 checkCancelled = {
-                    if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                    checkThreadInterrupted { CypherQueryCancelledException() }
                 }
             )
         } else {
@@ -1232,8 +1292,8 @@ class QueryPipeline private constructor(
                 val value = localEvaluator.evaluate(countedExpression, bindings) ?: continue
                 if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
             }
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
         }
         return FilteredStringCountPartial(source.id, count, distinctValues, matchedWhere)
@@ -1482,7 +1542,7 @@ class QueryPipeline private constructor(
                         parameterResolver = stringParameters::get,
                         checkCancelled = {
                             tracker?.checkCancelled()
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            checkThreadInterrupted { CypherQueryCancelledException() }
                         }
                     )
                     val predicate: (Node) -> Boolean = { node ->
@@ -2841,8 +2901,8 @@ class QueryPipeline private constructor(
 
         private fun pollInterrupted() {
             inspected++
-            if ((inspected and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected and CANCELLATION_POLL_MASK) == 0) {
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
         }
     }
@@ -2984,8 +3044,8 @@ class QueryPipeline private constructor(
     private fun <T> interruptible(values: Sequence<T>): Sequence<T> = sequence {
         var inspected = 0
         for (value in values) {
-            if ((inspected++ and CANCELLATION_POLL_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CypherQueryCancelledException()
+            if ((inspected++ and CANCELLATION_POLL_MASK) == 0) {
+                checkThreadInterrupted { CypherQueryCancelledException() }
             }
             yield(value)
         }
@@ -3665,7 +3725,7 @@ class QueryPipeline private constructor(
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = parameters::get,
                         checkCancelled = {
-                            if (Thread.currentThread().isInterrupted) throw CypherQueryCancelledException()
+                            checkThreadInterrupted { CypherQueryCancelledException() }
                         }
                     )
                     val bindings = mutableMapOf<String, Any?>(variable to null)

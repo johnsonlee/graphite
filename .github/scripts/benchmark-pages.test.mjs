@@ -94,6 +94,17 @@ test("snapshot series keys canonicalize parameter order", () => {
     );
 });
 
+test("snapshot history separates changed query populations and query definitions", () => {
+    const original = { ...result(), protocol: "MULTIGRAPH_QUERY_SUITE_V2", suite: "all",
+        caseListSha256: "a".repeat(64), querySha256: "b".repeat(64) };
+    assert.equal(snapshotKey(original), snapshotKey({ ...original, primaryMetric: { ...original.primaryMetric, score: 20 } }));
+    for (const changed of [result(), { ...original, suite: "fixture64" },
+        { ...original, caseListSha256: "c".repeat(64) },
+        { ...original, querySha256: "d".repeat(64) }]) {
+        assert.notEqual(snapshotKey(original), snapshotKey(changed));
+    }
+});
+
 test("history replaces a rerun of the same SHA and rejects incompatible data", () => {
     const old = {
         schemaVersion: 1,
@@ -190,7 +201,8 @@ test("benchmark page is self-contained, classified, interactive, and injection-s
     assert.match(html, /Benchmark Observatory/);
     assert.match(html, /Fresh Rust engine snapshot/);
     assert.match(html, /rust\.fixture64\.global-wide-four-properties \[selectivity=dense\]/);
-    assert.match(html, /JVM engine gate/);
+    assert.match(html, /Paired regression evidence/);
+    assert.match(html, /not server request p50\/p95/);
     assert.match(html, /pill good">PASS/);
     assert.match(html, /Semantic correctness/);
     assert.match(html, /Build and persistence lifecycle/);

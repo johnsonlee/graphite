@@ -31,7 +31,14 @@ pub fn parse_sha256_file(text: &str) -> Option<String> {
 
 pub fn sha256_of(path: &Path) -> Result<String, String> {
     let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
-    Ok(format!("{:x}", Sha256::digest(bytes)))
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let digest = Sha256::digest(bytes);
+    let mut hex = String::with_capacity(digest.len() * 2);
+    for &byte in digest.iter() {
+        hex.push(char::from(HEX[usize::from(byte >> 4)]));
+        hex.push(char::from(HEX[usize::from(byte & 0x0f)]));
+    }
+    Ok(hex)
 }
 
 /// Fetch `url` into `target` with curl. Fails on any HTTP error (`-f`).

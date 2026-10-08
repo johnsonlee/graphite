@@ -68,7 +68,7 @@ class MmapGraph internal constructor(
     private val localDefinitionData: Map<Int, IntArray>,
     incomingIndex: EdgeOffsetIndex?,
     override val resources: ResourceAccessor
-) : Graph, Closeable {
+) : Graph, Closeable, PackedBranchMetadataSource {
 
     private val nodeMmap: ByteBuffer = FileChannel.open(dataDir.resolve("nodes.dat"), StandardOpenOption.READ).use {
         it.map(FileChannel.MapMode.READ_ONLY, 0, it.size())
@@ -80,7 +80,7 @@ class MmapGraph internal constructor(
         incomingIndex ?: buildIncomingEdgeOffsetIndex()
     }
 
-    private val branchScopeIndex: Map<Int, List<BranchScope>> by lazy {
+    private val branchScopeIndex = lazy {
         branchScopeData.map { it.toBranchScope() }.groupBy { it.conditionNodeId.value }
     }
 
@@ -201,16 +201,26 @@ class MmapGraph internal constructor(
     override fun artifactDependencies(): Map<String, Map<String, Int>> = artifactDependenciesMap
 
     override fun branchScopes(): Sequence<BranchScope> =
-        branchScopeIndex.values.asSequence().flatMap { it.asSequence() }
+        branchScopeIndex.value.values.asSequence().flatMap { it.asSequence() }
 
     override fun branchScopesFor(conditionNodeId: NodeId): Sequence<BranchScope> =
-        branchScopeIndex[conditionNodeId.value]?.asSequence() ?: emptySequence()
+        branchScopeIndex.value[conditionNodeId.value]?.asSequence() ?: emptySequence()
 
-    private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
+    private val localDefinitionIndex = lazy {
         BranchScope.unpackDefinitionTable(localDefinitionData)
     }
 
-    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
+    override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex.value
+
+    override fun packedBranchScopes(): Sequence<PackedBranchScope>? {
+        if (branchScopeIndex.isInitialized()) return null
+        return branchScopeData.packedBranchScopeSnapshot()
+    }
+
+    override fun packedLocalDefinitions(): Map<Int, IntArray>? {
+        if (localDefinitionIndex.isInitialized()) return null
+        return localDefinitionData.packedLocalDefinitionSnapshot()
+    }
 
     override fun typeHierarchyTypes(): Set<String> = typeHierarchy.allKeys()
 

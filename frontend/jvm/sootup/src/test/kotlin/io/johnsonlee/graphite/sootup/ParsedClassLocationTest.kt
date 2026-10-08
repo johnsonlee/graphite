@@ -11,7 +11,12 @@ import kotlin.io.path.readBytes
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
+import sootup.core.jimple.common.constant.IntConstant
+import sootup.core.jimple.common.stmt.JReturnStmt
 import sootup.core.model.SourceType
 import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import sootup.java.core.views.JavaView
@@ -103,6 +108,47 @@ class ParsedClassLocationTest {
         val view = JavaView(listOf(ParsedClassLocation(classes, SourceType.Application, emptyList())))
         assertEquals(setOf("p.q.A", "p.q.A\$Inner", "p.q.B", "p.q.C"), names(view).toSet())
         assertTrue(view.getClass(view.identifierFactory.getClassType("p.q.r.Broken")).isEmpty)
+    }
+
+    @Test
+    fun `a truncated class attribute count is rejected without padding the input`() {
+        val classes = root.resolve("truncated-classes")
+        val packageDir = Files.createDirectories(classes.resolve("p/q"))
+        val truncated = tinyClassBytes("p/q/Truncated")
+        assertTrue(truncated.size < 256, "exercise ASM's minimum stream buffer size")
+        assertEquals(listOf(0.toByte(), 0.toByte()), truncated.takeLast(2), "the final field is class attributes_count")
+        Files.write(packageDir.resolve("Truncated.class"), truncated.copyOf(truncated.size - 2))
+        Files.write(packageDir.resolve("Complete.class"), tinyClassBytes("p/q/Complete"))
+
+        for (input in listOf(jar(classes), classes)) {
+            val location = ParsedClassLocation(input, SourceType.Application, emptyList())
+            try {
+                val view = JavaView(listOf(location))
+                assertEquals(listOf("p.q.Complete"), names(view), "the truncated class must be skipped in $input")
+                val factory = view.identifierFactory
+                assertTrue(view.getClass(factory.getClassType("p.q.Truncated")).isEmpty, "$input")
+                val complete = view.getClass(factory.getClassType("p.q.Complete")).get()
+                val method = complete.getMethod(factory.getMethodSubSignature("value", factory.getType("int"), emptyList())).get()
+                val returned = assertIs<JReturnStmt>(method.body.controlFlowGraph.stmts.single())
+                assertEquals(7, assertIs<IntConstant>(returned.op).value, "the complete control class stays usable in $input")
+            } finally {
+                location.close()
+            }
+        }
+    }
+
+    private fun tinyClassBytes(name: String): ByteArray {
+        val writer = ClassWriter(0)
+        writer.visit(Opcodes.V1_8, Opcodes.ACC_PUBLIC, name, null, "java/lang/Object", null)
+        writer.visitMethod(Opcodes.ACC_PUBLIC or Opcodes.ACC_STATIC, "value", "()I", null, null).apply {
+            visitCode()
+            visitIntInsn(Opcodes.BIPUSH, 7)
+            visitInsn(Opcodes.IRETURN)
+            visitMaxs(1, 0)
+            visitEnd()
+        }
+        writer.visitEnd()
+        return writer.toByteArray()
     }
 
     @Test

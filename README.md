@@ -204,6 +204,31 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 together with `openjdk@17`. Every command line written for the jar-based formula works
 unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
 
+When no JVM options are supplied, `graphite build` checks whether the selected
+JVM supports the following G1 configuration and uses it for the JAR frontend,
+including JAR and APK inputs. The maximum heap remains 8 GiB:
+
+```text
+-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4
+```
+
+The check runs once per build command, including a two-pass fold build. A JVM
+that does not confirm support keeps the previous `-Xmx8g` fallback. Executable
+frontend launchers manage their own settings.
+
+Explicit nonempty `JAVA_TOOL_OPTIONS`, `JAVA_OPTS`, `JDK_JAVA_OPTIONS` or
+`_JAVA_OPTIONS` bypass this check and automatic GC tuning. The CLI preserves
+`JAVA_TOOL_OPTIONS` precedence over `JAVA_OPTS`; the JVM handles its own
+`JDK_JAVA_OPTIONS` and `_JAVA_OPTIONS`. For example, use `JAVA_OPTS='-Xmx2g'`
+for a smaller heap when `JAVA_TOOL_OPTIONS` is unset. These settings do not tune
+native `query` or `serve`. Maximum heap is separate from peak process RSS.
+
+The matched performance evidence for this G1 configuration uses HotSpot 17 on
+macOS ARM64 with Kotlin compiler 2.0.21 and Tika 2.9.2 JARs. See the
+[experiment history](docs/webgraph-optimization-attempts.md) for results,
+measurement boundaries and limitations; capability detection does not imply
+identical performance on every JVM or workload.
+
 ```bash
 graphite frontend list           # which frontend `build` will run, and where it came from
 graphite frontend describe jvm   # JSON: version, accepted inputs

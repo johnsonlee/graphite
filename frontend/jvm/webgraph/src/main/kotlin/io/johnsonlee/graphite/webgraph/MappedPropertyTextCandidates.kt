@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import java.nio.ByteBuffer
@@ -26,8 +27,8 @@ internal class MappedPropertyTextCandidates(
         }.toTypedArray()
         var inspected = 0
         for (id in types.ids(type)) {
-            if ((inspected++ and CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CancellationException("Property text scan interrupted")
+            if ((inspected++ and CANCELLATION_MASK) == 0) {
+                checkThreadInterrupted { CancellationException("Property text scan interrupted") }
             }
             work?.consume()
             val offset = offsets.offset(id).toInt()

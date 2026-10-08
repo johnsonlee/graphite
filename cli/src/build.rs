@@ -15,6 +15,9 @@
 //! the selected call sites (`fold.rs`); a file of `match` rules alone goes straight to
 //! the frontend, one build as before.
 
+#[path = "build_jvm_options.rs"]
+mod jvm_options;
+
 use crate::fold;
 use crate::frontend::{self, Env, Frontend, Launch};
 use std::ffi::OsString;
@@ -158,6 +161,16 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
         eprintln!("{}", missing_frontend_message());
         return 2;
     };
+    // Resolve a supported default once; a two-pass fold reuses this environment.
+    // Explicit user options and executable frontends bypass capability detection.
+    let build_env = match jvm_options::build_env(env, &fe, args) {
+        Ok(env) => env,
+        Err(error) => {
+            eprintln!("Error: could not finish the JVM capability check: {error}");
+            return 1;
+        }
+    };
+    let env = build_env.as_ref();
     // A fold file with `select` rules needs a graph to run them on: two builds. An output
     // the frontend would reject anyway (none named) goes straight to it for the message.
     if let (Some(file), Some(output)) = (fold::fold_file(args), fold::output_of(args)) {

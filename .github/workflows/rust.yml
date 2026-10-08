@@ -106,6 +106,15 @@ jobs:
         java -jar frontend/jvm/query/build/libs/graphite.jar build "${RUNNER_TEMP}/acme.jar" \
           -o "${RUNNER_TEMP}/acme-graph-direct" --include com.acme
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-graph-direct"
+        # Exercise the clean-env default through the actual CLI and JVM, then a
+        # smaller explicit heap. Existing JAVA_TOOL_OPTIONS=4g builds above also
+        # retain their override; the observer execs Java with unchanged arguments.
+        python3 .github/scripts/check-build-jvm-defaults.py \
+          --cli ./target/release/graphite \
+          --frontend frontend/jvm/query/build/libs/graphite.jar \
+          --input "${RUNNER_TEMP}/acme.jar" \
+          --reference "${RUNNER_TEMP}/acme-graph-direct" \
+          --output "${RUNNER_TEMP}/build-jvm-defaults"
         # A fold file with a `select` rule: the shell builds once without rules, runs the
         # query on that graph, and builds again with the selected call sites folded. The
         # gate `inventory.reserve(sku, quantity)` guards a throw in OrderService.place().

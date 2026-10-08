@@ -1,6 +1,6 @@
 //! Clause pipeline: MATCH / WHERE / WITH / RETURN / UNWIND / ORDER BY / SKIP / LIMIT / UNION.
 
-use super::matching::{has_unknown_label, Matcher};
+use super::matching::{has_unknown_label, resolve_node_class, Matcher, NodeClass};
 use super::partition::{row_weight, PartitionPlan, INTERNAL_WEIGHT_KEY};
 use super::Executor;
 use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem};
@@ -12,6 +12,7 @@ use crate::render::to_cypher_string;
 use crate::semantics::{to_int_for_skip_limit, value_key, Key};
 use crate::value::Value;
 use crate::{CypherError, CypherResult};
+use graphite_storage::node::TAG_CALL_SITE_NODE;
 use indexmap::IndexMap;
 use std::cmp::Ordering;
 use std::sync::Arc;
@@ -552,8 +553,18 @@ impl Executor {
             }
         }
 
+        let ordered_capacity = bounded_order_capacity(shape, aggregated, patterns, &rows);
         let (columns, out) = self.fused_rows(
-            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated,
+            matcher,
+            ev,
+            rows,
+            patterns,
+            shape,
+            &scan,
+            &hop,
+            budget,
+            aggregated,
+            ordered_capacity,
         )?;
         finish_fused(ev, columns, out, shape)
     }
@@ -592,7 +603,7 @@ impl Executor {
             None
         };
         self.fused_rows(
-            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated,
+            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
         )
     }
 
@@ -611,6 +622,7 @@ impl Executor {
         hop: &Option<super::hop::HopPlan>,
         budget: Option<usize>,
         aggregated: bool,
+        ordered_capacity: Option<usize>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
         let items = shape.items.as_deref();
         if aggregated {
@@ -663,6 +675,8 @@ impl Executor {
 
         // Non-aggregated: stream projection.
         let mut out: Vec<Row> = Vec::new();
+        let mut top = ordered_capacity
+            .map(|capacity| BoundedOrderedRows::new(capacity, shape.order.as_deref().unwrap()));
         let mut columns: Vec<String> = items.map(item_names).unwrap_or_default();
         // Index of each distinct key into `out`, not just the set of keys. Finding the
         // row to merge provenance into by scanning `out` is linear, and it runs once per
@@ -706,6 +720,15 @@ impl Executor {
                 order_before_distinct,
                 &mut columns,
             )?;
+            if let Some(top) = &mut top {
+                // Project every row first, including every expression and order stash.
+                // Losing rows must still report errors and consume the normal scan work.
+                if top.encounter & 1023 == 0 {
+                    self.cancel.check()?;
+                }
+                top.push(projected);
+                return Ok(true);
+            }
             if shape.distinct {
                 let k = visible_key(&projected);
                 match seen.get(&k) {
@@ -759,6 +782,11 @@ impl Executor {
         // `consume` borrowed `out` and `seen`; its last use is above.
         #[allow(clippy::drop_non_drop)]
         drop(consume);
+
+        if let Some(top) = top {
+            self.cancel.check()?;
+            return Ok((columns, top.into_encounter_order()));
+        }
 
         // Second pass: complete the provenance of the rows already chosen.
         //
@@ -846,7 +874,240 @@ impl Executor {
             }
             consume(r)
         };
+        if let Some(plan) = super::id_candidate::IdCandidatePlan::build(patterns, where_clause, row)
+        {
+            return plan.run(self, &mut emit);
+        }
         matcher.match_patterns(row, patterns, &mut emit)
+    }
+}
+
+// Bound retained rows, not scan work. Other shapes keep the complete general path:
+// DISTINCT needs all keys/provenance, aggregates need all inputs, and nonliteral
+// counts can depend on the first sorted row. WITH must not truncate its output.
+const MAX_BOUNDED_ORDER_ROWS: usize = 65_536;
+
+fn bounded_order_capacity(
+    shape: &FusedShape,
+    aggregated: bool,
+    patterns: &[Pattern],
+    seeds: &[Row],
+) -> Option<usize> {
+    if aggregated || shape.distinct || shape.order.as_ref()?.is_empty() {
+        return None;
+    }
+    let items = shape.items.as_ref()?;
+    if items.is_empty()
+        || items
+            .iter()
+            .any(|item| matches!(&item.expr, Expr::Variable(v) if v == "*"))
+    {
+        return None;
+    }
+    // The general comparator is not a total preorder on every Value domain:
+    // Node~Method ties and mixed floating/integer comparisons are nontransitive.
+    // Prove Int/Str/null sort keys before discarding anything; never discover an
+    // unsupported domain after eviction and try to recover by scanning again.
+    let [seed] = seeds else { return None };
+    let [pattern] = patterns else { return None };
+    let [node] = pattern.nodes.as_slice() else {
+        return None;
+    };
+    if !seed.is_empty()
+        || pattern.path_variable.is_some()
+        || !pattern.rels.is_empty()
+        || !matches!(
+            resolve_node_class(&node.labels),
+            NodeClass::Tags(tags) if tags.as_slice() == [TAG_CALL_SITE_NODE]
+        )
+    {
+        return None;
+    }
+    let variable = node.variable.as_ref()?;
+    let names = item_names(items);
+    if names.iter().any(|name| is_internal_key(name))
+        || names.iter().collect::<std::collections::HashSet<_>>().len() != names.len()
+    {
+        return None;
+    }
+    // These CallSite properties have fixed scalar domains in node_property.
+    // Strings use the same UTF-16 ordering as the final stable sort; Int/Str/null
+    // also have a fixed cross-type rank. Expressions with an unproven domain
+    // still use the full-sort path, without discarding or rescanning any rows.
+    let ordered_scalar = |expr: &Expr| match expr {
+        Expr::Literal(Literal::Int(_) | Literal::Str(_) | Literal::Null) => true,
+        Expr::Property { expr, key } => {
+            matches!(expr.as_ref(), Expr::Variable(v) if v == variable)
+                && matches!(
+                    key.as_str(),
+                    "id" | "ordinal"
+                        | "line"
+                        | "callee_class"
+                        | "callee_name"
+                        | "callee_signature"
+                        | "callee_descriptor"
+                        | "caller_class"
+                        | "caller_name"
+                        | "caller_signature"
+                        | "caller_descriptor"
+                )
+        }
+        _ => false,
+    };
+    for order in shape.order.as_ref()? {
+        let expr = match &order.expr {
+            Expr::Variable(alias) => {
+                &items
+                    .get(names.iter().position(|name| name == alias)?)?
+                    .expr
+            }
+            expr => expr,
+        };
+        if !ordered_scalar(expr) {
+            return None;
+        }
+    }
+    let literal = |e: &Expr| match e {
+        Expr::Literal(Literal::Int(n)) => usize::try_from(*n).ok(),
+        _ => None,
+    };
+    let limit = literal(shape.limit.as_ref()?)?;
+    let skip = match &shape.skip {
+        Some(e) => literal(e)?,
+        None => 0,
+    };
+    skip.checked_add(limit)
+        .filter(|n| *n <= MAX_BOUNDED_ORDER_ROWS)
+}
+
+struct OrderedCandidate {
+    keys: Vec<Value>,
+    row: Row,
+    encounter: usize,
+}
+
+/// Max-heap: the worst retained row is first; later ties lose to earlier rows.
+/// Only called after non-DISTINCT explicit projection. Every non-alias sort key
+/// is already in ORDER_STASH, and the remaining expressions are bare variables,
+/// so extracting keys cannot introduce or suppress expression evaluation errors.
+struct BoundedOrderedRows {
+    capacity: usize,
+    order: Vec<(String, Option<String>, bool)>,
+    heap: Vec<OrderedCandidate>,
+    encounter: usize,
+}
+
+impl BoundedOrderedRows {
+    fn new(capacity: usize, items: &[OrderItem]) -> Self {
+        Self {
+            capacity,
+            order: items
+                .iter()
+                .enumerate()
+                .map(|(i, item)| {
+                    let alias = match &item.expr {
+                        Expr::Variable(v) => Some(v.clone()),
+                        _ => None,
+                    };
+                    (format!("{ORDER_STASH_PREFIX}{i}"), alias, item.descending)
+                })
+                .collect(),
+            heap: Vec::new(),
+            encounter: 0,
+        }
+    }
+
+    fn compare(&self, a: &OrderedCandidate, b: &OrderedCandidate) -> Ordering {
+        for (i, (_, _, descending)) in self.order.iter().enumerate() {
+            let cmp = compare_order_values(&a.keys[i], &b.keys[i]);
+            let cmp = if *descending { cmp.reverse() } else { cmp };
+            if cmp != Ordering::Equal {
+                return cmp;
+            }
+        }
+        a.encounter.cmp(&b.encounter)
+    }
+
+    fn key<'a>(&self, row: &'a Row, index: usize) -> &'a Value {
+        let (stash, alias, _) = &self.order[index];
+        row.get(stash)
+            .or_else(|| alias.as_ref().and_then(|name| row.get(name)))
+            .unwrap_or(&Value::Null)
+    }
+
+    fn compare_borrowed(&self, row: &Row, encounter: usize, b: &OrderedCandidate) -> Ordering {
+        for (i, (_, _, descending)) in self.order.iter().enumerate() {
+            let cmp = compare_order_values(self.key(row, i), &b.keys[i]);
+            let cmp = if *descending { cmp.reverse() } else { cmp };
+            if cmp != Ordering::Equal {
+                return cmp;
+            }
+        }
+        encounter.cmp(&b.encounter)
+    }
+
+    fn push(&mut self, row: Row) {
+        let encounter = self.encounter;
+        self.encounter += 1;
+        if self.capacity == 0 {
+            return;
+        }
+        // Projection and its errors have already happened. A full-heap loser
+        // needs neither an owned key vector nor cloned key values.
+        if self.heap.len() == self.capacity
+            && self.compare_borrowed(&row, encounter, &self.heap[0]) != Ordering::Less
+        {
+            return;
+        }
+        let keys = (0..self.order.len())
+            .map(|i| self.key(&row, i).clone())
+            .collect();
+        let candidate = OrderedCandidate {
+            keys,
+            row,
+            encounter,
+        };
+        if self.heap.len() < self.capacity {
+            self.heap.push(candidate);
+            let mut at = self.heap.len() - 1;
+            while at > 0 {
+                let parent = (at - 1) / 2;
+                if self.compare(&self.heap[at], &self.heap[parent]) != Ordering::Greater {
+                    break;
+                }
+                self.heap.swap(at, parent);
+                at = parent;
+            }
+        } else {
+            self.heap[0] = candidate;
+            let mut at = 0;
+            loop {
+                let left = 2 * at + 1;
+                if left >= self.heap.len() {
+                    break;
+                }
+                let right = left + 1;
+                let child = if right < self.heap.len()
+                    && self.compare(&self.heap[right], &self.heap[left]) == Ordering::Greater
+                {
+                    right
+                } else {
+                    left
+                };
+                if self.compare(&self.heap[child], &self.heap[at]) != Ordering::Greater {
+                    break;
+                }
+                self.heap.swap(at, child);
+                at = child;
+            }
+        }
+    }
+
+    fn into_encounter_order(mut self) -> Vec<Row> {
+        // finish_fused's existing stable sort, count handling and stash removal
+        // remain authoritative, including the HTTP probe's injected extra row.
+        self.heap.sort_unstable_by_key(|entry| entry.encounter);
+        self.heap.into_iter().map(|entry| entry.row).collect()
     }
 }
 
@@ -1515,6 +1776,31 @@ fn finalize_groups(
     Ok(out)
 }
 
+/// An explicit single-variable projection can transfer rows already in output order.
+/// The actual rendered column must match too, including quoted variable names.
+fn is_identity_projection(items: &[ReturnItem], columns: &[String], rows: &[Row]) -> bool {
+    let [item] = items else { return false };
+    let Expr::Variable(name) = &item.expr else {
+        return false;
+    };
+    if columns.len() != 1 || columns[0] != *name {
+        return false;
+    }
+    rows.iter().all(|row| {
+        row.keys()
+            .map(String::as_str)
+            .eq(std::iter::once(name.as_str())
+                .chain(
+                    row.contains_key(INTERNAL_PROVENANCE_KEY)
+                        .then_some(INTERNAL_PROVENANCE_KEY),
+                )
+                .chain(
+                    row.contains_key(INTERNAL_WEIGHT_KEY)
+                        .then_some(INTERNAL_WEIGHT_KEY),
+                ))
+    })
+}
+
 /// Batch projection (`projectAndAggregate`).
 fn project(
     ev: &Evaluator,
@@ -1523,6 +1809,7 @@ fn project(
     distinct: bool,
     order: Option<&[OrderItem]>,
 ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+    let explicit_items = items.is_some();
     // RETURN * expansion.
     let expanded: Vec<ReturnItem>;
     let items: Option<&[ReturnItem]> = match items {
@@ -1555,6 +1842,13 @@ fn project(
                 .unwrap_or_else(|| to_cypher_string(&it.expr))
         })
         .collect();
+    if explicit_items
+        && !distinct
+        && order.is_none()
+        && is_identity_projection(items, &columns, &rows)
+    {
+        return Ok((columns, rows));
+    }
     let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
     let mut out: Vec<Row>;
     if aggregated {
@@ -1590,10 +1884,11 @@ fn project(
         out = Vec::with_capacity(rows.len());
         let names = item_names(items);
         let mut cols = columns.clone();
-        for row in &rows {
+        // Release each input row after its projection and order keys are owned by out.
+        for row in rows {
             out.push(project_row(
                 ev,
-                row,
+                &row,
                 Some(items),
                 &names,
                 order,
@@ -1705,6 +2000,723 @@ fn selected_value_filter(
     });
     let first = iter.next()?;
     Some(iter.fold(first, |acc, e| Expr::Or(Box::new(acc), Box::new(e))))
+}
+
+#[cfg(test)]
+mod bounded_order_tests {
+    use super::super::Source;
+    use super::*;
+    use crate::parser::parse;
+    use crate::value::{MethodRef, NodeRef};
+
+    fn query_shape(query: &str) -> (Vec<Pattern>, FusedShape) {
+        let clauses = parse(query).unwrap();
+        let Clause::Match { patterns, .. } = &clauses[0] else {
+            panic!("MATCH required")
+        };
+        (patterns.clone(), FusedShape::detect(&clauses).unwrap())
+    }
+
+    fn capacity(query: &str) -> Option<usize> {
+        let (patterns, shape) = query_shape(query);
+        let aggregated = shape
+            .items
+            .as_ref()
+            .is_some_and(|items| items.iter().any(|item| contains_aggregation(&item.expr)));
+        bounded_order_capacity(&shape, aggregated, &patterns, &[Row::new()])
+    }
+
+    #[test]
+    fn admission_proves_integer_sort_keys_and_literal_bounded_counts() {
+        let prefix = "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal";
+        assert_eq!(
+            capacity(&format!("{prefix} ORDER BY ordinal, id LIMIT 32")),
+            Some(32)
+        );
+        assert_eq!(
+            capacity(&format!(
+                "{prefix} ORDER BY n.ordinal DESC, id SKIP 7 LIMIT 32"
+            )),
+            Some(39)
+        );
+        assert_eq!(
+            capacity(&format!("{prefix} ORDER BY ordinal LIMIT 0")),
+            Some(0)
+        );
+        assert_eq!(
+            capacity(&format!("{prefix} ORDER BY ordinal LIMIT 65536")),
+            Some(65536)
+        );
+        for tail in [
+            "ORDER BY ordinal LIMIT 65537",
+            "ORDER BY ordinal SKIP 1 LIMIT 65536",
+            "ORDER BY ordinal LIMIT -1",
+            "ORDER BY ordinal LIMIT $limit",
+            "ORDER BY ordinal",
+            "ORDER BY ordinal SKIP $skip LIMIT 32",
+            "LIMIT 32",
+        ] {
+            assert_eq!(capacity(&format!("{prefix} {tail}")), None, "{tail}");
+        }
+        for query in [
+            "MATCH (n:CallSiteNode) RETURN DISTINCT n.id AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN count(n) AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN * ORDER BY n.id LIMIT 32",
+            "MATCH (n) RETURN n.id AS id ORDER BY id LIMIT 32",
+            "MATCH (n:Method) RETURN n.id AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.unknown AS key ORDER BY key LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.id + 0 AS id ORDER BY id LIMIT 32",
+        ] {
+            assert_eq!(capacity(query), None, "{query}");
+        }
+        let (patterns, shape) = query_shape(&format!("{prefix} ORDER BY ordinal LIMIT 32"));
+        let mut bound = Row::new();
+        bound.insert("n".into(), Value::Null);
+        assert_eq!(
+            bounded_order_capacity(&shape, false, &patterns, &[bound]),
+            None
+        );
+    }
+
+    #[test]
+    fn admission_resolves_callsite_aliases_and_rejects_wider_domains() {
+        for label in [
+            "CallSite",
+            "CALLSITE",
+            "callsitenode",
+            "cAlLsItEnOdE",
+            "CallSite:CallSiteNode",
+            "CallSite:Node",
+            "CallSite:Field",
+        ] {
+            for property in ["caller_class", "callee_name"] {
+                for direction in ["", " DESC"] {
+                    let query = format!("MATCH (n:{label}) RETURN n.{property} ORDER BY n.{property}{direction} LIMIT 200");
+                    let (patterns, _) = query_shape(&query);
+                    assert_eq!(
+                        patterns[0].nodes[0].labels,
+                        label.split(':').map(str::to_string).collect::<Vec<_>>(),
+                        "Parser must retain the original label spelling"
+                    );
+                    assert_eq!(capacity(&query), Some(200), "{query}");
+                }
+            }
+            assert_eq!(
+                capacity(&format!("MATCH (n:{label}) RETURN n.callee_name AS name ORDER BY name DESC SKIP 2 LIMIT 3")),
+                Some(5),
+                "Alias projection and literal skip remain eligible"
+            );
+        }
+        for label in [
+            "Node",
+            "Node:CallSite",
+            "Method",
+            "CallSite:Method",
+            "Field:CallSite",
+            "Constant",
+        ] {
+            let query = format!(
+                "MATCH (n:{label}) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200"
+            );
+            assert_eq!(capacity(&query), None, "{query}");
+        }
+        for query in [
+            "MATCH (n:CallSite) RETURN DISTINCT n.caller_class ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN * ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT $limit",
+            "MATCH (n:CallSite) RETURN n.unknown AS key ORDER BY key LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 65537",
+        ] {
+            assert_eq!(capacity(query), None, "{query}");
+        }
+    }
+
+    #[test]
+    fn admission_proves_callsite_string_keys_without_admitting_unknown_domains() {
+        for property in [
+            "callee_class",
+            "callee_name",
+            "callee_signature",
+            "callee_descriptor",
+            "caller_class",
+            "caller_name",
+            "caller_signature",
+            "caller_descriptor",
+        ] {
+            for order in ["key", &format!("n.{property} DESC")] {
+                assert_eq!(
+                    capacity(&format!(
+                        "MATCH (n:CallSiteNode) RETURN n.{property} AS key, n.id AS id ORDER BY {order}, id SKIP 3 LIMIT 20"
+                    )),
+                    Some(23),
+                    "{property}: {order}"
+                );
+            }
+        }
+        assert_eq!(
+            capacity("MATCH (n:CallSiteNode) RETURN 'same' AS key ORDER BY key LIMIT 1"),
+            Some(1)
+        );
+        for query in [
+            "MATCH (n:CallSiteNode) RETURN toString(n.id) AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN $key AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS key ORDER BY key LIMIT $limit",
+            "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_name AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS key, n.id AS key ORDER BY key LIMIT 20",
+            "MATCH (n:Method) RETURN n.name AS key ORDER BY key LIMIT 20",
+        ] {
+            assert_eq!(capacity(query), None, "{query}");
+        }
+    }
+
+    #[test]
+    fn string_heap_matches_utf16_stable_sort_with_nulls_ties_and_mixed_directions() {
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let input: Vec<Row> = [
+            None,
+            Some("a"),
+            Some("\u{10000}"),
+            Some("\u{e000}"),
+            Some("a"),
+            Some("\u{1f600}"),
+            Some("A"),
+            Some("a"),
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(i, name)| {
+            let mut row = Row::new();
+            row.insert("name".into(), name.map(Value::str).unwrap_or(Value::Null));
+            row.insert("line".into(), Value::Int((i % 2) as i64));
+            row.insert("encounter".into(), Value::Int(i as i64));
+            add_provenance_id(&mut row, Arc::from(if i % 2 == 0 { "a" } else { "b" }));
+            row
+        })
+        .collect();
+        for order_text in ["name, line DESC", "name DESC, line"] {
+            let (_, shape) = query_shape(&format!(
+                "MATCH (n:CallSiteNode) RETURN n.callee_name AS name, n.line AS line ORDER BY {order_text} LIMIT 8"
+            ));
+            let order = shape.order.as_deref().unwrap();
+            for limit in [0, 1, 3, 5, 8, 12] {
+                let mut top = BoundedOrderedRows::new(limit, order);
+                for row in input.clone() {
+                    top.push(row);
+                    assert!(top.heap.len() <= limit);
+                }
+                assert_eq!(top.encounter, input.len());
+                let actual = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+                let expected: Vec<_> = order_rows(&ev, input.clone(), order)
+                    .unwrap()
+                    .into_iter()
+                    .take(limit)
+                    .collect();
+                assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+                if limit == 8 && order_text == "name, line DESC" {
+                    let encounters: Vec<_> = actual
+                        .iter()
+                        .map(|r| match r["encounter"] {
+                            Value::Int(id) => id,
+                            ref other => panic!("Unexpected encounter: {other:?}"),
+                        })
+                        .collect();
+                    assert_eq!(encounters, [6, 1, 7, 4, 2, 5, 3, 0]);
+                    assert_eq!(QueryResult::graph_ids(&actual[1]), ["b"]);
+                    assert_eq!(QueryResult::graph_ids(&actual[2]), ["b"]);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn nontransitive_value_domains_are_rejected_before_any_scan() {
+        let low = Value::Node(NodeRef { source: 0, id: 1 });
+        let middle = Value::Method(MethodRef {
+            source: 0,
+            index: 0,
+        });
+        let high = Value::Node(NodeRef { source: 0, id: 2 });
+        assert_eq!(compare_order_values(&low, &middle), Ordering::Equal);
+        assert_eq!(compare_order_values(&middle, &high), Ordering::Equal);
+        assert_eq!(compare_order_values(&low, &high), Ordering::Less);
+        let negative = Value::Float(-0.0);
+        let zero = Value::Int(0);
+        let positive = Value::Float(0.0);
+        assert_eq!(compare_order_values(&negative, &zero), Ordering::Equal);
+        assert_eq!(compare_order_values(&zero, &positive), Ordering::Equal);
+        assert_eq!(compare_order_values(&negative, &positive), Ordering::Less);
+        for expression in [
+            "n",
+            "$key",
+            "CASE WHEN n.id = 0 THEN n ELSE $method END",
+            "CASE WHEN n.id = 0 THEN -0.0 WHEN n.id = 1 THEN 0 ELSE 0.0 END",
+            "CASE WHEN n.id = 0 THEN 9007199254740993 ELSE 9007199254740992.0 END",
+        ] {
+            assert_eq!(
+                capacity(&format!(
+                    "MATCH (n:CallSiteNode) RETURN {expression} AS key ORDER BY key LIMIT 1"
+                )),
+                None
+            );
+        }
+    }
+
+    #[test]
+    fn heap_matches_complete_stable_sort_with_stashes_nulls_ties_and_provenance() {
+        let (_, shape) = query_shape(
+            "MATCH (n:CallSiteNode) RETURN n.id AS id ORDER BY n.ordinal DESC, id LIMIT 4",
+        );
+        let order = shape.order.as_deref().unwrap();
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let input: Vec<Row> = [
+            Some(7),
+            None,
+            Some(-3),
+            Some(7),
+            Some(i64::MAX),
+            Some(i64::MIN),
+            None,
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(i, ordinal)| {
+            let mut row = Row::new();
+            row.insert("id".into(), Value::Int((i % 3) as i64));
+            row.insert("payload".into(), Value::str(format!("encounter-{i}")));
+            row.insert(
+                format!("{ORDER_STASH_PREFIX}0"),
+                ordinal.map(Value::Int).unwrap_or(Value::Null),
+            );
+            add_provenance_id(&mut row, Arc::from(if i % 2 == 0 { "a" } else { "b" }));
+            row
+        })
+        .collect();
+        for limit in [0, 1, 2, 4, 7, 12] {
+            let mut top = BoundedOrderedRows::new(limit, order);
+            for row in input.clone() {
+                top.push(row);
+                assert!(top.heap.len() <= limit);
+            }
+            assert_eq!(top.encounter, input.len(), "No early scan termination");
+            let actual = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+            let expected: Vec<Row> = order_rows(&ev, input.clone(), order)
+                .unwrap()
+                .into_iter()
+                .take(limit)
+                .collect();
+            assert_eq!(
+                format!("{actual:?}"),
+                format!("{expected:?}"),
+                "limit={limit}"
+            );
+            if limit == 4 {
+                let payloads: Vec<_> = actual
+                    .iter()
+                    .map(|row| row["payload"].as_str().unwrap())
+                    .collect();
+                assert_eq!(
+                    payloads,
+                    ["encounter-6", "encounter-1", "encounter-4", "encounter-0"]
+                );
+                assert_eq!(QueryResult::graph_ids(&actual[0]), ["a"]);
+            }
+        }
+    }
+
+    #[test]
+    fn borrowed_order_keys_preserve_stash_precedence_alias_and_missing_null() {
+        let (_, shape) = query_shape(
+            "MATCH (n:CallSiteNode) RETURN n.id AS id ORDER BY id, n.ordinal DESC LIMIT 2",
+        );
+        let top = BoundedOrderedRows::new(2, shape.order.as_deref().unwrap());
+        let mut row = Row::new();
+        row.insert("id".into(), Value::Int(99));
+        let stash = format!("{ORDER_STASH_PREFIX}0");
+        row.insert(stash.clone(), Value::Int(-7));
+        assert!(std::ptr::eq(top.key(&row, 0), &row[&stash]));
+        assert!(matches!(top.key(&row, 0), Value::Int(-7)));
+        row.shift_remove(&stash);
+        assert!(std::ptr::eq(top.key(&row, 0), &row["id"]));
+        assert!(matches!(top.key(&row, 0), Value::Int(99)));
+        row.shift_remove("id");
+        assert!(top.key(&row, 0).is_null());
+        // A property expression has only its evaluated stash, not an alias lookup.
+        row.insert("n.ordinal".into(), Value::Int(42));
+        assert!(top.key(&row, 1).is_null());
+        let stash = format!("{ORDER_STASH_PREFIX}1");
+        row.insert(stash.clone(), Value::Null);
+        assert!(std::ptr::eq(top.key(&row, 1), &row[&stash]));
+    }
+
+    #[test]
+    fn full_heap_borrowed_admission_discards_losers_and_later_ties_but_keeps_better_rows() {
+        let (_, shape) = query_shape(
+            "MATCH (n:CallSiteNode) RETURN n.id AS id ORDER BY id, n.ordinal DESC LIMIT 2",
+        );
+        let order = shape.order.as_deref().unwrap();
+        let make_row = |id: Value, ordinal: Value, payload: &str| {
+            let payload: Arc<str> = Arc::from(payload);
+            let weak = Arc::downgrade(&payload);
+            let mut row = Row::new();
+            row.insert("id".into(), id);
+            row.insert(format!("{ORDER_STASH_PREFIX}1"), ordinal);
+            row.insert("payload".into(), Value::Str(payload));
+            add_provenance_id(&mut row, Arc::from("real-source"));
+            (row, weak)
+        };
+        let mut top = BoundedOrderedRows::new(2, order);
+        let (first, first_payload) = make_row(Value::Int(2), Value::Int(5), "first");
+        top.push(first);
+        let (best, best_payload) = make_row(Value::Int(1), Value::Null, "best");
+        top.push(best);
+        for (id, ordinal, payload) in [
+            (Value::Int(3), Value::Int(100), "worse"),
+            (Value::Int(2), Value::Int(5), "later-tie"),
+            (Value::Null, Value::Int(100), "null-id"),
+        ] {
+            let (row, weak) = make_row(id, ordinal, payload);
+            top.push(row);
+            assert!(weak.upgrade().is_none(), "Rejected row must be released");
+            assert_eq!(top.heap.len(), 2);
+            assert!(first_payload.upgrade().is_some());
+            assert!(best_payload.upgrade().is_some());
+        }
+        let (mut row, weak) = make_row(Value::Int(-10), Value::Int(100), "stash-loser");
+        row.insert(format!("{ORDER_STASH_PREFIX}0"), Value::Int(4));
+        top.push(row);
+        assert!(weak.upgrade().is_none(), "Stashed key overrides the alias");
+        let (winner, winner_payload) = make_row(Value::Int(2), Value::Int(9), "winner");
+        top.push(winner);
+        assert!(
+            first_payload.upgrade().is_none(),
+            "Replaced row is released"
+        );
+        assert!(winner_payload.upgrade().is_some());
+        assert_eq!(top.encounter, 7, "Losing rows still count as encounters");
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let rows = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+        assert_eq!(
+            rows.iter()
+                .map(|r| r["payload"].as_str().unwrap())
+                .collect::<Vec<_>>(),
+            ["best", "winner"]
+        );
+        assert_eq!(QueryResult::graph_ids(&rows[0]), ["real-source"]);
+        assert_eq!(QueryResult::graph_ids(&rows[1]), ["real-source"]);
+    }
+
+    #[test]
+    fn losing_and_zero_limit_rows_still_evaluate_every_projection_expression() {
+        let (_, shape) = query_shape("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = 2 THEN missing_function(n.id) ELSE n.id END AS payload ORDER BY id LIMIT 1");
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let names = item_names(shape.items.as_deref().unwrap());
+        for limit in [0, 1] {
+            let mut top = BoundedOrderedRows::new(limit, shape.order.as_deref().unwrap());
+            let mut columns = names.clone();
+            for id in 0..3 {
+                let mut node = IndexMap::new();
+                node.insert("id".into(), Value::Int(id));
+                let mut source = Row::new();
+                source.insert("n".into(), Value::map(node));
+                let row = project_row(
+                    &ev,
+                    &source,
+                    shape.items.as_deref(),
+                    &names,
+                    shape.order.as_deref(),
+                    false,
+                    false,
+                    &mut columns,
+                );
+                if id == 2 {
+                    let error = row.unwrap_err().to_string();
+                    assert!(error.contains("missing_function"), "{error}");
+                } else {
+                    top.push(row.unwrap());
+                }
+            }
+        }
+    }
+
+    fn full_sort(ex: &Executor, query: &str) -> CypherResult<QueryResult> {
+        let (patterns, shape) = query_shape(query);
+        let ev = Evaluator::new(ex, &ex.params);
+        let matcher = Matcher { ex, ev: &ev };
+        let scan = super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
+        let (columns, rows) = ex.fused_rows(
+            &matcher,
+            &ev,
+            vec![Row::new()],
+            &patterns,
+            &shape,
+            &scan,
+            &None,
+            None,
+            false,
+            None,
+        )?;
+        finish_fused(&ev, columns, rows, &shape)
+    }
+
+    fn real_graph() -> Option<Arc<graphite_storage::graph::Graph>> {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return None;
+        };
+        Some(Arc::new(
+            graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap(),
+        ))
+    }
+
+    #[test]
+    fn real_executor_preserves_late_losing_expression_errors_even_with_limit_zero() {
+        let Some(graph) = real_graph() else { return };
+        let ex = Executor::single("real", graph);
+        let all = ex
+            .execute("MATCH (n:CallSiteNode) RETURN n.id AS id", None)
+            .unwrap();
+        let ids: Vec<_> = all
+            .rows
+            .iter()
+            .map(|row| match row["id"] {
+                Value::Int(id) => id,
+                ref other => panic!("CallSite id must be an integer: {other:?}"),
+            })
+            .collect();
+        assert!(
+            ids.len() > 1,
+            "Real core fixture must contain multiple calls"
+        );
+        let last = *ids.last().unwrap();
+        assert!(
+            last > *ids.iter().min().unwrap(),
+            "Late error must occur after a better candidate"
+        );
+        for limit in [0, 1] {
+            for key in ["n.id", "'same'"] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY key LIMIT {limit}");
+                assert_eq!(capacity(&query), Some(limit));
+                let reference = full_sort(&ex, &query).unwrap_err();
+                let actual = ex.execute(&query, None).unwrap_err();
+                assert!(actual.to_string().contains("missing_function"));
+                assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
+            }
+        }
+    }
+
+    #[test]
+    fn real_executor_never_swallows_cancelled_or_timed_out_ordered_requests() {
+        let Some(graph) = real_graph() else { return };
+        for limit in [0, 1, 32] {
+            for order in ["ordinal, id", "n.callee_class, n.callee_name, id"] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY {order} LIMIT {limit}");
+                assert_eq!(capacity(&query), Some(limit));
+                let cancelled = super::super::CancelToken::new();
+                cancelled.cancel();
+                let ex = Executor::single("real", graph.clone()).with_cancel(cancelled);
+                assert!(matches!(
+                    ex.execute(&query, None),
+                    Err(CypherError::Cancelled)
+                ));
+                let timed_out = super::super::CancelToken::new();
+                timed_out.timeout(60_000);
+                let ex = Executor::single("real", graph.clone()).with_cancel(timed_out);
+                assert!(matches!(
+                    ex.execute(&query, None),
+                    Err(CypherError::Timeout(60_000))
+                ));
+            }
+        }
+    }
+
+    #[test]
+    fn real_alias_order_matches_full_sort_with_multilabels_and_probe() {
+        let Some(graph) = real_graph() else { return };
+        let ex = Executor::new(
+            vec![
+                Source {
+                    id: Arc::from("a"),
+                    graph: graph.clone(),
+                },
+                Source {
+                    id: Arc::from("b"),
+                    graph,
+                },
+            ],
+            true,
+        );
+        let all_calls = ex
+            .execute("MATCH (n:CallSiteNode) RETURN n.id AS id", None)
+            .unwrap();
+        assert!(
+            all_calls.rows.len() > 5,
+            "Real fixture must exercise eviction"
+        );
+        let ev = Evaluator::new(&ex, &ex.params);
+        let matcher = Matcher { ex: &ex, ev: &ev };
+        for (label, admitted, nonempty) in [
+            ("CallSite", true, true),
+            ("CALLSITE", true, true),
+            ("callsitenode", true, true),
+            ("CallSite:CallSiteNode", true, true),
+            ("CallSite:Node", true, true),
+            ("CallSite:Field", true, false),
+            ("Node:CallSite", false, true),
+            ("CallSite:Method", false, false),
+        ] {
+            for (property, direction) in [("caller_class", ""), ("callee_name", " DESC")] {
+                let query = format!("MATCH (n:{label}) RETURN n.{property} ORDER BY n.{property}{direction} LIMIT 3");
+                assert_eq!(capacity(&query), admitted.then_some(3), "{query}");
+                let expected = full_sort(&ex, &query).unwrap();
+                let actual = ex.execute(&query, None).unwrap();
+                assert_eq!(actual.columns, vec![format!("n.{property}")], "{query}");
+                assert_eq!(actual.columns, expected.columns, "{query}");
+                assert_eq!(
+                    format!("{:?}", actual.rows),
+                    format!("{:?}", expected.rows),
+                    "{query}"
+                );
+                assert_eq!(actual.rows.len(), if nonempty { 3 } else { 0 }, "{query}");
+                for row in &actual.rows {
+                    assert!(row[&format!("n.{property}")].as_str().is_some(), "{query}");
+                    let ids = QueryResult::graph_ids(row);
+                    assert!(ids == ["a"] || ids == ["b"], "{query}: {ids:?}");
+                }
+                if admitted {
+                    let (patterns, shape) = query_shape(&query);
+                    let scan =
+                        super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
+                    let (_, retained) = ex
+                        .fused_rows(
+                            &matcher,
+                            &ev,
+                            vec![Row::new()],
+                            &patterns,
+                            &shape,
+                            &scan,
+                            &None,
+                            Some(3),
+                            false,
+                            capacity(&query),
+                        )
+                        .unwrap();
+                    assert_eq!(
+                        retained.len(),
+                        if nonempty { 3 } else { 0 },
+                        "Heap must retain only capacity before finish_fused truncates: {query}"
+                    );
+                }
+                let probe = Executor::new(ex.sources.clone(), true).with_probe();
+                let probed = probe.execute(&query, None).unwrap();
+                assert_eq!(probed.columns, actual.columns, "{query}");
+                assert_eq!(
+                    format!("{:?}", probed.rows),
+                    format!("{:?}", actual.rows),
+                    "{query}"
+                );
+                assert_eq!(probed.more, nonempty, "{query}");
+            }
+        }
+        for label in ["CallSite", "CALLSITE", "CallSite:Node"] {
+            let query = format!("MATCH (n:{label}) RETURN n.id AS id, n.callee_name AS name ORDER BY name DESC, id SKIP 2 LIMIT 3");
+            assert_eq!(capacity(&query), Some(5));
+            let expected = full_sort(&ex, &query).unwrap();
+            let actual = ex.execute(&query, None).unwrap();
+            assert_eq!(actual.columns, expected.columns);
+            assert_eq!(format!("{:?}", actual.rows), format!("{:?}", expected.rows));
+            let cancelled = super::super::CancelToken::new();
+            cancelled.cancel();
+            let cancelled_ex = Executor::new(ex.sources.clone(), true).with_cancel(cancelled);
+            assert!(matches!(
+                cancelled_ex.execute(&query, None),
+                Err(CypherError::Cancelled)
+            ));
+        }
+    }
+
+    #[test]
+    fn real_fixture_matches_full_sort_rows_provenance_skip_and_http_probe() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let graph =
+            Arc::new(graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap());
+        let ex = Executor::new(
+            vec![
+                Source {
+                    id: Arc::from("a"),
+                    graph: graph.clone(),
+                },
+                Source {
+                    id: Arc::from("b"),
+                    graph,
+                },
+            ],
+            true,
+        );
+        let ev = Evaluator::new(&ex, &ex.params);
+        let matcher = Matcher { ex: &ex, ev: &ev };
+        let cases = [
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY ordinal, id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY n.ordinal DESC, id SKIP 7 LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_name AS name ORDER BY id LIMIT 0",
+            "MATCH (n:CallSiteNode) WHERE n.id < 0 RETURN n.id AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.callee_class AS className, n.callee_name AS methodName ORDER BY className, methodName LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.caller_name AS name ORDER BY n.caller_class DESC, name, id SKIP 7 LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_descriptor AS descriptor ORDER BY descriptor DESC, n.caller_signature LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_signature AS signature ORDER BY signature, n.caller_descriptor DESC LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS name ORDER BY name LIMIT 0",
+        ];
+        for query in cases {
+            let (patterns, shape) = query_shape(query);
+            assert!(bounded_order_capacity(&shape, false, &patterns, &[Row::new()]).is_some());
+            let scan = super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
+            let (columns, rows) = ex
+                .fused_rows(
+                    &matcher,
+                    &ev,
+                    vec![Row::new()],
+                    &patterns,
+                    &shape,
+                    &scan,
+                    &None,
+                    None,
+                    false,
+                    None,
+                )
+                .unwrap();
+            let expected = finish_fused(&ev, columns, rows, &shape).unwrap();
+            let actual = ex.execute(query, None).unwrap();
+            assert_eq!(actual.columns, expected.columns, "{query}");
+            assert_eq!(
+                format!("{:?}", actual.rows),
+                format!("{:?}", expected.rows),
+                "{query}"
+            );
+            if query == cases[0] {
+                assert_eq!(
+                    actual.rows.len(),
+                    32,
+                    "Real core fixture must contain enough calls"
+                );
+                assert_eq!(QueryResult::graph_ids(&actual.rows[0]), ["a"]);
+                assert_eq!(QueryResult::graph_ids(&actual.rows[1]), ["b"]);
+            }
+        }
+        for query in [cases[0], cases[4], cases[5]] {
+            let plain = ex.execute(query, None).unwrap();
+            let probed_ex = Executor::new(ex.sources.clone(), true).with_probe();
+            let probed = probed_ex.execute(query, None).unwrap();
+            assert_eq!(format!("{:?}", plain.rows), format!("{:?}", probed.rows));
+            assert!(probed.more);
+        }
+    }
 }
 
 #[cfg(test)]
@@ -2048,3 +3060,11 @@ mod with_prefix_tests {
         assert_eq!(QueryResult::graph_ids(&r.rows[1]), ["b"]);
     }
 }
+
+#[cfg(test)]
+#[path = "identity_projection_tests.rs"]
+mod identity_projection_tests;
+
+#[cfg(test)]
+#[path = "owned_projection_tests.rs"]
+mod owned_projection_tests;

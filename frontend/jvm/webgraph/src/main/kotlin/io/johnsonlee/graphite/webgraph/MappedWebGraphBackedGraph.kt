@@ -16,6 +16,7 @@ import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
+import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
@@ -41,6 +42,7 @@ import io.johnsonlee.graphite.graph.StringPropertyDisjunctionDistinctProjection
 import io.johnsonlee.graphite.graph.StringPropertyDisjunctionProjection
 import io.johnsonlee.graphite.graph.StringPropertyDistinctRow
 import io.johnsonlee.graphite.graph.StringPropertyProjectionRow
+import io.johnsonlee.graphite.graph.WorkAwareStreamingStringPropertyProjection
 import io.johnsonlee.graphite.graph.StringPropertyLookupOrder
 import io.johnsonlee.graphite.graph.StringPropertyPredicate
 import io.johnsonlee.graphite.graph.StringMatchMode
@@ -172,6 +174,7 @@ internal class MappedWebGraphBackedGraph(
     WorkAwareStringPropertyDisjunctionLookup,
     WorkAwareStringPropertyDisjunctionAggregation,
     StringPropertyDisjunctionProjection,
+    WorkAwareStreamingStringPropertyProjection,
     StringPropertyDisjunctionDistinctProjection,
     ReleasableStringPropertyDisjunctionCache,
     PreparedStringPropertyDisjunctionLookup,
@@ -285,8 +288,8 @@ internal class MappedWebGraphBackedGraph(
         val ids = nodeTypeIndex.idIterator(type)
         var inspected = 0
         while (ids.hasNext()) {
-            if ((inspected++ and NODE_ID_SCAN_CANCELLATION_MASK) == 0 && Thread.currentThread().isInterrupted) {
-                throw CancellationException("Node ID candidate scan interrupted")
+            if ((inspected++ and NODE_ID_SCAN_CANCELLATION_MASK) == 0) {
+                checkThreadInterrupted { CancellationException("Node ID candidate scan interrupted") }
             }
             val id = ids.nextInt()
             workConsumer?.consume()
@@ -611,11 +614,8 @@ internal class MappedWebGraphBackedGraph(
                     var inspected = 0
                     try {
                         nodeTypeIndex.forEachIdWhile(CallSiteNode::class.java, start, end) { nodeId ->
-                            if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                                (abort.get() || Thread.currentThread().isInterrupted)
-                            ) {
-                                if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
-                                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                            if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                                checkWorkerInterrupted(abort, countScanAbort = true)
                             }
                             accounting.consume()
                             var matched = false
@@ -709,6 +709,7 @@ internal class MappedWebGraphBackedGraph(
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
         }
         failure?.let { error -> throw error }
+        checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
         val rows = ArrayList<StringPropertyDistinctRow>(targetSize)
         val seenValues = HashSet<List<String?>>()
         results.filterNotNull().sortedBy(ParallelCallSiteProjectionResult::workerIndex).forEach { result ->
@@ -747,10 +748,8 @@ internal class MappedWebGraphBackedGraph(
         var inspected = 0
         try {
             for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
-                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                    Thread.currentThread().isInterrupted
-                ) {
-                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                    checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                 }
                 accounting.consume()
                 var matched = false
@@ -788,6 +787,83 @@ internal class MappedWebGraphBackedGraph(
         } finally {
             accounting.flush()
         }
+    }
+
+    override fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean = forEachStringPropertyProjection(type, projectedProperties, null, checkCancelled, consumer)
+
+    override fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        preflightWorkConsumer: GraphWorkConsumer?,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean {
+        if (type != CallSiteNode::class.java || projectedProperties.isEmpty() ||
+            projectedProperties.any { !supportsRawStringProperty(type, it) }
+        ) return false
+        if (!canStreamCallSiteProjection(preflightWorkConsumer)) return false
+        val propertyIndexes = projectedProperties.map(::requiredCallSiteStringPropertyIndex)
+        fun checkProjectionCancellation() {
+            checkCancelled()
+            checkThreadInterrupted { CancellationException("Mapped CallSite projection interrupted") }
+        }
+        checkProjectionCancellation()
+        forEachRawCallSiteStringIds(null) { _, callerClass, callerName, calleeClass, calleeName ->
+            checkProjectionCancellation()
+            consumer(StringPropertyProjectionRow(propertyIndexes.map { propertyIndex ->
+                val stringId = when (propertyIndex) {
+                    CALLER_CLASS_PROPERTY_INDEX -> callerClass
+                    CALLER_NAME_PROPERTY_INDEX -> callerName
+                    CALLEE_CLASS_PROPERTY_INDEX -> calleeClass
+                    else -> calleeName
+                }
+                stringTable.get(stringId)
+            }))
+        }
+        checkProjectionCancellation()
+        return true
+    }
+
+    // Publish only completed immutable structural decisions. Cold callers may validate concurrently;
+    // none waits on a cancelled initializer, and no request's work consumer is retained by the graph.
+    @Volatile
+    private var callSiteProjectionSupported: Boolean? = null
+
+    private fun canStreamCallSiteProjection(workConsumer: GraphWorkConsumer?): Boolean {
+        checkCallSiteProjectionPreflightInterrupted()
+        return callSiteProjectionSupported ?: validateCallSiteProjection(workConsumer).also {
+            callSiteProjectionSupported = it
+        }
+    }
+
+    private fun checkCallSiteProjectionPreflightInterrupted() {
+        // Empty scans retain the projection callback's original precedence over the thread flag.
+        if (nodeTypeIndex.count(CallSiteNode::class.java) > 0L) {
+            checkThreadInterrupted { CancellationException("Mapped CallSite projection preflight interrupted") }
+        }
+    }
+
+    private fun validateCallSiteProjection(workConsumer: GraphWorkConsumer?): Boolean {
+        var index = 0
+        // Reused IDs may leave a typed entry pointing at a different current record. Refuse
+        // before row/cancellation callbacks so fallback never receives partial rows.
+        // Inspected structural candidates are charged separately.
+        for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
+            if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                checkThreadInterrupted { CancellationException("Mapped CallSite projection preflight interrupted") }
+            }
+            workConsumer?.consume()
+            if (nodeId < 0 || nodeId >= nodeOffsets.size) return false
+            val offset = nodeOffsets.offset(nodeId)
+            if (offset < 0L || offset > mappedNodeData.limit() - NODE_HEADER_BYTES) return false
+            if (mappedNodeData.get(offset.toInt() + Int.SIZE_BYTES).toInt() != NodeSerializer.TAG_CALL_SITE_NODE) return false
+        }
+        return true
     }
 
     override fun projectStringPropertyDisjunction(
@@ -889,10 +965,8 @@ internal class MappedWebGraphBackedGraph(
         try {
             while (nodeIds.hasNext() && inspected < maxInspected) {
                 val nodeId = nodeIds.nextInt()
-                if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                    Thread.currentThread().isInterrupted
-                ) {
-                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                    checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                 }
                 inspected++
                 accounting.consume()
@@ -1040,10 +1114,8 @@ internal class MappedWebGraphBackedGraph(
             var inspected = 0
             try {
                 for (nodeId in nodeTypeIndex.ids(type)) {
-                    if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                        Thread.currentThread().isInterrupted
-                    ) {
-                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                    if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                        checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                     }
                     accounting.consume()
                     val matches = predicates.indices.any { index ->
@@ -1104,10 +1176,8 @@ internal class MappedWebGraphBackedGraph(
             try {
                 while (yielded < limit && nodeIds.hasNext()) {
                     val nodeId = nodeIds.nextInt()
-                    if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                        Thread.currentThread().isInterrupted
-                    ) {
-                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                    if ((inspected++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                        checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                     }
                     accounting.consume()
                     var matched = false
@@ -1215,11 +1285,8 @@ internal class MappedWebGraphBackedGraph(
                     var inspected = 0
                     try {
                         nodeTypeIndex.forEachIdWhile(type, start, end) { nodeId ->
-                            if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                                (abort.get() || Thread.currentThread().isInterrupted)
-                            ) {
-                                if (abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
-                                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                            if ((inspected and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                                checkWorkerInterrupted(abort, countScanAbort = true)
                             }
                             accounting.consume()
                             var matched = false
@@ -1330,38 +1397,38 @@ internal class MappedWebGraphBackedGraph(
                 .filterNotNull().sumOf { result -> result.matches.size } >= limit
             waveStart += wave.size
         }
-        interruption?.let { error ->
-            indexReservation?.close()
-            indexReservation = null
-            Thread.currentThread().interrupt()
-            throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
-        }
-        failure?.let { error ->
-            indexReservation?.close()
-            indexReservation = null
-            throw error
-        }
-        indexReservation?.let { reservation ->
-            indexReservation = null
-            val completed = results.filterNotNull()
-            if (executedTasks == tasks.size && completed.size == tasks.size &&
-                completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)
-            ) {
-                try {
-                    buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
-                } catch (cancelled: CancellationException) {
-                    throw cancelled
-                } catch (_: Exception) {
-                    // The bounded scan already produced a complete query result. Index publication is
-                    // an optional cache handoff, so a budget/admission/build failure must not replace it.
-                }
-            } else {
-                reservation.close()
+        try {
+            interruption?.let { error ->
+                Thread.currentThread().interrupt()
+                throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED).apply { initCause(error) }
             }
+            failure?.let { error ->
+                throw error
+            }
+            checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
+            indexReservation?.let { reservation ->
+                val completed = results.filterNotNull()
+                if (executedTasks == tasks.size && completed.size == tasks.size &&
+                    completed.all(ParallelCallSiteScanResult::capturedCompleteIndex)
+                ) {
+                    // The callee now owns release on failure or retention by the published index.
+                    indexReservation = null
+                    try {
+                        buildAndPublishCallSiteStringIndex(completed, nodeCount, reservation, workConsumer)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        // The bounded scan already produced a complete query result. Index publication is
+                        // an optional cache handoff, so a budget/admission/build failure must not replace it.
+                    }
+                }
+            }
+            val matchedNodeIds = results.asSequence().filterNotNull()
+                .flatMap { result -> result.matches.asSequence() }.take(limit)
+            return matchedNodeIds.mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
+        } finally {
+            indexReservation?.close()
         }
-        val matchedNodeIds = results.asSequence().filterNotNull()
-            .flatMap { result -> result.matches.asSequence() }.take(limit)
-        return matchedNodeIds.mapNotNull { nodeId -> node(NodeId(nodeId))?.let(type::cast) }
     }
 
     @Suppress("CyclomaticComplexMethod", "LongMethod", "NestedBlockDepth", "TooGenericExceptionCaught")
@@ -1659,8 +1726,17 @@ internal class MappedWebGraphBackedGraph(
 
     private fun checkCallSiteIndexBuildWorker(index: Int, abort: AtomicBoolean) {
         if ((index and RAW_SCAN_INTERRUPTION_POLL_MASK) != 0) return
-        if (abort.get() || Thread.currentThread().isInterrupted) {
+        checkWorkerInterrupted(abort)
+    }
+
+    private fun checkWorkerInterrupted(abort: AtomicBoolean, countScanAbort: Boolean = false) {
+        if (abort.get()) {
+            if (countScanAbort) callSiteScanAbortedWorkers.incrementAndGet()
             throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+        }
+        checkThreadInterrupted {
+            if (countScanAbort && abort.get()) callSiteScanAbortedWorkers.incrementAndGet()
+            CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
         }
     }
 
@@ -1675,15 +1751,11 @@ internal class MappedWebGraphBackedGraph(
         val accounting = BufferedGraphWorkConsumer(workConsumer)
         try {
             for (predicate in predicateKeys) {
-                if (Thread.currentThread().isInterrupted) {
-                    throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
-                }
+                checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                 val actual = MutableString()
                 for (stringId in 0 until stringTable.size()) {
-                    if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                        Thread.currentThread().isInterrupted
-                    ) {
-                        throw CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED)
+                    if ((stringId and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                        checkThreadInterrupted { CancellationException(MAPPED_STRING_PROPERTY_SCAN_INTERRUPTED) }
                     }
                     accounting.consume()
                     stringTable.get(stringId, actual)
@@ -2041,6 +2113,8 @@ internal class MappedWebGraphBackedGraph(
     }
 
     internal fun isMetadataInitialized(): Boolean = metadata.isInitialized()
+
+    internal fun isCallSiteOrdinalsInitialized(): Boolean = callSiteOrdinals.isInitialized()
 
     internal fun isMethodIndexInitialized(): Boolean = methodIndex != null
 
@@ -2482,10 +2556,8 @@ internal class MappedWebGraphBackedGraph(
         var index = 0
         try {
             for (nodeId in nodeTypeIndex.ids(CallSiteNode::class.java)) {
-                if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0 &&
-                    Thread.currentThread().isInterrupted
-                ) {
-                    throw CancellationException("Mapped CallSite string index build interrupted")
+                if ((index++ and RAW_SCAN_INTERRUPTION_POLL_MASK) == 0) {
+                    checkThreadInterrupted { CancellationException("Mapped CallSite string index build interrupted") }
                 }
                 accounting.consume()
                 withRawCallSiteStringIds(nodeId) { callerClass, callerName, calleeClass, calleeName ->
@@ -2589,8 +2661,13 @@ internal class MappedWebGraphBackedGraph(
     }
 
     private fun readNodeAt(offset: Long): Node {
-        val input = ByteBufferDataInput(mappedNodeData, offset.toInt())
-        return NodeSerializer.readNode(input, stringTable, nodeDataVersion, callSiteOrdinals.value)
+        val position = offset.toInt()
+        // A malformed header still goes through the serializer's EOF/unknown-tag validation.
+        val isCallSite = position >= 0 && position <= mappedNodeData.limit() - NODE_HEADER_BYTES &&
+            mappedNodeData.get(position + Int.SIZE_BYTES).toInt() == NodeSerializer.TAG_CALL_SITE_NODE
+        val ordinals = if (isCallSite) callSiteOrdinals.value else CallSiteOrdinals.EMPTY
+        val input = ByteBufferDataInput(mappedNodeData, position)
+        return NodeSerializer.readNode(input, stringTable, nodeDataVersion, ordinals)
     }
 }
 

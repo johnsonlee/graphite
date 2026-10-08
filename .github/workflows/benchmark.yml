@@ -14,22 +14,27 @@ concurrency:
 env:
   JAVA_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+  # Cap direct Java launchers and inherited forks; explicit per-task heaps take precedence.
+  JAVA_TOOL_OPTIONS: -Xmx2g
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: 3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419
   LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
   WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256: 5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  BENCHMARK_REPORT_TRANSITION_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
+  RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
+  RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
+  RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -55,6 +60,9 @@ jobs:
 
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
+
+    - name: Test native multi-graph snapshot harness
+      run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
@@ -2965,8 +2973,8 @@ jobs:
     needs: [candidate-gate-tests, prepare-fixture64]
     runs-on: ubuntu-latest
     # Two release builds of the CLI, then each engine opens the 64 graphs once (about three
-    # minutes cold on a hosted runner) and answers the fixture64 plan five times; a regression
-    # candidate repeats both in reverse order.
+    # minutes cold on a hosted runner) and answers the same broad multi-graph plan five
+    # times. Each engine has a bounded query budget; a regression repeats both in reverse order.
     timeout-minutes: 60
     permissions:
       contents: read
@@ -3036,18 +3044,21 @@ jobs:
       run: |
         set -euo pipefail
         HARNESS=base/backend/bench/snapshot.py
-        # The plan is base-owned too; until main carries the schema shapes the candidate
-        # copy stands in, pinned to the reviewed hash and only after the candidate's own
-        # tests passed, so both revisions answer the same plan.
-        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'SCHEMA_SHAPES' "${HARNESS}"; then
+        # Until main has the broad suite, use the reviewed candidate harness and all
+        # its imported query definitions for both engines, never one plan per revision.
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'MULTIGRAPH_QUERY_SUITE_V2' "${HARNESS}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/backend/bench/snapshot.py | cut -d' ' -f1)" = \
             "${RUST_LATENCY_TRANSITION_HARNESS_SHA256}"
+          test "$(sha256sum candidate/backend/bench/shapes.py | cut -d' ' -f1)" = \
+            "${RUST_LATENCY_TRANSITION_SHAPES_SHA256}"
+          test "$(sha256sum candidate/backend/bench/fixture64.py | cut -d' ' -f1)" = \
+            "${RUST_LATENCY_TRANSITION_FIXTURE_SHA256}"
           HARNESS=candidate/backend/bench/snapshot.py
         fi
         test -f "${HARNESS}"
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-rust-latency' "${COMPARATOR}"; then
+        if ! grep -q 'RUST_MULTIGRAPH_COVERAGE_V2' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
@@ -3055,6 +3066,51 @@ jobs:
         fi
         echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
+
+    # Keep actual executable identity: equal Rust sources need not yield equal ELF files.
+    # This evidence does not change the paired measurements or their gate decision.
+    - name: Archive Rust latency provenance
+      env:
+        HARNESS: ${{ steps.controls.outputs.harness }}
+        COMPARATOR: ${{ steps.controls.outputs.comparator }}
+      run: |
+        python3 - <<'PY'
+        import hashlib, json, os, pathlib, shutil, subprocess
+        out = pathlib.Path("benchmark-results/rust-provenance")
+        out.mkdir(parents=True, exist_ok=True)
+        def digest(path):
+            with path.open("rb") as stream:
+                return hashlib.file_digest(stream, "sha256").hexdigest()
+        flags = ("RUSTFLAGS", "CARGO_ENCODED_RUSTFLAGS", "CARGO_BUILD_TARGET", "CARGO_INCREMENTAL",
+                 "RUSTC_WRAPPER", "CC", "CXX", "AR", "CFLAGS", "CXXFLAGS", "LDFLAGS",
+                 "GRAPHITE_VERSION", "GRAPHITE_COMMIT", "GRAPHITE_NO_FASTPATH",
+                 "RAYON_NUM_THREADS", "MALLOC_CONF", "_RJEM_MALLOC_CONF", "LD_PRELOAD", "LD_LIBRARY_PATH")
+        data = {"environment": {name: os.environ.get(name) for name in flags}, "files": {}, "commands": []}
+        paths = [pathlib.Path(os.environ["HARNESS"]), pathlib.Path(os.environ["COMPARATOR"]),
+                 pathlib.Path(os.environ["HARNESS"]).with_name("fixture64.py"),
+                 pathlib.Path(os.environ["HARNESS"]).with_name("shapes.py")]
+        paths += [pathlib.Path("shared-fixture64") / name for name in
+                  ("fixture64.complete.json", "fixture-reproducibility.json", "graphs/graphs.tsv", "graphs/fixture-provenance.tsv")]
+        for revision in ("base", "candidate"):
+            binary = pathlib.Path(revision) / "target/release/graphite"
+            archived = out / (revision + "-graphite")
+            shutil.copy2(binary, archived)
+            assert digest(binary) == digest(archived), "Binary changed during archive"
+            paths += [binary, archived, pathlib.Path(revision) / "Cargo.toml", pathlib.Path(revision) / "Cargo.lock"]
+        # Cargo config can contain credentials; archive only hashes, never contents.
+        dirs = [pathlib.Path.cwd(), *pathlib.Path.cwd().parents, pathlib.Path("base"), pathlib.Path("candidate")]
+        paths += [directory / ".cargo" / name for directory in dirs for name in ("config", "config.toml")]
+        paths += [pathlib.Path(os.environ.get("CARGO_HOME", str(pathlib.Path.home() / ".cargo"))) / name
+                  for name in ("config", "config.toml")]
+        data["files"] = {str(path): digest(path) if path.is_file() else None for path in paths}
+        commands = [["rustc", "--version", "--verbose"], ["cargo", "--version"]]
+        for revision in ("base", "candidate"):
+            commands += [["git", "-C", revision, "rev-parse", "HEAD", "HEAD:backend", "HEAD:cli"],
+                         ["readelf", "-h", "-n", "-S", "-W", revision + "/target/release/graphite"]]
+        for command in commands:
+            data["commands"].append({"command": command, "output": subprocess.check_output(command, text=True)})
+        (out / "provenance.json").write_text(json.dumps(data, indent=2) + "\n")
+        PY
 
     - name: Measure base then PR
       env:
@@ -3066,12 +3122,14 @@ jobs:
           python3 "${HARNESS}" \
             --manifest shared-fixture64/graphs/graphs.tsv \
             --binary "${REVISION}/target/release/graphite" \
-            --port 18080 --repetitions 5 \
+            --port 18080 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+            --responses-dir "benchmark-results/${REVISION}-rust-responses" \
             --server-log "benchmark-results/${REVISION}-rust-serve.log" \
             --out "benchmark-results/${REVISION}-rust.json"
         done
 
     - name: Compare Rust engine latency
+      id: rust_comparison
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
         COMPARATOR: ${{ steps.controls.outputs.comparator }}
@@ -3086,11 +3144,18 @@ jobs:
           mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
           mv benchmark-results/initial-rust-latency-status.json benchmark-results/rust-latency-status.json
         else
+          # Repeating cannot repair missing evidence or different query answers.
+          if jq -e '.errors | length > 0' benchmark-results/initial-rust-latency-status.json >/dev/null; then
+            mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
+            mv benchmark-results/initial-rust-latency-status.json benchmark-results/rust-latency-status.json
+            exit 1
+          fi
           for REVISION in candidate base; do
             python3 "${HARNESS}" \
               --manifest shared-fixture64/graphs/graphs.tsv \
               --binary "${REVISION}/target/release/graphite" \
-              --port 18081 --repetitions 5 \
+              --port 18081 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+              --responses-dir "benchmark-results/${REVISION}-rust-confirmation-responses" \
               --server-log "benchmark-results/${REVISION}-rust-confirmation-serve.log" \
               --out "benchmark-results/${REVISION}-rust-confirmation.json"
           done
@@ -3102,6 +3167,63 @@ jobs:
             --report benchmark-results/rust-latency-report.md \
             --status benchmark-results/rust-latency-status.json
         fi
+
+    # A confirmed failure stays failed. This one extra candidate run is attribution
+    # evidence only; its metrics-enabled results never enter either comparator.
+    - name: Diagnose confirmed Rust shape regression
+      if: ${{ failure() && steps.rust_comparison.outcome == 'failure' }}
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        set -euo pipefail
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test "$(sha256sum candidate/backend/bench/snapshot.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_HARNESS_SHA256}"
+        test "$(sha256sum candidate/backend/bench/fixture64.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_FIXTURE_SHA256}"
+        test "$(sha256sum candidate/backend/bench/shapes.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_SHAPES_SHA256}"
+        test "$(sha256sum candidate/backend/bench/metrics_capture.py | cut -d' ' -f1)" = "${RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256}"
+        DIAG=benchmark-results/rust-failure-diagnostic
+        mkdir -p "${DIAG}/harness"
+        cp candidate/backend/bench/{snapshot,fixture64,shapes,metrics_capture}.py "${DIAG}/harness/"
+        python3 - <<'PY'
+        import hashlib, json, pathlib, sys
+        out = pathlib.Path("benchmark-results/rust-failure-diagnostic")
+        sys.path.insert(0, str(out / "harness"))
+        from snapshot import confirmed_diagnostic_shape
+        status = pathlib.Path("benchmark-results/rust-latency-status.json")
+        result = json.loads(status.read_text()) if status.is_file() else {}
+        selected = confirmed_diagnostic_shape(result)
+        def digest(path):
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        files = [*sorted((out / "harness").glob("*.py")),
+                 pathlib.Path("candidate/target/release/graphite"),
+                 pathlib.Path("shared-fixture64/graphs/graphs.tsv"),
+                 pathlib.Path("shared-fixture64/graphs/fixture-provenance.tsv")]
+        if status.is_file():
+            files.append(status)
+        provenance = {"diagnosticOnly": True, "selectedShape": selected,
+                      "selection": "largest absoluteDeltaMs among confirmed blocked original broad shapes",
+                      "originalGateStatusUntouched": True,
+                      "scope": "candidate-only metrics-enabled full73x5; not a gate confirmation or retry",
+                      "files": {str(path): digest(path) for path in files}}
+        (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+        if selected is not None:
+            (out / "selected-shape.txt").write_text(selected + "\n")
+        PY
+        if [[ ! -f "${DIAG}/selected-shape.txt" ]]; then
+          echo "No eligible confirmed broad-shape failure; no diagnostic server started"
+          exit 0
+        fi
+        code=0
+        python3 "${DIAG}/harness/snapshot.py" \
+          --manifest shared-fixture64/graphs/graphs.tsv \
+          --binary candidate/target/release/graphite \
+          --port 18082 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+          --diagnostic-metrics-case "$(cat "${DIAG}/selected-shape.txt")" \
+          --responses-dir "${DIAG}/responses" \
+          --server-log "${DIAG}/serve.log" \
+          --out "${DIAG}/candidate-rust-diagnostic.json" || code=$?
+        printf '{"exitCode":%s,"diagnosticOnly":true}\n' "${code}" > "${DIAG}/execution.json"
+        exit "${code}"
 
     - name: Upload Rust engine latency results
       if: always()

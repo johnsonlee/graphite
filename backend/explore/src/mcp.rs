@@ -799,7 +799,7 @@ impl McpServer {
         // A request id is a string or a number (the MCP RequestId type); `null`, a
         // boolean or a structured value is not an id, and such a message is neither a
         // request nor a notification, so it is refused with a null response id.
-        if !is_notification && !(id.is_string() || id.is_number()) {
+        if !(is_notification || id.is_string() || id.is_number()) {
             return Some(error_response(
                 Value::Null,
                 INVALID_REQUEST,

@@ -117,6 +117,10 @@ import sootup.core.signatures.MethodSignature
 import sootup.core.util.Modifiers
 import sootup.java.core.JavaSootClass
 import sootup.java.bytecode.frontend.conversion.isBytecodeClassSource
+import sootup.java.bytecode.frontend.conversion.AsmMethodSource
+import sootup.java.bytecode.frontend.conversion.asStreamingMethod
+import sootup.java.bytecode.frontend.conversion.signatureFor
+import sootup.java.bytecode.frontend.conversion.streamingMethodSources
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -489,28 +493,7 @@ class SootUpAdapter(
                 if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
                     log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
                 }
-                if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
-                    val className = sootClass.type.fullyQualifiedName
-                    extractAnnotations(sootClass.annotations, className, "<class>")
-                    sootClass.fields.forEach { field ->
-                        extractAnnotations(field.annotations, className, field.name)
-                    }
-                }
-
-                activeSyntheticClass = SyntheticIdentity.isSyntheticClass(sootClass)
-                if (activeSyntheticClass) {
-                    syntheticIdentities.addClass(sootClass)
-                }
-                forEachMethod(sootClass) { method ->
-                    processMethod(method)
-                    if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
-                        extractAnnotations(method.annotations, sootClass.type.fullyQualifiedName, method.name)
-                    }
-                }
-
-                visitFieldsForClass(sootClass)
-                extensions.forEach { it.visit(sootClass, extensionContext) }
-                bytecodeMethodsCache.remove(sootClass)
+                processClassWithMethodCache(sootClass, extensionContext)
             }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
@@ -551,6 +534,37 @@ class SootUpAdapter(
         }
     }
 
+    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext) {
+        methodCacheOwner = sootClass as? JavaSootClass
+        try {
+            if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
+                val className = sootClass.type.fullyQualifiedName
+                extractAnnotations(sootClass.annotations, className, "<class>")
+                sootClass.fields.forEach { field ->
+                    extractAnnotations(field.annotations, className, field.name)
+                }
+            }
+
+            activeSyntheticClass = SyntheticIdentity.isSyntheticClass(sootClass)
+            if (activeSyntheticClass) {
+                syntheticIdentities.addClass(sootClass)
+            }
+            forEachMethod(sootClass) { method ->
+                processMethod(method)
+                if (extractAnnotationsEnabled && sootClass is JavaSootClass && method is JavaSootMethod) {
+                    extractAnnotations(method.annotations, sootClass.type.fullyQualifiedName, method.name)
+                }
+            }
+
+            visitFieldsForClass(sootClass)
+            extensions.forEach { it.visit(sootClass, extensionContext) }
+        } finally {
+            bytecodeMethodsCache.clear()
+            streamingSourcesCache.clear()
+            methodCacheOwner = null
+        }
+    }
+
     private fun log(message: String) {
         config.verbose?.invoke(message)
     }
@@ -575,7 +589,7 @@ class SootUpAdapter(
         val className = enumClass.type.fullyQualifiedName
         log { "Processing enum class: $className" }
 
-        val clinit = firstMethod(enumClass) { it.name == "<clinit>" && it.isStatic }
+        val clinit = findStaticMethod(enumClass, "<clinit>")
         if (clinit == null) {
             log { "  No <clinit> found for $className" }
             return
@@ -591,118 +605,106 @@ class SootUpAdapter(
         } finally {
             releaseConversionState(clinit)
         }
-        val stmtGraph = body.controlFlowGraph
+        extractEnumValues(className, body.controlFlowGraph)
+    }
+
+    private fun extractEnumValues(className: String, statements: Iterable<Stmt>) {
+        val constructors = indexEnumConstructors(statements)
 
         // Track local variable assignments: localName -> value (for constants)
         val localValues = mutableMapOf<String, Any?>()
         // Track local variable aliases: localName -> original localName (for tracking new objects)
         val localAliases = mutableMapOf<String, String>()
 
-        for (stmt in stmtGraph) {
-            when (stmt) {
-                is JAssignStmt -> {
-                    val left = stmt.leftOp
-                    val right = stmt.rightOp
+        for (stmt in statements) {
+            if (stmt !is JAssignStmt) continue
+            val left = stmt.leftOp
+            val right = stmt.rightOp
 
-                    // Track constant assignments to locals
-                    if (left is Local && right is SootConstant) {
-                        localValues[left.name] = extractConstantValue(right)
-                    }
+            if (left is Local) trackEnumLocalValue(left, right, localValues)
 
-                    // Track boxing method calls: Integer.valueOf(int), Long.valueOf(long), etc.
-                    // Pattern: $stackN = staticinvoke Integer.valueOf(1234)
-                    if (left is Local && right is JStaticInvokeExpr) {
-                        val boxedValue = extractBoxedValue(right)
-                        if (boxedValue != null) {
-                            localValues[left.name] = boxedValue
-                        }
-                    }
+            // Track local-to-local assignments (aliases)
+            if (left is Local && right is Local) {
+                // left = right, so left is an alias for right
+                // Follow the chain to find the original
+                val original = localAliases[right.name] ?: right.name
+                localAliases[left.name] = original
+            }
 
-                    // Track static field reads (enum constant references from other enums)
-                    // Pattern: $stackN = <sample.ab.Priority: Priority HIGH>
-                    // This handles the case where one enum's constructor takes another enum as argument
-                    if (left is Local && right is JFieldRef) {
-                        val fieldSig = right.fieldSignature
-                        val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
-                        val fieldType = fieldSig.type
-                        // Check if the field type matches the declaring class (enum constant pattern)
-                        if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
-                            localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
-                            log { "  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}" }
-                        }
-                    }
-
-                    // Track local-to-local assignments (aliases)
-                    if (left is Local && right is Local) {
-                        // left = right, so left is an alias for right
-                        // Follow the chain to find the original
-                        val original = localAliases[right.name] ?: right.name
-                        localAliases[left.name] = original
-                    }
-
-                    // Look for: EnumField = new EnumClass(...)
-                    if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className) {
-                        val fieldName = left.fieldSignature.name
-
-                        // The right side should be a local that was assigned from new + <init>
-                        // We need to find the <init> call to get the constructor arguments
-                        if (right is Local) {
-                            // Resolve alias to find the original local that was used with new/init
-                            val originalLocal = localAliases[right.name] ?: right.name
-                            log { "  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)" }
-                            val initValues = findEnumInitValues(originalLocal, stmtGraph, localValues)
-                            if (initValues.isNotEmpty()) {
-                                graphBuilder.addEnumValues(className, fieldName, initValues)
-                                log { "  Extracted enum value: $className.$fieldName = $initValues" }
-                            }
-                        }
-                    }
+            // Look for a field assigned from the local used by new + <init>.
+            if (left is JFieldRef && left.fieldSignature.declClassType.fullyQualifiedName == className && right is Local) {
+                val fieldName = left.fieldSignature.name
+                val originalLocal = localAliases[right.name] ?: right.name
+                log { "  Found field assignment: $fieldName = ${right.name} (resolved to $originalLocal)" }
+                val initValues = findEnumInitValues(originalLocal, constructors, localValues)
+                if (initValues.isNotEmpty()) {
+                    graphBuilder.addEnumValues(className, fieldName, initValues)
+                    log { "  Extracted enum value: $className.$fieldName = $initValues" }
                 }
             }
         }
     }
 
-    /**
-     * Find the values passed to enum constructor for a given local variable.
-     * Looks for the pattern: local.<init>("NAME", ordinal, value1, value2, ...)
-     *
-     * @return list of user-defined constructor arguments (excluding name and ordinal)
-     */
-    private fun findEnumInitValues(localName: String, stmtGraph: ControlFlowGraph<*>, localValues: Map<String, Any?>): List<Any?> {
-        for (stmt in stmtGraph) {
-            if (stmt !is JInvokeStmt) continue
+    private fun trackEnumLocalValue(left: Local, right: Value, localValues: MutableMap<String, Any?>) {
+        // Track constant assignments to locals
+        if (right is SootConstant) {
+            localValues[left.name] = extractConstantValue(right)
+        }
 
-            val invokeExpr = stmt.invokeExpr.orElse(null) ?: continue
-            log { "    Checking invoke: ${invokeExpr.javaClass.simpleName} - ${invokeExpr.methodSignature}" }
-
-            if (invokeExpr !is AbstractInstanceInvokeExpr) {
-                log { "    Skipping: not AbstractInstanceInvokeExpr" }
-                continue
-            }
-            if (invokeExpr.methodSignature.name != INIT_METHOD) {
-                log { "    Skipping: method name is '${invokeExpr.methodSignature.name}', not '<init>'" }
-                continue
-            }
-
-            val base = invokeExpr.base
-            log { "    Base: ${base.javaClass.simpleName} - $base (looking for $localName)" }
-            if (base.name != localName) continue
-
-            // Found the <init> call
-            // Args: [name, ordinal, ...user args...]
-            val args = invokeExpr.args
-            log { "    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}" }
-            if (args.size > 2) {
-                // Get all user-defined arguments (starting from index 2)
-                return args.drop(2).map { arg ->
-                    extractValueFromArg(arg, localValues)
-                }
-            } else {
-                log { "    Only ${args.size} args (need > 2 for user-defined values)" }
+        // Track boxing method calls: Integer.valueOf(int), Long.valueOf(long), etc.
+        // Pattern: $stackN = staticinvoke Integer.valueOf(1234)
+        if (right is JStaticInvokeExpr) {
+            val boxedValue = extractBoxedValue(right)
+            if (boxedValue != null) {
+                localValues[left.name] = boxedValue
             }
         }
-        log { "    No <init> call found for local $localName" }
-        return emptyList()
+
+        // Track static field reads (enum constant references from other enums)
+        // Pattern: $stackN = <sample.ab.Priority: Priority HIGH>
+        // This handles the case where one enum's constructor takes another enum as argument
+        if (right is JFieldRef) {
+            val fieldSig = right.fieldSignature
+            val fieldDeclClass = fieldSig.declClassType.fullyQualifiedName
+            val fieldType = fieldSig.type
+            // Check if the field type matches the declaring class (enum constant pattern)
+            if (fieldType is ClassType && fieldType.fullyQualifiedName == fieldDeclClass) {
+                localValues[left.name] = EnumValueReference(fieldDeclClass, fieldSig.name)
+                log { "  Tracked enum reference: ${left.name} = $fieldDeclClass.${fieldSig.name}" }
+            }
+        }
+    }
+
+    /**
+     * Keep the first eligible constructor in the same order as the old full-CFG search.
+     * Only index expressions: argument locals must be read at each field assignment, not here.
+     */
+    private fun indexEnumConstructors(statements: Iterable<Stmt>): Map<String, AbstractInstanceInvokeExpr> {
+        val constructors = mutableMapOf<String, AbstractInstanceInvokeExpr>()
+        for (stmt in statements) {
+            if (stmt !is JInvokeStmt) continue
+            val invoke = stmt.invokeExpr.orElse(null) ?: continue
+            log { "    Checking invoke: ${invoke.javaClass.simpleName} - ${invoke.methodSignature}" }
+            if (invoke is AbstractInstanceInvokeExpr && invoke.methodSignature.name == INIT_METHOD && invoke.args.size > 2) {
+                constructors.putIfAbsent(invoke.base.name, invoke)
+            }
+        }
+        return constructors
+    }
+
+    private fun findEnumInitValues(
+        localName: String,
+        constructors: Map<String, AbstractInstanceInvokeExpr>,
+        localValues: Map<String, Any?>
+    ): List<Any?> {
+        val invoke = constructors[localName]
+        if (invoke == null) {
+            log { "    No <init> call found for local $localName" }
+            return emptyList()
+        }
+        val args = invoke.args
+        log { "    Found <init> for $localName with ${args.size} args: ${args.map { it.toString() }}" }
+        return args.drop(2).map { extractValueFromArg(it, localValues) }
     }
 
     /**
@@ -2509,10 +2511,15 @@ class SootUpAdapter(
             // The algorithm resolves bodies through the methods the view holds, which memoize
             // them; their conversion scratch state is released here, as the adapter's own
             // detached copies release theirs after each method.
-            view.classes.forEach { sootClass ->
-                if (sootClass is JavaSootClass) bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
-            }
+            view.classes.forEach(::releaseClassConversionState)
         }
+    }
+
+    private fun releaseClassConversionState(sootClass: SootClass) {
+        if (sootClass !is JavaSootClass) return
+        val sources = streamingSources(sootClass)
+        if (sources != null) sources.forEach { releaseConversionState(it) }
+        else bytecodeMethods(sootClass)?.forEach(::releaseConversionState)
     }
 
     private fun bridgeBody(bridge: SootMethod): Body = try {
@@ -2542,9 +2549,14 @@ class SootUpAdapter(
         // Find main methods and other entry points
         val entryPoints = mutableListOf<MethodSignature>()
         view.classes.forEach { sootClass ->
-            forEachMethod(sootClass) { method ->
-                if (method.name == "main" && method.isStatic) {
-                    entryPoints.add(method.signature)
+            val selected = streamingStaticMethodsOrNull(sootClass, "main")
+            if (selected != null) {
+                selected.mapTo(entryPoints) { it.signature }
+            } else {
+                forEachMethod(sootClass) { method ->
+                    if (method.name == "main" && method.isStatic) {
+                        entryPoints.add(method.signature)
+                    }
                 }
             }
         }
@@ -2552,16 +2564,52 @@ class SootUpAdapter(
     }
 
     private fun forEachMethod(sootClass: SootClass, action: (SootMethod) -> Unit) {
-        streamMethodsOrNull(sootClass)?.forEach(action) ?: resolveMethodsOrEmpty(sootClass).forEach(action)
+        streamMethodsOrNull(sootClass)?.forEach(action)
+            ?: resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)
     }
 
-    private fun firstMethod(sootClass: SootClass, predicate: (SootMethod) -> Boolean): SootMethod? {
-        streamMethodsOrNull(sootClass)?.firstOrNull(predicate)?.let { return it }
-        return resolveMethodsOrEmpty(sootClass).firstOrNull(predicate)
+    private fun findStaticMethod(sootClass: SootClass, name: String): SootMethod? {
+        val selected = streamingStaticMethodsOrNull(sootClass, name)
+        val streamed = if (selected != null) {
+            selected.firstOrNull()
+        } else {
+            streamMethodsOrNull(sootClass)?.firstOrNull { it.name == name && it.isStatic }
+        }
+        // Preserve the existing fallback, including resolution failures, when no wrapper survived.
+        return streamed ?: resolveMethodsOrEmpty(sootClass).firstOrNull { it.name == name && it.isStatic }
+    }
+
+    /**
+     * Only our parsed ASM sources keep name/access unchanged from method construction. Select
+     * those fields before wrapping, but still convert all metadata for a selected method so a
+     * failing annotation cannot introduce an entry point previously skipped by streaming.
+     */
+    private fun streamingStaticMethodsOrNull(sootClass: SootClass, name: String): List<SootMethod>? {
+        if (sootClass !is JavaSootClass) return null
+        return streamingSources(sootClass)?.mapNotNull { source ->
+            try {
+                if (source.name == name && (source.access and Opcodes.ACC_STATIC) != 0) {
+                    source.asStreamingMethod(sootClass.type)
+                } else {
+                    null
+                }
+            } catch (oom: OutOfMemoryError) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                System.gc()
+                null
+            } catch (e: Exception) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                null
+            } finally {
+                // Run even for non-matches, and before a caller can stop after its first match.
+                releaseConversionState(source)
+            }
+        }
     }
 
     private fun streamMethodsOrNull(sootClass: SootClass): Sequence<SootMethod>? {
         if (sootClass !is JavaSootClass) return null
+        streamingSources(sootClass)?.let { return streamMethods(sootClass, it) }
         val methods = bytecodeMethods(sootClass) ?: return null
         return sequence {
             for (method in methods) {
@@ -2575,6 +2623,34 @@ class SootUpAdapter(
                 } finally {
                     releaseConversionState(method.bodySource)
                 }
+            }
+        }
+    }
+
+    // Only the current pass-2 class may populate the sorted-method caches. Ancestor lookups,
+    // enum discovery and post-pass call-graph cleanup must not retain a corpus-wide index.
+    private var methodCacheOwner: JavaSootClass? = null
+
+    private val streamingSourcesCache = IdentityHashMap<JavaSootClass, List<AsmMethodSource>?>()
+
+    private fun streamingSources(sootClass: JavaSootClass): List<AsmMethodSource>? =
+        if (sootClass === methodCacheOwner) {
+            streamingSourcesCache.getOrPut(sootClass) { sootClass.classSource.streamingMethodSources() }
+        } else {
+            sootClass.classSource.streamingMethodSources()
+        }
+
+    private fun streamMethods(sootClass: JavaSootClass, sources: List<AsmMethodSource>): Sequence<SootMethod> = sequence {
+        for (source in sources) {
+            try {
+                yield(source.asStreamingMethod(sootClass.type))
+            } catch (oom: OutOfMemoryError) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                System.gc()
+            } catch (e: Exception) {
+                log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+            } finally {
+                releaseConversionState(source)
             }
         }
     }
@@ -2626,13 +2702,18 @@ class SootUpAdapter(
      * here for a deterministic walk; `null` for a class that did not come from bytecode.
      */
     private fun bytecodeMethods(sootClass: JavaSootClass): List<JavaSootMethod>? =
-        bytecodeMethodsCache.getOrPut(sootClass) { resolveBytecodeMethods(sootClass) }
+        if (sootClass === methodCacheOwner) {
+            bytecodeMethodsCache.getOrPut(sootClass) { resolveBytecodeMethods(sootClass) }
+        } else {
+            resolveBytecodeMethods(sootClass)
+        }
 
     /**
      * [bytecodeMethods] per class while the class is being processed: `resolveMethods()`
      * converts every method's descriptor into a signature on each call, and a class is asked
      * for its methods more than once in a pass (its graph, its declared sub-signatures). The
-     * entry is dropped once the class's pass is over, so the cache holds one class at a time.
+     * entry is dropped in finally once that class's pass is over. Other classes and phases
+     * resolve without insertion, so the cache holds at most the active class.
      */
     private val bytecodeMethodsCache = IdentityHashMap<JavaSootClass, List<JavaSootMethod>?>()
 
@@ -2666,7 +2747,7 @@ class SootUpAdapter(
     )
 
     private fun getAsmMethodNodes(sootClass: JavaSootClass): List<MethodNode>? =
-        bytecodeMethods(sootClass)?.mapNotNull { it.bodySource as? MethodNode }
+        streamingSources(sootClass) ?: bytecodeMethods(sootClass)?.mapNotNull { it.bodySource as? MethodNode }
 
     private fun loadMethodNodesFromResource(sootClass: JavaSootClass): List<MethodNode>? {
         return try {
@@ -3060,7 +3141,8 @@ class SootUpAdapter(
     private fun collectDeclaredMethodSubSignatures(className: String): Set<String> {
         val sootClass = resolveClassByName(className) ?: return emptySet()
         val asmSubSignatures = if (sootClass is JavaSootClass) {
-            bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
+            streamingSources(sootClass)?.mapTo(HashSet()) { it.signatureFor(sootClass.type).subSignature.toString() }
+                ?: bytecodeMethods(sootClass)?.mapTo(HashSet()) { it.signature.subSignature.toString() }
         } else {
             null
         }

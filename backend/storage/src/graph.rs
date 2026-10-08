@@ -3,14 +3,15 @@
 use crate::bvgraph::{BvError, BvGraph};
 use crate::container::Bytes;
 use crate::io::{
-    check_header, read_i32_at, read_i64_at, MAGIC_NODEDATA, MAGIC_NODEOFFSETS, MAGIC_TYPEINDEX,
+    check_header, read_i32_at, read_i64_at, Cursor, MAGIC_NODEDATA, MAGIC_NODEOFFSETS,
+    MAGIC_TYPEINDEX,
 };
 use crate::metadata::{
     BranchComparison, ClassOverview, Comparisons, Metadata, MetadataError, Resources,
 };
 use crate::node::{
     read_call_site_strings, CallSiteStrings, MethodDesc, Node, NodeDecodeError, NodeId, StrId,
-    NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT,
+    NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_INT_CONSTANT,
 };
 use crate::source::{GraphSource, SourceError};
 use crate::strings::{StringTable, StringTableError};
@@ -270,6 +271,8 @@ impl Graph {
 
         let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
+        // The CSR owns its copied labels; release the source map before further loading.
+        drop(labels);
         drop(bv);
         let backward = build_backward_csr(&forward);
 
@@ -279,6 +282,8 @@ impl Graph {
         };
         let metadata_bytes = src.require("graph.metadata").map_err(io)?;
         let metadata = Metadata::parse(&metadata_bytes)?;
+        // Parsed metadata owns every value, including the optional ordinal binding.
+        drop(metadata_bytes);
         let class_overview = match src.bytes("graph.classoverview").map_err(io)? {
             Some(bytes) => Some(ClassOverview::parse(&bytes)?),
             None => None,
@@ -308,8 +313,8 @@ impl Graph {
             .bytes("graph.callsite-ordinals")
             .map_err(io)?
             .and_then(|bytes| {
-                crate::node::CallSiteOrdinals::parse(
-                    &bytes,
+                crate::node::CallSiteOrdinals::parse_bytes(
+                    bytes,
                     metadata.call_site_ordinal_digest.as_ref(),
                 )
             })
@@ -380,16 +385,20 @@ impl Graph {
         self.node_count
     }
 
-    /// Bytes this graph keeps memory-mapped rather than owned: the node records, the
-    /// node offsets and the persisted CallSite string index when it was mapped. The
-    /// adjacency and the string table are decoded into owned memory at load and are
-    /// not counted here.
+    /// Logical bytes of the mapped entry ranges retained by this graph: node records,
+    /// node offsets, the persisted CallSite string index and the ordinal sidecar. A
+    /// container entry counts only its range, not the whole shared map. This is neither
+    /// unique physical mapping size nor resident memory. Adjacency, strings and the
+    /// ordinal rank index are owned memory and are not counted here.
     pub fn mapped_bytes(&self) -> u64 {
         let index = self
             .call_site_index
             .as_ref()
             .map_or(0, |i| i.mapped_bytes());
-        self.nodedata.len() as u64 + self.node_offsets.len() as u64 + index
+        self.nodedata.len() as u64
+            + self.node_offsets.len() as u64
+            + index
+            + self.call_site_ordinals.mapped_bytes()
     }
 
     /// maxNodeId + 1
@@ -427,6 +436,13 @@ impl Graph {
     #[inline]
     pub fn node_tag(&self, id: NodeId) -> Option<u8> {
         self.node_offset(id).map(|o| self.nodedata[o + 4])
+    }
+
+    /// The complete fixed IntConstant record, without constructing a Node.
+    /// None also means another kind or a truncated record; callers retain their
+    /// ordinary node-property fallback in those cases.
+    pub fn int_constant_value(&self, id: NodeId) -> Option<i32> {
+        read_int_constant_value(&self.nodedata, self.node_offset(id)?)
     }
 
     pub fn node(&self, id: NodeId) -> Option<Node> {
@@ -719,3 +735,18 @@ fn build_backward_csr(fwd: &Csr) -> Csr {
 
 #[allow(dead_code)]
 const _: usize = NODE_HEADER_BYTES;
+
+// Match Node::read's id/tag/value reads: do not trust the type index, add an id
+// equality requirement, or use node_tag's unchecked indexing on a truncated record.
+fn read_int_constant_value(data: &[u8], offset: usize) -> Option<i32> {
+    let mut c = Cursor::at(data, offset);
+    c.u32().ok()?;
+    if c.u8().ok()? != TAG_INT_CONSTANT {
+        return None;
+    }
+    c.i32().ok()
+}
+
+#[cfg(test)]
+#[path = "int_constant_tests.rs"]
+mod int_constant_tests;

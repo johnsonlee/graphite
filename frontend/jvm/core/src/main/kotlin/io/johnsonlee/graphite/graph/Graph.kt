@@ -235,6 +235,42 @@ data class StringPropertyProjectionRow(
     val values: List<String?>
 )
 
+/**
+ * Optional, serial projection in the same encounter order as [Graph.nodes], retaining duplicates.
+ * Each row contains the requested properties in order; its values remain valid after the callback.
+ * Returns false only for unsupported requests, before scanning or invoking either callback.
+ * A successful scan visits every matching node, without a storage-side limit or result list.
+ * `checkCancelled` is cancellation-only, not graph-work accounting: implementations call it before
+ * scanning, before decoding each row and after scanning, including an empty scan. Callback and
+ * storage exceptions propagate; a partially completed scan must never become an unsupported result.
+ * This separate capability does not add required methods to existing [Graph] implementations.
+ */
+interface StreamingStringPropertyProjection {
+    fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean
+}
+
+/**
+ * Projection capability that also charges structural preflight work. Each inspected preflight
+ * node consumes one unit before its header is read; cached decisions consume no preflight work.
+ * Unsupported shapes consume nothing. A structural refusal may consume preflight work before
+ * returning false, but still invokes neither the cancellation callback nor the row consumer. Exceptions propagate
+ * without publishing an incomplete decision. Row accounting remains the consumer's responsibility.
+ */
+interface WorkAwareStreamingStringPropertyProjection : StreamingStringPropertyProjection {
+    fun forEachStringPropertyProjection(
+        type: Class<out Node>,
+        projectedProperties: List<String>,
+        preflightWorkConsumer: GraphWorkConsumer?,
+        checkCancelled: () -> Unit,
+        consumer: (StringPropertyProjectionRow) -> Unit
+    ): Boolean
+}
+
 /** Optional capability for projecting bounded string matches without materializing full nodes. */
 interface StringPropertyDisjunctionProjection {
     fun projectStringPropertyDisjunction(

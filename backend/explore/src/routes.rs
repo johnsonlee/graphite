@@ -1649,7 +1649,16 @@ async fn cypher_one(
         Err(r) => return r,
     };
     let limit = bounded_row_limit(q.get("limit").map(|s| s.as_str()));
-    run_cypher(s, vec![l], false, query, limit, timeout, vec![]).await
+    run_cypher(
+        s,
+        CypherSources::Leases(vec![l]),
+        false,
+        query,
+        limit,
+        timeout,
+        vec![],
+    )
+    .await
 }
 
 async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Response {
@@ -1661,12 +1670,12 @@ async fn cypher_all(State(s): St, Query(q): Query<Params>, body: String) -> Resp
         Ok(t) => t,
         Err(r) => return r,
     };
-    let leases = s.registry.acquire_all();
-    let count = leases.len();
+    let sources = s.registry.acquire_all_sources();
+    let count = sources.len();
     let limit = bounded_row_limit(q.get("limit").map(|s| s.as_str()));
     run_cypher(
         s,
-        leases,
+        CypherSources::Shared(sources),
         true,
         query,
         limit,
@@ -1771,7 +1780,7 @@ async fn cypher_graphs(State(s): St, Query(q): Query<Params>, body: String) -> R
         let count = leases.len();
         return run_cypher(
             s,
-            leases,
+            CypherSources::Leases(leases),
             true,
             query,
             limit,
@@ -1840,10 +1849,17 @@ fn default_per_graph_limit(graph_count: usize, limit: i64) -> i64 {
     (limit + graph_count as i64 - 1) / graph_count as i64
 }
 
+/// Only the all-graphs route already owns its query sources. Other routes keep
+/// constructing their sources after acquiring a permit, as before.
+enum CypherSources {
+    Leases(Vec<GraphLease>),
+    Shared(Vec<Source>),
+}
+
 /// Run a query on the blocking pool under a guard permit.
 async fn run_cypher(
     s: Arc<AppState>,
-    leases: Vec<GraphLease>,
+    sources: CypherSources,
     cross: bool,
     query: String,
     limit: i64,
@@ -1863,13 +1879,16 @@ async fn run_cypher(
     // request whose whole engine time is a few hundred -- and the concurrency guard
     // already bounds how many queries run at once, so the runtime keeps workers free.
     let result: Result<_, tokio::task::JoinError> = Ok(tokio::task::block_in_place(move || {
-        let sources: Vec<Source> = leases
-            .into_iter()
-            .map(|l| Source {
-                id: Arc::from(l.id.as_str()),
-                graph: l.graph,
-            })
-            .collect();
+        let sources = match sources {
+            CypherSources::Shared(sources) => sources,
+            CypherSources::Leases(leases) => leases
+                .into_iter()
+                .map(|l| Source {
+                    id: Arc::from(l.id.as_str()),
+                    graph: l.graph,
+                })
+                .collect(),
+        };
         let ex = Executor::new(sources, cross)
             .with_cancel(permit.cancel.clone())
             .with_compact()
@@ -2271,6 +2290,96 @@ mod tests {
             .await
             .unwrap();
         (status, String::from_utf8(bytes.to_vec()).unwrap())
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn shared_global_sources_preserve_full_rows_and_provenance() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let (_, state) = metrics_app();
+        state
+            .registry
+            .load("z", std::path::Path::new(&dir), None)
+            .unwrap();
+        state
+            .registry
+            .load("a", std::path::Path::new(&dir), None)
+            .unwrap();
+        let query = "MATCH (n) RETURN 1 AS value LIMIT 2";
+        let leases = state.registry.acquire_all();
+        assert!(
+            leases[0].stats.nodes >= 2,
+            "Fixture needs at least two nodes"
+        );
+        let legacy = run_cypher(
+            state.clone(),
+            CypherSources::Leases(leases),
+            true,
+            query.into(),
+            200,
+            None,
+            vec![("graphCount", json!(2))],
+        )
+        .await;
+        let shared = cypher_all(
+            State(state),
+            Query(Params::from([("limit".into(), "200".into())])),
+            json!({"query": query}).to_string(),
+        )
+        .await;
+        assert_eq!(legacy.status(), StatusCode::OK);
+        assert_eq!(shared.status(), StatusCode::OK);
+        let legacy = axum::body::to_bytes(legacy.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let shared = axum::body::to_bytes(shared.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        assert_eq!(
+            shared, legacy,
+            "Full response serialization must be identical"
+        );
+        let result: J = serde_json::from_slice(&shared).unwrap();
+        assert_eq!(result["columns"], json!(["value"]));
+        assert_eq!(
+            result["rows"],
+            json!([
+                {"value": 1, "$metadata": {"graphIds": ["a"]}},
+                {"value": 1, "$metadata": {"graphIds": ["a"]}}
+            ])
+        );
+        assert_eq!(result["rowCount"], 2);
+        assert_eq!(result["graphCount"], 2);
+        assert_eq!(result["total"], json!({"value": 3, "relation": "gte"}));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn shared_global_sources_still_require_a_guard_permit() {
+        let (_, state) = metrics_app();
+        let first = state.guard.try_acquire(None).ok().unwrap();
+        let second = state.guard.try_acquire(None).ok().unwrap();
+        let response = cypher_all(
+            State(state.clone()),
+            Query(Params::new()),
+            json!({"query": "RETURN 1 AS value"}).to_string(),
+        )
+        .await;
+        assert_eq!(response.status(), StatusCode::TOO_MANY_REQUESTS);
+        let body = axum::body::to_bytes(response.into_body(), usize::MAX)
+            .await
+            .unwrap();
+        let body: J = serde_json::from_slice(&body).unwrap();
+        assert_eq!(body["code"], "cypher_concurrency_limit");
+        assert!(state
+            .guard
+            .metrics
+            .snapshot()
+            .iter()
+            .all(|(_, count, _)| *count == 0));
+        drop((first, second));
+        assert!(state.guard.try_acquire(None).is_ok());
     }
 
     /// The schema routes answer an empty registry with an empty envelope and an
@@ -2805,6 +2914,7 @@ mod tests {
             "graphite_graphs_loaded 0.0",
             "graphite_graph_nodes 0.0",
             "graphite_graph_mapped_bytes 0.0",
+            "# HELP graphite_graph_mapped_bytes Logical bytes of retained mapped graph entry ranges, not unique mappings or resident memory",
             "# TYPE http_server_requests_active gauge",
             // The scrape itself is in flight while it is answered.
             "http_server_requests_active 1.0",

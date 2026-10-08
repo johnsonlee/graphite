@@ -126,22 +126,27 @@ jobs:
         python3 candidate/backend/bench/snapshot.py \
           --manifest shared-fixture64/graphs/graphs.tsv \
           --binary candidate/target/release/graphite \
-          --repetitions 3 \
+          --suite all --repetitions 3 --timeout 60 --overall-timeout 600 \
+          --responses-dir benchmark-source/rust-responses \
           --server-log benchmark-source/graphite-serve.log \
           --out benchmark-source/main-rust-snapshot.json
         jq -e '
-          length > 0 and
+          length == 75 and
+          all(.[]; .protocol == "MULTIGRAPH_QUERY_SUITE_V2" and .suite == "all" and
+            .caseCount == 73 and .inputGraphCount == 64 and .requestScope == "global-cross-graph") and
           all(.[].benchmark; startswith("rust.fixture64.")) and
           all(.[].primaryMetric.score; type == "number" and isfinite and . >= 0) and
           ([.[] | "\(.benchmark)|\(.params // {})"] | unique | length) == length
         ' benchmark-source/main-rust-snapshot.json >/dev/null
 
     - name: Upload forensic snapshot artifact
+      if: always()
       uses: actions/upload-artifact@v7
       with:
         name: benchmark-pages-snapshot-${{ github.sha }}-${{ github.run_id }}
         path: |
           benchmark-source/main-rust-snapshot.json
+          benchmark-source/rust-responses/
           benchmark-source/graphite-serve.log
         if-no-files-found: error
         retention-days: 90

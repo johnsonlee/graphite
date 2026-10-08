@@ -15,6 +15,7 @@ import {
     aggregateGraphRoutingStates,
     aggregateReports,
     compareRustLatency,
+    RUST_MULTIGRAPH_CASES,
     canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
@@ -3249,20 +3250,44 @@ function rustRow(benchmark, params, samples) {
     const middle = sorted.length >> 1;
     return {
         benchmark, params, mode: "sequential-pass",
+        sampling: { repetitions: samples.length, requestPercentileEstimate: false },
         primaryMetric: {
-            score: sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2,
-            scoreUnit: "ms/op", scoreConfidence: [sorted[0], sorted[sorted.length - 1]], rawData: [samples]
+            score: Number((sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2).toFixed(3)),
+            scoreUnit: "ms/op", scoreConfidence: [sorted[0], sorted[sorted.length - 1]].map(value => Number(value.toFixed(3))),
+            rawData: [samples.map(value => Number(value.toFixed(3)))]
         }
     };
 }
 
+function rustHash(value) {
+    return crypto.createHash("sha256").update(JSON.stringify(value)).digest("hex");
+}
+
+function bindRustCatalog(rows) {
+    const catalog = rows.filter(row => row.benchmark !== "rust.fixture64.aggregate")
+        .map(({ benchmark, params, querySha256 }) => ({ benchmark, params, querySha256 }));
+    const caseListSha256 = rustHash(catalog);
+    return rows.map(row => ({ ...row, caseListSha256 }));
+}
+
 function rustSnapshot(scale = 1) {
-    return [
-        rustRow("rust.fixture64.global-wide-four-properties", { selectivity: "dense" }, [40, 41, 42].map((v) => v * scale)),
-        rustRow("rust.fixture64.global-wide-class-pair", { selectivity: "zero" }, [0.8, 0.9, 1.0].map((v) => v * scale)),
-        rustRow("rust.fixture64.aggregate", { statistic: "p50" }, [1.2, 1.3, 1.4].map((v) => v * scale)),
-        rustRow("rust.fixture64.aggregate", { statistic: "p95" }, [20, 21, 300].map((v) => v * scale))
-    ];
+    // Fabricated values test comparator correctness only, never performance evidence.
+    const rows = RUST_MULTIGRAPH_CASES.map(({ benchmark, params }, index) => ({
+        ...rustRow(benchmark, params,
+            (benchmark.endsWith("class-pair") && params.selectivity === "zero"
+                ? [0.8, 0.85, 0.9, 0.95, 1.0] : [40, 40.5, 41, 41.5, 42]).map(v => v * scale)),
+        querySha256: rustHash(`query-${index}`),
+        responseDigest: rustHash({ columns: ["value"], rows: [{ value: index }], $metadata: { graphs: ["g"] } }),
+        rowCount: 1, statisticScope: "same-case-sequential-pass-median"
+    }));
+    rows.push(
+        { ...rustRow("rust.fixture64.aggregate", { statistic: "p50" }, [1.2, 1.25, 1.3, 1.35, 1.4].map(v => v * scale)),
+          statisticScope: "cross-case-per-pass" },
+        { ...rustRow("rust.fixture64.aggregate", { statistic: "p95" }, [20, 20.5, 21, 150, 300].map(v => v * scale)),
+          statisticScope: "cross-case-per-pass" }
+    );
+    return bindRustCatalog(rows.map(row => ({ ...row, protocol: "MULTIGRAPH_QUERY_SUITE_V2",
+        suite: "all", caseCount: 73, inputGraphCount: 64, requestScope: "global-cross-graph" })));
 }
 
 test("Rust latency comparison blocks only above the relative limit and the millisecond floor", () => {
@@ -3270,7 +3295,7 @@ test("Rust latency comparison blocks only above the relative limit and the milli
     assert.equal(same.passed, true);
     assert.deepEqual(same.errors, []);
     assert.equal(same.minimum, 1);
-    assert.equal(same.rows.length, 4);
+    assert.equal(same.rows.length, 75);
 
     const slower = compareRustLatency(rustSnapshot(), rustSnapshot(1.3));
     assert.equal(slower.passed, false);
@@ -3305,6 +3330,95 @@ test("Rust latency comparison rejects foreign, partial, or mis-united snapshots"
     const seconds = rustSnapshot().map((row) => ({ ...row, primaryMetric: { ...row.primaryMetric, scoreUnit: "s/op" } }));
     assert.match(compareRustLatency(seconds, seconds).errors.join("\n"), /expected ms\/op/);
     assert.match(compareRustLatency(rustSnapshot(), seconds).errors.join("\n"), /different mode or unit/);
+});
+
+test("Rust multigraph coverage rejects a broad case omitted by both revisions", () => {
+    const rows = bindRustCatalog(rustSnapshot().filter(row => !row.benchmark.endsWith("shape-order-by")));
+    const comparison = compareRustLatency(rows, rows);
+    assert.equal(comparison.passed, false);
+    assert.match(comparison.errors.join("\n"), /shape-order-by.*missing required multigraph case/);
+    // Legacy fast-only metadata cannot opt out of the blocking contract.
+    const legacy = rustSnapshot().map(({ protocol, ...row }) => row);
+    assert.equal(compareRustLatency(legacy, legacy).passed, false);
+});
+
+test("Rust multigraph comparison binds queries, typed values, metadata and graph scope", () => {
+    const base = rustSnapshot();
+    const index = base.findIndex(row => row.benchmark.endsWith("shape-order-by"));
+    const changedQuery = structuredClone(base);
+    changedQuery[index].querySha256 = rustHash("a different query with the same label");
+    assert.match(compareRustLatency(base, bindRustCatalog(changedQuery)).errors.join("\n"), /querySha256 differ/);
+    for (const body of [
+        { columns: ["value"], rows: [{ value: String(index) }], $metadata: { graphs: ["g"] } },
+        { columns: ["value"], rows: [{ value: index }], $metadata: { graphs: ["another-graph"] } }
+    ]) {
+        const changedBody = structuredClone(base);
+        changedBody[index].responseDigest = rustHash(body);
+        assert.equal(changedBody[index].rowCount, base[index].rowCount);
+        assert.match(compareRustLatency(base, changedBody).errors.join("\n"), /responseDigest differ/);
+    }
+    for (const patch of [{ inputGraphCount: 1 }, { requestScope: "single-graph" },
+        { statisticScope: "request-p95" }, { suite: "fast34" }, { responseDigest: undefined }]) {
+        const wrongScope = structuredClone(base);
+        Object.assign(wrongScope[index], patch);
+        assert.equal(compareRustLatency(wrongScope, wrongScope).passed, false, JSON.stringify(patch));
+    }
+    const staleCatalog = structuredClone(base);
+    staleCatalog[index].querySha256 = rustHash("changed without re-binding catalog");
+    assert.match(compareRustLatency(staleCatalog, staleCatalog).errors.join("\n"), /caseListSha256 does not bind/);
+});
+
+test("Rust coverage distinguishes an empty known label scan from a valid zero-selectivity result", () => {
+    for (const label of ["callsite", "method", "constant", "field"]) {
+        const empty = rustSnapshot();
+        empty.find(row => row.benchmark.endsWith(`shape-label-scan-${label}`)).rowCount = 0;
+        assert.match(compareRustLatency(empty, empty).errors.join("\n"), /known fixture type\/schema query unexpectedly returned no rows/);
+    }
+    const zero = rustSnapshot();
+    zero[0].rowCount = 0;
+    assert.equal(compareRustLatency(zero, zero).passed, true);
+});
+
+test("Rust latency rejects missing or shortened samples and derived-score drift", () => {
+    for (const index of [0, 73]) {
+        for (const rawData of [undefined, [], [[]], [[1]], [[1, 2, 3, 4]], [[1, 2, 3, 4, NaN]],
+            [[1, 2, 3, 4, -1]], [[1, 2, 3, 4, "5"]], [[1, 2, 3, 4, 5], [6]]]) {
+            const rows = rustSnapshot();
+            rows[index].primaryMetric.rawData = rawData;
+            assert.match(compareRustLatency(rows, rows).errors.join("\n"), /expected five finite nonnegative raw samples/);
+        }
+        for (const mutate of [
+            row => { row.sampling.repetitions = 1; },
+            row => { delete row.sampling; },
+            row => { row.primaryMetric.score += 0.001; },
+            row => { row.primaryMetric.scoreConfidence[1] += 0.001; }
+        ]) {
+            const rows = rustSnapshot();
+            mutate(rows[index]);
+            assert.equal(compareRustLatency(rows, rows).passed, false);
+        }
+    }
+    const singlePass = rustSnapshot().map(row => ({ ...row, sampling: { repetitions: 1, requestPercentileEstimate: false },
+        primaryMetric: { ...row.primaryMetric, rawData: [[row.primaryMetric.score]],
+            scoreConfidence: [row.primaryMetric.score, row.primaryMetric.score] } }));
+    assert.equal(compareRustLatency(singlePass, singlePass).passed, false);
+});
+
+test("Rust reverse confirmation cannot confirm a different query or response population", () => {
+    const original = rustSnapshot();
+    const initial = compareRustLatency(original, rustSnapshot(1.3));
+    const changed = structuredClone(original);
+    changed[0].querySha256 = rustHash("another query in a later round");
+    const rebound = bindRustCatalog(changed);
+    assert.match(confirmJmh(initial, compareRustLatency(rebound, rebound)).errors.join("\n"), /workloadIdentity differs/);
+    const changedBody = structuredClone(original);
+    changedBody[0].responseDigest = rustHash({ rows: [{ changed: true }] });
+    assert.match(confirmJmh(initial, compareRustLatency(changedBody, changedBody)).errors.join("\n"), /responseIdentity differs/);
+});
+
+test("Rust latency reports the absolute millisecond delta before the percentage", () => {
+    const report = renderJmhReport(compareRustLatency(rustSnapshot(), rustSnapshot(1.3)));
+    assert.match(report, /\+12\.300 ms; \+30\.0%/);
 });
 
 test("Rust latency commands write the report and status the aggregate consumes", () => {
@@ -3343,12 +3457,13 @@ test("pull-request workflow runs the paired Rust engine gate and demotes the JVM
     assert.match(job, /fixture64\.complete\.json/);
     // The harness is the base's own snapshot script; the comparator is base-owned once main carries it.
     assert.match(job, /HARNESS=base\/backend\/bench\/snapshot\.py/);
-    assert.match(job, /if ! grep -q 'compare-rust-latency' "\$\{COMPARATOR\}"/);
+    assert.match(job, /if ! grep -q 'RUST_MULTIGRAPH_COVERAGE_V2' "\$\{COMPARATOR\}"/);
     assert.match(job, /"\$\{BENCHMARK_REPORT_TRANSITION_SHA256\}"/);
     assert.match(job, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
     assert.match(job, /compare-rust-latency/);
     assert.match(job, /confirm-rust-latency/);
     assert.match(job, /--repetitions 5/);
+    assert.match(job, /--suite all/);
     assert.match(job, /name: benchmark-rust-latency-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
 
     const enforcement = workflow.slice(workflow.indexOf("    - name: Enforce benchmark gate"), workflow.indexOf("  benchmark-comment:"));
@@ -4069,4 +4184,47 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
         assert.equal(provenance.scriptSha256, crypto.createHash("sha256").update(driver).digest("hex"));
         assert.equal(fs.existsSync(publishMarker), false, "a failed comparison must never publish success");
     } finally { fs.rmSync(directory, { recursive: true, force: true }); }
+});
+
+test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const start = job.indexOf("    - name: Diagnose confirmed Rust shape regression");
+    const end = job.indexOf("    - name: Upload Rust engine latency results", start);
+    assert.ok(start > 0 && end > start);
+    const diagnostic = job.slice(start, end);
+    const original = job.slice(job.indexOf("    - name: Measure base then PR"), start);
+    assert.match(original, /id: rust_comparison/);
+    assert.match(original, /--threshold 15 --minimum 1/g);
+    assert.match(original, /confirm-rust-latency/);
+    assert.doesNotMatch(original, /diagnostic-metrics-case|continue-on-error/);
+    assert.match(diagnostic, /if: \$\{\{ failure\(\) && steps\.rust_comparison\.outcome == 'failure' \}\}/);
+    assert.match(diagnostic, /confirmed_diagnostic_shape\(result\)/);
+    assert.match(diagnostic, /No eligible confirmed broad-shape failure; no diagnostic server started/);
+    assert.match(diagnostic, /DIAG=benchmark-results\/rust-failure-diagnostic/);
+    assert.match(diagnostic, /--binary candidate\/target\/release\/graphite/);
+    assert.match(diagnostic, /--port 18082 --suite all --repetitions 5 --timeout 60 --overall-timeout 600/);
+    assert.equal((diagnostic.match(/python3 "\$\{DIAG\}\/harness\/snapshot\.py"/g) ?? []).length, 1);
+    assert.match(diagnostic, /--out "\$\{DIAG\}\/candidate-rust-diagnostic\.json"/);
+    assert.match(diagnostic, /--responses-dir "\$\{DIAG\}\/responses"/);
+    assert.match(diagnostic, /"diagnosticOnly": True/);
+    assert.match(diagnostic, /provenance\.json/);
+    assert.match(diagnostic, /fixture-provenance\.tsv/);
+    assert.doesNotMatch(diagnostic, /--status|--report|compare-rust-latency|confirm-rust-latency|continue-on-error|cargo build/);
+    assert.match(diagnostic, /exit "\$\{code\}"/);
+    const pins = [
+        ["snapshot.py", "RUST_LATENCY_TRANSITION_HARNESS_SHA256"],
+        ["fixture64.py", "RUST_LATENCY_TRANSITION_FIXTURE_SHA256"],
+        ["shapes.py", "RUST_LATENCY_TRANSITION_SHAPES_SHA256"],
+        ["metrics_capture.py", "RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256"]
+    ];
+    for (const [file, key] of pins) {
+        const source = fs.readFileSync(new URL(`../../backend/bench/${file}`, import.meta.url));
+        const sha = crypto.createHash("sha256").update(source).digest("hex");
+        assert.ok(workflow.includes(`${key}: ${sha}`), `${file} reviewed pin is current`);
+        assert.ok(diagnostic.includes(`sha256sum candidate/backend/bench/${file}`));
+        assert.ok(diagnostic.includes(`"\${${key}}"`));
+    }
+    assert.match(workflow, /python3 -m unittest discover -s candidate\/backend\/bench -p 'test_snapshot\*\.py'/);
+    assert.match(job.slice(end), /if: always\(\)/);
 });
