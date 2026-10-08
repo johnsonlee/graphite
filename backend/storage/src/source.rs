@@ -6,6 +6,7 @@ use crate::container::{Bytes, Container, ContainerError};
 use memmap2::Mmap;
 use std::fs::File;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 pub enum GraphSource {
     Dir(PathBuf),
@@ -82,6 +83,36 @@ impl GraphSource {
         }
     }
 
+    /// Query mapping and a temporary reader share one open file identity.
+    pub(crate) fn require_buffered(
+        &self,
+        name: &str,
+    ) -> Result<(Bytes, crate::buffered::FileRange), IoAt> {
+        match self {
+            GraphSource::Container(c) => c.bytes(name).zip(c.file_range(name)).ok_or_else(|| {
+                (
+                    self.describe(name),
+                    std::io::Error::new(std::io::ErrorKind::NotFound, "no such file"),
+                )
+            }),
+            GraphSource::Dir(d) => {
+                let shown = d.join(name).display().to_string();
+                let file = File::open(d.join(name)).map_err(|e| (shown.clone(), e))?;
+                let len = file.metadata().map_err(|e| (shown.clone(), e))?.len();
+                let bytes = if len == 0 {
+                    Bytes::owned(Vec::new())
+                } else {
+                    // SAFETY: read-only mapping of the same file used below; we do not modify it.
+                    Bytes::whole(unsafe { Mmap::map(&file) }.map_err(|e| (shown.clone(), e))?)
+                };
+                Ok((
+                    bytes,
+                    crate::buffered::FileRange::new(Arc::new(file), 0, len, shown),
+                ))
+            }
+        }
+    }
+
     /// The file's bytes; an absent file is a not-found error naming it.
     pub fn require(&self, name: &str) -> Result<Bytes, IoAt> {
         self.bytes(name)?.ok_or_else(|| {
@@ -96,6 +127,30 @@ impl GraphSource {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn buffered_directory_reader_keeps_mapping_identity_after_path_replacement() {
+        use crate::buffered::ReadWindow;
+        let root =
+            std::env::temp_dir().join(format!("graphite-buffered-dir-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let path = root.join("graph.nodedata");
+        std::fs::write(&path, b"original").unwrap();
+        let source = GraphSource::open(&root).unwrap();
+        let (mapped, range) = source.require_buffered("graph.nodedata").unwrap();
+        std::fs::rename(&path, root.join("old")).unwrap();
+        std::fs::write(&path, b"replaced").unwrap();
+        drop(source);
+        let mut reader = ReadWindow::new(range);
+        let mut bytes = [0; 16];
+        assert_eq!(reader.copy_prefix(0, &mut bytes).unwrap(), 8);
+        assert_eq!(&bytes[..8], b"original");
+        assert_eq!(&mapped[..], b"original");
+        assert_eq!(std::fs::read(path).unwrap(), b"replaced");
+        drop(reader);
+        drop(mapped);
+        std::fs::remove_dir_all(root).unwrap();
+    }
 
     /// With a real graph directory at hand, its container answers exactly as it does.
     #[test]
