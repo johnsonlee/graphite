@@ -228,6 +228,14 @@ internal object DeclaredTypeStore {
         }
     }
 
+    private fun interface RowKeyHash {
+        fun hash(reader: Reader): Int
+    }
+
+    private fun interface TypeReferenceCheck {
+        fun validate(reader: Reader, typeCount: Int)
+    }
+
     private class MappedRows<K : Any, V : Any>(
         private val bytes: ByteBuffer,
         private val offsets: IntArray,
@@ -237,7 +245,7 @@ internal object DeclaredTypeStore {
         private val key: (Reader) -> K,
         private val value: (Reader) -> V,
         private val strings: DeclaredTypeStringPool?,
-        private val references: Reader.(Int) -> Unit
+        private val references: TypeReferenceCheck
     ) : AbstractMap<K, V>(), DeclaredTypeReferences {
         override val size: Int get() = offsets.size
 
@@ -247,7 +255,7 @@ internal object DeclaredTypeStore {
             val input = reader(0)
             for (offset in valuesAt) {
                 input.bytes.position(offset)
-                input.references(typeCount)
+                references.validate(input, typeCount)
             }
         }
 
@@ -368,8 +376,8 @@ internal object DeclaredTypeStore {
             name: String,
             typeCount: Int,
             key: (Reader) -> K,
-            keyHash: (Reader) -> Int,
-            skipValue: Reader.(Int) -> Unit,
+            keyHash: RowKeyHash,
+            skipValue: TypeReferenceCheck,
             value: (Reader) -> V
         ): Map<K, V> {
             val count = rowCount(minimumBytes)
@@ -382,10 +390,10 @@ internal object DeclaredTypeStore {
             val slots = IntArray(capacity)
             repeat(count) { row ->
                 offsets[row] = bytes.position()
-                val hash = keyHash(this)
+                val hash = keyHash.hash(this)
                 hashes[row] = hash
                 valuesAt[row] = bytes.position()
-                skipValue(typeCount)
+                skipValue.validate(this, typeCount)
                 var slot = hashSlot(hash, capacity)
                 while (slots[slot] != 0) {
                     val previous = slots[slot] - 1
