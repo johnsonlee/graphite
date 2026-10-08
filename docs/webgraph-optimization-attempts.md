@@ -9977,3 +9977,46 @@ Decision: close the hypothesis that C4 **inference overlap** caused this cohort'
 |independent native overlap audit|`26ad5b956f7e4f52f314d0ba8a73238bc848421888cb2c7cf3729ea5ff5e67cb`|
 
 Raw evidence remains in `/tmp/sootup-static-review/native-cumulative/c4-overlap-probe/measurement/execution/`; independent reconstruction is in sibling `c4-overlap-independent-audit/`.
+
+### 2026-10-08 — Latest cumulative native query versus preupgrade: c4 recovery still fails
+
+At the user's request, prioritize Query p50/p95 and defer further construction/memory experiments. Compare uninstrumented preupgrade A6f (`2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b`) with latest cumulative135+136+123 B (`0d639648ae1e53dbf933931e4f8b2436739fa88298db15dd73d1e17c6b8e102e`). B retains its historical build base8b6694f4 plus135 patch; all115 tracked native files/manifests match production5461f59e and the subsequent documentation-only9c8b6806. This is source equivalence, not a claim that the artifact was rebuilt at either HEAD. The rebased JVM changes are outside this native comparison.
+
+Command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-cumulative-135/server-request-full34-latest/run.py --plan /tmp/sootup-static-review/native-cumulative-135/server-request-full34-latest/plan.sealed.json --execute-root-released`. Same macOS ARM environment and64 real persisted graph fixture as the previous full34 cohort, unchanged complete-response oracle and uninstrumented ThreadPoolExecutor client. Fixed ABBA at c1 then ABBA at c4;34 cases, first1/warm2/measured60 per process. All latency measurements consume the complete HTTP body; all samples and both pairs remain, with no retries or pooling of previous cohorts. Query CPU is the native process counter difference over the measured window; whole-lifetime CPU/RSS are separate.
+
+Original56381 exited0 (`641d07`): all8 sessions,17,136 full responses and16,320 measured responses passed. Fresh cleanup found all32 observed lifecycle/native/time/client PIDs and8 actual time-wrapper process groups absent. Root independently reconstructed every typed body, raw rank30/57 of60, all68 case/concurrency groups, first/warm samples, pairs, means/variability, CPU counters, time-l records, exact fixture stat continuity and cleanup. The independent auditor's original54302 exited0 (`818a7c`). Keep340 monitor samples and zero classified external events; the one-second observer cannot establish an exclusive host or exclude short/unrecognized activity.
+
+The table compares the mean of the two **per-process, per-case** quantiles in each arm; ranges run across separate query cases, never pooled request percentiles.
+
+|Concurrency|Per-case p50 changes|Per-case p95 changes|Cases slower in both forward/reverse pairs|
+|---|---|---|---|
+|1|17/34 improve; range -3.313% to +3.508%|14/34 improve; range -4.251% to +9.910%|p50:8/34; p95:12/34|
+|4|0/34 improve; range +1.961% to +19.152%|0/34 improve; range +1.286% to +22.911%|p50:34/34; p95:33/34|
+
+The c4 worst case is `global-wide-caller-class-zero`: p50 rises from542.479 to646.375 microseconds (+19.152%, paired+12.013%/+26.522%); p95 rises from730.375 to897.709 microseconds (+22.911%, paired+12.589%/+34.308%). The one c4 p95 case with a mixed pair is wrapped case-insensitive distinct dense (+38.806%/-0.582%, mean+19.048%); preserve this mixed outcome rather than describing all34 p95 cases as slower in both pairs.
+
+There are positive c1 outcomes. `global-wide-four-properties-dense` improves p50 by2.142% and p95 by3.062%; `global-wide-provenance-zero` improves by3.313%/3.680%. Each metric improves in both pairs for these two cases. Keep these benefits and the cumulative implementation; the c4 failure is not a reason to discard independently beneficial increments. Other c1 cases remain mixed or adverse, so c1 is not a blanket recovery pass.
+
+|Resource / scope|c1 old to latest / mean change|c1 forward / reverse|c4 old to latest / mean change|c4 forward / reverse|
+|---|---|---|---|---|
+|Measured-window native CPU seconds|6.050 to6.010, -0.661%|-1.475% / +0.167%|4.190 to4.185, -0.119%|-1.176% / +0.969%|
+|Whole native lifetime CPU seconds|42.030 to25.075, -40.340%|-39.243% / -41.396%|40.905 to23.435, -42.709%|-42.728% / -42.689%|
+|Whole native lifetime peak RSS bytes|6,568,247,296 to6,612,344,832, +0.671%|+0.675% / +0.668%|6,582,771,712 to6,631,030,784, +0.733%|+0.755% / +0.711%|
+|Whole native lifetime wall seconds|57.070 to40.440, -29.140%|-27.875% / -30.358%|45.185 to27.855, -38.353%|-38.213% / -38.494%|
+
+Measured-window CPU is effectively close here; the c4 mean difference of0.005s is below an individual `ps TIME` counter's0.01s resolution. Both read brackets remain available, and the window includes validation/logging gaps and native background work. Whole-lifetime savings include loading and cannot compensate for query latency or query-window CPU. Lifetime peak RSS is not query-only memory; these measurements do not establish the separate query RSS acceptance boundary. No JVM heap increase is involved. Two processes per arm and finite empirical quantiles do not provide precise production confidence intervals.
+
+Decision: **latest cumulative c4 Query performance has not recovered to preupgrade** in this fixed shared-fixture workload. Correctness and owned shutdown passed; c1 preserves measured positive increments but still has adverse cases. Do not infer restored latency from lower lifecycle CPU/time, earlier method benchmarks or CI success. The preceding historical diagnostic ruled out C4 inference overlap in that cohort; it does not identify the remaining transport/pre-handler/scheduling cause or establish causal fractions for this uninstrumented cohort. Keep the existing positive changes and focus subsequent query diagnosis on the remaining delay.
+
+Full Kotlin/Tika query coverage remains distinct. Source review in `full-jar-query-scope-review/REPORT.md` found that old A predates `ordinal`; null-property work is not an equivalent baseline for the three ordinal-only queries. Preserve their existing parent-relative evidence. Common line projection and full-node queries remain comparable with strict complete per-version outputs; B's added ordinal field must remain validated and timed. A concrete same-fullgraph common five-query follow-up can reuse these two plus three existing property/order compatibility contracts, with strict A/current-graph correctness checked first. This scope review launched no additional server. Same-graph engine comparison must remain separate from own-version graph populations and from construction/loading acceptance.
+
+|Evidence|SHA256|
+|---|---|
+|sealed eight-session plan|`94650acdc9e9c7e5cd32064f5cbdf70c28ee942ab1eab19fd4860b4bd66ac447`|
+|owner terminal / cleanup|`b2394ae571fa5fbf6e7ad607cc5c3f18187fb5872e0194d951a75844502e1a76`|
+|raw aggregate results|`63b4d708fff21c82e478458a8e88a6c22b4abcc23427234ed376a69880feae49`|
+|descriptive summary|`7aad62236e8b0bafd686ad214c0fbabd25cc3f72f8fddd84bbb9cafdab1b39be`|
+|independent full-body/resource/statistics audit|`3a51d6d68c797d5ed938d4ecfb8f5fad822ccc7b79c97126500057be424fa13a`|
+|full-JAR compatibility scope review|`1214c3475b09c5450dea574aa49e2b81e7a59333f72270e4dff6b073c6011c8e`|
+
+Raw samples, full response bodies, source/identity proof and independent audit are retained under `/tmp/sootup-static-review/native-cumulative-135/server-request-full34-latest/`.
