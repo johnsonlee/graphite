@@ -20,18 +20,20 @@ env:
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
   LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
-  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
+  LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256: 3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419
   LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840
   WRAPPED_QUERY_SHAPE_BASE_CORPUS_SHA256: 5c2be9550c0f3e0fa408d5d56375efc4b9e3c78d96b95de1c20718f08aa4dd2b
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  BENCHMARK_REPORT_TRANSITION_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  RUST_LATENCY_TRANSITION_HARNESS_SHA256: a3f35a03dd9cff6272365125283f2143996fc53a73dc497d83e994392a9eb7c6
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 073cfbe1387ad326c5196adb67369f276ad8cd12dddfc3320535596557123d15
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  RUST_LATENCY_TRANSITION_HARNESS_SHA256: 1d495cc09327b2c0ba9086d3e4480fba7fe7d8596a7ca08655f509c0799d85b9
+  RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
+  RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -57,6 +59,9 @@ jobs:
 
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
+
+    - name: Test native multi-graph snapshot harness
+      run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot.py'
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
@@ -2967,8 +2972,8 @@ jobs:
     needs: [candidate-gate-tests, prepare-fixture64]
     runs-on: ubuntu-latest
     # Two release builds of the CLI, then each engine opens the 64 graphs once (about three
-    # minutes cold on a hosted runner) and answers the fixture64 plan five times; a regression
-    # candidate repeats both in reverse order.
+    # minutes cold on a hosted runner) and answers the same broad multi-graph plan five
+    # times. Each engine has a bounded query budget; a regression repeats both in reverse order.
     timeout-minutes: 60
     permissions:
       contents: read
@@ -3038,18 +3043,21 @@ jobs:
       run: |
         set -euo pipefail
         HARNESS=base/backend/bench/snapshot.py
-        # The plan is base-owned too; until main carries the schema shapes the candidate
-        # copy stands in, pinned to the reviewed hash and only after the candidate's own
-        # tests passed, so both revisions answer the same plan.
-        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'SCHEMA_SHAPES' "${HARNESS}"; then
+        # Until main has the broad suite, use the reviewed candidate harness and all
+        # its imported query definitions for both engines, never one plan per revision.
+        if [[ ! -f "${HARNESS}" ]] || ! grep -q 'MULTIGRAPH_QUERY_SUITE_V2' "${HARNESS}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/backend/bench/snapshot.py | cut -d' ' -f1)" = \
             "${RUST_LATENCY_TRANSITION_HARNESS_SHA256}"
+          test "$(sha256sum candidate/backend/bench/shapes.py | cut -d' ' -f1)" = \
+            "${RUST_LATENCY_TRANSITION_SHAPES_SHA256}"
+          test "$(sha256sum candidate/backend/bench/fixture64.py | cut -d' ' -f1)" = \
+            "${RUST_LATENCY_TRANSITION_FIXTURE_SHA256}"
           HARNESS=candidate/backend/bench/snapshot.py
         fi
         test -f "${HARNESS}"
         COMPARATOR=base/.github/scripts/benchmark-gate.mjs
-        if ! grep -q 'compare-rust-latency' "${COMPARATOR}"; then
+        if ! grep -q 'RUST_MULTIGRAPH_COVERAGE_V2' "${COMPARATOR}"; then
           test "${CANDIDATE_GATE_TEST_JOB}" = success
           test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
@@ -3078,7 +3086,8 @@ jobs:
                  "RAYON_NUM_THREADS", "MALLOC_CONF", "_RJEM_MALLOC_CONF", "LD_PRELOAD", "LD_LIBRARY_PATH")
         data = {"environment": {name: os.environ.get(name) for name in flags}, "files": {}, "commands": []}
         paths = [pathlib.Path(os.environ["HARNESS"]), pathlib.Path(os.environ["COMPARATOR"]),
-                 pathlib.Path(os.environ["HARNESS"]).with_name("fixture64.py")]
+                 pathlib.Path(os.environ["HARNESS"]).with_name("fixture64.py"),
+                 pathlib.Path(os.environ["HARNESS"]).with_name("shapes.py")]
         paths += [pathlib.Path("shared-fixture64") / name for name in
                   ("fixture64.complete.json", "fixture-reproducibility.json", "graphs/graphs.tsv", "graphs/fixture-provenance.tsv")]
         for revision in ("base", "candidate"):
@@ -3112,7 +3121,8 @@ jobs:
           python3 "${HARNESS}" \
             --manifest shared-fixture64/graphs/graphs.tsv \
             --binary "${REVISION}/target/release/graphite" \
-            --port 18080 --repetitions 5 \
+            --port 18080 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+            --responses-dir "benchmark-results/${REVISION}-rust-responses" \
             --server-log "benchmark-results/${REVISION}-rust-serve.log" \
             --out "benchmark-results/${REVISION}-rust.json"
         done
@@ -3132,11 +3142,18 @@ jobs:
           mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
           mv benchmark-results/initial-rust-latency-status.json benchmark-results/rust-latency-status.json
         else
+          # Repeating cannot repair missing evidence or different query answers.
+          if jq -e '.errors | length > 0' benchmark-results/initial-rust-latency-status.json >/dev/null; then
+            mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
+            mv benchmark-results/initial-rust-latency-status.json benchmark-results/rust-latency-status.json
+            exit 1
+          fi
           for REVISION in candidate base; do
             python3 "${HARNESS}" \
               --manifest shared-fixture64/graphs/graphs.tsv \
               --binary "${REVISION}/target/release/graphite" \
-              --port 18081 --repetitions 5 \
+              --port 18081 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+              --responses-dir "benchmark-results/${REVISION}-rust-confirmation-responses" \
               --server-log "benchmark-results/${REVISION}-rust-confirmation-serve.log" \
               --out "benchmark-results/${REVISION}-rust-confirmation.json"
           done

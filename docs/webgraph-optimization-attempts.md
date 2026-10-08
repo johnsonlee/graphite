@@ -10767,3 +10767,36 @@ All first-use/warmup values, raw60 samples, max/mean and both connection-mode co
 
 
 Decision: keep Attempt141 isolated with its source and full observations, do not integrate the registry change, and do not add sampling to stabilize tiny differences. No material multi-graph recovery was demonstrated. Next query diagnosis uses the existing broad multi-graph shape suite, preserving absolute times and complete responses, rather than repeating the narrow fast-path cohort.
+
+### Attempt142 — close native multi-graph query coverage gaps
+
+Date: 2026-10-08. This is a benchmark coverage change, not an engine optimization or a recovery claim. The original 34 search/distribution cases mostly exercise existing string fast paths; they cannot validate sorting, aggregation, traversal, WITH pipelines or ID lookup. Keep those controls and add the existing 36 broad shapes plus three schema cases to the native CLI snapshot and paired CI gate: 73 query cases and two explicitly cross-case aggregate rows.
+
+#### Current real-data diagnosis
+
+Before changing the suite, run the original 36 shapes and three schema queries once against each already-validated binary, sequentially (old pre-upgrade then current Attempt140 `dd514ca7`), with the same 64 persisted Android/Tika/Hive/Kotlin graph shards: 19,438,199 nodes and 5,051,914 CallSites. Binary SHA-256 values are `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b` (old) and `e2d9e405dc0155c1429b39a2db81e57c68efe8294268737f9e93d4d2105dfbf2` (current). Each request uses global `/api/cypher`; LIMIT may stop before visiting every graph. Concurrency is one, complete-response timing, 60-second request budget, 600-second query budget per server. This one-observation diagnosis identifies absolute costs; it does not estimate request p50/p95 or establish an improvement.
+
+| Query shape | Old ms | Current ms | Absolute change ms |
+|---|---:|---:|---:|
+| ORDER BY caller class | 7013.962 | 7077.640 | +63.678 |
+| ORDER BY callee name DESC | 6266.071 | 6498.292 | +232.221 |
+| ID lookup | 5291.727 | 5373.551 | +81.824 |
+| WITH filter | 4002.994 | 3681.983 | -321.011 |
+| WITH aggregate | 609.245 | 602.189 | -7.056 |
+| Group count | 308.894 | 311.297 | +2.404 |
+| DISTINCT | 279.091 | 281.493 | +2.401 |
+
+Original session52228 ended with exit0: 78 requests, 76 HTTP200 and two retained HTTP400 responses, no retries. Both engines reject nested `collect(...)[0..10]` because aggregation discovery does not descend into slicing; these failures are not successful latency samples. The shared query is corrected to `WITH collect(n.callee_name) AS names RETURN names[0..10] AS names`, still aggregating every matching CallSite before slicing. All four type scans return 200 rows in both versions. Complete responses differ in the historical added CallSite ordinal property and schema keys; those differences remain visible, with no field removal or normalization. Other 36 bodies, including the collect error, match. Query-window CPU is 24.44→24.51 seconds; whole-process CPU 59.43→43.34 seconds and peak RSS 15139.439→13171.818 MB include loading/shutdown. Fixed order and n=1 preclude resource or latency acceptance conclusions.
+
+Evidence: `/tmp/sootup-static-review/multigraph-shapes39-diagnostic/results.md`, raw bodies and `semantic-differences.json`; terminal receipt SHA `ba8a714d537d38761366a98ab45c575da735dba281b1a1d1f59c544fb48b71f3`. All eight owned PIDs and two process groups were confirmed gone.
+
+#### Permanent coverage and validation
+
+- `snapshot.py --suite all` uses one shared ordered plan, records query/catalog hashes, full typed response digests, actual input graph count, complete bodies and failures. Missing cases, non-200 responses, changing answers or budget exhaustion fail the run. Transport failures without a completed body are retained as failed attempts; partial bytes are not claimed complete.
+- The native paired gate requires all 73 cases and both aggregates, five actual samples per row, consistent reported statistics, matching query/response identities, global 64-graph scope and nonempty known type/schema queries. The existing 15% plus 1 ms threshold and reverse-order confirmation remain unchanged. Semantic/evidence failures fail immediately without wasteful resampling.
+- PR CI runs the same reviewed, hash-pinned harness and imported query definitions against both versions. Pages uses the broad suite too, preserves failed-run evidence and starts new history series when the query catalog changes. Per-case pass medians and cross-case aggregates are explicitly not server request p50/p95.
+- No production engine source is changed in this attempt. Repeated-request percentiles under representative multi-graph concurrency, construction/loading acceptance and the pre-upgrade CPU/RSS constraints remain outstanding.
+
+Validation: 156 Node benchmark tests and 15 Python harness tests pass; both edited workflow YAML files parse and `git diff --check` passes. The repository CLI, using the same current140 binary and real64 manifest, completed `--suite all --repetitions 2 --timeout 60 --overall-timeout 600` (original session84096, terminal exit0): 146/146 HTTP200 responses, all73 complete typed digests identical across the two passes, and75 output rows. Both corrected collect responses contain one row with the same ten names and provenance for all64 graph IDs. Root independently rehashed and decoded all146 saved bodies and verified collect values/provenance, sample coverage and unchanged source hashes. Both owned processes and groups were confirmed gone. This validates the harness and repeatability, not performance acceptance; the paired CI gate still uses five passes per version.
+
+CLI command and raw evidence: `/tmp/sootup-static-review/repo-snapshot-all-validation/command.json` and `execution/`. Terminal receipt SHA `5c0c7b836d8e35d4b60ddd5b529e26bf0f1b05188c84e1010d647f09b93cc86c`; snapshot SHA `d88d44db7bb9a5a302420eca5d207132554dd5b28ae54deca601bad34e6bb3ef`. Decision: retain the coverage change and validate its paired CI execution. Focus subsequent query investigation on the measured seconds-long paths, not stabilization of tiny search timings.

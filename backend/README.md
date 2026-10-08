@@ -67,3 +67,30 @@ cd bench && python3 bench.py            # latency comparison
 
 `parity.py` and `bench.py` both expect a Kotlin server on port 18081 and a Rust server
 on port 18080, serving the same graph under the id `app`.
+
+## Multi-graph query benchmarks
+
+Use the real 64-graph corpus for query performance comparisons. The original
+string-search suite does not cover sorting, aggregation, traversal, WITH pipelines
+or ID lookups. The broad suite reuses the 36 query shapes in `bench/shapes.py` and
+the three schema queries; `all` also retains the original string-search controls.
+
+```bash
+python3 backend/bench/snapshot.py --manifest /path/to/graphs.tsv \
+  --binary ./target/release/graphite --suite all --repetitions 5 \
+  --timeout 60 --overall-timeout 600 \
+  --responses-dir benchmark-results/responses --out benchmark-results/snapshot.json
+```
+
+CI runs the same reviewed query definitions against both revisions, preserves
+complete responses, and rejects missing cases or changed results as well as
+confirmed latency regressions. Reports show absolute milliseconds before relative
+changes. `fixture64` preserves the historical search-plus-schema plan; `fast34`
+selects only searches, and `broad` selects the 36 shapes plus schema queries.
+
+These serial passes report per-case medians. The aggregate p50/p95 rows describe
+different queries within a pass, not repeated-request server percentiles or
+sustained load. Single-graph query timings are diagnostic only. Repeated-request
+p50/p95 under a declared multi-graph workload and concurrency remain separate
+acceptance evidence; loading 64 graphs alone does not prove every limited query
+actually scans them all.

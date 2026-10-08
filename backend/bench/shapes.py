@@ -2,25 +2,16 @@
 """Timeout rate across query *shapes*, not one shape at many selectivities.
 
 `fixture64.py` measures ten variants of a single family — a disjunction of CONTAINS over
-four CallSite string properties — which is exactly the family the Rust scan pushdown
-covers. A suite that only asks questions the fast path answers cannot discover that
-everything else falls to the generic evaluator.
+four CallSite string properties. That family alone cannot expose regressions in
+sorting, aggregation, traversal and other execution paths.
 
-This runs a deliberately broad set at a real timeout and reports how many queries never
-come back, which is the number that matters to someone actually using the thing.
-
-Measured on fixture64 (64 graphs, 19.4M nodes), serially, 60s timeout:
-
-    rust    0 of 36 timed out      slowest: order-by 46.0s, order-by-desc 24.4s,
-                                   with-filter 19.4s, group-count 16.8s, id-lookup 11.7s
-    kotlin  3 of 36 timed out      count-all, group-count, count-traversal; eight more
-                                   returned 400 "Java heap space" after 30-58s
-
-Neither side is healthy here. The Rust numbers are the ones this port owns: a point
-lookup (`WHERE id(n) = 4101`) taking 11.7 seconds is a full scan of 19.4M nodes
-evaluating a constant comparison, and `ORDER BY ... LIMIT 200` materialises and sorts
-everything rather than keeping a bounded top-N. Both are shapes the `global-wide`
-benchmark family never asks for, which is why they went unnoticed.
+The standalone command records timeout/status observations, not a correctness or
+latency acceptance result. snapshot.py imports this catalog for its multi-graph
+broad/all suites, retaining complete responses and checking their full typed digests.
+Ordering, aggregation, traversal and expression cases complement the global-wide
+family; historical measurements and their revisions belong in the optimization log,
+not in this query catalog. The collect case aggregates in WITH before slicing because
+both engines' aggregation discovery deliberately does not descend into slices.
 """
 import argparse, json, sys, time, urllib.request, urllib.error
 
@@ -57,7 +48,9 @@ SHAPES = [
     ("count-label", "MATCH (n:CallSite) RETURN count(*)"),
     ("group-count", "MATCH (n:CallSite) RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 20"),
     ("distinct", "MATCH (n:CallSite) RETURN DISTINCT n.callee_class LIMIT 200"),
-    ("collect", "MATCH (n:CallSite) RETURN collect(n.callee_name)[0..10] AS names"),
+    # Aggregate before slicing: aggregation discovery intentionally does not descend
+    # into Slice expressions on either engine. Still collect every matching value.
+    ("collect", "MATCH (n:CallSite) WITH collect(n.callee_name) AS names RETURN names[0..10] AS names"),
     ("count-traversal", "MATCH (a)-[r]->(b) RETURN count(*)"),
 
     # --- ordering, which forces a full materialisation ---
@@ -120,4 +113,5 @@ def main():
     return 0
 
 
-sys.exit(main())
+if __name__ == "__main__":
+    sys.exit(main())

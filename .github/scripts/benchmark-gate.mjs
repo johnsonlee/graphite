@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs";
+import crypto from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
@@ -465,14 +466,124 @@ export const RUST_LATENCY_AGGREGATE_KEYS = [
     "rust.fixture64.aggregate[statistic=p95]"
 ];
 
-// The Rust engine answers most fixture64 shapes in about a millisecond, where a hosted runner
-// moves a point estimate by more than 15% on its own. A row therefore blocks only when it
+// Fail closed when an older comparator or a narrowed suite would omit broad query paths.
+export const RUST_MULTIGRAPH_COVERAGE_V2 = "MULTIGRAPH_QUERY_SUITE_V2";
+const RUST_FAST_SHAPES = [
+    "four-properties", "class-pair", "name-pair", "caller-class", "callee-class",
+    "provenance", "aliased", "parameterized-as-literal", "wrapped-case-insensitive",
+    "wrapped-case-insensitive-distinct"
+];
+const RUST_BROAD_SHAPES = [
+    "wide-contains", "label-scan-callsite", "label-scan-method", "label-scan-constant",
+    "label-scan-field", "all-nodes", "equality", "inequality", "id-lookup", "in-list",
+    "null-check", "regex", "one-hop", "one-hop-typed", "two-hop", "incoming", "var-length",
+    "path", "traverse-filtered", "count-all", "count-label", "group-count", "distinct",
+    "collect", "count-traversal", "order-by", "order-by-desc", "skip", "function-calls",
+    "case-expr", "coalesce", "labels-fn", "with-filter", "with-aggregate", "cartesian", "union"
+];
+export const RUST_MULTIGRAPH_CASES = [
+    ...["zero", "targeted", "dense"].flatMap(selectivity => RUST_FAST_SHAPES.map(shape => ({
+        benchmark: `${RUST_LATENCY_BENCHMARK_PREFIX}global-wide-${shape}`, params: { selectivity }
+    }))),
+    ...["localized-early", "localized-middle", "localized-late", "broad-all-64"].map(value => ({
+        benchmark: `${RUST_LATENCY_BENCHMARK_PREFIX}global-wide-four-properties`, params: { case: value }
+    })),
+    ...["label", "key", "relationship"].map(kind => ({
+        benchmark: `${RUST_LATENCY_BENCHMARK_PREFIX}schema-${kind}-histogram`, params: { selectivity: "schema" }
+    })),
+    ...RUST_BROAD_SHAPES.map(shape => ({
+        benchmark: `${RUST_LATENCY_BENCHMARK_PREFIX}shape-${shape}`, params: { selectivity: "broad" }
+    }))
+];
+
+function rustCatalogHash(cases) {
+    // snapshot.canonical_json sorts object keys; catalog order is the declared execution order.
+    const catalog = cases.map(({ benchmark, params, querySha256 }) => ({
+        benchmark, params: Object.fromEntries(Object.entries(params ?? {}).sort()), querySha256
+    }));
+    return crypto.createHash("sha256").update(JSON.stringify(catalog)).digest("hex");
+}
+
+function validateRustCoverage(results, revision, errors) {
+    const expected = new Set([...RUST_MULTIGRAPH_CASES.map(benchmarkKey), ...RUST_LATENCY_AGGREGATE_KEYS]);
+    const actual = new Map(results.map(result => [benchmarkKey(result), result]));
+    for (const key of expected) {
+        if (!actual.has(key)) errors.push(`${revision}: ${key}: missing required multigraph case`);
+    }
+    for (const key of actual.keys()) {
+        if (!expected.has(key)) errors.push(`${revision}: ${key}: unexpected multigraph case`);
+    }
+    const cases = results.filter(result => result.benchmark !== `${RUST_LATENCY_BENCHMARK_PREFIX}aggregate`);
+    if (JSON.stringify(cases.map(benchmarkKey)) !== JSON.stringify(RUST_MULTIGRAPH_CASES.map(benchmarkKey))) {
+        errors.push(`${revision}: multigraph cases do not follow the complete declared order`);
+    }
+    const hash = rustCatalogHash(cases);
+    for (const result of results) {
+        const key = benchmarkKey(result);
+        const aggregate = result.benchmark === `${RUST_LATENCY_BENCHMARK_PREFIX}aggregate`;
+        if (result.protocol !== RUST_MULTIGRAPH_COVERAGE_V2 || result.suite !== "all" ||
+            result.caseCount !== 73 || result.inputGraphCount !== 64 ||
+            result.requestScope !== "global-cross-graph") {
+            errors.push(`${revision}: ${key}: invalid multigraph protocol, suite, case count or graph scope`);
+        }
+        if (!/^[a-f0-9]{64}$/.test(result.caseListSha256 ?? "") || result.caseListSha256 !== hash) {
+            errors.push(`${revision}: ${key}: caseListSha256 does not bind the complete ordered query catalog`);
+        }
+        if (result.mode !== "sequential-pass" || result.statisticScope !==
+            (aggregate ? "cross-case-per-pass" : "same-case-sequential-pass-median")) {
+            errors.push(`${revision}: ${key}: invalid statistic scope or mode`);
+        }
+        const metric = result.primaryMetric ?? {};
+        const raw = metric.rawData;
+        if (result.sampling?.repetitions !== 5 || result.sampling?.requestPercentileEstimate !== false ||
+            !Array.isArray(raw) || raw.length !== 1 || !Array.isArray(raw[0]) || raw[0].length !== 5 ||
+            !raw[0].every(value => typeof value === "number" && Number.isFinite(value) && value >= 0)) {
+            errors.push(`${revision}: ${key}: expected five finite nonnegative raw samples and matching sampling metadata`);
+        } else {
+            const sorted = [...raw[0]].sort((left, right) => left - right);
+            const round3 = value => Number(value.toFixed(3));
+            if (metric.score !== round3(sorted[2]) ||
+                !Array.isArray(metric.scoreConfidence) || metric.scoreConfidence.length !== 2 ||
+                metric.scoreConfidence[0] !== round3(sorted[0]) || metric.scoreConfidence[1] !== round3(sorted[4])) {
+                errors.push(`${revision}: ${key}: score or min/max does not match the rounded five raw samples`);
+            }
+        }
+        // These type scans and schema queries are known nonempty in the real fixture64 corpus.
+        // Legitimately empty selectivity and lookup cases remain valid.
+        const requiresRows = ["shape-label-scan-callsite", "shape-label-scan-method", "shape-label-scan-constant",
+            "shape-label-scan-field", "schema-label-histogram", "schema-key-histogram", "schema-relationship-histogram"]
+            .some(name => result.benchmark === `${RUST_LATENCY_BENCHMARK_PREFIX}${name}`);
+        if (requiresRows && result.rowCount === 0) {
+            errors.push(`${revision}: ${key}: known fixture type/schema query unexpectedly returned no rows`);
+        }
+        if (!aggregate && (!/^[a-f0-9]{64}$/.test(result.querySha256 ?? "") ||
+            !/^[a-f0-9]{64}$/.test(result.responseDigest ?? "") ||
+            !Number.isSafeInteger(result.rowCount) || result.rowCount < 0)) {
+            errors.push(`${revision}: ${key}: missing complete query/response identity or valid rowCount`);
+        }
+    }
+    return actual;
+}
+
+// The fast subset includes millisecond cases, where hosted-runner noise can exceed 15%.
+// Broad cases retain the same gate rather than replacing the declared threshold. A row therefore blocks only when it
 // exceeds the relative limit by at least `minimum` (ms) as well, and only after the reverse-order
 // confirmation run says the same. Confidence intervals are the min-max spread over passes,
-// which the cold first pass always widens, so they never decide anything here.
+// which mix first-use and warm effects, so they never decide anything here.
 export function compareRustLatency(baseResults, candidateResults, threshold = 15, minimum = 1) {
     const comparison = compareJmh(baseResults, candidateResults, threshold, true);
     const errors = [...comparison.errors];
+    const base = validateRustCoverage(baseResults, "base", errors);
+    const candidate = validateRustCoverage(candidateResults, "candidate", errors);
+    for (const [key, baseline] of base) {
+        const current = candidate.get(key);
+        if (current === undefined) continue;
+        const fields = baseline.benchmark === `${RUST_LATENCY_BENCHMARK_PREFIX}aggregate`
+            ? ["caseListSha256"] : ["caseListSha256", "querySha256", "responseDigest", "rowCount"];
+        for (const field of fields) {
+            if (baseline[field] !== current[field]) errors.push(`${key}: base and candidate ${field} differ`);
+        }
+    }
     for (const [revision, results] of [["base", baseResults], ["candidate", candidateResults]]) {
         for (const result of results) {
             if (!String(result.benchmark).startsWith(RUST_LATENCY_BENCHMARK_PREFIX)) {
@@ -488,13 +599,20 @@ export function compareRustLatency(baseResults, candidateResults, threshold = 15
         if (row.unit !== "ms/op") errors.push(`${row.key}: expected ms/op, found ${row.unit}`);
         const increase = row.candidateScore - row.baseScore;
         const aboveMinimum = increase >= minimum;
-        return { ...row, minimum, aboveMinimum, blocked: row.blocked && aboveMinimum };
+        return { ...row, absoluteDeltaMs: increase, minimum, aboveMinimum, blocked: row.blocked && aboveMinimum };
     });
     return {
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         thresholdOnly: true,
         minimum,
+        workloadIdentity: baseResults[0]?.caseListSha256,
+        responseIdentity: crypto.createHash("sha256").update(JSON.stringify(
+            RUST_MULTIGRAPH_CASES.map(definition => {
+                const row = base.get(benchmarkKey(definition));
+                return [benchmarkKey(definition), row?.responseDigest, row?.rowCount];
+            })
+        )).digest("hex"),
         rows
     };
 }
@@ -504,6 +622,11 @@ export function confirmJmh(initial, confirmation) {
         ...initial.errors,
         ...confirmation.errors.map((error) => `confirmation: ${error}`)
     ];
+    for (const field of ["workloadIdentity", "responseIdentity"]) {
+        if (initial[field] !== confirmation[field]) {
+            errors.push(`confirmation: ${field} differs from the initial comparison`);
+        }
+    }
     const confirmationRows = new Map(confirmation.rows.map((row) => [row.key, row]));
     const rows = initial.rows.map((row) => {
         if (!row.blocked) return row;
@@ -565,7 +688,8 @@ export function renderJmhReport(comparison, title = "Method-level JMH") {
                 `${row.unit} (${formatDelta(row.confirmation.delta)})`;
         lines.push(
             `| \`${shortBenchmarkName(row.key)}\` | ${formatScore(row.baseScore)} ${row.unit} | ` +
-            `${formatScore(row.candidateScore)} ${row.unit} | ${formatDelta(row.delta)} | ` +
+            `${formatScore(row.candidateScore)} ${row.unit} | ` +
+            `${row.absoluteDeltaMs === undefined ? "" : `${row.absoluteDeltaMs >= 0 ? "+" : ""}${formatScore(row.absoluteDeltaMs)} ms; `}${formatDelta(row.delta)} | ` +
             `${confirmation} | ${row.threshold.toFixed(0)}% | **${statusLabel(row)}** |`
         );
     }
