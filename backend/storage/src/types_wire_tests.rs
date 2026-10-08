@@ -223,6 +223,14 @@ fn v1_v2_complete_tables_renders_and_shared_text_identity_agree() {
             actual.fields.keys().collect::<Vec<_>>(),
             expected.fields.keys().collect::<Vec<_>>()
         );
+        assert_eq!(
+            actual.methods.iter().collect::<Vec<_>>(),
+            expected.methods.iter().collect::<Vec<_>>()
+        );
+        assert_eq!(
+            actual.classes.iter().collect::<Vec<_>>(),
+            expected.classes.iter().collect::<Vec<_>>()
+        );
         for id in 0..expected.types.len() {
             assert_eq!(actual.render(id), expected.render(id));
         }
@@ -535,4 +543,85 @@ fn both_wire_versions_load_from_bound_directories_and_packed_sources() {
             .contains("digest mismatch"));
     }
     std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn top_level_section_counts_require_the_full_minimum_row_footprint() {
+    for pooled in [false, true] {
+        let wire = encode(&full_table(), pooled, &[]);
+        let mut sections = vec![("type", wire.text_offsets[0] - 4, 28)];
+        sections.extend(
+            wire.sections
+                .iter()
+                .map(|&(name, count, _, _)| (name, count, if name == "method" { 24 } else { 16 })),
+        );
+        for (name, offset, minimum) in sections {
+            // This count passes the old four-bytes-per-row bound but cannot fit
+            // complete rows. Its error must precede reservation/first-row parse.
+            let count = (wire.bytes.len() - offset - 4) / minimum + 1;
+            let mut malformed = wire.bytes.clone();
+            malformed[offset..offset + 4].copy_from_slice(&(count as i32).to_be_bytes());
+            assert_eq!(
+                DeclaredTypes::parse(&malformed, b"metadata").unwrap_err().0,
+                "section count exceeds remaining bytes",
+                "{name}, pooled={pooled}"
+            );
+            malformed[offset..offset + 4].copy_from_slice(&i32::MAX.to_be_bytes());
+            assert_eq!(
+                DeclaredTypes::parse(&malformed, b"metadata").unwrap_err().0,
+                "invalid count",
+                "huge {name}, pooled={pooled}"
+            );
+            // One row with exactly one missing byte must also fail before any
+            // allocation even when the following bytes look like a valid prefix.
+            malformed.truncate(offset + 4 + minimum - 1);
+            malformed[offset..offset + 4].copy_from_slice(&1i32.to_be_bytes());
+            assert_eq!(
+                DeclaredTypes::parse(&malformed, b"metadata").unwrap_err().0,
+                "section count exceeds remaining bytes",
+                "truncated {name}, pooled={pooled}"
+            );
+        }
+    }
+}
+
+#[test]
+fn invalid_first_record_is_still_rejected_after_bounded_reservation() {
+    for pooled in [false, true] {
+        let wire = encode(&full_table(), pooled, &[]);
+        let mut sections = vec![("type", wire.text_offsets[0] - 4, 28)];
+        sections.extend(
+            wire.sections
+                .iter()
+                .map(|&(name, count, _, _)| (name, count, if name == "method" { 24 } else { 16 })),
+        );
+        for (name, offset, minimum) in sections {
+            let mut malformed = wire.bytes.clone();
+            // Sufficient bytes may still contain a bad first record. The count
+            // guard is only an allocation bound, never a substitute for parsing.
+            malformed.resize(offset + 4 + 64 * minimum, 0);
+            malformed[offset..offset + 4].copy_from_slice(&64i32.to_be_bytes());
+            malformed[offset + 4..offset + 8].copy_from_slice(&(-1i32).to_be_bytes());
+            let error = DeclaredTypes::parse(&malformed, b"metadata").unwrap_err();
+            assert_eq!(
+                error.0,
+                if pooled {
+                    "invalid string ID"
+                } else {
+                    "negative string length"
+                },
+                "{name}, pooled={pooled}"
+            );
+        }
+    }
+}
+
+#[test]
+fn section_footprint_multiplication_is_checked() {
+    let bytes = [0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0];
+    let mut reader = Reader::at(&bytes, 0);
+    assert_eq!(
+        reader.section_count(usize::MAX).unwrap_err().0,
+        "section byte length overflow"
+    );
 }
