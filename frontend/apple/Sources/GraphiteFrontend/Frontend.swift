@@ -300,10 +300,17 @@ public struct Frontend {
             for case let url as URL in enumerator {
                 let name = url.lastPathComponent
                 if name.hasPrefix(".") || name == ".build" {
-                    enumerator.skipDescendants()
+                    // skipDescendants on a regular file can skip the next directory
+                    // on macOS, silently dropping unrelated source declarations.
+                    if try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory == true {
+                        enumerator.skipDescendants()
+                    }
                     continue
                 }
-                if sourceExtensions.contains(url.pathExtension) { files.append(SourcePosition.canonical(url.path)) }
+                if sourceExtensions.contains(url.pathExtension),
+                   try url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory != true {
+                    files.append(SourcePosition.canonical(url.path))
+                }
             }
         }
         return Array(Set(files)).sorted()

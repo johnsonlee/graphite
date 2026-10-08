@@ -15,6 +15,7 @@ import Foundation
 ///     c:objc(cy)LegacyStore@Extras(im)purge                           category member
 ///     c:@M@AcmeApp@objc(cs)AppDelegate(im)application:didFinishLaunchingWithOptions:
 ///                                                                    Swift @objc member, module AcmeApp
+///     c:@CM@AcmeApp@@objc(cs)NSObject(cm)make                       Swift extension's @objc member
 ///     c:@S@CGRect, c:@E@UIUserInterfaceStyle, c:@T@NSInteger, c:@F@NSStringFromClass
 ///                                                                    C struct, enum, typedef, function
 public struct ClangUSR: Equatable {
@@ -58,7 +59,21 @@ public struct ClangUSR: Equatable {
         guard usr.hasPrefix("c:") else { return nil }
         var rest = Substring(usr.dropFirst(2))
         var result = ClangUSR()
-        if rest.hasPrefix("@M@") {
+        if rest.hasPrefix("@CM@") {
+            // Swift exposes an @objc member added by an extension as a category in
+            // the extension's module. Imported ObjC owners carry an additional `@`.
+            rest = rest.dropFirst(4)
+            guard let end = rest.firstIndex(of: "@"), end != rest.startIndex else { return nil }
+            result.module = String(rest[..<end])
+            rest = rest[end...].dropFirst()
+            if !rest.hasPrefix("objc("), let ownerEnd = rest.firstIndex(of: "@") {
+                // Extensions of a type from another Swift module name that owner
+                // module here; an imported ObjC owner has an empty module segment.
+                result.module = ownerEnd == rest.startIndex ? nil : String(rest[..<ownerEnd])
+                rest = rest[ownerEnd...].dropFirst()
+            }
+            guard rest.hasPrefix("objc(") else { return nil }
+        } else if rest.hasPrefix("@M@") {
             rest = rest.dropFirst(3)
             guard let end = rest.firstIndex(of: "@") else { return nil }
             result.module = String(rest[..<end])
