@@ -97,12 +97,12 @@ data class DeclaredTypeTable(
         fun reference(id: Int) { require(id in types.indices) { "Invalid graph.types type ID $id" } }
         fun parameters(values: List<TypeParameter>) { values.forEach { parameter -> parameter.bounds.forEach(::reference) } }
         fields.values.forEach(::reference)
-        methods.values.forEach { method ->
+        validateMemberReferences(methods) { method ->
             method.parameterTypes.forEach(::reference)
             reference(method.returnType)
             parameters(method.typeParameters)
         }
-        classes.values.forEach { type ->
+        validateMemberReferences(classes) { type ->
             type.superType?.let(::reference)
             type.interfaces.forEach(::reference)
             parameters(type.typeParameters)
@@ -140,6 +140,11 @@ data class DeclaredTypeTable(
             return height
         }
         types.indices.forEach { visit(it, 1) }
+    }
+
+    private fun <V> validateMemberReferences(values: Map<*, V>, validateValue: (V) -> Unit) {
+        if (values is DeclaredTypeReferences) values.validateTypeReferences(types.size)
+        else values.values.forEach(validateValue)
     }
 
     private fun saturatedAdd(left: Int, right: Int, limit: Int): Int =
