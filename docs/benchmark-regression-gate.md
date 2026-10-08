@@ -199,94 +199,133 @@ a confirmation doubles the measurement.
 
 ## Apple frontend gate
 
-Three components measure the Swift frontend the Apple path of `graphite build` runs, so a
-regression in the frontend itself can fail the gate: no other job records its wall time or
-memory, and `apple.yml` checks byte determinism only. Each has its own pinned corpus manifest
-under `backend/bench/`, its own graph shape and its own time and RSS ceilings, and its own
-report and status the aggregate counts as a blocking component:
+Three blocking components measure the **frontend stage only**, from an existing compiler
+index store through Graph IR emission. They do not measure compilation, import/save, saved
+map readiness or server request latency. The sample journal records CPU consumption, but
+the frontend-stage gate does not compare CPU. Import with the production reader
+is a correctness check after the timed region; it is not an end-to-end timing.
 
-| Component | Manifest | Corpus | Runner |
+| Component | Manifest | Real source corpus | Runner |
 |---|---|---|---|
-| `apple-frontend` | `apple-frontend-corpus.json` | SwiftFormat at a pinned commit: 181 files, 32.5k nodes; a fast smoke, not evidence at app scale | `swift:6.1` container, Linux |
-| `apple-frontend-large` | `apple-frontend-corpus-large.json` | generated SwiftPM package: 2500 files over 25 modules, 374,836 nodes (7.6 s and 11.4 s wall on hosted runs, 315 MiB) | `swift:6.1` container, Linux |
-| `apple-frontend-xcode` | `apple-frontend-corpus-xcode.json` | the same generated sources as an iOS `.xcodeproj` with one app target, built by `xcodebuild` for the simulator; 374,838 nodes (12.0 s and 25.0 s wall on the first two hosted runs, 455 MiB both times: hosted macOS machines vary, so its wall ceiling is 40 s) | `macos-latest` |
+| `apple-frontend` | `apple-frontend-corpus.json` | SwiftFormat at `173d2cb252474cd8e8baeaf13636f5d565408ec9`; small smoke | Swift 6.1.3, Linux |
+| `apple-frontend-large` | `apple-frontend-corpus-large.json` | Swift Package Manager at `587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54` | Swift 6.1.3, Linux |
+| `apple-frontend-xcode` | `apple-frontend-corpus-xcode.json` | Signal 7.70.1.917 at `4193fd427eeae9d9a8c704e60958463342b7e1cc`, Pods at `c65dd3f33daaa96582de97296e480f5a3aecc04d` | Xcode 16.4, macOS 15 |
 
-The two generated corpora are written by `backend/bench/generate-apple-corpus.py` from the
-manifest's `generator` block (seed, files, modules, layout, name): every file is a service
-class with the same public API, so cross-file and cross-module calls with literal and
-non-literal arguments compile everywhere, modules are layered so the debug build
-parallelises, and the text is a pure function of the parameters, so the corpus is the same on
-every runner. A cached corpus is trusted only after it is regenerated and `diff -r`ed against
-the cache; the generator and both manifests are base-owned like the harness (candidate copies
-stand in, pinned to `APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256`,
-`APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256` and
-`APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256`, until `main` carries them). The 2500-file
-size is the class of a large iOS application (a few thousand files, a few hundred thousand
-nodes); the manifests' `shape` and `ceilings` are `null` until the first hosted measurement
-pins them.
+Every performance manifest uses `graphite-apple-frontend-corpus-v2`, `kind: real-source`,
+a repository and a full commit pin. Source caches are bound to the manifest and toolchain;
+checkout and dependency revisions are checked again before measurement. Swift Package Manager
+uses a checked-in, SHA-256-pinned `Package.resolved`, copied before a
+`--force-resolved-versions` build and verified after cache restoration. Signal builds its
+workspace with the simulator destination and code signing disabled; its tracked RingRTC setup
+script validates its binary dependency checksum. Compiler builds force the index store on.
+The Linux gate and release calibration install `libsqlite3-dev` and `pkg-config`: the pinned
+Swift Package Manager dependency `swift-llbuild` requires SQLite headers during compilation.
 
-The `apple-frontend` job runs one matrix leg per SwiftPM corpus in the `swift:6.1`
-container (with Node from `actions/setup-node` for the comparator), builds `graphite-frontend-apple` in release from the base and from the candidate
-revision, and prepares the leg's corpus: for `apple-frontend-corpus.json` a
-clone at the pinned commit, verified with `git rev-parse HEAD`, for the generated manifest
-one run of the generator, then one `swift build -c debug`
-so the index store exists (the sources and their build are cached by commit or generator
-hash and toolchain). The `apple-frontend-xcode` job does the same on `macos-latest` with the
-`.xcodeproj` layout, built once with the `xcodebuild` the frontend itself runs (one scheme,
-Debug, `generic/platform=iOS Simulator`, `COMPILER_INDEX_STORE_ENABLE=YES`, code signing off)
-into a derived data directory whose `Index.noindex` is cached with the sources (the index
-store keys its units by source path, the same on every hosted runner).
-`backend/bench/apple-frontend.py` then runs each frontend on that corpus: one unrecorded
-warm-up and five (three at app scale) `build --package <corpus> --skip-build` runs, or
-`build --project <corpus>.xcodeproj --derived-data <build> --skip-build` for the Xcode
-project, so `swift build` and `xcodebuild` are never part
-of the measurement (the manifest's `input`, `package` or `xcodeproj`, must match the
-invocation), and records the median wall time (`ms/op`) and the median peak RSS
-(`MiB`, `ru_maxrss` of the waited process) with their min–max spread, the graph shape the
-frontend reported (files, types, methods, fields, call sites, constants, annotations, nodes,
-edges, strings) and the SHA-256 of every run's IR. A sample counts only for valid, equivalent
-work: every measured IR is walked as the stream `ir/graphite_ir.proto` defines (a header
-first, a trailer last and nothing after it) and its nodes, edges and strings counted, the
-trailer and the frontend's summary must agree with those counts, and the shape must equal
-the one the corpus manifest pins (`shape`); an empty or truncated IR, an IR that differs
-between runs, a failing run, a shape other than the pin (a frontend that emits less and so
-gets faster included) or a file count other than the manifest's fails the snapshot. That walk
-checks framing and counts, not the reader's semantic contract (node kinds, dense ids, string
-ids, edge endpoints), so the harness also hands the last measured IR of every revision (all
-runs wrote the same bytes) to the production reader through `--verify`: `graphite.jar import`,
-built from the revision under test by the `build-graphite-jar` job and downloaded into both
-Apple jobs (the `swift:6.1` container gets `openjdk-17-jre-headless`, macOS has Java); a
-refusal fails the snapshot with the reader's message, the rows record the verification, and
-the comparator refuses a base or candidate row without it. Changing
-the pinned shape is the explicit transition when the frontend intentionally emits more or
-less for the same corpus; the comparator refuses a candidate whose shape differs from the pin,
-and treats a base that emits another shape as not comparable (ceilings only, the report says
-why).
+The hosted Signal revision explicitly selects Xcode 16.4 in its
+[upstream CI](https://github.com/signalapp/Signal-iOS/blob/4193fd427eeae9d9a8c704e60958463342b7e1cc/.github/workflows/main.yml)
+and [.xcode-version](https://github.com/signalapp/Signal-iOS/blob/4193fd427eeae9d9a8c704e60958463342b7e1cc/.xcode-version).
+Its pinned MobileCoin dependency contains the explicit result typing in
+[FogView+TxOutFetcher.swift](https://github.com/signalapp/Signal-Pods/blob/c65dd3f33daaa96582de97296e480f5a3aecc04d/MobileCoin/Sources/Common/Fog/View/FogView%2BTxOutFetcher.swift)
+and the revised [throwing flatMap overload](https://github.com/signalapp/Signal-Pods/blob/c65dd3f33daaa96582de97296e480f5a3aecc04d/MobileCoin/Sources/Common/Utils/Result%2BThrows.swift).
+These address the source compilation error observed with the older Signal corpus under
+Xcode 16.4 in [calibration run 37794100367](https://github.com/johnsonlee/graphite/actions/runs/37794100367).
+The manifest also pins the upstream message-backup test submodule to
+`341379da3316e97421c212e6bb62c795e68c53a9`. Successful source preparation and hosted measurements
+are still required; the new Signal shape, file count and ceilings remain null until then.
 
-The comparison is `compare-apple-frontend` in `benchmark-gate.mjs`, base-owned like every other
-comparator (the candidate copy, harness and corpus manifest stand in, pinned to
-`APPLE_FRONTEND_TRANSITION_*_SHA256`, only until `main` carries them). It is the same
-point-estimate policy as `rust-latency`, one floor per metric: a row is a regression
-candidate when the candidate median exceeds the base median by more than 15% **and** by at least
-100 ms (wall) or 8 MiB (RSS); rows under the floor
-are reported as `NOISE`. A candidate triggers a
-reverse-order confirmation (candidate first, then base) and blocks only when the confirmation
-says the same. The corpus ceilings (`ceilings.wallMs`, `ceilings.rssMiB` in the manifest) are
-enforced only when no comparable base exists: when the base revision carries no Apple frontend
-(the revisions before it landed) or emits another shape, the candidate is measured against the
-ceilings alone and the report says so. With a paired base a ceiling breach is reported, never
-blocking: hosted runners differ by up to 2× on identical work (7.6 s and 11.4 s for the
-generated package on Linux, 12.0 s and 25.0 s on macOS, with the same IR and RSS), so an
-absolute limit would fail an unchanged frontend on a slow machine while the paired comparison
-on that one machine is the measurement that means something. The ceilings are set from the
-observed hosted range (1.6× the slowest wall observation, 1.5× the stable RSS). Both
-jobs' results are blocking inputs of `benchmark-regression-gate`, and the three reports are
-blocking components of the aggregate under *Build and persistence lifecycle*.
+Local lifecycle evidence uses **Signal 7.19.1.208**, commit
+`dc04157b3adef68af2136a12478f455e41e5d2e0`, Pods
+`77c21193e6b5e4f8cbd86abaf46631fd242322f4`, built with Xcode 15.4. That is a separate workload
+from hosted Signal 7.70.1.917. Its existing construction, loading and query observations remain
+evidence for that local workload only; they cannot supply the hosted graph shape or ceilings.
 
-Cost on a hosted runner: two release builds of the frontend (cached by `actions/cache` on
-`Package.resolved`), the corpus build on a cache miss (minutes for the generated corpora),
-and about a minute (SwiftFormat) to a few minutes (app scale) of measured runs per revision;
-a confirmation doubles the measurement.
+The synthetic 2500-file package and Xcode project used before this transition are **historical
+correctness fixtures only**. Their timings and old ceilings cannot establish scalability or
+performance acceptance under `CONVENTIONS.md`. `generate-apple-corpus.py` remains available for
+determinism and correctness tests, but neither CI performance job runs it and the comparator
+rejects any manifest or sample containing a generator. Historical benchmark comments remain
+historical evidence with this limitation; their green status does not establish real-app
+performance.
+
+`prepare-apple-corpus.py` is the shared preparation and cache-verification recipe used by
+the gate and optional release calibration. Its correctness tests verify clean source commits,
+locked dependencies, mandatory compiler indexing and the workspace build scope. Compilation
+is preparation only and is never included in frontend-stage timing.
+
+The preparation helper, harness, manifests and comparator are base-owned. A base carrying the old synthetic
+contract cannot authorize this transition: controls without the `graphite-apple-real-source-v1`
+marker or the real-source v2 manifest schema are replaced only by SHA-256-pinned candidate
+copies after candidate gate tests pass. Once main carries the real-source controls, it owns
+them normally. The aggregate selects the same real-source-aware comparator, so an old reporter
+cannot silently describe or accept the synthetic performance contract.
+
+`backend/bench/apple-frontend.py` performs one warm-up retained in the journal but excluded from metric aggregation, then five runs for the
+SwiftFormat smoke or three runs for each larger corpus. Each run invokes
+`graphite-frontend-apple build --skip-build` with the package or workspace and existing derived
+data. It retains every wall-time and peak-process-RSS sample, reports medians and min–max
+spread, validates the IR framing and counts, and requires all runs to write identical bytes.
+The last IR is imported by `graphite.jar import`, built from the candidate revision; a refusal
+fails the measurement. Rows must bind the real repository, exact commit and submodule pins.
+The candidate's file count and graph shape must match a measured manifest pin. Every invocation
+requires fresh output/log paths so a failed rerun cannot destroy raw samples or leave a stale
+success result. Each run must print its own summary; it cannot borrow an earlier run's summary.
+The verifier's output and exit status are retained in a separate verification JSON file.
+
+A manifest with a pending/null graph shape is unavailable evidence and fails closed; no shape
+or ceiling is invented from the old generated corpus. When the base emits the same pinned
+shape, the existing paired rule applies independently to wall time and RSS: a regression
+exceeds 15% and its metric floor (100 ms or 8 MiB), followed by a reverse-order confirmation.
+An intentional baseline/candidate shape difference must be declared in `baselineShapes`, keyed
+by the **full baseline commit**, with its measured shape and a reason. Only a base invocation
+with that exact `--baseline-revision` may use the alternate shape/file count. Candidate pins
+remain mandatory. The comparator checks that alternate pin independently; an unknown revision,
+missing reason or unexpected baseline shape fails. Different validated work is explicitly
+incomparable, not silently paired. When the base lacks the frontend or emits such reviewed
+different work, only **measured, explicitly pinned**
+bootstrap ceilings can be used. Missing ceilings in that situation fail closed. A bootstrap
+pass is not a paired improvement or recovery claim. Ceilings exceeded on a paired runner remain
+visible but do not substitute for the paired comparison.
+
+A dry-run release can collect Linux SwiftFormat/SwiftPM and Xcode 16.4 Signal measurements
+before any shape or ceiling is pinned:
+
+```bash
+gh workflow run publish.yml --ref <candidate-branch> \
+  -f tag=v3.0.0-apple-calibration.1 -f calibrate_apple=true
+```
+
+This opt-in path verifies and runs the assembled frontend/JAR release assets, prepares the
+same pinned sources with the shared recipe, then builds baseline
+`332c0d8a6fec650a6e7979e3dce37aa1a891c03a` and records its shape and raw samples on that same
+prepared corpus. Candidate release observations run first, baseline observations second;
+this is calibration, not a paired performance comparison. Separate output files preserve
+both revisions' samples, warm-ups, process failures, verifier output and logs. Calibration
+preserves the original manifest and measures with a separate unpinned copy (shape, file count,
+ceilings and baselineShapes cleared), so legitimate source/signature fixes cannot be rejected
+by stale pins before their shape is observed. The artifact includes
+toolchain details and an explicit `performanceAcceptance: false` scope record. It does not
+invoke the acceptance comparator or publish a release. Its samples must be reviewed and
+pinned for the matching platform and compiler before the gate can accept that corpus;
+a macOS package shape is not a Linux package pin. Preparation failures remain failures,
+with logs uploaded for diagnosis.
+
+[Run 37794100367](https://github.com/johnsonlee/graphite/actions/runs/37794100367) successfully
+calibrated SwiftFormat with Swift 6.1.3 on Linux and static Swift standard-library linkage.
+Both revisions retained the existing manifest shape, with six valid raw records each
+(one declared warm-up and five measured runs), deterministic IR within each revision, and
+successful import/save by the production JAR. Candidate measured wall time was
+1334.990 ms median (1315.662–1362.740 ms range), with peak RSS 78.699 MiB median
+(78.559–78.848 MiB range). The existing 2000 ms / 120 MiB measured-run ceilings remain unchanged.
+The first warm-up used 127.824 MiB and is retained separately under the declared sampling
+protocol. This calibration supports the existing SwiftFormat pin; its fixed run order does
+not establish paired performance acceptance. The same run failed before measuring SwiftPM
+(missing SQLite headers) and the old Signal revision (compiler incompatibility), so neither
+failure provides a shape or ceiling for those workloads.
+
+These three components retain their names for report compatibility. They establish only the
+stated frontend-stage boundary. Real application import/save, cold/warm load, multi-graph
+query p50/p95, CPU and RSS must be recorded separately for lifecycle acceptance; a faster
+frontend or a small SwiftFormat smoke cannot fill those gaps.
 
 ## Wrapped case-insensitive latency gate
 

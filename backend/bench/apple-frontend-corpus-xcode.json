@@ -1,31 +1,49 @@
 {
-  "schema": "graphite-apple-frontend-corpus-v1",
-  "label": "generated-xcodeproj",
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "kind": "real-source",
+  "label": "signal-ios",
+  "repository": "https://github.com/signalapp/Signal-iOS.git",
+  "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
   "input": "xcodeproj",
-  "generator": {
-    "script": "generate-apple-corpus.py",
-    "seed": 20260929,
-    "files": 2500,
-    "modules": 25,
-    "layout": "xcodeproj",
-    "name": "GraphiteBenchApp"
-  },
-  "files": 2500,
-  "ceilings": {
-    "wallMs": 40000,
-    "rssMiB": 690
-  },
-  "note": "The same generated sources as apple-frontend-corpus-large.json laid out as an iOS application `.xcodeproj`: one app target holding every file (the 25 module directories are groups), a UIKit app delegate and a shared scheme, built once with `xcodebuild` for the iOS Simulator on macOS with the index store on; the frontend reads that derived data through `build --project ... --derived-data ... --skip-build`. `shape` is the graph the frontend emits for it, pinned from the first hosted measurement (macOS-ARM64, macos-latest): the package's graph plus the app delegate (374838 nodes, 163539 edges); a sample whose shape differs is refused, so changing this pin is the explicit transition when the frontend intentionally emits more or less. Hosted macOS runners vary a lot between machines: the first two hosted runs measured 11956 ms and 24999 ms wall (median of 3) for the same IR and the same 455 MiB peak RSS. The ceilings are enforced only when no comparable base exists (a base revision without the frontend, or one that emits another shape); with a paired base the comparator reports a breach and the paired comparison on the one runner decides. The wall ceiling is 1.6x the slower observation (40 s), the RSS ceiling 1.5x the stable measurement (690 MiB).",
+  "files": 3853,
   "shape": {
-    "files": 2500,
-    "types": 5971,
-    "methods": 24816,
-    "fields": 20840,
-    "callSites": 185510,
-    "constants": 131647,
-    "annotations": 4949,
-    "nodes": 374838,
-    "edges": 163539,
-    "strings": 25923
+    "files": 3853,
+    "types": 9334,
+    "methods": 43578,
+    "fields": 37077,
+    "callSites": 200315,
+    "constants": 39516,
+    "annotations": 5771,
+    "nodes": 449760,
+    "edges": 206597,
+    "strings": 140713
+  },
+  "ceilings": {
+    "wallMs": 74500,
+    "rssMiB": 1408
+  },
+  "note": "Hosted corpus: Signal 7.70.1.917, measured on macOS 15 arm64 with Xcode 16.4 / Swift 6.1.2 in run 37798249852. It differs from Signal 7.19.1.208 used for local lifecycle validation; their measurements and shapes are not interchangeable. Initial ceilings follow the policy declared before inspecting candidate samples: 1.5 times the maximum of all five measured samples, rounded up to 250 ms and 16 MiB. Warmup is retained separately; these frontend-stage bootstrap limits do not establish lifecycle performance acceptance.",
+  "project": "Signal.xcworkspace",
+  "scheme": "Signal",
+  "submodules": {
+    "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+    "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+  },
+  "baselineShapes": {
+    "332c0d8a6fec650a6e7979e3dce37aa1a891c03a": {
+      "shape": {
+        "files": 2594,
+        "types": 6718,
+        "methods": 31695,
+        "fields": 27524,
+        "callSites": 156129,
+        "constants": 34428,
+        "annotations": 4943,
+        "nodes": 357780,
+        "edges": 169184,
+        "strings": 111202
+      },
+      "reason": "The candidate changes source/header discovery and signature extraction. On the same pinned Signal 7.70.1.917 corpus and Xcode 16.4 runner, the observed baseline has 2594 files and 357780 nodes; the candidate has 3853 files and 449760 nodes. Full shapes were separately verified in calibration run 37798249852. They represent different work and cannot establish a paired performance comparison."
+    }
   }
 }

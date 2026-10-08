@@ -1,0 +1,10 @@
+......................................Preparing corpus: swift build --package-path /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/apple corpus 6tcuqhr8/source --jobs 4 -c debug --enable-index-store --force-resolved-versions
+Prepared pinned real-source corpus fixture: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/apple corpus 6tcuqhr8/source/.build/debug/index/store
+Prepared pinned real-source corpus fixture: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/apple corpus 6tcuqhr8/source/.build/debug/index/store
+...Preparing corpus: swift build --package-path /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/apple corpus g8pnofvz/source --jobs 4 -c debug --enable-index-store --force-resolved-versions
+Prepared pinned real-source corpus fixture: /var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/apple corpus g8pnofvz/source/.build/debug/index/store
+...............................
+----------------------------------------------------------------------
+Ran 72 tests in 6.850s
+
+OK

@@ -1,0 +1,3352 @@
+{
+  "sourceFiles": {
+    "loading": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-loading-final/samples.jsonl",
+    "query": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-query-final/samples.jsonl"
+  },
+  "method": {
+    "rounds": 3,
+    "order": [
+      "baseline,candidate",
+      "candidate,baseline",
+      "baseline,candidate"
+    ],
+    "quantiles": "nearest-rank over all 300 repeated-request latencies per case/concurrency/variant; separate 100-request round quantiles and ranges retained",
+    "cpuAggregation": "median across three 100-request batch deltas; raw mislabeled values and timebase-corrected values both retained",
+    "load": "spawn through HTTP readiness and complete consumption of all four cases; wall and live CPU end before shutdown; separate wait4 CPU/RSS cover whole lifetime including shutdown",
+    "rss": "max wait4 process RSS across all rounds; query RSS applies to the whole mixed workload, never attributed to one case",
+    "cache": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+    "scope": [
+      "signal-ios",
+      "swiftpm",
+      "signal-server"
+    ],
+    "limitations": "Three fixed closed-loop rounds, not sustained saturation. No averaging across cases/concurrency to offset failures. Overlapping ranges mean causal/statistical confidence remains limited, but do not satisfy a strict non-regression gate."
+  },
+  "identicalPersistedGraphFingerprints": true,
+  "parity": [
+    {
+      "case": "all-graph-node-census",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "645af5357c007ea45b6e065dc7ca7d12c9f502e3790efc74dc0843c79e23bf08",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "645af5357c007ea45b6e065dc7ca7d12c9f502e3790efc74dc0843c79e23bf08",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "network-message-call-scan",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "literal-call-provenance",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "field-type-inventory",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "948967cbffeab7ec1574e2bbf2a2b9f282cfb803cdf70c35cc38d14dede01b63",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "948967cbffeab7ec1574e2bbf2a2b9f282cfb803cdf70c35cc38d14dede01b63",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ],
+        "candidate": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ]
+      }
+    }
+  ],
+  "failureStatistics": {
+    "loading": {
+      "totalRequests": 44,
+      "byPhase": [
+        {
+          "phase": "load-consumption",
+          "ok": true,
+          "count": 24
+        },
+        {
+          "phase": "readiness",
+          "ok": false,
+          "count": 14
+        },
+        {
+          "phase": "readiness",
+          "ok": true,
+          "count": 6
+        }
+      ],
+      "expectedInitialConnectionRefused": 14,
+      "unexpectedRequestFailures": [],
+      "otherFailedRecords": [],
+      "serverExpectedSIGTERMShutdownCount": 6,
+      "rssSamplingErrors": []
+    },
+    "query": {
+      "totalRequests": 4940,
+      "byPhase": [
+        {
+          "phase": "measured",
+          "ok": true,
+          "count": 4800
+        },
+        {
+          "phase": "readiness",
+          "ok": false,
+          "count": 14
+        },
+        {
+          "phase": "readiness",
+          "ok": true,
+          "count": 6
+        },
+        {
+          "phase": "warmup",
+          "ok": true,
+          "count": 120
+        }
+      ],
+      "expectedInitialConnectionRefused": 14,
+      "unexpectedRequestFailures": [],
+      "otherFailedRecords": [],
+      "serverExpectedSIGTERMShutdownCount": 6,
+      "rssSamplingErrors": []
+    }
+  },
+  "cpuUnitCorrection": {
+    "measurementBug": "Original proc_pid_rusage code treated Mach absolute CPU ticks as nanoseconds. Historical cpu_seconds and cpu_before/after seconds are underreported; wait4 CPU is unaffected.",
+    "machTimebase": {
+      "numer": 125,
+      "denom": 3
+    },
+    "correctionFactor": 41.666666666666664,
+    "derivation": "Recover each integer tick counter as round(original_float * 1e9), then ticks * numer / denom / 1e9. For batch deltas subtract corrected after and before values. Original samples and summaries are not modified.",
+    "counterSources": [
+      "https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/bsd_kern.c#L1187-L1197",
+      "https://github.com/apple-oss-distributions/xnu/blob/main/osfmk/kern/task.c#L6387-L6392"
+    ],
+    "wait4Consistency": [
+      {
+        "operation": "loading",
+        "variant": "baseline",
+        "round": 0,
+        "originalLiveCpuReportedSeconds": 0.021770881,
+        "reconstructedRawTicks": {
+          "user": 21098848,
+          "system": 672033
+        },
+        "derivedLiveCpuSeconds": 0.9071200416666666,
+        "wait4LifetimeCpuSeconds": 0.9072939999999999,
+        "shutdownRemainderCpuSeconds": 0.000173958333333335
+      },
+      {
+        "operation": "loading",
+        "variant": "baseline",
+        "round": 1,
+        "originalLiveCpuReportedSeconds": 0.021010283999999997,
+        "reconstructedRawTicks": {
+          "user": 20396090,
+          "system": 614194
+        },
+        "derivedLiveCpuSeconds": 0.8754285,
+        "wait4LifetimeCpuSeconds": 0.8758609999999999,
+        "shutdownRemainderCpuSeconds": 0.0004324999999998358
+      },
+      {
+        "operation": "loading",
+        "variant": "baseline",
+        "round": 2,
+        "originalLiveCpuReportedSeconds": 0.021299540999999998,
+        "reconstructedRawTicks": {
+          "user": 20661895,
+          "system": 637646
+        },
+        "derivedLiveCpuSeconds": 0.887480875,
+        "wait4LifetimeCpuSeconds": 0.887729,
+        "shutdownRemainderCpuSeconds": 0.00024812500000004345
+      },
+      {
+        "operation": "loading",
+        "variant": "candidate",
+        "round": 0,
+        "originalLiveCpuReportedSeconds": 0.022098521000000003,
+        "reconstructedRawTicks": {
+          "user": 21402480,
+          "system": 696041
+        },
+        "derivedLiveCpuSeconds": 0.9207717083333333,
+        "wait4LifetimeCpuSeconds": 0.9210079999999999,
+        "shutdownRemainderCpuSeconds": 0.0002362916666666104
+      },
+      {
+        "operation": "loading",
+        "variant": "candidate",
+        "round": 1,
+        "originalLiveCpuReportedSeconds": 0.021613889,
+        "reconstructedRawTicks": {
+          "user": 20975305,
+          "system": 638584
+        },
+        "derivedLiveCpuSeconds": 0.9005787083333334,
+        "wait4LifetimeCpuSeconds": 0.9007819999999999,
+        "shutdownRemainderCpuSeconds": 0.0002032916666664386
+      },
+      {
+        "operation": "loading",
+        "variant": "candidate",
+        "round": 2,
+        "originalLiveCpuReportedSeconds": 0.020441233,
+        "reconstructedRawTicks": {
+          "user": 19845934,
+          "system": 595299
+        },
+        "derivedLiveCpuSeconds": 0.8517180416666666,
+        "wait4LifetimeCpuSeconds": 0.852055,
+        "shutdownRemainderCpuSeconds": 0.00033695833333335923
+      },
+      {
+        "operation": "query",
+        "variant": "baseline",
+        "round": 0,
+        "originalLiveCpuReportedSeconds": 3.605731614,
+        "reconstructedRawTicks": {
+          "user": 3600884907,
+          "system": 4846707
+        },
+        "derivedLiveCpuSeconds": 150.23881725,
+        "wait4LifetimeCpuSeconds": 150.23905499999998,
+        "shutdownRemainderCpuSeconds": 0.00023774999996817314
+      },
+      {
+        "operation": "query",
+        "variant": "baseline",
+        "round": 1,
+        "originalLiveCpuReportedSeconds": 3.512042023,
+        "reconstructedRawTicks": {
+          "user": 3506845108,
+          "system": 5196915
+        },
+        "derivedLiveCpuSeconds": 146.33508429166665,
+        "wait4LifetimeCpuSeconds": 146.33530000000002,
+        "shutdownRemainderCpuSeconds": 0.0002157083333713672
+      },
+      {
+        "operation": "query",
+        "variant": "baseline",
+        "round": 2,
+        "originalLiveCpuReportedSeconds": 3.441536979,
+        "reconstructedRawTicks": {
+          "user": 3437207151,
+          "system": 4329828
+        },
+        "derivedLiveCpuSeconds": 143.397374125,
+        "wait4LifetimeCpuSeconds": 143.397764,
+        "shutdownRemainderCpuSeconds": 0.0003898749999962092
+      },
+      {
+        "operation": "query",
+        "variant": "candidate",
+        "round": 0,
+        "originalLiveCpuReportedSeconds": 3.886619304,
+        "reconstructedRawTicks": {
+          "user": 3878280910,
+          "system": 8338394
+        },
+        "derivedLiveCpuSeconds": 161.942471,
+        "wait4LifetimeCpuSeconds": 161.942728,
+        "shutdownRemainderCpuSeconds": 0.000256999999976415
+      },
+      {
+        "operation": "query",
+        "variant": "candidate",
+        "round": 1,
+        "originalLiveCpuReportedSeconds": 3.703269047,
+        "reconstructedRawTicks": {
+          "user": 3697085578,
+          "system": 6183469
+        },
+        "derivedLiveCpuSeconds": 154.30287695833334,
+        "wait4LifetimeCpuSeconds": 154.303175,
+        "shutdownRemainderCpuSeconds": 0.0002980416666673591
+      },
+      {
+        "operation": "query",
+        "variant": "candidate",
+        "round": 2,
+        "originalLiveCpuReportedSeconds": 3.454306201,
+        "reconstructedRawTicks": {
+          "user": 3449885813,
+          "system": 4420388
+        },
+        "derivedLiveCpuSeconds": 143.92942504166666,
+        "wait4LifetimeCpuSeconds": 143.929735,
+        "shutdownRemainderCpuSeconds": 0.0003099583333323608
+      }
+    ],
+    "batchDerivations": [
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.015695233999999995,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 132382720,
+            "system_seconds": 0.000692155,
+            "user_seconds": 0.087985399
+          },
+          "rawUserTicks": 87985399,
+          "rawSystemTicks": 692155
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 139591680,
+            "system_seconds": 0.001067514,
+            "user_seconds": 0.103305274
+          },
+          "rawUserTicks": 103305274,
+          "rawSystemTicks": 1067514
+        },
+        "derivedCorrectedCpuSeconds": 0.6539680833333339
+      },
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.017138780000000006,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 138133504,
+            "system_seconds": 0.000694906,
+            "user_seconds": 0.08662789
+          },
+          "rawUserTicks": 86627890,
+          "rawSystemTicks": 694906
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 138313728,
+            "system_seconds": 0.001173312,
+            "user_seconds": 0.103288264
+          },
+          "rawUserTicks": 103288264,
+          "rawSystemTicks": 1173312
+        },
+        "derivedCorrectedCpuSeconds": 0.7141158333333335
+      },
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.014687959999999996,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 139804672,
+            "system_seconds": 0.000685381,
+            "user_seconds": 0.083763159
+          },
+          "rawUserTicks": 83763159,
+          "rawSystemTicks": 685381
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 140083200,
+            "system_seconds": 0.000994699,
+            "user_seconds": 0.098141801
+          },
+          "rawUserTicks": 98141801,
+          "rawSystemTicks": 994699
+        },
+        "derivedCorrectedCpuSeconds": 0.6119983333333332
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.022571417,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 137494528,
+            "system_seconds": 0.000877462,
+            "user_seconds": 0.098175201
+          },
+          "rawUserTicks": 98175201,
+          "rawSystemTicks": 877462
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 138526720,
+            "system_seconds": 0.001885699,
+            "user_seconds": 0.119738381
+          },
+          "rawUserTicks": 119738381,
+          "rawSystemTicks": 1885699
+        },
+        "derivedCorrectedCpuSeconds": 0.9404757083333335
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.019191229999999986,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 135217152,
+            "system_seconds": 0.000864565,
+            "user_seconds": 0.097343566
+          },
+          "rawUserTicks": 97343566,
+          "rawSystemTicks": 864565
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 142983168,
+            "system_seconds": 0.001380539,
+            "user_seconds": 0.116018822
+          },
+          "rawUserTicks": 116018822,
+          "rawSystemTicks": 1380539
+        },
+        "derivedCorrectedCpuSeconds": 0.7996345833333338
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.014862824000000004,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 123437056,
+            "system_seconds": 0.000635206,
+            "user_seconds": 0.085278144
+          },
+          "rawUserTicks": 85278144,
+          "rawSystemTicks": 635206
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 130924544,
+            "system_seconds": 0.000981297,
+            "user_seconds": 0.099794877
+          },
+          "rawUserTicks": 99794877,
+          "rawSystemTicks": 981297
+        },
+        "derivedCorrectedCpuSeconds": 0.6192843333333338
+      },
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.0171052349999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 150700032,
+            "system_seconds": 0.002351589,
+            "user_seconds": 1.745040528
+          },
+          "rawUserTicks": 1745040528,
+          "rawSystemTicks": 2351589
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 197165056,
+            "system_seconds": 0.003474693,
+            "user_seconds": 1.761022659
+          },
+          "rawUserTicks": 1761022659,
+          "rawSystemTicks": 3474693
+        },
+        "derivedCorrectedCpuSeconds": 0.7127181250000092
+      },
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.016984083000000188,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 149700608,
+            "system_seconds": 0.002690908,
+            "user_seconds": 1.786716136
+          },
+          "rawUserTicks": 1786716136,
+          "rawSystemTicks": 2690908
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 181616640,
+            "system_seconds": 0.004062371,
+            "user_seconds": 1.802328756
+          },
+          "rawUserTicks": 1802328756,
+          "rawSystemTicks": 4062371
+        },
+        "derivedCorrectedCpuSeconds": 0.7076701249999928
+      },
+      {
+        "variant": "baseline",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.016578190000000017,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 141393920,
+            "system_seconds": 0.001997724,
+            "user_seconds": 1.71663348
+          },
+          "rawUserTicks": 1716633480,
+          "rawSystemTicks": 1997724
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 174243840,
+            "system_seconds": 0.003229896,
+            "user_seconds": 1.731979498
+          },
+          "rawUserTicks": 1731979498,
+          "rawSystemTicks": 3229896
+        },
+        "derivedCorrectedCpuSeconds": 0.6907579166666693
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.018966251999999968,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 149536768,
+            "system_seconds": 0.003710902,
+            "user_seconds": 1.922218046
+          },
+          "rawUserTicks": 1922218046,
+          "rawSystemTicks": 3710902
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 185958400,
+            "system_seconds": 0.004949841,
+            "user_seconds": 1.939945359
+          },
+          "rawUserTicks": 1939945359,
+          "rawSystemTicks": 4949841
+        },
+        "derivedCorrectedCpuSeconds": 0.7902605000000023
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.01685341700000001,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 149651456,
+            "system_seconds": 0.003541656,
+            "user_seconds": 1.930837284
+          },
+          "rawUserTicks": 1930837284,
+          "rawSystemTicks": 3541656
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 191381504,
+            "system_seconds": 0.004925804,
+            "user_seconds": 1.946306553
+          },
+          "rawUserTicks": 1946306553,
+          "rawSystemTicks": 4925804
+        },
+        "derivedCorrectedCpuSeconds": 0.7022257083333301
+      },
+      {
+        "variant": "candidate",
+        "case": "network-message-call-scan",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.016827546000000047,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 140558336,
+            "system_seconds": 0.00209747,
+            "user_seconds": 1.727178098
+          },
+          "rawUserTicks": 1727178098,
+          "rawSystemTicks": 2097470
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 174653440,
+            "system_seconds": 0.003467584,
+            "user_seconds": 1.74263553
+          },
+          "rawUserTicks": 1742635530,
+          "rawSystemTicks": 3467584
+        },
+        "derivedCorrectedCpuSeconds": 0.7011477500000041
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.059636668000000004,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 139591680,
+            "system_seconds": 0.001067514,
+            "user_seconds": 0.103305274
+          },
+          "rawUserTicks": 103305274,
+          "rawSystemTicks": 1067514
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 139837440,
+            "system_seconds": 0.001267259,
+            "user_seconds": 0.162742197
+          },
+          "rawUserTicks": 162742197,
+          "rawSystemTicks": 1267259
+        },
+        "derivedCorrectedCpuSeconds": 2.484861166666666
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.05824508399999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 138313728,
+            "system_seconds": 0.001173312,
+            "user_seconds": 0.103288264
+          },
+          "rawUserTicks": 103288264,
+          "rawSystemTicks": 1173312
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 137625600,
+            "system_seconds": 0.001359661,
+            "user_seconds": 0.161346999
+          },
+          "rawUserTicks": 161346999,
+          "rawSystemTicks": 1359661
+        },
+        "derivedCorrectedCpuSeconds": 2.4268785
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.053788758999999985,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 140083200,
+            "system_seconds": 0.000994699,
+            "user_seconds": 0.098141801
+          },
+          "rawUserTicks": 98141801,
+          "rawSystemTicks": 994699
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 136953856,
+            "system_seconds": 0.001145768,
+            "user_seconds": 0.151779491
+          },
+          "rawUserTicks": 151779491,
+          "rawSystemTicks": 1145768
+        },
+        "derivedCorrectedCpuSeconds": 2.2411982916666675
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.06989470399999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 138526720,
+            "system_seconds": 0.001885699,
+            "user_seconds": 0.119738381
+          },
+          "rawUserTicks": 119738381,
+          "rawSystemTicks": 1885699
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 135577600,
+            "system_seconds": 0.002198581,
+            "user_seconds": 0.189320203
+          },
+          "rawUserTicks": 189320203,
+          "rawSystemTicks": 2198581
+        },
+        "derivedCorrectedCpuSeconds": 2.912279333333333
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.06853796699999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 142983168,
+            "system_seconds": 0.001380539,
+            "user_seconds": 0.116018822
+          },
+          "rawUserTicks": 116018822,
+          "rawSystemTicks": 1380539
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 134184960,
+            "system_seconds": 0.00168768,
+            "user_seconds": 0.184249648
+          },
+          "rawUserTicks": 184249648,
+          "rawSystemTicks": 1687680
+        },
+        "derivedCorrectedCpuSeconds": 2.8557486249999995
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.05352053599999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 130924544,
+            "system_seconds": 0.000981297,
+            "user_seconds": 0.099794877
+          },
+          "rawUserTicks": 99794877,
+          "rawSystemTicks": 981297
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 131072000,
+            "system_seconds": 0.001120153,
+            "user_seconds": 0.153176557
+          },
+          "rawUserTicks": 153176557,
+          "rawSystemTicks": 1120153
+        },
+        "derivedCorrectedCpuSeconds": 2.2300223333333324
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.05820762100000009,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 197165056,
+            "system_seconds": 0.003474693,
+            "user_seconds": 1.761022659
+          },
+          "rawUserTicks": 1761022659,
+          "rawSystemTicks": 3474693
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 198148096,
+            "system_seconds": 0.003625909,
+            "user_seconds": 1.819079064
+          },
+          "rawUserTicks": 1819079064,
+          "rawSystemTicks": 3625909
+        },
+        "derivedCorrectedCpuSeconds": 2.425317541666672
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.05709972299999998,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 181616640,
+            "system_seconds": 0.004062371,
+            "user_seconds": 1.802328756
+          },
+          "rawUserTicks": 1802328756,
+          "rawSystemTicks": 4062371
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 182484992,
+            "system_seconds": 0.004200448,
+            "user_seconds": 1.859290402
+          },
+          "rawUserTicks": 1859290402,
+          "rawSystemTicks": 4200448
+        },
+        "derivedCorrectedCpuSeconds": 2.379155124999997
+      },
+      {
+        "variant": "baseline",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.05778181599999996,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 174243840,
+            "system_seconds": 0.003229896,
+            "user_seconds": 1.731979498
+          },
+          "rawUserTicks": 1731979498,
+          "rawSystemTicks": 3229896
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 179535872,
+            "system_seconds": 0.003400963,
+            "user_seconds": 1.789590247
+          },
+          "rawUserTicks": 1789590247,
+          "rawSystemTicks": 3400963
+        },
+        "derivedCorrectedCpuSeconds": 2.4075756666666592
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.06407277200000014,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 185958400,
+            "system_seconds": 0.004949841,
+            "user_seconds": 1.939945359
+          },
+          "rawUserTicks": 1939945359,
+          "rawSystemTicks": 4949841
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 180813824,
+            "system_seconds": 0.005194351,
+            "user_seconds": 2.003773621
+          },
+          "rawUserTicks": 2003773621,
+          "rawSystemTicks": 5194351
+        },
+        "derivedCorrectedCpuSeconds": 2.669698833333328
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.05779729199999973,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 191381504,
+            "system_seconds": 0.004925804,
+            "user_seconds": 1.946306553
+          },
+          "rawUserTicks": 1946306553,
+          "rawSystemTicks": 4925804
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 193085440,
+            "system_seconds": 0.005081064,
+            "user_seconds": 2.003948585
+          },
+          "rawUserTicks": 2003948585,
+          "rawSystemTicks": 5081064
+        },
+        "derivedCorrectedCpuSeconds": 2.4082204999999988
+      },
+      {
+        "variant": "candidate",
+        "case": "literal-call-provenance",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.058169579999999915,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 174653440,
+            "system_seconds": 0.003467584,
+            "user_seconds": 1.74263553
+          },
+          "rawUserTicks": 1742635530,
+          "rawSystemTicks": 3467584
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 176029696,
+            "system_seconds": 0.003625304,
+            "user_seconds": 1.80064739
+          },
+          "rawUserTicks": 1800647390,
+          "rawSystemTicks": 3625304
+        },
+        "derivedCorrectedCpuSeconds": 2.4237325
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.0407626,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 139837440,
+            "system_seconds": 0.001267259,
+            "user_seconds": 0.162742197
+          },
+          "rawUserTicks": 162742197,
+          "rawSystemTicks": 1267259
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 153665536,
+            "system_seconds": 0.001446375,
+            "user_seconds": 0.203325681
+          },
+          "rawUserTicks": 203325681,
+          "rawSystemTicks": 1446375
+        },
+        "derivedCorrectedCpuSeconds": 1.6984416666666666
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.044902194000000006,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 137625600,
+            "system_seconds": 0.001359661,
+            "user_seconds": 0.161346999
+          },
+          "rawUserTicks": 161346999,
+          "rawSystemTicks": 1359661
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 152649728,
+            "system_seconds": 0.001609137,
+            "user_seconds": 0.205999717
+          },
+          "rawUserTicks": 205999717,
+          "rawSystemTicks": 1609137
+        },
+        "derivedCorrectedCpuSeconds": 1.8709247499999995
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.040310606000000006,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 136953856,
+            "system_seconds": 0.001145768,
+            "user_seconds": 0.151779491
+          },
+          "rawUserTicks": 151779491,
+          "rawSystemTicks": 1145768
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 145276928,
+            "system_seconds": 0.00130435,
+            "user_seconds": 0.191931515
+          },
+          "rawUserTicks": 191931515,
+          "rawSystemTicks": 1304350
+        },
+        "derivedCorrectedCpuSeconds": 1.6796085833333336
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.048196266,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 135577600,
+            "system_seconds": 0.002198581,
+            "user_seconds": 0.189320203
+          },
+          "rawUserTicks": 189320203,
+          "rawSystemTicks": 2198581
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 152535040,
+            "system_seconds": 0.002505348,
+            "user_seconds": 0.237209702
+          },
+          "rawUserTicks": 237209702,
+          "rawSystemTicks": 2505348
+        },
+        "derivedCorrectedCpuSeconds": 2.0081777500000006
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.04593481000000002,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 134184960,
+            "system_seconds": 0.00168768,
+            "user_seconds": 0.184249648
+          },
+          "rawUserTicks": 184249648,
+          "rawSystemTicks": 1687680
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 155631616,
+            "system_seconds": 0.001992202,
+            "user_seconds": 0.229879936
+          },
+          "rawUserTicks": 229879936,
+          "rawSystemTicks": 1992202
+        },
+        "derivedCorrectedCpuSeconds": 1.913950416666668
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.040931207000000004,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 131072000,
+            "system_seconds": 0.001120153,
+            "user_seconds": 0.153176557
+          },
+          "rawUserTicks": 153176557,
+          "rawSystemTicks": 1120153
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 143851520,
+            "system_seconds": 0.001284739,
+            "user_seconds": 0.193943178
+          },
+          "rawUserTicks": 193943178,
+          "rawSystemTicks": 1284739
+        },
+        "derivedCorrectedCpuSeconds": 1.7054669583333348
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.044292443999999896,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 198148096,
+            "system_seconds": 0.003625909,
+            "user_seconds": 1.819079064
+          },
+          "rawUserTicks": 1819079064,
+          "rawSystemTicks": 3625909
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 265519104,
+            "system_seconds": 0.003882861,
+            "user_seconds": 1.863114556
+          },
+          "rawUserTicks": 1863114556,
+          "rawSystemTicks": 3882861
+        },
+        "derivedCorrectedCpuSeconds": 1.8455184999999972
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.04395582999999985,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 182484992,
+            "system_seconds": 0.004200448,
+            "user_seconds": 1.859290402
+          },
+          "rawUserTicks": 1859290402,
+          "rawSystemTicks": 4200448
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 257015808,
+            "system_seconds": 0.004496562,
+            "user_seconds": 1.902950118
+          },
+          "rawUserTicks": 1902950118,
+          "rawSystemTicks": 4496562
+        },
+        "derivedCorrectedCpuSeconds": 1.8314929166666758
+      },
+      {
+        "variant": "baseline",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.04383933599999997,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 179535872,
+            "system_seconds": 0.003400963,
+            "user_seconds": 1.789590247
+          },
+          "rawUserTicks": 1789590247,
+          "rawSystemTicks": 3400963
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 237797376,
+            "system_seconds": 0.003655691,
+            "user_seconds": 1.833174855
+          },
+          "rawUserTicks": 1833174855,
+          "rawSystemTicks": 3655691
+        },
+        "derivedCorrectedCpuSeconds": 1.8266390000000001
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 0.04704809499999976,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 180813824,
+            "system_seconds": 0.005194351,
+            "user_seconds": 2.003773621
+          },
+          "rawUserTicks": 2003773621,
+          "rawSystemTicks": 5194351
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 270925824,
+            "system_seconds": 0.005758996,
+            "user_seconds": 2.050257071
+          },
+          "rawUserTicks": 2050257071,
+          "rawSystemTicks": 5758996
+        },
+        "derivedCorrectedCpuSeconds": 1.9603372916666757
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 0.04450859600000024,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 193085440,
+            "system_seconds": 0.005081064,
+            "user_seconds": 2.003948585
+          },
+          "rawUserTicks": 2003948585,
+          "rawSystemTicks": 5081064
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 247054336,
+            "system_seconds": 0.005341046,
+            "user_seconds": 2.048197199
+          },
+          "rawUserTicks": 2048197199,
+          "rawSystemTicks": 5341046
+        },
+        "derivedCorrectedCpuSeconds": 1.8545248333333433
+      },
+      {
+        "variant": "candidate",
+        "case": "field-type-inventory",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 0.044479225999999976,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 176029696,
+            "system_seconds": 0.003625304,
+            "user_seconds": 1.80064739
+          },
+          "rawUserTicks": 1800647390,
+          "rawSystemTicks": 3625304
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 240025600,
+            "system_seconds": 0.00389612,
+            "user_seconds": 1.8448558
+          },
+          "rawUserTicks": 1844855800,
+          "rawSystemTicks": 3896120
+        },
+        "derivedCorrectedCpuSeconds": 1.8533010833333208
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 1.5426200610000003,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 153665536,
+            "system_seconds": 0.001446375,
+            "user_seconds": 0.203325681
+          },
+          "rawUserTicks": 203325681,
+          "rawSystemTicks": 1446375
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 150700032,
+            "system_seconds": 0.002351589,
+            "user_seconds": 1.745040528
+          },
+          "rawUserTicks": 1745040528,
+          "rawSystemTicks": 2351589
+        },
+        "derivedCorrectedCpuSeconds": 64.275835875
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 1.5817981899999998,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 152649728,
+            "system_seconds": 0.001609137,
+            "user_seconds": 0.205999717
+          },
+          "rawUserTicks": 205999717,
+          "rawSystemTicks": 1609137
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 149700608,
+            "system_seconds": 0.002690908,
+            "user_seconds": 1.786716136
+          },
+          "rawUserTicks": 1786716136,
+          "rawSystemTicks": 2690908
+        },
+        "derivedCorrectedCpuSeconds": 65.90825791666667
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 1.525395339,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 145276928,
+            "system_seconds": 0.00130435,
+            "user_seconds": 0.191931515
+          },
+          "rawUserTicks": 191931515,
+          "rawSystemTicks": 1304350
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 141393920,
+            "system_seconds": 0.001997724,
+            "user_seconds": 1.71663348
+          },
+          "rawUserTicks": 1716633480,
+          "rawSystemTicks": 1997724
+        },
+        "derivedCorrectedCpuSeconds": 63.558139125
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 0,
+        "originalReportedCpuSeconds": 1.686213898,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 152535040,
+            "system_seconds": 0.002505348,
+            "user_seconds": 0.237209702
+          },
+          "rawUserTicks": 237209702,
+          "rawSystemTicks": 2505348
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 149536768,
+            "system_seconds": 0.003710902,
+            "user_seconds": 1.922218046
+          },
+          "rawUserTicks": 1922218046,
+          "rawSystemTicks": 3710902
+        },
+        "derivedCorrectedCpuSeconds": 70.25891241666666
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 1,
+        "originalReportedCpuSeconds": 1.7025068020000003,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 155631616,
+            "system_seconds": 0.001992202,
+            "user_seconds": 0.229879936
+          },
+          "rawUserTicks": 229879936,
+          "rawSystemTicks": 1992202
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 149651456,
+            "system_seconds": 0.003541656,
+            "user_seconds": 1.930837284
+          },
+          "rawUserTicks": 1930837284,
+          "rawSystemTicks": 3541656
+        },
+        "derivedCorrectedCpuSeconds": 70.93778341666666
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 1,
+        "round": 2,
+        "originalReportedCpuSeconds": 1.5340476509999998,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 143851520,
+            "system_seconds": 0.001284739,
+            "user_seconds": 0.193943178
+          },
+          "rawUserTicks": 193943178,
+          "rawSystemTicks": 1284739
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 140558336,
+            "system_seconds": 0.00209747,
+            "user_seconds": 1.727178098
+          },
+          "rawUserTicks": 1727178098,
+          "rawSystemTicks": 2097470
+        },
+        "derivedCorrectedCpuSeconds": 63.91865212500001
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 1.7387341970000003,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 265519104,
+            "system_seconds": 0.003882861,
+            "user_seconds": 1.863114556
+          },
+          "rawUserTicks": 1863114556,
+          "rawSystemTicks": 3882861
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26033905910284",
+            "resident_bytes": 263520256,
+            "system_seconds": 0.004846707,
+            "user_seconds": 3.600884907
+          },
+          "rawUserTicks": 3600884907,
+          "rawSystemTicks": 4846707
+        },
+        "derivedCorrectedCpuSeconds": 72.44725820833334
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 1.604595343,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 257015808,
+            "system_seconds": 0.004496562,
+            "user_seconds": 1.902950118
+          },
+          "rawUserTicks": 1902950118,
+          "rawSystemTicks": 4496562
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26040982458133",
+            "resident_bytes": 252018688,
+            "system_seconds": 0.005196915,
+            "user_seconds": 3.506845108
+          },
+          "rawUserTicks": 3506845108,
+          "rawSystemTicks": 5196915
+        },
+        "derivedCorrectedCpuSeconds": 66.85813929166665
+      },
+      {
+        "variant": "baseline",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 1.604706433,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 237797376,
+            "system_seconds": 0.003655691,
+            "user_seconds": 1.833174855
+          },
+          "rawUserTicks": 1833174855,
+          "rawSystemTicks": 3655691
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26043217256852",
+            "resident_bytes": 232210432,
+            "system_seconds": 0.004329828,
+            "user_seconds": 3.437207151
+          },
+          "rawUserTicks": 3437207151,
+          "rawSystemTicks": 4329828
+        },
+        "derivedCorrectedCpuSeconds": 66.86276804166667
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 0,
+        "originalReportedCpuSeconds": 1.830603237,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 270925824,
+            "system_seconds": 0.005758996,
+            "user_seconds": 2.050257071
+          },
+          "rawUserTicks": 2050257071,
+          "rawSystemTicks": 5758996
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26036132932686",
+            "resident_bytes": 269467648,
+            "system_seconds": 0.008338394,
+            "user_seconds": 3.87828091
+          },
+          "rawUserTicks": 3878280910,
+          "rawSystemTicks": 8338394
+        },
+        "derivedCorrectedCpuSeconds": 76.275134875
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 1,
+        "originalReportedCpuSeconds": 1.6497308019999997,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 247054336,
+            "system_seconds": 0.005341046,
+            "user_seconds": 2.048197199
+          },
+          "rawUserTicks": 2048197199,
+          "rawSystemTicks": 5341046
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26038580063034",
+            "resident_bytes": 241876992,
+            "system_seconds": 0.006183469,
+            "user_seconds": 3.697085578
+          },
+          "rawUserTicks": 3697085578,
+          "rawSystemTicks": 6183469
+        },
+        "derivedCorrectedCpuSeconds": 68.73878341666668
+      },
+      {
+        "variant": "candidate",
+        "case": "shared-wire-literals-prefiltered",
+        "concurrency": 4,
+        "round": 2,
+        "originalReportedCpuSeconds": 1.6055542809999999,
+        "before": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 240025600,
+            "system_seconds": 0.00389612,
+            "user_seconds": 1.8448558
+          },
+          "rawUserTicks": 1844855800,
+          "rawSystemTicks": 3896120
+        },
+        "after": {
+          "original": {
+            "cpu_counter": "proc_pid_rusage-v2-nanoseconds",
+            "identity": "26045378157256",
+            "resident_bytes": 227147776,
+            "system_seconds": 0.004420388,
+            "user_seconds": 3.449885813
+          },
+          "rawUserTicks": 3449885813,
+          "rawSystemTicks": 4420388
+        },
+        "derivedCorrectedCpuSeconds": 66.89809504166666
+      }
+    ],
+    "machTimebaseCapturedAfterRun": true,
+    "recoveryValidation": "Timebase was queried on the same host after sampling; every one of the 12 complete load/query process records reconciles the corrected final live CPU counter to wait4 lifetime CPU, with only positive <0.1s shutdown remainder. No benchmarks rerun or original records overwritten."
+  },
+  "loading": {
+    "baseline": {
+      "wall_ms": {
+        "samples": [
+          919.9081670958549,
+          892.3295841086656,
+          898.8130840007216
+        ],
+        "min": 892.3295841086656,
+        "max": 919.9081670958549,
+        "aggregate": 898.8130840007216,
+        "aggregation": "median"
+      },
+      "cpu_original_mislabeled_seconds": {
+        "samples": [
+          0.021770881,
+          0.021010283999999997,
+          0.021299540999999998
+        ],
+        "min": 0.021010283999999997,
+        "max": 0.021770881,
+        "aggregate": 0.021299540999999998,
+        "aggregation": "median"
+      },
+      "cpu_through_consumption_derived_seconds": {
+        "samples": [
+          0.9071200416666666,
+          0.8754285,
+          0.887480875
+        ],
+        "min": 0.8754285,
+        "max": 0.9071200416666666,
+        "aggregate": 0.887480875,
+        "aggregation": "median"
+      },
+      "cpu_lifetime_wait4_seconds": {
+        "samples": [
+          0.9072939999999999,
+          0.8758609999999999,
+          0.887729
+        ],
+        "min": 0.8758609999999999,
+        "max": 0.9072939999999999,
+        "aggregate": 0.887729,
+        "aggregation": "median"
+      },
+      "lifetime_peak_rss_bytes": {
+        "samples": [
+          109445120,
+          108838912,
+          113360896
+        ],
+        "min": 108838912,
+        "max": 113360896,
+        "aggregate": 113360896,
+        "aggregation": "max"
+      }
+    },
+    "candidate": {
+      "wall_ms": {
+        "samples": [
+          974.709999980405,
+          954.8677920829505,
+          859.6531248185784
+        ],
+        "min": 859.6531248185784,
+        "max": 974.709999980405,
+        "aggregate": 954.8677920829505,
+        "aggregation": "median"
+      },
+      "cpu_original_mislabeled_seconds": {
+        "samples": [
+          0.022098521000000003,
+          0.021613889,
+          0.020441233
+        ],
+        "min": 0.020441233,
+        "max": 0.022098521000000003,
+        "aggregate": 0.021613889,
+        "aggregation": "median"
+      },
+      "cpu_through_consumption_derived_seconds": {
+        "samples": [
+          0.9207717083333333,
+          0.9005787083333334,
+          0.8517180416666666
+        ],
+        "min": 0.8517180416666666,
+        "max": 0.9207717083333333,
+        "aggregate": 0.9005787083333334,
+        "aggregation": "median"
+      },
+      "cpu_lifetime_wait4_seconds": {
+        "samples": [
+          0.9210079999999999,
+          0.9007819999999999,
+          0.852055
+        ],
+        "min": 0.852055,
+        "max": 0.9210079999999999,
+        "aggregate": 0.9007819999999999,
+        "aggregation": "median"
+      },
+      "lifetime_peak_rss_bytes": {
+        "samples": [
+          113754112,
+          114606080,
+          117358592
+        ],
+        "min": 113754112,
+        "max": 117358592,
+        "aggregate": 117358592,
+        "aggregation": "max"
+      }
+    },
+    "delta": {
+      "wall_ms": {
+        "absolute": 56.0547080822289,
+        "percent": 6.236525600264176
+      },
+      "cpu_through_consumption_derived_seconds": {
+        "absolute": 0.013097833333333475,
+        "percent": 1.4758440099718717
+      },
+      "cpu_lifetime_wait4_seconds": {
+        "absolute": 0.01305299999999987,
+        "percent": 1.4703811636208597
+      },
+      "lifetime_peak_rss_bytes": {
+        "absolute": 3997696,
+        "percent": 3.5265211735799884
+      }
+    },
+    "acceptance": {
+      "wallNotAboveBaseline": false,
+      "cpuThroughConsumptionWithin5Percent": true,
+      "cpuLifetimeWithin5Percent": true,
+      "rssWithin5Percent": true
+    }
+  },
+  "queryCases": [
+    {
+      "case": "network-message-call-scan",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 6.628332892432809,
+        "p95_ms": 7.797457976266742,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 6.6736668813973665,
+            "p95_ms": 7.606167113408446
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 7.104541175067425,
+            "p95_ms": 8.624541806057096
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 6.121875019744039,
+            "p95_ms": 6.627124967053533
+          }
+        ],
+        "round_p50_range_ms": [
+          6.121875019744039,
+          7.104541175067425
+        ],
+        "round_p95_range_ms": [
+          6.627124967053533,
+          8.624541806057096
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.015695233999999995,
+            0.017138780000000006,
+            0.014687959999999996
+          ],
+          "min": 0.014687959999999996,
+          "max": 0.017138780000000006,
+          "aggregate": 0.015695233999999995,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            0.6539680833333339,
+            0.7141158333333335,
+            0.6119983333333332
+          ],
+          "min": 0.6119983333333332,
+          "max": 0.7141158333333335,
+          "aggregate": 0.6539680833333339,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            677.5536660570651,
+            732.6007501687855,
+            628.0173750128597
+          ],
+          "min": 628.0173750128597,
+          "max": 732.6007501687855,
+          "aggregate": 677.5536660570651,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 8.136625168845057,
+        "p95_ms": 9.8277498036623,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 9.432749822735786,
+            "p95_ms": 10.020291898399591
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 8.122165920212865,
+            "p95_ms": 9.131249971687794
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 6.153458962216973,
+            "p95_ms": 7.100875023752451
+          }
+        ],
+        "round_p50_range_ms": [
+          6.153458962216973,
+          9.432749822735786
+        ],
+        "round_p95_range_ms": [
+          7.100875023752451,
+          10.020291898399591
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.022571417,
+            0.019191229999999986,
+            0.014862824000000004
+          ],
+          "min": 0.014862824000000004,
+          "max": 0.022571417,
+          "aggregate": 0.019191229999999986,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            0.9404757083333335,
+            0.7996345833333338,
+            0.6192843333333338
+          ],
+          "min": 0.6192843333333338,
+          "max": 0.9404757083333335,
+          "aggregate": 0.7996345833333338,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            963.0813340190798,
+            847.2255410160869,
+            634.978000074625
+          ],
+          "min": 634.978000074625,
+          "max": 963.0813340190798,
+          "aggregate": 847.2255410160869,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 1.5082922764122486,
+          "percent": 22.755228213329183
+        },
+        "p95_ms": {
+          "absolute": 2.0302918273955584,
+          "percent": 26.037868156201593
+        },
+        "batch_cpu_seconds": {
+          "absolute": 0.14566649999999992,
+          "percent": 22.274252171073037
+        },
+        "batch_wall_ms": {
+          "absolute": 169.6718749590218,
+          "percent": 25.041835570960025
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": false,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "network-message-call-scan",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 7.003207923844457,
+        "p95_ms": 8.520083036273718,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 7.172042038291693,
+            "p95_ms": 8.70091700926423
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 7.0168329402804375,
+            "p95_ms": 8.520083036273718
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 6.884332979097962,
+            "p95_ms": 7.618499919772148
+          }
+        ],
+        "round_p50_range_ms": [
+          6.884332979097962,
+          7.172042038291693
+        ],
+        "round_p95_range_ms": [
+          7.618499919772148,
+          8.70091700926423
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.0171052349999999,
+            0.016984083000000188,
+            0.016578190000000017
+          ],
+          "min": 0.016578190000000017,
+          "max": 0.0171052349999999,
+          "aggregate": 0.016984083000000188,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            0.7127181250000092,
+            0.7076701249999928,
+            0.6907579166666693
+          ],
+          "min": 0.6907579166666693,
+          "max": 0.7127181250000092,
+          "aggregate": 0.7076701249999928,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            185.94820890575647,
+            183.5445831529796,
+            176.9207080360502
+          ],
+          "min": 176.9207080360502,
+          "max": 185.94820890575647,
+          "aggregate": 183.5445831529796,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 7.257417077198625,
+        "p95_ms": 8.725249907001853,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 7.990292040631175,
+            "p95_ms": 8.793917018920183
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 6.957374978810549,
+            "p95_ms": 8.19587497971952
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 6.932042073458433,
+            "p95_ms": 7.700792048126459
+          }
+        ],
+        "round_p50_range_ms": [
+          6.932042073458433,
+          7.990292040631175
+        ],
+        "round_p95_range_ms": [
+          7.700792048126459,
+          8.793917018920183
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.018966251999999968,
+            0.01685341700000001,
+            0.016827546000000047
+          ],
+          "min": 0.016827546000000047,
+          "max": 0.018966251999999968,
+          "aggregate": 0.01685341700000001,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            0.7902605000000023,
+            0.7022257083333301,
+            0.7011477500000041
+          ],
+          "min": 0.7011477500000041,
+          "max": 0.7902605000000023,
+          "aggregate": 0.7022257083333301,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            206.18291618302464,
+            181.7905828356743,
+            180.64474989660084
+          ],
+          "min": 180.64474989660084,
+          "max": 206.18291618302464,
+          "aggregate": 181.7905828356743,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 0.25420915335416794,
+          "percent": 3.629895843712405
+        },
+        "p95_ms": {
+          "absolute": 0.2051668707281351,
+          "percent": 2.408038394164125
+        },
+        "batch_cpu_seconds": {
+          "absolute": -0.0054444166666627325,
+          "percent": -0.7693438615432258
+        },
+        "batch_wall_ms": {
+          "absolute": -1.7540003173053265,
+          "percent": -0.9556263046147317
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": true,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "literal-call-provenance",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 23.308458039537072,
+        "p95_ms": 27.628042036667466,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 25.223915930837393,
+            "p95_ms": 28.87033298611641
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 24.29470792412758,
+            "p95_ms": 27.628042036667466
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 22.610249929130077,
+            "p95_ms": 23.910209070891142
+          }
+        ],
+        "round_p50_range_ms": [
+          22.610249929130077,
+          25.223915930837393
+        ],
+        "round_p95_range_ms": [
+          23.910209070891142,
+          28.87033298611641
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.059636668000000004,
+            0.05824508399999999,
+            0.053788758999999985
+          ],
+          "min": 0.053788758999999985,
+          "max": 0.059636668000000004,
+          "aggregate": 0.05824508399999999,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            2.484861166666666,
+            2.4268785,
+            2.2411982916666675
+          ],
+          "min": 2.2411982916666675,
+          "max": 2.484861166666666,
+          "aggregate": 2.4268785,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            2567.4769580364227,
+            2506.8639169912785,
+            2313.303417060524
+          ],
+          "min": 2313.303417060524,
+          "max": 2567.4769580364227,
+          "aggregate": 2506.8639169912785,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 28.368292143568397,
+        "p95_ms": 31.48895804770291,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 29.654040932655334,
+            "p95_ms": 31.513750087469816
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 28.74745801091194,
+            "p95_ms": 32.99258300103247
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 22.59312500245869,
+            "p95_ms": 23.00275000743568
+          }
+        ],
+        "round_p50_range_ms": [
+          22.59312500245869,
+          29.654040932655334
+        ],
+        "round_p95_range_ms": [
+          23.00275000743568,
+          32.99258300103247
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.06989470399999999,
+            0.06853796699999999,
+            0.05352053599999999
+          ],
+          "min": 0.05352053599999999,
+          "max": 0.06989470399999999,
+          "aggregate": 0.06853796699999999,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            2.912279333333333,
+            2.8557486249999995,
+            2.2300223333333324
+          ],
+          "min": 2.2300223333333324,
+          "max": 2.912279333333333,
+          "aggregate": 2.8557486249999995,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            3015.899709193036,
+            2966.4773331023753,
+            2302.726374939084
+          ],
+          "min": 2302.726374939084,
+          "max": 3015.899709193036,
+          "aggregate": 2966.4773331023753,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 5.059834104031324,
+          "percent": 21.708146010553598
+        },
+        "p95_ms": {
+          "absolute": 3.8609160110354424,
+          "percent": 13.97462768411637
+        },
+        "batch_cpu_seconds": {
+          "absolute": 0.42887012499999955,
+          "percent": 17.671676806234828
+        },
+        "batch_wall_ms": {
+          "absolute": 459.61341611109674,
+          "percent": 18.33419887676717
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": false,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "literal-call-provenance",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 24.903415935114026,
+        "p95_ms": 27.629374992102385,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 24.889040971174836,
+            "p95_ms": 28.442875016480684
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 24.708749959245324,
+            "p95_ms": 27.33837510459125
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 25.059750070795417,
+            "p95_ms": 26.860333047807217
+          }
+        ],
+        "round_p50_range_ms": [
+          24.708749959245324,
+          25.059750070795417
+        ],
+        "round_p95_range_ms": [
+          26.860333047807217,
+          28.442875016480684
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.05820762100000009,
+            0.05709972299999998,
+            0.05778181599999996
+          ],
+          "min": 0.05709972299999998,
+          "max": 0.05820762100000009,
+          "aggregate": 0.05778181599999996,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            2.425317541666672,
+            2.379155124999997,
+            2.4075756666666592
+          ],
+          "min": 2.379155124999997,
+          "max": 2.425317541666672,
+          "aggregate": 2.4075756666666592,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            657.4763329699636,
+            646.573708858341,
+            655.4068748373538
+          ],
+          "min": 646.573708858341,
+          "max": 657.4763329699636,
+          "aggregate": 655.4068748373538,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 25.861292146146297,
+        "p95_ms": 29.07158387824893,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 27.72012515924871,
+            "p95_ms": 30.395332956686616
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 24.82270891778171,
+            "p95_ms": 28.140374924987555
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 25.18516592681408,
+            "p95_ms": 27.406958863139153
+          }
+        ],
+        "round_p50_range_ms": [
+          24.82270891778171,
+          27.72012515924871
+        ],
+        "round_p95_range_ms": [
+          27.406958863139153,
+          30.395332956686616
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.06407277200000014,
+            0.05779729199999973,
+            0.058169579999999915
+          ],
+          "min": 0.05779729199999973,
+          "max": 0.06407277200000014,
+          "aggregate": 0.058169579999999915,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            2.669698833333328,
+            2.4082204999999988,
+            2.4237325
+          ],
+          "min": 2.4082204999999988,
+          "max": 2.669698833333328,
+          "aggregate": 2.4237325,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            727.3290001321584,
+            653.7321249488741,
+            659.5872920006514
+          ],
+          "min": 653.7321249488741,
+          "max": 727.3290001321584,
+          "aggregate": 659.5872920006514,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 0.9578762110322714,
+          "percent": 3.8463647458164774
+        },
+        "p95_ms": {
+          "absolute": 1.4422088861465454,
+          "percent": 5.219838981369596
+        },
+        "batch_cpu_seconds": {
+          "absolute": 0.016156833333340614,
+          "percent": 0.6710830964540504
+        },
+        "batch_wall_ms": {
+          "absolute": 4.180417163297534,
+          "percent": 0.637835415494381
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": true,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "field-type-inventory",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 17.330792034044862,
+        "p95_ms": 19.657042110338807,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 17.311499919742346,
+            "p95_ms": 17.632792005315423
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 19.031750038266182,
+            "p95_ms": 20.03120887093246
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 17.103125108405948,
+            "p95_ms": 17.307542031630874
+          }
+        ],
+        "round_p50_range_ms": [
+          17.103125108405948,
+          19.031750038266182
+        ],
+        "round_p95_range_ms": [
+          17.307542031630874,
+          20.03120887093246
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.0407626,
+            0.044902194000000006,
+            0.040310606000000006
+          ],
+          "min": 0.040310606000000006,
+          "max": 0.044902194000000006,
+          "aggregate": 0.0407626,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            1.6984416666666666,
+            1.8709247499999995,
+            1.6796085833333336
+          ],
+          "min": 1.6796085833333336,
+          "max": 1.8709247499999995,
+          "aggregate": 1.6984416666666666,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            1764.7657089401037,
+            1950.2796670421958,
+            1743.5211250558496
+          ],
+          "min": 1743.5211250558496,
+          "max": 1950.2796670421958,
+          "aggregate": 1764.7657089401037,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 19.45875003002584,
+        "p95_ms": 21.510208025574684,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 20.31145803630352,
+            "p95_ms": 22.046792088076472
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 19.527790835127234,
+            "p95_ms": 20.82054177299142
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 17.321667168289423,
+            "p95_ms": 17.978291027247906
+          }
+        ],
+        "round_p50_range_ms": [
+          17.321667168289423,
+          20.31145803630352
+        ],
+        "round_p95_range_ms": [
+          17.978291027247906,
+          22.046792088076472
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.048196266,
+            0.04593481000000002,
+            0.040931207000000004
+          ],
+          "min": 0.040931207000000004,
+          "max": 0.048196266,
+          "aggregate": 0.04593481000000002,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            2.0081777500000006,
+            1.913950416666668,
+            1.7054669583333348
+          ],
+          "min": 1.7054669583333348,
+          "max": 2.0081777500000006,
+          "aggregate": 1.913950416666668,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            2097.669541137293,
+            2008.6058338638395,
+            1770.4025418497622
+          ],
+          "min": 1770.4025418497622,
+          "max": 2097.669541137293,
+          "aggregate": 2008.6058338638395,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 2.127957995980978,
+          "percent": 12.278480936132553
+        },
+        "p95_ms": {
+          "absolute": 1.853165915235877,
+          "percent": 9.427491200525973
+        },
+        "batch_cpu_seconds": {
+          "absolute": 0.21550875000000147,
+          "percent": 12.688616525933183
+        },
+        "batch_wall_ms": {
+          "absolute": 243.84012492373586,
+          "percent": 13.817138654070016
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": false,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "field-type-inventory",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 19.31308303028345,
+        "p95_ms": 20.32450004480779,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 19.325958099216223,
+            "p95_ms": 20.38162504322827
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 19.342290936037898,
+            "p95_ms": 20.301791140809655
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 19.238125067204237,
+            "p95_ms": 20.230083027854562
+          }
+        ],
+        "round_p50_range_ms": [
+          19.238125067204237,
+          19.342290936037898
+        ],
+        "round_p95_range_ms": [
+          20.230083027854562,
+          20.38162504322827
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.044292443999999896,
+            0.04395582999999985,
+            0.04383933599999997
+          ],
+          "min": 0.04383933599999997,
+          "max": 0.044292443999999896,
+          "aggregate": 0.04395582999999985,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            1.8455184999999972,
+            1.8314929166666758,
+            1.8266390000000001
+          ],
+          "min": 1.8266390000000001,
+          "max": 1.8455184999999972,
+          "aggregate": 1.8314929166666758,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            504.3230829760432,
+            500.07683294825256,
+            500.59400009922683
+          ],
+          "min": 500.07683294825256,
+          "max": 504.3230829760432,
+          "aggregate": 500.59400009922683,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 19.692332949489355,
+        "p95_ms": 22.063415963202715,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 20.890374900773168,
+            "p95_ms": 24.450999917462468
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 19.326125038787723,
+            "p95_ms": 20.454540848731995
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 19.413792062550783,
+            "p95_ms": 20.580542040988803
+          }
+        ],
+        "round_p50_range_ms": [
+          19.326125038787723,
+          20.890374900773168
+        ],
+        "round_p95_range_ms": [
+          20.454540848731995,
+          24.450999917462468
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            0.04704809499999976,
+            0.04450859600000024,
+            0.044479225999999976
+          ],
+          "min": 0.044479225999999976,
+          "max": 0.04704809499999976,
+          "aggregate": 0.04450859600000024,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            1.9603372916666757,
+            1.8545248333333433,
+            1.8533010833333208
+          ],
+          "min": 1.8533010833333208,
+          "max": 1.9603372916666757,
+          "aggregate": 1.8545248333333433,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            547.2336250822991,
+            502.15479196049273,
+            506.12337491475046
+          ],
+          "min": 502.15479196049273,
+          "max": 547.2336250822991,
+          "aggregate": 506.12337491475046,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 0.379249919205904,
+          "percent": 1.9636943444567123
+        },
+        "p95_ms": {
+          "absolute": 1.7389159183949232,
+          "percent": 8.555762329018046
+        },
+        "batch_cpu_seconds": {
+          "absolute": 0.023031916666667485,
+          "percent": 1.2575487711186772
+        },
+        "batch_wall_ms": {
+          "absolute": 5.529374815523624,
+          "percent": 1.1045627423476034
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": true,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 1,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 637.7083749976009,
+        "p95_ms": 714.5656668581069,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 637.1452498715371,
+            "p95_ms": 678.6620419006795
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 641.6326658800244,
+            "p95_ms": 738.7524589430541
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 635.2510419674218,
+            "p95_ms": 645.9588331636041
+          }
+        ],
+        "round_p50_range_ms": [
+          635.2510419674218,
+          641.6326658800244
+        ],
+        "round_p95_range_ms": [
+          645.9588331636041,
+          738.7524589430541
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            1.5426200610000003,
+            1.5817981899999998,
+            1.525395339
+          ],
+          "min": 1.525395339,
+          "max": 1.5817981899999998,
+          "aggregate": 1.5426200610000003,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            64.275835875,
+            65.90825791666667,
+            63.558139125
+          ],
+          "min": 63.558139125,
+          "max": 65.90825791666667,
+          "aggregate": 64.275835875,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            64390.74949990027,
+            66111.74741690047,
+            63676.43883405253
+          ],
+          "min": 63676.43883405253,
+          "max": 66111.74741690047,
+          "aggregate": 64390.74949990027,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 682.8508342150599,
+        "p95_ms": 753.8224998861551,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 700.2019579522312,
+            "p95_ms": 740.5958340968937
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 733.276209095493,
+            "p95_ms": 759.0291248634458
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 637.8019580151886,
+            "p95_ms": 656.6622499376535
+          }
+        ],
+        "round_p50_range_ms": [
+          637.8019580151886,
+          733.276209095493
+        ],
+        "round_p95_range_ms": [
+          656.6622499376535,
+          759.0291248634458
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            1.686213898,
+            1.7025068020000003,
+            1.5340476509999998
+          ],
+          "min": 1.5340476509999998,
+          "max": 1.7025068020000003,
+          "aggregate": 1.686213898,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            70.25891241666666,
+            70.93778341666666,
+            63.91865212500001
+          ],
+          "min": 63.91865212500001,
+          "max": 70.93778341666666,
+          "aggregate": 70.25891241666666,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            70514.05562506989,
+            71384.78837488219,
+            64047.55091690458
+          ],
+          "min": 64047.55091690458,
+          "max": 71384.78837488219,
+          "aggregate": 70514.05562506989,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 45.14245921745896,
+          "percent": 7.078856258964583
+        },
+        "p95_ms": {
+          "absolute": 39.25683302804828,
+          "percent": 5.493803417768128
+        },
+        "batch_cpu_seconds": {
+          "absolute": 5.983076541666662,
+          "percent": 9.308438327122204
+        },
+        "batch_wall_ms": {
+          "absolute": 6123.30612516962,
+          "percent": 9.509605296920952
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": false,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "concurrency": 4,
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "baseline": {
+        "samples": 300,
+        "p50_ms": 669.994292082265,
+        "p95_ms": 771.7135408893228,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 730.7210001163185,
+            "p95_ms": 786.7741249501705
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 666.9354590121657,
+            "p95_ms": 682.1146660950035
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 666.9795420020819,
+            "p95_ms": 684.2932079453021
+          }
+        ],
+        "round_p50_range_ms": [
+          666.9354590121657,
+          730.7210001163185
+        ],
+        "round_p95_range_ms": [
+          682.1146660950035,
+          786.7741249501705
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            1.7387341970000003,
+            1.604595343,
+            1.604706433
+          ],
+          "min": 1.604595343,
+          "max": 1.7387341970000003,
+          "aggregate": 1.604706433,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            72.44725820833334,
+            66.85813929166665,
+            66.86276804166667
+          ],
+          "min": 66.85813929166665,
+          "max": 72.44725820833334,
+          "aggregate": 66.86276804166667,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            18302.63741593808,
+            16777.156374882907,
+            16806.45341705531
+          ],
+          "min": 16777.156374882907,
+          "max": 18302.63741593808,
+          "aggregate": 16806.45341705531,
+          "aggregation": "median"
+        }
+      },
+      "candidate": {
+        "samples": 300,
+        "p50_ms": 686.1296249553561,
+        "p95_ms": 834.1354171279818,
+        "rounds": [
+          {
+            "round": 0,
+            "samples": 100,
+            "p50_ms": 780.1901251077652,
+            "p95_ms": 891.936041880399
+          },
+          {
+            "round": 1,
+            "samples": 100,
+            "p50_ms": 684.3567909672856,
+            "p95_ms": 730.7555410079658
+          },
+          {
+            "round": 2,
+            "samples": 100,
+            "p50_ms": 667.6767920143902,
+            "p95_ms": 684.0089168399572
+          }
+        ],
+        "round_p50_range_ms": [
+          667.6767920143902,
+          780.1901251077652
+        ],
+        "round_p95_range_ms": [
+          684.0089168399572,
+          891.936041880399
+        ],
+        "batch_cpu_original_mislabeled_seconds": {
+          "samples": [
+            1.830603237,
+            1.6497308019999997,
+            1.6055542809999999
+          ],
+          "min": 1.6055542809999999,
+          "max": 1.830603237,
+          "aggregate": 1.6497308019999997,
+          "aggregation": "median"
+        },
+        "batch_cpu_derived_seconds": {
+          "samples": [
+            76.275134875,
+            68.73878341666668,
+            66.89809504166666
+          ],
+          "min": 66.89809504166666,
+          "max": 76.275134875,
+          "aggregate": 68.73878341666668,
+          "aggregation": "median"
+        },
+        "batch_wall_ms": {
+          "samples": [
+            19740.440957946703,
+            17374.448333168402,
+            16777.190083870664
+          ],
+          "min": 16777.190083870664,
+          "max": 19740.440957946703,
+          "aggregate": 17374.448333168402,
+          "aggregation": "median"
+        }
+      },
+      "delta": {
+        "p50_ms": {
+          "absolute": 16.1353328730911,
+          "percent": 2.4082791545797066
+        },
+        "p95_ms": {
+          "absolute": 62.421876238659024,
+          "percent": 8.088736678991548
+        },
+        "batch_cpu_seconds": {
+          "absolute": 1.8760153750000086,
+          "percent": 2.8057698326682257
+        },
+        "batch_wall_ms": {
+          "absolute": 567.9949161130935,
+          "percent": 3.379623898143125
+        }
+      },
+      "acceptance": {
+        "p50NotAboveBaseline": false,
+        "p95NotAboveBaseline": false,
+        "cpuWithin5Percent": true,
+        "perCasePeakRss": "not isolated; only whole mixed-workload lifetime peak recorded"
+      },
+      "status": "not-passed"
+    }
+  ],
+  "wholeMixedQueryWorkloadResources": {
+    "baseline": {
+      "lifetime_peak_rss_bytes": {
+        "samples": [
+          265568256,
+          257130496,
+          237879296
+        ],
+        "min": 237879296,
+        "max": 265568256,
+        "aggregate": 265568256,
+        "aggregation": "max"
+      },
+      "lifetime_cpu_wait4_seconds": {
+        "samples": [
+          150.23905499999998,
+          146.33530000000002,
+          143.397764
+        ],
+        "min": 143.397764,
+        "max": 150.23905499999998,
+        "aggregate": 146.33530000000002,
+        "aggregation": "median"
+      },
+      "lifetime_wall_ms": {
+        "samples": [
+          92792.22641699016,
+          93116.11908301711,
+          90036.9928330183
+        ],
+        "min": 90036.9928330183,
+        "max": 93116.11908301711,
+        "aggregate": 92792.22641699016,
+        "aggregation": "median"
+      }
+    },
+    "candidate": {
+      "lifetime_peak_rss_bytes": {
+        "samples": [
+          270974976,
+          247152640,
+          240205824
+        ],
+        "min": 240205824,
+        "max": 270974976,
+        "aggregate": 270974976,
+        "aggregation": "max"
+      },
+      "lifetime_cpu_wait4_seconds": {
+        "samples": [
+          161.942728,
+          154.303175,
+          143.929735
+        ],
+        "min": 143.929735,
+        "max": 161.942728,
+        "aggregate": 154.303175,
+        "aggregation": "median"
+      },
+      "lifetime_wall_ms": {
+        "samples": [
+          101963.37395790033,
+          100099.43604189903,
+          90485.40462506935
+        ],
+        "min": 90485.40462506935,
+        "max": 101963.37395790033,
+        "aggregate": 100099.43604189903,
+        "aggregation": "median"
+      }
+    },
+    "delta": {
+      "lifetime_peak_rss_bytes": {
+        "absolute": 5406720,
+        "percent": 2.0359059781602795
+      },
+      "lifetime_cpu_wait4_seconds": {
+        "absolute": 7.967874999999992,
+        "percent": 5.444943906220834
+      },
+      "lifetime_wall_ms": {
+        "absolute": 7307.2096249088645,
+        "percent": 7.8748079522003245
+      }
+    },
+    "acceptance": {
+      "rssWithin5Percent": true,
+      "lifetimeCpuWithin5Percent": false
+    }
+  },
+  "overallPerformanceAcceptance": "not-passed",
+  "reason": "Every pooled query p50 and p95 is above baseline; some per-case batch CPU increases exceed 5%, and whole query-lifetime CPU also exceeds 5%. Correctness/parity success does not imply performance acceptance."
+}

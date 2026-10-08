@@ -45,4 +45,34 @@ final class SwiftPackageTests: XCTestCase {
         XCTAssertEqual(try SwiftPackage.sourceFiles(fromDescribe: Data("{\"targets\": []}".utf8), root: "/src"), [])
         XCTAssertEqual(FrontendError.describeFailed(2).description, "swift package describe failed with exit code 2")
     }
+
+    func testClangHeadersRespectTargetBoundariesAndManifestExcludes() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("graphite-headers-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        let paths = [
+            "Custom/Legacy/Legacy.m", "Custom/Legacy/Public/Legacy.h", "Custom/Legacy/Private/Details.h",
+            "Custom/Legacy/Public/Excluded.h", "Custom/Legacy/Omitted/Hidden.h", "Custom/Legacy/OmittedExtra/Kept.h",
+            "Custom/Unbuilt/Other.h", "Tests/LegacyTests/Test.h", "Unrelated.h",
+        ]
+        for path in paths {
+            let file = root.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try "".write(to: file, atomically: true, encoding: .utf8)
+        }
+        let describe = Data("""
+        {"targets": [
+            {"name":"Legacy", "type":"library", "module_type":"ClangTarget", "path":"Custom/Legacy", "sources":["Legacy.m"]},
+            {"name":"LegacyTests", "type":"test", "module_type":"ClangTarget", "path":"Tests/LegacyTests", "sources":[]}
+        ]}
+        """.utf8)
+        let manifest = Data("""
+        {"targets": [{"name":"Legacy", "path":"Custom/Legacy", "publicHeadersPath":"Public", "exclude":["Public/Excluded.h", "Omitted"]}]}
+        """.utf8)
+        XCTAssertTrue(try SwiftPackage.hasClangTargets(fromDescribe: describe))
+        let files = try SwiftPackage.sourceFiles(fromDescribe: describe, root: root.path, manifest: manifest)
+        XCTAssertEqual(Set(files.map(SourcePosition.canonical)), Set([
+            "Custom/Legacy/Legacy.m", "Custom/Legacy/Public/Legacy.h", "Custom/Legacy/Private/Details.h",
+            "Custom/Legacy/OmittedExtra/Kept.h",
+        ].map { SourcePosition.canonical(root.appendingPathComponent($0).path) }))
+    }
 }

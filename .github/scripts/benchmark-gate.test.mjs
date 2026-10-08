@@ -3442,6 +3442,7 @@ function appleRow(name, samples, unit, extra = {}) {
             scoreUnit: unit, scoreConfidence: [sorted[0], sorted[sorted.length - 1]], rawData: [samples]
         },
         files: 181, shape: { ...appleShape }, determinism: { identical: true, sha256: "abc" },
+        corpus: { kind: "real-source", repository: "https://github.com/nicklockwood/SwiftFormat.git", commit: "173d2cb252474cd8e8baeaf13636f5d565408ec9" },
         verified: { command: "java -jar graphite.jar import {ir} -o {out}", passed: true }, ...extra
     };
 }
@@ -3453,7 +3454,7 @@ function appleSnapshot(wallScale = 1, rssScale = 1) {
     ];
 }
 
-const appleCorpus = { label: "swiftformat", commit: "173d2cb2", files: 181, shape: appleShape, ceilings: { wallMs: 2000, rssMiB: 120 } };
+const appleCorpus = { schema: "graphite-apple-frontend-corpus-v2", kind: "real-source", repository: "https://github.com/nicklockwood/SwiftFormat.git", label: "swiftformat", commit: "173d2cb252474cd8e8baeaf13636f5d565408ec9", files: 181, shape: appleShape, ceilings: { wallMs: 2000, rssMiB: 120 } };
 
 test("Apple frontend comparison pairs base and candidate with floors and corpus ceilings", () => {
     const same = compareAppleFrontend(appleSnapshot(), appleSnapshot(), appleCorpus);
@@ -3507,8 +3508,8 @@ test("Apple frontend comparison pairs base and candidate with floors and corpus 
     assert.deepEqual(bootstrap.rows.map((row) => row.baseScore), [null, null]);
     assert.match(renderAppleFrontendReport(bootstrap), /carries no Apple frontend/);
     assert.equal(compareAppleFrontend(null, appleSnapshot(6, 1), appleCorpus).passed, false);
-    // A manifest without ceilings (or with a null file count) constrains nothing on its own.
-    assert.equal(compareAppleFrontend(null, appleSnapshot(5, 5), { label: "swiftformat", files: null }).passed, true);
+    // Missing measured pins are unavailable evidence, never permission for an unbounded pass.
+    assert.equal(compareAppleFrontend(null, appleSnapshot(5, 5), { ...appleCorpus, ceilings: null }).passed, false);
 
     const errors = (base, candidate, corpus = appleCorpus) => compareAppleFrontend(base, candidate, corpus).errors.join("\n");
     assert.match(errors(appleSnapshot(), appleSnapshot().slice(0, 1)), /rss\[corpus=swiftformat\]: missing from the candidate results/);
@@ -3539,17 +3540,24 @@ test("Apple frontend comparison pairs base and candidate with floors and corpus 
     assert.match(errors(appleSnapshot(), appleSnapshot().map((row) => ({ ...row, shape: undefined }))), /shape missing/);
     // A base that emits another shape is not comparable work: the manifest was re-pinned for
     // this PR, so the candidate is measured against the ceilings alone and the report says why.
-    const oldBase = appleSnapshot(0.5, 0.8).map((row) => ({ ...row, shape: { ...appleShape, edges: 14000 } }));
-    const transition = compareAppleFrontend(oldBase, appleSnapshot(), appleCorpus);
+    const baselineRevision = "b".repeat(40);
+    const oldShape = { ...appleShape, edges: 14000 };
+    const oldBase = appleSnapshot(0.5, 0.8).map((row) => ({ ...row, baselineRevision, shape: oldShape }));
+    const transitionCorpus = { ...appleCorpus, baselineShapes: { [baselineRevision]: { shape: oldShape, reason: "candidate adds discovered source declarations" } } };
+    const transition = compareAppleFrontend(oldBase, appleSnapshot(), transitionCorpus);
+    assert.equal(compareAppleFrontend(oldBase, appleSnapshot(), appleCorpus).passed, false, "unreviewed base shape changes cannot become a bootstrap pass");
+    assert.equal(compareAppleFrontend(oldBase.map(row => ({ ...row, baselineRevision: "c".repeat(40) })), appleSnapshot(), transitionCorpus).passed, false);
+    assert.equal(compareAppleFrontend(oldBase.map(row => ({ ...row, shape: { ...oldShape, nodes: 2 } })), appleSnapshot(), transitionCorpus).passed, false);
+    assert.match(renderAppleFrontendReport(transition), /Reviewed transition.*candidate adds discovered source declarations/);
     assert.equal(transition.passed, true);
     assert.equal(transition.baseline, "ceilings");
     assert.equal(transition.baseShape, "edges 14655 -> 14000");
     assert.deepEqual(transition.rows.map((row) => row.baseScore), [null, null]);
     assert.match(renderAppleFrontendReport(transition), /emits a different graph shape for this corpus \(edges 14655 -> 14000\)/);
     assert.match(renderAppleFrontendReport(transition), /pinned graph shape \(32530 nodes, 14655 edges, 16867 call sites, 3468 constants\)/);
-    // A manifest without a shape binds nothing, and a sample without one is then fine.
+    // A manifest without a measured shape cannot establish equivalent real work.
     const unpinned = { ...appleCorpus, shape: undefined };
-    assert.equal(compareAppleFrontend(appleSnapshot(), appleSnapshot().map((row) => ({ ...row, shape: undefined })), unpinned).passed, true);
+    assert.equal(compareAppleFrontend(appleSnapshot(), appleSnapshot().map((row) => ({ ...row, shape: undefined })), unpinned).passed, false);
     assert.match(renderAppleFrontendReport(compareAppleFrontend(null, appleSnapshot(), unpinned)), /the manifest pins no graph shape/);
 });
 
@@ -3578,8 +3586,8 @@ test("Apple frontend commands write the report and status the aggregate consumes
         assert.deepEqual(status.corpus.shape, appleShape);
         assert.equal(status.rows[0].confirmation.blocked, false);
         const report = fs.readFileSync(path.join(directory, "apple-frontend-report.md"), "utf8");
-        assert.match(report, /### Apple frontend build time and peak RSS \(pinned corpus\)/);
-        assert.match(report, /Corpus `swiftformat` at `173d2cb2`, 181 Swift files; each run is `graphite-frontend-apple build --package <corpus> --skip-build`/);
+        assert.match(report, /### Apple frontend stage time and peak RSS \(real source corpus\)/);
+        assert.match(report, /Corpus `swiftformat` at `173d2cb252474cd8e8baeaf13636f5d565408ec9`, 181 source files; each run is `graphite-frontend-apple build --package <corpus> --skip-build`/);
         assert.match(report, /The last measured IR of every revision was imported by the production reader \(`graphite.jar import`\)/);
         assert.match(report, /\| wall time \| 1500\.0 ms\/op \| 1950\.0 ms\/op \| \+30\.0% \| 2000\.0 ms\/op \| 1500\.0 ms\/op -> 1500\.0 ms\/op \(\+0\.0%\) \| \*\*PASS\*\* \(confirmed\) \|/);
 
@@ -3595,23 +3603,63 @@ test("Apple frontend commands write the report and status the aggregate consumes
         assert.match(aggregate.body, /`apple-frontend` \| \*\*PASS\*\* \|/);
         assert.match(aggregate.body, /Implemented gates: `large-corpus`, `apple-frontend`, `apple-frontend-large`, `apple-frontend-xcode`\./);
 
-        // A generated corpus reports its generator and, as a project, the --project invocation.
-        const generated = write("generated.json", {
-            label: "generated-xcodeproj", input: "xcodeproj", files: 2, shape: null, ceilings: null,
-            generator: { script: "generate-apple-corpus.py", seed: 5, files: 2, modules: 1, layout: "xcodeproj", name: "Demo" }
-        });
-        const projectRows = write("project.json", appleSnapshot().map((row) => ({ ...row, params: { corpus: "generated-xcodeproj" }, files: 2, input: "xcodeproj" })));
-        const project = spawnSync(process.execPath, [script, "compare-apple-frontend", "--candidate", projectRows, "--corpus", generated,
+        // The project path is a real workspace, with the dependency revision bound to every row.
+        const realProject = { ...appleCorpus, label: "signal-ios", input: "xcodeproj", project: "Signal.xcworkspace",
+            repository: "https://github.com/signalapp/Signal-iOS.git", commit: "dc04157b3adef68af2136a12478f455e41e5d2e0",
+            submodules: { Pods: "77c21193e6b5e4f8cbd86abaf46631fd242322f4" } };
+        const manifest = write("real-project.json", realProject);
+        const projectRows = write("project.json", appleSnapshot().map((row) => ({ ...row,
+            params: { corpus: "signal-ios" }, input: "xcodeproj", corpus: {
+                kind: realProject.kind, repository: realProject.repository, commit: realProject.commit,
+                submodules: realProject.submodules
+            } })));
+        const project = spawnSync(process.execPath, [script, "compare-apple-frontend", "--candidate", projectRows, "--corpus", manifest,
             "--report", path.join(directory, "apple-frontend-xcode-report.md"), "--status", path.join(directory, "apple-frontend-xcode-status.json")], { encoding: "utf8" });
         assert.equal(project.status, 0, project.stderr);
         const projectReport = fs.readFileSync(path.join(directory, "apple-frontend-xcode-report.md"), "utf8");
-        assert.match(projectReport, /Corpus `generated-xcodeproj` generated by `generate-apple-corpus.py` \(seed 5, 1 modules, xcodeproj\), 2 Swift files; each run is `graphite-frontend-apple build --project <corpus>.xcodeproj --derived-data <build> --skip-build`, so `xcodebuild` is never measured\. The last measured IR of every revision was imported by the production reader \(`graphite.jar import`\), or the sample would have been refused\. Every measured IR is validated; the manifest pins no graph shape\./);
+        assert.match(projectReport, /--project <corpus>\/Signal.xcworkspace --derived-data <build> --skip-build/);
+        assert.match(projectReport, /Only index-store → IR emission is timed/);
         const projectStatus = JSON.parse(fs.readFileSync(path.join(directory, "apple-frontend-xcode-status.json")));
         assert.equal(projectStatus.passed, true);
         assert.equal(projectStatus.corpus.input, "xcodeproj");
-        assert.equal(projectStatus.corpus.generator.seed, 5);
+        assert.deepEqual(projectStatus.corpus.submodules, realProject.submodules);
         assert.equal(status.corpus.input, "package");
-        assert.equal(status.corpus.generator, undefined);
+
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("Apple confirmation retains the reviewed coverage transition for both outcomes", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-apple-transition-"));
+    const script = fileURLToPath(new URL("./benchmark-gate.mjs", import.meta.url));
+    try {
+        const write = (name, value) => { const file = path.join(directory, name); fs.writeFileSync(file, JSON.stringify(value)); return file; };
+        const baselineRevision = "332c0d8a6fec650a6e7979e3dce37aa1a891c03a";
+        const reason = "candidate discovers copied framework header declarations";
+        const oldShape = { ...appleShape, strings: appleShape.strings - 1 };
+        const baseRows = appleSnapshot().map(row => ({ ...row, baselineRevision, shape: oldShape }));
+        const corpus = { ...appleCorpus, baselineShapes: { [baselineRevision]: { shape: oldShape, reason } } };
+        const initial = compareAppleFrontend(baseRows, appleSnapshot(2), corpus);
+        assert.equal(initial.passed, false);
+        const initialFile = write("initial.json", initial);
+        const baseFile = write("base.json", baseRows);
+        const corpusFile = write("corpus.json", corpus);
+        for (const [scale, expectedPass] of [[1, true], [2, false]]) {
+            const reportFile = path.join(directory, `report-${scale}.md`);
+            const statusFile = path.join(directory, `status-${scale}.json`);
+            const result = spawnSync(process.execPath, [script, "confirm-apple-frontend",
+                "--initial", initialFile, "--base", baseFile,
+                "--candidate", write(`candidate-${scale}.json`, appleSnapshot(scale)), "--corpus", corpusFile,
+                "--report", reportFile, "--status", statusFile], { encoding: "utf8" });
+            assert.equal(result.status, expectedPass ? 0 : 1, result.stderr);
+            const status = JSON.parse(fs.readFileSync(statusFile, "utf8"));
+            assert.equal(status.passed, expectedPass);
+            assert.equal(status.baseline, "ceilings");
+            assert.equal(status.rows[0].blocked, !expectedPass);
+            assert.deepEqual(status.baselineTransition, { revision: baselineRevision, reason });
+            assert.ok(fs.readFileSync(reportFile, "utf8").includes(`Reviewed transition at \`${baselineRevision}\`: ${reason}.`));
+        }
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -3631,26 +3679,27 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
     assert.equal((job.match(/--verify 'java -jar jar\/graphite\.jar import \{ir\} -o \{out\}'/g) ?? []).length, 2);
     assert.match(fs.readFileSync(new URL("../../backend/bench/apple-frontend.py", import.meta.url), "utf8"), /"--verify"/);
     assert.match(job, /image: swift:6\.1/);
-    // One leg per SwiftPM corpus: the SwiftFormat smoke and the generated app-scale package.
+    // One leg per SwiftPM corpus: the SwiftFormat smoke and the real Swift Package Manager source.
     assert.match(job, /- component: apple-frontend\n\s+manifest: apple-frontend-corpus\.json\n\s+pin: APPLE_FRONTEND_TRANSITION_CORPUS_SHA256\n\s+repetitions: 5/);
     assert.match(job, /- component: apple-frontend-large\n\s+manifest: apple-frontend-corpus-large\.json\n\s+pin: APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256\n\s+repetitions: 3/);
     assert.match(job, /fail-fast: false/);
     assert.match(job, /actions\/setup-node@v4/);
-    assert.match(job, /candidate\/frontend\/apple\/swift\.sh build -c release/);
-    assert.match(job, /base\/frontend\/apple\/swift\.sh build -c release/);
+    assert.match(job, /candidate\/frontend\/apple\/swift\.sh build -c release --static-swift-stdlib/);
+    assert.match(job, /base\/frontend\/apple\/swift\.sh build -c release --static-swift-stdlib/);
     // The harness and the corpus pin are base-owned; the candidate copies stand in, pinned to their hashes, until main carries them.
     assert.match(job, /HARNESS=base\/backend\/bench\/apple-frontend\.py/);
     assert.match(job, /CORPUS="base\/backend\/bench\/\$\{MANIFEST\}"/);
     assert.match(job, /"\$\{APPLE_FRONTEND_TRANSITION_HARNESS_SHA256\}"/);
     assert.match(job, /"\$\{!CORPUS_PIN\}"/);
-    assert.match(job, /"\$\{APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256\}"/);
     assert.match(job, /"\$\{APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256\}"/);
-    assert.match(job, /if ! grep -q 'compare-apple-frontend' "\$\{COMPARATOR\}"/);
-    assert.match(job, /git -C corpus rev-parse HEAD/);
-    assert.match(job, /swift build -c debug/);
-    // A generated corpus is written from the manifest, and a cached one must equal what the generator writes now.
-    assert.match(job, /python3 "\$\{GENERATOR\}" --manifest "\$\{CORPUS\}" --out corpus\n/);
-    assert.match(job, /python3 "\$\{GENERATOR\}" --manifest "\$\{CORPUS\}" --out corpus-expected\n\s+diff -r --exclude=\.build corpus-expected corpus/);
+    assert.match(job, /if ! grep -q 'graphite-apple-real-source-v1' "\$\{COMPARATOR\}"/);
+    assert.match(job, /PREPARE=base\/backend\/bench\/prepare-apple-corpus\.py/);
+    assert.match(job, /APPLE_FRONTEND_TRANSITION_PREPARE_SHA256/);
+    assert.match(job, /python3 "\$\{PREPARE\}" --corpus "\$\{CORPUS\}" --out corpus --log benchmark-results\/prepare\.log/);
+    assert.doesNotMatch(job, /generate-apple-corpus\.py/);
+    assert.match(job, /graphite-apple-frontend-corpus-v2/);
+    assert.match(job, /\.kind == "real-source" and \.generator == null/);
+    assert.match(job, /--verify-only/);
     assert.match(job, /--repetitions "\$\{REPETITIONS\}" --warmup 1/);
     // The harness owns the skip-build invocation, so `swift build` is never measured.
     assert.match(fs.readFileSync(new URL("../../backend/bench/apple-frontend.py", import.meta.url), "utf8"), /"--skip-build"/);
@@ -3658,25 +3707,24 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
     assert.match(job, /confirm-apple-frontend/);
     assert.match(job, /name: benchmark-\$\{\{ matrix\.corpus\.component \}\}-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
 
-    // The iOS path: the generated sources as an .xcodeproj, built by xcodebuild on macOS with
+    // The iOS path: pinned Signal sources and Pods, built by xcodebuild on macOS with
     // the index store on, measured through --project and the build's derived data.
     const xcode = workflow.match(/^  apple-frontend-xcode:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
     assert.match(xcode, /needs: \[candidate-gate-tests, build-graphite-jar\]/);
     assert.match(xcode, /name: graphite-jar-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
     assert.equal((xcode.match(/--verify 'java -jar jar\/graphite\.jar import \{ir\} -o \{out\}'/g) ?? []).length, 2);
-    assert.match(xcode, /runs-on: macos-latest/);
+    assert.match(xcode, /runs-on: macos-15/);
+    assert.match(xcode, /xcode-version: '16\.4'/);
     assert.match(xcode, /MANIFEST: apple-frontend-corpus-xcode\.json/);
     assert.match(xcode, /"\$\{APPLE_FRONTEND_TRANSITION_HARNESS_SHA256\}"/);
     assert.match(xcode, /"\$\{APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256\}"/);
-    assert.match(xcode, /"\$\{APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256\}"/);
     assert.match(xcode, /"\$\{APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256\}"/);
-    assert.match(xcode, /\.input == "xcodeproj" and \.generator\.layout == "xcodeproj"/);
-    assert.match(xcode, /xcodebuild -project "corpus\/\$\{NAME\}\.xcodeproj" -scheme "\$\{NAME\}" -configuration Debug/);
-    assert.match(xcode, /-destination 'generic\/platform=iOS Simulator' build/);
-    assert.match(xcode, /COMPILER_INDEX_STORE_ENABLE=YES CODE_SIGNING_ALLOWED=NO/);
-    assert.match(xcode, /test -d derived-data\/Index\.noindex\/DataStore/);
-    assert.match(xcode, /diff -r --exclude=project\.xcworkspace --exclude=xcuserdata corpus-expected corpus/);
-    assert.match(xcode, /--project "corpus\/\$\{NAME\}\.xcodeproj" --derived-data derived-data --corpus "\$\{CORPUS\}"/);
+    assert.match(xcode, /\.input == "xcodeproj" and \(\.commit/);
+    assert.match(xcode, /python3 "\$\{PREPARE\}" --corpus "\$\{CORPUS\}" --out corpus --derived-data derived-data/);
+    assert.match(xcode, /APPLE_FRONTEND_TRANSITION_PREPARE_SHA256/);
+    assert.match(xcode, /--verify-only/);
+    assert.doesNotMatch(xcode, /generate-apple-corpus\.py/);
+    assert.match(xcode, /--project "corpus\/\$\{PROJECT\}" --derived-data derived-data --corpus "\$\{CORPUS\}"/);
     assert.match(xcode, /--repetitions 3 --warmup 1/);
     assert.match(xcode, /compare-apple-frontend/);
     assert.match(xcode, /confirm-apple-frontend/);
@@ -3691,16 +3739,16 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
     assert.match(enforcement, /APPLE_FRONTEND_XCODE_JOB: \$\{\{ needs\.apple-frontend-xcode\.result \}\}/);
     assert.match(enforcement, /\[ "\$\{APPLE_FRONTEND_XCODE_JOB\}" != success \]/);
     const report = workflow.slice(workflow.indexOf("    - name: Build benchmark report"), workflow.indexOf("    - name: Upload aggregate benchmark report"));
-    assert.match(report, /if ! grep -q '"apple-frontend"' "\$\{COMPARATOR\}"; then/);
+    assert.match(report, /if ! grep -q 'graphite-apple-real-source-v1' "\$\{COMPARATOR\}"; then/);
     assert.match(report, /"\$\{APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256\}"/);
 
     // The pinned hashes name the files this revision carries.
     const env = (name) => workflow.match(new RegExp(`^  ${name}: ([0-9a-f]{64})$`, "m"))?.[1];
     const digest = (file) => crypto.createHash("sha256").update(fs.readFileSync(new URL(file, import.meta.url))).digest("hex");
+    assert.equal(env("APPLE_FRONTEND_TRANSITION_PREPARE_SHA256"), digest("../../backend/bench/prepare-apple-corpus.py"));
     assert.equal(env("APPLE_FRONTEND_TRANSITION_HARNESS_SHA256"), digest("../../backend/bench/apple-frontend.py"));
     assert.equal(env("APPLE_FRONTEND_TRANSITION_CORPUS_SHA256"), digest("../../backend/bench/apple-frontend-corpus.json"));
     assert.equal(env("APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256"), digest("./benchmark-gate.mjs"));
-    assert.equal(env("APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256"), digest("../../backend/bench/generate-apple-corpus.py"));
     assert.equal(env("APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256"), digest("../../backend/bench/apple-frontend-corpus-large.json"));
     assert.equal(env("APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256"), digest("../../backend/bench/apple-frontend-corpus-xcode.json"));
 
@@ -3711,14 +3759,85 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
         assert.equal(component.status, `${name}-status.json`);
         assert.ok(BENCHMARK_COVERAGE_DOMAINS.find((domain) => domain.name === "Build and persistence lifecycle").components.includes(name));
     }
-    // The generated manifests are the same sources in two layouts, at iOS-app scale.
+    // Performance manifests are pinned upstream repositories, never generated graphs.
     const large = JSON.parse(fs.readFileSync(new URL("../../backend/bench/apple-frontend-corpus-large.json", import.meta.url)));
     const xcodeCorpus = JSON.parse(fs.readFileSync(new URL("../../backend/bench/apple-frontend-corpus-xcode.json", import.meta.url)));
     assert.equal(large.input, "package");
     assert.equal(xcodeCorpus.input, "xcodeproj");
-    assert.ok(large.files >= 2000);
-    assert.equal(large.files, xcodeCorpus.files);
-    assert.deepEqual({ ...large.generator, layout: null }, { ...xcodeCorpus.generator, layout: null });
+    for (const corpus of [large, xcodeCorpus]) {
+        assert.equal(corpus.schema, "graphite-apple-frontend-corpus-v2");
+        assert.equal(corpus.kind, "real-source");
+        assert.match(corpus.commit, /^[0-9a-f]{40}$/);
+        assert.equal(corpus.generator, undefined);
+    }
+    assert.equal(xcodeCorpus.project, "Signal.xcworkspace");
+    assert.match(xcodeCorpus.submodules.Pods, /^[0-9a-f]{40}$/);
+
+});
+
+test("Xcode corpus cache restores copied and generated header paths used by the index", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const xcode = workflow.match(/^  apple-frontend-xcode:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const cache = xcode.match(/    - name: Restore the built corpus\n[\s\S]*?(?=    - name:)/)?.[0] ?? "";
+    const paths = cache.match(/        path: \|\n((?:          [^\n]+\n)+)/)?.[1]
+        .trim().split("\n").map((entry) => entry.trim()) ?? [];
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "apple-index-cache-"));
+    try {
+        const fresh = path.join(directory, "fresh");
+        const restored = path.join(directory, "restored");
+        const copied = "derived-data/Build/Products/Debug/Model.framework/Headers/Model.h";
+        const generated = "derived-data/Build/Intermediates.noindex/GeneratedHeaders/Model-Swift.h";
+        const linkedHeaders = "derived-data/Build/Products/Debug/Generated.framework/Headers";
+        const contents = new Map([
+            ["corpus/Model.m", "@implementation Model\n@end\n"],
+            ["derived-data/Index.noindex/DataStore/record", copied + "\n" + generated],
+            [copied, "- (long)copiedValue;\n"],
+            [generated, "- (int)generatedValue;\n"],
+        ]);
+        for (const [relative, content] of contents) {
+            fs.mkdirSync(path.dirname(path.join(fresh, relative)), { recursive: true });
+            fs.writeFileSync(path.join(fresh, relative), content);
+        }
+        fs.mkdirSync(path.dirname(path.join(fresh, linkedHeaders)), { recursive: true });
+        fs.symlinkSync("../../../Intermediates.noindex/GeneratedHeaders", path.join(fresh, linkedHeaders));
+        for (const relative of paths) {
+            fs.mkdirSync(path.dirname(path.join(restored, relative)), { recursive: true });
+            fs.cpSync(path.join(fresh, relative), path.join(restored, relative), {
+                recursive: true, verbatimSymlinks: true,
+            });
+        }
+        // Read the exact declaration paths retained by the restored index, not just
+        // similarly named headers under the source checkout.
+        const indexed = fs.readFileSync(path.join(restored, "derived-data/Index.noindex/DataStore/record"), "utf8").split("\n");
+        for (const relative of indexed) {
+            assert.equal(fs.readFileSync(path.join(restored, relative), "utf8"), contents.get(relative));
+        }
+        assert.equal(fs.readFileSync(path.join(restored, linkedHeaders, "Model-Swift.h"), "utf8"), contents.get(generated));
+        assert.ok(fs.lstatSync(path.join(restored, linkedHeaders)).isSymbolicLink());
+        assert.doesNotMatch(xcode, /cache-key=apple-frontend-real-xcode-v2-/, "invalidate earlier incomplete caches");
+    } finally {
+        fs.rmSync(directory, { recursive: true, force: true });
+    }
+});
+
+test("Apple performance evidence rejects generated sources, unpinned work and foreign revisions", () => {
+    const compare = (corpus, rows = appleSnapshot()) => compareAppleFrontend(appleSnapshot(), rows, corpus);
+    const generated = compare({ ...appleCorpus, generator: { script: "generate-apple-corpus.py" } });
+    assert.equal(generated.passed, false);
+    assert.match(generated.errors.join("\n"), /synthetic\/generated corpora are correctness-only/);
+    assert.equal(compare({ ...appleCorpus, schema: "graphite-apple-frontend-corpus-v1" }).passed, false);
+    assert.equal(compare({ ...appleCorpus, shape: null }).passed, false);
+    assert.equal(compare({ ...appleCorpus, commit: "173d2cb2" }).passed, false);
+    const foreign = compare(appleCorpus, appleSnapshot().map(row => ({ ...row, corpus: { ...row.corpus, commit: "a".repeat(40) } })));
+    assert.equal(foreign.passed, false);
+    assert.match(foreign.errors.join("\n"), /not bound to the pinned real-source corpus/);
+    assert.equal(compare(appleCorpus, appleSnapshot().map(row => ({ ...row, corpus: undefined }))).passed, false);
+    const withLock = { ...appleCorpus, dependencyLock: { path: "Package.resolved", sha256: "a".repeat(64) } };
+    assert.equal(compare(withLock).passed, false, "a lock pin missing from the measured row must fail");
+    assert.equal(compareAppleFrontend(appleSnapshot().map(row => ({ ...row, corpus: { ...row.corpus, commit: "b".repeat(40) } })), appleSnapshot(), appleCorpus).passed, false, "a foreign base cannot provide paired evidence");
+    const unmeasured = compareAppleFrontend(null, appleSnapshot(), { ...appleCorpus, ceilings: null });
+    assert.equal(unmeasured.passed, false);
+    assert.match(unmeasured.errors.join("\n"), /no comparable base and no measured bootstrap ceiling/);
 });
 
 test("Rust latency commands write the report and status the aggregate consumes", () => {

@@ -1,0 +1,226 @@
+{
+  "scope": {
+    "purpose": "real-source calibration only",
+    "performanceAcceptance": false,
+    "revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+    "releaseVersion": "2.11.3-apple-validation.4",
+    "baseline": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+    "baselinePurpose": "shape calibration only; no paired acceptance",
+    "timedBoundary": "existing compiler index store through IR emission",
+    "excluded": [
+      "compilation",
+      "import/save timing",
+      "graph load",
+      "server query latency"
+    ]
+  },
+  "toolchain": {
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "swift": "Swift version 6.1.3 (swift-6.1.3-RELEASE)\nTarget: x86_64-unknown-linux-gnu"
+  },
+  "candidate": {
+    "shape": {
+      "files": 482,
+      "types": 1752,
+      "methods": 4602,
+      "fields": 5355,
+      "callSites": 25139,
+      "constants": 3434,
+      "annotations": 913,
+      "nodes": 60407,
+      "edges": 29000,
+      "strings": 21419
+    },
+    "irSha": "e52e4f85fab3a743c4f58d4cabf3a607bb785435a7bce54b2aecc5e5ab50f4c9",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/swiftlang/swift-package-manager.git",
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyLock": {
+          "path": "fixtures/swiftpm/Package.resolved",
+          "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+        }
+      },
+      "command": [
+        "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+        "build",
+        "--package",
+        "/__w/_temp/corpus",
+        "--skip-build",
+        "--out",
+        "/tmp/apple-frontend-bench-lldzliqs/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": null,
+      "wallMs": 6118.716052999957,
+      "cpuMs": 6021.9,
+      "userMs": 5285.919,
+      "systemMs": 735.981,
+      "peakRssBytes": 181559296,
+      "exitCode": 0,
+      "shape": {
+        "files": 482,
+        "types": 1752,
+        "methods": 4602,
+        "fields": 5355,
+        "callSites": 25139,
+        "constants": 3434,
+        "annotations": 913,
+        "nodes": 60407,
+        "edges": 29000,
+        "strings": 21419
+      },
+      "sha256": "e52e4f85fab3a743c4f58d4cabf3a607bb785435a7bce54b2aecc5e5ab50f4c9"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 5176.945917000012,
+        "min": 5144.327736999969,
+        "max": 5246.15212599997,
+        "raw": [
+          5176.565901000004,
+          5144.327736999969,
+          5176.945917000012,
+          5221.442615000001,
+          5246.15212599997
+        ]
+      },
+      "cpuMs": {
+        "median": 5079.3,
+        "min": 5040.3,
+        "max": 5140.1939999999995,
+        "raw": [
+          5077.398,
+          5040.3,
+          5079.3,
+          5117.177,
+          5140.1939999999995
+        ]
+      },
+      "peakRssMiB": {
+        "median": 174.51171875,
+        "min": 173.625,
+        "max": 174.65625,
+        "raw": [
+          173.703125,
+          174.61328125,
+          173.625,
+          174.51171875,
+          174.65625
+        ]
+      }
+    },
+    "baselineRevision": null
+  },
+  "baseline": {
+    "shape": {
+      "files": 481,
+      "types": 1752,
+      "methods": 4601,
+      "fields": 5355,
+      "callSites": 25139,
+      "constants": 3434,
+      "annotations": 913,
+      "nodes": 60407,
+      "edges": 29000,
+      "strings": 21459
+    },
+    "irSha": "2f0f170b70860f10db020178ab9d5959e73071a1f9943b5ca315c98f15b1eb3e",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/swiftlang/swift-package-manager.git",
+        "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+        "dependencyLock": {
+          "path": "fixtures/swiftpm/Package.resolved",
+          "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+        }
+      },
+      "command": [
+        "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+        "build",
+        "--package",
+        "/__w/_temp/corpus",
+        "--skip-build",
+        "--out",
+        "/tmp/apple-frontend-bench-iblb8v8b/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+      "wallMs": 5786.217244999989,
+      "cpuMs": 5740.639999999999,
+      "userMs": 5100.114,
+      "systemMs": 640.526,
+      "peakRssBytes": 184414208,
+      "exitCode": 0,
+      "shape": {
+        "files": 481,
+        "types": 1752,
+        "methods": 4601,
+        "fields": 5355,
+        "callSites": 25139,
+        "constants": 3434,
+        "annotations": 913,
+        "nodes": 60407,
+        "edges": 29000,
+        "strings": 21459
+      },
+      "sha256": "2f0f170b70860f10db020178ab9d5959e73071a1f9943b5ca315c98f15b1eb3e"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 4874.959241999932,
+        "min": 4866.864577999991,
+        "max": 4938.719569999989,
+        "raw": [
+          4903.052869999897,
+          4938.719569999989,
+          4866.864577999991,
+          4874.959241999932,
+          4869.163243999992
+        ]
+      },
+      "cpuMs": {
+        "median": 4826.886,
+        "min": 4811.433,
+        "max": 4894.819,
+        "raw": [
+          4855.641,
+          4894.819,
+          4813.123,
+          4826.886,
+          4811.433
+        ]
+      },
+      "peakRssMiB": {
+        "median": 173.34375,
+        "min": 173.1171875,
+        "max": 173.90625,
+        "raw": [
+          173.75390625,
+          173.1171875,
+          173.90625,
+          173.18359375,
+          173.34375
+        ]
+      }
+    },
+    "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+  },
+  "proposedCeilings": {
+    "wallMs": 8000,
+    "rssMiB": 272
+  },
+  "policy": "hosted-bootstrap-ceiling-policy.md, declared before inspecting candidate samples at 2026-10-08T15:32:34.797571+00:00; sampling may already have occurred.",
+  "performanceAcceptance": false
+}

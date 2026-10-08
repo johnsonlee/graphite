@@ -53,6 +53,103 @@ struct DecodedIR {
     }
 }
 
+/// Exercise SwiftPM itself: its release indexing defaults and header discovery differ
+/// from the directory-based fixtures used by the other frontend tests.
+final class SwiftPMFrontendRegressionTests: XCTestCase {
+    private func package(_ files: [String: String], run: (URL) throws -> Void) throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent("graphite-swiftpm-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: root) }
+        for (path, text) in files {
+            let file = root.appendingPathComponent(path)
+            try FileManager.default.createDirectory(at: file.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try text.write(to: file, atomically: true, encoding: .utf8)
+        }
+        try run(root)
+    }
+
+    func testReleaseBuildProducesAnIndexedGraph() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "ReleaseProbe", targets: [.target(name: "ReleaseProbe")])
+            """,
+            "Sources/ReleaseProbe/Probe.swift": """
+            public struct Probe {
+                public static func read(_ key: String) -> Bool { true }
+                public static func run() -> Bool { read("release.flag") }
+            }
+            """,
+        ]) { root in
+            var options = BuildOptions()
+            options.package = root.path
+            options.configuration = "release"
+            let output = root.appendingPathComponent("release.graphite-ir")
+            let result = try Frontend(options: options).build(to: output)
+            XCTAssertTrue(FileManager.default.fileExists(atPath: result.indexStore))
+            let graph = try DecodedIR(url: output)
+            XCTAssertEqual(graph.origins.map(\.className), ["ReleaseProbe.Probe"])
+            let call = try XCTUnwrap(graph.callSites.first { graph.str($0.callee.name) == "read(_:)" })
+            XCTAssertEqual(graph.signature(call.caller), "ReleaseProbe.Probe.run()() -> Swift.Bool")
+            XCTAssertEqual(graph.signature(call.callee), "ReleaseProbe.Probe.read(_:)(Swift.String) -> Swift.Bool")
+            XCTAssertEqual(call.arguments.map(graph.literal), ["\"release.flag\""])
+        }
+    }
+
+    func testSwiftPMIncludesObjectiveCHeaderDeclarationsAndNullability() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "Legacy", targets: [
+                .target(name: "Legacy", path: "Custom/Legacy", exclude: ["Excluded"], publicHeadersPath: "Public")
+            ])
+            """,
+            "Custom/Legacy/Public/Legacy.h": """
+            #pragma clang assume_nonnull begin
+            @protocol Reading
+            @property (readonly) int enabled;
+            - (const char *)readName;
+            @end
+            __attribute__((objc_root_class))
+            @interface Legacy
+            @property (readonly) int count;
+            - (const char *)lookup:(const char *)key;
+            @end
+            #pragma clang assume_nonnull end
+            """,
+            "Custom/Legacy/Legacy.m": """
+            #import "Legacy.h"
+            @implementation Legacy
+            - (int)count { return 1; }
+            - (const char *)lookup:(const char *)key { return key; }
+            @end
+            """,
+            "Custom/Legacy/Excluded/Ignore.h": "@interface Ignored\n@end\n",
+        ]) { root in
+            var options = BuildOptions()
+            options.package = root.path
+            let output = root.appendingPathComponent("legacy.graphite-ir")
+            let result = try Frontend(options: options).build(to: output)
+            XCTAssertEqual(result.files, 2, "the implementation and custom public header, excluding ignored headers")
+            let graph = try DecodedIR(url: output)
+            XCTAssertTrue(graph.origins.contains { $0.className == "Reading" || $0.className == "Legacy.Reading" })
+            let fields = graph.nodes.values.compactMap { node -> GraphiteIRField? in
+                if case .field(let field)? = node.kind { return field }
+                return nil
+            }
+            XCTAssertEqual(Set(fields.map { "\(graph.str($0.field.name)): \(graph.type($0.field.type))" }), ["enabled: int", "count: int"])
+            let lookup = try XCTUnwrap(graph.methods.first { graph.str($0.name) == "lookup:" })
+            XCTAssertEqual(lookup.parameterTypes.map(graph.type), ["const char * _Nonnull"])
+            XCTAssertEqual(graph.type(lookup.returnType), "const char * _Nonnull")
+            let readName = try XCTUnwrap(graph.methods.first { graph.str($0.name) == "readName" })
+            XCTAssertEqual(readName.parameterTypes, [])
+            XCTAssertEqual(graph.type(readName.returnType), "const char * _Nonnull")
+            XCTAssertFalse(graph.origins.contains { $0.className.contains("Ignored") })
+        }
+    }
+}
+
 final class FrontendTests: XCTestCase {
     static let fixture = URL(fileURLWithPath: #filePath)
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()

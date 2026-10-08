@@ -1,0 +1,132 @@
+{
+  "candidate": {
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "validSamples": 6,
+    "warmups": 1,
+    "measured": 5,
+    "irSha": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508",
+    "productionImportPassed": true,
+    "metrics": {
+      "wallMs": {
+        "median": 1334.9897559999704,
+        "min": 1315.661984999963,
+        "max": 1362.739605999991,
+        "raw": [
+          1315.661984999963,
+          1343.609076000007,
+          1362.739605999991,
+          1334.9897559999704,
+          1327.441437999994
+        ]
+      },
+      "cpuMs": {
+        "median": 1249.7319999999997,
+        "min": 1226.279,
+        "max": 1273.0349999999999,
+        "raw": [
+          1226.279,
+          1255.1150000000002,
+          1273.0349999999999,
+          1249.7319999999997,
+          1238.463
+        ]
+      },
+      "peakRssBytes": {
+        "median": 78.69921875,
+        "min": 78.55859375,
+        "max": 78.84765625,
+        "raw": [
+          78.57421875,
+          78.69921875,
+          78.84765625,
+          78.7265625,
+          78.55859375
+        ]
+      }
+    },
+    "warmup": {
+      "wallMs": 1656.938794000041,
+      "cpuMs": 1570.88,
+      "peakRssMiB": 127.82421875
+    }
+  },
+  "baseline": {
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "validSamples": 6,
+    "warmups": 1,
+    "measured": 5,
+    "irSha": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea",
+    "productionImportPassed": true,
+    "metrics": {
+      "wallMs": {
+        "median": 1323.7454369999568,
+        "min": 1316.4759310000136,
+        "max": 1353.01769900002,
+        "raw": [
+          1332.1371590000126,
+          1316.4759310000136,
+          1318.6351939999668,
+          1353.01769900002,
+          1323.7454369999568
+        ]
+      },
+      "cpuMs": {
+        "median": 1234.6760000000002,
+        "min": 1226.2079999999999,
+        "max": 1264.836,
+        "raw": [
+          1244.753,
+          1226.2079999999999,
+          1230.378,
+          1264.836,
+          1234.6760000000002
+        ]
+      },
+      "peakRssBytes": {
+        "median": 78.859375,
+        "min": 78.8203125,
+        "max": 79.07421875,
+        "raw": [
+          78.9453125,
+          78.8203125,
+          78.84375,
+          78.859375,
+          79.07421875
+        ]
+      }
+    },
+    "warmup": {
+      "wallMs": 1676.041672999986,
+      "cpuMs": 1590.3569999999997,
+      "peakRssMiB": 128.03515625
+    }
+  },
+  "limitations": [
+    "Calibration only, fixed candidate-then-baseline order, no performance acceptance.",
+    "Five measured observations on one hosted runner; no cross-run runner variability estimate.",
+    "Timed boundary excludes compilation, import/save, graph loading and queries.",
+    "First warmup RSS is above 120 MiB existing measured-sample ceiling; retained and explicitly excluded by declared warmup protocol."
+  ]
+}

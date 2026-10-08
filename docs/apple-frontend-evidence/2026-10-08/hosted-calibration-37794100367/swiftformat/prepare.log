@@ -1,0 +1,1927 @@
+
+$ git init --quiet /__w/_temp/corpus
+
+$ git -C /__w/_temp/corpus remote add origin https://github.com/nicklockwood/SwiftFormat.git
+
+$ git -C /__w/_temp/corpus fetch --quiet --depth 1 origin 173d2cb252474cd8e8baeaf13636f5d565408ec9
+
+$ git -C /__w/_temp/corpus checkout --quiet 173d2cb252474cd8e8baeaf13636f5d565408ec9
+
+$ swift build --package-path /__w/_temp/corpus --jobs 4 -c debug --enable-index-store
+[1/1] Compiling plugin SwiftFormatPlugin
+Building for debugging...
+[1/10] Write sources
+[5/10] Write swift-version-24593BA9C3E375BF.txt
+[7/150] Compiling SwiftFormat ExtensionAccessControl.swift
+[8/150] Compiling SwiftFormat FileHeader.swift
+[9/150] Compiling SwiftFormat FileMacro.swift
+[10/150] Compiling SwiftFormat GenericExtensions.swift
+[11/150] Compiling SwiftFormat HeaderFileName.swift
+[12/150] Compiling SwiftFormat HoistAwait.swift
+[13/150] Compiling SwiftFormat HoistPatternLet.swift
+[14/150] Compiling SwiftFormat HoistTry.swift
+[15/150] Compiling SwiftFormat IfExpressions.swift
+[16/150] Compiling SwiftFormat Indent.swift
+[17/150] Compiling SwiftFormat InitCoderUnavailable.swift
+[18/150] Compiling SwiftFormat IsEmpty.swift
+[19/150] Compiling SwiftFormat LeadingDelimiters.swift
+[20/150] Compiling SwiftFormat LinebreakAtEndOfFile.swift
+[21/150] Compiling SwiftFormat Linebreaks.swift
+[22/150] Compiling SwiftFormat MarkTypes.swift
+[23/150] Compiling SwiftFormat ModifierOrder.swift
+[24/150] Compiling SwiftFormat ModifiersOnSameLine.swift
+[25/150] Compiling SwiftFormat NoExplicitOwnership.swift
+[26/150] Compiling SwiftFormat NoForceTryInTests.swift
+[27/150] Compiling SwiftFormat NoForceUnwrapInTests.swift
+[28/150] Compiling SwiftFormat NoGuardInTests.swift
+[29/150] Compiling SwiftFormat NumberFormatting.swift
+[30/173] Compiling SwiftFormat BlankLineAfterImports.swift
+[31/173] Compiling SwiftFormat BlankLineAfterSwitchCase.swift
+[32/173] Compiling SwiftFormat BlankLinesAfterGuardStatements.swift
+[33/173] Compiling SwiftFormat BlankLinesAroundMark.swift
+[34/173] Compiling SwiftFormat BlankLinesAtEndOfScope.swift
+[35/173] Compiling SwiftFormat BlankLinesAtStartOfScope.swift
+[36/173] Compiling SwiftFormat BlankLinesBetweenChainedFunctions.swift
+[37/173] Compiling SwiftFormat BlankLinesBetweenImports.swift
+[38/173] Compiling SwiftFormat BlankLinesBetweenScopes.swift
+[39/173] Compiling SwiftFormat BlockComments.swift
+[40/173] Compiling SwiftFormat Braces.swift
+[41/173] Compiling SwiftFormat ConditionalAssignment.swift
+[42/173] Compiling SwiftFormat ConsecutiveBlankLines.swift
+[43/173] Compiling SwiftFormat ConsecutiveSpaces.swift
+[44/173] Compiling SwiftFormat ConsistentSwitchCaseSpacing.swift
+[45/173] Compiling SwiftFormat DocComments.swift
+[46/173] Compiling SwiftFormat DocCommentsBeforeModifiers.swift
+[47/173] Compiling SwiftFormat DuplicateImports.swift
+[48/173] Compiling SwiftFormat ElseOnSameLine.swift
+[49/173] Compiling SwiftFormat EmptyBraces.swift
+[50/173] Compiling SwiftFormat EmptyExtensions.swift
+[51/173] Compiling SwiftFormat EnumNamespaces.swift
+[52/173] Compiling SwiftFormat EnvironmentEntry.swift
+[76/218] Compiling SwiftFormat RedundantExtensionACL.swift
+[77/218] Compiling SwiftFormat RedundantFileprivate.swift
+[78/218] Compiling SwiftFormat RedundantGet.swift
+[79/218] Compiling SwiftFormat RedundantInit.swift
+[80/218] Compiling SwiftFormat RedundantInternal.swift
+[81/218] Compiling SwiftFormat RedundantLet.swift
+[82/218] Compiling SwiftFormat RedundantLetError.swift
+[83/218] Compiling SwiftFormat RedundantMemberwiseInit.swift
+[84/218] Compiling SwiftFormat RedundantNilInit.swift
+[85/218] Compiling SwiftFormat RedundantObjc.swift
+[86/218] Compiling SwiftFormat RedundantOptionalBinding.swift
+[87/218] Compiling SwiftFormat RedundantParens.swift
+[88/218] Compiling SwiftFormat RedundantPattern.swift
+[89/218] Compiling SwiftFormat RedundantProperty.swift
+[90/218] Compiling SwiftFormat RedundantPublic.swift
+[91/218] Compiling SwiftFormat RedundantRawValues.swift
+[92/218] Compiling SwiftFormat RedundantReturn.swift
+[93/218] Compiling SwiftFormat RedundantSelf.swift
+[94/218] Compiling SwiftFormat RedundantSendable.swift
+[95/218] Compiling SwiftFormat RedundantStaticSelf.swift
+[96/218] Compiling SwiftFormat RedundantSwiftTestingSuite.swift
+[97/218] Compiling SwiftFormat RedundantSwiftUIGroup.swift
+[98/240] Compiling SwiftFormat OpaqueGenericParameters.swift
+[99/240] Compiling SwiftFormat OrganizeDeclarations.swift
+[100/240] Compiling SwiftFormat PreferContains.swift
+[101/240] Compiling SwiftFormat PreferCountWhere.swift
+[102/240] Compiling SwiftFormat PreferExplicitFalse.swift
+[103/240] Compiling SwiftFormat PreferFinalClasses.swift
+[104/240] Compiling SwiftFormat PreferFirstWhere.swift
+[105/240] Compiling SwiftFormat PreferFlatMap.swift
+[106/240] Compiling SwiftFormat PreferForLoop.swift
+[107/240] Compiling SwiftFormat PreferKeyPath.swift
+[108/240] Compiling SwiftFormat PreferLazyMap.swift
+[109/240] Compiling SwiftFormat PreferMinOverSorted.swift
+[110/240] Compiling SwiftFormat PreferSwiftStringAPI.swift
+[111/240] Compiling SwiftFormat PreferSwiftTesting.swift
+[112/240] Compiling SwiftFormat PrivateStateVariables.swift
+[113/240] Compiling SwiftFormat PropertyTypes.swift
+[114/240] Compiling SwiftFormat RedundantAsync.swift
+[115/240] Compiling SwiftFormat RedundantBackticks.swift
+[116/240] Compiling SwiftFormat RedundantBreak.swift
+[117/240] Compiling SwiftFormat RedundantClosure.swift
+[118/240] Compiling SwiftFormat RedundantEmptyView.swift
+[119/240] Compiling SwiftFormat RedundantEquatable.swift
+[120/240] Compiling SwiftFormat RedundantExtendedLifetime.swift
+[144/262] Emitting module SwiftFormat
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[168/328] Compiling SwiftFormat RedundantThrows.swift
+[169/328] Compiling SwiftFormat RedundantType.swift
+[170/328] Compiling SwiftFormat RedundantTypedThrows.swift
+[171/328] Compiling SwiftFormat RedundantVariable.swift
+[172/328] Compiling SwiftFormat RedundantViewBuilder.swift
+[173/328] Compiling SwiftFormat RedundantVoidReturnType.swift
+[174/328] Compiling SwiftFormat Semicolons.swift
+[175/328] Compiling SwiftFormat SimplifyGenericConstraints.swift
+[176/328] Compiling SwiftFormat SinglePropertyPerLine.swift
+[177/328] Compiling SwiftFormat SortDeclarations.swift
+[178/328] Compiling SwiftFormat SortImports.swift
+[179/328] Compiling SwiftFormat SortSwitchCases.swift
+[180/328] Compiling SwiftFormat SortTypealiases.swift
+[181/328] Compiling SwiftFormat SortedImports.swift
+[182/328] Compiling SwiftFormat SortedSwitchCases.swift
+[183/328] Compiling SwiftFormat SpaceAroundBraces.swift
+[184/328] Compiling SwiftFormat SpaceAroundBrackets.swift
+[185/328] Compiling SwiftFormat SpaceAroundComments.swift
+[186/328] Compiling SwiftFormat SpaceAroundGenerics.swift
+[187/328] Compiling SwiftFormat SpaceAroundOperators.swift
+[188/328] Compiling SwiftFormat SpaceAroundParens.swift
+[189/328] Compiling SwiftFormat SpaceInsideBraces.swift
+[190/350] Compiling SwiftFormat SpaceInsideBrackets.swift
+[191/350] Compiling SwiftFormat SpaceInsideComments.swift
+[192/350] Compiling SwiftFormat SpaceInsideGenerics.swift
+[193/350] Compiling SwiftFormat SpaceInsideParens.swift
+[194/350] Compiling SwiftFormat Specifiers.swift
+[195/350] Compiling SwiftFormat StrongOutlets.swift
+[196/350] Compiling SwiftFormat StrongifiedSelf.swift
+[197/350] Compiling SwiftFormat SwiftTestingTestCaseNames.swift
+[198/350] Compiling SwiftFormat TestSuiteAccessControl.swift
+[199/350] Compiling SwiftFormat ThrowingTests.swift
+[200/350] Compiling SwiftFormat Todos.swift
+[201/350] Compiling SwiftFormat TrailingClosures.swift
+[202/350] Compiling SwiftFormat TrailingCommas.swift
+[203/350] Compiling SwiftFormat TrailingSpace.swift
+[204/350] Compiling SwiftFormat TypeSugar.swift
+[205/350] Compiling SwiftFormat URLMacro.swift
+[206/350] Compiling SwiftFormat UnusedArguments.swift
+[207/350] Compiling SwiftFormat UnusedPrivateDeclarations.swift
+[208/350] Compiling SwiftFormat ValidateTestCases.swift
+[209/350] Compiling SwiftFormat Void.swift
+[210/350] Compiling SwiftFormat Wrap.swift
+[211/350] Compiling SwiftFormat WrapArguments.swift
+[212/350] Compiling SwiftFormat RedundantExtensionACL.swift
+[213/350] Compiling SwiftFormat RedundantFileprivate.swift
+[214/350] Compiling SwiftFormat RedundantGet.swift
+[215/350] Compiling SwiftFormat RedundantInit.swift
+[216/350] Compiling SwiftFormat RedundantInternal.swift
+[217/350] Compiling SwiftFormat RedundantLet.swift
+[218/350] Compiling SwiftFormat RedundantLetError.swift
+[219/350] Compiling SwiftFormat RedundantMemberwiseInit.swift
+[220/350] Compiling SwiftFormat RedundantNilInit.swift
+[221/350] Compiling SwiftFormat RedundantObjc.swift
+[222/350] Compiling SwiftFormat RedundantOptionalBinding.swift
+[223/350] Compiling SwiftFormat RedundantParens.swift
+[224/350] Compiling SwiftFormat RedundantPattern.swift
+[225/350] Compiling SwiftFormat RedundantProperty.swift
+[226/350] Compiling SwiftFormat RedundantPublic.swift
+[227/350] Compiling SwiftFormat RedundantRawValues.swift
+[228/350] Compiling SwiftFormat RedundantReturn.swift
+[229/350] Compiling SwiftFormat RedundantSelf.swift
+[230/350] Compiling SwiftFormat RedundantSendable.swift
+[231/350] Compiling SwiftFormat RedundantStaticSelf.swift
+[232/350] Compiling SwiftFormat RedundantSwiftTestingSuite.swift
+[233/350] Compiling SwiftFormat RedundantSwiftUIGroup.swift
+[278/372] Compiling SwiftFormat WrapAttributes.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[279/372] Compiling SwiftFormat WrapCaseBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[280/372] Compiling SwiftFormat WrapConditionalBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[281/372] Compiling SwiftFormat WrapEnumCases.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[282/372] Compiling SwiftFormat WrapFunctionBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[283/372] Compiling SwiftFormat WrapGuardStatementBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[284/372] Compiling SwiftFormat WrapIfExpressionBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[285/372] Compiling SwiftFormat WrapIfStatementBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[286/372] Compiling SwiftFormat WrapLoopBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[287/372] Compiling SwiftFormat WrapMultilineConditionalAssignment.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[288/372] Compiling SwiftFormat WrapMultilineFunctionChains.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[289/372] Compiling SwiftFormat WrapMultilineStatementBraces.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[290/372] Compiling SwiftFormat WrapPropertyBodies.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[291/372] Compiling SwiftFormat WrapSingleLineComments.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[292/372] Compiling SwiftFormat WrapSwitchCases.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[293/372] Compiling SwiftFormat YodaConditions.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[294/372] Compiling SwiftFormat SARIFReporter.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[295/372] Compiling SwiftFormat Singularize.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[296/372] Compiling SwiftFormat SwiftFormat.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[297/372] Compiling SwiftFormat Tokenizer.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[298/372] Compiling SwiftFormat TypeName.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[299/372] Compiling SwiftFormat XMLReporter.swift
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+/__w/_temp/corpus/Sources/SwiftFormat.swift:151:13: warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+    |             `- warning: mutation of captured var 'completionBlocks' in concurrently-executing code; this is an error in the Swift 6 language mode
+152 |         }
+153 |     }
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:206:10: warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+204 |     }
+205 | 
+206 |     func enumerate(inputURL: URL,
+    |          `- warning: concurrently-executed local function 'enumerate(inputURL:outputURL:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+207 |                    outputURL: URL?,
+208 |                    options: Options)
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:157:10: warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+155 |     let queue = concurrent ? DispatchQueue.global(qos: .userInitiated) : completionQueue
+156 | 
+157 |     func resolveInputURL(_ inputURL: URL, options: Options) -> (URL, URLResourceValues, Options)? {
+    |          `- warning: concurrently-executed local function 'resolveInputURL(_:options:)' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+158 |         let fileOptions = options.fileOptions ?? .default
+159 |         let inputURL = inputURL.standardizedFileURL
+
+/__w/_temp/corpus/Sources/SwiftFormat.swift:149:10: warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+147 |     var completionBlocks = [() throws -> Void]()
+148 |     let completionQueue = DispatchQueue(label: "swiftformat.enumeration")
+149 |     func onComplete(_ block: @escaping () throws -> Void) {
+    |          `- warning: concurrently-executed local function 'onComplete' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+150 |         completionQueue.async(group: group) {
+151 |             completionBlocks.append(block)
+[322/372] Compiling SwiftFormat Arguments.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[323/372] Compiling SwiftFormat CommandLine.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[324/372] Compiling SwiftFormat Declaration.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[325/372] Compiling SwiftFormat DeclarationType.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[326/372] Compiling SwiftFormat EnumAssociable.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[327/372] Compiling SwiftFormat FormatRule.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[328/372] Compiling SwiftFormat Formatter.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[329/372] Compiling SwiftFormat FormattingHelpers.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[330/372] Compiling SwiftFormat GitFileInfo.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[331/372] Compiling SwiftFormat GithubActionsLogReporter.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[332/372] Compiling SwiftFormat Globs.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[333/372] Compiling SwiftFormat Inference.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[334/372] Compiling SwiftFormat JSONReporter.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[335/372] Compiling SwiftFormat OptionDescriptor.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[336/372] Compiling SwiftFormat Options.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[337/372] Compiling SwiftFormat ParsingHelpers.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[338/372] Compiling SwiftFormat Reporter.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[339/372] Compiling SwiftFormat RuleRegistry.generated.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[340/372] Compiling SwiftFormat Acronyms.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[341/372] Compiling SwiftFormat AndOperator.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[342/372] Compiling SwiftFormat AnyObjectProtocol.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[343/372] Compiling SwiftFormat ApplicationMain.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[344/372] Compiling SwiftFormat AssertionFailures.swift
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[345/375] Wrapping AST for SwiftFormat for debugging
+[347/375] Emitting module CommandLineTool
+[348/375] Compiling CommandLineTool main.swift
+[349/376] Wrapping AST for CommandLineTool for debugging
+[350/376] Write Objects.LinkFileList
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[375/376] Emitting module SwiftFormat
+/__w/_temp/corpus/Sources/CommandLine.swift:775:14: warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 773 |         var input: String?
+ 774 |         var status = Status.idle
+ 775 |         func processFromStdin() {
+     |              `- warning: concurrently-executed local function 'processFromStdin()' must be marked as '@Sendable'; this is an error in the Swift 6 language mode
+ 776 |             status = .started
+ 777 |             while let line = CLI.readLine() {
+[376/377] Linking swiftformat
+[378/379] Compiling CommandLineTool main.swift
+[379/379] Emitting module CommandLineTool
+Build complete! (52.92s)

@@ -148,21 +148,21 @@ export const BENCHMARK_COMPONENTS = [
         report: "apple-frontend-report.md",
         status: "apple-frontend-status.json",
         coverage: "partial",
-        gap: "The 181-file SwiftFormat package on one hosted Linux runner: a fast smoke; app-scale shapes are apple-frontend-large and apple-frontend-xcode."
+        gap: "SwiftFormat on one hosted Linux runner: a real-source frontend-stage smoke; no saved-graph lifecycle or server latency evidence."
     },
     {
         name: "apple-frontend-large",
         report: "apple-frontend-large-report.md",
         status: "apple-frontend-large-status.json",
         coverage: "partial",
-        gap: "One generated 2500-file SwiftPM package (about 375k nodes) on one hosted Linux runner; no real application source and no workspace input."
+        gap: "Pinned Swift Package Manager sources on one hosted Linux runner; frontend stage only, not saved-graph lifecycle or server latency."
     },
     {
         name: "apple-frontend-xcode",
         report: "apple-frontend-xcode-report.md",
         status: "apple-frontend-xcode-status.json",
         coverage: "partial",
-        gap: "One generated 2500-file iOS .xcodeproj on one hosted macOS runner; a single app target, no workspace, no real application source."
+        gap: "Pinned Signal iOS workspace and Pods on one hosted macOS runner; frontend stage only, not saved-graph lifecycle or server latency."
     }
 ];
 
@@ -640,8 +640,8 @@ export function compareRustLatency(baseResults, candidateResults, threshold = 15
 
 // The Apple frontend gate: wall time and peak RSS of `graphite-frontend-apple build --skip-build`
 // over a pinned corpus (`backend/bench/apple-frontend-corpus*.json`: the 181-file SwiftFormat
-// package as a smoke, a generated 2500-file package on Linux and the same sources as an iOS
-// `.xcodeproj` on macOS, one report each), paired base vs candidate
+// package as a smoke, Swift Package Manager on Linux and the Signal iOS workspace
+// on macOS, one report each), paired base vs candidate
 // when the base revision carries the frontend, against the corpus ceilings alone when it does not
 // (the revisions before the frontend landed). Point estimates with a floor, like `rust-latency`:
 // a row is a regression candidate when it exceeds the relative limit by at least the floor
@@ -651,8 +651,9 @@ export function compareRustLatency(baseResults, candidateResults, threshold = 15
 // revisions before the frontend landed, or a base that emits another shape): hosted runners
 // differ by 2x on identical work, so with a paired base the ceiling is reported, never
 // blocking, and the paired comparison on the one runner decides.
+// graphite-apple-real-source-v1: synthetic corpora cannot establish performance evidence.
 export const APPLE_FRONTEND_BENCHMARK_PREFIX = "apple.frontend.";
-const APPLE_FRONTEND_TITLE = "Apple frontend build time and peak RSS (pinned corpus)";
+const APPLE_FRONTEND_TITLE = "Apple frontend stage time and peak RSS (real source corpus)";
 const APPLE_FRONTEND_METRICS = [
     { name: "wall", label: "wall time", unit: "ms/op", floor: "minimumMs", ceiling: "wallMs" },
     { name: "rss", label: "peak RSS", unit: "MiB", floor: "minimumMiB", ceiling: "rssMiB" }
@@ -677,6 +678,16 @@ export function compareAppleFrontend(baseResults, candidateResults, corpus, opti
     const errors = [];
     const label = corpus?.label;
     if (typeof label !== "string" || label === "") errors.push("corpus manifest names no label");
+    if (corpus?.schema !== "graphite-apple-frontend-corpus-v2" || corpus?.kind !== "real-source" || corpus?.generator) {
+        errors.push("performance evidence requires a real-source v2 corpus; synthetic/generated corpora are correctness-only");
+    }
+    if (typeof corpus?.repository !== "string" || !/^https:\/\//.test(corpus.repository)
+        || !/^[0-9a-f]{40}$/.test(corpus?.commit ?? "")) {
+        errors.push("real-source corpus requires a repository and full commit pin");
+    }
+    if (!corpus?.shape || APPLE_FRONTEND_SHAPE_KEYS.some((key) => !Number.isSafeInteger(corpus.shape[key]) || corpus.shape[key] < 0)) {
+        errors.push("performance evidence unavailable: corpus graph shape has not been measured and pinned");
+    }
     const ceilings = corpus?.ceilings ?? {};
     const index = (results, revision) => {
         const rows = new Map();
@@ -689,6 +700,12 @@ export function compareAppleFrontend(baseResults, candidateResults, corpus, opti
             if (result.params?.corpus !== label) {
                 errors.push(`${revision}: ${benchmarkKey(result)} measures corpus ${result.params?.corpus}, expected ${label}`);
                 continue;
+            }
+            if (result.corpus?.kind !== "real-source" || result.corpus?.generator
+                || result.corpus?.repository !== corpus?.repository || result.corpus?.commit !== corpus?.commit
+                || JSON.stringify(result.corpus?.submodules ?? {}) !== JSON.stringify(corpus?.submodules ?? {})
+                || JSON.stringify(result.corpus?.dependencyLock ?? null) !== JSON.stringify(corpus?.dependencyLock ?? null)) {
+                errors.push(`${revision}: ${benchmarkKey(result)} is not bound to the pinned real-source corpus`);
             }
             rows.set(benchmark.slice(APPLE_FRONTEND_BENCHMARK_PREFIX.length), result);
         }
@@ -703,11 +720,29 @@ export function compareAppleFrontend(baseResults, candidateResults, corpus, opti
     const pinnedShape = corpus?.shape ?? null;
     let baseShape = null;
     for (const [name, sample] of candidate) {
+        if (sample.baselineRevision) errors.push(`${name}: candidate must not select a baseline shape transition`);
         const drift = appleFrontendShapeDrift(sample.shape, pinnedShape);
         if (drift.length > 0) errors.push(`${APPLE_FRONTEND_BENCHMARK_PREFIX}${name}[corpus=${label}]: candidate graph shape differs from the corpus pin (${drift.join(", ")})`);
     }
+    let baselineTransition = null;
     if (paired && pinnedShape !== null) {
+        const revisions = new Set([...base.values()].map((sample) => sample.baselineRevision ?? null));
+        if (revisions.size > 1) errors.push("base metrics disagree on the measured baseline revision");
         const drift = [...base.values()].flatMap((sample) => appleFrontendShapeDrift(sample.shape, pinnedShape));
+        for (const [name, sample] of base) {
+            const declared = corpus?.baselineShapes?.[sample.baselineRevision];
+            const changed = appleFrontendShapeDrift(sample.shape, pinnedShape).length > 0;
+            if (declared || changed) {
+                if (!/^[0-9a-f]{40}$/.test(sample.baselineRevision ?? "") || !declared?.reason?.trim()
+                    || !declared.shape || APPLE_FRONTEND_SHAPE_KEYS.some((key) => !Number.isSafeInteger(declared.shape[key]) || declared.shape[key] < 0)) {
+                    errors.push(`${name}: differing base work requires a full-revision baselineShapes pin and explicit reason`);
+                } else if (appleFrontendShapeDrift(sample.shape, declared.shape).length > 0) {
+                    errors.push(`${name}: base graph shape differs from its reviewed baselineShapes pin`);
+                } else {
+                    baselineTransition = { revision: sample.baselineRevision, reason: declared.reason };
+                }
+            }
+        }
         if (drift.length > 0) {
             baseShape = [...new Set(drift)].join(", ");
             paired = false;
@@ -734,6 +769,9 @@ export function compareAppleFrontend(baseResults, candidateResults, corpus, opti
         const candidateScore = finiteNumber(sample.primaryMetric?.score) ?? undefined;
         if (candidateScore === undefined) errors.push(`${key}: candidate score is not a number`);
         const ceiling = finiteNumber(ceilings[metric.ceiling]) ?? undefined;
+        if (!paired && (ceiling === undefined || ceiling <= 0)) {
+            errors.push(`${key}: performance evidence unavailable: no comparable base and no measured bootstrap ceiling`);
+        }
         const floor = floors[metric.floor];
         const row = {
             key, metric: metric.label, unit: metric.unit, files: sample.files,
@@ -771,10 +809,12 @@ export function compareAppleFrontend(baseResults, candidateResults, corpus, opti
         threshold,
         corpus: {
             label, commit: corpus?.commit ?? null, files: corpus?.files ?? null, shape: pinnedShape,
-            input: corpus?.input ?? "package", ...(corpus?.generator ? { generator: corpus.generator } : {})
+            input: corpus?.input ?? "package", kind: corpus?.kind, repository: corpus?.repository,
+            project: corpus?.project, submodules: corpus?.submodules, dependencyLock: corpus?.dependencyLock, ...(corpus?.generator ? { generator: corpus.generator } : {})
         },
         baseline: paired ? "paired" : "ceilings",
         ...(baseShape === null ? {} : { baseShape }),
+        ...(baselineTransition === null ? {} : { baselineTransition }),
         rows
     };
 }
@@ -805,14 +845,14 @@ export function renderAppleFrontendReport(comparison, title = APPLE_FRONTEND_TIT
         ? `generated by \`${generator.script}\` (seed ${generator.seed}, ${generator.modules} modules, ${generator.layout})`
         : `at \`${corpus.commit ?? "?"}\``;
     const invocation = corpus.input === "xcodeproj"
-        ? "each run is `graphite-frontend-apple build --project <corpus>.xcodeproj --derived-data <build> --skip-build`, so `xcodebuild` is never measured. "
+        ? `each run is \`graphite-frontend-apple build --project <corpus>/${corpus.project ?? "project.xcodeproj"} --derived-data <build> --skip-build\`, so \`xcodebuild\` is never measured. `
         : "each run is `graphite-frontend-apple build --package <corpus> --skip-build`, so `swift build` is never measured. ";
     const verification = "The last measured IR of every revision was imported by the production reader (`graphite.jar import`), or the sample would have been refused. ";
     return [
         `### ${title}`,
         "",
-        `Corpus \`${corpus.label ?? "?"}\` ${origin}${files === undefined ? "" : `, ${files} Swift files`}; ` +
-            invocation + verification +
+        `Corpus \`${corpus.label ?? "?"}\` ${origin}${files === undefined ? "" : `, ${files} source files`}; ` +
+            invocation + "Only index-store → IR emission is timed; import/save, graph load and server queries are outside this measurement. " + verification +
             (shape ? `Every measured IR is validated and must carry the pinned graph shape (${shape.nodes} nodes, ${shape.edges} edges, ${shape.callSites} call sites, ${shape.constants} constants).` : "Every measured IR is validated; the manifest pins no graph shape."),
         comparison.baseline === "paired"
             ? `A row is a regression candidate when the PR median exceeds the base median by more than ${comparison.threshold ?? 15}% and by at least its floor ` +
@@ -820,7 +860,8 @@ export function renderAppleFrontendReport(comparison, title = APPLE_FRONTEND_TIT
               "it blocks only when the reverse-order confirmation run says the same. Rows under the floor are reported as NOISE. " +
               "The corpus ceiling is reported but not enforced when a base is paired: hosted runners differ in speed, and base and PR ran on this one."
             : comparison.baseShape
-            ? `The base revision emits a different graph shape for this corpus (${comparison.baseShape}) and is not comparable work, so the PR is measured against the corpus ceilings alone; a ceiling breach blocks after the reverse-order confirmation.`
+            ? `The base revision emits a different graph shape for this corpus (${comparison.baseShape}) and is not comparable work, so the PR is measured against the corpus ceilings alone; a ceiling breach blocks after the reverse-order confirmation.` +
+              (comparison.baselineTransition ? ` Reviewed transition at \`${comparison.baselineTransition.revision}\`: ${comparison.baselineTransition.reason}.` : "")
             : "The base revision carries no Apple frontend, so the PR is measured against the corpus ceilings alone; a ceiling breach blocks after the reverse-order confirmation.",
         "",
         "| Metric | Base | PR | Regression | Ceiling | Confirmation | Gate |",
@@ -3727,6 +3768,7 @@ function confirmAppleFrontendCommand(args) {
         threshold: initial.threshold,
         corpus: initial.corpus,
         baseline: initial.baseline,
+        ...(initial.baselineTransition === undefined ? {} : { baselineTransition: initial.baselineTransition }),
         ...(initial.baseShape === undefined ? {} : { baseShape: initial.baseShape })
     };
     writeFile(requireArg(args, "report"), renderAppleFrontendReport(comparison));

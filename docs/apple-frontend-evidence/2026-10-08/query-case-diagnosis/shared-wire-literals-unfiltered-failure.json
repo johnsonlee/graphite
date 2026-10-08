@@ -1,0 +1,12 @@
+{
+  "query": "MATCH (a:StringConstant), (b:StringConstant) WHERE a.graphId <> b.graphId AND a.value = b.value AND a.value IN ['application/json', 'Content-Type', 'GET', 'POST'] RETURN a.graphId AS leftGraph, b.graphId AS rightGraph, a.value AS wireLiteral, count(*) AS pairs ORDER BY leftGraph, rightGraph, wireLiteral",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "http_status": 504,
+  "error": "Gateway Timeout at server declared 60000ms limit",
+  "diagnosis_only": true,
+  "response_body_retained": false
+}

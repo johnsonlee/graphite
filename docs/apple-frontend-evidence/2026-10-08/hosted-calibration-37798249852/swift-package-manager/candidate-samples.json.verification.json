@@ -1,0 +1,8 @@
+{
+  "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+  "renderedCommand": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import /tmp/apple-frontend-bench-lldzliqs/corpus.graphite-ir -o /tmp/apple-frontend-bench-lldzliqs/verified-graph",
+  "exitCode": 0,
+  "stdout": "",
+  "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx2g\nReading IR from: /tmp/apple-frontend-bench-lldzliqs/corpus.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 60407 nodes, 29000 edges, 21419 strings\nSaving to: /tmp/apple-frontend-bench-lldzliqs/verified-graph\nDone.\n",
+  "passed": true
+}

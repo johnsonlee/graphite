@@ -1,0 +1,207 @@
+﻿2026-10-08T15:08:24.6364417Z Current runner version: '2.337.0'
+2026-10-08T15:08:24.6383614Z ##[group]Runner Image Provisioner
+2026-10-08T15:08:24.6384163Z Hosted Compute Agent
+2026-10-08T15:08:24.6384612Z Version: 20261002.596
+2026-10-08T15:08:24.6384978Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+2026-10-08T15:08:24.6385435Z Build Date: 2026-10-02T22:28:27Z
+2026-10-08T15:08:24.6385906Z Worker ID: {435359ae-a536-41f9-a13b-0f5645d6cf00}
+2026-10-08T15:08:24.6386320Z Region: centralus
+2026-10-08T15:08:24.6386716Z Cloud: Azure
+2026-10-08T15:08:24.6387049Z ##[endgroup]
+2026-10-08T15:08:24.6387829Z ##[group]Operating System
+2026-10-08T15:08:24.6388241Z Ubuntu
+2026-10-08T15:08:24.6388558Z 24.04.5
+2026-10-08T15:08:24.6388896Z LTS
+2026-10-08T15:08:24.6389266Z ##[endgroup]
+2026-10-08T15:08:24.6389600Z ##[group]Runner Image
+2026-10-08T15:08:24.6390011Z Image: ubuntu-24.04
+2026-10-08T15:08:24.6390352Z Version: 20261004.327.1
+2026-10-08T15:08:24.6391197Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T15:08:24.6392092Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+2026-10-08T15:08:24.6392703Z ##[endgroup]
+2026-10-08T15:08:24.6393999Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:08:24.6395246Z Contents: read
+2026-10-08T15:08:24.6395638Z Metadata: read
+2026-10-08T15:08:24.6396061Z Packages: read
+2026-10-08T15:08:24.6396445Z ##[endgroup]
+2026-10-08T15:08:24.6397893Z Secret source: Actions
+2026-10-08T15:08:24.6398449Z Cache mode: write
+2026-10-08T15:08:24.6398911Z Prepare workflow directory
+2026-10-08T15:08:24.6735384Z Prepare all required actions
+2026-10-08T15:08:24.6766986Z Getting action download info
+2026-10-08T15:08:24.9121193Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:08:25.0320006Z Complete job name: validate-release-tag
+2026-10-08T15:08:25.0819995Z ##[group]Run actions/checkout@v7
+2026-10-08T15:08:25.0820431Z with:
+2026-10-08T15:08:25.0820704Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:25.0821064Z   repository: johnsonlee/graphite
+2026-10-08T15:08:25.0823156Z   token: ***
+2026-10-08T15:08:25.0823396Z   ssh-strict: true
+2026-10-08T15:08:25.0823637Z   ssh-user: git
+2026-10-08T15:08:25.0823891Z   persist-credentials: true
+2026-10-08T15:08:25.0824161Z   clean: true
+2026-10-08T15:08:25.0824419Z   sparse-checkout-cone-mode: true
+2026-10-08T15:08:25.0824709Z   fetch-depth: 1
+2026-10-08T15:08:25.0824953Z   fetch-tags: false
+2026-10-08T15:08:25.0825201Z   show-progress: true
+2026-10-08T15:08:25.0825452Z   lfs: false
+2026-10-08T15:08:25.0825686Z   submodules: false
+2026-10-08T15:08:25.0825936Z   set-safe-directory: true
+2026-10-08T15:08:25.0826215Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:08:25.0826574Z env:
+2026-10-08T15:08:25.0826819Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:25.0827148Z   DRY_RUN: true
+2026-10-08T15:08:25.0827387Z ##[endgroup]
+2026-10-08T15:08:25.2513056Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:08:25.2514782Z ##[group]Getting Git version info
+2026-10-08T15:08:25.2515388Z Working directory is '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:25.2516318Z [command]/usr/bin/git version
+2026-10-08T15:08:25.2598980Z git version 2.55.0
+2026-10-08T15:08:25.2628513Z ##[endgroup]
+2026-10-08T15:08:25.2647347Z Temporarily overriding HOME='/home/runner/work/_temp/efe22752-9e3b-4d53-aee9-0ae17cc95302' before making global git config changes
+2026-10-08T15:08:25.2649828Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:08:25.2651471Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:08:25.2746162Z Deleting the contents of '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:25.2752269Z ##[group]Determining repository object format
+2026-10-08T15:08:25.2753421Z ##[endgroup]
+2026-10-08T15:08:25.2755152Z ##[group]Initializing the repository
+2026-10-08T15:08:25.2760229Z [command]/usr/bin/git init /home/runner/work/graphite/graphite
+2026-10-08T15:08:25.3196941Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:08:25.3198525Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:08:25.3199740Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:08:25.3200554Z hint: call:
+2026-10-08T15:08:25.3201219Z hint:
+2026-10-08T15:08:25.3201787Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:08:25.3202262Z hint:
+2026-10-08T15:08:25.3202602Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:08:25.3203266Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:08:25.3203670Z hint:
+2026-10-08T15:08:25.3203900Z hint: 	git branch -m <name>
+2026-10-08T15:08:25.3204161Z hint:
+2026-10-08T15:08:25.3204567Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:08:25.3205121Z Initialized empty Git repository in /home/runner/work/graphite/graphite/.git/
+2026-10-08T15:08:25.3206541Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:08:25.3501224Z ##[endgroup]
+2026-10-08T15:08:25.3501975Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:08:25.3502630Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T15:08:25.3689067Z ##[endgroup]
+2026-10-08T15:08:25.3690184Z ##[group]Setting up auth
+2026-10-08T15:08:25.3690667Z Removing SSH command configuration
+2026-10-08T15:08:25.3694358Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:08:25.3728641Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:08:25.4032274Z Removing HTTP extra header
+2026-10-08T15:08:25.4036109Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:08:25.4065786Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:08:25.4239263Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:08:25.4243372Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:08:25.4278773Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:08:25.4456611Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:08:25.4670489Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git.path /home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:25.4886980Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:25.5084430Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:25.5302387Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:25.5382445Z ##[endgroup]
+2026-10-08T15:08:25.5383012Z ##[group]Fetching the repository
+2026-10-08T15:08:25.5388401Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:26.7272472Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:08:26.7274306Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:08:26.7280183Z [command]/usr/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:08:26.7307810Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:26.7311907Z ##[endgroup]
+2026-10-08T15:08:26.7312281Z ##[group]Determining the checkout info
+2026-10-08T15:08:26.7312748Z ##[endgroup]
+2026-10-08T15:08:26.7315740Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T15:08:26.8309356Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:08:26.8392096Z ##[group]Checking out the ref
+2026-10-08T15:08:26.8395368Z [command]/usr/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:26.9602645Z Note: switching to '1ba3808f79db8190ecd278a3853ab7a27d5abac9'.
+2026-10-08T15:08:26.9603169Z 
+2026-10-08T15:08:26.9603393Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T15:08:26.9603892Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T15:08:26.9604352Z state without impacting any branches by switching back to a branch.
+2026-10-08T15:08:26.9604600Z 
+2026-10-08T15:08:26.9604793Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T15:08:26.9605245Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T15:08:26.9605499Z 
+2026-10-08T15:08:26.9605621Z   git switch -c <new-branch-name>
+2026-10-08T15:08:26.9605807Z 
+2026-10-08T15:08:26.9605986Z Or undo this operation with:
+2026-10-08T15:08:26.9606143Z 
+2026-10-08T15:08:26.9606240Z   git switch -
+2026-10-08T15:08:26.9606387Z 
+2026-10-08T15:08:26.9606632Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T15:08:26.9606908Z 
+2026-10-08T15:08:26.9607345Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:08:26.9615373Z ##[endgroup]
+2026-10-08T15:08:26.9658835Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T15:08:26.9682518Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:27.0212664Z ##[group]Run python3 .github/scripts/release-version.py --self-test
+2026-10-08T15:08:27.0213234Z [36;1mpython3 .github/scripts/release-version.py --self-test[0m
+2026-10-08T15:08:27.0213558Z [36;1mpython3 .github/scripts/release-version.py "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"[0m
+2026-10-08T15:08:27.0450663Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:08:27.0450914Z env:
+2026-10-08T15:08:27.0451109Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:27.0451290Z   DRY_RUN: true
+2026-10-08T15:08:27.0451432Z ##[endgroup]
+2026-10-08T15:08:27.0744047Z release-version: 6 accepted, 13 refused
+2026-10-08T15:08:27.0909452Z version=2.11.3-apple-validation.4
+2026-10-08T15:08:27.0909965Z prerelease=true
+2026-10-08T15:08:27.0995916Z ##[group]Run python3 .github/scripts/test_verify_apple_release.py
+2026-10-08T15:08:27.0996377Z [36;1mpython3 .github/scripts/test_verify_apple_release.py[0m
+2026-10-08T15:08:27.0996853Z [36;1mpython3 -m unittest discover -s backend/bench -p test_prepare_apple_corpus.py[0m
+2026-10-08T15:08:27.1054891Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:08:27.1055079Z env:
+2026-10-08T15:08:27.1055237Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:27.1055419Z   DRY_RUN: true
+2026-10-08T15:08:27.1055566Z ##[endgroup]
+2026-10-08T15:08:27.6539166Z .....
+2026-10-08T15:08:27.6539678Z ----------------------------------------------------------------------
+2026-10-08T15:08:27.6539963Z Ran 5 tests in 0.459s
+2026-10-08T15:08:27.6540057Z 
+2026-10-08T15:08:27.6540111Z OK
+2026-10-08T15:08:28.0116240Z Preparing corpus: swift build --package-path /tmp/apple corpus _a5puj81/source --jobs 4 -c debug --enable-index-store --force-resolved-versions
+2026-10-08T15:08:28.0507500Z Prepared pinned real-source corpus fixture: /tmp/apple corpus _a5puj81/source/.build/debug/index/store
+2026-10-08T15:08:28.1704961Z Prepared pinned real-source corpus fixture: /tmp/apple corpus _a5puj81/source/.build/debug/index/store
+2026-10-08T15:08:28.5222758Z Preparing corpus: swift build --package-path /tmp/apple corpus 3pdezfii/source --jobs 4 -c debug --enable-index-store --force-resolved-versions
+2026-10-08T15:08:28.5503969Z Prepared pinned real-source corpus fixture: /tmp/apple corpus 3pdezfii/source/.build/debug/index/store
+2026-10-08T15:08:28.7230936Z ......
+2026-10-08T15:08:28.7231346Z ----------------------------------------------------------------------
+2026-10-08T15:08:28.7231667Z Ran 6 tests in 0.974s
+2026-10-08T15:08:28.7231787Z 
+2026-10-08T15:08:28.7231879Z OK
+2026-10-08T15:08:28.7594777Z Post job cleanup.
+2026-10-08T15:08:28.8217743Z [command]/usr/bin/git version
+2026-10-08T15:08:28.8252774Z git version 2.55.0
+2026-10-08T15:08:28.8283074Z Temporarily overriding HOME='/home/runner/work/_temp/2e24a279-96d5-4d02-bbc0-8821ca29ce1f' before making global git config changes
+2026-10-08T15:08:28.8283879Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:08:28.8286314Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:08:28.9319269Z Removing SSH command configuration
+2026-10-08T15:08:28.9323544Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:08:28.9356821Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:08:28.9547871Z Removing HTTP extra header
+2026-10-08T15:08:28.9553425Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:08:28.9590471Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:08:28.9781559Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:08:28.9795070Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:08:28.9815762Z includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:08:28.9816106Z includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:08:28.9816465Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:08:28.9816798Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:08:28.9823501Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:08:28.9846170Z /home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:28.9853764Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-10e4af71\-8d9f\-4d45\-acbd\-1c8c66c4ec7c\.config
+2026-10-08T15:08:29.0519586Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:08:29.0546518Z /home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:29.0558760Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-10e4af71\-8d9f\-4d45\-acbd\-1c8c66c4ec7c\.config
+2026-10-08T15:08:29.1125335Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:08:29.1158359Z /github/runner_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:29.1165876Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-10e4af71\-8d9f\-4d45\-acbd\-1c8c66c4ec7c\.config
+2026-10-08T15:08:29.2337448Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:08:29.2355815Z /github/runner_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config
+2026-10-08T15:08:29.2367147Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-10e4af71\-8d9f\-4d45\-acbd\-1c8c66c4ec7c\.config
+2026-10-08T15:08:29.3624102Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:08:29.3810062Z Removing credentials config '/home/runner/work/_temp/git-credentials-10e4af71-8d9f-4d45-acbd-1c8c66c4ec7c.config'
+2026-10-08T15:08:29.4027317Z Evaluate and set job outputs
+2026-10-08T15:08:29.4032679Z Set output 'version'
+2026-10-08T15:08:29.4034788Z Set output 'prerelease'
+2026-10-08T15:08:29.4035404Z Cleaning up orphan processes

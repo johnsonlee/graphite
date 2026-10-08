@@ -1,0 +1,548 @@
+﻿2026-10-08T15:25:29.2516010Z Current runner version: '2.337.0'
+2026-10-08T15:25:29.2531380Z ##[group]Runner Image Provisioner
+2026-10-08T15:25:29.2531910Z Hosted Compute Agent
+2026-10-08T15:25:29.2532270Z Version: 20260828.587
+2026-10-08T15:25:29.2532670Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-10-08T15:25:29.2533120Z Build Date: 2026-08-28T16:44:25Z
+2026-10-08T15:25:29.2533550Z Worker ID: {047421ee-f47e-4f4c-bf81-a58624e12b1d}
+2026-10-08T15:25:29.2533990Z Azure Region: westus
+2026-10-08T15:25:29.2534350Z ##[endgroup]
+2026-10-08T15:25:29.2535220Z ##[group]Operating System
+2026-10-08T15:25:29.2535610Z macOS
+2026-10-08T15:25:29.2535930Z 15.7.9
+2026-10-08T15:25:29.2536250Z 24G830
+2026-10-08T15:25:29.2536570Z ##[endgroup]
+2026-10-08T15:25:29.2536910Z ##[group]Runner Image
+2026-10-08T15:25:29.2537280Z Image: macos-15-arm64
+2026-10-08T15:25:29.2537680Z Version: 20260907.0337.1
+2026-10-08T15:25:29.2538500Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260907.0337/images/macos/macos-15-arm64-Readme.md
+2026-10-08T15:25:29.2539550Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260907.0337
+2026-10-08T15:25:29.2540200Z ##[endgroup]
+2026-10-08T15:25:29.2540950Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:25:29.2542040Z Contents: read
+2026-10-08T15:25:29.2542400Z Metadata: read
+2026-10-08T15:25:29.2542760Z ##[endgroup]
+2026-10-08T15:25:29.2544130Z Secret source: Actions
+2026-10-08T15:25:29.2544680Z Cache mode: write
+2026-10-08T15:25:29.2545120Z Prepare workflow directory
+2026-10-08T15:25:29.2909210Z Prepare all required actions
+2026-10-08T15:25:29.2946550Z Getting action download info
+2026-10-08T15:25:29.6218850Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:25:29.9189270Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+2026-10-08T15:25:30.5170640Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+2026-10-08T15:25:31.3624640Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+2026-10-08T15:25:32.1411860Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+2026-10-08T15:25:33.0205850Z Complete job name: apple-corpus-calibration (signal-ios)
+2026-10-08T15:25:33.0689910Z ##[group]Run actions/checkout@v7
+2026-10-08T15:25:33.0690300Z with:
+2026-10-08T15:25:33.0690480Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:33.0690730Z   repository: johnsonlee/graphite
+2026-10-08T15:25:33.0692660Z   token: ***
+2026-10-08T15:25:33.0692790Z   ssh-strict: true
+2026-10-08T15:25:33.0692940Z   ssh-user: git
+2026-10-08T15:25:33.0693100Z   persist-credentials: true
+2026-10-08T15:25:33.0693260Z   clean: true
+2026-10-08T15:25:33.0693430Z   sparse-checkout-cone-mode: true
+2026-10-08T15:25:33.0693690Z   fetch-depth: 1
+2026-10-08T15:25:33.0693870Z   fetch-tags: false
+2026-10-08T15:25:33.0694020Z   show-progress: true
+2026-10-08T15:25:33.0694260Z   lfs: false
+2026-10-08T15:25:33.0694390Z   submodules: false
+2026-10-08T15:25:33.0694550Z   set-safe-directory: true
+2026-10-08T15:25:33.0694730Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:25:33.0695200Z env:
+2026-10-08T15:25:33.0695350Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:33.0695590Z   DRY_RUN: true
+2026-10-08T15:25:33.0695760Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:33.0696040Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:33.0696260Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:33.0696500Z ##[endgroup]
+2026-10-08T15:25:33.4637050Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:25:33.4638220Z ##[group]Getting Git version info
+2026-10-08T15:25:33.4638530Z Working directory is '/Users/runner/work/graphite/graphite'
+2026-10-08T15:25:33.4639030Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:25:33.5232440Z git version 2.55.0
+2026-10-08T15:25:33.5257480Z ##[endgroup]
+2026-10-08T15:25:33.5295830Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/aa6a6234-6e82-4279-991c-d453e843a29a/.gitconfig'
+2026-10-08T15:25:33.5296740Z Temporarily overriding HOME='/Users/runner/work/_temp/aa6a6234-6e82-4279-991c-d453e843a29a' before making global git config changes
+2026-10-08T15:25:33.5297740Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:25:33.5344640Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+2026-10-08T15:25:33.5432000Z Deleting the contents of '/Users/runner/work/graphite/graphite'
+2026-10-08T15:25:33.5437350Z ##[group]Determining repository object format
+2026-10-08T15:25:33.5451080Z ##[endgroup]
+2026-10-08T15:25:33.5452310Z ##[group]Initializing the repository
+2026-10-08T15:25:33.5453520Z [command]/opt/homebrew/bin/git init /Users/runner/work/graphite/graphite
+2026-10-08T15:25:33.5663360Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:25:33.5663950Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:25:33.5664880Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:25:33.5665220Z hint: call:
+2026-10-08T15:25:33.5665380Z hint:
+2026-10-08T15:25:33.5665670Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:25:33.5665920Z hint:
+2026-10-08T15:25:33.5666180Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:25:33.5666590Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:25:33.5666920Z hint:
+2026-10-08T15:25:33.5667080Z hint: 	git branch -m <name>
+2026-10-08T15:25:33.5667270Z hint:
+2026-10-08T15:25:33.5667560Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:25:33.5682380Z Initialized empty Git repository in /Users/runner/work/graphite/graphite/.git/
+2026-10-08T15:25:33.5716140Z [command]/opt/homebrew/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:25:33.5797540Z ##[endgroup]
+2026-10-08T15:25:33.5800750Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:25:33.5802730Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-08T15:25:33.5861380Z ##[endgroup]
+2026-10-08T15:25:33.5862720Z ##[group]Setting up auth
+2026-10-08T15:25:33.5894410Z Removing SSH command configuration
+2026-10-08T15:25:33.5895770Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:25:33.5930720Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:25:33.7111020Z Removing HTTP extra header
+2026-10-08T15:25:33.7114930Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:25:33.7180570Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:25:33.7999710Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:25:33.8003030Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:25:33.8070670Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:25:33.8929870Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:25:33.9006870Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git.path /Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:25:33.9071160Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:25:33.9145270Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:25:33.9212650Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:25:33.9279690Z ##[endgroup]
+2026-10-08T15:25:33.9280600Z ##[group]Fetching the repository
+2026-10-08T15:25:33.9283240Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.2847510Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:25:35.2848130Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:25:35.2917810Z [command]/opt/homebrew/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:25:35.2977870Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.2982450Z ##[endgroup]
+2026-10-08T15:25:35.2982860Z ##[group]Determining the checkout info
+2026-10-08T15:25:35.2985290Z ##[endgroup]
+2026-10-08T15:25:35.2993590Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-08T15:25:35.3387690Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:25:35.3457420Z ##[group]Checking out the ref
+2026-10-08T15:25:35.3458960Z [command]/opt/homebrew/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.4944470Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:25:35.4958750Z ##[endgroup]
+2026-10-08T15:25:35.5056140Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-08T15:25:35.5124520Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:25:35.5333740Z ##[group]Run maxim-lobanov/setup-xcode@v1
+2026-10-08T15:25:35.5333980Z with:
+2026-10-08T15:25:35.5334130Z   xcode-version: 16.4
+2026-10-08T15:25:35.5334280Z env:
+2026-10-08T15:25:35.5334440Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:35.5334640Z   DRY_RUN: true
+2026-10-08T15:25:35.5334810Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:35.5335030Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:35.5335260Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:35.5335500Z ##[endgroup]
+2026-10-08T15:25:35.6221880Z Switching Xcode to version '16.4'...
+2026-10-08T15:25:35.7535530Z Xcode is set to 16.4.0 (16F6)
+2026-10-08T15:25:35.7697870Z ##[group]Run actions/setup-java@v5
+2026-10-08T15:25:35.7698580Z with:
+2026-10-08T15:25:35.7699820Z   distribution: temurin
+2026-10-08T15:25:35.7700590Z   java-version: 17
+2026-10-08T15:25:35.7701360Z   java-package: jdk
+2026-10-08T15:25:35.7701780Z   check-latest: false
+2026-10-08T15:25:35.7701970Z   set-default: true
+2026-10-08T15:25:35.7702150Z   verify-signature: false
+2026-10-08T15:25:35.7702330Z   server-id: github
+2026-10-08T15:25:35.7702520Z   server-username: GITHUB_ACTOR
+2026-10-08T15:25:35.7702730Z   server-password: GITHUB_TOKEN
+2026-10-08T15:25:35.7702960Z   overwrite-settings: true
+2026-10-08T15:25:35.7703130Z   job-status: success
+2026-10-08T15:25:35.7705050Z   token: ***
+2026-10-08T15:25:35.7705240Z   show-download-progress: false
+2026-10-08T15:25:35.7705440Z env:
+2026-10-08T15:25:35.7705610Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:35.7705830Z   DRY_RUN: true
+2026-10-08T15:25:35.7706010Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:35.7706310Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:35.7706530Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:35.7706810Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:25:35.7707020Z ##[endgroup]
+2026-10-08T15:25:35.9213530Z ##[group]Installed distributions
+2026-10-08T15:25:35.9365770Z Resolved Java 17.0.20+101 from tool-cache
+2026-10-08T15:25:35.9366960Z Setting Java 17.0.20+101 as the default
+2026-10-08T15:25:35.9367470Z Creating toolchains.xml for JDK version 17 from temurin
+2026-10-08T15:25:35.9367930Z Writing to /Users/runner/.m2/toolchains.xml
+2026-10-08T15:25:35.9368200Z 
+2026-10-08T15:25:35.9368340Z Java configuration:
+2026-10-08T15:25:35.9368590Z   Distribution: temurin
+2026-10-08T15:25:35.9368830Z   Version: 17.0.20+101
+2026-10-08T15:25:35.9369250Z   Path: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:35.9369610Z 
+2026-10-08T15:25:35.9369980Z ##[endgroup]
+2026-10-08T15:25:35.9401110Z Creating settings.xml with server-id: github
+2026-10-08T15:25:35.9401950Z Writing to /Users/runner/.m2/settings.xml
+2026-10-08T15:25:35.9403460Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+2026-10-08T15:25:35.9483990Z ##[group]Run actions/download-artifact@v8
+2026-10-08T15:25:35.9484250Z with:
+2026-10-08T15:25:35.9484450Z   name: release-v2.11.3-apple-validation.4
+2026-10-08T15:25:35.9484720Z   path: dry-run
+2026-10-08T15:25:35.9484920Z   merge-multiple: false
+2026-10-08T15:25:35.9485130Z   repository: johnsonlee/graphite
+2026-10-08T15:25:35.9485520Z   run-id: 37798249852
+2026-10-08T15:25:35.9485690Z   skip-decompress: false
+2026-10-08T15:25:35.9485880Z   digest-mismatch: error
+2026-10-08T15:25:35.9486070Z env:
+2026-10-08T15:25:35.9486240Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:35.9486440Z   DRY_RUN: true
+2026-10-08T15:25:35.9486620Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:35.9486860Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:35.9487100Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:35.9487460Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:25:35.9487980Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:35.9488610Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:35.9489030Z   MAVEN_ARGS: -ntp
+2026-10-08T15:25:35.9489220Z ##[endgroup]
+2026-10-08T15:25:36.0968800Z Downloading single artifact
+2026-10-08T15:25:36.3227680Z Preparing to download the following artifacts:
+2026-10-08T15:25:36.3229350Z - release-v2.11.3-apple-validation.4 (ID: 11561030466, Size: 104057988, Expected Digest: sha256:eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696)
+2026-10-08T15:25:36.6781290Z Redirecting to blob download url: https://productionresultssa13.blob.core.windows.net/actions-results/d97cd4f8-f4a6-4c9a-b2b9-fe1ec5b7999f/workflow-job-run-62403cbc-6b52-5f3c-9c5e-772953032411/artifacts/e1c3514b3e1bb853e8a5910771b5177a871dd0ff035ab41479985fced5e029e1.zip
+2026-10-08T15:25:36.6782620Z Starting download of artifact to: /Users/runner/work/graphite/graphite/dry-run
+2026-10-08T15:25:36.8900900Z (node:1175) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-10-08T15:25:36.8901720Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-08T15:25:41.2607570Z SHA256 digest of downloaded artifact is eedbe9a9e5d3e802da24aa02e8451acec07c9291987d3131903d60c09e938696
+2026-10-08T15:25:41.2609520Z Artifact download completed successfully.
+2026-10-08T15:25:41.2610610Z Total of 1 artifact(s) downloaded
+2026-10-08T15:25:41.2624530Z Download artifact has finished successfully
+2026-10-08T15:25:41.2755140Z ##[group]Run set -euo pipefail
+2026-10-08T15:25:41.2755520Z [36;1mset -euo pipefail[0m
+2026-10-08T15:25:41.2755880Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+2026-10-08T15:25:41.2756340Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-aarch64-apple-darwin.tar.gz"[0m
+2026-10-08T15:25:41.2764880Z [36;1m(cd "${ASSETS}" && shasum -a 256 -c "${ASSET}.sha256" graphite.jar.sha256)[0m
+2026-10-08T15:25:41.2765390Z [36;1mmkdir -p "${RUNNER_TEMP}/calibration-frontend" calibration-results[0m
+2026-10-08T15:25:41.2765820Z [36;1mtar -xzf "${ASSETS}/${ASSET}" -C "${RUNNER_TEMP}/calibration-frontend"[0m
+2026-10-08T15:25:41.2766310Z [36;1mcp "backend/bench/apple-frontend-corpus-xcode.json" calibration-results/corpus.json[0m
+2026-10-08T15:25:41.2766740Z [36;1mpython3 - <<'PY'[0m
+2026-10-08T15:25:41.2766940Z [36;1mimport json, os, pathlib[0m
+2026-10-08T15:25:41.2767410Z [36;1moriginal = json.loads(pathlib.Path("calibration-results/corpus.json").read_text())[0m
+2026-10-08T15:25:41.2768030Z [36;1munpinned = {**original, "shape": None, "files": None, "ceilings": None, "baselineShapes": {}}[0m
+2026-10-08T15:25:41.2768670Z [36;1mpathlib.Path("calibration-results/unpinned-corpus.json").write_text(json.dumps(unpinned, indent=2) + "\n")[0m
+2026-10-08T15:25:41.2769260Z [36;1mpathlib.Path("calibration-results/scope.json").write_text(json.dumps({[0m
+2026-10-08T15:25:41.2769720Z [36;1m    "purpose": "real-source calibration only", "performanceAcceptance": False,[0m
+2026-10-08T15:25:41.2770200Z [36;1m    "revision": os.environ["GITHUB_SHA"], "releaseVersion": os.environ["RELEASE_VERSION"],[0m
+2026-10-08T15:25:41.2770940Z [36;1m    "baseline": os.environ["BASELINE_SHA"], "baselinePurpose": "shape calibration only; no paired acceptance", "timedBoundary": "existing compiler index store through IR emission",[0m
+2026-10-08T15:25:41.2771690Z [36;1m    "excluded": ["compilation", "import/save timing", "graph load", "server query latency"],[0m
+2026-10-08T15:25:41.2772080Z [36;1m}, indent=2) + "\n")[0m
+2026-10-08T15:25:41.2772270Z [36;1mPY[0m
+2026-10-08T15:25:41.3067840Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:25:41.3068110Z env:
+2026-10-08T15:25:41.3068390Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:41.3068670Z   DRY_RUN: true
+2026-10-08T15:25:41.3068900Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:41.3069130Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:41.3069380Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:41.3069690Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:25:41.3070110Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:41.3070680Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:41.3071080Z   MAVEN_ARGS: -ntp
+2026-10-08T15:25:41.3071240Z ##[endgroup]
+2026-10-08T15:25:41.4323140Z graphite-frontend-apple-2.11.3-apple-validation.4-aarch64-apple-darwin.tar.gz: OK
+2026-10-08T15:25:41.5861750Z graphite.jar: OK
+2026-10-08T15:25:41.8527030Z ##[group]Run set -euo pipefail
+2026-10-08T15:25:41.8527420Z [36;1mset -euo pipefail[0m
+2026-10-08T15:25:41.8527720Z [36;1mpython3 backend/bench/prepare-apple-corpus.py \[0m
+2026-10-08T15:25:41.8528230Z [36;1m  --corpus "backend/bench/apple-frontend-corpus-xcode.json" --out "${RUNNER_TEMP}/corpus" \[0m
+2026-10-08T15:25:41.8528870Z [36;1m  --derived-data "${RUNNER_TEMP}/derived-data" --log calibration-results/prepare.log[0m
+2026-10-08T15:25:41.8562590Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:25:41.8562950Z env:
+2026-10-08T15:25:41.8563180Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:25:41.8563440Z   DRY_RUN: true
+2026-10-08T15:25:41.8563630Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:25:41.8563920Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:25:41.8564180Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:25:41.8564560Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:25:41.8565210Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:41.8565860Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:25:41.8566570Z   MAVEN_ARGS: -ntp
+2026-10-08T15:25:41.8566860Z ##[endgroup]
+2026-10-08T15:25:42.0436760Z Preparing corpus: git init --quiet /Users/runner/work/_temp/corpus
+2026-10-08T15:25:42.0710620Z Preparing corpus: git -C /Users/runner/work/_temp/corpus remote add origin https://github.com/signalapp/Signal-iOS.git
+2026-10-08T15:25:42.0790350Z Preparing corpus: git -C /Users/runner/work/_temp/corpus fetch --quiet --depth 1 origin 4193fd427eeae9d9a8c704e60958463342b7e1cc
+2026-10-08T15:25:45.8980880Z Preparing corpus: git -C /Users/runner/work/_temp/corpus checkout --quiet 4193fd427eeae9d9a8c704e60958463342b7e1cc
+2026-10-08T15:25:46.8891050Z Preparing corpus: git -C /Users/runner/work/_temp/corpus submodule update --init --depth 1 Pods SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests
+2026-10-08T15:26:06.2157020Z Preparing corpus: /Users/runner/work/_temp/corpus/Pods/SignalRingRTC/bin/set-up-for-cocoapods
+2026-10-08T15:26:16.3494030Z Preparing corpus: xcodebuild -workspace /Users/runner/work/_temp/corpus/Signal.xcworkspace -scheme Signal -configuration Debug -derivedDataPath /Users/runner/work/_temp/derived-data -destination generic/platform=iOS Simulator -jobs 4 build COMPILER_INDEX_STORE_ENABLE=YES CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=
+2026-10-08T15:42:37.9027940Z Prepared pinned real-source corpus signal-ios: /Users/runner/work/_temp/derived-data/Index.noindex/DataStore
+2026-10-08T15:42:38.0158210Z ##[group]Run set -euo pipefail
+2026-10-08T15:42:38.0159160Z [36;1mset -euo pipefail[0m
+2026-10-08T15:42:38.0159640Z [36;1mCORPUS=calibration-results/unpinned-corpus.json[0m
+2026-10-08T15:42:38.0160010Z [36;1mif [[ "${CORPUS_INPUT}" = package ]]; then[0m
+2026-10-08T15:42:38.0160500Z [36;1m  INPUT=(--package "${RUNNER_TEMP}/corpus")[0m
+2026-10-08T15:42:38.0161560Z [36;1melse[0m
+2026-10-08T15:42:38.0162850Z [36;1m  PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")[0m
+2026-10-08T15:42:38.0165110Z [36;1m  INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")[0m
+2026-10-08T15:42:38.0167370Z [36;1mfi[0m
+2026-10-08T15:42:38.0168580Z [36;1mpython3 backend/bench/apple-frontend.py \[0m
+2026-10-08T15:42:38.0170200Z [36;1m  --frontend "${RUNNER_TEMP}/calibration-frontend/graphite-frontend-apple" \[0m
+2026-10-08T15:42:38.0172090Z [36;1m  "${INPUT[@]}" --corpus "${CORPUS}" --repetitions 5 --warmup 1 \[0m
+2026-10-08T15:42:38.0173500Z [36;1m  --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \[0m
+2026-10-08T15:42:38.0180250Z [36;1m  --log calibration-results/candidate-frontend.log --out calibration-results/candidate-samples.json[0m
+2026-10-08T15:42:38.2549050Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:42:38.2549400Z env:
+2026-10-08T15:42:38.2561020Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:42:38.2561640Z   DRY_RUN: true
+2026-10-08T15:42:38.2561980Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:42:38.2562570Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:42:38.2563100Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:42:38.2563670Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:42:38.2564360Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:42:38.2565110Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:42:38.2565970Z   MAVEN_ARGS: -ntp
+2026-10-08T15:42:38.2566510Z   CORPUS_INPUT: xcodeproj
+2026-10-08T15:42:38.2566800Z   MANIFEST: apple-frontend-corpus-xcode.json
+2026-10-08T15:42:38.2571290Z ##[endgroup]
+2026-10-08T15:47:37.0340450Z signal-ios: 3853 files, 449760 nodes, 206597 edges, wall 45720.037 ms, peak RSS 925.328 MiB over 5 runs (+1 warm-up), IR sha256 cb6111bffd6a, verified by the production reader
+2026-10-08T15:47:37.0966560Z ##[group]Run actions/checkout@v7
+2026-10-08T15:47:37.0966940Z with:
+2026-10-08T15:47:37.0982280Z   ref: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:37.0983230Z   path: calibration-baseline
+2026-10-08T15:47:37.0984020Z   persist-credentials: false
+2026-10-08T15:47:37.0984720Z   repository: johnsonlee/graphite
+2026-10-08T15:47:37.0990940Z   token: ***
+2026-10-08T15:47:37.0991750Z   ssh-strict: true
+2026-10-08T15:47:37.0992330Z   ssh-user: git
+2026-10-08T15:47:37.0993090Z   clean: true
+2026-10-08T15:47:37.0993750Z   sparse-checkout-cone-mode: true
+2026-10-08T15:47:37.0994540Z   fetch-depth: 1
+2026-10-08T15:47:37.0995090Z   fetch-tags: false
+2026-10-08T15:47:37.0995810Z   show-progress: true
+2026-10-08T15:47:37.0996660Z   lfs: false
+2026-10-08T15:47:37.0997190Z   submodules: false
+2026-10-08T15:47:37.0998190Z   set-safe-directory: true
+2026-10-08T15:47:37.0998840Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:47:37.0999650Z env:
+2026-10-08T15:47:37.1000590Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:47:37.1001310Z   DRY_RUN: true
+2026-10-08T15:47:37.1002030Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:47:37.1002750Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:47:37.1003770Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:37.1004750Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:47:37.1005920Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:47:37.1007680Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:47:37.1008770Z   MAVEN_ARGS: -ntp
+2026-10-08T15:47:37.1009510Z ##[endgroup]
+2026-10-08T15:47:37.6235910Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:47:37.6236710Z ##[group]Getting Git version info
+2026-10-08T15:47:37.6237190Z Working directory is '/Users/runner/work/graphite/graphite/calibration-baseline'
+2026-10-08T15:47:37.6328240Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:47:37.6525760Z git version 2.55.0
+2026-10-08T15:47:37.6544960Z ##[endgroup]
+2026-10-08T15:47:37.6551650Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/482ed2b5-a6d2-4d6b-add2-5afcdd175ae8/.gitconfig'
+2026-10-08T15:47:37.6564440Z Temporarily overriding HOME='/Users/runner/work/_temp/482ed2b5-a6d2-4d6b-add2-5afcdd175ae8' before making global git config changes
+2026-10-08T15:47:37.6565230Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:47:37.6569850Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite/calibration-baseline
+2026-10-08T15:47:37.6719900Z ##[group]Determining repository object format
+2026-10-08T15:47:37.6720620Z ##[endgroup]
+2026-10-08T15:47:37.6721550Z ##[group]Initializing the repository
+2026-10-08T15:47:37.6724200Z [command]/opt/homebrew/bin/git init /Users/runner/work/graphite/graphite/calibration-baseline
+2026-10-08T15:47:37.6958740Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:47:37.6960630Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:47:37.6962190Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:47:37.6963560Z hint: call:
+2026-10-08T15:47:37.6964380Z hint:
+2026-10-08T15:47:37.6965490Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:47:37.6965890Z hint:
+2026-10-08T15:47:37.6970620Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:47:37.6971420Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:47:37.6971750Z hint:
+2026-10-08T15:47:37.6971980Z hint: 	git branch -m <name>
+2026-10-08T15:47:37.6986250Z hint:
+2026-10-08T15:47:37.6986900Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:47:37.6988300Z Initialized empty Git repository in /Users/runner/work/graphite/graphite/calibration-baseline/.git/
+2026-10-08T15:47:37.6989590Z [command]/opt/homebrew/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:47:37.7055300Z ##[endgroup]
+2026-10-08T15:47:37.7055840Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:47:37.7059140Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+2026-10-08T15:47:37.7131530Z ##[endgroup]
+2026-10-08T15:47:37.7132260Z ##[group]Setting up auth
+2026-10-08T15:47:37.7132690Z Removing SSH command configuration
+2026-10-08T15:47:37.7136150Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:47:37.7266520Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:47:37.8799610Z Removing HTTP extra header
+2026-10-08T15:47:37.8803790Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:47:37.8875660Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:47:38.0949380Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:47:38.0950390Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:47:38.0952360Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:47:38.2451100Z [command]/opt/homebrew/bin/git config --file /Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:47:38.2537290Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git.path /Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:38.2639190Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git/worktrees/*.path /Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:38.2690820Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/calibration-baseline/.git.path /github/runner_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:38.2756200Z [command]/opt/homebrew/bin/git config --local includeIf.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path /github/runner_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:38.2868330Z ##[endgroup]
+2026-10-08T15:47:38.2868740Z ##[group]Fetching the repository
+2026-10-08T15:47:38.2882910Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:39.4023770Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:47:39.4024890Z  * branch            332c0d8a6fec650a6e7979e3dce37aa1a891c03a -> FETCH_HEAD
+2026-10-08T15:47:39.4046610Z [command]/opt/homebrew/bin/git rev-parse --verify --quiet 332c0d8a6fec650a6e7979e3dce37aa1a891c03a^{object}
+2026-10-08T15:47:39.4182780Z 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:39.4189740Z ##[endgroup]
+2026-10-08T15:47:39.4190720Z ##[group]Determining the checkout info
+2026-10-08T15:47:39.4191830Z ##[endgroup]
+2026-10-08T15:47:39.4198040Z [command]/opt/homebrew/bin/git sparse-checkout disable
+2026-10-08T15:47:39.4302580Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:47:39.4442750Z ##[group]Checking out the ref
+2026-10-08T15:47:39.4447180Z [command]/opt/homebrew/bin/git checkout --progress --force 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:39.6188130Z HEAD is now at 332c0d8 Add the Swift frontend, the protobuf Graph IR and graphite import
+2026-10-08T15:47:39.6216240Z ##[endgroup]
+2026-10-08T15:47:39.6330360Z [command]/opt/homebrew/bin/git log -1 --format=%H
+2026-10-08T15:47:39.6453380Z 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:39.6464230Z ##[group]Removing auth
+2026-10-08T15:47:39.6464500Z Removing SSH command configuration
+2026-10-08T15:47:39.6467440Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:47:39.6538210Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:47:39.7639880Z Removing HTTP extra header
+2026-10-08T15:47:39.7642880Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:47:39.7740160Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:47:39.9157970Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:47:39.9158860Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:47:39.9206780Z includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git.path
+2026-10-08T15:47:39.9207710Z includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git/worktrees/*.path
+2026-10-08T15:47:39.9208250Z includeif.gitdir:/github/workspace/calibration-baseline/.git.path
+2026-10-08T15:47:39.9208960Z includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path
+2026-10-08T15:47:39.9212480Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git.path
+2026-10-08T15:47:39.9273180Z /Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:39.9283980Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-400ebc5e\-3ef6\-400f\-ae6a\-056539c070e3\.config
+2026-10-08T15:47:39.9385800Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git/worktrees/*.path
+2026-10-08T15:47:39.9448490Z /Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:39.9462170Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/calibration-baseline/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-400ebc5e\-3ef6\-400f\-ae6a\-056539c070e3\.config
+2026-10-08T15:47:39.9560020Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/calibration-baseline/.git.path
+2026-10-08T15:47:39.9630520Z /github/runner_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:39.9636360Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/calibration-baseline/.git.path \/github\/runner_temp\/git\-credentials\-400ebc5e\-3ef6\-400f\-ae6a\-056539c070e3\.config
+2026-10-08T15:47:39.9780560Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path
+2026-10-08T15:47:39.9848010Z /github/runner_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config
+2026-10-08T15:47:39.9856130Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-400ebc5e\-3ef6\-400f\-ae6a\-056539c070e3\.config
+2026-10-08T15:47:39.9979910Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:47:40.1173370Z Removing credentials config '/Users/runner/work/_temp/git-credentials-400ebc5e-3ef6-400f-ae6a-056539c070e3.config'
+2026-10-08T15:47:40.1185140Z ##[endgroup]
+2026-10-08T15:47:40.1417830Z ##[group]Run set -euo pipefail
+2026-10-08T15:47:40.1418190Z [36;1mset -euo pipefail[0m
+2026-10-08T15:47:40.1418530Z [36;1mtest "$(git -C calibration-baseline rev-parse HEAD)" = "${BASELINE_SHA}"[0m
+2026-10-08T15:47:40.1418990Z [36;1mcalibration-baseline/frontend/apple/swift.sh build -c release --jobs 4  \[0m
+2026-10-08T15:47:40.1419380Z [36;1m  > calibration-results/baseline-build.log 2>&1[0m
+2026-10-08T15:47:40.1848470Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:47:40.1848740Z env:
+2026-10-08T15:47:40.1848920Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:47:40.1849140Z   DRY_RUN: true
+2026-10-08T15:47:40.1849320Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:47:40.1849540Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:47:40.1849780Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:47:40.1850090Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:47:40.1850570Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:47:40.1851170Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:47:40.1851580Z   MAVEN_ARGS: -ntp
+2026-10-08T15:47:40.1851730Z ##[endgroup]
+2026-10-08T15:55:04.4980520Z ##[group]Run set -euo pipefail
+2026-10-08T15:55:04.4981770Z [36;1mset -euo pipefail[0m
+2026-10-08T15:55:04.4982460Z [36;1mCORPUS=calibration-results/unpinned-corpus.json[0m
+2026-10-08T15:55:04.4982950Z [36;1mif [[ "${CORPUS_INPUT}" = package ]]; then[0m
+2026-10-08T15:55:04.4983460Z [36;1m  INPUT=(--package "${RUNNER_TEMP}/corpus")[0m
+2026-10-08T15:55:04.4984130Z [36;1melse[0m
+2026-10-08T15:55:04.4984650Z [36;1m  PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")[0m
+2026-10-08T15:55:04.4985860Z [36;1m  INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")[0m
+2026-10-08T15:55:04.4986570Z [36;1mfi[0m
+2026-10-08T15:55:04.4987340Z [36;1mpython3 backend/bench/apple-frontend.py \[0m
+2026-10-08T15:55:04.4988290Z [36;1m  --frontend calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple \[0m
+2026-10-08T15:55:04.4989410Z [36;1m  "${INPUT[@]}" --corpus "${CORPUS}" --baseline-revision "${BASELINE_SHA}" --repetitions 5 --warmup 1 \[0m
+2026-10-08T15:55:04.4990220Z [36;1m  --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \[0m
+2026-10-08T15:55:04.4991030Z [36;1m  --log calibration-results/baseline-frontend.log --out calibration-results/baseline-samples.json[0m
+2026-10-08T15:55:04.5567430Z shell: /bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-08T15:55:04.5568060Z env:
+2026-10-08T15:55:04.5568830Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:55:04.5569420Z   DRY_RUN: true
+2026-10-08T15:55:04.5570080Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:55:04.5570540Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:55:04.5571370Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:55:04.5572050Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:55:04.5572750Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:55:04.5573740Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:55:04.5574460Z   MAVEN_ARGS: -ntp
+2026-10-08T15:55:04.5574740Z   CORPUS_INPUT: xcodeproj
+2026-10-08T15:55:04.5575270Z   MANIFEST: apple-frontend-corpus-xcode.json
+2026-10-08T15:55:04.5575860Z ##[endgroup]
+2026-10-08T15:58:13.5400960Z signal-ios: 2594 files, 357780 nodes, 169184 edges, wall 28062.418 ms, peak RSS 766.062 MiB over 5 runs (+1 warm-up), IR sha256 26fefc73e304, verified by the production reader
+2026-10-08T15:58:13.5727940Z ##[group]Run actions/upload-artifact@v7
+2026-10-08T15:58:13.5729220Z with:
+2026-10-08T15:58:13.5730040Z   name: apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.4
+2026-10-08T15:58:13.5731380Z   path: calibration-results/
+2026-10-08T15:58:13.5732230Z   if-no-files-found: error
+2026-10-08T15:58:13.5732800Z   retention-days: 30
+2026-10-08T15:58:13.5733450Z   compression-level: 6
+2026-10-08T15:58:13.5734050Z   overwrite: false
+2026-10-08T15:58:13.5734770Z   include-hidden-files: false
+2026-10-08T15:58:13.5735530Z   archive: true
+2026-10-08T15:58:13.5736050Z env:
+2026-10-08T15:58:13.5736650Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:58:13.5737430Z   DRY_RUN: true
+2026-10-08T15:58:13.5738050Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:58:13.5738870Z   JAVA_TOOL_OPTIONS: -Xmx2g
+2026-10-08T15:58:13.5739570Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+2026-10-08T15:58:13.5740630Z   MD_APPLE_SDK_ROOT: /Applications/Xcode_16.4.app
+2026-10-08T15:58:13.5742210Z   JAVA_HOME: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:58:13.5743980Z   JAVA_HOME_17_ARM64: /Users/runner/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-101/arm64/Contents/Home
+2026-10-08T15:58:13.5745280Z   MAVEN_ARGS: -ntp
+2026-10-08T15:58:13.5745980Z ##[endgroup]
+2026-10-08T15:58:14.0600780Z With the provided path, there will be 14 files uploaded
+2026-10-08T15:58:14.0609020Z Artifact name is valid!
+2026-10-08T15:58:14.0610040Z Root directory input is valid!
+2026-10-08T15:58:14.4021200Z Uploading artifact: apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.4.zip
+2026-10-08T15:58:14.4046380Z Beginning upload of artifact content to blob storage
+2026-10-08T15:58:14.9152510Z Uploaded bytes 562293
+2026-10-08T15:58:14.9629180Z Finished uploading artifact content to blob storage!
+2026-10-08T15:58:14.9631210Z SHA256 digest of uploaded artifact is d3f8f381613c00d7b4ef6ccb3589e145e00d4cb52103e59b8184d956d1cb913c
+2026-10-08T15:58:14.9631870Z Finalizing artifact upload
+2026-10-08T15:58:15.3286910Z Artifact apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.4 successfully finalized. Artifact ID 11562083040
+2026-10-08T15:58:15.3288010Z Artifact apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.4 has been successfully uploaded! Final size is 562293 bytes. Artifact ID is 11562083040
+2026-10-08T15:58:15.3296560Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37798249852/artifacts/11562083040
+2026-10-08T15:58:15.3589900Z Post job cleanup.
+2026-10-08T15:58:15.5258790Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:58:15.5429880Z git version 2.55.0
+2026-10-08T15:58:15.5522090Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/e1297c4b-279c-44ac-be10-e26d9b24c723/.gitconfig'
+2026-10-08T15:58:15.5523080Z Temporarily overriding HOME='/Users/runner/work/_temp/e1297c4b-279c-44ac-be10-e26d9b24c723' before making global git config changes
+2026-10-08T15:58:15.5524490Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:58:15.5525540Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite/calibration-baseline
+2026-10-08T15:58:15.5584580Z Removing SSH command configuration
+2026-10-08T15:58:15.5585080Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:58:15.5674070Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:58:15.7114420Z Removing HTTP extra header
+2026-10-08T15:58:15.7119200Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:58:15.7186670Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:58:15.8644510Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:58:15.8693380Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:58:15.8768000Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:58:15.9956070Z Post job cleanup.
+2026-10-08T15:58:16.1747770Z Post job cleanup.
+2026-10-08T15:58:16.2929620Z [command]/opt/homebrew/bin/git version
+2026-10-08T15:58:16.3001160Z git version 2.55.0
+2026-10-08T15:58:16.3019830Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/e4a3db3b-785e-4569-86c9-a9990886c5ff/.gitconfig'
+2026-10-08T15:58:16.3025610Z Temporarily overriding HOME='/Users/runner/work/_temp/e4a3db3b-785e-4569-86c9-a9990886c5ff' before making global git config changes
+2026-10-08T15:58:16.3026810Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:58:16.3034530Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/graphite/graphite
+2026-10-08T15:58:16.3189610Z Removing SSH command configuration
+2026-10-08T15:58:16.3194470Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:58:16.3276620Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:58:16.4364670Z Removing HTTP extra header
+2026-10-08T15:58:16.4369030Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:58:16.4436290Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:58:16.5458300Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:58:16.5462220Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:58:16.5565440Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+2026-10-08T15:58:16.5565940Z includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:58:16.5566360Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:58:16.5566700Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:58:16.5572190Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path
+2026-10-08T15:58:16.5664170Z /Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:58:16.5680600Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git.path \/Users\/runner\/work\/_temp\/git\-credentials\-41e3b2b3\-849a\-48bf\-a477\-c35aaeaf834c\.config
+2026-10-08T15:58:16.5809040Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:58:16.5871120Z /Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:58:16.5895740Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/Users/runner/work/graphite/graphite/.git/worktrees/*.path \/Users\/runner\/work\/_temp\/git\-credentials\-41e3b2b3\-849a\-48bf\-a477\-c35aaeaf834c\.config
+2026-10-08T15:58:16.5984320Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:58:16.6043150Z /github/runner_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:58:16.6056380Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-41e3b2b3\-849a\-48bf\-a477\-c35aaeaf834c\.config
+2026-10-08T15:58:16.6136790Z [command]/opt/homebrew/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:58:16.6199900Z /github/runner_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config
+2026-10-08T15:58:16.6212910Z [command]/opt/homebrew/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-41e3b2b3\-849a\-48bf\-a477\-c35aaeaf834c\.config
+2026-10-08T15:58:16.6284950Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:58:16.7238530Z Removing credentials config '/Users/runner/work/_temp/git-credentials-41e3b2b3-849a-48bf-a477-c35aaeaf834c.config'
+2026-10-08T15:58:16.7353100Z Cleaning up orphan processes

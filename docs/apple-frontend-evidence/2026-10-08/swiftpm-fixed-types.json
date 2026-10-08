@@ -1,0 +1,113 @@
+{
+  "method_total": {
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 4575
+      }
+    ],
+    "rowCount": 1
+  },
+  "method_empty": {
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 0
+      }
+    ],
+    "rowCount": 1
+  },
+  "field_total": {
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 5377
+      }
+    ],
+    "rowCount": 1
+  },
+  "field_empty": {
+    "columns": [
+      "n"
+    ],
+    "rows": [
+      {
+        "n": 0
+      }
+    ],
+    "rowCount": 1
+  },
+  "empty_methods": {
+    "columns": [
+      "m.class",
+      "m.name",
+      "m.parameter_types",
+      "m.return_type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "empty_fields": {
+    "columns": [
+      "f.class",
+      "f.name",
+      "f.type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "cryptography": {
+    "columns": [
+      "m.class",
+      "m.name",
+      "m.parameter_types",
+      "m.return_type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "private_owner": {
+    "columns": [
+      "f.class",
+      "f.name",
+      "f.type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "deinit": {
+    "columns": [
+      "m.class",
+      "m.name",
+      "m.parameter_types",
+      "m.return_type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "badge": {
+    "columns": [
+      "f.class",
+      "f.name",
+      "f.type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  },
+  "crossmodule": {
+    "columns": [
+      "m.class",
+      "m.name",
+      "m.parameter_types",
+      "m.return_type"
+    ],
+    "rows": [],
+    "rowCount": 0
+  }
+}

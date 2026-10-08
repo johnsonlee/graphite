@@ -1,0 +1,730 @@
+{
+  "scope": {
+    "purpose": "real-source calibration only",
+    "performanceAcceptance": false,
+    "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+    "releaseVersion": "2.11.3-apple-validation.3",
+    "baseline": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+    "baselinePurpose": "shape calibration only; no paired acceptance",
+    "timedBoundary": "existing compiler index store through IR emission",
+    "excluded": [
+      "compilation",
+      "import/save timing",
+      "graph load",
+      "server query latency"
+    ]
+  },
+  "toolchain": {
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "swift": "Swift version 6.1.3 (swift-6.1.3-RELEASE)\nTarget: x86_64-unknown-linux-gnu"
+  },
+  "candidate": {
+    "rows": [
+      {
+        "benchmark": "apple.frontend.wall",
+        "primaryMetric": {
+          "score": 1334.99,
+          "scoreUnit": "ms/op",
+          "scoreConfidence": [
+            1315.662,
+            1362.74
+          ],
+          "rawData": [
+            [
+              1315.662,
+              1343.609,
+              1362.74,
+              1334.99,
+              1327.441
+            ]
+          ]
+        },
+        "params": {
+          "corpus": "swiftformat"
+        },
+        "mode": "sequential-run",
+        "files": 181,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "determinism": {
+          "identical": true,
+          "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+        },
+        "input": "package",
+        "verified": {
+          "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+          "passed": true
+        },
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+        "baselineRevision": null
+      },
+      {
+        "benchmark": "apple.frontend.rss",
+        "primaryMetric": {
+          "score": 78.699,
+          "scoreUnit": "MiB",
+          "scoreConfidence": [
+            78.559,
+            78.848
+          ],
+          "rawData": [
+            [
+              78.574,
+              78.699,
+              78.848,
+              78.727,
+              78.559
+            ]
+          ]
+        },
+        "params": {
+          "corpus": "swiftformat"
+        },
+        "mode": "sequential-run",
+        "files": 181,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "determinism": {
+          "identical": true,
+          "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+        },
+        "input": "package",
+        "verified": {
+          "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+          "passed": true
+        },
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+        "baselineRevision": null
+      }
+    ],
+    "samples": [
+      {
+        "run": 0,
+        "warmup": true,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1656.938794000041,
+        "cpuMs": 1570.88,
+        "userMs": 1336.4940000000001,
+        "systemMs": 234.386,
+        "peakRssBytes": 134033408,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      },
+      {
+        "run": 1,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1315.661984999963,
+        "cpuMs": 1226.279,
+        "userMs": 1101.222,
+        "systemMs": 125.057,
+        "peakRssBytes": 82391040,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      },
+      {
+        "run": 2,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1343.609076000007,
+        "cpuMs": 1255.1150000000002,
+        "userMs": 1124.807,
+        "systemMs": 130.30800000000002,
+        "peakRssBytes": 82522112,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      },
+      {
+        "run": 3,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1362.739605999991,
+        "cpuMs": 1273.0349999999999,
+        "userMs": 1139.9379999999999,
+        "systemMs": 133.09699999999998,
+        "peakRssBytes": 82677760,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      },
+      {
+        "run": 4,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1334.9897559999704,
+        "cpuMs": 1249.7319999999997,
+        "userMs": 1106.321,
+        "systemMs": 143.41099999999997,
+        "peakRssBytes": 82550784,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      },
+      {
+        "run": 5,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": null,
+        "wallMs": 1327.441437999994,
+        "cpuMs": 1238.463,
+        "userMs": 1096.426,
+        "systemMs": 142.037,
+        "peakRssBytes": 82374656,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+      }
+    ],
+    "verification": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "renderedCommand": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import /tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir -o /tmp/apple-frontend-bench-n2hpmgd9/verified-graph",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx2g\nReading IR from: /tmp/apple-frontend-bench-n2hpmgd9/corpus.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 32530 nodes, 14655 edges, 7173 strings\nSaving to: /tmp/apple-frontend-bench-n2hpmgd9/verified-graph\nDone.\n",
+      "passed": true
+    }
+  },
+  "baseline": {
+    "rows": [
+      {
+        "benchmark": "apple.frontend.wall",
+        "primaryMetric": {
+          "score": 1323.745,
+          "scoreUnit": "ms/op",
+          "scoreConfidence": [
+            1316.476,
+            1353.018
+          ],
+          "rawData": [
+            [
+              1332.137,
+              1316.476,
+              1318.635,
+              1353.018,
+              1323.745
+            ]
+          ]
+        },
+        "params": {
+          "corpus": "swiftformat"
+        },
+        "mode": "sequential-run",
+        "files": 181,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "determinism": {
+          "identical": true,
+          "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+        },
+        "input": "package",
+        "verified": {
+          "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+          "passed": true
+        },
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "samples": "calibration-results/baseline-samples.json.samples.jsonl",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+      },
+      {
+        "benchmark": "apple.frontend.rss",
+        "primaryMetric": {
+          "score": 78.859,
+          "scoreUnit": "MiB",
+          "scoreConfidence": [
+            78.82,
+            79.074
+          ],
+          "rawData": [
+            [
+              78.945,
+              78.82,
+              78.844,
+              78.859,
+              79.074
+            ]
+          ]
+        },
+        "params": {
+          "corpus": "swiftformat"
+        },
+        "mode": "sequential-run",
+        "files": 181,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "determinism": {
+          "identical": true,
+          "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+        },
+        "input": "package",
+        "verified": {
+          "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+          "passed": true
+        },
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "samples": "calibration-results/baseline-samples.json.samples.jsonl",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+      }
+    ],
+    "samples": [
+      {
+        "run": 0,
+        "warmup": true,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1676.041672999986,
+        "cpuMs": 1590.3569999999997,
+        "userMs": 1339.282,
+        "systemMs": 251.075,
+        "peakRssBytes": 134254592,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      },
+      {
+        "run": 1,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1332.1371590000126,
+        "cpuMs": 1244.753,
+        "userMs": 1109.536,
+        "systemMs": 135.217,
+        "peakRssBytes": 82780160,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      },
+      {
+        "run": 2,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1316.4759310000136,
+        "cpuMs": 1226.2079999999999,
+        "userMs": 1094.398,
+        "systemMs": 131.80999999999997,
+        "peakRssBytes": 82649088,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      },
+      {
+        "run": 3,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1318.6351939999668,
+        "cpuMs": 1230.378,
+        "userMs": 1083.883,
+        "systemMs": 146.49499999999998,
+        "peakRssBytes": 82673664,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      },
+      {
+        "run": 4,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1353.01769900002,
+        "cpuMs": 1264.836,
+        "userMs": 1128.0410000000002,
+        "systemMs": 136.795,
+        "peakRssBytes": 82690048,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      },
+      {
+        "run": 5,
+        "warmup": false,
+        "corpus": {
+          "kind": "real-source",
+          "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+          "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+        },
+        "command": [
+          "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+          "build",
+          "--package",
+          "/__w/_temp/corpus",
+          "--skip-build",
+          "--out",
+          "/tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir"
+        ],
+        "status": "valid-ir",
+        "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+        "wallMs": 1323.7454369999568,
+        "cpuMs": 1234.6760000000002,
+        "userMs": 1094.065,
+        "systemMs": 140.611,
+        "peakRssBytes": 82915328,
+        "exitCode": 0,
+        "shape": {
+          "files": 181,
+          "types": 147,
+          "methods": 677,
+          "fields": 990,
+          "callSites": 16867,
+          "constants": 3468,
+          "annotations": 18,
+          "nodes": 32530,
+          "edges": 14655,
+          "strings": 7173
+        },
+        "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+      }
+    ],
+    "verification": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "renderedCommand": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import /tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir -o /tmp/apple-frontend-bench-ghrwm9e0/verified-graph",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx2g\nReading IR from: /tmp/apple-frontend-bench-ghrwm9e0/corpus.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 32530 nodes, 14655 edges, 7173 strings\nSaving to: /tmp/apple-frontend-bench-ghrwm9e0/verified-graph\nDone.\n",
+      "passed": true
+    }
+  }
+}

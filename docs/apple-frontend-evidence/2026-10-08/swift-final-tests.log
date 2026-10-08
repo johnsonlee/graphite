@@ -1,0 +1,279 @@
+[0/1] Planning build
+[1/1] Compiling plugin GenerateManual
+[2/2] Compiling plugin GenerateDoccReference
+[3/3] Compiling plugin SwiftProtobufPlugin
+Building for debugging...
+[3/10] Write sources
+[5/10] Write swift-version-6D90EC345980CB45.txt
+[7/12] Emitting module GraphiteFrontend
+[8/12] Compiling GraphiteFrontend Frontend.swift
+[9/14] Compiling GraphiteFrontend Emitter.swift
+[10/14] Compiling GraphiteFrontend SwiftPackage.swift
+[11/29] Emitting module graphite_frontend_apple
+[12/29] Compiling graphite_frontend_apple main.swift
+[12/29] Write Objects.LinkFileList
+[14/29] Compiling GraphiteFrontendTests SyntaxPassTests.swift
+[15/29] Compiling GraphiteFrontendTests SwiftSignatureTests.swift
+[16/29] Compiling GraphiteFrontendTests XcodeTests.swift
+[17/29] Compiling GraphiteFrontendTests SwiftPackageTests.swift
+[18/29] Compiling GraphiteFrontendTests SourceDiscoveryTests.swift
+[19/29] Compiling GraphiteFrontendTests EmitterObjcExtensionTests.swift
+[20/29] Compiling GraphiteFrontendTests ObjectiveCTests.swift
+[21/29] Compiling GraphiteFrontendTests IRWriterTests.swift
+[22/29] Compiling GraphiteFrontendTests ClangUSRTests.swift
+[23/29] Compiling GraphiteFrontendTests FrontendTests.swift
+[24/29] Compiling GraphiteFrontendTests ObjectiveCSyntaxTests.swift
+[25/29] Emitting module GraphiteFrontendTests
+[25/29] Write Objects.LinkFileList
+[26/29] Linking graphite-frontend-apple
+[27/29] Applying graphite-frontend-apple
+[28/29] Linking graphite-frontend-applePackageTests
+Build complete! (15.86s)
+Test Suite 'All tests' started at 2026-10-08 23:35:34.203.
+Test Suite 'graphite-frontend-applePackageTests.xctest' started at 2026-10-08 23:35:34.204.
+Test Suite 'ClangUSRTests' started at 2026-10-08 23:35:34.204.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testCForms]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testCForms]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testObjectiveCBackedDeclarationsKeepTheirSignatures]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testObjectiveCBackedDeclarationsKeepTheirSignatures]' passed (0.011 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testObjectiveCForms]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testObjectiveCForms]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testQualification]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testQualification]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testQualifiedNamesResolveThroughIndexes]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testQualifiedNamesResolveThroughIndexes]' passed (0.037 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testRejectedForms]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testRejectedForms]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testSwiftExtensionObjectiveCForms]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testSwiftExtensionObjectiveCForms]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testSwiftExtensionObjectiveCMembersKeepDeclaredAndCallSiteTypes]' started.
+Test Case '-[GraphiteFrontendTests.ClangUSRTests testSwiftExtensionObjectiveCMembersKeepDeclaredAndCallSiteTypes]' passed (0.003 seconds).
+Test Suite 'ClangUSRTests' passed at 2026-10-08 23:35:34.256.
+	 Executed 8 tests, with 0 failures (0 unexpected) in 0.052 (0.052) seconds
+Test Suite 'EmitterObjcExtensionTests' started at 2026-10-08 23:35:34.256.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExplicitOwnerModuleWinsOverSameNamedLocalType]' started.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExplicitOwnerModuleWinsOverSameNamedLocalType]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExternalObjectiveCClassExtensionThroughTheCompilerIndex]' started.
+Building for debugging...
+[0/2] Write sources
+[1/2] Write swift-version-6D90EC345980CB45.txt
+[3/4] Compiling ExtensionProbe Extension.swift
+[4/4] Emitting module ExtensionProbe
+Build complete! (8.75s)
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testExternalObjectiveCClassExtensionThroughTheCompilerIndex]' passed (10.892 seconds).
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testSwiftAnchorWinsRegardlessOfMemberOrder]' started.
+Test Case '-[GraphiteFrontendTests.EmitterObjcExtensionTests testSwiftAnchorWinsRegardlessOfMemberOrder]' passed (0.002 seconds).
+Test Suite 'EmitterObjcExtensionTests' passed at 2026-10-08 23:35:45.151.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 10.894 (10.894) seconds
+Test Suite 'FrontendTests' started at 2026-10-08 23:35:45.151.
+Building for debugging...
+[0/3] Write swift-version-6D90EC345980CB45.txt
+Build complete! (0.10s)
+Test Case '-[GraphiteFrontendTests.FrontendTests testAnnotations]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testAnnotations]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testBuildFromAnExistingIndexStore]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testBuildFromAnExistingIndexStore]' passed (0.260 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testCallSitesCarryLiteralArgumentsInPosition]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testCallSitesCarryLiteralArgumentsInPosition]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testHeaderTrailerAndSummary]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testHeaderTrailerAndSummary]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testInputErrors]' started.
+Building for debugging...
+[0/2] Write sources
+[1/2] Write swift-version-6D90EC345980CB45.txt
+error: emit-module command failed with exit code 1 (use -v to see invocation)
+[3/4] Emitting module Broken
+/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/broken-C7685B8E-BCB0-4ADE-90A2-549E5CFE52C7/Sources/Broken/A.swift:1:14: error: cannot convert value of type 'String' to specified type 'Int'
+1 | let x: Int = "no"
+  |              `- error: cannot convert value of type 'String' to specified type 'Int'
+2 | 
+[4/4] Compiling Broken A.swift
+/private/var/folders/sy/_tdkyl2x0gx6z5kl2wbhd9tc0000gn/T/broken-C7685B8E-BCB0-4ADE-90A2-549E5CFE52C7/Sources/Broken/A.swift:1:14: error: cannot convert value of type 'String' to specified type 'Int'
+1 | let x: Int = "no"
+  |              `- error: cannot convert value of type 'String' to specified type 'Int'
+2 | 
+Test Case '-[GraphiteFrontendTests.FrontendTests testInputErrors]' passed (2.145 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testMethodsAndFields]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testMethodsAndFields]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testSymlinkedRootJoinsSyntaxFacts]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testSymlinkedRootJoinsSyntaxFacts]' passed (0.262 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testTargetsOutsideSourcesAreDiscoveredFromTheManifest]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testTargetsOutsideSourcesAreDiscoveredFromTheManifest]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testToolLocation]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testToolLocation]' passed (0.366 seconds).
+Test Case '-[GraphiteFrontendTests.FrontendTests testTypesOriginsAndRelations]' started.
+Test Case '-[GraphiteFrontendTests.FrontendTests testTypesOriginsAndRelations]' passed (0.001 seconds).
+Test Suite 'FrontendTests' passed at 2026-10-08 23:35:49.156.
+	 Executed 10 tests, with 0 failures (0 unexpected) in 3.036 (4.006) seconds
+Test Suite 'IRWriterTests' started at 2026-10-08 23:35:49.157.
+Test Case '-[GraphiteFrontendTests.IRWriterTests testLargeBatchesAreSplitAndStringsFlushedFirst]' started.
+Test Case '-[GraphiteFrontendTests.IRWriterTests testLargeBatchesAreSplitAndStringsFlushedFirst]' passed (0.058 seconds).
+Test Case '-[GraphiteFrontendTests.IRWriterTests testMalformedStreams]' started.
+Test Case '-[GraphiteFrontendTests.IRWriterTests testMalformedStreams]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.IRWriterTests testMapFieldsAreWrittenInDeterministicOrder]' started.
+Test Case '-[GraphiteFrontendTests.IRWriterTests testMapFieldsAreWrittenInDeterministicOrder]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.IRWriterTests testStreamLayoutStringsPrecedeTheirUsersAndTrailerCounts]' started.
+Test Case '-[GraphiteFrontendTests.IRWriterTests testStreamLayoutStringsPrecedeTheirUsersAndTrailerCounts]' passed (0.001 seconds).
+Test Suite 'IRWriterTests' passed at 2026-10-08 23:35:49.216.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.059 (0.060) seconds
+Test Suite 'ObjectiveCSyntaxTests' started at 2026-10-08 23:35:49.216.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testAFileWithoutObjectiveCDeclarationsIsEmpty]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testAFileWithoutObjectiveCDeclarationsIsEmpty]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testALaterEnumBodyIsNotTheInstanceVariableBlock]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testALaterEnumBodyIsNotTheInstanceVariableBlock]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testCDeclarationsAccessorsAndSynthesizedInstanceVariables]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testCDeclarationsAccessorsAndSynthesizedInstanceVariables]' passed (0.002 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testEveryParserLoopAdvancesOrExits]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testEveryParserLoopAdvancesOrExits]' passed (0.062 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testHeaderDeclarations]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testHeaderDeclarations]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testImplementationDeclarations]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testImplementationDeclarations]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testUnfinishedDeclarationsDoNotStopTheParse]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCSyntaxTests testUnfinishedDeclarationsDoNotStopTheParse]' passed (0.000 seconds).
+Test Suite 'ObjectiveCSyntaxTests' passed at 2026-10-08 23:35:49.285.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 0.069 (0.069) seconds
+Test Suite 'ObjectiveCTests' started at 2026-10-08 23:35:49.285.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testContainerUSRs]' started.
+LegacyStore.m:8:17: warning: method 'audit:' in protocol 'Auditing' not implemented [-Wprotocol]
+    8 | @implementation LegacyStore
+      |                 ^
+    9 | static char *const kTag = "tag";
+   10 | @synthesize contentType = _contentType;
+   11 | @synthesize badge = _badge;
+   12 | @dynamic level;
+   13 | + (instancetype)shared { return 0; }
+   14 | + (int)total { return 1; }
+   15 | + (void)setTotal:(int)total {}
+   16 | - (int)normalizeKey:(int)key { return key + 1; }
+   17 | - (int)storeValue:(int)value forKey:(int)key { _hits += 1; return [self normalizeKey:key] + value + helper(sCalls); }
+   18 | - (LegacyStore *)childNamed:(const char *)name { return 0; }
+   19 | @end
+./LegacyStore.h:7:1: note: method 'audit:' declared here
+    7 | - (void)audit:(int)code;
+      | ^
+1 warning generated.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testContainerUSRs]' passed (0.078 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testObjectiveCFilesAreSourceFiles]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testObjectiveCFilesAreSourceFiles]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheGraphOfAnObjectiveCClass]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheGraphOfAnObjectiveCClass]' passed (0.144 seconds).
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheStoreYieldsTheClassItsMembersAndItsCalls]' started.
+Test Case '-[GraphiteFrontendTests.ObjectiveCTests testTheStoreYieldsTheClassItsMembersAndItsCalls]' passed (0.073 seconds).
+Test Suite 'ObjectiveCTests' passed at 2026-10-08 23:35:49.581.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.296 (0.296) seconds
+Test Suite 'SourceDiscoveryTests' started at 2026-10-08 23:35:49.581.
+Test Case '-[GraphiteFrontendTests.SourceDiscoveryTests testHiddenFilesDoNotHideNeighboringSourceDirectories]' started.
+Test Case '-[GraphiteFrontendTests.SourceDiscoveryTests testHiddenFilesDoNotHideNeighboringSourceDirectories]' passed (0.007 seconds).
+Test Case '-[GraphiteFrontendTests.SourceDiscoveryTests testIndexedFrameworkHeaderCopySuppliesTheDeclaredSignature]' started.
+Test Case '-[GraphiteFrontendTests.SourceDiscoveryTests testIndexedFrameworkHeaderCopySuppliesTheDeclaredSignature]' passed (0.002 seconds).
+Test Suite 'SourceDiscoveryTests' passed at 2026-10-08 23:35:49.590.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.009 (0.009) seconds
+Test Suite 'SwiftPMFrontendRegressionTests' started at 2026-10-08 23:35:49.590.
+Test Case '-[GraphiteFrontendTests.SwiftPMFrontendRegressionTests testReleaseBuildProducesAnIndexedGraph]' started.
+Building for production...
+[0/2] Write sources
+[1/2] Write swift-version-6D90EC345980CB45.txt
+[3/3] Compiling ReleaseProbe Probe.swift
+Build complete! (1.13s)
+Test Case '-[GraphiteFrontendTests.SwiftPMFrontendRegressionTests testReleaseBuildProducesAnIndexedGraph]' passed (2.411 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftPMFrontendRegressionTests testSwiftPMIncludesObjectiveCHeaderDeclarationsAndNullability]' started.
+Building for debugging...
+[0/1] Compiling Legacy Legacy.m
+Build complete! (0.05s)
+Test Case '-[GraphiteFrontendTests.SwiftPMFrontendRegressionTests testSwiftPMIncludesObjectiveCHeaderDeclarationsAndNullability]' passed (1.454 seconds).
+Test Suite 'SwiftPMFrontendRegressionTests' passed at 2026-10-08 23:35:53.455.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 3.865 (3.865) seconds
+Test Suite 'SwiftPackageTests' started at 2026-10-08 23:35:53.455.
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testBuiltTargetsContributeTheirSourcesWhereverTheManifestPutsThem]' started.
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testBuiltTargetsContributeTheirSourcesWhereverTheManifestPutsThem]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testClangHeadersRespectTargetBoundariesAndManifestExcludes]' started.
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testClangHeadersRespectTargetBoundariesAndManifestExcludes]' passed (0.005 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testUnreadableDescribeOutputIsAnError]' started.
+Test Case '-[GraphiteFrontendTests.SwiftPackageTests testUnreadableDescribeOutputIsAnError]' passed (0.000 seconds).
+Test Suite 'SwiftPackageTests' passed at 2026-10-08 23:35:53.461.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.005 (0.006) seconds
+Test Suite 'SwiftSignatureTests' started at 2026-10-08 23:35:53.461.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testDeinitializersHaveVoidReturnWithoutAParameterClause]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testDeinitializersHaveVoidReturnWithoutAParameterClause]' passed (0.143 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testFunctionTypedParametersKeepTheirNeighbours]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testFunctionTypedParametersKeepTheirNeighbours]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testHelpers]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testHelpers]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testInitializerAndVoidReturn]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testInitializerAndVoidReturn]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testInstanceMethod]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testInstanceMethod]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testOperatorsAndExtensionsAndGenerics]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testOperatorsAndExtensionsAndGenerics]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testPrivateFunctions]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testPrivateFunctions]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testProperties]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testProperties]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testPropertiesInPrivateDeclaringTypes]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testPropertiesInPrivateDeclaringTypes]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testSendableMethodsFromRealSwiftPMSymbols]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testSendableMethodsFromRealSwiftPMSymbols]' passed (0.147 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testStaticMethodWithUnlabeledParameter]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testStaticMethodWithUnlabeledParameter]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testUnparsableForms]' started.
+Test Case '-[GraphiteFrontendTests.SwiftSignatureTests testUnparsableForms]' passed (0.000 seconds).
+Test Suite 'SwiftSignatureTests' passed at 2026-10-08 23:35:53.757.
+	 Executed 12 tests, with 0 failures (0 unexpected) in 0.295 (0.296) seconds
+Test Suite 'SyntaxPassTests' started at 2026-10-08 23:35:53.757.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testAttributesAreKeyedByTheDeclaredName]' started.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testAttributesAreKeyedByTheDeclaredName]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testDeclaredSignaturesAreKeyedByTheDeclaredName]' started.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testDeclaredSignaturesAreKeyedByTheDeclaredName]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testLiteralArgumentsAreKeyedByTheCalledName]' started.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testLiteralArgumentsAreKeyedByTheCalledName]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testParseFile]' started.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testParseFile]' passed (0.002 seconds).
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testStringLiteralsCarryTheirRuntimeValue]' started.
+Test Case '-[GraphiteFrontendTests.SyntaxPassTests testStringLiteralsCarryTheirRuntimeValue]' passed (0.002 seconds).
+Test Suite 'SyntaxPassTests' passed at 2026-10-08 23:35:53.769.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 0.012 (0.013) seconds
+Test Suite 'XcodeTests' started at 2026-10-08 23:35:53.769.
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildArguments]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildArguments]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildFromAProjectWithSkipBuild]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildFromAProjectWithSkipBuild]' passed (0.704 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildingAProjectNeedsXcodebuild]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testBuildingAProjectNeedsXcodebuild]' passed (1.223 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testIndexStoreLayouts]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testIndexStoreLayouts]' passed (0.003 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testProjectPaths]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testProjectPaths]' passed (0.001 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testSchemesFromList]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testSchemesFromList]' passed (0.000 seconds).
+Test Case '-[GraphiteFrontendTests.XcodeTests testXcodebuildLocation]' started.
+Test Case '-[GraphiteFrontendTests.XcodeTests testXcodebuildLocation]' passed (0.004 seconds).
+Test Suite 'XcodeTests' passed at 2026-10-08 23:35:55.706.
+	 Executed 7 tests, with 0 failures (0 unexpected) in 1.936 (1.937) seconds
+Test Suite 'graphite-frontend-applePackageTests.xctest' passed at 2026-10-08 23:35:55.706.
+	 Executed 67 tests, with 0 failures (0 unexpected) in 20.529 (21.502) seconds
+Test Suite 'All tests' passed at 2026-10-08 23:35:55.706.
+	 Executed 67 tests, with 0 failures (0 unexpected) in 20.529 (21.503) seconds
+objc[84005]: Class DTXDecompressionException is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20911d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b630). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXService is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091200) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b658). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXBlockCompressorFactory is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912a0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b6f8). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXBlockCompressorLibCompression is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091250) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b6a8). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXRemoteInvocationReceipt is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20912f0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b748). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXProxyChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091340) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b798). One of the two will be used. Which one is undefined.
+objc[84005]: Class _DTXProxy is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091368) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b7c0). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXMachTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20913e0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b838). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091430) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b888). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXResourceTracker is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091480) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b8d8). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXProxyRequestHandler is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20914d0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b928). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXConnection is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091520) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b978). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXChannel is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091548) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7b9a0). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXSocketTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20915c0) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7ba18). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXSharedMemoryTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091610) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7ba68). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXMessageParser is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091660) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7bab8). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXMessageTransmitter is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e20916d8) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7bb30). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXMessage is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091700) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7bb58). One of the two will be used. Which one is undefined.
+objc[84005]: Class DTXFileDescriptorTransport is implemented in both /System/Library/PrivateFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x1e2091750) and /Applications/Xcode.app/Contents/SharedFrameworks/DTXConnectionServices.framework/Versions/A/DTXConnectionServices (0x104e7bba8). One of the two will be used. Which one is undefined.
+◇ Test run started.
+↳ Testing Library Version: 6.1.3 (1d1f7e489c9c606)
+↳ Target Platform: arm64-apple-macosx
+✔ Test run with 0 tests passed after 0.001 seconds.

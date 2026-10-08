@@ -269,6 +269,20 @@ public final class Emitter {
                 return signature.declaringType
             }
         }
+        // Prefer a Swift anchor anywhere in the extension before falling back to
+        // Clang, so reordering @objc and Swift members cannot change its owner.
+        for member in membersByContainer[`extension`.symbol.usr] ?? [] {
+            // An @objc-only extension has no demangleable Swift member. Its Clang
+            // category USR identifies the owner even when that type is external.
+            if let clang = ClangUSR.parse(member.symbol.usr), let owner = clang.container {
+                let module = clang.module.map { "@M@\($0)@" } ?? ""
+                let ownerUSR = "c:\(module)objc(\(clang.isProtocol ? "pl" : "cs"))\(owner)"
+                // A simple-name lookup can pick a different module's same-named
+                // class. Preserve the owner encoded in the member's USR.
+                if typesByUSR[ownerUSR] != nil { return qualifiedName(ofType: ownerUSR) }
+                if let qualified = clang.qualifiedContainer { return qualified }
+            }
+        }
         if let declared = declaredTypesByName[`extension`.symbol.name] {
             return qualifiedName(ofType: declared.symbol.usr)
         }

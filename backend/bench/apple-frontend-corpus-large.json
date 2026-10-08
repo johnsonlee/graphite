@@ -1,31 +1,47 @@
 {
-  "schema": "graphite-apple-frontend-corpus-v1",
-  "label": "generated-package",
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "kind": "real-source",
+  "label": "swift-package-manager",
+  "repository": "https://github.com/swiftlang/swift-package-manager.git",
+  "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
   "input": "package",
-  "generator": {
-    "script": "generate-apple-corpus.py",
-    "seed": 20260929,
-    "files": 2500,
-    "modules": 25,
-    "layout": "package",
-    "name": "GraphiteBenchApp"
-  },
-  "files": 2500,
-  "ceilings": {
-    "wallMs": 18500,
-    "rssMiB": 480
-  },
-  "note": "An application-scale SwiftPM package written by backend/bench/generate-apple-corpus.py from the generator block: 2500 Swift files over 25 library modules in layers plus one executable, about 150 graph nodes per file (375k nodes and 164k edges, the class of a large iOS application), built once with `swift build -c debug` on Linux (swift:6.1). `shape` is the graph the frontend emits for it, pinned from the first hosted measurement (Linux-X64, swift:6.1; the same shape as a local swift 6.1 build): a sample whose shape differs is refused, so changing this pin is the explicit transition when the frontend intentionally emits more or less. Hosted runners differ in speed: the first hosted runs measured 7613 ms and 11374 ms wall (median of 3) for the same IR and the same 315 MiB peak RSS. The ceilings are enforced only when no comparable base exists (a base revision without the frontend, or one that emits another shape); with a paired base the comparator reports a breach and the paired comparison on the one runner decides. The wall ceiling is 1.6x the slower observation (18.5 s), the RSS ceiling 1.5x the stable measurement (480 MiB).",
+  "files": 482,
   "shape": {
-    "files": 2500,
-    "types": 5970,
-    "methods": 24815,
-    "fields": 20839,
-    "callSites": 185510,
-    "constants": 131647,
-    "annotations": 4948,
-    "nodes": 374836,
-    "edges": 163539,
-    "strings": 25917
+    "files": 482,
+    "types": 1752,
+    "methods": 4602,
+    "fields": 5355,
+    "callSites": 25139,
+    "constants": 3434,
+    "annotations": 913,
+    "nodes": 60407,
+    "edges": 29000,
+    "strings": 21419
+  },
+  "ceilings": {
+    "wallMs": 8000,
+    "rssMiB": 272
+  },
+  "note": "Real Swift Package Manager source corpus, calibrated on Linux x86_64 with Swift 6.1.3 and static Swift standard-library linkage in run 37798249852. Shape pins are observed separately for baseline and candidate. Initial ceilings follow the 1.5 times maximum of all five measured candidate samples, rounded up to 250 ms and 16 MiB; warmup is retained separately. The ceiling rule was recorded before inspecting the sample values, not before sampling. These frontend-stage bootstrap limits do not establish lifecycle performance acceptance.",
+  "dependencyLock": {
+    "path": "fixtures/swiftpm/Package.resolved",
+    "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+  },
+  "baselineShapes": {
+    "332c0d8a6fec650a6e7979e3dce37aa1a891c03a": {
+      "shape": {
+        "files": 481,
+        "types": 1752,
+        "methods": 4601,
+        "fields": 5355,
+        "callSites": 25139,
+        "constants": 3434,
+        "annotations": 913,
+        "nodes": 60407,
+        "edges": 29000,
+        "strings": 21459
+      },
+      "reason": "Source/header discovery and signature handling changed in this follow-up. The separately observed baseline has 481 files, 4601 methods and 21459 strings; the candidate has 482, 4602 and 21419. These shapes were observed on the same pinned SwiftPM sources and Swift 6.1.3 Linux toolchain in calibration run 37798249852; different work is not a paired performance comparison."
+    }
   }
 }

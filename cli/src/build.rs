@@ -206,6 +206,12 @@ pub fn choose(args: &[OsString]) -> Result<Choice, String> {
     let mut index = 0;
     while index < args.len() {
         let arg = args[index].to_string_lossy().into_owned();
+        if arg == "--" {
+            if input.is_none() {
+                input = args.get(index + 1).map(PathBuf::from);
+            }
+            break;
+        }
         if arg == "--lang" || arg == "--frontend" {
             let Some(value) = args.get(index + 1) else {
                 return Err(format!("{arg} needs a value"));
@@ -222,7 +228,7 @@ pub fn choose(args: &[OsString]) -> Result<Choice, String> {
             lang = Some(parse_lang(value)?);
         } else if let Some(value) = arg.strip_prefix("--frontend=") {
             explicit = Some(PathBuf::from(value));
-        } else if arg == "-o" || arg == "--output" || VALUE_OPTIONS.contains(&arg.as_str()) {
+        } else if selection_option_takes_value(&arg) {
             index += 2;
             continue;
         } else if !arg.starts_with('-') && input.is_none() {
@@ -285,6 +291,21 @@ const VALUE_OPTIONS: [&str; 8] = [
     "--configuration",
     "--sources",
 ];
+
+/// Values belonging to either frontend must not be reinterpreted as shell selectors
+/// or positional inputs while choosing a frontend and removing selection flags.
+fn selection_option_takes_value(arg: &str) -> bool {
+    VALUE_OPTIONS.contains(&arg)
+        || matches!(
+            arg,
+            "-o" | "--output"
+                | "--include"
+                | "--exclude"
+                | "--android-sdk"
+                | "--lib-filter"
+                | "--fold"
+        )
+}
 
 /// A `graphite build` for the Apple frontend, split into what the shell needs and what
 /// the frontend gets.
@@ -423,6 +444,15 @@ fn run_apple(env: &Env, choice: &Choice, args: &[OsString]) -> i32 {
         return 2;
     }
     let ir = ir_path_for(&build.output);
+    if let Some(parent) = ir.parent().filter(|parent| !parent.as_os_str().is_empty()) {
+        if let Err(error) = std::fs::create_dir_all(parent) {
+            eprintln!(
+                "Error: could not create output directory {}: {error}",
+                parent.display()
+            );
+            return 1;
+        }
+    }
     let inv = apple_invocation(&fe, &build, &ir);
     eprintln!("Running {} build", fe.path().display());
     let code = match inv.command().status() {
@@ -473,8 +503,48 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
     };
     match choice.lang {
         "apple" => run_apple(env, &choice, args),
-        _ => run_subcommand(env, "build", args),
+        _ => {
+            let args = jvm_build_args(args);
+            if let Some(path) = choice.frontend {
+                // Reuse JVM lookup, jar/launcher classification, capability detection
+                // and fold handling with the explicit frontend pinned.
+                let mut env = env.clone();
+                env.vars
+                    .insert(frontend::JVM_FRONTEND_VAR.into(), path.into());
+                run_subcommand(&env, "build", &args)
+            } else {
+                run_subcommand(env, "build", &args)
+            }
+        }
     }
+}
+
+/// Consume only the shell's selection flags; preserve JVM arguments and everything
+/// after the option terminator for the frontend's parser.
+fn jvm_build_args(args: &[OsString]) -> Vec<OsString> {
+    let mut passthrough = Vec::with_capacity(args.len());
+    let mut index = 0;
+    while index < args.len() {
+        let arg = args[index].to_string_lossy();
+        if arg == "--" {
+            passthrough.extend_from_slice(&args[index..]);
+            break;
+        }
+        if arg == "--lang" || arg == "--frontend" {
+            index += 2;
+            continue;
+        }
+        if selection_option_takes_value(&arg) {
+            passthrough.extend_from_slice(&args[index..(index + 2).min(args.len())]);
+            index += 2;
+            continue;
+        }
+        if !arg.starts_with("--lang=") && !arg.starts_with("--frontend=") {
+            passthrough.push(args[index].clone());
+        }
+        index += 1;
+    }
+    passthrough
 }
 
 /// Run `graphite import <ir> -o <output>` (the jar's `import`) and return the exit code.
@@ -1146,6 +1216,169 @@ mod tests {
                 .lang,
             "apple"
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn jvm_selection_flags_are_consumed_and_explicit_frontends_build_the_output() {
+        use std::os::unix::fs::PermissionsExt;
+        let root =
+            std::env::temp_dir().join(format!("graphite-jvm-selection-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let launcher = root.join("launcher");
+        let java = root.join("java");
+        let script = "#!/bin/sh\nset -eu\nprintf '%s\\n' \"$@\" > \"$0.log\"\n\
+            while [ $# -gt 0 ]; do\n\
+              if [ \"$1\" = -o ]; then mkdir -p \"$2\"; echo built > \"$2/result\"; fi\n\
+              shift\n\
+            done\n";
+        for path in [&launcher, &java] {
+            std::fs::write(path, script).unwrap();
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let output = root.join("graph");
+        let jar = root.join("custom.jar");
+        std::fs::write(&jar, "jar").unwrap();
+        let env = env_with(&[
+            ("GRAPHITE_FRONTEND_JVM", launcher.to_str().unwrap()),
+            ("GRAPHITE_JAVA", java.to_str().unwrap()),
+            ("JAVA_TOOL_OPTIONS", "-Xmx256m"),
+        ]);
+        let forwarded = os(&[
+            "app.jar",
+            "--include",
+            "com.example",
+            "-o",
+            output.to_str().unwrap(),
+        ]);
+        for selectors in [os(&["--lang", "jvm"]), os(&["--lang=java"])] {
+            let mut args = selectors;
+            args.extend(forwarded.clone());
+            assert_eq!(run(&env, &args), 0);
+            let expected = std::iter::once("build".to_string())
+                .chain(
+                    forwarded
+                        .iter()
+                        .map(|arg| arg.to_str().unwrap().to_string()),
+                )
+                .collect::<Vec<_>>()
+                .join("\n")
+                + "\n";
+            assert_eq!(
+                std::fs::read_to_string(root.join("launcher.log")).unwrap(),
+                expected
+            );
+            assert_eq!(
+                std::fs::read_to_string(output.join("result")).unwrap(),
+                "built\n"
+            );
+            std::fs::remove_dir_all(&output).unwrap();
+        }
+        // Both selector spellings must override even a pinned, unusable frontend.
+        let mut pinned = env.clone();
+        pinned.vars.insert(
+            frontend::JVM_FRONTEND_VAR.into(),
+            root.join("missing").into(),
+        );
+        for path in [&launcher, &jar] {
+            for selector in [
+                os(&["--frontend", path.to_str().unwrap()]),
+                vec![OsString::from(format!("--frontend={}", path.display()))],
+            ] {
+                let mut args = os(&["--lang=kotlin"]);
+                args.extend(selector);
+                args.extend(forwarded.clone());
+                assert_eq!(run(&pinned, &args), 0);
+                let (log, mut expected) = if path == &jar {
+                    (
+                        root.join("java.log"),
+                        os(&["-jar", jar.to_str().unwrap(), "build"]),
+                    )
+                } else {
+                    (root.join("launcher.log"), os(&["build"]))
+                };
+                expected.extend(forwarded.clone());
+                assert_eq!(
+                    std::fs::read_to_string(log).unwrap(),
+                    expected
+                        .iter()
+                        .map(|arg| arg.to_str().unwrap())
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                        + "\n"
+                );
+                assert_eq!(
+                    std::fs::read_to_string(output.join("result")).unwrap(),
+                    "built\n"
+                );
+                std::fs::remove_dir_all(&output).unwrap();
+            }
+        }
+        let terminated = os(&["-o", "g", "--", "--lang=apple"]);
+        assert_eq!(choose(&terminated).unwrap().lang, "jvm");
+        assert_eq!(jvm_build_args(&terminated), terminated);
+        let selector_values = os(&[
+            "--fold",
+            "--frontend=rules",
+            "-o",
+            "--lang=apple",
+            "app.jar",
+        ]);
+        assert_eq!(choose(&selector_values).unwrap().lang, "jvm");
+        assert_eq!(jvm_build_args(&selector_values), selector_values);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn apple_build_prepares_nested_output_and_refuses_blocked_parent_before_building() {
+        use std::os::unix::fs::PermissionsExt;
+        let root =
+            std::env::temp_dir().join(format!("graphite-apple-output-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let apple = root.join("apple");
+        let jvm = root.join("jvm");
+        std::fs::write(
+            &apple,
+            "#!/bin/sh\nset -eu\n\
+            if [ \"$1\" = describe ]; then echo '{\"ir_schema\":[1]}'; exit; fi\n\
+            echo build > \"$0.log\"\n\
+            [ \"$1\" = build ] && [ \"$2\" = --out ]\n\
+            echo 'IR payload' > \"$3\"\n",
+        )
+        .unwrap();
+        std::fs::write(
+            &jvm,
+            "#!/bin/sh\nset -eu\n\
+            [ \"$1\" = import ] && [ \"$3\" = -o ]\n\
+            mkdir -p \"$4\"\n\
+            cp \"$2\" \"$4/result\"\n",
+        )
+        .unwrap();
+        for path in [&apple, &jvm] {
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let env = env_with(&[
+            ("GRAPHITE_FRONTEND_APPLE", apple.to_str().unwrap()),
+            ("GRAPHITE_FRONTEND_JVM", jvm.to_str().unwrap()),
+        ]);
+        let output = root.join("new/nested/graph");
+        let args =
+            |output: &Path| os(&["--lang", "apple", "MyApp", "-o", output.to_str().unwrap()]);
+        assert!(!output.parent().unwrap().exists());
+        assert_eq!(run(&env, &args(&output)), 0);
+        assert_eq!(
+            std::fs::read_to_string(output.join("result")).unwrap(),
+            "IR payload\n"
+        );
+        assert!(!ir_path_for(&output).exists());
+
+        std::fs::remove_file(root.join("apple.log")).unwrap();
+        let blocked = root.join("blocked");
+        std::fs::write(&blocked, "file").unwrap();
+        assert_eq!(run(&env, &args(&blocked.join("graph.graphite"))), 1);
+        assert!(!root.join("apple.log").exists());
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     /// The whole Apple path with a stub frontend and a stub jar: describe is checked,

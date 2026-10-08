@@ -113,6 +113,73 @@ final class SwiftSignatureTests: XCTestCase {
         XCTAssertNil(SwiftSignature.parse("AcmeShop.CartService.(broken in _0F1E2D3C", name: "broken"))
     }
 
+    func testPropertiesInPrivateDeclaringTypes() {
+        let owner = "Signal.(AddContactShareToContactsFlow in _855D7A027B4E81189F13437A2D9414CE)"
+        XCTAssertEqual(
+            SwiftSignature.parse("\(owner).contactShare : SignalUI.ContactShareViewModel", name: "contactShare"),
+            SwiftSignature(declaringType: owner, returnType: "SignalUI.ContactShareViewModel")
+        )
+        XCTAssertEqual(
+            SwiftSignature.parse("static \(owner).Nested.completion : (() -> ())?", name: "completion"),
+            SwiftSignature(declaringType: owner + ".Nested", returnType: "(() -> ())?", isStatic: true)
+        )
+        // Preserve the separate private-member form when its declaring type is
+        // private too; recognizing a property separator must not stop that fallback.
+        XCTAssertEqual(
+            SwiftSignature.parse("\(owner).(operation in _855D7A027B4E81189F13437A2D9414CE) : Swift.Int", name: "operation"),
+            SwiftSignature(declaringType: owner, returnType: "Swift.Int")
+        )
+        XCTAssertNil(SwiftSignature.parse("\(owner).contactShare : SignalUI.ContactShareViewModel", name: "other"))
+    }
+
+    func testDeinitializersHaveVoidReturnWithoutAParameterClause() throws {
+        // This USR is emitted for Signal's source declaration `deinit { ... }`.
+        let usr = "s:16SignalServiceKit28AccountAttributesUpdaterImplCfd"
+        let demangler = try XCTUnwrap(Demangler.locate())
+        let demangled = try demangler.demangle([usr])
+        let text = try XCTUnwrap(demangled[usr])
+        XCTAssertEqual(text, "SignalServiceKit.AccountAttributesUpdaterImpl.deinit")
+        XCTAssertEqual(
+            SwiftSignature.parse(text, name: "deinit"),
+            SwiftSignature(declaringType: "SignalServiceKit.AccountAttributesUpdaterImpl", returnType: "Swift.Void")
+        )
+        XCTAssertEqual(
+            SwiftSignature.parse("Signal.(Owner in _01234567).__deallocating_deinit", name: "deinit"),
+            SwiftSignature(declaringType: "Signal.(Owner in _01234567)", returnType: "Swift.Void")
+        )
+        XCTAssertNil(SwiftSignature.parse(text, name: "other"))
+        XCTAssertNil(SwiftSignature.parse("Signal.Owner.other", name: "deinit"))
+    }
+
+    func testSendableMethodsFromRealSwiftPMSymbols() throws {
+        let cases: [(String, String, SwiftSignature)] = [
+            (
+                "s:6Basics21AuthorizationProviderPAAE04httpB6Header3forSSSg10Foundation3URLV_tYbF",
+                "httpAuthorizationHeader",
+                SwiftSignature(declaringType: "Basics.AuthorizationProvider", parameterTypes: ["Foundation.URL"], returnType: "Swift.String?")
+            ),
+            (
+                "s:6Basics20URLSessionHTTPClientC7execute_8progressAA0C8ResponseVAA0C7RequestV_ys5Int64V_AKSgtYbKcSgtYaYbKF",
+                "execute",
+                SwiftSignature(declaringType: "Basics.URLSessionHTTPClient", parameterTypes: ["Basics.HTTPClientRequest", "(@Sendable (Swift.Int64, Swift.Int64?) throws -> ())?"], returnType: "Basics.HTTPClientResponse")
+            ),
+            (
+                "s:6Basics20URLSessionHTTPClientC7execute_8progress10completionyAA06LegacyC7RequestV_ys5Int64V_AJSgtYbKcSgys6ResultOyAA0C8ResponseVs5Error_pGYbctYbF",
+                "execute",
+                SwiftSignature(declaringType: "Basics.URLSessionHTTPClient", parameterTypes: ["Basics.LegacyHTTPClientRequest", "(@Sendable (Swift.Int64, Swift.Int64?) throws -> ())?", "@Sendable (Swift.Result<Basics.HTTPClientResponse, Swift.Error>) -> ()"], returnType: "Swift.Void")
+            ),
+        ]
+        let demangler = try XCTUnwrap(Demangler.locate())
+        let demangled = try demangler.demangle(cases.map { $0.0 })
+        for (usr, name, expected) in cases {
+            let text = try XCTUnwrap(demangled[usr])
+            XCTAssertTrue(text.contains(name + "@Sendable ("), text)
+            XCTAssertEqual(SwiftSignature.parse(text, name: name), expected)
+        }
+        XCTAssertNil(SwiftSignature.parse("Demo.Owner.execute@SendableExtra () -> ()", name: "execute"))
+        XCTAssertNil(SwiftSignature.parse("Demo.Owner.executeOther@Sendable () -> ()", name: "execute"))
+    }
+
     func testUnparsableForms() {
         XCTAssertNil(SwiftSignature.parse("closure #1 (AcmeShop.Item) -> Swift.Double in AcmeShop.Order.total.getter : Swift.Double", name: "total"))
         XCTAssertNil(SwiftSignature.parse("x #1 : [Swift.Int] in Ext.free(Swift.Int...) -> ()", name: "x"))
