@@ -11360,3 +11360,106 @@ Evidence root: `/tmp/sootup-static-review/attempt147`. Frozen source-proof descr
 - Measurement owner: `/tmp/sootup-static-review/attempt147/measurement/execution/owner-terminal.json` SHA `1601f56e9b5b4a3b6e0d46ad36a97f0ef961dc4a471149cf35c8b248b71d998c`.
 - Raw-derived summary: `/tmp/sootup-static-review/attempt147/measurement/summary.json` SHA `2a59534bfdcf734d9694a4eb547deb8fe9e6fe6aeb263b8b75e13a06e79d470b`.
 - Owner report: `/tmp/sootup-static-review/attempt147/measurement/results.md` SHA `7d55b586c6d9dbe1813aeb311217eacd36cb9417858d1a214683e1e1387f7d3c`.
+
+### 2026-10-08 — final pre-upgrade6f to integrated147 real64 query comparison
+
+Compare cumulative production `523801bacac70fd15be10b92da7503c23b22619a` with actual pre-upgrade `6f498705009689551c92c6d1ca92f67252ef77c4`, not the preceding increment. A is frozen binary `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b`; B is validated147 export `d9c7d3c39b554b0efe628921ff04f30a923e7cad10f0fc3fb2660cdbcb543d8b`. Historical build base4dac plus147 patch remains recorded; all82 source hashes match integrated523801ba (`integrated-source-equivalence.json`, SHA `61a45eb228d2e1085c9600260e553f78b2b0d1867fb113f3c7a852aa6c2aee66`). The257-test validation and the parent146→147 attribution remain separate evidence.
+
+Released plan SHA `b0ad64ab3aa6e83651a7c820a92fc974212be9fd60401733de5f5774747f742d`. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/run.py --execute-root-released`. Same macOS M3 Max,64 real persisted graph inputs, MAPPED/default C4/fastpaths/Rayon, metrics enabled. Each of four fresh ABBA processes uses the fixed14-case rolling c4 queue,2warm+20measured per case,308 complete responses/process,1,232 total/1,120 measured and8 metrics scrapes.900s client/60s query/65s socket/600s readiness budgets are unchanged. No retry, replacement, extra samples or singlegraph performance run.
+
+Retain the original13 controls and the predeclared renamed-WITH target that reaches generic projection. Its complete oracle is explicitly DERIVED from the original with-filter capture only by column/key c→renamed; all typed values, row order, metadata and probe remain. Both actual versions matched that complete expected response. It is not a new capture or a normalization of actual responses. The14-case mixed queue is not pooled with historical13-case timings.
+
+Root independently verified all1,232 typed bodies,1,120 per-case quantiles, raw time-l/CPU/RSS and four metrics windows (tool796750, `root-independent-audit.json`). No adverse mean or individual forward/reverse p50/p95 comparison occurs among these14 cases. This statement is limited to the declared fixed workload; all actual values follow.
+
+Original session95823 terminal0 /4e8bab;4/4 servers,1232/1232 complete typed bodies,1120 measured,8 raw metrics captures PASS. Owner terminal SHA `655d0280ca29b1339f65861bb92fc4446b74a4fa566a5d462524dc0fa930f0be`. No retry, replacement, HTTP failure or rejected request. Sixteen owned PIDs and four time groups absent.
+
+A: preupgrade6f `2bf3cd50…`; B:147 `d9c7d3c3…`. Same64 graphs, MAPPED/defaultC4/default fastpath and Rayon. Each process:2 warmups and20 measured requests per case; rolling four requests, mixed case queue, no batch barrier.900s total client budget,60s query timeout.
+
+Per-process n20 nearest-rank p50=rank10, p95=rank19; arm values below are the mean of two process quantiles. Absolute ms first; no case pooling.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 7330.958 | 3054.246 | -4276.712 | 9922.758 | 3087.247 | -6835.511 | -4231.839/-6026.208 | -4321.585/-7644.813 |
+| order-by-desc | 7308.830 | 3004.222 | -4304.608 | 9032.512 | 3037.537 | -5994.975 | -4210.433/-6020.645 | -4398.783/-5969.304 |
+| canonical-order-by | 7424.957 | 3051.851 | -4373.106 | 8661.375 | 3081.310 | -5580.065 | -4243.939/-5096.325 | -4502.273/-6063.805 |
+| id-lookup | 5555.403 | 38.527 | -5516.876 | 5609.872 | 39.149 | -5570.722 | -5515.413/-5538.818 | -5518.340/-5602.627 |
+| wide-contains | 0.720 | 0.611 | -0.109 | 19.867 | 0.682 | -19.185 | -0.105/-0.277 | -0.113/-38.092 |
+| with-filter | 3859.280 | 3112.763 | -746.517 | 7227.756 | 3400.381 | -3827.375 | -696.303/-1790.160 | -796.731/-5864.590 |
+| with-aggregate | 693.706 | 645.294 | -48.412 | 809.897 | 672.272 | -137.625 | -44.644/-90.981 | -52.181/-184.269 |
+| group-count | 335.388 | 301.167 | -34.222 | 403.151 | 316.632 | -86.520 | -34.844/-82.388 | -33.599/-90.651 |
+| distinct | 294.535 | 261.683 | -32.852 | 413.120 | 281.998 | -131.121 | -29.772/-66.681 | -35.932/-195.562 |
+| collect | 2559.103 | 2484.004 | -75.099 | 3899.624 | 2509.890 | -1389.734 | -65.572/-720.518 | -84.626/-2058.950 |
+| count-traversal | 42.621 | 26.470 | -16.151 | 73.997 | 27.955 | -46.042 | -14.034/-31.398 | -18.269/-60.687 |
+| int-sort | 123.158 | 112.469 | -10.689 | 182.423 | 116.481 | -65.943 | -9.052/-39.059 | -12.326/-92.826 |
+| int-filter | 13.094 | 12.132 | -0.962 | 47.802 | 13.823 | -33.979 | -0.753/-49.291 | -1.172/-18.667 |
+| with-filter-renamed | 4054.111 | 3584.977 | -469.134 | 7415.564 | 3796.237 | -3619.327 | -477.298/-2465.609 | -460.969/-4773.046 |
+
+Raw process quantiles remain in execution/results.json and this report's summary.json, alongside all warmup values. Warmups are excluded from measured statistics. At n20 these are empirical tails, not a production SLA.
+
+| Process | Query-window CPU s | Whole CPU s | Whole wall s | Whole peak RSS MB | HTTP mixed mean ms | Guard mixed mean ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 0-A | 798.510 | 913.660 | 266.770 | 35970.400 | 2951.814 | 2948.793 |
+| 1-B | 401.010 | 460.760 | 132.950 | 22240.559 | 1418.940 | 1417.953 |
+| 2-B | 397.420 | 457.300 | 131.240 | 22772.875 | 1407.598 | 1406.622 |
+| 3-A | 814.170 | 930.830 | 278.460 | 35424.879 | 3097.568 | 3094.555 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 806.340 | 399.215 | -407.125 | -50.490% | -397.500 | -416.750 |
+| whole CPU s | 922.245 | 459.030 | -463.215 | -50.227% | -452.900 | -473.530 |
+| whole wall s | 272.615 | 132.095 | -140.520 | -51.545% | -133.820 | -147.220 |
+| whole peak RSS MB | 35697.639 | 22506.717 | -13190.922 | -36.952% | -13729.841 | -12652.003 |
+
+HTTP/guard means use sum/count for280 mixed requests per process; not per-case or p95. Current prepares source/ID Arcs before the guard timer; old performs its corresponding conversion inside that timer. Guard means therefore have different preparation scope; outer HTTP covers both preparations but excludes final TCP/body transmission. Full-client request quantiles retain their original complete-response boundary. Every metrics window shows280 successful outcomes, zero rejected/failed/cancelled/timeout/budget-exceeded.10ms first bucket cannot supply precise submillisecond quantiles. Query CPU includes the measured queue, response validation/checkpoint gaps and executor shutdown; ps counter0.01s. Whole resource scope additionally includes loading, warmups and shutdown; no per-case resource attribution.
+
+This compares old6f with cumulative147, not the isolated147 increment. The unchanged14-case mixed queue may alter interference relative to historical13-case workloads; do not pool those samples. This is a closed-loop c4 mixed workload, not a fixed-arrival saturated benchmark. Per-case empirical p50/p95 and query-window CPU remain separate from lifetime resources; these selected cases do not establish whole-product recovery or replace the separate CI main-relative gate. All adverse cases and both pairs remain reported.
+
+Background: {"performanceAttributionStatus": "DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY", "nativeSessionCommandsStarted": 4, "diagnosticOnly": true, "sampleStatus": "RETAIN_ALL_STARTED_SAMPLES", "nativeSessionEvents": [], "betweenSessionEvents": [], "preflightEvents": [], "allEvents": [], "externalLifetimeLimitations": [], "sampleCount": 785, "exclusiveWindowClaim": false, "limits": ["One-second process metadata can miss short-lived/sub-resolution activity and unknown native builds/I/O.", "Observer/supervisor overhead is outside native time-l/CPU counters and applies to both arms; ps child CPU is not separately attributed. No causal delay quantification or guaranteed exclusive window.", "All samples retained; no clean subset selection or automatic resampling."]}.
+
+| Case | Input graphs | Returned rows | total probe | Returned provenance graph count |
+|---|---:|---:|---|---:|
+| order-by | 64 | 200 | {'value': 201, 'relation': 'gte'} | 16 |
+| order-by-desc | 64 | 200 | {'value': 201, 'relation': 'gte'} | 34 |
+| canonical-order-by | 64 | 200 | {'value': 201, 'relation': 'gte'} | 16 |
+| id-lookup | 64 | 1 | {'value': 1, 'relation': 'eq'} | 1 |
+| wide-contains | 64 | 200 | {'value': 201, 'relation': 'gte'} | 1 |
+| with-filter | 64 | 200 | {'value': 201, 'relation': 'gte'} | 1 |
+| with-aggregate | 64 | 50 | {'value': 51, 'relation': 'gte'} | 64 |
+| group-count | 64 | 20 | {'value': 21, 'relation': 'gte'} | 64 |
+| distinct | 64 | 200 | {'value': 201, 'relation': 'gte'} | 64 |
+| collect | 64 | 1 | {'value': 1, 'relation': 'eq'} | 64 |
+| count-traversal | 64 | 1 | {'value': 1, 'relation': 'eq'} | 64 |
+| int-sort | 64 | 20 | {'value': 21, 'relation': 'gte'} | 20 |
+| int-filter | 64 | 1000 | {'value': 1001, 'relation': 'gte'} | 13 |
+| with-filter-renamed | 64 | 200 | {'value': 201, 'relation': 'gte'} | 1 |
+
+Full returned graph-id lists are in summary.json and raw bodies. LIMIT/probe can stop early; graphCount64 is input scope, returned metadata is not a graph-visitation trace.
+
+The measured cumulative comparison satisfies the declared query-latency and independent CPU/RSS+5% constraints for this workload: query CPU806.340→399.215s (−50.490%), whole CPU922.245→459.030s (−50.227%), peak RSS35,697.639→22,506.717MB (−36.952%), both resource pairs improved. Slow string-order p50 drops about4.28–4.37s, literal-ID lookup about5.52s, and generic renamed-WITH469.134ms. Wide-contains p50 changes only0.109ms; that small absolute change is not promoted as a material standalone gain. All14 empirical p50/p95 means and both pairs improve, but finite n20/n2 observations do not imply universal or saturated-workload acceptance. The observer recorded785 samples/no events while explicitly declining an exclusive-host claim. No UNION causality claim follows from these results.
+
+Source continuity and separate construction/loading evidence: source-only git comparison6bb→523801ba finds no Java/Kotlin/Gradle-source changes; f211→523801ba finds no native storage/explore/CLI changes, only the two147 Cypher files. Receipt `final-documentation-continuity.json` SHA `44b056534e500f55e7cf3cab4826d5c86dd0f8e606052558da51456e1812fb09`. This supports carrying exact-scope earlier evidence; it is not a new current-binary runtime measurement or proof of deferred-work completion.
+
+- Own-writer native loading remains the independently checked146-reader evidence: old6f reader on old writer graphs versus146 reader on current144 JVM graphs. Kotlin1751.116→959.211ms, CPU1.765→0.970s, RSS365.051904→364.789760MB; Tika1421.986→718.467ms, CPU1.440→0.730s, RSS249.683968→236.953600MB. Means and both RSS pairs≤+5%, with adverse Kotlin pair+0.004499% retained. Original20907 exit0/84e058,8 full metadata responses; ownerSHA818060742649b3757e4b3dbf324d0b4d3a4098634f2e2ef12cf799e6c270d032. Boundary is MAPPED first strict ready response, observed cache, n2/arm; not C4-complete, lazy-column/first-query or cold-cache acceptance. Separate64-common-input loading144 retains its own identity.
+- Current JVM construction source is unchanged from the tested144 MAIN_query88 runtime. The completed matched8g/G1cap30/minfree20/GCTimeRatio4 profile has Kotlin continuous122.335428→38.782015s, CPU212.740→115.760s, RSS+1.928237% (pairs+1.002327/+2.885878%); Tika110.968079→29.156288s, CPU195.160→100.230s, RSS−3.648815% (pairs−2.365119/−4.943763%). Original60707 exit0/e763df,8build+24strict/40orderedqueries,148files unchanged, all JVMs≤8GiB; ownerSHAc6be097557f1ebacc1f71848efbaeba010fed79a838c841f8c95131eda23e6d3. This is the explicit optional matched configuration, not changed product defaults. Retain earlier8g cap30/minfree20 profile RSS failures and6g's adverse Kotlin pair; do not infer isolated GC causality across cohorts.
+
+
+Separate exact-head main-relative CI: integrated523801ba completed [Rust37743234539](https://github.com/johnsonlee/graphite/actions/runs/37743234539), [JVM37743234540](https://github.com/johnsonlee/graphite/actions/runs/37743234540) and [Benchmark37743234600](https://github.com/johnsonlee/graphite/actions/runs/37743234600), allSUCCESS. The standard report compares main502e2304399b with PR523801bacac7 on Linux-X64:7/7 blocking reports and6/6 advisory JVM-engine reports PASS. These are their existing contracts, not a claim that every individual benchmark or stage became faster.
+
+Retain the inspected adverse method rows: `cypher.CypherBenchmark.withPipeline`137.338→150.623us/op (+9.7%) and `cypher.BudgetedCypherBenchmark.budgetedGeneralRegex`1593.6→1742.1us/op (+9.3%), both within the unchanged15% gate. The separate method-compatibility discovery matrix is reported under its actual standard-report scope; no unsupported synthetic/real classification is inferred here. Advisory JVM-engine reports are not the native server request p95 measurement.
+
+The real-corpus `JAR→build→save→mapped load→Cypher` pipeline passes on Tika42,939→36,670ms (−14.6%), Hive59,763→57,407ms (−3.9%), Kotlin36,710→33,687ms (−8.2%). Retain stage increases: Tika mapped load119→125ms (+5.0%) and branch definitions875→1045ms (+19.4%); Kotlin mapped load108→113ms (+4.6%) and branch definitions1173→1195ms (+1.9%). Those pass their unchanged stage gates; “all pipelines improved” does not mean all stages improved. This4GiB CI lifecycle evidence is distinct from the matched optional8GiB construction profile and the own-writer native-ready boundary above.
+
+Conclusion for the declared scopes: cumulative old→147 selected real64 query latency/resources pass, matched explicit construction-profile and own-writer readiness evidence remain applicable through the recorded source continuity, and exact-head main-relative required CI passes. Preserve earlier construction-profile RSS failures, earlier adverse pairs and historical confirmed UNION diagnostics. Default configuration recovery, arbitrary queries/corpora, cold-cache behavior, sustained saturation and universal semantic coverage are not established. Product defaults remain unchanged; no threshold or sample selection was relaxed.
+
+Evidence:
+
+- Executed plan: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/plan.json`, SHA `b0ad64ab3aa6e83651a7c820a92fc974212be9fd60401733de5f5774747f742d`.
+- Integrated source equivalence: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/integrated-source-equivalence.json`, SHA `61a45eb228d2e1085c9600260e553f78b2b0d1867fb113f3c7a852aa6c2aee66`.
+- Owner terminal: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/execution/owner-terminal.json`, SHA `655d0280ca29b1339f65861bb92fc4446b74a4fa566a5d462524dc0fa930f0be`.
+- Actual report: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/results.md`, SHA `575f022d13df39924a341e0131524edcb4c79447867fbb6c3635e4386c228db8`.
+- Raw-derived summary: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/summary.json`, SHA `7e2c929ac49066e45826ff71abf7938ef2099c847a64d9bdee9b37b7f17be96d`.
+- Root independent raw audit: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/measurement/root-independent-audit.json`, SHA `25a54ce23b81652f6ae44adea87ca650fbd22b4d8317f43ae94b0ded8b1d609e`.
+- JVM/loading source continuity: `/tmp/sootup-static-review/preupgrade-vs147-slow-suite/final-documentation-continuity.json`, SHA `44b056534e500f55e7cf3cab4826d5c86dd0f8e606052558da51456e1812fb09`.
+- Exact-head standard benchmark comment: `/tmp/sootup-static-review/benchmark-comment-523801ba.json`, SHA `a6b1d0df92e6c96893a2a38d9d28ea13d1e1a773ddb103ae9f2609982c3805c4`.
+
+Review6054863268 identifies a remaining delivery gap: default CLI construction has not been accepted under the CPU/RSS limits. The passing GC4 profile is opt-in and does not close that gap. The earlier Kotlin+9.991955% result used the explicit8g/G1cap30/minfree20 profile with default GCTimeRatio; it was not a measurement of the bare CLI fallback, so do not report that exact percentage as bare-default behavior. The current `default_java_tool_options` still falls back to `-Xmx8g`. Changing that fallback requires preserving explicit JAVA_TOOL_OPTIONS/JAVA_OPTS precedence and validating the actual launcher and supported runtime/workload behavior; the existing direct-Java4GiB CI corpus gate does not itself exercise the CLI fallback. The task remains open for default-path recovery or an explicit user decision about configuration scope.
