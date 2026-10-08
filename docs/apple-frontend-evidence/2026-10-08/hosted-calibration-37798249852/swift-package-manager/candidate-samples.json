@@ -1,0 +1,116 @@
+[
+  {
+    "benchmark": "apple.frontend.wall",
+    "primaryMetric": {
+      "score": 5176.946,
+      "scoreUnit": "ms/op",
+      "scoreConfidence": [
+        5144.328,
+        5246.152
+      ],
+      "rawData": [
+        [
+          5176.566,
+          5144.328,
+          5176.946,
+          5221.443,
+          5246.152
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "swift-package-manager"
+    },
+    "mode": "sequential-run",
+    "files": 482,
+    "shape": {
+      "files": 482,
+      "types": 1752,
+      "methods": 4602,
+      "fields": 5355,
+      "callSites": 25139,
+      "constants": 3434,
+      "annotations": 913,
+      "nodes": 60407,
+      "edges": 29000,
+      "strings": 21419
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "e52e4f85fab3a743c4f58d4cabf3a607bb785435a7bce54b2aecc5e5ab50f4c9"
+    },
+    "input": "package",
+    "verified": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLock": {
+        "path": "fixtures/swiftpm/Package.resolved",
+        "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+      }
+    },
+    "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+    "baselineRevision": null
+  },
+  {
+    "benchmark": "apple.frontend.rss",
+    "primaryMetric": {
+      "score": 174.512,
+      "scoreUnit": "MiB",
+      "scoreConfidence": [
+        173.625,
+        174.656
+      ],
+      "rawData": [
+        [
+          173.703,
+          174.613,
+          173.625,
+          174.512,
+          174.656
+        ]
+      ]
+    },
+    "params": {
+      "corpus": "swift-package-manager"
+    },
+    "mode": "sequential-run",
+    "files": 482,
+    "shape": {
+      "files": 482,
+      "types": 1752,
+      "methods": 4602,
+      "fields": 5355,
+      "callSites": 25139,
+      "constants": 3434,
+      "annotations": 913,
+      "nodes": 60407,
+      "edges": 29000,
+      "strings": 21419
+    },
+    "determinism": {
+      "identical": true,
+      "sha256": "e52e4f85fab3a743c4f58d4cabf3a607bb785435a7bce54b2aecc5e5ab50f4c9"
+    },
+    "input": "package",
+    "verified": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "passed": true
+    },
+    "corpus": {
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLock": {
+        "path": "fixtures/swiftpm/Package.resolved",
+        "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+      }
+    },
+    "samples": "calibration-results/candidate-samples.json.samples.jsonl",
+    "baselineRevision": null
+  }
+]

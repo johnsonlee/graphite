@@ -1,0 +1,213 @@
+{
+  "scope": {
+    "purpose": "real-source calibration only",
+    "performanceAcceptance": false,
+    "revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+    "releaseVersion": "2.11.3-apple-validation.4",
+    "baseline": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+    "baselinePurpose": "shape calibration only; no paired acceptance",
+    "timedBoundary": "existing compiler index store through IR emission",
+    "excluded": [
+      "compilation",
+      "import/save timing",
+      "graph load",
+      "server query latency"
+    ]
+  },
+  "toolchain": {
+    "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+    "machine": "x86_64",
+    "swift": "Swift version 6.1.3 (swift-6.1.3-RELEASE)\nTarget: x86_64-unknown-linux-gnu"
+  },
+  "candidate": {
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "irSha": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+        "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+      },
+      "command": [
+        "/__w/_temp/calibration-frontend/graphite-frontend-apple",
+        "build",
+        "--package",
+        "/__w/_temp/corpus",
+        "--skip-build",
+        "--out",
+        "/tmp/apple-frontend-bench-4e9q7qpf/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": null,
+      "wallMs": 1649.5662670000115,
+      "cpuMs": 1563.9650000000001,
+      "userMs": 1330.729,
+      "systemMs": 233.236,
+      "peakRssBytes": 132956160,
+      "exitCode": 0,
+      "shape": {
+        "files": 181,
+        "types": 147,
+        "methods": 677,
+        "fields": 990,
+        "callSites": 16867,
+        "constants": 3468,
+        "annotations": 18,
+        "nodes": 32530,
+        "edges": 14655,
+        "strings": 7173
+      },
+      "sha256": "783ce80903e63bce1472a78fb44f85c116bc137ddc388020e955f2a170ec5508"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 1312.2782909999842,
+        "min": 1309.760022000006,
+        "max": 1322.879721000021,
+        "raw": [
+          1322.879721000021,
+          1312.2782909999842,
+          1312.7194290000261,
+          1309.760022000006,
+          1310.881870000003
+        ]
+      },
+      "cpuMs": {
+        "median": 1222.784,
+        "min": 1220.483,
+        "max": 1232.933,
+        "raw": [
+          1232.933,
+          1222.784,
+          1223.273,
+          1220.483,
+          1221.7089999999998
+        ]
+      },
+      "peakRssMiB": {
+        "median": 78.6796875,
+        "min": 78.515625,
+        "max": 78.77734375,
+        "raw": [
+          78.65234375,
+          78.77734375,
+          78.6875,
+          78.6796875,
+          78.515625
+        ]
+      }
+    },
+    "baselineRevision": null
+  },
+  "baseline": {
+    "shape": {
+      "files": 181,
+      "types": 147,
+      "methods": 677,
+      "fields": 990,
+      "callSites": 16867,
+      "constants": 3468,
+      "annotations": 18,
+      "nodes": 32530,
+      "edges": 14655,
+      "strings": 7173
+    },
+    "irSha": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea",
+    "productionImportPassed": true,
+    "records": 6,
+    "warmup": {
+      "run": 0,
+      "warmup": true,
+      "corpus": {
+        "kind": "real-source",
+        "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+        "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9"
+      },
+      "command": [
+        "calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple",
+        "build",
+        "--package",
+        "/__w/_temp/corpus",
+        "--skip-build",
+        "--out",
+        "/tmp/apple-frontend-bench-z1dctr6e/corpus.graphite-ir"
+      ],
+      "status": "valid-ir",
+      "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+      "wallMs": 1697.5355010000612,
+      "cpuMs": 1608.827,
+      "userMs": 1361.567,
+      "systemMs": 247.26,
+      "peakRssBytes": 132964352,
+      "exitCode": 0,
+      "shape": {
+        "files": 181,
+        "types": 147,
+        "methods": 677,
+        "fields": 990,
+        "callSites": 16867,
+        "constants": 3468,
+        "annotations": 18,
+        "nodes": 32530,
+        "edges": 14655,
+        "strings": 7173
+      },
+      "sha256": "fad778fbaa286f540f94fc37230242ad414575ecc92bb4707bfbf8eae0098aea"
+    },
+    "metrics": {
+      "wallMs": {
+        "median": 1301.4236489999575,
+        "min": 1296.4034110000284,
+        "max": 1303.8658719999603,
+        "raw": [
+          1301.4236489999575,
+          1296.4904399999568,
+          1303.8658719999603,
+          1296.4034110000284,
+          1302.7529309999863
+        ]
+      },
+      "cpuMs": {
+        "median": 1212.163,
+        "min": 1207.2620000000002,
+        "max": 1214.655,
+        "raw": [
+          1212.163,
+          1207.2620000000002,
+          1214.655,
+          1207.41,
+          1213.16
+        ]
+      },
+      "peakRssMiB": {
+        "median": 78.8203125,
+        "min": 78.65234375,
+        "max": 78.9765625,
+        "raw": [
+          78.65234375,
+          78.9765625,
+          78.6640625,
+          78.8203125,
+          78.9765625
+        ]
+      }
+    },
+    "baselineRevision": "332c0d8a6fec650a6e7979e3dce37aa1a891c03a"
+  },
+  "performanceAcceptance": false
+}

@@ -1,0 +1,18 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v2",
+  "kind": "real-source",
+  "label": "signal-ios",
+  "repository": "https://github.com/signalapp/Signal-iOS.git",
+  "commit": "4193fd427eeae9d9a8c704e60958463342b7e1cc",
+  "input": "xcodeproj",
+  "files": null,
+  "shape": null,
+  "ceilings": null,
+  "note": "Hosted corpus: Signal 7.70.1.917, whose upstream CI uses Xcode 16.4. This differs from the Signal 7.19.1.208 corpus used for local lifecycle validation; their measurements and graph shapes are not interchangeable. Graph shape, file count and bootstrap ceilings remain pending matching hosted measurements; the comparator fails closed until the shape is pinned. No synthetic timing is accepted.",
+  "project": "Signal.xcworkspace",
+  "scheme": "Signal",
+  "submodules": {
+    "Pods": "c65dd3f33daaa96582de97296e480f5a3aecc04d",
+    "SignalServiceKit/tests/MessageBackup/Signal-Message-Backup-Tests": "341379da3316e97421c212e6bb62c795e68c53a9"
+  }
+}

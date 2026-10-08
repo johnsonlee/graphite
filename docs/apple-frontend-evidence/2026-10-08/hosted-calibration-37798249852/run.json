@@ -1,0 +1,1449 @@
+{
+  "conclusion": "success",
+  "createdAt": "2026-10-08T15:08:19Z",
+  "event": "workflow_dispatch",
+  "headSha": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+  "jobs": [
+    {
+      "completedAt": "2026-10-08T15:08:31Z",
+      "conclusion": "success",
+      "databaseId": 113383274575,
+      "name": "validate-release-tag",
+      "startedAt": "2026-10-08T15:08:23Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Parse the release tag as SemVer",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Test release smoke validation and real-source preparation",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 9,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383274575"
+    },
+    {
+      "completedAt": "2026-10-08T15:11:51Z",
+      "conclusion": "success",
+      "databaseId": 113383358637,
+      "name": "maven",
+      "startedAt": "2026-10-08T15:08:34Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Publish the Maven artifacts to the local repository (dry run)",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Publish to Sonatype Central",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358637"
+    },
+    {
+      "completedAt": "2026-10-08T15:10:35Z",
+      "conclusion": "success",
+      "databaseId": 113383358732,
+      "name": "binaries (ubuntu-latest, x86_64-unknown-linux-musl, CC_x86_64_unknown_linux_musl)",
+      "startedAt": "2026-10-08T15:08:34Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install the musl C toolchain",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install cross and qemu-user",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build release binaries",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358732"
+    },
+    {
+      "completedAt": "2026-10-08T15:22:53Z",
+      "conclusion": "success",
+      "databaseId": 113383358745,
+      "name": "apple-frontend (macos-15-intel, x86_64-apple-darwin)",
+      "startedAt": "2026-10-08T15:08:36Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Select the frontend compiler",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install what the swift image lacks",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the frontend",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358745"
+    },
+    {
+      "completedAt": "2026-10-08T15:14:58Z",
+      "conclusion": "success",
+      "databaseId": 113383358777,
+      "name": "apple-frontend (macos-15, aarch64-apple-darwin)",
+      "startedAt": "2026-10-08T15:08:40Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Select the frontend compiler",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install what the swift image lacks",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the frontend",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358777"
+    },
+    {
+      "completedAt": "2026-10-08T15:11:38Z",
+      "conclusion": "success",
+      "databaseId": 113383358804,
+      "name": "binaries (ubuntu-latest, aarch64-unknown-linux-musl, true, qemu-aarch64-static)",
+      "startedAt": "2026-10-08T15:08:36Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install the musl C toolchain",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install cross and qemu-user",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build release binaries",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358804"
+    },
+    {
+      "completedAt": "2026-10-08T15:14:07Z",
+      "conclusion": "success",
+      "databaseId": 113383358840,
+      "name": "apple-frontend (ubuntu-latest, x86_64-unknown-linux-gnu, swift:6.1.3, --static-swift-stdlib)",
+      "startedAt": "2026-10-08T15:08:35Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Initialize containers",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Select the frontend compiler",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install what the swift image lacks",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the frontend",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 15,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Stop containers",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358840"
+    },
+    {
+      "completedAt": "2026-10-08T15:12:34Z",
+      "conclusion": "success",
+      "databaseId": 113383358905,
+      "name": "binaries (macos-15-intel, x86_64-apple-darwin)",
+      "startedAt": "2026-10-08T15:08:37Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install the musl C toolchain",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install cross and qemu-user",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build release binaries",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358905"
+    },
+    {
+      "completedAt": "2026-10-08T15:10:18Z",
+      "conclusion": "success",
+      "databaseId": 113383358916,
+      "name": "binaries (macos-latest, aarch64-apple-darwin)",
+      "startedAt": "2026-10-08T15:08:41Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run dtolnay/rust-toolchain@stable",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install the musl C toolchain",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install cross and qemu-user",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build release binaries",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Package",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 16,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 17,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113383358916"
+    },
+    {
+      "completedAt": "2026-10-08T15:25:17Z",
+      "conclusion": "success",
+      "databaseId": 113390346673,
+      "name": "release",
+      "startedAt": "2026-10-08T15:22:56Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the JVM frontend jar",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Collect the Rust binaries and the Apple frontend",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify release assets",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Render the Homebrew formula",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Keep the assets and the rendered formula",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Self-test the publish script against a stub gh",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Publish the GitHub Release",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 19,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 20,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 21,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113390346673"
+    },
+    {
+      "completedAt": "2026-10-08T15:26:06Z",
+      "conclusion": "success",
+      "databaseId": 113391523176,
+      "name": "apple-release-smoke (x86_64-apple-darwin)",
+      "startedAt": "2026-10-08T15:25:22Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify, unpack and exercise the shipped artifacts",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523176"
+    },
+    {
+      "completedAt": "2026-10-08T15:26:04Z",
+      "conclusion": "success",
+      "databaseId": 113391523177,
+      "name": "docker",
+      "startedAt": "2026-10-08T15:25:21Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Take the Linux binaries from this run (dry run)",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Download the Linux binaries from the GitHub Release",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run docker/setup-qemu-action@v4",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run docker/setup-buildx-action@v4",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Login to GitHub Container Registry",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Login to Docker Hub",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Extract Docker metadata",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build and run the image for the runner's architecture",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Check the image starts and reports the release version",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build and push graphite-explore image",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Build and push graphite-explore image",
+          "number": 20,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Build and run the image for the runner's architecture",
+          "number": 21,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run docker/setup-buildx-action@v4",
+          "number": 22,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run docker/setup-qemu-action@v4",
+          "number": 23,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 24,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 25,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523177"
+    },
+    {
+      "completedAt": "2026-10-08T15:37:37Z",
+      "conclusion": "success",
+      "databaseId": 113391523202,
+      "name": "apple-corpus-calibration (swift-package-manager)",
+      "startedAt": "2026-10-08T15:25:22Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Initialize containers",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install preparation dependencies on Linux",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Select the corpus compiler",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify and unpack the final frontend release asset",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Prepare the pinned real source corpus",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record raw calibration samples without an acceptance verdict",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the baseline frontend",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record baseline shape and raw samples on the same prepared corpus",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 25,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 26,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 27,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Stop containers",
+          "number": 28,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523202"
+    },
+    {
+      "completedAt": "2026-10-08T15:36:22Z",
+      "conclusion": "success",
+      "databaseId": 113391523240,
+      "name": "apple-release-smoke (aarch64-apple-darwin)",
+      "startedAt": "2026-10-08T15:35:27Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify, unpack and exercise the shipped artifacts",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 13,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523240"
+    },
+    {
+      "completedAt": "2026-10-08T15:26:18Z",
+      "conclusion": "success",
+      "databaseId": 113391523243,
+      "name": "apple-release-smoke (x86_64-unknown-linux-gnu)",
+      "startedAt": "2026-10-08T15:25:21Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Initialize containers",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify, unpack and exercise the shipped artifacts",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Stop containers",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 15,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523243"
+    },
+    {
+      "completedAt": "2026-10-08T15:27:08Z",
+      "conclusion": "success",
+      "databaseId": 113391523278,
+      "name": "install-the-formula (dry run)",
+      "startedAt": "2026-10-08T15:25:29Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install the formula from the dry-run assets and run its test",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 11,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523278"
+    },
+    {
+      "completedAt": "2026-10-08T15:58:30Z",
+      "conclusion": "success",
+      "databaseId": 113391523335,
+      "name": "apple-corpus-calibration (signal-ios)",
+      "startedAt": "2026-10-08T15:25:28Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Install preparation dependencies on Linux",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Select the corpus compiler",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify and unpack the final frontend release asset",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Prepare the pinned real source corpus",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record raw calibration samples without an acceptance verdict",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the baseline frontend",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record baseline shape and raw samples on the same prepared corpus",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 24,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 25,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 26,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 27,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523335"
+    },
+    {
+      "completedAt": "2026-10-08T15:34:22Z",
+      "conclusion": "success",
+      "databaseId": 113391523362,
+      "name": "apple-corpus-calibration (swiftformat)",
+      "startedAt": "2026-10-08T15:25:22Z",
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job",
+          "number": 1,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Initialize containers",
+          "number": 2,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install preparation dependencies on Linux",
+          "number": 3,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@v7",
+          "number": 4,
+          "status": "completed"
+        },
+        {
+          "conclusion": "skipped",
+          "name": "Select the corpus compiler",
+          "number": 5,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-java@v5",
+          "number": 6,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/download-artifact@v8",
+          "number": 7,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify and unpack the final frontend release asset",
+          "number": 8,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Prepare the pinned real source corpus",
+          "number": 9,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record raw calibration samples without an acceptance verdict",
+          "number": 10,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 11,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build the baseline frontend",
+          "number": 12,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Record baseline shape and raw samples on the same prepared corpus",
+          "number": 13,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/upload-artifact@v7",
+          "number": 14,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Checkout the fixed pre-fix baseline for shape calibration",
+          "number": 25,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-java@v5",
+          "number": 26,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@v7",
+          "number": 27,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Stop containers",
+          "number": 28,
+          "status": "completed"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job",
+          "number": 29,
+          "status": "completed"
+        }
+      ],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391523362"
+    },
+    {
+      "completedAt": "2026-10-08T15:25:17Z",
+      "conclusion": "skipped",
+      "databaseId": 113391528304,
+      "name": "update-the-homebrew-tap",
+      "startedAt": "2026-10-08T15:25:18Z",
+      "status": "completed",
+      "steps": [],
+      "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852/job/113391528304"
+    }
+  ],
+  "status": "completed",
+  "updatedAt": "2026-10-08T15:58:32Z",
+  "url": "https://github.com/johnsonlee/graphite/actions/runs/37798249852"
+}

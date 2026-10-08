@@ -5,12 +5,43 @@
   "repository": "https://github.com/swiftlang/swift-package-manager.git",
   "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
   "input": "package",
-  "files": null,
-  "shape": null,
-  "ceilings": null,
-  "note": "Real upstream source corpus. Graph shape, file count and bootstrap ceilings are pending measured evidence; the comparator fails closed until the shape is pinned. No synthetic timing is accepted.",
+  "files": 482,
+  "shape": {
+    "files": 482,
+    "types": 1752,
+    "methods": 4602,
+    "fields": 5355,
+    "callSites": 25139,
+    "constants": 3434,
+    "annotations": 913,
+    "nodes": 60407,
+    "edges": 29000,
+    "strings": 21419
+  },
+  "ceilings": {
+    "wallMs": 8000,
+    "rssMiB": 272
+  },
+  "note": "Real Swift Package Manager source corpus, calibrated on Linux x86_64 with Swift 6.1.3 and static Swift standard-library linkage in run 37798249852. Shape pins are observed separately for baseline and candidate. Initial ceilings follow the 1.5 times maximum of all five measured candidate samples, rounded up to 250 ms and 16 MiB; warmup is retained separately. The ceiling rule was recorded before inspecting the sample values, not before sampling. These frontend-stage bootstrap limits do not establish lifecycle performance acceptance.",
   "dependencyLock": {
     "path": "fixtures/swiftpm/Package.resolved",
     "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+  },
+  "baselineShapes": {
+    "332c0d8a6fec650a6e7979e3dce37aa1a891c03a": {
+      "shape": {
+        "files": 481,
+        "types": 1752,
+        "methods": 4601,
+        "fields": 5355,
+        "callSites": 25139,
+        "constants": 3434,
+        "annotations": 913,
+        "nodes": 60407,
+        "edges": 29000,
+        "strings": 21459
+      },
+      "reason": "Source/header discovery and signature handling changed in this follow-up. The separately observed baseline has 481 files, 4601 methods and 21459 strings; the candidate has 482, 4602 and 21419. These shapes were observed on the same pinned SwiftPM sources and Swift 6.1.3 Linux toolchain in calibration run 37798249852; different work is not a paired performance comparison."
+    }
   }
 }
