@@ -51,16 +51,16 @@ internal class DeclaredTypeTextCandidates(
     private fun matchMappedType(id: Int, source: DeclaredTypeAtoms): Int {
         var position = source.typeOffset(id)
         var mask = matchAtom(source, position, "kind", matchText("arguments", 0))
-        position = atomEnd(source, position)
+        position = source.nextTextField(position)
         mask = matchAtom(source, position, "name", mask)
-        position = atomEnd(source, position)
+        position = source.nextTextField(position)
         mask = matchAtom(source, position, "scope", mask)
-        position = atomEnd(source, position)
+        position = source.nextTextField(position)
         val owner = source.atomInt(position)
         val component = source.atomInt(position + Int.SIZE_BYTES)
         position += 2 * Int.SIZE_BYTES
         mask = matchAtom(source, position, "variance", mask)
-        position = atomEnd(source, position)
+        position = source.nextTextField(position)
         if (owner >= 0) mask = matchText("owner", mask) or matchReference(owner)
         if (component >= 0) mask = matchText("component", mask) or matchReference(component)
         val argumentCount = source.atomInt(position)
@@ -72,15 +72,13 @@ internal class DeclaredTypeTextCandidates(
         return mask
     }
 
-    private fun atomEnd(source: DeclaredTypeAtoms, position: Int): Int =
-        position + Int.SIZE_BYTES + source.atomInt(position)
-
     private fun matchAtom(source: DeclaredTypeAtoms, position: Int, key: String, initial: Int): Int {
-        val length = source.atomInt(position)
+        val textOffset = source.atomTextOffset(position)
+        val length = source.atomInt(textOffset)
         var mask = if (length == 0) initial else matchText(key, initial)
         for ((index, fragment) in fragments.withIndex()) {
             val bit = 1 shl index
-            if (mask and bit == 0 && atomContains(source, position + Int.SIZE_BYTES, length, fragment)) {
+            if (mask and bit == 0 && atomContains(source, textOffset + Int.SIZE_BYTES, length, fragment)) {
                 mask = mask or bit
             }
         }

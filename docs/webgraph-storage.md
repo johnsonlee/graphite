@@ -15,7 +15,7 @@ graph-dir/
 ├── graph.nodeoffsets  Mmap Node ID -> offset lookup
 ├── graph.typeindex    Mmap node type -> Node ID ranges lookup
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
-├── graph.types        Optional deduplicated declared types + member bindings (own UTF-8 strings)
+├── graph.types        Optional deduplicated declared types + member bindings (own string dictionary)
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
@@ -112,7 +112,8 @@ text and bytes and does not reference `graph.strings` or store Node IDs.
 ```mermaid
 flowchart TB
     P["forward.properties<br/>authoritative declared-type binding"]
-    T["graph.types<br/>type expressions + field/method/class bindings<br/>own UTF-8 strings"]
+    T["graph.types<br/>type expressions + field/method/class bindings"]
+    TS["dictionary inside graph.types v2<br/>unique UTF-8 strings"]
     M["graph.metadata"]
     N["graph.nodedata"]
     D["graph.branchdefs<br/>branch-side/local definition triples"]
@@ -125,8 +126,9 @@ flowchart TB
     P -.->|"SHA-256 of complete type file"| T
     T -.->|"embedded SHA-256 of complete metadata file"| M
     T -->|"table-local type IDs: arguments, owner, component, bindings"| T
-    T ---|"full field/method key lookup at query time"| N
-    T ---|"full method key lookup at query time"| M
+    T -->|"table-local string IDs: names, scopes, kinds, member keys"| TS
+    T ---|"full field/method key lookup"| N
+    T ---|"full method key lookup"| M
     M -.->|"GRX trailer: branch payload digest"| D
     M -.->|"GRB section: ordinal index digest"| Q
     D -->|"local/constant Node IDs; scope order follows metadata"| N
@@ -140,9 +142,12 @@ flowchart TB
 ```
 
 A full member key is the declaring class, member name and **complete JVM descriptor**,
-including the return type for methods. The current `graph.types` v1 stores these keys and
-its type names/scopes as its own UTF-8 strings; it contains neither `graph.strings` IDs nor
-Node IDs. Its integer type references point only to its own deduplicated expression rows.
+including the return type for methods. The current writer emits `graph.types` v2,
+whose member keys and type text reference a dictionary inside that same file.
+It contains neither `graph.strings` IDs nor Node IDs. Its type references point
+only to its own deduplicated expression rows; its string references use a separate
+table-local ID space. Readers also accept v1, which stores text inline without
+the internal dictionary.
 Fields, parameters and returns resolve that binding using their erased declaration key.
 A formatted value such as `List<User>` is rendered on demand rather than stored as a string.
 
@@ -150,7 +155,7 @@ The `graph.types` binding is authoritative in `forward.properties`: no binding m
 legacy graph and any orphan type file is ignored; a binding with a missing or mismatched
 file is a load error. The embedded metadata digest prevents attaching the table to another
 metadata file. JVM loading validates the complete table and retains mapped rows/indexes;
-Rust loading currently decodes the table into memory. See [Declared JVM types](declared-types.md)
+Rust loading decodes the table into memory with graph-local shared strings. See [Declared JVM types](declared-types.md)
 for the complete wire format and query properties.
 
 The CallSite identity files are snapshots generated while saving the graph.
@@ -173,7 +178,7 @@ entry blocks; the diagram shows the file-level binding rather than those interna
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.types | `GTY` | `0x47545901` (independent version 1) |
+| graph.types | `GTY` | `0x47545902` (independent version 2; readers also accept `0x47545901`) |
 | graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524202`, last) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |

@@ -10,7 +10,6 @@ import java.io.BufferedOutputStream
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
-import java.nio.charset.CodingErrorAction
 import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.Path
@@ -26,7 +25,8 @@ internal object DeclaredTypeStore {
     const val FILE_NAME = "graph.types"
     internal const val BINDING_KEY = "graphite.declaredTypes.sha256"
     private const val PROPERTIES_FILE = "forward.properties"
-    private const val HEADER = 0x47545901 // GTY, version 1
+    private const val LEGACY_HEADER = 0x47545901 // GTY, inline UTF-8
+    private const val HEADER = 0x47545902 // GTY, table-local string dictionary
     private const val DIGEST_SIZE = 32
     private const val TYPE_MIN_BYTES = 28
     private const val FIELD_MIN_BYTES = 16
@@ -61,35 +61,37 @@ internal object DeclaredTypeStore {
     }
 
     private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path) {
+        val strings = DeclaredTypeStringIds(table)
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(path))).use { out ->
             out.writeInt(HEADER)
             out.write(digest(dir.resolve("graph.metadata")))
+            strings.write(out)
             out.writeInt(table.types.size)
             for (type in table.types) {
-                out.text(type.kind)
-                out.text(type.name)
-                out.text(type.scope)
+                out.text(type.kind, strings)
+                out.text(type.name, strings)
+                out.text(type.scope, strings)
                 out.writeInt(type.owner ?: -1)
                 out.writeInt(type.component ?: -1)
-                out.text(type.variance)
+                out.text(type.variance, strings)
                 out.ids(type.arguments)
             }
             out.writeInt(table.fields.size)
             for ((key, type) in table.fields) {
-                out.key(key)
+                out.key(key, strings)
                 out.writeInt(type)
             }
             out.writeInt(table.methods.size)
             for ((key, method) in table.methods) {
-                out.key(key)
+                out.key(key, strings)
                 out.ids(method.parameterTypes)
                 out.writeInt(method.returnType)
-                out.parameters(method.typeParameters)
+                out.parameters(method.typeParameters, strings)
             }
             out.writeInt(table.classes.size)
             for ((name, type) in table.classes) {
-                out.text(name)
-                out.parameters(type.typeParameters)
+                out.text(name, strings)
+                out.parameters(type.typeParameters, strings)
                 out.writeInt(type.superType ?: -1)
                 out.ids(type.interfaces)
             }
@@ -109,16 +111,18 @@ internal object DeclaredTypeStore {
                 "Invalid graph.types length"
             }
             val reader = Reader(channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()))
-            require(reader.int() == HEADER) { "Unsupported graph.types header/version" }
+            val header = reader.int()
+            require(header == HEADER || header == LEGACY_HEADER) { "Unsupported graph.types header/version" }
             val metadataHash = ByteArray(DIGEST_SIZE).also(reader.bytes::get)
             require(MessageDigest.isEqual(metadataHash, digest(dir.resolve("graph.metadata")))) {
                 "graph.types does not match graph.metadata"
             }
+            if (header == HEADER) reader.strings = DeclaredTypeStringPool.read(reader.bytes)
             val typeCount = reader.rowCount(TYPE_MIN_BYTES)
             val typeOffsets = IntArray(typeCount) {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
-            val types = MappedTypes(reader.bytes, typeOffsets)
+            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings)
             val fields = reader.rows(FIELD_MIN_BYTES, "field", Reader::key, ::keyHash, { reference(typeCount) }, Reader::int)
             val methods = reader.rows(
                 METHOD_MIN_BYTES, "method", Reader::key, ::keyHash, { skipMethod(typeCount) }, Reader::method
@@ -163,34 +167,34 @@ internal object DeclaredTypeStore {
         return digest.digest()
     }
 
-    private fun DataOutputStream.text(value: String) {
-        val bytes = value.toByteArray(Charsets.UTF_8)
-        writeInt(bytes.size)
-        write(bytes)
-    }
+    private fun DataOutputStream.text(value: String, strings: DeclaredTypeStringIds) = writeInt(strings[value])
 
     private fun DataOutputStream.ids(values: List<Int>) {
         writeInt(values.size)
         values.forEach(::writeInt)
     }
 
-    private fun DataOutputStream.key(key: MemberTypeKey) {
-        text(key.owner)
-        text(key.name)
-        text(key.descriptor)
+    private fun DataOutputStream.key(key: MemberTypeKey, strings: DeclaredTypeStringIds) {
+        text(key.owner, strings)
+        text(key.name, strings)
+        text(key.descriptor, strings)
     }
 
-    private fun DataOutputStream.parameters(parameters: List<TypeParameter>) {
+    private fun DataOutputStream.parameters(parameters: List<TypeParameter>, strings: DeclaredTypeStringIds) {
         writeInt(parameters.size)
         for (parameter in parameters) {
-            text(parameter.name)
-            text(parameter.scope)
+            text(parameter.name, strings)
+            text(parameter.scope, strings)
             ids(parameter.bounds)
         }
     }
 
     /** Read-only views keep offsets and primitive hash indexes, never decoded declarations. */
-    private class MappedTypes(private val bytes: ByteBuffer, private val offsets: IntArray) :
+    private class MappedTypes(
+        private val bytes: ByteBuffer,
+        private val offsets: IntArray,
+        private val strings: DeclaredTypeStringPool?
+    ) :
         AbstractList<DeclaredType>(), DeclaredTypeAtoms {
         override fun typeOffset(index: Int): Int {
             checkElementIndex(index, size)
@@ -198,10 +202,13 @@ internal object DeclaredTypeStore {
         }
         override fun atomInt(offset: Int): Int = bytes.getInt(offset)
         override fun atomByte(offset: Int): Byte = bytes.get(offset)
+        override fun atomTextOffset(position: Int): Int = strings?.offset(bytes.getInt(position)) ?: position
+        override fun nextTextField(position: Int): Int =
+            position + Int.SIZE_BYTES + if (strings == null) bytes.getInt(position) else 0
         override val size: Int get() = offsets.size
         override fun get(index: Int): DeclaredType {
             checkElementIndex(index, size)
-            return Reader(bytes.duplicate().apply { position(offsets[index]) }).type()
+            return Reader(bytes.duplicate().apply { position(offsets[index]) }, strings).type()
         }
     }
 
@@ -212,11 +219,12 @@ internal object DeclaredTypeStore {
         private val hashes: IntArray,
         private val slots: IntArray,
         private val key: (Reader) -> K,
-        private val value: (Reader) -> V
+        private val value: (Reader) -> V,
+        private val strings: DeclaredTypeStringPool?
     ) : AbstractMap<K, V>() {
         override val size: Int get() = offsets.size
 
-        private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) })
+        private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) }, strings)
 
         override fun containsKey(key: K): Boolean = findRow(key) >= 0
 
@@ -265,27 +273,7 @@ internal object DeclaredTypeStore {
         }
     }
 
-    /** Kotlin String.hashCode over validated UTF-8, without allocating ASCII key strings. */
-    private fun textHash(reader: Reader): Int {
-        val bytes = reader.bytes
-        val start = bytes.position()
-        val length = reader.int()
-        require(length >= 0 && length <= bytes.remaining()) { "Invalid graph.types string length" }
-        var position = bytes.position()
-        val end = position + length
-        var hash = 0
-        while (position < end) {
-            val character = bytes.get(position++).toInt()
-            if (character < 0) {
-                // Preserve UTF-16 hashing (including surrogate pairs) and strict malformed-input rejection.
-                bytes.position(start)
-                return reader.text().hashCode()
-            }
-            hash = HASH_MULTIPLIER * hash + character
-        }
-        bytes.position(end)
-        return hash
-    }
+    private fun textHash(reader: Reader): Int = reader.strings?.hash(reader.int()) ?: hashDeclaredTypeText(reader.bytes)
 
     private fun keyHash(reader: Reader): Int {
         val owner = textHash(reader)
@@ -304,7 +292,9 @@ internal object DeclaredTypeStore {
         if (index !in 0 until size) throw IndexOutOfBoundsException("index=$index, size=$size")
     }
 
-    private class Reader(val bytes: ByteBuffer) {
+    private fun Reader.optionalId(): Int? = int().also { require(it >= -1) { "Invalid graph.types reference" } }.takeIf { it >= 0 }
+
+    private class Reader(val bytes: ByteBuffer, var strings: DeclaredTypeStringPool? = null) {
         fun int(): Int {
             require(bytes.remaining() >= Int.SIZE_BYTES) { "Truncated graph.types" }
             return bytes.int
@@ -313,15 +303,11 @@ internal object DeclaredTypeStore {
         fun rowCount(minimumBytes: Int): Int = int().also {
             require(it >= 0 && it <= bytes.remaining() / minimumBytes) { "Invalid graph.types count" }
         }
-        fun optionalId(): Int? = int().also { require(it >= -1) { "Invalid graph.types reference" } }.takeIf { it >= 0 }
         fun ids(): List<Int> = List(count()) { int() }
-        fun text(): String {
-            val length = int()
-            require(length >= 0 && length <= bytes.remaining()) { "Invalid graph.types string length" }
-            val slice = bytes.slice().apply { limit(length) }
-            val text = Charsets.UTF_8.newDecoder().onMalformedInput(CodingErrorAction.REPORT).decode(slice).toString()
-            bytes.position(bytes.position() + length)
-            return text
+        fun text(): String = strings?.text(int()) ?: readDeclaredTypeText(bytes)
+        private fun skipText() {
+            val pool = strings
+            if (pool == null) text() else pool.offset(int())
         }
         fun key(): MemberTypeKey = MemberTypeKey(text(), text(), text())
         fun parameters(): List<TypeParameter> = List(count()) { TypeParameter(text(), text(), ids()) }
@@ -338,12 +324,12 @@ internal object DeclaredTypeStore {
         }
         private fun skipIds(typeCount: Int) { repeat(count()) { reference(typeCount) } }
         private fun skipParameters(typeCount: Int) {
-            repeat(rowCount(PARAMETER_MIN_BYTES)) { text(); text(); skipIds(typeCount) }
+            repeat(rowCount(PARAMETER_MIN_BYTES)) { skipText(); skipText(); skipIds(typeCount) }
         }
         fun skipType(typeCount: Int) {
-            text(); text(); text()
+            skipText(); skipText(); skipText()
             optionalReference(typeCount); optionalReference(typeCount)
-            text(); skipIds(typeCount)
+            skipText(); skipIds(typeCount)
         }
         fun skipMethod(typeCount: Int) {
             skipIds(typeCount); reference(typeCount); skipParameters(typeCount)
@@ -386,7 +372,7 @@ internal object DeclaredTypeStore {
                 }
                 slots[slot] = row + 1
             }
-            return MappedRows(bytes, offsets, valuesAt, hashes, slots, key, value)
+            return MappedRows(bytes, offsets, valuesAt, hashes, slots, key, value, strings)
         }
     }
 }

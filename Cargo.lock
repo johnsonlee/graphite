@@ -453,6 +453,7 @@ name = "graphite-storage"
 version = "2.5.0"
 dependencies = [
  "crc32fast",
+ "indexmap",
  "memmap2",
  "parking_lot",
  "rayon",

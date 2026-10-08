@@ -1,42 +1,58 @@
 //! Graph-local declared types. Erased node identities remain in the main graph.
 use crate::source::GraphSource;
+use indexmap::{Equivalent, IndexMap, IndexSet};
 use sha2::{Digest, Sha256};
-use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
+use std::sync::Arc;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypeExpr {
-    pub kind: String,
-    pub name: String,
-    pub scope: String,
+    pub kind: Arc<str>,
+    pub name: Arc<str>,
+    pub scope: Arc<str>,
     pub owner: Option<usize>,
     pub component: Option<usize>,
-    pub variance: String,
+    pub variance: Arc<str>,
     pub arguments: Vec<usize>,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypeParameter {
-    pub name: String,
-    pub scope: String,
+    pub name: Arc<str>,
+    pub scope: Arc<str>,
     pub bounds: Vec<usize>,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MethodTypes {
     pub parameters: Vec<usize>,
     pub returns: usize,
     pub type_parameters: Vec<TypeParameter>,
 }
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ClassTypes {
     pub type_parameters: Vec<TypeParameter>,
     pub superclass: Option<usize>,
     pub interfaces: Vec<usize>,
 }
-#[derive(Default, Debug)]
+pub type MemberKey = (Arc<str>, Arc<str>, Arc<str>);
+
+struct BorrowedMemberKey<'a>(&'a str, &'a str, &'a str);
+impl Hash for BorrowedMemberKey<'_> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        (self.0, self.1, self.2).hash(state);
+    }
+}
+impl Equivalent<MemberKey> for BorrowedMemberKey<'_> {
+    fn equivalent(&self, key: &MemberKey) -> bool {
+        self.0 == key.0.as_ref() && self.1 == key.1.as_ref() && self.2 == key.2.as_ref()
+    }
+}
+
+#[derive(Default, Debug, PartialEq, Eq)]
 pub struct DeclaredTypes {
     pub types: Vec<TypeExpr>,
-    pub fields: HashMap<(String, String, String), usize>,
-    pub methods: HashMap<(String, String, String), MethodTypes>,
-    pub classes: HashMap<String, ClassTypes>,
+    pub fields: IndexMap<MemberKey, usize>,
+    pub methods: IndexMap<MemberKey, MethodTypes>,
+    pub classes: IndexMap<Arc<str>, ClassTypes>,
 }
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("graph.types: {0}")]
@@ -45,8 +61,19 @@ pub struct TypeError(pub String);
 struct Reader<'a> {
     bytes: &'a [u8],
     pos: usize,
+    strings: IndexSet<Arc<str>>,
+    pooled: bool,
 }
 impl<'a> Reader<'a> {
+    fn at(bytes: &'a [u8], pos: usize) -> Self {
+        Self {
+            bytes,
+            pos,
+            strings: IndexSet::new(),
+            pooled: false,
+        }
+    }
+
     fn take(&mut self, len: usize) -> Result<&'a [u8], TypeError> {
         let end = self
             .pos
@@ -69,13 +96,39 @@ impl<'a> Reader<'a> {
         }
         Ok(n as usize)
     }
-    fn string(&mut self) -> Result<String, TypeError> {
+    fn inline_string(&mut self) -> Result<&'a str, TypeError> {
         let len = self.int()?;
         if len < 0 {
             return Err(TypeError("negative string length".into()));
         }
-        String::from_utf8(self.take(len as usize)?.to_vec())
-            .map_err(|_| TypeError("invalid UTF-8".into()))
+        std::str::from_utf8(self.take(len as usize)?).map_err(|_| TypeError("invalid UTF-8".into()))
+    }
+    fn dictionary(&mut self) -> Result<(), TypeError> {
+        for _ in 0..self.count()? {
+            let value = self.inline_string()?;
+            if !self.strings.insert(Arc::from(value)) {
+                return Err(TypeError("duplicate dictionary string".into()));
+            }
+        }
+        self.pooled = true;
+        Ok(())
+    }
+    fn string(&mut self) -> Result<Arc<str>, TypeError> {
+        if self.pooled {
+            let id = self.int()?;
+            return usize::try_from(id)
+                .ok()
+                .and_then(|id| self.strings.get_index(id))
+                .cloned()
+                .ok_or_else(|| TypeError("invalid string ID".into()));
+        }
+        let value = self.inline_string()?;
+        if let Some(shared) = self.strings.get(value) {
+            return Ok(shared.clone());
+        }
+        let shared: Arc<str> = Arc::from(value);
+        self.strings.insert(shared.clone());
+        Ok(shared)
     }
     fn reference(&mut self, count: usize) -> Result<usize, TypeError> {
         let n = self.int()?;
@@ -108,7 +161,7 @@ impl<'a> Reader<'a> {
             })
             .collect()
     }
-    fn key(&mut self) -> Result<(String, String, String), TypeError> {
+    fn key(&mut self) -> Result<MemberKey, TypeError> {
         Ok((self.string()?, self.string()?, self.string()?))
     }
 }
@@ -116,13 +169,13 @@ impl DeclaredTypes {
     /// Member lookup boundary independent of the table's physical key storage.
     pub fn field_type(&self, owner: &str, name: &str, descriptor: &str) -> Option<usize> {
         self.fields
-            .get(&(owner.into(), name.into(), descriptor.into()))
+            .get(&BorrowedMemberKey(owner, name, descriptor))
             .copied()
     }
 
     pub fn method_types(&self, owner: &str, name: &str, descriptor: &str) -> Option<&MethodTypes> {
         self.methods
-            .get(&(owner.into(), name.into(), descriptor.into()))
+            .get(&BorrowedMemberKey(owner, name, descriptor))
     }
 
     /// Exact erased member identity shared by projections and load-time key summaries.
@@ -214,12 +267,16 @@ impl DeclaredTypes {
         Self::parse(&bytes, &metadata).map(Some)
     }
     pub fn parse(bytes: &[u8], metadata: &[u8]) -> Result<Self, TypeError> {
-        let mut r = Reader { bytes, pos: 0 };
-        if r.int()? != 0x47545901 {
+        let mut r = Reader::at(bytes, 0);
+        let version = r.int()?;
+        if !matches!(version, 0x47545901 | 0x47545902) {
             return Err(TypeError("unsupported header/version".into()));
         }
         if r.take(32)? != Sha256::digest(metadata).as_slice() {
             return Err(TypeError("metadata digest mismatch".into()));
+        }
+        if version == 0x47545902 {
+            r.dictionary()?;
         }
         let count = r.count()?;
         let mut table = Self::default();
@@ -293,11 +350,11 @@ impl DeclaredTypes {
             }
             state[id] = 1;
             let t = &table.types[id];
-            let shape = match t.kind.as_str() {
+            let shape = match t.kind.as_ref() {
                 "class" => !t.name.is_empty() && t.component.is_none() && t.variance.is_empty(),
                 "primitive" => {
                     matches!(
-                        t.name.as_str(),
+                        t.name.as_ref(),
                         "boolean"
                             | "byte"
                             | "char"
@@ -329,7 +386,7 @@ impl DeclaredTypes {
                 "wildcard" => {
                     t.owner.is_none()
                         && t.arguments.is_empty()
-                        && match t.variance.as_str() {
+                        && match t.variance.as_ref() {
                             "extends" | "super" => t.component.is_some(),
                             "unbounded" => t.component.is_none(),
                             _ => false,
@@ -397,7 +454,7 @@ impl DeclaredTypes {
     }
     pub fn render(&self, id: usize) -> String {
         let t = &self.types[id];
-        match t.kind.as_str() {
+        match t.kind.as_ref() {
             "array" => format!("{}[]", self.render(t.component.unwrap())),
             "wildcard" => t
                 .component
@@ -410,9 +467,9 @@ impl DeclaredTypes {
                         self.render(owner),
                         t.name
                             .strip_prefix(&format!("{}$", self.types[owner].name))
-                            .unwrap_or(&t.name)
+                            .unwrap_or(t.name.as_ref())
                     ),
-                    None => t.name.clone(),
+                    None => t.name.to_string(),
                 };
                 if !t.arguments.is_empty() {
                     out.push('<');
@@ -427,7 +484,7 @@ impl DeclaredTypes {
                 }
                 out
             }
-            _ => t.name.clone(),
+            _ => t.name.to_string(),
         }
     }
 }
@@ -465,7 +522,7 @@ mod tests {
         string(out, variance);
         ids(out, args);
     }
-    fn bind(dir: &std::path::Path, bytes: &[u8]) {
+    pub(super) fn bind(dir: &std::path::Path, bytes: &[u8]) {
         let digest = Sha256::digest(bytes)
             .iter()
             .map(|b| format!("{b:02x}"))
@@ -477,7 +534,7 @@ mod tests {
         .unwrap();
     }
 
-    fn fixture() -> Vec<u8> {
+    pub(super) fn fixture() -> Vec<u8> {
         let mut out = Vec::new();
         int(&mut out, 0x47545901);
         out.extend(Sha256::digest(b"metadata"));
@@ -517,15 +574,13 @@ mod tests {
         assert_eq!(table.types.len(), 5);
         assert_eq!(table.fields.values().copied().collect::<Vec<_>>(), [0, 0]);
         assert_eq!(table.render(3), "java.util.List<? super T>[]");
-        let method = &table.methods[&(
-            "Example".into(),
-            "method".into(),
-            "(Ljava/util/List;)[Ljava/util/List;".into(),
-        )];
+        let method = table
+            .method_types("Example", "method", "(Ljava/util/List;)[Ljava/util/List;")
+            .unwrap();
         assert_eq!(method.parameters, [0]);
         assert_eq!(method.returns, 3);
         let parameter = &table.classes["Example"].type_parameters[0];
-        assert_eq!(parameter.scope, "class:Example");
+        assert_eq!(parameter.scope.as_ref(), "class:Example");
         assert_eq!(table.render(parameter.bounds[0]), "java.lang.Comparable<T>");
     }
     #[test]
@@ -542,7 +597,7 @@ mod tests {
             .0
             .contains("digest"));
         let mut unknown = bytes.clone();
-        unknown[3] = 2;
+        unknown[3] = 3;
         assert!(DeclaredTypes::parse(&unknown, b"metadata").is_err());
         let mut trailing = bytes.clone();
         trailing.push(0);
@@ -563,10 +618,7 @@ mod tests {
     #[test]
     fn wire_references_and_utf8_are_checked_before_projection() {
         let original = fixture();
-        let mut reader = Reader {
-            bytes: &original,
-            pos: 36,
-        };
+        let mut reader = Reader::at(&original, 36);
         let count = reader.count().unwrap();
         reader.string().unwrap();
         reader.string().unwrap();
@@ -614,10 +666,10 @@ mod tests {
             table.types.push(TypeExpr {
                 kind: "class".into(),
                 name: "Pair".into(),
-                scope: String::new(),
+                scope: Arc::from(""),
                 owner: None,
                 component: None,
-                variance: String::new(),
+                variance: Arc::from(""),
                 arguments: vec![previous, previous],
             });
         }
@@ -627,7 +679,7 @@ mod tests {
             .0
             .contains("projection budget"));
         let mut table = DeclaredTypes::parse(&fixture(), b"metadata").unwrap();
-        table.types[1].scope = "界".repeat(20_000);
+        table.types[1].scope = "界".repeat(20_000).into();
         table.types[0].arguments = vec![1; 17];
         assert!(table
             .validate()
@@ -642,9 +694,9 @@ mod tests {
         for variant in 0..8 {
             let mut table = DeclaredTypes::parse(&base, b"metadata").unwrap();
             match variant {
-                0 => table.types[0].name.clear(),
+                0 => table.types[0].name = Arc::from(""),
                 1 => table.types[0].component = Some(1),
-                2 => table.types[1].scope.clear(),
+                2 => table.types[1].scope = Arc::from(""),
                 3 => table.types[1].arguments.push(0),
                 4 => table.types[2].component = None,
                 5 => table.types[2].variance = "unbounded".into(),
@@ -667,10 +719,10 @@ mod tests {
         table.types.push(TypeExpr {
             kind: "class".into(),
             name: "example.Outer$Inner$Name".into(),
-            scope: String::new(),
+            scope: Arc::from(""),
             owner: Some(0),
             component: None,
-            variance: String::new(),
+            variance: Arc::from(""),
             arguments: Vec::new(),
         });
         assert_eq!(table.render(5), "example.Outer<? super T>.Inner$Name");
@@ -678,11 +730,11 @@ mod tests {
             let component = table.types.len() - 1;
             table.types.push(TypeExpr {
                 kind: "array".into(),
-                name: String::new(),
-                scope: String::new(),
+                name: Arc::from(""),
+                scope: Arc::from(""),
                 owner: None,
                 component: Some(component),
-                variance: String::new(),
+                variance: Arc::from(""),
                 arguments: Vec::new(),
             });
         }
@@ -710,10 +762,7 @@ mod tests {
         );
         // Changing a type-variable name leaves erased graph.metadata unchanged.
         let mut swapped = original.clone();
-        let mut reader = Reader {
-            bytes: &original,
-            pos: 36,
-        };
+        let mut reader = Reader::at(&original, 36);
         let count = reader.count().unwrap();
         for _ in 0..1 {
             reader.string().unwrap();
@@ -791,3 +840,7 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "types_wire_tests.rs"]
+mod wire_tests;

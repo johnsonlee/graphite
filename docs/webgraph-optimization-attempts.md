@@ -11859,3 +11859,88 @@ Decision: **retain this verified intermediate increment**, verified material que
 
 
 Root independently reconstructed all160 measured query samples,16 warmups, exact typed response bodies, per-process percentiles and raw CPU deltas. A separate loading audit checked256 graph-readiness records, full nonvolatile response equality, exact node/edge/method/CallSite totals, raw process CPU/RSS and lifecycle peaks. Both audit scripts pass and independently confirm the standalone loading RSS constraint fails in both pairs. Evidence: /tmp/graphite-native155/{query,loading}/root-audit.py and root-independent-audit.json. Integrated production/test source files match the validated isolated candidate byte-for-byte. Construction has not been measured for this increment; no construction or cumulative no-regression conclusion follows from these results.
+
+
+### Attempt156 — deduplicate declared-type strings within the independent type table (2026-10-09)
+
+Hypothesis: v1 repeats type/member names, owners, scopes and full descriptors inline. Introduce a graph-local unique UTF-8 dictionary in GTY02 while preserving every declaration row and type ID; map dictionary offsets and precomputed Kotlin UTF-16 hashes without retaining decoded strings. Readers accept GTY01 and GTY02, writer emits02. Full dictionary UTF-8/uniqueness/ID checks, member duplicate rejection and all type-shape/reference/cycle/depth/projection validation remain before graph readiness. Adapt the154raw atom matcher to resolve either inline or pooled byte spans, keeping cancellation, work accounting and final predicate semantics. No graph.strings/core-node changes or deferred validation.
+
+Kotlin156patch SHA256 `d6e2ca3fd39f888635136a45fdb7ee51519f5a8f30920df1658b2305cbeb80ae`, source-equivalent parent `f237309b` (154). Full webgraph311tests, detekt and98.378%line coverage pass. Independent checked-in v1 fixture, full v1/v2 tables, dictionary duplicate/malformed unused text, every invalid string-ID position, same-directory persistence, failed surrogate writer atomicity, both-format raw scan/cancellation/budgets/concurrency and compiled Java generic queries are covered. Fresh `/tmp/graphite-attempt156-fixtures/{v1,v2}` passes JVM eager/mapped complete-table and projected-value equivalence. Rust verification is documented separately.
+
+Frozen runtime/source identities live at `/tmp/graphite-attempt156-runtime/{parent,candidate}/manifest.json`. Only the webgraph executable JAR differs; all347other runtime files are byte-identical after reusing parent core/Cypher archives whose ordered ZIP-entry names and uncompressed hashes were already proven identical. Original archive metadata differences remain retained in `runtime-differences.json` and `raw-candidate-archive-metadata/`; no code discrepancy is normalized.
+
+The retained Tika/Hive/Kotlin v1 graphs were independently cloned and migrated by the production Kotlin v2 codec under8g. Original graph hashes are unchanged. The complete table compares equal in production, and an independent strict Python wire decoder hashes every declaration row to the exact original v1 byte digest, including scoped variables/bounds, all field/method/class keys and type IDs. All other core files are byte-identical except the authoritative type digest in forward.properties. Actual migrated type file bytes are Tika61379711→22932781, Hive101837620→36482606, Kotlin67378924→25309500, total230596255→84724887. These are measured file sizes from migration, not fresh JAR construction cost or RSS predictions; new-build gate pins still require real construction evidence.
+
+A separately sealed loading cohort follows153: JDK17/MAPPED, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, ABBA four fresh servers once, allthree graphs loaded. Every runtime/fixture byte is SHA-read before each launch outside timing. Readiness includes all required validation plus complete `/api/graphs` IDs/paths/counts/mode validation. Three exact generic projection queries follow readiness. Four loads and12full results pass, all709runtime/source/protocol pins and126fixture files remain unchanged.
+
+| Loading metric | Parent154 → candidate156 mean | Absolute delta |
+|---|---:|---:|
+| Ready wall ms |2547.710 →1968.868|-578.842|
+| Ready CPU s |4.220 →3.565|-0.655|
+| Observed loading peak RSS bytes |847716352 →706437120|-141279232|
+| Exact lifecycle peak RSS bytes |887504896 →745930752|-141574144|
+
+Both directional pairs improve wall2561.767→1970.752ms and2533.653→1966.983ms, CPU4.28→3.56s and4.16→3.57s, and both RSS measures. CPU is cumulative process user+system at readiness with0.01s resolution. Loading RSS is a5ms sampled lower bound; exact lifecycle peak includes three validation queries/shutdown and upper-bounds loading. Conservative mean RSS ratio interval0.7960–0.8799 and CPU ratio0.8448 meet parent-relative limits independently. This is a loading increment, not JVM retained-heap recovery or accepted pre-feature4f recovery. Only two observations per arm; no inferential-confidence/cold-cache claim.
+
+The independently sealed real3query cohort retains the exact154five scalar LIMIT50 cases, explicit three-graph request scope, c4rolling scheduling, two warmups then20measured requests/case/process, ABBA. Two fresh oracle processes compare complete typed ordered JSON bodies; all400measured+40warmup+10oracle responses pass. Each process/case p50/p95 uses nearest ranks10/19; table values average the two process percentiles, not mixed cases or pooled samples. A LIMIT hit may stop in the first graph; full-scope misses establish multigraph traversal.
+
+| Query | Parent p50 → candidate ms | Parent p95 → candidate ms | Absolute p95 delta |
+|---|---:|---:|---:|
+| Global dynamic miss |808.635 →796.052|814.320 →800.877|-13.443|
+| Dynamic HTTP hit |3.672 →3.755|4.918 →5.175|+0.257|
+| Field dynamic miss |56.691 →56.761|59.085 →58.198|-0.887|
+| CallSite dynamic miss |190.644 →185.029|194.081 →188.132|-5.948|
+| Value miss control |40.693 →42.069|43.904 →46.797|+2.892|
+
+Query CPU22.395→22.040s and measured window5.849→5.766s. Mean observed query RSS1595678720→1603944448bytes and exact lifecycle peak1595965440→1604231168bytes rise0.52%. The pooled descriptive RSS ratio does not establish compliance with the +5% constraint; the first matched pair fails and the per-process spread is material: first pair exact RSS1592967168→1757921280(+10.36%); second1598963712→1450541056(-9.28%). The JVM query RSS constraint remains unresolved; no query +5% pass is claimed. CPU improves in both pairs. Global and CallSite p50/p95 improve in both; HTTP p95 and Value p50/p95 worsen in both; Field p50 worsens slightly in both while p95 improves. The small hit percentage is not the optimization target. All adverse observations remain, without replacement or selective stabilization runs.
+
+Environment is shared. Graphite team heavy work was exclusive during both cohorts. Spotlight appeared around92–99%CPU in preflight/per-process observations and all24query-host samples; one loading preflight WindowServer sample was31%. QueryA0 had one CodexRenderer38% observation, A3 had Codex41%/Renderer49% observations. No Swift compiler was observed. Loading's during-series monitor has only two10second snapshots, so shorter activity cannot be ruled out. The runner's own SHA-warming Python at98–100%CPU appears before launch, outside timers. No clean-host/saturation/statistical-confidence claim; no failure or sample was omitted.
+
+JVM decision: retain the verified loading benefit while continuing targeted query/resource validation. This evidence does not establish all-query non-regression, cumulative pre-feature latency/CPU/RSS recovery,36graph retained-heap acceptance, native64query acceptance or construction-through-usable-save acceptance. Writer dictionary collection and extra traversal/hash/encoding costs must be measured in the pending12-process real-JAR build cohort; migration time does not substitute for construction.
+
+Evidence: `/tmp/graphite-attempt156-real3/manifest.json` plus each complete equivalence receipt; `/tmp/graphite-attempt156-load/` protocol SHA256 `b349c60976d1ef8e3ecff1c7cd616705ad6ba832ad73b2edc437fa0867b5e21d`; `/tmp/graphite-attempt156-query/` protocol SHA256 `e56f00377f95a28372b5f66afca7bf7752289fa9a8c4c14da0c820fbdc59ff74`. Both retain every body/sample/command/host observation, seals, summaries/reports and final hashes. Root independently recomputed all load/query bodies/percentiles/CPU/RSS in `root-audit.py` and `root-independent-audit.json`. All owned four loading and six query server PIDs were confirmed exited; no construction or64conversion ran concurrently.
+
+Native64 results follow. Construction-through-usable-save remains pending; migration and loading/query evidence do not establish that boundary.
+
+#### Native reader and the real64 comparison
+
+Native parsing accepts both wire versions and stores repeated text in graph-local Arc<str> allocations; the temporary intern set is discarded after parsing. Borrowed member keys use the same owner/name/full-descriptor hash and equality as stored tuples, avoiding temporary owned lookup strings. The existing155 loading summary and query semantics remain intact. Rust156 patch SHA256 is `3ebe2c790ad64c0a5fbc8d041e50049c94c2dad7419cc8a4fb9d5d794fc287d9`. Full workspace tests with both fresh Java fixtures pass: CLI41, Cypher145, Explore118+1, Storage59 and doctests. Strict workspace/all-target/all-feature Clippy, formatting and source review pass. The pre-existing GRAPHITE_INDEX_FIXTURE tests remain unset locally; both new declared-type fixtures ran. CI now explicitly generates both versions and runs complete properties/mixed-graph/packed interoperability plus packing/schema checks on each. Its YAML and shell syntax pass; final-head CI remains pending. Logs/source pins: `/tmp/graphite-attempt156-rust-manifest.json`.
+
+Evidence: `/private/tmp/graphite-native156`. Parent155 binary `5ed206cf3146f231d07b7bcc0a4bf02de44760fd22cb9ff79c3e79dcf872139a`; candidate156 `d0c049dfe8c4b382c81ececb278b56bd19cee82d2692439121e8a1a64d3ba441`. Query protocol `a1564d0a1819e1f2aabbab2fd82e54adb905fb3adec1e375ecdeff4ee478e95f`; independent loading protocol `ff799a64ca540635a5ae9d3f3267ac3c566fc3c9a4d9ddab61a54ae2a514d845`.
+
+The same 64 real Android/Hive/Kotlin/Tika shards are loaded in every process and scoped by every query. Parent reads original GTY01; candidate reads production-writer GTY02. Two independently implemented audits compare all complete ordered declaration rows and all graph core bytes except graph.types and its exact properties digest. All 2564 input files are pinned. All 85 Rust/Cargo source hashes match the validated snapshot. A fresh isolated release build recompiled all local crates.
+
+Loading uses four fresh ABBA processes, start through complete 64-graph readiness, with all type validation and the existing 155 summary pass included. No queries/warmups run in loading processes. Query uses separate four fresh ABBA processes, client/server c4, two warmups plus 20 measured requests per case/process, with full typed response equality and complete consumption. Per-case nearest-rank p50/p95 is reported as the mean of two process percentiles and both directional pairs. No mixed-case latency percentile or cold-cache claim.
+
+| Operation/metric | Parent | Candidate | Absolute change |
+|---|---:|---:|---:|
+| Ready wall seconds | 23.446 | 21.944 | -1.501 |
+| Ready process CPU seconds | 21.325 | 20.560 | -0.765 |
+| Loading observed RSS MB | 8,158.929 | 7,788.331 | -370.598 |
+| Loading lifecycle peak RSS MB | 8,161.591 | 7,815.815 | -345.776 |
+| schema-key-histogram p50Ms | 1.446 | 1.430 | -0.016 |
+| schema-key-histogram p95Ms | 2.622 | 2.696 | +0.075 |
+| schema-label-histogram p50Ms | 1.256 | 1.283 | +0.027 |
+| schema-label-histogram p95Ms | 2.651 | 2.115 | -0.537 |
+| Mixed query process CPU seconds | 0.020 | 0.025 | +0.005 |
+| Query observed RSS MB | 8,120.877 | 7,771.455 | -349.422 |
+| Query lifecycle peak RSS MB | 8,162.247 | 7,817.077 | -345.170 |
+
+Loading directional pairs (candidate minus matching parent): {"readyWallSeconds": [1.5359785409999986, -4.538837292], "readyCpuSeconds": [-0.23000000000000043, -1.3000000000000007], "lifecyclePeakRssBytes": [-342720512, -348831744]}.
+
+Loading resource constraints: {"readyCpuWithin5percentBothPairs": true, "guaranteedRssWithin5percentBothPairs": true, "guaranteedRssExceeds5percentAnyPair": false}. Exact lifecycle RSS is an upper bound on loading peak; sampled loading RSS is a lower bound. Candidate upper/baseline lower checks: [{"candidateUpperOverBaselineLower": 0.9583258826767714, "candidateLowerOverBaselineUpper": 0.9576336376143565}, {"candidateUpperOverBaselineLower": 0.957566975216962, "candidateLowerOverBaselineUpper": 0.9509021996697385}].
+
+Query resource constraints: {"queryCpuWithin5percentBothPairs": false, "queryCpuExceeds5percentAnyPair": false, "guaranteedQueryRssWithin5percentBothPairs": true, "guaranteedQueryRssExceeds5percentAnyPair": false}. Query CPU conclusion: INDETERMINATE at ps CPU resolution. The predeclared conservative +/-0.02-second CPU delta uncertainty limits tiny-workload conclusions. Query RSS interval bounds: [{"candidateUpperOverBaselineLower": 0.9622834089762985, "candidateLowerOverBaselineUpper": 0.9517258679510335}, {"candidateUpperOverBaselineLower": 0.9628971200723211, "candidateLowerOverBaselineUpper": 0.9525185316061261}].
+
+Correctness/stability: all 180 query responses (160 measured, 16 warmup, 4 oracle) passed complete typed body comparison; all 4 standalone readiness responses matched exact nonvolatile topology. All 10 owned servers exited normally after SIGTERM; none remained. Both final-file-verification reports contain empty changedPins/changedFixtures, and final source hashes match. Six small standalone tests validated the independent auditor including corrupted unused dictionary text and unauthorized core/property/semantic changes. No synthetic timing evidence.
+
+External host observations:88 snapshots retained. Unrelated mediaanalysisd reached 96.8% CPU (above 10% in 81 snapshots), searchpartyuseragent reached 92.4%, and XprotectService reached 48.5%; Chrome and Codex activity also occurred. See `host-environment-summary.json` and each process's `host-observation.jsonl` for exact PIDs and samples. These instantaneous observations are not integrated CPU measurements. All original samples remain; no unrelated process was terminated, no selected rerun occurred, and this was not a clean host. Two processes per arm and 20 observations per case limit uncertainty. The workload is closed-loop batched concurrency 4, not fixed-rate saturation. Loading wall pairs disagree in direction, so the lower mean does not establish stable improvement.
+
+Decision: retain the verified loading CPU/RSS reduction as a positive increment. It does not by itself prove stable wall-latency improvement or cumulative pre-feature recovery. Query results preserve the 155 behavior; assess their complete per-case millisecond distributions without treating percentages on this tiny baseline as the main benefit. Query CPU remains indeterminate when quantization bounds overlap. Construction was not measured here. Parent-relative gains cannot erase the previously unresolved cumulative loading/RSS regression or substitute for a matched pre-feature comparison.
+
+Actual graph.types storage across these 64 shards decreased from338,923,944 to168,476,432 bytes (-170,447,512 bytes). This is saved-file size evidence, not a construction benchmark. Query key p95 was0.075 ms higher on average; paired signs differ. No query latency recovery claim follows from these tiny differences.
+
+
+Root independently reproduced the160 measured native request percentiles,16 warmups, full typed bodies and raw CPU deltas, then checked query RSS from raw process samples and exact lifecycle peaks (`query/root-audit.py`, `root-independent-audit.json`, `root-rss-audit.json`). The independent loading audit checks256 graph-readiness records, exact nonvolatile topology, each declared v1/v2 input path, timestamp syntax and raw CPU/RSS values (`loading/root-audit.py`, `root-independent-audit.json`). Both parent-relative loading resource bounds and native query RSS bounds pass in both pairs. Native query CPU remains indeterminate; the JVM query RSS failure is separately confirmed from raw bounds in `/tmp/graphite-attempt156-query/root-rss-constraint-audit.json` and cannot be offset by native savings.
+
+Overall decision: **retain this verified loading/storage increment for continued composition**. All integrated Kotlin/Rust source files match their validated isolated snapshots. Storage documentation and the relationship diagram now describe the internal v2 dictionary and v1 compatibility; all four Mermaid diagrams parse. The writer's new dictionary traversal and temporary save map still need the matched real-JAR construction cohort. The existing large-corpus size-transition pins must be updated from verified constructed v2 artifacts before final CI. Cumulative pre-feature latency, CPU/RSS, construction and exact-head regression/mergeability acceptance remain open. This commit does not establish that the PR is ready to merge.

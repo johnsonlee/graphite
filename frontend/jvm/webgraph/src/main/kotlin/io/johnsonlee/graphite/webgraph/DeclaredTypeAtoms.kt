@@ -5,4 +5,6 @@ internal interface DeclaredTypeAtoms {
     fun typeOffset(index: Int): Int
     fun atomInt(offset: Int): Int
     fun atomByte(offset: Int): Byte
+    fun atomTextOffset(position: Int): Int
+    fun nextTextField(position: Int): Int
 }
