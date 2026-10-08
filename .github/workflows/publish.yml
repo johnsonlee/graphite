@@ -15,7 +15,9 @@ on:
   # the Sonatype upload itself, the GitHub Release, the tap push and the registry
   # push; those run for real on a pre-release tag (v2.5.0-rc.1), which leaves the
   # default channels alone. `workflow_dispatch` is available once this file is on the
-  # default branch. The tag named here need not exist; it only stamps the version.
+  # default branch (it already is). --ref selects the candidate workflow and checkout;
+  # github.sha pins every dry-run checkout to that selected revision. The tag named
+  # here need not exist; it only stamps the version.
   #   gh workflow run publish.yml --ref <branch> -f tag=v2.5.0
   workflow_dispatch:
     inputs:
@@ -50,6 +52,8 @@ jobs:
       run: |
         python3 .github/scripts/release-version.py --self-test
         python3 .github/scripts/release-version.py "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
+    - name: Test release smoke validation
+      run: python3 .github/scripts/test_verify_apple_release.py
 
   # ---- Maven Central (Sonatype) ----
   maven:
@@ -442,6 +446,68 @@ jobs:
         GH_REPO: ${{ github.repository }}
       run: bash .github/scripts/publish-release.sh release-assets
 
+  # Test the assembled tarballs, not the binaries in the build jobs' workspaces. The
+  # Linux frontend here is the actual --static-swift-stdlib release artifact.
+  apple-release-smoke:
+    name: apple-release-smoke (${{ matrix.apple-target }})
+    needs: [validate, release]
+    if: github.event_name == 'workflow_dispatch' && github.repository_owner == 'johnsonlee'
+    runs-on: ${{ matrix.os }}
+    container: ${{ matrix.container }}
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-latest
+            cli-target: aarch64-apple-darwin
+            apple-target: aarch64-apple-darwin
+          - os: macos-15-intel
+            cli-target: x86_64-apple-darwin
+            apple-target: x86_64-apple-darwin
+          - os: ubuntu-latest
+            cli-target: x86_64-unknown-linux-musl
+            apple-target: x86_64-unknown-linux-gnu
+            container: swift:6.1
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
+    - uses: actions/setup-java@v5
+      with:
+        distribution: temurin
+        java-version: '17'
+    - uses: actions/download-artifact@v8
+      with:
+        name: release-${{ env.RELEASE_TAG }}
+        path: dry-run
+    - name: Verify, unpack and exercise the shipped artifacts
+      shell: bash
+      run: |
+        set -euo pipefail
+        ASSETS="$PWD/dry-run/release-assets"
+        INSTALLED="${RUNNER_TEMP}/apple-release"
+        mkdir -p "${INSTALLED}"
+        CLI="graphite-${RELEASE_VERSION}-${{ matrix.cli-target }}.tar.gz"
+        APPLE="graphite-frontend-apple-${RELEASE_VERSION}-${{ matrix.apple-target }}.tar.gz"
+        (cd "${ASSETS}" && shasum -a 256 -c "${CLI}.sha256" "${APPLE}.sha256" graphite.jar.sha256)
+        tar -xzf "${ASSETS}/${CLI}" -C "${INSTALLED}"
+        tar -xzf "${ASSETS}/${APPLE}" -C "${INSTALLED}"
+        cp "${ASSETS}/graphite.jar" "${INSTALLED}/graphite.jar"
+        "${INSTALLED}/graphite" --version | grep -F "${RELEASE_VERSION}"
+        bash .github/scripts/verify-apple-release.sh "${INSTALLED}/graphite" \
+          frontend/apple/Fixtures/AcmeShop "${RUNNER_TEMP}/apple-release-check"
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: apple-release-check-${{ matrix.apple-target }}
+        path: |
+          ${{ runner.temp }}/apple-release-check/*.csv
+          ${{ runner.temp }}/apple-release-check/*.graphite
+        if-no-files-found: warn
+
   # ---- Homebrew tap ----
   # Runs after the release is published and can be re-run on its own: the formula was
   # rendered before publication and comes from the `release-<tag>` artifact. Only a
@@ -493,6 +559,9 @@ jobs:
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.sha }}
     - uses: actions/download-artifact@v8
       with:
         name: release-${{ env.RELEASE_TAG }}
@@ -514,6 +583,16 @@ jobs:
         graphite frontend describe jvm
         graphite frontend describe apple | grep -F '"writes": "ir"'
         brew test "${DRY_RUN_TAP}/graphite"
+        bash .github/scripts/verify-apple-release.sh "$(command -v graphite)" \
+          frontend/apple/Fixtures/AcmeShop "${RUNNER_TEMP}/apple-formula-check"
+    - uses: actions/upload-artifact@v7
+      if: always()
+      with:
+        name: apple-formula-check
+        path: |
+          ${{ runner.temp }}/apple-formula-check/*.csv
+          ${{ runner.temp }}/apple-formula-check/*.graphite
+        if-no-files-found: warn
 
   # ---- Docker image ----
   # Takes the Linux binaries from the published GitHub Release, so it can be re-run
