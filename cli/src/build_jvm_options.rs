@@ -325,7 +325,8 @@ mod tests {
         std::fs::remove_dir_all(home).unwrap();
         for file in ["first.jar", "second.jar"] {
             let args = vec![OsString::from(file), "-o".into(), "graph".into()];
-            let inv = crate::build::invocation(configured.as_ref(), &jar(), &args).unwrap();
+            let inv =
+                crate::build::invocation_for(configured.as_ref(), &jar(), "build", &args).unwrap();
             assert_eq!(inv.program, java);
             assert_eq!(inv.env, vec![("JAVA_TOOL_OPTIONS".into(), PROFILE.into())]);
             assert_eq!(
@@ -346,7 +347,7 @@ mod tests {
             })
             .unwrap();
             assert!(matches!(configured, Cow::Borrowed(_)));
-            let inv = crate::build::invocation(&configured, &jar(), &args).unwrap();
+            let inv = crate::build::invocation_for(&configured, &jar(), "build", &args).unwrap();
             assert_eq!(
                 inv.args,
                 ["-jar", "/fixture/graphite.jar", "build", flag].map(OsString::from)

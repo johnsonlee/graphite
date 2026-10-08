@@ -17,7 +17,8 @@ comes only from the blocking component reports. The gates that measure the JVM q
 (`explorer`, `method-compatibility`, `cypher-capacity`, `budgeted-collection`,
 `budgeted-mapped-string`, `wrapped-query-latency`) are advisory: `graphite serve` runs the Rust
 engine, so their reports are still built and shown but never decide the verdict. The paired
-measurement of the engine a release ships is `rust-latency`. Coverage labels follow the model introduced in
+measurement of the engine a release ships is `rust-latency`; `apple-frontend` is the paired
+measurement of the Swift frontend `graphite build` runs for Apple inputs. Coverage labels follow the model introduced in
 PR #104: ✅ means an implemented gate has no identified gate-specific gap, while ⚠️ means the gate
 is implemented but intentionally incomplete. A passing component does not claim to cover its listed
 gap.
@@ -194,6 +195,97 @@ again. Every row must be a `rust.fixture64.*` measurement in `ms/op`, and the pe
 
 Cost on a hosted runner: two release builds (cached by `Swatinem/rust-cache` per workspace),
 about three minutes of cold graph opening per engine, and under a minute of queries per engine;
+a confirmation doubles the measurement.
+
+## Apple frontend gate
+
+Three components measure the Swift frontend the Apple path of `graphite build` runs, so a
+regression in the frontend itself can fail the gate: no other job records its wall time or
+memory, and `apple.yml` checks byte determinism only. Each has its own pinned corpus manifest
+under `backend/bench/`, its own graph shape and its own time and RSS ceilings, and its own
+report and status the aggregate counts as a blocking component:
+
+| Component | Manifest | Corpus | Runner |
+|---|---|---|---|
+| `apple-frontend` | `apple-frontend-corpus.json` | SwiftFormat at a pinned commit: 181 files, 32.5k nodes; a fast smoke, not evidence at app scale | `swift:6.1` container, Linux |
+| `apple-frontend-large` | `apple-frontend-corpus-large.json` | generated SwiftPM package: 2500 files over 25 modules, 374,836 nodes (7.6 s and 11.4 s wall on hosted runs, 315 MiB) | `swift:6.1` container, Linux |
+| `apple-frontend-xcode` | `apple-frontend-corpus-xcode.json` | the same generated sources as an iOS `.xcodeproj` with one app target, built by `xcodebuild` for the simulator; 374,838 nodes (12.0 s and 25.0 s wall on the first two hosted runs, 455 MiB both times: hosted macOS machines vary, so its wall ceiling is 40 s) | `macos-latest` |
+
+The two generated corpora are written by `backend/bench/generate-apple-corpus.py` from the
+manifest's `generator` block (seed, files, modules, layout, name): every file is a service
+class with the same public API, so cross-file and cross-module calls with literal and
+non-literal arguments compile everywhere, modules are layered so the debug build
+parallelises, and the text is a pure function of the parameters, so the corpus is the same on
+every runner. A cached corpus is trusted only after it is regenerated and `diff -r`ed against
+the cache; the generator and both manifests are base-owned like the harness (candidate copies
+stand in, pinned to `APPLE_FRONTEND_TRANSITION_GENERATOR_SHA256`,
+`APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256` and
+`APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256`, until `main` carries them). The 2500-file
+size is the class of a large iOS application (a few thousand files, a few hundred thousand
+nodes); the manifests' `shape` and `ceilings` are `null` until the first hosted measurement
+pins them.
+
+The `apple-frontend` job runs one matrix leg per SwiftPM corpus in the `swift:6.1`
+container (with Node from `actions/setup-node` for the comparator), builds `graphite-frontend-apple` in release from the base and from the candidate
+revision, and prepares the leg's corpus: for `apple-frontend-corpus.json` a
+clone at the pinned commit, verified with `git rev-parse HEAD`, for the generated manifest
+one run of the generator, then one `swift build -c debug`
+so the index store exists (the sources and their build are cached by commit or generator
+hash and toolchain). The `apple-frontend-xcode` job does the same on `macos-latest` with the
+`.xcodeproj` layout, built once with the `xcodebuild` the frontend itself runs (one scheme,
+Debug, `generic/platform=iOS Simulator`, `COMPILER_INDEX_STORE_ENABLE=YES`, code signing off)
+into a derived data directory whose `Index.noindex` is cached with the sources (the index
+store keys its units by source path, the same on every hosted runner).
+`backend/bench/apple-frontend.py` then runs each frontend on that corpus: one unrecorded
+warm-up and five (three at app scale) `build --package <corpus> --skip-build` runs, or
+`build --project <corpus>.xcodeproj --derived-data <build> --skip-build` for the Xcode
+project, so `swift build` and `xcodebuild` are never part
+of the measurement (the manifest's `input`, `package` or `xcodeproj`, must match the
+invocation), and records the median wall time (`ms/op`) and the median peak RSS
+(`MiB`, `ru_maxrss` of the waited process) with their min–max spread, the graph shape the
+frontend reported (files, types, methods, fields, call sites, constants, annotations, nodes,
+edges, strings) and the SHA-256 of every run's IR. A sample counts only for valid, equivalent
+work: every measured IR is walked as the stream `ir/graphite_ir.proto` defines (a header
+first, a trailer last and nothing after it) and its nodes, edges and strings counted, the
+trailer and the frontend's summary must agree with those counts, and the shape must equal
+the one the corpus manifest pins (`shape`); an empty or truncated IR, an IR that differs
+between runs, a failing run, a shape other than the pin (a frontend that emits less and so
+gets faster included) or a file count other than the manifest's fails the snapshot. That walk
+checks framing and counts, not the reader's semantic contract (node kinds, dense ids, string
+ids, edge endpoints), so the harness also hands the last measured IR of every revision (all
+runs wrote the same bytes) to the production reader through `--verify`: `graphite.jar import`,
+built from the revision under test by the `build-graphite-jar` job and downloaded into both
+Apple jobs (the `swift:6.1` container gets `openjdk-17-jre-headless`, macOS has Java); a
+refusal fails the snapshot with the reader's message, the rows record the verification, and
+the comparator refuses a base or candidate row without it. Changing
+the pinned shape is the explicit transition when the frontend intentionally emits more or
+less for the same corpus; the comparator refuses a candidate whose shape differs from the pin,
+and treats a base that emits another shape as not comparable (ceilings only, the report says
+why).
+
+The comparison is `compare-apple-frontend` in `benchmark-gate.mjs`, base-owned like every other
+comparator (the candidate copy, harness and corpus manifest stand in, pinned to
+`APPLE_FRONTEND_TRANSITION_*_SHA256`, only until `main` carries them). It is the same
+point-estimate policy as `rust-latency`, one floor per metric: a row is a regression
+candidate when the candidate median exceeds the base median by more than 15% **and** by at least
+100 ms (wall) or 8 MiB (RSS); rows under the floor
+are reported as `NOISE`. A candidate triggers a
+reverse-order confirmation (candidate first, then base) and blocks only when the confirmation
+says the same. The corpus ceilings (`ceilings.wallMs`, `ceilings.rssMiB` in the manifest) are
+enforced only when no comparable base exists: when the base revision carries no Apple frontend
+(the revisions before it landed) or emits another shape, the candidate is measured against the
+ceilings alone and the report says so. With a paired base a ceiling breach is reported, never
+blocking: hosted runners differ by up to 2× on identical work (7.6 s and 11.4 s for the
+generated package on Linux, 12.0 s and 25.0 s on macOS, with the same IR and RSS), so an
+absolute limit would fail an unchanged frontend on a slow machine while the paired comparison
+on that one machine is the measurement that means something. The ceilings are set from the
+observed hosted range (1.6× the slowest wall observation, 1.5× the stable RSS). Both
+jobs' results are blocking inputs of `benchmark-regression-gate`, and the three reports are
+blocking components of the aggregate under *Build and persistence lifecycle*.
+
+Cost on a hosted runner: two release builds of the frontend (cached by `actions/cache` on
+`Package.resolved`), the corpus build on a cache miss (minutes for the generated corpora),
+and about a minute (SwiftFormat) to a few minutes (app scale) of measured runs per revision;
 a confirmation doubles the measurement.
 
 ## Wrapped case-insensitive latency gate

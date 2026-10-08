@@ -1,0 +1,31 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v1",
+  "label": "generated-xcodeproj",
+  "input": "xcodeproj",
+  "generator": {
+    "script": "generate-apple-corpus.py",
+    "seed": 20260929,
+    "files": 2500,
+    "modules": 25,
+    "layout": "xcodeproj",
+    "name": "GraphiteBenchApp"
+  },
+  "files": 2500,
+  "ceilings": {
+    "wallMs": 40000,
+    "rssMiB": 690
+  },
+  "note": "The same generated sources as apple-frontend-corpus-large.json laid out as an iOS application `.xcodeproj`: one app target holding every file (the 25 module directories are groups), a UIKit app delegate and a shared scheme, built once with `xcodebuild` for the iOS Simulator on macOS with the index store on; the frontend reads that derived data through `build --project ... --derived-data ... --skip-build`. `shape` is the graph the frontend emits for it, pinned from the first hosted measurement (macOS-ARM64, macos-latest): the package's graph plus the app delegate (374838 nodes, 163539 edges); a sample whose shape differs is refused, so changing this pin is the explicit transition when the frontend intentionally emits more or less. Hosted macOS runners vary a lot between machines: the first two hosted runs measured 11956 ms and 24999 ms wall (median of 3) for the same IR and the same 455 MiB peak RSS. The ceilings are enforced only when no comparable base exists (a base revision without the frontend, or one that emits another shape); with a paired base the comparator reports a breach and the paired comparison on the one runner decides. The wall ceiling is 1.6x the slower observation (40 s), the RSS ceiling 1.5x the stable measurement (690 MiB).",
+  "shape": {
+    "files": 2500,
+    "types": 5971,
+    "methods": 24816,
+    "fields": 20840,
+    "callSites": 185510,
+    "constants": 131647,
+    "annotations": 4949,
+    "nodes": 374838,
+    "edges": 163539,
+    "strings": 25923
+  }
+}

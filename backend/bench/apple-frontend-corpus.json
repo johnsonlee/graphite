@@ -1,0 +1,24 @@
+{
+  "schema": "graphite-apple-frontend-corpus-v1",
+  "label": "swiftformat",
+  "repository": "https://github.com/nicklockwood/SwiftFormat.git",
+  "commit": "173d2cb252474cd8e8baeaf13636f5d565408ec9",
+  "files": 181,
+  "ceilings": {
+    "wallMs": 2000,
+    "rssMiB": 120
+  },
+  "note": "SwiftFormat at the pinned commit: the library under Sources/ and the executable under CommandLineTool/. `shape` is the graph the frontend emits for it (pinned from the first hosted measurement, Linux-X64, swift:6.1); a sample whose shape differs is refused, so changing this pin is the explicit transition when the frontend intentionally emits more or less. The ceilings are 1.5x that measurement (1347 ms wall, 79 MiB peak RSS); they are enforced only when no comparable base exists, since with a paired base the comparison on the one runner decides and a breach is only reported.",
+  "shape": {
+    "files": 181,
+    "types": 147,
+    "methods": 677,
+    "fields": 990,
+    "callSites": 16867,
+    "constants": 3468,
+    "annotations": 18,
+    "nodes": 32530,
+    "edges": 14655,
+    "strings": 7173
+  }
+}
