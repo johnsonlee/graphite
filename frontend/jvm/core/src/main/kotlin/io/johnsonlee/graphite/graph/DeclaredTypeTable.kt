@@ -105,7 +105,7 @@ data class DeclaredTypeTable(
     private fun validateExpressions() {
         fun reference(id: Int) { require(id in types.indices) { "Invalid graph.types type ID $id" } }
         fun parameters(values: List<TypeParameter>) { values.forEach { parameter -> parameter.bounds.forEach(::reference) } }
-        fields.values.forEach(::reference)
+        validateMemberReferences(fields, ::reference)
         validateMemberReferences(methods) { method ->
             method.parameterTypes.forEach(::reference)
             reference(method.returnType)

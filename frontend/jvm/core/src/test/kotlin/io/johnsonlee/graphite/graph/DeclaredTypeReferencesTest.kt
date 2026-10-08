@@ -12,9 +12,10 @@ class DeclaredTypeReferencesTest {
 
     @Test
     fun `compact maps validate references without requesting decoded values and validate once across readers`() {
+        val fields = References<MemberTypeKey, Int>(intArrayOf(0, 0))
         val methods = References<MemberTypeKey, MethodTypes>(intArrayOf(0, 1, 1))
         val classes = References<String, ClassTypes>(intArrayOf(1, 0))
-        val table = DeclaredTypeTable(types, emptyMap(), methods, classes)
+        val table = DeclaredTypeTable(types, fields, methods, classes)
         val pool = Executors.newFixedThreadPool(4)
         try {
             val tasks = List(32) {
@@ -26,13 +27,47 @@ class DeclaredTypeReferencesTest {
             }
             tasks.forEach { assertEquals("java.lang.Object[]", it.get()) }
         } finally { pool.shutdownNow() }
+        assertEquals(1, fields.calls.get())
+        assertEquals(2, fields.lastCount)
         assertEquals(1, methods.calls.get())
         assertEquals(1, classes.calls.get())
         assertEquals(2, methods.lastCount)
         assertEquals(2, classes.lastCount)
         // A copied table must validate again with its own count, not trust the map's prior success.
         assertFailsWith<IllegalArgumentException> { table.copy(types = types.take(1)).validate() }
+        assertEquals(2, fields.calls.get())
+        assertEquals(1, fields.lastCount)
         assertEquals(1, methods.lastCount)
+    }
+
+    @Test
+    fun `ordinary and compact fields reject every bad reference and recheck copied bounds`() {
+        val last = key.copy(name = "last")
+        for (bad in listOf(-1, types.size, Int.MAX_VALUE)) {
+            for (ids in listOf(intArrayOf(bad, 0), intArrayOf(0, bad))) {
+                val ordinary = linkedMapOf(key to ids[0], last to ids[1])
+                val compact = References<MemberTypeKey, Int>(ids)
+                for (fields in listOf(ordinary, compact)) {
+                    assertFailsWith<IllegalArgumentException> {
+                        DeclaredTypeTable(types, fields, emptyMap(), emptyMap()).validate()
+                    }
+                }
+                assertEquals(1, compact.calls.get())
+                assertEquals(types.size, compact.lastCount)
+            }
+        }
+        val fields = References<MemberTypeKey, Int>(intArrayOf(0, 1))
+        val valid = DeclaredTypeTable(types, fields, emptyMap(), emptyMap())
+        valid.validate()
+        assertEquals("java.lang.Object[]", valid.render(1))
+        assertFailsWith<IllegalArgumentException> { valid.copy(types = types.take(1)).validate() }
+        assertEquals(2, fields.calls.get())
+        assertEquals(1, fields.lastCount)
+        val mixed = valid.copy(methods = mapOf(key to MethodTypes(emptyList(), 0)))
+        mixed.validate()
+        assertFailsWith<IllegalArgumentException> {
+            mixed.copy(methods = mapOf(key to MethodTypes(emptyList(), types.size))).validate()
+        }
     }
 
     @Test

@@ -25,7 +25,10 @@ class MappedDeclaredTypeReferencesTest {
     )
     private val table = DeclaredTypeTable(
         listOf(DeclaredType("class", "java.lang.Object"), DeclaredType("class", "java.lang.String")),
-        mapOf(MemberTypeKey("Owner", "field", "Ljava/lang/Object;") to 0),
+        linkedMapOf(
+            MemberTypeKey("Owner", "field", "Ljava/lang/Object;") to 0,
+            MemberTypeKey("Owner", "last", "Ljava/lang/Object;") to 0
+        ),
         linkedMapOf(first to MethodTypes(listOf(0, 0), 0, parameters), second to MethodTypes(listOf(0), 0, parameters)),
         linkedMapOf("Owner" to ClassTypes(parameters, 0, listOf(0, 0)), "Empty" to ClassTypes(emptyList(), null, emptyList()))
     )
@@ -35,20 +38,27 @@ class MappedDeclaredTypeReferencesTest {
         for (version in 1..2) {
             DeclaredTypeWireFixture.write(dir, table, version)
             val valid = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
-            val references = positions(valid, version).references.filter { it.section == "method" || it.section == "class" }
-            assertEquals(18, references.size)
+            val references = positions(valid, version).references.filter { it.section != "type" }
+            assertEquals(20, references.size)
             for (reference in references) {
                 // The first scan and normal core validation accept ID1 with the original two types.
                 // A new supplied count of1 must fail at this exact position during raw revalidation.
                 replace(dir, valid.copyOf().also { ByteBuffer.wrap(it).putInt(reference.offset, 1) })
                 val loaded = DeclaredTypeStore.load(dir)
-                val map = if (reference.section == "method") loaded.methods else loaded.classes
+                val map = when (reference.section) {
+                    "field" -> loaded.fields
+                    "method" -> loaded.methods
+                    else -> loaded.classes
+                }
                 val validator = map as DeclaredTypeReferences
                 validator.validateTypeReferences(2)
                 val failure = assertFailsWith<IllegalArgumentException>("$version $reference") {
                     validator.validateTypeReferences(1)
                 }
                 assertTrue(failure.message.orEmpty().contains("reference") || failure.message.orEmpty().contains("type ID"))
+                assertFailsWith<IllegalArgumentException>("copied bounds: $version $reference") {
+                    loaded.copy(types = loaded.types.take(1)).validate()
+                }
             }
         }
     }
@@ -90,8 +100,10 @@ class MappedDeclaredTypeReferencesTest {
         try {
             val tasks = List(32) {
                 pool.submit {
+                    (restored.fields as DeclaredTypeReferences).validateTypeReferences(table.types.size)
                     (restored.methods as DeclaredTypeReferences).validateTypeReferences(table.types.size)
                     (restored.classes as DeclaredTypeReferences).validateTypeReferences(table.types.size)
+                    assertEquals(table.fields.entries.toList(), restored.fields.entries.toList())
                     assertEquals(table.methods.entries.toList(), restored.methods.entries.toList())
                     assertEquals(table.classes.values.toList(), restored.classes.values.toList())
                     assertEquals(table.methods[first], restored.methods[first])
