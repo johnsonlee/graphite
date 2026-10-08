@@ -12221,3 +12221,73 @@ Decision: **retain162's verified modest incremental wall-time and exact lifecycl
 Evidence: `/tmp/graphite-attempt162-load/` contains all six raw records/bodies, protocol/seal/authorization, preserved preparation failures, host observations, runtime/source identities, cleanup and final byte-verification receipts. Independent audit script `/tmp/graphite-attempt162-independent-audit.py` and result `native-independent-audit.json` agree with root's independent audit. Validation receipt `/tmp/graphite-attempt162-validation-receipt.json`; root test audit `/tmp/graphite-attempt162-root-test-audit.json`; source manifest `/tmp/graphite-attempt162-source-manifest.json`. Exact source patch SHA256 is `3736d7eda47ef8be0e4a28384f9ffb06a863d26a99fb94a6bb3b5d31370fd11c`.
 
 Root integration independently rechecks all three tested source hashes against `/tmp/graphite-attempt162-root-integration.json` on parent `f7641ed9061b1b2d6616fe2ac0f21a3acb8f17a7`. The previously retained 160 Rust change is disjoint. Root independently checks the 85 XML reports, coverage, raw loading bodies, complete-read RSS boundary, cleanup and final identity receipts; the retained initial audit assertion about an unchanged Detekt FROM-CACHE task was corrected without rerunning or altering validation.
+
+### Attempt161 — keep scalar declaration checks inside relevant node kinds; verified mixed query tradeoff (2026-10-09)
+
+Parent is retained160 `c3e6fab626a035a52145aa93c484ae4efbd46637`. This attempt moves the existing `generic_type`/`type_info` scalar-property checks into the Field, Parameter and Return match arms, so unrelated nodes no longer take those checks on each scalar lookup. It keeps the same declared-property helper, null behavior and Annotation property lookup. It changes neither graph/type storage nor scope, queries, output limits, cancellation, work budgets or validation.
+
+Correctness and source attribution: full Rust workspace tests passed **380** (CLI41, Cypher146, explore118, integration1, storage74), with `GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES=1` and both explicit Java GTY01/02 fixture paths. The new test checks actual CallSite scalar identities, all declared-node kinds, missing/null/annotation properties, partial bindings and absent tables; existing full rendered/tree and packed/directory interoperability checks remain. The first fmt check failed only on two new test-layout expressions; its log and original patch are retained. After rustfmt, fmt and strict all-target/all-feature clippy passed. No test assertions or coverage were removed. Optional unrelated GRAPHITE_INDEX_FIXTURE was unset as in160; no claim is made that those optional paths executed.
+
+Validated two-file patch SHA `de45f7e4a58983984ff653d5e7f361793613ee55979b50801adc1634fd716752`, with a separate CI companion adding an explicit strict-dual-fixture scalar-contract invocation. A fresh release build passed in68s. Source/runtime manifest proves the isolated source equals frozen160 plus only this161 delta; original unformatted patch SHA39c1cf18…9984 and the fmt failure remain. No inference of performance follows from these correctness checks.
+
+The protocol was sealed before launch: C=accepted4f, A=retained160, B=161; three fresh oracle processes C,A,B, then measured C,A,B,B,A,C. The same five audited158 catalog cases run against all64 graph IDs at HTTP/server concurrency4, two warmup cycles and20measured cycles percase/process. The three slow cases consume all matching CallSites before their later slice/limit; schema histograms cover the complete requested graph set using valid precomputed summaries rather than a claimed physical all-node scan. C uses original audited v1 fixtures; A/B share byte-identical v2 fixtures. Parent/candidate same feature settings, fresh processes and warm filesystem cache. Every request is fully consumed and typed/canonical response-checked. This is closed-loop load, not fixed-rate saturation; no single-graph inference.
+
+All **675** responses passed (15 fresh-oracle,60warmup,600measured), as did all576 readiness graph records across9processes. No retries, replacement samples, failures or result normalization. Per-process p50/p95 are nearest ranks10/19 among20 measured values percase; tables show the mean of two process percentiles and both preregistered symmetric pair deltas. Cases are never pooled together. Complete source/runtime/fixture identities were rechecked before every server and after both oracle and measurement stages. All9servers and both runner groups were proven stopped with no forced kills or cleanup errors.
+
+Parent160 →161 repeated-request latency, milliseconds (absolute changes first):
+
+| Case | Parent p50 →161 p50 | Δp50; directional pairs | Parent p95 →161 p95 | Δp95; directional pairs |
+|---|---:|---:|---:|---:|
+| shape-collect | 2531.954 → 2560.679 | +28.725; +40.164/+17.286 | 2565.942 → 2615.843 | +49.901; +55.457/+44.345 |
+| schema-key-histogram | 1.259 → 1.268 | +0.009; +0.006/+0.011 | 1.749 → 2.013 | +0.264; +0.072/+0.456 |
+| shape-order-by | 3165.775 → 3157.996 | -7.779; -2.884/-12.675 | 3200.506 → 3188.125 | -12.382; +9.072/-33.836 |
+| schema-label-histogram | 0.837 → 0.862 | +0.024; +0.017/+0.031 | 0.921 → 1.369 | +0.449; +0.348/+0.550 |
+| shape-with-filter | 3250.748 → 3180.267 | -70.481; -85.530/-55.432 | 3512.544 → 3480.866 | -31.678; -29.922/-33.433 |
+
+Accepted4f →161 cumulative repeated-request latency:
+
+| Case | 4f p50 →161 p50; Δ | 4f p95 →161 p95; Δ |
+|---|---:|---:|
+| shape-collect | 2506.619 → 2560.679; +54.060 | 2544.762 → 2615.843; +71.081 |
+| schema-key-histogram | 1.218 → 1.268; +0.050 | 1.826 → 2.013; +0.187 |
+| shape-order-by | 3107.537 → 3157.996; +50.459 | 3147.412 → 3188.125; +40.713 |
+| schema-label-histogram | 0.901 → 0.862; -0.040 | 1.060 → 1.369; +0.309 |
+| shape-with-filter | 3130.469 → 3180.267; +49.798 | 3403.593 → 3480.866; +77.273 |
+
+The WITH-filter improvement repeats in both directions, while collect worsens in both directions. Order-by has a small p50 gain and mixed p95. Tiny schema cases are controls: their submillisecond changes remain reported and are not used to justify a larger practical gain or repeated stabilization runs. All three slow cases remain worse than accepted4f at both p50/p95 in both cumulative pairs. The mixed-window aggregate cannot hide these regressions.
+
+Query-window end-to-end and CPU, through all100 measured requests/process, complete draining and validation:
+
+| Comparison | Window ms baseline →161; Δ | User+system CPU s baseline →161; Δ | CPU directional deltas s |
+|---|---:|---:|---:|
+| incremental160to161 | 46214.556 → 45945.818; -268.739 | 179.320 → 178.485; -0.835 | -0.310/-1.360 |
+| cumulative4fto161 | 45276.073 → 45945.818; +669.745 | 175.120 → 178.485; +3.365 | +2.730/+4.000 |
+
+CPU is a mixed five-case window, not per-case attribution. Both incremental and cumulative pair bounds satisfy+5% using conservative ±0.02s uncertainty per endpoint reading; root also verifies ±0.04s per derived query-window delta. A shorter window does not compensate for collect or cumulative p50/p95 regressions.
+
+RSS is reported as a sampled query-window lower bound and `/usr/bin/time -l` exact lifecycle upper bound (loading/warmup/query/shutdown included). The independent lower bound accepts only entire sampling intervals inside the declared query window: `clockNs >= queryStartNs && readEndNs <= queryEndNs`. One C5 sample crossed the endpoint and was excluded; its exclusion did not change that process peak. All other query samples and all loading samples were inside their respective complete windows. Raw/all-sample summaries remain unchanged.
+
+| Comparison/pair | Query peak delta interval MB | Lifecycle peak delta MB | Conservative CPU+5% | Conservative RSS+5% |
+|---|---:|---:|---|---|
+| incremental160to161 /1 | [+221.004, +704.070] | +437.158 | PASS | PASS |
+| incremental160to161 /2 | [-714.441, -283.754] | -647.496 | PASS | PASS |
+| cumulative4fto161 /1 | [+281.657, +560.906] | +497.811 | PASS | PASS |
+| cumulative4fto161 /2 | [-232.800, +134.939] | -165.855 | PASS | PASS |
+
+Lifecycle peak means: parent16020,905,418,752B→16120,800,249,856B (−105,168,896B), and4f20,634,271,744B→16120,800,249,856B (+165,978,112B). These means do not override directional bounds: the first incremental pair has a proven RSS increase and the second a proven reduction, both within5%. Native process RSS is distinct from JVM heap; no JVM heap increase was made or used. This query cohort does not establish independent loading or construction recovery.
+
+Fresh-process first-use observations are retained separately, in fixed case order; they are not repeated-request percentiles:
+
+| Oracle arm | Collect ms | Key histogram ms | Order-by ms | Label histogram ms | WITH-filter ms |
+|---|---:|---:|---:|---:|---:|
+| oracle-C | 2433.005 | 1.341 | 2997.396 | 0.973 | 3058.836 |
+| oracle-A | 2407.278 | 1.328 | 3067.996 | 0.926 | 3208.947 |
+| oracle-B | 2449.058 | 1.410 | 3069.175 | 0.859 | 3144.541 |
+
+Environment and certainty:305 host observations were retained across oracle and measured stages. Unrelated mediaanalysisd reached190.4%CPU (121 observations above10%), syspolicyd102.8%, Codex renderer100%, searchpartyuseragent95.1% and coreaudiod49.8%. No unrelated processes were stopped, no samples discarded or adjusted, and this is not a clean-host causal proof. Two process replicates/arm and20observations/case limit uncertainty; no extrapolation to other workloads, saturation, APKs or final operation acceptance.
+
+**Decision: retain161 as a mixed, verified positive composition candidate, with targeted tradeoff validation still required.** The repeated WITH-filter benefit and lower mixed CPU justify preserving the increment under the project rule; repeated collect regression and every slow cumulative latency regression remain explicit unresolved work. Query CPU/RSS limits pass for this declared workload; query latency recovery does not. Correctness/stability pass; independent loading/construction acceptance is not inferred. No final recovery or mergeability claim follows from keeping this intermediate attempt.
+
+Evidence: `/tmp/graphite-native161/query/{protocol.json,seal.json,summary.json,independent-raw-audit.json,root-independent-audit.json,root-paired-comparison.json}`, all675 raw response bodies and request/lifecycle/host records; `/tmp/graphite-native161/independent-query-audit.py` independently rederives results and strict RSS bounds without rereading large fixtures, relying on every frozen warm/final full-hash receipt. ProtocolSHA334ee07e3e259467217da57969adb3cfc293487ec19f30c2b4b9c2d076d8a266; sealSHA5567651b92769166f6b9da7f749860231c41bfc6d19f1d91e7ffc553a01558e2 (127pins/2564fixturefiles). A160 binarySHA131f475e202a9598dd71b0243842599950b0bde12a62a68950784ff212e93312; B161SHA3be8505a4d79dd63834aa2bc964e21d4fa116891e4c87a516e2f41d9697e4af0. Root session51884 exited0; own audit exits0 and independently agrees with root.
+
+Root integration on `53c9b2561cf7193da54f47d531d4862bad8ace63` verifies both production/test hashes against the validated source receipt, separately verifies the CI companion patch SHA, and parses the resulting workflow with Ruby YAML. `/tmp/graphite-attempt161-root-integration.json` records the exact source and unresolved mixed decision. Root independently rederives all675 typed bodies, raw CPU/RSS and case percentiles; the independent audit additionally checks all576 readiness records. Attempt161 completed after162; the chronology follows completion/integration rather than its earlier reservation number.
