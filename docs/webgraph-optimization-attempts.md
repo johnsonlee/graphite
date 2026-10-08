@@ -11019,3 +11019,28 @@ Root independently rehashed and recursively compared all1144 raw responses again
 Conclusion: **all13 selected queries improve p50 and p95 in both pair directions versus pre-upgrade**. The measured query CPU and whole-process CPU/RSS also decrease in both pairs. This is substantive multi-graph evidence for the retained sort, ID and IntConstant paths and representative aggregate/WITH queries. It does not prove every query or a production SLA, nor assign independent gains to unchanged control algorithms. Loading, warmup and query boundaries remain distinct; warmup values are retained but not an isolated per-case cold-cache experiment. No whole-process query-run RSS is substituted for an independent loading measurement.
 
 The independent main-relative CI at exact144 still fails: run37725832099/native113144860022 confirms `shape-union` at0.994→27.666ms initially and0.925→27.162ms in reverse, exceeding the unchanged15%+1ms gate. Full responses are equal. Candidate first-pass samples are fast and later passes slower, while a reverse-base72.378ms outlier is preserved; neither pattern establishes a cause. Do not erase this failure with the thirteen-case result or rerun unchanged code to seek a favorable sample. Full evidence is `/tmp/sootup-static-review/attempt144/ci-run37725832099/REPORT.md` (SHA `ab77e5a759b1000646fda966291a5dd6ec7701d5a5b3d7c00248471bfd7369c7`). Overall performance recovery remains incomplete.
+
+### 2026-10-08 — Cumulative144 versus pre-upgrade: independent real64 loading
+
+Measure native loading separately from the preceding query run, using the same64 persisted graphs, exact pre-upgrade6f498705/current6bb1fd11 binaries and macOS/Apple Silicon environment. Reuse the existing readiness-only lifecycle with a fixed four-process ABBA; issue no Cypher or metrics request. Both arms use default MAPPED mode and background C4, with no cache purge, warmup, feature override or replacement sample. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-real64-loading144/run.py --plan /tmp/sootup-static-review/native-real64-loading144/plan.sealed.json --execute-root-released`.
+
+Wall time covers launch through the complete `/api/graphs` response. Strict validation checks every graph identity/path, MAPPED mode, typed nodes/edges/methods/CallSites, total counts and timestamp format. The actual native CPU snapshot follows validation, then the process is immediately stopped and reaped. Whole user+system CPU and peak RSS include validation/snapshot/shutdown; this extension is retained, not subtracted. MAPPED readiness does not imply background C4 completion or materialization of deferred first-use columns/trigrams.
+
+| Session | MAPPED-ready s | Native CPU snapshot s | Whole CPU s | Peak RSS bytes | Ready→reaped s |
+|---|---:|---:|---:|---:|---:|
+| A0 old | 35.997195041 | 34.99 | 34.99 | 6332268544 | 0.093586834 |
+| B1 current | 18.096239833 | 18.36 | 18.38 | 6370934784 | 0.092121292 |
+| B2 current | 18.138354084 | 18.41 | 18.41 | 6377488384 | 0.154441708 |
+| A3 old | 35.983127125 | 36.24 | 36.28 | 6332514304 | 0.093804833 |
+
+| Metric | Old mean | Current mean | Absolute change | Change | A0/B1 change | A3/B2 change |
+|---|---:|---:|---:|---:|---:|---:|
+| Loading wall s | 35.990161083 | 18.117296958 | -17.872864125 | -49.660417% | -49.728750% | -49.592057% |
+| Whole CPU s | 35.635 | 18.395 | -17.240 | -48.379402% | -47.470706% | -49.255788% |
+| Whole peak RSS bytes | 6332391424 | 6374211584 | +41820160 | +0.660417% | +0.610622% | +0.710209% |
+
+Original session84080 ended exit0/tool7f4eac. All4 sessions passed,1216 fixture file stats remained unchanged, and all12 observed lifecycle/time/native PIDs plus4 groups were absent after cleanup. Root independently reconciled all four raw time-l logs, launch/body timestamps, response hashes and complete64-graph metadata with the sealed plan, then recomputed means. Two initial offline audit scripts assumed the wrong receipt/plan field shapes; those audit failures did not start or replace measurements, and the corrected field access passed. The observer retained116 snapshots and no classified events; this does not establish exclusive host use or exclude short-lived activity.
+
+Plan SHA `48cf530ada790f8fe8ff40ec9aab1df637caa99fab0deea71e9f28df98d33058`; results SHA `18f5eca634ce041653b9883060e05617956c306cc3a3530e484cd1a7b96cc561`; summary SHA `c884bbb573631d7121083fd84c0802bef633f039c303608105cbf4e6419ecbf1`; owner SHA `7fd88bcde89802dfa0c680f2a18d2919662406ab8183972b2f2af35b708fcb13`. Raw evidence and all overheads remain under `/tmp/sootup-static-review/native-real64-loading144`.
+
+Conclusion: retain the cumulative loading gains. Both paired wall/CPU observations improve and both RSS increases remain below the independent5% cap for this declared workload. Two samples per arm do not establish all-workload or cold-cache acceptance. Native RSS is separate from JVM heap, construction and JVM/own-writer loading remain unaccepted, and this result neither supplies query p50/p95 nor resolves the separate UNION gate failure.
