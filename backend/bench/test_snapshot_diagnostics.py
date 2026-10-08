@@ -127,6 +127,48 @@ class SnapshotDiagnosticsTest(unittest.TestCase):
             self.assertTrue((directory / "metrics-pass-000-case-000-after.prom").exists())
             validate.assert_not_called()
 
+    def test_records_actual_query_timeout_after_before_metrics(self):
+        for transport_error in (False, True):
+            now = [0]
+            def capture(url, directory, boundary, timeout):
+                out = self.capture(url, directory, boundary, timeout)
+                if boundary.endswith("-before"):
+                    now[0] = 3
+                return out
+            call = Mock(side_effect=TimeoutError("query timeout")) if transport_error else \
+                Mock(return_value=(1, 200, payload(1)))
+            with self.subTest(transport_error=transport_error), tempfile.TemporaryDirectory() as temp, \
+                    patch.object(metrics_capture, "capture", side_effect=capture), \
+                    patch.object(metrics_capture, "validate_window", return_value={}):
+                directory = pathlib.Path(temp) / "responses"
+                if transport_error:
+                    with self.assertRaisesRegex(RuntimeError, "query timeout"):
+                        self.run_measure(directory, call=call, overall_timeout=10, clock=lambda: now[0])
+                else:
+                    self.run_measure(directory, call=call, overall_timeout=10, clock=lambda: now[0])
+                call.assert_called_once_with("http://x", "RETURN 1", 7)
+                record, = self.attempts(directory)
+                self.assertEqual(record["timeoutSeconds"], 7)
+                self.assertEqual(record["status"], "FAIL" if transport_error else "PASS")
+
+    def test_budget_expiring_during_before_metrics_does_not_issue_query(self):
+        now = [0]
+        def capture(url, directory, boundary, timeout):
+            out = self.capture(url, directory, boundary, timeout)
+            now[0] = 11
+            return out
+        with tempfile.TemporaryDirectory() as temp, \
+                patch.object(metrics_capture, "capture", side_effect=capture):
+            directory = pathlib.Path(temp) / "responses"
+            call = Mock(side_effect=AssertionError("query must not run"))
+            with self.assertRaisesRegex(RuntimeError, "budget exhausted after metrics"):
+                self.run_measure(directory, call=call, overall_timeout=10, clock=lambda: now[0])
+            call.assert_not_called()
+            record, = self.attempts(directory)
+            self.assertEqual(record["status"], "FAIL")
+            self.assertEqual(record["bodyCompleteness"], "unavailable")
+            self.assertNotIn("callStartMonotonicNs", record)
+
     def test_original_http_and_transport_errors_keep_the_original_failure(self):
         for transport in (False, True):
             def call(*_):

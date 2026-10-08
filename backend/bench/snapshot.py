@@ -232,6 +232,7 @@ def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
                         effective_timeout = min(timeout, deadline-clock()) if deadline is not None else timeout
                         if effective_timeout <= 0:
                             raise RuntimeError("overall budget exhausted after metrics")
+                        record["timeoutSeconds"] = effective_timeout
                     if diagnostic_metrics_case is None:
                         # Keep the uninstrumented call and output contract unchanged.
                         ms, status, payload = call(base, query, effective_timeout)
