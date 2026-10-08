@@ -11189,3 +11189,57 @@ Native job113170554627 passes the unchanged gate: all73 query hashes, complete r
 This establishes current main-relative gate success, not request p95, final pre-upgrade resource acceptance or a proven cause/fix of3963's server-side42.7ms delay. Attempt146 changes allocation behavior but does not directly change the UNION path. Preserve both historical failure records and this changed-candidate success; do not spend additional runs stabilizing this tiny timing baseline without a new blocking failure.
 
 Evidence: `/tmp/sootup-static-review/attempt146/ci-run37733977570`; terminal run SHA `f1782af47e3e94e577bb0acc048792bd6dadc164a01ad37aa7c121132ebc92b8`; native report SHA `845115811e1d9b78c2554ea8a4f5baf216150495c566bb54b10a67d1e2b44bfd`. No rerun, threshold change or failure deletion.
+
+### 2026-10-08 — cumulative146 versus pre-upgrade: thirteen real multi-graph query shapes
+
+The permanent coverage added in Attempt142 now has a passing 73-case main-relative CI gate, and this separate run measures repeated-request latency against the pre-upgrade baseline. A is `6f498705`, binary SHA `2bf3cd50096fe3d39ad9227cc1aade64bb4ac8014486c10b0d4b57f48a57700b`; B is cumulative146 at `f211a611`, binary SHA `0b26a4f67eb5e44f5d3c37ea1e141c6946988d06075368daec35a9532cf7fd61`. Same 64 persisted Android/Tika/Hive/Kotlin shards (19,438,199 nodes, 5,051,914 CallSites), global input scope, MAPPED/default C4/default fast paths. LIMIT/probe can stop early; returned provenance is not a trace of all visited graphs.
+
+Fixed four fresh processes in ABBA order, rolling concurrency four and the original thirteen-case mixed queue. Each process executes two warmups and twenty measured requests per case. Request timing includes connection through complete response consumption; encoding and full result validation are outside the latency timer. Each process uses nearest ranks 10/19 for p50/p95; the table reports the mean of its arm's two process quantiles, never a percentile pooled across cases. Both chronological pairs are retained below.
+
+| Case | Old p50 ms | Current p50 ms | Old p95 ms | Current p95 ms | Pair A0→B1 Δ p50/p95 ms | Pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| order-by | 7271.296 | 3072.349 | 8072.947 | 3105.732 | -4239.541/-5395.001 | -4158.354/-4539.428 |
+| order-by-desc | 7257.126 | 3055.480 | 7737.693 | 3105.934 | -4233.141/-4661.640 | -4170.151/-4601.880 |
+| canonical-order-by | 7215.869 | 3077.758 | 7735.252 | 3102.747 | -4182.600/-5009.289 | -4093.621/-4255.721 |
+| id-lookup | 5567.664 | 38.466 | 5627.321 | 38.715 | -5538.566/-5629.988 | -5519.830/-5547.224 |
+| wide-contains | 0.715 | 0.580 | 28.046 | 0.636 | -0.148/-50.188 | -0.121/-4.633 |
+| with-filter | 3877.247 | 3092.717 | 5370.275 | 3219.519 | -844.505/-2532.403 | -724.557/-1769.109 |
+| with-aggregate | 697.620 | 668.084 | 811.177 | 706.879 | -26.223/-87.014 | -32.849/-121.583 |
+| group-count | 339.453 | 309.361 | 405.359 | 322.153 | -36.807/-141.093 | -23.378/-25.318 |
+| distinct | 291.980 | 264.610 | 342.781 | 280.104 | -29.711/-60.712 | -25.028/-64.641 |
+| collect | 2544.841 | 2464.725 | 2815.059 | 2499.025 | -111.744/-348.759 | -48.488/-283.310 |
+| count-traversal | 37.131 | 26.121 | 65.482 | 28.817 | -15.681/-37.347 | -6.339/-35.984 |
+| int-sort | 121.062 | 112.361 | 127.334 | 120.918 | -9.429/-10.903 | -7.973/-1.930 |
+| int-filter | 13.328 | 12.185 | 16.697 | 14.156 | -1.266/-3.565 | -1.020/-1.517 |
+
+| Resource | Old mean | Current mean | Absolute change | Change | Both pair changes |
+|---|---:|---:|---:|---:|---:|
+| Measured queue CPU s | 711.130 | 329.065 | -382.065 | -53.726% | -384.120/-380.010 |
+| Whole CPU s | 818.395 | 381.435 | -436.960 | -53.392% | -438.770/-435.150 |
+| Whole wall s | 237.415 | 111.665 | -125.750 | -52.966% | -125.960/-125.540 |
+| Whole peak RSS MB | 34335.867 | 17476.084 | -16859.783 | -49.103% | -16227.484/-17492.083 |
+
+Original session23769 terminal exit0: all four servers, 1,144 complete typed bodies, 1,040 measured requests and eight metrics captures pass with no request failure, retry or replacement. All sixteen owned PIDs/four process groups exited; original 1,216 fixture stat identities remain unchanged before and after every run. Root independently reread all bodies, verified complete typed oracles and hashes, recalculated all quantiles/pairs, and checked CPU/wall/RSS against the original time-l and process counters. Server `/metrics` confirms 260 successes per measured window, zero errors/rejections, and separately retains HTTP/guard sum/count. These mixed means are not case p95; old versus current guard boundaries differ in source preparation, so guard times cannot establish an engine-only speedup.
+
+CPU/RSS improve for this declared mixed workload; whole resources include loading, warmup and shutdown and cannot be attributed to each query case. All thirteen request p50/p95 improve in both pairs, including the seconds-long sorting and WITH paths. This supports retaining the cumulative query changes. It does not establish every query shape's pre-upgrade acceptance, production tail guarantees, saturation behavior or recovery of construction/loading. With twenty measured requests per case/process, tails remain empirical; changed slow queries also change interference for fast controls, so control gains are not proof of independently faster control algorithms. Host monitoring retained 679 observations with no detected events, without an exclusive-host claim.
+
+Two failed prelaunch checks are retained; neither launched a server or produced a sample. The corrected diagnosis was the inherited `MallocNanoZone` variable, not a surviving owned PID. The already-specified `env -u MallocNanoZone` launch passed the unchanged preflight. This was not a performance rerun.
+
+Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/preupgrade-vs146-slow-suite/measurement/run.py --execute-root-released`. Evidence in that directory: plan SHA `5497d8b67a51499710f5fd3ed60773c02c478ed207254fccf9c3694673536efd`, results SHA `b8e42bfd919f35c6260418392fb0b4c2718387a64e572572a46b4fba29b76ae8`, summary SHA `da7af7cebfeff3c3fd3831e6ecf671007a8c3208fb4bf1740841eb8c3493f77f`, report SHA `586b36442119fd88445f8ff5a535b40668417b6543166fda7bcd410ae20d97e3`, owner SHA `98eeea4c6230bb83574872d90e40f03072976404d0ce0f488408ef0fe582614f`; root audit `root-independent-audit.json`.
+
+### 2026-10-08 — cumulative146 own-writer native loading
+
+Close the artifact-identity gap separately from query timing: old6f native reader loads old6f writer output; cumulative146 native reader loads current144 JVM writer output (JVM production sources unchanged at146). Deterministically use the first A0/B1 Kotlin and Tika graphs from completed six-GiB construction81808. All74 files/2,048,220,886 bytes match that run's original before/after content inventories. Those inventories contain size/SHA, not historical inode/timestamps; freeze the first loading stat baseline only after unchanged stats around full content verification, without claiming historical stat continuity. The original24 construction correctness reports and predeclared metadata expectations are retained.
+
+Reuse the original readiness-only runner unchanged: fixed Kotlin ABBA then Tika ABBA, fresh processes, no queries or extra warming. Measure owned launch through the first complete strictly valid `/api/graphs` response, followed immediately by validation, actual native CPU snapshot and SIGTERM/reap. Whole CPU/RSS include that overhead. Default C4 remains enabled; readiness does not establish C4 completion, lazy-column preparation, first-query completion or cold-cache performance. Cache state is observed after binding reads.
+
+| Corpus | Old→current readiness ms | Old→current whole CPU s | Old→current peak RSS MB | RSS mean change | Both RSS pair changes |
+|---|---:|---:|---:|---:|---:|
+| Kotlin | 1751.116→959.211 | 1.765→0.970 | 365.051904→364.789760 | -0.071810% | -0.147750%/+0.004499% |
+| Tika | 1421.986→718.467 | 1.440→0.730 | 249.683968→236.953600 | -5.098592% | -4.600341%/-5.596746% |
+
+Original session20907 terminal exit0/84e058; all8 strict readiness sessions pass with no failed session/retry/replacement. All24 owned PIDs/eight groups exit. Root independently validates all eight complete metadata bodies and hashes, recomputes means/both pairs, checks raw time-l CPU/RSS and launch/readiness boundaries, and verifies the original per-run stat inventories. Readiness-to-reap overhead is7.280–7.780ms; the0.01s CPU snapshot resolution can make whole CPU minus snapshot negative by0.01s, retained without clamping.21 observer samples detect no events without proving an exclusive host.
+
+Decision: retain the current loading changes. Both wall/CPU pairs improve for both corpora, and resource means and both pairs satisfy the independent+5% limits for this measured readiness boundary; the small adverse Kotlin RSS pair is retained. Two observations per arm remain descriptive, not confidence-based final acceptance. Query performance and deferred work have separate evidence; no query percentile is inferred here.
+
+Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/native-own-graph-loading146/run.py --plan /tmp/sootup-static-review/native-own-graph-loading146/plan.sealed.json --execute-root-released`. Evidence in that directory: released plan SHA `0d38f7b03fd212b1a1597d21c2e64fd4c0962bbc7174df0db9039e9a5651fa13`, results SHA `dbd2fedad76bc72ec9da42d91ffaeafced6406d79764ae7825e8d586c86842f9`, summary SHA `917d225d0a0a7ab42d31968019f9e6cfb91aef65861d88f2ea0afe80b087c000`, report SHA `5c72947d1b481c0d91e34965ec6226d2c2c6c52f517d56152d9cec7d10845491`, owner SHA `818060742649b3757e4b3dbf324d0b4d3a4098634f2e2ef12cf799e6c270d032`. All8 raw values and paired resources remain in RESULTS.md and execution/summary.json.
