@@ -440,7 +440,7 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn probe_checks_exit_status_effective_values_and_exact_requested_options() {
-        let _spawn_guard = SPAWN_LOCK.lock().unwrap();
+        let _spawn_guard = SPAWN_LOCK.lock().unwrap_or_else(|error| error.into_inner());
         let args_log = Capture::new().unwrap();
         let mut input = env();
         input
@@ -476,7 +476,7 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn build_run_probes_once_then_exports_profile_and_preserves_build_failure() {
-        let _spawn_guard = SPAWN_LOCK.lock().unwrap();
+        let _spawn_guard = SPAWN_LOCK.lock().unwrap_or_else(|error| error.into_inner());
         let log = Capture::new().unwrap();
         let fake = fake_java(&format!(
             "if [ \"$1\" = '-Xmx8g' ]; then\n  printf 'probe\\n' >> '{}'\n  printf '%s' '{FLAGS}'\nelse\n  printf 'build:%s\\n' \"$JAVA_TOOL_OPTIONS\" >> '{}'\n  printf '%s\\n' \"$@\" >> '{}'\n  exit 23\nfi",
@@ -503,7 +503,7 @@ mod tests {
     #[test]
     #[cfg(unix)]
     fn probe_timeout_and_output_limit_reap_the_direct_child() {
-        let _spawn_guard = SPAWN_LOCK.lock().unwrap();
+        let _spawn_guard = SPAWN_LOCK.lock().unwrap_or_else(|error| error.into_inner());
         let pid_log = Capture::new().unwrap();
         let mut input = env();
         input

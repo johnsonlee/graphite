@@ -11559,3 +11559,56 @@ Decision: retain and integrate the deterministic fallback correction and the ver
 CI follow-up to Attempt148 (test-only): integrated `8aabdc86` failed Linux `rust-build-test` run37754712723 with40/41 CLI tests passing. Review comment6056729906 reproduced `ETXTBSY` from executing a fake Java script while a concurrent test fork temporarily retained its writable descriptor. Closing the writing thread's descriptor alone does not exclude that overlap. A shared test-only mutex now covers the complete three tests that create executable scripts or launch processes, including the real build invocation and `/bin/kill` checks. The remaining CLI tests do not spawn children. Production probing, flags, timeouts and fallback behavior are unchanged; no retry or global serial test mode was added.
 
 Local validation used the normal parallel test runner: `cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli -- --nocapture`, with the existing real `GRAPHITE_INDEX_FIXTURE`. All41tests pass; `cargo fmt --all --check` and CLI all-target/all-feature Clippy with `-D warnings` pass. Logs are retained under `/tmp/sootup-static-review/cli-spawn-race-fix/`. This macOS result does not substitute for the new-head Linux CI check; the original failed CI run is retained. This correction changes no measured production artifact or performance conclusion.
+
+#### Actual native CLI default construction — follow-up to Attempt149
+
+**PASS for the declared Kotlin/Tika default-CLI construction workloads.** All8 timed samples,24 strict verifiers and40 ordered-query checks are complete, with independent raw-log and full-report verification. Overall PR completion still requires the final-head CI gate.
+
+The original fixed Kotlin ABBA then Tika ABBA series compares pre-upgrade6f native CLI `2bf3cd50096f…`/MAIN_query84 with native148 `1f10ec262059…`/JVM149 MAIN_query88. Production source continuity extends to integrated `8aabdc86`; `ba91ae47` changes only CLI tests. Inputs are the unchanged full Kotlin compiler2.0.21 and Tika2.9.2 JARs on macOS ARM64/HotSpot17.0.20.1, full features, default Mmap construction and two-worker prepared save.
+
+Both maximum heaps are8GiB. This deliberately compares shipped defaults: old bare `-Xmx8g` versus the new capability-selected G1 profile (`UseG1GC`, `UnlockExperimentalVMOptions`, `G1MaxNewSizePercent=30`, `MinHeapFreeRatio=20`, `GCTimeRatio=4`). The harness injects no tuning options. It pins the real Java and manifest-only JAR wrappers containing the actual MainKt/ordered84-or88 runtime entries without new bytecode. These wrappers exercise native Launch::Jar and real BuildCommand, not release-fatjar packaging.
+
+Timing is `/usr/bin/time -l <native> build <input> -o <directory>/graph`, from native CLI launch through successful exit, including capability probing, real JVM build/count/save and natural teardown. CPU includes waited descendants. RSS is the maximum individual-process peak among CLI and waited descendants, **not** simultaneous process-tree RSS; probe and build are sequential. No internal helper-phase timing or explicit helper graph.close is substituted.
+
+Original session83586 stopped exit1/daa3f0 **after** successful Kotlin A0 (exit0): the inherited post-build counter incorrectly required helper-only `construction.properties`. Its original graph, time-l and failure remain untouched. The narrow counter repair reads the persisted node header and corroborates CLI/type-index counts. Explicit continuation21682 retains that exact A0 and executes only the original remaining seven builds, followed by the original24 strict verifiers/40 ordered-query checks. No sample was replaced or added. This is an interrupted ABBA series, n2/arm/corpus; do not imply uninterrupted conditions or confidence-based stability.
+
+| Raw sample | CLI wall s | CPU s | Peak RSS bytes |
+|---|---:|---:|---:|
+| kotlin 0A (retained) | 116.130 | 229.180 | 9648717824 |
+| kotlin 1B | 39.060 | 117.690 | 6436896768 |
+| kotlin 2B | 43.100 | 123.430 | 6276399104 |
+| kotlin 3A | 115.380 | 189.320 | 7061946368 |
+| tika 0A | 116.020 | 185.240 | 7796801536 |
+| tika 1B | 28.800 | 101.750 | 5269192704 |
+| tika 2B | 28.570 | 95.380 | 5399396352 |
+| tika 3A | 113.310 | 206.650 | 8818704384 |
+
+| Corpus / metric | Old mean → current mean | Absolute Δ | Mean Δ % | A0→B1 % | A3→B2 % |
+|---|---:|---:|---:|---:|---:|
+| kotlin / CLI wall s | 115.755 → 41.080 | -74.675 | -64.511% | -66.365% | -62.645% |
+| kotlin / CPU s | 209.250 → 120.560 | -88.690 | -42.385% | -48.647% | -34.804% |
+| kotlin / RSS bytes | 8355332096 → 6356647936 | -1998684160 | -23.921% | -33.288% | -11.124% |
+| tika / CLI wall s | 114.665 → 28.685 | -85.980 | -74.984% | -75.177% | -74.786% |
+| tika / CPU s | 195.945 → 98.565 | -97.380 | -49.698% | -45.071% | -53.845% |
+| tika / RSS bytes | 8307752960 → 5334294528 | -2973458432 | -35.791% | -32.419% | -38.773% |
+
+All reported construction means and both directional pairs improve. The unchanged correctness checks and independent raw audit passed; these observations satisfy the separate latency/CPU/RSS constraints for these two default-configuration workloads. They do not erase the previous bare-default failure (Kotlin RSS+13.454%, Tika+29.742%), establish a matched-GC causal effect, or extend performance acceptance to unsupported JVMs/explicit overrides. Earlier cohorts are retained without pooling.
+
+Linux packaged-frontend wiring is now independently covered by exactba91 Rust run [37756679805](https://github.com/johnsonlee/graphite/actions/runs/37756679805), terminal SUCCESS: the real CLI default and explicit2GiB check are enabled in rust-build-test. This is platform/launcher correctness evidence, not Linux Kotlin/Tika resource benchmarking. Final current-head method-level/E2E benchmark conclusions still require their actual terminal reports; older green runs are not substituted.
+
+Continuation command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/attempt148/native-cli-construction/continuation1/execute.py --execute-root-released`. Raw timing source: `continuation1/execution/summary.json`; original failure and retained-A provenance remain in the parent packet.
+
+Final evidence: continuation21682 terminated exit0/tool1ebcbb. Original A0→B1 interruption is851.250762seconds by same-host monotonic boundaries (UTC separately851.263239seconds). The independently recomputed table exactly matches all raw logs and the complete summary, including medians/min/max/ranges and both pairs. All24 complete own-version reports match the original references, with40 ordered-query comparisons, exact current ordinal sidecars/bindings and old-format ordinal absence. The8 graph inventories retain all148 file entries unchanged across verification. The independent auditor checks those recorded before/after inventories and originalA pins; it does not rehash every large graph file a second time.
+
+Observed owned PIDs (including supervisor monitoring children) and the recorded owner process group are absent; fresh inspection found no remaining JVM/native/Cargo workload. The monitor cannot observe every short-lived child, and does not record separate child PGIDs. All samples and original failures remain. Root reviewed the independent auditor and checked its result, the raw summary and limit flags. CPU and RSS means and both pairs each satisfy the unchanged+5%limits independently for Kotlin and Tika. Query and loading acceptance remain based on their separate already-audited workloads, whose production implementations are unchanged.
+
+| Evidence under `attempt148/native-cli-construction/continuation1/` | SHA256 |
+|---|---|
+| commands.resolved.json | `e28a0b2df92eabb89dc7e4d9a263539d27df5f04be2e276c4168f28a9d7be78a` |
+| execute.py | `fc4b1ba13ff964f464a4612c686802c03971b36287070bf3c5ed51090e6ceaed` |
+| execution/results.json | `b2413b3d333c79f581bfc9f5a78bee596d8c57bfcdedc458f549799128063d01` |
+| execution/summary.json | `d136cc3c0bfa4201c2107c020e4532d5c0a5075d2cf7364e83c28378ac6f57db` |
+| execution/owner-terminal.json | `e15db7c6a65d35f30322b97b295d77d1c268564ad027193ba811bc3bbce411c0` |
+| independent-audit.json | `0b5511e0c6b37a506b5fd4a7e332c75285ac6df352b97cc6e49558b41240233c` |
+
+The exactba91 JVM workflow37756679804 also succeeded. Its Benchmark37756680076 remains in progress at this record, so no final-head method/E2E claim is made here. A final test-only review nit changes the three mutex acquisitions to recover their guard after poisoning: the first panicking test still fails, while later tests can run and report their own outcomes. Production source is unchanged. The normal parallel41CLI tests, formatting and strict all-target/all-feature Clippy pass again; logs are under `/tmp/sootup-static-review/cli-spawn-race-fix/poison-followup/`. A new commit's required CI remains authoritative; earlier green checks are not relabeled as its result.
