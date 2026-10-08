@@ -16,6 +16,9 @@ internal class DeclaredTypeTextCandidates(
     private val fragments: List<String>,
     private val work: GraphWorkConsumer?
 ) {
+    private val atoms = (types as? DeclaredTypeAtoms)?.takeIf {
+        fragments.all { fragment -> fragment.all { it.code <= ASCII_MAX } }
+    }
     private val matches = ByteArray(types.size)
     private val required = (1 shl fragments.size) - 1
     private var inspected = 0
@@ -32,13 +35,69 @@ internal class DeclaredTypeTextCandidates(
         val cached = matches[id].toInt()
         if (cached and COMPLETE != 0) return cached and required
         consume()
-        val type = types[id]
+        val mask = atoms?.let { matchMappedType(id, it) } ?: matchDecodedType(types[id])
+        matches[id] = (mask or COMPLETE).toByte()
+        return mask
+    }
+
+    private fun matchDecodedType(type: DeclaredType): Int {
         var mask = localMatches(type)
         type.owner?.let { mask = mask or matchReference(it) }
         type.component?.let { mask = mask or matchReference(it) }
         for (argument in type.arguments) mask = mask or matchReference(argument)
-        matches[id] = (mask or COMPLETE).toByte()
         return mask
+    }
+
+    private fun matchMappedType(id: Int, source: DeclaredTypeAtoms): Int {
+        var position = source.typeOffset(id)
+        var mask = matchAtom(source, position, "kind", matchText("arguments", 0))
+        position = atomEnd(source, position)
+        mask = matchAtom(source, position, "name", mask)
+        position = atomEnd(source, position)
+        mask = matchAtom(source, position, "scope", mask)
+        position = atomEnd(source, position)
+        val owner = source.atomInt(position)
+        val component = source.atomInt(position + Int.SIZE_BYTES)
+        position += 2 * Int.SIZE_BYTES
+        mask = matchAtom(source, position, "variance", mask)
+        position = atomEnd(source, position)
+        if (owner >= 0) mask = matchText("owner", mask) or matchReference(owner)
+        if (component >= 0) mask = matchText("component", mask) or matchReference(component)
+        val argumentCount = source.atomInt(position)
+        position += Int.SIZE_BYTES
+        repeat(argumentCount) {
+            mask = mask or matchReference(source.atomInt(position))
+            position += Int.SIZE_BYTES
+        }
+        return mask
+    }
+
+    private fun atomEnd(source: DeclaredTypeAtoms, position: Int): Int =
+        position + Int.SIZE_BYTES + source.atomInt(position)
+
+    private fun matchAtom(source: DeclaredTypeAtoms, position: Int, key: String, initial: Int): Int {
+        val length = source.atomInt(position)
+        var mask = if (length == 0) initial else matchText(key, initial)
+        for ((index, fragment) in fragments.withIndex()) {
+            val bit = 1 shl index
+            if (mask and bit == 0 && atomContains(source, position + Int.SIZE_BYTES, length, fragment)) {
+                mask = mask or bit
+            }
+        }
+        return mask
+    }
+
+    private fun atomContains(source: DeclaredTypeAtoms, position: Int, length: Int, fragment: String): Boolean {
+        for (start in 0..length - fragment.length) {
+            var matched = 0
+            while (matched < fragment.length &&
+                source.atomByte(position + start + matched).toInt() == fragment[matched].code
+            ) {
+                matched++
+            }
+            if (matched == fragment.length) return true
+        }
+        return false
     }
 
     private fun matchReference(id: Int): Int {
@@ -82,6 +141,7 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private companion object {
+        const val ASCII_MAX = 127
         const val COMPLETE = 4
         const val CANCELLATION_MASK = 255
     }
