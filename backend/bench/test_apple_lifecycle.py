@@ -154,6 +154,22 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual(measured["cpu_seconds"], measured["user_seconds"] + measured["system_seconds"])
         self.assertEqual(measured["rss_sample_errors"], [])
 
+    def test_mac_cpu_ticks_are_converted_with_the_host_timebase(self):
+        usage = bench.MacUsageV2()
+        usage.ri_user_time, usage.ri_system_time = 24000000, 12000000
+        usage.ri_resident_size, usage.ri_proc_start_abstime = 4096, 123456
+        measured = bench.mac_usage(usage, (125, 3))
+        self.assertEqual(measured["user_seconds"], 1.0)
+        self.assertEqual(measured["system_seconds"], 0.5)
+        self.assertEqual(measured["raw_cpu_ticks"], {"user": 24000000, "system": 12000000})
+        self.assertEqual(measured["mach_timebase"], {"numer": 125, "denom": 3})
+        self.assertEqual(measured["resident_bytes"], 4096)
+        self.assertEqual(measured["identity"], "123456")
+        self.assertEqual(measured["cpu_counter"], "proc_pid_rusage-v2-mach-ticks-converted-to-seconds")
+        self.assertEqual(bench.mac_usage(usage, (1, 1))["user_seconds"], .024)
+        with self.assertRaisesRegex(bench.Invalid, "timebase"):
+            bench.mac_usage(usage, (125, 0))
+
     def test_linux_cpu_fields_handle_spaces_and_parentheses_in_process_name(self):
         fields = ["S"] + ["0"] * 21
         fields[11], fields[12], fields[19], fields[21] = "250", "75", "12345", "99"
