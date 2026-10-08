@@ -121,6 +121,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                 pack,
             })
         }
+        Launch::Node(_) => Err("TypeScript builds use the graph interchange adapter".into()),
         Launch::Jar(jar) => {
             let java = frontend::locate_java(env)?;
             let mut argv = Vec::new();
@@ -157,6 +158,20 @@ pub fn missing_frontend_message() -> String {
 
 /// Run `graphite build` and return the exit code to use.
 pub fn run(env: &Env, args: &[OsString]) -> i32 {
+    let (lang, args) = match crate::build_ts::select_language(args) {
+        Ok(selected) => selected,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 2;
+        }
+    };
+    if lang == "ts" {
+        return crate::build_ts::run(env, &args);
+    }
+    run_jvm(env, &args)
+}
+
+fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
     let Some(fe) = frontend::locate_jvm(env) else {
         eprintln!("{}", missing_frontend_message());
         return 2;

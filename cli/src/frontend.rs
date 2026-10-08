@@ -1,9 +1,8 @@
 //! Locating and describing frontends.
 //!
-//! A frontend turns compiled artifacts into a graph. The only one today is the JVM
-//! frontend, shipped as `graphite.jar` (the Kotlin CLI, whose `build` runs the SootUp
-//! analysis). This module finds it, finds a `java` to run it with, and reports what it
-//! found. Nothing here touches the real environment directly: every lookup goes through
+//! Frontends turn compiled artifacts or source projects into graphs. The JVM frontend
+//! runs SootUp; the TypeScript frontend runs the TypeScript compiler under Node.js.
+//! This module locates their launchers and runtimes and reports what it found. Nothing here touches the real environment directly: every lookup goes through
 //! [`Env`], so the search order is unit-tested against fake homes and PATHs.
 
 use serde_json::{json, Map, Value};
@@ -74,6 +73,8 @@ impl Env {
 pub enum Launch {
     /// A jar, run as `java -jar <jar> <args>`.
     Jar(PathBuf),
+    /// A JavaScript entry point, run as `node <script> <args>`.
+    Node(PathBuf),
     /// An executable (`graphite-frontend-jvm` launcher), run directly.
     Executable(PathBuf),
 }
@@ -90,7 +91,7 @@ pub struct Frontend {
 impl Frontend {
     pub fn path(&self) -> &Path {
         match &self.launch {
-            Launch::Jar(p) | Launch::Executable(p) => p,
+            Launch::Jar(p) | Launch::Node(p) | Launch::Executable(p) => p,
         }
     }
 }
@@ -103,6 +104,41 @@ pub const JAVA_VAR: &str = "GRAPHITE_JAVA";
 pub const JVM_FRONTEND_JAR: &str = "graphite-frontend-jvm.jar";
 /// The asset name on a GitHub release.
 pub const JVM_RELEASE_ASSET: &str = "graphite.jar";
+
+/// Pin the TypeScript frontend JavaScript entry point or executable launcher.
+pub const TS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_TS";
+/// Pin the Node.js runtime used for a JavaScript entry point.
+pub const NODE_VAR: &str = "GRAPHITE_NODE";
+
+/// TypeScript is opt-in: a pinned entry point, then an installed launcher on PATH.
+pub fn locate_ts(env: &Env) -> Option<Frontend> {
+    if let Some(path) = env.var_path(TS_FRONTEND_VAR) {
+        let launch = match path.extension().and_then(|e| e.to_str()) {
+            Some("js" | "mjs" | "cjs") => Launch::Node(path),
+            _ => Launch::Executable(path),
+        };
+        return Some(Frontend {
+            lang: "ts",
+            launch,
+            found_via: TS_FRONTEND_VAR,
+        });
+    }
+    env.which("graphite-frontend-ts").map(|path| Frontend {
+        lang: "ts",
+        launch: Launch::Executable(path),
+        found_via: "PATH",
+    })
+}
+
+pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
+    env.var_path(NODE_VAR).or_else(|| env.which("node")).ok_or_else(|| {
+        format!("node not found. The TypeScript frontend needs Node.js: put node on PATH or set {NODE_VAR}.")
+    })
+}
+
+pub fn missing_ts_message() -> String {
+    format!("No TypeScript frontend found. Build frontend/web with `npm ci && npm run build`, then set {TS_FRONTEND_VAR} to its absolute dist/cli.js path; or put graphite-frontend-ts on PATH.")
+}
 
 /// Find the JVM frontend. The order, first match wins:
 ///
@@ -269,6 +305,7 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
         "kind".into(),
         json!(match frontend.launch {
             Launch::Jar(_) => "jar",
+            Launch::Node(_) => "node",
             Launch::Executable(_) => "executable",
         }),
     );
@@ -277,11 +314,23 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
     m.insert("version".into(), json!(version));
     m.insert(
         "inputs".into(),
-        json!(["jar", "war", "apk", "aar", "dex", "class directory"]),
+        if frontend.lang == "ts" {
+            json!([
+                "tsconfig.json",
+                "TypeScript/JavaScript source",
+                "source directory"
+            ])
+        } else {
+            json!(["jar", "war", "apk", "aar", "dex", "class directory"])
+        },
     );
-    // The jar-era frontend writes the persisted graph itself; it emits no IR yet.
-    m.insert("ir_schema".into(), json!([]));
-    m.insert("writes".into(), json!("persisted-graph"));
+    if frontend.lang == "ts" {
+        m.insert("ir_schema".into(), json!(["graphite-graph-v1"]));
+        m.insert("writes".into(), json!("graph-json"));
+    } else {
+        m.insert("ir_schema".into(), json!([]));
+        m.insert("writes".into(), json!("persisted-graph"));
+    }
     Value::Object(m)
 }
 
@@ -527,6 +576,40 @@ mod tests {
         let d = describe(&fe, None);
         assert_eq!(d["kind"], "executable");
         assert!(d["version"].is_null());
+    }
+
+    #[test]
+    fn typescript_discovery_prefers_pinned_script_then_path_launcher() {
+        let root = temp_dir("ts");
+        let launcher = root.join("graphite-frontend-ts");
+        touch(&launcher);
+        let mut env = env_with(&[("PATH", &root)]);
+        assert_eq!(
+            locate_ts(&env).unwrap().launch,
+            Launch::Executable(launcher)
+        );
+        for extension in ["js", "mjs", "cjs"] {
+            let entry = root.join(format!("cli.{extension}"));
+            env.vars
+                .insert(TS_FRONTEND_VAR.into(), entry.clone().into_os_string());
+            let frontend = locate_ts(&env).unwrap();
+            assert_eq!(frontend.launch, Launch::Node(entry));
+            let descriptor = describe(&frontend, Some("1.0.0".into()));
+            assert_eq!(descriptor["name"], "ts");
+            assert_eq!(descriptor["kind"], "node");
+            assert_eq!(descriptor["writes"], "graph-json");
+            assert_eq!(descriptor["inputs"][0], "tsconfig.json");
+        }
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), "/custom/launcher".into());
+        assert_eq!(
+            locate_ts(&env).unwrap().launch,
+            Launch::Executable("/custom/launcher".into())
+        );
+        assert!(locate_node(&env).is_err());
+        env.vars.insert(NODE_VAR.into(), "/custom/node".into());
+        assert_eq!(locate_node(&env).unwrap(), PathBuf::from("/custom/node"));
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

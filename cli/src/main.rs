@@ -15,6 +15,7 @@
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
+mod build_ts;
 mod fold;
 mod frontend;
 mod install;
@@ -56,7 +57,7 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build graph from JAR/WAR/APK/directory and save to disk (runs the JVM frontend)
+    /// Build and save a JVM graph, or use --lang ts for TypeScript/JavaScript
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
@@ -87,7 +88,7 @@ struct McpArgs {
     graphs: GraphArgs,
 }
 
-/// Everything after `build` belongs to the frontend, `--help` included.
+/// An optional leading --lang selects a frontend; other arguments belong to it.
 #[derive(Parser, Debug)]
 struct BuildArgs {
     #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
@@ -100,12 +101,12 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm
+        /// Frontend language: jvm or ts
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm
+        /// Frontend language: jvm or ts
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
@@ -180,11 +181,27 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                 }
                 None => println!("jvm\tnot installed\t-\t(graphite frontend install jvm)"),
             }
+            match frontend::locate_ts(env) {
+                Some(fe) => println!(
+                    "ts\t{}\t{}\t(via {})",
+                    frontend_version(env, &fe).unwrap_or_else(|| "unknown".into()),
+                    fe.path().display(),
+                    fe.found_via
+                ),
+                None => println!(
+                    "ts\tnot installed\t-\t(set GRAPHITE_FRONTEND_TS to frontend/web/dist/cli.js)"
+                ),
+            }
             Ok(())
         }
         FrontendCommand::Describe { lang } => {
-            require_jvm_lang(&lang)?;
-            let fe = frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?;
+            let fe = match lang.as_str() {
+                "jvm" => frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?,
+                "ts" | "typescript" => {
+                    frontend::locate_ts(env).ok_or_else(frontend::missing_ts_message)?
+                }
+                _ => return Err(format!("unknown frontend '{lang}'; available: jvm, ts")),
+            };
             let version = frontend_version(env, &fe);
             let text = serde_json::to_string_pretty(&frontend::describe(&fe, version))
                 .map_err(|e| e.to_string())?;
@@ -196,6 +213,9 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
+            if lang == "ts" || lang == "typescript" {
+                return Err(frontend::missing_ts_message());
+            }
             require_jvm_lang(&lang)?;
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
@@ -216,7 +236,7 @@ fn require_jvm_lang(lang: &str) -> Result<(), String> {
     if lang == "jvm" {
         Ok(())
     } else {
-        Err(format!("unknown frontend '{lang}'; available: jvm"))
+        Err(format!("unknown frontend '{lang}'; available: jvm, ts"))
     }
 }
 
@@ -226,6 +246,11 @@ fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<Stri
         frontend::Launch::Jar(jar) => {
             let mut c = std::process::Command::new(frontend::locate_java(env).ok()?);
             c.arg("-jar").arg(jar);
+            c
+        }
+        frontend::Launch::Node(script) => {
+            let mut c = std::process::Command::new(frontend::locate_node(env).ok()?);
+            c.arg(script);
             c
         }
         frontend::Launch::Executable(exe) => std::process::Command::new(exe),
@@ -374,4 +399,22 @@ fn query(args: QueryArgs) -> Result<(), String> {
 #[allow(dead_code)]
 fn _context_marker(c: &dyn GraphContext) -> usize {
     c.source_count()
+}
+
+#[cfg(test)]
+mod cli_tests {
+    use super::*;
+
+    #[test]
+    fn build_parser_preserves_the_language_selector_and_frontend_help() {
+        let cli = Cli::try_parse_from(["graphite", "build", "--lang", "ts", "--help"]).unwrap();
+        let Some(Command::Build(args)) = cli.command else {
+            panic!("expected build");
+        };
+        assert_eq!(args.args, ["--lang", "ts", "--help"].map(OsString::from));
+        assert_eq!(
+            build_ts::select_language(&args.args).unwrap(),
+            ("ts", vec![OsString::from("--help")])
+        );
+    }
 }

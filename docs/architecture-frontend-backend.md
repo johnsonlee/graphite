@@ -5,10 +5,12 @@ backend) on top of `main` at #128.
 
 **Reading this document:** this is a design proposal anchored to the baseline
 above, not a current feature inventory. The Rust CLI now runs `query`, `serve`,
-and `mcp`, while `build` delegates to the JVM frontend.
+and `mcp`, while `build` delegates to the selected language frontend.
 [PR #154](https://github.com/johnsonlee/graphite/pull/154) implements the Swift / iOS
 frontend and protobuf Graph IR and is currently in progress. The TypeScript
-frontend remains a proposal; neither should be read as a released capability.
+source frontend is implemented separately; see its
+[current setup and limitations](typescript-frontend.md). The full Graph IR migration
+below remains a proposal, and the Swift work is not a released capability.
 See the [README architecture](../README.md#architecture) and
 [runnable demo](quickstart-demo.md) for the current user workflow.
 
