@@ -4109,7 +4109,10 @@ test("workflow applies withdrawn resource growth constraints in both initial and
         .split('    - name: Upload resource results')[0];
     assert.match(block, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
     assert.match(block, /CANDIDATE_GATE_TEST_JOB/);
-    assert.match(block, /REAL_ONLY_LATENCY_COMPARATOR_SHA256/);
+    assert.match(block, /WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256/);
+    const resourcePin = workflow.match(/WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: ([0-9a-f]{64})/)[1];
+    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    assert.equal(resourcePin, crypto.createHash("sha256").update(comparator).digest("hex"));
     assert.match(block, /"\$\{COMPARATOR\}" confirm-latency-resources/);
     assert.match(workflow, /secondaryMetrics\.processCpuNanos\.score > 0/);
     assert.match(workflow, /secondaryMetrics\.residentSetAfterBytes\.score > 0/);

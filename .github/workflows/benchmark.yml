@@ -35,6 +35,7 @@ env:
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
   LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
@@ -2118,7 +2119,7 @@ jobs:
         # Apply the reviewed resource policy to the unchanged base-owned paired harness.
         test "${CANDIDATE_GATE_TEST_JOB}" = success
         test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d ' ' -f 1)" = \
-          "${REAL_ONLY_LATENCY_COMPARATOR_SHA256}"
+          "${WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256}"
         COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         if node "${COMPARATOR}" compare-latency-resources \
           --base benchmark-results/base-latency-resources.json \
