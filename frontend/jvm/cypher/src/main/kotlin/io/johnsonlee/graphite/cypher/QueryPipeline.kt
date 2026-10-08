@@ -4922,7 +4922,7 @@ class QueryPipeline private constructor(
             val lookup = (source.graph as? NodePropertyTextCandidates)
                 ?.takeUnless {
                     qualified && source.id.contains(fragment) ||
-                        hasDeclaredNodeProperties(source.graph, nodeClass)
+                        !it.includesDeclaredTypeProperties && hasDeclaredNodeProperties(source.graph, nodeClass)
                 }
             val candidates = lookup?.propertyTextCandidates(nodeClass, fragments, tracker)
                 ?: trackWork(source.graph.nodes(nodeClass), tracker)
