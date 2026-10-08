@@ -1,0 +1,4 @@
+# Raw validation evidence is retained for audit; collapse generated data in review.
+docs/apple-frontend-evidence/**/*.json linguist-generated=true
+docs/apple-frontend-evidence/**/*.jsonl linguist-generated=true
+docs/apple-frontend-evidence/**/*.log linguist-generated=true
