@@ -11284,3 +11284,79 @@ The matching baseline also changed relative to the separate previous8g series: K
 README.md and README.zh.md now give the actual supported `JAVA_TOOL_OPTIONS` build command and its tested scope, heap/RSS distinction and option precedence. Product defaults and the reusable Graphite skill remain unchanged. The8GiB ceiling applies to this recovery task and its experiments, as clarified in review discussion4205982770; it is not a restriction on general skill usage.
 
 Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/final-construction-old-vs144-gctime4-minfree20/execute.py --execute-root-released`. Evidence in that directory: plan SHA `c81ce5ef8e6801b8010a33e350a547f7ec30354dbd100dc2fbddf77f79064ea8`, runner SHA `038111dcfffc63c755d3ec1197b79b67d42f6db48a510ce52335f0b8e6d6ac8b`, results SHA `b0ed6098ab9fd08869fc4f86e8a01319b60a1972d1e6a08fbc790c52f7242d3a`, summary SHA `d6d402b89a26003bf24e56a23490588c15512ca27cd546e1163b4cf2348581be`, report SHA `6da991358d616bdcd279060840bf1a23c4f54f1234b33f0954210c37c17b8bdd`, owner SHA `c6be097557f1ebacc1f71848efbaeba010fed79a838c841f8c95131eda23e6d3`; root raw audit `root-independent-audit.json`.
+
+### Attempt147 — consume generic projection input rows after producing each output
+
+Base: isolated `/tmp/graphite-attempt147` at `4dac7a4e25aaffac7ce361baa91178d8faa9bd4a`; production parent Attempt146/f211a611. Later root documentation/benchmark-harness commits do not change these Rust inputs or require rebuilding the parent. This independent increment addresses review comments6053422315/6053444853. Their allocator/interference suggestion is a hypothesis, not established UNION causality.
+
+The generic nonaggregate projection now consumes `rows`, lending `&row` to the unchanged `project_row`, then drops that input row after its output and ORDER BY stashes own their values. Retain the identity fastpath, aggregate branch, subsequent DISTINCT/provenance merging, preprojection order keys, late expression errors and existing cancellation/work-accounting sites. Do not move LIMIT or omit later row evaluation. The input Vec backing allocation remains until iteration ends and output values can share Arc storage; the mechanism does not guarantee a particular memory peak or allocator cost.
+
+Two focused new tests preserve alias shadowing, equal projected values with distinct preprojection sort keys, metadata/weight/key order and DISTINCT merging; and late projection/ORDER errors with release of partial output and remaining inputs. Arc strong-count cleanup passes both versions and is correctness evidence, not evidence of incremental early release or RSS. Existing identity/cancellation/timeout/late-error tests remain in the full suite; no new cancellation polling guarantee is claimed.
+
+Before execution, standalone rustfmt changed only new-test formatting; the original source and format-only diff were retained (SHA `1c31b20584f3141e01f76096c11540b7e73d4944f5c353718dbee8334f5deb01`). Original validator52610 exited0/tool719901: fmt, full Cypher138, Explore118+1integration, strict Cypher all-target/all-feature Clippy, and clean release CLI export all passed, zero ignored/filtered/explicit skips. The existing real core fixture remained unchanged. Rust1.93/ARM64/locked/release/jobs2 and the original five commands were retained. Root independently checked257 test results, required names,82 source pins and export (tool559a8c). Correctness owner SHA `65929092b2441b4515228e5742ce4cb0b71db5867ffccb2a8f634791ef5b0bae`; six owned PIDs/groups absent.
+
+Coverage review preceded measurement: the original13 controls largely bypass the changed generic batch loop through fused, partitioned, aggregate or identity paths. WITHaggregate reaches surviving groups and collect only one aggregate row. Preserve all13 and append one actual large-row target:
+
+```cypher
+MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c AS renamed LIMIT 200
+```
+
+WITH WHERE prevents early LIMIT admission; the final renamed output rejects identity projection, so the retained CallSite rows pass through generic projection before LIMIT/probe. The frozen fixture metadata reports5,051,914 CallSites, but this coverage argument is source/schema inference, not a newly instrumented runtime scan count. All64 graphs are inputs; the first200 returned rows have one contributor graph, which is not a count of visited graphs.
+
+The new full typed oracle is explicitly DERIVED: only columns[0] c→renamed and each row key c→renamed from the existing with-filter capture; preserve every value/type, row order, metadata/graphIds and total201/gte. Inverse renaming reproduced the original typed contract. Original capture SHA `b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893`; derived expected-body SHA `16c18c7d22a62d4246fbcd710ea3995850b230c346cd48b561ba017a6762d881`. It is not a new native capture, and no runtime response normalization was introduced. Original13 draft/scripts are preserved under `measurement/before-fourteenth/`.
+
+A is frozen parent146 binary `0b26a4f67eb5e44f5d3c37ea1e141c6946988d06075368daec35a9532cf7fd61`; B is validated147 binary `d9c7d3c39b554b0efe628921ff04f30a923e7cad10f0fc3fb2660cdbcb543d8b`. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/attempt147/measurement/run.py --execute-root-released`. macOS M3 Max, real64 MAPPED/default C4/fastpaths/Rayon, metrics enabled. Four fresh processes ABBA, rolling c4 without batch barriers,2warm+20measured per case/process,28warm+280measured per process,1,232 full responses/1,120 measured and8 metric scrapes. Original900s client/60s query/65s socket/600s readiness budgets and nearest ranks10/19 remain; no retries, replacements or added samples. The predeclared14-case mix changes interference relative to historical13-case runs, so compare only these matched14-case arms.
+
+Original measurement82819 exited0/tool2f4fe8. Existing offline report exited0/toolf0950e, rechecked all1,232 typed bodies,1,120 ranks,8 metrics windows and all four before/after1,216-file stat inventories. All16 lifecycle/native/time/client PIDs and4time groups were freshly absent. Root independently verified all1,232 original complete typed bodies and hashes, recomputed all1,120 samples' quantiles and paired deltas, and checked CPU/wall/RSS against the original time-l/process counters (tool0d8b3b; measurement/root-independent-audit.json). Per-case arm values below are means of two process quantiles; both chronological pairs are retained, never pooled across cases.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 3089.681 | 3055.100 | -34.581 | 3122.145 | 3088.498 | -33.647 | -25.420/-3.078 | -43.742/-64.216 |
+| order-by-desc | 3090.741 | 3030.810 | -59.931 | 3123.852 | 3056.109 | -67.743 | -53.806/-63.390 | -66.056/-72.097 |
+| canonical-order-by | 3094.704 | 3063.016 | -31.687 | 3126.641 | 3083.097 | -43.544 | -22.042/-31.267 | -41.332/-55.822 |
+| id-lookup | 38.545 | 38.518 | -0.027 | 38.933 | 38.721 | -0.211 | -0.004/-0.183 | -0.049/-0.240 |
+| wide-contains | 0.609 | 0.609 | 0.000 | 0.696 | 0.728 | 0.032 | -0.002/+0.060 | +0.002/+0.003 |
+| with-filter | 3092.772 | 3056.707 | -36.065 | 3315.654 | 3321.072 | 5.419 | -2.035/+35.221 | -70.096/-24.384 |
+| with-aggregate | 644.779 | 642.567 | -2.212 | 679.610 | 665.756 | -13.854 | +2.991/-11.519 | -7.415/-16.189 |
+| group-count | 301.641 | 300.457 | -1.184 | 330.510 | 324.097 | -6.412 | -4.042/+5.209 | +1.674/-18.033 |
+| distinct | 267.166 | 261.702 | -5.465 | 286.408 | 285.856 | -0.553 | -4.263/-0.764 | -6.666/-0.341 |
+| collect | 2507.517 | 2459.329 | -48.188 | 2533.015 | 2496.344 | -36.671 | -23.234/-12.358 | -73.142/-60.984 |
+| count-traversal | 26.063 | 26.061 | -0.002 | 29.621 | 28.155 | -1.466 | +0.044/+1.633 | -0.048/-4.565 |
+| int-sort | 112.692 | 112.799 | 0.107 | 118.905 | 117.519 | -1.386 | +1.307/+1.078 | -1.092/-3.850 |
+| int-filter | 12.230 | 11.994 | -0.236 | 15.280 | 13.775 | -1.505 | -0.272/-0.949 | -0.201/-2.061 |
+| with-filter-renamed | 3780.017 | 3560.118 | -219.899 | 4071.787 | 3687.804 | -383.983 | -222.880/-347.516 | -216.917/-420.450 |
+
+| Process | Query-window CPU s | Whole CPU s | Whole wall s | Whole peak RSS MB | HTTP mixed mean ms | Guard mixed mean ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 0-A | 406.510 | 466.440 | 134.700 | 28200.862 | 1438.917 | 1437.905 |
+| 1-B | 398.620 | 458.590 | 131.870 | 21566.751 | 1410.719 | 1409.743 |
+| 2-B | 396.510 | 456.640 | 130.870 | 21875.573 | 1403.746 | 1402.764 |
+| 3-A | 407.910 | 468.720 | 134.280 | 29072.818 | 1444.254 | 1443.252 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 407.210 | 397.565 | -9.645 | -2.369% | -7.890 | -11.400 |
+| whole CPU s | 467.580 | 457.615 | -9.965 | -2.131% | -7.850 | -12.080 |
+| whole wall s | 134.490 | 131.370 | -3.120 | -2.320% | -2.830 | -3.410 |
+| whole peak RSS MB | 28636.840 | 21721.162 | -6915.678 | -24.150% | -6634.111 | -7197.245 |
+
+The added target improved p50 by219.899ms (3780.017→3560.118; −5.817%) and p95 by383.983ms (4071.787→3687.804; −9.430%); both forward/reverse pairs improved. Mixed query CPU fell9.645s/2.369% and whole peak RSS6,915.678MB/24.150%; both resource pairs improved. These are measured parent-relative gains of the complete changed candidate in this workload, not per-case resource attribution.
+
+Retain adverse controls: with-filter p95 increased5.419ms overall (forward+35.221ms, reverse−24.384ms), wide-contains p95+0.032ms (both pairs adverse), int-sort p50+0.107ms with mixed pairs. WITHaggregate p50, group-count p50/p95, count-traversal p50/p95 and int-sort p95 also have adverse individual pairs as shown. Tiny absolute deltas are not treated as meaningful standalone gains. Better control latency does not prove a control algorithm changed; the mixed queue can change interference.
+
+HTTP/guard metrics are sum/count means over280 mixed measured requests/process, not per-case or p95. Each window has280 successful outcomes and zero failed/rejected/cancelled/timeout/budget-exceeded. First histogram bucket10ms cannot provide precise submillisecond percentiles. Both arms prepare current source/ID state before the guard timer, so that boundary is matched here; full-client timing retains complete-response consumption. Query CPU includes the measured queue, validation/checkpoint gaps and executor shutdown; process CPU snapshots have0.01s resolution. Whole time-l CPU/RSS additionally includes load, warmups and shutdown. All warmup raw values remain in summary.json and original client records, excluded from quantiles.
+
+Observed-background monitor retained520 samples and no recorded phase events, but reports `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`/exclusiveWindowClaim=false: one-second metadata can miss short-lived activity and cannot quantify causal interference. No sample was excluded. Rolling c4 is closed-loop, not a fixed-arrival saturation/SLA claim; empirical n20 tails and n2 arm means are finite-sample evidence. Decision: retain and integrate the exact validated two-file147 increment; it is not blanket final pre-upgrade/main-relative acceptance and does not establish a UNION cause/fix. Historical failures, construction/loading limits and completed old→146 evidence remain separate. Integration copies the exact validated production/test bytes; cumulative old→147 validation and the new-head CI gate remain pending.
+
+Evidence root: `/tmp/sootup-static-review/attempt147`. Frozen source-proof describes its preparation-time state; actual execution is recorded in validation/result.json and measurement receipts.
+
+- Candidate patch: `/tmp/sootup-static-review/attempt147/candidate.patch` SHA `ae78a389d93fcd37dc35353db6cf50335620a5e89bd9f269591777b8209d2c88`.
+- pipeline.rs: `/tmp/graphite-attempt147/backend/cypher/src/engine/pipeline.rs` SHA `8f591682ba3aaaeb9e943aad5ec94f80d1835092e72b2f952c1dc7ba4d09218b`.
+- owned_projection_tests.rs: `/tmp/graphite-attempt147/backend/cypher/src/engine/owned_projection_tests.rs` SHA `66a526f08195a2be80b89ab4dcb27c67b5d84c2a25e0cce1e08c0d7af9c8d0b9`.
+- Validation plan: `/tmp/sootup-static-review/attempt147/validation-plan.json` SHA `33a7e344ae9624110e48252cd2a5c42e17ec3745fa5c9bdb6f5c5e5140975e5f`.
+- Validation result: `/tmp/sootup-static-review/attempt147/validation/result.json` SHA `4c6b4cbe13fbe945724b941904066cdbf749cc89a3a52c30515303f0aa5bf55d`.
+- Measurement sealed/pre-release plan: `/tmp/sootup-static-review/attempt147/measurement/plan.sealed.json` SHA `1b116a7c38a9d62020da99b3a7edb5f11f6b8a0f3703ee8c1d3644b0c81fef2e`.
+- Executed plan: `/tmp/sootup-static-review/attempt147/measurement/plan.json` SHA `f86bad051e68684aa82404ba6ec0f690e4aec9a2235da33e88acf0f9b05c6f23`.
+- Measurement owner: `/tmp/sootup-static-review/attempt147/measurement/execution/owner-terminal.json` SHA `1601f56e9b5b4a3b6e0d46ad36a97f0ef961dc4a471149cf35c8b248b71d998c`.
+- Raw-derived summary: `/tmp/sootup-static-review/attempt147/measurement/summary.json` SHA `2a59534bfdcf734d9694a4eb547deb8fe9e6fe6aeb263b8b75e13a06e79d470b`.
+- Owner report: `/tmp/sootup-static-review/attempt147/measurement/results.md` SHA `7d55b586c6d9dbe1813aeb311217eacd36cb9417858d1a214683e1e1387f7d3c`.

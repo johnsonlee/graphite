@@ -1884,10 +1884,11 @@ fn project(
         out = Vec::with_capacity(rows.len());
         let names = item_names(items);
         let mut cols = columns.clone();
-        for row in &rows {
+        // Release each input row after its projection and order keys are owned by out.
+        for row in rows {
             out.push(project_row(
                 ev,
-                row,
+                &row,
                 Some(items),
                 &names,
                 order,
@@ -3063,3 +3064,7 @@ mod with_prefix_tests {
 #[cfg(test)]
 #[path = "identity_projection_tests.rs"]
 mod identity_projection_tests;
+
+#[cfg(test)]
+#[path = "owned_projection_tests.rs"]
+mod owned_projection_tests;
