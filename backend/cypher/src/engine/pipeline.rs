@@ -1,6 +1,6 @@
 //! Clause pipeline: MATCH / WHERE / WITH / RETURN / UNWIND / ORDER BY / SKIP / LIMIT / UNION.
 
-use super::matching::{has_unknown_label, Matcher};
+use super::matching::{has_unknown_label, resolve_node_class, Matcher, NodeClass};
 use super::partition::{row_weight, PartitionPlan, INTERNAL_WEIGHT_KEY};
 use super::Executor;
 use crate::ast::{Clause, Expr, Literal, OrderItem, Pattern, ReturnItem};
@@ -12,6 +12,7 @@ use crate::render::to_cypher_string;
 use crate::semantics::{to_int_for_skip_limit, value_key, Key};
 use crate::value::Value;
 use crate::{CypherError, CypherResult};
+use graphite_storage::node::TAG_CALL_SITE_NODE;
 use indexmap::IndexMap;
 use std::cmp::Ordering;
 use std::sync::Arc;
@@ -911,7 +912,10 @@ fn bounded_order_capacity(
     if !seed.is_empty()
         || pattern.path_variable.is_some()
         || !pattern.rels.is_empty()
-        || node.labels.as_slice() != ["CallSiteNode"]
+        || !matches!(
+            resolve_node_class(&node.labels),
+            NodeClass::Tags(tags) if tags.as_slice() == [TAG_CALL_SITE_NODE]
+        )
     {
         return None;
     }
@@ -2038,6 +2042,59 @@ mod bounded_order_tests {
     }
 
     #[test]
+    fn admission_resolves_callsite_aliases_and_rejects_wider_domains() {
+        for label in [
+            "CallSite",
+            "CALLSITE",
+            "callsitenode",
+            "cAlLsItEnOdE",
+            "CallSite:CallSiteNode",
+            "CallSite:Node",
+            "CallSite:Field",
+        ] {
+            for property in ["caller_class", "callee_name"] {
+                for direction in ["", " DESC"] {
+                    let query = format!("MATCH (n:{label}) RETURN n.{property} ORDER BY n.{property}{direction} LIMIT 200");
+                    let (patterns, _) = query_shape(&query);
+                    assert_eq!(
+                        patterns[0].nodes[0].labels,
+                        label.split(':').map(str::to_string).collect::<Vec<_>>(),
+                        "Parser must retain the original label spelling"
+                    );
+                    assert_eq!(capacity(&query), Some(200), "{query}");
+                }
+            }
+            assert_eq!(
+                capacity(&format!("MATCH (n:{label}) RETURN n.callee_name AS name ORDER BY name DESC SKIP 2 LIMIT 3")),
+                Some(5),
+                "Alias projection and literal skip remain eligible"
+            );
+        }
+        for label in [
+            "Node",
+            "Node:CallSite",
+            "Method",
+            "CallSite:Method",
+            "Field:CallSite",
+            "Constant",
+        ] {
+            let query = format!(
+                "MATCH (n:{label}) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200"
+            );
+            assert_eq!(capacity(&query), None, "{query}");
+        }
+        for query in [
+            "MATCH (n:CallSite) RETURN DISTINCT n.caller_class ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN * ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT $limit",
+            "MATCH (n:CallSite) RETURN n.unknown AS key ORDER BY key LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 65537",
+        ] {
+            assert_eq!(capacity(query), None, "{query}");
+        }
+    }
+
+    #[test]
     fn admission_proves_callsite_string_keys_without_admitting_unknown_domains() {
         for property in [
             "callee_class",
@@ -2436,6 +2493,111 @@ mod bounded_order_tests {
                     Err(CypherError::Timeout(60_000))
                 ));
             }
+        }
+    }
+
+    #[test]
+    fn real_alias_order_matches_full_sort_with_multilabels_and_probe() {
+        let Some(graph) = real_graph() else { return };
+        let ex = Executor::new(
+            vec![
+                Source {
+                    id: Arc::from("a"),
+                    graph: graph.clone(),
+                },
+                Source {
+                    id: Arc::from("b"),
+                    graph,
+                },
+            ],
+            true,
+        );
+        let all_calls = ex
+            .execute("MATCH (n:CallSiteNode) RETURN n.id AS id", None)
+            .unwrap();
+        assert!(
+            all_calls.rows.len() > 5,
+            "Real fixture must exercise eviction"
+        );
+        let ev = Evaluator::new(&ex, &ex.params);
+        let matcher = Matcher { ex: &ex, ev: &ev };
+        for (label, admitted, nonempty) in [
+            ("CallSite", true, true),
+            ("CALLSITE", true, true),
+            ("callsitenode", true, true),
+            ("CallSite:CallSiteNode", true, true),
+            ("CallSite:Node", true, true),
+            ("CallSite:Field", true, false),
+            ("Node:CallSite", false, true),
+            ("CallSite:Method", false, false),
+        ] {
+            for (property, direction) in [("caller_class", ""), ("callee_name", " DESC")] {
+                let query = format!("MATCH (n:{label}) RETURN n.{property} ORDER BY n.{property}{direction} LIMIT 3");
+                assert_eq!(capacity(&query), admitted.then_some(3), "{query}");
+                let expected = full_sort(&ex, &query).unwrap();
+                let actual = ex.execute(&query, None).unwrap();
+                assert_eq!(actual.columns, vec![format!("n.{property}")], "{query}");
+                assert_eq!(actual.columns, expected.columns, "{query}");
+                assert_eq!(
+                    format!("{:?}", actual.rows),
+                    format!("{:?}", expected.rows),
+                    "{query}"
+                );
+                assert_eq!(actual.rows.len(), if nonempty { 3 } else { 0 }, "{query}");
+                for row in &actual.rows {
+                    assert!(row[&format!("n.{property}")].as_str().is_some(), "{query}");
+                    let ids = QueryResult::graph_ids(row);
+                    assert!(ids == ["a"] || ids == ["b"], "{query}: {ids:?}");
+                }
+                if admitted {
+                    let (patterns, shape) = query_shape(&query);
+                    let scan =
+                        super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
+                    let (_, retained) = ex
+                        .fused_rows(
+                            &matcher,
+                            &ev,
+                            vec![Row::new()],
+                            &patterns,
+                            &shape,
+                            &scan,
+                            &None,
+                            Some(3),
+                            false,
+                            capacity(&query),
+                        )
+                        .unwrap();
+                    assert_eq!(
+                        retained.len(),
+                        if nonempty { 3 } else { 0 },
+                        "Heap must retain only capacity before finish_fused truncates: {query}"
+                    );
+                }
+                let probe = Executor::new(ex.sources.clone(), true).with_probe();
+                let probed = probe.execute(&query, None).unwrap();
+                assert_eq!(probed.columns, actual.columns, "{query}");
+                assert_eq!(
+                    format!("{:?}", probed.rows),
+                    format!("{:?}", actual.rows),
+                    "{query}"
+                );
+                assert_eq!(probed.more, nonempty, "{query}");
+            }
+        }
+        for label in ["CallSite", "CALLSITE", "CallSite:Node"] {
+            let query = format!("MATCH (n:{label}) RETURN n.id AS id, n.callee_name AS name ORDER BY name DESC, id SKIP 2 LIMIT 3");
+            assert_eq!(capacity(&query), Some(5));
+            let expected = full_sort(&ex, &query).unwrap();
+            let actual = ex.execute(&query, None).unwrap();
+            assert_eq!(actual.columns, expected.columns);
+            assert_eq!(format!("{:?}", actual.rows), format!("{:?}", expected.rows));
+            let cancelled = super::super::CancelToken::new();
+            cancelled.cancel();
+            let cancelled_ex = Executor::new(ex.sources.clone(), true).with_cancel(cancelled);
+            assert!(matches!(
+                cancelled_ex.execute(&query, None),
+                Err(CypherError::Cancelled)
+            ));
         }
     }
 

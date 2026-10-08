@@ -10800,3 +10800,56 @@ Evidence: `/tmp/sootup-static-review/multigraph-shapes39-diagnostic/results.md`,
 Validation: 156 Node benchmark tests and 15 Python harness tests pass; both edited workflow YAML files parse and `git diff --check` passes. The repository CLI, using the same current140 binary and real64 manifest, completed `--suite all --repetitions 2 --timeout 60 --overall-timeout 600` (original session84096, terminal exit0): 146/146 HTTP200 responses, all73 complete typed digests identical across the two passes, and75 output rows. Both corrected collect responses contain one row with the same ten names and provenance for all64 graph IDs. Root independently rehashed and decoded all146 saved bodies and verified collect values/provenance, sample coverage and unchanged source hashes. Both owned processes and groups were confirmed gone. This validates the harness and repeatability, not performance acceptance; the paired CI gate still uses five passes per version.
 
 CLI command and raw evidence: `/tmp/sootup-static-review/repo-snapshot-all-validation/command.json` and `execution/`. Terminal receipt SHA `5c0c7b836d8e35d4b60ddd5b529e26bf0f1b05188c84e1010d647f09b93cc86c`; snapshot SHA `d88d44db7bb9a5a302420eca5d207132554dd5b28ae54deca601bad34e6bb3ef`. Decision: retain the coverage change and validate its paired CI execution. Focus subsequent query investigation on the measured seconds-long paths, not stabilization of tiny search timings.
+
+
+### Attempt143 — resolve CallSite label aliases before bounded ORDER BY admission
+
+Date: 2026-10-08. The actual multi-graph `:CallSite` sorting cases found in Attempt142 bypassed the retained bounded sorter: its scalar-domain proof accepted only the literal spelling `CallSiteNode`, although the parser/matcher also supports `CallSite` and case-insensitive aliases. Reuse the matcher's `resolve_node_class` and require exactly the CallSite tag. All other eligibility conditions, full projection/error evaluation, stable ordering, cancellation and LIMIT/probe behavior remain unchanged. No ID-query algorithm or loading/building code changes.
+
+Composition: isolated `/tmp/graphite-attempt143` starts from `d0fcf5c7ed019b2edfbe1f3dfcf8d55d144f3f08`; only `backend/cypher/src/engine/pipeline.rs` changes. Patch SHA `1d03f3115b4aad2b926c7f81ccdfd314570c5582e952c4f28d812ff7bcfd353b`, resulting file SHA `583ffab1b0280763bad0d9158220956bed3e0edc8d638c7e64359860145aa841`. The parent executable is the already validated production140 export, whose engine sources are unchanged by the intervening benchmark/documentation commits. Candidate executable SHA `2d63c5dccf13ceb5a54618e65488f36727ed07a93387a5300e0a075f36ac4f8f`.
+
+Correctness: original validation session47496 ended exit0. All124 `graphite-cypher` release tests pass without skipped real-fixture checks, plus `cargo fmt --all --check`, strict clippy for all cypher targets/features and release CLI export. New tests exercise aliases/casing and multi-label intersections, compare complete typed rows/provenance against the full sorter, assert bounded retention before final truncation, and verify SKIP, HTTP probe and cancellation. The existing real-core persisted fixture is used for executor checks, not performance claims. All78 tracked Rust/Cargo source identities and19 fixture content hashes remain unchanged through validation. Root confirms the integrated source matches this validated candidate exactly; no second native build is substituted.
+
+Validation commands, source identities and logs are in `/tmp/sootup-static-review/attempt143/validation/`; the bounded build/test command is `cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cypher -- --nocapture --test-threads=1` with `GRAPHITE_INDEX_FIXTURE` set. The final performance command is the released `measurement/run.py --execute-root-released` plan, SHA `02731b722e72598f79d14cefa2f59d9457b73baa9018524c9bb238d22882763a`. This is a parent-relative increment on the same real64 corpus (19,438,199 nodes), not final pre-upgrade acceptance.
+
+
+Original session88065 terminal0 /7ee3c4;4/4 servers,440/440 complete typed bodies,400 measured,8 raw metrics captures PASS. Owner terminal SHA `fbe5a799a415aa680fb06a774d8480b92bf5e63f5810a3a27144a6e2bf8e3ced`. No retry, replacement, HTTP failure or rejected request. Sixteen owned PIDs and four time groups absent.
+
+A: current140 `e2d9e405…`; B:143 `2d63c5dc…`. Same64 graphs, MAPPED/defaultC4/default fastpath and Rayon. Each process:2 warmups and20 measured requests per case; rolling four requests, mixed case queue, no batch barrier.900s total client budget,60s query timeout.
+
+Per-process n20 nearest-rank p50=rank10, p95=rank19; arm values below are the mean of two process quantiles. Absolute ms first; no case pooling.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 7300.099 | 3078.165 | -4221.934 | 7574.863 | 3144.595 | -4430.268 | -4258.320/-4495.215 | -4185.547/-4365.321 |
+| order-by-desc | 7149.108 | 3046.970 | -4102.138 | 7330.351 | 3097.298 | -4233.053 | -4114.650/-4234.139 | -4089.626/-4231.966 |
+| canonical-order-by | 3074.538 | 3077.074 | 2.535 | 3117.040 | 3096.349 | -20.691 | +12.427/-2.985 | -7.356/-38.396 |
+| id-lookup | 5604.336 | 5572.231 | -32.104 | 5647.784 | 5655.273 | 7.488 | -65.818/-51.819 | +1.609/+66.795 |
+| wide-contains | 0.724 | 0.626 | -0.097 | 6.618 | 1.109 | -5.510 | -0.143/-0.987 | -0.051/-10.032 |
+
+Raw process quantiles remain in execution/results.json and this report's summary.json, alongside all warmup values. Warmups are excluded from measured statistics. At n20 these are empirical tails, not a production SLA.
+
+| Process | Query-window CPU s | Whole CPU s | Whole wall s | Whole peak RSS MB | HTTP mixed mean ms | Guard mixed mean ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 0-A | 462.390 | 528.610 | 149.770 | 27401.667 | 4645.036 | 4640.968 |
+| 1-B | 295.900 | 344.460 | 108.760 | 7532.413 | 2963.041 | 2962.964 |
+| 2-B | 295.630 | 343.990 | 106.990 | 7531.692 | 2960.023 | 2959.939 |
+| 3-A | 459.920 | 525.920 | 149.550 | 28577.071 | 4617.560 | 4613.903 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 461.155 | 295.765 | -165.390 | -35.864% | -166.490 | -164.290 |
+| whole CPU s | 527.265 | 344.225 | -183.040 | -34.715% | -184.150 | -181.930 |
+| whole wall s | 149.660 | 107.875 | -41.785 | -27.920% | -41.010 | -42.560 |
+| whole peak RSS MB | 27989.369 | 7532.052 | -20457.316 | -73.090% | -19869.254 | -21045.379 |
+
+HTTP/guard means use sum/count for100 mixed requests per process; not per-case or p95. Every metrics window shows100 successful outcomes, zero rejected/failed/cancelled/timeout/budget-exceeded.10ms first bucket cannot supply precise submillisecond quantiles. Query CPU includes the measured queue, response validation/checkpoint gaps and executor shutdown; ps counter0.01s. Whole resource scope additionally includes loading, warmups and shutdown; no per-case resource attribution.
+
+Changing two slow sorting cases changes the mixed queue's interference for controls. Lower control times therefore do not prove a changed control algorithm; any control regression is also retained. This is a closed-loop c4 mixed workload, not a fixed-arrival saturated benchmark. Parent-relative only, not preupgrade/main acceptance.
+
+Background: {"performanceAttributionStatus": "DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY", "nativeSessionCommandsStarted": 4, "diagnosticOnly": true, "sampleStatus": "RETAIN_ALL_STARTED_SAMPLES", "nativeSessionEvents": [], "betweenSessionEvents": [], "preflightEvents": [], "allEvents": [], "externalLifetimeLimitations": [], "sampleCount": 504, "exclusiveWindowClaim": false, "limits": ["One-second process metadata can miss short-lived/sub-resolution activity and unknown native builds/I/O.", "Observer/supervisor overhead is outside native time-l/CPU counters and applies to both arms; ps child CPU is not separately attributed. No causal delay quantification or guaranteed exclusive window.", "All samples retained; no clean subset selection or automatic resampling."]}.
+
+
+Root independently reconciled all440 raw response hashes and full typed bodies, all per-process nearest-rank quantiles, the four metrics windows, and raw CPU/peak-RSS values. Decision: **retain and integrate** the verified seconds-scale sorting improvement. Both paired p50/p95 comparisons improve materially and the declared mixed-workload CPU/RSS decrease. Preserve the mixed control results, including ID p95 +7.488ms with opposing pair directions; do not claim those paths were independently optimized or resample the small changes. ID lookup remains a substantive ~5.6-second target. Empirical n20 tails, this five-case workload and whole-process resources do not prove complete query, loading or construction recovery against the pre-upgrade baseline.
+
+At integration preparation, d0fc's JVM unit tests and Rust checks pass. Its new broad native CI measurement remains active and is allowed to finish before another push; the base-only JVM capacity third fork failed its four-permit overlap assertion (peak3), an explicitly advisory result retained in run37721037996. Do not call that failure a pass or attribute it to this native-only candidate.
