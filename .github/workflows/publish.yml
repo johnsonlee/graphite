@@ -56,8 +56,10 @@ jobs:
       run: |
         bun test ./.github/scripts/release/version.test.ts
         bun .github/scripts/release/version.ts "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
-    - name: Test release smoke validation
-      run: python3 .github/scripts/test_verify_apple_release.py
+    - name: Test release smoke validation and real-source preparation
+      run: |
+        python3 .github/scripts/test_verify_apple_release.py
+        python3 -m unittest discover -s backend/bench -p test_prepare_apple_corpus.py
 
   # ---- Maven Central (Sonatype) ----
   maven:
