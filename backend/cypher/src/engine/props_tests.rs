@@ -179,8 +179,12 @@ fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() 
     let mut partial = Graph::load(path).unwrap();
     partial.update_declared_types(|table| {
         let table = table.as_mut().unwrap();
-        table.fields.retain(|(_, name, _), _| name != "first");
-        table.methods.retain(|(_, name, _), _| name != "echo");
+        table
+            .fields
+            .retain(|(_, name, _), _| name.as_ref() != "first");
+        table
+            .methods
+            .retain(|(_, name, _), _| name.as_ref() != "echo");
     });
     let mut legacy = Graph::load(path).unwrap();
     legacy.update_declared_types(|table| *table = None);
@@ -276,7 +280,7 @@ fn declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows() {
                 .as_mut()
                 .unwrap()
                 .fields
-                .retain(|(_, name, _), _| name != "first");
+                .retain(|(_, name, _), _| name.as_ref() != "first");
         });
         assert_eq!(
             graph.declared_key_partitions(TAG_FIELD_NODE).is_some(),
@@ -628,11 +632,16 @@ fn real_nodes_and_cross_graph_results_match_complete_filtered_properties() {
 /// JVM writer and native reader must agree on descriptors, references and maps.
 #[test]
 fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
-    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
-        eprintln!("GRAPHITE_TYPES_FIXTURE unset; skipping Java interoperability test");
-        return;
-    };
-    let path = std::path::Path::new(&dir);
+    for variable in ["GRAPHITE_TYPES_V1_FIXTURE", "GRAPHITE_TYPES_FIXTURE"] {
+        let Some(dir) = std::env::var_os(variable) else {
+            eprintln!("{variable} unset; skipping Java interoperability test");
+            continue;
+        };
+        assert_declared_types_java_fixture(std::path::Path::new(&dir));
+    }
+}
+
+fn assert_declared_types_java_fixture(path: &std::path::Path) {
     let graph = Graph::load(path).unwrap();
     assert!(graph.declared_types().is_some());
     let method = graph
@@ -751,7 +760,7 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
     let mut other = Graph::load(path).unwrap();
     other.update_declared_types(|table| {
         for ty in &mut table.as_mut().unwrap().types {
-            if ty.name == "java.lang.String" {
+            if ty.name.as_ref() == "java.lang.String" {
                 ty.name = "example.Other".into();
             }
         }
@@ -771,8 +780,12 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
     let mut partial = Graph::load(path).unwrap();
     partial.update_declared_types(|table| {
         let table = table.as_mut().unwrap();
-        table.fields.retain(|(_, name, _), _| name != "first");
-        table.methods.retain(|(_, name, _), _| name != "echo");
+        table
+            .fields
+            .retain(|(_, name, _), _| name.as_ref() != "first");
+        table
+            .methods
+            .retain(|(_, name, _), _| name.as_ref() != "echo");
     });
     assert!(!node_properties(&partial, &field).contains_key("generic_type"));
     assert!(!method_properties(&partial, &method, None).contains_key("generic_return_type"));
@@ -862,6 +875,99 @@ fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
     }
 }
 
+fn assert_complete_declared_graph_equivalence(expected: &Graph, actual: &Graph) {
+    assert_eq!(expected.declared_types(), actual.declared_types());
+    assert_eq!(expected.node_capacity(), actual.node_capacity());
+    assert_eq!(expected.node_count(), actual.node_count());
+    for id in 0..expected.node_capacity() as u32 {
+        match (expected.node(id), actual.node(id)) {
+            (Some(left), Some(right)) => {
+                assert_eq!(
+                    ordered_values(&node_properties(expected, &left)),
+                    ordered_values(&node_properties(actual, &right)),
+                    "node {id}"
+                );
+                assert_eq!(
+                    node_keys(expected, &left),
+                    node_keys(actual, &right),
+                    "keys {id}"
+                );
+            }
+            (None, None) => {}
+            _ => panic!("node presence differs at {id}"),
+        }
+    }
+    assert_eq!(expected.methods().len(), actual.methods().len());
+    for (left, right) in expected.methods().iter().zip(actual.methods()) {
+        assert_eq!(
+            ordered_values(&method_properties(expected, left, None)),
+            ordered_values(&method_properties(actual, right, None))
+        );
+    }
+}
+
+#[test]
+fn java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries() {
+    let (Some(v1_dir), Some(v2_dir)) = (
+        std::env::var_os("GRAPHITE_TYPES_V1_FIXTURE"),
+        std::env::var_os("GRAPHITE_TYPES_FIXTURE"),
+    ) else {
+        eprintln!("both GRAPHITE_TYPES_V1_FIXTURE and GRAPHITE_TYPES_FIXTURE required for wire interoperability");
+        return;
+    };
+    let v1_path = std::path::Path::new(&v1_dir);
+    let v2_path = std::path::Path::new(&v2_dir);
+    let v1 = Arc::new(Graph::load(v1_path).unwrap());
+    let v2 = Arc::new(Graph::load(v2_path).unwrap());
+    assert_complete_declared_graph_equivalence(&v1, &v2);
+    let temp =
+        std::env::temp_dir().join(format!("graphite-types-wire-props-{}", std::process::id()));
+    std::fs::create_dir_all(&temp).unwrap();
+    let mut sources = vec![
+        Source {
+            id: Arc::from("v1"),
+            graph: v1.clone(),
+        },
+        Source {
+            id: Arc::from("v2"),
+            graph: v2.clone(),
+        },
+    ];
+    for (id, path) in [("packed-v1", v1_path), ("packed-v2", v2_path)] {
+        let packed = temp.join(format!("{id}.graphite"));
+        graphite_storage::container::pack(path, &packed).unwrap();
+        let graph = Arc::new(Graph::load(&packed).unwrap());
+        assert_complete_declared_graph_equivalence(&v1, &graph);
+        sources.push(Source {
+            id: Arc::from(id),
+            graph,
+        });
+    }
+    let executor = Executor::new(sources, true);
+    let result = executor.execute("MATCH (f:FieldNode) WHERE f.name = 'first' RETURN f.graphId AS source, f.generic_type AS declared, f.type_info AS info ORDER BY source", None).unwrap();
+    assert_eq!(result.rows.len(), 4);
+    let Value::Map(expected_info) = &result.rows[0]["info"] else {
+        panic!("type map");
+    };
+    for (row, source) in result
+        .rows
+        .iter()
+        .zip(["packed-v1", "packed-v2", "v1", "v2"])
+    {
+        assert_eq!(row["source"].as_str(), Some(source));
+        assert_eq!(
+            row["declared"].as_str(),
+            Some("java.util.List<java.lang.String>")
+        );
+        let Value::Map(info) = &row["info"] else {
+            panic!("type map");
+        };
+        assert_eq!(ordered_values(info), ordered_values(expected_info));
+    }
+    drop(executor);
+    std::fs::remove_dir_all(temp).unwrap();
+}
+
 #[test]
 fn declared_type_info_is_sparse_internally_and_in_nested_json() {
     use graphite_storage::types::{DeclaredTypes, TypeExpr};
@@ -873,13 +979,13 @@ fn declared_type_info_is_sparse_internally_and_in_nested_json() {
                 scope: "class:fixture.Holder".into(),
                 owner: None,
                 component: None,
-                variance: String::new(),
+                variance: Arc::from(""),
                 arguments: vec![],
             },
             TypeExpr {
                 kind: "wildcard".into(),
-                name: String::new(),
-                scope: String::new(),
+                name: Arc::from(""),
+                scope: Arc::from(""),
                 owner: None,
                 component: Some(0),
                 variance: "super".into(),
@@ -888,19 +994,19 @@ fn declared_type_info_is_sparse_internally_and_in_nested_json() {
             TypeExpr {
                 kind: "class".into(),
                 name: "java.util.List".into(),
-                scope: String::new(),
+                scope: Arc::from(""),
                 owner: None,
                 component: None,
-                variance: String::new(),
+                variance: Arc::from(""),
                 arguments: vec![1],
             },
             TypeExpr {
                 kind: "array".into(),
-                name: String::new(),
-                scope: String::new(),
+                name: Arc::from(""),
+                scope: Arc::from(""),
                 owner: None,
                 component: Some(2),
-                variance: String::new(),
+                variance: Arc::from(""),
                 arguments: vec![],
             },
         ],

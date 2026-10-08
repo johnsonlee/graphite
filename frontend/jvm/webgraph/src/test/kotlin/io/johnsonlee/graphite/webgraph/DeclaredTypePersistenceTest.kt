@@ -15,6 +15,7 @@ import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
 import java.util.HexFormat
 import java.util.jar.JarEntry
@@ -210,11 +211,13 @@ class DeclaredTypePersistenceTest {
             DeclaredTypeStore.save(value, dir)
             val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
             val bytes = Files.readAllBytes(path)
-            val positions = (0 until bytes.size - 1).filter { bytes[it] == 'B'.code.toByte() && bytes[it + 1] == 'B'.code.toByte() }
-            assertEquals(1, positions.size)
-            val position = positions.single()
-            bytes[position] = 'A'.code.toByte()
-            bytes[position + 1] = 'a'.code.toByte()
+            val typeStart = DeclaredTypeWireFixture.dictionaryEnd(bytes)
+            // One argument-free primitive type (28 bytes); preceding binding sections are empty.
+            val sectionOffset = when (section) { "field" -> 0; "method" -> 4; else -> 8 }
+            val firstRow = typeStart + 4 + 28 + 4 + sectionOffset
+            val rowBytes = when (section) { "field" -> 16; "method" -> 24; else -> 16 }
+            val keyBytes = if (section == "class") 4 else 12
+            bytes.copyInto(bytes, firstRow + rowBytes, firstRow, firstRow + keyBytes)
             Files.write(path, bytes)
             rebind(dir)
             assertEquals("Duplicate $section in graph.types", assertFailsWith<IllegalArgumentException> {
@@ -229,7 +232,7 @@ class DeclaredTypePersistenceTest {
         DeclaredTypeStore.save(table, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
-        // First type kind starts after header, metadata hash, type count and string length.
+        // First dictionary entry is the first type kind, after header/hash/count/length.
         val invalidUtf8 = valid.copyOf().also { it[44] = 0xff.toByte() }
         Files.write(path, invalidUtf8)
         rebind(dir)
@@ -257,8 +260,8 @@ class DeclaredTypePersistenceTest {
             List(16) { DeclaredType("class", "A", arguments = listOf(it, it)) }
         val tooManyBytes = listOf(DeclaredType("variable", "T", scope = "class:" + "\u754c".repeat(1_000))) +
             List(9) { DeclaredType("class", "A", arguments = listOf(it, it)) }
-        for (types in listOf(cycle, tooDeep, tooManyNodes, tooManyBytes)) {
-            writeUncheckedTypes(dir, types)
+        for (version in 1..2) for (types in listOf(cycle, tooDeep, tooManyNodes, tooManyBytes)) {
+            DeclaredTypeWireFixture.write(dir, DeclaredTypeTable(types, emptyMap(), emptyMap(), emptyMap()), version)
             assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
         }
         val forwardReferences = listOf(DeclaredType("array", component = 1), DeclaredType("class", "A"))
@@ -300,7 +303,7 @@ class DeclaredTypePersistenceTest {
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         val corruptions = listOf(
-            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545902) } to "Unsupported graph.types header/version",
+            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545903) } to "Unsupported graph.types header/version",
             valid.copyOf(valid.size + 1) to "Trailing bytes in graph.types",
             valid.copyOf().also { ByteBuffer.wrap(it).putInt(40, -1) } to "Invalid graph.types string length",
             valid.copyOf(35) to "Invalid graph.types length"
@@ -387,7 +390,17 @@ class DeclaredTypePersistenceTest {
             val output = System.getenv("GRAPHITE_TYPES_FIXTURE")?.let(Path::of) ?: dir.resolve("graph")
             Files.createDirectories(output)
             GraphStore.save(graph, output)
-            for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>({ GraphStore.load(output) }, { GraphStore.loadMapped(output) })) {
+            val legacy = System.getenv("GRAPHITE_TYPES_V1_FIXTURE")?.let(Path::of) ?: dir.resolve("legacy")
+            Files.createDirectories(legacy)
+            Files.list(output).use { files ->
+                files.filter(Files::isRegularFile).forEach { path ->
+                    Files.copy(path, legacy.resolve(path.fileName), StandardCopyOption.REPLACE_EXISTING)
+                }
+            }
+            DeclaredTypeWireFixture.write(legacy, types, 1)
+            for (fixture in listOf(output, legacy)) for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>(
+                { GraphStore.load(fixture) }, { GraphStore.loadMapped(fixture) }
+            )) {
                 val restored = load()
                 try {
                     assertEquals(types, restored.declaredTypes())

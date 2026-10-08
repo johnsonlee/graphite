@@ -75,11 +75,14 @@ treat the graph as legacy and ignore any orphan table. Rewriting a graph with an
 writer therefore cannot accidentally reuse stale generic declarations, even when its
 erased metadata is unchanged.
 
-Version 1 uses big-endian integers. Strings are an int32 UTF-8 byte length followed
-by those bytes; lists start with an int32 count. References are zero-based type row
-IDs, with `-1` reserved for an absent optional reference.
+Both versions use signed big-endian int32 words. Lists start with an int32 count.
+Type references are zero-based type row IDs, with `-1` reserved for an absent
+optional reference. Writers emit version 2; both JVM and native readers accept
+versions 1 and 2.
 
-1. Header `0x47545901` (`GTY`, version 1), then SHA-256 of `graph.metadata` (32 bytes).
+1. Header `0x47545902` (`GTY`, version 2), then SHA-256 of `graph.metadata` (32 bytes).
+   Next comes a string count and that many unique strings, each encoded as an
+   int32 UTF-8 byte length followed by those bytes.
 2. Type rows: `kind`, `name`, `scope`, optional `owner`, optional `component`,
    `variance`, argument reference list.
 3. Field bindings: owner, name, full JVM field descriptor, type reference.
@@ -93,21 +96,41 @@ name, scope and bound reference list. The full method descriptor includes the
 return type, keeping bridge methods distinct. Identical type expressions share
 rows, but same-named variables from different scopes do not.
 
+Every text field in sections 2–5 is a zero-based int32 ID into this file's string
+dictionary, including member keys, type kinds/names/scopes, variance and type
+parameter names/scopes. Empty text has an ordinary dictionary entry; text IDs have
+no null sentinel. These IDs are separate from type row IDs and `graph.strings`
+IDs. Dictionary equality is exact, without Unicode normalization, and writers
+assign IDs in first-occurrence order. Formatted generic types are rendered on
+demand rather than stored as additional strings.
+
+Version 1 has header `0x47545901` and the same metadata digest and declaration
+sections, but no dictionary: each text field contains its own int32 UTF-8 byte
+length and bytes. Saving a loaded version 1 table writes version 2 through a
+temporary file and replacement, including when saving into the same directory.
+
 Both readers validate the table binding, metadata digest, lengths, reference ranges, expression
 shapes, duplicate declaration keys and expression cycles before exposing the table.
+Version 2 also validates every dictionary entry, including unused entries, and
+rejects invalid UTF-8, duplicate text and out-of-range string IDs.
 Nesting beyond 256 expression levels is rejected. Expanded projections are limited
 to 100,000 expression nodes and 1,000,000 UTF-8 bytes of type text to reject small
 DAGs whose recursive expansion would consume unbounded memory. A referenced but missing
 or invalid table is a load error; an absent binding is the supported legacy case. All integrity validation occurs during graph loading, before the first generic query.
 The JVM reader retains mapped table bytes and compact offsets/indexes; it decodes
 individual type and declaration objects on access without retaining a decoded cache.
+Its version 2 dictionary retains primitive offsets and string hashes. The native
+reader decodes strings into graph-local shared storage; repeated text shares the
+same allocation in either version, with no process-wide interning.
 Rendering and structured projections are produced when requested.
 
 ## Verification
 
 `DeclaredTypePersistenceTest` compiles a Java JAR, builds its graph, and verifies
 ordinary and mapped loading plus Cypher projections. Set `GRAPHITE_TYPES_FIXTURE`
-to retain that persisted graph for the native interoperability tests. Fixtures in
+to retain that version 2 persisted graph and `GRAPHITE_TYPES_V1_FIXTURE` to retain
+its version 1 equivalent for native directory and packed-container interoperability
+tests. Fixtures in
 these tests establish correctness, not performance. Performance comparisons must
 use the repository's representative real multi-graph workloads.
 

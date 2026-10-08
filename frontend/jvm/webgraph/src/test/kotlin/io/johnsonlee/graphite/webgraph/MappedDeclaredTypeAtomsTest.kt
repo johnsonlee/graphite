@@ -131,10 +131,14 @@ class MappedDeclaredTypeAtomsTest {
         val directory = Files.createTempDirectory("declared-atoms")
         try {
             Files.writeString(directory.resolve("graph.metadata"), "binding")
-            DeclaredTypeStore.save(DeclaredTypeTable(rows, emptyMap(), emptyMap(), emptyMap()), directory)
-            val restored = DeclaredTypeStore.load(directory).types
-            assertIs<DeclaredTypeAtoms>(restored)
-            block(restored)
+            val table = DeclaredTypeTable(rows, emptyMap(), emptyMap(), emptyMap())
+            for (version in 1..2) {
+                if (version == 1) DeclaredTypeWireFixture.write(directory, table, version)
+                else DeclaredTypeStore.save(table, directory)
+                val restored = DeclaredTypeStore.load(directory).types
+                assertIs<DeclaredTypeAtoms>(restored)
+                block(restored)
+            }
         } finally {
             directory.toFile().deleteRecursively()
         }

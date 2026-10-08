@@ -1059,8 +1059,12 @@ mod declared_key_tests {
         let returns = *graph.declared_key_partitions(TAG_RETURN_NODE).unwrap();
         graph.update_declared_types(|table| {
             let table = table.as_mut().unwrap();
-            table.fields.retain(|(_, name, _), _| name != "first");
-            table.methods.retain(|(_, name, _), _| name != "echo");
+            table
+                .fields
+                .retain(|(_, name, _), _| name.as_ref() != "first");
+            table
+                .methods
+                .retain(|(_, name, _), _| name.as_ref() != "echo");
         });
         let after = graph.declared_key_partitions(TAG_FIELD_NODE).unwrap();
         assert_eq!(after[1].count, before[1].count - 1);

@@ -60,10 +60,10 @@ fn s(g: &Graph, id: StrId) -> Value {
 fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value {
     let t = &table.types[id];
     let mut map = IndexMap::new();
-    map.insert("kind".into(), Value::str(t.kind.as_str()));
+    map.insert("kind".into(), Value::str(t.kind.as_ref()));
     for (key, value) in [("name", &t.name), ("scope", &t.scope)] {
         if !value.is_empty() {
-            map.insert(key.into(), Value::str(value.as_str()));
+            map.insert(key.into(), Value::str(value.as_ref()));
         }
     }
     if let Some(owner) = t.owner {
@@ -73,7 +73,7 @@ fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value
         map.insert("component".into(), type_info(table, component));
     }
     if !t.variance.is_empty() {
-        map.insert("variance".into(), Value::str(t.variance.as_str()));
+        map.insert("variance".into(), Value::str(t.variance.as_ref()));
     }
     map.insert(
         "arguments".into(),
@@ -198,8 +198,8 @@ fn generic_method_property(g: &Graph, m: &MethodDesc, key: &str) -> Value {
                 .iter()
                 .map(|p| {
                     Value::map(IndexMap::from([
-                        ("name".into(), Value::str(p.name.as_str())),
-                        ("scope".into(), Value::str(p.scope.as_str())),
+                        ("name".into(), Value::str(p.name.as_ref())),
+                        ("scope".into(), Value::str(p.scope.as_ref())),
                         (
                             "bounds".into(),
                             Value::list(
