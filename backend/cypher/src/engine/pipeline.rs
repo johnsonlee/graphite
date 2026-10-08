@@ -1776,6 +1776,31 @@ fn finalize_groups(
     Ok(out)
 }
 
+/// An explicit single-variable projection can transfer rows already in output order.
+/// The actual rendered column must match too, including quoted variable names.
+fn is_identity_projection(items: &[ReturnItem], columns: &[String], rows: &[Row]) -> bool {
+    let [item] = items else { return false };
+    let Expr::Variable(name) = &item.expr else {
+        return false;
+    };
+    if columns.len() != 1 || columns[0] != *name {
+        return false;
+    }
+    rows.iter().all(|row| {
+        row.keys()
+            .map(String::as_str)
+            .eq(std::iter::once(name.as_str())
+                .chain(
+                    row.contains_key(INTERNAL_PROVENANCE_KEY)
+                        .then_some(INTERNAL_PROVENANCE_KEY),
+                )
+                .chain(
+                    row.contains_key(INTERNAL_WEIGHT_KEY)
+                        .then_some(INTERNAL_WEIGHT_KEY),
+                ))
+    })
+}
+
 /// Batch projection (`projectAndAggregate`).
 fn project(
     ev: &Evaluator,
@@ -1784,6 +1809,7 @@ fn project(
     distinct: bool,
     order: Option<&[OrderItem]>,
 ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+    let explicit_items = items.is_some();
     // RETURN * expansion.
     let expanded: Vec<ReturnItem>;
     let items: Option<&[ReturnItem]> = match items {
@@ -1816,6 +1842,13 @@ fn project(
                 .unwrap_or_else(|| to_cypher_string(&it.expr))
         })
         .collect();
+    if explicit_items
+        && !distinct
+        && order.is_none()
+        && is_identity_projection(items, &columns, &rows)
+    {
+        return Ok((columns, rows));
+    }
     let aggregated = items.iter().any(|it| contains_aggregation(&it.expr));
     let mut out: Vec<Row>;
     if aggregated {
@@ -3026,3 +3059,7 @@ mod with_prefix_tests {
         assert_eq!(QueryResult::graph_ids(&r.rows[1]), ["b"]);
     }
 }
+
+#[cfg(test)]
+#[path = "identity_projection_tests.rs"]
+mod identity_projection_tests;

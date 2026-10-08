@@ -11095,3 +11095,48 @@ Root independently reconciled all8 raw phase/time-l reports, recomputed the mean
 Evidence: `/tmp/sootup-static-review/final-construction-old-vs144-minfree20`. Frozen command SHA `32405c420f8700c19d0d1169cb1fe45e4dcbe915d1e62ff1eb4d910c8e34239b`; runner SHA `159b06fdf5f6fee5b9c2bef1820444dcf3b953c052f10b588fa5c8c2039806a9`; results SHA `e75ef36fb19e6c19ed7dc699f1df38594093e8866bbce16f228981e4825b043c`; summary SHA `6bace1c330db8effb9744163c58af7f5edaa82ec0d3432e5cd2db0ae7d649189`; owner SHA `c00cbf9a64a1d1cef38bcf2b1ba086a00202d937c043c7d1e6020eaec07d6ed3`.
 
 Decision: retain the measured construction gains and the matched-setting candidate. Do not claim complete recovery: Kotlin RSS remains over its cap; these results neither accept independent loading/query nor resolve the native UNION CI failure.
+
+### Attempt146 — transfer identity projection rows after the complete WITH filter
+
+Base: `6bb1fd1129b6bac3014e393beff5648a46874ef9`; isolated branch `codex/attempt146-identity-projection` at `/tmp/graphite-attempt146`. The retained real64 slow query is `MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 200`; its previously observed current p50/p95 are approximately3.738/4.015 seconds. These are motivation from the prior workload, not measurements of this candidate.
+
+Hypothesis: after MATCH/WITH has already evaluated and materialized its complete output and the WITH filter has processed all rows, rebuilding the same one-column rows for RETURN adds avoidable allocation and reference-count work. Reuse the owned vector only when the explicit single bare-variable projection's actual rendered column equals that variable and every row already has exactly the output key order, including optional provenance and weight. DISTINCT, ORDER BY, wildcard, renamed/missing/extra/reordered keys retain the existing projection. Quoted and Unicode names are checked using their actual rendered column, not assumed from AST spelling.
+
+This change does not move LIMIT, skip a late expression/error, change any scan/filter tick or clause cancellation check, preload an index, or move work into loading. It retains full scan/WITH/filter work and adds an eligibility pass over all rows; it is not an O(LIMIT) query. The following fixed comparison tests the net benefit. Seven new correctness tests cover: original projection oracle and ownership, names/empty rows, fallback cases, DISTINCT/order/errors, real two-source rows/provenance/probe/poll parity, late second-source errors before LIMIT0/1, and exact cancellation/timeout reasons. The real-fixture executor oracle changes only the final RETURN expression to an equivalent CASE that cannot take the new identity path. Existing tests remain unchanged.
+
+Validation: original session44313 exited0/tool73f3b4. Full Cypher136 and Explore118 library+1 footprint tests passed without skips, including all seven new named tests. Format, strict Cypher clippy and release CLI export passed. Root independently verified all81 source hashes, exported binary, five raw log hashes, exact test summaries and seven new cases. The original19 correctness fixture hashes remained unchanged. Binary SHA `0b26a4f67eb5e44f5d3c37ea1e141c6946988d06075368daec35a9532cf7fd61`; correctness owner SHA `2f79409b1316bfa0da82a692d2da79ec50ceab34e63ed6f72cc3059fc29c5055`.
+
+Measure the increment against parent144 binary `95311156d18c9a068c91f1129477df4d062fcc82557ee08224db20d4f94f96fa`, using the unchanged prior thirteen-case real64 client/lifecycle/request bodies and full typed oracles. Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/attempt146/measurement/run.py --execute-root-released`. Environment: macOS M3 Max, MAPPED/default C4/fast paths/Rayon, metrics enabled. Fixed four fresh servers ABBA, rolling concurrency4 without batch barriers,2 warmups+20 measured requests per case/process,1,144 total/1,040 measured,8 metrics scrapes,900s client budget and60s server/65s socket limits. No pilot, retries, replacements or altered LIMITs.
+
+Request latency includes explicit connection through complete response consumption/context exit; preparation/JSON encoding precede it, body hashing/full typed validation follows it. Per case/process nearest-rank p50=rank10,p95=rank19; arm values are means of two process quantiles, never pooled across cases. Original session26707 exited0/toola9e162. All1,144 complete typed responses and1,040 measured samples passed; metrics show260 successful requests per process and no errors/rejections. All16 observed owner PIDs and4 groups were absent. Root independently compared every raw body against the original oracle with JSON types preserved, recomputed all quantiles/means, and reconciled raw time-l CPU/RSS/wall and query CPU snapshots.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 3083.458 | 3075.318 | -8.139 | 3130.843 | 3101.644 | -29.199 | -28.740/-71.509 | +12.461/+13.112 |
+| order-by-desc | 3065.708 | 3071.219 | 5.511 | 3105.212 | 3105.227 | 0.015 | -13.182/-50.103 | +24.205/+50.134 |
+| canonical-order-by | 3086.432 | 3079.262 | -7.171 | 3116.660 | 3118.961 | 2.301 | -19.830/-29.820 | +5.488/+34.423 |
+| id-lookup | 38.482 | 38.515 | 0.034 | 38.865 | 39.708 | 0.843 | +0.080/-0.109 | -0.013/+1.795 |
+| wide-contains | 0.578 | 0.582 | 0.004 | 0.651 | 0.692 | 0.041 | +0.002/+0.124 | +0.005/-0.041 |
+| with-filter | 3753.308 | 3141.377 | -611.930 | 4107.992 | 3316.461 | -791.532 | -602.866/-808.972 | -620.994/-774.092 |
+| with-aggregate | 656.010 | 672.743 | 16.733 | 690.071 | 697.606 | 7.534 | +15.192/-3.396 | +18.274/+18.465 |
+| group-count | 312.328 | 310.139 | -2.188 | 323.919 | 327.214 | 3.295 | -3.312/+4.382 | -1.065/+2.209 |
+| distinct | 268.012 | 268.149 | 0.137 | 283.305 | 288.493 | 5.188 | +1.670/+13.068 | -1.395/-2.691 |
+| collect | 2479.625 | 2501.241 | 21.616 | 2519.130 | 2525.014 | 5.885 | +13.881/-22.603 | +29.351/+34.372 |
+| count-traversal | 26.514 | 26.887 | 0.373 | 28.406 | 29.008 | 0.601 | +0.788/+0.786 | -0.043/+0.416 |
+| int-sort | 112.995 | 113.637 | 0.642 | 117.539 | 116.138 | -1.402 | +0.462/-0.646 | +0.822/-2.157 |
+| int-filter | 12.134 | 12.258 | 0.124 | 18.126 | 13.147 | -4.978 | +0.150/-0.948 | +0.099/-9.008 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 343.775 | 331.230 | -12.545 | -3.649% | -13.700 | -11.390 |
+| whole CPU s | 397.485 | 383.810 | -13.675 | -3.440% | -14.590 | -12.760 |
+| whole wall s | 114.935 | 112.015 | -2.920 | -2.541% | -2.800 | -3.040 |
+| whole peak RSS MB | 27248.345 | 18827.035 | -8421.310 | -30.906% | -10208.150 | -6634.471 |
+
+Whole resources include loading, warmups, measured requests and shutdown; query CPU includes the mixed queue and validation/checkpoint gaps. These are not per-case memory/CPU or independent loading measurements. Both arms prepare source IDs before the guard timer; full-client latency includes that work. Metrics mixed means do not substitute for request p95. All64 graphs are in request scope, but LIMIT/probe may stop before visiting all graphs; the target returns200 rows with provenance from one graph. Full returned provenance and actual query bodies remain in the report. The original host observer recorded446 snapshots with no classified events; that does not establish exclusive host use or absence of brief activity.
+
+Decision: **retain this verified positive increment**. WITH/filter p50/p95 improve in both pairs, as do query/whole CPU and whole RSS. Preserve adverse controls: WITH aggregate p50+16.733ms and collect p50+21.616ms in both pairs, group-count p95+3.295ms in both pairs, and every other positive delta above. The mixed queue changes interference, so neither algorithmic regressions nor harmless noise are proved by these controls alone. Do not discard the useful change because it has not achieved whole-goal acceptance, and do not claim all queries improve. This is parent-relative evidence; a final matched pre-upgrade comparison and required main-relative CI remain separate. Kotlin construction RSS and historical confirmed UNION CI failure are not resolved by this result.
+
+Root integration copied the two exact tested source files after confirming root parent pipeline matched6bb; no unrelated engine change or second hypothesis is included. No repeated correctness execution is claimed after the byte-identical copy.
+
+Evidence: `/tmp/sootup-static-review/attempt146/measurement`; plan SHA `f08c6b1e444c978c8206afb9c1bec53c315566a98ffc5c549f87b89ee140ae44`; summary SHA `5d33715710913569e32675491f1fc6de542cdc5ff79ab00a5b48500f2c67f269`; report SHA `b3655453973e2e5e9e216acca3dbc43e17c0ed8b07c08bfb14075f40b6b96611`; performance owner SHA `7f22390d38887248fabdc806aef7bd3f3c675d83f92a22f7ed37e790772a58dc`.
