@@ -117,3 +117,6 @@ migrated through 84 exact type-text substitutions (39 field-erasure facts and 45
 array-dimension facts): all 12,725 unique facts / 12,894 counted facts match after
 those substitutions, with no collisions or topology/count changes. The parity test
 continues to reject missing facts without normalization or relaxed assertions.
+The [large-corpus identity audit](declared-types-corpus-identity-audit.md) independently
+verifies the recovered array overloads and preserved labeled-edge topology on Hive,
+Tika and the Kotlin compiler.

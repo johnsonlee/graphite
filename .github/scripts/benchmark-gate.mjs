@@ -198,30 +198,28 @@ const LARGE_CORPUS_SHAPE_FIELDS = ["nodes", "sourceEdges", "persistedEdges", "me
 const LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE = 4 * 1024;
 const LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5;
 
-// One-time graph-shape transition: the graph.callsite-ordinals sidecar adds eight bytes per
-// call site (node id, ordinal), a 44-byte header, an index of 36 bytes per block of 256 call
-// sites (the block's first node id and the SHA-256 of its entries) and the 36-byte binding at
-// the end of graph.metadata, plus an origin table that is empty without dispatch resolution,
-// so the persisted size grows by that while the node, edge, method and call-site counts stay
-// identical. Only this exact base -> candidate shape, and a persisted-size delta within
-// LARGE_CORPUS_PERSISTED_BYTES_TOLERANCE of the pinned one, may pass while the workflow
-// selects the pinned shape-transition controls; every other comparison keeps exact shape
-// equality.
+// One-time declared-type transition, pinned to exact harness/comparator hashes in the workflow.
+// Full JVM array dimensions recover 64 Tika and 27 Hive method identities that previously
+// collided. Independent classfile and javap inventories establish these exact count changes;
+// nodes, edges and call sites remain unchanged. The optional graph.types table and its
+// binding account for the measured persisted-size deltas. See the declared-types corpus audit.
+// Every other comparison retains exact shape equality and the existing 4 KiB size tolerance;
+// timing, CPU, RSS and heap constraints are unchanged.
 export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
     tika: {
         base: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
-        candidate: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_788, callSites: 1_006_172 },
-        persistedBytesDelta: 8_190_900
+        candidate: { nodes: 3_901_103, sourceEdges: 4_510_016, persistedEdges: 4_353_588, methods: 312_852, callSites: 1_006_172 },
+        persistedBytesDelta: 61_386_645
     },
     hive: {
         base: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
-        candidate: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_016, callSites: 1_443_886 },
-        persistedBytesDelta: 11_754_172
+        candidate: { nodes: 5_992_914, sourceEdges: 6_597_267, persistedEdges: 6_376_682, methods: 404_043, callSites: 1_443_886 },
+        persistedBytesDelta: 101_839_125
     },
     "kotlin-compiler": {
         base: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
         candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
-        persistedBytesDelta: 7_512_796
+        persistedBytesDelta: 67_384_686
     }
 });
 
