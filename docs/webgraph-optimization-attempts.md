@@ -10937,3 +10937,85 @@ Root independently rehashed and compared all440 full raw JSON responses with the
 Decision: **retain and integrate the positive ID-query increment**, while preserving mixed control results. Both paired ID p50/p95 comparisons improve by more than5.5 seconds. Query CPU decreases in both pairs; whole peak RSS increases5.145MB/+0.068% on average. Descending sort p50 increases39.627ms and p95 increases54.544ms, with both pair directions adverse; do not dismiss this as noise or claim every query improved. This experiment changes the mixed queue's interference and does not establish the cause of the control change. Keep these observations for cumulative acceptance instead of repeatedly sampling them or discarding the ID gain. Parent-relative resources do not substitute for the matching pre-upgrade +5% constraints. Construction/loading and complete cumulative query recovery remain unaccepted.
 
 Coverage CI history: d0fc run37721037996 completed with the native gate failing `shape-function-calls`: initial median5.512→26.201ms and reverse median14.441→18.915ms against main502e. All73 complete query responses matched across the four snapshots. Preserve the failed gate; these five-pass medians are not request p95. At144 integration, parent143 run37723533113 is still running its native latency comparison; JVM and Rust tests pass. Do not cancel this paired run with an early push or describe it as passing.
+
+
+### 2026-10-08 — Cumulative144 versus pre-upgrade: thirteen real multi-graph query shapes
+
+Compare frozen pre-upgrade6f498705009689551c92c6d1ca92f67252ef77c4 with cumulative144 (`6bb1fd1129b6bac3014e393beff5648a46874ef9`), not merely the preceding attempt. Reuse the existing real64 Android/Tika/Hive/Kotlin corpus:19,438,199 nodes,21,081,154 edges,1,374,983 methods and5,051,914 CallSites. Both use identical persisted inputs and native release executables on macOS/Apple Silicon, global API scope, MAPPED/default C4 and unchanged fastpath/Rayon settings. This measures the native engine against common inputs; it does not establish construction, JVM loading or own-writer graph-population acceptance.
+
+The fixed suite keeps the existing five cases and adds WITH filtering/aggregation, grouped count, DISTINCT, corrected collect, traversal count and two explicit IntConstant.value queries. The latter close the retained scalar path's multi-graph coverage gap; an untyped Constant scan could not establish that it exercised IntConstant. No existing query or result cap was changed to make the run faster.
+
+Before timing, original capture session53449 ended exit0/e05909 with exactly six requests: old/current each execute corrected collect, Int sort and Int predicate once. All HTTP200 bodies match completely, including types, row order, provenance and probe. Collect has one row/ten names with64 provenance graph IDs; Int sort20 integer rows/probe21gte with20 contributing graphs; predicate1000 rows with values101..199/probe1001gte and13 contributing graphs. These are result contributors, not a trace of all visited graphs. Both bodies and the original historical inline-collect HTTP400 failures remain preserved. Root independently rehashed and compared all six raw JSON bodies. Capture owner SHA `470cbedfc3d115f88c924467272c900d5fce2e92110fbf362a17b68d7678b78b`.
+
+Freeze the actual old capture references and execute the declared four-process ABBA once:13 cases,2 warmups then20 measurements per case/process, rolling concurrency4,1144 total requests/1040 measured,900-second client budget per process and60-second server timeout. No synthetic graphs, single-graph timing, replacement, resampling or budget extension. Query13 reuses the previous client/lifecycle; only case counts, identities and the explicitly declared references change. Canonical-label sorting uses an explicit alias-equivalent expected response, checked on every actual request, not a falsely relabelled capture.
+
+Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/sootup-static-review/preupgrade-vs144-slow-suite/measurement/run.py --execute-root-released`. Released plan SHA `828fd9521176e967afc23491fd3c55a867a2c13afd36fcccc2287ad7e13b6069`. All raw responses, warmups, metrics and result/provenance lists remain under that packet.
+
+Original session93935 terminal0 /b3be4c;4/4 servers,1144/1144 complete typed bodies,1040 measured,8 raw metrics captures PASS. Owner terminal SHA `80addaa7a8a52a8cc4a9b39a7fdc2e3112c03321c64f3109d0832619be96976c`. No retry, replacement, HTTP failure or rejected request. Sixteen owned PIDs and four time groups absent.
+
+A: preupgrade6f498705 `2bf3cd50…`; B:144 `95311156…`. Same64 graphs, MAPPED/defaultC4/default fastpath and Rayon. Each process:2 warmups and20 measured requests per case; rolling four requests, mixed case queue, no batch barrier.900s total client budget,60s query timeout.
+
+Per-process n20 nearest-rank p50=rank10, p95=rank19; arm values below are the mean of two process quantiles. Absolute ms first; no case pooling.
+
+| Case | A p50 ms | B p50 ms | Δ ms | A p95 ms | B p95 ms | Δ ms | pair A0→B1 Δ p50/p95 ms | pair A3→B2 Δ p50/p95 ms |
+|---|---:|---:|---:|---:|---:|---:|---|---|
+| order-by | 7230.469 | 3093.156 | -4137.313 | 8689.549 | 3136.223 | -5553.327 | -4234.071/-6051.824 | -4040.554/-5054.829 |
+| order-by-desc | 7110.880 | 3057.891 | -4052.989 | 8112.185 | 3095.433 | -5016.752 | -4168.197/-5221.269 | -3937.782/-4812.235 |
+| canonical-order-by | 7229.273 | 3090.850 | -4138.422 | 7794.877 | 3121.093 | -4673.785 | -4253.148/-4803.892 | -4023.696/-4543.677 |
+| id-lookup | 5563.827 | 38.460 | -5525.367 | 5643.079 | 38.618 | -5604.461 | -5528.555/-5597.580 | -5522.179/-5611.342 |
+| wide-contains | 0.721 | 0.569 | -0.152 | 35.027 | 0.641 | -34.386 | -0.165/-26.528 | -0.139/-42.244 |
+| with-filter | 3832.734 | 3738.445 | -94.289 | 5812.541 | 4014.932 | -1797.610 | -186.922/-1913.969 | -1.655/-1681.250 |
+| with-aggregate | 696.003 | 660.953 | -35.050 | 750.353 | 689.747 | -60.606 | -34.237/-72.151 | -35.863/-49.060 |
+| group-count | 334.422 | 310.761 | -23.661 | 363.129 | 324.209 | -38.920 | -23.425/-41.869 | -23.897/-35.972 |
+| distinct | 287.417 | 273.227 | -14.190 | 327.986 | 286.801 | -41.185 | -9.566/-24.683 | -18.814/-57.688 |
+| collect | 2550.201 | 2512.471 | -37.729 | 3223.218 | 2543.744 | -679.475 | -47.056/-871.573 | -28.403/-487.377 |
+| count-traversal | 36.240 | 25.913 | -10.327 | 59.146 | 27.554 | -31.592 | -11.508/-27.703 | -9.146/-35.480 |
+| int-sort | 121.973 | 112.046 | -9.927 | 128.633 | 116.722 | -11.911 | -9.688/-11.230 | -10.166/-12.592 |
+| int-filter | 13.356 | 12.446 | -0.909 | 31.401 | 14.289 | -17.111 | -0.680/-32.594 | -1.138/-1.629 |
+
+Raw process quantiles remain in execution/results.json and this report's summary.json, alongside all warmup values. Warmups are excluded from measured statistics. At n20 these are empirical tails, not a production SLA.
+
+| Process | Query-window CPU s | Whole CPU s | Whole wall s | Whole peak RSS MB | HTTP mixed mean ms | Guard mixed mean ms |
+|---|---:|---:|---:|---:|---:|---:|
+| 0-A | 718.410 | 825.800 | 239.990 | 29672.997 | 2828.387 | 2825.403 |
+| 1-B | 344.360 | 398.540 | 116.830 | 23237.313 | 1307.949 | 1307.365 |
+| 2-B | 343.950 | 398.050 | 115.240 | 23916.184 | 1306.858 | 1306.278 |
+| 3-A | 707.380 | 814.780 | 237.380 | 33291.125 | 2769.469 | 2766.692 |
+
+| Resource | A mean | B mean | Δ absolute | Δ % | pair0 Δ absolute | pair1 Δ absolute |
+|---|---:|---:|---:|---:|---:|---:|
+| query CPU s | 712.895 | 344.155 | -368.740 | -51.724% | -374.050 | -363.430 |
+| whole CPU s | 820.290 | 398.295 | -421.995 | -51.445% | -427.260 | -416.730 |
+| whole wall s | 238.685 | 116.035 | -122.650 | -51.386% | -123.160 | -122.140 |
+| whole peak RSS MB | 31482.061 | 23576.748 | -7905.313 | -25.111% | -6435.684 | -9374.941 |
+
+HTTP/guard means use sum/count for260 mixed requests per process; not per-case or p95. Old source/ID preparation occurs inside the guard timer, whereas current preparation precedes it; guard means therefore do not compare identical engine work boundaries. HTTP includes both preparations, and full-client request quantiles retain their original complete-response boundary. Every metrics window shows260 successful outcomes, zero rejected/failed/cancelled/timeout/budget-exceeded.10ms first bucket cannot supply precise submillisecond quantiles. Query CPU includes the measured queue, response validation/checkpoint gaps and executor shutdown; ps counter0.01s. Whole resource scope additionally includes loading, warmups and shutdown; no per-case resource attribution.
+
+The old6f-to-cumulative144 comparison includes multiple retained optimizations and changes the mixed queue's interference for controls. Lower control times therefore do not prove a changed control algorithm; any control regression is also retained. This is a closed-loop c4 mixed workload, not a fixed-arrival saturated benchmark. This is a direct preupgrade comparison of the selected thirteen-case real64 mix, not every query shape or the separate CI main-relative gate.
+
+Background: {"performanceAttributionStatus": "DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY", "nativeSessionCommandsStarted": 4, "diagnosticOnly": true, "sampleStatus": "RETAIN_ALL_STARTED_SAMPLES", "nativeSessionEvents": [], "betweenSessionEvents": [], "preflightEvents": [], "allEvents": [], "externalLifetimeLimitations": [], "sampleCount": 689, "exclusiveWindowClaim": false, "limits": ["One-second process metadata can miss short-lived/sub-resolution activity and unknown native builds/I/O.", "Observer/supervisor overhead is outside native time-l/CPU counters and applies to both arms; ps child CPU is not separately attributed. No causal delay quantification or guaranteed exclusive window.", "All samples retained; no clean subset selection or automatic resampling."]}.
+
+| Case | Input graphs | Returned rows | total probe | Returned provenance graph count |
+|---|---:|---:|---|---:|
+| order-by | 64 | 200 | {'value': 201, 'relation': 'gte'} | 16 |
+| order-by-desc | 64 | 200 | {'value': 201, 'relation': 'gte'} | 34 |
+| canonical-order-by | 64 | 200 | {'value': 201, 'relation': 'gte'} | 16 |
+| id-lookup | 64 | 1 | {'value': 1, 'relation': 'eq'} | 1 |
+| wide-contains | 64 | 200 | {'value': 201, 'relation': 'gte'} | 1 |
+| with-filter | 64 | 200 | {'value': 201, 'relation': 'gte'} | 1 |
+| with-aggregate | 64 | 50 | {'value': 51, 'relation': 'gte'} | 64 |
+| group-count | 64 | 20 | {'value': 21, 'relation': 'gte'} | 64 |
+| distinct | 64 | 200 | {'value': 201, 'relation': 'gte'} | 64 |
+| collect | 64 | 1 | {'value': 1, 'relation': 'eq'} | 64 |
+| count-traversal | 64 | 1 | {'value': 1, 'relation': 'eq'} | 64 |
+| int-sort | 64 | 20 | {'value': 21, 'relation': 'gte'} | 20 |
+| int-filter | 64 | 1000 | {'value': 1001, 'relation': 'gte'} | 13 |
+
+Full returned graph-id lists are in summary.json and raw bodies. LIMIT/probe can stop early; graphCount64 is input scope, returned metadata is not a graph-visitation trace.
+
+
+Root independently rehashed and recursively compared all1144 raw responses against the original captures while preserving JSON types; recomputed every per-process20-sample p50/p95; and reconciled raw time-l CPU/RSS and query CPU counters. Result report SHA `ac6fe237fb08585c4aede605b6782188a8cc4dda3b78c1be43c7c1e29648d50c`; summary SHA `bdbc72505df609fdbfe8c2f35d3dac4d52faa4f2cc03a133de98c26a8ea55718`.
+
+Conclusion: **all13 selected queries improve p50 and p95 in both pair directions versus pre-upgrade**. The measured query CPU and whole-process CPU/RSS also decrease in both pairs. This is substantive multi-graph evidence for the retained sort, ID and IntConstant paths and representative aggregate/WITH queries. It does not prove every query or a production SLA, nor assign independent gains to unchanged control algorithms. Loading, warmup and query boundaries remain distinct; warmup values are retained but not an isolated per-case cold-cache experiment. No whole-process query-run RSS is substituted for an independent loading measurement.
+
+The independent main-relative CI at exact144 still fails: run37725832099/native113144860022 confirms `shape-union` at0.994→27.666ms initially and0.925→27.162ms in reverse, exceeding the unchanged15%+1ms gate. Full responses are equal. Candidate first-pass samples are fast and later passes slower, while a reverse-base72.378ms outlier is preserved; neither pattern establishes a cause. Do not erase this failure with the thirteen-case result or rerun unchanged code to seek a favorable sample. Full evidence is `/tmp/sootup-static-review/attempt144/ci-run37725832099/REPORT.md` (SHA `ab77e5a759b1000646fda966291a5dd6ec7701d5a5b3d7c00248471bfd7369c7`). Overall performance recovery remains incomplete.
