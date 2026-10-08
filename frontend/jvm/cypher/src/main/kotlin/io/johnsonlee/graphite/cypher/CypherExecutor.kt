@@ -24,6 +24,11 @@ private const val PROPERTY_TYPE = "type"
 private const val PROPERTY_VALUE = "value"
 private const val PROPERTY_NAME = "name"
 
+private fun Map<String, Any?>.withDeclaredProperties(node: GraphiteNode, graph: Graph?): Map<String, Any?> {
+    val declared = DeclaredTypeProperties.nodeProperties(node, graph)
+    return if (declared.isEmpty()) this else this + declared
+}
+
 /**
  * Executes Cypher queries against a Graphite [Graph].
  *
@@ -313,8 +318,8 @@ class CypherExecutor internal constructor(
 
     private fun materializeValue(value: Any?, workTracker: CypherWorkTracker?): Any? = when (value) {
         is MethodValue -> value.properties()
-        is GraphiteNode -> nodeToMap(value)
-        is QualifiedNode -> nodeToMap(value.node) + mapOf(
+        is GraphiteNode -> nodeToMap(value).withDeclaredProperties(value, pipeline.defaultGraph)
+        is QualifiedNode -> nodeToMap(value.node).withDeclaredProperties(value.node, value.graph) + mapOf(
             GRAPH_ID_PROPERTY to value.graphId,
             ELEMENT_ID_PROPERTY to value.elementId,
             QUALIFIED_ID_PROPERTY to value.elementId
@@ -354,8 +359,8 @@ class CypherExecutor internal constructor(
 
     private fun materializeValue(value: Any?): Any? = when (value) {
         is MethodValue -> value.properties()
-        is GraphiteNode -> nodeToMap(value)
-        is QualifiedNode -> nodeToMap(value.node) + mapOf(
+        is GraphiteNode -> nodeToMap(value).withDeclaredProperties(value, pipeline.defaultGraph)
+        is QualifiedNode -> nodeToMap(value.node).withDeclaredProperties(value.node, value.graph) + mapOf(
             GRAPH_ID_PROPERTY to value.graphId,
             ELEMENT_ID_PROPERTY to value.elementId,
             QUALIFIED_ID_PROPERTY to value.elementId

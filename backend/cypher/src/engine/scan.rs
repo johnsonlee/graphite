@@ -51,7 +51,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 26] = [
+const PUSHABLE_PROPS: [&str; 28] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -76,6 +76,8 @@ const PUSHABLE_PROPS: [&str; 26] = [
     "index",
     "method",
     "actual_type",
+    "generic_type",
+    "type_info",
     "profile",
     // Synthesised from the graph id and the node id in cross-graph mode; folded per
     // graph without decoding anything.
@@ -88,8 +90,8 @@ const PUSHABLE_PROPS: [&str; 26] = [
 /// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
 /// value pairs add keys of their own, which is why the Annotation type is always
 /// decoded for that shape.
-const ALL_KEYS: [&str; 27] = {
-    let mut keys = ["id"; 27];
+const ALL_KEYS: [&str; 29] = {
+    let mut keys = ["id"; 29];
     let mut i = 0;
     while i < PUSHABLE_PROPS.len() {
         keys[i + 1] = PUSHABLE_PROPS[i];
@@ -985,18 +987,30 @@ impl ScanPlan {
             let plan = &plans[tag as usize];
             // An annotation's keys are whatever strings its value pairs carry, so a
             // key absent from this graph's dictionary reaches no annotation here.
-            let annotation_plan;
-            let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
-                annotation_plan = tag_plan(
+            let contextual_plan;
+            let missing_declarations = matches!(
+                tag,
+                graphite_storage::node::TAG_FIELD_NODE
+                    | graphite_storage::node::TAG_PARAMETER_NODE
+                    | graphite_storage::node::TAG_RETURN_NODE
+            ) && !super::props::has_declared_types_for_tag(graph, tag);
+            let plan = if (tag == TAG_ANNOTATION_NODE || missing_declarations)
+                && matches!(plan, TagPlan::Generic)
+            {
+                contextual_plan = tag_plan(
                     &self.tree,
                     tag,
                     &|key| {
-                        !matches!(key, "name" | "class" | "member" | "values")
-                            && graph.strings.index_of(key).is_none()
+                        if tag == TAG_ANNOTATION_NODE {
+                            !matches!(key, "name" | "class" | "member" | "values")
+                                && graph.strings.index_of(key).is_none()
+                        } else {
+                            matches!(key, "generic_type" | "type_info")
+                        }
                     },
                     &synthetic,
                 );
-                &annotation_plan
+                &contextual_plan
             } else {
                 plan
             };
@@ -3045,6 +3059,11 @@ fn exposure_of(
             Exposure::Absent
         };
     }
+    if matches!(tag, TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
+        && matches!(property, "generic_type" | "type_info")
+    {
+        return Exposure::Dynamic;
+    }
     if let Some(slot) = graphite_storage::columns::raw_string_field(tag, property) {
         return Exposure::Column(slot);
     }
@@ -4084,6 +4103,21 @@ mod tests {
             Exposure::Column(_)
         ));
         assert_eq!(exposure(TAG_LOCAL_VARIABLE, "method"), Exposure::Dynamic);
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            for key in ["generic_type", "type_info"] {
+                assert_eq!(exposure(tag, key), Exposure::Dynamic);
+                assert!(ALL_KEYS.contains(&key));
+                assert_eq!(
+                    kind(&prune(
+                        &leaf(key, PushOp::Contains, "java.lang.String"),
+                        tag,
+                        &|_| false,
+                        &|_| Fold::Unknown
+                    )),
+                    "generic"
+                );
+            }
+        }
     }
 
     #[test]

@@ -414,27 +414,20 @@ class FoldSelectionTest {
     }
 
     @Test
-    fun `a key that names overloads differing only in array dimensions folds neither`() {
+    fun `array dimension overloads have distinct keys and only the selected caller folds`() {
         val classes = compile()
         val plain = load(classes)
         val runs = plain.nodes<CallSiteNode>().filter { it.caller.name == "run" && it.callee.name == "enabled" }.toList()
         assertEquals(2, runs.size)
-        assertEquals(1, runs.map(::key).toSet().size, "the graph records one array dimension: one key for both calls")
-        val (graph, report) = fold(classes, select(listOf(runs.first()), false, mapOf(0 to "k")))
+        assertEquals(2, runs.map(::key).toSet().size)
+        val selected = runs.single { it.caller.parameterTypes.single().className == "int[]" }
+        val (graph, report) = fold(classes, select(listOf(selected), false, mapOf(0 to "k")))
         val constants: List<Int> = graph.nodes<CallSiteNode>().filter { it.caller.name == "run" }
             .flatMap { site -> site.arguments.mapNotNull { (graph.node(it) as? IntConstant)?.value } }.sorted().toList()
-        assertEquals(listOf(11, 12), constants, "both calls keep their arguments")
-        val reasons = report.unsupported()
-        assertEquals(2, reasons.size)
-        reasons.forEach { reason ->
-            assertTrue(
-                reason.startsWith(
-                    "the key's caller sample.selection.Shapes.run(int[]) names 2 methods that differ only in array dimensions"
-                ),
-                reason
-            )
-            assertTrue(reason.contains("run(int[][])") && reason.endsWith("; not folded"), reason)
-        }
+        assertEquals(listOf(12), constants, "only the selected int[] overload loses its guarded work call")
+        val remaining = graph.nodes<CallSiteNode>().single { it.caller.name == "run" && it.callee.name == "enabled" }
+        assertEquals("int[][]", remaining.caller.parameterTypes.single().className)
+        assertEquals(emptyList(), report.unsupported())
     }
 
     @Test

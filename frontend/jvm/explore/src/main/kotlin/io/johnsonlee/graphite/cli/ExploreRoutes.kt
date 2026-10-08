@@ -280,7 +280,7 @@ internal class ExploreRoutes(
                     ctx.status(HTTP_NOT_FOUND).result(API_ERROR_NODE_NOT_FOUND)
                     return@withGraph
                 }
-                ctx.json(nodeToMap(node))
+                ctx.json(nodeToMap(node, graph))
             }
         }
 
@@ -1056,7 +1056,7 @@ internal class ExploreRoutes(
             val admitted = nodes.size < MAX_SUBGRAPH_NODES && visitedNodes.add(nodeId.value) && remaining >= 0
             val node = if (admitted) graph.node(nodeId) else null
             if (node != null) {
-                nodes.add(nodeToMap(node))
+                nodes.add(nodeToMap(node, graph))
                 // Pushed in reverse so outgoing edges are walked first.
                 if (remaining > 0 && direction.includeIncoming) {
                     pending.addLast(SubgraphFrame(graph.incoming(nodeId).iterator(), Edge::from, remaining - 1))

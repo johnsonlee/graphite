@@ -705,6 +705,8 @@ object GraphStore {
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
+        DeclaredTypeStore.save(graph.declaredTypes(), dir)
+
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
             ClassOverview(
@@ -911,7 +913,8 @@ object GraphStore {
             metadata,
             classOverview,
             PersistedResourceStore.load(dir),
-            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) }
+            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
+            DeclaredTypeStore.load(dir)
         )
     }
 
@@ -993,7 +996,8 @@ object GraphStore {
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) },
             branchDefinitions = branchDefinitions,
-            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) }
+            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
+            declaredTypeTable = DeclaredTypeStore.load(dir)
         )
         if (prepareCallSiteStringIndex) {
             try {

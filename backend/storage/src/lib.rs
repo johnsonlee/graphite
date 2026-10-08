@@ -12,6 +12,7 @@ pub mod metadata;
 pub mod node;
 pub mod source;
 pub mod strings;
+pub mod types;
 
 pub use container::{Bytes, Container, ContainerError};
 pub use graph::{Edge, EdgeFamily, Graph, GraphError};

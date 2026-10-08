@@ -57,10 +57,170 @@ fn s(g: &Graph, id: StrId) -> Value {
     Value::str(g.str(id))
 }
 
+fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value {
+    let t = &table.types[id];
+    let mut map = IndexMap::new();
+    map.insert("kind".into(), Value::str(t.kind.as_str()));
+    for (key, value) in [("name", &t.name), ("scope", &t.scope)] {
+        if !value.is_empty() {
+            map.insert(key.into(), Value::str(value.as_str()));
+        }
+    }
+    if let Some(owner) = t.owner {
+        map.insert("owner".into(), type_info(table, owner));
+    }
+    if let Some(component) = t.component {
+        map.insert("component".into(), type_info(table, component));
+    }
+    if !t.variance.is_empty() {
+        map.insert("variance".into(), Value::str(t.variance.as_str()));
+    }
+    map.insert(
+        "arguments".into(),
+        Value::list(t.arguments.iter().map(|id| type_info(table, *id)).collect()),
+    );
+    Value::map(map)
+}
+
+fn declared_method<'a>(
+    g: &'a Graph,
+    m: &MethodDesc,
+) -> Option<(
+    &'a graphite_storage::types::DeclaredTypes,
+    &'a graphite_storage::types::MethodTypes,
+)> {
+    let table = g.declared_types.as_ref()?;
+    let types = table.methods.get(&(
+        g.str(m.declaring_class).into(),
+        g.str(m.name).into(),
+        m.descriptor(&g.strings),
+    ))?;
+    Some((table, types))
+}
+
+pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
+    g.declared_types.as_ref().is_some_and(|table| match tag {
+        TAG_FIELD_NODE => !table.fields.is_empty(),
+        TAG_PARAMETER_NODE | TAG_RETURN_NODE => !table.methods.is_empty(),
+        _ => false,
+    })
+}
+
+fn declared_node_type(g: &Graph, node: &Node) -> Option<usize> {
+    let table = g.declared_types.as_ref()?;
+    match &node.kind {
+        NodeKind::Field {
+            declaring_class,
+            name,
+            field_type,
+            ..
+        } => {
+            let mut descriptor = String::new();
+            push_type_descriptor(g.str(*field_type), &mut descriptor);
+            table
+                .fields
+                .get(&(
+                    g.str(*declaring_class).into(),
+                    g.str(*name).into(),
+                    descriptor,
+                ))
+                .copied()
+        }
+        NodeKind::Parameter { method, index, .. } => {
+            declared_method(g, method).and_then(|(_, m)| {
+                usize::try_from(*index)
+                    .ok()
+                    .and_then(|i| m.parameters.get(i).copied())
+            })
+        }
+        NodeKind::Return { method, .. } => declared_method(g, method).map(|(_, m)| m.returns),
+        _ => None,
+    }
+}
+
+fn declared_node_property(g: &Graph, node: &Node, key: &str) -> Value {
+    declared_node_type(g, node)
+        .map(|id| {
+            let table = g.declared_types.as_ref().unwrap();
+            if key == "generic_type" {
+                Value::str(table.render(id))
+            } else {
+                type_info(table, id)
+            }
+        })
+        .unwrap_or(Value::Null)
+}
+
+fn generic_method_property(g: &Graph, m: &MethodDesc, key: &str) -> Value {
+    let Some((table, types)) = declared_method(g, m) else {
+        return Value::Null;
+    };
+    match key {
+        "generic_return_type" => Value::str(table.render(types.returns)),
+        "generic_parameter_types" => Value::list(
+            types
+                .parameters
+                .iter()
+                .map(|id| Value::str(table.render(*id)))
+                .collect(),
+        ),
+        "return_type_info" => type_info(table, types.returns),
+        "parameter_type_info" => Value::list(
+            types
+                .parameters
+                .iter()
+                .map(|id| type_info(table, *id))
+                .collect(),
+        ),
+        "type_parameters" => Value::list(
+            types
+                .type_parameters
+                .iter()
+                .map(|p| {
+                    Value::map(IndexMap::from([
+                        ("name".into(), Value::str(p.name.as_str())),
+                        ("scope".into(), Value::str(p.scope.as_str())),
+                        (
+                            "bounds".into(),
+                            Value::list(
+                                p.bounds
+                                    .iter()
+                                    .map(|id| Value::str(table.render(*id)))
+                                    .collect(),
+                            ),
+                        ),
+                        (
+                            "bound_info".into(),
+                            Value::list(p.bounds.iter().map(|id| type_info(table, *id)).collect()),
+                        ),
+                    ]))
+                })
+                .collect(),
+        ),
+        _ => Value::Null,
+    }
+}
+
+pub const GENERIC_METHOD_KEYS: [&str; 5] = [
+    "generic_return_type",
+    "generic_parameter_types",
+    "return_type_info",
+    "parameter_type_info",
+    "type_parameters",
+];
+
 /// `getProperty(node, key)`.
 pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
     if key == "id" {
         return Value::Int(node.id as i64);
+    }
+    if matches!(key, "generic_type" | "type_info")
+        && matches!(
+            node.kind,
+            NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+        )
+    {
+        return declared_node_property(g, node, key);
     }
     let v = match &node.kind {
         NodeKind::CallSite {
@@ -391,6 +551,11 @@ fn node_properties_impl(
             }
         }
     }
+    if let Some(id) = declared_node_type(g, node) {
+        let table = g.declared_types.as_ref().unwrap();
+        m.insert("generic_type".into(), Value::str(table.render(id)));
+        m.insert("type_info".into(), type_info(table, id));
+    }
     m
 }
 
@@ -507,6 +672,11 @@ pub fn method_properties(
         Value::list(m.parameter_types.iter().map(|p| s(g, *p)).collect()),
     );
     map.insert("return_type".to_string(), s(g, m.return_type));
+    if declared_method(g, m).is_some() {
+        for key in GENERIC_METHOD_KEYS {
+            map.insert(key.into(), generic_method_property(g, m, key));
+        }
+    }
     if let Some(gid) = graph_id {
         map.insert("graphId".to_string(), Value::str(gid));
     }
@@ -520,6 +690,11 @@ pub fn method_property(g: &Graph, m: &MethodDesc, key: &str, graph_id: Option<&s
         "name" => s(g, m.name),
         "parameter_types" => Value::list(m.parameter_types.iter().map(|p| s(g, *p)).collect()),
         "return_type" => s(g, m.return_type),
+        "generic_return_type"
+        | "generic_parameter_types"
+        | "return_type_info"
+        | "parameter_type_info"
+        | "type_parameters" => generic_method_property(g, m, key),
         "graphId" => graph_id.map(Value::str).unwrap_or(Value::Null),
         _ => Value::Null,
     }

@@ -365,3 +365,312 @@ fn real_nodes_and_cross_graph_results_match_complete_filtered_properties() {
         );
     }
 }
+
+/// Uses the compiled Java fixture emitted by DeclaredTypesIntegrationTest, so the
+/// JVM writer and native reader must agree on descriptors, references and maps.
+#[test]
+fn declared_types_java_fixture_query_roundtrip_and_graph_local_identity() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        eprintln!("GRAPHITE_TYPES_FIXTURE unset; skipping Java interoperability test");
+        return;
+    };
+    let path = std::path::Path::new(&dir);
+    let graph = Graph::load(path).unwrap();
+    assert!(graph.declared_types.is_some());
+    let method = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "echo")
+        .expect("echo method")
+        .clone();
+    assert_eq!(
+        method_property(&graph, &method, "generic_return_type", None).as_str(),
+        Some("java.util.List<java.lang.String>")
+    );
+    assert_eq!(
+        method_property(&graph, &method, "return_type", None).as_str(),
+        Some("java.util.List")
+    );
+    let field = graph
+        .ids_by_tag(TAG_FIELD_NODE)
+        .iter()
+        .filter_map(|id| graph.node(*id))
+        .find(|n| matches!(&n.kind, NodeKind::Field {name, ..} if graph.str(*name)=="first"))
+        .expect("first field");
+    assert_eq!(
+        node_property(&graph, &field, "generic_type").as_str(),
+        Some("java.util.List<java.lang.String>")
+    );
+    let Value::Map(info) = node_property(&graph, &field, "type_info") else {
+        panic!("type map")
+    };
+    assert_eq!(info["name"].as_str(), Some("java.util.List"));
+    let Value::List(arguments) = &info["arguments"] else {
+        panic!("arguments")
+    };
+    let Value::Map(argument) = &arguments[0] else {
+        panic!("argument map")
+    };
+    assert_eq!(argument["name"].as_str(), Some("java.lang.String"));
+    assert!(!info.contains_key("scope"));
+
+    for tag in [TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+        let declarations: Vec<_> = graph
+            .ids_by_tag(tag)
+            .iter()
+            .filter_map(|id| graph.node(*id))
+            .filter(|node| match &node.kind {
+                NodeKind::Parameter { method, index, .. } => {
+                    graph.str(method.name) == "echo" && *index >= 0
+                }
+                NodeKind::Return { method, .. } => graph.str(method.name) == "echo",
+                _ => false,
+            })
+            .collect();
+        assert!(!declarations.is_empty(), "echo declarations for tag {tag}");
+        for node in declarations {
+            assert_eq!(
+                node_property(&graph, &node, "generic_type").as_str(),
+                Some("java.util.List<java.lang.String>")
+            );
+        }
+    }
+    for (field_name, expected) in [("value", "T"), ("matrix", "T[][]")] {
+        let declaration = graph.ids_by_tag(TAG_FIELD_NODE).iter().filter_map(|id| graph.node(*id))
+            .find(|node| matches!(&node.kind, NodeKind::Field { name, .. } if graph.str(*name) == field_name))
+            .unwrap_or_else(|| panic!("missing {field_name} field"));
+        assert_eq!(
+            node_property(&graph, &declaration, "generic_type").as_str(),
+            Some(expected)
+        );
+    }
+    let matrix = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "echoMatrix")
+        .expect("echoMatrix method");
+    assert_eq!(
+        method_property(&graph, matrix, "generic_return_type", None).as_str(),
+        Some("T[][]")
+    );
+    let Value::List(parameters) = method_property(&graph, matrix, "generic_parameter_types", None)
+    else {
+        panic!("matrix parameters")
+    };
+    assert_eq!(parameters.len(), 1);
+    assert_eq!(parameters[0].as_str(), Some("T[][]"));
+    let Value::Map(outer) = method_property(&graph, matrix, "return_type_info", None) else {
+        panic!("outer array")
+    };
+    assert_eq!(outer["kind"].as_str(), Some("array"));
+    let Value::Map(inner) = &outer["component"] else {
+        panic!("inner array")
+    };
+    assert_eq!(inner["kind"].as_str(), Some("array"));
+    let Value::Map(element) = &inner["component"] else {
+        panic!("type variable")
+    };
+    assert_eq!(element["kind"].as_str(), Some("variable"));
+    assert_eq!(element["name"].as_str(), Some("T"));
+    assert!(element["scope"].as_str().unwrap().starts_with("class:"));
+    let identity = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "identity")
+        .expect("identity method");
+    assert_eq!(
+        method_property(&graph, identity, "generic_return_type", None).as_str(),
+        Some("T")
+    );
+    let Value::Map(info) = method_property(&graph, identity, "return_type_info", None) else {
+        panic!("variable info")
+    };
+    assert_eq!(info["kind"].as_str(), Some("variable"));
+    assert!(info["scope"].as_str().unwrap().starts_with("class:"));
+
+    // A separate graph has the same local IDs and member identities, but a
+    // different type table. Query source identity must select the right table.
+    let mut other = Graph::load(path).unwrap();
+    let table = other.declared_types.as_mut().unwrap();
+    for ty in &mut table.types {
+        if ty.name == "java.lang.String" {
+            ty.name = "example.Other".into();
+        }
+    }
+    let mut legacy = Graph::load(path).unwrap();
+    legacy.declared_types = None;
+    for key in ["generic_type", "type_info"] {
+        assert!(node_property(&legacy, &field, key).is_null());
+        assert!(!node_properties(&legacy, &field).contains_key(key));
+    }
+    for key in GENERIC_METHOD_KEYS {
+        assert!(method_property(&legacy, &method, key, None).is_null());
+    }
+    for key in GENERIC_METHOD_KEYS {
+        assert!(!method_properties(&legacy, &method, None).contains_key(key));
+    }
+    let mut partial = Graph::load(path).unwrap();
+    let table = partial.declared_types.as_mut().unwrap();
+    table.fields.retain(|(_, name, _), _| name != "first");
+    table.methods.retain(|(_, name, _), _| name != "echo");
+    assert!(!node_properties(&partial, &field).contains_key("generic_type"));
+    assert!(!method_properties(&partial, &method, None).contains_key("generic_return_type"));
+    let partial = Executor::new(
+        vec![Source {
+            id: Arc::from("partial"),
+            graph: Arc::new(partial),
+        }],
+        false,
+    );
+    let groups = partial
+        .execute(
+            "MATCH (f:FieldNode) RETURN 'generic_type' IN keys(f) AS declared, count(*) AS n",
+            None,
+        )
+        .unwrap()
+        .rows;
+    assert_eq!(groups.len(), 2, "declaration keys vary within one node tag");
+    assert!(groups
+        .iter()
+        .any(|row| row["declared"].as_bool() == Some(false) && matches!(row["n"], Value::Int(1))));
+    assert!(groups
+        .iter()
+        .any(|row| row["declared"].as_bool() == Some(true)));
+    for query in [
+        "MATCH (f:FieldNode) WHERE f.name = 'first' AND NOT any(k IN keys(f) WHERE toString(f[k]) CONTAINS 'absent-marker') RETURN f.name AS name",
+        "MATCH (m:Method) WHERE m.name = 'echo' AND NOT any(k IN keys(m) WHERE toString(m[k]) CONTAINS 'absent-marker') RETURN m.name AS name",
+    ] {
+        assert_eq!(partial.execute(query, None).unwrap().rows.len(), 1, "{query}");
+    }
+    let executor = Executor::new(
+        vec![
+            Source {
+                id: Arc::from("original"),
+                graph: Arc::new(graph),
+            },
+            Source {
+                id: Arc::from("other"),
+                graph: Arc::new(other),
+            },
+            Source {
+                id: Arc::from("legacy"),
+                graph: Arc::new(legacy),
+            },
+        ],
+        true,
+    );
+    let result = executor.execute("MATCH (m:Method) WHERE m.name = 'echo' RETURN m.graphId AS source, m.generic_return_type AS declared ORDER BY source",None).unwrap();
+    assert_eq!(result.rows.len(), 3);
+    assert_eq!(result.rows[0]["source"].as_str(), Some("legacy"));
+    assert!(result.rows[0]["declared"].is_null());
+    assert_eq!(result.rows[1]["source"].as_str(), Some("original"));
+    assert_eq!(
+        result.rows[1]["declared"].as_str(),
+        Some("java.util.List<java.lang.String>")
+    );
+    assert_eq!(result.rows[2]["source"].as_str(), Some("other"));
+    assert_eq!(
+        result.rows[2]["declared"].as_str(),
+        Some("java.util.List<example.Other>")
+    );
+    let result = executor.execute("MATCH (f:FieldNode) WHERE f.name = 'first' RETURN f.graphId AS source, f.generic_type AS declared ORDER BY source",None).unwrap();
+    assert_eq!(result.rows.len(), 3);
+    assert!(result.rows[0]["declared"].is_null());
+    assert_eq!(
+        result.rows[1]["declared"].as_str(),
+        Some("java.util.List<java.lang.String>")
+    );
+    assert_eq!(
+        result.rows[2]["declared"].as_str(),
+        Some("java.util.List<example.Other>")
+    );
+    for query in [
+        "MATCH (f:FieldNode) WHERE any(k IN keys(f) WHERE toString(f[k]) CONTAINS 'example.Other') RETURN f.graphId AS source",
+        "MATCH (f:FieldNode) WHERE f.generic_type CONTAINS 'example.Other' RETURN f.graphId AS source",
+        "MATCH (f:FieldNode) WHERE toString(f.type_info) CONTAINS 'example.Other' RETURN f.graphId AS source",
+    ] {
+        let rows = executor.execute(query, None).unwrap().rows;
+        assert!(!rows.is_empty(), "{query}");
+        assert!(rows.iter().all(|row| row["source"].as_str() == Some("other")), "{query}: {rows:?}");
+    }
+    for query in [
+        "MATCH (f:FieldNode) WHERE f.name = 'first' AND NOT any(k IN keys(f) WHERE toString(f[k]) CONTAINS 'absent-marker') RETURN f.graphId AS source",
+        "MATCH (m:Method) WHERE m.name = 'echo' AND NOT any(k IN keys(m) WHERE toString(m[k]) CONTAINS 'absent-marker') RETURN m.graphId AS source",
+    ] {
+        assert_eq!(executor.execute(query, None).unwrap().rows.len(), 3, "legacy negative ANY: {query}");
+    }
+}
+
+#[test]
+fn declared_type_info_is_sparse_internally_and_in_nested_json() {
+    use graphite_storage::types::{DeclaredTypes, TypeExpr};
+    let table = DeclaredTypes {
+        types: vec![
+            TypeExpr {
+                kind: "variable".into(),
+                name: "T".into(),
+                scope: "class:fixture.Holder".into(),
+                owner: None,
+                component: None,
+                variance: String::new(),
+                arguments: vec![],
+            },
+            TypeExpr {
+                kind: "wildcard".into(),
+                name: String::new(),
+                scope: String::new(),
+                owner: None,
+                component: Some(0),
+                variance: "super".into(),
+                arguments: vec![],
+            },
+            TypeExpr {
+                kind: "class".into(),
+                name: "java.util.List".into(),
+                scope: String::new(),
+                owner: None,
+                component: None,
+                variance: String::new(),
+                arguments: vec![1],
+            },
+            TypeExpr {
+                kind: "array".into(),
+                name: String::new(),
+                scope: String::new(),
+                owner: None,
+                component: Some(2),
+                variance: String::new(),
+                arguments: vec![],
+            },
+        ],
+        ..DeclaredTypes::default()
+    };
+    let info = type_info(&table, 3);
+    let Value::Map(map) = &info else {
+        panic!("array map")
+    };
+    assert_eq!(
+        map.keys().map(String::as_str).collect::<Vec<_>>(),
+        ["kind", "component", "arguments"]
+    );
+    let context = Executor::new(vec![], false);
+    assert_eq!(
+        crate::materialize::materialize(&info, &context),
+        serde_json::json!({
+            "kind": "array",
+            "arguments": [],
+            "component": {
+                "kind": "class", "name": "java.util.List",
+                "arguments": [{
+                    "kind": "wildcard", "variance": "super", "arguments": [],
+                    "component": {"kind": "variable", "name": "T", "scope": "class:fixture.Holder", "arguments": []}
+                }]
+            }
+        })
+    );
+    let user_map = Value::map(IndexMap::from([("scope".into(), Value::Null)]));
+    assert_eq!(
+        crate::materialize::materialize(&user_map, &context),
+        serde_json::json!({"scope": null})
+    );
+}

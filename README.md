@@ -610,6 +610,12 @@ LIMIT 50
 Their stable string identity is available through `elementId(method)`;
 `id(method)` returns `null` because no numeric graph-node id exists.
 
+JVM declaration generics are available through `Method.generic_return_type`,
+`Method.generic_parameter_types`, and `generic_type` on fields, parameters and
+return nodes. Structured `type_info` projections preserve nested types, scoped
+variables and wildcards. See [declared JVM types](docs/declared-types.md) for the
+query schema, deduplicated type table and legacy-graph behavior.
+
 Every Cypher response says whether the rows it returned are all there are. Next
 to `rowCount` (the rows in the response) there is `total`, in the shape
 Elasticsearch gives `hits.total`:

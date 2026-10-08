@@ -11,6 +11,7 @@ import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.webgraph.ImmutableGraph
@@ -35,7 +36,8 @@ internal class WebGraphBackedGraph(
     private val metadata: GraphMetadata,
     private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor,
-    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY }
+    private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
+    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
 ) : Graph {
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
@@ -51,6 +53,8 @@ internal class WebGraphBackedGraph(
     private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
         BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
     }
+
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 

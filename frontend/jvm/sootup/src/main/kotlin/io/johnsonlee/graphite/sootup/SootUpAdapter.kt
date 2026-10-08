@@ -444,6 +444,12 @@ class SootUpAdapter(
     fun buildGraph(): Graph {
         val classes = view.classes.toList()
         classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
+        val declarations = classes.mapNotNull { sootClass ->
+            val name = sootClass.type.fullyQualifiedName
+            (sootClass.classSource.analysisInputLocation as? ParsedClassLocation)?.declarations(name)
+                ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
+        }.associateBy { it.name }
+        graphBuilder.setDeclaredTypes(DeclaredTypesReader(declarations).build())
         val indexedClasses: List<IndexedClass>
         val loadedClassSources: Set<String>
         if (singleArtifactSource == null) {
@@ -4109,9 +4115,12 @@ class SootUpAdapter(
         fieldName: String,
         fallbackType: TypeDescriptor
     ): TypeDescriptor {
-        return signatureReader?.getFieldType(declaringClass, fieldName)
+        val generic = signatureReader?.getFieldType(declaringClass, fieldName)
             ?: fieldGenericTypes(declaringClass)[fieldName]
-            ?: fallbackType
+            ?: return fallbackType
+        // A Signature can name T or an owner-qualified inner type; neither replaces the JVM
+        // descriptor used to identify this field. Retain arguments for existing type analysis.
+        return generic.copy(className = fallbackType.className)
     }
 
     private fun fieldGenericTypes(className: String): Map<String, TypeDescriptor> =
