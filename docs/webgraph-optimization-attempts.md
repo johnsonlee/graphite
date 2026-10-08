@@ -11515,7 +11515,6 @@ Export: `/tmp/sootup-static-review/attempt148/validation2/graphite`, SHA `1f10ec
 Status: retained isolated candidate with verified CLI correctness/export, not integrated or pushed. No real JVM build, APK smoke, Linux launcher smoke or default-candidate performance measurement has run in these validations. Do not report optional-profile results as measured default-candidate acceptance. Default construction CPU/RSS and elapsed-time acceptance remain open until the actual launcher and matched real workloads are checked.
 
 
-
 Real-launcher correctness follow-up (not a performance series): original session49820 terminated exit1/tool80bcf8 and is retained as a failed smoke. The actual native148 binary drove current144 MAIN_query88 via a manifest-only runnable JAR (real MainKt and the exact88 ordered runtime entries, no new bytecode); this is not release-fatjar proof. Java17 uses256MiB for javac/jar fixture tools,4GiB for direct references,8GiB for the default and2GiB for the explicit override. Six existing Acme source files were compiled once. Acme direct4g, actual CLI defaultGC4 and explicit JAVA_OPTS2g all produced identical graph files apart from properties comments. Exact Java invocation logs prove one capability probe before the default build and no probe for the2g override. The same helper is added to Linux Rust CI against its actual shadowJar/reference graph; that new-head CI has not run yet.
 
 The6,481-byte existing D8 register-reuse APK and an explicit empty Android21 platform follow the original fixture setup, with the CLI's full default call-graph behavior retained. Direct4g and actual defaultGC4 both saved1,253nodes. Their byte comparison failed across15/19files; the explicit2g APK build and later planned queries did not run. Do not report this as a successful APK smoke. Original owner SHA `4989e6bfadb1d454797dc931251ecd53310df8e14be8c44bfd03ed500cea2326`; all outer roots/groups were absent and a fresh scan found no remaining matching JVM/CLI. The nested helper's groups were not individually inventoried; the helper had waited for its children.
@@ -11638,3 +11637,29 @@ Correctness: both graphs have 4,744,132 nodes; node counts per label and the sor
 Not measured: the APK itself (not available in this environment), query latency and loading (no persisted-format or query-path change), and repeated or matched-GC samples. One sample per side does not establish variability. With `--include`, a fold report no longer lists methods outside the graph that only CHA resolved.
 
 Decision: retain. The APK result is pending a build of the reporting APK with this change.
+
+
+### Attempt150 — compact mapped declared-type loading (2026-10-08)
+
+Hypothesis: retaining decoded strings, type objects and three declaration maps for every loaded graph causes the new independent type table to exceed the heap budget on large multi-graph workloads. Keep the existing v1 wire format and eager integrity validation, but retain mapped bytes with primitive row offsets and collision-safe key indexes. Decode rows only when accessed, without a decoded-object cache. Map membership does not decode values, and value iteration does not allocate declaration keys. Saving a mapped table writes a sibling temporary file before replacement so it cannot truncate its own source mapping.
+
+Parent is `7e321fc97d13148454914c34e4d3133659b51024`. The measured initial arm uses frozen `d8a5dd497751dc0f64e3ea13b766989ff6d1e4ff`; intervening7e changes corpus audits/gates only. Production runtime comparison differs solely in DeclaredTypeStore. Candidate source patch SHA256 is `5f3e3ca5d210e8f7de6a6393ad2e3a4563027f95a82149d27846cab632d6fd70`, frozen at `/tmp/graphite-mapped-types-runtime/`. The subsequently discovered direct-filter correctness fix is not part of either measured runtime.
+
+Matched real fixtures are the same three candidate Hive, Tika and Kotlin compiler graphs under `/tmp/graphite-types-corpus-audit/candidate/graphs/`. Fresh server processes run one ABBA series, two observations per arm, JDK17, MAPPED, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`. Every runtime and fixture byte is SHA256-read before each launch outside timing: this is a warm-filesystem loading comparison, not cold-cache evidence. Readiness spans process launch through full `/api/graphs` verification of all three graph identities/counts/mapped modes, including synchronous table hash and full record/shape/reference/cycle/expansion validation. CPU is cumulative process user+system at readiness (0.01s precision); RSS is sampled every5ms through readiness and its observed peak is a lower bound. Exact time-l lifecycle measurements separately include three subsequent metadata queries and shutdown.
+
+| Metric | Initial → compact mean | Absolute delta | Change |
+|---|---:|---:|---:|
+| Loading readiness wall ms | 3140.864 → 2819.990 | -320.874 | -10.22% |
+| Loading readiness CPU s | 5.370 → 4.420 | -0.950 | -17.69% |
+| Loading observed peak RSS bytes | 1981857792 → 859750400 | -1122107392 | -56.62% |
+| Full lifecycle wall s | 3.730 → 3.365 | -0.365 | -9.79% |
+| Full lifecycle CPU s | 5.585 → 4.595 | -0.990 | -17.73% |
+| Full lifecycle peak RSS bytes | 2030239744 → 899424256 | -1130815488 | -55.70% |
+
+Both directional pairs improve loading wall, CPU and RSS independently. All four processes verify three complete generic type/string results against independently decoded table bytes (12 checks), with unchanged fixtures/runtime pins. The 76.775→76.988ms post-readiness verification interval is diagnostic only, not query performance evidence. The complete webgraph suite passes289tests and detekt, with98.3343% line coverage. Tests include hash collisions, Unicode, map equality/iteration, no decoded caching, same-directory save and all malformed-data validation. Root independently recomputed reported loading means from retained observations.
+
+The original Attempt150 first initial-arm process loaded successfully but failed a direct generic-string filter sample. This exposed an existing graph-context bug in the initial implementation, recorded separately for correction. The v2 regex protocol was sealed but never launched. v3 selects known erased field identities and compares exact declared values; it does not claim the failing filter was repaired by the loader. All earlier failures remain preserved.
+
+Decision: **retain the verified loading increment**. These two observations per arm establish neither pre-feature recovery nor confidence-based stability. Query p50/p95, construction, 36-graph heap stability and loading acceptance against pre-feature4f remain open. The global dynamic-property full-scan regression is still present; no deferred validation or query-cost transfer is credited as recovery. CPU and RSS improve against the immediate implementation, but their separate +5% constraints against the accepted pre-feature baseline still require matched measurements.
+
+Evidence: `/tmp/graphite-declared-load-attempt150-v3/` contains protocol SHA256 `bceb6779bf90e21f471b353ac0440bcca401baea0284d5cfc2d03154f2c2dadd`, seal, independent sample extractor/oracles, all raw responses/resource samples, summary/report and final identity verification. Validation logs are `/tmp/graphite-mapped-types-targeted2.log` and `/tmp/graphite-mapped-types-webgraph.log`. All four measured servers terminated; no failing sample was replaced.
