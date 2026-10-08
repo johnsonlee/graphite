@@ -12653,3 +12653,50 @@ Only complete5ms RSS reads inside launch..ready define the lower bound; five mea
 All three preflight snapshots and25 in-series host observations (nine oracle, sixteen measured) remain. Preflight includes syspolicyd88.4%; maxima across both oracle/measured phases include Codex Renderer113.6%, searchpartyuseragent95.4%, syspolicyd56.3% and coreaudiod30.9%. The30.9% coreaudiod observation belongs to the oracle phase; its measured-phase maximum is19.1%. These sampled percentages do not attribute CPU cost; no unrelated process was stopped, no quiet-host claim is made, and no favorable rerun replaces any observation. Correctness/stability and heap ceiling pass in this scope; construction/end-to-end and query p50/p95/CPU/RSS remain separately unresolved.
 
 Evidence: `/tmp/graphite-attempt169-load/` contains complete raw results, original host observations, both authorizations, independent oracle/raw audits and final cleanup/identity records. Source/tests/export are indexed by `/tmp/graphite-attempt169-runtime-final-manifest.json`. Protocol SHA `f95fe67f36b3d0a6ed728daff3353ccdbc170acf9176ea47cca13d11193081f6`; seal `1887d0e04bfbeb9032bc313dfb0a23ed561f7ad3d3f07e20467cbd3019275e1d`; preflight `5d0d4eec1777e41dab853da782a217ac1d2db032f8eb717dca57bc6754af13b3`; oracle seal `085db1b111945aa91a942b555333ad73982f6c62d76b0f0e7d3ba1b8bdbc9f8d`. This evidence-only record leaves169 isolated while preserving the verified positive increment.
+
+### Attempt168 query follow-up — retain the validated native CSR increment in the working candidate (2026-10-09)
+
+**Decision: integrate the exact tested168 source as an intermediate improvement, not as regression recovery.** Its paired loading CPU/time gain remains valid. The new real64 query cohort proves complete result equivalence and incremental CPU/RSS compliance; collect/order p50/p95 and filter p50 improve in both parent-relative pairs. Filter p95 is mixed (+1.509ms mean), and cumulative baseline latency/RSS failures remain. The positive increment is preserved for composition; no claim that every query or final acceptance passes is made.
+
+All88 Rust source/config files in the root after applying the unchanged patch match the validated/frozen168 source manifest exactly. The two production and two test files are the same ones covered by389 workspace tests, four dual-format checks, strict Clippy, final formatting and the separately recorded real64 loading cohort. No164 bit-reader code is composed; there is no new executable change beyond168. Exact source identity reuses that evidence without claiming a redundant suite was rerun.
+
+The separate query protocol preserves completed164's five queries/catalog selections and full64-graph request scope: three slow collect/order/filter cases consume all5,051,914 CallSites before their late limit; schema cases cover19,438,199 nodes, allowing the audited summary path. Full73-entry catalog identity is retained. The only intentional schema transition remains26→28 keys, with each new declared-property count exactly3,485,013. No field, value, row order, type, metadata or provenance is stripped before comparison.
+
+Setup/seal/preflight pass first time with159 pins and2564 graph/provenance files.27 no-process harness mocks pass. Three fresh C/A/B oracle servers consume15 complete responses, independently audited and bound by24 raw body/request/readiness/lifecycle files before measurement authorization. Six fresh C,A,B,B,A,C servers then issue60 warmup and600 measured requests:20 measurements per case/process, rolling client/server concurrency4, complete body consumption. All675 responses pass, as do all576 readiness graph records across nine servers. Every measured process attains at most the prescribed concurrency4. Per-process p50 is rank10 and p95 rank19 of20; means below average the two process percentiles rather than pooling cases or samples.
+
+| Query |161 p50 ms|168 p50 ms|Delta ms|161 p95 ms|168 p95 ms|Delta ms|
+|---|---:|---:|---:|---:|---:|---:|
+|collect|2578.938|2527.930|−51.008|2625.969|2567.515|−58.453|
+|order by|3159.935|3138.200|−21.736|3202.989|3166.085|−36.904|
+|WITH filter|3284.967|3170.191|−114.776|3554.490|3555.998|+1.509|
+|schema keys|1.248|1.255|+0.008|1.602|2.031|+0.429|
+|schema labels|0.838|0.820|−0.018|0.911|0.917|+0.006|
+
+Parent-relative collect p50/p95 changes are−92.208/−103.391ms and−9.808/−13.516ms; order changes−33.406/−51.474ms and−10.065/−22.334ms. Filter p50 improves−131.412/−98.140ms, while p95 changes−3.988/+7.005ms. These observations do not prove a filter-tail improvement. Tiny schema timings are retained, including the+0.901ms second key-p95 change; they are not used to select a performance candidate or justify repeated stabilization runs. Two process replicates and background variability limit inference; all samples and both directional comparisons remain.
+
+| Query |4f p50 ms|168 p50 ms|Delta ms|4f p95 ms|168 p95 ms|Delta ms|
+|---|---:|---:|---:|---:|---:|---:|
+|collect|2517.118|2527.930|+10.812|2570.682|2567.515|−3.166|
+|order by|3090.503|3138.200|+47.696|3120.296|3166.085|+45.789|
+|WITH filter|3129.161|3170.191|+41.030|3450.957|3555.998|+105.042|
+|schema keys|1.209|1.255|+0.046|2.078|2.031|−0.047|
+|schema labels|0.891|0.820|−0.070|1.329|0.917|−0.412|
+
+Cumulative order p50/p95 are adverse in both pairs (+21.928/+6.559ms and+73.465/+85.018ms); filter p95 is likewise adverse+97.305/+112.778ms. Collect's opposite-direction results do not establish recovery. The accepted4f baseline remains authoritative; a parent-relative gain or favorable mean cannot replace these failures.
+
+| Process |Measured query window ms|Query user+system CPU s|Strict query RSS lower MB|Lifecycle RSS upper MB|
+|---|---:|---:|---:|---:|
+|0C|45598.230|176.15|21929.132|22163.964|
+|1A|46522.110|179.91|22456.648|22753.690|
+|2B|45542.553|175.95|21510.357|21539.258|
+|3B|46237.140|179.26|21612.478|21637.759|
+|4A|46447.898|180.55|22873.047|22941.106|
+|5C|45080.554|175.39|19692.798|19830.571|
+
+161→168 query CPU **180.230→177.605s (−2.625s)** and window **46485.004→45889.847ms (−595.157ms)**. Both CPU and RSS+5% comparisons pass, including±0.02s CPU endpoint sensitivity. Peak-RSS ratio enclosures[0.945357,0.959148]/[0.942085,0.945994] prove reductions in both pairs; lifecycle mean22847.398→21588.509MB (−1258.889MB). These are observed cumulative process effects, not proof that unchanged query code or CSR sharing directly caused every latency/RSS change.
+
+4f→168 query CPU **175.770→177.605s (+1.835s)** passes both+5% bounds; measured window **45339.392→45889.847ms (+550.454ms)** is adverse. Lifecycle mean20997.267→21588.509MB (+591.241MB) does not establish RSS acceptance: pair1[0.970510,0.982221] passes, pair2[1.089857,1.098765] fails. Loading CPU/RSS failures recorded above remain separate. Construction/complete pipeline are not measured here.
+
+Root independently verifies every raw typed response, request hash/clock, full catalog identity, c4 timing,20-sample percentile, CPU,1292 raw query-RSS reads, strict entire-read cutoffs, time-l lifecycle peaks, owner-bound cleanup and final identities. All nine server groups and oracle/measured runner groups are empty, with no additional group-cleanup signals or cleanup errors; normal shutdown sends SIGTERM. Root oracle40266 and measured41336 exit0, measured runner92042 exits0. Three original preflight snapshots plus59 oracle and246 measured host observations remain. Across both phases, background maxima include Codex Renderer168.5%, mediaanalysisd165.3%, syspolicyd103.7%, searchpartyuseragent93.8% and PerfPowerServices88.1%. No unrelated process was stopped and no sample replaced. This is a warm-filesystem batched c4 workload with full validation gaps, not a saturation test or quiet-host guarantee. Correctness/stability pass within the declared scope; no JVM heap is raised by this native change.
+
+Evidence: `/tmp/graphite-native168-query/query/` retains the protocol, all bodies/readiness/resources/host observations, both authorizations, independent oracle/raw audits, original auditor versions/diffs and cleanup/final identities. Independent auditor follow-up fixes were source-only, outside the sealed execution harness; their exact hashes are bound in measured authorization. Protocol SHA `f11e23364edceab1dc14ceb7fee25c50e0949754ece51d7fd792e1119a0217cb`; seal `c10d18bac255cd9f352f307f32923a8da55fc6e8e5726ede313e23a69381ea28`; preflight `7dbc199b6c3d2bfe8c19ba08911cbb5a773a5feb0645e24a48ebdccda6efa2d8`; oracle seal `26317723397f156170ce128580a10381165f7c5fa1535b9c9f4ce78a9bb0fde5`. The retained candidate is still under active optimization; required final CI/PR mergeability gates remain unresolved.

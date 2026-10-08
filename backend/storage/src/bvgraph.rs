@@ -153,6 +153,32 @@ pub struct BvGraph {
     offsets: Vec<u64>,
 }
 
+/// Borrowed final CSR rows completed by the private ascending graph constructor.
+#[derive(Clone, Copy)]
+struct CompletedCsr<'a> {
+    offsets: &'a [u32],
+    targets: &'a [u32],
+}
+
+impl<'a> CompletedCsr<'a> {
+    fn matches_node(node: usize, offsets_len: usize, targets_len: usize) -> bool {
+        node.checked_add(1) == Some(offsets_len) && u32::try_from(targets_len).is_ok()
+    }
+
+    fn referenced_row(self, node: usize, reference: usize, window: usize) -> Option<&'a [u32]> {
+        if reference == 0
+            || reference > window
+            || !Self::matches_node(node, self.offsets.len(), self.targets.len())
+        {
+            return None;
+        }
+        let predecessor = node.checked_sub(reference)?;
+        let start = *self.offsets.get(predecessor)? as usize;
+        let end = *self.offsets.get(predecessor + 1)? as usize;
+        self.targets.get(start..end)
+    }
+}
+
 impl BvGraph {
     /// Load `<basename>.properties`, `.graph` and `.offsets` from the source.
     pub fn load(src: &GraphSource, basename: &str) -> Result<Self, BvError> {
@@ -213,10 +239,25 @@ impl BvGraph {
         if node >= self.props.nodes {
             return;
         }
-        self.decode(node, out);
+        self.decode(node, out, None);
     }
 
-    fn decode(&self, node: usize, out: &mut Vec<u32>) {
+    /// Only graph construction supplies a completed, immutable prefix of its final CSR.
+    pub(crate) fn successors_into_with_prefix(
+        &self,
+        node: usize,
+        out: &mut Vec<u32>,
+        offsets: &[u32],
+        targets: &[u32],
+    ) {
+        out.clear();
+        if node >= self.props.nodes {
+            return;
+        }
+        self.decode(node, out, Some(CompletedCsr { offsets, targets }));
+    }
+
+    fn decode(&self, node: usize, out: &mut Vec<u32>, prefix: Option<CompletedCsr<'_>>) {
         let p = &self.props;
         let mut r = BitReader::new(&self.graph, self.offsets[node]);
         let degree = read_code(&mut r, p.outdegree_code) as usize;
@@ -231,8 +272,16 @@ impl BvGraph {
         if p.window_size != 0 {
             let reference = read_code(&mut r, p.reference_code) as usize;
             if reference != 0 {
-                let mut ref_succ = Vec::new();
-                self.decode(node - reference, &mut ref_succ);
+                let mut decoded_reference = Vec::new();
+                let ref_succ = match prefix
+                    .and_then(|rows| rows.referenced_row(node, reference, p.window_size))
+                {
+                    Some(row) => row,
+                    None => {
+                        self.decode(node - reference, &mut decoded_reference, None);
+                        &decoded_reference
+                    }
+                };
                 let block_count = read_code(&mut r, p.block_count_code) as usize;
                 let mut blocks = Vec::with_capacity(block_count);
                 for i in 0..block_count {
@@ -320,3 +369,7 @@ fn merge3(a: &[u32], b: &[u32], c: &[u32], out: &mut Vec<u32>) {
         out.push(m);
     }
 }
+
+#[cfg(test)]
+#[path = "bvgraph_prefix_tests.rs"]
+pub(crate) mod prefix_tests;

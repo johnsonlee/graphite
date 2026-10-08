@@ -990,7 +990,7 @@ fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
     let mut buf = Vec::new();
     offsets.push(0u32);
     for node in 0..n {
-        bv.successors_into(node, &mut buf);
+        bv.successors_into_with_prefix(node, &mut buf, &offsets, &targets);
         targets.extend_from_slice(&buf);
         offsets.push(targets.len() as u32);
     }
@@ -1531,3 +1531,7 @@ mod declared_key_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "csr_prefix_tests.rs"]
+mod csr_prefix_tests;
