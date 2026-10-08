@@ -76,20 +76,29 @@ data class DeclaredTypeTable(
         }
     }
 
-    @Suppress("CyclomaticComplexMethod") // Five wire variants, each with explicit shape constraints.
-    private fun validShape(type: DeclaredType): Boolean = when (type.kind) {
-        "class" -> type.name.isNotEmpty() && type.component == null && type.variance.isEmpty()
-        "primitive" -> type.name in setOf("boolean", "byte", "char", "short", "int", "long", "float", "double", "void") &&
-            type.owner == null && type.component == null && type.arguments.isEmpty() && type.variance.isEmpty()
-        "array" -> type.component != null && type.owner == null && type.arguments.isEmpty() && type.variance.isEmpty()
-        "variable" -> type.name.isNotEmpty() && type.scope.isNotEmpty() && type.owner == null &&
-            type.component == null && type.arguments.isEmpty() && type.variance.isEmpty()
-        "wildcard" -> type.owner == null && type.arguments.isEmpty() && when (type.variance) {
-            "extends", "super" -> type.component != null
-            "unbounded" -> type.component == null
+    @Suppress("CyclomaticComplexMethod") // Five variants retain the same explicit shape constraints.
+    private fun validShape(access: DeclaredTypeValidationAccess, id: Int): Boolean {
+        fun kind(value: String) = access.textEquals(id, DeclaredTypeTextField.KIND, value)
+        fun empty(field: DeclaredTypeTextField) = access.textIsEmpty(id, field)
+        fun variance(value: String) = access.textEquals(id, DeclaredTypeTextField.VARIANCE, value)
+        return when {
+            kind("class") -> !empty(DeclaredTypeTextField.NAME) && access.component(id) == null &&
+                empty(DeclaredTypeTextField.VARIANCE)
+            kind("primitive") -> setOf("boolean", "byte", "char", "short", "int", "long", "float", "double", "void")
+                .any { access.textEquals(id, DeclaredTypeTextField.NAME, it) } && access.owner(id) == null &&
+                access.component(id) == null && access.argumentCount(id) == 0 && empty(DeclaredTypeTextField.VARIANCE)
+            kind("array") -> access.component(id) != null && access.owner(id) == null &&
+                access.argumentCount(id) == 0 && empty(DeclaredTypeTextField.VARIANCE)
+            kind("variable") -> !empty(DeclaredTypeTextField.NAME) && !empty(DeclaredTypeTextField.SCOPE) &&
+                access.owner(id) == null && access.component(id) == null && access.argumentCount(id) == 0 &&
+                empty(DeclaredTypeTextField.VARIANCE)
+            kind("wildcard") -> access.owner(id) == null && access.argumentCount(id) == 0 && when {
+                variance("extends") || variance("super") -> access.component(id) != null
+                variance("unbounded") -> access.component(id) == null
+                else -> false
+            }
             else -> false
         }
-        else -> false
     }
 
     /** Validate before exposing recursive renderers to persisted references. */
@@ -107,12 +116,17 @@ data class DeclaredTypeTable(
             type.interfaces.forEach(::reference)
             parameters(type.typeParameters)
         }
-        types.forEach { type ->
-            require(validShape(type)) { "Invalid graph.types ${type.kind} expression" }
-            type.owner?.let(::reference)
-            type.component?.let(::reference)
-            type.arguments.forEach(::reference)
+        val access = types as? DeclaredTypeValidationAccess ?: OrdinaryDeclaredTypeValidationAccess(types)
+        types.indices.forEach { id ->
+            require(validShape(access, id)) { "Invalid graph.types ${access.text(id, DeclaredTypeTextField.KIND)} expression" }
+            access.owner(id)?.let(::reference)
+            access.component(id)?.let(::reference)
+            repeat(access.argumentCount(id)) { reference(access.argument(id, it)) }
         }
+        validateExpressionDag(access)
+    }
+
+    private fun validateExpressionDag(access: DeclaredTypeValidationAccess) {
         val state = ByteArray(types.size)
         val depths = IntArray(types.size)
         val expandedNodes = IntArray(types.size)
@@ -121,12 +135,16 @@ data class DeclaredTypeTable(
             require(depth <= MAX_DEPTH && state[id] != 1.toByte()) { "Cyclic or excessive graph.types nesting" }
             if (state[id] == 2.toByte()) return depths[id]
             state[id] = 1
-            val type = types[id]
             var height = 1
             var nodes = 1
-            var bytes = listOf(type.kind, type.name, type.scope, type.variance)
-                .fold(0) { total, value -> saturatedAdd(total, value.toByteArray(Charsets.UTF_8).size, MAX_EXPANDED_BYTES) }
-            for (child in type.arguments + listOfNotNull(type.owner, type.component)) {
+            var bytes = DeclaredTypeTextField.entries.fold(0) { total, field ->
+                saturatedAdd(total, access.textUtf8Length(id, field), MAX_EXPANDED_BYTES)
+            }
+            val argumentCount = access.argumentCount(id)
+            // Long indexing keeps the two optional slots from overflowing the argument count.
+            for (index in 0L until argumentCount.toLong() + 2) {
+                val child = expressionChild(access, id, index, argumentCount)
+                if (child < 0) continue
                 height = maxOf(height, 1 + visit(child, depth + 1))
                 nodes = saturatedAdd(nodes, expandedNodes[child], MAX_EXPANDED_NODES)
                 bytes = saturatedAdd(bytes, expandedBytes[child], MAX_EXPANDED_BYTES)
@@ -140,6 +158,13 @@ data class DeclaredTypeTable(
             return height
         }
         types.indices.forEach { visit(it, 1) }
+    }
+
+    /** All present IDs have been range-checked before DFS; -1 here denotes an absent optional edge only. */
+    private fun expressionChild(access: DeclaredTypeValidationAccess, id: Int, index: Long, arguments: Int): Int = when {
+        index < arguments -> access.argument(id, index.toInt())
+        index == arguments.toLong() -> access.owner(id) ?: -1
+        else -> access.component(id) ?: -1
     }
 
     private fun <V> validateMemberReferences(values: Map<*, V>, validateValue: (V) -> Unit) {

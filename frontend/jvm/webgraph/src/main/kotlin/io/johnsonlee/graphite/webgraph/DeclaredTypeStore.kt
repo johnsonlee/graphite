@@ -3,6 +3,8 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.graph.ClassTypes
 import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.DeclaredTypeReferences
+import io.johnsonlee.graphite.graph.DeclaredTypeTextField
+import io.johnsonlee.graphite.graph.DeclaredTypeValidationAccess
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
@@ -198,7 +200,18 @@ internal object DeclaredTypeStore {
         private val offsets: IntArray,
         private val strings: DeclaredTypeStringPool?
     ) :
-        AbstractList<DeclaredType>(), DeclaredTypeAtoms {
+        AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess {
+        private val validationAccess = MappedDeclaredTypeValidationAccess(this, offsets.size)
+        override fun text(id: Int, field: DeclaredTypeTextField): String = validationAccess.text(id, field)
+        override fun textIsEmpty(id: Int, field: DeclaredTypeTextField): Boolean = validationAccess.textIsEmpty(id, field)
+        override fun textEquals(id: Int, field: DeclaredTypeTextField, expected: String): Boolean =
+            validationAccess.textEquals(id, field, expected)
+        override fun textUtf8Length(id: Int, field: DeclaredTypeTextField): Int = validationAccess.textUtf8Length(id, field)
+        override fun owner(id: Int): Int? = validationAccess.owner(id)
+        override fun component(id: Int): Int? = validationAccess.component(id)
+        override fun argumentCount(id: Int): Int = validationAccess.argumentCount(id)
+        override fun argument(id: Int, index: Int): Int = validationAccess.argument(id, index)
+
         override fun typeOffset(index: Int): Int {
             checkElementIndex(index, size)
             return offsets[index]
