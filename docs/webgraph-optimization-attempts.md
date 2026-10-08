@@ -11249,3 +11249,38 @@ Command: `env -u MallocNanoZone /opt/homebrew/opt/python@3.14/bin/python3.14 /tm
 Address PR171 comment6052858911: the metrics-before scrape consumes part of the overall deadline, and the query already uses the reduced timeout, but its retained `timeoutSeconds` still reported the pre-scrape allowance. Update that field after recalculating and validating the remaining budget. Request execution, deadline enforcement, query plan, comparator thresholds and the default uninstrumented path are unchanged. Refresh the reviewed workflow harness SHA to match the corrected source.
 
 Two focused tests verify the recorded value equals the actual7-second query allowance after a3-second scrape from a10-second budget, for both success and transport failure, and that an exhausted before-scrape budget sends no query. All25 snapshot Python tests and157 Node benchmark tests pass without skips; diff checks pass. This is an evidence-accuracy correction, not a performance optimization or a new latency claim. Historical diagnostic receipts retain their original values and limitations.
+
+### 2026-10-08 — matched eight-GiB construction with GCTimeRatio=4
+
+Hypothesis: retain the tested G1 cap30/minfree20 profile and allow more GC time before heap expansion with `-XX:GCTimeRatio=4`, symmetrically on the pre-upgrade and current arms. This is a configuration increment, not a production default change. JDK17.0.20.1 HotSpot on the same macOS ARM64 host; old6f MAIN_query84 versus current144 exact6bb MAIN_query88 (JVM production unchanged through26a5). Kotlin compiler2.0.21 and Tika2.9.2, fixed Kotlin ABBA then Tika ABBA; no145 overlay, feature removal, forced GC or profiler. Both construction arms use `-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4`; all24 correctness verifiers retain their original8g/defaultGC settings.
+
+Continuous construction includes loading/building, the production CLI node count, prepared two-worker save and source close. Whole CPU/RSS include startup and teardown; verification is outside performance timing. Every sample is retained:
+
+| Run | Continuous s | Whole wall s | Whole CPU s | Peak RSS bytes | Build s | Count s | Save s |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| kotlin-0-A | 121.907113500 | 122.06 | 210.33 | 6569443328 | 110.677339834 | 0.348955666 | 10.880814125 |
+| kotlin-1-B | 38.078092000 | 38.20 | 114.97 | 6635290624 | 30.934777459 | 0.383869875 | 6.759439708 |
+| kotlin-2-B | 39.485938875 | 39.60 | 116.55 | 6535069696 | 32.052845875 | 0.409679791 | 7.023407750 |
+| kotlin-3-A | 122.763743292 | 122.87 | 215.15 | 6351765504 | 111.527470459 | 0.421594541 | 10.814674250 |
+| tika-0-A | 110.218329958 | 110.32 | 187.11 | 5600067584 | 104.209123500 | 0.387611458 | 5.621590917 |
+| tika-1-B | 29.222401375 | 29.34 | 105.41 | 5467619328 | 23.342034375 | 0.419443083 | 5.460919375 |
+| tika-2-B | 29.090174584 | 29.19 | 95.05 | 5276958720 | 23.304683875 | 0.367432792 | 5.418052833 |
+| tika-3-A | 111.717827417 | 111.86 | 203.21 | 5551407104 | 105.804854792 | 0.415531000 | 5.497437583 |
+
+
+| Corpus | Continuous old→current s | Whole CPU old→current s | Peak RSS old→current bytes | RSS mean change | Both RSS pair changes |
+|---|---:|---:|---:|---:|---:|
+| Kotlin | 122.335428→38.782015 | 212.740→115.760 | 6460604416→6585180160 | +1.928237% | +1.002327%/+2.885878% |
+| Tika | 110.968079→29.156288 | 195.160→100.230 | 5575737344→5372289024 | -3.648815% | -2.365119%/-4.943763% |
+
+Both corpora's continuous wall and CPU improve in both pairs: mean wall−68.298623%/−73.725518%, CPU−45.586162%/−48.642140% for Kotlin/Tika. Save is10.847744→6.891424s for Kotlin and5.559514→5.439486s for Tika. The count phase has mixed pair movements, retained in the complete report; these internal phases do not create new independent acceptance limits or relax existing CI gates.
+
+Original session60707 is authoritative terminal exit0/e763df: eight constructions and24 strict full shape/metadata/query verifiers pass, including40 fully consumed ordered queries. All32 JVMs use maximum8GiB. Eight graphs/148files have identical before/after verification inventories and the original ordinal checks pass. Root independently reread all eight original construction properties/time-l logs, checked log hashes and raw CPU/RSS, recomputed means and both pairs, and compared every full verifier report with its original own-version reference. Forty-one owned PIDs and group19686 are absent. No workload failure, retry or replacement. Two supplemental audit mistakes (floating-point arithmetic order and imposing raw-text order on properties) were corrected against the original parsed-field contract and retained; they were not runtime failures or weakened checks.
+
+Decision: retain and document this optional build profile. Under the predeclared arithmetic means, it satisfies independent CPU/RSS+5% constraints for each measured construction workload; both pairs also satisfy them. Two samples per arm describe this experiment, not universal stability. The rules do not introduce a new minimum sample count or allow replacing the planned statistic after measurement. The observer's1332 samples detected no external event, without proving exclusive execution. Exit0 alone cannot prove no adapter-caught skips with verbose=null; original full semantic references remain the correctness evidence.
+
+The matching baseline also changed relative to the separate previous8g series: Kotlin current RSS6787334144→6585180160bytes, old6170755072→6460604416bytes. Do not attribute the entire improved ratio to current-arm savings or infer isolated GC causality from different series. Keep the earlier6g positive candidate and its adverse+7.054260% Kotlin pair. This result applies to the measured explicit8g profile; default-parameter recovery and unmeasured inputs are not established. Query p50/p95 and loading have their own completed comparisons and are not inferred from correctness verifiers.
+
+README.md and README.zh.md now give the actual supported `JAVA_TOOL_OPTIONS` build command and its tested scope, heap/RSS distinction and option precedence. Product defaults and the reusable Graphite skill remain unchanged. The8GiB ceiling applies to this recovery task and its experiments, as clarified in review discussion4205982770; it is not a restriction on general skill usage.
+
+Command: `env -u MallocNanoZone python3 /tmp/sootup-static-review/final-construction-old-vs144-gctime4-minfree20/execute.py --execute-root-released`. Evidence in that directory: plan SHA `c81ce5ef8e6801b8010a33e350a547f7ec30354dbd100dc2fbddf77f79064ea8`, runner SHA `038111dcfffc63c755d3ec1197b79b67d42f6db48a510ce52335f0b8e6d6ac8b`, results SHA `b0ed6098ab9fd08869fc4f86e8a01319b60a1972d1e6a08fbc790c52f7242d3a`, summary SHA `d6d402b89a26003bf24e56a23490588c15512ca27cd546e1163b4cf2348581be`, report SHA `6da991358d616bdcd279060840bf1a23c4f54f1234b33f0954210c37c17b8bdd`, owner SHA `c6be097557f1ebacc1f71848efbaeba010fed79a838c841f8c95131eda23e6d3`; root raw audit `root-independent-audit.json`.

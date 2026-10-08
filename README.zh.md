@@ -150,6 +150,16 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 `graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。原来面向 jar 版 formula 编写的所有命令行均可原样使用，包括 `--profile` 以及 `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` 堆内存设置。
 
+对于大型 JAR 构建，可显式选择以下 G1 配置，将最大堆保持为 8 GiB：
+
+```bash
+JAVA_TOOL_OPTIONS='-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4' graphite build app.jar -o app.graphite
+```
+
+对照范围为 macOS ARM64 上的 HotSpot 17，输入为 Kotlin compiler 2.0.21 和 Tika 2.9.2 JAR；升级前基线与当前版本使用相同参数。记录的时长和资源结果适用于这组配置及这些工作负载；对照数据和限制见[实验记录](docs/webgraph-optimization-attempts.md)。默认参数不变，最大堆不等于进程峰值 RSS。
+
+JVM 前端优先使用 `JAVA_TOOL_OPTIONS`，其次是 `JAVA_OPTS`，均未设置时使用 `-Xmx8g`。上面的赋值会替换继承的 `JAVA_TOOL_OPTIONS`，仍需保留的参数请自行合并。这些 JVM 参数不用于调节原生 `query` 或 `serve`。
+
 ```bash
 graphite frontend list           # which frontend `build` will run, and where it came from
 graphite frontend describe jvm   # JSON: version, accepted inputs

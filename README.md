@@ -204,6 +204,23 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 together with `openjdk@17`. Every command line written for the jar-based formula works
 unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
 
+For large JAR builds, this optional G1 profile keeps the maximum heap at 8 GiB:
+
+```bash
+JAVA_TOOL_OPTIONS='-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4' graphite build app.jar -o app.graphite
+```
+
+The comparison scope is HotSpot 17 on macOS ARM64, using Kotlin compiler 2.0.21
+and Tika 2.9.2 JARs with identical settings for the pre-upgrade baseline and current
+version. The recorded latency and resource results apply to this configuration
+and these workloads; see the [experiment history](docs/webgraph-optimization-attempts.md)
+for the comparison and its limits. Default settings are unchanged. Maximum heap
+is not peak process RSS.
+The JVM frontend honors `JAVA_TOOL_OPTIONS` first, then `JAVA_OPTS`, and otherwise
+uses `-Xmx8g`. The assignment above replaces inherited `JAVA_TOOL_OPTIONS`; merge
+any options you still need yourself. These JVM options do not tune native `query`
+or `serve`.
+
 ```bash
 graphite frontend list           # which frontend `build` will run, and where it came from
 graphite frontend describe jvm   # JSON: version, accepted inputs
