@@ -12049,3 +12049,31 @@ Evidence: `/tmp/graphite-native158/loading`, including protocol/seal/authorizati
 Decision: **retain the verified native loading-memory increment for continued composition**. Its parent-relative CPU/RSS constraints pass; cumulative loading CPU/RSS still fail. Query p50/p95, mixed query CPU/RSS, first-use page-fault cost, construction and final-head CI/mergeability remain open. The separate cumulative query plan covers all64 graphs with collect/order-by/WITH-filter plus the two schema controls, c4, two warmups and20 measured cycles per process:450 complete responses across two oracles and four measured ABBA processes. That cohort has not run at this entry's preparation time; no query-performance conclusion follows from loading results. A read-only source audit verifies both actual revisions consume all64 sources for the selected slow shapes, and complete response controls permit only the exact independently audited declared-property addition.
 
 Root integration matches all five tested/measured source hashes exactly; `/tmp/graphite-attempt158-root-integration.json` records the check. The independent workspace test audit is `/tmp/graphite-attempt158-root-test-audit.json`. No production code changed after validation or measurement.
+
+### Attempt158 follow-up — cumulative native64 query evidence (2026-10-09)
+
+The predeclared query cohort finished once, after the independent loading cohort. Accepted4f A and committed158 B used the same64 real shards with independently proven v1/v2 declaration equivalence. Protocol bdc24d07919f5b5646c2c04ef331450c78bf4bf864ce74a0a07484b4503706dd; seal877f78e9ec7aef799e43c113c2682330e83b2a5d53d3c8534455c27a58663452. Runtime hashes, all116 pins and2564 input file hashes remained unchanged in both runner and executor final receipts. No selected rerun.
+
+Two fresh oracle processes each consumed5 complete responses; four fresh ABBA measurement processes each used c4 rolling requests,2 warmup cycles and20 measured cycles of each of5 cases. All450 complete typed responses matched exact pinned oracles, including only the reviewed exact schema-key addition. Each request covered64 graphs; three CallSite cases scan all5,051,914 CallSites. No timeout, request failure, incomplete body or budget/cancellation change. All6 native servers ended by planned SIGTERM(-15), both outer runners exited0, every owned group empty, no forced signal.
+
+Percentiles use nearest ranks10/19 of20 requests per case/process; the table averages the two process percentiles per arm, never pools different cases. Two process replicates leave substantial uncertainty.
+
+|case|p50 4f→158(ms)|absolute Δ|p95 4f→158(ms)|absolute Δ|
+|---|---:|---:|---:|---:|
+|shape-collect|2515.141→2515.541|+0.400|2556.856→2551.532|-5.324|
+|schema-key-histogram|1.207→1.251|+0.045|1.835→1.941|+0.107|
+|shape-order-by|3096.620→3150.981|+54.361|3129.227→3184.072|+54.845|
+|schema-label-histogram|0.862→0.833|-0.029|1.552→1.051|-0.501|
+|shape-with-filter|3247.098→3245.244|-1.854|3435.294→3490.892|+55.597|
+
+Order-by p50 andp95 are worse in both matched pairs; WITH-filter p95 is worse in both pairs. Collect is mixed and effectively unchanged; tiny schema timings are retained without selecting them as the optimization target. First-use oracle order-by3019.877→3087.926ms and WITH-filter3171.929→3299.182ms are single diagnostic observations, not repeated-request evidence or an isolated cold-cache experiment.
+
+The measured mixed query window CPU is176.490→177.985s(+1.495s). Both comparisons pass the independent+5% constraint even with±0.02s rounding: worst ratios1.009370/1.008021. Query-window observed RSS lower bounds are22,829,465,600/20,852,801,536B for4f and23,616,405,504/21,111,832,576B for158. Whole-lifecycle time-l peak upper bounds are22,892,363,776/21,074,116,608B and23,736,205,312/21,445,083,136B. Candidate upper divided by matching baseline lower is1.039718/1.028403, conservatively proving+5% query RSS for both pairs. Whole-lifecycle mean upper RSS21,983,240,192→22,590,644,224B is reported separately and does not replace the query bounds. Query window wall45,573.724→45,824.714ms(+250.990). These mixed-window resources do not prove resource recovery separately for each individual case.
+
+All206 oracle/measurement host snapshots remain. External peaks include mediaanalysisd128.7%CPU(58 snapshots≥10%), searchparty97.7%(64), syspolicyd102.4%, mds_stores98.8%, Codex Renderer93.8%, and coreaudiod44.8%. Own harness Python reached100% mainly for file hashing outside clocks. No clean-host claim or causal attribution of small differences; no unrelated processes were killed.
+
+Independent audit: /tmp/graphite-native158/query-independent-audit.py and query/native-independent-audit.json recompute all450 bodies, latencies, per-case ranks, raw ps CPU/RSS, time-l peaks, request concurrency, cleanup and final identity receipts. One audit-only initial KeyError assumed final receipt fields at top level rather than details; preserved in native-audit-initial-failure.json, fixed against actual receipt structure. Measurement did not fail or rerun. Root independent audit separately passed.
+
+Decision: retain158's verified incremental loading RSS reduction; cumulative loading CPU/RSS still fail their own+5% constraints. Query correctness/stability and declared mixed-window CPU/RSS pass, but repeated-request latency recovery is incomplete. No final acceptance or mergeability claim.
+
+Source-only follow-up hypothesis: scalar props::node_property added a generic-name check before node-kind dispatch. caller_class/callee_class and generic_type all have12 bytes; callee_name has11. Move new names into the three declaration-bearing node-kind arms to restore the original CallSite dispatch. This is source-backed avoidable work, not proof it caused the measured delay; compiler layout, retained heap/cache effects and host variance remain alternatives. No production change or extra measurement belongs to this158 evidence.
