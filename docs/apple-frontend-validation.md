@@ -77,8 +77,10 @@ shape changes must be checked and reported separately.
 
 The query statistic is nearest-rank p50/p95 per case, concurrency and round, with
 pooled values and per-round ranges retained. Report baseline and candidate milliseconds
-and absolute changes before percentages. Construction/loading use every paired sample,
-median and full range. Correctness, stability, wall time, query p50/p95, CPU and RSS
+and absolute changes before percentages. Construction/loading wall time and CPU use every
+paired sample, median and full range; query batch CPU uses the per-case/concurrency median
+and full range. Peak RSS comparisons use the maximum observed process peak across all
+rounds, with the per-round values retained. Correctness, stability, wall time, query p50/p95, CPU and RSS
 receive separate conclusions. A faster mean or construction stage cannot compensate
 for slower query p50/p95, and CPU/RSS increases above 5% cannot be silently accepted.
 Small differences within run variability remain inconclusive. No post-hoc selection
