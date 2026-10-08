@@ -103,6 +103,81 @@ class DeclaredTypePersistenceTest {
     }
 
     @Test
+    fun `raw key hashes preserve collisions UTF16 Unicode and arbitrary string boundaries`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        val names = listOf("", "\u0000", "Aa", "BB", "ascii\u007f", "caf\u00e9", "pre\u0800", "类型", "泛型\uD83D\uDE80")
+        val keys = names.map { name ->
+            MemberTypeKey("Owner".repeat(40) + name, name, "L$name;")
+        }
+        val expected = DeclaredTypeTable(
+            listOf(DeclaredType("class", "java.lang.Object"), DeclaredType("class", "java.lang.String")),
+            keys.mapIndexed { index, key -> key to index.mod(2) }.toMap(),
+            keys.mapIndexed { index, key -> key to MethodTypes(listOf(index.mod(2)), index.mod(2)) }.toMap(),
+            names.mapIndexed { index, name -> name to ClassTypes(emptyList(), index.mod(2), emptyList()) }.toMap()
+        )
+        DeclaredTypeStore.save(expected, dir)
+        val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
+        val restored = DeclaredTypeStore.load(dir)
+        assertEquals(expected, restored)
+        for (key in keys) {
+            assertTrue(restored.fields.containsKey(key))
+            assertEquals(expected.fields[key], restored.fields[key])
+            assertEquals(expected.methods[key], restored.methods[key])
+            assertNull(restored.fields[key.copy(owner = key.owner + "missing")])
+        }
+        for (name in names) assertEquals(expected.classes[name], restored.classes[name])
+        assertEquals(keys, restored.fields.keys.toList())
+        DeclaredTypeStore.save(restored, dir)
+        assertContentEquals(original, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
+    }
+
+    @Test
+    fun `raw key hashing still rejects malformed UTF8 after an ASCII prefix in every key section`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        val key = MemberTypeKey("Owner", "Member", "Ljava/lang/Object;")
+        val names = listOf("FieldKeyProbe", "MethodKeyProbe", "ClassKeyProbe")
+        val value = DeclaredTypeTable(
+            listOf(DeclaredType("class", "java.lang.Object")),
+            mapOf(key.copy(name = names[0]) to 0),
+            mapOf(key.copy(name = names[1]) to MethodTypes(emptyList(), 0)),
+            mapOf(names[2] to ClassTypes(emptyList(), 0, emptyList()))
+        )
+        DeclaredTypeStore.save(value, dir)
+        val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
+        val valid = Files.readAllBytes(path)
+        for (name in names) {
+            val needle = name.toByteArray(Charsets.UTF_8)
+            val offset = (0..valid.size - needle.size).single { start ->
+                needle.indices.all { index -> valid[start + index] == needle[index] }
+            }
+            val malformed = valid.copyOf().also { it[offset + 3] = 0xc3.toByte() }
+            Files.write(path, malformed)
+            rebind(dir)
+            assertFailsWith<CharacterCodingException>(name) { DeclaredTypeStore.load(dir) }
+        }
+    }
+
+    @Test
+    fun `raw key lengths are validated before scanning bytes`() = inDirectory { dir ->
+        Files.writeString(dir.resolve("graph.metadata"), "binding")
+        DeclaredTypeStore.save(table, dir)
+        val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
+        val valid = Files.readAllBytes(path)
+        val needle = "first".toByteArray(Charsets.UTF_8)
+        val offset = (0..valid.size - needle.size).single { start ->
+            needle.indices.all { index -> valid[start + index] == needle[index] }
+        }
+        for (length in listOf(-1, Int.MAX_VALUE)) {
+            val malformed = valid.copyOf().also { ByteBuffer.wrap(it).putInt(offset - Int.SIZE_BYTES, length) }
+            Files.write(path, malformed)
+            rebind(dir)
+            assertEquals("Invalid graph.types string length", assertFailsWith<IllegalArgumentException> {
+                DeclaredTypeStore.load(dir)
+            }.message)
+        }
+    }
+
+    @Test
     fun `mapped table can be saved over its own file without changing IDs or bytes`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
         DeclaredTypeStore.save(table, dir)

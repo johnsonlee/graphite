@@ -34,6 +34,7 @@ internal object DeclaredTypeStore {
     private const val CLASS_MIN_BYTES = 16
     private const val PARAMETER_MIN_BYTES = 12
     private const val HASH_SPREAD_SHIFT = 16
+    private const val HASH_MULTIPLIER = 31
 
     fun save(table: DeclaredTypeTable, dir: Path) {
         val path = dir.resolve(FILE_NAME)
@@ -118,9 +119,11 @@ internal object DeclaredTypeStore {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
             val types = MappedTypes(reader.bytes, typeOffsets)
-            val fields = reader.rows(FIELD_MIN_BYTES, "field", Reader::key, { reference(typeCount) }, Reader::int)
-            val methods = reader.rows(METHOD_MIN_BYTES, "method", Reader::key, { skipMethod(typeCount) }, Reader::method)
-            val classes = reader.rows(CLASS_MIN_BYTES, "class", Reader::text, { skipClass(typeCount) }, Reader::classTypes)
+            val fields = reader.rows(FIELD_MIN_BYTES, "field", Reader::key, ::keyHash, { reference(typeCount) }, Reader::int)
+            val methods = reader.rows(
+                METHOD_MIN_BYTES, "method", Reader::key, ::keyHash, { skipMethod(typeCount) }, Reader::method
+            )
+            val classes = reader.rows(CLASS_MIN_BYTES, "class", Reader::text, ::textHash, { skipClass(typeCount) }, Reader::classTypes)
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
             DeclaredTypeTable(types, fields, methods, classes).also { it.validate() }
         }
@@ -255,6 +258,34 @@ internal object DeclaredTypeStore {
         }
     }
 
+    /** Kotlin String.hashCode over validated UTF-8, without allocating ASCII key strings. */
+    private fun textHash(reader: Reader): Int {
+        val bytes = reader.bytes
+        val start = bytes.position()
+        val length = reader.int()
+        require(length >= 0 && length <= bytes.remaining()) { "Invalid graph.types string length" }
+        var position = bytes.position()
+        val end = position + length
+        var hash = 0
+        while (position < end) {
+            val character = bytes.get(position++).toInt()
+            if (character < 0) {
+                // Preserve UTF-16 hashing (including surrogate pairs) and strict malformed-input rejection.
+                bytes.position(start)
+                return reader.text().hashCode()
+            }
+            hash = HASH_MULTIPLIER * hash + character
+        }
+        bytes.position(end)
+        return hash
+    }
+
+    private fun keyHash(reader: Reader): Int {
+        val owner = textHash(reader)
+        val name = textHash(reader)
+        return HASH_MULTIPLIER * (HASH_MULTIPLIER * owner + name) + textHash(reader)
+    }
+
     private fun hashSlot(hash: Int, capacity: Int): Int = (hash xor (hash ushr HASH_SPREAD_SHIFT)) and (capacity - 1)
 
     private fun sameBytes(bytes: ByteBuffer, first: Int, firstEnd: Int, second: Int, secondEnd: Int): Boolean {
@@ -318,6 +349,7 @@ internal object DeclaredTypeStore {
             minimumBytes: Int,
             name: String,
             key: (Reader) -> K,
+            keyHash: (Reader) -> Int,
             skipValue: Reader.() -> Unit,
             value: (Reader) -> V
         ): Map<K, V> {
@@ -331,7 +363,7 @@ internal object DeclaredTypeStore {
             val slots = IntArray(capacity)
             repeat(count) { row ->
                 offsets[row] = bytes.position()
-                val hash = key(this).hashCode()
+                val hash = keyHash(this)
                 hashes[row] = hash
                 valuesAt[row] = bytes.position()
                 skipValue()
