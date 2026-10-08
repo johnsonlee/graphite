@@ -158,10 +158,10 @@ class DeclaredTypeQueryTest {
                         "RETURN n.name AS name, keys(n) AS keys, properties(n) AS props, n ORDER BY name"
                 ).rows
                 assertEquals(if (source === legacy) 1 else 2, rows.size)
+                val names = if (label == "Field") DeclaredTypeProperties.nodePropertyNames
+                    else DeclaredTypeProperties.methodPropertyNames
                 for (row in rows) {
                     val hasDeclaration = source !== legacy && row["name"] != "external"
-                    val names = if (label == "Field") DeclaredTypeProperties.nodePropertyNames
-                        else DeclaredTypeProperties.methodPropertyNames
                     assertDeclarationKeys(row, names, hasDeclaration)
                 }
             }
