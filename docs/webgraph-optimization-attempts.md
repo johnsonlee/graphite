@@ -10020,3 +10020,13 @@ Full Kotlin/Tika query coverage remains distinct. Source review in `full-jar-que
 |full-JAR compatibility scope review|`1214c3475b09c5450dea574aa49e2b81e7a59333f72270e4dff6b073c6011c8e`|
 
 Raw samples, full response bodies, source/identity proof and independent audit are retained under `/tmp/sootup-static-review/native-cumulative-135/server-request-full34-latest/`.
+
+### 2026-10-08 — Rebased5461 CI: Method passes, Kotlin save blocks large-corpus gate
+
+Current remote run37704093026 compares exact base502e2304 with candidate5461f59e; both checkout SHAs are confirmed in the retained job log. JVM unit/coverage and Rust workflows completed successfully. The previous Method failure did not recur: `method-compatibility-gate`113077470900 passed. This does not establish a causal fix for the earlier af8d result or replace preupgrade query acceptance.
+
+The large-corpus job113074720887 failed its comparison, with exactly one blocked row and no comparator errors: Kotlin save was9,320ms base versus15,404ms PR (+65.279%), and its workflow-prescribed reverse-order confirmation was8,694ms versus15,398ms (+77.111%). The25% plus250ms threshold was unchanged. Root reconciled both deltas against all four retained raw corpus logs; no manual rerun, selective sample or relaxed gate was used. Other corpus rows passed their declared gates. The JVM query totals improved relative to this **main** baseline (Tika -25.472%, Hive -38.234%, Kotlin -33.947% in the initial comparison), but they are coarse pipeline query totals, not native server p50/p95 or preupgrade recovery evidence. Isolated corpus JVMs use4GiB, under the8GiB ceiling.
+
+This is an additional unresolved save regression. Preserve it while honoring the user's Query priority; do not switch the active investigation back to construction/memory solely because this CI result arrived. Global-wide and graph-routing pressure jobs were still running at this observation; the overall benchmark workflow was not reported as green. Documentation-only follow-up commits were held locally while those original jobs ran, avoiding cancellation of the in-flight evidence.
+
+Raw job log and all eight artifact files are retained at `/tmp/sootup-static-review/5461-query-ci/`. The raw reconciliation receipt is `raw-verification.json`, SHA256 `bcd3598ff7dd822cd8a8c82929b311b9b75f340ce17abc8b9b394695804e4176`. Job: https://github.com/johnsonlee/graphite/actions/runs/37704093026/job/113074720887 .
