@@ -11638,3 +11638,54 @@ The original Attempt150 first initial-arm process loaded successfully but failed
 Decision: **retain the verified loading increment**. These two observations per arm establish neither pre-feature recovery nor confidence-based stability. Query p50/p95, construction, 36-graph heap stability and loading acceptance against pre-feature4f remain open. The global dynamic-property full-scan regression is still present; no deferred validation or query-cost transfer is credited as recovery. CPU and RSS improve against the immediate implementation, but their separate +5% constraints against the accepted pre-feature baseline still require matched measurements.
 
 Evidence: `/tmp/graphite-declared-load-attempt150-v3/` contains protocol SHA256 `bceb6779bf90e21f471b353ac0440bcca401baea0284d5cfc2d03154f2c2dadd`, seal, independent sample extractor/oracles, all raw responses/resource samples, summary/report and final identity verification. Validation logs are `/tmp/graphite-mapped-types-targeted2.log` and `/tmp/graphite-mapped-types-webgraph.log`. All four measured servers terminated; no failing sample was replaced.
+
+### Attempt151 — retain raw property candidates with declared types (2026-10-08)
+
+Hypothesis: disabling the mapped raw-record candidate provider whenever a graph has declared types makes dynamic property searches materialize every node and generic projection. Retain the existing canonical raw scan and union declaration-bearing node kinds only when the unique type-expression DAG can contain the search fragments. A query-local two-bit memo checks raw scalar atoms, emitted map keys and child references without rendering type trees. The final predicate remains authoritative. The default-false provider capability preserves legacy fallback. Canonical order, deduplication, LIMIT, negative predicates, interruption and per-type/per-edge work accounting remain intact. This is a raw-record candidate scan, not a postings index or shared query cache.
+
+Immediate parent is `a90e9a403966da79ba4b19531bded6f4bf0eec42` (Attempt150 plus the separately tested direct-filter graph-context correction). Exact full revision and executable/source hashes are in `/tmp/graphite-attempt151-runtime/{parent,combined}/manifest.json`; parent manifest SHA256 `50de1c77a60ca695f2bb09cac1dd4d7b293ed5e512dd7f9c89b68b1549c8f784`, candidate `761ec161cacffc86dd97f8b56d9cd5623803a7d9b58fe099effd7e58e855ffc0`. Runtime comparison isolates five production files and three changed module JARs; all other345runtime files match. The initial isolated patch is `6617099a7298dca1f03bfd3e8c9fe04cc10ba8291a9c20048aa960bd32286c6b`. The root integrated source preserves the parent correctness fix.
+
+Combined validation passes2144tests (core485, Cypher1362, webgraph297), all three detekt checks, and respective line coverage98.4536%,98.0145%,98.3481%. Tests compare full decoded results against the ordinary engine over fields/parameters/returns, bounded and unbound members, map delimiters, scopes, wildcards, owner types, negative ANY, order, limits and cancellation/work exhaustion. Synthetic fixtures establish correctness only.
+
+Two separately sealed real three-graph HTTP series run first against accepted pre-feature `4f2ccf33b969e684972e56b5e810034e6e67c1b3`, then against the immediate parent. The primary series uses each revision's own graph builds from the same pinned Tika/Hive/Kotlin JARs and settings; attribution uses identical candidate graphs. Both use JDK17, MAPPED, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, fresh-process ABBA, concurrency4 rolling requests, two warmups then20measured requests per case/process. Every request explicitly lists all three graphs and consumes its complete scalar LIMIT50 response. Misses exhaust the full scope; the HTTP hit may stop in the first graph, so it is not evidence of three-graph traversal. No aggregation/ORDER path substitutes for the changed candidate scan.
+
+Each series retains400measured requests,40warmups, separate exact ordered typed-body oracles and every host/process observation, with no failure/retry/replacement. Process percentiles use nearest ranks10/19; the table averages the two per-process percentiles per arm, never cases or pooled runs. Root independently recomputed all800measured percentile inputs and CPU means. Only two processes per arm: no inferential-confidence or saturation claim.
+
+| Query | Parent p50 → candidate ms | Parent p95 → candidate ms | Absolute p95 delta |
+|---|---:|---:|---:|
+| Global dynamic miss | 20525.53 → 866.01 | 20843.27 → 880.31 | -19962.95 |
+| Dynamic HTTP hit | 12.94 → 4.78 | 14.27 → 5.98 | -8.29 |
+| Field dynamic miss | 831.04 → 97.73 | 842.31 → 101.27 | -741.04 |
+| CallSite dynamic miss | 184.84 → 191.78 | 187.41 → 197.16 | +9.74 |
+| Value miss control | 42.12 → 41.31 | 43.46 → 43.19 | -0.27 |
+
+Parent-relative measured-query CPU432.100→24.470seconds (-94.34%), complete measured window109.645→6.392seconds, observed query RSS2,046,599,168→1,725,341,696bytes (-15.70%), exact lifecycle peak2,046,869,504→1,725,636,608bytes. Both query resource constraints pass relative to that parent. CallSite latency is an unresolved adverse increment and remains recorded for targeted correction; the much larger verified global/Field benefit is retained for composition, not discarded or declared complete.
+
+| Query | Pre-feature p50 → cumulative ms | Pre-feature p95 → cumulative ms | Absolute p95 delta |
+|---|---:|---:|---:|
+| Global dynamic miss | 774.82 → 849.02 | 779.10 → 858.46 | +79.36 |
+| Dynamic HTTP hit | 3.01 → 4.70 | 4.25 → 6.32 | +2.07 |
+| Field dynamic miss | 43.79 → 97.10 | 44.90 → 99.60 | +54.71 |
+| CallSite dynamic miss | 184.04 → 192.24 | 186.74 → 195.46 | +8.72 |
+| Value miss control | 41.98 → 41.25 | 46.15 → 44.24 | -1.91 |
+
+Cumulative query CPU21.275→24.085seconds (+13.21%), query window5.575→6.297seconds, observed query RSS1,294,761,984→1,712,472,064bytes (+32.26%), exact lifecycle peak1,295,056,896→1,712,750,592bytes. Query CPU and RSS independently fail their5%limits. CPU is user+system delta over measured submissions through drain, excluding load/warmups. Query RSS samples every200ms give a lower bound; the exact lifecycle peak including load/warmup/shutdown gives an upper bound. Candidate upper bound below1.05×baseline lower bound proves a pass; candidate lower bound above1.05×baseline upper bound proves failure; intermediate bounds remain unresolved. No resource is offset by another operation's gain.
+
+Environment limitation: preflight waited for unrelated Swift builds to stop, retaining every unsuccessful quiet check. An unrelated swift-build/dsymutil resumed during primaryA0 (three93–102%CPU observations) and is retained, without rerunning or dropping samples. The later clean pair still has global p95 763.12→863.89ms, CPU+15.99% and lifecycle RSS+32.92%; the first pair has795.08→853.03ms, CPU+10.54%, RSS+31.59%. Small latency differences have limited confidence. No compiler/build appeared in the parent-attribution measured-window observations. Shared host GUI/idle daemons remain present.
+
+A separate matched warm-filesystem loading ABBA compares4f to cumulative151. Every runtime/fixture byte is SHA-read before every launch outside timing. Readiness includes all three usable graph loads, full declared-table validation and exact identity/count/mode verification; three erased-identity/type projection checks follow readiness. Baseline requires absent new properties; candidate values match independently decoded declarations. All four loads and12checks pass; full fixture/runtime identity verification passes.
+
+| Loading metric | Pre-feature → cumulative mean | Absolute delta |
+|---|---:|---:|
+| Ready wall ms | 766.368 → 2910.428 | +2144.059 |
+| Ready CPU s | 1.645 → 4.525 | +2.880 |
+| Observed ready peak RSS bytes | 294109184 → 855318528 | +561209344 |
+| Full lifecycle wall s | 1.240 → 3.400 | +2.160 |
+| Full lifecycle CPU s | 1.845 → 4.735 | +2.890 |
+| Exact lifecycle peak RSS bytes | 337510400 → 895639552 | +558129152 |
+
+Ready RSS uses5ms sampling and the same independent upper/lower-bound proof: CPU+175.08% and RSS lower-bound ratio2.534 fail separately. No cold-cache or post-ready query-latency claim. These are full server loading boundaries, not construction end-to-end acceptance; construction and exact36graph/no-OOM recovery remain pending.
+
+Decision: **retain Attempt151's verified positive increment**, while continuing correction of the CallSite increment and cumulative Field/global latency, query CPU/RSS and loading regressions. Neither150nor151 meets final pre-feature acceptance. No heap increase, feature removal, deferred integrity check, favorable-sample selection or gate-threshold relaxation is used.
+
+Evidence packets: `/tmp/graphite-attempt151-primary-query/` (protocol SHA256 `d9978fdfd0fe147786a74c121c75ec86c154f88fef9f57d7c75ded20137a3936`), `/tmp/graphite-attempt151-parent-query/` (`04eeb2c0433d0bd823e152d0e952973341983601497a53811e36a8692dcd7799`) and `/tmp/graphite-attempt151-primary-load/` (`82c42a1025711ab9d248a8c0a0b5f589bdff912c19de5867f363176137a37320`). Each retains seals, every sample/body, commands, source/runtime/input identities, summaries and paired reports. Validation log: `/tmp/graphite-attempt151.wJagNj/combined-validation.log`. All owned JVM servers terminated before releasing the measurement slot.

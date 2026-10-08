@@ -303,6 +303,8 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
+    override val includesDeclaredTypeProperties: Boolean = true
+
     override fun <T : Node> propertyTextCandidates(
         type: Class<T>,
         fragment: String,
@@ -317,7 +319,7 @@ internal class MappedWebGraphBackedGraph(
         if (fragments.isEmpty() || fragments.size > 2 || fragments.distinct().size != fragments.size ||
             fragments.any { propertyTextFragment(it) != it }
         ) return null
-        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable)
+        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable, declaredTypeTable)
             .ids(type, fragments, workConsumer).mapNotNull { nodeId ->
                 node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
             }
