@@ -138,6 +138,59 @@ fn declared_node_type(g: &Graph, node: &Node) -> Option<usize> {
     }
 }
 
+pub(super) fn has_declared_node_type(g: &Graph, node: &Node) -> bool {
+    declared_node_type(g, node).is_some()
+}
+
+/// Declaration-bearing nodes have two possible key sets. Reading those sets
+/// requires member binding, never rendering or expanding the bound type tree.
+pub fn node_keys(g: &Graph, node: &Node) -> Vec<String> {
+    let fixed: &[&str] = match &node.kind {
+        NodeKind::Field {
+            declaring_class,
+            name,
+            field_type,
+            ..
+        } => {
+            for id in [name, field_type, declaring_class] {
+                let _ = g.str(*id);
+            }
+            &["id", "name", "type", "class", "static"]
+        }
+        NodeKind::Parameter {
+            method, param_type, ..
+        } => {
+            let _ = g.str(*param_type);
+            check_method_signature_strings(g, method);
+            &["id", "index", "type", "method"]
+        }
+        NodeKind::Return {
+            method,
+            actual_type,
+        } => {
+            check_method_signature_strings(g, method);
+            if let Some(id) = actual_type {
+                let _ = g.str(*id);
+            }
+            &["id", "method", "actual_type"]
+        }
+        _ => return node_properties(g, node).into_keys().collect(),
+    };
+    let mut keys: Vec<String> = fixed.iter().map(|key| (*key).to_owned()).collect();
+    if has_declared_node_type(g, node) {
+        keys.extend(["generic_type", "type_info"].map(str::to_owned));
+    }
+    keys
+}
+
+fn check_method_signature_strings(g: &Graph, method: &MethodDesc) {
+    let _ = g.str(method.declaring_class);
+    let _ = g.str(method.name);
+    for parameter in &method.parameter_types {
+        let _ = g.str(*parameter);
+    }
+}
+
 fn declared_node_property(g: &Graph, node: &Node, key: &str) -> Value {
     declared_node_type(g, node)
         .map(|id| {

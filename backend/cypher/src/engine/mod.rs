@@ -286,6 +286,15 @@ impl GraphContext for Executor {
         }
         m
     }
+    fn node_keys(&self, node: NodeRef) -> Vec<String> {
+        let mut keys = self
+            .node(node)
+            .map_or_else(Vec::new, |n| props::node_keys(self.graph(node.source), &n));
+        if self.cross {
+            keys.extend(["graphId", "elementId", "qualifiedId"].map(str::to_owned));
+        }
+        keys
+    }
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = self.node_display_properties(node);
         m.retain(|_, v| !v.is_null());

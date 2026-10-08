@@ -19,6 +19,10 @@ pub trait GraphContext {
     fn node_property(&self, node: NodeRef, key: &str) -> Value;
     /// `getAllProperties(node)` — fixed per-type map including `id` (no `type`).
     fn node_properties(&self, node: NodeRef) -> IndexMap<String, Value>;
+    /// Ordered property names, without requiring values to be materialised.
+    fn node_keys(&self, node: NodeRef) -> Vec<String> {
+        self.node_properties(node).into_keys().collect()
+    }
     /// The map a node materialises to in a query result. This differs from
     /// `node_properties`: signatures are omitted and null-valued keys are dropped,
     /// matching `CypherExecutor.nodeToMap` and Gson's null handling.

@@ -11689,3 +11689,58 @@ Ready RSS uses5ms sampling and the same independent upper/lower-bound proof: CPU
 Decision: **retain Attempt151's verified positive increment**, while continuing correction of the CallSite increment and cumulative Field/global latency, query CPU/RSS and loading regressions. Neither150nor151 meets final pre-feature acceptance. No heap increase, feature removal, deferred integrity check, favorable-sample selection or gate-threshold relaxation is used.
 
 Evidence packets: `/tmp/graphite-attempt151-primary-query/` (protocol SHA256 `d9978fdfd0fe147786a74c121c75ec86c154f88fef9f57d7c75ded20137a3936`), `/tmp/graphite-attempt151-parent-query/` (`04eeb2c0433d0bd823e152d0e952973341983601497a53811e36a8692dcd7799`) and `/tmp/graphite-attempt151-primary-load/` (`82c42a1025711ab9d248a8c0a0b5f589bdff912c19de5867f363176137a37320`). Each retains seals, every sample/body, commands, source/runtime/input identities, summaries and paired reports. Validation log: `/tmp/graphite-attempt151.wJagNj/combined-validation.log`. All owned JVM servers terminated before releasing the measurement slot.
+
+
+### Attempt152 — native declaration-key partitions (2026-10-08)
+
+Hypothesis: schema queries need the presence of declaration keys, but the initial native implementation constructs every generic string and nested type map to obtain those keys. Use exact field/method binding to distinguish the two key sets, retaining the existing walk, cancellation, first-seen order and provenance. Add a key-only node accessor for declaration-bearing nodes; unrelated nodes, methods and maps preserve their existing paths. Do not change graph loading, storage, validation, cache state, or retained indexes.
+
+The initial hosted real64 diagnostic at cfcfb191 compared pre-feature4f2ccf33 and the initial feature implementation on the same candidate-built persisted fixtures. The key histogram median was1.511→8551.643ms, with all five candidate samples8503.943–8926.656ms. This is a same-case sequential diagnostic, not concurrent requestp95. The schema query accounted for43.091s of45.163s total additional request time over five73-case passes. Every one of730 requests completed successfully. The existing comparator stopped at intentional additive response differences, so there was no reverse-order confirmation. Independent body audit of every pass found all old histogram rows/counts/provenance identical, exactly two new keys each counted3485013times, and only49 generic_type/type_info property pairs added to the200-node response. No nativeCPU/RSS evidence was captured by that hosted run.
+
+Parent Rust revision:a90e9a40 (production Rust identical to the original cfc/7e implementation). Candidate:uncommitted Attempt152 six-file Rust patch `e4178cb031a5336f0793c33cc270a6ef5da73371c3dbca8ac427424d4b1958b4`; parent/candidate executable SHA256 `0b64b42e3b458a417528cab570cc2fdacd7cf0903878d568b6b0aca305b198b0` / `d84502ed641160f437bb0461b56b5065464f9fc6c25087dc130035c7f4571ca4`. Full Rust source inventories are in manifest.json.
+
+Correctness:full Rust workspace CLI41/Cypher143/Explore118+1/Storage47 tests pass, with GRAPHITE_TYPES_FIXTURE=/tmp/graphite-types-java-fixture. Existing GRAPHITE_INDEX_FIXTURE tests remain environment-gated in that full run. The two new fixture tests execute and cover ordered keys, field and return descriptor mismatch, valid/invalid parameter indexes, zero-argument constructor, unavailable type-value backing, legacy absence, mixed original/partial/legacy cross-graph sources, grouping and provenance against without_partitioning, and cancellation. All-target/all-feature strict Clippy and formatting pass. No construction/loading/performance conclusion follows from these correctness tests.
+
+Performance: same64 candidate-built persisted class shards from Android/Hive/Kotlin compiler/Tika, all64 scoped by every request; exact paths/IDs/inventory and complete responses pinned in perf/. Fresh native processes, MAPPED, server/client concurrency4, rolling scheduler; two warmups then20 complete measured responses per each of the two cases, ABBA. Latencies span loopback connect through complete response bytes. Each process/case uses nearest-rank p50=rank10,p95=rank19; reported means average the two process percentiles, never mixed cases. Every160measured+16warmup+4oracle response matches the complete typed parent oracle, retaining rows/order/provenance; independent known total19438199nodes and3485013bound nodes corroborate the key histogram. All1282fixture files and7runtime/protocol pins remain unchanged after final hashing. All servers stopped cleanly.
+
+| Metric | Immediate parent mean → candidate mean | Absolute delta | Change |
+|---|---:|---:|---:|
+| schema-key-histogram p50 ms | 5010.335 → 1266.349 | -3743.986 | -74.73% |
+| schema-key-histogram p95 ms | 5023.335 → 1361.907 | -3661.428 | -72.89% |
+| schema-label-histogram p50 ms | 0.857 → 0.859 | +0.002 | +0.25% |
+| schema-label-histogram p95 ms | 2.821 → 2.155 | -0.666 | -23.60% |
+| queryCpuSeconds | 99.930 → 25.535 | -74.395 | -74.45% |
+| queryWindowSeconds | 25.077 → 6.522 | -18.555 | -73.99% |
+| queryObservedRssBytes | 8124882944.000 → 8122130432.000 | -2752512.000 | -0.03% |
+| lifecyclePeakRssBytes | 8125005824.000 → 8122212352.000 | -2793472.000 | -0.03% |
+| lifecycleCpuSeconds | 130.385 → 48.635 | -81.750 | -62.70% |
+| lifecycleWallSeconds | 50.450 → 28.355 | -22.095 | -43.80% |
+
+Primary key-histogram p50/p95 improve in both directional pairs. The label control p50 change is+0.002ms, tiny and inconsistent in direction between pairs; do not claim a control latency improvement. QueryCPU is cumulative server user+system around the measured mixed40request window, excluding readiness and warmups; it is not percaseCPU. CPU and exact lifecyclepeakRSS independently stay within+5% in bothpairs. Query-window RSS is sampled every200ms (a lower bound), while time-l lifecyclepeak is an upper bound on the query window and includes loading, warmups and shutdown. Lifecycle wall/CPU are a mixed server session diagnostic, not graph construction or loading acceptance. Readiness21s-scale timing is retained separately; code did not move work into loading. The filesystem was warmed by sealing; no cold-cache or saturation claim. n20p95/n2processes perarm limit uncertainty.
+
+Decision:retain this verified positive increment. Matching results and a3.7second primary latency reduction matter, but candidate key-histogram p95 remains1.36seconds; this does not establish pre-feature recovery. The source retains no new cache/index and does not change loading/storage/validation. The same-host accepted4f baseline comparison below confirms residual type-table memory/CPU and query latency costs; separate operation acceptance and exact-head CI remain open. No construction result or global no-regression claim is made.
+
+Evidence:/tmp/graphite-native152/perf/{protocol.json,seal.json,oracle-seal.json,summary.json,report.json,final-file-verification.json}; results/* contains every command/body/request/resource record. Correctness logs:/tmp/graphite-native152-workspace.log, /tmp/graphite-native152-keys-final.log, /tmp/graphite-native152-clippy-final.log. Root independently recomputed the160measured request percentiles and both CPU means before retaining this increment. Protocol SHA256: `8b7ce574c1df52960537ff9d58416a225dc6e0a2da86cff0464965f97c906d7d`.
+
+Environment caveat: retained host snapshots reveal external Swift workload recurrence: A0 swift-test up to100% in3/24 samples; B1 swift-test99% in7/7 samples plus a burst of many Swift compiler processes (~69–99% each); B2 no Swift activity observed; A3 repeated Swift builds/tests/frontends, including swift-build100% in10/24 samples. Graphite team builds were idle (Java daemons<=0.1%). Every sample remains retained. Both directional primary wins and server CPU reductions are large, but this is not a clean-host or final-acceptance claim; exact variability is confounded by external activity.
+
+Cumulative pre-feature validation: a separately sealed `/tmp/graphite-native152/cumulative-perf/` compares accepted `4f2ccf33b969e684972e56b5e810034e6e67c1b3` (binary SHA256 `cdfc2461f5337c22ddc0c5aaad639e5b5d3c4be2be9589a28901cec881ff989b`) against the exact frozen152 candidate on the same64graphs, MAPPED/c4,2warmups+20measured percase, ABBA. The key histogram uses exact complete canonical response digest pairs independently audited from hostedCI: old26rows `15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c`, new28rows `ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a`; no response stripping. Label response exact equality; all160measured+16warmup+4oracle responses pass. Allservers stopped normally and all8pins/1282fixture files unchanged.
+
+| Cumulative metric | Accepted4f | Candidate152 | Change |
+| --- | ---: | ---: | ---: |
+| Key histogram repeated-request p50 |1.710ms|1248.075ms|+1246.365ms|
+| Key histogram repeated-request p95 |4.497ms|1254.230ms|+1249.732ms|
+| Label control p50 |1.265ms|1.161ms|-0.103ms, inconsistent pair direction|
+| Label control p95 |4.223ms|2.403ms|-1.820ms, inconsistent pair direction|
+| Measured mixed40request server CPU |0.020s|24.885s|+24.865s|
+| Measured query window |0.043s|6.272s|+6.229s|
+| Query observed RSS lower bound |6316933120bytes|8124547072bytes|+28.62%|
+| Exact lifecycle peakRSS |6379143168bytes|8124612608bytes|+27.36%|
+| Lifecycle server CPU |19.085s|47.350s|+28.265s|
+| Lifecycle wall time |19.160s|27.430s|+8.270s|
+| Readiness wall diagnostic |18.991s|19.773s|+4.12%|
+| Readiness CPU diagnostic |19.050s|19.880s|+4.36%|
+
+The two independent key-histogram p50 comparisons are1.548→1245.729ms and1.872→1250.421ms; p95 comparisons2.771→1247.883ms and6.224→1260.576ms. CPU and exactpeakRSS each fail+5% in bothpairs. Baseline CPU is near the0.01second ps accounting granularity; its huge ratio is not a precise cost multiplier. Baseline query windows are very short and onlyone host/RSS snapshot each, whereas candidates have6host snapshots; lifecyclepeak exactRSS is separately recorded. An external Swift compiler restarted during candidate oracle loading; no Swift build appeared in timedquery snapshots, but finalA3 captured CodexRenderer190.9%CPU. Keep every sample, no clean-host guarantee or control benefit claim. No need for repeated stabilization of the tiny baseline: the residual ~1.25second query cost and27%memory increase are material and unequivocally unresolved. Readiness/lifecycle figures are diagnostic, not a separate accepted loading experiment. Decision:retain152's verified parent-relative improvement while cumulative query latency,CPU,RSS recovery remains open. No construction acceptance or global no-regression claim.
+
+Root independently rechecked all160cumulative measured latencies,16warmups, complete decoded response bodies with exact JSON value types, nearest-rank per-process percentiles and CPU deltas from raw process accounting. Audit: `/tmp/graphite-native152/root-cumulative-audit.py` and `cumulative-perf/root-independent-audit.json`. Cumulative protocol SHA256: `e86ccc4d14fccf06e9ddcf3746f98dc2b07be2cbf0e4a0fede59fbcaae961bac`.
