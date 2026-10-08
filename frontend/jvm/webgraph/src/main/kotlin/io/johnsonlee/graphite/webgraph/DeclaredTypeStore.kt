@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.ClassTypes
 import io.johnsonlee.graphite.graph.DeclaredType
+import io.johnsonlee.graphite.graph.DeclaredTypeReferences
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
@@ -123,11 +124,13 @@ internal object DeclaredTypeStore {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
             val types = MappedTypes(reader.bytes, typeOffsets, reader.strings)
-            val fields = reader.rows(FIELD_MIN_BYTES, "field", Reader::key, ::keyHash, { reference(typeCount) }, Reader::int)
+            val fields = reader.rows(FIELD_MIN_BYTES, "field", typeCount, Reader::key, ::keyHash, Reader::reference, Reader::int)
             val methods = reader.rows(
-                METHOD_MIN_BYTES, "method", Reader::key, ::keyHash, { skipMethod(typeCount) }, Reader::method
+                METHOD_MIN_BYTES, "method", typeCount, Reader::key, ::keyHash, Reader::skipMethod, Reader::method
             )
-            val classes = reader.rows(CLASS_MIN_BYTES, "class", Reader::text, ::textHash, { skipClass(typeCount) }, Reader::classTypes)
+            val classes = reader.rows(
+                CLASS_MIN_BYTES, "class", typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
+            )
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
             DeclaredTypeTable(types, fields, methods, classes).also { it.validate() }
         }
@@ -220,11 +223,20 @@ internal object DeclaredTypeStore {
         private val slots: IntArray,
         private val key: (Reader) -> K,
         private val value: (Reader) -> V,
-        private val strings: DeclaredTypeStringPool?
-    ) : AbstractMap<K, V>() {
+        private val strings: DeclaredTypeStringPool?,
+        private val references: Reader.(Int) -> Unit
+    ) : AbstractMap<K, V>(), DeclaredTypeReferences {
         override val size: Int get() = offsets.size
 
         private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) }, strings)
+
+        override fun validateTypeReferences(typeCount: Int) {
+            val input = reader(0)
+            for (offset in valuesAt) {
+                input.bytes.position(offset)
+                input.references(typeCount)
+            }
+        }
 
         override fun containsKey(key: K): Boolean = findRow(key) >= 0
 
@@ -341,9 +353,10 @@ internal object DeclaredTypeStore {
         fun <K : Any, V : Any> rows(
             minimumBytes: Int,
             name: String,
+            typeCount: Int,
             key: (Reader) -> K,
             keyHash: (Reader) -> Int,
-            skipValue: Reader.() -> Unit,
+            skipValue: Reader.(Int) -> Unit,
             value: (Reader) -> V
         ): Map<K, V> {
             val count = rowCount(minimumBytes)
@@ -359,7 +372,7 @@ internal object DeclaredTypeStore {
                 val hash = keyHash(this)
                 hashes[row] = hash
                 valuesAt[row] = bytes.position()
-                skipValue()
+                skipValue(typeCount)
                 var slot = hashSlot(hash, capacity)
                 while (slots[slot] != 0) {
                     val previous = slots[slot] - 1
@@ -372,7 +385,7 @@ internal object DeclaredTypeStore {
                 }
                 slots[slot] = row + 1
             }
-            return MappedRows(bytes, offsets, valuesAt, hashes, slots, key, value, strings)
+            return MappedRows(bytes, offsets, valuesAt, hashes, slots, key, value, strings, skipValue)
         }
     }
 }
