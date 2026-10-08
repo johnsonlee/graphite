@@ -245,6 +245,14 @@ private final class FactVisitor: SyntaxVisitor {
         return .visitChildren
     }
 
+    override func visit(_ node: DeinitializerDeclSyntax) -> SyntaxVisitorContinueKind {
+        let key = position(of: node.deinitKeyword)
+        facts.declarations[key] = SyntaxDeclaration(
+            position: key, parameterTypes: [], returnType: "()", isStatic: false
+        )
+        return .visitChildren
+    }
+
     override func visit(_ node: VariableDeclSyntax) -> SyntaxVisitorContinueKind {
         for binding in node.bindings {
             if let identifier = binding.pattern.as(IdentifierPatternSyntax.self) {

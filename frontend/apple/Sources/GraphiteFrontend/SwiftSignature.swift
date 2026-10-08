@@ -48,10 +48,20 @@ public struct SwiftSignature: Equatable {
             return nil
         }
 
-        // Property: `Qualified.name : Type`
-        if let colon = topLevelRange(of: " : ", in: text), !text[..<colon.lowerBound].contains("(") {
-            let qualified = String(text[..<colon.lowerBound])
-            guard let declaring = dropLastComponent(of: qualified, expecting: name) else { return nil }
+        // Swift destructor symbols have no parameter clause or return arrow. The
+        // source-level deinitializer takes no arguments and returns no value.
+        if name == "deinit" {
+            for suffix in ["deinit", "__deallocating_deinit"] {
+                if let declaring = dropLastComponent(of: text, expecting: suffix) {
+                    return SwiftSignature(declaringType: declaring, returnType: "Swift.Void")
+                }
+            }
+        }
+
+        // Property: `Qualified.name : Type`. A private declaring type can contain
+        // `(Type in _HASH)` even when the property itself has no discriminator.
+        if let colon = topLevelRange(of: " : ", in: text),
+           let declaring = dropLastComponent(of: String(text[..<colon.lowerBound]), expecting: name) {
             return SwiftSignature(
                 declaringType: declaring,
                 parameterTypes: [],

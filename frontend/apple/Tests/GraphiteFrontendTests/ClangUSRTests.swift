@@ -23,6 +23,11 @@ final class ClangUSRTests: XCTestCase {
         XCTAssertEqual(classMethod.memberKind, .classMethod)
         let property = try XCTUnwrap(ClangUSR.parse("c:objc(cs)UIView(py)frame"))
         XCTAssertEqual(property.memberKind, .property)
+        let crossModule = try XCTUnwrap(ClangUSR.parse("c:@CM@SignalUI@SignalServiceKit@objc(cs)OutgoingStoryMessage(cm)prepareForMultisendingWithDestinations:state:transaction:error:"))
+        XCTAssertEqual(crossModule.module, "SignalServiceKit")
+        XCTAssertEqual(crossModule.qualifiedContainer, "SignalServiceKit.OutgoingStoryMessage")
+        XCTAssertEqual(crossModule.member, "prepareForMultisendingWithDestinations:state:transaction:error:")
+        XCTAssertEqual(crossModule.memberKind, .classMethod)
         XCTAssertEqual(property.member, "frame")
 
         let type = try XCTUnwrap(ClangUSR.parse("c:objc(cs)NSObject"))
@@ -52,6 +57,86 @@ final class ClangUSRTests: XCTestCase {
         XCTAssertEqual(constant.container, "UIUserInterfaceStyle")
         XCTAssertEqual(constant.member, "UIUserInterfaceStyleDark")
         XCTAssertEqual(ClangUSR.parse("c:@N@std@S@string")?.container, "string")
+    }
+
+    func testSwiftExtensionObjectiveCForms() throws {
+        let method = try XCTUnwrap(ClangUSR.parse("c:@CM@SignalServiceKit@@objc(cs)Cryptography(cm)computeSHA256Digest:truncatedToBytes:"))
+        XCTAssertNil(method.module)
+        XCTAssertEqual(method.qualifiedContainer, "Cryptography")
+        XCTAssertEqual(method.container, "Cryptography")
+        XCTAssertEqual(method.member, "computeSHA256Digest:truncatedToBytes:")
+        XCTAssertEqual(method.memberKind, .classMethod)
+        XCTAssertFalse(method.isProtocol)
+        let property = try XCTUnwrap(ClangUSR.parse("c:@CM@App@objc(cs)Legacy(py)enabled"))
+        XCTAssertEqual(property.module, "App")
+        XCTAssertEqual(property.container, "Legacy")
+        XCTAssertEqual(property.member, "enabled")
+        XCTAssertEqual(property.memberKind, .property)
+        for invalid in ["c:@CM@", "c:@CM@@@objc(cs)Legacy", "c:@CM@App@@@objc(cs)Legacy", "c:@CM@App@@objc(cs)"] {
+            XCTAssertNil(ClangUSR.parse(invalid), invalid)
+        }
+    }
+
+    /// The compiler uses @CM@ for these declarations, not the @M@ prefix of a
+    /// member declared in a Swift class. Declaration types must reach both ends
+    /// of a call, including a Swift extension on an Objective-C class.
+    func testSwiftExtensionObjectiveCMembersKeepDeclaredAndCallSiteTypes() throws {
+        let path = "/src/Legacy.swift"
+        let source = """
+        extension Legacy {
+            @objc static func digest(_ data: Data, truncatedToBytes: UInt) -> Data? {
+                return digest(data, truncatedToBytes: 16)
+            }
+            @objc var enabled: Bool { true }
+        }
+        class Lifetime: NSObject {
+            deinit { }
+        }
+        """
+        let facts = [path: SyntaxFacts.parse(source: source, path: path)]
+        let owner = SymbolInfo(usr: "c:objc(cs)Legacy", name: "Legacy", kind: .class)
+        let ext = SymbolInfo(usr: "s:e:c:@CM@App@@objc(cs)Legacy(cm)digest:truncatedToBytes:", name: "Legacy", kind: .extension)
+        let digest = SymbolInfo(usr: "c:@CM@App@@objc(cs)Legacy(cm)digest:truncatedToBytes:", name: "digest(_:truncatedToBytes:)", kind: .classMethod)
+        let enabled = SymbolInfo(usr: "c:@CM@App@@objc(cs)Legacy(py)enabled", name: "enabled", kind: .instanceProperty)
+        let data = SymbolInfo(usr: "s:10Foundation4DataV", name: "Data", kind: .struct)
+        let lifetime = SymbolInfo(usr: "c:@M@App@objc(cs)Lifetime", name: "Lifetime", kind: .class)
+        let deinitSymbol = SymbolInfo(usr: "c:@M@App@objc(cs)Lifetime(im)dealloc", name: "deinit", kind: .destructor)
+        func at(_ line: Int, _ column: Int) -> SourcePosition { SourcePosition(path: path, line: line, column: column) }
+        var model = IndexModel()
+        model.types = [
+            TypeDecl(symbol: owner, kind: .class, module: "", position: at(1, 11), container: nil),
+            TypeDecl(symbol: ext, kind: .extension, module: "App", position: at(1, 11), container: nil),
+            TypeDecl(symbol: lifetime, kind: .class, module: "App", position: at(7, 7), container: nil),
+        ]
+        model.members = [
+            MemberDecl(symbol: digest, kind: .method, isStatic: true, module: "App", position: at(2, 23), container: ext.usr, overrides: []),
+            MemberDecl(symbol: enabled, kind: .property, isStatic: false, module: "App", position: at(5, 15), container: ext.usr, overrides: []),
+            MemberDecl(symbol: deinitSymbol, kind: .deinitializer, isStatic: false, module: "App", position: at(8, 5), container: lifetime.usr, overrides: []),
+        ]
+        model.calls = [CallOccurrence(callee: digest, caller: digest, module: "App", position: at(3, 16), isDynamic: false)]
+        for symbol in [owner, ext, digest, enabled, data, lifetime, deinitSymbol] { model.symbols[symbol.usr] = symbol }
+        let out = FileManager.default.temporaryDirectory.appendingPathComponent("extension-objc-\(UUID().uuidString).graphite-ir")
+        defer { try? FileManager.default.removeItem(at: out) }
+        var header = GraphiteIRHeader()
+        header.language = "swift"
+        let writer = try IRWriter(url: out, header: header)
+        _ = try Emitter(writer: writer, model: model, facts: facts, demangled: [data.usr: "Foundation.Data"]).emit()
+        let ir = try DecodedIR(url: out)
+        let expected = "Legacy.digest(_:truncatedToBytes:)(Foundation.Data, Swift.UInt) -> Foundation.Data?"
+        XCTAssertEqual(ir.methods.map(ir.signature), [expected, "App.Lifetime.deinit() -> Swift.Void"])
+        let call = try XCTUnwrap(ir.callSites.first)
+        XCTAssertEqual(ir.signature(call.caller), expected)
+        XCTAssertEqual(ir.signature(call.callee), expected)
+        XCTAssertEqual(call.arguments.map(ir.literal), ["<data>", "16"])
+        let fields = ir.nodes.values.compactMap { node -> GraphiteIRField? in
+            if case .field(let field)? = node.kind { return field }
+            return nil
+        }
+        let field = try XCTUnwrap(fields.first)
+        XCTAssertEqual(fields.count, 1)
+        XCTAssertEqual(ir.type(field.field.declaringClass), "Legacy")
+        XCTAssertEqual(ir.str(field.field.name), "enabled")
+        XCTAssertEqual(ir.type(field.field.type), "Swift.Bool")
     }
 
     func testRejectedForms() {
