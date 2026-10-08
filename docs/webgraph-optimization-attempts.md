@@ -11463,3 +11463,67 @@ Evidence:
 - Exact-head standard benchmark comment: `/tmp/sootup-static-review/benchmark-comment-523801ba.json`, SHA `a6b1d0df92e6c96893a2a38d9d28ea13d1e1a773ddb103ae9f2609982c3805c4`.
 
 Review6054863268 identifies a remaining delivery gap: default CLI construction has not been accepted under the CPU/RSS limits. The passing GC4 profile is opt-in and does not close that gap. The earlier Kotlin+9.991955% result used the explicit8g/G1cap30/minfree20 profile with default GCTimeRatio; it was not a measurement of the bare CLI fallback, so do not report that exact percentage as bare-default behavior. The current `default_java_tool_options` still falls back to `-Xmx8g`. Changing that fallback requires preserving explicit JAVA_TOOL_OPTIONS/JAVA_OPTS precedence and validating the actual launcher and supported runtime/workload behavior; the existing direct-Java4GiB CI corpus gate does not itself exercise the CLI fallback. The task remains open for default-path recovery or an explicit user decision about configuration scope.
+
+
+#### Bare-default construction follow-up — current144 versus pre-upgrade
+
+Review6054863268 exposed the gap between an optional GC profile and the shipped default. The fixed bare `-Xmx8g` comparison is now complete. Both workloads exceed the independent +5% peak-RSS limit, while their construction time and CPU benefits remain retained.
+
+Same macOS ARM64/JDK17 environment and immutable Kotlin compiler2.0.21/Tika2.9.2 inputs, old6f MAIN_query84/current144 MAIN_query88; fixed KotlinABBA then TikaABBA, n2/arm. Only the eight timed JVMs' five explicit GC flags were removed from the preceding GC4 plan. All32 complete job objects otherwise preserve inputs, feature settings, contracts and ordering after output-path substitution. Construction uses the existing production load/build/full-count/prepared-two-worker-save/close helper. This matches the bare fallback JVM configuration but is not an actual native CLI launch or packaging test. All24 correctness-verifier JVMs keep their original8g settings.
+
+| Workload / metric | Pre-upgrade mean | Current mean | Mean change | A0→B1 | A3→B2 |
+|---|---:|---:|---:|---:|---:|
+| Kotlin continuous construction | 116.552617s | 39.321040s | −66.263272% | −68.735114% | −63.700809% |
+| Kotlin whole CPU | 204.455s | 106.250s | −48.032574% | −47.818082% | −48.239877% |
+| Kotlin peak RSS | 8,507,826,176B | 9,652,445,184B | **+13.453719%** | **+21.103707%** | **+6.723296%** |
+| Tika continuous construction | 110.125951s | 27.941334s | −74.627839% | −74.294279% | −74.953214% |
+| Tika whole CPU | 173.625s | 84.285s | −51.455724% | −50.014768% | −52.826478% |
+| Tika peak RSS | 6,739,836,928B | 8,744,427,520B | **+29.742420%** | **+46.085596%** | **+16.303156%** |
+
+The absolute mean RSS increases are1,144,619,008B and2,004,590,592B. RSS includes non-heap memory; RSS above8GiB does not itself violate the unchanged `-Xmx8g` maximum heap. Save-only Kotlin8.682410→8.835974s (+1.768683%, pairs−39.917733/+70.163836%) and Tika5.331714→5.462883s (+2.460164%, pairs+1.262139/+3.699599%) remain diagnostic; save is not a new independent hard gate.
+
+Original session69150 exited0 (terminal91c5e1):8 constructions,24 strict shape/metadata/query reports and40 complete ordered-query comparisons PASS. All8 graph inventories/148files are unchanged. Root independently parsed raw phase properties/time-l logs, compared every full strict report with its original reference, and recomputed means and both pairs. All41 observed owned PIDs and process group30495 were absent after completion. No retry, replacement sample, forced GC or cache purge. Observer1319samples/no events does not establish an exclusive host; n2/arm and observed cache limit generalization.
+
+Decision: retain construction throughput/CPU gains and the separately verified GC4 increment. Bare-default construction remains **unaccepted for both workloads**. No query/loading benefit offsets this failure. This is the first directly matched bare-current144 evidence; the earlier Kotlin+9.991955% used cap30/minfree20 and must not be relabeled as bare default.
+
+Reproduction: `env -u MallocNanoZone python3 /tmp/sootup-static-review/final-construction-old-vs144-bare8g/execute.py --execute-root-released`. Packet contains all32 fullargv,8 raw measurements, full reports and original references.
+
+| Evidence | SHA256 |
+|---|---|
+| commands.resolved.json | `92e2e8f22584f8ae9c12e60a3d584f1d27c14cd7686d9bc7261ec8df826f4a3a` |
+| execute.py | `753535044582a1af67497d693014531d52d583c70bba95a98a27568eb9282f85` |
+| execution/results.json | `a83daa857671b343db5a17d6a3257521edd164affb22ffb672e3d239a2417f61` |
+| execution/summary.json | `f929cab7e02bdc36c7d427984731d6723328c43838c95b470373048a88690457` |
+| execution/owner-terminal.json | `27b9ee67fef92f4eefe9f9ef15269580d4971a2c93cebdb82ad79a0d8f8c4389` |
+| root-independent-audit.json | `9897c913cdb2a4b4d5e9837fdb90d0fa9e5798207a17fe4e08624f10ddbd0e14` |
+
+
+### Attempt148 — capability-confirmed default JVM construction profile (CLI correctness verified)
+
+The optional matched GC4 profile passed its declared Kotlin/Tika construction constraints, but that did not recover the bare CLI default. The subsequent bare8g cohort retained correct graphs while peak RSS increased for both corpora; default-path recovery remains open. This attempt changes only how the native CLI selects a default JVM profile, not graph construction features or the measured query implementation.
+
+Starting from `7c504ebcb2c87b8149070c15f724be959125447f`, the isolated candidate probes the selected Java executable for all six effective flags of the already measured `-Xmx8g`/G1/cap30/minfree20/GCTimeRatio4 profile. It applies that profile only when the runtime confirms it and no explicit nonempty JVM option variable is present. Existing overrides, executable frontend behavior and unsupported-runtime bare8g fallback remain. The selected Java path and internal JAVA_OPTS are stored in a per-build Env snapshot reused by the existing frontend calls. There is no global environment mutation, vendor assumption, ignored-option fallback, real-build retry or persistent cache.
+
+The probe has bounded retained output and a direct-child timeout/reap path. Polling does not impose a hard disk quota or guarantee cleanup of arbitrary wrapper descendants; stderr is discarded, and temporary-file removal failures are reported. Ten correctness tests cover effective flags, env/argv passthrough, help/version bypass, actual fake-process execution and original build failure preservation, timeout/oversize cleanup and explicit overrides. Linux fake scripts close writable handles before execution. The environment-reuse test is not a full fold execution claim.
+
+The first serialized validation (`67985`, terminal exit101, tool `74bb1f`) passed formatting and 40/41 CLI tests; the timeout test failed to parse the fake sleeper PID after its test-specific250ms deadline. The assertion did not retain the actual PID text, so startup delay is not a proved cause. Preserve `validation/1.log`, initial source/plan/runner and terminal receipt `c338d6e0aeb137bc4ac9aee1fa3ad2d9ae280b7881623087c4d7fbb46c21f17d`; lint and export did not execute in this failed run.
+
+A test-only correction uses the actual production five-second deadline, includes the PID text on failure, clears the PID record before the overflow case and requires a new valid PID distinct from the sleeper. Production code and assertions that owned children are reaped remain unchanged. The second serialized full CLI validation (`89573`, terminal exit0, tool `4d9d15`) passed formatting,41/41 tests (31existing+10new,0failed/ignored/filtered), strict CLI all-targets/all-features Clippy and release export. The exact commands are in `validation2-plan.json`/`validate2.py`: pinned Rust1.93, `--locked --release --target aarch64-apple-darwin --jobs2`, real core fixture, no test filter. All83 native source pins and19 fixture content hashes remained unchanged before/after. Existing fold real-graph tests ran; two invocations reusing configuration do not alone constitute a real two-pass JVM fold smoke.
+
+Export: `/tmp/sootup-static-review/attempt148/validation2/graphite`, SHA `1f10ec26205982f1af4c8dbb76d479b96c25b44b9c247e74c082631e01892008`. Plan SHA `06a434cd5827252650bd903e00316117cb008d505a335876498ffe8ff8b44433`; result SHA `5f76c5978ecbe2b34acfd99e156fe331421286994797815f3c234ee23baffb33`; owner-terminal SHA `a8bca27a7e14afd78bad94955238193b54c812df64ed9a06ce43b7e705e3d402`. All observed runner/Cargo roots and four Cargo groups are absent; the timeout/overflow test separately asserts both fake direct children are absent.
+
+Status: retained isolated candidate with verified CLI correctness/export, not integrated or pushed. No real JVM build, APK smoke, Linux launcher smoke or default-candidate performance measurement has run in these validations. Do not report optional-profile results as measured default-candidate acceptance. Default construction CPU/RSS and elapsed-time acceptance remain open until the actual launcher and matched real workloads are checked.
+
+
+
+Real-launcher correctness follow-up (not a performance series): original session49820 terminated exit1/tool80bcf8 and is retained as a failed smoke. The actual native148 binary drove current144 MAIN_query88 via a manifest-only runnable JAR (real MainKt and the exact88 ordered runtime entries, no new bytecode); this is not release-fatjar proof. Java17 uses256MiB for javac/jar fixture tools,4GiB for direct references,8GiB for the default and2GiB for the explicit override. Six existing Acme source files were compiled once. Acme direct4g, actual CLI defaultGC4 and explicit JAVA_OPTS2g all produced identical graph files apart from properties comments. Exact Java invocation logs prove one capability probe before the default build and no probe for the2g override. The same helper is added to Linux Rust CI against its actual shadowJar/reference graph; that new-head CI has not run yet.
+
+The6,481-byte existing D8 register-reuse APK and an explicit empty Android21 platform follow the original fixture setup, with the CLI's full default call-graph behavior retained. Direct4g and actual defaultGC4 both saved1,253nodes. Their byte comparison failed across15/19files; the explicit2g APK build and later planned queries did not run. Do not report this as a successful APK smoke. Original owner SHA `4989e6bfadb1d454797dc931251ecd53310df8e14be8c44bfd03ed500cea2326`; all outer roots/groups were absent and a fresh scan found no remaining matching JVM/CLI. The nested helper's groups were not individually inventoried; the helper had waited for its children.
+
+A bounded read-only diagnosis of those two retained outputs then ran six complete functional queries, without rebuilding either graph. Both return pair=2/saturated=66 Runnable calls. Independent record decoding gives1,253unique complete immutable node keys, an exact bijection (969sameIDs/284renumbered), equal complete CallSite receiver/argument/origin references and503ordinals. All792directed typed edges (582DataFlow,204Call including both flags,6ControlFlow including comparands),6comparison entries,3branch scopes with ordered definition triples and1local-definition table are equivalent under that bijection. Scope/side iteration order differs and is reported. Metadata parsing consumes every byte and verifies branch/ordinal bindings; methods, hierarchy, enums, origins, dependencies and annotations agree.
+
+However, **34of206 synthetic identity values differ**:17numbered lambda classes and their constructors. Exactly those17of68classes exchange constructor/run visitation order; the other51retain both order and fingerprints. These hashes remain part of the persisted JVM Graph API, even though the native reader currently skips that section. They are not discarded from the correctness comparison. Root reviewed and recomputed both raw-decoder reports and independently confirmed the mismatch; root audit SHA `65ad1c28b3a9652c6296c19a810a65640f12504f40d860e7fc4bbc42f4ad9adb`.
+
+Source inspection identifies an existing ordering defect: the non-ASM method fallback iterates a SootUp Set, while SyntheticIdentity folds methods into a class digest in visitation order. The same fallback and Collector logic already exist in pre-upgrade6f498705; ancestor019f00247dc5 (#164) introduced the order-sensitive Collector. The only old→current SyntheticIdentity change is the SootUp body-graph accessor rename. This establishes the source defect predates this recovery; no old-runtime APK control was run, and these two outputs do not isolate a GC cause. A separate narrow correction will sort only fallback methods and assert both traversal order and complete fingerprints using opposite deterministic input orders. No random reruns to seek matching fingerprints and no additional APK performance matrix.
+
+Evidence: `/tmp/sootup-static-review/attempt148/launcher-smoke/` contains the frozen smoke plan, raw invocation/stdout/stderr logs, original failed output, decoder sources/reports and exact member differences. Diagnostic process cleanup and unchanged19-file inventories for each graph are recorded by owner SHA `1c923b9e0246b170a029cc2a31e51c2e777d7c241dc4bc55e1d4cf398c35cf44`. The default-profile candidate remains isolated; real Kotlin/Tika CLI resource acceptance and the fingerprint correction remain pending. Earlier query/loading gains remain retained.
