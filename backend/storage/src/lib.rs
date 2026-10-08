@@ -1,6 +1,7 @@
 //! Rust reader for Graphite's persisted WebGraph storage format.
 
 pub mod bits;
+mod buffered;
 pub mod bvgraph;
 pub mod callsite_index;
 pub mod columns;

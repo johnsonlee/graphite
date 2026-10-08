@@ -163,6 +163,7 @@ pub struct Entry {
 pub struct Container {
     path: PathBuf,
     map: Arc<Mmap>,
+    file: Arc<File>,
     entries: BTreeMap<String, Entry>,
 }
 
@@ -229,6 +230,7 @@ impl Container {
         Ok(Container {
             path: path.to_path_buf(),
             map: Arc::new(map),
+            file: Arc::new(file),
             entries,
         })
     }
@@ -360,6 +362,18 @@ impl Container {
             map: self.map.clone(),
             start: e.offset as usize,
             end: (e.offset + e.size) as usize,
+        })
+    }
+
+    /// The same opened file as the map; no pathname reopen can mix snapshots.
+    pub(crate) fn file_range(&self, name: &str) -> Option<crate::buffered::FileRange> {
+        self.entries.get(name).map(|entry| {
+            crate::buffered::FileRange::new(
+                self.file.clone(),
+                entry.offset,
+                entry.size,
+                format!("{}!/{name}", self.path.display()),
+            )
         })
     }
 
@@ -1089,6 +1103,33 @@ mod tests {
         std::fs::write(dir.join("forward.properties"), b"nodes=3\narcs=2\n").unwrap();
         std::fs::create_dir_all(dir.join("nested")).unwrap();
         std::fs::write(dir.join("nested/empty"), b"").unwrap();
+    }
+
+    #[test]
+    fn buffered_packed_entry_keeps_mapping_identity_and_stops_at_entry_end() {
+        use crate::buffered::ReadWindow;
+        let root = tempdir("buffered-identity");
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        fixture(&src);
+        let path = root.join("g.graphite");
+        pack(&src, &path).unwrap();
+        let source = crate::source::GraphSource::open(&path).unwrap();
+        let (mapped, range) = source.require_buffered("graph.metadata").unwrap();
+        // A pathname reopen would read this replacement instead of the query map.
+        std::fs::rename(&path, root.join("old.graphite")).unwrap();
+        std::fs::write(&path, b"not the mapped container").unwrap();
+        drop(source);
+        let mut reader = ReadWindow::new(range);
+        let mut bytes = [255; 64];
+        let n = reader.copy_prefix(0, &mut bytes).unwrap();
+        assert_eq!(n, mapped.len());
+        assert_eq!(&bytes[..n], &mapped[..]);
+        assert!(bytes[n..].iter().all(|&byte| byte == 255));
+        assert_eq!(reader.copy_prefix(n as u64, &mut bytes).unwrap(), 0);
+        drop(reader);
+        drop(mapped);
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]
