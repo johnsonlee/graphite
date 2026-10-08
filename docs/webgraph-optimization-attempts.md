@@ -11554,3 +11554,8 @@ Decision: retain and integrate the deterministic fallback correction and the ver
 | export/owner-terminal.json | `095ea55fed620f5803b9aefe97d02add33bda03c83948cd778a2e4a576758e06` |
 | launcher-smoke/execution/result.json | `bda870cf1e68a3f902a48dd82787162cb4f17b5bfebec0f99bbe5b1a2f1921ac` |
 | launcher-smoke/execution/owner-terminal.json | `3a055f55a214e714f0684ba57dca32e6b8880e060f62f5fa285327c0edda4b4c` |
+
+
+CI follow-up to Attempt148 (test-only): integrated `8aabdc86` failed Linux `rust-build-test` run37754712723 with40/41 CLI tests passing. Review comment6056729906 reproduced `ETXTBSY` from executing a fake Java script while a concurrent test fork temporarily retained its writable descriptor. Closing the writing thread's descriptor alone does not exclude that overlap. A shared test-only mutex now covers the complete three tests that create executable scripts or launch processes, including the real build invocation and `/bin/kill` checks. The remaining CLI tests do not spawn children. Production probing, flags, timeouts and fallback behavior are unchanged; no retry or global serial test mode was added.
+
+Local validation used the normal parallel test runner: `cargo test --locked --release --target aarch64-apple-darwin --jobs 2 -p graphite-cli -- --nocapture`, with the existing real `GRAPHITE_INDEX_FIXTURE`. All41tests pass; `cargo fmt --all --check` and CLI all-target/all-feature Clippy with `-D warnings` pass. Logs are retained under `/tmp/sootup-static-review/cli-spawn-race-fix/`. This macOS result does not substitute for the new-head Linux CI check; the original failed CI run is retained. This correction changes no measured production artifact or performance conclusion.
