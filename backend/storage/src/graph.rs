@@ -3,14 +3,15 @@
 use crate::bvgraph::{BvError, BvGraph};
 use crate::container::Bytes;
 use crate::io::{
-    check_header, read_i32_at, read_i64_at, MAGIC_NODEDATA, MAGIC_NODEOFFSETS, MAGIC_TYPEINDEX,
+    check_header, read_i32_at, read_i64_at, Cursor, MAGIC_NODEDATA, MAGIC_NODEOFFSETS,
+    MAGIC_TYPEINDEX,
 };
 use crate::metadata::{
     BranchComparison, ClassOverview, Comparisons, Metadata, MetadataError, Resources,
 };
 use crate::node::{
     read_call_site_strings, CallSiteStrings, MethodDesc, Node, NodeDecodeError, NodeId, StrId,
-    NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT,
+    NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_INT_CONSTANT,
 };
 use crate::source::{GraphSource, SourceError};
 use crate::strings::{StringTable, StringTableError};
@@ -437,6 +438,13 @@ impl Graph {
         self.node_offset(id).map(|o| self.nodedata[o + 4])
     }
 
+    /// The complete fixed IntConstant record, without constructing a Node.
+    /// None also means another kind or a truncated record; callers retain their
+    /// ordinary node-property fallback in those cases.
+    pub fn int_constant_value(&self, id: NodeId) -> Option<i32> {
+        read_int_constant_value(&self.nodedata, self.node_offset(id)?)
+    }
+
     pub fn node(&self, id: NodeId) -> Option<Node> {
         let off = self.node_offset(id)?;
         let mut node = Node::read(&self.nodedata, off, self.node_version).ok()?;
@@ -727,3 +735,18 @@ fn build_backward_csr(fwd: &Csr) -> Csr {
 
 #[allow(dead_code)]
 const _: usize = NODE_HEADER_BYTES;
+
+// Match Node::read's id/tag/value reads: do not trust the type index, add an id
+// equality requirement, or use node_tag's unchecked indexing on a truncated record.
+fn read_int_constant_value(data: &[u8], offset: usize) -> Option<i32> {
+    let mut c = Cursor::at(data, offset);
+    c.u32().ok()?;
+    if c.u8().ok()? != TAG_INT_CONSTANT {
+        return None;
+    }
+    c.i32().ok()
+}
+
+#[cfg(test)]
+#[path = "int_constant_tests.rs"]
+mod int_constant_tests;

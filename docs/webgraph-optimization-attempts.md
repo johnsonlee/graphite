@@ -10295,3 +10295,329 @@ Each entry averages only the two original single observations for that arm/cycle
 No additional performance workload was launched as part of this packet.
 
 Evidence directory: `/tmp/sootup-static-review/attempt138/string-bounded-order/measurement`. Candidate source is the exact305-test validated pipeline; parent-relative gains support retaining this increment. Root integrated the byte-identical validated/measured pipeline and independently matched all115 native source/manifest inputs and the exact candidate diff. Integration receipt SHA `a4c438c4b043212c4625ecd142e874305d4a5bc61f6ad555686bf89c3d07207e`. Decision: retain this verified positive increment and continue targeted work on adverse short-query cases. This does not assert preupgrade-wide acceptance; construction/loading and the separate JVM Method gate remain outstanding.
+
+### 2026-10-08 — IntConstant regression diagnosis: actual shared Node layout grows by8 bytes
+
+The pinned Rust1.93 ARM64 release probe imports the actual old6f498 and current storage crates; it does not copy their type definitions, open graphs or measure performance. Original continuation session35239 exited0 (tool12549e). Actual size/alignment: old/current `Node`128/136 bytes, `NodeKind`120/128 bytes, `MethodDesc`40/40 bytes; all align8. Root independently read both raw three-type outputs, matched the result/owner hashes, and freshly confirmed all seven command groups absent. The two18-file storage source inventories and tool pins remained unchanged. Current storage inputs are byte-identical to integrated28c107bd.
+
+This confirms that the ordinal-bearing CallSite variant enlarges the shared Node allocation even for IntConstant. It does not prove allocator size classes, allocation latency, RSS percentages or causation of the observed query regression. The range-predicate scan/decode path therefore has a concrete representation hypothesis to test. Any candidate must preserve the full signed ordinal domain (including negative synthetic ordinals), full NodeId range and missing values; no sentinel collision or extra allocation is authorized as a shortcut.
+
+Evidence: `/tmp/sootup-static-review/intconstant-node-layout/continuation2/result.json` SHA `a5d67b493b301b71a483a4de98cff65400ec0f25ce26fcc45ca18ebb2755d645`; owner receipt `ffc9d946e418aeb33f4d78f02a696683f3affaee290fe3749c610631ac03eeb1`. Original91256 exited1 because the wrapper incorrectly required Cargo's exact rlib under release/deps; Cargo legitimately emitted release/libgraphite_storage.rlib. The first continuation exited1 because the hand-written rustc command omitted the host dependency search path for proc macros. Both failures and all logs are retained; the narrow successful continuation accepted only the exact compiler-artifact path and added the host dependency path. Old clean/build ran once, with hash-bound outputs reused; current clean/build ran once. No production change or performance claim arises from this probe.
+
+### 2026-10-08 — Current138 versus preupgrade, short connections versus reuse: fixed8 underway
+
+The already-reviewed same-`http.client` protocol now runs as original session34567 (launchf5b64f), sealed plan SHA `289303486ac42ae07fb7c650490cd794d7ac5ba5f6b129ae2c12c907bfcd3e9f`. The current arm is the validated138 export e0d971a3, source-equivalent to28c107bd; old remains6f498 export2bf3. Original135 draft/source/proof are preserved, and the only runtime-source revision is the auditor's B identity and scope. The14 client/transport/runner/statistics/schema/mock sources,34 complete typed oracles,64 real graph identities, sample counts and connection behavior are unchanged. All34 queries lack ORDER BY; source parity supports reusing the unchanged oracle, while each actual response still needs complete validation.
+
+Fixed order: A-close,A-keep,B-keep,B-close,B-close,B-keep,A-keep,A-close, c4 only. Per server:first1+warm2+measured60 cycles of34 queries (2142 complete responses,2040 measurements); fixed8 totals17136/16320 with16 metrics captures. Both modes use the same transport, complete-response clock and batches; close creates one explicit connection per query, keep uses one per actual worker with no reconnect/retry. Quantiles are per-server nearest ranks30/57, with both chronological pairs retained; prior urllib cohorts are not pooled. The original failure before sealing was only eight stale nested README pins, corrected to the already-reviewed file hash and retained separately; no server or sample existed at that point. Final195 canonical content pins,1216 fixture stat identities, prior layout process cleanup and the eight free ports passed. No performance outcome is claimed while the original handle is live.
+
+### 2026-10-08 — Connection reuse reduces request latency, but current138 recovery remains mixed
+
+Original measurement34567 terminal0/a4d6b8. The original runner completed its single automatic summary before terminal. Independent raw audit41095 terminal0/ee7524 PASS17136 complete typed bodies,16320 measured,16 raw metrics, all connection identities/statistics/fixture continuity/cleanup.32 owned lifecycle/native/time/client PIDs and8 actual time groups fresh absent. No resampling or replacement.
+
+A=preupgrade6f498/2bf3cd50; B=integrated138 at28c107bd using validated historical e0d971a3 export. Same64 real graphs,34 requests and complete typed oracle. All c4; fixed A-close,A-keep,B-keep,B-close,B-close,B-keep,A-keep,A-close. Each server first1+warm2+measured60 rotated34 cycles,2142 requests/2040 measured, batches4+final2. Each case p50/p95 uses nearest ranks30/57 per server; displayed mode/arm values average two process quantiles, not pooled requests.
+
+Keep is faster than close in all34 p50/p95 arm means for both binaries. A p50 mode effects range−59.220..−8.821%, B−60.002..−9.123%; A p95−57.641..−7.497%, B−56.346..−9.313%. This is a measured same-client connection-lifecycle effect, not a server regression fix or a browser-equivalence claim.
+
+The old/current difference remains mixed. Close has9/34 lower current p50 and13/34 lower p95; keep has21/34 and19/34. Keep-minus-close absolute version gap decreases for23/34 p50 and18/34 p95 arm means, but both paired gap interactions decrease for only4/34 in each metric. Therefore the experiment does not prove that connection setup explains or removes the entire version difference. Earlier urllib/close adverse cohorts remain unchanged and cannot be pooled into this different-client experiment.
+
+#### All68 old/current query comparisons — milliseconds
+
+| Mode | Case | Old→138 p50 ms | Δ% | Pair Δ% | Old→138 p95 ms | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|---:|---:|---:|
+| close | global-wide-four-properties-zero | 0.4597→0.4881 | +6.172 | +2.009/+10.020 | 0.5822→0.6126 | +5.225 | +1.550/+8.949 |
+| close | global-wide-four-properties-targeted | 0.7368→0.7881 | +6.961 | +7.271/+6.672 | 1.0553→0.9885 | -6.322 | -4.591/-7.932 |
+| close | global-wide-four-properties-dense | 1.0919→1.1164 | +2.248 | -0.743/+5.128 | 1.3646→1.3239 | -2.982 | -2.159/-3.766 |
+| close | global-wide-class-pair-zero | 0.4519→0.4610 | +2.010 | -7.702/+11.761 | 0.5949→0.6517 | +9.557 | +23.203/-2.551 |
+| close | global-wide-class-pair-targeted | 0.9675→0.9787 | +1.154 | -3.146/+5.356 | 1.2015→1.1826 | -1.571 | -3.634/+0.415 |
+| close | global-wide-class-pair-dense | 1.1489→1.1640 | +1.315 | -1.688/+4.161 | 1.3626→1.3860 | +1.719 | -0.674/+4.040 |
+| close | global-wide-name-pair-zero | 0.4473→0.4616 | +3.190 | -4.263/+10.688 | 0.5794→0.6069 | +4.754 | -4.674/+14.599 |
+| close | global-wide-name-pair-targeted | 0.9854→0.9869 | +0.152 | -3.407/+3.732 | 1.2156→1.2225 | +0.567 | -0.217/+1.320 |
+| close | global-wide-name-pair-dense | 1.1221→1.1076 | -1.290 | -4.689/+2.169 | 1.3913→1.3333 | -4.170 | -5.433/-2.962 |
+| close | global-wide-caller-class-zero | 0.4421→0.4450 | +0.646 | -8.424/+9.556 | 0.5807→0.6168 | +6.228 | +11.979/+1.411 |
+| close | global-wide-caller-class-targeted | 0.9161→0.9164 | +0.039 | -1.909/+1.961 | 1.1481→1.1012 | -4.085 | +0.418/-8.066 |
+| close | global-wide-caller-class-dense | 1.0593→1.0607 | +0.138 | -1.719/+1.969 | 1.2931→1.2672 | -2.003 | -0.084/-3.756 |
+| close | global-wide-callee-class-zero | 0.4404→0.4379 | -0.554 | -5.260/+3.972 | 0.5577→0.5598 | +0.381 | -2.413/+2.849 |
+| close | global-wide-callee-class-targeted | 0.7569→0.7933 | +4.800 | +3.664/+5.875 | 1.0486→1.0241 | -2.334 | -10.352/+6.040 |
+| close | global-wide-callee-class-dense | 1.0934→1.0796 | -1.265 | -4.213/+1.611 | 1.2765→1.3062 | +2.329 | -2.397/+6.910 |
+| close | global-wide-provenance-zero | 0.4387→0.4375 | -0.280 | -6.022/+5.407 | 0.6081→0.5571 | -8.386 | -12.538/-4.582 |
+| close | global-wide-provenance-targeted | 0.9124→0.8984 | -1.530 | -5.119/+2.034 | 1.0797→1.1055 | +2.387 | -3.557/+8.322 |
+| close | global-wide-provenance-dense | 1.1002→1.0979 | -0.212 | -3.058/+2.582 | 1.2830→1.3120 | +2.255 | -2.109/+6.656 |
+| close | global-wide-aliased-zero | 0.4257→0.4455 | +4.644 | +1.552/+7.564 | 0.5461→0.5767 | +5.600 | -11.655/+23.416 |
+| close | global-wide-aliased-targeted | 0.8851→0.8905 | +0.612 | -0.302/+1.493 | 1.1475→1.0737 | -6.433 | -7.523/-5.356 |
+| close | global-wide-aliased-dense | 1.0894→1.0750 | -1.325 | -3.418/+0.750 | 1.2899→1.3057 | +1.226 | +0.829/+1.591 |
+| close | global-wide-parameterized-zero | 0.4382→0.4502 | +2.738 | -5.126/+10.400 | 0.5804→0.5903 | +1.694 | -9.058/+12.726 |
+| close | global-wide-parameterized-targeted | 0.8390→0.8680 | +3.462 | -1.914/+8.938 | 1.0515→1.1237 | +6.859 | +4.676/+8.913 |
+| close | global-wide-parameterized-dense | 1.0679→1.1039 | +3.373 | +3.372/+3.374 | 1.3307→1.3687 | +2.859 | -0.655/+6.301 |
+| close | global-wide-wrapped-case-insensitive-zero | 0.4369→0.4393 | +0.558 | -6.800/+8.083 | 0.5726→0.5750 | +0.415 | -9.844/+11.285 |
+| close | global-wide-wrapped-case-insensitive-targeted | 0.7400→0.7231 | -2.280 | -5.503/+0.914 | 0.9697→1.1264 | +16.158 | +11.837/+20.538 |
+| close | global-wide-wrapped-case-insensitive-dense | 1.2890→1.3161 | +2.104 | +1.053/+3.126 | 1.5180→1.5161 | -0.122 | +0.471/-0.691 |
+| close | global-wide-wrapped-case-insensitive-distinct-zero | 0.4622→0.4596 | -0.545 | -9.364/+8.643 | 0.5899→0.5748 | -2.567 | -14.615/+9.917 |
+| close | global-wide-wrapped-case-insensitive-distinct-targeted | 0.7095→0.7110 | +0.211 | -4.704/+5.201 | 0.8417→0.8511 | +1.119 | -1.982/+4.138 |
+| close | global-wide-wrapped-case-insensitive-distinct-dense | 3.1385→3.1569 | +0.583 | -0.488/+1.635 | 3.3424→3.4426 | +2.999 | +4.905/+1.210 |
+| close | global-wide-distribution-broad-all-64 | 1.3282→1.3403 | +0.913 | -1.627/+3.437 | 1.5813→1.5813 | +0.000 | +2.533/-2.358 |
+| close | global-wide-distribution-localized-early | 0.6010→0.6014 | +0.066 | -5.284/+5.399 | 0.7553→0.7188 | -4.833 | -4.863/-4.805 |
+| close | global-wide-distribution-localized-late | 0.8155→0.8379 | +2.738 | -1.176/+6.610 | 0.9915→1.0031 | +1.164 | -3.399/+5.695 |
+| close | global-wide-distribution-localized-middle | 0.8197→0.8451 | +3.106 | -0.928/+7.201 | 1.0401→1.0163 | -2.291 | -5.381/+0.684 |
+| keep | global-wide-four-properties-zero | 0.1925→0.1998 | +3.755 | +5.049/+2.475 | 0.2756→0.2769 | +0.491 | +7.758/-6.386 |
+| keep | global-wide-four-properties-targeted | 0.4971→0.4948 | -0.469 | -3.012/+2.126 | 0.7133→0.6998 | -1.887 | -7.113/+4.197 |
+| keep | global-wide-four-properties-dense | 0.8339→0.8167 | -2.056 | -0.472/-3.695 | 1.0829→1.0785 | -0.408 | +6.473/-6.744 |
+| keep | global-wide-class-pair-zero | 0.1980→0.1911 | -3.514 | +0.354/-7.456 | 0.2687→0.2919 | +8.622 | +1.316/+16.301 |
+| keep | global-wide-class-pair-targeted | 0.7149→0.7297 | +2.060 | +3.605/+0.586 | 0.9072→0.9544 | +5.204 | +14.255/-2.830 |
+| keep | global-wide-class-pair-dense | 0.8535→0.8778 | +2.841 | +4.727/+0.949 | 1.0777→1.0969 | +1.780 | +9.972/-5.881 |
+| keep | global-wide-name-pair-zero | 0.1856→0.1846 | -0.539 | +4.622/-5.318 | 0.2454→0.2831 | +15.374 | +14.590/+16.164 |
+| keep | global-wide-name-pair-targeted | 0.7629→0.7485 | -1.884 | +1.282/-5.002 | 1.0145→0.9180 | -9.510 | -1.237/-16.741 |
+| keep | global-wide-name-pair-dense | 0.8311→0.8425 | +1.369 | +2.887/-0.188 | 1.0481→0.9869 | -5.840 | +0.523/-11.691 |
+| keep | global-wide-caller-class-zero | 0.1874→0.1857 | -0.878 | +4.692/-6.240 | 0.2652→0.2742 | +3.394 | -2.151/+9.109 |
+| keep | global-wide-caller-class-targeted | 0.6491→0.6595 | +1.595 | -0.715/+4.018 | 0.8649→0.8623 | -0.292 | +2.564/-3.299 |
+| keep | global-wide-caller-class-dense | 0.7985→0.7896 | -1.124 | +0.399/-2.667 | 1.0331→0.9851 | -4.650 | +3.858/-12.498 |
+| keep | global-wide-callee-class-zero | 0.1796→0.1915 | +6.625 | +1.450/+12.417 | 0.2468→0.2516 | +1.967 | -8.939/+14.930 |
+| keep | global-wide-callee-class-targeted | 0.5210→0.5228 | +0.348 | -1.633/+2.385 | 0.7228→0.7838 | +8.433 | +12.911/+3.959 |
+| keep | global-wide-callee-class-dense | 0.8196→0.8157 | -0.470 | +2.745/-3.687 | 1.0297→1.0107 | -1.845 | +3.059/-6.583 |
+| keep | global-wide-provenance-zero | 0.1895→0.1893 | -0.099 | -1.135/+0.952 | 0.2657→0.2676 | +0.722 | -0.745/+2.097 |
+| keep | global-wide-provenance-targeted | 0.6670→0.6474 | -2.936 | -0.115/-5.614 | 0.8552→0.8363 | -2.207 | +6.203/-9.528 |
+| keep | global-wide-provenance-dense | 0.8456→0.8394 | -0.737 | +1.929/-3.289 | 1.0250→1.0093 | -1.535 | +4.422/-7.101 |
+| keep | global-wide-aliased-zero | 0.1889→0.1837 | -2.790 | +3.328/-8.522 | 0.2643→0.2517 | -4.760 | +3.287/-12.541 |
+| keep | global-wide-aliased-targeted | 0.6706→0.6761 | +0.817 | +0.789/+0.845 | 0.8843→0.8595 | -2.808 | +0.175/-5.757 |
+| keep | global-wide-aliased-dense | 0.8438→0.8038 | -4.741 | -2.534/-6.885 | 1.0591→1.0037 | -5.236 | -1.087/-9.259 |
+| keep | global-wide-parameterized-zero | 0.1952→0.1903 | -2.497 | +2.026/-6.660 | 0.2796→0.2932 | +4.873 | +24.227/-11.622 |
+| keep | global-wide-parameterized-targeted | 0.6118→0.5919 | -3.248 | +0.149/-6.672 | 0.8074→0.7552 | -6.466 | -7.033/-5.861 |
+| keep | global-wide-parameterized-dense | 0.8175→0.7923 | -3.089 | +0.621/-6.691 | 1.0300→0.9920 | -3.687 | +3.215/-10.045 |
+| keep | global-wide-wrapped-case-insensitive-zero | 0.1970→0.1827 | -7.254 | -5.514/-8.944 | 0.2644→0.2669 | +0.922 | +11.149/-8.486 |
+| keep | global-wide-wrapped-case-insensitive-targeted | 0.4622→0.4810 | +4.061 | +5.999/+2.102 | 0.6912→0.7386 | +6.851 | +15.132/-0.697 |
+| keep | global-wide-wrapped-case-insensitive-dense | 1.0294→1.0431 | +1.328 | +5.526/-2.857 | 1.2656→1.2317 | -2.685 | -5.414/+0.366 |
+| keep | global-wide-wrapped-case-insensitive-distinct-zero | 0.2222→0.2190 | -1.444 | +1.277/-4.078 | 0.2946→0.2843 | -3.500 | -5.199/-1.798 |
+| keep | global-wide-wrapped-case-insensitive-distinct-targeted | 0.4689→0.4710 | +0.431 | -1.469/+2.392 | 0.5524→0.5741 | +3.934 | +7.959/+0.175 |
+| keep | global-wide-wrapped-case-insensitive-distinct-dense | 2.8617→2.8689 | +0.250 | +1.270/-0.776 | 3.0918→3.1220 | +0.976 | +5.625/-3.685 |
+| keep | global-wide-distribution-broad-all-64 | 1.0898→1.0642 | -2.344 | -0.199/-4.489 | 1.2778→1.2770 | -0.060 | +2.466/-2.659 |
+| keep | global-wide-distribution-localized-early | 0.3399→0.3417 | +0.540 | +1.456/-0.365 | 0.4315→0.4271 | -1.014 | -0.472/-1.582 |
+| keep | global-wide-distribution-localized-late | 0.5651→0.5581 | -1.250 | +0.493/-3.000 | 0.6735→0.7283 | +8.135 | +8.712/+7.547 |
+| keep | global-wide-distribution-localized-middle | 0.5430→0.5403 | -0.510 | +3.982/-4.867 | 0.7316→0.7130 | -2.537 | -6.909/+2.117 |
+
+Close comparisons use global0→3 and7→4; keep uses1→2 and6→5. Adverse examples: close wrapped-case-insensitive-targeted p95+16.158%; keep name-pair-zero p95+15.374%. Full tables and raw mean/max retain all adverse tails, not a clean subset.
+
+#### All34 connection interactions — microseconds
+
+For each case, Δgap=(current−old)keep−(current−old)close. Negative means the absolute version gap is smaller with reuse; it does not mean current is necessarily faster. These are differences of empirical per-run quantiles, not quantiles of per-request differences.
+
+| Case | Mean p50 Δgap μs | Both p50 pair Δgap μs | Mean p95 Δgap μs | Both p95 pair Δgap μs |
+|---|---:|---:|---:|---:|
+| global-wide-four-properties-zero | -21.146 | +0.791/-43.083 | -29.063 | +11.708/-69.834 |
+| global-wide-four-properties-targeted | -53.624 | -66.833/-40.416 | +53.249 | -7.876/+114.375 |
+| global-wide-four-properties-dense | -41.688 | +3.957/-87.334 | +36.270 | +95.958/-23.417 |
+| global-wide-class-pair-zero | -16.043 | +35.583/-67.668 | -33.688 | -126.167/+58.791 |
+| global-wide-class-pair-targeted | +3.562 | +55.249/-48.125 | +66.084 | +164.459/-32.291 |
+| global-wide-class-pair-dense | +9.147 | +59.293/-40.999 | -4.229 | +112.916/-121.374 |
+| global-wide-name-pair-zero | -15.271 | +27.375/-57.917 | +10.188 | +63.626/-43.250 |
+| global-wide-name-pair-targeted | -15.875 | +43.374/-75.124 | -103.376 | -9.125/-197.626 |
+| global-wide-name-pair-dense | +25.855 | +77.375/-25.666 | -3.187 | +79.167/-85.541 |
+| global-wide-caller-class-zero | -4.500 | +45.540/-54.541 | -27.166 | -69.208/+14.875 |
+| global-wide-caller-class-targeted | +10.001 | +12.625/+7.376 | +44.374 | +18.248/+70.500 |
+| global-wide-caller-class-dense | -10.438 | +21.291/-42.166 | -22.145 | +39.293/-83.582 |
+| global-wide-callee-class-zero | +14.334 | +25.460/+3.208 | +2.729 | -11.334/+16.792 |
+| global-wide-callee-class-targeted | -34.521 | -35.583/-33.459 | +85.438 | +204.208/-33.333 |
+| global-wide-callee-class-dense | +9.980 | +68.001/-48.041 | -48.730 | +61.083/-158.542 |
+| global-wide-provenance-zero | +1.041 | +24.124/-22.042 | +52.917 | +71.001/+34.833 |
+| global-wide-provenance-targeted | -5.625 | +45.791/-57.040 | -44.645 | +87.751/-177.041 |
+| global-wide-provenance-dense | -3.896 | +49.292/-57.084 | -44.667 | +70.959/-160.293 |
+| global-wide-aliased-zero | -25.043 | -0.334/-49.752 | -43.167 | +73.208/-159.542 |
+| global-wide-aliased-targeted | +0.062 | +7.917/-7.792 | +48.980 | +87.292/+10.668 |
+| global-wide-aliased-dense | -25.562 | +16.001/-67.126 | -71.271 | -21.583/-120.959 |
+| global-wide-parameterized-zero | -16.875 | +25.958/-59.707 | +3.792 | +115.583/-108.000 |
+| global-wide-parameterized-targeted | -48.916 | +17.125/-114.958 | -124.332 | -106.333/-142.332 |
+| global-wide-parameterized-dense | -61.271 | -30.209/-92.333 | -76.020 | +40.375/-192.416 |
+| global-wide-wrapped-case-insensitive-zero | -16.729 | +19.334/-52.791 | +0.062 | +86.250/-86.125 |
+| global-wide-wrapped-case-insensitive-targeted | +35.645 | +68.416/+2.874 | -109.332 | -15.833/-202.832 |
+| global-wide-wrapped-case-insensitive-dense | -13.459 | +43.416/-70.333 | -32.126 | -79.334/+15.083 |
+| global-wide-wrapped-case-insensitive-distinct-zero | -0.688 | +46.959/-48.334 | +4.833 | +72.417/-62.751 |
+| global-wide-wrapped-case-insensitive-distinct-targeted | +0.520 | +26.625/-25.584 | +12.313 | +58.918/-34.292 |
+| global-wide-wrapped-case-insensitive-distinct-dense | -11.146 | +51.625/-73.916 | -70.062 | +15.375/-155.499 |
+| global-wide-distribution-broad-all-64 | -37.666 | +19.375/-94.708 | -0.770 | -6.667/+5.126 |
+| global-wide-distribution-localized-early | +1.438 | +36.626/-33.750 | +32.126 | +32.751/+31.500 |
+| global-wide-distribution-localized-late | -29.395 | +12.333/-71.124 | +43.250 | +92.833/-6.333 |
+| global-wide-distribution-localized-middle | -28.230 | +28.958/-85.417 | +5.270 | +2.791/+7.749 |
+
+All within-binary keep/close pair values and means for every case are preserved in `connectionContrasts` in the audit, including first/warm separately in original summary/raw records. No first-use or warm request enters the60-sample percentile.
+
+#### Resource scopes
+
+| Mode | Metric | Old→138 | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|
+| close | wallSeconds (s) | 40.0000→22.5200 | -43.700 | -43.810/-43.592 |
+| close | cpuSeconds (s) | 40.3050→23.1550 | -42.551 | -41.589/-43.476 |
+| close | peakRssBytes (MiB) | 6282.5156→6328.0938 | +0.725 | +0.753/+0.698 |
+| close | measuredWindowCpuSeconds (s) | 4.1550→4.1400 | -0.361 | +0.983/-1.651 |
+| keep | wallSeconds (s) | 39.9100→22.3350 | -44.037 | -44.067/-44.006 |
+| keep | cpuSeconds (s) | 40.5600→22.9900 | -43.319 | -42.797/-43.834 |
+| keep | peakRssBytes (MiB) | 6281.7500→6322.6094 | +0.650 | +0.543/+0.758 |
+| keep | measuredWindowCpuSeconds (s) | 4.0800→4.0200 | -1.471 | +1.229/-4.156 |
+
+Measured query-window CPU is same native PID/lstart ps TIME delta at0.01s resolution; includes request gaps/client validation idle and native background work. Whole time-l CPU/wall/RSS includes graph loading and all cycles. About43% lower whole CPU here cannot be substituted for query-window CPU: close changes−0.361%, keep−1.471%, each with mixed pairs. Whole peak RSS is+0.725% close/+0.650% keep, both pairs higher, and is not query-only peak.
+
+#### Mixed34 server metrics means — milliseconds
+
+| Mode | Metric | Old→138 mean ms | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|
+| close | HTTP | 0.490470→0.486423 | -0.825 | +1.250/-2.824 |
+| close | guard | 0.430481→0.427756 | -0.633 | +1.542/-2.734 |
+| keep | HTTP | 0.491699→0.491105 | -0.121 | +2.410/-2.626 |
+| keep | guard | 0.425415→0.423085 | -0.548 | +1.535/-2.620 |
+
+Raw metrics independently reconstruct2040 HTTP/guard successes per measured window, zero failure/rejection increments, active0 and coherent bucket/count/sum/max. Mixed34 means are sum/count only; coarse first10ms bucket provides no exact submillisecond p95. HTTP ends at Response construction before final transfer; guard ends before serialization. Old Source assembly is inside guard while current assembly is before guard, so guard work scope is not perfectly matched. Server HTTP mixed means are nearly unchanged in both modes despite lower keep client latency.
+
+#### Connection and cleanup proof
+
+Each of8 clients created4 actual workers. Every close run created2142 connection objects and2142 explicit one-time connect attempts; every keep run created4 objects/4 attempts. Worker ownership, monotonically numbered identities, socket address pairs, complete consumption, no concurrent reuse, no implicit reconnect, will_close rejection, complete-response/partial-error retention and cleanup were independently checked. Readiness/metrics sockets are separate from these query counts. No connection mode used a different client library.
+
+The source protocol reads chunks and joins after endNs, retains partial bytes on errors, drains batches before validation, and rejects any failed cohort. No failure occurred in measurement. One preexecution seal conflict in nested README pins was retained and corrected before any sample; this was not a discarded run.
+
+Observer retained252 process snapshots, no listed events, but remains DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY/exclusiveWindowClaim=false. One-second process metadata misses short activity/unknown I/O. No quiet-window, causal socket/accept scheduling claim, production confidence or final-cap acceptance.
+
+#### Evidence
+
+- `plan.sealed.json` SHA `289303486ac42ae07fb7c650490cd794d7ac5ba5f6b129ae2c12c907bfcd3e9f`
+- `execution/owner-terminal.json` SHA `5130d5a0fd4384b544679a2050a53f4d04b67fe74384c924956d8d3a072191c5`
+- `execution/results.json` SHA `d28002f0ab8fb86b787ede997f1acafd59e9650a5440e67b170986d160509ef5`
+- `execution/summary.json` SHA `f1e947a5c8662db0ed107b17d711c3e8fa9425b547e5d0dcb54a8360e289ab4f`
+- `independent-audit/audit.json` SHA `2837c9c8b5ca9713336f38f9b61f0c2b3c9657a68d634a91318135648f6dc11a`
+- `independent-audit/audit.py` SHA `6139b740c35daad7b9da1770f1d4ba14783da06b558644320bbd44c40c781825`
+- `independent-audit/raw_checks.py` SHA `7831978644c18497f4b16134ce266f11a3b35f5bfdc4958239076ebbec77dcb2`
+
+Exact once command: `/opt/homebrew/opt/python@3.14/bin/python3.14 run.py --plan plan.sealed.json --execute-root-released` from `/tmp/sootup-static-review/native-cumulative-135/connection-reuse-full34`; macOS/M3 Max, Rust1.93 ARM64 release exports, Python3.14.7, no JVM. This is a direct preupgrade/current query comparison; main-relative CI remains separate. No next workload was part of this packet.
+
+Root independently matched all68 published p50/p95 rows and both pairs to the raw auditor output, verified owner/audit hashes and freshly checked32 owned PIDs/eight groups absent. Decision: retain138 and the complete connection-mode evidence; do not accept complete Query recovery. Connection reuse changes the client boundary materially but does not eliminate version regressions: keep name-pair-zero p95 remains0.2454165→0.283146ms (+15.374%, both pairs+14.590/+16.164%). Keep does not replace the earlier short-connection results, and no implementation gain is attributed to changing the client connection mode. Continue isolated source candidates for decoded-node cost while retaining all adverse cases.
+
+### 2026-10-08 — Current28c CI passes; remaining work is preupgrade acceptance
+
+At exact28c107bda10583ebe21198aa186198e9c90573df, JVM workflow37713740646, Rust37713740773 and complete benchmark37713740737 all finish success. The latter has no failed jobs; Method compatibility113106619140, large-corpus113105424801 and required benchmark-regression-gate113109332534 pass. Previous5461 save and3cbd Method failures remain historical observations;28c changes native Rust sorting and documentation only, so the new JVM passes do not establish a JVM fix. Main-relative CI is now green, while direct preupgrade Query cohorts above still show adverse cases and construction/loading acceptance remains incomplete.
+
+### 2026-10-08 — Attempts139/140 source candidates for decoded-node cost
+
+139 isolates shared CallSite scalar presence: three full-width payloads plus an eight-state enum preserve every i32/u32 value and independent None, aiming to restore Node128/NodeKind120 without allocation or unsafe code. It migrates seven internal consumers and adds four correctness tests, including actual type-size assertions. It also changes public Rust CallSite construction/destructuring fields and nested Debug shape; those compatibility boundaries are explicit, and no runtime benefit or successful build is claimed. Source patch SHA `c7acac58bb610600f56802da78653bacd8debddc0ffbdbad4274b99c2b4eec12`, under `/tmp/sootup-static-review/attempt139/callsite-presence`. The candidate remains isolated.
+
+140 instead tries a complete checked nine-byte IntConstant scalar read for the value property, followed by the original node-property fallback for every other tag or truncated record. Node layout and public construction fields remain unchanged. It avoids successful scalar Node/Arc construction but reads the fixed record again for repeated properties and adds a header probe to other value types; control-case costs must be measured. All matcher/evaluator/tick/probe call sites remain unchanged. Six source tests cover full signed values, every truncated prefix, legacy header-ID behavior, typed full-decode oracles, cross-graph/epoch isolation, full properties, range results/errors and cancellation boundaries. The source patch SHA is `c9ffbf53c08542d50c403a0a7fd31765037a30b275d8aa22e079a2a343b91deb`, under `/tmp/sootup-static-review/attempt140/intconstant-scalar`. Root reviewed the complete source candidate;140 receives the next serial correctness slot ahead of139 because it avoids the public field migration. Neither candidate is integrated or accepted on source inference alone.
+
+Current28c small CI artifacts further delimit that success: Kotlin main→PR build36,716→35,987ms, save9,440→8,556ms, mapped load125→160ms (+28%, below the CI30%/50ms gate), coarse query2,445→1,725ms, pipeline48,726→46,428ms. Method4 middle batch wall286.527570→278.094161ms (−2.943%); its advisory processCPU counter540,000,000→680,000,000ns rises25.926%. Both initial comparisons pass, so neither has a reverse confirmation. Source changes since the earlier JVM failures remain native/documentation only. The passing aggregate thresholds and advisory resource classification do not establish the user's preupgrade p50/p95 or separate CPU/RSS constraints. Exact raw reconciliation: `/tmp/sootup-static-review/28c-query-ci/raw-verification.json`.
+
+140 initial actual validation ran as72787, terminal1/tool22b574: all311 tests (31CLI/122Cypher/118Explore/1integration/39storage),71 required names, fmt, strict lint and CLI build passed, but final strict fixture continuity rejected changed ctimes from the test's hard links. This was a test isolation failure, not an accepted validation/export. All19 fixture contents independently match their historical SHA256s in attempt123/build2-plan; size/inode/mtime remain unchanged and link counts return to1. The narrow correction copies the small temporary fixture files instead of linking them, preserving the exact production change. Original failure/diff and explicit content-verified stat rebaseline are retained. The full corrected validation is now original43632 (launch9efd7a), plan SHA `edcea1eabfff78865b6a43adee8cb70f10f54cf9ddd8f057abad5e4e4d250b4b`; no candidate performance outcome is claimed.
+
+140 corrected validation is now terminal success: original43632 exited0/tool98bc28. All311 tests and71 required names, formatting, strict3package lint and CLI export pass; all117 actual native source inputs and19 fixture contents/stat identities are unchanged across validation. The independent raw audit (tool657c3e exit0) matched every actual named test and raw command exit, exact four-file candidate diff, compiler worktree, source pins, original historical fixture SHA256s and exported binary. Root additionally checked the audit/owner identities and fresh absence of all observed PIDs/groups. Independent audit SHA `5959e12f936ef20943c6e3691f8d4bba1a6818710568a35990f5feb8ee0610d9`; owner `171bc1091485b2eea34a221393aff1dcf68dd39fb52cbdcdbff68c74ee6e1ee1`; result `ea2d24497d86d51c6ae7e32604477dde37f0ba57a898fe1818e7a3161c33d6d2`; export `e2d9e405dc0155c1429b39a2db81e57c68efe8294268737f9e93d4d2105dfbf2`. Original failed72787 remains intact.
+
+The next matched140/138 performance packet reuses the complete fixed16 full-Kotlin/Tika common-five protocol. Root verified graph/oracle/query/budget/timing/statistics/metrics equality and all16 actual server argv, which differ only in declared binaries and ports. The frozen complete oracle retains its original135 capture identity0d639648; a separate explicit `frozenOracleBinarySha256` avoids falsely relabelling that oracle as either new arm. Its exact fields, including ordinal, remain unchanged, and138 already passed the same full2640-response oracle comparison. The isolated140 candidate is still not integrated, and no latency/CPU/RSS benefit is established by its correctness result.
+
+The final140 fixed16 plan is sealed as `3c1d057ace9231378b48b87c2fc1ad5eca99382daa114c7fdc666b1c868af7fd` and started once as original69939 (launchc15695). Final204 canonical content pins,38 full-graph stat identities, prior43632 process cleanup and16 ports passed. Root independently confirmed that sealing changed only release/pending/gate/receipt fields; all16 workloads are unchanged. This original measurement remains active; no result is claimed before terminal and independent raw audit.
+
+Deferred construction-candidate continuity check:137 still lives at823eeda55184636fa00a8cac2e9986fc2890f6ef with its original builder patch and2113-test evidence. Current28c differs in ten SootUp build/loader/interceptor/folding/fixture/test files since that base; a metadata-only git path comparison confirms this. The historical statement that root JVM sources matched823e applied at the earlier observation, not current-head construction acceptance. The small builder candidate remains isolated and unmeasured. Any later construction comparison must incorporate current SootUp sources and validate that composition; the historical test run cannot be relabelled as that current composition. No JVM work runs alongside69939 Query measurement.
+
+### Attempt140 — IntConstant scalar access: measured positive increment with retained mixed controls
+
+A = validated138 parent `e0d971a34ea441ed9217e079f6422b2801a739c31229ac0da59315863056ed3e`; B = validated140 `e2d9e405dc0155c1429b39a2db81e57c68efe8294268737f9e93d4d2105dfbf2`, exact28c base plus IntConstant scalar access. This measures the incremental candidate, not preupgrade acceptance.
+
+Fixed16: full Kotlin2.0.21/Tika2.9.2 × c1/c4 × ABBA; unchanged fivequeries, 1first+2warm+30measured,2640 full responses/2400measured and32metrics scrapes. Full frozen current oracle retains ordinal and capture identity0d639648; both arms matched it exactly. Nearest ranks15/29 independently recomputed. Below means average the two per-process statistics, without pooling cases/samples. Pair order is forward A0→B1, reverse A3→B2. Negative is lower.
+
+Measurement original69939 terminal0/54feef; unchanged summary59239 terminal0/2c0ce5; independent auditor51709 terminal0/22d81f, PASS all2640 typed bodies/2400 measured/20groups/32scrapes/statistics/resources/fixture stats. All64 lifecycle/native/time/client PIDs and16 actual time groups fresh absent; all client exits0, owned nativeSIGTERM/time−15, cleanupErrors empty.
+
+#### All20 steady query groups
+
+| Corpus/c | Query | p50 A→B ms | Mean Δ | Pair Δ | p95 A→B ms | Mean Δ | Pair Δ |
+|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin c1 | line LIMIT512 | 0.746333→0.750875 | +0.608% | +0.709% / +0.509% | 0.825604→0.829041 | +0.416% | -1.383% / +2.269% |
+| kotlin c1 | CallSite materialization LIMIT32 | 0.437896→0.428250 | -2.203% | -2.737% / -1.667% | 0.590542→0.495208 | -16.143% | -27.770% / -0.059% |
+| kotlin c1 | CallSite string ORDER BY LIMIT20 | 1217.679688→1210.979292 | -0.550% | -0.401% / -0.699% | 1237.107229→1225.262542 | -0.957% | -0.554% / -1.358% |
+| kotlin c1 | IntConstant ORDER BY LIMIT20 | 4.144916→3.913125 | -5.592% | -3.976% / -7.110% | 4.362208→4.214167 | -3.394% | -1.079% / -5.576% |
+| kotlin c1 | IntConstant predicate | 2.370626→2.121459 | -10.511% | -7.594% / -13.230% | 3.076416→2.872041 | -6.643% | -5.251% / -7.974% |
+| kotlin c4 | line LIMIT512 | 0.984396→0.967770 | -1.689% | -1.288% / -2.106% | 1.225375→1.225771 | +0.032% | -2.667% / +2.878% |
+| kotlin c4 | CallSite materialization LIMIT32 | 0.656208→0.650583 | -0.857% | -1.766% / +0.191% | 0.932542→0.912605 | -2.138% | +1.409% / -5.813% |
+| kotlin c4 | CallSite string ORDER BY LIMIT20 | 1228.034229→1209.056208 | -1.545% | -0.788% / -2.296% | 1246.348229→1224.565479 | -1.748% | -0.879% / -2.603% |
+| kotlin c4 | IntConstant ORDER BY LIMIT20 | 4.133354→3.886271 | -5.978% | -5.641% / -6.317% | 4.540854→4.223167 | -6.996% | -3.556% / -10.377% |
+| kotlin c4 | IntConstant predicate | 3.185792→2.896501 | -9.081% | -8.835% / -9.325% | 3.691791→3.297292 | -10.686% | -9.701% / -11.632% |
+| tika c1 | line LIMIT512 | 0.793416→0.788208 | -0.656% | +1.486% / -2.725% | 0.913979→0.883625 | -3.321% | -0.281% / -6.106% |
+| tika c1 | CallSite materialization LIMIT32 | 0.437771→0.419771 | -4.112% | -2.517% / -5.642% | 0.574479→0.477229 | -16.928% | -17.075% / -16.786% |
+| tika c1 | CallSite string ORDER BY LIMIT20 | 924.001583→920.873458 | -0.339% | -0.286% / -0.391% | 939.419042→938.506625 | -0.097% | -0.077% / -0.117% |
+| tika c1 | IntConstant ORDER BY LIMIT20 | 23.705749→22.517313 | -5.013% | -5.399% / -4.627% | 25.187459→23.729979 | -5.787% | -5.489% / -6.082% |
+| tika c1 | IntConstant predicate | 13.492062→12.099958 | -10.318% | -10.297% / -10.339% | 14.453646→12.926562 | -10.565% | -9.736% / -11.377% |
+| tika c4 | line LIMIT512 | 1.041834→1.049916 | +0.776% | -0.582% / +2.321% | 1.420521→1.493229 | +5.118% | +16.290% / -5.898% |
+| tika c4 | CallSite materialization LIMIT32 | 0.693666→0.670104 | -3.397% | -1.641% / -5.255% | 1.085209→1.078937 | -0.578% | -6.252% / +5.924% |
+| tika c4 | CallSite string ORDER BY LIMIT20 | 923.535979→923.812667 | +0.030% | +0.267% / -0.208% | 938.805604→939.030417 | +0.024% | -0.067% / +0.116% |
+| tika c4 | IntConstant ORDER BY LIMIT20 | 24.097145→22.580833 | -6.292% | -5.865% / -6.714% | 25.310979→24.230667 | -4.268% | -3.878% / -4.656% |
+| tika c4 | IntConstant predicate | 14.367750→12.640937 | -12.019% | -10.699% / -13.326% | 15.113187→13.395396 | -11.366% | -12.129% / -10.587% |
+
+#### Resource scopes
+
+Window CPU is the measured150 mixed-query native process counter delta (0.01s ps resolution). Whole CPU/RSS includes startup/load/first/warm and all requests; it is not query-only memory. RSS uses decimal MB here.
+
+| Group | Metric | A→B | Mean Δ | Pair Δ |
+|---|---|---:|---:|---:|
+| kotlin-current c1 | wallSeconds (s) | 43.030000→42.925000 | -0.244% | +0.536% / -1.020% |
+| kotlin-current c1 | cpuSeconds (s) | 41.405000→41.195000 | -0.507% | -0.170% / -0.843% |
+| kotlin-current c1 | rssBytes (MB) | 582.033408→577.863680 | -0.716% | -0.522% / -0.913% |
+| kotlin-current c1 | windowCpuSeconds (s) | 36.725000→36.495000 | -0.626% | -0.437% / -0.815% |
+| kotlin-current c4 | wallSeconds (s) | 42.540000→41.900000 | -1.504% | -0.944% / -2.060% |
+| kotlin-current c4 | cpuSeconds (s) | 41.775000→41.120000 | -1.568% | -0.939% / -2.190% |
+| kotlin-current c4 | rssBytes (MB) | 606.945280→604.291072 | -0.437% | -0.019% / -0.853% |
+| kotlin-current c4 | windowCpuSeconds (s) | 37.060000→36.430000 | -1.700% | -1.059% / -2.334% |
+| tika-current c1 | wallSeconds (s) | 34.090000→33.830000 | -0.763% | -0.853% / -0.673% |
+| tika-current c1 | cpuSeconds (s) | 32.430000→32.275000 | -0.478% | -0.496% / -0.460% |
+| tika-current c1 | rssBytes (MB) | 524.419072→524.345344 | -0.014% | -0.016% / -0.013% |
+| tika-current c1 | windowCpuSeconds (s) | 28.800000→28.660000 | -0.486% | -0.454% / -0.518% |
+| tika-current c4 | wallSeconds (s) | 32.555000→32.495000 | -0.184% | -0.092% / -0.277% |
+| tika-current c4 | cpuSeconds (s) | 32.485000→32.385000 | -0.308% | -0.123% / -0.493% |
+| tika-current c4 | rssBytes (MB) | 649.117696→652.378112 | +0.502% | -0.545% / +1.581% |
+| tika-current c4 | windowCpuSeconds (s) | 28.840000→28.760000 | -0.277% | -0.104% / -0.451% |
+
+#### Original16 raw resource rows
+
+| Run | Whole wall s | Whole CPU s | Peak RSS MB | Measured native CPU s |
+|---|---:|---:|---:|---:|
+| 00-kotlin-current-c1-0-A | 42.910000 | 41.280000 | 584.237056 | 36.630000 |
+| 01-kotlin-current-c1-1-B | 43.140000 | 41.210000 | 581.189632 | 36.470000 |
+| 02-kotlin-current-c1-2-B | 42.710000 | 41.180000 | 574.537728 | 36.520000 |
+| 03-kotlin-current-c1-3-A | 43.150000 | 41.530000 | 579.829760 | 36.820000 |
+| 04-kotlin-current-c4-0-A | 42.360000 | 41.540000 | 604.749824 | 36.840000 |
+| 05-kotlin-current-c4-1-B | 41.960000 | 41.150000 | 604.635136 | 36.450000 |
+| 06-kotlin-current-c4-2-B | 41.840000 | 41.090000 | 603.947008 | 36.410000 |
+| 07-kotlin-current-c4-3-A | 42.720000 | 42.010000 | 609.140736 | 37.280000 |
+| 08-tika-current-c1-0-A | 33.980000 | 32.270000 | 525.615104 | 28.650000 |
+| 09-tika-current-c1-1-B | 33.690000 | 32.110000 | 525.533184 | 28.520000 |
+| 10-tika-current-c1-2-B | 33.970000 | 32.440000 | 523.157504 | 28.800000 |
+| 11-tika-current-c1-3-A | 34.200000 | 32.590000 | 523.223040 | 28.950000 |
+| 12-tika-current-c4-0-A | 32.590000 | 32.490000 | 658.718720 | 28.850000 |
+| 13-tika-current-c4-1-B | 32.560000 | 32.450000 | 655.130624 | 28.820000 |
+| 14-tika-current-c4-2-B | 32.430000 | 32.320000 | 649.625600 | 28.700000 |
+| 15-tika-current-c4-3-A | 32.520000 | 32.480000 | 639.516672 | 28.830000 |
+
+#### Server metrics: mixed-five means only
+
+Each window independently parses the original before/after Prometheus bodies:150 successful HTTP and guard queries, zero rejected/failure outcomes, active0 at both ends. These are sum/count means, not per-case or p95. HTTP ends at Response construction, excluding final network transfer; guard ends before serialization. Parent and candidate share the route work boundary. First histogram bucket10ms prevents exact submillisecond percentiles.
+
+| Group | Scope | A→B mean ms | Δ | Pair Δ |
+|---|---|---:|---:|---:|
+| kotlin-current c1 | HTTP | 245.107347→243.534242 | -0.642% | -0.450% / -0.833% |
+| kotlin-current c1 | guard | 245.052549→243.480178 | -0.642% | -0.450% / -0.832% |
+| kotlin-current c4 | HTTP | 247.203676→243.159945 | -1.636% | -0.985% / -2.279% |
+| kotlin-current c4 | guard | 247.139299→243.093294 | -1.637% | -0.986% / -2.281% |
+| tika-current c1 | HTTP | 192.132284→191.117693 | -0.528% | -0.502% / -0.554% |
+| tika-current c1 | guard | 192.068645→191.050575 | -0.530% | -0.504% / -0.556% |
+| tika-current c4 | HTTP | 192.586331→191.919344 | -0.346% | -0.164% / -0.529% |
+| tika-current c4 | guard | 192.509370→191.844074 | -0.346% | -0.165% / -0.526% |
+
+First/warm all60 case-cycle rows and their two pairs remain in `/private/tmp/sootup-static-review/attempt140/intconstant-scalar/measurement/owner-results.md`; they are not pooled into steady quantiles.
+
+#### Scope and retained failure
+
+Observer retained 596 process snapshots and 0 classified events, with 0 external lifetime limitations. Label remains `DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY`, exclusiveWindowClaim=false. One-second metadata can miss short events/unknown native IO; no quiet-window or causal attribution claim.
+
+Lower mean p50 in 17/20 and mean p95 in 16/20; all adverse rows and both directions remain above. Finite n30 and two paired processes do not establish production confidence or final5% limits.
+
+Correctness failure72787 is retained:311tests/fmt/lint/build passed but test hard links changed18 source ctimes and final continuity failed; no binary exported. All19 fixture contents matched historical attempt123 SHA. Test-only copy repair and strict fresh baseline yielded validation2 43632 full311/71names/fmt/lint/export PASS; independent audit5959e12f. No measurement failure or replacement occurred.
+
+Inherited summarize.py scope prose mentions preupgrade; this is stale text retained to keep the reviewed script identical. The sealed arms, raw commands and this report identify the actual matched138→140 comparison.
+
+#### Evidence hashes
+
+- `measurement.plan.sealed.json`: `3c1d057ace9231378b48b87c2fc1ad5eca99382daa114c7fdc666b1c868af7fd`
+- `measurement-execution/owner-terminal.json`: `a2e9ad386b5d76b4ba4321d4b23c75b4da7f1e1debdc028613eee4649c416d91`
+- `measurement-execution/results.json`: `a6e22395b3d1645bd8710899f9fe0413dff51bffb868edba02432f209aca9f14`
+- `measurement-summary.json`: `bc97168c77f313ec725adb66eb02c48812813a862cc0336ae9706b96ea976944`
+- `independent-audit/audit.json`: `dbedef52216a6e51512c69d9a4a3cc1f103c1a0f4bcc465db9c3dddd3ef59dd2`
+
+Root integration verified all117 native input contents and the exact four-file binary diff against corrected validation2; the same tested and measured code is now applied to the production branch. All20 published p50/p95 rows and both paired deltas match the independent raw audit; fresh owned PIDs/time groups are absent. Integration receipt: `/tmp/sootup-static-review/attempt140/intconstant-scalar/root-integration-verification.json`, SHA `e1fec0ffe2073f20a10cba1d7458d646eb46640539291506beb07552271ce841`. Reusing the identical-source311-test/full-lint validation avoids claiming a second test run. This retains the verified IntConstant gain while preserving mixed controls; it does not establish preupgrade recovery or final resource-cap acceptance.

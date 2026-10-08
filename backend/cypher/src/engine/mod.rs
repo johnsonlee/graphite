@@ -262,6 +262,11 @@ impl GraphContext for Executor {
                 _ => {}
             }
         }
+        if key == "value" {
+            if let Some(value) = self.graph(node.source).int_constant_value(node.id) {
+                return Value::Int(i64::from(value));
+            }
+        }
         match self.node(node) {
             Some(n) => props::node_property(self.graph(node.source), &n, key),
             None => Value::Null,
@@ -351,3 +356,6 @@ impl GraphContext for Executor {
         self.tick()
     }
 }
+
+#[cfg(test)]
+mod int_constant_tests;
