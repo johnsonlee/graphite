@@ -8,6 +8,7 @@ public enum FrontendError: Error, CustomStringConvertible {
     case noInput
     case buildFailed(Int32)
     case describeFailed(Int32)
+    case manifestFailed(Int32)
     case packageUnreadable
     case noSwift
     case noSources(String)
@@ -24,6 +25,7 @@ public enum FrontendError: Error, CustomStringConvertible {
                 "or --index-store <dir> with --sources <dir>"
         case .buildFailed(let code): return "swift build failed with exit code \(code)"
         case .describeFailed(let code): return "swift package describe failed with exit code \(code)"
+        case .manifestFailed(let code): return "swift package dump-package failed with exit code \(code)"
         case .packageUnreadable: return "swift package describe printed no targets"
         case .noSwift: return "no swift executable found; set GRAPHITE_SWIFT or put swift on PATH"
         case .noSources(let path): return "no Swift or Objective-C sources under \(path)"
@@ -212,7 +214,8 @@ public struct Frontend {
         progress(Progress(phase: "swift build", done: 0, total: 1))
         let process = Process()
         process.executableURL = URL(fileURLWithPath: swift)
-        process.arguments = ["build", "--package-path", package, "-c", options.configuration]
+        // SwiftPM's automatic indexing is disabled for release configurations.
+        process.arguments = ["build", "--package-path", package, "-c", options.configuration, "--enable-index-store"]
         process.standardOutput = FileHandle.standardError
         process.standardError = FileHandle.standardError
         try process.run()
@@ -221,8 +224,8 @@ public struct Frontend {
         progress(Progress(phase: "swift build", done: 1, total: 1))
     }
 
-    /// The files `swift build` compiled, from `swift package describe`: every built
-    /// target's sources, custom target paths and excludes honoured.
+    /// The files `swift build` compiled, from `swift package describe`, plus Clang
+    /// headers: every built target's sources, custom target paths and excludes honoured.
     private func packageSourceFiles(package root: String) throws -> [String] {
         guard let swift = Frontend.locateSwift(environment: options.environment) else { throw FrontendError.noSwift }
         progress(Progress(phase: "swift package describe", done: 0, total: 1))
@@ -236,7 +239,20 @@ public struct Frontend {
         let data = pipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
         guard process.terminationStatus == 0 else { throw FrontendError.describeFailed(process.terminationStatus) }
-        let files = try SwiftPackage.sourceFiles(fromDescribe: data, root: root)
+        var manifest: Data?
+        if try SwiftPackage.hasClangTargets(fromDescribe: data) {
+            let dump = Process()
+            dump.executableURL = URL(fileURLWithPath: swift)
+            dump.arguments = ["package", "--package-path", root, "dump-package"]
+            let output = Pipe()
+            dump.standardOutput = output
+            dump.standardError = FileHandle.standardError
+            try dump.run()
+            manifest = output.fileHandleForReading.readDataToEndOfFile()
+            dump.waitUntilExit()
+            guard dump.terminationStatus == 0 else { throw FrontendError.manifestFailed(dump.terminationStatus) }
+        }
+        let files = try SwiftPackage.sourceFiles(fromDescribe: data, root: root, manifest: manifest)
         progress(Progress(phase: "swift package describe", done: 1, total: 1))
         return files
     }
