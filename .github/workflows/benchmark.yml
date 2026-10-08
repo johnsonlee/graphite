@@ -48,7 +48,7 @@ env:
   APPLE_FRONTEND_TRANSITION_CORPUS_SHA256: 7280eed74d0299f207f9d06e4e3470e381742cc2a8bc51e47c564216ce5f9ed9
   APPLE_FRONTEND_TRANSITION_COMPARATOR_SHA256: 31ad11ef5ada04b6d66396d953df20deec19ccc5268b2504ba4cff8be236dd9b
   APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256: 83750efdb4b016bf19362d73571a1d4f4b68060167d53e49575240c2ca462b30
-  APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256: 916463cfe6dca62ce9696d367b573acdac52bbfae76ad8a367fc8d9082b6624b
+  APPLE_FRONTEND_TRANSITION_XCODE_CORPUS_SHA256: d4ebe0d6f0fead290d6e864933842b85bde2a287e90e8effed2ad0714d002044
 
 jobs:
   candidate-gate-tests:
@@ -3310,7 +3310,7 @@ jobs:
     # curl, the corpus clone git, the manifest jq, the harness python3, the
     # production reader (graphite.jar) a Java runtime.
     - name: Install git, curl, jq, python3 and a Java runtime
-      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates jq python3 openjdk-17-jre-headless
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates jq python3 openjdk-17-jre-headless libsqlite3-dev pkg-config
 
     # The comparator is a Node script; the container has none.
     - name: Setup Node

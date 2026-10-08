@@ -562,7 +562,7 @@ jobs:
     steps:
     - name: Install preparation dependencies on Linux
       if: matrix.container != ''
-      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3
+      run: apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3 libsqlite3-dev pkg-config
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.sha }}

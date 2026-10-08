@@ -209,7 +209,7 @@ is a correctness check after the timed region; it is not an end-to-end timing.
 |---|---|---|---|
 | `apple-frontend` | `apple-frontend-corpus.json` | SwiftFormat at `173d2cb252474cd8e8baeaf13636f5d565408ec9`; small smoke | Swift 6.1.3, Linux |
 | `apple-frontend-large` | `apple-frontend-corpus-large.json` | Swift Package Manager at `587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54` | Swift 6.1.3, Linux |
-| `apple-frontend-xcode` | `apple-frontend-corpus-xcode.json` | Signal iOS workspace at `dc04157b3adef68af2136a12478f455e41e5d2e0`, Pods at `77c21193e6b5e4f8cbd86abaf46631fd242322f4` | Xcode 16.4, macOS 15 |
+| `apple-frontend-xcode` | `apple-frontend-corpus-xcode.json` | Signal 7.70.1.917 at `4193fd427eeae9d9a8c704e60958463342b7e1cc`, Pods at `c65dd3f33daaa96582de97296e480f5a3aecc04d` | Xcode 16.4, macOS 15 |
 
 Every performance manifest uses `graphite-apple-frontend-corpus-v2`, `kind: real-source`,
 a repository and a full commit pin. Source caches are bound to the manifest and toolchain;
@@ -218,6 +218,26 @@ uses a checked-in, SHA-256-pinned `Package.resolved`, copied before a
 `--force-resolved-versions` build and verified after cache restoration. Signal builds its
 workspace with the simulator destination and code signing disabled; its tracked RingRTC setup
 script validates its binary dependency checksum. Compiler builds force the index store on.
+The Linux gate and release calibration install `libsqlite3-dev` and `pkg-config`: the pinned
+Swift Package Manager dependency `swift-llbuild` requires SQLite headers during compilation.
+
+The hosted Signal revision explicitly selects Xcode 16.4 in its
+[upstream CI](https://github.com/signalapp/Signal-iOS/blob/4193fd427eeae9d9a8c704e60958463342b7e1cc/.github/workflows/main.yml)
+and [.xcode-version](https://github.com/signalapp/Signal-iOS/blob/4193fd427eeae9d9a8c704e60958463342b7e1cc/.xcode-version).
+Its pinned MobileCoin dependency contains the explicit result typing in
+[FogView+TxOutFetcher.swift](https://github.com/signalapp/Signal-Pods/blob/c65dd3f33daaa96582de97296e480f5a3aecc04d/MobileCoin/Sources/Common/Fog/View/FogView%2BTxOutFetcher.swift)
+and the revised [throwing flatMap overload](https://github.com/signalapp/Signal-Pods/blob/c65dd3f33daaa96582de97296e480f5a3aecc04d/MobileCoin/Sources/Common/Utils/Result%2BThrows.swift).
+These address the source compilation error observed with the older Signal corpus under
+Xcode 16.4 in [calibration run 37794100367](https://github.com/johnsonlee/graphite/actions/runs/37794100367).
+The manifest also pins the upstream message-backup test submodule to
+`341379da3316e97421c212e6bb62c795e68c53a9`. Successful source preparation and hosted measurements
+are still required; the new Signal shape, file count and ceilings remain null until then.
+
+Local lifecycle evidence uses **Signal 7.19.1.208**, commit
+`dc04157b3adef68af2136a12478f455e41e5d2e0`, Pods
+`77c21193e6b5e4f8cbd86abaf46631fd242322f4`, built with Xcode 15.4. That is a separate workload
+from hosted Signal 7.70.1.917. Its existing construction, loading and query observations remain
+evidence for that local workload only; they cannot supply the hosted graph shape or ceilings.
 
 The synthetic 2500-file package and Xcode project used before this transition are **historical
 correctness fixtures only**. Their timings and old ceilings cannot establish scalability or
@@ -288,6 +308,19 @@ invoke the acceptance comparator or publish a release. Its samples must be revie
 pinned for the matching platform and compiler before the gate can accept that corpus;
 a macOS package shape is not a Linux package pin. Preparation failures remain failures,
 with logs uploaded for diagnosis.
+
+[Run 37794100367](https://github.com/johnsonlee/graphite/actions/runs/37794100367) successfully
+calibrated SwiftFormat with Swift 6.1.3 on Linux and static Swift standard-library linkage.
+Both revisions retained the existing manifest shape, with six valid raw records each
+(one declared warm-up and five measured runs), deterministic IR within each revision, and
+successful import/save by the production JAR. Candidate measured wall time was
+1334.990 ms median (1315.662–1362.740 ms range), with peak RSS 78.699 MiB median
+(78.559–78.848 MiB range). The existing 2000 ms / 120 MiB measured-run ceilings remain unchanged.
+The first warm-up used 127.824 MiB and is retained separately under the declared sampling
+protocol. This calibration supports the existing SwiftFormat pin; its fixed run order does
+not establish paired performance acceptance. The same run failed before measuring SwiftPM
+(missing SQLite headers) and the old Signal revision (compiler incompatibility), so neither
+failure provides a shape or ceiling for those workloads.
 
 These three components retain their names for report compatibility. They establish only the
 stated frontend-stage boundary. Real application import/save, cold/warm load, multi-graph
