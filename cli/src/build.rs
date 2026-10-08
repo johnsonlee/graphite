@@ -200,9 +200,10 @@ fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), String>
             .find(|opt| opt.positional)
             .map_or("jvm", |opt| lang_of_input(Path::new(opt.raw)))
     };
-    if frontend.is_some() && lang != "apple" {
+    if frontend.is_some() && lang == "js" {
         return Err(
-            "--frontend selects an Apple protocol frontend; use it with --lang apple".into(),
+            "--frontend requires a JVM or Apple frontend, not a JavaScript interchange adapter"
+                .into(),
         );
     }
     let forwarded = option
@@ -456,7 +457,16 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
     match choice.lang {
         "js" => crate::build_ts::run(env, &args),
         "apple" => run_apple(env, &choice, &args),
-        _ => run_subcommand(env, "build", &args, output),
+        _ => {
+            if let Some(path) = choice.frontend {
+                let mut env = env.clone();
+                env.vars
+                    .insert(frontend::JVM_FRONTEND_VAR.into(), path.into());
+                run_subcommand(&env, "build", &args, output)
+            } else {
+                run_subcommand(env, "build", &args, output)
+            }
+        }
     }
 }
 
@@ -1200,6 +1210,172 @@ mod tests {
                 .lang,
             "apple"
         );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn jvm_selection_flags_are_consumed_and_explicit_frontends_build_the_output() {
+        use std::os::unix::fs::PermissionsExt;
+        let root =
+            std::env::temp_dir().join(format!("graphite-jvm-selection-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let launcher = root.join("launcher");
+        let java = root.join("java");
+        let script = "#!/bin/sh\nset -eu\nprintf '%s\\n' \"$@\" > \"$0.log\"\n\
+            while [ $# -gt 0 ]; do\n\
+              if [ \"$1\" = -o ]; then mkdir -p \"$2\"; echo built > \"$2/result\"; fi\n\
+              shift\n\
+            done\n";
+        for path in [&launcher, &java] {
+            std::fs::write(path, script).unwrap();
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let output = root.join("graph");
+        let jar = root.join("custom.jar");
+        std::fs::write(&jar, "jar").unwrap();
+        let env = env_with(&[
+            ("GRAPHITE_FRONTEND_JVM", launcher.to_str().unwrap()),
+            ("GRAPHITE_JAVA", java.to_str().unwrap()),
+            ("JAVA_TOOL_OPTIONS", "-Xmx256m"),
+        ]);
+        let forwarded = os(&[
+            "app.jar",
+            "--include",
+            "com.example",
+            "-o",
+            output.to_str().unwrap(),
+        ]);
+        for selectors in [os(&["--lang", "jvm"]), os(&["--lang=java"])] {
+            let mut args = selectors;
+            args.extend(forwarded.clone());
+            assert_eq!(run(&env, &args), 0);
+            let expected = std::iter::once("build".to_string())
+                .chain(
+                    forwarded
+                        .iter()
+                        .map(|arg| arg.to_str().unwrap().to_string()),
+                )
+                .collect::<Vec<_>>()
+                .join("\n")
+                + "\n";
+            assert_eq!(
+                std::fs::read_to_string(root.join("launcher.log")).unwrap(),
+                expected
+            );
+            assert_eq!(
+                std::fs::read_to_string(output.join("result")).unwrap(),
+                "built\n"
+            );
+            std::fs::remove_dir_all(&output).unwrap();
+        }
+        // Both selector spellings must override even a pinned, unusable frontend.
+        let mut pinned = env.clone();
+        pinned.vars.insert(
+            frontend::JVM_FRONTEND_VAR.into(),
+            root.join("missing").into(),
+        );
+        for path in [&launcher, &jar] {
+            for selector in [
+                os(&["--frontend", path.to_str().unwrap()]),
+                vec![OsString::from(format!("--frontend={}", path.display()))],
+            ] {
+                let mut args = os(&["--lang=kotlin"]);
+                args.extend(selector);
+                args.extend(forwarded.clone());
+                assert_eq!(run(&pinned, &args), 0);
+                let (log, mut expected) = if path == &jar {
+                    (
+                        root.join("java.log"),
+                        os(&["-jar", jar.to_str().unwrap(), "build"]),
+                    )
+                } else {
+                    (root.join("launcher.log"), os(&["build"]))
+                };
+                expected.extend(forwarded.clone());
+                assert_eq!(
+                    std::fs::read_to_string(log).unwrap(),
+                    expected
+                        .iter()
+                        .map(|arg| arg.to_str().unwrap())
+                        .collect::<Vec<_>>()
+                        .join("\n")
+                        + "\n"
+                );
+                assert_eq!(
+                    std::fs::read_to_string(output.join("result")).unwrap(),
+                    "built\n"
+                );
+                std::fs::remove_dir_all(&output).unwrap();
+            }
+        }
+        let terminated = os(&["-o", "g", "--", "--lang=apple"]);
+        assert_eq!(choose(&terminated).unwrap().lang, "jvm");
+        assert_eq!(select_frontend(&terminated).unwrap().1, terminated);
+        let selector_values = os(&[
+            "--fold",
+            "--frontend=rules",
+            "--output=--lang=apple",
+            "app.jar",
+        ]);
+        assert_eq!(choose(&selector_values).unwrap().lang, "jvm");
+        assert_eq!(
+            select_frontend(&selector_values).unwrap().1,
+            selector_values
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn apple_build_prepares_nested_output_and_refuses_blocked_parent_before_building() {
+        use std::os::unix::fs::PermissionsExt;
+        let root =
+            std::env::temp_dir().join(format!("graphite-apple-output-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        let apple = root.join("apple");
+        let jvm = root.join("jvm");
+        std::fs::write(
+            &apple,
+            "#!/bin/sh\nset -eu\n\
+            if [ \"$1\" = describe ]; then echo '{\"ir_schema\":[1]}'; exit; fi\n\
+            echo \"$3\" > \"$0.log\"\n\
+            [ \"$1\" = build ] && [ \"$2\" = --out ]\n\
+            echo 'IR payload' > \"$3\"\n",
+        )
+        .unwrap();
+        std::fs::write(
+            &jvm,
+            "#!/bin/sh\nset -eu\n\
+            [ \"$1\" = import ] && [ \"$3\" = -o ]\n\
+            mkdir -p \"$4\"\n\
+            cp \"$2\" \"$4/result\"\n",
+        )
+        .unwrap();
+        for path in [&apple, &jvm] {
+            std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o755)).unwrap();
+        }
+        let env = env_with(&[
+            ("GRAPHITE_FRONTEND_APPLE", apple.to_str().unwrap()),
+            ("GRAPHITE_FRONTEND_JVM", jvm.to_str().unwrap()),
+        ]);
+        let output = root.join("new/nested/graph");
+        let args =
+            |output: &Path| os(&["--lang", "apple", "MyApp", "-o", output.to_str().unwrap()]);
+        assert!(!output.parent().unwrap().exists());
+        assert_eq!(run(&env, &args(&output)), 0);
+        assert_eq!(
+            std::fs::read_to_string(output.join("result")).unwrap(),
+            "IR payload\n"
+        );
+        let ir = std::fs::read_to_string(root.join("apple.log")).unwrap();
+        assert!(!Path::new(ir.trim()).exists());
+
+        std::fs::remove_file(root.join("apple.log")).unwrap();
+        let blocked = root.join("blocked");
+        std::fs::write(&blocked, "file").unwrap();
+        assert_eq!(run(&env, &args(&blocked.join("graph.graphite"))), 1);
+        assert!(!root.join("apple.log").exists());
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     /// The whole Apple path with a stub frontend and a stub jar: describe is checked,
