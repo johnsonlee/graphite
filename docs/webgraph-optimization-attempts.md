@@ -11140,3 +11140,23 @@ Decision: **retain this verified positive increment**. WITH/filter p50/p95 impro
 Root integration copied the two exact tested source files after confirming root parent pipeline matched6bb; no unrelated engine change or second hypothesis is included. No repeated correctness execution is claimed after the byte-identical copy.
 
 Evidence: `/tmp/sootup-static-review/attempt146/measurement`; plan SHA `f08c6b1e444c978c8206afb9c1bec53c315566a98ffc5c549f87b89ee140ae44`; summary SHA `5d33715710913569e32675491f1fc6de542cdc5ff79ab00a5b48500f2c67f269`; report SHA `b3655453973e2e5e9e216acca3dbc43e17c0ed8b07c08bfb14075f40b6b96611`; performance owner SHA `7f22390d38887248fabdc806aef7bd3f3c675d83f92a22f7ed37e790772a58dc`.
+
+### 2026-10-08 — Confirmed UNION delay localized inside the server guard
+
+The unchanged production144 engine at observability head3963 again fails the native main-relative gate: run37731235775/native113161862839/aggregate113168575241 are terminal failure; JVM and Rust correctness workflows pass. Base502e2304, Linux x86_64/Rust1.99.0. UNION alone is confirmed blocked: initial five-pass median0.951→43.519ms (+42.568ms), reverse1.264→30.855ms (+29.591ms), with identical full responses and errors=[]/thresholdOnly. Preserve the reverse-base100.164762ms observation as well; these medians are not request p95.
+
+The failure-only diagnostic added at3963 ran exactly one complete73×5 candidate sequence, selected UNION, and exited0 with365 successful receipts. It retained the original failed status and ran outside the comparator. All five target bodies contain the same101 rows and complete response digest; every raw metric window records one successful query, zero errors/rejections and idle boundaries.
+
+| Pass | Client ms | HTTP ms | Guard ms | Client thread CPU ms |
+|---|---:|---:|---:|---:|
+| 0 | 3.588931 | 3.051744 | 2.967116 | 0.523199 |
+| 1 | 0.926390 | 0.378798 | 0.303405 | 0.483020 |
+| 2 | 0.946873 | 0.418238 | 0.342986 | 0.472414 |
+| 3 | 4.376837 | 3.829567 | 3.730016 | 0.486383 |
+| 4 | 43.499864 | 42.817340 | 42.716027 | 0.574204 |
+
+The fifth request reproduces the slow behavior, with42.716027ms inside the guard versus43.499864ms complete client latency. Root independently rehashed/parsed all five target bodies, compared their full documents and recalculated HTTP/guard durations from all ten raw scrapes. This rules out attributing the reproduced delay chiefly to client/network time outside the guard. The wall timer includes `block_in_place` and executor execution, so it does not distinguish computation from scheduling, allocator/lock waits or background interference. Source/ID preparation precedes the timer, and response serialization follows it. Do not label this CPU growth, C4 interference or a TCP problem without further evidence.
+
+The diagnostic inserts two metrics scrapes per target (about19ms each), so its history differs from the original gate. Four target requests are faster; all remain reported. The C4 log announces queued work only, with no inference start/end or CPU counters. Selected five bodies/ten scrapes were independently verified; the other360 body successes are supported by original snapshot receipts/digests, not a fresh download. Only selected small ZIP entries were fetched (561,683+233,820 bytes), no binaries or graphs. Original gate failure remains unresolved.
+
+Evidence: `/tmp/sootup-static-review/attempt144/ci-run37731235775`; report SHA `1e32f65cff60f1b75cb2bc3434dc3ebf5924049bc0d98387d10f25777c41a508`; raw boundary proof SHA `8106d21f68b20eed36ba8e669522730914bac561ab674d70a227c292e9e0b4c7`; original status SHA `068bccfb0d1c4d3c6726f2dd7c1170b043f69ee02581cb618b83a154f9664fef`. No rerun or threshold change. Attempt146 changes allocation behavior and now has its own required CI run37733977570; observe that changed candidate before introducing another diagnostic or claiming the historical failure fixed.
