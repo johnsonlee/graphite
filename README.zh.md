@@ -4,7 +4,7 @@
 
 [English](README.md) · 简体中文
 
-**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
+**为 LLM 提供结构化的代码库上下文。** Graphite 将 JVM 字节码和 TypeScript 源码转换为可查询的程序图，让 AI 智能体无需逐一阅读文件就能理解你的代码库。
 
 [生产环境规模](#生产环境规模) · [运行演示](docs/quickstart-demo.md) · [快速开始](#快速开始) · [接入 AI 智能体](#mcp-集成) · [Kotlin API](#kotlin-api)
 
@@ -94,6 +94,23 @@ Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进
 ## 前端支持
 
 当前发布的前端支持读取 JVM 和 Android 产物。构建图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
+
+**TypeScript 源码前端**支持通过 `graphite build --lang ts` 分析 `tsconfig.json`、源码目录或 TS/JS 文件。在 Graphite 源码仓库中构建 `frontend/web`，并通过 `GRAPHITE_FRONTEND_TS` 指定其 `dist/cli.js` 入口。分析需要 Node.js 20 或更新版本；保存的图可直接使用相同的 Rust 查询、服务和 `.graphite` 容器命令：
+
+```bash
+npm ci --prefix frontend/web
+npm test --prefix frontend/web
+cargo build --release --locked -p graphite-cli
+export GRAPHITE_FRONTEND_TS="$PWD/frontend/web/dist/cli.js"
+
+./target/release/graphite build --lang ts /path/to/project/tsconfig.json -o /tmp/project.graphite
+./target/release/graphite verify /tmp/project.graphite
+./target/release/graphite query /tmp/project.graphite \
+  "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
+  --format json
+```
+
+分析不会运行目标项目的脚本或安装其依赖。静态分析的覆盖边界、语义诊断行为以及固定版本 mitt/Zod 的端到端验证步骤，详见 [TypeScript 前端文档](docs/typescript-frontend.md)。此源码前端需单独构建，JVM 的 Homebrew 安装不会自动安装它。
 
 **开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
 
@@ -408,6 +425,7 @@ Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI
 ```
 graphite/
 ├── frontend/
+│   ├── web/                # TypeScript 编译器源码前端（Node.js）
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)

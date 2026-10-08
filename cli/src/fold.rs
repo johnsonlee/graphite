@@ -266,6 +266,7 @@ pub fn plan_command(
             c
         }
         Launch::Executable(exe) => Command::new(exe),
+        Launch::Node(_) => return Err("fold rules are only supported by the JVM frontend".into()),
     };
     cmd.arg("fold").arg("plan").arg(file);
     if let Some(input) = input {
