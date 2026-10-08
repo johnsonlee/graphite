@@ -29,7 +29,8 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
   LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
   BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
-  RUST_LATENCY_TRANSITION_HARNESS_SHA256: 1d495cc09327b2c0ba9086d3e4480fba7fe7d8596a7ca08655f509c0799d85b9
+  RUST_LATENCY_TRANSITION_HARNESS_SHA256: 0eee7d8ca07fd292092978ff214a335046939d20df89b494285ddf926caf8655
+  RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
   REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
@@ -61,7 +62,7 @@ jobs:
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
 
     - name: Test native multi-graph snapshot harness
-      run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot.py'
+      run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
 
   build-explore-jmh:
     name: build-explore-jmh-${{ matrix.revision }}
@@ -3128,6 +3129,7 @@ jobs:
         done
 
     - name: Compare Rust engine latency
+      id: rust_comparison
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
         COMPARATOR: ${{ steps.controls.outputs.comparator }}
@@ -3165,6 +3167,63 @@ jobs:
             --report benchmark-results/rust-latency-report.md \
             --status benchmark-results/rust-latency-status.json
         fi
+
+    # A confirmed failure stays failed. This one extra candidate run is attribution
+    # evidence only; its metrics-enabled results never enter either comparator.
+    - name: Diagnose confirmed Rust shape regression
+      if: ${{ failure() && steps.rust_comparison.outcome == 'failure' }}
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        set -euo pipefail
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test "$(sha256sum candidate/backend/bench/snapshot.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_HARNESS_SHA256}"
+        test "$(sha256sum candidate/backend/bench/fixture64.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_FIXTURE_SHA256}"
+        test "$(sha256sum candidate/backend/bench/shapes.py | cut -d' ' -f1)" = "${RUST_LATENCY_TRANSITION_SHAPES_SHA256}"
+        test "$(sha256sum candidate/backend/bench/metrics_capture.py | cut -d' ' -f1)" = "${RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256}"
+        DIAG=benchmark-results/rust-failure-diagnostic
+        mkdir -p "${DIAG}/harness"
+        cp candidate/backend/bench/{snapshot,fixture64,shapes,metrics_capture}.py "${DIAG}/harness/"
+        python3 - <<'PY'
+        import hashlib, json, pathlib, sys
+        out = pathlib.Path("benchmark-results/rust-failure-diagnostic")
+        sys.path.insert(0, str(out / "harness"))
+        from snapshot import confirmed_diagnostic_shape
+        status = pathlib.Path("benchmark-results/rust-latency-status.json")
+        result = json.loads(status.read_text()) if status.is_file() else {}
+        selected = confirmed_diagnostic_shape(result)
+        def digest(path):
+            return hashlib.sha256(path.read_bytes()).hexdigest()
+        files = [*sorted((out / "harness").glob("*.py")),
+                 pathlib.Path("candidate/target/release/graphite"),
+                 pathlib.Path("shared-fixture64/graphs/graphs.tsv"),
+                 pathlib.Path("shared-fixture64/graphs/fixture-provenance.tsv")]
+        if status.is_file():
+            files.append(status)
+        provenance = {"diagnosticOnly": True, "selectedShape": selected,
+                      "selection": "largest absoluteDeltaMs among confirmed blocked original broad shapes",
+                      "originalGateStatusUntouched": True,
+                      "scope": "candidate-only metrics-enabled full73x5; not a gate confirmation or retry",
+                      "files": {str(path): digest(path) for path in files}}
+        (out / "provenance.json").write_text(json.dumps(provenance, indent=2) + "\n")
+        if selected is not None:
+            (out / "selected-shape.txt").write_text(selected + "\n")
+        PY
+        if [[ ! -f "${DIAG}/selected-shape.txt" ]]; then
+          echo "No eligible confirmed broad-shape failure; no diagnostic server started"
+          exit 0
+        fi
+        code=0
+        python3 "${DIAG}/harness/snapshot.py" \
+          --manifest shared-fixture64/graphs/graphs.tsv \
+          --binary candidate/target/release/graphite \
+          --port 18082 --suite all --repetitions 5 --timeout 60 --overall-timeout 600 \
+          --diagnostic-metrics-case "$(cat "${DIAG}/selected-shape.txt")" \
+          --responses-dir "${DIAG}/responses" \
+          --server-log "${DIAG}/serve.log" \
+          --out "${DIAG}/candidate-rust-diagnostic.json" || code=$?
+        printf '{"exitCode":%s,"diagnosticOnly":true}\n' "${code}" > "${DIAG}/execution.json"
+        exit "${code}"
 
     - name: Upload Rust engine latency results
       if: always()

@@ -129,9 +129,33 @@ def case_catalog(work):
             for params, shape, query in work]
 
 
+def confirmed_diagnostic_shape(status):
+    """One original broad shape, only after an error-free confirmed gate failure."""
+    if (status.get("passed") is not False or status.get("errors") != []
+            or status.get("thresholdOnly") is not True):
+        return None
+    eligible = []
+    known = {"shape-" + name for name, _ in shapes.SHAPES}
+    prefix, suffix = "rust.fixture64.", "[selectivity=broad]"
+    for row in status.get("rows", []):
+        key = row.get("key", "")
+        confirmation = row.get("confirmation")
+        delta = row.get("absoluteDeltaMs")
+        if (row.get("blocked") is not True or not isinstance(confirmation, dict)
+                or confirmation.get("blocked") is not True
+                or type(delta) not in (int, float) or not 0 < delta < float("inf")
+                or not key.startswith(prefix) or not key.endswith(suffix)):
+            continue
+        name = key[len(prefix):-len(suffix)]
+        if name in known:
+            eligible.append((delta, name))
+    # Stable name tie-break; selection never discards samples from the gate.
+    return sorted(eligible, key=lambda pair: (-pair[0], pair[1]))[0][1] if eligible else None
+
+
 def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
             suite="fixture64", responses_dir=None, overall_timeout=None,
-            clock=time.monotonic, input_graph_count=None):
+            clock=time.monotonic, input_graph_count=None, diagnostic_metrics_case=None):
     """Complete-body sequential diagnostics; fail closed and retain every attempted body.
 
     The first successful body is a repeatability reference, not a correctness oracle.
@@ -139,6 +163,8 @@ def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
     """
     if not work or repetitions < 1 or timeout <= 0 or (overall_timeout is not None and overall_timeout <= 0):
         raise ValueError("nonempty plan and positive repetitions/timeouts required")
+    if diagnostic_metrics_case is not None and diagnostic_metrics_case not in {shape for _, shape, _ in work}:
+        raise ValueError("diagnostic metrics case is absent from fixed query plan")
     catalog = case_catalog(work)
     identity = hashlib.sha256(canonical_json(catalog)).hexdigest()
     common = {"protocol": MULTIGRAPH_QUERY_SUITE_V2, "suite": suite,
@@ -146,6 +172,9 @@ def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
               "inputGraphCount": input_graph_count, "requestScope": "global-cross-graph",
               "sampling": {"repetitions": repetitions, "firstPass": "first-use",
                            "laterPasses": "warm", "requestPercentileEstimate": False}}
+    if diagnostic_metrics_case is not None:
+        common["diagnosticMetricsCase"] = diagnostic_metrics_case
+        common["diagnosticScope"] = "metrics-enabled boundary attribution, not uninstrumented gate evidence"
     samples = [[] for _ in work]
     digests = [None] * len(work)
     legacy_digests = [None] * len(work)
@@ -159,6 +188,11 @@ def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
                 "statisticScope": "sequential-pass-diagnostic"}
     if directory is not None:
         directory.mkdir(parents=True, exist_ok=False)
+
+    if diagnostic_metrics_case is not None:
+        if directory is None:
+            raise ValueError("diagnostic metrics requires retained response directory")
+        from metrics_capture import capture, validate_window
 
     def checkpoint():
         if directory is not None:
@@ -191,10 +225,38 @@ def measure(base, work, repetitions, timeout, call=fixture64.call, log=print, *,
                           "query": query, "timeoutSeconds": effective_timeout}
                 payload = None
                 try:
-                    ms, status, payload = call(base, query, effective_timeout)
+                    traced = shape == diagnostic_metrics_case
+                    if traced:
+                        tag = f"pass-{pass_index:03d}-case-{i:03d}"
+                        record["metricsBefore"] = capture(base + "/metrics", directory, tag + "-before", effective_timeout)
+                        effective_timeout = min(timeout, deadline-clock()) if deadline is not None else timeout
+                        if effective_timeout <= 0:
+                            raise RuntimeError("overall budget exhausted after metrics")
+                    if diagnostic_metrics_case is None:
+                        # Keep the uninstrumented call and output contract unchanged.
+                        ms, status, payload = call(base, query, effective_timeout)
+                    else:
+                        record["callStartMonotonicNs"] = time.monotonic_ns()
+                        record["callStartThreadCpuNs"] = time.thread_time_ns()
+                        try:
+                            ms, status, payload = call(base, query, effective_timeout)
+                        finally:
+                            record["callEndThreadCpuNs"] = time.thread_time_ns()
+                            record["callEndMonotonicNs"] = time.monotonic_ns()
                     record.update(elapsedMs=ms, httpStatus=status)
                     if status != 200:
                         raise RuntimeError(f"HTTP {status}")
+                    if traced:
+                        remaining_after = min(timeout, deadline-clock()) if deadline is not None else timeout
+                        if remaining_after <= 0:
+                            raise RuntimeError("overall budget exhausted before metrics")
+                        record["metricsAfter"] = capture(base + "/metrics", directory, tag + "-after", remaining_after)
+                        if deadline is not None and clock() > deadline:
+                            raise RuntimeError("overall budget exhausted after metrics")
+                        record["serverMetricsWindow"] = validate_window(
+                            (directory / ("metrics-" + tag + "-before.prom")).read_bytes(),
+                            (directory / ("metrics-" + tag + "-after.prom")).read_bytes(), expected_count=1)
+                        record["diagnosticScope"] = "metrics enabled; additional scrapes perturb interrequest history; not original uninstrumented CI timing"
                     d, n = response_digest(payload)
                     record.update(responseDigest=d, rowCount=n)
                     if deadline is not None and clock() > deadline:
@@ -248,8 +310,10 @@ def graph_count(base):
     return d.get("count", len(d)) if isinstance(d, dict) else len(d)
 
 
-def serve(binary, graphs, port, log_path, timeout_ms):
+def serve(binary, graphs, port, log_path, timeout_ms, metrics=False):
     args = [binary, "serve", "--port", str(port), "--cypher-max-timeout-ms", str(timeout_ms)]
+    if metrics:
+        args.append("--metrics")
     for g in graphs:
         args += ["--graph", f"{g['id']}:{g['path']}"]
     log = open(log_path, "w")
@@ -285,6 +349,7 @@ def main():
     ap.add_argument("--startup-timeout", type=int, default=600, help="seconds to wait for the graphs")
     ap.add_argument("--server-log", default="graphite-serve.log")
     ap.add_argument("--responses-dir", help="new directory retaining every full body and failed attempt; default OUT.responses")
+    ap.add_argument("--diagnostic-metrics-case", help="optional boundary capture for one existing shape; enables server metrics, changes diagnostic scope")
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
     if bool(args.binary) == bool(args.base):
@@ -311,7 +376,7 @@ def main():
             if graph_count(base) is not None:
                 print(f"port {args.port} is already served; refusing to measure it", file=sys.stderr)
                 return 2
-            process = serve(args.binary, graphs, args.port, args.server_log, args.timeout * 1000)
+            process = serve(args.binary, graphs, args.port, args.server_log, args.timeout * 1000, bool(args.diagnostic_metrics_case))
             deadline = time.monotonic() + args.startup_timeout
             while graph_count(base) != len(graphs):
                 if process.poll() is not None:
@@ -336,7 +401,8 @@ def main():
             try:
                 rows = measure(base, work, args.repetitions, args.timeout, suite=args.suite,
                                responses_dir=args.responses_dir or args.out + ".responses",
-                               overall_timeout=args.overall_timeout, input_graph_count=len(graphs))
+                               overall_timeout=args.overall_timeout, input_graph_count=len(graphs),
+                               diagnostic_metrics_case=args.diagnostic_metrics_case)
             finally:
                 signal.setitimer(signal.ITIMER_REAL, 0)
                 signal.signal(signal.SIGALRM, previous_handler)

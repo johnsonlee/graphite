@@ -4185,3 +4185,46 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
         assert.equal(fs.existsSync(publishMarker), false, "a failed comparison must never publish success");
     } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
+
+test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const start = job.indexOf("    - name: Diagnose confirmed Rust shape regression");
+    const end = job.indexOf("    - name: Upload Rust engine latency results", start);
+    assert.ok(start > 0 && end > start);
+    const diagnostic = job.slice(start, end);
+    const original = job.slice(job.indexOf("    - name: Measure base then PR"), start);
+    assert.match(original, /id: rust_comparison/);
+    assert.match(original, /--threshold 15 --minimum 1/g);
+    assert.match(original, /confirm-rust-latency/);
+    assert.doesNotMatch(original, /diagnostic-metrics-case|continue-on-error/);
+    assert.match(diagnostic, /if: \$\{\{ failure\(\) && steps\.rust_comparison\.outcome == 'failure' \}\}/);
+    assert.match(diagnostic, /confirmed_diagnostic_shape\(result\)/);
+    assert.match(diagnostic, /No eligible confirmed broad-shape failure; no diagnostic server started/);
+    assert.match(diagnostic, /DIAG=benchmark-results\/rust-failure-diagnostic/);
+    assert.match(diagnostic, /--binary candidate\/target\/release\/graphite/);
+    assert.match(diagnostic, /--port 18082 --suite all --repetitions 5 --timeout 60 --overall-timeout 600/);
+    assert.equal((diagnostic.match(/python3 "\$\{DIAG\}\/harness\/snapshot\.py"/g) ?? []).length, 1);
+    assert.match(diagnostic, /--out "\$\{DIAG\}\/candidate-rust-diagnostic\.json"/);
+    assert.match(diagnostic, /--responses-dir "\$\{DIAG\}\/responses"/);
+    assert.match(diagnostic, /"diagnosticOnly": True/);
+    assert.match(diagnostic, /provenance\.json/);
+    assert.match(diagnostic, /fixture-provenance\.tsv/);
+    assert.doesNotMatch(diagnostic, /--status|--report|compare-rust-latency|confirm-rust-latency|continue-on-error|cargo build/);
+    assert.match(diagnostic, /exit "\$\{code\}"/);
+    const pins = [
+        ["snapshot.py", "RUST_LATENCY_TRANSITION_HARNESS_SHA256"],
+        ["fixture64.py", "RUST_LATENCY_TRANSITION_FIXTURE_SHA256"],
+        ["shapes.py", "RUST_LATENCY_TRANSITION_SHAPES_SHA256"],
+        ["metrics_capture.py", "RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256"]
+    ];
+    for (const [file, key] of pins) {
+        const source = fs.readFileSync(new URL(`../../backend/bench/${file}`, import.meta.url));
+        const sha = crypto.createHash("sha256").update(source).digest("hex");
+        assert.ok(workflow.includes(`${key}: ${sha}`), `${file} reviewed pin is current`);
+        assert.ok(diagnostic.includes(`sha256sum candidate/backend/bench/${file}`));
+        assert.ok(diagnostic.includes(`"\${${key}}"`));
+    }
+    assert.match(workflow, /python3 -m unittest discover -s candidate\/backend\/bench -p 'test_snapshot\*\.py'/);
+    assert.match(job.slice(end), /if: always\(\)/);
+});

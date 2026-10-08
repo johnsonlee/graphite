@@ -94,3 +94,17 @@ sustained load. Single-graph query timings are diagnostic only. Repeated-request
 p50/p95 under a declared multi-graph workload and concurrency remain separate
 acceptance evidence; loading 64 graphs alone does not prove every limited query
 actually scans them all.
+
+For server/client boundary diagnosis, add `--diagnostic-metrics-case shape-union`
+to the same command and use a new output directory. This enables `/metrics`,
+records request wall and calling-thread CPU clocks, and retains metrics before
+and after that case in each pass. The strict metrics check requires the default
+four-query guard and one successful query per window. HTTP duration ends at
+response construction; guard duration ends before serialization; client latency
+includes the complete response read. Metrics sum/count is not a p95 estimate.
+
+After a confirmed broad-shape CI failure, CI performs this diagnosis once for the
+case with the largest absolute regression, keeping the complete 73-query order
+and five passes. Results go under `rust-failure-diagnostic`, separately from the
+unchanged failed gate. Enabling metrics and inserting scrapes changes execution
+history, so a successful diagnostic does not clear the original regression.
