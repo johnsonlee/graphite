@@ -10134,3 +10134,164 @@ Monitor recorded1816 process metadata samples and no listed events, but retains 
 - Auditor source: `independent-audit/audit.py` SHA `27ce7f06e4b9cd7eeb0cc33bd89194eb26de62b9f43932e286e61e1c529e2c01`
 
 Decision: retain the verified positive increments, including Tika/c4 line projection, but do not accept overall Query recovery. The next optimization candidate is Attempt138 string bounded-order retention, which targets the seconds-long sorting case without skipping scan/evaluation work. It still needs correctness and performance verification. Existing construction/loading regressions and the separate Kotlin save CI failure remain open.
+
+### 2026-10-08 — Attempt138: string bounded-order candidate passes correctness; performance pending
+
+The full-JAR common-five baseline includes `MATCH (n:CallSiteNode) RETURN n.callee_class AS className, n.callee_name AS methodName ORDER BY className, methodName LIMIT20` on the unchanged current116 Kotlin/Tika persisted graphs. The first completed old-A Kotlin c1 session has a roughly4s per-request median for this query; that isolated baseline observation is not a candidate comparison or a recovery conclusion. The fixed16 old/current measurement remains in progress and is not modified by this preparation.
+
+Hypothesis: extend the existing bounded native ORDER BY retention to the eight statically proven caller/callee string properties and string literals. `node_property` supplies Str/null for these properties; the existing comparator orders strings by UTF-16 and consistently ranks Int/Str/null. Every row is still matched/projected before heap admission, including rejected rows and LIMIT0, preserving errors and cancellation. Heap logic, comparison, final stable sort, provenance, literal SKIP/LIMIT bounds, HTTP probe, and all fallback eligibility remain unchanged. This reduces retained rows only for the newly proven string domain; it does not bypass scan work or admit unknown/mixed numeric domains.
+
+The candidate is an isolated source-file copy based on roota267c1e2; production code and running measurement inputs remain untouched. It adds correctness cases for admitted properties and exclusions, UTF-16 supplementary/BMP ordering, nulls/ties/mixed directions, complete real-fixture full-sort parity/provenance/SKIP/probe, late errors, cancellation and timeout. At source-preparation time, standalone Rust1.93 rustfmt had parsed/formatted it, with builds deferred until original measurement26191 and owned cleanup. The correctness results below now validate the implementation; no latency/CPU/RSS benefit is established yet, so it remains isolated rather than an integrated positive increment.
+
+Files: `/tmp/sootup-static-review/attempt138/string-bounded-order/`. Base pipeline SHA256 `5287e94c84249112bcf6550b3e5d93fbb80292806bca5a277539cd084e5862b9`; candidate `4ba4a92bc73beff4e372f2b17f91a99571a88693d3ec0ab2d1c7f3649b27171e`; patch `c268a9c876e783252507dbb0e79728f726957438cc1fa950371d4a2722b49a05`. Independent source review found no production blocker; it identified coverage limits for mid-scan cancellation and malformed string IDs. A test-only case was added to exercise the two remaining whitelisted properties against full sort. Relevant tests/lint, real-data parent-relative measurement and cumulative pre-upgrade acceptance remain outstanding. Construction/loading are unmeasured by this attempt; their existing failures remain open.
+
+After the fixed16 predecessor completed (original26191 exit0; independent audit84607 exit0), the candidate was applied only in `/tmp/graphite-attempt138` at exacta267c1e2. All115 expected native source pins were verified, with only pipeline.rs changed. The original reviewed runner completed as session74172, terminal exit0 (tool91db7d), under sealed plan `6ab5d62ab03729f72a1409f42ed8007feaebdc8fce058915fd6dca9d1b0c05c1`. Formatting, all305 tests (31CLI +119Cypher +118Explore +1integration +36storage), all65 required named behaviors, strict lint and CLI export passed. No test was skipped/ignored/filtered. The real fixture was present and its19 file stat identities remained unchanged. Root independently reconciled raw summaries and every required named test, four command exits/log hashes, the unique pipeline diff, all115 native source hashes and the exported binary. Root also freshly verified the three observed owned PIDs and group21989 absent. No performance measurement ran as part of this correctness packet. Documentation commit3cbd42b4 changes no native inputs.
+
+Correctness evidence: `validation/owner-terminal.json` SHA256 `f1f417bfdc904b16a2e73b8773f700e30fd7b3caff536ece5f756bfe97c8f74f`; root independent audit `cf094dc7654f6a66de08664b2241a45ded9be2a9f1553f0cc5f85c8b91854608`; exported candidate binary `e0d971a34ea441ed9217e079f6422b2801a739c31229ac0da59315863056ed3e`. Next: unchanged common-five real-data protocol comparing cumulative135 parent to this candidate, with complete current-version oracles in both arms. This incremental comparison does not replace preupgrade acceptance.
+
+The fixed16 parent/candidate performance packet is now running as original session16360 (launch toolbd5d95), sealed plan `9baf85c063b80a4c3a9e7f0786ee7ddfbdd4d64faa6f9fd1d2b562d2acc1d9c2`. The original common-five queries, complete current contracts including ordinal, two full real graphs, c1/c4 ABBA, first1/warm2/measured30,2640 total responses and32 metrics captures are unchanged. Both arms reference the same complete current oracle. Only binary roles/ports and provenance bindings change. This is a parent-relative increment test; completed preupgrade results remain separate. No performance outcome is claimed until original terminal and raw audit.
+
+### 2026-10-08 — Documentation-head CI retains a confirmed Method middle-position regression
+
+The newer documentation-only head `3cbd42b4` has an additional confirmed Method compatibility failure in [run37711248412](https://github.com/johnsonlee/graphite/actions/runs/37711248412): four-graph `middle` wall time is 251.702 → 323.920 ms (+28.692%), with the prescribed reverse confirmation 272.555 → 342.637 ms (+25.713%). The unchanged threshold is15%. The `early` initial failure did not reproduce in confirmation; `middle` still fails the Method compatibility check. Raw JMH scores were reconciled with the status artifact. The workflow is now terminal failure; its only failed jobs are `method-compatibility-4-position` and `method-compatibility-gate`. The separate required `benchmark-regression-gate` and `large-corpus-benchmarks` jobs pass; the aggregate report classifies Method compatibility as advisory, so the workflow failure and required performance-gate result must not be conflated. The earlier5461 pass is historical evidence, not a substitute for this failure.
+
+The exact job checkout SHAs are base502e2304399b28a0147c42be60711121d022b9d3 and candidate3cbd42b48a41c831a6ef183f5dead5188487b840. Root independently reconciled the four primaryMetric scores in original and confirmation raw JMH JSON. Source changes from5461 to3cbd are documentation only; no cause is inferred from the run-to-run difference, and no manual rerun or relaxed threshold is requested. CPU and RSS rows in this particular CI shard are advisory and cannot replace the stricter preupgrade resource constraints. Artifacts: `/tmp/sootup-static-review/3cbd42b4-method-position/`;26KB artifact zip SHA256 `f62218c5d2efbfc165fdd8c5828993895af3999d013bb8c3f34a2fe542431682`. The original live16360 Query experiment remains unchanged.
+
+Source-boundary follow-up for the latest Method gate: `methodScenarioGate` executes one scoped request per service, then one root request per distinct corpus. With4 services and4 corpora this is8 sequential HTTP requests plus complete client normalization/validation, expected-result work and the measurement wrapper; `requestsSucceeded=1` counts that whole action, not one HTTP request. The reported251.702/323.920ms and confirmation272.555/342.637ms are batch JMH wall scores, not request p50/p95. The latest middle raw secondary metrics report0ms GC in all four trials; Java-thread CPU is259.180→330.753ms initially and279.065→348.255ms in confirmation, while compilation-time counters are296→343ms and285→329ms. These counters identify remaining attribution work; they do not establish JIT as the cause, and compilation milliseconds cannot be subtracted from wall time. The shared benchmark source and required gate remain unchanged.
+
+The completed latest large-corpus gate passes: Kotlin save is9,755→9,441ms (−3.219%) against the same main502e baseline. The first comparison passed, so no reverse confirmation ran; the small artifact contains only those two original corpus logs. Latest pipeline49,837→45,434ms (−8.835%) and coarse JVM query2,509→1,983ms (−20.965%) are separate scopes, not request p50/p95. The older5461 save failures (+65.279% and prescribed reverse+77.111%) remain evidence:5461→3cbd changed documentation only, so this new passing observation does not establish a code fix or eliminate an intermittent regression. This CI uses4g/reduced features and does not provide full-feature preupgrade CPU/RSS acceptance. Evidence: `/tmp/sootup-static-review/3cbd-query-ci/raw-verification.json`; exact source delta, raw Kotlin markers, status rows and small artifact hashes are retained. The aggregate report passes7/7 blocking components while Method compatibility is reported advisory/MISSING; its actual failed jobs above remain unresolved.
+
+### 2026-10-08 — Attempt138 result: retain bounded string ORDER BY after matched full-JAR query validation
+
+Fixed16 completed once. Measurement16360 exit0/tool a4f142; summary12301 exit0/a00b19; independent raw audit39833 exit0/b91286. All2640 complete typed responses,2400 measured samples,32 metrics scrapes PASS. Fresh64 lifecycle/native/time/client PIDs and16 actual time groups absent. No retries, replacements or additional workload.
+
+A is current135 parent0d639648; B is attempt138 e0d971a3. Both use the same full current Kotlin/Tika graphs and exact current oracle including ordinal. This is a parent-relative increment, not direct preupgrade acceptance. Each artifact/concurrency has ABBA with first1/warm2/measured30 cycles of all five cases. Client p50/p95 are per-server ranks15/29; reported arm values average the two server quantiles without pooling. Both pairs are forward0→1 and reverse3→2. Positive deltas mean slower/higher.
+
+The intended string ORDER BY query improves p50 by64.291–70.485% and p95 by64.712–71.481% across all four groups, with every pair improving. It remains a real seconds-scale query: Kotlin about4.1s→1.22s, Tika about2.64s→0.94s. Native measured-window CPU falls63.483–70.437%; whole-lifetime peak RSS falls82.068–93.159%, both pairs in every group. These measured gains do not hide smaller adverse control cases listed below.
+
+#### All20 query groups — absolute milliseconds and both pairs
+
+| Artifact/c | Query | Parent→138 p50 ms | Δ% | Pair Δ% | Parent→138 p95 ms | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|---:|---:|---:|
+| kotlin-current/c1 | legacy-line-projection-control | 0.7570→0.7575 | +0.066 | +0.033/+0.100 | 1.2924→0.8495 | -34.273 | -33.985/-34.564 |
+| kotlin-current/c1 | bounded-callsite-materialization | 0.4358→0.4350 | -0.177 | -1.164/+0.814 | 0.5203→0.5049 | -2.959 | -10.411/+5.226 |
+| kotlin-current/c1 | mapped_orderedCallSitePropertyLimit | 4096.2437→1225.8836 | -70.073 | -70.204/-69.943 | 4212.3536→1245.9374 | -70.422 | -70.382/-70.461 |
+| kotlin-current/c1 | mapped_orderedIntConstantPropertyLimit | 4.1440→4.2467 | +2.477 | +2.226/+2.726 | 5.9446→4.5800 | -22.955 | -23.236/-22.671 |
+| kotlin-current/c1 | nodeMatchWithWhere | 2.5453→2.4508 | -3.714 | -1.537/-5.771 | 4.0870→3.3110 | -18.986 | -6.220/-29.028 |
+| kotlin-current/c4 | legacy-line-projection-control | 1.1394→0.9721 | -14.679 | -19.848/-9.013 | 2.4657→1.2545 | -49.121 | -60.307/-30.818 |
+| kotlin-current/c4 | bounded-callsite-materialization | 0.6447→0.6817 | +5.746 | +11.024/+0.725 | 1.3475→0.9570 | -28.980 | -2.347/-43.727 |
+| kotlin-current/c4 | mapped_orderedCallSitePropertyLimit | 4146.2008→1223.7631 | -70.485 | -71.139/-69.821 | 4347.2740→1239.8152 | -71.481 | -71.885/-71.076 |
+| kotlin-current/c4 | mapped_orderedIntConstantPropertyLimit | 4.3603→4.1180 | -5.557 | -7.675/-3.426 | 5.9892→4.4812 | -25.178 | -26.049/-24.328 |
+| kotlin-current/c4 | nodeMatchWithWhere | 3.1612→3.1934 | +1.016 | +1.235/+0.799 | 4.1022→3.5277 | -14.005 | -15.914/-12.039 |
+| tika-current/c1 | legacy-line-projection-control | 0.7892→0.7804 | -1.111 | -1.995/-0.203 | 1.6198→0.8988 | -44.508 | -47.646/-41.135 |
+| tika-current/c1 | bounded-callsite-materialization | 0.4396→0.4356 | -0.896 | -1.276/-0.519 | 0.5370→0.5481 | +2.064 | +8.550/-4.001 |
+| tika-current/c1 | mapped_orderedCallSitePropertyLimit | 2642.7767→943.6996 | -64.291 | -64.240/-64.343 | 2723.8768→961.2087 | -64.712 | -64.658/-64.766 |
+| tika-current/c1 | mapped_orderedIntConstantPropertyLimit | 23.7976→23.9613 | +0.688 | +1.442/-0.069 | 26.5270→25.2571 | -4.787 | -5.612/-3.935 |
+| tika-current/c1 | nodeMatchWithWhere | 14.3120→13.5364 | -5.419 | -4.540/-6.293 | 15.7987→14.6563 | -7.231 | -10.471/-3.742 |
+| tika-current/c4 | legacy-line-projection-control | 1.0443→1.0065 | -3.615 | -9.892/+2.631 | 2.5860→1.5010 | -41.958 | -50.534/-28.520 |
+| tika-current/c4 | bounded-callsite-materialization | 0.6488→0.6461 | -0.421 | -4.548/+3.823 | 0.9536→0.9194 | -3.587 | +5.962/-11.828 |
+| tika-current/c4 | mapped_orderedCallSitePropertyLimit | 2646.2826→936.7269 | -64.602 | -63.961/-65.230 | 2743.6701→956.8853 | -65.124 | -64.796/-65.448 |
+| tika-current/c4 | mapped_orderedIntConstantPropertyLimit | 24.8402→24.1526 | -2.768 | -2.127/-3.403 | 28.1590→25.8185 | -8.312 | -9.402/-7.203 |
+| tika-current/c4 | nodeMatchWithWhere | 14.3363→14.2830 | -0.372 | +0.596/-1.344 | 17.0334→14.9040 | -12.501 | -10.563/-14.402 |
+
+Adverse results retained: Kotlin/c4 materialization p50 rises5.746% (0.6447→0.6817ms), both pairs+11.024/+0.725%; Kotlin/c1 integer sort p50 rises2.477%, both pairs+2.226/+2.726%; Kotlin/c4 predicate p50 rises1.016%, both pairs+1.235/+0.799%. Tika/c1 materialization p95 rises2.064% (0.5370→0.5481ms), with mixed pairs+8.550/−4.001%. Other individual adverse pairs remain in the full table. No assumption that untargeted control changes share the same direct mechanism.
+
+#### Resource means and both pairs
+
+| Artifact/c | Scope | Parent→138 | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|
+| kotlin-current/c1 | measured native CPU s | 123.450→36.995 | -70.032 | -70.131/-69.935 |
+| kotlin-current/c1 | whole native CPU s | 137.355→41.760 | -69.597 | -69.653/-69.542 |
+| kotlin-current/c1 | whole peak RSS MiB | 3480.867→554.680 | -84.065 | -85.706/-82.019 |
+| kotlin-current/c1 | whole native wall s | 139.100→43.500 | -68.728 | -68.671/-68.783 |
+| kotlin-current/c4 | measured native CPU s | 124.735→36.875 | -70.437 | -70.892/-69.982 |
+| kotlin-current/c4 | whole native CPU s | 138.575→41.565 | -70.005 | -70.388/-69.624 |
+| kotlin-current/c4 | whole peak RSS MiB | 8448.406→577.969 | -93.159 | -93.291/-93.023 |
+| kotlin-current/c4 | whole native wall s | 139.555→42.315 | -69.679 | -70.070/-69.288 |
+| tika-current/c1 | measured native CPU s | 80.565→29.420 | -63.483 | -63.423/-63.543 |
+| tika-current/c1 | whole native CPU s | 89.175→33.125 | -62.854 | -62.797/-62.911 |
+| tika-current/c1 | whole peak RSS MiB | 2775.250→497.648 | -82.068 | -79.385/-84.097 |
+| tika-current/c1 | whole native wall s | 90.825→34.715 | -61.778 | -61.730/-61.826 |
+| tika-current/c4 | measured native CPU s | 80.535→29.315 | -63.600 | -63.001/-64.188 |
+| tika-current/c4 | whole native CPU s | 89.425→33.010 | -63.086 | -62.545/-63.619 |
+| tika-current/c4 | whole peak RSS MiB | 7250.305→633.180 | -91.267 | -91.400/-91.132 |
+| tika-current/c4 | whole native wall s | 89.605→33.020 | -63.149 | -62.621/-63.670 |
+
+Measured CPU is same-PID/lstart ps cumulative user+sys delta at0.01s resolution, including measured request/logging/validation gaps; it is not per-case CPU. Whole time-l CPU/wall/peakRSS covers startup/load, first/warm/measured and owned shutdown, excluding client/observer CPU. RSS is not query-window-only peak.
+
+#### All16 raw process resource records
+
+| Run | Whole wall s | Whole CPU s | Measured CPU s | Peak RSS bytes |
+|---|---:|---:|---:|---:|
+| 00-kotlin-current-c1-0-A | 138.50 | 136.75 | 122.97 | 4050370560 |
+| 01-kotlin-current-c1-1-B | 43.39 | 41.50 | 36.73 | 578961408 |
+| 02-kotlin-current-c1-2-B | 43.61 | 42.02 | 37.26 | 584286208 |
+| 03-kotlin-current-c1-3-A | 139.70 | 137.96 | 123.93 | 3249537024 |
+| 04-kotlin-current-c4-0-A | 139.49 | 138.49 | 124.88 | 8972320768 |
+| 05-kotlin-current-c4-1-B | 41.75 | 41.01 | 36.35 | 601931776 |
+| 06-kotlin-current-c4-2-B | 42.88 | 42.12 | 37.40 | 610156544 |
+| 07-kotlin-current-c4-3-A | 139.62 | 138.66 | 124.59 | 8745271296 |
+| 08-tika-current-c1-0-A | 90.96 | 89.32 | 80.68 | 2506014720 |
+| 09-tika-current-c1-1-B | 34.81 | 33.23 | 29.51 | 516603904 |
+| 10-tika-current-c1-2-B | 34.62 | 33.02 | 29.33 | 527040512 |
+| 11-tika-current-c1-3-A | 90.69 | 89.03 | 80.45 | 3314106368 |
+| 12-tika-current-c4-0-A | 88.90 | 88.72 | 79.84 | 7641399296 |
+| 13-tika-current-c4-1-B | 33.23 | 33.23 | 29.54 | 657129472 |
+| 14-tika-current-c4-2-B | 32.81 | 32.79 | 29.09 | 670744576 |
+| 15-tika-current-c4-3-A | 90.31 | 90.13 | 81.23 | 7563591680 |
+
+#### Mixed-five server metrics means — milliseconds
+
+| Artifact/c | Scope | Parent→138 mean ms | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|
+| kotlin-current/c1 | HTTP | 824.2021→246.9252 | -70.041 | -70.139/-69.943 |
+| kotlin-current/c1 | guard | 823.5773→246.8699 | -70.025 | -70.123/-69.927 |
+| kotlin-current/c4 | HTTP | 833.1892→246.0977 | -70.463 | -70.938/-69.987 |
+| kotlin-current/c4 | guard | 832.4856→246.0345 | -70.446 | -70.921/-69.970 |
+| tika-current/c1 | HTTP | 537.8841→196.3113 | -63.503 | -63.461/-63.545 |
+| tika-current/c1 | guard | 537.3264→196.2460 | -63.477 | -63.436/-63.519 |
+| tika-current/c4 | HTTP | 537.8250→195.5318 | -63.644 | -63.055/-64.223 |
+| tika-current/c4 | guard | 537.2388→195.4564 | -63.618 | -63.029/-64.198 |
+
+Each of32 raw Prometheus scrapes independently parsed; each measured window gives150 HTTP SUCCESS/guard successes and zero error/rejection increments, active0, matching complete bucket/count/sum deltas. These are mixed-five sum/count means dominated by the string sorting query, not per-case means or p95. First10ms bucket cannot provide exact submillisecond quantiles. Client quantiles above use individual complete-response clocks.
+
+HTTP ends at Response construction before final transmission; guard ends before serialization. Parent/candidate differ only in pipeline and share route/registry guard placement, unlike the prior preupgrade/current comparison where Source assembly moved across the guard boundary. Do not transfer this matched scope to the old comparison.
+
+First-use and both warm cycles remain separate raw single observations in measurement-summary.json and audit.json, never pooled into measured p95. All process quantiles/raw30 and both pair mean/max values are retained there.
+
+Host monitor retained1187 snapshots with no listed activity events, but remains DIAGNOSTIC_WITH_OBSERVED_BACKGROUND_ACTIVITY and exclusiveWindowClaim=false. One-second metadata cannot establish quiet or exclude subsecond/unknown I/O. No sample selection, final cap acceptance or production-confidence claim. Existing preupgrade and earlier adverse cohorts remain unchanged.
+
+#### Identities and evidence
+
+- Candidate correctness: full305 tests/65 required names/fmt/strict lint/export, original74172 exit0; root independent validation audit retained.
+- Exact command: `/opt/homebrew/opt/python@3.14/bin/python3.14 run.py --plan measurement.plan.sealed.json --execute-root-released` from `/tmp/sootup-static-review/attempt138/string-bounded-order/measurement`; macOS/M3 Max, Rust1.93 ARM64 release exports, Python3.14.7, no JVM. Full current116 Kotlin graph:4,744,132 nodes/2,251,811 CallSites; Tika:4,620,490 nodes/1,705,428 CallSites.
+- `measurement.plan.sealed.json` SHA `9baf85c063b80a4c3a9e7f0786ee7ddfbdd4d64faa6f9fd1d2b562d2acc1d9c2`
+- `measurement-execution/owner-terminal.json` SHA `5b2fe0c101344654853f69d544fc97ecd4a3a7f4e87a0fbcbe6dbcb8182d1d7b`
+- `measurement-execution/results.json` SHA `58423bcf87e4afb450ad6f7ae72d5d866f7b11593dc47fd41f71013e235ccb6c`
+- `measurement-summary.json` SHA `d144e8b44dd0e61a506c66419cf71711c20351f8dc7e151a1f57f61bca3ab515`
+- `independent-audit/audit.py` SHA `e980d3eaf70a354c2dfa53b1fe2834e28b33916f26d7bc07359e5d6124c18044`
+- `independent-audit/audit.json` SHA `ef6de9b1d2b1e684fa4877abe3164368d2775b91554a54cbb6e589db41af9239`
+
+
+#### Target string-sort first/warm observations — separate from steady statistics
+
+Each entry averages only the two original single observations for that arm/cycle; this is descriptive, not a percentile or cold-cache claim. Pair deltas use the original forward/reverse runs. All other cases and every original first/warm value remain in the full audit and summary.
+
+| Artifact/c | Cycle | Parent→138 ms | Δ% | Pair Δ% |
+|---|---|---:|---:|---:|
+| kotlin-current/c1 | first-use | 4359.7957→1254.0097 | -71.237 | -71.054/-71.417 |
+| kotlin-current/c1 | warm1 | 4237.3029→1241.1611 | -70.709 | -70.273/-71.124 |
+| kotlin-current/c1 | warm2 | 4289.9013→1235.5739 | -71.198 | -71.590/-70.803 |
+| kotlin-current/c4 | first-use | 4353.0136→1244.5396 | -71.410 | -71.194/-71.617 |
+| kotlin-current/c4 | warm1 | 4225.7136→1226.7654 | -70.969 | -70.665/-71.264 |
+| kotlin-current/c4 | warm2 | 4138.3488→1217.4232 | -70.582 | -70.143/-71.004 |
+| tika-current/c1 | first-use | 2654.7663→964.7751 | -63.659 | -63.203/-64.116 |
+| tika-current/c1 | warm1 | 2571.5555→948.6993 | -63.108 | -63.431/-62.777 |
+| tika-current/c1 | warm2 | 2526.9661→938.0529 | -62.878 | -62.548/-63.208 |
+| tika-current/c4 | first-use | 2587.2745→962.1064 | -62.814 | -62.908/-62.720 |
+| tika-current/c4 | warm1 | 2744.0899→941.5598 | -65.688 | -65.147/-66.219 |
+| tika-current/c4 | warm2 | 2634.6113→934.4178 | -64.533 | -64.138/-64.926 |
+
+No additional performance workload was launched as part of this packet.
+
+Evidence directory: `/tmp/sootup-static-review/attempt138/string-bounded-order/measurement`. Candidate source is the exact305-test validated pipeline; parent-relative gains support retaining this increment. Root integrated the byte-identical validated/measured pipeline and independently matched all115 native source/manifest inputs and the exact candidate diff. Integration receipt SHA `a4c438c4b043212c4625ecd142e874305d4a5bc61f6ad555686bf89c3d07207e`. Decision: retain this verified positive increment and continue targeted work on adverse short-query cases. This does not assert preupgrade-wide acceptance; construction/loading and the separate JVM Method gate remain outstanding.

@@ -901,7 +901,7 @@ fn bounded_order_capacity(
     }
     // The general comparator is not a total preorder on every Value domain:
     // Node~Method ties and mixed floating/integer comparisons are nontransitive.
-    // Prove Int/null sort keys before discarding anything; never discover an
+    // Prove Int/Str/null sort keys before discarding anything; never discover an
     // unsupported domain after eviction and try to recover by scanning again.
     let [seed] = seeds else { return None };
     let [pattern] = patterns else { return None };
@@ -922,15 +922,27 @@ fn bounded_order_capacity(
     {
         return None;
     }
-    // Str also forms a total order with Int/null (UTF-16 within strings, fixed
-    // cross-type rank). String properties remain on the full-sort path because
-    // this initial specialization was scoped to ordinal/id/line queries; admitting
-    // them is a separate eligibility extension, not a comparator safety issue.
-    let int_or_null = |expr: &Expr| match expr {
-        Expr::Literal(Literal::Int(_) | Literal::Null) => true,
+    // These CallSite properties have fixed scalar domains in node_property.
+    // Strings use the same UTF-16 ordering as the final stable sort; Int/Str/null
+    // also have a fixed cross-type rank. Expressions with an unproven domain
+    // still use the full-sort path, without discarding or rescanning any rows.
+    let ordered_scalar = |expr: &Expr| match expr {
+        Expr::Literal(Literal::Int(_) | Literal::Str(_) | Literal::Null) => true,
         Expr::Property { expr, key } => {
             matches!(expr.as_ref(), Expr::Variable(v) if v == variable)
-                && matches!(key.as_str(), "id" | "ordinal" | "line")
+                && matches!(
+                    key.as_str(),
+                    "id" | "ordinal"
+                        | "line"
+                        | "callee_class"
+                        | "callee_name"
+                        | "callee_signature"
+                        | "callee_descriptor"
+                        | "caller_class"
+                        | "caller_name"
+                        | "caller_signature"
+                        | "caller_descriptor"
+                )
         }
         _ => false,
     };
@@ -943,7 +955,7 @@ fn bounded_order_capacity(
             }
             expr => expr,
         };
-        if !int_or_null(expr) {
+        if !ordered_scalar(expr) {
             return None;
         }
     }
@@ -2011,7 +2023,7 @@ mod bounded_order_tests {
             "MATCH (n:CallSiteNode) RETURN * ORDER BY n.id LIMIT 32",
             "MATCH (n) RETURN n.id AS id ORDER BY id LIMIT 32",
             "MATCH (n:Method) RETURN n.id AS id ORDER BY id LIMIT 32",
-            "MATCH (n:CallSiteNode) RETURN n.callee_name AS name ORDER BY name LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.unknown AS key ORDER BY key LIMIT 32",
             "MATCH (n:CallSiteNode) RETURN n.id + 0 AS id ORDER BY id LIMIT 32",
         ] {
             assert_eq!(capacity(query), None, "{query}");
@@ -2023,6 +2035,104 @@ mod bounded_order_tests {
             bounded_order_capacity(&shape, false, &patterns, &[bound]),
             None
         );
+    }
+
+    #[test]
+    fn admission_proves_callsite_string_keys_without_admitting_unknown_domains() {
+        for property in [
+            "callee_class",
+            "callee_name",
+            "callee_signature",
+            "callee_descriptor",
+            "caller_class",
+            "caller_name",
+            "caller_signature",
+            "caller_descriptor",
+        ] {
+            for order in ["key", &format!("n.{property} DESC")] {
+                assert_eq!(
+                    capacity(&format!(
+                        "MATCH (n:CallSiteNode) RETURN n.{property} AS key, n.id AS id ORDER BY {order}, id SKIP 3 LIMIT 20"
+                    )),
+                    Some(23),
+                    "{property}: {order}"
+                );
+            }
+        }
+        assert_eq!(
+            capacity("MATCH (n:CallSiteNode) RETURN 'same' AS key ORDER BY key LIMIT 1"),
+            Some(1)
+        );
+        for query in [
+            "MATCH (n:CallSiteNode) RETURN toString(n.id) AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN $key AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS key ORDER BY key LIMIT $limit",
+            "MATCH (n:CallSiteNode) RETURN DISTINCT n.callee_name AS key ORDER BY key LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS key, n.id AS key ORDER BY key LIMIT 20",
+            "MATCH (n:Method) RETURN n.name AS key ORDER BY key LIMIT 20",
+        ] {
+            assert_eq!(capacity(query), None, "{query}");
+        }
+    }
+
+    #[test]
+    fn string_heap_matches_utf16_stable_sort_with_nulls_ties_and_mixed_directions() {
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let input: Vec<Row> = [
+            None,
+            Some("a"),
+            Some("\u{10000}"),
+            Some("\u{e000}"),
+            Some("a"),
+            Some("\u{1f600}"),
+            Some("A"),
+            Some("a"),
+        ]
+        .into_iter()
+        .enumerate()
+        .map(|(i, name)| {
+            let mut row = Row::new();
+            row.insert("name".into(), name.map(Value::str).unwrap_or(Value::Null));
+            row.insert("line".into(), Value::Int((i % 2) as i64));
+            row.insert("encounter".into(), Value::Int(i as i64));
+            add_provenance_id(&mut row, Arc::from(if i % 2 == 0 { "a" } else { "b" }));
+            row
+        })
+        .collect();
+        for order_text in ["name, line DESC", "name DESC, line"] {
+            let (_, shape) = query_shape(&format!(
+                "MATCH (n:CallSiteNode) RETURN n.callee_name AS name, n.line AS line ORDER BY {order_text} LIMIT 8"
+            ));
+            let order = shape.order.as_deref().unwrap();
+            for limit in [0, 1, 3, 5, 8, 12] {
+                let mut top = BoundedOrderedRows::new(limit, order);
+                for row in input.clone() {
+                    top.push(row);
+                    assert!(top.heap.len() <= limit);
+                }
+                assert_eq!(top.encounter, input.len());
+                let actual = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+                let expected: Vec<_> = order_rows(&ev, input.clone(), order)
+                    .unwrap()
+                    .into_iter()
+                    .take(limit)
+                    .collect();
+                assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+                if limit == 8 && order_text == "name, line DESC" {
+                    let encounters: Vec<_> = actual
+                        .iter()
+                        .map(|r| match r["encounter"] {
+                            Value::Int(id) => id,
+                            ref other => panic!("Unexpected encounter: {other:?}"),
+                        })
+                        .collect();
+                    assert_eq!(encounters, [6, 1, 7, 4, 2, 5, 3, 0]);
+                    assert_eq!(QueryResult::graph_ids(&actual[1]), ["b"]);
+                    assert_eq!(QueryResult::graph_ids(&actual[2]), ["b"]);
+                }
+            }
+        }
     }
 
     #[test]
@@ -2293,12 +2403,14 @@ mod bounded_order_tests {
             "Late error must occur after a better candidate"
         );
         for limit in [0, 1] {
-            let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY id LIMIT {limit}");
-            assert_eq!(capacity(&query), Some(limit));
-            let reference = full_sort(&ex, &query).unwrap_err();
-            let actual = ex.execute(&query, None).unwrap_err();
-            assert!(actual.to_string().contains("missing_function"));
-            assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
+            for key in ["n.id", "'same'"] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY key LIMIT {limit}");
+                assert_eq!(capacity(&query), Some(limit));
+                let reference = full_sort(&ex, &query).unwrap_err();
+                let actual = ex.execute(&query, None).unwrap_err();
+                assert!(actual.to_string().contains("missing_function"));
+                assert_eq!(format!("{actual:?}"), format!("{reference:?}"));
+            }
         }
     }
 
@@ -2306,22 +2418,24 @@ mod bounded_order_tests {
     fn real_executor_never_swallows_cancelled_or_timed_out_ordered_requests() {
         let Some(graph) = real_graph() else { return };
         for limit in [0, 1, 32] {
-            let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY ordinal, id LIMIT {limit}");
-            assert_eq!(capacity(&query), Some(limit));
-            let cancelled = super::super::CancelToken::new();
-            cancelled.cancel();
-            let ex = Executor::single("real", graph.clone()).with_cancel(cancelled);
-            assert!(matches!(
-                ex.execute(&query, None),
-                Err(CypherError::Cancelled)
-            ));
-            let timed_out = super::super::CancelToken::new();
-            timed_out.timeout(60_000);
-            let ex = Executor::single("real", graph.clone()).with_cancel(timed_out);
-            assert!(matches!(
-                ex.execute(&query, None),
-                Err(CypherError::Timeout(60_000))
-            ));
+            for order in ["ordinal, id", "n.callee_class, n.callee_name, id"] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY {order} LIMIT {limit}");
+                assert_eq!(capacity(&query), Some(limit));
+                let cancelled = super::super::CancelToken::new();
+                cancelled.cancel();
+                let ex = Executor::single("real", graph.clone()).with_cancel(cancelled);
+                assert!(matches!(
+                    ex.execute(&query, None),
+                    Err(CypherError::Cancelled)
+                ));
+                let timed_out = super::super::CancelToken::new();
+                timed_out.timeout(60_000);
+                let ex = Executor::single("real", graph.clone()).with_cancel(timed_out);
+                assert!(matches!(
+                    ex.execute(&query, None),
+                    Err(CypherError::Timeout(60_000))
+                ));
+            }
         }
     }
 
@@ -2353,6 +2467,11 @@ mod bounded_order_tests {
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal ORDER BY n.ordinal DESC, id SKIP 7 LIMIT 32",
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_name AS name ORDER BY id LIMIT 0",
             "MATCH (n:CallSiteNode) WHERE n.id < 0 RETURN n.id AS id ORDER BY id LIMIT 32",
+            "MATCH (n:CallSiteNode) RETURN n.callee_class AS className, n.callee_name AS methodName ORDER BY className, methodName LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.caller_name AS name ORDER BY n.caller_class DESC, name, id SKIP 7 LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_descriptor AS descriptor ORDER BY descriptor DESC, n.caller_signature LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_signature AS signature ORDER BY signature, n.caller_descriptor DESC LIMIT 20",
+            "MATCH (n:CallSiteNode) RETURN n.callee_name AS name ORDER BY name LIMIT 0",
         ];
         for query in cases {
             let (patterns, shape) = query_shape(query);
@@ -2390,10 +2509,13 @@ mod bounded_order_tests {
                 assert_eq!(QueryResult::graph_ids(&actual.rows[1]), ["b"]);
             }
         }
-        let plain = ex.execute(cases[0], None).unwrap();
-        let probed = ex.with_probe().execute(cases[0], None).unwrap();
-        assert_eq!(format!("{:?}", plain.rows), format!("{:?}", probed.rows));
-        assert!(probed.more);
+        for query in [cases[0], cases[4], cases[5]] {
+            let plain = ex.execute(query, None).unwrap();
+            let probed_ex = Executor::new(ex.sources.clone(), true).with_probe();
+            let probed = probed_ex.execute(query, None).unwrap();
+            assert_eq!(format!("{:?}", plain.rows), format!("{:?}", probed.rows));
+            assert!(probed.more);
+        }
     }
 }
 
