@@ -2564,7 +2564,8 @@ class SootUpAdapter(
     }
 
     private fun forEachMethod(sootClass: SootClass, action: (SootMethod) -> Unit) {
-        streamMethodsOrNull(sootClass)?.forEach(action) ?: resolveMethodsOrEmpty(sootClass).forEach(action)
+        streamMethodsOrNull(sootClass)?.forEach(action)
+            ?: resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)
     }
 
     private fun findStaticMethod(sootClass: SootClass, name: String): SootMethod? {
