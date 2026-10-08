@@ -486,6 +486,8 @@ enum Strategy {
     /// One row per distinct (key set, masked columns), the record decoded for its
     /// keys: the annotations.
     Keys(u8),
+    /// Fixed keys plus optional declared-type keys, determined by member binding.
+    DeclaredKeys(u8),
     /// One row per node.
     Each,
 }
@@ -780,14 +782,10 @@ impl PartitionPlan {
                         let strategy = match by_tag[declared_keys as usize][tag as usize] {
                             Some(decided) => decided,
                             None => {
-                                let keys: Vec<String> = ex
-                                    .node_properties(NodeRef {
-                                        source: si as SourceIdx,
-                                        id: first,
-                                    })
-                                    .keys()
-                                    .cloned()
-                                    .collect();
+                                let keys = ex.node_keys(NodeRef {
+                                    source: si as SourceIdx,
+                                    id: first,
+                                });
                                 let ctx = TagCtx {
                                     tag: Some(tag),
                                     keys: &keys,
@@ -817,7 +815,11 @@ impl PartitionPlan {
                                         if !final_aggregated && d.columns != 0 {
                                             None
                                         } else if d.level == Level::Keys {
-                                            Some(Strategy::Keys(d.columns))
+                                            Some(if declared_keys {
+                                                Strategy::DeclaredKeys(d.columns)
+                                            } else {
+                                                Strategy::Keys(d.columns)
+                                            })
                                         } else {
                                             Some(Strategy::Columns(d.columns))
                                         }
@@ -1003,21 +1005,29 @@ impl PartitionPlan {
                     .collect()
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
-                Strategy::Whole => (Vec::new(), Vec::new()),
-                Strategy::Columns(mask) => (masked(mask), Vec::new()),
+                Strategy::Whole => (Vec::new(), KeySet::Fixed),
+                Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
                     masked(mask),
-                    ex.node_properties(NodeRef {
+                    KeySet::Dynamic(ex.node_keys(NodeRef {
                         source: source as SourceIdx,
                         id,
-                    })
-                    .keys()
-                    .cloned()
-                    .collect(),
+                    })),
+                ),
+                Strategy::DeclaredKeys(mask) => (
+                    masked(mask),
+                    if graph
+                        .node(id)
+                        .is_some_and(|node| super::props::has_declared_node_type(graph, &node))
+                    {
+                        KeySet::Declared
+                    } else {
+                        KeySet::Fixed
+                    },
                 ),
                 // A node of its own: the id keeps it apart.
-                Strategy::Each => (vec![id as StrId], Vec::new()),
+                Strategy::Each => (vec![id as StrId], KeySet::Fixed),
             };
             parts[source]
                 .entry((tag, ids, keys))
@@ -1060,7 +1070,7 @@ impl PartitionPlan {
                         match self.strategies[si][tag as usize] {
                             Strategy::Whole => {
                                 parts[si].insert(
-                                    (tag, Vec::new(), Vec::new()),
+                                    (tag, Vec::new(), KeySet::Fixed),
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
@@ -1086,7 +1096,7 @@ impl PartitionPlan {
         let mut out: Vec<Row> = Vec::new();
         // A whole type, or a key set, met again in a later graph: the row it joined,
         // or `None` when the WHERE dropped it.
-        let mut shared: HashMap<(u8, Vec<String>), Option<usize>> = HashMap::new();
+        let mut shared: HashMap<(u8, KeySet), Option<usize>> = HashMap::new();
         for (si, per_source) in parts.into_iter().enumerate() {
             let source = si as SourceIdx;
             // Partitions in the order the walk first meets them: the pushdown's, or
@@ -1128,7 +1138,14 @@ fn ascending(ids: &[u32]) -> bool {
 
 /// The partitions of one source: (first id, weight), keyed by (tag, column ids,
 /// property keys).
-type Parts = IndexMap<(u8, Vec<StrId>, Vec<String>), (u32, i64)>;
+type Parts = IndexMap<(u8, Vec<StrId>, KeySet), (u32, i64)>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum KeySet {
+    Fixed,
+    Declared,
+    Dynamic(Vec<String>),
+}
 
 /// Add a later graph's partition to the row of the same one: its weight and its
 /// graph.

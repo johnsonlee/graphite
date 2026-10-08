@@ -29,6 +29,11 @@ fn display_oracle(mut full: IndexMap<String, Value>, local: bool) -> IndexMap<St
 }
 
 fn assert_views(g: &Graph, node: &Node) {
+    assert_eq!(
+        node_keys(g, node),
+        node_properties(g, node).into_keys().collect::<Vec<_>>(),
+        "ordered keys for {node:?}"
+    );
     let expected = display_oracle(
         node_properties(g, node),
         matches!(node.kind, NodeKind::LocalVariable { .. }),
@@ -45,6 +50,184 @@ fn assert_views(g: &Graph, node: &Node) {
         ordered_values(&non_null),
         "result node {node:?}"
     );
+}
+
+#[test]
+fn declaration_keys_use_exact_binding_without_projecting_type_values() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        return;
+    };
+    let mut graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+    for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+        for id in graph.ids_by_tag(tag) {
+            let node = graph.node(*id).unwrap();
+            assert_eq!(
+                node_keys(&graph, &node),
+                node_properties(&graph, &node)
+                    .into_keys()
+                    .collect::<Vec<_>>()
+            );
+        }
+    }
+    let field = graph
+        .ids_by_tag(TAG_FIELD_NODE)
+        .iter()
+        .filter_map(|id| graph.node(*id))
+        .find(|n| matches!(&n.kind, NodeKind::Field {name, ..} if graph.str(*name) == "first"))
+        .unwrap();
+    let mut unmatched_field = field.clone();
+    if let NodeKind::Field {
+        declaring_class,
+        field_type,
+        ..
+    } = &mut unmatched_field.kind
+    {
+        *field_type = *declaring_class;
+    }
+    assert_eq!(
+        node_keys(&graph, &unmatched_field),
+        ["id", "name", "type", "class", "static"]
+    );
+    let method = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "echo")
+        .unwrap()
+        .clone();
+    let parameter = |method: MethodDesc, index| Node {
+        id: 0,
+        kind: NodeKind::Parameter {
+            param_type: method.return_type,
+            method,
+            index,
+        },
+    };
+    assert_eq!(
+        node_keys(&graph, &parameter(method.clone(), 0)),
+        ["id", "index", "type", "method", "generic_type", "type_info"]
+    );
+    for index in [-1, method.parameter_types.len() as i32] {
+        assert_eq!(
+            node_keys(&graph, &parameter(method.clone(), index)),
+            ["id", "index", "type", "method"]
+        );
+    }
+    let constructor = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "<init>")
+        .unwrap()
+        .clone();
+    assert_eq!(
+        node_keys(&graph, &parameter(constructor, 0)),
+        ["id", "index", "type", "method"]
+    );
+    let returned = |method| Node {
+        id: 0,
+        kind: NodeKind::Return {
+            method,
+            actual_type: None,
+        },
+    };
+    assert_eq!(
+        node_keys(&graph, &returned(method.clone())),
+        ["id", "method", "actual_type", "generic_type", "type_info"]
+    );
+    let mut unmatched = method.clone();
+    unmatched.return_type = method.declaring_class;
+    assert_eq!(
+        node_keys(&graph, &returned(unmatched)),
+        ["id", "method", "actual_type"]
+    );
+    // A source-access assertion: bindings suffice for keys. Any expansion of the
+    // type values would access this deliberately unavailable test-only backing.
+    graph.declared_types.as_mut().unwrap().types.clear();
+    assert_eq!(
+        node_keys(&graph, &field),
+        [
+            "id",
+            "name",
+            "type",
+            "class",
+            "static",
+            "generic_type",
+            "type_info"
+        ]
+    );
+    assert_eq!(
+        node_keys(&graph, &returned(method.clone())),
+        ["id", "method", "actual_type", "generic_type", "type_info"]
+    );
+    assert_eq!(
+        node_keys(&graph, &parameter(method.clone(), 0)),
+        ["id", "index", "type", "method", "generic_type", "type_info"]
+    );
+    graph.declared_types = None;
+    assert_eq!(
+        node_keys(&graph, &returned(method)),
+        ["id", "method", "actual_type"]
+    );
+}
+
+#[test]
+fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        return;
+    };
+    let path = std::path::Path::new(&dir);
+    let original = Graph::load(path).unwrap();
+    let mut partial = Graph::load(path).unwrap();
+    partial
+        .declared_types
+        .as_mut()
+        .unwrap()
+        .fields
+        .retain(|(_, name, _), _| name != "first");
+    partial
+        .declared_types
+        .as_mut()
+        .unwrap()
+        .methods
+        .retain(|(_, name, _), _| name != "echo");
+    let mut legacy = Graph::load(path).unwrap();
+    legacy.declared_types = None;
+    let sources: Vec<Source> = [
+        ("original", original),
+        ("partial", partial),
+        ("legacy", legacy),
+    ]
+    .into_iter()
+    .map(|(id, graph)| Source {
+        id: Arc::from(id),
+        graph: Arc::new(graph),
+    })
+    .collect();
+    let fast = Executor::new(sources.clone(), true);
+    let plain = Executor::new(sources.clone(), true).without_partitioning();
+    for query in [
+        "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c ORDER BY c DESC LIMIT 50",
+        "MATCH (n) RETURN keys(n) AS k, count(*) AS c",
+        "MATCH (n:FieldNode) RETURN n.class AS owner, keys(n) AS k, count(*) AS c",
+        "MATCH (n:ParameterNode) RETURN n.graphId AS graph, keys(n) AS k, count(*) AS c",
+        "MATCH (n:ReturnNode) WHERE 'generic_type' IN keys(n) RETURN keys(n) AS k, count(*) AS c",
+        "MATCH (n:FieldNode) WHERE NOT ('generic_type' IN keys(n)) RETURN n.graphId AS graph, count(*) AS c",
+        "MATCH (n) RETURN keys(n) AS k LIMIT 50",
+    ] {
+        let expected = plain.execute(query, None).unwrap();
+        let actual = fast.execute(query, None).unwrap();
+        assert_eq!(actual.columns, expected.columns, "{query}");
+        assert_eq!(actual.rows.iter().map(ordered_values).collect::<Vec<_>>(),
+            expected.rows.iter().map(ordered_values).collect::<Vec<_>>(), "{query}");
+    }
+    let token = crate::engine::CancelToken::new();
+    token.cancel();
+    let cancelled = Executor::new(sources, true).with_cancel(token);
+    assert!(cancelled
+        .execute(
+            "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c",
+            None
+        )
+        .is_err());
 }
 
 fn call_site(g: &Graph) -> Node {
