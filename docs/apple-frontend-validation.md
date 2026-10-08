@@ -476,6 +476,8 @@ tests, 163 benchmark script tests and workflow actionlint (shellcheck disabled).
 Their logs accompany the evidence. The 67-test final Swift run and earlier CLI tests/
 clippy results validate the unchanged production code.
 
-The required PR `benchmark-regression-gate` result is still pending PR creation.
-Passing that gate's own thresholds would not override the stricter local performance
-conclusions above.
+The required `benchmark-regression-gate` result and its standard method-level/end-to-end
+comment are tracked on [PR #176](https://github.com/johnsonlee/graphite/pull/176).
+Consult that live check for the final PR head; this report does not substitute a static
+calibration result for the required gate. Passing the gate's own thresholds would not
+override the stricter local performance conclusions above.
