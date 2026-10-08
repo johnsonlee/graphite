@@ -363,6 +363,22 @@ factor in future evidence. Fourteen lifecycle harness tests pass, including exac
 125/3 and 1/1 conversion checks and rejection of an invalid timebase. The correction
 does not turn the observed CPU or latency overruns into a pass.
 
+## Validation control fixes
+
+The Xcode corpus cache now retains `derived-data/Build` alongside the index store.
+Index records refer to copied framework headers in `Build/Products` and generated
+headers in `Build/Intermediates.noindex`; preserving their symlink targets keeps a
+cache hit consistent with a fresh build. The cache version was changed to avoid
+restoring old incomplete entries. A restore simulation checks that the paths recorded
+by the index remain readable after restoring the configured cache trees.
+
+The comparator also retains the reviewed baseline revision and coverage-change reason
+in reverse-order confirmation reports, including unsuccessful confirmations. This
+changes reporting only, not the resource or graph-shape acceptance rules. The full
+[benchmark script test run](apple-frontend-evidence/2026-10-08/benchmark-script-tests.log)
+passes all 163 tests, including both confirmation outcomes and the cache restoration
+check. Fourteen lifecycle tests pass after the CPU collector correction.
+
 ## Release and PR validation status
 
 The final release rehearsal and hosted real-corpus calibration are still running.
