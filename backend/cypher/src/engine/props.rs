@@ -234,14 +234,6 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
     if key == "id" {
         return Value::Int(node.id as i64);
     }
-    if matches!(key, "generic_type" | "type_info")
-        && matches!(
-            node.kind,
-            NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
-        )
-    {
-        return declared_node_property(g, node, key);
-    }
     let v = match &node.kind {
         NodeKind::CallSite {
             caller,
@@ -320,6 +312,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "type" => s(g, *field_type),
             "class" => s(g, *declaring_class),
             "static" => Value::Bool(*is_static),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::Parameter {
@@ -330,6 +323,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "index" => Value::Int(*index as i64),
             "type" => s(g, *param_type),
             "method" => sig(g, method),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::Return {
@@ -338,6 +332,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
         } => match key {
             "method" => sig(g, method),
             "actual_type" => actual_type.map(|t| s(g, t)).unwrap_or(Value::Null),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::ResourceFile {

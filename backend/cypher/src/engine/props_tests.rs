@@ -1041,3 +1041,109 @@ fn declared_type_info_is_sparse_internally_and_in_nested_json() {
         serde_json::json!({"scope": null})
     );
 }
+
+#[test]
+fn scalar_properties_preserve_declared_and_non_declared_node_contracts() {
+    for variable in ["GRAPHITE_TYPES_V1_FIXTURE", "GRAPHITE_TYPES_FIXTURE"] {
+        let Some(dir) = std::env::var_os(variable) else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none(),
+                "{variable} is required for strict scalar property validation"
+            );
+            eprintln!("{variable} unset; skipping scalar property interoperability test");
+            continue;
+        };
+        let mut graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        let name = graph.strings().index_of("first").unwrap() as u32;
+        let null_name = graph.strings().index_of("second").unwrap() as u32;
+        let annotation = Node {
+            id: 17,
+            kind: NodeKind::Annotation {
+                name,
+                class_name: name,
+                member_name: name,
+                values: vec![(name, AnyValue::Int(7)), (null_name, AnyValue::Null)],
+            },
+        };
+        assert!(matches!(
+            node_property(&graph, &annotation, "first"),
+            Value::Int(7)
+        ));
+        for key in [
+            "second",
+            "generic_type",
+            "type_info",
+            "__missing_property__",
+        ] {
+            assert!(node_property(&graph, &annotation, key).is_null());
+        }
+        let mut declarations = Vec::new();
+        for tag in [
+            TAG_CALL_SITE_NODE,
+            TAG_FIELD_NODE,
+            TAG_PARAMETER_NODE,
+            TAG_RETURN_NODE,
+        ] {
+            assert!(
+                !graph.ids_by_tag(tag).is_empty(),
+                "missing fixture tag {tag}"
+            );
+            for id in graph.ids_by_tag(tag) {
+                let node = graph.node(*id).unwrap();
+                let full = node_properties(&graph, &node);
+                for (key, expected) in &full {
+                    assert_eq!(
+                        format!("{:?}", node_property(&graph, &node, key)),
+                        format!("{expected:?}"),
+                        "{variable}, {tag}, {id}, {key}"
+                    );
+                }
+                assert!(node_property(&graph, &node, "__missing_property__").is_null());
+                for key in ["generic_type", "type_info"] {
+                    if !full.contains_key(key) {
+                        assert!(node_property(&graph, &node, key).is_null());
+                    }
+                }
+                if let NodeKind::CallSite { caller, callee, .. } = &node.kind {
+                    for (key, sid) in [
+                        ("caller_class", caller.declaring_class),
+                        ("callee_class", callee.declaring_class),
+                        ("callee_name", callee.name),
+                    ] {
+                        assert_eq!(
+                            node_property(&graph, &node, key).as_str(),
+                            Some(graph.str(sid))
+                        );
+                    }
+                } else if full.contains_key("generic_type") {
+                    declarations.push(node);
+                }
+            }
+        }
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            assert!(declarations.iter().any(|node| node.tag() == tag));
+        }
+        // A present table without member bindings and a legacy graph both
+        // expose null scalars, while ordinary node identity remains available.
+        for absent_table in [false, true] {
+            graph.update_declared_types(|table| {
+                if absent_table {
+                    *table = None;
+                } else {
+                    let table = table.as_mut().unwrap();
+                    table.fields.clear();
+                    table.methods.clear();
+                }
+            });
+            for node in &declarations {
+                for key in ["generic_type", "type_info", "__missing_property__"] {
+                    assert!(node_property(&graph, node, key).is_null());
+                }
+                assert!(matches!(
+                    node_property(&graph, node, "id"),
+                    Value::Int(id) if id == i64::from(node.id)
+                ));
+            }
+        }
+    }
+}
