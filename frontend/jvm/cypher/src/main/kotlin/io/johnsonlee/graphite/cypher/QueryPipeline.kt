@@ -1505,8 +1505,8 @@ class QueryPipeline private constructor(
             )
             if (directStringConjunction != null) {
                 val candidates = DirectStringDisjunction(listOf(directStringConjunction.required))
-                val predicateFactory: DirectNodePredicateFactory = { _ ->
-                    { node: Node -> directStringConjunction.matches(node) }
+                val predicateFactory: DirectNodePredicateFactory = { source ->
+                    { node: Node -> directStringConjunction.matches(node, source.graph) }
                 }
                 return if (ret.distinct) {
                     executeDirectStringDisjunction(
@@ -1686,7 +1686,7 @@ class QueryPipeline private constructor(
                 nodeClass,
                 filter,
                 limit - rows.size
-            ) ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
+            ) ?: trackWork(source.graph.nodes(nodeClass)).filter { filter.matches(it, source.graph) }
             for (node in candidates) {
                 val candidate = nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
@@ -2981,7 +2981,7 @@ class QueryPipeline private constructor(
             graph !is StringPropertyLookupOrder
         ) {
             return interruptible(trackWork(graph.nodes(nodeClass), tracker))
-                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node) }
+                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node, graph) }
                 .take(limit)
         }
         val candidateSequences = mutableListOf<Sequence<Node>>()
@@ -2997,7 +2997,7 @@ class QueryPipeline private constructor(
             if (candidateType == AnnotationNode::class.java && filters.any { it.coercesToString }) {
                 if (graph.nodeCount(candidateType) != 0L) {
                     candidateSequences += interruptible(trackWork(graph.nodes(candidateType), tracker))
-                        .filter(disjunction::matches).take(limit)
+                        .filter { disjunction.matches(it, graph) }.take(limit)
                 }
                 continue
             }
@@ -3032,11 +3032,11 @@ class QueryPipeline private constructor(
                 )
             }
             val candidates: Sequence<Node> = if (accelerated.any { it == null }) {
-                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter(disjunction::matches)
+                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter { disjunction.matches(it, graph) }
             } else if (graph is StringPropertyLookupOrder) {
                 mergeNodeSequences(accelerated.filterNotNull(), graph::stringPropertyNodeOrder)
             } else {
-                filterOwnedNodes(filters, accelerated.filterNotNull())
+                filterOwnedNodes(graph, filters, accelerated.filterNotNull())
             }
             candidateSequences += candidates
         }
@@ -3058,13 +3058,14 @@ class QueryPipeline private constructor(
     }
 
     private fun <T : Node> filterOwnedNodes(
+        graph: Graph,
         filters: List<DirectStringFilter>,
         sequences: List<Sequence<T>>
     ): Sequence<Node> = sequence {
         for ((index, nodes) in sequences.withIndex()) {
             for (node in nodes) {
                 val ownedByEarlierFilter = (0 until index).any { earlierIndex ->
-                    filters[earlierIndex].matches(node)
+                    filters[earlierIndex].matches(node, graph)
                 }
                 if (!ownedByEarlierFilter) yield(node)
             }
@@ -3119,8 +3120,8 @@ class QueryPipeline private constructor(
         val transform: StringValueTransform? = null,
         val coercesToString: Boolean = false
     ) {
-        fun matches(node: Node): Boolean {
-            val value = NodePropertyAccessor.getProperty(node, property)
+        fun matches(node: Node, graph: Graph): Boolean {
+            val value = NodePropertyAccessor.getProperty(node, property, graph)
             val raw = (if (coercesToString) value?.toString() else value as? String) ?: return false
             val actual = when (transform) {
                 null -> raw
@@ -3261,7 +3262,7 @@ class QueryPipeline private constructor(
             }
         }
 
-        fun matches(node: Node): Boolean = filters.any { it.matches(node) }
+        fun matches(node: Node, graph: Graph): Boolean = filters.any { it.matches(node, graph) }
 
         companion object {
             @Suppress("ReturnCount")
@@ -3329,7 +3330,7 @@ class QueryPipeline private constructor(
         val required: DirectStringFilter,
         val anyOf: DirectStringDisjunction
     ) {
-        fun matches(node: Node): Boolean = required.matches(node) && anyOf.matches(node)
+        fun matches(node: Node, graph: Graph): Boolean = required.matches(node, graph) && anyOf.matches(node, graph)
 
         companion object {
             @Suppress("ReturnCount")

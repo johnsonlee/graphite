@@ -240,6 +240,68 @@ class DeclaredTypeQueryTest {
         assertNull(literal["missing"])
     }
 
+    @Test
+    fun `limited direct string filters read declarations from the node graph`() {
+        val executor = CypherExecutor(graph("java.lang.String"))
+        for (label in listOf("Field", "Parameter", "Return")) {
+            assertLimitedDeclarationFilters(label) { query -> executor.execute(query).rows }
+        }
+        val rows = executor.execute(
+            "MATCH (n:Field) WHERE n.name = 'items' AND n.generic_type CONTAINS 'String' " +
+                "RETURN n.generic_type AS declaration LIMIT 1"
+        ).rows
+        assertEquals(listOf(mapOf("declaration" to "java.util.List<java.lang.String>")), rows)
+        assertTrue(executor.execute(
+            "MATCH (n:Field) WHERE n.generic_type CONTAINS 'Integer' RETURN n.generic_type LIMIT 1"
+        ).rows.isEmpty())
+    }
+
+    @Test
+    fun `limited declaration filters preserve source graph identity across equal erased nodes`() {
+        val executor = CrossGraphCypherExecutor(listOf(
+            CypherGraph("integer", graph("java.lang.Integer")),
+            CypherGraph("string", graph("java.lang.String"))
+        ))
+        for (label in listOf("Field", "Parameter", "Return")) {
+            assertLimitedDeclarationFilters(label) { query ->
+                executor.execute(query).rows.map { row ->
+                    assertEquals(mapOf(RESULT_GRAPH_IDS_KEY to listOf("string")), row[RESULT_METADATA_KEY])
+                    row - RESULT_METADATA_KEY
+                }
+            }
+        }
+        val rows = executor.execute(
+            "MATCH (n:Field) WHERE n.name = 'items' AND n.generic_type ENDS WITH 'String>' " +
+                "RETURN n.graphId AS graph, n.generic_type AS declaration LIMIT 1"
+        ).rows
+        assertEquals(listOf(mapOf(
+            "graph" to "string", "declaration" to "java.util.List<java.lang.String>",
+            RESULT_METADATA_KEY to mapOf(RESULT_GRAPH_IDS_KEY to listOf("string"))
+        )), rows)
+    }
+
+    private fun assertLimitedDeclarationFilters(label: String, execute: (String) -> List<Map<String, Any?>>) {
+        val predicates = listOf(
+            "n.generic_type = 'java.util.List<java.lang.String>'",
+            "n.generic_type CONTAINS 'String'",
+            "n.generic_type STARTS WITH 'java.util.List<java.lang.Str'",
+            "n.generic_type ENDS WITH 'String>'",
+            "toString(n.generic_type) CONTAINS 'String'",
+            "toLower(n.generic_type) CONTAINS 'string'",
+            "toLower(coalesce(n.generic_type, '')) CONTAINS 'string'",
+            "toString(n.type_info) CONTAINS 'java.lang.String'"
+        )
+        for (predicate in predicates) {
+            val rows = execute(
+                "MATCH (n:$label) WHERE $predicate RETURN n.generic_type AS declaration, " +
+                    "n.type_info.arguments[0].name AS argument LIMIT 1"
+            )
+            assertEquals(listOf(mapOf(
+                "declaration" to "java.util.List<java.lang.String>", "argument" to "java.lang.String"
+            )), rows, "$label: $predicate")
+        }
+    }
+
     private fun assertDeclarationKeys(row: Map<String, Any?>, names: List<String>, hasDeclaration: Boolean) {
         for (name in names) {
             assertEquals(hasDeclaration, name in row["keys"] as List<*>)
