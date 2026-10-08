@@ -15,13 +15,19 @@ graph-dir/
 ├── graph.nodeoffsets  Mmap Node ID -> offset lookup
 ├── graph.typeindex    Mmap node type -> Node ID ranges lookup
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
+├── graph.types        Optional deduplicated declared types + member bindings (own UTF-8 strings)
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
 ├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 ├── graph.branchdefs   Optional branch-side local definitions, bound to graph.metadata by its trailer
+├── graph.callsite-ordinals Optional call-site ordinals/origins, bound to graph.metadata
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
+
+The following query-index and backward-adjacency behavior describes the JVM reader.
+The Rust reader builds forward/backward CSR in memory, does not use `backward.*` or
+`graph.labelprefix`, and rejects an incompatible present CallSite query index.
 
 The production `graphite build` command prepares `graph.callsite-string-index` while saving the
 graph. A mapped load restores its primitive arrays lazily under the shared CallSite-index heap
@@ -52,6 +58,113 @@ process still uses a transient compressed graph; it just cannot reuse
 `backward.*` across later processes. Forward-only queries still do not pay
 transpose construction during load.
 
+## File Relationships
+
+The diagrams describe the current on-disk layout. Solid arrows show references or reader
+lookups; dashed arrows show digest/identity bindings. An arrow does not mean a filename is
+stored in the referring record. `Node ID`, `string ID`, and declared `type ID` are separate
+index spaces. `graph.typeindex` indexes **node kinds**, not declared JVM types.
+
+### Core records and lookups
+
+```mermaid
+flowchart TB
+    subgraph NodeRecords["Node records and indexes"]
+        TI["graph.typeindex<br/>node kind → Node IDs"]
+        NI["graph.nodeindex / graph.nodeoffsets<br/>Node ID → byte offset"]
+        ND["graph.nodedata<br/>node records, erased field/parameter/return types"]
+        TI -->|"Node IDs"| NI
+        NI -->|"byte offsets"| ND
+    end
+
+    subgraph Edges["Edges"]
+        F["forward.*<br/>outgoing adjacency"]
+        B["backward.*<br/>optional incoming adjacency"]
+        LP["graph.labelprefix<br/>per-node arc ranges"]
+        L["graph.labels<br/>one label per forward arc"]
+        C["graph.comparisons<br/>control-flow comparison data"]
+        F -->|"JVM transpose, built on demand"| B
+        F -->|"forward arc order"| L
+        LP -->|"start/end offsets"| L
+    end
+
+    M["graph.metadata<br/>methods, hierarchy, annotations, branch scopes"]
+    O["graph.classoverview<br/>class counts and class-level edges"]
+    R["graph.resources<br/>own UTF-8 paths/sources and resource bytes"]
+    S["graph.strings<br/>shared deduplicated string dictionary"]
+
+    F -->|"source/target Node IDs"| ND
+    B -->|"source/target Node IDs"| ND
+    C -->|"edge endpoint and comparand Node IDs"| ND
+    M -->|"branch condition/comparand/membership Node IDs"| ND
+    ND -->|"string IDs"| S
+    M -->|"string IDs, including erased method types"| S
+    O -->|"class-name string IDs"| S
+    R ---|"logical path/source association"| ND
+```
+
+`graph.labelprefix` can be reconstructed from forward outdegrees. The backward graph uses
+the forward edge labels; it has no separate label file. `graph.resources` stores its own
+text and bytes and does not reference `graph.strings` or store Node IDs.
+
+### Declaration types, sidecars and integrity bindings
+
+```mermaid
+flowchart TB
+    P["forward.properties<br/>authoritative declared-type binding"]
+    T["graph.types<br/>type expressions + field/method/class bindings<br/>own UTF-8 strings"]
+    M["graph.metadata"]
+    N["graph.nodedata"]
+    D["graph.branchdefs<br/>branch-side/local definition triples"]
+    Q["graph.callsite-ordinals<br/>Node ID → ordinal / origin Node ID"]
+    S["graph.strings"]
+    SI["graph.strings.identity"]
+    CI["graph.callsite-string-content.identity"]
+    I["graph.callsite-string-index<br/>optional CSR/trigram query index"]
+
+    P -.->|"SHA-256 of complete type file"| T
+    T -.->|"embedded SHA-256 of complete metadata file"| M
+    T -->|"table-local type IDs: arguments, owner, component, bindings"| T
+    T ---|"full field/method key lookup at query time"| N
+    T ---|"full method key lookup at query time"| M
+    M -.->|"GRX trailer: branch payload digest"| D
+    M -.->|"GRB section: ordinal index digest"| Q
+    D -->|"local/constant Node IDs; scope order follows metadata"| N
+    Q -->|"call-site and origin Node IDs"| N
+    I -->|"string IDs"| S
+    I -->|"CallSite Node IDs"| N
+    SI -->|"input to combined identity"| CI
+    SI -.->|"save-time semantic hash snapshot"| S
+    I -.->|"compare saved content identity"| CI
+    CI -.->|"snapshot of CallSite count, Node IDs, offsets and indexed string IDs"| N
+```
+
+A full member key is the declaring class, member name and **complete JVM descriptor**,
+including the return type for methods. The current `graph.types` v1 stores these keys and
+its type names/scopes as its own UTF-8 strings; it contains neither `graph.strings` IDs nor
+Node IDs. Its integer type references point only to its own deduplicated expression rows.
+Fields, parameters and returns resolve that binding using their erased declaration key.
+A formatted value such as `List<User>` is rendered on demand rather than stored as a string.
+
+The `graph.types` binding is authoritative in `forward.properties`: no binding means a
+legacy graph and any orphan type file is ignored; a binding with a missing or mismatched
+file is a load error. The embedded metadata digest prevents attaching the table to another
+metadata file. JVM loading validates the complete table and retains mapped rows/indexes;
+Rust loading currently decodes the table into memory. See [Declared JVM types](declared-types.md)
+for the complete wire format and query properties.
+
+The CallSite identity files are snapshots generated while saving the graph.
+Normal index restore compares the saved combined identity; it does not recompute these
+identities by hashing the core files. When snapshots are absent, the JVM computes the required
+identity from core data. The combined identity includes the ordered-string
+identity, CallSite count, and each CallSite's Node ID, byte offset and four indexed string IDs.
+
+The other sidecars have their own policies described below. On the JVM, an unusable query
+index falls back to raw scanning and unusable branch definitions fall back to empty lists.
+Rust rejects an incompatible present query index and ignores branch-definition semantics.
+Unavailable call-site ordinals read as null. The ordinal index also contains hashes for its
+entry blocks; the diagram shows the file-level binding rather than those internal blocks.
+
 ## Binary Format
 
 ### Header (all Graphite files)
@@ -60,7 +173,8 @@ transpose construction during load.
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524201`, last) |
+| graph.types | `GTY` | `0x47545901` (independent version 1) |
+| graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524202`, last) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
 | graph.nodeoffsets | `GRL` | `0x47524C03` |
@@ -90,9 +204,10 @@ to its body, a lambda body reached through `invokedynamic`, the methods a functi
 apart, from `-1` downwards. It is a file of its own rather than a field of the `CallSite` record because the
 record format is what every reader shares: the benchmark gates query the candidate's graphs with the base
 revision's code, and a format version it does not know fails the whole comparison, while a file it never
-opens costs nothing. Both loaders map the sidecar and give the `CallSite` node its ordinal as they decode it (a search over the
-mapped entries, eight bytes per call site, nothing read up front: a cold query must not pay for a sidecar it
-may never need), the Rust reader holds the entries in memory, and a graph without the sidecar, or with one that is not a sidecar (wrong header, cut short), reads every ordinal as
+opens costs nothing. Both loaders give a `CallSite` node its ordinal as they decode it, using
+an indexed search over the retained sidecar bytes. Both hash the index at load; Kotlin validates
+entry blocks lazily and Rust validates every block up front. A graph without the sidecar, or
+with an invalid sidecar (for example, wrong header or truncated data), reads every ordinal as
 `null`. The sidecar is bound to the graph it describes the way `graph.branchdefs` is: the same digest is the
 last section of `graph.metadata` (`GRB`, 36 bytes, written after the trailer and the synthetic identities, so
 a reader finds it by looking at the file's tail without parsing the metadata, and a reader that predates it
@@ -114,7 +229,7 @@ not an empty resource set. Other graph APIs remain available, while resource HTT
 instruction to rebuild the graph using the current CLI.
 
 `graph.branchdefs` is an independent version `1` sidecar written after `graph.metadata`. Its preamble is the
-header, the payload length and the payload's SHA-256; `graph.metadata` ends with a trailer (`GRX` magic, version
+header, the payload length and the payload's SHA-256; `graph.metadata` contains a trailer (`GRX` magic, version
 `1`, the same SHA-256) that binds the two files. The payload lists, for every branch scope in metadata order, the
 writes on each side to locals that have a constant definition on some branch side (a side's writes are those
 reached only through that side: a write both sides reach, such as one after the merge point, at a loop exit or
@@ -131,9 +246,10 @@ The trailer is what makes a stale sidecar detectable: the graph files encode nei
 side attribution, so two graphs can persist byte-identically while the sidecar differs. A writer that predates
 the sidecar re-saves `graph.metadata` without the trailer, and a current writer re-saves it with a new digest;
 either way the old `graph.branchdefs` no longer matches and is never attached. Readers that predate the trailer
-stop after the last metadata section and never see it; the Rust reader does the same. The sidecar is read lazily
-on the first branch-scope access: the preamble is validated (header, budget, exact payload length, digest equal
-to the trailer's) before the payload is read, and every count in the payload is checked against the remaining
+stop after the last metadata section and never see it. The Rust reader skips the GRX and GRS
+sections to reach the ordinal binding, without interpreting branch-definition semantics.
+On the JVM, the sidecar is read lazily on the first branch-scope access: the preamble is validated
+(header, budget, exact payload length, digest equal to the trailer's) before the payload is read, and every count in the payload is checked against the remaining
 bytes before an array is allocated. The decoded content is then checked against the persisted nodes and the
 writer's invariants: the local table may not have more entries than `graph.nodedata` counts nodes, every table
 key must be a persisted `LocalVariable` node, every constant id must be `-1` or a persisted constant node (the
@@ -146,11 +262,11 @@ A loaded graph therefore never exposes a definition that points outside it, and 
 disagrees with the side definitions a consumer subtracts from it. The file is derived data: when it is missing, has a wrong magic or version,
 does not match the trailer, or is corrupt in any of these ways, the loader logs one warning and returns every
 branch scope with empty definition lists. The trailer and the sidecar are not part of the format version, so
-the Rust backend ignores both.
+the Rust backend ignores their branch-definition semantics.
 
-`graph.metadata` may end with one more optional section after the trailer: the synthetic identities (`GRS`
-magic, version `1`). It records, for every compiler-numbered synthetic member of the loaded packages (a class or
-method with `ACC_SYNTHETIC`, or whose name carries a purely numeric ordinal: `Foo$1`, `Foo$bar$1`,
+`graph.metadata` may contain another optional section after the trailer: the synthetic identities (`GRS`
+magic, version `1`), followed by the ordinal binding when present. It records, for every
+compiler-numbered synthetic member of the loaded packages (a class or method with `ACC_SYNTHETIC`, or whose name carries a purely numeric ordinal: `Foo$1`, `Foo$bar$1`,
 `lambda$run$0`, `run$lambda$0`, `access$000`, `Foo$$ExternalSyntheticLambda0`), a 128-bit fingerprint that does
 not move when a sibling is inserted or removed: `int32 count`, then per entry the member key as a string table
 index (the class name, or the method signature as `MethodDescriptor.signature` renders it) and 16 raw bytes.
@@ -177,6 +293,9 @@ bit 7: reserved
 
 ## Pipeline
 
+These save/load flows describe the JVM `GraphStore`; native loading builds CSR adjacency
+eagerly and does not use the JVM backward-graph cache.
+
 ```
 BUILD                          SAVE                              LOAD
 SootUpAdapter                  GraphStore.save()                 GraphStore.load()
@@ -188,7 +307,7 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
                                  4. BVGraph.store                  5. Read nodes + metadata
                                  5. Labels + label prefix + comparisons write
                                  6. Nodedata + node indexes write
-                                 7. Metadata write
+                                 7. Metadata + declared type table write
                                  8. Class overview + resource store write
 ```
 
@@ -207,7 +326,8 @@ graph TD
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
     G --> H[7. Write metadata + trailer + synthetic identities + ordinal binding, branchdefs and ordinal sidecars]
-    H --> I[8. Write class overview + resource store]
+    H --> T[Write graph.types + forward.properties digest binding]
+    T --> I[8. Write class overview + resource store]
 ```
 
 ### Load Flow
@@ -229,7 +349,8 @@ graph TD
     E -->|Eager| E1[Deserialize all to heap]
     E -->|Mapped| E2[mmap nodedata file]
     B2 --> F[Read metadata; branchdefs on first branch-scope access]
-C & D & B3 & B4 & E & F --> G[Construct Graph]
+    F --> T[Read and validate graph.types when bound in forward.properties]
+    C & D & B3 & B4 & E & F & T --> G[Construct Graph]
 ```
 
 ### Load Modes
