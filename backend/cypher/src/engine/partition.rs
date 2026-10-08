@@ -917,7 +917,7 @@ impl PartitionPlan {
                 for (si, slots) in swept.into_iter().enumerate() {
                     let source = si as SourceIdx;
                     let graph = &ex.sources[si].graph;
-                    let v2 = graph.node_version < 3;
+                    let v2 = graph.node_version() < 3;
                     let csr = match direction {
                         Direction::Outgoing => &graph.forward,
                         _ => &graph.backward,
@@ -1061,8 +1061,12 @@ impl PartitionPlan {
                     // Ascending lists make that walk id order, so each type can be
                     // swept on its own and the partitions sorted by first node
                     // afterwards, without the merge's comparison per node.
-                    let by_id = lists.clone().all(|(_, ids)| ascending(ids));
-                    let mut meet = |tag: u8, id: u32| -> CypherResult<()> {
+                    let by_id = lists.clone().all(|(tag, ids)| {
+                        matches!(self.strategies[si][tag as usize], Strategy::DeclaredKeys(0))
+                            && s.graph.declared_key_partitions(tag).is_some()
+                            || ascending(ids)
+                    });
+                    let mut meet = |tag: u8, id: u32, parts: &mut Vec<Parts>| -> CypherResult<()> {
                         polled = polled.wrapping_add(1);
                         if polled & 1023 == 0 {
                             ex.cancel.check()?;
@@ -1074,20 +1078,42 @@ impl PartitionPlan {
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
-                            _ => note(si, tag, id, &mut parts),
+                            _ => note(si, tag, id, parts),
                         }
                         Ok(())
                     };
                     if by_id {
                         for (tag, ids) in lists {
+                            if matches!(
+                                self.strategies[si][tag as usize],
+                                Strategy::DeclaredKeys(0)
+                            ) {
+                                if let Some(summary) = s.graph.declared_key_partitions(tag) {
+                                    ex.cancel.check()?;
+                                    for (bound, partition) in summary.iter().enumerate() {
+                                        if partition.count > 0 {
+                                            let key = if bound == 0 {
+                                                KeySet::Fixed
+                                            } else {
+                                                KeySet::Declared
+                                            };
+                                            parts[si].insert(
+                                                (tag, Vec::new(), key),
+                                                (partition.first, partition.count as i64),
+                                            );
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
                             for &id in ids {
-                                meet(tag, id)?;
+                                meet(tag, id, &mut parts)?;
                             }
                         }
                         parts[si].sort_by_cached_key(|_, (first, _)| *first);
                     } else {
                         for (tag, id) in MergedWalk::new(lists) {
-                            meet(tag, id)?;
+                            meet(tag, id, &mut parts)?;
                         }
                     }
                 }
@@ -1347,7 +1373,7 @@ fn sweep_edges(
         Direction::Outgoing => &graph.forward,
         _ => &graph.backward,
     };
-    let v2 = graph.node_version < 3;
+    let v2 = graph.node_version() < 3;
     let mut type_ok: [u8; 256] = [0; 256];
     // The slot table is two zero-initialised arrays, which the allocator hands out
     // as untouched pages, and the list of slots met: a graph pays for the slots it

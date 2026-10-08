@@ -460,7 +460,7 @@ pub fn select_sites(
 /// The callee signature of call site `id`, for a message.
 fn callee_of(graph: &graphite_storage::Graph, id: u32) -> Option<String> {
     match graph.node(id)?.kind {
-        NodeKind::CallSite { callee, .. } => Some(callee.signature(&graph.strings)),
+        NodeKind::CallSite { callee, .. } => Some(callee.signature(graph.strings())),
         _ => None,
     }
 }
@@ -577,7 +577,7 @@ fn key_of(graph: &graphite_storage::Graph, id: u32) -> Option<(CallSiteKey, bool
     else {
         return None;
     };
-    let strings = &graph.strings;
+    let strings = graph.strings();
     let key = CallSiteKey {
         caller: caller.signature(strings),
         caller_descriptor: caller.descriptor(strings),
@@ -600,7 +600,7 @@ fn result_type_of(
     let mut types: Vec<String> = Vec::new();
     for derived in leaves(graph, origin).into_iter().filter(|d| *d != origin) {
         if let Some(NodeKind::CallSite { callee, .. }) = graph.node(derived).map(|n| n.kind) {
-            let name = graph.strings.get(callee.return_type as usize).to_string();
+            let name = graph.strings().get(callee.return_type as usize).to_string();
             if !types.contains(&name) {
                 types.push(name);
             }

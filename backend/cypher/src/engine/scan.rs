@@ -860,7 +860,7 @@ impl ScanPlan {
             tag,
             &|key| {
                 !matches!(key, "name" | "class" | "member" | "values")
-                    && graph.strings.index_of(key).is_none()
+                    && graph.strings().index_of(key).is_none()
             },
             &|p| synthetic_truth(ex, source, p),
         );
@@ -1003,7 +1003,7 @@ impl ScanPlan {
                     &|key| {
                         if tag == TAG_ANNOTATION_NODE {
                             !matches!(key, "name" | "class" | "member" | "values")
-                                && graph.strings.index_of(key).is_none()
+                                && graph.strings().index_of(key).is_none()
                         } else {
                             matches!(key, "generic_type" | "type_info")
                         }
@@ -1486,11 +1486,11 @@ fn sweep_call_sites(graph: &Graph, ids: &[u32], sp: &SourcePlan, out: &mut Vec<u
 
 /// Indices of dictionary entries matching a seekable predicate, via binary search.
 fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
-    let n = graph.strings.len();
+    let n = graph.strings().len();
     let lower = lower_bound(graph, &p.literal);
     match p.op {
         PushOp::Equals => {
-            if lower < n && graph.strings.get(lower) == p.literal {
+            if lower < n && graph.strings().get(lower) == p.literal {
                 lower..lower + 1
             } else {
                 lower..lower
@@ -1499,7 +1499,7 @@ fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
         // Every string with the prefix sorts together, starting at the lower bound.
         PushOp::StartsWith => {
             let mut end = lower;
-            while end < n && graph.strings.get(end).starts_with(&p.literal) {
+            while end < n && graph.strings().get(end).starts_with(&p.literal) {
                 end += 1;
             }
             lower..end
@@ -1510,10 +1510,10 @@ fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
 
 /// First index whose string is not ordered before `needle` (Java string ordering).
 fn lower_bound(graph: &Graph, needle: &str) -> usize {
-    let (mut lo, mut hi) = (0usize, graph.strings.len());
+    let (mut lo, mut hi) = (0usize, graph.strings().len());
     while lo < hi {
         let mid = (lo + hi) / 2;
-        if graphite_storage::strings::java_cmp(graph.strings.get(mid), needle).is_lt() {
+        if graphite_storage::strings::java_cmp(graph.strings().get(mid), needle).is_lt() {
             lo = mid + 1;
         } else {
             hi = mid;
@@ -1687,7 +1687,7 @@ impl RawTree {
                             .iter()
                             .position(|c| *c == prop)
                             .expect("a CallSite leaf");
-                        let n = graph.strings.len();
+                        let n = graph.strings().len();
                         let mut set = StringBitset::new(n);
                         let resolved = idx.and_then(|idx| resolve_strings(graph, idx, p, memo));
                         match resolved {
@@ -1860,7 +1860,7 @@ fn build_source_plan(
                     // over a millisecond per graph on a term like "get".
                     return SourcePlan {
                         source,
-                        call_site: vec![sets.bitsets(graph.strings.len())],
+                        call_site: vec![sets.bitsets(graph.strings().len())],
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
@@ -2268,7 +2268,7 @@ fn plan_conjunction(
         return Conjunction::Empty;
     }
     if min > ceiling {
-        let len = graph.strings.len();
+        let len = graph.strings().len();
         return Conjunction::Sweep(sets.iter().map(|s| s.bitsets(len)).collect());
     }
     if costs.iter().any(|&c| c > ceiling)
@@ -2356,7 +2356,7 @@ fn matching_string_ids(
 
 /// Apply a predicate to a dictionary entry, transforming it the way the sweep does.
 fn predicate_matches(graph: &Graph, p: &StringPredicate, id: u32) -> bool {
-    let text = graph.strings.get(id as usize);
+    let text = graph.strings().get(id as usize);
     match p.transform {
         Transform::None => p.matches_raw(text),
         Transform::Lowercase => {
@@ -2376,7 +2376,7 @@ fn predicate_matches(graph: &Graph, p: &StringPredicate, id: u32) -> bool {
 
 /// The original plan: scan the dictionary into bitsets, then sweep records against them.
 fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate]) -> SourcePlan {
-    let n = graph.strings.len();
+    let n = graph.strings().len();
     // Group predicates by property once, then make a single pass over the dictionary.
     // A separate pass per property would re-read (and re-lowercase) every string.
     let mut by_property: [Vec<&StringPredicate>; 4] = [vec![], vec![], vec![], vec![]];
@@ -2426,7 +2426,7 @@ fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate])
                 let mut hits: [Vec<u32>; 4] = Default::default();
                 let mut lowered = String::new();
                 for s in start..end {
-                    let text = graph.strings.get(s);
+                    let text = graph.strings().get(s);
                     let cased: &str = if needs_lowercase && !is_lowercase_ascii(text) {
                         lowered.clear();
                         if text.is_ascii() {
@@ -3359,7 +3359,7 @@ fn resolve_column_leaf(
     } else {
         let candidates: Option<Vec<u32>> = match (p.literal.is_ascii(), p.trigrams.as_ref()) {
             (true, Some(trigrams)) if !trigrams.is_empty() => {
-                column.trigram_candidates(&graph.strings, trigrams)
+                column.trigram_candidates(graph.strings(), trigrams)
             }
             _ => None,
         };
@@ -3526,7 +3526,7 @@ impl ColumnTree {
                     return None;
                 }
                 let bits = (matched.len() > 8).then(|| {
-                    let mut b = StringBitset::new(graph.strings.len());
+                    let mut b = StringBitset::new(graph.strings().len());
                     for &id in matched.iter() {
                         b.set(id as usize);
                     }

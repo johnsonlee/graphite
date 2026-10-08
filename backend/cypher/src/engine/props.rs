@@ -50,7 +50,7 @@ pub fn any_to_kotlin_string(g: &Graph, v: &AnyValue) -> String {
 }
 
 fn sig(g: &Graph, m: &MethodDesc) -> Value {
-    Value::str(m.signature(&g.strings))
+    Value::str(m.signature(g.strings()))
 }
 
 fn s(g: &Graph, id: StrId) -> Value {
@@ -89,17 +89,12 @@ fn declared_method<'a>(
     &'a graphite_storage::types::DeclaredTypes,
     &'a graphite_storage::types::MethodTypes,
 )> {
-    let table = g.declared_types.as_ref()?;
-    let types = table.methods.get(&(
-        g.str(m.declaring_class).into(),
-        g.str(m.name).into(),
-        m.descriptor(&g.strings),
-    ))?;
-    Some((table, types))
+    let table = g.declared_types()?;
+    Some((table, table.method(m, g.strings())?))
 }
 
 pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
-    g.declared_types.as_ref().is_some_and(|table| match tag {
+    g.declared_types().is_some_and(|table| match tag {
         TAG_FIELD_NODE => !table.fields.is_empty(),
         TAG_PARAMETER_NODE | TAG_RETURN_NODE => !table.methods.is_empty(),
         _ => false,
@@ -107,35 +102,7 @@ pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
 }
 
 fn declared_node_type(g: &Graph, node: &Node) -> Option<usize> {
-    let table = g.declared_types.as_ref()?;
-    match &node.kind {
-        NodeKind::Field {
-            declaring_class,
-            name,
-            field_type,
-            ..
-        } => {
-            let mut descriptor = String::new();
-            push_type_descriptor(g.str(*field_type), &mut descriptor);
-            table
-                .fields
-                .get(&(
-                    g.str(*declaring_class).into(),
-                    g.str(*name).into(),
-                    descriptor,
-                ))
-                .copied()
-        }
-        NodeKind::Parameter { method, index, .. } => {
-            declared_method(g, method).and_then(|(_, m)| {
-                usize::try_from(*index)
-                    .ok()
-                    .and_then(|i| m.parameters.get(i).copied())
-            })
-        }
-        NodeKind::Return { method, .. } => declared_method(g, method).map(|(_, m)| m.returns),
-        _ => None,
-    }
+    g.declared_types()?.node_type_id(node, g.strings())
 }
 
 pub(super) fn has_declared_node_type(g: &Graph, node: &Node) -> bool {
@@ -194,7 +161,7 @@ fn check_method_signature_strings(g: &Graph, method: &MethodDesc) {
 fn declared_node_property(g: &Graph, node: &Node, key: &str) -> Value {
     declared_node_type(g, node)
         .map(|id| {
-            let table = g.declared_types.as_ref().unwrap();
+            let table = g.declared_types().unwrap();
             if key == "generic_type" {
                 Value::str(table.render(id))
             } else {
@@ -286,11 +253,11 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "callee_class" => s(g, callee.declaring_class),
             "callee_name" => s(g, callee.name),
             "callee_signature" => sig(g, callee),
-            "callee_descriptor" => Value::str(callee.descriptor(&g.strings)),
+            "callee_descriptor" => Value::str(callee.descriptor(g.strings())),
             "caller_class" => s(g, caller.declaring_class),
             "caller_name" => s(g, caller.name),
             "caller_signature" => sig(g, caller),
-            "caller_descriptor" => Value::str(caller.descriptor(&g.strings)),
+            "caller_descriptor" => Value::str(caller.descriptor(g.strings())),
             "line" => line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
             "ordinal" => ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             _ => Value::Null,
@@ -478,7 +445,7 @@ fn node_properties_impl(
                 put("callee_signature", sig(g, callee));
                 put(
                     "callee_descriptor",
-                    Value::str(callee.descriptor(&g.strings)),
+                    Value::str(callee.descriptor(g.strings())),
                 );
             } else {
                 check_method_detail_strings(g, callee);
@@ -489,7 +456,7 @@ fn node_properties_impl(
                 put("caller_signature", sig(g, caller));
                 put(
                     "caller_descriptor",
-                    Value::str(caller.descriptor(&g.strings)),
+                    Value::str(caller.descriptor(g.strings())),
                 );
             } else {
                 check_method_detail_strings(g, caller);
@@ -605,7 +572,7 @@ fn node_properties_impl(
         }
     }
     if let Some(id) = declared_node_type(g, node) {
-        let table = g.declared_types.as_ref().unwrap();
+        let table = g.declared_types().unwrap();
         m.insert("generic_type".into(), Value::str(table.render(id)));
         m.insert("type_info".into(), type_info(table, id));
     }

@@ -118,8 +118,8 @@ mod tests {
         assert_eq!(a.node_count(), b.node_count());
         assert_eq!(a.node_capacity(), b.node_capacity());
         assert_eq!(a.edge_count(), b.edge_count());
-        assert_eq!(a.strings.len(), b.strings.len());
-        match (&a.declared_types, &b.declared_types) {
+        assert_eq!(a.strings().len(), b.strings().len());
+        match (a.declared_types(), b.declared_types()) {
             (Some(left), Some(right)) => {
                 assert_eq!(left.fields, right.fields);
                 assert_eq!(left.methods.len(), right.methods.len());
