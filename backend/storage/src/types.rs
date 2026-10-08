@@ -96,6 +96,19 @@ impl<'a> Reader<'a> {
         }
         Ok(n as usize)
     }
+    // Both wire versions use at least four bytes per text (length or pool ID).
+    // Check a complete section's minimum footprint before reserving row storage;
+    // the generic count bound alone only allows four bytes per entire row.
+    fn section_count(&mut self, minimum_row_bytes: usize) -> Result<usize, TypeError> {
+        let count = self.count()?;
+        let minimum = count
+            .checked_mul(minimum_row_bytes)
+            .ok_or_else(|| TypeError("section byte length overflow".into()))?;
+        if minimum > self.bytes.len().saturating_sub(self.pos) {
+            return Err(TypeError("section count exceeds remaining bytes".into()));
+        }
+        Ok(count)
+    }
     fn inline_string(&mut self) -> Result<&'a str, TypeError> {
         let len = self.int()?;
         if len < 0 {
@@ -278,8 +291,12 @@ impl DeclaredTypes {
         if version == 0x47545902 {
             r.dictionary()?;
         }
-        let count = r.count()?;
+        let count = r.section_count(28)?;
         let mut table = Self::default();
+        table
+            .types
+            .try_reserve_exact(count)
+            .map_err(|error| TypeError(format!("type section allocation: {error}")))?;
         for _ in 0..count {
             table.types.push(TypeExpr {
                 kind: r.string()?,
@@ -291,13 +308,23 @@ impl DeclaredTypes {
                 arguments: r.references(count)?,
             });
         }
-        for _ in 0..r.count()? {
+        let field_count = r.section_count(16)?;
+        table
+            .fields
+            .try_reserve_exact(field_count)
+            .map_err(|error| TypeError(format!("field section allocation: {error}")))?;
+        for _ in 0..field_count {
             let key = r.key()?;
             if table.fields.insert(key, r.reference(count)?).is_some() {
                 return Err(TypeError("duplicate field".into()));
             }
         }
-        for _ in 0..r.count()? {
+        let method_count = r.section_count(24)?;
+        table
+            .methods
+            .try_reserve_exact(method_count)
+            .map_err(|error| TypeError(format!("method section allocation: {error}")))?;
+        for _ in 0..method_count {
             let key = r.key()?;
             let method = MethodTypes {
                 parameters: r.references(count)?,
@@ -308,7 +335,12 @@ impl DeclaredTypes {
                 return Err(TypeError("duplicate method".into()));
             }
         }
-        for _ in 0..r.count()? {
+        let class_count = r.section_count(16)?;
+        table
+            .classes
+            .try_reserve_exact(class_count)
+            .map_err(|error| TypeError(format!("class section allocation: {error}")))?;
+        for _ in 0..class_count {
             let key = r.string()?;
             let class = ClassTypes {
                 type_parameters: r.parameters(count)?,
