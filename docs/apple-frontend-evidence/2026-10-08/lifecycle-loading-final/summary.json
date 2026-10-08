@@ -1,0 +1,100 @@
+{
+  "quantile_method": "nearest-rank",
+  "queries": [],
+  "parity": [
+    {
+      "case": "all-graph-node-census",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "645af5357c007ea45b6e065dc7ca7d12c9f502e3790efc74dc0843c79e23bf08",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "645af5357c007ea45b6e065dc7ca7d12c9f502e3790efc74dc0843c79e23bf08",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "field-type-inventory",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "948967cbffeab7ec1574e2bbf2a2b9f282cfb803cdf70c35cc38d14dede01b63",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "948967cbffeab7ec1574e2bbf2a2b9f282cfb803cdf70c35cc38d14dede01b63",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "literal-call-provenance",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ],
+        "candidate": [
+          [
+            "c5d6283bc0066c8e109d70735914297dc1efd135e6ac653454e078c98178af6b",
+            100
+          ]
+        ]
+      }
+    },
+    {
+      "case": "network-message-call-scan",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ],
+        "candidate": [
+          [
+            "fa58aa02fb273f2b68e4ff8e823a5395a76cde2b37c445feb259abc803525855",
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "case": "shared-wire-literals-prefiltered",
+      "ok": true,
+      "values": {
+        "baseline": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ],
+        "candidate": [
+          [
+            "3d8cbf173cc6a2a5934288898d1f7289dc9b165de470bf1aec9477fcc1ca3d99",
+            12
+          ]
+        ]
+      }
+    }
+  ],
+  "query_cpu_boundary": "live process CPU delta around each measured request batch",
+  "query_rss_boundary": "wait4 lifetime process peak includes startup/warmup; sampled RSS is supplementary lower bound",
+  "query_resources": [],
+  "ok": true
+}

@@ -1,0 +1,443 @@
+{
+  "source": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/samples.jsonl",
+  "protocol": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/protocol.json",
+  "method": {
+    "rounds": 3,
+    "order": [
+      "baseline,candidate",
+      "candidate,baseline",
+      "baseline,candidate"
+    ],
+    "wall": "median across complete construction samples; min/max range retained, in milliseconds",
+    "cpu": "median of sum of frontend+importer user/system CPU per construction sample; min/max range retained, seconds",
+    "rss": "maximum across all three per-construction max-stage process peak RSS values, bytes; not median, not sum",
+    "boundary": "existing compiler index through production of saved graph. Source compilation is preparation. Artifact fingerprint and independent saved-graph verification are excluded.",
+    "uncertainty": "Three observations per variant/workload; full ranges reported. No significance or confidence-interval claim and no extrapolation to query latency."
+  },
+  "verification": {
+    "constructionSamples": 12,
+    "processStages": 36,
+    "allSuccess": true,
+    "independentSavedGraphChecks": [
+      {
+        "round": 0,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 331236,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-0-baseline/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 0,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-0-baseline/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 0,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 421262,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-0-candidate/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 0,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-0-candidate/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 1,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 421262,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-1-candidate/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 1,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-1-candidate/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 1,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 331236,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-1-baseline/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 1,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-1-baseline/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 2,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 331236,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-baseline/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 2,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-baseline/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 2,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "ok": true,
+        "verifiedNodes": 421262,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-candidate/signal-ios/verify.log",
+        "verificationExcludedFromMeasurement": true
+      },
+      {
+        "round": 2,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "ok": true,
+        "verifiedNodes": 60956,
+        "verificationLog": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-construction-final/construct-2-candidate/swiftpm/verify.log",
+        "verificationExcludedFromMeasurement": true
+      }
+    ],
+    "heapChecks": [
+      {
+        "round": 0,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 0,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 0,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 0,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 1,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 1,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 1,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 1,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 2,
+        "variant": "baseline",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 2,
+        "variant": "baseline",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 2,
+        "variant": "candidate",
+        "workload": "signal-ios",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      },
+      {
+        "round": 2,
+        "variant": "candidate",
+        "workload": "swiftpm",
+        "maxHeapBytes": 8589934592,
+        "allAtOrBelow8GiB": true,
+        "logEnvironmentOverrides": []
+      }
+    ]
+  },
+  "workloads": {
+    "signal-ios": {
+      "baseline": {
+        "wall_ms": {
+          "samples": [
+            15823.739167070016,
+            15348.065207945183,
+            14939.10975009203
+          ],
+          "min": 14939.10975009203,
+          "max": 15823.739167070016,
+          "aggregate": 15348.065207945183,
+          "aggregation": "median"
+        },
+        "cpu_seconds": {
+          "samples": [
+            19.462342,
+            19.656606,
+            19.471472999999996
+          ],
+          "min": 19.462342,
+          "max": 19.656606,
+          "aggregate": 19.471472999999996,
+          "aggregation": "median"
+        },
+        "peak_rss_bytes": {
+          "samples": [
+            908722176,
+            942555136,
+            943882240
+          ],
+          "min": 908722176,
+          "max": 943882240,
+          "aggregate": 943882240,
+          "aggregation": "max"
+        }
+      },
+      "candidate": {
+        "wall_ms": {
+          "samples": [
+            18900.143916951492,
+            19603.548750048503,
+            18852.878999896348
+          ],
+          "min": 18852.878999896348,
+          "max": 19603.548750048503,
+          "aggregate": 18900.143916951492,
+          "aggregation": "median"
+        },
+        "cpu_seconds": {
+          "samples": [
+            25.393986,
+            26.158004,
+            25.895599999999998
+          ],
+          "min": 25.393986,
+          "max": 26.158004,
+          "aggregate": 25.895599999999998,
+          "aggregation": "median"
+        },
+        "peak_rss_bytes": {
+          "samples": [
+            1491566592,
+            1446379520,
+            1325613056
+          ],
+          "min": 1325613056,
+          "max": 1491566592,
+          "aggregate": 1491566592,
+          "aggregation": "max"
+        }
+      },
+      "delta": {
+        "wall_ms": {
+          "absolute": 3552.0787090063095,
+          "percent": 23.143495032634576
+        },
+        "cpu_seconds": {
+          "absolute": 6.424127000000002,
+          "percent": 32.9925065248017
+        },
+        "peak_rss_bytes": {
+          "absolute": 547684352,
+          "percent": 58.024648498524556
+        }
+      },
+      "cpuAndRssObservedWithin5Percent": {
+        "cpu_seconds": false,
+        "peak_rss_bytes": false
+      },
+      "comparability": {
+        "strictMatchedCoverage": false,
+        "baselineNodes": 331236,
+        "candidateNodes": 421262,
+        "addedNodes": 90026,
+        "nodeCoveragePercent": 27.178809066647336,
+        "baselineSourceFiles": 2529,
+        "candidateSourceFiles": 3821,
+        "sourceFileCoveragePercent": 51.08738631870304,
+        "reason": "Baseline silently omitted source directories. Candidate restores source coverage and corrects signatures. These construction samples perform different work; raw resource deltas cannot establish strict 5% acceptance or performance recovery."
+      }
+    },
+    "swiftpm": {
+      "baseline": {
+        "wall_ms": {
+          "samples": [
+            5541.788916802034,
+            4435.214124852791,
+            4901.507625123486
+          ],
+          "min": 4435.214124852791,
+          "max": 5541.788916802034,
+          "aggregate": 4901.507625123486,
+          "aggregation": "median"
+        },
+        "cpu_seconds": {
+          "samples": [
+            7.078834,
+            6.594434000000001,
+            7.054857
+          ],
+          "min": 6.594434000000001,
+          "max": 7.078834,
+          "aggregate": 7.054857,
+          "aggregation": "median"
+        },
+        "peak_rss_bytes": {
+          "samples": [
+            334577664,
+            353058816,
+            356253696
+          ],
+          "min": 334577664,
+          "max": 356253696,
+          "aggregate": 356253696,
+          "aggregation": "max"
+        }
+      },
+      "candidate": {
+        "wall_ms": {
+          "samples": [
+            4689.224458066747,
+            4723.242916166782,
+            5290.157957933843
+          ],
+          "min": 4689.224458066747,
+          "max": 5290.157957933843,
+          "aggregate": 4723.242916166782,
+          "aggregation": "median"
+        },
+        "cpu_seconds": {
+          "samples": [
+            6.806672000000001,
+            6.807306,
+            6.9681560000000005
+          ],
+          "min": 6.806672000000001,
+          "max": 6.9681560000000005,
+          "aggregate": 6.807306,
+          "aggregation": "median"
+        },
+        "peak_rss_bytes": {
+          "samples": [
+            360071168,
+            352436224,
+            329252864
+          ],
+          "min": 329252864,
+          "max": 360071168,
+          "aggregate": 360071168,
+          "aggregation": "max"
+        }
+      },
+      "delta": {
+        "wall_ms": {
+          "absolute": -178.26470895670354,
+          "percent": -3.636936277380831
+        },
+        "cpu_seconds": {
+          "absolute": -0.24755100000000052,
+          "percent": -3.508944263505276
+        },
+        "peak_rss_bytes": {
+          "absolute": 3817472,
+          "percent": 1.0715599705665824
+        }
+      },
+      "cpuAndRssObservedWithin5Percent": {
+        "cpu_seconds": true,
+        "peak_rss_bytes": true
+      },
+      "comparability": {
+        "sameNodeAndEdgeCounts": true,
+        "sameFullShape": false,
+        "outputExactlyEquivalent": false,
+        "baseline": {
+          "files": 482,
+          "methods": 4620,
+          "strings": 21620,
+          "nodes": 60956,
+          "edges": 29247
+        },
+        "candidate": {
+          "files": 483,
+          "methods": 4621,
+          "strings": 21580,
+          "nodes": 60956,
+          "edges": 29247
+        },
+        "reason": "Only node/edge counts match. Candidate includes additional header coverage and corrected signatures; full shape and semantic output differ, so the construction work is not completely identical. Observed resource deltas do not establish strict matched-work performance acceptance or query latency recovery."
+      }
+    }
+  }
+}

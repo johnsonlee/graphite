@@ -1,0 +1,186 @@
+{
+  "sources": [
+    {
+      "id": "signal-ios",
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-iOS.git",
+      "commit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+      "submodules": {
+        "Pods": "77c21193e6b5e4f8cbd86abaf46631fd242322f4"
+      }
+    },
+    {
+      "id": "swiftpm",
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLockSha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+    },
+    {
+      "id": "signal-server",
+      "kind": "real-source",
+      "repository": "https://github.com/signalapp/Signal-Server.git",
+      "commit": "9c62622733de2d4f067d9f8094e7542e8bf0c700"
+    }
+  ],
+  "variants": {
+    "baseline": {
+      "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "source": "signal-ios",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-fixed-graph"
+        },
+        {
+          "id": "swiftpm",
+          "source": "swiftpm",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph"
+        },
+        {
+          "id": "signal-server",
+          "source": "signal-server",
+          "language": "jvm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+        }
+      ],
+      "server_command": [
+        "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "{port}"
+      ],
+      "server_binary_sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6"
+    },
+    "candidate": {
+      "revision": "357a6206a8a13fa2491d5ecaae16801493a89448",
+      "graphs": [
+        {
+          "id": "signal-ios",
+          "source": "signal-ios",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-fixed-graph"
+        },
+        {
+          "id": "swiftpm",
+          "source": "swiftpm",
+          "language": "apple",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/swiftpm-fixed-graph"
+        },
+        {
+          "id": "signal-server",
+          "source": "signal-server",
+          "language": "jvm",
+          "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-server-graph"
+        }
+      ],
+      "server_command": [
+        "/Users/johnsonlee/.codex/worktrees/19db/graphite/target/aarch64-apple-darwin/release/graphite",
+        "serve",
+        "--load-mode",
+        "MAPPED",
+        "--max-concurrent-cypher",
+        "4",
+        "--cypher-max-timeout-ms",
+        "60000",
+        "--port",
+        "{port}"
+      ],
+      "server_binary_sha256": "b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6"
+    }
+  },
+  "protocol": {
+    "rounds": 3,
+    "requests_per_case": 100,
+    "concurrency": [
+      1,
+      4
+    ],
+    "warmup_requests": 5,
+    "cache_state": "OS cache warm after preparation and graph fingerprint reads; process cold for load, warmed for measured query batches",
+    "timeout_seconds": 90,
+    "startup_timeout_seconds": 300,
+    "readiness": {
+      "name": "all-graph-node-census",
+      "query": "MATCH (n) RETURN n.graphId AS graph, count(n) AS nodes ORDER BY graph",
+      "scope": [
+        "signal-ios",
+        "swiftpm",
+        "signal-server"
+      ],
+      "row_order": "ordered",
+      "limit": 10000
+    },
+    "cases": [
+      {
+        "name": "network-message-call-scan",
+        "query": "MATCH (c:CallSite) WHERE toLower(coalesce(c.caller_class, '')) CONTAINS 'message' OR toLower(coalesce(c.callee_class, '')) CONTAINS 'request' RETURN c.graphId AS graph, count(c) AS calls ORDER BY graph",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "literal-call-provenance",
+        "query": "MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite) RETURN c.graphId AS graph, c.callee_class AS callee, c.callee_name AS method, count(s) AS literalArguments ORDER BY literalArguments DESC, graph, callee, method LIMIT 100",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "field-type-inventory",
+        "query": "MATCH (f:Field) RETURN f.graphId AS graph, f.type AS fieldType, count(f) AS fields ORDER BY fields DESC, graph, fieldType LIMIT 100",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      },
+      {
+        "name": "shared-wire-literals-prefiltered",
+        "query": "MATCH (a:StringConstant) WHERE a.value IN ['application/json', 'Content-Type', 'GET', 'POST'] WITH a MATCH (b:StringConstant) WHERE a.graphId <> b.graphId AND a.value = b.value RETURN a.graphId AS leftGraph, b.graphId AS rightGraph, a.value AS wireLiteral, count(*) AS pairs ORDER BY leftGraph, rightGraph, wireLiteral",
+        "scope": [
+          "signal-ios",
+          "swiftpm",
+          "signal-server"
+        ],
+        "row_order": "ordered",
+        "limit": 10000
+      }
+    ]
+  },
+  "environment": {
+    "swiftPathPrefix": "/Users/johnsonlee/Library/Developer/Toolchains/swift-6.1.3-RELEASE.xctoolchain/usr/bin",
+    "GRAPHITE_SWIFT_TOOLCHAIN": null,
+    "DEVELOPER_DIR": null,
+    "heap": "-Xmx8g for every importer",
+    "compilerIndex": "Xcode 15.4 for Signal; Swift 6.1.3 for SwiftPM",
+    "measurementBoundary": "existing index through saved graph; compilation is preparation"
+  },
+  "diagnosticOnly": {
+    "status": "proposed, not executed",
+    "hypothesis": "Test process/run variability using identical candidate binary SHA in both labeled slots before attributing original A/B regression to code.",
+    "fixedSamplePlan": "Three paired rounds, labels AB, BA, AB: six fresh server processes. Both labels use exactly candidate binary b089844defbf59bbad8670f156199f1fed07f63dd19321966d467b933b4cefa6. Keep all four cases, five warmups, 100 requests/case at concurrency 1 then 4. Same final three graphs and complete response consumption. Use corrected Mach-tick CPU harness. No adaptive extra runs or removal of original samples.",
+    "analysis": "Report all six process distributions, pair deltas, whole range and exact parity; no acceptance claim, no best-round substitution. Focus join absolute p50/p95 and per-batch CPU. A/A variability tests stationarity, not equivalence of main and candidate.",
+    "followup": "If A/A stable, predeclare separate reversed-label A/B with candidate in baseline slot and main in candidate slot for two paired rounds, holding binaries/graphs/settings fixed. If A/A unstable, preserve failed original gate; instrument environmental/core scheduling state or capture focused profiling before more acceptance runs.",
+    "environmentRecording": "Record safe relevant env overrides (RAYON_NUM_THREADS,TOKIO_WORKER_THREADS,MALLOC_CONF,_RJEM_MALLOC_CONF),power/thermal snapshot and system background process CPU before/after each process. No builds/tests or other benchmark on host during experiment. No unrecorded affinity/QoS/allocator tuning.",
+    "outputDirectory": "/Users/johnsonlee/.codex/benchmarks/apple-validation/lifecycle-query-aa-diagnostic"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "columns": [
+    "m.class",
+    "m.name",
+    "m.parameter_types",
+    "m.return_type"
+  ],
+  "rows": [
+    {
+      "m.class": "Mantle.MTLTransformerErrorHandling.MTLTransformerErrorHandling",
+      "m.name": "transformedValue:success:error:",
+      "m.parameter_types": [
+        "id",
+        "BOOL *",
+        "NSError **"
+      ],
+      "m.return_type": "id"
+    },
+    {
+      "m.class": "Mantle.MTLModel.MTLModel",
+      "m.name": "propertyKeys",
+      "m.parameter_types": [],
+      "m.return_type": "NSSet<NSString *> *"
+    },
+    {
+      "m.class": "Mantle.MTLModel.MTLModel",
+      "m.name": "initWithDictionary:error:",
+      "m.parameter_types": [
+        "NSDictionary<NSString *, id> *",
+        "NSError **"
+      ],
+      "m.return_type": "instancetype"
+    },
+    {
+      "m.class": "Mantle.MTLModel.MTLModel",
+      "m.name": "modelWithDictionary:error:",
+      "m.parameter_types": [
+        "NSDictionary<NSString *, id> *",
+        "NSError **"
+      ],
+      "m.return_type": "instancetype"
+    },
+    {
+      "m.class": "Mantle.MTLTransformerErrorHandling.MTLTransformerErrorHandling",
+      "m.name": "reverseTransformedValue:success:error:",
+      "m.parameter_types": [
+        "id",
+        "BOOL *",
+        "NSError **"
+      ],
+      "m.return_type": "id"
+    }
+  ],
+  "rowCount": 5
+}

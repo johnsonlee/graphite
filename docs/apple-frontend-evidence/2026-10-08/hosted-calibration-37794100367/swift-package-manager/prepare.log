@@ -1,0 +1,143 @@
+
+$ git init --quiet /__w/_temp/corpus
+
+$ git -C /__w/_temp/corpus remote add origin https://github.com/swiftlang/swift-package-manager.git
+
+$ git -C /__w/_temp/corpus fetch --quiet --depth 1 origin 587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54
+
+$ git -C /__w/_temp/corpus checkout --quiet 587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54
+
+$ swift build --package-path /__w/_temp/corpus --jobs 4 -c debug --enable-index-store --force-resolved-versions
+Fetching https://github.com/apple/swift-llbuild.git
+Fetching https://github.com/jpsim/Yams.git
+Fetching https://github.com/apple/swift-tools-support-core.git
+[1/7415] Fetching swift-tools-support-core
+[1781/37375] Fetching swift-tools-support-core, swift-llbuild
+Fetched https://github.com/apple/swift-tools-support-core.git from cache (1.07s)
+Fetching https://github.com/apple/swift-argument-parser.git
+[6592/29960] Fetching swift-llbuild
+[29961/41842] Fetching swift-llbuild, yams
+[29962/60938] Fetching swift-llbuild, yams, swift-argument-parser
+Fetched https://github.com/apple/swift-argument-parser.git from cache (1.36s)
+[38872/41842] Fetching swift-llbuild, yams
+Fetching https://github.com/apple/swift-asn1.git
+Fetched https://github.com/apple/swift-llbuild.git from cache (2.76s)
+Fetched https://github.com/jpsim/Yams.git from cache (2.76s)
+Fetching https://github.com/apple/swift-collections.git
+Fetching https://github.com/swiftlang/swift-syntax.git
+[1/28545] Fetching swift-collections
+[19698/30540] Fetching swift-collections, swift-asn1
+Fetched https://github.com/apple/swift-asn1.git from cache (1.74s)
+Fetching https://github.com/apple/swift-certificates.git
+[1/80381] Fetching swift-syntax
+Fetched https://github.com/apple/swift-collections.git from cache (1.75s)
+Fetching https://github.com/apple/swift-crypto.git
+[21704/87990] Fetching swift-syntax, swift-certificates
+[36078/106593] Fetching swift-syntax, swift-certificates, swift-crypto
+Fetched https://github.com/apple/swift-certificates.git from cache (0.97s)
+Fetching https://github.com/apple/swift-driver.git
+[54601/98984] Fetching swift-syntax, swift-crypto
+[98985/138677] Fetching swift-syntax, swift-crypto, swift-driver
+Fetched https://github.com/apple/swift-crypto.git from cache (2.21s)
+[114121/120074] Fetching swift-syntax, swift-driver
+Fetching https://github.com/apple/swift-system.git
+[120075/127315] Fetching swift-syntax, swift-driver, swift-system
+Fetched https://github.com/apple/swift-system.git from cache (1.65s)
+Fetching https://github.com/swiftlang/swift-toolchain-sqlite
+Fetched https://github.com/apple/swift-driver.git from cache (3.68s)
+[1/376] Fetching swift-toolchain-sqlite
+Fetched https://github.com/swiftlang/swift-toolchain-sqlite from cache (1.42s)
+Fetched https://github.com/swiftlang/swift-syntax.git from cache (7.09s)
+Creating working copy for https://github.com/apple/swift-llbuild.git
+Working copy of https://github.com/apple/swift-llbuild.git resolved at release/6.1 (4fc005b)
+Creating working copy for https://github.com/apple/swift-argument-parser.git
+Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.4.0
+Creating working copy for https://github.com/apple/swift-tools-support-core.git
+Working copy of https://github.com/apple/swift-tools-support-core.git resolved at release/6.1 (5cd61a7)
+Creating working copy for https://github.com/jpsim/Yams.git
+Working copy of https://github.com/jpsim/Yams.git resolved at 5.0.6
+Creating working copy for https://github.com/apple/swift-asn1.git
+Working copy of https://github.com/apple/swift-asn1.git resolved at 1.7.3
+Creating working copy for https://github.com/apple/swift-collections.git
+Working copy of https://github.com/apple/swift-collections.git resolved at 1.1.6
+Creating working copy for https://github.com/swiftlang/swift-syntax.git
+Working copy of https://github.com/swiftlang/swift-syntax.git resolved at release/6.1 (cbd0366)
+Creating working copy for https://github.com/apple/swift-certificates.git
+Working copy of https://github.com/apple/swift-certificates.git resolved at 1.5.0
+Creating working copy for https://github.com/apple/swift-crypto.git
+Working copy of https://github.com/apple/swift-crypto.git resolved at 3.0.0
+Creating working copy for https://github.com/apple/swift-driver.git
+Working copy of https://github.com/apple/swift-driver.git resolved at release/6.1 (20cd624)
+Creating working copy for https://github.com/apple/swift-system.git
+Working copy of https://github.com/apple/swift-system.git resolved at 1.8.1
+Creating working copy for https://github.com/swiftlang/swift-toolchain-sqlite
+Working copy of https://github.com/swiftlang/swift-toolchain-sqlite resolved at 1.0.13
+warning: couldn't find pc file for sqlite3
+warning: couldn't find pc file for sqlite3
+[1/1] Compiling plugin GenerateManual
+Building for debugging...
+[1/700] Write sources
+[14/700] Compiling tsan_utils tsan_utils.c
+[15/700] Write swift-version-24593BA9C3E375BF.txt
+[16/700] Compiling llvmSupport Valgrind.cpp
+[17/700] Compiling llvmSupport UnicodeCaseFold.cpp
+[18/700] Compiling llvmSupport circular_raw_ostream.cpp
+[19/700] Compiling llvmSupport Unicode.cpp
+[20/700] Compiling llvmSupport raw_ostream.cpp
+[21/700] Compiling llvmSupport Twine.cpp
+[22/700] Compiling llvmSupport Threading.cpp
+[23/700] Compiling llvmSupport YAMLParser.cpp
+[24/700] Compiling llvmSupport Triple.cpp
+[25/700] Compiling llvmSupport TargetParser.cpp
+[26/700] Compiling llvmSupport StringSaver.cpp
+[27/700] Compiling llvmSupport StringMap.cpp
+[28/700] Compiling llvmSupport StringRef.cpp
+[29/700] Compiling llvmSupport StringExtras.cpp
+[30/700] Compiling llvmSupport SmallVector.cpp
+[31/700] Compiling llvmSupport SmallPtrSet.cpp
+[32/700] Compiling llvmSupport SourceMgr.cpp
+[33/700] Compiling llvmSupport Program.cpp
+[34/700] Compiling llvmSupport Signals.cpp
+[35/700] Compiling llvmSupport Process.cpp
+[36/700] Compiling llvmSupport NativeFormatting.cpp
+[37/700] Compiling llvmSupport Options.cpp
+[38/700] Compiling llvmSupport Mutex.cpp
+[39/700] Compiling llvmSupport MathExtras.cpp
+[40/700] Compiling llvmSupport Path.cpp
+[41/700] Compiling llvmSupport Memory.cpp
+[42/700] Compiling llvmSupport ManagedStatic.cpp
+[43/700] Compiling llvmSupport MD5.cpp
+[44/700] Compiling llvmSupport MemoryBuffer.cpp
+[45/700] Compiling llvmSupport Locale.cpp
+[46/700] Compiling llvmSupport Hashing.cpp
+[47/700] Compiling llvmSupport FormatVariadic.cpp
+[48/700] Compiling llvmSupport FoldingSet.cpp
+[49/700] Compiling llvmSupport Host.cpp
+[50/700] Compiling llvmSupport FileUtilities.cpp
+[51/700] Compiling llvmSupport ErrorHandling.cpp
+[52/700] Compiling llvmSupport Errno.cpp
+[53/700] Compiling llvmSupport Error.cpp
+[54/700] Compiling llvmSupport ConvertUTF.cpp
+[55/700] Compiling llvmSupport DJB.cpp
+[56/700] Compiling llvmSupport Debug.cpp
+[57/700] Compiling llvmSupport Atomic.cpp
+[58/700] Compiling llvmSupport ConvertUTFWrapper.cpp
+[59/700] Compiling llvmSupport Allocator.cpp
+[60/700] Compiling llvmSupport APSInt.cpp
+[61/700] Compiling llvmSupport Chrono.cpp
+[62/700] Compiling llvmDemangle MicrosoftDemangle.cpp
+[63/700] Compiling llvmSupport APInt.cpp
+[64/700] Write sources
+[65/700] Compiling llvmSupport CommandLine.cpp
+[66/700] Compiling llvmSupport APFloat.cpp
+[67/700] Compiling llvmDemangle ItaniumDemangle.cpp
+[68/700] Compiling llbuildNinja Parser.cpp
+[69/700] Compiling llbuildNinja Lexer.cpp
+/__w/_temp/corpus/.build/checkouts/swift-llbuild/lib/Core/SQLiteBuildDB.cpp:28:10: fatal error: 'sqlite3.h' file not found
+   28 | #include <sqlite3.h>
+      |          ^~~~~~~~~~~
+1 error generated.
+[70/700] Compiling llbuildCore SQLiteBuildDB.cpp
+[70/700] Compiling llbuildCore MakefileDepsParser.cpp
+[70/700] Compiling llbuildNinja Manifest.cpp
+[70/700] Compiling llbuildNinja ManifestLoader.cpp

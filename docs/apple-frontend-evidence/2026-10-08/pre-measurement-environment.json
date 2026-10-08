@@ -1,0 +1,27 @@
+{
+  "binaries": {
+    "baseFrontend": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/base/frontend/apple/.build/release/graphite-frontend-apple",
+      "sha256": "d3c760ed4e38bcf6111ab62faedaac7fb0a3a2d7030023204c25794496537082",
+      "bytes": 25618776
+    },
+    "mainCLI": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/main/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "37f91ca120e8435b423671196fa24fe802a7d725056a4b1d1d4a2887052fdef8",
+      "bytes": 8859760
+    },
+    "baseCLI": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/base/target/aarch64-apple-darwin/release/graphite",
+      "sha256": "41a491a178afb3d97e78d6bcd4f0e9880f1f2f804885d1d4185cdcbf0a5ef6aa",
+      "bytes": 8896880
+    },
+    "jvmImporter": {
+      "path": "/Users/johnsonlee/.codex/benchmarks/apple-validation/jvm-build/frontend/jvm/query/build/libs/graphite.jar",
+      "sha256": "b96693a6c53bb2ac0a1503e9cdb75a680d1be5b008559f297afb311904901d6e",
+      "bytes": 39706466
+    }
+  },
+  "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t14.3\nBuildVersion:\t\t23D56\n",
+  "cpu": "Apple M3 Max\n68719476736\n",
+  "xcode": "Xcode 15.4\nBuild version 15F31d\n"
+}

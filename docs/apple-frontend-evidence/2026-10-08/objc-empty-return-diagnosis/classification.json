@@ -1,0 +1,71 @@
+{
+  "scope": "correctness diagnosis only, no performance measurement",
+  "parserChanges": false,
+  "headerCopies": [
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/Mantle/Mantle/MTLModel.h",
+      "indexPositionPath": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Mantle/Mantle.framework/Headers/MTLModel.h",
+      "sourceSHA256": "f9d732e2cf07689b2bc2e98307c41a21f7f1fe723443dbdfb934b5b8799e90d1",
+      "indexSHA256": "f9d732e2cf07689b2bc2e98307c41a21f7f1fe723443dbdfb934b5b8799e90d1",
+      "sameBytes": true,
+      "copyIsSymlink": false
+    },
+    {
+      "source": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/Pods/Mantle/Mantle/MTLTransformerErrorHandling.h",
+      "indexPositionPath": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Mantle/Mantle.framework/Headers/MTLTransformerErrorHandling.h",
+      "sourceSHA256": "61979e66b7e971be5769adb89cd5ab7ce3ba9ccdf04ceccbf72caeff2d0265fc",
+      "indexSHA256": "61979e66b7e971be5769adb89cd5ab7ce3ba9ccdf04ceccbf72caeff2d0265fc",
+      "sameBytes": true,
+      "copyIsSymlink": false
+    }
+  ],
+  "SSZipArchive": {
+    "methods": [
+      "_dateWithMSDOSFormat:",
+      "zipInfo:setAttributesOfItemAtPath:",
+      "zipInfo:setDate:",
+      "_gregorian"
+    ],
+    "cause": "Mutually exclusive preprocessor branches at lines1158-1164 each open an if body sharing a later closing brace. Unpreprocessed token stream is not balanced and prior method skipBalanced swallows later method declarations. Requires preprocessing or compiler AST; not addressed by narrow syntax parsing."
+  },
+  "Mantle": {
+    "methodCount": 5,
+    "cause": "IndexReader query of source-root header returns declaration occurrences at copied built-framework header path. Source syntax facts exist at source path only, so exact position join misses despite valid parsed signatures.",
+    "expected": {
+      "MTLModel.modelWithDictionary:error:": {
+        "parameters": [
+          "NSDictionary<NSString *, id> *",
+          "NSError **"
+        ],
+        "returns": "instancetype"
+      },
+      "MTLModel.initWithDictionary:error:": {
+        "parameters": [
+          "NSDictionary<NSString *, id> *",
+          "NSError **"
+        ],
+        "returns": "instancetype"
+      },
+      "MTLModel.propertyKeys": {
+        "parameters": [],
+        "returns": "NSSet<NSString *> *"
+      },
+      "MTLTransformerErrorHandling.transformedValue:success:error:": {
+        "parameters": [
+          "id",
+          "BOOL *",
+          "NSError **"
+        ],
+        "returns": "id"
+      },
+      "MTLTransformerErrorHandling.reverseTransformedValue:success:error:": {
+        "parameters": [
+          "id",
+          "BOOL *",
+          "NSError **"
+        ],
+        "returns": "id"
+      }
+    }
+  }
+}

@@ -1,0 +1,769 @@
+apple-corpus-calibration (swiftformat)	Set up job	﻿2026-10-08T14:51:06.0329762Z Current runner version: '2.337.0'
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0356807Z ##[group]Runner Image Provisioner
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0358130Z Hosted Compute Agent
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0358773Z Version: 20261002.596
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0359439Z Commit: c3d12f3313a95f25162a1503be624f3b0617f8c0
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0360255Z Build Date: 2026-10-02T22:28:27Z
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0360946Z Worker ID: {1a5d3eb4-c55b-4383-b9f3-b1c45b0f27cc}
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0361681Z Region: eastus
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0362237Z Cloud: Azure
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0363012Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0364915Z ##[group]Operating System
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0365603Z Ubuntu
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0366161Z 24.04.5
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0366746Z LTS
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0367311Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0367956Z ##[group]Runner Image
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0368594Z Image: ubuntu-24.04
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0369191Z Version: 20261004.327.1
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0370297Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261004.327/images/ubuntu/Ubuntu2404-Readme.md
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0372119Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261004.327
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0373402Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0374559Z ##[group]GITHUB_TOKEN Permissions
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0376790Z Contents: read
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0377485Z Metadata: read
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0378071Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0380388Z Secret source: Actions
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0381465Z Cache mode: write
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0382486Z Prepare workflow directory
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.0956628Z Prepare all required actions
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.1005364Z Getting action download info
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.3560122Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.4691633Z Download action repository 'maxim-lobanov/setup-xcode@v1' (SHA:ed7a3b1fda3918c0306d1b724322adc0b8cc0a90)
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.5835210Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:06.8258181Z Download action repository 'actions/download-artifact@v8' (SHA:9000827ccba6bdab643e8b6fd33ac0654aef8333)
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:07.0796472Z Download action repository 'actions/upload-artifact@v7' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+apple-corpus-calibration (swiftformat)	Set up job	2026-10-08T14:51:07.4039110Z Complete job name: apple-corpus-calibration (swiftformat)
+apple-corpus-calibration (swiftformat)	Initialize containers	﻿2026-10-08T14:51:07.4650660Z ##[group]Checking docker version
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.4664774Z ##[command]/usr/bin/docker version --format '{{.Server.APIVersion}}'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.5799170Z '1.48'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.5824511Z Docker daemon API version: '1.48'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.5826900Z ##[command]/usr/bin/docker version --format '{{.Client.APIVersion}}'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.5996086Z '1.48'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6011424Z Docker client API version: '1.48'
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6018169Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6021467Z ##[group]Clean up resources from previous jobs
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6027894Z ##[command]/usr/bin/docker ps --all --quiet --no-trunc --filter "label=a43099"
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6276463Z ##[command]/usr/bin/docker network prune --force --filter "label=a43099"
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6470331Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6471336Z ##[group]Create local container network
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6483223Z ##[command]/usr/bin/docker network create --label a43099 github_network_56532491382c4d89952f1569b5cfa4f8
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.6987145Z ba21c3f0fd42b940e22620d31be55f7d65574838d19893572a449c8e3176b9b5
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.7011477Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.7037009Z ##[group]Starting job container
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.7060618Z ##[command]/usr/bin/docker pull swift:6.1.3
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:07.9853355Z 6.1.3: Pulling from library/swift
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.0723777Z a60ef8ec184e: Already exists
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.0751790Z 6d384ac63da7: Pulling fs layer
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.0752546Z 23c386ab9005: Pulling fs layer
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.0753479Z 934353e7332e: Pulling fs layer
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.1027618Z 934353e7332e: Download complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:08.6658609Z 6d384ac63da7: Download complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:11.0488864Z 23c386ab9005: Verifying Checksum
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:11.0489640Z 23c386ab9005: Download complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:15.9199115Z 6d384ac63da7: Pull complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.3669909Z 23c386ab9005: Pull complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.3818279Z 934353e7332e: Pull complete
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.3864788Z Digest: sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.3880863Z Status: Downloaded newer image for swift:6.1.3
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.3891423Z docker.io/library/swift:6.1.3
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.4012234Z ##[command]/usr/bin/docker create --name 1c778eac6ff14126bfa25fe4c47520b5_swift613_890f1a --label a43099 --workdir /__w/graphite/graphite --network github_network_56532491382c4d89952f1569b5cfa4f8  -e "HOME=/github/home" -e GITHUB_ACTIONS=true -e CI=true -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work":"/__w" -v "/home/runner/actions-runner/cached/2.337.0/externals":"/__e":ro -v "/home/runner/work/_temp":"/__w/_temp" -v "/home/runner/work/_actions":"/__w/_actions" -v "/opt/hostedtoolcache":"/__t" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" --entrypoint "tail" swift:6.1.3 "-f" "/dev/null"
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.4338180Z c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.4362397Z ##[command]/usr/bin/docker start c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6544389Z c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6570554Z ##[command]/usr/bin/docker ps --all --filter id=c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 --filter status=running --no-trunc --format "{{.ID}} {{.Status}}"
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6703537Z c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 Up Less than a second
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6723693Z ##[command]/usr/bin/docker inspect --format "{{range .Config.Env}}{{println .}}{{end}}" c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6847684Z CI=true
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6848133Z HOME=/github/home
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6848521Z GITHUB_ACTIONS=true
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6849046Z PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6849769Z SWIFT_SIGNING_KEY=52BB7E3DE28A71BE22EC05FFEF80A866B47A981F
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6850793Z SWIFT_PLATFORM=ubuntu24.04
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6851210Z SWIFT_BRANCH=swift-6.1.3-release
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6851656Z SWIFT_VERSION=swift-6.1.3-RELEASE
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6852179Z SWIFT_WEBROOT=https://download.swift.org
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6869534Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6878819Z ##[group]Waiting for all services to be ready
+apple-corpus-calibration (swiftformat)	Initialize containers	2026-10-08T14:51:31.6880542Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	﻿2026-10-08T14:51:31.7104089Z ##[group]Run apt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7104971Z [36;1mapt-get update -q && apt-get install -y -q --no-install-recommends git curl ca-certificates python3[0m
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7108890Z shell: sh -e {0}
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7109380Z env:
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7109634Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7109959Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7110201Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7110502Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7110808Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:31.7111123Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.1871227Z Get:1 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.3181190Z Get:2 http://archive.ubuntu.com/ubuntu noble InRelease [256 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.6832940Z Get:3 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1545 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.8036775Z Get:4 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1998 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.8310093Z Get:5 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [1362 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.8358435Z Get:6 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [50.0 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:34.8954559Z Get:7 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:35.0362646Z Get:8 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:35.1784795Z Get:9 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [19.3 MB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:36.2285791Z Get:10 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [331 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:36.4346512Z Get:11 http://archive.ubuntu.com/ubuntu noble/restricted amd64 Packages [117 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:36.8779932Z Get:12 http://archive.ubuntu.com/ubuntu noble/main amd64 Packages [1808 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.5187543Z Get:13 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [2166 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.7279253Z Get:14 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [67.4 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.7298536Z Get:15 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1702 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.8319945Z Get:16 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [2177 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.9282441Z Get:17 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Packages [49.0 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.9283455Z Get:18 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [36.0 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:37.9284048Z Get:19 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Packages [671 B]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:38.0180866Z Fetched 33.4 MB in 4s (8324 kB/s)
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:38.8015140Z Reading package lists...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.5989560Z Reading package lists...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8076216Z Building dependency tree...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.8077059Z Reading state information...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9947210Z git is already the newest version (1:2.43.0-1ubuntu7.3).
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9948033Z ca-certificates is already the newest version (20260601~24.04.1).
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9948660Z ca-certificates set to manually installed.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9949444Z The following additional packages will be installed:
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9951279Z   libpython3-stdlib python3-minimal python3.12 python3.12-minimal
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9958232Z Suggested packages:
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9959016Z   python3-doc python3-tk python3-venv python3.12-venv python3.12-doc
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:39.9959894Z   binfmt-support
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.0374046Z The following NEW packages will be installed:
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.0388165Z   curl libpython3-stdlib python3 python3-minimal python3.12 python3.12-minimal
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.1122638Z 0 upgraded, 6 newly installed, 0 to remove and 4 not upgraded.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.1123545Z Need to get 3272 kB of archives.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.1124371Z After this operation, 9636 kB of additional disk space will be used.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.1125290Z Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12-minimal amd64 3.12.3-1ubuntu0.17 [2335 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.2694538Z Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3-minimal amd64 3.12.3-0ubuntu2.1 [27.4 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.2696406Z Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3.12 amd64 3.12.3-1ubuntu0.17 [651 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.2732464Z Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libpython3-stdlib amd64 3.12.3-0ubuntu2.1 [10.1 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.2746089Z Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 python3 amd64 3.12.3-0ubuntu2.1 [23.0 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:40.2748166Z Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 curl amd64 8.5.0-2ubuntu10.15 [227 kB]
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.4427133Z debconf: delaying package configuration, since apt-utils is not installed
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.4688528Z Fetched 3272 kB in 0s (16.0 MB/s)
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5845049Z Selecting previously unselected package python3.12-minimal.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5884850Z (Reading database ... 
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5885772Z (Reading database ... 5%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5886430Z (Reading database ... 10%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5886890Z (Reading database ... 15%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5887329Z (Reading database ... 20%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5887727Z (Reading database ... 25%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5888125Z (Reading database ... 30%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5888532Z (Reading database ... 35%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5888927Z (Reading database ... 40%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5889300Z (Reading database ... 45%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5889694Z (Reading database ... 50%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5890080Z (Reading database ... 55%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5890492Z (Reading database ... 60%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.5890857Z (Reading database ... 65%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.6767875Z (Reading database ... 70%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7610376Z (Reading database ... 75%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7918966Z (Reading database ... 80%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7926093Z (Reading database ... 85%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7936373Z (Reading database ... 90%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7955611Z (Reading database ... 95%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7956081Z (Reading database ... 100%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7956708Z (Reading database ... 16750 files and directories currently installed.)
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.7965727Z Preparing to unpack .../python3.12-minimal_3.12.3-1ubuntu0.17_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.8416148Z Unpacking python3.12-minimal (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:41.8908078Z Setting up python3.12-minimal (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7044284Z Selecting previously unselected package python3-minimal.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7065537Z (Reading database ... 
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7066202Z (Reading database ... 5%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7066642Z (Reading database ... 10%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7067112Z (Reading database ... 15%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7067428Z (Reading database ... 20%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7067895Z (Reading database ... 25%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7068315Z (Reading database ... 30%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7068731Z (Reading database ... 35%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7069155Z (Reading database ... 40%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7069638Z (Reading database ... 45%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7070094Z (Reading database ... 50%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7070550Z (Reading database ... 55%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7071001Z (Reading database ... 60%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7071450Z (Reading database ... 65%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7085609Z (Reading database ... 70%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7091699Z (Reading database ... 75%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7109214Z (Reading database ... 80%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7117482Z (Reading database ... 85%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7127118Z (Reading database ... 90%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7142957Z (Reading database ... 95%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7143355Z (Reading database ... 100%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7143885Z (Reading database ... 16761 files and directories currently installed.)
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7151617Z Preparing to unpack .../python3-minimal_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7160035Z Unpacking python3-minimal (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7309696Z Selecting previously unselected package python3.12.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7327062Z Preparing to unpack .../python3.12_3.12.3-1ubuntu0.17_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7337128Z Unpacking python3.12 (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7552653Z Selecting previously unselected package libpython3-stdlib:amd64.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7570766Z Preparing to unpack .../libpython3-stdlib_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7579070Z Unpacking libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.7744281Z Setting up python3-minimal (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8943430Z Selecting previously unselected package python3.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8964481Z (Reading database ... 
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8964983Z (Reading database ... 5%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8965801Z (Reading database ... 10%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8966432Z (Reading database ... 15%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8967029Z (Reading database ... 20%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8967412Z (Reading database ... 25%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8967792Z (Reading database ... 30%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8968590Z (Reading database ... 35%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8968956Z (Reading database ... 40%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8969348Z (Reading database ... 45%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8969722Z (Reading database ... 50%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8970098Z (Reading database ... 55%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8970487Z (Reading database ... 60%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8970860Z (Reading database ... 65%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8991054Z (Reading database ... 70%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.8998180Z (Reading database ... 75%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9015080Z (Reading database ... 80%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9022519Z (Reading database ... 85%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9034166Z (Reading database ... 90%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9047654Z (Reading database ... 95%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9048208Z (Reading database ... 100%
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9048818Z (Reading database ... 16808 files and directories currently installed.)
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9059324Z Preparing to unpack .../python3_3.12.3-0ubuntu2.1_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9191124Z Unpacking python3 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9338015Z Selecting previously unselected package curl.
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9356651Z Preparing to unpack .../curl_8.5.0-2ubuntu10.15_amd64.deb ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9369370Z Unpacking curl (8.5.0-2ubuntu10.15) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:42.9562607Z Setting up python3.12 (3.12.3-1ubuntu0.17) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7670112Z Setting up curl (8.5.0-2ubuntu10.15) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7688252Z Setting up libpython3-stdlib:amd64 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7707863Z Setting up python3 (3.12.3-0ubuntu2.1) ...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7790670Z running python rtupdate hooks for python3.12...
+apple-corpus-calibration (swiftformat)	Install preparation dependencies on Linux	2026-10-08T14:51:43.7791578Z running python post-rtupdate hooks for python3.12...
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	﻿2026-10-08T14:51:43.8910223Z ##[group]Run actions/checkout@v7
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8910534Z with:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8910770Z   ref: 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8911085Z   repository: johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8913591Z   token: ***
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8913814Z   ssh-strict: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8914039Z   ssh-user: git
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8914253Z   persist-credentials: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8914488Z   clean: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8914700Z   sparse-checkout-cone-mode: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8914959Z   fetch-depth: 1
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8915159Z   fetch-tags: false
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8915370Z   show-progress: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8915581Z   lfs: false
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8915778Z   submodules: false
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8915985Z   set-safe-directory: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8916229Z   allow-unsafe-pr-checkout: false
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8916476Z env:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8916679Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8916948Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8917206Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8917494Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8917781Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8918086Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:43.8964602Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1209199Z Syncing repository: johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1211329Z ##[group]Getting Git version info
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1211925Z Working directory is '/__w/graphite/graphite'
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1213140Z [command]/usr/bin/git version
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1213626Z git version 2.43.0
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1221211Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1235054Z Temporarily overriding HOME='/__w/_temp/949c6db6-8fff-423d-9f78-f7cd86038be0' before making global git config changes
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1236323Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1249888Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1284921Z Deleting the contents of '/__w/graphite/graphite'
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1289745Z ##[group]Determining repository object format
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1297047Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1298195Z ##[group]Initializing the repository
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1299672Z [command]/usr/bin/git init /__w/graphite/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1341520Z hint: Using 'master' as the name for the initial branch. This default branch name
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1342559Z hint: is subject to change. To configure the initial branch name to use in all
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1343660Z hint: of your new repositories, which will suppress this warning, call:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1344313Z hint: 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1344850Z hint: 	git config --global init.defaultBranch <name>
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1345406Z hint: 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1345938Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1347141Z hint: 'development'. The just-created branch can be renamed via this command:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1347576Z hint: 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1347790Z hint: 	git branch -m <name>
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1365589Z Initialized empty Git repository in /__w/graphite/graphite/.git/
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1368708Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1404184Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1404913Z ##[group]Disabling automatic garbage collection
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1407412Z [command]/usr/bin/git config --local gc.auto 0
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1446407Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1447034Z ##[group]Setting up auth
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1447470Z Removing SSH command configuration
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1448305Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.1499339Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2205524Z Removing HTTP extra header
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2209115Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2245803Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2469216Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2474017Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2508076Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2736033Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2777913Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git.path /__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2811616Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/.git/worktrees/*.path /__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2856028Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2892299Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2926105Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2926839Z ##[group]Fetching the repository
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:44.2934317Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1237493Z From https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1238172Z  * branch            357a6206a8a13fa2491d5ecaae16801493a89448 -> FETCH_HEAD
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1263440Z [command]/usr/bin/git rev-parse --verify --quiet 357a6206a8a13fa2491d5ecaae16801493a89448^{object}
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1292109Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1297594Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1298309Z ##[group]Determining the checkout info
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1299072Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1304060Z [command]/usr/bin/git sparse-checkout disable
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1344994Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1396303Z ##[group]Checking out the ref
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.1397104Z [command]/usr/bin/git checkout --progress --force 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2324270Z Note: switching to '357a6206a8a13fa2491d5ecaae16801493a89448'.
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2324955Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2325280Z You are in 'detached HEAD' state. You can look around, make experimental
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2325873Z changes and commit them, and you can discard any commits you make in this
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2326441Z state without impacting any branches by switching back to a branch.
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2326786Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2327008Z If you want to create a new branch to retain commits you create, you may
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2327540Z do so (now or later) by using -c with the switch command. Example:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2327863Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2327984Z   git switch -c <new-branch-name>
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2328189Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2328306Z Or undo this operation with:
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2328558Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2328732Z   git switch -
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2328990Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2329388Z Turn off this advice by setting config variable advice.detachedHead to false
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2330027Z 
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2330862Z HEAD is now at 357a620 Resolve copied framework headers and Swift sendable signatures
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2332615Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2374890Z [command]/usr/bin/git log -1 --format=%H
+apple-corpus-calibration (swiftformat)	Run actions/checkout@v7	2026-10-08T14:51:45.2403974Z 357a6206a8a13fa2491d5ecaae16801493a89448
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	﻿2026-10-08T14:51:45.2659169Z ##[group]Run actions/setup-java@v5
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2659480Z with:
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2659682Z   distribution: temurin
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2659906Z   java-version: 17
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2660121Z   java-package: jdk
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2660332Z   check-latest: false
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2660544Z   set-default: true
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2660757Z   verify-signature: false
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2660985Z   server-id: github
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2661202Z   server-username: GITHUB_ACTOR
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2661467Z   server-password: GITHUB_TOKEN
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2661717Z   overwrite-settings: true
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2661950Z   job-status: success
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2664428Z   token: ***
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2664675Z   show-download-progress: false
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2664924Z env:
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2665139Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2665414Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2665638Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2665953Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2666294Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2666605Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.2674758Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.5237556Z ##[group]Installed distributions
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.5396309Z Trying to resolve the latest version from remote
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.7388222Z Resolved latest version as 17.0.20+101
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.7388804Z Trying to download...
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:45.7390159Z Downloading Java 17.0.20+101 (Temurin-Hotspot) from https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.20.1%2B1/OpenJDK17U-jdk_x64_linux_hotspot_17.0.20.1_1.tar.gz ...
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:46.8525113Z Extracting Java archive...
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:46.8703865Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /__w/_temp/0a10cd03-c816-4fb4-bb86-b732b2af934e -f /__w/_temp/2bef2ac7-8244-4bd0-9b6d-110b82a3e201
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.3923622Z Java 17.0.20+101 was downloaded
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.3924182Z Setting Java 17.0.20+101 as the default
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.3934427Z Creating toolchains.xml for JDK version 17 from temurin
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4009217Z Writing to /github/home/.m2/toolchains.xml
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4009651Z 
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4009831Z Java configuration:
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4010239Z   Distribution: temurin
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4010629Z   Version: 17.0.20+101
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4011094Z   Path: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4011490Z 
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4012412Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4048646Z Creating settings.xml with server-id: github
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4049269Z Writing to /github/home/.m2/settings.xml
+apple-corpus-calibration (swiftformat)	Run actions/setup-java@v5	2026-10-08T14:51:49.4050436Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	﻿2026-10-08T14:51:49.6171572Z ##[group]Run actions/download-artifact@v8
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6171908Z with:
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6172130Z   name: release-v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6172410Z   path: dry-run
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6172620Z   merge-multiple: false
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6173197Z   repository: johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6173453Z   run-id: 37794100367
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6173672Z   skip-decompress: false
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6173904Z   digest-mismatch: error
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6174124Z env:
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6174326Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6174597Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6174823Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6175112Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6175397Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6175774Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6176159Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6176550Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6176767Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.6181513Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.8534966Z Downloading single artifact
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.9525796Z Preparing to download the following artifacts:
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:49.9527319Z - release-v2.11.3-apple-validation.3 (ID: 11558358183, Size: 104057364, Expected Digest: sha256:0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345)
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:50.1226798Z Redirecting to blob download url: https://productionresultssa18.blob.core.windows.net/actions-results/5a22544b-7623-4687-99eb-b5460af5b718/workflow-job-run-812102e3-5da6-5bcb-b604-047e312301bb/artifacts/2a0af7fe4df4bc80dedab45798fdf588a22db20b0469ddbf570e2f402266d1c8.zip
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:50.1229078Z Starting download of artifact to: /__w/graphite/graphite/dry-run
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:50.2265600Z (node:444) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:50.2267467Z (Use `node --trace-deprecation ...` to show where the warning was created)
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:53.7581794Z SHA256 digest of downloaded artifact is 0779418f947b4c0f668d87cc50024a80f9af41d8c3ce7993a4aa664ecaf10345
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:53.7582436Z Artifact download completed successfully.
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:53.7583246Z Total of 1 artifact(s) downloaded
+apple-corpus-calibration (swiftformat)	Run actions/download-artifact@v8	2026-10-08T14:51:53.7589414Z Download artifact has finished successfully
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	﻿2026-10-08T14:51:53.7740801Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7741334Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7741650Z [36;1mASSETS="$PWD/dry-run/release-assets"[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7742176Z [36;1mASSET="graphite-frontend-apple-${RELEASE_VERSION}-x86_64-unknown-linux-gnu.tar.gz"[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7743134Z [36;1m(cd "${ASSETS}" && shasum -a 256 -c "${ASSET}.sha256" graphite.jar.sha256)[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7743897Z [36;1mmkdir -p "${RUNNER_TEMP}/calibration-frontend" calibration-results[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7744430Z [36;1mtar -xzf "${ASSETS}/${ASSET}" -C "${RUNNER_TEMP}/calibration-frontend"[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7744985Z [36;1mcp "backend/bench/apple-frontend-corpus.json" calibration-results/corpus.json[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7745439Z [36;1mpython3 - <<'PY'[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7745689Z [36;1mimport json, os, pathlib[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7746122Z [36;1moriginal = json.loads(pathlib.Path("calibration-results/corpus.json").read_text())[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7746745Z [36;1munpinned = {**original, "shape": None, "files": None, "ceilings": None, "baselineShapes": {}}[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7747554Z [36;1mpathlib.Path("calibration-results/unpinned-corpus.json").write_text(json.dumps(unpinned, indent=2) + "\n")[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7748223Z [36;1mpathlib.Path("calibration-results/scope.json").write_text(json.dumps({[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7748773Z [36;1m    "purpose": "real-source calibration only", "performanceAcceptance": False,[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7749391Z [36;1m    "revision": os.environ["GITHUB_SHA"], "releaseVersion": os.environ["RELEASE_VERSION"],[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7750313Z [36;1m    "baseline": os.environ["BASELINE_SHA"], "baselinePurpose": "shape calibration only; no paired acceptance", "timedBoundary": "existing compiler index store through IR emission",[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7751232Z [36;1m    "excluded": ["compilation", "import/save timing", "graph load", "server query latency"],[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7751690Z [36;1m}, indent=2) + "\n")[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7751931Z [36;1mPY[0m
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7754080Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7754431Z env:
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7754662Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7754950Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7755193Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7755491Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7755817Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7756202Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7756608Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7756945Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:53.7757168Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:54.1566154Z graphite-frontend-apple-2.11.3-apple-validation.3-x86_64-unknown-linux-gnu.tar.gz: OK
+apple-corpus-calibration (swiftformat)	Verify and unpack the final frontend release asset	2026-10-08T14:51:54.3156948Z graphite.jar: OK
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	﻿2026-10-08T14:51:55.2729131Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2729692Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2730264Z [36;1mpython3 backend/bench/prepare-apple-corpus.py \[0m
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2731209Z [36;1m  --corpus "backend/bench/apple-frontend-corpus.json" --out "${RUNNER_TEMP}/corpus" \[0m
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2732357Z [36;1m  --derived-data "${RUNNER_TEMP}/derived-data" --log calibration-results/prepare.log[0m
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2734111Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2734741Z env:
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2735136Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2735647Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2736155Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2736695Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2737205Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2737916Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2738641Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2739323Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.2739715Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.3762967Z Preparing corpus: git init --quiet /__w/_temp/corpus
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.3798714Z Preparing corpus: git -C /__w/_temp/corpus remote add origin https://github.com/nicklockwood/SwiftFormat.git
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.3817499Z Preparing corpus: git -C /__w/_temp/corpus fetch --quiet --depth 1 origin 173d2cb252474cd8e8baeaf13636f5d565408ec9
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:55.9299726Z Preparing corpus: git -C /__w/_temp/corpus checkout --quiet 173d2cb252474cd8e8baeaf13636f5d565408ec9
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:51:56.1918268Z Preparing corpus: swift build --package-path /__w/_temp/corpus --jobs 4 -c debug --enable-index-store
+apple-corpus-calibration (swiftformat)	Prepare the pinned real source corpus	2026-10-08T14:52:51.1394533Z Prepared pinned real-source corpus swiftformat: /__w/_temp/corpus/.build/debug/index/store
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	﻿2026-10-08T14:52:51.1541948Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1542312Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1542638Z [36;1mCORPUS=calibration-results/unpinned-corpus.json[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1543455Z [36;1mif [[ "${CORPUS_INPUT}" = package ]]; then[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1543813Z [36;1m  INPUT=(--package "${RUNNER_TEMP}/corpus")[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1544110Z [36;1melse[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1544535Z [36;1m  PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1545260Z [36;1m  INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1545745Z [36;1mfi[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1545993Z [36;1mpython3 backend/bench/apple-frontend.py \[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1546462Z [36;1m  --frontend "${RUNNER_TEMP}/calibration-frontend/graphite-frontend-apple" \[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1546965Z [36;1m  "${INPUT[@]}" --corpus "${CORPUS}" --repetitions 5 --warmup 1 \[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1547533Z [36;1m  --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1548217Z [36;1m  --log calibration-results/candidate-frontend.log --out calibration-results/candidate-samples.json[0m
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1548872Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1549167Z env:
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1549381Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1549653Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1549885Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1550176Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1550473Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1550844Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1551233Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1551568Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1551784Z   CORPUS_INPUT: package
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1552029Z   MANIFEST: apple-frontend-corpus.json
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:52:51.1552302Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Record raw calibration samples without an acceptance verdict	2026-10-08T14:53:01.3044220Z swiftformat: 181 files, 32530 nodes, 14655 edges, wall 1334.99 ms, peak RSS 78.699 MiB over 5 runs (+1 warm-up), IR sha256 783ce80903e6, verified by the production reader
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	﻿2026-10-08T14:53:01.3215718Z ##[group]Run actions/checkout@v7
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3216021Z with:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3216261Z   ref: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3216579Z   path: calibration-baseline
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3216846Z   persist-credentials: false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3217101Z   repository: johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3219316Z   token: ***
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3219538Z   ssh-strict: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3219750Z   ssh-user: git
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3219948Z   clean: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3220165Z   sparse-checkout-cone-mode: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3220433Z   fetch-depth: 1
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3220636Z   fetch-tags: false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3220851Z   show-progress: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3221069Z   lfs: false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3221264Z   submodules: false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3221484Z   set-safe-directory: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3221736Z   allow-unsafe-pr-checkout: false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3221991Z env:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3222206Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3222526Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3223015Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3223338Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3223645Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3224024Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3224614Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3224949Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3225181Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.3232634Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5053572Z Syncing repository: johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5058417Z ##[group]Getting Git version info
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5059453Z Working directory is '/__w/graphite/graphite/calibration-baseline'
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5092294Z [command]/usr/bin/git version
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5141621Z git version 2.43.0
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5166659Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5178887Z Temporarily overriding HOME='/__w/_temp/bf94a029-db46-4b6b-8935-3007494186ca' before making global git config changes
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5180010Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5196214Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite/calibration-baseline
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5241401Z ##[group]Determining repository object format
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5242425Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5243281Z ##[group]Initializing the repository
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5243976Z [command]/usr/bin/git init /__w/graphite/graphite/calibration-baseline
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5281906Z hint: Using 'master' as the name for the initial branch. This default branch name
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5283332Z hint: is subject to change. To configure the initial branch name to use in all
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5284484Z hint: of your new repositories, which will suppress this warning, call:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5285205Z hint: 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5285656Z hint: 	git config --global init.defaultBranch <name>
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5286438Z hint: 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5286988Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5287907Z hint: 'development'. The just-created branch can be renamed via this command:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5288536Z hint: 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5289039Z hint: 	git branch -m <name>
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5298957Z Initialized empty Git repository in /__w/graphite/graphite/calibration-baseline/.git/
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5307134Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5357164Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5357834Z ##[group]Disabling automatic garbage collection
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5360456Z [command]/usr/bin/git config --local gc.auto 0
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5395247Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5395874Z ##[group]Setting up auth
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5396338Z Removing SSH command configuration
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5399545Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5435828Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5706438Z Removing HTTP extra header
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5714457Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.5751205Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6005951Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6010585Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6050597Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6319358Z [command]/usr/bin/git config --file /__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6368371Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/calibration-baseline/.git.path /__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6414780Z [command]/usr/bin/git config --local includeIf.gitdir:/__w/graphite/graphite/calibration-baseline/.git/worktrees/*.path /__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6449264Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/calibration-baseline/.git.path /github/runner_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6485842Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path /github/runner_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6518072Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6518748Z ##[group]Fetching the repository
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:01.6525621Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3494841Z From https://github.com/johnsonlee/graphite
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3495552Z  * branch            332c0d8a6fec650a6e7979e3dce37aa1a891c03a -> FETCH_HEAD
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3520385Z [command]/usr/bin/git rev-parse --verify --quiet 332c0d8a6fec650a6e7979e3dce37aa1a891c03a^{object}
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3550137Z 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3555341Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3556063Z ##[group]Determining the checkout info
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3557036Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3561665Z [command]/usr/bin/git sparse-checkout disable
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3604250Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3639478Z ##[group]Checking out the ref
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.3643408Z [command]/usr/bin/git checkout --progress --force 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4555940Z Note: switching to '332c0d8a6fec650a6e7979e3dce37aa1a891c03a'.
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4556620Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4557114Z You are in 'detached HEAD' state. You can look around, make experimental
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4558030Z changes and commit them, and you can discard any commits you make in this
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4558918Z state without impacting any branches by switching back to a branch.
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4559440Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4559731Z If you want to create a new branch to retain commits you create, you may
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4560319Z do so (now or later) by using -c with the switch command. Example:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4560801Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4561486Z   git switch -c <new-branch-name>
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4561847Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4562072Z Or undo this operation with:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4562317Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4562431Z   git switch -
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4562583Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4563158Z Turn off this advice by setting config variable advice.detachedHead to false
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4563561Z 
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4563854Z HEAD is now at 332c0d8 Add the Swift frontend, the protobuf Graph IR and graphite import
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4565464Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4608817Z [command]/usr/bin/git log -1 --format=%H
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4638524Z 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4649438Z ##[group]Removing auth
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4649890Z Removing SSH command configuration
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4653878Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4690022Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4924942Z Removing HTTP extra header
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4934045Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.4968828Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5196699Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5200704Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5230358Z includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5231373Z includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5232012Z includeif.gitdir:/github/workspace/calibration-baseline/.git.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5232593Z includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5241410Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5268152Z /__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5278320Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git.path \/__w\/_temp\/git\-credentials\-4b7f1af7\-a23a\-4fed\-a986\-ed900f9c96d1\.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5317236Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5343110Z /__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5352966Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/calibration-baseline/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-4b7f1af7\-a23a\-4fed\-a986\-ed900f9c96d1\.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5390838Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/calibration-baseline/.git.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5419842Z /github/runner_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5427723Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/calibration-baseline/.git.path \/github\/runner_temp\/git\-credentials\-4b7f1af7\-a23a\-4fed\-a986\-ed900f9c96d1\.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5471072Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5495781Z /github/runner_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5506578Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/calibration-baseline/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-4b7f1af7\-a23a\-4fed\-a986\-ed900f9c96d1\.config
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5556938Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5776699Z Removing credentials config '/__w/_temp/git-credentials-4b7f1af7-a23a-4fed-a986-ed900f9c96d1.config'
+apple-corpus-calibration (swiftformat)	Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:53:02.5786892Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	﻿2026-10-08T14:53:02.5932646Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5933364Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5933765Z [36;1mtest "$(git -C calibration-baseline rev-parse HEAD)" = "${BASELINE_SHA}"[0m
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5934399Z [36;1mcalibration-baseline/frontend/apple/swift.sh build -c release --jobs 4 --static-swift-stdlib \[0m
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5934961Z [36;1m  > calibration-results/baseline-build.log 2>&1[0m
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5935421Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5935721Z env:
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5935939Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5936214Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5936451Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5936740Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5937036Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5937406Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5937994Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5938359Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Build the baseline frontend	2026-10-08T14:53:02.5938568Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	﻿2026-10-08T14:59:44.5062144Z ##[group]Run set -euo pipefail
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5062499Z [36;1mset -euo pipefail[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5063188Z [36;1mCORPUS=calibration-results/unpinned-corpus.json[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5063573Z [36;1mif [[ "${CORPUS_INPUT}" = package ]]; then[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5063914Z [36;1m  INPUT=(--package "${RUNNER_TEMP}/corpus")[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5064219Z [36;1melse[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5064644Z [36;1m  PROJECT=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["project"])' "${CORPUS}")[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5065358Z [36;1m  INPUT=(--project "${RUNNER_TEMP}/corpus/${PROJECT}" --derived-data "${RUNNER_TEMP}/derived-data")[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5065833Z [36;1mfi[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5066082Z [36;1mpython3 backend/bench/apple-frontend.py \[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5066614Z [36;1m  --frontend calibration-baseline/frontend/apple/.build/release/graphite-frontend-apple \[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5067322Z [36;1m  "${INPUT[@]}" --corpus "${CORPUS}" --baseline-revision "${BASELINE_SHA}" --repetitions 5 --warmup 1 \[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5068039Z [36;1m  --verify "java -jar '$PWD/dry-run/release-assets/graphite.jar' import {ir} -o {out}" \[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5068723Z [36;1m  --log calibration-results/baseline-frontend.log --out calibration-results/baseline-samples.json[0m
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5069430Z shell: bash --noprofile --norc -e -o pipefail {0}
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5069728Z env:
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5069939Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5070215Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5070450Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5070738Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5071035Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5071413Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5071804Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5072134Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5072356Z   CORPUS_INPUT: package
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5072609Z   MANIFEST: apple-frontend-corpus.json
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:44.5073137Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Record baseline shape and raw samples on the same prepared corpus	2026-10-08T14:59:54.6377551Z swiftformat: 181 files, 32530 nodes, 14655 edges, wall 1323.745 ms, peak RSS 78.859 MiB over 5 runs (+1 warm-up), IR sha256 fad778fbaa28, verified by the production reader
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	﻿2026-10-08T14:59:54.6539769Z ##[group]Run actions/upload-artifact@v7
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6540086Z with:
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6540416Z   name: apple-corpus-calibration-swiftformat-v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6540840Z   path: calibration-results/
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6541104Z   if-no-files-found: error
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6541349Z   retention-days: 30
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6541572Z   compression-level: 6
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6541791Z   overwrite: false
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6542023Z   include-hidden-files: false
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6542267Z   archive: true
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6542464Z env:
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6542916Z   RELEASE_TAG: v2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6543219Z   DRY_RUN: true
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6543454Z   RELEASE_VERSION: 2.11.3-apple-validation.3
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6543747Z   JAVA_TOOL_OPTIONS: -Xmx2g
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6544045Z   BASELINE_SHA: 332c0d8a6fec650a6e7979e3dce37aa1a891c03a
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6544418Z   JAVA_HOME: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6544835Z   JAVA_HOME_17_X64: /__t/Java_Temurin-Hotspot_jdk/17.0.20-101/x64
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6545174Z   MAVEN_ARGS: -ntp
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6545386Z ##[endgroup]
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.6549459Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.9030222Z With the provided path, there will be 14 files uploaded
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.9038581Z Artifact name is valid!
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:54.9039415Z Root directory input is valid!
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.0870978Z Uploading artifact: apple-corpus-calibration-swiftformat-v2.11.3-apple-validation.3.zip
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.0918183Z Beginning upload of artifact content to blob storage
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.2046690Z Uploaded bytes 16862
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.2221805Z Finished uploading artifact content to blob storage!
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.2223550Z SHA256 digest of uploaded artifact is 1732fbb5c671756904bd1f7abf4efce2955e4b0bc61312f403a0eeb62ca2c526
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.2224493Z Finalizing artifact upload
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.4567576Z Artifact apple-corpus-calibration-swiftformat-v2.11.3-apple-validation.3 successfully finalized. Artifact ID 11559231234
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.4569740Z Artifact apple-corpus-calibration-swiftformat-v2.11.3-apple-validation.3 has been successfully uploaded! Final size is 16862 bytes. Artifact ID is 11559231234
+apple-corpus-calibration (swiftformat)	Run actions/upload-artifact@v7	2026-10-08T14:59:55.4573201Z Artifact download URL: https://github.com/johnsonlee/graphite/actions/runs/37794100367/artifacts/11559231234
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	﻿2026-10-08T14:59:55.4785029Z Post job cleanup.
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.4792618Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6579215Z [command]/usr/bin/git version
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6621822Z git version 2.43.0
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6669107Z Temporarily overriding HOME='/__w/_temp/a8d221ba-f6a3-4859-b224-144a2b834977' before making global git config changes
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6670709Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6703766Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite/calibration-baseline
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6750696Z Removing SSH command configuration
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6759702Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.6801738Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7064422Z Removing HTTP extra header
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7069175Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7105179Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7350636Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7354692Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swiftformat)	Post Checkout the fixed pre-fix baseline for shape calibration	2026-10-08T14:59:55.7399033Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swiftformat)	Post Run actions/setup-java@v5	﻿2026-10-08T14:59:55.7836033Z Post job cleanup.
+apple-corpus-calibration (swiftformat)	Post Run actions/setup-java@v5	2026-10-08T14:59:55.7844254Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	﻿2026-10-08T14:59:56.0429387Z Post job cleanup.
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.0441945Z ##[command]/usr/bin/docker exec  c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4 sh -c "cat /etc/*release | grep ^ID"
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2294335Z [command]/usr/bin/git version
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2339236Z git version 2.43.0
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2383401Z Temporarily overriding HOME='/__w/_temp/e984788b-f48a-4995-943d-307f76cef80e' before making global git config changes
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2385267Z Adding repository directory to the temporary git global config as a safe directory
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2390233Z [command]/usr/bin/git config --global --add safe.directory /__w/graphite/graphite
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2431090Z Removing SSH command configuration
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2436597Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2474622Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2757337Z Removing HTTP extra header
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2759541Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.2804779Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3091751Z Removing includeIf entries pointing to credentials config files
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3099911Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3130182Z includeif.gitdir:/__w/graphite/graphite/.git.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3130916Z includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3132044Z includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3132954Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3155684Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3173188Z /__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3190838Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git.path \/__w\/_temp\/git\-credentials\-cdf9f7d6\-c6e5\-4d8e\-adea\-b1b707002877\.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3244029Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3265345Z /__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3284342Z [command]/usr/bin/git config --local --unset includeif.gitdir:/__w/graphite/graphite/.git/worktrees/*.path \/__w\/_temp\/git\-credentials\-cdf9f7d6\-c6e5\-4d8e\-adea\-b1b707002877\.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3313691Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3342548Z /github/runner_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3360949Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-cdf9f7d6\-c6e5\-4d8e\-adea\-b1b707002877\.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3404564Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3444368Z /github/runner_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3454452Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-cdf9f7d6\-c6e5\-4d8e\-adea\-b1b707002877\.config
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3496995Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+apple-corpus-calibration (swiftformat)	Post Run actions/checkout@v7	2026-10-08T14:59:56.3726780Z Removing credentials config '/__w/_temp/git-credentials-cdf9f7d6-c6e5-4d8e-adea-b1b707002877.config'
+apple-corpus-calibration (swiftformat)	Stop containers	﻿2026-10-08T14:59:56.3874670Z Stop and remove container: 1c778eac6ff14126bfa25fe4c47520b5_swift613_890f1a
+apple-corpus-calibration (swiftformat)	Stop containers	2026-10-08T14:59:56.3879398Z ##[command]/usr/bin/docker rm --force c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Stop containers	2026-10-08T14:59:56.6307708Z c1298d3d312347acc2b7ea6bbe310a0190cbc627cb71ca1ec6dbbfc2ffa504d4
+apple-corpus-calibration (swiftformat)	Stop containers	2026-10-08T14:59:56.6336415Z Remove container network: github_network_56532491382c4d89952f1569b5cfa4f8
+apple-corpus-calibration (swiftformat)	Stop containers	2026-10-08T14:59:56.6340984Z ##[command]/usr/bin/docker network rm github_network_56532491382c4d89952f1569b5cfa4f8
+apple-corpus-calibration (swiftformat)	Stop containers	2026-10-08T14:59:56.7495637Z github_network_56532491382c4d89952f1569b5cfa4f8
+apple-corpus-calibration (swiftformat)	Complete job	﻿2026-10-08T14:59:56.7571076Z Cleaning up orphan processes

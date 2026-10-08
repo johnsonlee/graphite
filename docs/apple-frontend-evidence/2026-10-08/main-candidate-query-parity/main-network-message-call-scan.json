@@ -1,0 +1,50 @@
+{
+  "query": "MATCH (c:CallSite) WHERE toLower(coalesce(c.caller_class, '')) CONTAINS 'message' OR toLower(coalesce(c.callee_class, '')) CONTAINS 'request' RETURN c.graphId AS graph, count(c) AS calls ORDER BY graph",
+  "scope": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "columns": [
+    "graph",
+    "calls"
+  ],
+  "rows": [
+    {
+      "graph": "signal-ios",
+      "calls": 19813,
+      "$metadata": {
+        "graphIds": [
+          "signal-ios"
+        ]
+      }
+    },
+    {
+      "graph": "signal-server",
+      "calls": 3468,
+      "$metadata": {
+        "graphIds": [
+          "signal-server"
+        ]
+      }
+    },
+    {
+      "graph": "swiftpm",
+      "calls": 239,
+      "$metadata": {
+        "graphIds": [
+          "swiftpm"
+        ]
+      }
+    }
+  ],
+  "graphs": [
+    "signal-ios",
+    "swiftpm",
+    "signal-server"
+  ],
+  "mode": "cross-graph",
+  "rowCount": 3,
+  "error": null,
+  "digest": "92ff150ceaf74b2dd1d44770025f661f36186f3232dd5ab90efd1faf8373cf34"
+}

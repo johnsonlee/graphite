@@ -1,0 +1,18 @@
+{
+  "recordedAt": "2026-10-08T15:11:09.613880+00:00",
+  "phase": "early-run snapshot; not a pre-start CPU snapshot",
+  "preStartBackgroundCPU": null,
+  "earlierPreStartThermalToolObservation": "No thermal/performance warning or CPU power status had been recorded",
+  "currentThermal": "Note: No thermal warning level has been recorded\nNote: No performance warning level has been recorded\nNote: No CPU power status has been recorded\n",
+  "psDecayingCPUPercentTotal": 294.40000000000003,
+  "psDecayingCPUPercentExcludingGraphite": 196.60000000000002,
+  "overrides": {
+    "MALLOC_CONF": null,
+    "_RJEM_MALLOC_CONF": null,
+    "TOKIO_WORKER_THREADS": null,
+    "RAYON_NUM_THREADS": null,
+    "DYLD_INSERT_LIBRARIES": null,
+    "RUSTFLAGS": null,
+    "GRAPHITE_CYPHER_MAX_TIMEOUT_MS": null
+  }
+}
