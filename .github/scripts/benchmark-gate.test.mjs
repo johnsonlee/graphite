@@ -16,6 +16,8 @@ import {
     aggregateReports,
     compareRustLatency,
     RUST_MULTIGRAPH_CASES,
+    RUST_DECLARED_TYPES_RESPONSE_TRANSITION,
+    isDeclaredTypesResponseTransition,
     canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
@@ -4253,4 +4255,73 @@ test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair th
     }
     assert.match(workflow, /python3 -m unittest discover -s candidate\/backend\/bench -p 'test_snapshot\*\.py'/);
     assert.match(job.slice(end), /if: always\(\)/);
+});
+
+
+test("declared type response migration accepts only the independently audited complete response pairs", () => {
+    const audited = JSON.parse(fs.readFileSync(new URL("./fixtures/declared-types-native-responses.json", import.meta.url)));
+    const snapshot = revision => bindRustCatalog(rustSnapshot().map((row, i) => i >= audited.length ? row : {
+        ...row, benchmark: audited[i].benchmark, params: audited[i].params,
+        querySha256: audited[i].querySha256, responseDigest: audited[i][`${revision}Digest`],
+        rowCount: audited[i][`${revision}Rows`]
+    }));
+    const base = snapshot("base"), candidate = snapshot("candidate");
+    assert.equal(base[0].caseListSha256, RUST_DECLARED_TYPES_RESPONSE_TRANSITION.caseListSha256);
+    const options = { declaredTypesTransition: true };
+    const accepted = compareRustLatency(base, candidate, 15, 1, options);
+    assert.deepEqual(accepted.errors, []);
+    assert.equal(accepted.passed, true);
+    assert.equal(accepted.responseContract, "declared-types-v1-exact");
+    assert.equal(compareRustLatency(base, candidate).passed, false);
+    for (const [key, expected] of Object.entries(RUST_DECLARED_TYPES_RESPONSE_TRANSITION.cases)) {
+        const index = candidate.findIndex(row => `${row.benchmark}[selectivity=${row.params.selectivity}]` === key);
+        assert.ok(index >= 0);
+        assert.equal(isDeclaredTypesResponseTransition(key, base[index], candidate[index]), true);
+        assert.equal(isDeclaredTypesResponseTransition(key, candidate[index], base[index]), false);
+        for (const field of ["caseListSha256", "querySha256", "responseDigest", "rowCount"]) {
+            for (const side of ["base", "candidate"]) {
+                const left = structuredClone(base), right = structuredClone(candidate);
+                const target = side === "base" ? left[index] : right[index];
+                target[field] = field === "rowCount" ? target[field] + 1 : "0".repeat(64);
+                assert.equal(isDeclaredTypesResponseTransition(key, left[index], right[index]), false, `${side}/${field}`);
+                assert.equal(compareRustLatency(left, right, 15, 1, options).passed, false, `${side}/${field}`);
+            }
+        }
+        assert.equal(candidate[index].rowCount, expected.candidateRows);
+    }
+    const unrelated = structuredClone(candidate);
+    unrelated[0].responseDigest = "0".repeat(64);
+    assert.equal(compareRustLatency(base, unrelated, 15, 1, options).passed, false);
+    const slow = candidate.map(row => ({ ...row, primaryMetric: {
+        ...row.primaryMetric, score: row.primaryMetric.score * 2,
+        scoreConfidence: row.primaryMetric.scoreConfidence.map(v => v * 2),
+        rawData: row.primaryMetric.rawData.map(samples => samples.map(v => v * 2))
+    }}));
+    const regression = compareRustLatency(base, slow, 15, 1, options);
+    assert.deepEqual(regression.errors, []);
+    assert.equal(regression.passed, false);
+    assert.equal(regression.rows.some(row => row.blocked), true);
+    const policyChanged = confirmJmh(accepted, compareRustLatency(base, base));
+    assert.match(policyChanged.errors.join("\n"), /responseContract differs/);
+    const lostAdditions = compareRustLatency(base, base, 15, 1, options);
+    assert.equal(lostAdditions.passed, false);
+    assert.match(lostAdditions.errors.join("\n"), /candidate must provide the exact audited/);
+    assert.match(confirmJmh(accepted, lostAdditions).errors.join("\n"), /responseIdentity differs/);
+});
+
+
+test("native declared-type migration uses reviewed controls for both timing directions", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const pin = workflow.match(/RUST_DECLARED_TYPES_COMPARATOR_SHA256: ([a-f0-9]{64})/)[1];
+    assert.equal(pin, crypto.createHash("sha256").update(comparator).digest("hex"));
+    const start = workflow.indexOf("    - name: Select the base-owned harness and comparator");
+    const selection = workflow.slice(start, workflow.indexOf("    # Keep actual executable identity:", start));
+    assert.match(selection, /CANDIDATE_GATE_TEST_JOB/);
+    assert.match(selection, /RUST_DECLARED_TYPES_COMPARATOR_SHA256/);
+    assert.match(selection, /RESPONSE_TRANSITION=true/);
+    const compareStart = workflow.indexOf("    - name: Compare Rust engine latency");
+    const comparison = workflow.slice(compareStart, workflow.indexOf("    - name: Diagnose confirmed Rust shape regression", compareStart));
+    assert.match(comparison, /--declared-types-transition/);
+    assert.equal((comparison.match(/--threshold 15 --minimum 1 "\$\{RESPONSE_ARGS\[@\]\}"/g) ?? []).length, 2);
 });

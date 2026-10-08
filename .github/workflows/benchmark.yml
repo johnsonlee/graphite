@@ -27,8 +27,9 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 97dd2d5c27c26635ccf60b888bba50e1b430ae1091e85a71d9b163ca7f6c4dae
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
   BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
@@ -3064,6 +3065,17 @@ jobs:
             "${BENCHMARK_REPORT_TRANSITION_SHA256}"
           COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
         fi
+        RESPONSE_TRANSITION=false
+        # The exact two additive answers were independently audited against raw declaration
+        # bindings and original Android classfiles. No timing/resource threshold changes.
+        if ! grep -q 'RUST_DECLARED_TYPES_RESPONSE_TRANSITION' "${COMPARATOR}"; then
+          test "${CANDIDATE_GATE_TEST_JOB}" = success
+          test "$(sha256sum candidate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+            "${RUST_DECLARED_TYPES_COMPARATOR_SHA256}"
+          COMPARATOR=candidate/.github/scripts/benchmark-gate.mjs
+          RESPONSE_TRANSITION=true
+        fi
+        echo "response-transition=${RESPONSE_TRANSITION}" >> "${GITHUB_OUTPUT}"
         echo "harness=${HARNESS}" >> "${GITHUB_OUTPUT}"
         echo "comparator=${COMPARATOR}" >> "${GITHUB_OUTPUT}"
 
@@ -3133,12 +3145,15 @@ jobs:
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
         COMPARATOR: ${{ steps.controls.outputs.comparator }}
+        RESPONSE_TRANSITION: ${{ steps.controls.outputs.response-transition }}
       run: |
         set -euo pipefail
+        RESPONSE_ARGS=()
+        if [[ "${RESPONSE_TRANSITION}" = true ]]; then RESPONSE_ARGS+=(--declared-types-transition); fi
         if node "${COMPARATOR}" compare-rust-latency \
           --base benchmark-results/base-rust.json \
           --candidate benchmark-results/candidate-rust.json \
-          --threshold 15 --minimum 1 \
+          --threshold 15 --minimum 1 "${RESPONSE_ARGS[@]}" \
           --report benchmark-results/initial-rust-latency-report.md \
           --status benchmark-results/initial-rust-latency-status.json; then
           mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
@@ -3163,7 +3178,7 @@ jobs:
             --initial benchmark-results/initial-rust-latency-status.json \
             --base benchmark-results/base-rust-confirmation.json \
             --candidate benchmark-results/candidate-rust-confirmation.json \
-            --threshold 15 --minimum 1 \
+            --threshold 15 --minimum 1 "${RESPONSE_ARGS[@]}" \
             --report benchmark-results/rust-latency-report.md \
             --status benchmark-results/rust-latency-status.json
         fi

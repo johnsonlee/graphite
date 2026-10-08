@@ -494,6 +494,34 @@ export const RUST_MULTIGRAPH_CASES = [
     }))
 ];
 
+// Exact, independently audited additive API migration; no response fields are stripped.
+// See docs/declared-types-native-response-audit.md. This is opt-in for the pinned old base.
+export const RUST_DECLARED_TYPES_RESPONSE_TRANSITION = Object.freeze({
+    caseListSha256: "776c005324983836facd486287fd9afde7b7054455dca22c1413d3957ed7e34c",
+    cases: Object.freeze({
+        "rust.fixture64.schema-key-histogram[selectivity=schema]": Object.freeze({
+            querySha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+            baseDigest: "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c", baseRows: 26,
+            candidateDigest: "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a", candidateRows: 28
+        }),
+        "rust.fixture64.shape-all-nodes[selectivity=broad]": Object.freeze({
+            querySha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+            baseDigest: "d970e9a364104e9424bd1db998d805a9c706a0747bee0b12032502e093c4a88a", baseRows: 200,
+            candidateDigest: "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f", candidateRows: 200
+        })
+    })
+});
+
+export function isDeclaredTypesResponseTransition(key, base, candidate) {
+    const transition = RUST_DECLARED_TYPES_RESPONSE_TRANSITION;
+    const expected = transition.cases[key];
+    return expected !== undefined &&
+        base.caseListSha256 === transition.caseListSha256 && candidate.caseListSha256 === transition.caseListSha256 &&
+        base.querySha256 === expected.querySha256 && candidate.querySha256 === expected.querySha256 &&
+        base.responseDigest === expected.baseDigest && candidate.responseDigest === expected.candidateDigest &&
+        base.rowCount === expected.baseRows && candidate.rowCount === expected.candidateRows;
+}
+
 function rustCatalogHash(cases) {
     // snapshot.canonical_json sorts object keys; catalog order is the declared execution order.
     const catalog = cases.map(({ benchmark, params, querySha256 }) => ({
@@ -568,7 +596,7 @@ function validateRustCoverage(results, revision, errors) {
 // exceeds the relative limit by at least `minimum` (ms) as well, and only after the reverse-order
 // confirmation run says the same. Confidence intervals are the min-max spread over passes,
 // which mix first-use and warm effects, so they never decide anything here.
-export function compareRustLatency(baseResults, candidateResults, threshold = 15, minimum = 1) {
+export function compareRustLatency(baseResults, candidateResults, threshold = 15, minimum = 1, options = {}) {
     const comparison = compareJmh(baseResults, candidateResults, threshold, true);
     const errors = [...comparison.errors];
     const base = validateRustCoverage(baseResults, "base", errors);
@@ -578,8 +606,18 @@ export function compareRustLatency(baseResults, candidateResults, threshold = 15
         if (current === undefined) continue;
         const fields = baseline.benchmark === `${RUST_LATENCY_BENCHMARK_PREFIX}aggregate`
             ? ["caseListSha256"] : ["caseListSha256", "querySha256", "responseDigest", "rowCount"];
+        const migrated = options.declaredTypesTransition === true && isDeclaredTypesResponseTransition(key, baseline, current);
+        const expected = RUST_DECLARED_TYPES_RESPONSE_TRANSITION.cases[key];
+        if (options.declaredTypesTransition === true && expected !== undefined &&
+            baseline.caseListSha256 === RUST_DECLARED_TYPES_RESPONSE_TRANSITION.caseListSha256 &&
+            baseline.querySha256 === expected.querySha256 && baseline.responseDigest === expected.baseDigest &&
+            baseline.rowCount === expected.baseRows && !migrated) {
+            errors.push(`${key}: candidate must provide the exact audited declared-type response`);
+        }
         for (const field of fields) {
-            if (baseline[field] !== current[field]) errors.push(`${key}: base and candidate ${field} differ`);
+            if (baseline[field] !== current[field] && !(migrated && ["responseDigest", "rowCount"].includes(field))) {
+                errors.push(`${key}: base and candidate ${field} differ`);
+            }
         }
     }
     for (const [revision, results] of [["base", baseResults], ["candidate", candidateResults]]) {
@@ -605,10 +643,12 @@ export function compareRustLatency(baseResults, candidateResults, threshold = 15
         thresholdOnly: true,
         minimum,
         workloadIdentity: baseResults[0]?.caseListSha256,
+        responseContract: options.declaredTypesTransition === true ? "declared-types-v1-exact" : "identical",
         responseIdentity: crypto.createHash("sha256").update(JSON.stringify(
             RUST_MULTIGRAPH_CASES.map(definition => {
-                const row = base.get(benchmarkKey(definition));
-                return [benchmarkKey(definition), row?.responseDigest, row?.rowCount];
+                const key = benchmarkKey(definition);
+                const before = base.get(key), after = candidate.get(key);
+                return [key, before?.responseDigest, before?.rowCount, after?.responseDigest, after?.rowCount];
             })
         )).digest("hex"),
         rows
@@ -620,7 +660,7 @@ export function confirmJmh(initial, confirmation) {
         ...initial.errors,
         ...confirmation.errors.map((error) => `confirmation: ${error}`)
     ];
-    for (const field of ["workloadIdentity", "responseIdentity"]) {
+    for (const field of ["workloadIdentity", "responseIdentity", "responseContract"]) {
         if (initial[field] !== confirmation[field]) {
             errors.push(`confirmation: ${field} differs from the initial comparison`);
         }
@@ -649,6 +689,7 @@ export function confirmJmh(initial, confirmation) {
         errors,
         thresholdOnly: initial.thresholdOnly === true,
         ...(initial.minimum === undefined ? {} : { minimum: initial.minimum }),
+        ...(initial.responseContract === undefined ? {} : { responseContract: initial.responseContract }),
         rows
     };
 }
@@ -675,6 +716,9 @@ export function renderJmhReport(comparison, title = "Method-level JMH") {
         `### ${title}`,
         "",
         ...decisionRule,
+        ...(comparison.responseContract === "declared-types-v1-exact"
+            ? ["", "Response compatibility uses two exact audited declared-type API additions; all other complete responses must match. Timing thresholds are unchanged."]
+            : []),
         "",
         "| Benchmark | Base | PR | Regression | Confirmation (base -> PR) | Limit | Gate |",
         "|---|---:|---:|---:|---:|---:|:---:|"
@@ -3458,7 +3502,8 @@ function compareRustLatencyCommand(args) {
         readJson(requireArg(args, "base")),
         readJson(requireArg(args, "candidate")),
         Number(args.threshold ?? 15),
-        Number(args.minimum ?? 1)
+        Number(args.minimum ?? 1),
+        { declaredTypesTransition: args["declared-types-transition"] === true }
     );
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, RUST_LATENCY_TITLE));
     writeJson(requireArg(args, "status"), comparison);
@@ -3471,7 +3516,8 @@ function confirmRustLatencyCommand(args) {
         readJson(requireArg(args, "base")),
         readJson(requireArg(args, "candidate")),
         Number(args.threshold ?? 15),
-        Number(args.minimum ?? 1)
+        Number(args.minimum ?? 1),
+        { declaredTypesTransition: args["declared-types-transition"] === true }
     );
     const comparison = confirmJmh(initial, confirmation);
     writeFile(requireArg(args, "report"), renderJmhReport(comparison, RUST_LATENCY_TITLE));

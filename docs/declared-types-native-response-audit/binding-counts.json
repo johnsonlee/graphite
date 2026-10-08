@@ -1,0 +1,642 @@
+[
+  {
+    "graph": "fixture-android-00",
+    "fields": 19601,
+    "parameters": 28022,
+    "returns": 25301,
+    "boundFields": 15823,
+    "boundParameters": 28022,
+    "boundReturns": 25301,
+    "typesSha256": "d46d645c68055d9aa8cc18b02b203696e4b50b4f7e75709de52cf753f35830a3"
+  },
+  {
+    "graph": "fixture-android-01",
+    "fields": 16957,
+    "parameters": 29443,
+    "returns": 26263,
+    "boundFields": 13650,
+    "boundParameters": 29443,
+    "boundReturns": 26263,
+    "typesSha256": "b133b05a6ad6ee0f9630bbe058aa900bf5c09924f3bd429272ce030a2ebecc02"
+  },
+  {
+    "graph": "fixture-android-02",
+    "fields": 18728,
+    "parameters": 27947,
+    "returns": 25771,
+    "boundFields": 15044,
+    "boundParameters": 27947,
+    "boundReturns": 25771,
+    "typesSha256": "5035e26aebd55b0011579d61c4f7bb6d0f6651daa6998ab9978f190194349669"
+  },
+  {
+    "graph": "fixture-android-03",
+    "fields": 20368,
+    "parameters": 28855,
+    "returns": 25733,
+    "boundFields": 16718,
+    "boundParameters": 28855,
+    "boundReturns": 25733,
+    "typesSha256": "23ec6d42d023460e62bfe5fa632a031e51a6cb3d33c24d365c85fcb3b294d038"
+  },
+  {
+    "graph": "fixture-android-04",
+    "fields": 22691,
+    "parameters": 30187,
+    "returns": 25367,
+    "boundFields": 19391,
+    "boundParameters": 30187,
+    "boundReturns": 25367,
+    "typesSha256": "c06d35ce77da43a150a7988d8df5c5f46bcb2907f9e4de782dd6edb8a8b841ac"
+  },
+  {
+    "graph": "fixture-android-05",
+    "fields": 18868,
+    "parameters": 26995,
+    "returns": 25351,
+    "boundFields": 15351,
+    "boundParameters": 26995,
+    "boundReturns": 25351,
+    "typesSha256": "93a614597e3c9404a7f989363ed6f64877d189de752ca8b052054f4cfd740281"
+  },
+  {
+    "graph": "fixture-android-06",
+    "fields": 20286,
+    "parameters": 29331,
+    "returns": 26202,
+    "boundFields": 16098,
+    "boundParameters": 29331,
+    "boundReturns": 26202,
+    "typesSha256": "0f0ad096b2dc8f79536d1097fa9bdc0fbc64bbdc7174d91d32b1a00c7cfd39ab"
+  },
+  {
+    "graph": "fixture-android-07",
+    "fields": 21065,
+    "parameters": 29616,
+    "returns": 26660,
+    "boundFields": 16810,
+    "boundParameters": 29616,
+    "boundReturns": 26660,
+    "typesSha256": "7f9ab102ac26823deb89726f751ef5ccf6f3029f0641fc39585185db7f5f5ff1"
+  },
+  {
+    "graph": "fixture-android-08",
+    "fields": 20248,
+    "parameters": 29014,
+    "returns": 26855,
+    "boundFields": 16663,
+    "boundParameters": 29014,
+    "boundReturns": 26855,
+    "typesSha256": "8046af65239cea6ddaf896adbcfe7a0d3f66b9425e1928c0227b71d55dc223a3"
+  },
+  {
+    "graph": "fixture-android-09",
+    "fields": 21179,
+    "parameters": 31906,
+    "returns": 27810,
+    "boundFields": 17560,
+    "boundParameters": 31906,
+    "boundReturns": 27810,
+    "typesSha256": "3859147cbac0be2e43e26b40530ff3fe7a6a42a95cce7d0428f1dc3e33a73614"
+  },
+  {
+    "graph": "fixture-android-10",
+    "fields": 21917,
+    "parameters": 28703,
+    "returns": 25457,
+    "boundFields": 17822,
+    "boundParameters": 28703,
+    "boundReturns": 25457,
+    "typesSha256": "65ad79bb73fbaf408fe178e689c9b1307d4b290d1dffac5576233500dafbc4f1"
+  },
+  {
+    "graph": "fixture-android-11",
+    "fields": 19375,
+    "parameters": 27012,
+    "returns": 24452,
+    "boundFields": 15718,
+    "boundParameters": 27012,
+    "boundReturns": 24452,
+    "typesSha256": "f071e097ca9d8354c6763c3d92078f8316ee825abccfb5de9467cc5289e679ee"
+  },
+  {
+    "graph": "fixture-android-12",
+    "fields": 24540,
+    "parameters": 32999,
+    "returns": 28977,
+    "boundFields": 20865,
+    "boundParameters": 32999,
+    "boundReturns": 28977,
+    "typesSha256": "5502140752214e9352dc46066a9f6faf305c89f89edb95c91bfbcf540966a45d"
+  },
+  {
+    "graph": "fixture-android-13",
+    "fields": 20890,
+    "parameters": 29754,
+    "returns": 26154,
+    "boundFields": 16991,
+    "boundParameters": 29754,
+    "boundReturns": 26154,
+    "typesSha256": "f508820f767a47bc12c70a05f853655e61d4820dd0e019eef8ec9e652712bc8a"
+  },
+  {
+    "graph": "fixture-android-14",
+    "fields": 19296,
+    "parameters": 29857,
+    "returns": 26174,
+    "boundFields": 15553,
+    "boundParameters": 29857,
+    "boundReturns": 26174,
+    "typesSha256": "f8e22613877159de63fdbca5fcfd02b9f463c2b1eea7d2d0d88fe9ff888f7d6b"
+  },
+  {
+    "graph": "fixture-android-15",
+    "fields": 16867,
+    "parameters": 25834,
+    "returns": 24275,
+    "boundFields": 13695,
+    "boundParameters": 25834,
+    "boundReturns": 24275,
+    "typesSha256": "5fb577c1fd4eb919fbfefe8906f2b4f209f33a12ee15d92c987060b6260b1e98"
+  },
+  {
+    "graph": "fixture-hive-00",
+    "fields": 11364,
+    "parameters": 30057,
+    "returns": 29237,
+    "boundFields": 7869,
+    "boundParameters": 30057,
+    "boundReturns": 29237,
+    "typesSha256": "84a7e1acf647abf1bd4e87dcbd3024ace0b1a6ed51367e4c7ae28bbd51b23da5"
+  },
+  {
+    "graph": "fixture-hive-01",
+    "fields": 9977,
+    "parameters": 25120,
+    "returns": 26155,
+    "boundFields": 6914,
+    "boundParameters": 25120,
+    "boundReturns": 26155,
+    "typesSha256": "68ed2e0355871d758a52279233daa8f41f28c6d86f7ed7e8e2ecdc83625e286d"
+  },
+  {
+    "graph": "fixture-hive-02",
+    "fields": 10856,
+    "parameters": 31559,
+    "returns": 30563,
+    "boundFields": 7362,
+    "boundParameters": 31559,
+    "boundReturns": 30563,
+    "typesSha256": "77790291a8a03b9a3016beb6eb0a24b93ac045f2f121a401ad034e6ee22d298c"
+  },
+  {
+    "graph": "fixture-hive-03",
+    "fields": 11169,
+    "parameters": 26916,
+    "returns": 28736,
+    "boundFields": 7768,
+    "boundParameters": 26916,
+    "boundReturns": 28736,
+    "typesSha256": "a0c33af7b97c2a54e463da76bbfc4cdae7bcbab02c2697548ed292c65a24f81b"
+  },
+  {
+    "graph": "fixture-hive-04",
+    "fields": 12337,
+    "parameters": 27105,
+    "returns": 27750,
+    "boundFields": 8617,
+    "boundParameters": 27105,
+    "boundReturns": 27750,
+    "typesSha256": "7a18a4a3c6b16ce2aa50ca49ccce712cb7c13a1582330fcc2dd3e2528f226009"
+  },
+  {
+    "graph": "fixture-hive-05",
+    "fields": 11686,
+    "parameters": 27270,
+    "returns": 27936,
+    "boundFields": 8194,
+    "boundParameters": 27270,
+    "boundReturns": 27936,
+    "typesSha256": "ea28e3e84c35bbb2bc210ed45e27e7fb89b5b0de1a5d2f10f4ee18f08f27f7a3"
+  },
+  {
+    "graph": "fixture-hive-06",
+    "fields": 10160,
+    "parameters": 27230,
+    "returns": 28271,
+    "boundFields": 6787,
+    "boundParameters": 27230,
+    "boundReturns": 28271,
+    "typesSha256": "dd74fc6c947be2360510f94302d3e6be5cbec00c37b62541b8c1c890d019e889"
+  },
+  {
+    "graph": "fixture-hive-07",
+    "fields": 13585,
+    "parameters": 27587,
+    "returns": 28953,
+    "boundFields": 9554,
+    "boundParameters": 27587,
+    "boundReturns": 28953,
+    "typesSha256": "8d32166271b4b57e9aaad64162c80b60dff3f3882624ad0356c32e624e884973"
+  },
+  {
+    "graph": "fixture-hive-08",
+    "fields": 12113,
+    "parameters": 29862,
+    "returns": 29637,
+    "boundFields": 7667,
+    "boundParameters": 29862,
+    "boundReturns": 29637,
+    "typesSha256": "45f7c6700063eae7a57dff92ef31de6fd429d9d0f097c92ffab185ec1ce1826a"
+  },
+  {
+    "graph": "fixture-hive-09",
+    "fields": 10141,
+    "parameters": 25864,
+    "returns": 27462,
+    "boundFields": 7220,
+    "boundParameters": 25864,
+    "boundReturns": 27462,
+    "typesSha256": "6bc2e34e1e3c7f106b823c580b64fd1a1a1e5b5a65df8dfd34c721ad1927fc4e"
+  },
+  {
+    "graph": "fixture-hive-10",
+    "fields": 11878,
+    "parameters": 26327,
+    "returns": 26567,
+    "boundFields": 9052,
+    "boundParameters": 26327,
+    "boundReturns": 26567,
+    "typesSha256": "b419daf02f5ce86a7e05eebb51b07739df09a6f27a196766bbec23ad59d001cb"
+  },
+  {
+    "graph": "fixture-hive-11",
+    "fields": 10804,
+    "parameters": 27211,
+    "returns": 28698,
+    "boundFields": 7681,
+    "boundParameters": 27211,
+    "boundReturns": 28698,
+    "typesSha256": "d890b7b0fb9e6db0d96329e18754416ca04e406ee192128858e0c731cdfbaf8c"
+  },
+  {
+    "graph": "fixture-hive-12",
+    "fields": 13852,
+    "parameters": 26997,
+    "returns": 28140,
+    "boundFields": 10419,
+    "boundParameters": 26997,
+    "boundReturns": 28140,
+    "typesSha256": "2e17b78e7d00067dd5220bf0c46b028cdd3642a2ddb33a301ebf21f81d98ca15"
+  },
+  {
+    "graph": "fixture-hive-13",
+    "fields": 11603,
+    "parameters": 28177,
+    "returns": 29461,
+    "boundFields": 8272,
+    "boundParameters": 28177,
+    "boundReturns": 29461,
+    "typesSha256": "5859cf2bb99f04bd6745338c03fc2ce757818a84db4fb4c76cff07a36020a1a3"
+  },
+  {
+    "graph": "fixture-hive-14",
+    "fields": 10713,
+    "parameters": 27787,
+    "returns": 26774,
+    "boundFields": 7654,
+    "boundParameters": 27787,
+    "boundReturns": 26774,
+    "typesSha256": "1081ce130110879a6aaba09d95bba3ea1a1808681e50f41b0eec4c8633bd9fe8"
+  },
+  {
+    "graph": "fixture-hive-15",
+    "fields": 10043,
+    "parameters": 28128,
+    "returns": 28167,
+    "boundFields": 6927,
+    "boundParameters": 28128,
+    "boundReturns": 28167,
+    "typesSha256": "178300abc75c624af3009487b004c34ff8ed195467a06202e06ec7907ac11392"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-00",
+    "fields": 5257,
+    "parameters": 20673,
+    "returns": 17332,
+    "boundFields": 3294,
+    "boundParameters": 20673,
+    "boundReturns": 17332,
+    "typesSha256": "d1023f527c35bd1e1e4e1fed16ca2594a82343e3eb4f6c198bc62653cd4272fe"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-01",
+    "fields": 6189,
+    "parameters": 18718,
+    "returns": 16432,
+    "boundFields": 3687,
+    "boundParameters": 18718,
+    "boundReturns": 16432,
+    "typesSha256": "7c0f9928c00f3dccfb529ef838f734205683c99f6e97537f922f687a703d010a"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-02",
+    "fields": 5271,
+    "parameters": 16903,
+    "returns": 15358,
+    "boundFields": 3743,
+    "boundParameters": 16903,
+    "boundReturns": 15358,
+    "typesSha256": "b15ed3883e25ca3edc640828e6aa94dba65b1253f791ff22fc09942027e9c624"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-03",
+    "fields": 5160,
+    "parameters": 15281,
+    "returns": 13898,
+    "boundFields": 3322,
+    "boundParameters": 15281,
+    "boundReturns": 13898,
+    "typesSha256": "9e3928044ebfc3d18846f3ab84f502ffc77fa97606aaf4272ed06fe0a6e554e1"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-04",
+    "fields": 5402,
+    "parameters": 20521,
+    "returns": 16594,
+    "boundFields": 3433,
+    "boundParameters": 20521,
+    "boundReturns": 16594,
+    "typesSha256": "79d2376ba3091a4dd613abd1c7e657813a124a72735f73bc229a3e5ce6365575"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-05",
+    "fields": 6177,
+    "parameters": 20749,
+    "returns": 17308,
+    "boundFields": 4056,
+    "boundParameters": 20749,
+    "boundReturns": 17308,
+    "typesSha256": "19faa938163a912c0d9d6fef2574e5e103efb7221b59c06065275d54a2fc9005"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-06",
+    "fields": 4815,
+    "parameters": 18717,
+    "returns": 15658,
+    "boundFields": 3099,
+    "boundParameters": 18717,
+    "boundReturns": 15658,
+    "typesSha256": "be84495fb16fa8dcac8a624926297c1137e90dfd805879331857bf750b1112e5"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-07",
+    "fields": 5008,
+    "parameters": 19059,
+    "returns": 16362,
+    "boundFields": 3444,
+    "boundParameters": 19059,
+    "boundReturns": 16362,
+    "typesSha256": "959deae41a5c09f54f8f2a35a15f55589e411743b7a007ee05cfcf1dd6ffc6f8"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-08",
+    "fields": 5927,
+    "parameters": 19199,
+    "returns": 17110,
+    "boundFields": 4002,
+    "boundParameters": 19199,
+    "boundReturns": 17110,
+    "typesSha256": "f6cfaf41168c4f289b0ee0bc932e2fbc541c468765825f9db68645c626345697"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-09",
+    "fields": 6295,
+    "parameters": 22195,
+    "returns": 18684,
+    "boundFields": 4402,
+    "boundParameters": 22195,
+    "boundReturns": 18684,
+    "typesSha256": "827bfcb98775a892a1f960d4ae44a3c92d0b0843970b43614d2f56be4f43e51c"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-10",
+    "fields": 6099,
+    "parameters": 24302,
+    "returns": 19824,
+    "boundFields": 4066,
+    "boundParameters": 24302,
+    "boundReturns": 19824,
+    "typesSha256": "199b5f3e287d85269cee1fc74789f85d77000584b0d567fa9f72a5299e9f32f4"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-11",
+    "fields": 4709,
+    "parameters": 18000,
+    "returns": 15366,
+    "boundFields": 3154,
+    "boundParameters": 18000,
+    "boundReturns": 15366,
+    "typesSha256": "7a1f2f95a35ccb665a8d5e47a94c4c02b1f893d7628f5f04b2974e1e5dee2dd4"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-12",
+    "fields": 6110,
+    "parameters": 18343,
+    "returns": 16231,
+    "boundFields": 4165,
+    "boundParameters": 18343,
+    "boundReturns": 16231,
+    "typesSha256": "7e6ef720a7da8dc95d1f5ad4a843750ef65662db7a7e4c0e8e0606c38b6c878f"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-13",
+    "fields": 6083,
+    "parameters": 18038,
+    "returns": 15766,
+    "boundFields": 4151,
+    "boundParameters": 18038,
+    "boundReturns": 15766,
+    "typesSha256": "0e7de593ac2aca2b46dc094aea843e472002155c07fa91085022044b59624509"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-14",
+    "fields": 5236,
+    "parameters": 17927,
+    "returns": 15202,
+    "boundFields": 3330,
+    "boundParameters": 17927,
+    "boundReturns": 15202,
+    "typesSha256": "615591d6fe6d17f857bd0a1c0a3fd3636460f9421433d2b0dc93040fc66614a1"
+  },
+  {
+    "graph": "fixture-kotlin-compiler-15",
+    "fields": 5475,
+    "parameters": 20011,
+    "returns": 17503,
+    "boundFields": 3781,
+    "boundParameters": 20011,
+    "boundReturns": 17503,
+    "typesSha256": "bb2a940d79b60328af9a3c90970692272fc26f9fa7ffd8bf7dc0ad00d488b7a9"
+  },
+  {
+    "graph": "fixture-tika-00",
+    "fields": 7874,
+    "parameters": 14250,
+    "returns": 17912,
+    "boundFields": 6073,
+    "boundParameters": 14250,
+    "boundReturns": 17912,
+    "typesSha256": "cb1578a4376dedb00a85ac8a0686bf1693374113c733505a867827dce3415000"
+  },
+  {
+    "graph": "fixture-tika-01",
+    "fields": 8970,
+    "parameters": 16110,
+    "returns": 19512,
+    "boundFields": 7222,
+    "boundParameters": 16110,
+    "boundReturns": 19512,
+    "typesSha256": "48f82f7d537726cf1b90fd4e269eb97e1815458ab0c3d03244bfa6e5af8e969f"
+  },
+  {
+    "graph": "fixture-tika-02",
+    "fields": 8022,
+    "parameters": 16018,
+    "returns": 21046,
+    "boundFields": 6026,
+    "boundParameters": 16018,
+    "boundReturns": 21046,
+    "typesSha256": "7aa12fc89cb4427b2e0c4543937824e1dd623724879efd2315a265bfea5eeb54"
+  },
+  {
+    "graph": "fixture-tika-03",
+    "fields": 7714,
+    "parameters": 14995,
+    "returns": 18018,
+    "boundFields": 6074,
+    "boundParameters": 14995,
+    "boundReturns": 18018,
+    "typesSha256": "dda2aa6f82e1fa0d93fc73afc9312a99befe8812235292c17c250d0bed86dcef"
+  },
+  {
+    "graph": "fixture-tika-04",
+    "fields": 9043,
+    "parameters": 15195,
+    "returns": 19758,
+    "boundFields": 6969,
+    "boundParameters": 15195,
+    "boundReturns": 19758,
+    "typesSha256": "fee5fc900792a1d79a439fb530121a6beac2d13690596fe925eb9a251c868bfd"
+  },
+  {
+    "graph": "fixture-tika-05",
+    "fields": 8073,
+    "parameters": 15452,
+    "returns": 20565,
+    "boundFields": 6324,
+    "boundParameters": 15452,
+    "boundReturns": 20565,
+    "typesSha256": "f3d3370597580358cb77db0d84d4bc1718e3b6173b5e56dc4ee1297a3a1bfab0"
+  },
+  {
+    "graph": "fixture-tika-06",
+    "fields": 9356,
+    "parameters": 17534,
+    "returns": 18740,
+    "boundFields": 7410,
+    "boundParameters": 17534,
+    "boundReturns": 18740,
+    "typesSha256": "07a226de75f7b3223790721967abbbbe31187edf9762d931e99d0547532c7c25"
+  },
+  {
+    "graph": "fixture-tika-07",
+    "fields": 7805,
+    "parameters": 14984,
+    "returns": 19490,
+    "boundFields": 6163,
+    "boundParameters": 14984,
+    "boundReturns": 19490,
+    "typesSha256": "4ca78e7be7918c1dbb43617fc1b7ea3bcd919d102315b7710fe4fc92f83d160a"
+  },
+  {
+    "graph": "fixture-tika-08",
+    "fields": 8140,
+    "parameters": 16005,
+    "returns": 19530,
+    "boundFields": 6310,
+    "boundParameters": 16005,
+    "boundReturns": 19530,
+    "typesSha256": "29ad4915b1a70bd96c83339077719ff54466d6135a8eec43004be63f201ae166"
+  },
+  {
+    "graph": "fixture-tika-09",
+    "fields": 8612,
+    "parameters": 17076,
+    "returns": 20301,
+    "boundFields": 6515,
+    "boundParameters": 17076,
+    "boundReturns": 20301,
+    "typesSha256": "6d9357699057993a2aa992eb385461d739fcbe860990f799b748c3626cb5726c"
+  },
+  {
+    "graph": "fixture-tika-10",
+    "fields": 10078,
+    "parameters": 17147,
+    "returns": 21069,
+    "boundFields": 8300,
+    "boundParameters": 17147,
+    "boundReturns": 21069,
+    "typesSha256": "48e0eddfdf7075ec3a698aaee340dcbe4118950aeb9b76a7088ebf65e9416ede"
+  },
+  {
+    "graph": "fixture-tika-11",
+    "fields": 9254,
+    "parameters": 16263,
+    "returns": 19266,
+    "boundFields": 7205,
+    "boundParameters": 16263,
+    "boundReturns": 19266,
+    "typesSha256": "8c98eac11e1637171985b18e2aa447d7959a7ad0cd490e2fdba88ab4cecf8565"
+  },
+  {
+    "graph": "fixture-tika-12",
+    "fields": 8960,
+    "parameters": 15512,
+    "returns": 21049,
+    "boundFields": 6646,
+    "boundParameters": 15512,
+    "boundReturns": 21049,
+    "typesSha256": "1cb83117d2c50def858a7b5f21f7f933ab3ee18bb18c860ba3c70d3e7e580517"
+  },
+  {
+    "graph": "fixture-tika-13",
+    "fields": 9201,
+    "parameters": 15221,
+    "returns": 19051,
+    "boundFields": 7141,
+    "boundParameters": 15221,
+    "boundReturns": 19051,
+    "typesSha256": "f5263f081f2999573887c7778f9a38b1be93d6c2b132fae84943a53ed72a2f1d"
+  },
+  {
+    "graph": "fixture-tika-14",
+    "fields": 8204,
+    "parameters": 17071,
+    "returns": 21477,
+    "boundFields": 6291,
+    "boundParameters": 17071,
+    "boundReturns": 21477,
+    "typesSha256": "1c1f9d7a44729da497e59206210171b2e2360684490ac323398fd8de740fdc6b"
+  },
+  {
+    "graph": "fixture-tika-15",
+    "fields": 9736,
+    "parameters": 17612,
+    "returns": 21201,
+    "boundFields": 7831,
+    "boundParameters": 17612,
+    "boundReturns": 21201,
+    "typesSha256": "dddbe7103d3c542ac7dd0a4ca312ca78cb9a1b5e35b4f362c7efecd0811400b9"
+  }
+]
