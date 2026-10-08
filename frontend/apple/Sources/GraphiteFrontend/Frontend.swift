@@ -116,9 +116,10 @@ public struct Frontend {
         progress(Progress(phase: "index", done: files.count, total: files.count))
 
         var facts: [String: SyntaxFacts] = [:]
-        for (index, file) in files.enumerated() {
+        let syntaxFiles = Frontend.sourceFilesForSyntax(files, model: model)
+        for (index, file) in syntaxFiles.enumerated() {
             facts[file] = Frontend.isSwift(file) ? try SyntaxFacts.parse(path: file) : try ObjectiveCSyntax.parse(path: file)
-            progress(Progress(phase: "syntax", done: index + 1, total: files.count))
+            progress(Progress(phase: "syntax", done: index + 1, total: syntaxFiles.count))
         }
 
         progress(Progress(phase: "demangle", done: 0, total: model.symbols.count))
@@ -277,6 +278,22 @@ public struct Frontend {
     public static let sourceExtensions: Set<String> = ["swift", "m", "mm", "h"]
 
     public static func isSwift(_ path: String) -> Bool { path.hasSuffix(".swift") }
+
+    /// Xcode can index a framework's copied header instead of the original source
+    /// header. Read the exact paths carried by declarations already in this model,
+    /// so their coordinates join to syntax facts without guessing by basename or
+    /// discovering additional symbols from unrelated headers.
+    static func sourceFilesForSyntax(_ files: [String], model: IndexModel) -> [String] {
+        var result = Set(files)
+        let positions = model.members.flatMap { [$0.position] + ($0.declaration.map { [$0] } ?? []) }
+        for position in positions where (position.path as NSString).pathExtension == "h" {
+            var isDirectory: ObjCBool = false
+            if FileManager.default.fileExists(atPath: position.path, isDirectory: &isDirectory), !isDirectory.boolValue {
+                result.insert(position.path)
+            }
+        }
+        return result.sorted()
+    }
 
     /// Every `.swift` file under the roots (see `sourceFiles(under:)`).
     public static func swiftFiles(under roots: [String]) throws -> [String] {

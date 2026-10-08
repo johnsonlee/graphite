@@ -122,6 +122,11 @@ public struct SwiftSignature: Equatable {
                 for fixity in [" infix", " prefix", " postfix"] where text[cursor...].hasPrefix(fixity) {
                     cursor = text.index(cursor, offsetBy: fixity.count)
                 }
+                // Swift 6 prints a sendable function's annotation between its name
+                // and parameter clause (not as part of the source-level name).
+                if text[cursor...].hasPrefix("@Sendable ") {
+                    cursor = text.index(cursor, offsetBy: "@Sendable ".count)
+                }
                 if cursor < text.endIndex, text[cursor] == "<", let close = matchingBracket(in: text, from: cursor) {
                     cursor = text.index(after: close)
                 }

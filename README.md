@@ -346,6 +346,13 @@ carries the same descriptor as the declaration. Objective-C call sites carry no 
 (the Swift syntax pass reads Swift only), and data flow through variables and returns
 (SIL) is the next step.
 
+Type enrichment uses a lightweight source parser and does not evaluate preprocessor
+conditionals. Conditional branches with unmatched braces in the unprocessed source,
+and C declarations wrapped in `extern "C"` blocks, can retain empty type information
+even when their indexed declarations and calls are present. Validation against Signal
+and Swift Package Manager, including these remaining limits, is recorded in
+[the Apple frontend validation report](docs/apple-frontend-validation.md).
+
 ### Upgrading a legacy installation
 
 An older installer may have placed `~/.graphite/bin/graphite` before Homebrew in `PATH`. In that case, installing or
