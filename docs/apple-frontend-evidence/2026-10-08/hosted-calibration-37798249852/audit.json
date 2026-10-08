@@ -1,0 +1,164 @@
+{
+  "run": 37798249852,
+  "revision": "1ba3808f79db8190ecd278a3853ab7a27d5abac9",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 113383274575,
+      "name": "validate-release-tag",
+      "conclusion": "success",
+      "log": "job-113383274575.log"
+    },
+    {
+      "id": 113383358637,
+      "name": "maven",
+      "conclusion": "success",
+      "log": "job-113383358637.log"
+    },
+    {
+      "id": 113383358732,
+      "name": "binaries (ubuntu-latest, x86_64-unknown-linux-musl, CC_x86_64_unknown_linux_musl)",
+      "conclusion": "success",
+      "log": "job-113383358732.log"
+    },
+    {
+      "id": 113383358745,
+      "name": "apple-frontend (macos-15-intel, x86_64-apple-darwin)",
+      "conclusion": "success",
+      "log": "job-113383358745.log"
+    },
+    {
+      "id": 113383358777,
+      "name": "apple-frontend (macos-15, aarch64-apple-darwin)",
+      "conclusion": "success",
+      "log": "macos-arm64-frontend-release.log"
+    },
+    {
+      "id": 113383358804,
+      "name": "binaries (ubuntu-latest, aarch64-unknown-linux-musl, true, qemu-aarch64-static)",
+      "conclusion": "success",
+      "log": "job-113383358804.log"
+    },
+    {
+      "id": 113383358840,
+      "name": "apple-frontend (ubuntu-latest, x86_64-unknown-linux-gnu, swift:6.1.3, --static-swift-stdlib)",
+      "conclusion": "success",
+      "log": "linux-frontend-release.log"
+    },
+    {
+      "id": 113383358905,
+      "name": "binaries (macos-15-intel, x86_64-apple-darwin)",
+      "conclusion": "success",
+      "log": "job-113383358905.log"
+    },
+    {
+      "id": 113383358916,
+      "name": "binaries (macos-latest, aarch64-apple-darwin)",
+      "conclusion": "success",
+      "log": "job-113383358916.log"
+    },
+    {
+      "id": 113390346673,
+      "name": "release",
+      "conclusion": "success",
+      "log": "job-113390346673.log"
+    },
+    {
+      "id": 113391523176,
+      "name": "apple-release-smoke (x86_64-apple-darwin)",
+      "conclusion": "success",
+      "log": "job-113391523176.log"
+    },
+    {
+      "id": 113391523177,
+      "name": "docker",
+      "conclusion": "success",
+      "log": "docker-job.log"
+    },
+    {
+      "id": 113391523202,
+      "name": "apple-corpus-calibration (swift-package-manager)",
+      "conclusion": "success",
+      "log": "swift-package-manager-job.log"
+    },
+    {
+      "id": 113391523240,
+      "name": "apple-release-smoke (aarch64-apple-darwin)",
+      "conclusion": "success",
+      "log": "job-113391523240.log"
+    },
+    {
+      "id": 113391523243,
+      "name": "apple-release-smoke (x86_64-unknown-linux-gnu)",
+      "conclusion": "success",
+      "log": "job-113391523243.log"
+    },
+    {
+      "id": 113391523278,
+      "name": "install-the-formula (dry run)",
+      "conclusion": "success",
+      "log": "formula-job.log"
+    },
+    {
+      "id": 113391523335,
+      "name": "apple-corpus-calibration (signal-ios)",
+      "conclusion": "success",
+      "log": "signal-ios-job.log"
+    },
+    {
+      "id": 113391523362,
+      "name": "apple-corpus-calibration (swiftformat)",
+      "conclusion": "success",
+      "log": "swiftformat-job.log"
+    },
+    {
+      "id": 113391528304,
+      "name": "update-the-homebrew-tap",
+      "conclusion": "skipped",
+      "log": null
+    }
+  ],
+  "performanceAcceptance": false,
+  "linuxSwiftImageDigest": "sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db",
+  "linuxLinkage": "Both release candidate and baseline built --static-swift-stdlib",
+  "macOSCompiler": "Candidate release and baseline build select Xcode 16.4 (16F6); corpus toolchain records Apple Swift 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5).",
+  "scope": "Frontend stage calibration only; candidate then baseline fixed order, different shapes for new corpora; separate local lifecycle evidence remains unchanged",
+  "verified": {
+    "corpora": 3,
+    "rawRecords": 36,
+    "warmups": 6,
+    "measuredSamples": 30,
+    "failedSamples": 0,
+    "allProductionImportsSaved": true
+  },
+  "proposedNewCeilings": {
+    "swift-package-manager": {
+      "wallMs": 8000,
+      "rssMiB": 272
+    },
+    "signal-ios": {
+      "wallMs": 74500,
+      "rssMiB": 1408
+    }
+  },
+  "artifacts": [
+    {
+      "id": 11562083040,
+      "name": "apple-corpus-calibration-signal-ios-v2.11.3-apple-validation.4",
+      "digest": "sha256:d3f8f381613c00d7b4ef6ccb3589e145e00d4cb52103e59b8184d956d1cb913c",
+      "size_in_bytes": 562293
+    },
+    {
+      "id": 11561156728,
+      "name": "apple-corpus-calibration-swiftformat-v2.11.3-apple-validation.4",
+      "digest": "sha256:526dda135458e8ac5c36281b1f71071ca0b5d6a819434c05910b0d41c8137312",
+      "size_in_bytes": 17793
+    },
+    {
+      "id": 11560722695,
+      "name": "apple-corpus-calibration-swift-package-manager-v2.11.3-apple-validation.4",
+      "digest": "sha256:cc194b9982d6a50df2cea545c7d0813c1b5d126f9f3161a517149b557b68afa3",
+      "size_in_bytes": 48779
+    }
+  ]
+}

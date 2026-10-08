@@ -1,0 +1,136 @@
+Fetching https://github.com/apple/swift-argument-parser.git
+Fetching https://github.com/swiftlang/swift-syntax.git
+[1/19096] Fetching swift-argument-parser
+[19097/99477] Fetching swift-argument-parser, swift-syntax
+Fetched https://github.com/apple/swift-argument-parser.git from cache (4.64s)
+Fetched https://github.com/swiftlang/swift-syntax.git from cache (4.64s)
+Fetching https://github.com/swiftlang/indexstore-db.git
+Fetching https://github.com/apple/swift-protobuf.git
+[1/6125] Fetching indexstore-db
+[6126/60972] Fetching indexstore-db, swift-protobuf
+Fetched https://github.com/apple/swift-protobuf.git from cache (8.85s)
+Fetched https://github.com/swiftlang/indexstore-db.git from cache (8.85s)
+Creating working copy for https://github.com/swiftlang/swift-syntax.git
+Working copy of https://github.com/swiftlang/swift-syntax.git resolved at 601.0.1
+Creating working copy for https://github.com/swiftlang/indexstore-db.git
+Working copy of https://github.com/swiftlang/indexstore-db.git resolved at release/6.1 (54212fc)
+Creating working copy for https://github.com/apple/swift-argument-parser.git
+Working copy of https://github.com/apple/swift-argument-parser.git resolved at 1.8.2
+Creating working copy for https://github.com/apple/swift-protobuf.git
+Working copy of https://github.com/apple/swift-protobuf.git resolved at 1.38.1
+[1/1] Compiling plugin GenerateManual
+[2/2] Compiling plugin GenerateDoccReference
+[3/3] Compiling plugin SwiftProtobufPlugin
+Building for production...
+[3/106] Write sources
+[9/106] Copying PrivacyInfo.xcprivacy
+[9/106] Write sources
+[12/106] Compiling _SwiftSyntaxCShims dummy.c
+[13/106] Write swift-version--79AA4F9932D1E87A.txt
+[14/106] Compiling IndexStoreDB_Support Logging-NonMac.cpp
+[16/107] Compiling SwiftSyntax601 Empty.swift
+[17/108] Compiling SwiftSyntax600 Empty.swift
+[18/109] Compiling SwiftSyntax510 Empty.swift
+[18/109] Compiling IndexStoreDB_Support PatternMatching.cpp
+[19/110] Compiling IndexStoreDB_Support Logging.cpp
+[21/110] Compiling SwiftSyntax509 Empty.swift
+[21/111] Compiling IndexStoreDB_Support Path.cpp
+[22/112] Compiling IndexStoreDB_Support Logging-Mac.mm
+[23/112] Compiling IndexStoreDB_Support FilePathWatcher.cpp
+[24/112] Compiling IndexStoreDB_Support Concurrency-Mac.cpp
+[25/112] Compiling circular_raw_ostream.cpp
+[26/112] Compiling raw_ostream.cpp
+[27/112] Compiling YAMLTraits.cpp
+[28/112] Compiling YAMLParser.cpp
+[29/112] Compiling Watchdog.cpp
+[30/112] Compiling WithColor.cpp
+[31/112] Compiling Valgrind.cpp
+[32/112] Compiling UnicodeCaseFold.cpp
+[33/112] Compiling VersionTuple.cpp
+[34/112] Compiling Unicode.cpp
+[35/112] Compiling Twine.cpp
+[36/112] Compiling Triple.cpp
+[37/112] Compiling ToolOutputFile.cpp
+[38/112] Compiling Threading.cpp
+[39/112] Compiling Timer.cpp
+[40/112] Compiling TargetParser.cpp
+[41/112] Compiling StringSaver.cpp
+[42/112] Compiling StringRef.cpp
+[43/112] Compiling StringMap.cpp
+[44/112] Compiling StringExtras.cpp
+[45/112] Compiling Statistic.cpp
+[46/112] Compiling SmallVector.cpp
+[47/112] Compiling SourceMgr.cpp
+[48/112] Compiling SmallPtrSet.cpp
+[49/112] Compiling Signposts.cpp
+[50/112] Compiling Signals.cpp
+[51/112] Compiling Program.cpp
+[52/112] Compiling PrettyStackTrace.cpp
+[53/112] Compiling Process.cpp
+[54/112] Compiling Options.cpp
+[55/112] Compiling Optional.cpp
+[56/112] Compiling Path.cpp
+[57/112] Compiling NativeFormatting.cpp
+[58/112] Compiling Mutex.cpp
+[59/112] Compiling Memory.cpp
+[60/112] Compiling MemoryBuffer.cpp
+[61/112] Compiling MathExtras.cpp
+[62/112] Compiling ManagedStatic.cpp
+[63/112] Compiling MD5.cpp
+[64/112] Compiling Locale.cpp
+[65/112] Compiling LineIterator.cpp
+[66/112] Compiling Host.cpp
+[67/112] Compiling JSON.cpp
+[68/112] Compiling Hashing.cpp
+[69/112] Compiling FormatVariadic.cpp
+[70/112] Compiling FoldingSet.cpp
+[71/112] Compiling FileUtilities.cpp
+[72/112] Compiling ErrorHandling.cpp
+[73/112] Compiling Errno.cpp
+[74/112] Compiling Error.cpp
+[75/112] Compiling DJB.cpp
+[76/112] Compiling Debug.cpp
+[77/112] Compiling ConvertUTF.cpp
+[78/112] Compiling ConvertUTFWrapper.cpp
+[79/112] Compiling Chrono.cpp
+[80/112] Compiling Atomic.cpp
+[81/112] Compiling Allocator.cpp
+[82/112] Compiling ARMTargetParser.cpp
+[83/112] Compiling CommandLine.cpp
+[84/112] Compiling APSInt.cpp
+[85/112] Compiling APFloat.cpp
+[86/112] Compiling APInt.cpp
+[87/112] Compiling AArch64TargetParser.cpp
+[88/112] Compiling IndexStoreDB_Index StoreSymbolRecord.cpp
+[89/112] Compiling IndexStoreDB_Index SymbolIndex.cpp
+[90/112] Compiling IndexStoreDB_Index IndexStoreLibraryProvider.cpp
+[91/112] Compiling IndexStoreDB_Index IndexSystem.cpp
+[92/112] Compiling IndexStoreDB_Index FileVisibilityChecker.cpp
+[93/112] Compiling IndexStoreDB_Index FilePathIndex.cpp
+[94/112] Compiling midl.c
+[95/112] Compiling IndexStoreDB_Index IndexDatastore.cpp
+[96/112] Compiling mdb.c
+[97/112] Compiling IndexStoreDB_Database ReadTransaction.cpp
+[98/112] Compiling IndexStoreDB_Database DatabaseError.cpp
+[100/112] Compiling SwiftProtobuf AnyMessageStorage.swift
+[100/112] Compiling IndexStoreDB_Database ImportTransaction.cpp
+[101/112] Compiling IndexStoreDB_Core Symbol.cpp
+[102/112] Write sources
+[105/113] Compiling IndexStoreDB_Database Database.cpp
+[106/113] Write sources
+[108/114] Compiling IndexStoreDB_CIndexStoreDB CIndexStoreDB.cpp
+[110/115] Compiling ArgumentParserToolInfo ToolInfo.swift
+[111/116] Compiling IndexStoreDB IndexDelegate.swift
+<module-includes>:1:9: note: in file included from <module-includes>:1:
+1 | #import "CIndexStoreDB.h"
+  |         `- note: in file included from <module-includes>:1:
+2 | 
+[112/116] Compiling GraphiteIR IRWriter.swift
+[113/116] Compiling ArgumentParser BashCompletionsGenerator.swift
+[114/116] Compiling SwiftSyntax AbsolutePosition.swift
+[115/117] Compiling SwiftParser Attributes.swift
+[116/118] Compiling GraphiteFrontend ClangUSR.swift
+[117/119] Compiling graphite_frontend_apple main.swift
+[117/119] Write Objects.LinkFileList
+[118/119] Linking graphite-frontend-apple
+Build complete! (439.25s)

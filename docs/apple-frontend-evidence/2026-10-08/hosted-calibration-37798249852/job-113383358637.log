@@ -1,0 +1,535 @@
+﻿2026-10-08T15:08:35.5007023Z Current runner version: '2.337.0'
+2026-10-08T15:08:35.5026991Z ##[group]Runner Image Provisioner
+2026-10-08T15:08:35.5027615Z Hosted Compute Agent
+2026-10-08T15:08:35.5028088Z Version: 20260901.588
+2026-10-08T15:08:35.5028542Z Commit: f88ec8081b781fac6c440065ac7ff9e710ce3d0b
+2026-10-08T15:08:35.5029588Z Build Date: 2026-09-01T19:56:44Z
+2026-10-08T15:08:35.5030071Z Worker ID: {aac77420-21ec-419e-bd31-bdb22122f815}
+2026-10-08T15:08:35.5030566Z Azure Region: centralus
+2026-10-08T15:08:35.5031000Z ##[endgroup]
+2026-10-08T15:08:35.5031982Z ##[group]Operating System
+2026-10-08T15:08:35.5032476Z Ubuntu
+2026-10-08T15:08:35.5032831Z 24.04.5
+2026-10-08T15:08:35.5033249Z LTS
+2026-10-08T15:08:35.5033601Z ##[endgroup]
+2026-10-08T15:08:35.5034084Z ##[group]Runner Image
+2026-10-08T15:08:35.5034502Z Image: ubuntu-24.04
+2026-10-08T15:08:35.5034951Z Version: 20260927.320.1
+2026-10-08T15:08:35.5035831Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260927.320/images/ubuntu/Ubuntu2404-Readme.md
+2026-10-08T15:08:35.5036825Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260927.320
+2026-10-08T15:08:35.5037459Z ##[endgroup]
+2026-10-08T15:08:35.5038236Z ##[group]GITHUB_TOKEN Permissions
+2026-10-08T15:08:35.5039733Z Contents: read
+2026-10-08T15:08:35.5040178Z Metadata: read
+2026-10-08T15:08:35.5040591Z ##[endgroup]
+2026-10-08T15:08:35.5042144Z Secret source: Actions
+2026-10-08T15:08:35.5042806Z Cache mode: write
+2026-10-08T15:08:35.5043356Z Prepare workflow directory
+2026-10-08T15:08:35.5443064Z Prepare all required actions
+2026-10-08T15:08:35.5477627Z Getting action download info
+2026-10-08T15:08:35.7701057Z Download action repository 'actions/checkout@v7' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+2026-10-08T15:08:35.8579696Z Download action repository 'actions/setup-java@v5' (SHA:b6effb05e454b25005698d916606bdc6ffcbf961)
+2026-10-08T15:08:36.6621209Z Complete job name: maven
+2026-10-08T15:08:36.7116927Z ##[group]Run actions/checkout@v7
+2026-10-08T15:08:36.7117464Z with:
+2026-10-08T15:08:36.7117836Z   ref: 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:36.7118254Z   repository: johnsonlee/graphite
+2026-10-08T15:08:36.7120960Z   token: ***
+2026-10-08T15:08:36.7121257Z   ssh-strict: true
+2026-10-08T15:08:36.7121568Z   ssh-user: git
+2026-10-08T15:08:36.7121878Z   persist-credentials: true
+2026-10-08T15:08:36.7122215Z   clean: true
+2026-10-08T15:08:36.7122522Z   sparse-checkout-cone-mode: true
+2026-10-08T15:08:36.7122877Z   fetch-depth: 1
+2026-10-08T15:08:36.7123174Z   fetch-tags: false
+2026-10-08T15:08:36.7123479Z   show-progress: true
+2026-10-08T15:08:36.7123798Z   lfs: false
+2026-10-08T15:08:36.7124096Z   submodules: false
+2026-10-08T15:08:36.7124404Z   set-safe-directory: true
+2026-10-08T15:08:36.7124747Z   allow-unsafe-pr-checkout: false
+2026-10-08T15:08:36.7125212Z env:
+2026-10-08T15:08:36.7125515Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:36.7125926Z   DRY_RUN: true
+2026-10-08T15:08:36.7126255Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:36.7126640Z ##[endgroup]
+2026-10-08T15:08:36.7898369Z Syncing repository: johnsonlee/graphite
+2026-10-08T15:08:36.7900944Z ##[group]Getting Git version info
+2026-10-08T15:08:36.7901682Z Working directory is '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:36.7902866Z [command]/usr/bin/git version
+2026-10-08T15:08:36.7967275Z git version 2.55.0
+2026-10-08T15:08:36.7981973Z ##[endgroup]
+2026-10-08T15:08:36.7990994Z Temporarily overriding HOME='/home/runner/work/_temp/90d7ddd1-4d4e-41c9-9f7f-508102417353' before making global git config changes
+2026-10-08T15:08:36.7992486Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:08:36.7997343Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:08:36.8044538Z Deleting the contents of '/home/runner/work/graphite/graphite'
+2026-10-08T15:08:36.8047116Z ##[group]Determining repository object format
+2026-10-08T15:08:36.8048267Z ##[endgroup]
+2026-10-08T15:08:36.8049526Z ##[group]Initializing the repository
+2026-10-08T15:08:36.8051730Z [command]/usr/bin/git init /home/runner/work/graphite/graphite
+2026-10-08T15:08:36.8175080Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-08T15:08:36.8178063Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-08T15:08:36.8179057Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-08T15:08:36.8179981Z hint: call:
+2026-10-08T15:08:36.8180411Z hint:
+2026-10-08T15:08:36.8180958Z hint: 	git config --global init.defaultBranch <name>
+2026-10-08T15:08:36.8181600Z hint:
+2026-10-08T15:08:36.8182202Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-08T15:08:36.8183184Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-08T15:08:36.8183987Z hint:
+2026-10-08T15:08:36.8184502Z hint: 	git branch -m <name>
+2026-10-08T15:08:36.8185005Z hint:
+2026-10-08T15:08:36.8185688Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-08T15:08:36.8186794Z Initialized empty Git repository in /home/runner/work/graphite/graphite/.git/
+2026-10-08T15:08:36.8188723Z [command]/usr/bin/git remote add origin https://github.com/johnsonlee/graphite
+2026-10-08T15:08:36.8241743Z ##[endgroup]
+2026-10-08T15:08:36.8242601Z ##[group]Disabling automatic garbage collection
+2026-10-08T15:08:36.8244186Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-08T15:08:36.8280880Z ##[endgroup]
+2026-10-08T15:08:36.8282165Z ##[group]Setting up auth
+2026-10-08T15:08:36.8282910Z Removing SSH command configuration
+2026-10-08T15:08:36.8286095Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:08:36.8333321Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:08:36.8637199Z Removing HTTP extra header
+2026-10-08T15:08:36.8641280Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:08:36.8671883Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:08:36.8851906Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:08:36.8855718Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:08:36.8894113Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:08:36.9078880Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-08T15:08:36.9114517Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git.path /home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:08:36.9166519Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:08:36.9202921Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:08:36.9236948Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:08:36.9267772Z ##[endgroup]
+2026-10-08T15:08:36.9268335Z ##[group]Fetching the repository
+2026-10-08T15:08:36.9273504Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:38.1080365Z From https://github.com/johnsonlee/graphite
+2026-10-08T15:08:38.1081750Z  * branch            1ba3808f79db8190ecd278a3853ab7a27d5abac9 -> FETCH_HEAD
+2026-10-08T15:08:38.1089869Z [command]/usr/bin/git rev-parse --verify --quiet 1ba3808f79db8190ecd278a3853ab7a27d5abac9^{object}
+2026-10-08T15:08:38.1118113Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:38.1123271Z ##[endgroup]
+2026-10-08T15:08:38.1124659Z ##[group]Determining the checkout info
+2026-10-08T15:08:38.1126101Z ##[endgroup]
+2026-10-08T15:08:38.1127054Z [command]/usr/bin/git sparse-checkout disable
+2026-10-08T15:08:38.1182567Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-08T15:08:38.1218946Z ##[group]Checking out the ref
+2026-10-08T15:08:38.1222433Z [command]/usr/bin/git checkout --progress --force 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:38.1925977Z Note: switching to '1ba3808f79db8190ecd278a3853ab7a27d5abac9'.
+2026-10-08T15:08:38.1927032Z 
+2026-10-08T15:08:38.1927875Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-08T15:08:38.1929863Z changes and commit them, and you can discard any commits you make in this
+2026-10-08T15:08:38.1931703Z state without impacting any branches by switching back to a branch.
+2026-10-08T15:08:38.1933001Z 
+2026-10-08T15:08:38.1933876Z If you want to create a new branch to retain commits you create, you may
+2026-10-08T15:08:38.1935932Z do so (now or later) by using -c with the switch command. Example:
+2026-10-08T15:08:38.1937116Z 
+2026-10-08T15:08:38.1937705Z   git switch -c <new-branch-name>
+2026-10-08T15:08:38.1938613Z 
+2026-10-08T15:08:38.1939208Z Or undo this operation with:
+2026-10-08T15:08:38.1940134Z 
+2026-10-08T15:08:38.1940640Z   git switch -
+2026-10-08T15:08:38.1941259Z 
+2026-10-08T15:08:38.1942896Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-08T15:08:38.1944326Z 
+2026-10-08T15:08:38.1945112Z HEAD is now at 1ba3808 Fix hosted Apple corpus build prerequisites
+2026-10-08T15:08:38.1949400Z ##[endgroup]
+2026-10-08T15:08:38.1986283Z [command]/usr/bin/git log -1 --format=%H
+2026-10-08T15:08:38.2014669Z 1ba3808f79db8190ecd278a3853ab7a27d5abac9
+2026-10-08T15:08:38.2433176Z ##[group]Run actions/setup-java@v5
+2026-10-08T15:08:38.2433970Z with:
+2026-10-08T15:08:38.2434562Z   distribution: temurin
+2026-10-08T15:08:38.2435227Z   java-version: 17
+2026-10-08T15:08:38.2435867Z   java-package: jdk
+2026-10-08T15:08:38.2436517Z   check-latest: false
+2026-10-08T15:08:38.2437177Z   set-default: true
+2026-10-08T15:08:38.2437837Z   verify-signature: false
+2026-10-08T15:08:38.2438530Z   server-id: github
+2026-10-08T15:08:38.2439191Z   server-username: GITHUB_ACTOR
+2026-10-08T15:08:38.2440104Z   server-password: GITHUB_TOKEN
+2026-10-08T15:08:38.2440862Z   overwrite-settings: true
+2026-10-08T15:08:38.2441571Z   job-status: success
+2026-10-08T15:08:38.2447685Z   token: ***
+2026-10-08T15:08:38.2448317Z   show-download-progress: false
+2026-10-08T15:08:38.2449047Z env:
+2026-10-08T15:08:38.2449842Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:38.2450642Z   DRY_RUN: true
+2026-10-08T15:08:38.2451313Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:38.2452150Z ##[endgroup]
+2026-10-08T15:08:38.3573363Z ##[group]Installed distributions
+2026-10-08T15:08:38.3620467Z Resolved Java 17.0.20+1 from tool-cache
+2026-10-08T15:08:38.3621375Z Setting Java 17.0.20+1 as the default
+2026-10-08T15:08:38.3627720Z Creating toolchains.xml for JDK version 17 from temurin
+2026-10-08T15:08:38.3676637Z Writing to /home/runner/.m2/toolchains.xml
+2026-10-08T15:08:38.3677415Z 
+2026-10-08T15:08:38.3679638Z Java configuration:
+2026-10-08T15:08:38.3680765Z   Distribution: temurin
+2026-10-08T15:08:38.3681817Z   Version: 17.0.20+1
+2026-10-08T15:08:38.3683172Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-10-08T15:08:38.3684103Z 
+2026-10-08T15:08:38.3685192Z ##[endgroup]
+2026-10-08T15:08:38.3722135Z Creating settings.xml with server-id: github
+2026-10-08T15:08:38.3724208Z Writing to /home/runner/.m2/settings.xml
+2026-10-08T15:08:38.3727265Z Configured MAVEN_ARGS to include -ntp to suppress Maven transfer progress logs. Set 'show-download-progress: true' to keep the download progress output.
+2026-10-08T15:08:38.3916411Z ##[group]Run SIGNING=()
+2026-10-08T15:08:38.3917228Z [36;1mSIGNING=()[0m
+2026-10-08T15:08:38.3917962Z [36;1mif [ -n "${GPG_KEY_ARMOR:-}" ]; then[0m
+2026-10-08T15:08:38.3919088Z [36;1m  echo "$GPG_KEY_ARMOR" | base64 --decode > "${GITHUB_WORKSPACE}/secring.gpg"[0m
+2026-10-08T15:08:38.3921031Z [36;1m  SIGNING=(-Psigning.keyId="${GPG_KEY_ID}" -Psigning.***[0m
+2026-10-08T15:08:38.3922250Z [36;1m           -Psigning.secretKeyRingFile="${GITHUB_WORKSPACE}/secring.gpg")[0m
+2026-10-08T15:08:38.3923282Z [36;1melse[0m
+2026-10-08T15:08:38.3924334Z [36;1m  echo "GPG secrets are not available to this run: publishing unsigned to the local repository"[0m
+2026-10-08T15:08:38.3925538Z [36;1mfi[0m
+2026-10-08T15:08:38.3926625Z [36;1m./gradlew clean publishToMavenLocal -S --no-daemon -Pversion=${RELEASE_VERSION} "${SIGNING[@]}"[0m
+2026-10-08T15:08:38.3928415Z [36;1m# The published coordinates are ***.graphite:<module> (settings.gradle.kts[0m
+2026-10-08T15:08:38.3929910Z [36;1m# keeps the project names prefix-free), so the local repository holds[0m
+2026-10-08T15:08:38.3931320Z [36;1m# io/johnsonlee/graphite/<module>/<version>/<module>-<version>.*, as on Maven Central.[0m
+2026-10-08T15:08:38.3932579Z [36;1mfor MODULE in core cypher sootup webgraph; do[0m
+2026-10-08T15:08:38.3933779Z [36;1m  DIR="${HOME}/.m2/repository/io/johnsonlee/graphite/${MODULE}/${RELEASE_VERSION}"[0m
+2026-10-08T15:08:38.3934904Z [36;1m  ls -la "${DIR}"[0m
+2026-10-08T15:08:38.3935675Z [36;1m  POM="${DIR}/${MODULE}-${RELEASE_VERSION}.pom"[0m
+2026-10-08T15:08:38.3936523Z [36;1m  test -f "${POM}"[0m
+2026-10-08T15:08:38.3937329Z [36;1m  test -f "${DIR}/${MODULE}-${RELEASE_VERSION}.jar"[0m
+2026-10-08T15:08:38.3938366Z [36;1m  test -f "${DIR}/${MODULE}-${RELEASE_VERSION}-sources.jar"[0m
+2026-10-08T15:08:38.3939555Z [36;1m  test -f "${DIR}/${MODULE}-${RELEASE_VERSION}-javadoc.jar"[0m
+2026-10-08T15:08:38.3940687Z [36;1m  grep -q "<groupId>***.graphite</groupId>" "${POM}"[0m
+2026-10-08T15:08:38.3941725Z [36;1m  grep -q "<artifactId>${MODULE}</artifactId>" "${POM}"[0m
+2026-10-08T15:08:38.3942793Z [36;1m  grep -q "<version>${RELEASE_VERSION}</version>" "${POM}"[0m
+2026-10-08T15:08:38.3943770Z [36;1m  if [ -n "${GPG_KEY_ARMOR:-}" ]; then[0m
+2026-10-08T15:08:38.3944577Z [36;1m    test -f "${POM}.asc"[0m
+2026-10-08T15:08:38.3945426Z [36;1m    test -f "${DIR}/${MODULE}-${RELEASE_VERSION}.jar.asc"[0m
+2026-10-08T15:08:38.3946292Z [36;1m  fi[0m
+2026-10-08T15:08:38.3946865Z [36;1mdone[0m
+2026-10-08T15:08:38.4187673Z shell: /usr/bin/bash -e {0}
+2026-10-08T15:08:38.4188478Z env:
+2026-10-08T15:08:38.4189119Z   RELEASE_TAG: v2.11.3-apple-validation.4
+2026-10-08T15:08:38.4190134Z   DRY_RUN: true
+2026-10-08T15:08:38.4190821Z   RELEASE_VERSION: 2.11.3-apple-validation.4
+2026-10-08T15:08:38.4191912Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-10-08T15:08:38.4193194Z   JAVA_HOME_17_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/17.0.20-1/x64
+2026-10-08T15:08:38.4194268Z   MAVEN_ARGS: -ntp
+2026-10-08T15:08:38.4195095Z   JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+2026-10-08T15:08:38.4196167Z   JVM_OPTS: -Xmx8g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
+2026-10-08T15:08:38.4237564Z   GPG_KEY_ARMOR: ***
+2026-10-08T15:08:38.4238219Z   GPG_KEY_ID: ***
+2026-10-08T15:08:38.4238890Z   GPG_PASSPHRASE: ***
+2026-10-08T15:08:38.4239594Z ##[endgroup]
+2026-10-08T15:08:38.7104454Z Downloading https://services.gradle.org/distributions/gradle-8.13-bin.zip
+2026-10-08T15:08:40.0188453Z .............10%.............20%.............30%.............40%.............50%.............60%.............70%.............80%.............90%.............100%
+2026-10-08T15:08:41.1093796Z 
+2026-10-08T15:08:41.1094425Z Welcome to Gradle 8.13!
+2026-10-08T15:08:41.1095268Z 
+2026-10-08T15:08:41.1100307Z Here are the highlights of this release:
+2026-10-08T15:08:41.1100697Z  - Daemon JVM auto-provisioning
+2026-10-08T15:08:41.1101012Z  - Enhancements for Scala plugin and JUnit testing
+2026-10-08T15:08:41.1101847Z  - Improvements for build authors and plugin developers
+2026-10-08T15:08:41.1102122Z 
+2026-10-08T15:08:41.1103216Z For more details see https://docs.gradle.org/8.13/release-notes.html
+2026-10-08T15:08:41.1103515Z 
+2026-10-08T15:08:41.2101603Z To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.13/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+2026-10-08T15:08:42.3090816Z Daemon will be stopped at the end of the build 
+2026-10-08T15:09:13.0100005Z 
+2026-10-08T15:09:13.0126888Z > Configure project :
+2026-10-08T15:09:13.0135238Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:13.0136052Z [root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:18.4085195Z [root project 'graphite'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:20.4096076Z 
+2026-10-08T15:09:20.4110708Z > Configure project :core
+2026-10-08T15:09:20.4122785Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:20.4123660Z [project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:21.2100959Z [project ':core'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:26.5100553Z 
+2026-10-08T15:09:26.5101428Z > Configure project :cypher
+2026-10-08T15:09:26.5102553Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:26.5103550Z [project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:26.5104590Z [project ':cypher'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:34.3090168Z 
+2026-10-08T15:09:34.3150544Z > Configure project :ir
+2026-10-08T15:09:34.3180403Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:34.3210226Z [project ':ir'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:34.3230448Z [project ':ir'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:37.0098976Z 
+2026-10-08T15:09:37.0100617Z > Configure project :sootup
+2026-10-08T15:09:37.0101225Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:37.0101931Z [project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:37.0102539Z [project ':sootup'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:38.3084385Z 
+2026-10-08T15:09:38.3110764Z > Configure project :webgraph
+2026-10-08T15:09:38.3140256Z [root project 'graphite'] Configuring `nexusPublishing` skipped: `OSSRH_USERNAME` or `OSSRH_PASSWORD` not found
+2026-10-08T15:09:38.3180493Z [project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:38.3208912Z [project ':webgraph'] Configuring nexus skipped: `NEXUS_URL` or `NEXUS_USERNAME` or `NEXUS_PASSWORD` not found
+2026-10-08T15:09:51.9082598Z 
+2026-10-08T15:09:51.9091639Z > Task :clean UP-TO-DATE
+2026-10-08T15:09:51.9092102Z > Task :core:clean UP-TO-DATE
+2026-10-08T15:09:51.9092487Z > Task :cypher:clean UP-TO-DATE
+2026-10-08T15:09:51.9092856Z > Task :explore:clean UP-TO-DATE
+2026-10-08T15:09:51.9093555Z > Task :ir:clean UP-TO-DATE
+2026-10-08T15:09:51.9093912Z > Task :query:clean UP-TO-DATE
+2026-10-08T15:09:51.9094453Z > Task :sootup:clean UP-TO-DATE
+2026-10-08T15:09:51.9096961Z > Task :webgraph:clean UP-TO-DATE
+2026-10-08T15:09:51.9097546Z > Task :publishToMavenLocal UP-TO-DATE
+2026-10-08T15:09:51.9098016Z > Task :core:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-08T15:09:56.0111008Z > Task :core:processResources NO-SOURCE
+2026-10-08T15:09:56.3083122Z > Task :core:generatePomFileForMavenJavaPublication
+2026-10-08T15:10:03.4090141Z 
+2026-10-08T15:10:03.4130301Z > Task :core:dokkaHtml
+2026-10-08T15:10:03.4130958Z Initializing plugins
+2026-10-08T15:10:03.6088735Z Dokka is performing: documentation for core
+2026-10-08T15:10:03.6140409Z Validity check
+2026-10-08T15:10:03.6160327Z Creating documentation models
+2026-10-08T15:10:12.2100698Z Transforming documentation model before merging
+2026-10-08T15:10:12.3100697Z Merging documentation models
+2026-10-08T15:10:12.3120282Z Transforming documentation model after merging
+2026-10-08T15:10:12.4083657Z Creating pages
+2026-10-08T15:10:13.0090564Z Transforming pages
+2026-10-08T15:10:13.2110328Z Rendering
+2026-10-08T15:10:15.6093000Z Running post-actions
+2026-10-08T15:10:15.6150188Z 
+2026-10-08T15:10:16.1100062Z 
+2026-10-08T15:10:16.1137641Z > Task :core:compileKotlin
+2026-10-08T15:10:16.1158693Z w: file:///home/runner/work/graphite/graphite/frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/analysis/BranchReachabilityAnalysis.kt:295:25 This synthetic property is based on the getter function 'fun isEmpty(): Boolean' from Kotlin. In the future, synthetic properties will be available only if the base getter function came from Java. Consider replacing this property access with a 'isEmpty()' function call.
+2026-10-08T15:10:16.3090101Z 
+2026-10-08T15:10:16.3091204Z > Task :core:packageJavadocForMavenJava
+2026-10-08T15:10:16.3091717Z > Task :core:compileJava NO-SOURCE
+2026-10-08T15:10:16.3092178Z > Task :core:classes UP-TO-DATE
+2026-10-08T15:10:16.3092724Z > Task :core:jar
+2026-10-08T15:10:16.3093066Z > Task :core:generateMetadataFileForMavenJavaPublication
+2026-10-08T15:10:16.3093452Z > Task :core:packageSourcesForMavenJava
+2026-10-08T15:10:19.1087684Z > Task :core:signMavenJavaPublication
+2026-10-08T15:10:19.1088956Z > Task :core:publishMavenJavaPublicationToMavenLocal
+2026-10-08T15:10:19.1089867Z > Task :core:publishToMavenLocal
+2026-10-08T15:10:19.1092948Z > Task :cypher:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-08T15:10:21.1083775Z > Task :cypher:generateGrammarSource
+2026-10-08T15:10:21.5091255Z > Task :cypher:processResources NO-SOURCE
+2026-10-08T15:10:21.6102632Z > Task :cypher:generatePomFileForMavenJavaPublication
+2026-10-08T15:10:23.6083489Z 
+2026-10-08T15:10:23.6120302Z > Task :cypher:dokkaHtml
+2026-10-08T15:10:23.6142606Z Initializing plugins
+2026-10-08T15:10:23.6178705Z Dokka is performing: documentation for cypher
+2026-10-08T15:10:23.6209220Z Validity check
+2026-10-08T15:10:23.6230116Z Creating documentation models
+2026-10-08T15:10:38.3120858Z Transforming documentation model before merging
+2026-10-08T15:10:38.6100728Z Merging documentation models
+2026-10-08T15:10:38.6130715Z Transforming documentation model after merging
+2026-10-08T15:10:38.7085282Z Creating pages
+2026-10-08T15:10:40.2100525Z Transforming pages
+2026-10-08T15:10:40.7100338Z Rendering
+2026-10-08T15:10:41.3082060Z 
+2026-10-08T15:10:41.3082581Z > Task :cypher:compileKotlin
+2026-10-08T15:10:47.5083493Z 
+2026-10-08T15:10:47.5084097Z > Task :cypher:dokkaHtml
+2026-10-08T15:10:47.5090441Z Running post-actions
+2026-10-08T15:10:47.5091327Z 
+2026-10-08T15:10:51.6091367Z 
+2026-10-08T15:10:51.6092346Z > Task :cypher:compileJava
+2026-10-08T15:10:51.6092976Z > Task :cypher:classes
+2026-10-08T15:10:51.7084050Z > Task :cypher:jar
+2026-10-08T15:10:51.7105490Z > Task :cypher:generateMetadataFileForMavenJavaPublication
+2026-10-08T15:10:52.1084053Z > Task :cypher:packageJavadocForMavenJava
+2026-10-08T15:10:52.1084706Z > Task :cypher:packageSourcesForMavenJava
+2026-10-08T15:10:54.8083676Z > Task :cypher:signMavenJavaPublication
+2026-10-08T15:10:54.8083983Z > Task :cypher:publishMavenJavaPublicationToMavenLocal
+2026-10-08T15:10:54.8084213Z > Task :cypher:publishToMavenLocal
+2026-10-08T15:10:54.8084967Z > Task :ir:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-08T15:10:55.3083748Z > Task :ir:extractIncludeProto
+2026-10-08T15:10:55.3084106Z > Task :ir:extractProto
+2026-10-08T15:10:55.7083812Z > Task :ir:generateProto
+2026-10-08T15:10:55.9083722Z > Task :ir:processResources
+2026-10-08T15:10:56.0092803Z > Task :ir:generatePomFileForMavenJavaPublication
+2026-10-08T15:10:58.0089812Z 
+2026-10-08T15:10:58.0120262Z > Task :ir:dokkaHtml
+2026-10-08T15:10:58.0150323Z Initializing plugins
+2026-10-08T15:10:58.0205335Z Dokka is performing: documentation for ir
+2026-10-08T15:10:58.0260240Z Validity check
+2026-10-08T15:10:58.0290145Z Creating documentation models
+2026-10-08T15:10:58.3097985Z 
+2026-10-08T15:10:58.3098638Z > Task :ir:compileKotlin
+2026-10-08T15:11:02.3084164Z 
+2026-10-08T15:11:02.3085056Z > Task :ir:dokkaHtml
+2026-10-08T15:11:02.3110732Z Transforming documentation model before merging
+2026-10-08T15:11:02.4083814Z Merging documentation models
+2026-10-08T15:11:02.4087089Z Transforming documentation model after merging
+2026-10-08T15:11:02.4087393Z Creating pages
+2026-10-08T15:11:02.5083673Z Transforming pages
+2026-10-08T15:11:02.5086049Z Rendering
+2026-10-08T15:11:03.6083025Z Running post-actions
+2026-10-08T15:11:03.6083250Z 
+2026-10-08T15:11:06.2094190Z 
+2026-10-08T15:11:06.2095095Z > Task :ir:compileJava
+2026-10-08T15:11:06.2095517Z > Task :ir:classes
+2026-10-08T15:11:06.2095829Z > Task :ir:jar
+2026-10-08T15:11:06.2096270Z > Task :ir:generateMetadataFileForMavenJavaPublication
+2026-10-08T15:11:06.2096729Z > Task :ir:packageJavadocForMavenJava
+2026-10-08T15:11:06.3082729Z > Task :ir:packageSourcesForMavenJava
+2026-10-08T15:11:09.0082594Z > Task :ir:signMavenJavaPublication
+2026-10-08T15:11:09.0082908Z > Task :ir:publishMavenJavaPublicationToMavenLocal
+2026-10-08T15:11:09.0083176Z > Task :ir:publishToMavenLocal
+2026-10-08T15:11:09.0083404Z > Task :sootup:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-08T15:11:11.2110741Z > Task :sootup:processResources NO-SOURCE
+2026-10-08T15:11:11.4115214Z > Task :sootup:generatePomFileForMavenJavaPublication
+2026-10-08T15:11:13.4089851Z 
+2026-10-08T15:11:13.4120342Z > Task :sootup:dokkaHtml
+2026-10-08T15:11:13.4170444Z Initializing plugins
+2026-10-08T15:11:13.4170802Z Dokka is performing: documentation for sootup
+2026-10-08T15:11:13.4171115Z Validity check
+2026-10-08T15:11:13.4171338Z Creating documentation models
+2026-10-08T15:11:22.3103693Z 
+2026-10-08T15:11:22.3104777Z The Daemon will expire after the build after running out of JVM Metaspace.
+2026-10-08T15:11:22.3133242Z The project memory settings are likely not configured or are configured to an insufficient value.
+2026-10-08T15:11:22.3160509Z The daemon will restart for the next build, which may increase subsequent build times.
+2026-10-08T15:11:22.3207953Z These settings can be adjusted by setting 'org.gradle.jvmargs' in 'gradle.properties'.
+2026-10-08T15:11:22.3261033Z The currently configured max heap space is '2 GiB' and the configured max metaspace is '512 MiB'.
+2026-10-08T15:11:22.3290951Z For more information on how to set these values, please refer to https://docs.gradle.org/8.13/userguide/build_environment.html#sec:configuring_jvm_memory in the Gradle documentation.
+2026-10-08T15:11:22.3292225Z To disable this warning, set 'org.gradle.daemon.performance.disable-logging=true'.
+2026-10-08T15:11:23.0091478Z 
+2026-10-08T15:11:23.0100730Z > Task :sootup:compileKotlin
+2026-10-08T15:11:23.0102062Z w: file:///home/runner/work/graphite/graphite/frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/ConstantFolding.kt:496:31 Java type mismatch: inferred type is '@NonNull() sootup.core.jimple.common.Local?', but '@NonNull() sootup.core.jimple.common.Local' was expected.
+2026-10-08T15:11:23.0104018Z w: file:///home/runner/work/graphite/graphite/frontend/jvm/sootup/src/main/kotlin/sootup/java/bytecode/frontend/conversion/GraphiteClassNode.kt:26:64 Java type mismatch: inferred type is 'kotlin.String?', but '@NonNull() kotlin.String' was expected.
+2026-10-08T15:11:23.8084081Z 
+2026-10-08T15:11:23.8100909Z > Task :sootup:dokkaHtml
+2026-10-08T15:11:23.8101524Z Transforming documentation model before merging
+2026-10-08T15:11:23.8102065Z Merging documentation models
+2026-10-08T15:11:23.8102477Z Transforming documentation model after merging
+2026-10-08T15:11:23.8102890Z Creating pages
+2026-10-08T15:11:23.9082520Z Transforming pages
+2026-10-08T15:11:24.0083381Z Rendering
+2026-10-08T15:11:25.0083644Z Running post-actions
+2026-10-08T15:11:25.0084061Z 
+2026-10-08T15:11:25.0084144Z 
+2026-10-08T15:11:25.0084417Z > Task :sootup:compileJava NO-SOURCE
+2026-10-08T15:11:25.0084792Z > Task :sootup:classes UP-TO-DATE
+2026-10-08T15:11:25.1083446Z > Task :sootup:jar
+2026-10-08T15:11:25.1087805Z > Task :sootup:generateMetadataFileForMavenJavaPublication
+2026-10-08T15:11:25.1088271Z > Task :sootup:packageJavadocForMavenJava
+2026-10-08T15:11:25.1094688Z > Task :sootup:packageSourcesForMavenJava
+2026-10-08T15:11:27.8082895Z > Task :sootup:signMavenJavaPublication
+2026-10-08T15:11:27.8083355Z > Task :sootup:publishMavenJavaPublicationToMavenLocal
+2026-10-08T15:11:27.8083701Z > Task :sootup:publishToMavenLocal
+2026-10-08T15:11:27.8084046Z > Task :webgraph:checkKotlinGradlePluginConfigurationErrors SKIPPED
+2026-10-08T15:11:30.2194415Z > Task :webgraph:processResources NO-SOURCE
+2026-10-08T15:11:30.2196761Z > Task :webgraph:generatePomFileForMavenJavaPublication
+2026-10-08T15:11:32.2100094Z 
+2026-10-08T15:11:32.2130835Z > Task :webgraph:dokkaHtml
+2026-10-08T15:11:32.2139841Z Initializing plugins
+2026-10-08T15:11:32.2170176Z Dokka is performing: documentation for webgraph
+2026-10-08T15:11:32.2170528Z Validity check
+2026-10-08T15:11:32.2170756Z Creating documentation models
+2026-10-08T15:11:41.3082894Z 
+2026-10-08T15:11:41.3111080Z > Task :webgraph:compileKotlin
+2026-10-08T15:11:44.4084766Z 
+2026-10-08T15:11:44.4088786Z > Task :webgraph:dokkaHtml
+2026-10-08T15:11:44.4089543Z Transforming documentation model before merging
+2026-10-08T15:11:44.4090053Z Merging documentation models
+2026-10-08T15:11:44.4090543Z Transforming documentation model after merging
+2026-10-08T15:11:44.4090976Z Creating pages
+2026-10-08T15:11:44.5092762Z Transforming pages
+2026-10-08T15:11:44.5093315Z Rendering
+2026-10-08T15:11:45.7082066Z Running post-actions
+2026-10-08T15:11:45.7082494Z 
+2026-10-08T15:11:45.7082629Z 
+2026-10-08T15:11:45.7082829Z > Task :webgraph:compileJava NO-SOURCE
+2026-10-08T15:11:45.7083124Z > Task :webgraph:classes UP-TO-DATE
+2026-10-08T15:11:45.8090073Z > Task :webgraph:jar
+2026-10-08T15:11:45.8090862Z > Task :webgraph:generateMetadataFileForMavenJavaPublication
+2026-10-08T15:11:45.8091611Z > Task :webgraph:packageJavadocForMavenJava
+2026-10-08T15:11:45.8092156Z > Task :webgraph:packageSourcesForMavenJava
+2026-10-08T15:11:48.5082835Z > Task :webgraph:signMavenJavaPublication
+2026-10-08T15:11:48.5083285Z > Task :webgraph:publishMavenJavaPublicationToMavenLocal
+2026-10-08T15:11:48.5084304Z > Task :webgraph:publishToMavenLocal
+2026-10-08T15:11:48.5563104Z 
+2026-10-08T15:11:48.5580730Z [Incubating] Problems report is available at: file:///home/runner/work/graphite/graphite/build/reports/problems/problems-report.html
+2026-10-08T15:11:48.5584074Z 
+2026-10-08T15:11:48.5584727Z Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+2026-10-08T15:11:48.5585097Z 
+2026-10-08T15:11:48.5585495Z You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+2026-10-08T15:11:48.5585947Z 
+2026-10-08T15:11:48.5586276Z For more on this, please refer to https://docs.gradle.org/8.13/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+2026-10-08T15:11:48.5586613Z 
+2026-10-08T15:11:48.5586686Z BUILD SUCCESSFUL in 3m 9s
+2026-10-08T15:11:48.5586863Z 60 actionable tasks: 52 executed, 8 up-to-date
+2026-10-08T15:11:48.8801954Z total 2740
+2026-10-08T15:11:48.8802467Z drwxr-xr-x 2 runner runner    4096 Oct  8 15:10 .
+2026-10-08T15:11:48.8802811Z drwxr-xr-x 3 runner runner    4096 Oct  8 15:10 ..
+2026-10-08T15:11:48.8803597Z -rw-r--r-- 1 runner runner 2226876 Oct  8 15:10 core-2.11.3-apple-validation.4-javadoc.jar
+2026-10-08T15:11:48.8804152Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 core-2.11.3-apple-validation.4-javadoc.jar.asc
+2026-10-08T15:11:48.8804690Z -rw-r--r-- 1 runner runner   78024 Oct  8 15:10 core-2.11.3-apple-validation.4-sources.jar
+2026-10-08T15:11:48.8805049Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 core-2.11.3-apple-validation.4-sources.jar.asc
+2026-10-08T15:11:48.8805375Z -rw-r--r-- 1 runner runner  455049 Oct  8 15:10 core-2.11.3-apple-validation.4.jar
+2026-10-08T15:11:48.8805666Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 core-2.11.3-apple-validation.4.jar.asc
+2026-10-08T15:11:48.8805957Z -rw-r--r-- 1 runner runner    3559 Oct  8 15:10 core-2.11.3-apple-validation.4.module
+2026-10-08T15:11:48.8806266Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 core-2.11.3-apple-validation.4.module.asc
+2026-10-08T15:11:48.8806564Z -rw-r--r-- 1 runner runner    2766 Oct  8 15:10 core-2.11.3-apple-validation.4.pom
+2026-10-08T15:11:48.8806864Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 core-2.11.3-apple-validation.4.pom.asc
+2026-10-08T15:11:48.8862418Z total 6452
+2026-10-08T15:11:48.8862646Z drwxr-xr-x 2 runner runner    4096 Oct  8 15:10 .
+2026-10-08T15:11:48.8862876Z drwxr-xr-x 3 runner runner    4096 Oct  8 15:10 ..
+2026-10-08T15:11:48.8863286Z -rw-r--r-- 1 runner runner 5510188 Oct  8 15:10 cypher-2.11.3-apple-validation.4-javadoc.jar
+2026-10-08T15:11:48.8863847Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 cypher-2.11.3-apple-validation.4-javadoc.jar.asc
+2026-10-08T15:11:48.8864392Z -rw-r--r-- 1 runner runner  166004 Oct  8 15:10 cypher-2.11.3-apple-validation.4-sources.jar
+2026-10-08T15:11:48.8864926Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 cypher-2.11.3-apple-validation.4-sources.jar.asc
+2026-10-08T15:11:48.8865294Z -rw-r--r-- 1 runner runner  883779 Oct  8 15:10 cypher-2.11.3-apple-validation.4.jar
+2026-10-08T15:11:48.8880949Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 cypher-2.11.3-apple-validation.4.jar.asc
+2026-10-08T15:11:48.8881456Z -rw-r--r-- 1 runner runner    4482 Oct  8 15:10 cypher-2.11.3-apple-validation.4.module
+2026-10-08T15:11:48.8881821Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 cypher-2.11.3-apple-validation.4.module.asc
+2026-10-08T15:11:48.8882210Z -rw-r--r-- 1 runner runner    3465 Oct  8 15:10 cypher-2.11.3-apple-validation.4.pom
+2026-10-08T15:11:48.8882679Z -rw-r--r-- 1 runner runner     485 Oct  8 15:10 cypher-2.11.3-apple-validation.4.pom.asc
+2026-10-08T15:11:48.8907025Z total 896
+2026-10-08T15:11:48.8907300Z drwxr-xr-x 2 runner runner   4096 Oct  8 15:11 .
+2026-10-08T15:11:48.8907644Z drwxr-xr-x 3 runner runner   4096 Oct  8 15:11 ..
+2026-10-08T15:11:48.8908067Z -rw-r--r-- 1 runner runner 331330 Oct  8 15:11 sootup-2.11.3-apple-validation.4-javadoc.jar
+2026-10-08T15:11:48.8908638Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 sootup-2.11.3-apple-validation.4-javadoc.jar.asc
+2026-10-08T15:11:48.8909185Z -rw-r--r-- 1 runner runner 107442 Oct  8 15:11 sootup-2.11.3-apple-validation.4-sources.jar
+2026-10-08T15:11:48.8910026Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 sootup-2.11.3-apple-validation.4-sources.jar.asc
+2026-10-08T15:11:48.8910612Z -rw-r--r-- 1 runner runner 427702 Oct  8 15:11 sootup-2.11.3-apple-validation.4.jar
+2026-10-08T15:11:48.8910951Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 sootup-2.11.3-apple-validation.4.jar.asc
+2026-10-08T15:11:48.8911303Z -rw-r--r-- 1 runner runner   5690 Oct  8 15:11 sootup-2.11.3-apple-validation.4.module
+2026-10-08T15:11:48.8911639Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 sootup-2.11.3-apple-validation.4.module.asc
+2026-10-08T15:11:48.8911979Z -rw-r--r-- 1 runner runner   5190 Oct  8 15:11 sootup-2.11.3-apple-validation.4.pom
+2026-10-08T15:11:48.8912312Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 sootup-2.11.3-apple-validation.4.pom.asc
+2026-10-08T15:11:48.8950661Z total 1128
+2026-10-08T15:11:48.8950852Z drwxr-xr-x 2 runner runner   4096 Oct  8 15:11 .
+2026-10-08T15:11:48.8951239Z drwxr-xr-x 3 runner runner   4096 Oct  8 15:11 ..
+2026-10-08T15:11:48.8951556Z -rw-r--r-- 1 runner runner 432421 Oct  8 15:11 webgraph-2.11.3-apple-validation.4-javadoc.jar
+2026-10-08T15:11:48.8952058Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 webgraph-2.11.3-apple-validation.4-javadoc.jar.asc
+2026-10-08T15:11:48.8952623Z -rw-r--r-- 1 runner runner 110460 Oct  8 15:11 webgraph-2.11.3-apple-validation.4-sources.jar
+2026-10-08T15:11:48.8953228Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 webgraph-2.11.3-apple-validation.4-sources.jar.asc
+2026-10-08T15:11:48.8953969Z -rw-r--r-- 1 runner runner 569540 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.jar
+2026-10-08T15:11:48.8954319Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.jar.asc
+2026-10-08T15:11:48.8954662Z -rw-r--r-- 1 runner runner   3919 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.module
+2026-10-08T15:11:48.8955014Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.module.asc
+2026-10-08T15:11:48.8955374Z -rw-r--r-- 1 runner runner   3157 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.pom
+2026-10-08T15:11:48.8955712Z -rw-r--r-- 1 runner runner    485 Oct  8 15:11 webgraph-2.11.3-apple-validation.4.pom.asc
+2026-10-08T15:11:48.9085606Z Post job cleanup.
+2026-10-08T15:11:49.0607147Z Post job cleanup.
+2026-10-08T15:11:49.1288442Z [command]/usr/bin/git version
+2026-10-08T15:11:49.1327411Z git version 2.55.0
+2026-10-08T15:11:49.1369801Z Temporarily overriding HOME='/home/runner/work/_temp/637e06da-b6bf-41ed-bb85-e3f19809a11d' before making global git config changes
+2026-10-08T15:11:49.1370567Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-08T15:11:49.1373572Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/graphite/graphite
+2026-10-08T15:11:49.1420137Z Removing SSH command configuration
+2026-10-08T15:11:49.1420852Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-08T15:11:49.1454014Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-08T15:11:49.1659208Z Removing HTTP extra header
+2026-10-08T15:11:49.1664935Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-08T15:11:49.1706791Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-08T15:11:49.1920796Z Removing includeIf entries pointing to credentials config files
+2026-10-08T15:11:49.1926476Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-08T15:11:49.1961644Z includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:11:49.1961949Z includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:11:49.1962211Z includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:11:49.1962421Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:11:49.1969451Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git.path
+2026-10-08T15:11:49.1994898Z /home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:11:49.2003987Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-4763f2b4\-d317\-4670\-a8b2\-b5c8217dfa9c\.config
+2026-10-08T15:11:49.2038794Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path
+2026-10-08T15:11:49.2063113Z /home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:11:49.2071080Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/graphite/graphite/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-4763f2b4\-d317\-4670\-a8b2\-b5c8217dfa9c\.config
+2026-10-08T15:11:49.2105390Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+2026-10-08T15:11:49.2129487Z /github/runner_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:11:49.2135299Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-4763f2b4\-d317\-4670\-a8b2\-b5c8217dfa9c\.config
+2026-10-08T15:11:49.2199625Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+2026-10-08T15:11:49.2223543Z /github/runner_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config
+2026-10-08T15:11:49.2229496Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-4763f2b4\-d317\-4670\-a8b2\-b5c8217dfa9c\.config
+2026-10-08T15:11:49.2264048Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-08T15:11:49.2447195Z Removing credentials config '/home/runner/work/_temp/git-credentials-4763f2b4-d317-4670-a8b2-b5c8217dfa9c.config'
+2026-10-08T15:11:49.2589747Z Cleaning up orphan processes
+2026-10-08T15:11:49.2872101Z Terminate orphan process: pid (2410) (java)

@@ -379,9 +379,103 @@ changes reporting only, not the resource or graph-shape acceptance rules. The fu
 passes all 163 tests, including both confirmation outcomes and the cache restoration
 check. Fourteen lifecycle tests pass after the CPU collector correction.
 
+## Hosted real-corpus calibration
+
+Run [37798249852](https://github.com/johnsonlee/graphite/actions/runs/37798249852)
+uses the final release tarball on Linux with Swift 6.1.3/static Swift standard-library
+linkage and on macOS 15 with Xcode 16.4. It prepares upstream sources once, measures the
+candidate and then the fixed feature baseline `332c0d8a`, with one warmup plus five
+measured frontend-only observations per variant. These sequential calibration samples
+are not the alternating lifecycle comparison. Each emitted IR is wire-validated; the
+last IR of each variant is imported by the production JAR, and identical IR hashes
+across that variant's samples establish deterministic bytes.
+
+The completed frontend-only observations are:
+
+| Corpus / metric | Baseline | Candidate |
+| --- | ---: | ---: |
+| SwiftFormat wall median [range], ms | 1,301.424 [1,296.403–1,303.866] | 1,312.278 [1,309.760–1,322.880] |
+| SwiftFormat peak RSS maximum, MiB | 78.977 | 78.777 |
+| SwiftPM wall median [range], ms | 4,874.959 [4,866.865–4,938.720] | 5,176.946 [5,144.328–5,246.152] |
+| SwiftPM CPU median [range], ms | 4,826.886 [4,811.433–4,894.819] | 5,079.300 [5,040.300–5,140.194] |
+| SwiftPM peak RSS maximum, MiB | 173.906 | 174.656 |
+| Signal 7.70 wall median [range], ms | 28,062.418 [26,661.809–30,964.288] | 45,720.037 [44,764.814–49,665.776] |
+| Signal 7.70 CPU median [range], ms | 25,164.619 [24,467.679–27,469.450] | 36,758.423 [35,606.883–37,917.726] |
+| Signal 7.70 peak RSS maximum, MiB | 776.656 | 933.656 |
+
+The [SwiftPM audit](apple-frontend-evidence/2026-10-08/hosted-calibration-37798249852/swift-package-manager-audit.json)
+and [raw calibration artifacts](apple-frontend-evidence/2026-10-08/hosted-calibration-37798249852/)
+retain all six samples per variant, including warmup and import logs. SwiftFormat's
+observed shape matches the existing pin and its limits remain unchanged. SwiftPM's
+candidate has 482 files, 4,602 methods and 21,419 strings, versus 481, 4,601 and 21,459
+for the baseline; its 60,407 nodes and 29,000 edges do not make the full outputs equal.
+The manifest records both observed shapes and the exact baseline revision. These
+Linux shapes also differ from the local macOS SwiftPM graphs; they are not interchangeable.
+
+The [initial ceiling policy](apple-frontend-evidence/2026-10-08/hosted-bootstrap-ceiling-policy.md)
+was recorded before inspecting the new samples, after SwiftPM candidate sampling had occurred.
+For new real corpora only, the absolute bootstrap health limits use 1.5 times the maximum
+of all five measured candidate samples, rounded upward to 250 ms and 16 MiB. SwiftPM
+therefore receives 8,000 ms and 272 MiB. Warmup is retained separately; no measured
+outliers are discarded. This is an explicit headroom choice, not a confidence interval,
+an estimate of cross-runner uncertainty, or permission to exceed the independent 5%
+resource constraints. Different coverage is reported as a ceilings-only transition,
+not as a passing paired regression comparison. These calibration observations do not
+establish lifecycle or query performance acceptance.
+
+The [Signal 7.70 audit](apple-frontend-evidence/2026-10-08/hosted-calibration-37798249852/signal-ios-audit.json)
+records both deterministic shapes: the baseline has 2,594 files and 357,780 nodes;
+the candidate has 3,853 files and 449,760 nodes. This is different coverage, not a
+paired regression pass. Applying the same declared initial rule to maximum candidate
+wall time 49,665.776 ms and peak RSS 933.65625 MiB gives limits of 74,500 ms and
+1,408 MiB. All three manifests now carry observed shapes and limits; both new corpora
+also pin the baseline's separately observed shape to its full revision SHA.
+
+## Remaining acceptance work
+
+The retained candidate fixes correctness and delivery gaps; it is not a performance
+recovery claim. A separately declared multi-graph comparison on an isolated host,
+with background activity recorded throughout, is needed to determine whether the
+native latency/CPU differences reproduce. That comparison must retain all observations
+and report p50/p95 and resource constraints independently; the existing A/B failure
+must remain in the history. Repeated runs selected for favorable results are not a
+substitute for that diagnosis.
+
+Construction also needs a semantically matched coverage baseline before a strict
+performance comparison can be accepted. The original frontend's omitted sources
+cannot be removed from the candidate to obtain a faster result. Any optimization
+should first profile the complete discovered workload, preserve the source-fact and
+lowering audits, and remeasure through a usable saved graph under matched heap settings.
+The C/third-party and preprocessor-dependent signature gaps listed above require
+additional language handling rather than a performance threshold change.
+
 ## Release and PR validation status
 
-The final release rehearsal and hosted real-corpus calibration are still running.
-The required PR `benchmark-regression-gate` result must be linked here before any
-claim of CI acceptance. Passing that gate's own thresholds would not override the
-stricter local performance conclusions above.
+The final [dry-run release](https://github.com/johnsonlee/graphite/actions/runs/37798249852)
+at `1ba3808f` succeeded. The
+[archived audit](apple-frontend-evidence/2026-10-08/hosted-calibration-37798249852/audit.json)
+contains every job outcome, artifact identity and full job log. Production frontend
+code is unchanged since `357a6206`; later commits adjust validation controls and evidence.
+
+- All four native CLI builds and all three shipped Apple frontend builds succeeded.
+- Final tarball installation/build/import/query smoke tests passed on Linux x86_64 and macOS arm64/x86_64.
+- The actual Homebrew-installed command built and queried the fixture successfully.
+- Release archive assembly and local Maven publication passed; Docker built with `push: false`. The Homebrew tap update was intentionally skipped in dry-run mode.
+- Three pinned real corpora produced 36 valid raw records (six warmups and 30 measured observations), with deterministic IR per variant and all six production import/save checks passing. These are calibration checks, not performance acceptance.
+
+Earlier run 37794100367 passed every release job but failed SwiftPM/Signal preparation;
+its [audit](apple-frontend-evidence/2026-10-08/hosted-calibration-37794100367/audit.json)
+and logs remain. Linux needed SQLite development headers; the older Signal/MobileCoin
+source pin did not compile with hosted Xcode 16.4. The final run installs those build
+dependencies and uses Signal 7.70, whose upstream build uses the matching Xcode version.
+The earlier successful rehearsal and intentionally cancelled intermediate run are also
+retained; none of these observations is substituted for a failed performance sample.
+
+Final validation-control checks pass: 72 Python benchmark tests, 10 Apple verifier
+tests, 163 benchmark script tests and workflow actionlint (shellcheck disabled).
+Their logs accompany the evidence. The 67-test final Swift run and earlier CLI tests/
+clippy results validate the unchanged production code.
+
+The required PR `benchmark-regression-gate` result is still pending PR creation.
+Passing that gate's own thresholds would not override the stricter local performance
+conclusions above.
