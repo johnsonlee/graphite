@@ -1,0 +1,805 @@
+[
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+    "baseDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "candidateDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-class-pair",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "ef4c26381ee3ca2c22c7292db0841cfee24107e8f077b9566947de7f3685390c",
+    "baseDigest": "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7",
+    "candidateDigest": "f597900ae41e4839319ee07d12f70a3c105a0a407b485045e97db9e475ecc7e7",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-name-pair",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "4a48b6deb2b4ef6c0dd39f795e2a6aa5c460decd41deaeb1ce50d0af8e435e10",
+    "baseDigest": "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786",
+    "candidateDigest": "3d53bcde29c959f8f73b1df88018b16aa5eaa7e1e62e234feaf32b91f94ce786",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-caller-class",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "5f32ffe3fb97dcd13a79848547ff658647011e8b030e2e5c1e6452867d48f11b",
+    "baseDigest": "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad",
+    "candidateDigest": "2e35c700a3fe23e36508a9c9330f9907f713394b3ee5a6f5042e9c334b5a61ad",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-callee-class",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "b412eba1d5bd22e7213dd5763f16b4d2a40a8e62fda5d895b81abe306a385936",
+    "baseDigest": "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf",
+    "candidateDigest": "9a53ae277917baf2e8140b45859e5e65c8f1640bb0656c386adb97eab51ab5bf",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-provenance",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "3053f76c30ef6b34fce6665a2ab104bad26223f9133374648cbb041a0d146c95",
+    "baseDigest": "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d",
+    "candidateDigest": "dcc601db94fd4092ea5e7c1c0370a00a772b719753bf7d59cce60982ab5ce93d",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-aliased",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "527ad441f0549171fd87e2bf859b2308597c9f288c18261665c6448c6f6c7628",
+    "baseDigest": "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56",
+    "candidateDigest": "ee873bb558633d65ca304aaea53e7d1155e60455c010854333dc0285a841eb56",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-parameterized-as-literal",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "a62e2ed9c84ac8e4278f26ab2f448757fb73f353c4eaf4995dd89b823eafd5e8",
+    "baseDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "candidateDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "658391da6bf30cc559d3e34a9ffe4fb3211d67c0f54cb4a8fea0b38cd0dada0f",
+    "baseDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "candidateDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive-distinct",
+    "params": {
+      "selectivity": "zero"
+    },
+    "querySha256": "17934101df82ef251dfb7206490382fc01b91e62284d8cad0f5788340ef34564",
+    "baseDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "candidateDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+    "baseRows": 0,
+    "candidateRows": 0
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+    "baseDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "candidateDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-class-pair",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "c33e6c0c08430e24c4ca2964a5190f8a37d4ff0b4f78f22bf00dbf5b094b7fbf",
+    "baseDigest": "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387",
+    "candidateDigest": "8d444d282ea26cef382a74f9ba265ca085733859c39f520bc2d9997314114387",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-name-pair",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "de8626633e1fd4dcf762378eb1253e970a0b1bff702af5b2ae7a9953399376da",
+    "baseDigest": "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65",
+    "candidateDigest": "089d4c11a4433d8aec3934517f5d9924c554c5605b49795bcc85093ea2a0cb65",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-caller-class",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "c9c91490c15858149b5a58b5e4f43f8eca87968afa840986db99014b7944a920",
+    "baseDigest": "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639",
+    "candidateDigest": "9c7ad79e2d449e38ed7734146556ccd8f1d98a1ea829b129fbee12161c31d639",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-callee-class",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "8f4498c2adbdaa8f5440eb9f24a26394eaab17a0b1a188989fa725df13a98992",
+    "baseDigest": "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749",
+    "candidateDigest": "88f3138c2e15f1cbf19104d7efb146636712feb69d79fff15444160ca5bda749",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-provenance",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "5aa97e0c6166666786be117e31790a1e30409d75bf87399287b3fc20327297dd",
+    "baseDigest": "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6",
+    "candidateDigest": "2a21d51116c1a3ba236c55862231c77cc9f7492074e20e3ee9720d60695ccbe6",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-aliased",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "83c20a970dcd7896eaeec945b36451899075a7914eb1295e221497fe05698ba4",
+    "baseDigest": "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da",
+    "candidateDigest": "7708cbd8c168060e6e8c1bfc5d14b6dc8e381ff109e2139d331c935bc60601da",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-parameterized-as-literal",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "7aeaa1dfea2f54c6e04ce314d525f66a1c982efa3a0b8a0fd58d03b0a7cc7701",
+    "baseDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "candidateDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "09d004be3d8c57880c423433c68cf23c6c132c85b0d4e3aff2fa73c83234f9d5",
+    "baseDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "candidateDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive-distinct",
+    "params": {
+      "selectivity": "targeted"
+    },
+    "querySha256": "c951ae1a56b8289abd4fba22833152af54ff0e7323ac292d2a48377cd22bef7d",
+    "baseDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "candidateDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+    "baseRows": 11,
+    "candidateRows": 11
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+    "baseDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "candidateDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-class-pair",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "df6505ac9046688c21d330141017178d1a6bf86671867ea2238e2a0b989570ea",
+    "baseDigest": "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e",
+    "candidateDigest": "825735a34a9c5019454fd7502133abfa0e5923148e06945d4457d10042e39c1e",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-name-pair",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "9bee68d1375446a2a3a49ea8ce5cb524602c143950717720b13c8ed711818c8d",
+    "baseDigest": "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d",
+    "candidateDigest": "a9ec20223924f2d9deb48c334860a5da48f7f444405a6af8dc502e87be0fa30d",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-caller-class",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "7c55514c67383c0e4170b6961553036bc893f2ba150a6fad504c6e6cea8c8234",
+    "baseDigest": "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb",
+    "candidateDigest": "26a1cb97db4f5c4e3b23c68a9cf4b7098271b2cacbd632eb532218cd6efd64cb",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-callee-class",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "a90ae1b807d6addb89e11ec96205e07ae4a9f910673a6daf7059c1b533cd043e",
+    "baseDigest": "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c",
+    "candidateDigest": "1ba0b29f47383ec3aab4b9be9ffaf7077ff4cfcf7736161966e4b8157e0e542c",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-provenance",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+    "baseDigest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+    "candidateDigest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-aliased",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "9ff0b9a62177ec4599cbfae0b60af87ffe23b5a894ad37a46bfa5328f86a69d4",
+    "baseDigest": "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de",
+    "candidateDigest": "31481f6bd51b038a871fb8a3bfffa2ca0e73c385ccf35dc41d4cb405624df0de",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-parameterized-as-literal",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+    "baseDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "candidateDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+    "baseDigest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+    "candidateDigest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-wrapped-case-insensitive-distinct",
+    "params": {
+      "selectivity": "dense"
+    },
+    "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+    "baseDigest": "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+    "candidateDigest": "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "case": "localized-early"
+    },
+    "querySha256": "607aa55d80fa9ccb9f13e5b9107f14f6cba16e7f863c862cd5d53f1c23059f8e",
+    "baseDigest": "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed",
+    "candidateDigest": "2cba549f1d330975949e4d57301cd38dfb7ada1853a728234f5103fd3d7cf4ed",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "case": "localized-middle"
+    },
+    "querySha256": "4302637c07bc770cb08aadcff9c2d05b3312f014291a4ecac2ef15301220944a",
+    "baseDigest": "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670",
+    "candidateDigest": "ae27d3a8fa344547f879365f1d5e74505b3556b73d99636b33b9d62990672670",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "case": "localized-late"
+    },
+    "querySha256": "3f2bfcd26d97a468911e9a5e37cf43b027c3baf23e58b93140db62bc18ee70b8",
+    "baseDigest": "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49",
+    "candidateDigest": "b24a9dd91581255a212fc0ff51a62c4e9c4b56a9782610a6a0ab6c40a71f3e49",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.global-wide-four-properties",
+    "params": {
+      "case": "broad-all-64"
+    },
+    "querySha256": "7a41ab8af71576ca9e872e408a216229430c490a2a75a8d98aa238d7112ebe49",
+    "baseDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "candidateDigest": "bfa9ff18fe7ac280409448431ff9929243be209724717949fe41346de9539de6",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.schema-label-histogram",
+    "params": {
+      "selectivity": "schema"
+    },
+    "querySha256": "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+    "baseDigest": "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394",
+    "candidateDigest": "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394",
+    "baseRows": 12,
+    "candidateRows": 12
+  },
+  {
+    "benchmark": "rust.fixture64.schema-key-histogram",
+    "params": {
+      "selectivity": "schema"
+    },
+    "querySha256": "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+    "baseDigest": "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c",
+    "candidateDigest": "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a",
+    "baseRows": 26,
+    "candidateRows": 28
+  },
+  {
+    "benchmark": "rust.fixture64.schema-relationship-histogram",
+    "params": {
+      "selectivity": "schema"
+    },
+    "querySha256": "f3363bdea15a4ac2e7e892cd232e97aba7d1bd755f8bd6373bf06cbce776e46a",
+    "baseDigest": "c97af2647e6766def04cd1890516efc6be852758d35aa000652587a8ac9e13dc",
+    "candidateDigest": "c97af2647e6766def04cd1890516efc6be852758d35aa000652587a8ac9e13dc",
+    "baseRows": 40,
+    "candidateRows": 40
+  },
+  {
+    "benchmark": "rust.fixture64.shape-wide-contains",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "93876fd68d6103ec49088d957d5b2ed4e16967ff5d6a31754ea673d0034c6bb3",
+    "baseDigest": "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4",
+    "candidateDigest": "4c3e3554b917a8c153c4e2fd6e765d469c35c44b579ec3df4ddb5d537dfb43b4",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-label-scan-callsite",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "ef3fc90c8f8245ade483b1319504b7e05761870e686ec771fc8ca4a32ee8b22b",
+    "baseDigest": "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813",
+    "candidateDigest": "b08ea209275519942554cacd405379991ce408f101bb1f47e7b5587bd4e00813",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-label-scan-method",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "a4ab145c29a44c9c73521f428689997a587818dcf860d28614d2483aeb853895",
+    "baseDigest": "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241",
+    "candidateDigest": "99e72de3708125c3712e8a0e8ee5bbb8aec67bac1a104959bff4b51c4c244241",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-label-scan-constant",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "36eb396d87edf3494167d7a2b05232be8a9109fa8c7cb3f6445974175bb91328",
+    "baseDigest": "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db",
+    "candidateDigest": "0333b582aaa1e2078454000d844b0cb46c05fdccdb19e9dd9e9a8c76bf3d29db",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-label-scan-field",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+    "baseDigest": "5f334de9f565cf9b4e1419cd509a95341ff582bebfab2cd51bb66375a3b14899",
+    "candidateDigest": "5f334de9f565cf9b4e1419cd509a95341ff582bebfab2cd51bb66375a3b14899",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-all-nodes",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+    "baseDigest": "d970e9a364104e9424bd1db998d805a9c706a0747bee0b12032502e093c4a88a",
+    "candidateDigest": "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-equality",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "c43182394f50246b2e9c89319e8f166065491b976966d716f9b2b7c879bff260",
+    "baseDigest": "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521",
+    "candidateDigest": "a3e45c4cb769726835dd5818bc112e13668d9a00b0debcbc73d81e54000dd521",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-inequality",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "220a040b7e8b1d70fb8f38185f0fd7bfa838ae906f8d945af4ba3398630c684d",
+    "baseDigest": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+    "candidateDigest": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-id-lookup",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "169f3d9eab075cdc2f38aecaa86a06cc37422b307cd16ad20247ec1a86a870a7",
+    "baseDigest": "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6",
+    "candidateDigest": "ff67961c60f35d835568256b882974c02f12312cc95aec950d919282587f0af6",
+    "baseRows": 1,
+    "candidateRows": 1
+  },
+  {
+    "benchmark": "rust.fixture64.shape-in-list",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "ee43ec33151492de0a432600d1b22750f534e6a2940f235a15840b5887a57e80",
+    "baseDigest": "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94",
+    "candidateDigest": "11ca0bac7ec82cf5a796842efbe0dd2e2bcb09cd4537fb31c6e8b4c812b2dc94",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-null-check",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "7600ed77337a5ce0060e5030848b905cdd6a0d7970b25942cca4592fc0c66300",
+    "baseDigest": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+    "candidateDigest": "35978460009380a9f275e66134c5e4013692c4af4935210746dfbac6ba99cc05",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-regex",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "dbb2006f6ec42c960f06b6bf16cad9d7a4f2f93c0b21153799485e12e35fea95",
+    "baseDigest": "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9",
+    "candidateDigest": "0dfac0769bf0050b6e84e2ed0d2c6aea7da633ec9d446ad67a4f111fb5d947e9",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-one-hop",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "fe48eaa25cafe412b60316026609aa73a6035358ba4fa88cb578f55c86ceda5b",
+    "baseDigest": "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8",
+    "candidateDigest": "1e2339e4baa2a762e6e523469278f292a00b272c84340efcd567196e327630e8",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-one-hop-typed",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "bf6f5042d8cf8a082930407b2eb4ec09b8d5008ddbb9a0ed6df5444317fb4a1f",
+    "baseDigest": "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053",
+    "candidateDigest": "f03d60a48b7f7590553b205073011b9c87f508b209580a338381ce0a608dc053",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-two-hop",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "2fc55556115e8aa917aa4638706649cb645453c06d0c17f0ac39350b60202d23",
+    "baseDigest": "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59",
+    "candidateDigest": "96504878cff79f22a0318fe1c8e6da870535f0592bee3c593c57eb9fb44b4d59",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-incoming",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "7fa551be7b95270423109861b0cb77b358417bc9cd734eaaf13006d64604a40d",
+    "baseDigest": "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1",
+    "candidateDigest": "98b0c96c63849091b5dd0f2399d3a931bfa05fbbe787629041c42e90eb8b22f1",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-var-length",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "bbca77bd13a3c89dd634a3c4818730ffc1d4a1203bcfce37bfcbec4764dae24c",
+    "baseDigest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+    "candidateDigest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-path",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "3f07a6904220fc88bcaad6d93152d16f3c10a6f6bf7ad7f1f718f3ca03e93ddb",
+    "baseDigest": "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b",
+    "candidateDigest": "29302046aeaf6dfcaadbfd0d6e9923f6e2a6c99773efc6b8b79a9eba097b9b9b",
+    "baseRows": 50,
+    "candidateRows": 50
+  },
+  {
+    "benchmark": "rust.fixture64.shape-traverse-filtered",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "115eee701b50832840734f1d17e85159c34e2915ffa3c9af247908157496598d",
+    "baseDigest": "db49759a02623072ab0fd4e5c980b8bd51fbd8c78d0c889c127126b33d0e4074",
+    "candidateDigest": "db49759a02623072ab0fd4e5c980b8bd51fbd8c78d0c889c127126b33d0e4074",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-count-all",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "586fa3f5cb7871402ce88be4dc31639cdd552857589b6a998c8be6002b7d0db5",
+    "baseDigest": "d379a18c9a59c8afab70f4e8b889e84a1863b6e2dc74f29b552023b0cbc26969",
+    "candidateDigest": "d379a18c9a59c8afab70f4e8b889e84a1863b6e2dc74f29b552023b0cbc26969",
+    "baseRows": 1,
+    "candidateRows": 1
+  },
+  {
+    "benchmark": "rust.fixture64.shape-count-label",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "c610b36404891c86d63224dcdc151687ef70f50828493c03013ffe046c487ddc",
+    "baseDigest": "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62",
+    "candidateDigest": "86c04aa6b72bcbeae689190f5076f9139ea0c479fcdcba03629a0a078f2b1f62",
+    "baseRows": 1,
+    "candidateRows": 1
+  },
+  {
+    "benchmark": "rust.fixture64.shape-group-count",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "7f71983908cab00265b8280df5a69a87e94aa2a7fa926d2798c99bcb25fea9a8",
+    "baseDigest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+    "candidateDigest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+    "baseRows": 20,
+    "candidateRows": 20
+  },
+  {
+    "benchmark": "rust.fixture64.shape-distinct",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "d61e543f7fc136a73d16b035c114634cea576eb2e81cb676de247132f16562ea",
+    "baseDigest": "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4",
+    "candidateDigest": "14a33c734a703069a77080d733418a23fbe1b6bff6a6bccc7c5444e9e9618ba4",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-collect",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "920a011a3f0fd70b86c8e96978ec8828fd67b07c4b21f46b1ae0dce3adac6261",
+    "baseDigest": "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+    "candidateDigest": "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+    "baseRows": 1,
+    "candidateRows": 1
+  },
+  {
+    "benchmark": "rust.fixture64.shape-count-traversal",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "0c0eb528ce456f3b8a996edfec5f51ada004216adf66e0261d67696a81ec6801",
+    "baseDigest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3",
+    "candidateDigest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3",
+    "baseRows": 1,
+    "candidateRows": 1
+  },
+  {
+    "benchmark": "rust.fixture64.shape-order-by",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "88cb04da13ed7fcb5a8eb263eda499cad1bedb7808f5cf3eef0d6826e0e29744",
+    "baseDigest": "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+    "candidateDigest": "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-order-by-desc",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "5027d879d533d800096e2d9fbaeecb7a409f5a8744a27401dc97f82cb2f17ad0",
+    "baseDigest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+    "candidateDigest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-skip",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "2a7f57057d9f6182cd0b65fc3ced3f7a4bb1952cffcc074bae52f551c4abc680",
+    "baseDigest": "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b",
+    "candidateDigest": "f298adbb48b11632ca4165bd570f8dd71ba7c15ad56bc33f24281cec335f0a1b",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-function-calls",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "7cc12fdd157088ab19b33a3d6b3c735b0e990668e9eb535388edf239f0885fcc",
+    "baseDigest": "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5",
+    "candidateDigest": "ec6831a04511289ea9cc4fc10458e93b9cec3611f3d1e5bc81c34eb55cdd54d5",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-case-expr",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "a239e4bd5ce026f72684b26c46cb4c9e101cc800ef31fe48a5fab4b1cb73509a",
+    "baseDigest": "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2",
+    "candidateDigest": "690044fc509f6770e5e0ac2a6ee876d75f20ffa1b6bd184c653fe232d92408f2",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-coalesce",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "059f17f974f39b2c1bc00f1fe3782592e0b67f83a2b38f29a25b366ef431022e",
+    "baseDigest": "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1",
+    "candidateDigest": "759336d1863731e4db4f90c796289cc3475e57e23b1edabb5bf419325ad002a1",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-labels-fn",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "958b0c85ff86238ef3cbba0891181b49bc9b6782936597d4e746d02d87d11917",
+    "baseDigest": "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c",
+    "candidateDigest": "8e60a3b10577ce1e14d20885f32c16de588475b8eb0154e6493471711114693c",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-with-filter",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "1100d048a0d279d87643fd15810de59ad71187854262f28e9a14571dbe7ac26d",
+    "baseDigest": "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+    "candidateDigest": "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+    "baseRows": 200,
+    "candidateRows": 200
+  },
+  {
+    "benchmark": "rust.fixture64.shape-with-aggregate",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "be7b22e552251ee59d665d048dc80bab6a3beb13634f31a375dffc0ba04b1d32",
+    "baseDigest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+    "candidateDigest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+    "baseRows": 50,
+    "candidateRows": 50
+  },
+  {
+    "benchmark": "rust.fixture64.shape-cartesian",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "c4e256ff0ca5177f28608ede80ddceb5090cd36052a228756ee7b3e3c124009d",
+    "baseDigest": "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6",
+    "candidateDigest": "048f7d54ac9b351386d3d5771017e09908bca6c4bdb0a59f1144efd98af686a6",
+    "baseRows": 50,
+    "candidateRows": 50
+  },
+  {
+    "benchmark": "rust.fixture64.shape-union",
+    "params": {
+      "selectivity": "broad"
+    },
+    "querySha256": "a61e7b84e438e36530b5357b395bb8144e49a95aa0dc50e1f0e1b66844d441f8",
+    "baseDigest": "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852",
+    "candidateDigest": "b9d03fc6d73ea9182e717c78fed119008ed272b347fe51b9817aafa02d286852",
+    "baseRows": 101,
+    "candidateRows": 101
+  }
+]
