@@ -221,10 +221,11 @@ jobs:
   # ---- The Apple frontend ----
   # graphite-frontend-apple is a Swift binary (frontend/apple). It is built natively per
   # target: the two macOS architectures on their own runners, Linux x86_64 in the
-  # swift:6.1 image with the Swift standard library linked statically so the binary runs
+  # swift:6.1.3 image with the Swift standard library linked statically so the binary runs
   # wherever the Swift toolchain it drives is installed. `graphite frontend install apple`
   # downloads the tarball for its host, verifies the .sha256 next to it and unpacks the
-  # one executable.
+  # one executable. Compiler versions match the real-corpus gate and calibration:
+  # Xcode 16.4 on macOS 15 and Swift 6.1.3 on Linux.
   apple-frontend:
     needs: validate
     permissions:
@@ -238,18 +239,23 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-15
             target: aarch64-apple-darwin
           - os: macos-15-intel
             target: x86_64-apple-darwin
           - os: ubuntu-latest
             target: x86_64-unknown-linux-gnu
-            container: swift:6.1
+            container: swift:6.1.3
             static: --static-swift-stdlib
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Select the frontend compiler
+      if: runner.os == 'macOS'
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.4'
     - name: Install what the swift image lacks
       if: matrix.container != ''
       run: apt-get update -q && apt-get install -y -q --no-install-recommends ca-certificates
@@ -474,7 +480,7 @@ jobs:
           - os: ubuntu-latest
             cli-target: x86_64-unknown-linux-musl
             apple-target: x86_64-unknown-linux-gnu
-            container: swift:6.1
+            container: swift:6.1.3
     env:
       RELEASE_VERSION: ${{ needs.validate.outputs.version }}
     steps:

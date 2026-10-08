@@ -3649,8 +3649,8 @@ test("pull-request workflow runs the Apple frontend gate on the pinned corpus an
     assert.match(job, /- component: apple-frontend-large\n\s+manifest: apple-frontend-corpus-large\.json\n\s+pin: APPLE_FRONTEND_TRANSITION_LARGE_CORPUS_SHA256\n\s+repetitions: 3/);
     assert.match(job, /fail-fast: false/);
     assert.match(job, /actions\/setup-node@v4/);
-    assert.match(job, /candidate\/frontend\/apple\/swift\.sh build -c release/);
-    assert.match(job, /base\/frontend\/apple\/swift\.sh build -c release/);
+    assert.match(job, /candidate\/frontend\/apple\/swift\.sh build -c release --static-swift-stdlib/);
+    assert.match(job, /base\/frontend\/apple\/swift\.sh build -c release --static-swift-stdlib/);
     // The harness and the corpus pin are base-owned; the candidate copies stand in, pinned to their hashes, until main carries them.
     assert.match(job, /HARNESS=base\/backend\/bench\/apple-frontend\.py/);
     assert.match(job, /CORPUS="base\/backend\/bench\/\$\{MANIFEST\}"/);

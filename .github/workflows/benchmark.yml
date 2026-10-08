@@ -3338,9 +3338,10 @@ jobs:
         path: |
           base/frontend/apple/.build
           candidate/frontend/apple/.build
-        key: apple-frontend-gate-swiftpm-6.1-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
-        restore-keys: apple-frontend-gate-swiftpm-6.1-
+        key: apple-frontend-gate-swiftpm-6.1.3-static-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
+        restore-keys: apple-frontend-gate-swiftpm-6.1.3-static-
 
+    # Match the release Linux linkage (--static-swift-stdlib) as well as its compiler.
     # The frontends under test are the executables a release ships, one per revision; a base
     # revision from before the frontend landed has none, and the candidate is then measured
     # against the corpus ceilings alone.
@@ -3348,10 +3349,10 @@ jobs:
       shell: bash
       run: |
         set -euo pipefail
-        candidate/frontend/apple/swift.sh build -c release
+        candidate/frontend/apple/swift.sh build -c release --static-swift-stdlib
         candidate/frontend/apple/.build/release/graphite-frontend-apple version
         if [[ -f base/frontend/apple/Package.swift ]]; then
-          base/frontend/apple/swift.sh build -c release
+          base/frontend/apple/swift.sh build -c release --static-swift-stdlib
           base/frontend/apple/.build/release/graphite-frontend-apple version
         else
           echo "::notice::The base revision carries no Apple frontend; measuring against the corpus ceilings"
@@ -3414,7 +3415,7 @@ jobs:
         jq -e '.schema == "graphite-apple-frontend-corpus-v2" and .kind == "real-source" and .generator == null and .input == "package" and (.commit | test("^[0-9a-f]{40}$"))' "${CORPUS}" >/dev/null
         echo "commit=$(jq -r .commit "${CORPUS}")" >> "${GITHUB_OUTPUT}"
         echo "repository=$(jq -r .repository "${CORPUS}")" >> "${GITHUB_OUTPUT}"
-        echo "cache-key=apple-frontend-real-corpus-v2-swift6.1-$(sha256sum "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
+        echo "cache-key=apple-frontend-real-corpus-v2-swift6.1.3-$(sha256sum "${CORPUS}" | cut -c1-16)" >> "${GITHUB_OUTPUT}"
         if jq -e '.dependencyLock' "${CORPUS}" >/dev/null; then
           LOCKFILE="$(dirname "${CORPUS}")/$(jq -r .dependencyLock.path "${CORPUS}")"
           test "$(sha256sum "${LOCKFILE}" | cut -d' ' -f1)" = "$(jq -r .dependencyLock.sha256 "${CORPUS}")"
@@ -3559,8 +3560,8 @@ jobs:
         path: |
           base/frontend/apple/.build
           candidate/frontend/apple/.build
-        key: apple-frontend-gate-swiftpm-${{ runner.os }}-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
-        restore-keys: apple-frontend-gate-swiftpm-${{ runner.os }}-
+        key: apple-frontend-gate-swiftpm-xcode16.4-${{ runner.os }}-${{ hashFiles('candidate/frontend/apple/Package.resolved', 'base/frontend/apple/Package.resolved') }}
+        restore-keys: apple-frontend-gate-swiftpm-xcode16.4-${{ runner.os }}-
 
     - name: Build the base and candidate frontends
       shell: bash
