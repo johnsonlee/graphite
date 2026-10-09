@@ -66,21 +66,57 @@ class ArtifactAuditTests(unittest.TestCase):
     def write(self, path, value):
         path.write_text(json.dumps(value))
 
-    def run_audit(self):
+    def run_audit(self, require_construction=False):
         with patch.object(auditor, 'source_inventory', return_value=self.source), \
              patch('subprocess.Popen', side_effect=AssertionError('no build or server allowed')):
             return auditor.audit(self.out / 'packet.json', self.checkout, 'b' * 40,
-                                 'candidate', self.inputs_path, self.tools)
+                                 'candidate', self.inputs_path, self.tools, require_construction)
 
     def test_complete_raw_artifacts_are_verified_without_claiming_query_or_semantics(self):
         result = self.run_audit()
         self.assertEqual(auditor.STATUS, result['status'])
         self.assertEqual(len(result['graphs']), 64)
         self.assertEqual(result['phaseCount'], 7)
+        self.assertNotIn('constructionResources', result)
         self.assertEqual(result['binarySha256'], auditor.common.sha(self.out / 'runtime/graphite'))
         for key in ('readinessVerified', 'queryCorrectnessVerified', 'completeSemanticEquivalence',
                     'performanceAcceptance', 'acceptanceEligible'):
             self.assertIs(result[key], False)
+
+    def construction_capture(self):
+        phase=self.packet['phases'][5];directory=self.out/'prepare-real64'
+        self.assertEqual('prepare-real64',phase['name'])
+        time_path=directory/'time-v.log';time_path.write_text(fixtures.ConstructionResourceTests.RAW)
+        phase['launchArgv']=['/usr/bin/time','-v','-o',str(time_path),'--',*phase['argv']]
+        phase['environmentOverrides']={'LC_ALL':'C'}
+        phase['constructionResources']=fixtures.producer.construction_resources(time_path,0)
+        phase['logs'][str(time_path)]=auditor.common.sha(time_path)
+        owner=auditor.common.read(directory/'owner.json');owner['argv']=phase['launchArgv'];self.write(directory/'owner.json',owner)
+        self.write(directory/'record.json',phase)
+        self.packet['phaseReceipts'][str(directory/'record.json')]=auditor.common.sha(directory/'record.json')
+        version=self.out/'construction-time-version.txt';version.write_text('time (GNU Time) test-only\n')
+        self.packet['performanceMeasurement']=True
+        self.packet['constructionMeasurement']={'tool':'/usr/bin/time','versionFile':str(version),'scope':auditor.CONSTRUCTION_SCOPE,'performanceAcceptance':False}
+        pins=auditor.common.read(self.out/'inputs-before.json');pins.update({'/usr/bin/time':auditor.common.sha('/usr/bin/time'),str(version):auditor.common.sha(version)})
+        self.write(self.out/'inputs-before.json',pins);self.write(self.out/'packet.json',self.packet)
+
+    def test_explicit_required_capture_rejects_old_unmeasured_packet(self):
+        with self.assertRaisesRegex(ValueError,'required real64 construction resources missing'):self.run_audit(True)
+
+    def test_complete_captured_packet_retains_resources_without_acceptance(self):
+        self.construction_capture();result=self.run_audit(True)
+        self.assertEqual(63.5,result['constructionResources']['totalCpuSeconds'])
+        self.assertEqual(2097152,result['constructionResources']['peakRssBytes'])
+        self.assertEqual(64,len(result['graphs']));self.assertFalse(result['acceptanceEligible']);self.assertFalse(result['performanceAcceptance'])
+        self.assertIn(str(self.out/'prepare-real64/time-v.log'),result['pins'])
+        self.assertIn('/usr/bin/time',result['pins'])
+
+    def test_capture_tool_version_and_measurement_flag_cannot_be_forged(self):
+        self.construction_capture();self.packet['performanceMeasurement']=False;self.write(self.out/'packet.json',self.packet)
+        with self.assertRaisesRegex(ValueError,'explicit construction measurement scope'):self.run_audit(True)
+        self.packet['performanceMeasurement']=True;self.write(self.out/'packet.json',self.packet)
+        (self.out/'construction-time-version.txt').write_text('time other implementation')
+        with self.assertRaises(ValueError):self.run_audit(True)
 
     def test_runtime_corruption_despite_producer_pass_is_rejected(self):
         (self.out / 'runtime/graphite').write_text('different runtime')
@@ -165,6 +201,36 @@ class ArtifactAuditTests(unittest.TestCase):
         with patch.object(auditor, 'verify_pins', side_effect=changed):
             with self.assertRaisesRegex(ValueError, 'pinned input changed'):
                 self.run_audit()
+
+
+class ConstructionAuditTests(unittest.TestCase):
+    def phase(self):
+        case=fixtures.ConstructionResourceTests();self.addCleanup(case.doCleanups)
+        return case.resource_phase(case.RAW)
+
+    def test_independent_raw_resource_receipt_verified(self):
+        record,root,argv,_=self.phase()
+        self.assertEqual(record,auditor.check_phase(root/'prepare-real64/record.json',argv,root,True))
+        with self.assertRaises(ValueError):auditor.check_phase(root/'prepare-real64/record.json',argv,root,False)
+
+    def test_changed_summary_or_child_command_rejected(self):
+        for kind in ('cpu','command','locale','rss'):
+            with self.subTest(kind=kind):
+                record,root,argv,_=self.phase();path=root/'prepare-real64/record.json'
+                if kind=='cpu':record['constructionResources']['totalCpuSeconds']+=1
+                elif kind=='command':record['launchArgv'][-1]='other-corpus'
+                elif kind=='locale':record['environmentOverrides']={'LC_ALL':'foreign'}
+                else:record['constructionResources']['peakRssBytes']*=1024
+                path.write_text(json.dumps(record))
+                with self.assertRaises(ValueError):auditor.check_phase(path,argv,root,True)
+
+    def test_missing_nonzero_or_changed_raw_time_rejected(self):
+        for kind in ('missing','exit','changed'):
+            with self.subTest(kind=kind):
+                _,root,argv,_=self.phase();path=root/'prepare-real64/time-v.log'
+                if kind=='missing':path.unlink()
+                else:path.write_text(path.read_text().replace('Exit status: 0','Exit status: 2') if kind=='exit' else path.read_text().replace('61.20','71.20'))
+                with self.assertRaises((ValueError,OSError)):auditor.check_phase(root/'prepare-real64/record.json',argv,root,True)
 
 
 if __name__ == '__main__':

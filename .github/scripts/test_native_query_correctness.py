@@ -98,6 +98,20 @@ class QueryCorrectnessTests(unittest.TestCase):
         self.assertFalse(audited['performanceAcceptance'])
         self.assertFalse(audited['completeSemanticEquivalence'])
 
+    def test_measured_construction_handoff_preserves_all39_correctness_requests(self):
+        self.fixture.construction_capture()
+        audited_artifacts=self.fixture.run_audit(True)
+        self.fixture.write(self.artifact_path,audited_artifacts)
+        self.out=self.root/'queries-with-construction';self.out.mkdir()
+        self.plan=runner.prepare(self.artifact_path,self.fixture.inputs_path,'b'*40,'candidate',self.out,22840)
+        result=self.run_queries();audited=raw_audit.audit(self.out)
+        self.assertEqual(39,len(result['responses']))
+        self.assertEqual([c['id'] for c in self.plan['cases']],[c['case'] for c in audited['cases']])
+        self.assertEqual(audited_artifacts['constructionResources']['rawSha256'],
+                         self.plan['pins'][str(self.fixture.out/'prepare-real64/time-v.log')])
+        self.assertFalse(self.plan['performanceAcceptance']);self.assertFalse(audited['performanceAcceptance'])
+        self.assertFalse(audited['completeSemanticEquivalence'])
+
     def test_wrong_first_body_is_retained_and_stops_the_cohort(self):
         result = self.run_queries(failed_case=self.plan['cases'][0]['id'])
         self.assertEqual(result['status'], 'FAIL')

@@ -19,6 +19,8 @@ class AuditedArmTests(unittest.TestCase):
         self.addCleanup(self.fixture.doCleanups)
         q = self.fixture
         self.root = q.fixture.out
+        if getattr(self, 'construction_capture', False):
+            q.fixture.construction_capture()
         q.artifact_path = self.root / 'artifact-audit.json'
         q.fixture.write(q.artifact_path, q.fixture.run_audit())
         q.out = self.root / 'query-correctness'
@@ -69,6 +71,19 @@ class AuditedArmTests(unittest.TestCase):
         self.source_inputs = dict(self.source_inputs, sha256='f' * 64)
         with self.assertRaisesRegex(ValueError, 'same source input manifest'):
             self.read_arm()
+
+
+class CapturedConstructionArmTests(AuditedArmTests):
+    construction_capture = True
+
+    def test_resource_pins_survive_assembly_without_acceptance(self):
+        arm,pins,_=self.read_arm()
+        path=self.root/'prepare-real64/time-v.log'
+        self.assertEqual(bundle.common.sha(path),pins[str(path)])
+        artifact=bundle.common.read(self.root/'artifact-audit.json')
+        self.assertEqual(63.5,artifact['constructionResources']['totalCpuSeconds'])
+        self.assertFalse(artifact['performanceAcceptance']);self.assertFalse(artifact['acceptanceEligible'])
+        self.assertEqual(39,len(arm['cases']));self.assertEqual(64,len(arm['graphs']))
 
 
 class BundleAssemblyTests(unittest.TestCase):

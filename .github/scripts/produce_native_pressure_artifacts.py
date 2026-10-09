@@ -8,6 +8,8 @@ and pinned input JARs. No candidate graph is reused as an accepted-baseline grap
 import argparse
 import hashlib
 import json
+import math
+import re
 import os
 from pathlib import Path
 import shutil
@@ -24,6 +26,8 @@ CORPORA = ('android', 'tika', 'hive', 'kotlin-compiler')
 PROPERTIES = ('android.jar.path', 'tika.jar.path', 'hive.jar.path', 'kotlin.compiler.jar.path')
 SCHEMA = 'graphite.native-artifact-producer.v1'
 ARTIFACTS_READY = 'ARTIFACTS_COMPLETE_INDEPENDENT_PROOFS_PENDING'
+CONSTRUCTION_SCOPE = 'fresh JVM through 64 saved graphs, persisted indexes, manifests, embedded readback validation and clean writer exit'
+
 
 
 def require(condition, message):
@@ -110,16 +114,47 @@ def cleanup_process(proc, expected_live=False):
             signal.signal(sig, handler)
 
 
-def phase(name, argv, cwd, env, out, timeout):
+def construction_resources(path, exit_code):
+    # Reuse the existing GNU/BSD resource decoder; this opt-in path is GNU/Linux only.
+    raw = Path(path).read_text()
+    require('Elapsed (wall clock) time (h:mm:ss or m:ss):' in raw, 'GNU construction resource format')
+    statuses = re.findall(r'^\s*Exit status:\s*([0-9]+)\s*$', raw, re.M)
+    require(statuses == [str(exit_code)], 'construction resource exit status')
+    for label in ('User time (seconds)', 'System time (seconds)',
+                  'Elapsed (wall clock) time (h:mm:ss or m:ss)', 'Maximum resident set size (kbytes)'):
+        require(sum(line.strip().startswith(label + ':') for line in raw.splitlines()) == 1,
+                'unique construction resource field: ' + label)
+    require(re.search(r'^\s*Maximum resident set size \(kbytes\):\s*[0-9]+\s*$', raw, re.M), 'integer GNU time peak RSS')
+    value = common.lifecycle_time(path)
+    require(all(type(value[key]) in (int, float) and math.isfinite(value[key]) and value[key] >= 0
+                for key in ('realSeconds', 'userSeconds', 'systemSeconds')), 'finite nonnegative construction resources')
+    require(type(value['peakRssBytes']) is int and value['peakRssBytes'] > 0, 'positive construction peak process RSS')
+    value.update(scope=CONSTRUCTION_SCOPE, totalCpuSeconds=value['userSeconds'] + value['systemSeconds'],
+                 graphCount=64, heapMaxBytes=4 * 1024 ** 3, activeProcessorCount=4,
+                 cpuAccounting='GNU time waited JVM and its waited-for descendants; all JVM threads included',
+                 rssAccounting='GNU time maximum process RSS; not a sum of concurrent process RSS',
+                 performanceAcceptance=False)
+    return value
+
+
+def phase(name, argv, cwd, env, out, timeout, construction_time=None):
     directory = out / name
     directory.mkdir()
     record = {'name': name, 'argv': argv, 'cwd': str(cwd), 'timeoutSeconds': timeout, 'errors': []}
     proc = None
+    launch_argv = argv
+    launch_env = env
+    if construction_time is not None:
+        require(name == 'prepare-real64' and '-Xmx4g' in argv and '-XX:ActiveProcessorCount=4' in argv,
+                'construction capture only for bounded real64 writer')
+        launch_argv = [construction_time, '-v', '-o', str(directory / 'time-v.log'), '--', *argv]
+        launch_env = {**env, 'LC_ALL': 'C'}
+        record.update(launchArgv=launch_argv, environmentOverrides={'LC_ALL': 'C'})
     try:
         with common.deferred_signals():
             with (directory / 'stdout.log').open('x') as stdout, (directory / 'stderr.log').open('x') as stderr:
-                proc = subprocess.Popen(argv, cwd=cwd, env=env, stdout=stdout, stderr=stderr, start_new_session=True)
-            common.save(directory / 'owner.json', {'runnerPid': os.getpid(), 'group': proc.pid, 'argv': argv})
+                proc = subprocess.Popen(launch_argv, cwd=cwd, env=launch_env, stdout=stdout, stderr=stderr, start_new_session=True)
+            common.save(directory / 'owner.json', {'runnerPid': os.getpid(), 'group': proc.pid, 'argv': launch_argv})
         record['exit'] = proc.wait(timeout=timeout)
         require(record['exit'] == 0, name + ' command failed')
     except BaseException as error:
@@ -130,6 +165,12 @@ def phase(name, argv, cwd, env, out, timeout):
             require(not record['cleanup']['after'] and not record['cleanup']['errors'], 'phase cleanup')
         except BaseException as error:
             record['errors'].append('cleanup: ' + repr(error))
+        if construction_time is not None:
+            try:
+                require('exit' in record, 'construction process did not complete')
+                record['constructionResources'] = construction_resources(directory / 'time-v.log', record['exit'])
+            except BaseException as error:
+                record['errors'].append('construction metrics: ' + repr(error))
         record['status'] = 'FAIL' if record['errors'] else 'PASS'
         record['logs'] = {str(p): common.sha(p) for p in directory.glob('*.log')}
         common.save(directory / 'record.json', record)
@@ -219,7 +260,7 @@ def produce(args):
               'independentlyAudited': False, 'acceptanceEligible': False,
               'unavailable': ['independent producer audit', 'complete cross-arm semantic-equivalence authority',
                               'complete native readiness and independent query-response oracles'],
-              'performanceMeasurement': False}
+              'performanceMeasurement': bool(getattr(args, 'construction_metrics', False))}
     before = source_before = generated = runtime_pins = config_before = env = None
     original_handlers = {}
     def interrupted(signum, frame):
@@ -241,6 +282,18 @@ def produce(args):
             path = jdk / relative
             require(path.is_file() and not path.is_symlink(), 'JDK identity file missing: ' + relative)
             controls[str(path)] = common.sha(path)
+        construction_time = None
+        if getattr(args, 'construction_metrics', False):
+            require(sys.platform == 'linux', 'construction capture requires GNU time on Linux')
+            construction_time = '/usr/bin/time'
+            require(Path(construction_time).is_file(), 'GNU time missing')
+            version = subprocess.check_output([construction_time, '--version'], env={**common.clean_env(), 'LC_ALL':'C'}, timeout=30).decode()
+            require(version.startswith('time (GNU Time)'), 'GNU time implementation required')
+            version_path = out / 'construction-time-version.txt'; version_path.write_text(version)
+            controls[construction_time] = common.sha(construction_time)
+            controls[str(version_path)] = common.sha(version_path)
+            record['constructionMeasurement'] = {'tool': construction_time, 'versionFile': str(version_path),
+                                                'scope': CONSTRUCTION_SCOPE, 'performanceAcceptance': False}
         env = build_environment(checkout, out, tools)
         config_before = configuration_inventory(checkout, env)
         record['configurationBefore'] = config_before
@@ -248,7 +301,8 @@ def produce(args):
         before = {**before, **controls}
         common.save(out / 'inputs-before.json', before)
         def run(name, argv, timeout=1800):
-            result = phase(name, argv, checkout, env, out, timeout)
+            options = {'construction_time': construction_time} if construction_time and name == 'prepare-real64' else {}
+            result = phase(name, argv, checkout, env, out, timeout, **options)
             record['phases'].append(result)
             temporary = out / 'progress.json.tmp'
             temporary.write_text(json.dumps(record, indent=2) + '\n')
@@ -355,6 +409,7 @@ def main():
         parser.add_argument('--' + name, required=True)
     parser.add_argument('--revision', required=True)
     parser.add_argument('--role', choices=('accepted-baseline', 'parent', 'candidate'), required=True)
+    parser.add_argument('--construction-metrics', action='store_true', help='capture full real64 preparation resources using GNU time on Linux')
     args = parser.parse_args()
     value = produce(args)
     print(json.dumps({'status': value['status'], 'output': args.output, 'acceptanceEligible': False,

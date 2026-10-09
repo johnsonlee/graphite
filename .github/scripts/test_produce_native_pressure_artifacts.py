@@ -212,7 +212,7 @@ class ProducerTests(unittest.TestCase):
 
 
 class ArtifactCompositionTests(unittest.TestCase):
-    def execute(self, root, drift=False):
+    def execute(self, root, drift=False, construction=False):
         checkout=root/'checkout';checkout.mkdir();(checkout/'.git').mkdir();(checkout/'source').write_text('source')
         out=root/'out';tools=root/'tools';tools.mkdir()
         for name in ('cargo','rustc'):(tools/name).write_text(name)
@@ -223,14 +223,15 @@ class ArtifactCompositionTests(unittest.TestCase):
             jar=root/(corpus+'.jar');jar.write_text(corpus)
             jars.append({'corpus':corpus,'path':str(jar),'sha256':producer.common.sha(jar)})
         inputs={'jars':jars};args=SimpleNamespace(checkout=str(checkout),output=str(out),revision='b'*40,
-            role='candidate',fixture_manifest='fixture.json',java=str(jdk/'bin/java'),cargo=str(tools/'cargo'),rustc=str(tools/'rustc'))
-        calls=[]
+            role='candidate',fixture_manifest='fixture.json',java=str(jdk/'bin/java'),cargo=str(tools/'cargo'),rustc=str(tools/'rustc'),construction_metrics=construction)
+        calls=[];self.capture_options={}
         def git(path,*args):
             if args[0]=='rev-parse':return 'b'*40
             if args[0]=='status':return ''
             if args[0]=='ls-files':return 'source'
             self.fail('unexpected git operation')
-        def phase(name,argv,cwd,env,directory,timeout):
+        def phase(name,argv,cwd,env,directory,timeout,**options):
+            self.capture_options[name]=options
             calls.append((name,argv,dict(env)));phase_dir=out/name;phase_dir.mkdir()
             (phase_dir/'stdout.log').write_text('host: x86_64-unknown-linux-gnu\n' if name=='rustc-version' else name+'\n')
             if name=='build-jvm':
@@ -249,7 +250,7 @@ class ArtifactCompositionTests(unittest.TestCase):
             if name=='verify-real64' and drift:
                 (out/'native-target/x86_64-unknown-linux-gnu/release/graphite').write_text('changed after copy')
             return {'name':name,'status':'PASS','argv':argv,'errors':[],'cleanup':{'after':[],'errors':[]}}
-        with patch.object(producer,'git',side_effect=git),patch.object(producer,'verify_inputs',return_value=(inputs,{})),patch.object(producer,'phase',side_effect=phase),patch('subprocess.Popen',side_effect=AssertionError('no child')):
+        with patch.object(producer,'git',side_effect=git),patch.object(producer,'verify_inputs',return_value=(inputs,{})),patch.object(producer,'phase',side_effect=phase),patch.object(producer.sys,'platform','linux'),patch.object(producer.subprocess,'check_output',return_value=b'time (GNU Time) test-only\n'),patch('subprocess.Popen',side_effect=AssertionError('no child')):
             result=producer.produce(args)
         return result,calls,out
 
@@ -271,11 +272,89 @@ class ArtifactCompositionTests(unittest.TestCase):
             self.assertEqual('b'*40,manifest['writerRevision']);self.assertEqual(4,len(manifest['inputJars']))
             self.assertEqual(result,json.loads((out/'packet.json').read_text()))
 
+    def test_optional_construction_capture_only_targets_own_64_writer(self):
+        with tempfile.TemporaryDirectory() as d:
+            result,calls,out=self.execute(Path(d).resolve(),construction=True)
+            self.assertEqual(producer.ARTIFACTS_READY,result['status']);self.assertTrue(result['performanceMeasurement'])
+            self.assertFalse(result['acceptanceEligible'])
+            self.assertEqual({'prepare-real64':{'construction_time':'/usr/bin/time'}}, {k:v for k,v in self.capture_options.items() if v})
+            pins=json.loads((out/'inputs-before.json').read_text())
+            self.assertEqual(producer.common.sha('/usr/bin/time'),pins['/usr/bin/time'])
+            self.assertEqual(producer.common.sha(out/'construction-time-version.txt'),pins[str(out/'construction-time-version.txt')])
+            self.assertEqual(producer.CONSTRUCTION_SCOPE,result['constructionMeasurement']['scope'])
+
     def test_changed_original_binary_prevents_artifact_success(self):
         with tempfile.TemporaryDirectory() as d:
             result,_,_=self.execute(Path(d).resolve(),drift=True)
             self.assertEqual('FAIL',result['status']);self.assertEqual('FAIL',result['finalIdentity']['originalArtifacts'])
             self.assertFalse(result['acceptanceEligible'])
+
+
+class ConstructionResourceTests(unittest.TestCase):
+    RAW = ('User time (seconds): 61.20\nSystem time (seconds): 2.30\n'
+           'Elapsed (wall clock) time (h:mm:ss or m:ss): 1:03.75\n'
+           'Maximum resident set size (kbytes): 2048\nExit status: 0\n')
+
+    def test_resource_units_total_and_boundary(self):
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'time-v.log';path.write_text(self.RAW)
+            value=producer.construction_resources(path,0)
+            self.assertEqual((63.75,61.2,2.3,63.5,2097152),(value['realSeconds'],value['userSeconds'],value['systemSeconds'],value['totalCpuSeconds'],value['peakRssBytes']))
+            self.assertEqual(64,value['graphCount']);self.assertEqual(4*1024**3,value['heapMaxBytes'])
+            self.assertIn('embedded readback validation',value['scope']);self.assertFalse(value['performanceAcceptance'])
+
+    def test_missing_duplicate_malformed_exit_and_rss_rejected(self):
+        cases=[self.RAW.replace('Exit status: 0','Exit status: 1'),self.RAW.replace('User time (seconds): 61.20\n',''),
+               self.RAW+'System time (seconds): 0.1\n',self.RAW.replace('2048','0'),self.RAW.replace('2048','1.5'),
+               self.RAW.replace('61.20','NaN'),self.RAW.replace('1:03.75','garbage')]
+        with tempfile.TemporaryDirectory() as d:
+            path=Path(d)/'time-v.log'
+            for raw in cases:
+                with self.subTest(raw=raw):
+                    path.write_text(raw)
+                    with self.assertRaises(ValueError):producer.construction_resources(path,0)
+
+    def resource_phase(self,raw=None,exit_code=0,timeout=False):
+        temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup);root=Path(temp.name)
+        argv=['java','-Xmx4g','-XX:ActiveProcessorCount=4','Writer',str(root/'graphs')]
+        calls=[]
+        class Process:
+            pid=987654
+            returncode=exit_code
+            def wait(self,timeout):
+                if raw is not None:(root/'prepare-real64/time-v.log').write_text(raw)
+                if should_timeout:raise subprocess.TimeoutExpired('writer',1)
+                return exit_code
+            def poll(self):return exit_code
+        should_timeout=timeout
+        def launch(actual,**kwargs):calls.append((actual,kwargs));return Process()
+        cleanup={'group':987654,'after':[],'errors':[],'exit':exit_code}
+        with patch.object(producer.subprocess,'Popen',side_effect=launch),patch.object(producer,'cleanup_process',return_value=cleanup):
+            try:producer.phase('prepare-real64',argv,root,{'LANG':'foreign'},root,1,construction_time='/usr/bin/time')
+            except ValueError:pass
+        return producer.common.read(root/'prepare-real64/record.json'),root,argv,calls
+
+    def test_only_actual_writer_is_wrapped_and_receipts_bind_raw_time(self):
+        record,root,argv,calls=self.resource_phase(self.RAW)
+        expected=['/usr/bin/time','-v','-o',str(root/'prepare-real64/time-v.log'),'--',*argv]
+        self.assertEqual('PASS',record['status']);self.assertEqual(expected,calls[0][0])
+        self.assertEqual('C',calls[0][1]['env']['LC_ALL']);self.assertTrue(calls[0][1]['start_new_session'])
+        self.assertEqual(argv,record['argv']);self.assertEqual(expected,record['launchArgv'])
+        self.assertEqual(expected,producer.common.read(root/'prepare-real64/owner.json')['argv'])
+        self.assertEqual(record['constructionResources']['rawSha256'],record['logs'][str(root/'prepare-real64/time-v.log')])
+
+    def test_failed_missing_or_timed_out_measurement_never_passes(self):
+        for raw,code,timeout in [(None,0,False),(self.RAW.replace('status: 0','status: 7'),7,False),(self.RAW,0,True)]:
+            with self.subTest(raw=raw,code=code,timeout=timeout):
+                record,_,_,_=self.resource_phase(raw,code,timeout)
+                self.assertEqual('FAIL',record['status']);self.assertTrue(record['errors']);self.assertEqual([],record['cleanup']['after'])
+
+    def test_capture_cannot_wrap_build_or_verification(self):
+        with tempfile.TemporaryDirectory() as d:
+            root=Path(d)
+            for name in ('build-jvm','verify-real64'):
+                with self.assertRaisesRegex(ValueError,'capture only'):
+                    producer.phase(name,['java','-Xmx4g','-XX:ActiveProcessorCount=4'],root,{},root,1,construction_time='/usr/bin/time')
 
 
 if __name__ == '__main__':
