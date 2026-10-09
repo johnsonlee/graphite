@@ -296,6 +296,7 @@ jobs:
           grep -E '^graphite\.declaredTypes\.sha256=[[:xdigit:]]{64}$' "${FIXTURE}/forward.properties"
         done
         cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture
+        cargo test --release --locked -p graphite-cypher declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows -- --nocapture
         cargo test --release --locked -p graphite-cypher java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries -- --nocapture
         cargo test --release --locked -p graphite-cypher java_all_three_wire_formats_preserve_full_properties_and_shared_string_queries -- --nocapture
         GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES=1 cargo test --release --locked -p graphite-storage dual_java_wire_versions_directory_and_packed_summaries_match_all_bindings -- --nocapture
