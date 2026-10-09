@@ -105,3 +105,15 @@ precedence and method lookup still strips this field-only authority. It never
 makes an inference or complete-semantic claim. A future whole64 runner should
 reuse one verified pair authority rather than replaying complete artifact audits
 for each graph; the standalone branch currently favors complete verification.
+
+The fresh formatter binder consumes the independently replayed marker/producer
+pair, checks the exact reviewed renderer expressions, seven adapter method
+boundaries (including both method-descriptor overloads), identity caches and
+unchanged dependency/build definitions, then writes the existing local-array
+source-rule schema. Identical writer aliases must use strict comparison without
+this correction rule. Its source-only report explicitly keeps
+productionFormatterTestsVerified=false and syntheticLocalInferenceOracleClaim=false.
+Production Kotlin test execution and full core/topology/index comparison remain
+mandatory separate authorities. The source contract is a portable textual copy
+of the reviewed source fragments; its historical sourceReview path is provenance
+only and is never loaded by the binder.

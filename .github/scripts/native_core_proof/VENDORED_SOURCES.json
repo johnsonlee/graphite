@@ -144,6 +144,11 @@
     "ExportSerializable.java": {
       "source": "/tmp/graphite-platform-field-class-prep-1/ExportSerializable.java",
       "sha256": "c322dd8096d437eb435ac89df099ce2e535ceccbba9f309bc65d89da7d4a5a87"
+    },
+    "formatter_source_contract.json": {
+      "source": "/tmp/graphite-array-formatter-migration-prep-1/source-invariant.json",
+      "sha256": "9e65802d13161121b504cf54a5bf697f200789a6453cb745e5e346e3fb700905",
+      "transform": "Reviewed exact boundary/formatter/cache/dependency fragments only; no historical statuses or pass claims copied"
     }
   }
 }
