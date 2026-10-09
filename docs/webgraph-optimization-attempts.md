@@ -14585,3 +14585,43 @@ The root independently checked the raw test counts, phase log hashes and exact
 
 Decision: retain the correctness-verified candidate for matched multi-graph
 measurement. No single-graph timing or performance acceptance is claimed.
+
+
+### Attempt193 — reuse one declaration binding for complete Method properties (2026-10-10)
+
+`method_properties` previously performed one binding existence lookup followed by
+another lookup for each of five generic properties. Resolve the exact Method
+binding once and reuse its borrowed view while constructing the same returned map.
+The scalar-property entry point still performs its own binding. No rendered value,
+descriptor, or map is retained across calls; all generic properties, empty lists,
+ordering and graph provenance remain part of complete responses.
+
+Production parent is Attempt192 `8754ec4d9ea784497cde50dbc2db27264c14a325`;
+integration parent `26167faa` differs only in CI comparison tooling/documentation.
+The isolated two-file patch is SHA-256
+`bb979f0e4169ecfa49d5548c075ad9f6a6e352c22dd2593df7a53b49ee896430`.
+Two new tests compare full maps against separately rebound scalar properties over
+GTY01–05, including missing and partial declarations, empty generic lists, graph
+provenance, complete materialization and cancellation. The cumulative192+193 tree
+passes448 Native tests with zero failures, ignored or filtered tests, strict
+all-target/all-feature Clippy and formatting. The root independently checked raw
+counts, new test names, log hashes, cleanup and the exact tested source tree.
+
+Evidence: `/tmp/graphite-attempt193-cumulative-validation-1/independent-review.json`,
+SHA-256 `9b3a0cd4be3c9cb4282fd8346ddb5fb4707d6def058db81359724ad999b8834c`.
+The source-preparation API correction from a nonexistent Formals.is_empty call to
+its iterator check occurred before execution; no failed validation run was hidden.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | Cumulative448 PASS; strict Clippy/format PASS; clean owned shutdown |
+| Construction / loading | Unchanged source paths; no new measurements |
+| Query p50 / p95 / CPU / RSS | Not measured; no performance acceptance |
+| Full-projection review concern | Still open pending representative real multi-graph pressure |
+
+Decision: retain for independent measurement. The existing39-case workload does
+not exercise complete Method or node projection. The prepared32-row two-graph
+oracle is correctness preparation only and is insufficient evidence for large
+projections. A larger persisted-data-derived workload is required. Attempt192's
+separate runtime remains fixed for its own parent-relative comparison; this change
+must not be silently included in that measurement.

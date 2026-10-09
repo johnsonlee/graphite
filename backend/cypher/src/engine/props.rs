@@ -176,6 +176,16 @@ fn generic_method_property(g: &Graph, m: &MethodDesc, key: &str) -> Value {
     let Some((table, types)) = declared_method(g, m) else {
         return Value::Null;
     };
+    project_generic_method_property(table, &types, key)
+}
+
+/// A full Method map shares one exact declaration binding across its properties.
+/// No projected values or descriptor strings survive beyond the returned map.
+fn project_generic_method_property(
+    table: &graphite_storage::types::DeclaredTypes,
+    types: &graphite_storage::types::MethodView<'_>,
+    key: &str,
+) -> Value {
     match key {
         "generic_return_type" => Value::str(table.render(types.returns)),
         "generic_parameter_types" => Value::list(
@@ -713,9 +723,12 @@ pub fn method_properties(
         Value::list(m.parameter_types.iter().map(|p| s(g, *p)).collect()),
     );
     map.insert("return_type".to_string(), s(g, m.return_type));
-    if declared_method(g, m).is_some() {
+    if let Some((table, types)) = declared_method(g, m) {
         for key in GENERIC_METHOD_KEYS {
-            map.insert(key.into(), generic_method_property(g, m, key));
+            map.insert(
+                key.into(),
+                project_generic_method_property(table, &types, key),
+            );
         }
     }
     if let Some(gid) = graph_id {
@@ -747,3 +760,7 @@ fn _unused(_: NodeRef, _: MethodRef, _: Arc<str>) {}
 #[cfg(test)]
 #[path = "props_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "method_map_tests.rs"]
+mod method_map_tests;
