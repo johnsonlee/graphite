@@ -83,41 +83,62 @@ treat the graph as legacy and ignore any orphan table. Rewriting a graph with an
 writer therefore cannot accidentally reuse stale generic declarations, even when its
 erased metadata is unchanged.
 
-All versions use signed big-endian int32 words. Lists start with an int32 count.
-Type references are zero-based type row IDs, with `-1` reserved for an absent
-optional reference. Writers emit version 3; JVM and native readers also accept
-versions 1 and 2. The main node/edge format does not change.
+Counts and references use signed big-endian int32 words. Lists start with an
+int32 count. Type references are zero-based type row IDs, with `-1` reserved for
+an absent optional reference. The structural writer uses version 4 when scopes
+can be represented by declaration references; opaque legacy scopes retain the
+version 3 representation without changing their text. Readers accept versions
+1–4. The main node/edge format does not change.
 
-1. Header `0x47545903` (`GTY`, version 3), then SHA-256 of `graph.metadata` (32 bytes)
+Version 4 has this layout:
+
+1. Header `0x47545904` (`GTY`, version 4), then SHA-256 of `graph.metadata` (32 bytes)
    and SHA-256 of the complete serialized `graph.strings` file (32 bytes).
-   There is no string count or local dictionary in this version.
-2. Type rows: `kind`, `name`, `scope`, optional `owner`, optional `component`,
-   `variance`, argument reference list.
+2. Type rows: four bytes (`kind`, `variance`, `scopeTag`, reserved zero), then
+   int32 `nameStringId`, `scopeTarget`, optional `owner`, optional `component`,
+   and the argument reference list. `nameStringId = -1` means absent text;
+   other names reference the shared string table. The fixed row is 24 bytes.
 3. Field bindings: owner, name, full JVM field descriptor, type reference.
 4. Method bindings: owner, name, full JVM method descriptor, parameter reference
    list, return reference, type parameter list.
 5. Class declarations: class name, type parameter list, optional superclass
    reference, interface reference list.
 
-Each of sections 2–5 starts with its row count. A type parameter consists of its
-name, scope and bound reference list. The full method descriptor includes the
-return type, keeping bridge methods distinct. Identical type expressions share
-rows, but same-named variables from different scopes do not.
+Each of sections 2–5 starts with its row count. Kind codes are `class=0`,
+`primitive=1`, `array=2`, `variable=3`, `wildcard=4`. Variance codes are
+`none=0`, `extends=1`, `super=2`, `unbounded=3`. Scope tags are `none=0`,
+`class=1`, `method=2`, `unresolved-class=3`, `unresolved-method=4`.
+An absent scope requires target `-1`; other targets reference the zero-based
+class or method declaration row, including declarations without graph nodes.
+Readers reject unknown codes, nonzero reserved bytes and invalid references.
+Scope references can point forward and must be checked after declaration indexing.
 
-Every text field in sections 2–5 is a zero-based int32 ID into `graph.strings`,
-including member keys, type kinds/names/scopes, variance and type parameter
-names/scopes. Empty text has an ordinary string-table entry; text IDs have no
-null sentinel. Type IDs remain local to `graph.types` and are separate from
-string IDs and Node IDs. Before saving, the writer collects declaration strings
-with node and metadata strings, then builds one sorted, deduplicated string table.
-Formatted generic types such as `List<User>` are rendered on demand rather than
-stored as additional strings.
+A version 4 type parameter contains int32 name string ID, one scope-tag byte,
+three reserved zero bytes, int32 scope target, and the bound reference list.
+The full method descriptor includes the return type, keeping bridge methods
+distinct. Identical type expressions share rows, but same-named variables from
+different scopes do not. Scope text is reconstructed only when requested; the
+loaded table retains the declaration reference.
 
-The version 3 string binding covers the actual serialized bytes used to load
+Version 3 (`0x47545903`) has the same digests and declaration sections, but its
+type rows contain `kind`, `name`, `scope`, optional `owner`, optional `component`,
+`variance`, and the argument reference list. All text, including kind, variance
+and scope, uses shared string IDs; an empty value has an ordinary string entry.
+Its type parameters contain name, scope and the bound reference list.
+
+Before saving, declaration names and member identity text are collected with
+node and metadata strings into one sorted, deduplicated string table. Version 4
+does not add enum labels or composed scope strings. Formatted generic types such
+as `List<User>` are rendered on demand in all versions. Type IDs, declaration
+row IDs, string IDs and Node IDs are distinct. Member descriptor strings remain
+part of erased member keys; this format change does not yet normalize those
+keys into component type references.
+
+The version 3/4 string binding covers the actual serialized bytes used to load
 that immutable string-table instance. It is distinct from the semantic snapshot
 in `graph.strings.identity`; a matching snapshot cannot authorize a changed
 string file. Both readers require the verified serialized digest before exposing
-version 3 declarations and validate every referenced string ID and its text.
+version 3/4 declarations and validate every referenced string ID and its text.
 Unpaired UTF-16 surrogates cannot be silently replaced in declared types.
 The type table's metadata digest and authoritative `forward.properties` binding
 remain required as well.
@@ -130,8 +151,9 @@ and reject invalid UTF-8, duplicate text and out-of-range string IDs. Version 1
 (`0x47545901`) has the metadata digest and the same declaration sections, but
 each text field contains its own int32 UTF-8 byte length and bytes.
 
-Saving a loaded graph with declaration metadata writes version 3 and remaps its
-declaration strings against the newly built `graph.strings`. An empty declaration
+Saving a loaded graph remaps its declaration names against the newly built
+`graph.strings`. Canonical scopes use version 4 declaration references; scopes
+that cannot be represented without loss retain version 3. An empty declaration
 table removes or omits `graph.types` and its binding. When saving into the same
 directory, the source table continues to resolve text through its original immutable
 string table while the replacement type file is written and published. Reusing old
@@ -152,13 +174,13 @@ and uses the erased descriptor; it cannot leave an over-budget table that fails
 only at the end of graph construction. Shared expressions count once per occurrence
 in the expanded projection, even when their type IDs are deduplicated.
 
-The JVM reader retains mapped type rows and compact indexes; version 3 resolves
+The JVM reader retains mapped type rows and compact indexes; versions 3 and 4 resolve
 text through the graph's already loaded string table. Its legacy version 2 reader
 retains dictionary offsets and hashes. The native reader decodes declaration
 values into graph-local shared storage, with no process-wide interning. Rendering
 and structured projections are produced when requested.
 
-During version 3 validation, the JVM reader also builds an immutable, bounded
+During shared-string validation, the JVM reader also builds an immutable, bounded
 ASCII substring summary for declaration text and generated `type_info` keys.
 Dynamic text queries use this summary to rule out impossible matches without
 scanning the type table or charging declaration rows against the query budget.
@@ -170,9 +192,10 @@ is an in-memory index and does not change the storage format.
 
 `DeclaredTypePersistenceTest` compiles a Java JAR, builds its graph, and verifies
 ordinary and mapped loading plus Cypher projections. Set `GRAPHITE_TYPES_FIXTURE`
-to retain the current version 3 graph, `GRAPHITE_TYPES_V1_FIXTURE` for version 1,
-and `GRAPHITE_TYPES_V2_FIXTURE` for version 2. The native interoperability tests
-exercise all three as directories and packed containers; set
+to retain the current structural graph, `GRAPHITE_TYPES_V1_FIXTURE` for version 1,
+`GRAPHITE_TYPES_V2_FIXTURE` for version 2, and `GRAPHITE_TYPES_V3_FIXTURE` for
+version 3. The native interoperability tests exercise all four as directories
+and packed containers; set
 `GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES=1` to require every fixture. These fixtures establish correctness, not performance. Performance comparisons must
 use the repository's representative real multi-graph workloads.
 

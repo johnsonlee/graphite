@@ -29,6 +29,13 @@ internal class DeclaredTypeTextSummary private constructor(private val bits: Lon
         }
     }
 
+    /** Union type-name atoms with generated enum/scope text without including member index keys. */
+    fun union(other: DeclaredTypeTextSummary): DeclaredTypeTextSummary =
+        DeclaredTypeTextSummary(LongArray(bits.size) { index ->
+            checkCancelled(index)
+            bits[index] or other.bits[index]
+        })
+
     /** Only the loader owns this builder. Snapshotting prevents later writes reaching readers. */
     class Builder {
         private val bits = LongArray(WORDS)

@@ -125,7 +125,8 @@ flowchart TB
     P -.->|"SHA-256 of complete type file"| T
     T -.->|"embedded SHA-256 of complete metadata file"| M
     T -->|"table-local type IDs: arguments, owner, component, bindings"| T
-    T -->|"shared string IDs: names, scopes, kinds, member keys"| S
+    T -->|"v4 scope: class or method declaration row ID"| T
+    T -->|"shared string IDs: names and member keys; legacy scopes/kinds"| S
     T -.->|"embedded SHA-256 of actual serialized string-table bytes"| S
     T ---|"full field/method key lookup"| N
     T ---|"full method key lookup"| M
@@ -142,11 +143,14 @@ flowchart TB
 ```
 
 A full member key is the declaring class, member name and **complete JVM descriptor**,
-including the return type for methods. The current writer emits `graph.types` v3,
-whose member keys and type text reference the shared `graph.strings` table.
+including the return type for methods. The structural writer emits `graph.types` v4,
+whose names and member keys reference the shared `graph.strings` table. Kind and
+variance are byte enums; scope references a class or method declaration row in
+`graph.types`, with its textual form reconstructed on demand.
 It contains no local string dictionary or Node IDs. Type references still point
 to its own deduplicated expression rows, in an ID space separate from string IDs.
-Readers also accept v2 with its file-local UTF-8 dictionary and v1 with inline text.
+Readers also accept v3 with shared text IDs, v2 with its file-local UTF-8 dictionary
+and v1 with inline text. Nonrepresentable legacy scopes are saved losslessly as v3.
 Fields, parameters and returns resolve that binding using their erased declaration key.
 A formatted value such as `List<User>` is rendered on demand rather than stored as a string.
 
@@ -164,13 +168,14 @@ be represented as follows (irrelevant columns are omitted):
 A field, parameter or return binding references T3; another occurrence of the same
 expression reuses T3. Neither `List<Foo>` nor `Map<String, List<Foo>>` needs a
 string-table entry. A name found only in a generic signature is collected into the
-shared dictionary if it is not already present. The `class` kind also references
-a shared string entry in the wire format; the table above shows its decoded value.
+shared dictionary if it is not already present. Kind and variance are enums in v4 and need no string-table entry. The table above
+shows the decoded kind. Existing member descriptor strings remain part of the
+erased member keys.
 
 The `graph.types` binding is authoritative in `forward.properties`: no binding means a
 legacy graph and any orphan type file is ignored; a binding with a missing or mismatched
 file is a load error. The embedded metadata digest prevents attaching the table to another
-metadata file. Version 3 also binds the actual serialized bytes of the string table
+metadata file. Versions 3 and 4 also bind the actual serialized bytes of the string table
 used for decoding; `graph.strings.identity` alone cannot satisfy this binding. JVM
 loading validates the complete table and retains mapped rows/indexes;
 Rust loading decodes the table into memory with graph-local shared strings. See [Declared JVM types](declared-types.md)
@@ -196,7 +201,7 @@ entry blocks; the diagram shows the file-level binding rather than those interna
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.types | `GTY` | `0x47545903` (independent version 3; readers also accept `0x47545901` and `0x47545902`) |
+| graph.types | `GTY` | `0x47545904` (structural version 4; legacy scope fallback writes v3; readers also accept v1–v3) |
 | graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524202`, last) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
@@ -323,7 +328,7 @@ eagerly and does not use the JVM backward-graph cache.
 BUILD                       SAVE                                              LOAD
 SootUpAdapter               GraphStore.save()                                 GraphStore.load()
   → DefaultGraph            1. Node string collection                         1. BVGraph.load                  ┐
-                            2. Metadata + declaration strings + StringTable   2. StringTable.load (+ GTY03 SHA) ├ parallel
+                            2. Metadata + declaration strings + StringTable   2. StringTable.load (+ GTY03/04 SHA) ├ parallel
                             3. Forward adjacency + labels                     3. Labels + comparisons mmap
                             4. BVGraph.store                                  4. Mapped node indexes + nodedata
                             5. Labels + label prefix + comparisons write      5. Prepare lazy backward loader
@@ -358,7 +363,7 @@ graph TD
 graph TD
     A[Graph directory] --> B[Parallel I/O]
     B --> B1["BVGraph.load(forward)"]
-    B --> B2["StringTable.load<br/>GTY03: capture complete serialized SHA"]
+    B --> B2["StringTable.load<br/>GTY03/04: capture complete serialized SHA"]
     B --> B3[Labels + comparisons mmap]
     B --> B4[Mmap node offset/type indexes]
     B1 --> C[Build cumulative outdegree]
@@ -372,7 +377,7 @@ graph TD
     E -->|Mapped| E2[mmap nodedata file]
     B2 --> F[Read metadata; branchdefs on first branch-scope access]
     F --> T[Read and validate graph.types when bound in forward.properties]
-    B2 -->|"string table; verified digest required for GTY03"| T
+    B2 -->|"string table; verified digest required for GTY03/04"| T
     C & D & B3 & B4 & E & F & T --> G[Construct Graph]
 ```
 

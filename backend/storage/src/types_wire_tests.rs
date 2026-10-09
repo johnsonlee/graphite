@@ -246,7 +246,11 @@ fn assert_compact_values(actual: &crate::types::DeclaredTypes, expected: &Mutabl
                 .collect::<Vec<_>>(),
             m.type_parameters
                 .iter()
-                .map(|p| (p.name.as_ref(), p.scope.as_ref(), p.bounds.as_slice()))
+                .map(|p| (
+                    p.name.as_ref(),
+                    std::borrow::Cow::Borrowed(p.scope.as_ref()),
+                    p.bounds.as_slice()
+                ))
                 .collect::<Vec<_>>()
         );
     }

@@ -61,10 +61,11 @@ fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value
     let t = table.type_expr(id);
     let mut map = IndexMap::new();
     map.insert("kind".into(), Value::str(t.kind));
-    for (key, value) in [("name", &t.name), ("scope", &t.scope)] {
-        if !value.is_empty() {
-            map.insert(key.into(), Value::str(*value));
-        }
+    if !t.name.is_empty() {
+        map.insert("name".into(), Value::str(t.name));
+    }
+    if !t.scope.is_empty() {
+        map.insert("scope".into(), Value::str(t.scope));
     }
     if let Some(owner) = t.owner {
         map.insert("owner".into(), type_info(table, owner));

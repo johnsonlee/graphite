@@ -1,8 +1,18 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.graph.DeclaredTypeTextField
+
 /** Absolute reads over type rows whose UTF-8, references and record boundaries were validated on load. */
 internal interface DeclaredTypeAtoms {
     val textSummary: DeclaredTypeTextSummary? get() = null
+    fun fieldOffset(id: Int, field: DeclaredTypeTextField): Int {
+        var offset = typeOffset(id)
+        repeat(field.ordinal) { offset = nextTextField(offset) }
+        if (field == DeclaredTypeTextField.VARIANCE) offset += Int.SIZE_BYTES * 2
+        return offset
+    }
+    fun referencesOffset(id: Int): Int = nextTextField(fieldOffset(id, DeclaredTypeTextField.SCOPE))
+    fun argumentsOffset(id: Int): Int = nextTextField(fieldOffset(id, DeclaredTypeTextField.VARIANCE))
     fun typeOffset(index: Int): Int
     fun atomInt(offset: Int): Int
     fun atomByte(offset: Int): Byte

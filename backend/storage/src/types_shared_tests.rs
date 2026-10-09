@@ -561,3 +561,6 @@ fn compact_legacy_pool_drops_unused_dictionary_values() {
     };
     assert!(!texts.iter().any(|v| v.as_ref() == "unused-unique-text"));
 }
+
+#[path = "types_structural_tests.rs"]
+mod structural_tests;

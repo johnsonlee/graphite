@@ -22,14 +22,7 @@ internal class MappedDeclaredTypeValidationAccess(
         return atoms.atomInt(offset + Int.SIZE_BYTES * (index + 1))
     }
 
-    private fun fieldOffset(id: Int, field: DeclaredTypeTextField): Int {
-        var offset = atoms.typeOffset(id)
-        repeat(field.ordinal) { offset = atoms.nextTextField(offset) }
-        if (field == DeclaredTypeTextField.VARIANCE) offset += Int.SIZE_BYTES * 2
-        return offset
-    }
-
-    private fun referencesOffset(id: Int): Int = atoms.nextTextField(fieldOffset(id, DeclaredTypeTextField.SCOPE))
-    private fun argumentsOffset(id: Int): Int = atoms.nextTextField(fieldOffset(id, DeclaredTypeTextField.VARIANCE))
-
+    private fun fieldOffset(id: Int, field: DeclaredTypeTextField): Int = atoms.fieldOffset(id, field)
+    private fun referencesOffset(id: Int): Int = atoms.referencesOffset(id)
+    private fun argumentsOffset(id: Int): Int = atoms.argumentsOffset(id)
 }

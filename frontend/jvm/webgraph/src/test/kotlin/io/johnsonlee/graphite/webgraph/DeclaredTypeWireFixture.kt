@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.TypeParameter
@@ -15,26 +16,67 @@ import java.util.HexFormat
 internal object DeclaredTypeWireFixture {
     fun write(dir: Path, table: DeclaredTypeTable, version: Int, unused: List<String> = emptyList()) {
         val strings = dictionary(table, unused)
-        val ids = strings.withIndex().associate { (id, value) -> value to id }
+        val shared = if (version >= 3) StringTable.build(strings, dir, true) else null
+        val ids = strings.withIndex().associate { (id, value) -> value to (shared?.findId(value) ?: id) }
         val output = ByteArrayOutputStream()
-        DataOutputStream(output).use { out ->
-            fun inline(value: String) { val bytes = value.toByteArray(); out.writeInt(bytes.size); out.write(bytes) }
-            fun text(value: String) { if (version == 1) inline(value) else out.writeInt(ids.getValue(value)) }
-            fun refs(values: List<Int>) { out.writeInt(values.size); values.forEach(out::writeInt) }
-            fun writeKey(value: MemberTypeKey) { text(value.owner); text(value.name); text(value.descriptor) }
-            fun params(values: List<TypeParameter>) {
-                out.writeInt(values.size)
-                values.forEach { text(it.name); text(it.scope); refs(it.bounds) }
+        DataOutputStream(output).use { out -> Encoder(out, table, version, ids).write(dir, strings) }
+        Files.write(dir.resolve(DeclaredTypeStore.FILE_NAME), output.toByteArray())
+        rebind(dir)
+    }
+
+    /** Deliberately independent of the production codec and its tag/offset constants. */
+    private class Encoder(
+        val out: DataOutputStream, val table: DeclaredTypeTable, val version: Int, val ids: Map<String, Int>
+    ) {
+        fun inline(value: String) { val bytes = value.toByteArray(); out.writeInt(bytes.size); out.write(bytes) }
+        fun text(value: String) { if (version == 1) inline(value) else out.writeInt(ids.getValue(value)) }
+        fun refs(values: List<Int>) { out.writeInt(values.size); values.forEach(out::writeInt) }
+        fun writeKey(value: MemberTypeKey) { text(value.owner); text(value.name); text(value.descriptor) }
+
+        fun scope(value: String): Pair<Int, Int> {
+            if (value.isEmpty()) return 0 to -1
+            val unresolved = value.startsWith("unresolved:")
+            val name = value.removePrefix("unresolved:")
+            val owner = table.classes.keys.indexOfFirst { "class:$it" == name }
+            return if (owner >= 0) (if (unresolved) 3 else 1) to owner else {
+                val method = table.methods.keys.indexOfFirst { "method:${it.owner}#${it.name}${it.descriptor}" == name }
+                require(method >= 0) { "Fixture scope has no declaration: $value" }
+                (if (unresolved) 4 else 2) to method
             }
+        }
+
+        fun params(values: List<TypeParameter>) {
+            out.writeInt(values.size)
+            values.forEach {
+                text(it.name)
+                if (version < 4) text(it.scope) else {
+                    val (tag, target) = scope(it.scope)
+                    out.writeByte(tag); out.writeByte(0); out.writeShort(0); out.writeInt(target)
+                }
+                refs(it.bounds)
+            }
+        }
+
+        fun type(type: DeclaredType) {
+            if (version < 4) { text(type.kind); text(type.name); text(type.scope) } else {
+                out.writeByte(listOf("class", "primitive", "array", "variable", "wildcard").indexOf(type.kind))
+                out.writeByte(listOf("", "extends", "super", "unbounded").indexOf(type.variance))
+                val (tag, target) = scope(type.scope)
+                out.writeByte(tag); out.writeByte(0)
+                out.writeInt(if (type.name.isEmpty()) -1 else ids.getValue(type.name)); out.writeInt(target)
+            }
+            out.writeInt(type.owner ?: -1); out.writeInt(type.component ?: -1)
+            if (version < 4) text(type.variance)
+            refs(type.arguments)
+        }
+
+        fun write(dir: Path, strings: Set<String>) {
             out.writeInt(0x47545900 or version)
             out.write(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(dir.resolve("graph.metadata"))))
             if (version == 2) { out.writeInt(strings.size); strings.forEach(::inline) }
+            if (version >= 3) out.write(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(dir.resolve("graph.strings"))))
             out.writeInt(table.types.size)
-            table.types.forEach { type ->
-                text(type.kind); text(type.name); text(type.scope)
-                out.writeInt(type.owner ?: -1); out.writeInt(type.component ?: -1)
-                text(type.variance); refs(type.arguments)
-            }
+            table.types.forEach(::type)
             out.writeInt(table.fields.size)
             table.fields.forEach { (key, value) -> writeKey(key); out.writeInt(value) }
             out.writeInt(table.methods.size)
@@ -46,8 +88,6 @@ internal object DeclaredTypeWireFixture {
                 text(name); params(value.typeParameters); out.writeInt(value.superType ?: -1); refs(value.interfaces)
             }
         }
-        Files.write(dir.resolve(DeclaredTypeStore.FILE_NAME), output.toByteArray())
-        rebind(dir)
     }
 
     private fun dictionary(table: DeclaredTypeTable, unused: List<String>): Set<String> {

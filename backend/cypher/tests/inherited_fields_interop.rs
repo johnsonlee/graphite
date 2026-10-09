@@ -1,4 +1,4 @@
-//! Correctness-only JavaProjectLoader → GTY03 → native directory/container parity.
+//! Correctness-only JavaProjectLoader → GTY04 → native directory/container parity.
 use graphite_cypher::engine::props::node_properties;
 use graphite_cypher::engine::{Executor, Source, INTERNAL_PROVENANCE_KEY};
 use graphite_cypher::Value;
@@ -79,7 +79,7 @@ fn java_inherited_aliases_survive_both_builders_resave_and_native_containers() {
 fn load_checked(path: &Path) -> Graph {
     let source = GraphSource::open(path).unwrap();
     let raw = source.require("graph.types").unwrap();
-    assert_eq!(i32::from_be_bytes(raw[..4].try_into().unwrap()), 0x47545903);
+    assert_eq!(i32::from_be_bytes(raw[..4].try_into().unwrap()), 0x47545904);
     let graph = Graph::load(path).unwrap();
     assert!(graph.strings().serialized_digest().is_some());
     graph

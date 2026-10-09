@@ -64,7 +64,7 @@ class InheritedFieldPersistenceTest {
         action: (Graph) -> Unit
     ) {
         Files.newInputStream(path.resolve("graph.types")).use {
-            assertEquals(0x47545903, java.io.DataInputStream(it).readInt())
+            assertEquals(0x47545904, java.io.DataInputStream(it).readInt())
         }
         assertTrue(StringTable.load(path, verifySerializedDigest = true).serializedDigest() != null)
         val loaded = GraphStore.loadMapped(path)

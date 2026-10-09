@@ -14143,3 +14143,82 @@ Evidence: `/tmp/graphite-attempt187-validation-1/attempt-1/` and
 `/tmp/graphite-attempt187-validation-3/attempt-1/` contains the final raw output.
 Independent audit: `/tmp/graphite-attempt187-validation-independent-audit-3.json`,
 SHA `3ddae48c5baa548506d68ce3fcce75e54ebf28e079a0d0dc21b7ea7a1b883647`.
+
+
+### Attempt188 — structural enum and declaration-scope references; correctness verified, performance unmeasured (2026-10-10)
+
+The user clarified that generic composition belongs in `graph.types` rather than
+new composite strings. The candidate adds GTY04: kind and variance use fixed byte
+codes; scope uses a tagged class/method declaration-row reference. Names share
+`graph.strings`, and argument/owner/component/bound edges remain type IDs. JVM
+mapped storage and Native compact storage retain references, not rendered scope
+strings. Public projections retain the same scope text, generated on demand.
+Native generic-name rendering and expansion validation avoid constructing unused
+scopes; its public scope views borrow legacy text or own one requested projection.
+
+Base: `a21e8e3ec26a1863ba778b6b06ad544a532232cf`; candidate: the GTY04 implementation
+commit containing this entry. The accepted performance baseline remains
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3`. This is a functional storage candidate,
+not a demonstrated latency or RSS improvement. Attempt187 remains isolated and
+is not included. No real multi-graph measurements have been run for GTY04.
+
+All old wire readers remain. Canonical old tables upgrade on save; opaque, absent
+or ambiguous legacy declaration scopes round-trip through GTY03. An explicit
+legacy fixture save uses the complete graph save pipeline so adding legacy scope
+strings cannot invalidate node string IDs. Member descriptor strings and transient
+ingestion scope strings remain; this attempt does not claim that all declaration
+text has been normalized to atomic names.
+
+Review caught two avoidable costs before acceptance: building scope strings for
+every declaration would retain unnecessary text, so the save plan retains only
+actually referenced scopes; including all member keys in the negative type-text
+summary would weaken its filtering precision, so type-name and generated-text
+summaries are bounded and combined separately. An unrelated-member-key test guards
+the latter behavior. No query work budget, cancellation check, validation limit or
+heap ceiling was relaxed.
+
+Local verification used Java17, Gradle heap4g, one test fork with existing module
+heap limits at most4g, and Rust1.93 with two build jobs. Heavy phases ran serially.
+The independent JVM checkout's477 source/configuration inputs were checked against
+the working tree. Core495 and Cypher1,377 tests passed; the final Webgraph source
+passed360 tests, including8 new structural-wire cases, and all three modules'
+detekt checks passed. Native passed418 workspace tests with freshly exported JVM
+v1/v2/v3/v4 graphs, strict all-target/all-feature Clippy and formatting. Four-version
+interop checks compare complete properties in directories, packed containers and
+eight-source queries, including method/formal scopes and inherited field aliases.
+Independent encoders exercise illegal enums/reserved bytes, scope and child ranges,
+truncation, exact metadata/string/type-file bindings, Unicode and rendered expansion
+budgets. Tiny wire fixtures and single-graph executions establish correctness only.
+
+Failures are retained: the first JVM launch stopped before compilation because the
+publishing plugin could not recognize a linked-worktree Git directory; a byte-matched
+ordinary checkout resolved that environment problem. Initial detekt reported35 issues,
+then passed after extracting wire constants/helpers and grouping row indexes. One
+Native interop test still required the old03 header; it now requires04 while retaining
+all property assertions. The final fmt check requested one test-message line reflow;
+formatting subsequently passed, with that exact whitespace-only change audited.
+The initial storage-only driver also failed final report publication because it
+reused an exclusive output path; its raw107-test phase, unchanged source and owned
+cleanup were independently verified. No failed record was overwritten as a pass.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | Core495, Cypher1,377, Webgraph360 and Native418 tests PASS; lint and final formatting PASS |
+| Real multi-graph construction time / CPU / RSS | Not measured for GTY04 |
+| Real multi-graph loading time / CPU / RSS | Not measured for GTY04 |
+| Real multi-graph query p50 / p95 / CPU / RSS | Not measured for GTY04 |
+| CI / complete semantic proof / overall recovery / merge readiness | Not established; prior exact-head CI failures remain documented |
+
+Decision: retain the correctness-verified structural representation for continued
+validation and normalization; do not promote it as performance recovery. Required
+next evidence includes real own-writer multi-graph datasets, construction through
+usable save, loading and concurrent queries with complete result consumption.
+The existing GTY03 corpus-size transition does not authorize GTY04's new footprint.
+
+Evidence: `/tmp/graphite-structural-v4-jvm-check-{1,2,3,4}/`, with final independent
+review in `...-4/independent-review.json`; source comparison
+`/tmp/graphite-structural-v4-source-proof-2.json`. Native raw runs:
+`/tmp/graphite-structural-v4-native-check-1/`,
+`/tmp/graphite-structural-v4-native-workspace-{1,2}/`, and final independent review
+in `...-workspace-2/independent-review.json`. The revised workflow YAML parses and
+all117 shell blocks pass `bash -n`; coverage and size thresholds remain unchanged.
