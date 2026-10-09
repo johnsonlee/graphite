@@ -13242,3 +13242,54 @@ MB denotes decimal bytes. Parent-relative CPU reductions0.17/0.06s remain positi
 Accepted4f loading remains substantially slower, with CPU lower ratios2.006098/2.278146 and RSS lower ratios1.536410/1.670403, all above1.05. No parent-relative benefit offsets those failures. All six readiness bodies/18 graph rows,18 retained plus6 fresh typed query bodies, every raw CPU/RSS sample, boundary exclusions, paired vectors, exact commands, owned cleanup and final identities pass independent audit. CPU sampling completion lags4.503–6.612ms after readiness. All66 host observations are preserved, including renderer195.7% and mediaanalysisd103.4%; this is warmed-filesystem shared-host evidence, not a disk-cold, quiet-host or saturation result.
 
 Protocol SHA `f957e13096dff363423a5ceea828c6cfe1d3434a4ea0485bfc42ffffb2627d73`; seal SHA `ff9ff597ca5137028bd3a49c5136149df7fe82ea17d8bb92a78eee02d157c096`; preflight SHA `007bdaa0e249ef057c4a4c4570f0d504dbe28ac483859c1d5c58b55e3e3a867b`. Independent audit `/tmp/graphite-attempt180-loading-independent-audit.json`, SHA `3ca8e2364499c29a4ccf71e5ed32e9da2fd90bf8ff6fe67a171ccfb79448f57c`; auditor SHA `bc16aa9956d36194a4b28babff20f33f954f91da936b9bea67e8c203c60e565b`. Retain isolated180 for composition with other verified gains. Its results cannot be added numerically to179's separate cohort; cumulative loading and representative query/construction checks remain necessary. No root integration or overall recovery is claimed.
+
+### Shared-string native64 query follow-up — full correctness and resource bounds pass; latency recovery remains incomplete (2026-10-09)
+
+The fixed native64 query cohort completed with root session85992 exit0. Command: `python3.14 /tmp/graphite-shared-native64-prep/execute.py query measure`. C remains the accepted pre-feature `4f2ccf33` binary/original GTY01 corpus; A is retained168 (`8ea3d55c` plus its pinned168 patch)/audited GTY02; B is the frozen `ae316747` binary/shared GTY03. B retains its actual `ae316747` build identity (binary SHA `4bafeb4757e17f23c66556c66744bacca6b7d7b5bb0bbfae311f9a75a2f859da`). The separate source-closure audit binds a130-file compiler-input/config closure with129 identical files and identifies the sole later `cfg(test)` file change; it is not a claim of a newly built current-head executable. Full01→02 and02→03 corpus proofs remain prerequisites, including all64 final output hashes and exact node IDs, full payloads/metadata, per-tag ordering, labeled edges and canonical declaration rows.
+
+All requests target the entire same ordered64-graph registry, with no graph-narrowing parameter. The five exact catalog cases remain `shape-collect`, `schema-key-histogram`, `shape-order-by`, `schema-label-histogram` and `shape-with-filter`; their original query text, limits and complete typed responses are unchanged. The two schema cases use their existing summary execution paths; this is not a claim of physical full-node traversal by every case. The key histogram deliberately retains the audited26-row baseline versus28-row declared-type result. It does not treat baseline and feature outputs as identical or prove every possible formatted generic value.
+
+On the same macOS host in MAPPED mode, six fresh measured servers run C,A,B,B,A,C with client/server concurrency4, two warmup cycles and20 measured observations per case per process. The original three C/A/B oracle processes contribute15 full first-use bodies; measured servers contribute60 warmups plus600 measured bodies, totaling675 independently checked complete typed responses. Percentiles are nearest ranks10 and19 of each process/case's20 samples, never pooled across cases. Fixed forward pairs are C0→B2 and A1→B2; reverse pairs C5→B3 and A4→B3. All observations and failures are retained; no process replacement, selected rerun or extra tiny-case stabilization was used. Symmetric complete input verification warms the filesystem before each arm; no disk-cold claim is made.
+
+Values below are baseline→B in milliseconds, followed by absolute delta. Both fixed directions are retained.
+
+**Accepted4f→shared03**
+
+| Case | Forward p50 ms (delta) | Forward p95 ms (delta) | Reverse p50 ms (delta) | Reverse p95 ms (delta) |
+|---|---:|---:|---:|---:|
+| shape-collect | 2510.319→2559.639 (+49.320) | 2554.509→2583.599 (+29.090) | 2527.262→2547.892 (+20.630) | 2567.558→2600.567 (+33.009) |
+| schema-key-histogram | 1.224583→1.245458 (+0.020875) | 1.918459→1.537000 (-0.381459) | 1.209292→1.260125 (+0.050833) | 1.314959→1.956834 (+0.641875) |
+| shape-order-by | 3055.839→3154.342 (+98.504) | 3085.007→3183.561 (+98.554) | 3091.963→3183.370 (+91.407) | 3169.593→3248.394 (+78.801) |
+| schema-label-histogram | 0.857541→0.836125 (-0.021416) | 2.384500→0.975791 (-1.408709) | 0.853125→0.857792 (+0.004667) | 1.808250→0.991542 (-0.816708) |
+| shape-with-filter | 3076.137→3238.443 (+162.305) | 3360.981→3494.164 (+133.183) | 3089.925→3230.506 (+140.580) | 3428.745→3507.470 (+78.724) |
+
+**Parent168→shared03**
+
+| Case | Forward p50 ms (delta) | Forward p95 ms (delta) | Reverse p50 ms (delta) | Reverse p95 ms (delta) |
+|---|---:|---:|---:|---:|
+| shape-collect | 2476.056→2559.639 (+83.583) | 2536.320→2583.599 (+47.279) | 2560.575→2547.892 (-12.683) | 2595.099→2600.567 (+5.468) |
+| schema-key-histogram | 1.260959→1.245458 (-0.015501) | 1.316708→1.537000 (+0.220292) | 1.260667→1.260125 (-0.000542) | 2.863375→1.956834 (-0.906541) |
+| shape-order-by | 3143.958→3154.342 (+10.385) | 3177.986→3183.561 (+5.575) | 3169.086→3183.370 (+14.284) | 3199.704→3248.394 (+48.691) |
+| schema-label-histogram | 0.836000→0.836125 (+0.000125) | 1.127708→0.975791 (-0.151917) | 0.821042→0.857792 (+0.036750) | 0.928125→0.991542 (+0.063417) |
+| shape-with-filter | 3268.618→3238.443 (-30.176) | 3485.206→3494.164 (+8.958) | 3249.620→3230.506 (-19.114) | 3511.291→3507.470 (-3.822) |
+
+The three slow shape cases remain slower than accepted4f in both directions for both percentiles. Parent168 attribution is mixed: collect p50 reverses direction while its p95 worsens twice; order-by p50/p95 worsen twice; with-filter p50 improves twice but p95 is mixed. Schema effects are millisecond or sub-millisecond observations and cannot compensate for the larger slow-query regressions. The parent168 comparison attributes shared-format changes; it does not replace4f for acceptance.
+
+The next table keeps the declared100-request mixed measured window per process separate from readiness, warmups and lifetime CPU. Query wall runs through complete response consumption/drain and validation. CPU is own-PID user+system delta; no per-case CPU claim is inferred from this mixed window. RSS values are decimal GB intervals `[strict sampled query lower, exact time-l lifecycle upper]`; the upper includes loading, warmups, measured queries and shutdown. Every200ms ps sample is retained, only complete reads wholly inside the query interval qualify, and no boundary sample is excluded in this run. Independent +5% CPU and RSS checks use conservative bounds, not sampled RSS alone.
+
+| Comparison / direction | Query-window ms baseline→B (delta) | Query CPU seconds baseline→B (delta) | Baseline RSS interval GB → B interval GB | Conservative CPU / RSS upper ratios | CPU / RSS +5% |
+|---|---:|---:|---:|---:|---|
+| 4f→03 / forward | 44867.490→46534.729 (+1667.239) | 173.70→179.33 (+5.63) | [20.784120, 20.811284]→[20.154335, 20.256014] | 1.032646 / 0.974591 | PASS / PASS |
+| 4f→03 / reverse | 45446.698→46229.562 (+782.864) | 174.97→179.45 (+4.48) | [20.361658, 20.518404]→[20.333216, 20.647920] | 1.025836 / 1.014059 | PASS / PASS |
+| 168→03 / forward | 46034.790→46534.729 (+499.939) | 177.72→179.33 (+1.61) | [20.556644, 20.656357]→[20.154335, 20.256014] | 1.009285 / 0.985376 | PASS / PASS |
+| 168→03 / reverse | 46350.835→46229.562 (-121.273) | 179.28→179.45 (+0.17) | [21.262172, 21.525791]→[20.333216, 20.647920] | 1.001171 / 0.971111 | PASS / PASS |
+
+All eight resource checks pass: CPU and RSS independently for both directions against each reference. CPU comparisons use ±0.02s per-process conservative bounds. Actual query-window time still increases against4f in both directions and is mixed against168; neither passing resource limits nor a parent-relative RSS benefit establishes latency recovery. These are query resource conclusions, not loading or whole-lifecycle acceptance. In particular, the lifecycle peak supplies only a conservative query RSS upper bound; retained readiness/lifecycle numbers must not substitute for the separate loading cohort.
+
+The original oracle first-use observations remain separate from repeated-request percentiles. For the slow cases, C/A/B times in ms were collect2,422.605/2,516.004/2,455.769; order-by2,991.476/3,083.394/3,068.343; with-filter3,275.304/3,362.786/3,342.972. The schema first-use bodies are also retained. These are one ordered observation per case/arm, not cold-cache distributions or p50/p95 evidence.
+
+The external audit independently checks all675 raw typed bodies against the original73-entry catalog and arm-specific digests, exact request/query hashes and counts, per-process percentiles, CPU reads, strict RSS intervals, lifecycle records, full readiness, owner-bound cleanup and final identity receipts. All nine servers and both oracle/measurement runners have successful empty-group proofs without escalation. Original manifests, binaries, fixtures and prior records are unchanged; this response audit does not reread graph/runtime payloads beyond the completed setup/seal/final-identity evidence.
+
+Only two process replicates per arm were collected, with closed-loopc4 rather than fixed-rate saturation. All269 measurement host snapshots and three preflight snapshots are retained. Concurrent desktop/system work includes Codex Renderer201.3%, mediaanalysisd142.4% and syspolicyd100.1% observed maxima; no quiet-host or causal-noise-adjusted claim is made. No observations were removed to account for that activity.
+
+Completed report: `/tmp/graphite-shared-native64-prep/query/report.json`. Protocol SHA `3de7cecd5cbecbede27bbef5873eb645380e159e5e9beadfa47a36d3ee190990`; seal SHA `2172b84198c91c438c21beec527af202ba18cfe408d1bda14f8cb0b971ca0d6c`. Independent audit `/tmp/graphite-shared-native64-query-independent-audit.json`, SHA `554a6df9f6765b37b0afcc0d058b104ffc5b721fe3f65b633a2f79b1880a9dda`; auditor SHA `7b695b3d885d4a370a2f120e048c101c1207ede280e3f06f76166d6035bcf1fc`. Preserve the correctness/resource evidence and all mixed latency observations. Shared strings remain the implemented storage design; this follow-up introduces no production optimization to keep/revert. Accepted4f remains the cumulative baseline, slow-query latency recovery is unresolved, and neither loading nor overall PR acceptance is claimed.
