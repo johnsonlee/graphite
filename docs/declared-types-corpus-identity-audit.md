@@ -1001,3 +1001,16 @@ corpus execution remain pending behind the existing exclusive construction run.
 The exporter may retain more method bodies than the production streaming adapter;
 its actual4g execution must succeed without raising the heap. All global semantic
 and performance acceptance flags remain false pending actual evidence and review.
+
+
+Actual compilation follow-up: the unchanged helper compiled successfully against
+both the accepted4f writer and candidate286 writer using OpenJDK17 javac,
+`-J-Xmx4g -J-XX:ActiveProcessorCount=4 -proc:none`. Both commands exited0,
+stdout/stderr were empty, source and dependency identities remained unchanged,
+and both owned process groups were empty afterwards. Root independently checked
+the receipts, raw output hashes and generated class hashes. The identical class
+SHA-256 is `b26f51073ccb0b9b7224a04ff10ffdf630b23dd806eafcd1e1ccfe67fc09bfcd`.
+Evidence: `/private/tmp/graphite-attempt187-raw-local-helper-compile-1`, record
+SHA-256 `94ec66b028e24ea8544a2bca4a5de4853d77b6b24dc5067ff5066e428b32d89b`.
+This resolves compilation compatibility only; raw corpus execution and complete
+semantic acceptance remain pending.
