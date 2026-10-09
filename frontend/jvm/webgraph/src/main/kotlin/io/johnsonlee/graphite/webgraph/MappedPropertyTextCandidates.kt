@@ -20,7 +20,7 @@ internal class MappedPropertyTextCandidates(
     private val declaredTypes: DeclaredTypeTable = DeclaredTypeTable.EMPTY
 ) {
     fun ids(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Sequence<Int> = sequence {
-        val declaredKinds = declaredKinds(type, fragments, work)
+        val declaredKinds = declaredKinds(type, fragments)
         val matchers = fragments.map { fragment ->
             val predicate = StringPredicateKey(null, StringMatchMode.CONTAINS, fragment)
             // A byte per string avoids repeated decompression while capping each cache at 1 MiB.
@@ -44,14 +44,14 @@ internal class MappedPropertyTextCandidates(
         }
     }
 
-    private fun declaredKinds(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Int {
+    private fun declaredKinds(type: Class<out Node>, fragments: List<String>): Int {
         var kinds = 0
         if (type.isAssignableFrom(FieldNode::class.java) && declaredTypes.fields.isNotEmpty()) kinds = kinds or FIELD
         if (declaredTypes.methods.isNotEmpty()) {
             if (type.isAssignableFrom(ParameterNode::class.java)) kinds = kinds or PARAMETER
             if (type.isAssignableFrom(ReturnNode::class.java)) kinds = kinds or RETURN
         }
-        return if (kinds != 0 && DeclaredTypeTextCandidates(declaredTypes.types, fragments, work).mayMatch()) kinds else 0
+        return if (kinds != 0 && declaredTextMayMatch(declaredTypes, fragments)) kinds else 0
     }
 
     private fun declaredKind(tag: Int): Int = when (tag) {
