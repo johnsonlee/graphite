@@ -248,3 +248,73 @@ loading benchmark, repeated-request latency distribution or saturation test.
 They provide no p50/p95, CPU or RSS recovery claim. The prior cumulative resource
 and latency regressions, native/multi-shard validation and required CI/PR gates
 remain separate obligations; no threshold or corpus gate is relaxed here.
+
+### GTY03 CI persisted-size transition
+
+The exact `067f0cab4a01cdaea95d92d7e09048fd96ee6f9b` candidate and accepted
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3` corpus tests completed in
+[CI run 37882909532, job 113666472741](https://github.com/johnsonlee/graphite/actions/runs/37882909532/job/113666472741).
+The initial correctness outputs establish these `persistedBytes` values for
+the same pinned JARs (the separately reported CallSite index is excluded):
+
+| Corpus | Baseline bytes | GTY03 bytes | Declared migration delta |
+|---|---:|---:|---:|
+| Tika | 344,993,420 | 363,142,143 | 18,148,723 |
+| Hive | 540,289,068 | 568,781,406 | 28,492,338 |
+| Kotlin compiler | 318,590,672 | 339,774,950 | 21,184,278 |
+
+Reverse-order deltas are 18,148,725 / 28,492,337 / 21,184,279 bytes, within
+two bytes of the initial values and the unchanged 4,096-byte tolerance.
+
+These replace the active **storage transition** values for GTY03. The original
+GTY01 values remain in the historical transition object. Exact graph-shape
+counts and the 4,096-byte storage tolerance remain unchanged. A separate option
+selects the GTY03 correctness transition; it cannot silently authorize another
+format or turn off a size check.
+
+The complete fresh-corpus core/declaration/member proofs above provide the
+semantic basis. A source audit additionally confirms that `GraphStore.kt`,
+`StringTable.kt`, `NodeSerializer.kt`, and the declaration collection, writer,
+binding and digest functions have identical bytes from the proven `ae316747`
+implementation through `067f0cab` and `0cdb5dd9`. Loader/query changes do not
+alter these writer paths. The retained audit is
+`/tmp/graphite-multigraph-ci-storage-transition-source-audit.json`; the original
+CI failure, logs and size errors remain under
+`/tmp/graphite-pr174-067-large-corpus-failure/`.
+
+The original CI comparison still records a failure; it is not rewritten as a
+pass. Its per-corpus timing observations are historical single-graph evidence
+and have no performance-acceptance standing under the multi-graph-only rule.
+The storage correction establishes no latency, CPU or RSS recovery. Required
+multi-graph construction, loading and query evidence remains separate.
+
+### Multi-graph CI acceptance wiring
+
+Single-graph entry points now run correctness assertions without performance
+sampling. Their success does not satisfy a performance gate. The native query
+catalog contains 39 requests: 15 original full-response cases and 24 independently
+derived cases for slow shapes, wrapped discovery, graph routing and type presence.
+Global requests target all 64 graphs; the two routing requests target the declared
+pair while the complete registry remains loaded.
+
+Four DATAFLOW queries have no `ORDER BY`. They use complete independently derived
+legal result multisets, including typed values, provenance, multiplicity, LIMIT
+counts and probe totals. Their expected digest identifies that multiset, not an
+observed response. The verifier compiles the multiset before serving requests and
+checks every completed response during the measured boundary.
+
+The pressure runner retains each request and failure, executes fixed C/A/B/B/A/C
+cells with four independently replenished workers, and reports per-case request
+p50/p95 in milliseconds before relative changes. Each case has two warmup and
+20 measured requests per cell. CPU and RSS limits remain separate constraints.
+Source/runtime identities, independently established answers and matching real
+persisted fixtures are prerequisites; a parent can reuse C only when all identity
+fields are present and exactly match the accepted artifacts.
+
+This wiring is not a completed CI performance result. The workflow still requires
+an actual `native-pressure-producers/packet.json`; its absence yields UNAVAILABLE,
+not PASS. Complete fixture semantic-equivalence claims remain mandatory. The local
+all-64 comparison records explicit source-backed corrections and limitations, so
+it cannot be relabelled as that stronger claim. Construction, loading, JVM query
+pressure and the native CI producer remain outstanding acceptance work. The
+historical CI failure and the local correctness evidence remain separate records.
