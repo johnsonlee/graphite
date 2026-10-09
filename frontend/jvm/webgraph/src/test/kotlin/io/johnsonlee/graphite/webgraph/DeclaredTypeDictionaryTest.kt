@@ -56,11 +56,11 @@ class DeclaredTypeDictionaryTest {
             }
             assertEquals("$owner.Outer<T>.Inner\$Name<? extends T>[]", restored.render(6))
             assertNull(restored.methods[MemberTypeKey(owner, "echo", "()V")])
-            DeclaredTypeStore.save(restored, dir)
+            DeclaredTypeStore.saveLegacyV2(restored, dir)
             val saved = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
             assertEquals(0x47545902, ByteBuffer.wrap(saved).int)
             assertEquals(table, DeclaredTypeStore.load(dir))
-            DeclaredTypeStore.save(DeclaredTypeStore.load(dir), dir)
+            DeclaredTypeStore.saveLegacyV2(DeclaredTypeStore.load(dir), dir)
             assertContentEquals(saved, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
         }
     }
@@ -79,7 +79,7 @@ class DeclaredTypeDictionaryTest {
 
     @Test
     fun `dictionary deduplicates every text position and rejects duplicate unused entries`() = directory { dir ->
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val valid = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val input = ByteBuffer.wrap(valid).apply { position(36) }
         val texts = List(input.int) { val bytes = ByteArray(input.int); input.get(bytes); bytes.toString(Charsets.UTF_8) }
@@ -98,7 +98,7 @@ class DeclaredTypeDictionaryTest {
 
     @Test
     fun `all unused dictionary bytes undergo strict UTF8 validation`() = directory { dir ->
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val valid = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         for (text in listOf(
             byteArrayOf(0xff.toByte()), byteArrayOf(0xc0.toByte(), 0xaf.toByte()),
@@ -113,7 +113,7 @@ class DeclaredTypeDictionaryTest {
 
     @Test
     fun `negative and out of range IDs fail in type member class and type parameter text positions`() = directory { dir ->
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val valid = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val positions = textPositions(valid)
         val count = ByteBuffer.wrap(valid).getInt(36)
@@ -130,12 +130,12 @@ class DeclaredTypeDictionaryTest {
     fun `empty dictionary works for empty table and invalid scalar input cannot replace saved file`() = directory { dir ->
         DeclaredTypeWireFixture.write(dir, DeclaredTypeTable.EMPTY, 2)
         assertEquals(DeclaredTypeTable.EMPTY, DeclaredTypeStore.load(dir))
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val binding = Files.readString(dir.resolve("forward.properties"))
         for (invalid in listOf("bad\uD800", "bad\uDC00")) {
             val malformed = table.copy(fields = mapOf(MemberTypeKey(owner, invalid, "I") to 0))
-            assertFailsWith<CharacterCodingException> { DeclaredTypeStore.save(malformed, dir) }
+            assertFailsWith<CharacterCodingException> { DeclaredTypeStore.saveLegacyV2(malformed, dir) }
             assertContentEquals(original, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
             assertEquals(binding, Files.readString(dir.resolve("forward.properties")))
             assertEquals(table, DeclaredTypeStore.load(dir))

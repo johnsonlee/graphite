@@ -258,9 +258,16 @@ impl Graph {
         let dir = path.to_path_buf();
         let src = GraphSource::open(path)?;
         let io = |(path, e)| GraphError::Io(path, e);
+        let shared_strings = crate::types::DeclaredTypes::needs_shared_strings(&src)?;
         // Parallel-ish: strings and bvgraph are the heavy ones.
         let (strings, bv) = rayon::join(
-            || StringTable::load(&src),
+            || {
+                if shared_strings {
+                    StringTable::load_for_declared_types(&src)
+                } else {
+                    StringTable::load(&src)
+                }
+            },
             || BvGraph::load(&src, "forward"),
         );
         let strings = strings?;
@@ -336,7 +343,7 @@ impl Graph {
             })
             .unwrap_or_default();
 
-        let declared_types = crate::types::DeclaredTypes::load(&src)?;
+        let declared_types = crate::types::DeclaredTypes::load_with_strings(&src, &strings)?;
         let mut graph = Graph {
             dir,
             node_version,
@@ -1287,8 +1294,11 @@ mod declared_key_tests {
 
     #[test]
     fn dual_java_wire_versions_directory_and_packed_summaries_match_all_bindings() {
-        let fixtures =
-            ["GRAPHITE_TYPES_V1_FIXTURE", "GRAPHITE_TYPES_FIXTURE"].map(std::env::var_os);
+        let fixtures = [
+            std::env::var_os("GRAPHITE_TYPES_V1_FIXTURE"),
+            std::env::var_os("GRAPHITE_TYPES_V2_FIXTURE")
+                .or_else(|| std::env::var_os("GRAPHITE_TYPES_FIXTURE")),
+        ];
         let [Some(v1), Some(v2)] = fixtures else {
             assert!(std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none(),
                 "strict interoperability requires GRAPHITE_TYPES_V1_FIXTURE and GRAPHITE_TYPES_FIXTURE");

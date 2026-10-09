@@ -1,5 +1,6 @@
 //! Graph-local declared types. Erased node identities remain in the main graph.
 use crate::source::GraphSource;
+use crate::strings::StringTable;
 use indexmap::{Equivalent, IndexMap, IndexSet};
 use sha2::{Digest, Sha256};
 use std::hash::{Hash, Hasher};
@@ -63,6 +64,7 @@ struct Reader<'a> {
     pos: usize,
     strings: IndexSet<Arc<str>>,
     pooled: bool,
+    shared: Option<&'a StringTable>,
 }
 impl<'a> Reader<'a> {
     fn at(bytes: &'a [u8], pos: usize) -> Self {
@@ -71,6 +73,7 @@ impl<'a> Reader<'a> {
             pos,
             strings: IndexSet::new(),
             pooled: false,
+            shared: None,
         }
     }
 
@@ -127,6 +130,19 @@ impl<'a> Reader<'a> {
         Ok(())
     }
     fn string(&mut self) -> Result<Arc<str>, TypeError> {
+        if let Some(strings) = self.shared {
+            let id = usize::try_from(self.int()?)
+                .map_err(|_| TypeError("invalid global string ID".into()))?;
+            let value = strings
+                .strict_get(id)
+                .map_err(|error| TypeError(error.to_string()))?;
+            if let Some(shared) = self.strings.get(value) {
+                return Ok(shared.clone());
+            }
+            let shared: Arc<str> = Arc::from(value);
+            self.strings.insert(shared.clone());
+            return Ok(shared);
+        }
         if self.pooled {
             let id = self.int()?;
             return usize::try_from(id)
@@ -239,7 +255,7 @@ impl DeclaredTypes {
             _ => None,
         }
     }
-    pub fn load(source: &GraphSource) -> Result<Option<Self>, TypeError> {
+    fn binding(source: &GraphSource) -> Result<Option<String>, TypeError> {
         // This declaration is authoritative: older BVGraph writers replace
         // forward.properties, so an orphaned table cannot survive their saves.
         let properties = source
@@ -264,6 +280,46 @@ impl DeclaredTypes {
         if binding.len() != 64 || !binding.bytes().all(|b| b.is_ascii_hexdigit()) {
             return Err(TypeError("invalid forward.properties type binding".into()));
         }
+        Ok(Some(binding.to_owned()))
+    }
+
+    /// Advisory only. The actual GTY03 parser independently requires verified strings.
+    pub(crate) fn needs_shared_strings(source: &GraphSource) -> Result<bool, TypeError> {
+        if Self::binding(source)?.is_none() {
+            return Ok(false);
+        }
+        let bytes = source
+            .bytes("graph.types")
+            .map_err(|(path, error)| TypeError(format!("{path}: {error}")))?;
+        Ok(bytes
+            .as_ref()
+            .is_some_and(|bytes| bytes.get(..4) == Some(&0x47545903i32.to_be_bytes())))
+    }
+
+    pub fn load(source: &GraphSource) -> Result<Option<Self>, TypeError> {
+        if Self::needs_shared_strings(source)? {
+            let strings = StringTable::load_for_declared_types(source)
+                .map_err(|error| TypeError(error.to_string()))?;
+            Self::load_context(source, Some(&strings))
+        } else {
+            Self::load_context(source, None)
+        }
+    }
+
+    pub fn load_with_strings(
+        source: &GraphSource,
+        strings: &StringTable,
+    ) -> Result<Option<Self>, TypeError> {
+        Self::load_context(source, Some(strings))
+    }
+
+    fn load_context(
+        source: &GraphSource,
+        strings: Option<&StringTable>,
+    ) -> Result<Option<Self>, TypeError> {
+        let Some(binding) = Self::binding(source)? else {
+            return Ok(None);
+        };
         let bytes = source
             .require("graph.types")
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
@@ -271,18 +327,34 @@ impl DeclaredTypes {
             .iter()
             .map(|b| format!("{b:02x}"))
             .collect::<String>();
-        if !actual.eq_ignore_ascii_case(binding) {
+        if !actual.eq_ignore_ascii_case(&binding) {
             return Err(TypeError("forward.properties type digest mismatch".into()));
         }
         let metadata = source
             .require("graph.metadata")
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
-        Self::parse(&bytes, &metadata).map(Some)
+        Self::parse_context(&bytes, &metadata, strings).map(Some)
     }
     pub fn parse(bytes: &[u8], metadata: &[u8]) -> Result<Self, TypeError> {
+        Self::parse_context(bytes, metadata, None)
+    }
+
+    pub fn parse_with_strings(
+        bytes: &[u8],
+        metadata: &[u8],
+        strings: &StringTable,
+    ) -> Result<Self, TypeError> {
+        Self::parse_context(bytes, metadata, Some(strings))
+    }
+
+    fn parse_context<'a>(
+        bytes: &'a [u8],
+        metadata: &[u8],
+        strings: Option<&'a StringTable>,
+    ) -> Result<Self, TypeError> {
         let mut r = Reader::at(bytes, 0);
         let version = r.int()?;
-        if !matches!(version, 0x47545901 | 0x47545902) {
+        if !matches!(version, 0x47545901..=0x47545903) {
             return Err(TypeError("unsupported header/version".into()));
         }
         if r.take(32)? != Sha256::digest(metadata).as_slice() {
@@ -290,6 +362,16 @@ impl DeclaredTypes {
         }
         if version == 0x47545902 {
             r.dictionary()?;
+        } else if version == 0x47545903 {
+            let strings = strings
+                .ok_or_else(|| TypeError("GTY03 requires verified graph.strings context".into()))?;
+            let digest = strings.serialized_digest().ok_or_else(|| {
+                TypeError("GTY03 requires verified serialized graph.strings digest".into())
+            })?;
+            if r.take(32)? != digest {
+                return Err(TypeError("serialized graph.strings digest mismatch".into()));
+            }
+            r.shared = Some(strings);
         }
         let count = r.section_count(28)?;
         let mut table = Self::default();

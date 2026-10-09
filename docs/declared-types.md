@@ -75,14 +75,14 @@ treat the graph as legacy and ignore any orphan table. Rewriting a graph with an
 writer therefore cannot accidentally reuse stale generic declarations, even when its
 erased metadata is unchanged.
 
-Both versions use signed big-endian int32 words. Lists start with an int32 count.
+All versions use signed big-endian int32 words. Lists start with an int32 count.
 Type references are zero-based type row IDs, with `-1` reserved for an absent
-optional reference. Writers emit version 2; both JVM and native readers accept
-versions 1 and 2.
+optional reference. Writers emit version 3; JVM and native readers also accept
+versions 1 and 2. The main node/edge format does not change.
 
-1. Header `0x47545902` (`GTY`, version 2), then SHA-256 of `graph.metadata` (32 bytes).
-   Next comes a string count and that many unique strings, each encoded as an
-   int32 UTF-8 byte length followed by those bytes.
+1. Header `0x47545903` (`GTY`, version 3), then SHA-256 of `graph.metadata` (32 bytes)
+   and SHA-256 of the complete serialized `graph.strings` file (32 bytes).
+   There is no string count or local dictionary in this version.
 2. Type rows: `kind`, `name`, `scope`, optional `owner`, optional `component`,
    `variance`, argument reference list.
 3. Field bindings: owner, name, full JVM field descriptor, type reference.
@@ -96,42 +96,62 @@ name, scope and bound reference list. The full method descriptor includes the
 return type, keeping bridge methods distinct. Identical type expressions share
 rows, but same-named variables from different scopes do not.
 
-Every text field in sections 2–5 is a zero-based int32 ID into this file's string
-dictionary, including member keys, type kinds/names/scopes, variance and type
-parameter names/scopes. Empty text has an ordinary dictionary entry; text IDs have
-no null sentinel. These IDs are separate from type row IDs and `graph.strings`
-IDs. Dictionary equality is exact, without Unicode normalization, and writers
-assign IDs in first-occurrence order. Formatted generic types are rendered on
-demand rather than stored as additional strings.
+Every text field in sections 2–5 is a zero-based int32 ID into `graph.strings`,
+including member keys, type kinds/names/scopes, variance and type parameter
+names/scopes. Empty text has an ordinary string-table entry; text IDs have no
+null sentinel. Type IDs remain local to `graph.types` and are separate from
+string IDs and Node IDs. Before saving, the writer collects declaration strings
+with node and metadata strings, then builds one sorted, deduplicated string table.
+Formatted generic types such as `List<User>` are rendered on demand rather than
+stored as additional strings.
 
-Version 1 has header `0x47545901` and the same metadata digest and declaration
-sections, but no dictionary: each text field contains its own int32 UTF-8 byte
-length and bytes. Saving a loaded version 1 table writes version 2 through a
-temporary file and replacement, including when saving into the same directory.
+The version 3 string binding covers the actual serialized bytes used to load
+that immutable string-table instance. It is distinct from the semantic snapshot
+in `graph.strings.identity`; a matching snapshot cannot authorize a changed
+string file. Both readers require the verified serialized digest before exposing
+version 3 declarations and validate every referenced string ID and its text.
+Unpaired UTF-16 surrogates cannot be silently replaced in declared types.
+The type table's metadata digest and authoritative `forward.properties` binding
+remain required as well.
 
-Both readers validate the table binding, metadata digest, lengths, reference ranges, expression
-shapes, duplicate declaration keys and expression cycles before exposing the table.
-Version 2 also validates every dictionary entry, including unused entries, and
-rejects invalid UTF-8, duplicate text and out-of-range string IDs.
-Nesting beyond 256 expression levels is rejected. Expanded projections are limited
-to 100,000 expression nodes and 1,000,000 UTF-8 bytes of type text to reject small
-DAGs whose recursive expansion would consume unbounded memory. A referenced but missing
-or invalid table is a load error; an absent binding is the supported legacy case. All integrity validation occurs during graph loading, before the first generic query.
-The JVM reader retains mapped table bytes and compact offsets/indexes; it decodes
-individual type and declaration objects on access without retaining a decoded cache.
-Its version 2 dictionary retains primitive offsets and string hashes. The native
-reader decodes strings into graph-local shared storage; repeated text shares the
-same allocation in either version, with no process-wide interning.
-Rendering and structured projections are produced when requested.
+Version 2 (`0x47545902`) has the metadata digest followed by its own unique UTF-8
+dictionary: an int32 string count, then an int32 byte length and bytes per string.
+Its four declaration sections use IDs local to that dictionary, assigned in
+first-occurrence order. Readers validate every entry, including unused entries,
+and reject invalid UTF-8, duplicate text and out-of-range string IDs. Version 1
+(`0x47545901`) has the metadata digest and the same declaration sections, but
+each text field contains its own int32 UTF-8 byte length and bytes.
+
+Saving a loaded graph with declaration metadata writes version 3 and remaps its
+declaration strings against the newly built `graph.strings`. An empty declaration
+table removes or omits `graph.types` and its binding. When saving into the same
+directory, the source table continues to resolve text through its original immutable
+string table while the replacement type file is written and published. Reusing old
+string IDs with a newly built dictionary is not valid.
+
+Both readers validate the table binding, metadata digest, lengths, reference ranges,
+expression shapes, duplicate declaration keys and expression cycles before exposing
+the table. Nesting beyond 256 expression levels is rejected. Expanded projections
+are limited to 100,000 expression nodes and 1,000,000 UTF-8 bytes of type text to
+reject small DAGs whose recursive expansion would consume unbounded memory. A
+referenced but missing or invalid table is a load error; an absent binding is the
+supported legacy case. All integrity validation occurs during graph loading,
+before the first generic query.
+
+The JVM reader retains mapped type rows and compact indexes; version 3 resolves
+text through the graph's already loaded string table. Its legacy version 2 reader
+retains dictionary offsets and hashes. The native reader decodes declaration
+values into graph-local shared storage, with no process-wide interning. Rendering
+and structured projections are produced when requested.
 
 ## Verification
 
 `DeclaredTypePersistenceTest` compiles a Java JAR, builds its graph, and verifies
 ordinary and mapped loading plus Cypher projections. Set `GRAPHITE_TYPES_FIXTURE`
-to retain that version 2 persisted graph and `GRAPHITE_TYPES_V1_FIXTURE` to retain
-its version 1 equivalent for native directory and packed-container interoperability
-tests. Fixtures in
-these tests establish correctness, not performance. Performance comparisons must
+to retain the current version 3 graph, `GRAPHITE_TYPES_V1_FIXTURE` for version 1,
+and `GRAPHITE_TYPES_V2_FIXTURE` for version 2. The native interoperability tests
+exercise all three as directories and packed containers; set
+`GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES=1` to require every fixture. These fixtures establish correctness, not performance. Performance comparisons must
 use the repository's representative real multi-graph workloads.
 
 The declaration references also correct two historical type-name errors: generic

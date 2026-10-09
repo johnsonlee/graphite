@@ -4,6 +4,12 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
+import java.io.BufferedInputStream
+import java.io.BufferedOutputStream
+import java.io.ObjectInputStream
+import java.io.ObjectOutputStream
+import java.security.DigestInputStream
+import java.security.DigestOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,8 +29,12 @@ import java.security.MessageDigest
 internal class StringTable private constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>?,
-    contentIdentity: ByteArray?
+    contentIdentity: ByteArray?,
+    serializedDigest: ByteArray? = null
 ) {
+
+    private val serializedIdentity = serializedDigest?.copyOf()
+    internal fun serializedDigest(): ByteArray? = serializedIdentity?.copyOf()
 
     @Volatile
     private var persistedContentIdentity: ByteArray? = contentIdentity?.copyOf()
@@ -79,6 +89,7 @@ internal class StringTable private constructor(
 
     companion object {
 
+        private const val DIGEST_ALGORITHM = "SHA-256"
         private const val FILE_NAME = "graph.strings"
         internal const val CONTENT_IDENTITY_FILE_NAME = "graph.strings.identity"
         private const val CONTENT_IDENTITY_BYTES = 32
@@ -90,33 +101,50 @@ internal class StringTable private constructor(
          * The ratio parameter controls the trade-off between compression and
          * random access speed.
          */
-        fun build(strings: Collection<String>, dir: Path): StringTable {
+        fun build(strings: Collection<String>, dir: Path, captureSerializedDigest: Boolean = false): StringTable {
             val sorted = strings.toSortedSet().toList()
             val fcl = FrontCodedStringList(sorted.iterator(), FRONT_CODED_STRING_RATIO, false)
-            BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
+            val serializedHash = if (captureSerializedDigest) MessageDigest.getInstance(DIGEST_ALGORITHM) else null
+            if (serializedHash == null) {
+                BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
+            } else {
+                DigestOutputStream(BufferedOutputStream(Files.newOutputStream(dir.resolve(FILE_NAME))), serializedHash).use { raw ->
+                    ObjectOutputStream(raw).use { it.writeObject(fcl) }
+                }
+            }
             val contentIdentity = semanticContentIdentity(sorted)
             Files.write(dir.resolve(CONTENT_IDENTITY_FILE_NAME), contentIdentity)
             val indexMap = HashMap<String, Int>(sorted.size)
             for (i in sorted.indices) {
                 indexMap[sorted[i]] = i
             }
-            return StringTable(fcl, indexMap, contentIdentity)
+            return StringTable(fcl, indexMap, contentIdentity, serializedHash?.digest())
         }
 
         /**
          * Load a previously persisted [StringTable] from disk.
          */
-        fun load(dir: Path): StringTable {
-            @Suppress("UNCHECKED_CAST")
-            val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
+        fun load(dir: Path, verifySerializedDigest: Boolean = false): StringTable {
+            val serializedHash = if (verifySerializedDigest) MessageDigest.getInstance(DIGEST_ALGORITHM) else null
+            val fcl = if (serializedHash == null) {
+                BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
+            } else {
+                SerializedDigestInputStream(BufferedInputStream(Files.newInputStream(dir.resolve(FILE_NAME))), serializedHash).use { raw ->
+                    val objects = ObjectInputStream(raw)
+                    val decoded = objects.readObject() as FrontCodedStringList
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    while (raw.read(buffer) >= 0) { /* Bind every serialized byte, including trailing data. */ }
+                    decoded
+                }
+            }
             val contentIdentity = dir.resolve(CONTENT_IDENTITY_FILE_NAME).takeIf(Files::isRegularFile)
                 ?.let(Files::readAllBytes)
                 ?.takeIf { identity -> identity.size == CONTENT_IDENTITY_BYTES }
-            return StringTable(fcl, null, contentIdentity)
+            return StringTable(fcl, null, contentIdentity, serializedHash?.digest())
         }
 
         private fun semanticContentIdentity(strings: List<String>): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance(DIGEST_ALGORITHM)
             digest.updateInt(strings.size)
             strings.forEach { value ->
                 val bytes = value.toByteArray(StandardCharsets.UTF_8)
@@ -130,7 +158,7 @@ internal class StringTable private constructor(
             strings: FrontCodedStringList,
             workConsumer: GraphWorkConsumer?
         ): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance(DIGEST_ALGORITHM)
             digest.updateInt(strings.size)
             val reusable = MutableString()
             val accounting = BufferedGraphWorkConsumer(workConsumer)
@@ -153,5 +181,22 @@ internal class StringTable private constructor(
 private fun MessageDigest.updateInt(value: Int) {
     for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
         update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
+    }
+}
+
+/** ObjectInputStream may skip optional data; skipped bytes belong to the serialized identity too. */
+internal class SerializedDigestInputStream(input: java.io.InputStream, digest: MessageDigest) :
+    DigestInputStream(input, digest) {
+    override fun skip(n: Long): Long {
+        if (n <= 0) return 0
+        val buffer = ByteArray(minOf(n, DEFAULT_BUFFER_SIZE.toLong()).toInt())
+        var remaining = n
+        while (remaining > 0) {
+            val readCount = read(buffer, 0, minOf(remaining, buffer.size.toLong()).toInt())
+            val count = if (readCount == 0) { if (read() < 0) -1 else 1 } else readCount
+            if (count < 0) break
+            remaining -= count
+        }
+        return n - remaining
     }
 }
