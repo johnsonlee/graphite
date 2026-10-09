@@ -906,3 +906,34 @@ C/A192/B193 full-projection requests and pressure remain to execute.
 
 Generator record SHA-256: `f26186a79ab78831db472cb814d3430e0876596a253eab1667c5ae8fb25cac66`.
 Root review SHA-256: `301cb3511cfc4450834d4358911eee08a202b4d0484b235e17751017d53f2c75`.
+
+
+## Executable actual-writer formatter correctness stage (2026-10-10)
+
+The fresh producer workflow now has an owned correctness command for the actual
+non-baseline writer checkout: the four existing ArrayTypeFormatterMigrationTest
+cases,16 FoldSelectionTest cases and ArrayLocalPersistenceTest's six-allocation
+case. No candidate test is copied into accepted4f. A=C skips the stage; an actual
+parent lacking the exact reviewed test sources fails explicitly. The command
+reuses the producer's Gradle/home caches, uses its exact JDK with4g/APC4 and one
+Test fork, and keeps raw XML and binary test results outside measured graph roots.
+This work is after usable graph construction and contributes no performance time.
+
+The init script captures ordered classpath bytes before and after each Test task.
+The auditor checks exact test identities, no failures/skips or unrelated results,
+first-resolution production classes against the actual writer JAR, source/runtime
+identity and owned cleanup. A successful generic CI status or historical XML is
+not substituted. The independent audit sets productionFormatterTestsVerified
+only after actual command, classpath, writer and raw result checks succeed.
+Inference, complete graph semantics and performance flags remain false.
+
+Root inspected the Python/Groovy execution and audit paths and the11 behavioral
+protocol tests, then independently ran all11 successfully. Source/test/control
+hashes, YAML and extracted Bash validation pass. Evidence is
+`/tmp/graphite-formatter-tests-root-protocol.log`; frozen source is
+`/tmp/graphite-native-formatter-tests-prep-1/production-test-source-ready.json`,
+SHA-256 `2bc859336802853c3d1a68db019e4bfb21a2889a9320de9dad2aa0a2c209af49`.
+These tests use tiny classpath/JAR/XML fixtures with mocked execution. The new
+Groovy init script and complete actual-writer stage have not yet run in Gradle;
+they are not represented as production test success by this source integration.
+The separate615-test Attempt187 result remains separate evidence.
