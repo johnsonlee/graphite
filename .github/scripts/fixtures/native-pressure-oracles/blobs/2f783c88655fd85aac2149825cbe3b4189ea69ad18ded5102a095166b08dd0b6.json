@@ -1,0 +1,915 @@
+{
+  "columns": [
+    "graphId",
+    "returnRendered",
+    "returnStructured",
+    "parametersRendered",
+    "parametersStructured",
+    "formalParameters",
+    "members"
+  ],
+  "rows": [
+    {
+      "graphId": "fixture-android-00",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24779,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-01",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25700,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-01"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-02",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25074,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-02"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-03",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25260,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-03"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-04",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24910,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-04"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-05",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24793,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-05"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-06",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25698,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-06"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-07",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 26166,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-07"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-08",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 26293,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-08"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-09",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 27310,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-09"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-10",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25013,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-10"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-11",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 23920,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-11"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-12",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 28417,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-12"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-13",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25710,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-13"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-14",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25653,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-14"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-android-15",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 23822,
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-15"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-00",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25972,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-01",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 23388,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-01"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-02",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 27285,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-02"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-03",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25442,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-03"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-04",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24817,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-04"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-05",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25109,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-05"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-06",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24961,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-06"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-07",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25970,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-07"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-08",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 26281,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-08"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-09",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24481,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-09"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-10",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 23820,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-10"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-11",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25942,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-11"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-12",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25060,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-12"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-13",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 26326,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-13"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-14",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 24003,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-14"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-hive-15",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 25186,
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-15"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-00",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 16464,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-01",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 15684,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-01"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-02",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 14354,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-02"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-03",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 13209,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-03"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-04",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 15673,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-04"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-05",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 16343,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-05"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-06",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 14623,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-06"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-07",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 15573,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-07"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-08",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 16263,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-08"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-09",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 17463,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-09"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-10",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 18551,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-10"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-11",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 14347,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-11"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-12",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 15285,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-12"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-13",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 15051,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-13"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-14",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 14446,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-14"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-kotlin-compiler-15",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 16340,
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-00",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 17590,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-00"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-01",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 19179,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-01"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-02",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 20690,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-02"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-03",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 17676,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-03"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-04",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 19473,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-04"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-05",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 20295,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-05"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-06",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 18449,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-06"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-07",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 19135,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-07"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-08",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 19241,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-08"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-09",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 19924,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-09"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-10",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 20770,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-10"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-11",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 18950,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-11"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-12",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 20750,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-12"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-13",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 18677,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-14",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 21175,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-14"
+        ]
+      }
+    },
+    {
+      "graphId": "fixture-tika-15",
+      "returnRendered": true,
+      "returnStructured": true,
+      "parametersRendered": true,
+      "parametersStructured": true,
+      "formalParameters": true,
+      "members": 20878,
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-15"
+        ]
+      }
+    }
+  ],
+  "rowCount": 64,
+  "graphCount": 64,
+  "total": {
+    "value": 64,
+    "relation": "eq"
+  }
+}

@@ -1,0 +1,2767 @@
+{
+  "columns": [
+    "n.graph_id",
+    "caller",
+    "callerMethod",
+    "callee",
+    "calleeMethod"
+  ],
+  "rows": [
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "<clinit>",
+      "callee": "android.content.UriMatcher",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "<clinit>",
+      "callee": "android.content.UriMatcher",
+      "calleeMethod": "addURI",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "normalizeKey",
+      "callee": "android.content.UriMatcher",
+      "calleeMethod": "match",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "normalizeKey",
+      "callee": "android.net.Uri",
+      "calleeMethod": "getLastPathSegment",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "normalizeKey",
+      "callee": "android.net.Uri",
+      "calleeMethod": "withAppendedPath",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "purge",
+      "callee": "android.content.UriMatcher",
+      "calleeMethod": "match",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "purge",
+      "callee": "android.content.ContentUris",
+      "calleeMethod": "parseId",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "purge",
+      "callee": "android.net.Uri",
+      "calleeMethod": "getLastPathSegment",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "purge",
+      "callee": "android.net.Uri",
+      "calleeMethod": "withAppendedPath",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "callerMethod": "selectBestRoute",
+      "callee": "android.net.RouteInfo",
+      "calleeMethod": "getDestination",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "callerMethod": "selectBestRoute",
+      "callee": "android.net.IpPrefix",
+      "calleeMethod": "getAddress",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "callerMethod": "selectBestRoute",
+      "callee": "android.net.IpPrefix",
+      "calleeMethod": "getPrefixLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "callerMethod": "selectBestRoute",
+      "callee": "android.net.RouteInfo",
+      "calleeMethod": "matches",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.net.module.util.NetUtils",
+      "callerMethod": "selectBestRoute",
+      "callee": "android.net.RouteInfo",
+      "calleeMethod": "getType",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "<init>",
+      "callee": "android.app.Service",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onBind",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "getBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onCreate",
+      "callee": "android.app.Service",
+      "calleeMethod": "onCreate",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onCreate",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onDestroy",
+      "callee": "android.util.Log",
+      "calleeMethod": "d",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onDestroy",
+      "callee": "android.os.Handler",
+      "calleeMethod": "obtainMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onDestroy",
+      "callee": "android.os.Handler",
+      "calleeMethod": "sendMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onStartCommand",
+      "callee": "android.util.Log",
+      "calleeMethod": "d",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onStartCommand",
+      "callee": "android.os.Handler",
+      "calleeMethod": "obtainMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncService",
+      "callerMethod": "onStartCommand",
+      "callee": "android.os.Handler",
+      "calleeMethod": "sendMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connect",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connectSrcHandlerToPackageSync",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connectSrcHandlerToPackageSync",
+      "callee": "android.content.Intent",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connectSrcHandlerToPackageSync",
+      "callee": "android.content.Intent",
+      "calleeMethod": "setClassName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connectSrcHandlerToPackageSync",
+      "callee": "android.content.Context",
+      "calleeMethod": "bindService",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connectSync",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "connected",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "disconnect",
+      "callee": "android.content.Context",
+      "calleeMethod": "unbindService",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "disconnect",
+      "callee": "android.os.Message",
+      "calleeMethod": "obtain",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "disconnect",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "send",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "disconnect",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "getBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "disconnect",
+      "callee": "android.os.IBinder",
+      "calleeMethod": "unlinkToDeath",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "linkToDeathMonitor",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "getBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "linkToDeathMonitor",
+      "callee": "android.os.IBinder",
+      "calleeMethod": "linkToDeath",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "log",
+      "callee": "android.util.Log",
+      "calleeMethod": "d",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyDisconnected",
+      "callee": "android.os.Handler",
+      "calleeMethod": "obtainMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyDisconnected",
+      "callee": "android.os.Handler",
+      "calleeMethod": "sendMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyHalfConnected",
+      "callee": "android.os.Handler",
+      "calleeMethod": "obtainMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyHalfConnected",
+      "callee": "android.os.Handler",
+      "calleeMethod": "sendMessage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyToMessage",
+      "callee": "android.os.Message",
+      "calleeMethod": "obtain",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyToMessage",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "send",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "replyToMessage",
+      "callee": "android.os.RemoteException",
+      "calleeMethod": "printStackTrace",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "sendMessage",
+      "callee": "android.os.Message",
+      "calleeMethod": "obtain",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "sendMessage",
+      "callee": "android.os.Messenger",
+      "calleeMethod": "send",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.wifi.x.com.android.internal.util.AsyncChannel",
+      "callerMethod": "sendMessageSynchronously",
+      "callee": "android.os.Message",
+      "calleeMethod": "obtain",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "<init>",
+      "callee": "android.util.IntArray",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "<init>",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "addStateHandler",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "addStateHandler",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "put",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "enter",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "exit",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "handle",
+      "callee": "android.util.SparseArray",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "transit",
+      "callee": "android.util.IntArray",
+      "calleeMethod": "clear",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "transit",
+      "callee": "android.util.IntArray",
+      "calleeMethod": "add",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "transit",
+      "callee": "android.util.IntArray",
+      "calleeMethod": "size",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "transit",
+      "callee": "android.util.IntArray",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.utils.StateMachine",
+      "callerMethod": "transit",
+      "callee": "android.util.Slog",
+      "calleeMethod": "e",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.os.Trace",
+      "calleeMethod": "traceBegin",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setParent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setFormat",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setFlags",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setMetadata",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setCallsite",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setBLASTLayer",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "build",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "<init>",
+      "callee": "android.os.Trace",
+      "calleeMethod": "traceEnd",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "clearWindowContentFrameStats",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "clearContentFrameStats",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "destroy",
+      "callee": "android.os.Debug",
+      "calleeMethod": "getCallers",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "destroy",
+      "callee": "android.util.Slog",
+      "calleeMethod": "e",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "destroy",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "remove",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "destroy",
+      "callee": "android.util.Slog",
+      "calleeMethod": "w",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "start",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "end",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "getSurfaceControl",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "copyFrom",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "getWindowContentFrameStats",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "getContentFrameStats",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "hideSurface",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "hide",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "hideSurface",
+      "callee": "android.util.EventLog",
+      "calleeMethod": "writeEvent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "hideSurface",
+      "callee": "android.util.Slog",
+      "calleeMethod": "w",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "prepareToShowInTransaction",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setAlpha",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setColorSpaceAgnostic",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setColorSpaceAgnostic",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setMatrix",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setMatrix",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setOpaque",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "getGlobalTransaction",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setOpaque",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setOpaque",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setPosition",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setPosition",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setSecure",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "getGlobalTransaction",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "setSecure",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "setSecure",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "showRobustly",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "show",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "showRobustly",
+      "callee": "android.util.EventLog",
+      "calleeMethod": "writeEvent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.WindowSurfaceController",
+      "callerMethod": "toString",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "<init>",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "allResolved",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "appRemovedOrHidden",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "remove",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "clear",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "clear",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "dump",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "dump",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "size",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "dump",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "keyAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "dump",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "valueAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "getDebugMessage",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "size",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "getDebugMessage",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "keyAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "getDebugMessage",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "valueAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "isVisibilityUnknown",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "containsKey",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyAppResumedFinished",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "containsKey",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyAppResumedFinished",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyAppResumedFinished",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "put",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyLaunched",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "put",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyRelayouted",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "containsKey",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyRelayouted",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyRelayouted",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "put",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyVisibilitiesUpdated",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "size",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyVisibilitiesUpdated",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "valueAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.UnknownAppVisibilityController",
+      "callerMethod": "notifyVisibilitiesUpdated",
+      "callee": "android.util.ArrayMap",
+      "calleeMethod": "removeAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "<clinit>",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "<init>",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "<init>",
+      "callee": "android.app.ActivityManager$TaskDescription",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "<init>",
+      "callee": "android.app.ActivityManager$RecentTaskInfo$PersistedTaskSnapshotData",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "<init>",
+      "callee": "android.app.ActivityManagerInternal",
+      "calleeMethod": "getCurrentUserId",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustAnimationBoundsForTransition",
+      "callee": "android.view.InsetsState",
+      "calleeMethod": "sourceSize",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustAnimationBoundsForTransition",
+      "callee": "android.view.InsetsState",
+      "calleeMethod": "sourceAt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustAnimationBoundsForTransition",
+      "callee": "android.view.InsetsSource",
+      "calleeMethod": "insetsRoundedCornerFrame",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustAnimationBoundsForTransition",
+      "callee": "android.view.InsetsSource",
+      "calleeMethod": "calculateVisibleInsets",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustAnimationBoundsForTransition",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "inset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustBoundsForDisplayChangeIfNeeded",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustBoundsForDisplayChangeIfNeeded",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustBoundsForDisplayChangeIfNeeded",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "canResizeTask",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustForMinimalTaskDimensions",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustForMinimalTaskDimensions",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustForMinimalTaskDimensions",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "width",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustForMinimalTaskDimensions",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "height",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "adjustForMinimalTaskDimensions",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "canMoveTaskToBack",
+      "callee": "android.app.IActivityController",
+      "calleeMethod": "activityResuming",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "canResizeToBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "width",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "canResizeToBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "height",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "canResizeToBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "checkTranslucentActivityWaiting",
+      "callee": "android.os.Handler",
+      "calleeMethod": "removeMessages",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "cleanUpResourcesForDestroy",
+      "callee": "android.service.voice.IVoiceInteractionSession",
+      "calleeMethod": "taskFinished",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "clearLastRecentsAnimationTransaction",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "remove",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "computeFreeformBounds",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "computeFreeformBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "computeFreeformBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "intersect",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "computeFreeformBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "offset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "convertActivityToTranslucent",
+      "callee": "android.os.Handler",
+      "calleeMethod": "sendEmptyMessageDelayed",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dump",
+      "callee": "android.os.UserHandle",
+      "calleeMethod": "formatUid",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dump",
+      "callee": "android.content.Intent",
+      "calleeMethod": "toShortString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dump",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "flattenToShortString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dump",
+      "callee": "android.content.pm.ActivityInfo",
+      "calleeMethod": "resizeModeToString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "start",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "flattenToShortString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "dumpDebug",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "getWidth",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.view.SurfaceControl",
+      "calleeMethod": "getHeight",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "dumpDebug",
+      "callee": "android.util.proto.ProtoOutputStream",
+      "calleeMethod": "end",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "enableEnterPipOnTaskSwitch",
+      "callee": "android.app.ActivityOptions",
+      "calleeMethod": "disallowEnterPictureInPictureWhileLaunching",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "enableEnterPipOnTaskSwitch",
+      "callee": "android.app.ActivityOptions",
+      "calleeMethod": "getTransientLaunch",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "executeAppTransition",
+      "callee": "android.app.ActivityOptions",
+      "calleeMethod": "abort",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.app.TaskInfo",
+      "calleeMethod": "addLaunchCookie",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getFlags",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.content.Intent",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.content.Intent",
+      "calleeMethod": "cloneFilter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.content.Intent",
+      "calleeMethod": "setFlags",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.app.ActivityManager$TaskDescription",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.content.res.Configuration",
+      "calleeMethod": "setTo",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "setActivityType",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "setWindowingMode",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.app.PictureInPictureParams",
+      "calleeMethod": "isLaunchIntoPip",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "width",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fillTaskInfo",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "height",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishIfVoiceActivity",
+      "callee": "android.service.voice.IVoiceInteractionSession",
+      "calleeMethod": "asBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishIfVoiceActivity",
+      "callee": "android.app.IApplicationThread",
+      "calleeMethod": "scheduleLocalVoiceInteractionStarted",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishIfVoiceTask",
+      "callee": "android.service.voice.IVoiceInteractionSession",
+      "calleeMethod": "asBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishTopCrashedActivityLocked",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishTopCrashedActivityLocked",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "flattenToShortString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "finishTopCrashedActivityLocked",
+      "callee": "android.util.Slog",
+      "calleeMethod": "w",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fitWithinBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fitWithinBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "contains",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fitWithinBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "width",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fitWithinBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "offset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "fromWindowContainerToken",
+      "callee": "android.window.WindowContainerToken",
+      "calleeMethod": "asBinder",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getBasePackageName",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getBasePackageName",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "getPackageName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getDimBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "intersect",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getDimBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getDisplayCutoutInsets",
+      "callee": "android.view.DisplayCutout",
+      "calleeMethod": "getSafeInsets",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getFreezeSnapshotTarget",
+      "callee": "android.util.ArraySet",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getFreezeSnapshotTarget",
+      "callee": "android.util.ArraySet",
+      "calleeMethod": "add",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getFreezeSnapshotTarget",
+      "callee": "android.view.RemoteAnimationAdapter",
+      "calleeMethod": "getChangeNeedsSnapshot",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getInactiveDuration",
+      "callee": "android.os.SystemClock",
+      "calleeMethod": "elapsedRealtime",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getLaunchBounds",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "persistTaskBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getMaxVisibleBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "setEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getMaxVisibleBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getMaxVisibleBounds",
+      "callee": "android.view.InsetsState",
+      "calleeMethod": "calculateVisibleInsets",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getMaxVisibleBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "inset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getMaxVisibleBounds",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "union",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getPictureInPictureParams",
+      "callee": "android.app.PictureInPictureParams",
+      "calleeMethod": "empty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getPictureInPictureParams",
+      "callee": "android.app.PictureInPictureParams",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getRelativePosition",
+      "callee": "android.graphics.Point",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getStartingWindowInfo",
+      "callee": "android.window.StartingWindowInfo",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getStartingWindowInfo",
+      "callee": "android.content.res.Configuration",
+      "calleeMethod": "setTo",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getTaskFragmentParentInfo",
+      "callee": "android.window.TaskFragmentParentInfo",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "getTaskInfo",
+      "callee": "android.app.ActivityManager$RunningTaskInfo",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isResizeable",
+      "callee": "android.content.pm.ActivityInfo",
+      "calleeMethod": "isResizeableMode",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "setComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getPackage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "setPackage",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "isSameIntentFilter",
+      "callee": "android.content.Intent",
+      "calleeMethod": "filterEquals",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$getDumpActivitiesLocked$30",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$getOccludingActivityAbove$8",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "equals",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$getTopFullscreenActivity$9",
+      "callee": "android.view.WindowManager$LayoutParams",
+      "calleeMethod": "isFullscreen",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$moveTaskToBack$29",
+      "callee": "android.util.Slog",
+      "calleeMethod": "e",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$navigateUpTo$26",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "getPackageName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$navigateUpTo$26",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "getClassName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "lambda$setMainWindowSizeChangeTransaction$17",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "merge",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "makeAnimationLeash",
+      "callee": "android.view.SurfaceControl$Builder",
+      "calleeMethod": "setMetadata",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "matchesActivityInHistory",
+      "callee": "android.content.ComponentName",
+      "calleeMethod": "equals",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "maybeApplyLastRecentsAnimationTransaction",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "reparent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "maybeApplyLastRecentsAnimationTransaction",
+      "callee": "android.window.PictureInPictureSurfaceTransaction",
+      "calleeMethod": "apply",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "maybeApplyLastRecentsAnimationTransaction",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "show",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "minimalResumeActivityLocked",
+      "callee": "android.os.Debug",
+      "calleeMethod": "getCallers",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "moveActivityToFront",
+      "callee": "android.os.Debug",
+      "calleeMethod": "getCallers",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "moveTaskToBack",
+      "callee": "android.util.Slog",
+      "calleeMethod": "i",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "moveTaskToFront",
+      "callee": "android.app.ActivityOptions",
+      "calleeMethod": "abort",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "navigateUpTo",
+      "callee": "android.content.Intent",
+      "calleeMethod": "getComponent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "navigateUpTo",
+      "callee": "android.app.IActivityController",
+      "calleeMethod": "activityResuming",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "navigateUpTo",
+      "callee": "android.os.Binder",
+      "calleeMethod": "clearCallingIdentity",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "navigateUpTo",
+      "callee": "android.app.ActivityManager",
+      "calleeMethod": "isStartResultSuccessful",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "navigateUpTo",
+      "callee": "android.os.Binder",
+      "calleeMethod": "restoreCallingIdentity",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "notifyActivityDrawnLocked",
+      "callee": "android.os.Handler",
+      "calleeMethod": "removeMessages",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "notifyActivityDrawnLocked",
+      "callee": "android.app.IApplicationThread",
+      "calleeMethod": "scheduleTranslucentConversionComplete",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChanged",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getRotation",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChanged",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChangedInner",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "persistTaskBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChangedInner",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChangedInner",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "isEmpty",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChangedInner",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "setBounds",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onConfigurationChangedInner",
+      "callee": "android.graphics.Rect",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onDescendantActivityAdded",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getActivityType",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onDescendantActivityAdded",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "setActivityType",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onDescendantActivityAdded",
+      "callee": "android.app.ActivityTaskManager",
+      "calleeMethod": "getMaxAppRecentsLimitStatic",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onParentChanged",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "getRotation",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onParentChanged",
+      "callee": "android.app.WindowConfiguration",
+      "calleeMethod": "setRotation",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    },
+    {
+      "caller": "com.android.server.wm.Task",
+      "callerMethod": "onParentChanged",
+      "callee": "android.view.SurfaceControl$Transaction",
+      "calleeMethod": "show",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    }
+  ],
+  "rowCount": 250,
+  "graphCount": 64,
+  "total": {
+    "value": 251,
+    "relation": "gte"
+  }
+}

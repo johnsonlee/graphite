@@ -1,0 +1,194 @@
+{
+  "status": "PASS_EIGHTEEN_COMPLETE_NATIVE_HISTORICAL_RESPONSES_INDEPENDENT_RAW_AUDIT",
+  "proofs": [
+    {
+      "arm": "C",
+      "case": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "expectedDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+    },
+    {
+      "arm": "C",
+      "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "rows": 11,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "expectedDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+    },
+    {
+      "arm": "C",
+      "case": "global-wide-wrapped-case-insensitive-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+      "expectedDigest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d"
+    },
+    {
+      "arm": "C",
+      "case": "global-wide-provenance-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710",
+      "expectedDigest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a"
+    },
+    {
+      "arm": "C",
+      "case": "shape-group-count-broad",
+      "rows": 20,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f",
+      "expectedDigest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+    },
+    {
+      "arm": "C",
+      "case": "shape-count-traversal-broad",
+      "rows": 1,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea",
+      "expectedDigest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3"
+    },
+    {
+      "arm": "C",
+      "case": "shape-order-by-desc-broad",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74",
+      "expectedDigest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+    },
+    {
+      "arm": "C",
+      "case": "shape-with-aggregate-broad",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417",
+      "expectedDigest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+    },
+    {
+      "arm": "C",
+      "case": "shape-var-length-broad",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e",
+      "expectedDigest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287"
+    },
+    {
+      "arm": "B",
+      "case": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "expectedDigest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760"
+    },
+    {
+      "arm": "B",
+      "case": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "rows": 11,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+      "expectedDigest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd"
+    },
+    {
+      "arm": "B",
+      "case": "global-wide-wrapped-case-insensitive-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+      "expectedDigest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d"
+    },
+    {
+      "arm": "B",
+      "case": "global-wide-provenance-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710",
+      "expectedDigest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a"
+    },
+    {
+      "arm": "B",
+      "case": "shape-group-count-broad",
+      "rows": 20,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f",
+      "expectedDigest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b"
+    },
+    {
+      "arm": "B",
+      "case": "shape-count-traversal-broad",
+      "rows": 1,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea",
+      "expectedDigest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3"
+    },
+    {
+      "arm": "B",
+      "case": "shape-order-by-desc-broad",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74",
+      "expectedDigest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a"
+    },
+    {
+      "arm": "B",
+      "case": "shape-with-aggregate-broad",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417",
+      "expectedDigest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81"
+    },
+    {
+      "arm": "B",
+      "case": "shape-var-length-broad",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e",
+      "expectedDigest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287"
+    }
+  ],
+  "pins": {
+    "/tmp/graphite-native-historical-nine-http-prep-1/plan.json": "7373a7e75ffee4331a89d7393e44ef9d7c6023922087d9e0cab736b6be8622db",
+    "/tmp/graphite-native-historical-nine-http-execution-1/record.json": "601ba3704ab654507d210863511a149654371f12c6729549c002d16584d29afe",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/record.json": "2aee43f80dc2b3a9d80900c5b35ca2fc652215873e1f594d06b2283a03fffa4a",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/global-wide-wrapped-case-insensitive-distinct-zero.body": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+    "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/global-wide-wrapped-case-insensitive-distinct-targeted.body": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/global-wide-wrapped-case-insensitive-dense.body": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/global-wide-provenance-dense.body": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/shape-group-count-broad.body": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/shape-count-traversal-broad.body": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/shape-order-by-desc-broad.body": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/shape-with-aggregate-broad.body": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417",
+    "/tmp/graphite-native-historical-nine-http-execution-1/C/shape-var-length-broad.body": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/record.json": "ff6010015db4da6e434c3ac0e03969badd9e0663f9ebab32e452a63efe6f4b26",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/global-wide-wrapped-case-insensitive-distinct-zero.body": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/global-wide-wrapped-case-insensitive-distinct-targeted.body": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/global-wide-wrapped-case-insensitive-dense.body": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/global-wide-provenance-dense.body": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/shape-group-count-broad.body": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/shape-count-traversal-broad.body": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/shape-order-by-desc-broad.body": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/shape-with-aggregate-broad.body": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417",
+    "/tmp/graphite-native-historical-nine-http-execution-1/B/shape-var-length-broad.body": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e"
+  },
+  "scope": "All18 historical-query responses independently checked against original73 full canonical JSON hashes and exact row counts, on accepted4f/current42377 own64 graphs. No performance claim.",
+  "performanceClaim": false
+}

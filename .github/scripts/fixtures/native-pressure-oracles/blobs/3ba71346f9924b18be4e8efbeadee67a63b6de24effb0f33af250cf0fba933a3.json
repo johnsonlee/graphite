@@ -1,0 +1,189 @@
+{
+  "status": "PASS_SIXTEEN_COMPLETE_NATIVE_SLOW_NODE_RESPONSES_INDEPENDENT_RAW_AUDIT",
+  "proofs": [
+    {
+      "arm": "C",
+      "case": "slow-valueHit",
+      "rows": 3,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+      "expectedSha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+    },
+    {
+      "arm": "C",
+      "case": "slow-qualifiedIdHit",
+      "rows": 39,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1",
+      "expectedSha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409"
+    },
+    {
+      "arm": "C",
+      "case": "slow-dynamicHit",
+      "rows": 3,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+      "expectedSha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+    },
+    {
+      "arm": "C",
+      "case": "slow-wrappedCallerHit",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970",
+      "expectedSha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01"
+    },
+    {
+      "arm": "C",
+      "case": "slow-valueMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    },
+    {
+      "arm": "C",
+      "case": "slow-qualifiedIdMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40",
+      "expectedSha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1"
+    },
+    {
+      "arm": "C",
+      "case": "slow-dynamicMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    },
+    {
+      "arm": "C",
+      "case": "slow-wrappedCallerMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    },
+    {
+      "arm": "B",
+      "case": "slow-valueHit",
+      "rows": 3,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+      "expectedSha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+    },
+    {
+      "arm": "B",
+      "case": "slow-qualifiedIdHit",
+      "rows": 39,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1",
+      "expectedSha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dynamicHit",
+      "rows": 3,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+      "expectedSha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+    },
+    {
+      "arm": "B",
+      "case": "slow-wrappedCallerHit",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970",
+      "expectedSha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01"
+    },
+    {
+      "arm": "B",
+      "case": "slow-valueMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    },
+    {
+      "arm": "B",
+      "case": "slow-qualifiedIdMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40",
+      "expectedSha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dynamicMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    },
+    {
+      "arm": "B",
+      "case": "slow-wrappedCallerMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+      "expectedSha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+    }
+  ],
+  "pins": {
+    "/tmp/graphite-native-slow-node-http-prep-1/plan.json": "5218528749203542132360dbc6434f99915a0088fa290108134296e418b3f35a",
+    "/tmp/graphite-native-slow-node-http-execution-1/record.json": "024c1769609f8ed959295dcec9482ae0ef75455c0b974d0db684b0e37dda1982",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/record.json": "55292b13da42de47418bfa1a1c110d2eda6577c6fe479218364d34288e35da6e",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-valueHit.body": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-valueHit-expected.json": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-qualifiedIdHit.body": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-qualifiedIdHit-expected.json": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-dynamicHit.body": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-dynamicHit-expected.json": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-wrappedCallerHit.body": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-wrappedCallerHit-expected.json": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-valueMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-valueMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-qualifiedIdMiss.body": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-qualifiedIdMiss-expected.json": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-dynamicMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-dynamicMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+    "/tmp/graphite-native-slow-node-http-execution-1/C/slow-wrappedCallerMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-wrappedCallerMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/record.json": "c89c33f1a9936f18d4a2dc702ee90d47500d683b9c0154fa003dbcb4379e1ae0",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-valueHit.body": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-valueHit-expected.json": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-qualifiedIdHit.body": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-qualifiedIdHit-expected.json": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-dynamicHit.body": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-dynamicHit-expected.json": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-wrappedCallerHit.body": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-wrappedCallerHit-expected.json": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-valueMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-valueMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-qualifiedIdMiss.body": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-qualifiedIdMiss-expected.json": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-dynamicMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-dynamicMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+    "/tmp/graphite-native-slow-node-http-execution-1/B/slow-wrappedCallerMiss.body": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf",
+    "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-wrappedCallerMiss-expected.json": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+  },
+  "scope": "Exact eight slow node responses on both C4f/B42377 own64 graphs, including full typed values, row order, provenance and total. All sixteen responses target64 graphs. Correctness only, no performance acceptance claim.",
+  "performanceClaim": false
+}
