@@ -3158,6 +3158,22 @@ export function aggregateReports(directory, metadata) {
                     [...(evidence.missingProducers ?? []), ...(evidence.errors ?? [])].join("; "));
             }
             if (operation.operation !== "query") throw new Error("Complete multi-graph lifecycle auditor not installed");
+            // An unprepared plan has no measurement paths. Keep its concrete
+            // missing-authority reason; this branch can never produce a pass.
+            if (evidence.status === "UNAVAILABLE" && evidence.evidence === undefined) {
+                if (evidence.schema !== "graphite.multigraph-pressure.comparison.v1" ||
+                    evidence.scope !== "multi-graph-pressure" || evidence.engine !== operation.engine ||
+                    evidence.operation !== operation.operation || evidence.passed !== false ||
+                    evidence.queryEvidenceComplete !== false || evidence.otherOperationsEligible !== false ||
+                    !Array.isArray(evidence.errors) || evidence.errors.length === 0 ||
+                    !evidence.errors.every(reason => typeof reason === "string" && reason.trim().length > 0) ||
+                    (evidence.missingProducers !== undefined && (!Array.isArray(evidence.missingProducers) ||
+                        !evidence.missingProducers.every(reason => typeof reason === "string" && reason.trim().length > 0)))) {
+                    throw new Error("Malformed unavailable pressure evidence");
+                }
+                throw new Error("Pressure UNAVAILABLE: " +
+                    [...new Set([...evidence.errors, ...(evidence.missingProducers ?? [])])].join("; "));
+            }
             const contained = relative => {
                 if (typeof relative !== "string" || path.isAbsolute(relative)) throw new Error("Evidence must be artifact-relative");
                 const target = path.resolve(directory, relative);
