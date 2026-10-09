@@ -4162,6 +4162,46 @@ test("declared type response migration accepts only the independently audited co
 });
 
 
+test("active schema histogram contracts agree with the independent portable oracle", () => {
+    const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url)));
+    const index = read("native-pressure-oracles/index.json");
+    const oracle = index.cases.find(c => c.id === "schema-key-histogram");
+    const candidate = oracle.expected.candidate;
+    const payload = read(`native-pressure-oracles/${candidate.payload.path}`);
+    const audit = read(`native-pressure-oracles/${candidate.authority.audit.path}`);
+    const canonical = value => Array.isArray(value) ? value.map(canonical) :
+        value !== null && typeof value === "object" ?
+            Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
+    const digest = crypto.createHash("sha256").update(JSON.stringify(canonical(payload))).digest("hex");
+    assert.equal(candidate.authority.kind, "independent-completed-schema-oracle-v1");
+    assert.equal(audit.status, "PASS_INDEPENDENT_COMPLETED_SCHEMA_OUTPUT_AUDIT");
+    assert.equal(digest, audit.expectedCanonicalSha256);
+    assert.equal(digest, candidate.digest);
+    assert.equal(payload.rows.length, 28);
+    for (const [key, count] of [["generic_type", audit.genericTypeCount], ["type_info", audit.typeInfoCount]]) {
+        assert.equal(count, 3485883);
+        assert.deepEqual(payload.rows.filter(row => row.k === key).map(row => row.c), [count]);
+    }
+    const basePayload = read(`native-pressure-oracles/${oracle.expected.base.payload.path}`);
+    assert.deepEqual(payload.rows.filter(row => !["generic_type", "type_info"].includes(row.k)), basePayload.rows);
+    const key = "rust.fixture64.schema-key-histogram[selectivity=schema]";
+    const transition = RUST_DECLARED_TYPES_RESPONSE_TRANSITION.cases[key];
+    assert.equal(transition.candidateDigest, digest);
+    assert.equal(transition.candidateRows, candidate.rows);
+    assert.equal(transition.querySha256, oracle.querySha256);
+    assert.equal(transition.baseDigest, oracle.expected.base.digest);
+    const catalog = read("multigraph-pressure-cases.json").engines.native.cases.find(c => c.id === oracle.id);
+    const response = read("declared-types-native-responses.json").find(c => c.benchmark === "rust.fixture64.schema-key-histogram");
+    assert.equal(response.candidateDigest, digest);
+    assert.deepEqual(catalog.expected.candidate, { digest, rows: candidate.rows });
+    assert.deepEqual(catalog.sourceCatalogEntry, response);
+    const base = { caseListSha256: RUST_DECLARED_TYPES_RESPONSE_TRANSITION.caseListSha256,
+        querySha256: oracle.querySha256, responseDigest: transition.baseDigest, rowCount: transition.baseRows };
+    assert.equal(isDeclaredTypesResponseTransition(key, base, {
+        ...base, responseDigest: "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a", rowCount: 28
+    }), false, "obsolete pre-inheritance response remains rejected");
+});
+
 test("native declared-type migration uses reviewed controls for both timing directions", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
