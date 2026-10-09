@@ -13470,3 +13470,67 @@ The actual frozen181 runtime loads Tika, Hive and Kotlin compiler together under
 Of106 execution/native samples inside readiness,52 have SHA ancestry:25 from graph.metadata,18 from graph.strings and9 from graph.types. Their required inputs total216,367,071 bytes. These sample counts are not CPU time percentages, and the string samples have compression leaves; they do not establish that changing buffer placement would recover the regression. Full binding checks remain required. The191 allocation events include189 inside readiness and2 outside. Within SharedDeclaredTypeTextStats,21 samples with31,955,808 bytes of estimated allocation weight specifically arise from Int2LongOpenHashMap.rehash. Allocation sampling is not retained memory or peak RSS. This supports evaluating a bounded load-only SID facts representation, but neither a change nor a performance benefit has yet been established. Existing181 loading/query failures and isolated retention decisions remain unchanged.
 
 Evidence: `/tmp/graphite-attempt181-profile-independent-raw-audit.json`, SHA `a9da2b237b04a411bda2709c38c60df202531459f540148deb70b65c85d40722`; raw JFR/extraction/analysis under `/tmp/graphite-attempt181-profile`; residual diagnosis `/tmp/graphite-attempt181-residual-loading-diagnosis.md`, SHA `8b08bd821c1fb51fd4db3ecc0552403607e212339df1141627badc44d90eb127`. The independent auditor rechecks extracted rows and original payload-verification receipts; it does not reread the graph/runtime/JFR payloads. Two auditor-only schema/index mistakes were retained before correction; no measurement was repeated. No single-graph performance run occurred.
+
+### Attempt182 — continuous native64 pressure comparison (2026-10-09)
+
+The checked CallSite scalar accessor has a repeatable benefit on the three slow cases: collect, order and filter p50/p95 improve in both fixed directions versus both the shared-format parent and accepted4f. The mixed measured stage saves 5.309–6.016 seconds versus its parent and 4.210–5.168 seconds versus4f; its server CPU bounds improve in all four comparisons. Preserve182 as an isolated positive increment. It is **not accepted cumulative recovery**: the forward4f RSS comparison provably exceeds5%, and several fast-case quantiles rise. The missing query families, construction and loading gates remain unresolved. Do not repeat fast millisecond-scale cases merely to select a favorable statistic.
+
+The candidate is the previously validated/exported d3005c8 parent plus patch `bc966a8ebdd0602d3bcbc793a21b07cd909f9a48a9bdbe22052702a800734d24`, not current root2d9e5cdf. Its executable SHA is `0ff28e8d37166d35454450f589069eb5aaa2a3c8fafe90856774a38db7b4c548`. A uses the frozen ae316747 shared-format runtime; C uses accepted pre-feature `4f2ccf33b969e684972e56b5e810034e6e67c1b3`. These identities and the original format-migration equivalence chain remain unchanged. Current-root inherited-field aliases and its new fixtures are not retrospectively attributed to these measurements.
+
+Every query targets the same full64 registry:16 shards each of Android, Tika, Hive and Kotlin compiler, with19,438,199 nodes,21,081,154 persisted edges,1,375,082 methods and5,051,914 CallSites. C reads `/tmp/graphite-pr174-shared-fixture64/graphs`; A/B read the semantically audited shared-string migration at `/tmp/graphite-shared-real64-migration-1/graphs`. The six cases include collect, key histogram, order, label histogram, filter and wrapped case-insensitive DISTINCT over all four selected scalar properties. A global request scope does not imply every graph contributes a returned row, particularly for LIMIT cases.
+
+The predeclared order is C/A/B/B/A/C, with fresh native server processes on the same16-CPU macOS host, MAPPED loading, HTTP/server concurrency4,240-second request deadlines and unchanged frozen native executables. A/B retain their recorded Rust1.93.0 release identities; C retains the original4f archived build and binary-copy provenance, without a fresh rebuild or a full historical toolchain claim. Full input hashes run outside measurement for every arm; this is the same hash-warmed protocol, not cold-cache evidence. Four permanent workers immediately refill after complete response consumption, spooling and canonical validation, all included in request latency. Each process executes one oracle, two warmups and twenty measured requests per case:828 complete responses total, including720 measured responses. Per-case p50/p95 use nearest ranks10/19; cases and directions are never pooled. Independent raw audit observes concurrency4 in every measured stage and retains all worker refill gaps (maximum0.236–1.872ms across the six processes). This is continuous closed-loop load, not proof of saturation or a quiet host.
+
+The first actual0-C attempt failed before measurement because its server argv used `/tmp` paths while strict readiness expected their `/private/tmp` resolution. All64 graphs were present, no query stage ran, all4,989 input pins stayed unchanged and owned cleanup succeeded. The failed output remains at `/tmp/graphite-attempt182-continuous-pressure-results/0-C`; independent failure audit SHA `2225947e6c1969e6c1f4be057b51c65a660d089bbeb59f859ff7f3ab60fdaeae`. A binder-only follow-up also failed validation before launch and is preserved as prep2. The correction canonicalizes graph argv paths consistently in both execution and command audit, retaining strict readiness checks. The reviewed runner's36 no-child tests pass; fresh prep3 keeps the original sampling/query/oracle fields and adds the corrected control receipts. No failed sample was replaced or removed from a completed cohort.
+
+Commands, executed serially for each cell, followed by the independent full-cohort audit:
+
+```sh
+python3 /tmp/graphite-multigraph-ci-source/.github/scripts/multigraph_pressure.py run --plan /tmp/graphite-attempt182-continuous-pressure-prep-3/prepared-1/plan.json --cell CELL --output /tmp/graphite-attempt182-continuous-pressure-results-2/CELL
+python3 /tmp/graphite-multigraph-ci-source/.github/scripts/multigraph_pressure.py audit --plan /tmp/graphite-attempt182-continuous-pressure-prep-3/prepared-1/plan.json --output /tmp/graphite-attempt182-continuous-pressure-results-2/CELL
+python3 /tmp/graphite-attempt182-continuous-pressure-independent-audit.py --all-six-terminal --output /tmp/graphite-attempt182-continuous-pressure-independent-audit.json
+```
+
+Here CELL is0-C,1-A,2-B,3-B,4-A,5-C in that fixed order. All six run/audit pairs finish successfully. The independent auditor reads all828 raw bodies, request journals, readiness records, resource samples, owned cleanup and before/after4,991-pin receipts. Complete typed rows/provenance and all request statuses pass; no timeout, cancellation, missing sample or unstable owned process is omitted. This builds on the independently validated403 workspace tests, six wire-interoperability executions and lint from the earlier182 record; these correctness results establish no performance claim by themselves.
+
+| Comparison / direction | Case | p50 ms (reference→182; delta) | p95 ms (reference→182; delta) |
+|---|---|---:|---:|
+| parent / F | collect | 2567.172→2152.474 (-414.698) | 2614.680→2173.775 (-440.905) |
+| parent / F | keys | 1.846→1.855 (+0.009) | 3.383→2.768 (-0.615) |
+| parent / F | order | 3178.852→2758.760 (-420.091) | 3219.485→2775.105 (-444.380) |
+| parent / F | labels | 1.253→1.192 (-0.061) | 2.493→1.556 (-0.937) |
+| parent / F | filter | 3297.339→2840.243 (-457.096) | 3566.520→3165.108 (-401.412) |
+| parent / F | four-scalar DISTINCT | 4.484→4.291 (-0.193) | 5.710→5.715 (+0.005) |
+| parent / R | collect | 2555.207→2223.093 (-332.113) | 2598.616→2258.589 (-340.028) |
+| parent / R | keys | 1.901→1.915 (+0.014) | 2.956→3.449 (+0.493) |
+| parent / R | order | 3167.626→2778.161 (-389.465) | 3208.049→2818.411 (-389.638) |
+| parent / R | labels | 1.284→1.257 (-0.027) | 1.447→1.624 (+0.177) |
+| parent / R | filter | 3231.887→2866.115 (-365.771) | 3505.608→3164.404 (-341.204) |
+| parent / R | four-scalar DISTINCT | 4.593→4.445 (-0.148) | 6.089→6.588 (+0.499) |
+| 4f / F | collect | 2540.049→2152.474 (-387.574) | 2586.000→2173.775 (-412.225) |
+| 4f / F | keys | 1.854→1.855 (+0.001) | 3.373→2.768 (-0.606) |
+| 4f / F | order | 3105.782→2758.760 (-347.022) | 3141.680→2775.105 (-366.576) |
+| 4f / F | labels | 1.295→1.192 (-0.103) | 1.505→1.556 (+0.051) |
+| 4f / F | filter | 3194.190→2840.243 (-353.947) | 3473.715→3165.108 (-308.607) |
+| 4f / F | four-scalar DISTINCT | 4.514→4.291 (-0.223) | 6.315→5.715 (-0.601) |
+| 4f / R | collect | 2534.516→2223.093 (-311.423) | 2570.386→2258.589 (-311.797) |
+| 4f / R | keys | 1.778→1.915 (+0.137) | 2.373→3.449 (+1.076) |
+| 4f / R | order | 3095.197→2778.161 (-317.036) | 3132.641→2818.411 (-314.230) |
+| 4f / R | labels | 1.311→1.257 (-0.054) | 1.437→1.624 (+0.187) |
+| 4f / R | filter | 3135.945→2866.115 (-269.829) | 3457.038→3164.404 (-292.635) |
+| 4f / R | four-scalar DISTINCT | 4.508→4.445 (-0.063) | 6.129→6.588 (+0.459) |
+
+Resources below apply to the entire120-request measured mixture, not separately attributable query cases. CPU includes process user+system time with sampled inner/outer boundary and quantization bounds. RSS lower bounds use reads wholly within the measured stage; upper bounds use the owned process's complete lifecycle peak. A PASS requires the conservative upper ratio≤1.05, and a FAIL requires the conservative lower ratio>1.05. These are measurement bounds, not statistical confidence intervals. Native RSS includes mapped pages and is separate from the JVM heap ceiling; no JVM runs in this cohort.
+
+| Comparison / direction | Measured wall ms (reference→182; delta) | CPU bounds s (reference→182) / gate | RSS bounds MiB (reference→182) / gate |
+|---|---:|---:|---:|
+| parent / F | 46382.274→40366.276 (-6015.998) | [180.29, 180.40]→[155.90, 155.99] / PASS | [22080.562, 22090.000]→[21208.203, 21216.781] / PASS |
+| parent / R | 46320.921→41012.121 (-5308.800) | [179.65, 179.77]→[157.78, 157.85] / PASS | [22089.484, 22108.969]→[19876.500, 19880.469] / PASS |
+| 4f / F | 45534.219→40366.276 (-5167.943) | [176.66, 176.74]→[155.90, 155.99] / PASS | [19806.672, 19922.438]→[21208.203, 21216.781] / FAIL |
+| 4f / R | 45221.796→41012.121 (-4209.675) | [175.59, 175.68]→[157.78, 157.85] / PASS | [19453.297, 19482.125]→[19876.500, 19880.469] / PASS |
+
+The forward4f RSS ratio interval is1.064539–1.071194, a proven failure independent of latency/CPU gains. Reverse4f RSS passes at1.020243–1.021959. Both parent RSS comparisons pass and improve, but those incremental results cannot override the accepted-baseline failure. Candidate peak RSS varies substantially between its two processes (22,247,407,616 versus20,846,182,400 bytes); the record does not assign that variation to host interference or infer that repetition would remove it. The small latency regressions remain visible in the full table and are not dismissed by averages or offset by slower-case wins. Twenty samples per case and two fixed directions do not provide inferential confidence or exhaustive stability coverage.
+
+Separate conclusions: correctness and observed process stability pass; slow-case p50/p95 improve but all-query latency acceptance does not pass; measured-mixture end-to-end wall and CPU improve; accepted-baseline RSS fails in one direction; construction and loading are unavailable in this protocol. Feature presence, graph routing, full slow-shape catalog and heterogeneous wrapped discovery remain uncovered. The expanded source-only catalog has additional requests but no missing-family acceptance proof. All runner results therefore retain `acceptanceEligible:false` and `otherOperationsEligible:false`. Keep182 isolated for composition and targeted RSS/coverage work, without pushing it as a recovered cumulative candidate or claiming the required CI gate has passed.
+
+Evidence: plan SHA `435c81979436d89eedfdff67ce7afc4add652c4c0a6a6e1a6dd574dced46fe06`; reviewed runner SHA `b1beee5ccf6f432d9edf23ea461fb1c5e0849e834aa9060642d89aabe3e6a0e8`; complete raw outputs under `/tmp/graphite-attempt182-continuous-pressure-results-2/`; independent audit `/tmp/graphite-attempt182-continuous-pressure-independent-audit.json`, SHA `c4ed6a876d0b1d3ca402ae13a1901c97d19af14153467842c187c888a8c76409`; auditor SHA `9f0d82b9e976a2f775226f9626f63784f15fd1c91be5366001ee51441dd9a618`. The independent auditor rechecks original input-verification receipts without rehashing graph/runtime payloads. No single-graph performance measurement was used.
