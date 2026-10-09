@@ -415,10 +415,10 @@ impl Graph {
     /// from the updater: invalidate first and rebuild only after normal return.
     pub fn update_declared_types(
         &mut self,
-        update: impl FnOnce(&mut Option<crate::types::DeclaredTypes>),
+        update: impl FnOnce(&mut Option<crate::types::MutableDeclaredTypes>),
     ) {
         self.declared_key_partitions = [None; 3];
-        update(&mut self.declared_types);
+        crate::types::DeclaredTypes::update_slot(&mut self.declared_types, update);
         self.rebuild_declared_key_partitions();
     }
 
@@ -449,7 +449,7 @@ impl Graph {
         if self
             .declared_types
             .as_ref()
-            .is_none_or(|table| table.fields.is_empty() && table.methods.is_empty())
+            .is_none_or(|table| table.field_count() == 0 && table.method_count() == 0)
         {
             return Ok(());
         }
@@ -476,8 +476,8 @@ impl Graph {
             return Ok(result);
         };
         for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
-            if (tag == TAG_FIELD_NODE && table.fields.is_empty())
-                || (tag != TAG_FIELD_NODE && table.methods.is_empty())
+            if (tag == TAG_FIELD_NODE && table.field_count() == 0)
+                || (tag != TAG_FIELD_NODE && table.method_count() == 0)
             {
                 continue;
             }
@@ -1542,7 +1542,7 @@ mod declared_key_tests {
             });
         }));
         assert!(result.is_err());
-        assert!(graph.declared_types().unwrap().fields.is_empty());
+        assert!(graph.declared_types().unwrap().field_count() == 0);
         for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
             assert!(graph.declared_key_partitions(tag).is_none());
         }

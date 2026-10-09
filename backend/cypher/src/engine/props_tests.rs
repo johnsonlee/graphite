@@ -964,7 +964,7 @@ fn java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries(
 
 #[test]
 fn declared_type_info_is_sparse_internally_and_in_nested_json() {
-    use graphite_storage::types::{DeclaredTypes, TypeExpr};
+    use graphite_storage::types::{MutableDeclaredTypes as DeclaredTypes, TypeExpr};
     let table = DeclaredTypes {
         types: vec![
             TypeExpr {
@@ -1006,6 +1006,7 @@ fn declared_type_info_is_sparse_internally_and_in_nested_json() {
         ],
         ..DeclaredTypes::default()
     };
+    let table = graphite_storage::types::DeclaredTypes::from(table);
     let info = type_info(&table, 3);
     let Value::Map(map) = &info else {
         panic!("array map")

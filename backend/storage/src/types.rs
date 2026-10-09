@@ -1,60 +1,24 @@
 //! Graph-local declared types. Erased node identities remain in the main graph.
 use crate::source::GraphSource;
 use crate::strings::StringTable;
-use indexmap::{Equivalent, IndexMap, IndexSet};
+#[cfg(test)]
+use indexmap::IndexMap;
+use indexmap::IndexSet;
 use sha2::{Digest, Sha256};
+#[cfg(test)]
 use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TypeExpr {
-    pub kind: Arc<str>,
-    pub name: Arc<str>,
-    pub scope: Arc<str>,
-    pub owner: Option<usize>,
-    pub component: Option<usize>,
-    pub variance: Arc<str>,
-    pub arguments: Vec<usize>,
-}
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TypeParameter {
-    pub name: Arc<str>,
-    pub scope: Arc<str>,
-    pub bounds: Vec<usize>,
-}
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MethodTypes {
-    pub parameters: Vec<usize>,
-    pub returns: usize,
-    pub type_parameters: Vec<TypeParameter>,
-}
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ClassTypes {
-    pub type_parameters: Vec<TypeParameter>,
-    pub superclass: Option<usize>,
-    pub interfaces: Vec<usize>,
-}
-pub type MemberKey = (Arc<str>, Arc<str>, Arc<str>);
+#[path = "types_repr.rs"]
+mod repr;
+#[cfg(test)]
+use repr::{BorrowedMemberKey, MemberKey};
+pub use repr::{
+    ClassTypes, DeclaredTypes, MethodTypes, MethodView, MutableDeclaredTypes, TypeExpr,
+    TypeParameter, TypeView,
+};
+use repr::{CompactTable, Storage, Texts};
 
-struct BorrowedMemberKey<'a>(&'a str, &'a str, &'a str);
-impl Hash for BorrowedMemberKey<'_> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        (self.0, self.1, self.2).hash(state);
-    }
-}
-impl Equivalent<MemberKey> for BorrowedMemberKey<'_> {
-    fn equivalent(&self, key: &MemberKey) -> bool {
-        self.0 == key.0.as_ref() && self.1 == key.1.as_ref() && self.2 == key.2.as_ref()
-    }
-}
-
-#[derive(Default, Debug, PartialEq, Eq)]
-pub struct DeclaredTypes {
-    pub types: Vec<TypeExpr>,
-    pub fields: IndexMap<MemberKey, usize>,
-    pub methods: IndexMap<MemberKey, MethodTypes>,
-    pub classes: IndexMap<Arc<str>, ClassTypes>,
-}
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("graph.types: {0}")]
 pub struct TypeError(pub String);
@@ -63,6 +27,7 @@ struct Reader<'a> {
     bytes: &'a [u8],
     pos: usize,
     strings: IndexSet<Arc<str>>,
+    dictionary: Vec<Arc<str>>,
     pooled: bool,
     shared: Option<&'a StringTable>,
 }
@@ -72,6 +37,7 @@ impl<'a> Reader<'a> {
             bytes,
             pos,
             strings: IndexSet::new(),
+            dictionary: Vec::new(),
             pooled: false,
             shared: None,
         }
@@ -126,38 +92,33 @@ impl<'a> Reader<'a> {
                 return Err(TypeError("duplicate dictionary string".into()));
             }
         }
+        self.dictionary = std::mem::take(&mut self.strings).into_iter().collect();
         self.pooled = true;
         Ok(())
     }
-    fn string(&mut self) -> Result<Arc<str>, TypeError> {
+    fn string(&mut self) -> Result<usize, TypeError> {
         if let Some(strings) = self.shared {
             let id = usize::try_from(self.int()?)
                 .map_err(|_| TypeError("invalid global string ID".into()))?;
-            let value = strings
+            strings
                 .strict_get(id)
                 .map_err(|error| TypeError(error.to_string()))?;
-            if let Some(shared) = self.strings.get(value) {
-                return Ok(shared.clone());
-            }
-            let shared: Arc<str> = Arc::from(value);
-            self.strings.insert(shared.clone());
-            return Ok(shared);
+            return Ok(id);
         }
         if self.pooled {
             let id = self.int()?;
-            return usize::try_from(id)
+            let value = usize::try_from(id)
                 .ok()
-                .and_then(|id| self.strings.get_index(id))
+                .and_then(|id| self.dictionary.get(id))
                 .cloned()
-                .ok_or_else(|| TypeError("invalid string ID".into()));
+                .ok_or_else(|| TypeError("invalid string ID".into()))?;
+            return Ok(self.strings.insert_full(value).0);
         }
         let value = self.inline_string()?;
-        if let Some(shared) = self.strings.get(value) {
-            return Ok(shared.clone());
+        if let Some(id) = self.strings.get_index_of(value) {
+            return Ok(id);
         }
-        let shared: Arc<str> = Arc::from(value);
-        self.strings.insert(shared.clone());
-        Ok(shared)
+        Ok(self.strings.insert_full(Arc::from(value)).0)
     }
     fn reference(&mut self, count: usize) -> Result<usize, TypeError> {
         let n = self.int()?;
@@ -179,7 +140,7 @@ impl<'a> Reader<'a> {
     fn references(&mut self, count: usize) -> Result<Vec<usize>, TypeError> {
         (0..self.count()?).map(|_| self.reference(count)).collect()
     }
-    fn parameters(&mut self, count: usize) -> Result<Vec<TypeParameter>, TypeError> {
+    fn parameters(&mut self, count: usize) -> Result<Vec<TypeParameter<usize>>, TypeError> {
         (0..self.count()?)
             .map(|_| {
                 Ok(TypeParameter {
@@ -190,29 +151,25 @@ impl<'a> Reader<'a> {
             })
             .collect()
     }
-    fn key(&mut self) -> Result<MemberKey, TypeError> {
-        Ok((self.string()?, self.string()?, self.string()?))
+    fn key(&mut self) -> Result<[usize; 3], TypeError> {
+        Ok([self.string()?, self.string()?, self.string()?])
+    }
+}
+impl Texts for Reader<'_> {
+    fn text(&self, id: usize) -> &str {
+        match self.shared {
+            Some(table) => table.get(id),
+            None => &self.strings[id],
+        }
     }
 }
 impl DeclaredTypes {
-    /// Member lookup boundary independent of the table's physical key storage.
-    pub fn field_type(&self, owner: &str, name: &str, descriptor: &str) -> Option<usize> {
-        self.fields
-            .get(&BorrowedMemberKey(owner, name, descriptor))
-            .copied()
-    }
-
-    pub fn method_types(&self, owner: &str, name: &str, descriptor: &str) -> Option<&MethodTypes> {
-        self.methods
-            .get(&BorrowedMemberKey(owner, name, descriptor))
-    }
-
     /// Exact erased member identity shared by projections and load-time key summaries.
     pub fn method<'a>(
         &'a self,
         method: &crate::node::MethodDesc,
         strings: &crate::strings::StringTable,
-    ) -> Option<&'a MethodTypes> {
+    ) -> Option<MethodView<'a>> {
         self.method_types(
             strings.get(method.declaring_class as usize),
             strings.get(method.name as usize),
@@ -374,7 +331,7 @@ impl DeclaredTypes {
             r.shared = Some(strings);
         }
         let count = r.section_count(28)?;
-        let mut table = Self::default();
+        let mut table = CompactTable::default();
         table
             .types
             .try_reserve_exact(count)
@@ -392,19 +349,18 @@ impl DeclaredTypes {
         }
         let field_count = r.section_count(16)?;
         table
-            .fields
-            .try_reserve_exact(field_count)
+            .reserve_fields(field_count)
             .map_err(|error| TypeError(format!("field section allocation: {error}")))?;
         for _ in 0..field_count {
             let key = r.key()?;
-            if table.fields.insert(key, r.reference(count)?).is_some() {
+            let value = r.reference(count)?;
+            if !table.insert_field(&r, key, value) {
                 return Err(TypeError("duplicate field".into()));
             }
         }
         let method_count = r.section_count(24)?;
         table
-            .methods
-            .try_reserve_exact(method_count)
+            .reserve_methods(method_count)
             .map_err(|error| TypeError(format!("method section allocation: {error}")))?;
         for _ in 0..method_count {
             let key = r.key()?;
@@ -413,14 +369,13 @@ impl DeclaredTypes {
                 returns: r.reference(count)?,
                 type_parameters: r.parameters(count)?,
             };
-            if table.methods.insert(key, method).is_some() {
+            if !table.insert_method(&r, key, method) {
                 return Err(TypeError("duplicate method".into()));
             }
         }
         let class_count = r.section_count(16)?;
         table
-            .classes
-            .try_reserve_exact(class_count)
+            .reserve_classes(class_count)
             .map_err(|error| TypeError(format!("class section allocation: {error}")))?;
         for _ in 0..class_count {
             let key = r.string()?;
@@ -429,21 +384,28 @@ impl DeclaredTypes {
                 superclass: r.optional(count)?,
                 interfaces: r.references(count)?,
             };
-            if table.classes.insert(key, class).is_some() {
+            if !table.insert_class(&r, key, class) {
                 return Err(TypeError("duplicate class".into()));
             }
         }
         if r.pos != bytes.len() {
             return Err(TypeError("trailing bytes".into()));
         }
+        table.texts = match r.shared {
+            Some(strings) => repr::TextStore::Shared(strings.clone()),
+            None => repr::TextStore::Owned(r.strings.into_iter().collect()),
+        };
+        let table = Self {
+            storage: Storage::Compact(table),
+        };
         table.validate()?;
         Ok(table)
     }
     fn validate(&self) -> Result<(), TypeError> {
-        let mut state = vec![0u8; self.types.len()];
-        let mut heights = vec![0usize; self.types.len()];
-        let mut expanded_nodes = vec![0usize; self.types.len()];
-        let mut expanded_bytes = vec![0usize; self.types.len()];
+        let mut state = vec![0u8; self.type_count()];
+        let mut heights = vec![0usize; self.type_count()];
+        let mut expanded_nodes = vec![0usize; self.type_count()];
+        let mut expanded_bytes = vec![0usize; self.type_count()];
         fn visit(
             table: &DeclaredTypes,
             id: usize,
@@ -463,12 +425,12 @@ impl DeclaredTypes {
                 return Err(TypeError("type nesting exceeds 256".into()));
             }
             state[id] = 1;
-            let t = &table.types[id];
-            let shape = match t.kind.as_ref() {
+            let t = table.type_expr(id);
+            let shape = match t.kind {
                 "class" => !t.name.is_empty() && t.component.is_none() && t.variance.is_empty(),
                 "primitive" => {
                     matches!(
-                        t.name.as_ref(),
+                        t.name,
                         "boolean"
                             | "byte"
                             | "char"
@@ -500,7 +462,7 @@ impl DeclaredTypes {
                 "wildcard" => {
                     t.owner.is_none()
                         && t.arguments.is_empty()
-                        && match t.variance.as_ref() {
+                        && match t.variance {
                             "extends" | "super" => t.component.is_some(),
                             "unbounded" => t.component.is_none(),
                             _ => false,
@@ -553,7 +515,7 @@ impl DeclaredTypes {
             expanded_bytes[id] = bytes;
             Ok(height)
         }
-        for id in 0..self.types.len() {
+        for id in 0..self.type_count() {
             visit(
                 self,
                 id,
@@ -567,8 +529,8 @@ impl DeclaredTypes {
         Ok(())
     }
     pub fn render(&self, id: usize) -> String {
-        let t = &self.types[id];
-        match t.kind.as_ref() {
+        let t = self.type_expr(id);
+        match t.kind {
             "array" => format!("{}[]", self.render(t.component.unwrap())),
             "wildcard" => t
                 .component
@@ -580,8 +542,8 @@ impl DeclaredTypes {
                         "{}.{}",
                         self.render(owner),
                         t.name
-                            .strip_prefix(&format!("{}$", self.types[owner].name))
-                            .unwrap_or(t.name.as_ref())
+                            .strip_prefix(&format!("{}$", self.type_expr(owner).name))
+                            .unwrap_or(t.name)
                     ),
                     None => t.name.to_string(),
                 };
@@ -605,6 +567,7 @@ impl DeclaredTypes {
 
 #[cfg(test)]
 mod tests {
+    use super::MutableDeclaredTypes as DeclaredTypes;
     use super::*;
     fn int(out: &mut Vec<u8>, value: i32) {
         out.extend(value.to_be_bytes());

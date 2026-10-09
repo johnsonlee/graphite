@@ -58,12 +58,12 @@ fn s(g: &Graph, id: StrId) -> Value {
 }
 
 fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value {
-    let t = &table.types[id];
+    let t = table.type_expr(id);
     let mut map = IndexMap::new();
-    map.insert("kind".into(), Value::str(t.kind.as_ref()));
+    map.insert("kind".into(), Value::str(t.kind));
     for (key, value) in [("name", &t.name), ("scope", &t.scope)] {
         if !value.is_empty() {
-            map.insert(key.into(), Value::str(value.as_ref()));
+            map.insert(key.into(), Value::str(*value));
         }
     }
     if let Some(owner) = t.owner {
@@ -73,7 +73,7 @@ fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value
         map.insert("component".into(), type_info(table, component));
     }
     if !t.variance.is_empty() {
-        map.insert("variance".into(), Value::str(t.variance.as_ref()));
+        map.insert("variance".into(), Value::str(t.variance));
     }
     map.insert(
         "arguments".into(),
@@ -87,7 +87,7 @@ fn declared_method<'a>(
     m: &MethodDesc,
 ) -> Option<(
     &'a graphite_storage::types::DeclaredTypes,
-    &'a graphite_storage::types::MethodTypes,
+    graphite_storage::types::MethodView<'a>,
 )> {
     let table = g.declared_types()?;
     Some((table, table.method(m, g.strings())?))
@@ -95,8 +95,8 @@ fn declared_method<'a>(
 
 pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
     g.declared_types().is_some_and(|table| match tag {
-        TAG_FIELD_NODE => !table.fields.is_empty(),
-        TAG_PARAMETER_NODE | TAG_RETURN_NODE => !table.methods.is_empty(),
+        TAG_FIELD_NODE => table.field_count() != 0,
+        TAG_PARAMETER_NODE | TAG_RETURN_NODE => table.method_count() != 0,
         _ => false,
     })
 }
@@ -198,8 +198,8 @@ fn generic_method_property(g: &Graph, m: &MethodDesc, key: &str) -> Value {
                 .iter()
                 .map(|p| {
                     Value::map(IndexMap::from([
-                        ("name".into(), Value::str(p.name.as_ref())),
-                        ("scope".into(), Value::str(p.scope.as_ref())),
+                        ("name".into(), Value::str(p.name)),
+                        ("scope".into(), Value::str(p.scope)),
                         (
                             "bounds".into(),
                             Value::list(

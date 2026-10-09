@@ -176,10 +176,13 @@ mod tests {
         assert_eq!(a.strings().len(), b.strings().len());
         match (a.declared_types(), b.declared_types()) {
             (Some(left), Some(right)) => {
-                assert_eq!(left.fields, right.fields);
-                assert_eq!(left.methods.len(), right.methods.len());
-                assert_eq!(left.types.len(), right.types.len());
-                for id in 0..left.types.len() {
+                assert_eq!(
+                    left.field_entries().collect::<Vec<_>>(),
+                    right.field_entries().collect::<Vec<_>>()
+                );
+                assert_eq!(left.method_count(), right.method_count());
+                assert_eq!(left.type_count(), right.type_count());
+                for id in 0..left.type_count() {
                     assert_eq!(left.render(id), right.render(id));
                 }
             }

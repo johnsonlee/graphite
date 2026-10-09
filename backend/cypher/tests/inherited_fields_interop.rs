@@ -60,7 +60,7 @@ fn java_inherited_aliases_survive_both_builders_resave_and_native_containers() {
                 } else {
                     expected_fields = Some(fields);
                 }
-                let types = format!("{:?}", graph.declared_types().unwrap());
+                let types = format!("{:?}", graph.declared_types().unwrap().to_mutable());
                 if let Some(expected) = &expected_types {
                     assert_eq!(expected, &types, "full declaration table: {id}");
                 } else {

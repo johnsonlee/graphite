@@ -1,3 +1,4 @@
+use super::MutableDeclaredTypes as DeclaredTypes;
 use super::*;
 use crate::strings::StringTable;
 
@@ -158,6 +159,11 @@ fn shared_wire_uses_global_ids_and_preserves_complete_v1_v2_values_and_order() {
     assert_eq!(
         strings.serialized_digest().unwrap().as_slice(),
         Sha256::digest(&wire.strings).as_slice()
+    );
+    assert_compact_values(
+        &crate::types::DeclaredTypes::parse_with_strings(&wire.bytes, b"metadata", &strings)
+            .unwrap(),
+        &expected,
     );
     let actual = DeclaredTypes::parse_with_strings(&wire.bytes, b"metadata", &strings).unwrap();
     assert_eq!(actual, expected);
@@ -334,7 +340,7 @@ fn shared_directory_and_container_load_ignore_forged_identity_and_require_actual
             &dir
         };
         let source = GraphSource::open(path).unwrap();
-        assert!(DeclaredTypes::needs_shared_strings(&source).unwrap());
+        assert!(crate::types::DeclaredTypes::needs_shared_strings(&source).unwrap());
         assert_eq!(DeclaredTypes::load(&source).unwrap().unwrap(), full_table());
         let strings = StringTable::load_for_declared_types(&source).unwrap();
         assert_eq!(strings.identity(), Some(&[0x55; 32]));
@@ -443,4 +449,115 @@ fn shared_format_preserves_duplicate_shape_cycle_depth_and_expansion_checks() {
             "validation case {invalid}"
         );
     }
+}
+
+// Rebind all text references to an unsorted dictionary containing equal values
+// at distinct IDs. The wire writer remains independent of the production reader.
+fn unsorted_equal_ids(mut wire: SharedWire) -> SharedWire {
+    let old = wire.dictionary.clone();
+    wire.dictionary.reverse();
+    let unique = wire.dictionary.len();
+    wire.dictionary.extend(wire.dictionary.clone());
+    for (i, offset) in wire.text_offsets.iter().enumerate() {
+        let old_id =
+            i32::from_be_bytes(wire.bytes[*offset..*offset + 4].try_into().unwrap()) as usize;
+        let id = wire.dictionary[..unique]
+            .iter()
+            .position(|v| v == &old[old_id])
+            .unwrap()
+            + if i % 2 == 0 { unique } else { 0 };
+        wire.bytes[*offset..*offset + 4].copy_from_slice(&(id as i32).to_be_bytes());
+    }
+    wire.strings = serialized(
+        &wire
+            .dictionary
+            .iter()
+            .map(|s| s.encode_utf16().collect())
+            .collect::<Vec<_>>(),
+    );
+    wire.bytes[36..68].copy_from_slice(&Sha256::digest(&wire.strings));
+    wire
+}
+
+#[test]
+fn compact_shared_backing_survives_original_drop_without_copying_text() {
+    let expected = full_table();
+    let wire = shared_wire(&expected);
+    let strings = StringTable::from_serialized_for_declared_types(&wire.strings).unwrap();
+    let clone = strings.clone();
+    assert_eq!(strings.get(0).as_ptr(), clone.get(0).as_ptr());
+    let actual =
+        crate::types::DeclaredTypes::parse_with_strings(&wire.bytes, b"metadata", &strings)
+            .unwrap();
+    let id = wire
+        .dictionary
+        .iter()
+        .position(|v| v == "java.util.List")
+        .unwrap();
+    assert_eq!(actual.type_expr(0).name.as_ptr(), strings.get(id).as_ptr());
+    drop(strings);
+    drop(clone);
+    assert_compact_values(&actual, &expected);
+    let view = actual.type_expr(2);
+    assert_eq!(
+        (view.kind, view.variance, view.component),
+        ("wildcard", "super", Some(1))
+    );
+}
+
+#[test]
+fn compact_unsorted_global_ids_compare_full_values_without_dictionary_search() {
+    let expected = full_table();
+    let wire = unsorted_equal_ids(shared_wire(&expected));
+    let strings = StringTable::from_serialized_for_declared_types(&wire.strings).unwrap();
+    let actual =
+        crate::types::DeclaredTypes::parse_with_strings(&wire.bytes, b"metadata", &strings)
+            .unwrap();
+    drop(strings);
+    assert_compact_values(&actual, &expected);
+    assert_eq!(
+        actual.field_type("Example", "not-a-field", "Ljava/util/List;"),
+        None
+    );
+}
+
+#[test]
+fn compact_global_equal_value_keys_are_duplicates_for_all_three_maps() {
+    let expected = full_table();
+    let original = unsorted_equal_ids(shared_wire(&expected));
+    let strings = StringTable::from_serialized_for_declared_types(&original.strings).unwrap();
+    let half = original.dictionary.len() / 2;
+    for (section, width) in [("field", 3), ("method", 3), ("class", 1)] {
+        let mut bytes = original.bytes.clone();
+        let (_, _, first, second) = *original
+            .sections
+            .iter()
+            .find(|(name, _, _, _)| *name == section)
+            .unwrap();
+        for k in 0..width {
+            let at = first + 4 * k;
+            let id = i32::from_be_bytes(bytes[at..at + 4].try_into().unwrap()) as usize;
+            let distinct = (id + half) % original.dictionary.len();
+            bytes[second + 4 * k..second + 4 * k + 4]
+                .copy_from_slice(&(distinct as i32).to_be_bytes());
+        }
+        let error = crate::types::DeclaredTypes::parse_with_strings(&bytes, b"metadata", &strings)
+            .unwrap_err();
+        assert!(error.0.contains(&format!("duplicate {section}")), "{error}");
+    }
+}
+
+#[test]
+fn compact_legacy_pool_drops_unused_dictionary_values() {
+    let expected = full_table();
+    let wire = encode(&expected, true, &[b"unused-unique-text"]);
+    let actual = crate::types::DeclaredTypes::parse(&wire.bytes, b"metadata").unwrap();
+    assert_compact_values(&actual, &expected);
+    let crate::types::repr::Storage::Compact(table) = &actual.storage else {
+        panic!("compact")
+    };
+    let crate::types::repr::TextStore::Owned(texts) = &table.texts else {
+        panic!("legacy owned pool")
+    };
+    assert!(!texts.iter().any(|v| v.as_ref() == "unused-unique-text"));
 }
