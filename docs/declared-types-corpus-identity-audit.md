@@ -563,3 +563,80 @@ Budgeted and Synthetic drivers. No JVM was launched. All 101 workflow Bash block
 remain syntactically valid. The shell replay is retained at
 `/tmp/graphite-acd11-installer-pin-shell-review.json`; the original CI failure log
 remains `/tmp/graphite-acd11-synthetic-correctness.log`.
+
+## GTY05 CI storage transition (2026-10-10)
+
+Candidate `b033a4a2d05f8bb485966db7bb6769c8e9e75163` completed both untimed
+large-corpus persistence pipelines against accepted
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3` in
+[CI run 37983621250, job 114000873666](https://github.com/johnsonlee/graphite/actions/runs/37983621250/job/114000873666).
+The comparison failed because it still selected the historical GTY03 size
+transition. Artifact `11641609467` retains the original logs, per-file inventories
+and failure under `/tmp/graphite-b033-large-corpus/`.
+
+Independent accounting of every emitted file gives the following exact byte
+totals. `persistedBytes` excludes `graph.callsite-string-index` on both arms:
+
+| Corpus | Baseline bytes | GTY05 bytes | Persisted increase |
+|---|---:|---:|---:|
+| Tika | 344,993,419 | 358,550,052 | 13,556,633 |
+| Hive | 540,289,069 | 559,679,479 | 19,390,410 |
+| Kotlin compiler | 318,590,673 | 330,684,523 | 12,093,850 |
+
+| Corpus | `graph.types` added | `graph.strings` increase | Metadata increase | Forward-file net change |
+|---|---:|---:|---:|---:|
+| Tika | 13,552,964 | 2,082 | 1,492 | 95 |
+| Hive | 19,384,352 | 5,312 | 652 | 94 |
+| Kotlin compiler | 12,088,532 | 5,224 | 0 | 94 |
+
+Hive's forward-file total includes `forward.properties` +95 and
+`forward.offsets` −1 byte; the latter was initially omitted from the allowed
+filename set and remains explicitly recorded in the corrected audit. The
+separately checked CallSite index increases are 712, 544 and 768 bytes.
+Every other emitted file size matches, which is not a claim of content equality.
+The independent accounting is
+`/tmp/graphite-b033-large-corpus/independent-file-delta-audit.json`, SHA-256
+`74502fe39a1977ad5a0dd6be242807092577e50feb8aeae0be85aa56091c5ac7`.
+The original base/candidate log hashes are respectively
+`84a04740149cf4eedbd77af49dca15b2678d9e91477e9f2cbf2407bf31d226f7` and
+`4232161d3b890d7398b6487b155b200d266a46899c606c16ba9691472071a8ce`.
+
+The comparator adds a separate `--structural-types-transition` option for these
+GTY05 deltas. It requires `--correctness-only` and rejects combinations with the
+GTY01 `--shape-transition` or GTY03 `--shared-strings-transition` options. Both
+historical transition constants remain unchanged. Only the workflow's exact
+accepted4f branch selects the new option; ordinary same-format comparisons still
+require equal shapes and sizes within 4,096 bytes. The transition keeps the same
+exact base/candidate shape assertions, including the independently established
+64/27 recovered method identities, and the same 4,096-byte tolerance.
+
+Separately, the production writer from
+`acd11a6989c9d501ffac3803c41e629466c8883e` produced a fresh 64-graph GTY05
+corpus. Its production sources are unchanged at b033: the intervening diff
+contains only the benchmark workflow, protocol tests and this audit document.
+An independent decoded comparison against the prior writer
+`42377d8c1967a59ec3b4a71835f4538e803b3555` establishes that all 520,009 prior
+type rows remain the exact prefix, with 1,607 additional raw types used only by
+member keys; every field, method and class binding remains equal across all 64
+graphs. The retained record is
+`/tmp/graphite-gty05-wire-validation-1/record.json`, SHA-256
+`c63ac1d4d81bd9392b0a49f97279f76bb75dac512578f1b671e81f1a2bef9378`;
+its independent review is
+`/tmp/graphite-gty05-wire-validation-1/independent-review.json`, SHA-256
+`ff809c4cf9e2a2fef1c4fa00be9ee8c88b023d39a7d73fffb6bfc669bf17926c`.
+This proves the stated declaration comparison and wire/dictionary validity,
+not complete accepted4f core/topology/index equivalence, source-to-declaration
+completeness, or the bytecode origin of every appended row.
+
+The original CI failure remains a failure; a replay under the new explicit
+storage mode is a separate correctness result. No timing, CPU, RSS, heap,
+coverage or performance threshold is waived. Single-graph corpus checks have
+no performance-acceptance standing; representative multi-graph construction,
+loading and query acceptance remains separate.
+
+Validation of this comparator change passes all 179 JavaScript protocol tests.
+Replaying the exact archived base/candidate logs with the GTY05 option passes
+with `scope: correctness-only` and `performanceAcceptance: false`; replaying
+those same logs with the unchanged GTY03 option retains all three original
+size failures. Commands, source/log hashes and both results are retained at
+`/tmp/graphite-gty05-storage-transition-validation-1/record.json`.
