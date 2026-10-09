@@ -13605,3 +13605,55 @@ Nested unused capacity is27,435,880 bytes, including17,158,400 method-parameter 
 The next material hypothesis is a more compact native declaration representation and reuse of the already decoded shared text backing. The new Rust declaration structs were introduced by this unmerged PR: preserve their query/storage/update semantics rather than treating their current Arc/Vec field layout as an established baseline API. No production change or performance gain is established by this census. Whole-table interning is not selected: the64 fixture JARs contain distinct class partitions, and no exact duplicate-table evidence exists. Existing regression constraints remain unresolved.
 
 Evidence: `/tmp/graphite-declared-layout-execution-1/census.jsonl`, SHA `7d354ad7a44ae425f47a31f40d51849057605d94a2d47bfd5a67862879c7d103`; independent audit `/tmp/graphite-declared-layout-independent-audit.json`, SHA `79dc504bd2d50c396e231b38c74caf5f7c49babf5e53971e5c360d3e71a59232`; detailed findings `/tmp/graphite-declared-layout-findings.md`. Metadata-only auditor path-alias and aggregate-label corrections are preserved separately; raw census values and checks were not changed.
+
+### Attempt184 — share native declared-type text backing (2026-10-09)
+
+**Decision: retain the isolated candidate for composition; do not integrate or claim regression recovery.** The hypothesis was that reusing the decoded `graph.strings` backing and storing text IDs in native declarations would reduce duplicate retained text and handles. Actual multi-graph RSS did not establish that benefit: the candidate increased peak RSS relative to its parent in both fixed directions, exceeding the independent +5% bound in the forward direction. The slow sorting query improved p50/p95 in both directions, so the positive increment and full candidate remain available; this does not override the memory constraint.
+
+Parent production source is `42377d8c1967a59ec3b4a71835f4538e803b3555`; candidate is that source plus patch `1d3dfeebed1388a2b885c6a7ba5360c7c37185ac897b0b7e8ce3c20a1be4ca83`. Accepted baseline remains `4f2ccf33b969e684972e56b5e810034e6e67c1b3`. The main working branch has no184 production changes. The candidate uses an immutable shared string backing, usize text IDs, borrowed declaration views and value-equal fingerprinted keys. Legacy formats own only referenced strings. First mutation materializes the owning representation once; later mutations preserve the previous partial-panic update behavior. Wire format, eager integrity/UTF/DAG/expansion validation, type-ID width, allocator policy and query semantics are unchanged.
+
+Correctness: all404 prior native test names and7 new cases passed in the411-test workspace run, plus the explicit inherited-field test and six GTY01/02/03 storage/explore interop runs. A final equality correction preserving IndexMap membership equality was then checked by all100 storage tests, strict all-target/all-feature clippy and formatting. Root independently reviewed the changed source and actual logs. The inherited-table oracle compares a full owning snapshot; bounded Debug output is not used as a completeness oracle. Release build and runtime/source pins passed. These tests do not prove the pending current own-writer full-core comparison.
+
+The performance experiment uses the exact unchanged historical64 graph byte sets and complete independent oracles from182. A and B open the same declared-type graph files; C opens the corresponding accepted graph set. Current own-writer core differences remain a separate incomplete check and are not waived. Environment: same macOS ARM host and Rust1.93 native build settings, no competing assigned heavy job; no JVM or single-graph performance measurement. Fixed C/A/B/B/A/C order, four continuously replenished workers, six all64 query cases, two warmups and20 measured full-response validations per case per process; nearest ranks10/19 for p50/p95, no pooling or favorable case selection. All six processes and828 complete responses (36 oracle,72 warmup,720 measured) passed the independent raw audit, full before/after identity receipts and owned cleanup. This is declared continuous c4 load, not saturation or quiet-host proof.
+
+| Comparison / direction | Case | p50 ms (reference→184; delta) | p95 ms (reference→184; delta) |
+|---|---|---:|---:|
+| parent / F | collect | 2179.979→2214.783 (+34.804) | 2214.749→2250.015 (+35.266) |
+| parent / F | keys | 1.830→1.807 (-0.023) | 2.618→3.474 (+0.856) |
+| parent / F | order | 2801.943→2786.713 (-15.230) | 2853.537→2816.630 (-36.907) |
+| parent / F | labels | 1.222→1.200 (-0.022) | 2.896→2.693 (-0.203) |
+| parent / F | filter | 2797.662→2811.562 (+13.901) | 3105.614→3155.560 (+49.947) |
+| parent / F | four-scalar DISTINCT | 4.420→4.336 (-0.083) | 4.812→5.551 (+0.739) |
+| parent / R | collect | 2236.339→2166.665 (-69.673) | 2288.108→2215.384 (-72.724) |
+| parent / R | keys | 1.870→1.835 (-0.035) | 3.406→2.264 (-1.142) |
+| parent / R | order | 2803.026→2755.296 (-47.730) | 2830.367→2794.978 (-35.389) |
+| parent / R | labels | 1.222→1.218 (-0.005) | 1.938→1.558 (-0.380) |
+| parent / R | filter | 2946.280→2830.153 (-116.127) | 3184.750→3199.888 (+15.138) |
+| parent / R | four-scalar DISTINCT | 4.711→4.428 (-0.283) | 6.145→6.357 (+0.211) |
+| 4f / F | collect | 2538.500→2214.783 (-323.718) | 2576.530→2250.015 (-326.514) |
+| 4f / F | keys | 1.811→1.807 (-0.004) | 2.074→3.474 (+1.400) |
+| 4f / F | order | 3098.560→2786.713 (-311.847) | 3149.628→2816.630 (-332.998) |
+| 4f / F | labels | 1.285→1.200 (-0.085) | 1.409→2.693 (+1.284) |
+| 4f / F | filter | 3199.240→2811.562 (-387.678) | 3475.406→3155.560 (-319.845) |
+| 4f / F | four-scalar DISTINCT | 4.487→4.336 (-0.151) | 6.058→5.551 (-0.507) |
+| 4f / R | collect | 2517.798→2166.665 (-351.133) | 2558.921→2215.384 (-343.537) |
+| 4f / R | keys | 1.849→1.835 (-0.014) | 3.338→2.264 (-1.073) |
+| 4f / R | order | 3105.667→2755.296 (-350.371) | 3131.486→2794.978 (-336.508) |
+| 4f / R | labels | 1.286→1.218 (-0.068) | 1.913→1.558 (-0.354) |
+| 4f / R | filter | 3168.485→2830.153 (-338.332) | 3534.125→3199.888 (-334.237) |
+| 4f / R | four-scalar DISTINCT | 4.823→4.428 (-0.395) | 6.518→6.357 (-0.162) |
+
+Resources apply to the full120-request measured mixture, not individual cases. CPU includes user+system time and sampling/quantization bounds; RSS lower bounds come from reads wholly within the query stage, upper bounds from the owned process lifecycle peak. These are measurement bounds, not statistical confidence intervals.
+
+| Comparison / direction | Measured wall ms (reference→184; delta) | CPU bounds s (reference→184) / gate | RSS bounds MiB (reference→184) / gate |
+|---|---:|---:|---:|
+| parent / F | 40432.742→40706.868 (+274.126) | [156.460, 156.500]→[157.190, 157.230] / PASS | [18604.328, 18647.734]→[20261.078, 20284.812] / FAIL |
+| parent / R | 41348.053→40399.312 (-948.742) | [159.380, 159.500]→[156.060, 156.180] / PASS | [20198.578, 20205.016]→[20877.953, 20892.266] / PASS |
+| 4f / F | 45272.376→40706.868 (-4565.507) | [176.420, 176.510]→[157.190, 157.230] / PASS | [20775.203, 20795.406]→[20261.078, 20284.812] / PASS |
+| 4f / R | 45278.422→40399.312 (-4879.110) | [176.350, 176.480]→[156.060, 156.180] / PASS | [20129.328, 20132.719]→[20877.953, 20892.266] / PASS |
+
+Separate conclusions: observed correctness and process stability pass. Parent-relative latency is mixed: order improves in both directions, but collect/filter and fast-case quantiles retain adverse observations. Parent wall and CPU are mixed; CPU remains within+5%, while parent RSS fails forward and passes reverse. Relative to accepted4f, all three slow-case p50/p95 and measured-mixture wall/CPU improve; RSS passes both directions, while fast-case p95 increases remain in the forward results. Two fixed process samples do not establish an allocator-level cause, confidence interval or general recovery. The parent forward RSS interval is materially higher despite the compact-representation hypothesis; do not relabel a layout estimate as observed memory savings.
+
+Overall comparison remains `UNAVAILABLE`, with measured constraints incomplete. Feature presence, graph routing, full slow-shape catalog and heterogeneous wrapped discovery remain uncovered; construction and loading are not measured. No CI acceptance, current own-writer equivalence, push or merge claim follows. Further memory attribution must use actual observations and preserve this full mixed result.
+
+Evidence: plan `/tmp/graphite-attempt184-pressure-1/plan.json`, SHA `415d8674ccf08a95cc499f69653fe6e73c88b461e7a65e30222606596fbcb178`; raw outputs `/tmp/graphite-attempt184-pressure-1/`; independent audit `/tmp/graphite-attempt184-pressure-independent-audit.json`, SHA `8412d94312ece7cccaac873385829939bf3677280971960711c00871aee7f17d`; root validation review `/tmp/graphite-attempt184-pressure-1/validation-review.json`. Parent runtime SHA `e6092a6e69fcfd3325c8874b713c038f652e959b771c46556eec75274ca85543`; candidate `083d8eb1986a02aed85c3cbc49c30446ac33307065b80ed84cb5fb6c8f88f27e`. All original failures and earlier measurements remain archived. The comparator was invoked using its canonical `/private/tmp` path because its ESM entry-point guard does not run through the `/tmp` alias; the initial no-output invocation supplied no evidence.
