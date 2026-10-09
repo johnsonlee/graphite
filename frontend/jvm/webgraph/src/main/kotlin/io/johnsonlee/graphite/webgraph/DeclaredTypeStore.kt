@@ -162,6 +162,7 @@ internal object DeclaredTypeStore {
             val typeOffsets = IntArray(typeCount) {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
+            val textSummary = (reader.strings as? SharedDeclaredTypeTexts)?.finishTypeTextSummary()
             val fields = reader.rows(FIELD_MIN_BYTES, "field", typeCount, Reader::key, ::keyHash, Reader::reference, Reader::int)
             val methods = reader.rows(
                 METHOD_MIN_BYTES, "method", typeCount, Reader::key, ::keyHash, Reader::skipMethod, Reader::method
@@ -170,7 +171,7 @@ internal object DeclaredTypeStore {
                 CLASS_MIN_BYTES, "class", typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
             )
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
-            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes)
+            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes, textSummary)
             DeclaredTypeTable(types, fields, methods, classes).also {
                 it.validate()
                 (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
@@ -241,7 +242,8 @@ internal object DeclaredTypeStore {
         private val strings: DeclaredTypeTexts?,
         override val immutableFields: Map<MemberTypeKey, Int>,
         override val immutableMethods: Map<MemberTypeKey, MethodTypes>,
-        override val immutableClasses: Map<String, ClassTypes>
+        override val immutableClasses: Map<String, ClassTypes>,
+        override val textSummary: DeclaredTypeTextSummary?
     ) :
         AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess, ImmutableDeclaredTypeStorage {
         private val validationAccess = MappedDeclaredTypeValidationAccess(this, offsets.size)

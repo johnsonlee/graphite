@@ -50,6 +50,8 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
     fun queryMatcher(fragments: List<String>): SharedDeclaredTypeTextMatcher =
         SharedDeclaredTypeTextMatcher(fragments) { id, target -> strings.get(id, target) }
 
+    fun finishTypeTextSummary(): DeclaredTypeTextSummary = checkNotNull(loadingStats).finishTypeTextSummary()
+
     /** Called after complete validation and before any mapped view is published to query threads. */
     fun finishLoading() { loadingStats = null }
 }
@@ -58,14 +60,17 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
 private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
     private val values = Int2LongOpenHashMap()
     private val buffer = MutableString()
+    private var summary: DeclaredTypeTextSummary.Builder? = DeclaredTypeTextSummary.Builder()
 
     fun add(id: Int) {
         strings.get(id, buffer)
         var hash = 0
         var length = 0L
         var position = 0
+        summary?.beginText()
         while (position < buffer.length) {
             val character = buffer[position++]
+            summary?.add(character)
             hash = DECLARED_TEXT_HASH_MULTIPLIER * hash + character.code
             length += when {
                 character.code < ASCII_LIMIT -> 1
@@ -82,6 +87,8 @@ private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
         require(length <= Int.MAX_VALUE) { "Excessive graph.types string length" }
         values.put(id, (hash.toLong() shl Int.SIZE_BITS) or length)
     }
+
+    fun finishTypeTextSummary(): DeclaredTypeTextSummary = checkNotNull(summary).build().also { summary = null }
 
     fun hash(id: Int): Int = (values.get(id) ushr Int.SIZE_BITS).toInt()
     fun utf8Length(id: Int): Int = values.get(id).toInt()

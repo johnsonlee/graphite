@@ -75,7 +75,7 @@ class MappedDeclaredTypeCandidatesTest {
     }
 
     @Test
-    fun `declaration scan is lazy accounted and bypassed for unrelated node kinds`() = withGraph { graph ->
+    fun `summary lookup preserves lazy node accounting and unrelated node kinds`() = withGraph { graph ->
         val lookup = graph as NodePropertyTextCandidates
         var work = 0
         val candidates = assertNotNull(lookup.propertyTextCandidates(
@@ -83,7 +83,7 @@ class MappedDeclaredTypeCandidatesTest {
         ))
         assertEquals(0, work)
         assertEquals(emptyList(), candidates.toList())
-        assertTrue(work > graph.nodes(Node::class.java).count())
+        assertEquals(graph.nodes(Node::class.java).count(), work)
         work = 0
         assertNotNull(lookup.propertyTextCandidates(
             StringConstant::class.java, listOf("MissingDeclarationNeedle"), GraphWorkConsumer { work++ }

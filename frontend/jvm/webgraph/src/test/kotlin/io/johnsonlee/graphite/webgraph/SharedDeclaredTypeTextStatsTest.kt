@@ -132,6 +132,8 @@ class SharedDeclaredTypeTextStatsTest {
             assertEquals(expected.fields, actual.fields)
             assertTrue(DeclaredTypeTextCandidates(actual.types, listOf(expected.types[0].name), null).mayMatch())
             assertFalse(DeclaredTypeTextCandidates(actual.types, listOf("absent"), null).mayMatch())
+            assertTrue(declaredTextMayMatch(actual, listOf(expected.types[0].name)))
+            assertFalse(declaredTextMayMatch(actual, listOf("absent")))
         }
     }
 
