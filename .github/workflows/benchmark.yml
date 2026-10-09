@@ -370,7 +370,7 @@ jobs:
         RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt'
         install -m 0644 "candidate/${SOURCE}" "$(jvm base cypher)/${RELATIVE}"
         SOURCE='frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt'
-        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = '13251746dedbd63aad677c48d74730a07f77828cf617de02196dac97eb7047a3'
+        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = '522d2a5b3241bae8a8f0f3f48b410ef98de07eedd2b15885f8edc389a00e787f'
         RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt'
         install -m 0644 "candidate/${SOURCE}" "$(jvm base cypher)/${RELATIVE}"
 
