@@ -14495,3 +14495,48 @@ establish complete projection coverage. Therefore these results cannot close
 the review concern about full-node or full-Method generic expansion cost.
 Representative requests that consume complete projections from multiple actual
 graphs, with independently derived full responses, remain required.
+
+#### Attempts190/191: separate zero-query 64-graph loading (2026-10-10)
+
+The same fixed C-A-B-B-A-C revisions and graph artifacts were then measured
+without issuing any query. The boundary runs from native process-wrapper spawn
+through complete consumption and validation of the 64-graph readiness registry.
+This establishes registry readiness; it excludes deferred first-query work.
+CPU is total server user plus system time at readiness. RSS bounds combine the
+sampled peak through readiness and process-lifetime peak through clean shutdown.
+All six runs and the independent raw audit pass correctness and cleanup.
+
+| Cell | Readiness ms | CPU bounds s | Peak RSS bounds, bytes |
+|---|---:|---:|---:|
+| 01-C | 18507.711 | 18.74–18.78 | 6,378,110,976–6,379,405,312 |
+| 02-A | 21157.117 | 21.45–21.49 | 6,636,060,672–6,638,927,872 |
+| 03-B | 21010.085 | 21.28–21.32 | 6,645,514,240–6,646,513,664 |
+| 04-B | 24393.896 | 24.71–24.75 | 6,642,597,888–6,643,105,792 |
+| 05-A | 21627.439 | 21.90–21.94 | 6,636,765,184–6,639,501,312 |
+| 06-C | 19198.461 | 19.41–19.46 | 6,376,800,256–6,377,177,088 |
+
+Both accepted-baseline RSS comparisons satisfy the raw +5% bound: the
+additional peak is 266.109–268.403 MB forward and 265.421–266.306 MB reverse
+(decimal MB). Both CPU comparisons fail the raw +5% bound. Readiness adds
+2,502.375 and 5,195.435 ms; CPU adds 2.50–2.58 and 5.25–5.34 seconds.
+The historical user-approved loading overhead was about 1.6 seconds wall and
+2.0–2.1 seconds CPU. That approval is not extended to this new cohort.
+
+Parent A→B loading changes are mixed: −147.032 ms forward and +2,766.457 ms
+reverse. Both parent RSS bounds pass, but reverse CPU fails. The approximately
+3.38-second difference between the two B observations is retained; no favorable
+run is selected. Two paired directions with uncontrolled OS cache do not
+establish a confidence interval, quiet-host behavior or disk-cold loading.
+
+This narrows the prior loading-memory gap for the measured cumulative runtime,
+but does not pass loading overall, query resources, construction, complete
+semantic equivalence or CI acceptance. Every overall acceptance flag remains
+false. Preserve the beneficial candidate while addressing the remaining costs.
+
+Evidence: `/private/tmp/graphite-native-runtime-overlay-loading-audit-1.json`,
+SHA-256 `5aac9d89c8016a0571d8106a9e6c6f7634fec0e10c13957db7bc78adfd0593d6`;
+raw run `/private/tmp/graphite-native-runtime-overlay-loading-run-1`.
+Command: `python3 -B /private/tmp/graphite-native-runtime-overlay-prep-1/loading/run_loading.py run --plan /private/tmp/graphite-native-runtime-overlay-prep-1/loading-plan.json --output /private/tmp/graphite-native-runtime-overlay-loading-run-1`.
+Plan SHA-256 `94f102b2a10ad3fd97e4c8dfa4446c4b68cb47eadf28b920a1b4e7b7836a2d9a`.
+The local macOS ARM64 environment and per-cell complete input verification are
+retained in the plan and raw records; no single-graph performance was measured.
