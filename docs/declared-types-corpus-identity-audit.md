@@ -510,3 +510,42 @@ old report. Fresh CI XML is required to establish the counted source set and
 missed lines. The build workflow now generates XML/HTML alongside the log and
 uploads them after the threshold check even on failure. No coverage threshold,
 source exclusion or failure behavior has been relaxed.
+
+## Correctness-driver control bindings and per-file CI accounting (2026-10-10)
+
+At `d23`, benchmark run `37982075270` rejected the reviewed-control manifest
+before executing several correctness jobs. The coverage-test seams changed
+`SingleGraphCorrectness.kt` and `SyntheticQueryCorrectness.kt`, but their old
+source hashes were still pinned. Candidate gate job `113995249102` and synthetic
+correctness job `113995249059` both retained this failure. The correction updates
+only those two source hashes and the workflow's hash of the eight-entry manifest;
+the other six entries, verification commands, thresholds and result checks stay
+unchanged. The new manifest SHA-256 is
+`93c872af537ae477451db9d7a1397892cbd919a5596ac16ef3077fe8f6d7cffe`.
+
+Validation: all 174 JavaScript protocol tests and 115 pressure-related Python
+tests pass. The workflow parses, its 101 Bash blocks pass syntax checks, and all
+eight file hashes plus the manifest hash match. This is a control-binding fix,
+not a rerun or acceptance of the failed CI jobs. The exact changed-entry review
+is retained at `/tmp/graphite-d23-correctness-controls-review.json`.
+
+The completed large-corpus artifact from the subsequently canceled `8f` run
+`37978314668` remains available as artifact `11640132261`. Its new per-file
+inventory accounts for the complete observed persisted-size transition:
+
+| Corpus | `graph.types` added | `graph.strings` increase | Metadata increase | Forward-file net change | Total persisted increase |
+|---|---:|---:|---:|---:|---:|
+| Tika | 12,700,028 | 4,551,866 | 1,492 | 93 | 17,253,479 |
+| Hive | 17,850,784 | 9,178,720 | 652 | 93 | 27,030,249 |
+| Kotlin compiler | 11,049,504 | 8,018,322 | 0 | 96 | 19,067,922 |
+
+All values are bytes. Separately accounted CallSite indexes increased by 529,984,
+917,496 and 565,936 bytes respectively and are excluded from the persisted totals
+on both arms. Summing every emitted file and subtracting this index reproduces
+each recorded total exactly. Other emitted file sizes match between the arms;
+size equality does not establish content or semantic equality. The corresponding
+old `067` expectation has no per-file inventory in this artifact, so this evidence
+does not establish which code change caused the difference from that expectation.
+The existing tolerance and expected deltas remain unchanged. The independent
+accounting is retained at
+`/tmp/graphite-8f-large-corpus/independent-file-delta-audit.json`.
