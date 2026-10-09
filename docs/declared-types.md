@@ -55,6 +55,14 @@ When a declaration has no generic Signature, the descriptor supplies its type;
 information stripped from bytecode cannot be recovered this way. Missing declaration
 metadata yields null, distinct from a known non-generic declaration.
 
+An observed inherited field reference may name a child class rather than the class
+that declares the field. During construction, its symbolic owner, name and erased
+descriptor are bound to the existing declaration's type ID, following JVM field
+resolution through interfaces and superclasses. The original field node identity
+and type-variable scope remain unchanged: accessing `Parent<T>.value` through
+`Child extends Parent<String>` still describes the declaration as `T`. Unknown or
+cyclic hierarchy branches do not justify guessing a later declaration.
+
 `keys()` and property maps expose the new keys only when that member has a declaration
 binding. Legacy graphs and unbound external members keep their existing keys; direct
 access to a missing declaration property returns null. This preserves negative dynamic
@@ -138,11 +146,25 @@ referenced but missing or invalid table is a load error; an absent binding is th
 supported legacy case. All integrity validation occurs during graph loading,
 before the first generic query.
 
+Optional bytecode signatures use these same nesting and expansion limits while
+their expressions are interned. A rejected signature rolls back its partial rows
+and uses the erased descriptor; it cannot leave an over-budget table that fails
+only at the end of graph construction. Shared expressions count once per occurrence
+in the expanded projection, even when their type IDs are deduplicated.
+
 The JVM reader retains mapped type rows and compact indexes; version 3 resolves
 text through the graph's already loaded string table. Its legacy version 2 reader
 retains dictionary offsets and hashes. The native reader decodes declaration
 values into graph-local shared storage, with no process-wide interning. Rendering
 and structured projections are produced when requested.
+
+During version 3 validation, the JVM reader also builds an immutable, bounded
+ASCII substring summary for declaration text and generated `type_info` keys.
+Dynamic text queries use this summary to rule out impossible matches without
+scanning the type table or charging declaration rows against the query budget.
+Possible matches still require the complete node predicate and normal node work
+accounting. Legacy or mutable tables take the conservative node path. The summary
+is an in-memory index and does not change the storage format.
 
 ## Verification
 
@@ -153,6 +175,13 @@ and `GRAPHITE_TYPES_V2_FIXTURE` for version 2. The native interoperability tests
 exercise all three as directories and packed containers; set
 `GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES=1` to require every fixture. These fixtures establish correctness, not performance. Performance comparisons must
 use the repository's representative real multi-graph workloads.
+
+`InheritedFieldPersistenceTest` checks both graph builders through save, reload and
+resave. Set `GRAPHITE_INHERITED_TYPES_FIXTURE` to a fresh output directory to retain
+its four graphs. The native `inherited_fields_interop` integration test checks all
+four as directories and packed containers, including full type structures and
+cross-graph provenance. Set `GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE=1` together
+with that directory to make a missing fixture fail the native gate.
 
 The declaration references also correct two historical type-name errors: generic
 fields retain their erased bytecode class instead of a variable name such as `T`,
