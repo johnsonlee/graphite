@@ -137,20 +137,18 @@ data class DeclaredTypeTable(
             state[id] = 1
             var height = 1
             var nodes = 1
-            var bytes = DeclaredTypeTextField.entries.fold(0) { total, field ->
-                saturatedAdd(total, access.textUtf8Length(id, field), MAX_EXPANDED_BYTES)
-            }
+            var bytes = DeclaredTypeExpansionBudget.textBytes { access.textUtf8Length(id, it) }
             val argumentCount = access.argumentCount(id)
             // Long indexing keeps the two optional slots from overflowing the argument count.
             for (index in 0L until argumentCount.toLong() + 2) {
                 val child = expressionChild(access, id, index, argumentCount)
                 if (child < 0) continue
                 height = maxOf(height, 1 + visit(child, depth + 1))
-                nodes = saturatedAdd(nodes, expandedNodes[child], MAX_EXPANDED_NODES)
-                bytes = saturatedAdd(bytes, expandedBytes[child], MAX_EXPANDED_BYTES)
+                nodes = DeclaredTypeExpansionBudget.addNodes(nodes, expandedNodes[child])
+                bytes = DeclaredTypeExpansionBudget.addBytes(bytes, expandedBytes[child])
             }
             require(height <= MAX_DEPTH) { "Excessive graph.types nesting" }
-            require(nodes <= MAX_EXPANDED_NODES && bytes <= MAX_EXPANDED_BYTES) { "Excessive graph.types projection expansion" }
+            DeclaredTypeExpansionBudget.validate(nodes, bytes)
             state[id] = 2
             expandedNodes[id] = nodes
             expandedBytes[id] = bytes
@@ -172,13 +170,8 @@ data class DeclaredTypeTable(
         else values.values.forEach(validateValue)
     }
 
-    private fun saturatedAdd(left: Int, right: Int, limit: Int): Int =
-        (left.toLong() + right).coerceAtMost(limit.toLong() + 1).toInt()
-
     companion object {
         const val MAX_DEPTH = 256
-        private const val MAX_EXPANDED_NODES = 100_000
-        private const val MAX_EXPANDED_BYTES = 1_000_000
         val EMPTY = DeclaredTypeTable(emptyList(), emptyMap(), emptyMap(), emptyMap())
     }
 }
