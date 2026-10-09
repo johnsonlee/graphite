@@ -567,3 +567,24 @@ mod structural_tests;
 
 #[path = "types_descriptor_tests.rs"]
 mod descriptor_tests;
+
+#[test]
+fn shared_legacy_type_summary_preserves_scope_and_rendered_substrings() {
+    let expected = full_table();
+    let wire = shared_wire(&expected);
+    let strings = StringTable::from_serialized_for_declared_types(&wire.strings).unwrap();
+    let table = crate::types::DeclaredTypes::parse_with_strings(&wire.bytes, b"metadata", &strings)
+        .unwrap();
+    for id in 0..table.type_count() {
+        let t = table.type_expr(id);
+        for text in [
+            table.render(id),
+            t.scope.into_owned(),
+            t.kind.into(),
+            t.variance.into(),
+        ] {
+            assert!(table.generic_text_may_contain(&text), "{text}");
+        }
+    }
+    assert!(!table.generic_text_may_contain("ZZZAbsent"));
+}

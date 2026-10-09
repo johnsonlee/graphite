@@ -463,3 +463,46 @@ fn descriptorless_long_stream_hash_matches_borrowed_lookup_text_across_buffer_bo
         assert_eq!(table.field_type(&key[0], &key[1], &key[2]), Some(expected));
     }
 }
+
+#[test]
+fn descriptorless_text_summary_includes_generated_scope_joins_and_enum_words() {
+    let wire = fixture("foo.Bar");
+    let strings = StringTable::from_serialized_for_declared_types(&wire.strings).unwrap();
+    let table = Loaded::parse_with_strings(&wire.bytes, b"metadata", &strings).unwrap();
+    for id in 0..table.type_count() {
+        let t = table.type_expr(id);
+        for text in [table.render(id), t.scope.into_owned()] {
+            let ends: Vec<_> = text
+                .char_indices()
+                .map(|(i, _)| i)
+                .chain([text.len()])
+                .collect();
+            for &a in &ends {
+                for &b in &ends {
+                    if a <= b {
+                        assert!(
+                            table.generic_text_may_contain(&text[a..b]),
+                            "{}",
+                            &text[a..b]
+                        );
+                    }
+                }
+            }
+        }
+    }
+    for text in [
+        "kind=variable",
+        "arguments=[]",
+        "scope=method:Owner#echo",
+        "unresolved:method",
+        "Lfoo/Bar",
+    ] {
+        assert!(table.generic_text_may_contain(text), "{text}");
+    }
+    assert!(!table.generic_text_may_contain("ZZZAbsent"));
+    let owned = Loaded::from(table.to_mutable());
+    assert!(
+        owned.generic_text_may_contain("ZZZAbsent"),
+        "mutable backings cannot borrow a negative summary"
+    );
+}
