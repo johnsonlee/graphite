@@ -94,3 +94,14 @@ per-pair source-model approval, complete core/topology execution and producers.v
 completion are still separate pending work. No status in this stage replaces them.
 
 The decoder additionally requires forward.properties to authorize the actual graph.types SHA-256. Missing authority/orphan sidecars, malformed or duplicate property syntax, wrong digests and missing/symlinked bound tables fail closed. Uppercase digests follow production matching semantics; unsupported escaped property forms are conservatively rejected. Prefeature graphs without declarations remain an explicit caller path.
+
+The portable bootstrap stage runs the unchanged ExportSerializable bridge against
+an independently audited C/actual producer pair sharing the exact JDK module
+image. Its two owned phases, raw class bytes, module receipt and actual producer
+inputs are independently replayed. The new Marker audit branch retains the old
+historical receipt path unchanged. This authority admits only java.io.Serializable
+as the exact empty bootstrap interface; ordinary corpus definitions still take
+precedence and method lookup still strips this field-only authority. It never
+makes an inference or complete-semantic claim. A future whole64 runner should
+reuse one verified pair authority rather than replaying complete artifact audits
+for each graph; the standalone branch currently favors complete verification.

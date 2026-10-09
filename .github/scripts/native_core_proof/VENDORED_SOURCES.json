@@ -140,6 +140,10 @@
     "ExportStrings.java": {
       "source": "/tmp/graphite-gty05-independent-wire-1/ExportStrings.java",
       "sha256": "2957d2ddbcd32dd595e4496dfa12a597ef5dd88a07118a4e89fea611c9358835"
+    },
+    "ExportSerializable.java": {
+      "source": "/tmp/graphite-platform-field-class-prep-1/ExportSerializable.java",
+      "sha256": "c322dd8096d437eb435ac89df099ce2e535ceccbba9f309bc65d89da7d4a5a87"
     }
   }
 }

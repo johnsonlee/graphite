@@ -783,3 +783,53 @@ Fresh dictionary exports, GTY01–05 validation, bootstrap-marker and formatter-
 authorities, the owned all64 execution runner and completed producer-contract
 adapter remain required. Packaging the comparator does not make a partial fixture
 eligible for pressure or establish complete semantic/performance acceptance.
+
+
+## Fresh producer dictionary and bootstrap authority (2026-10-10)
+
+Commit `c7d9438d` integrates the fresh writer dictionary export stage. Each
+unique actual C/A/B producer compiles the dependency-only `ExportStrings` helper
+and exports all64 dictionaries in65 owned phases, using matching4g/APC4 limits.
+An A=C alias reuses the actual C artifact. Export work is outside construction
+measurement and outside source/runtime/graph roots. The independent auditor
+replays the exact commands, logs, cleanup, compiled helper closure, raw values,
+semantic digests and producer pins. GTY01–05 declaration loading now requires
+its active `forward.properties` binding; orphan, missing, duplicate, malformed
+and mismatched bindings are rejected. The fresh parser accepts plain ASCII
+properties and rejects unsupported escapes rather than guessing.
+
+Root verification passed213 package tests and15 mocked export protocol tests.
+The frozen source packet is `/tmp/graphite-native-core-export-prep-2/source-ready.json`,
+SHA-256 `e5ac61d351f4212ff6d4e6646fb0f0a7f5973bdf3da554ca2877849224c8dfa2`.
+Workflow YAML was parsed with Ruby Psych, the extracted producer shell passed
+`bash -n`, and source/control hashes matched. Actual fresh JVM exports have not
+yet run, so these are protocol/correctness results only.
+
+The next stage binds the exact producer JDK bootstrap `java.io.Serializable`
+resource to each actual C/A or C/B comparison. It replays both raw producer
+artifact audits, requires matching JDK path and module image, and runs two owned
+bounded compile/export phases against the actual writer JAR. The retained Java
+helper is byte-identical to the previously reviewed helper. An independent raw
+classfile parser requires the exact empty Serializable interface with Object as
+superclass. The portable Marker adapter replays the complete export audit;
+the historical adapter remains unchanged. This narrowly supplies a known
+bootstrap resource and never authorizes a fallback for arbitrary missing classes.
+
+Root independently verified all8 changed source files against the frozen packet,
+all preparation-control hashes, workflow binding and extracted shell syntax.
+All213 retained package tests and13 new marker protocol tests pass. The initial
+root package invocation omitted unittest's package top-level argument and failed
+19 imports; it is retained in `/tmp/graphite-core-marker-root-package-tests.log`.
+With the repository's package-aware invocation (`-t .github/scripts`) the suite
+passes in `/tmp/graphite-core-marker-root-package-tests-2.log`. No production
+source was changed to obtain that result. The marker protocol log is
+`/tmp/graphite-core-marker-root-protocol-tests.log`.
+
+Frozen marker source is `/tmp/graphite-native-core-marker-prep-1/marker-source-ready.json`,
+SHA-256 `f2581e01292457b77c84edc284c01dad96c832041151c96cd85192f2dd1ee187`.
+No real JVM, corpus or performance execution is represented by these tiny tests.
+The whole64 comparison runner must reuse a verified pair authority, avoiding
+repeated complete artifact audits per graph. Fresh source/formatter authority,
+whole core/topology/index comparison and the completed producer adapter still
+remain. Complete semantic equivalence, inference and performance acceptance
+flags remain false.
