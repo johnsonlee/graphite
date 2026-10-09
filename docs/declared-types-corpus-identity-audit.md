@@ -859,3 +859,50 @@ tests, actual whole64 semantic execution and completed producer evidence remain
 required. `productionFormatterTestsVerified`, complete semantic equivalence,
 synthetic-local inference and performance acceptance remain false. Historical
 unsupported inference cases are not promoted by checking source fragments.
+
+
+## Real two-graph large projection expectations (2026-10-10)
+
+The independent large-projection selector has now executed on accepted4f and
+GTY05 own-writer artifacts for `fixture-tika-10` and
+`fixture-kotlin-compiler-15`. It decoded the four real graph inputs with their
+actual shared dictionary exports. The frozen selector uses raw property cohorts,
+checks complete C/B identity multisets and retains every selection rejection;
+it does not select from server responses, timing or generic-presence filters.
+Return method candidates use owner/package prefixes, with exact-signature
+exclusions counted and retained, avoiding a20,000-candidate overflow without
+raising the cap. Thirty tiny selector tests pass, including20,771 distinct
+methods and exact complete matching. The earlier32-row packet remains unchanged.
+
+All eight requested full-node / properties projections have complete admitted
+cohorts. Counts below are identical for the two projection forms:
+
+| Node kind | Tika rows / bound / true generic | Kotlin rows / bound / true generic | Complete response rows |
+|---|---:|---:|---:|
+| Field | 993 / 969 / 54 | 966 / 650 / 70 | 1959 |
+| Parameter | 994 / 994 / 150 | 927 / 927 / 689 | 1921 |
+| Return | 1007 / 1007 / 40 | 1021 / 1021 / 5 | 2028 |
+| Method | 995 / 995 / 135 | 979 / 979 / 33 | 1974 |
+
+Every request actually targets both named graphs. The eventual server retains64
+loaded graphs, but these requests' scope is explicitly two, not64. There is no
+Cypher LIMIT; the exact URL `/api/cypher?limit=5000` admits all rows. Sixteen
+arm-specific expected JSON bodies preserve full order, nested values, provenance,
+Return null/label distinctions and `total.relation=eq`. C payloads range from
+715,128 to968,909 bytes; B payloads range from976,065 to1,844,352 bytes.
+
+Command:
+`python3 -B /tmp/graphite-large-projection-oracle-prep-2/large_oracle.py --plan /tmp/graphite-large-projection-oracle-prep-2/plan.json --output /tmp/graphite-large-projection-selection-1 --execute-assigned-slot`.
+The sole assigned process exited0 with no selection failure and unchanged
+before/after input pins. Root verified all output hashes, all16 canonical body
+digests, complete rows/graph coverage and exact request endpoints. An initial
+root output-check call passed a parsed dict to a byte-payload validator; using
+the original bytes corrected that review invocation without changing oracle
+source, selected rows or expected output.
+
+Status is `EXPECTED_LARGE_COHORTS_DERIVED_NOT_SERVER_COMPARED`. This establishes
+real expected responses, not HTTP correctness or latency/CPU/RSS. Actual
+C/A192/B193 full-projection requests and pressure remain to execute.
+
+Generator record SHA-256: `f26186a79ab78831db472cb814d3430e0876596a253eab1667c5ae8fb25cac66`.
+Root review SHA-256: `301cb3511cfc4450834d4358911eee08a202b4d0484b235e17751017d53f2c75`.
