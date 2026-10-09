@@ -14435,3 +14435,55 @@ all-target/all-feature Clippy with warnings denied, and formatting checks:
 Decision: preserve the correctness-verified cumulative candidate for independent
 parent-relative and accepted-baseline multi-graph comparisons. Loading and
 queries require separate measurement; a query gain cannot waive a loading cost.
+
+#### Attempts190/191: matched 64-graph runtime comparison (2026-10-10)
+
+Both candidates have now completed the fixed local macOS ARM64 C-A-B-B-A-C
+query workload: C is accepted4f, A is `3e202025` and B is `64d77daa`.
+A and B use the same independently audited `acd11a69` GTY05 graphs; C uses
+its own accepted-writer graphs. Each fresh MAPPED server runs 39 cases with
+four concurrent workers, one oracle request, two warmups and 20 measured
+requests per case. Of those cases, 37 target all 64 graphs and two target two
+graphs. Every request includes complete body consumption and independent
+result validation. All 5,382 responses and six cell audits pass with clean
+process shutdown. No single-graph timing is used.
+
+Latency below is milliseconds, p50 / p95, independently reported for the
+forward and reverse pair. Each case uses nearest-rank request statistics
+(20 observations; sorted indices 9 and 18), without pooling directions.
+
+| Case / direction | Accepted C | Presence A | Presence + text summary B |
+|---|---:|---:|---:|
+| feature-nodes / forward | 1.672 / 2.375 | 1.977 / 4.687 | 2.390 / 4.010 |
+| feature-methods / forward | 910.077 / 929.983 | 2886.308 / 2905.571 | 2920.155 / 2956.096 |
+| slow-dynamicMiss / forward | 395.155 / 448.195 | 16304.859 / 16411.108 | 398.248 / 476.621 |
+| slow-dynamicHit / forward | 453.399 / 518.365 | 16168.058 / 16214.993 | 407.011 / 553.936 |
+| feature-nodes / reverse | 1.915 / 6.679 | 2.069 / 5.626 | 2.397 / 5.915 |
+| feature-methods / reverse | 909.415 / 922.887 | 2851.735 / 2905.303 | 2945.438 / 2973.112 |
+| slow-dynamicMiss / reverse | 457.131 / 516.798 | 16399.135 / 16622.390 | 400.381 / 429.478 |
+| slow-dynamicHit / reverse | 510.098 / 559.781 | 16229.376 / 16439.160 | 402.661 / 468.759 |
+
+The dynamic-search hotspot is reduced from roughly 16 seconds to 0.4–0.6
+seconds in both directions. Method-presence p95 still exceeds accepted C by
+2,026 and 2,050 ms. Query-phase wall time changes from 77.864 to 84.099 seconds
+and from 78.971 to 83.610 seconds. Query CPU changes from 459.78 to 480.53
+seconds and from 452.50 to 478.94 seconds; the reverse pair exceeds +5%.
+
+Peak process RSS over the measured server lifecycle is 22,609,788,928 →
+23,139,680,256 bytes and 22,072,016,896 → 24,122,605,568 bytes. The reverse
+pair exceeds +5%. Query-interval sampled bounds are retained in the complete
+report. These are query-run resources, not an independent loading measurement.
+
+Two paired repetitions do not establish narrow p95 uncertainty or saturation.
+OS cache state is uncontrolled; oracle/warmup requests precede measurement.
+The complete cross-arm semantic proof remains pending, so every acceptance
+flag remains false. Keep the verified large dynamic-search improvement while
+continuing Method-query and resource work. Construction is unmeasured here;
+a separate zero-query loading run is in progress. No overall recovery claim.
+
+Evidence: `/private/tmp/graphite-native-runtime-overlay-query-run-1/diagnostic-report.json`,
+ SHA-256 `daab643f16ec96764a55baf356ea53759b7b469ed85a68eed6188884570a055b`.
+Command: `python3 -B /private/tmp/graphite-native-runtime-overlay-prep-1/query/run_diagnostic_pressure.py run --plan /private/tmp/graphite-native-runtime-overlay-prep-1/query-plan.json --output /private/tmp/graphite-native-runtime-overlay-query-run-1`.
+Plan SHA-256 `6f959b845271852a23f350dc9ee4d4a93e29d8a4059197d0f8e4da5270b946ea`. All 39 per-case results, raw samples,
+CPU/RSS bounds, source/runtime/fixture identities and errors are retained; the
+table above selects the changed paths, not a favorable aggregate.
