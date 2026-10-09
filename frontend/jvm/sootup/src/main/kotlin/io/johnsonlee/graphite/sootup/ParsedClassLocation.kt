@@ -89,7 +89,7 @@ internal class ParsedClassLocation(
             }
             ClassReader(bytes).accept(node, ClassReader.SKIP_FRAMES)
             if (node.name.replace('/', '.') != name) return null
-            declarations[name] = ClassDeclarations.from(node)
+            ClassDeclarations.validateParsedNode(node)
             node.fields.filter { it.signature != null }.associate { it.name to it.signature }
                 .takeIf { it.isNotEmpty() }?.let { fieldSignatures[name] = it }
             lazyClassSource(this, file, type, node).also { parsed.add(name) }
@@ -97,11 +97,6 @@ internal class ParsedClassLocation(
             null
         }
     }
-
-    /** Declaration signatures and descriptors retained from each class's existing parse. */
-    private val declarations = ConcurrentHashMap<String, ClassDeclarations>()
-
-    fun declarations(className: String): ClassDeclarations? = declarations[className]
 
     /** The generic field signatures, by class and field name, for the fields that have one. */
     private val fieldSignatures = ConcurrentHashMap<String, Map<String, String>>()

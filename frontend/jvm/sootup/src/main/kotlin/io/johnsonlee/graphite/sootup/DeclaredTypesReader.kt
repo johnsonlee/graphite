@@ -12,7 +12,7 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 
-/** Compact declaration snapshots retained from the existing bytecode parse. */
+/** Declaration snapshots used while constructing the deduplicated type table. */
 internal data class ClassDeclarations(
     val name: String,
     val signature: String?,
@@ -26,6 +26,20 @@ internal data class ClassDeclarations(
     val enclosingInstance: Boolean? = null
 ) {
     companion object {
+        /** Keep malformed-class rejection at parse time without retaining snapshots. */
+        fun validateParsedNode(node: ClassNode) {
+            requireNotNull(node.name)
+            node.interfaces.forEach { requireNotNull(it) }
+            node.fields.forEach {
+                requireNotNull(it.name)
+                requireNotNull(it.desc)
+            }
+            node.methods.forEach {
+                requireNotNull(it.name)
+                requireNotNull(it.desc)
+            }
+        }
+
         fun from(node: ClassNode): ClassDeclarations {
             val inner = node.innerClasses.firstOrNull { it.name == node.name }
             val enclosing = node.outerClass ?: inner?.takeIf { it.access and Opcodes.ACC_STATIC == 0 }?.outerName
