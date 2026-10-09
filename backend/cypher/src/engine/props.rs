@@ -230,6 +230,31 @@ pub const GENERIC_METHOD_KEYS: [&str; 5] = [
     "type_parameters",
 ];
 
+pub(super) fn node_property_is_null(g: &Graph, node: &Node, key: &str) -> bool {
+    if matches!(key, "generic_type" | "type_info")
+        && matches!(
+            node.kind,
+            NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+        )
+    {
+        return !has_declared_node_type(g, node);
+    }
+    // Annotation properties are dynamic and can use a generic property's name.
+    node_property(g, node, key).is_null()
+}
+
+pub(super) fn method_property_is_null(
+    g: &Graph,
+    method: &MethodDesc,
+    key: &str,
+    graph_id: Option<&str>,
+) -> bool {
+    if GENERIC_METHOD_KEYS.contains(&key) {
+        return declared_method(g, method).is_none();
+    }
+    method_property(g, method, key, graph_id).is_null()
+}
+
 /// `getProperty(node, key)`.
 pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
     if key == "id" {

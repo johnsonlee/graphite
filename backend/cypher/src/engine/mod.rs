@@ -301,6 +301,14 @@ impl GraphContext for Executor {
         }
         m
     }
+    fn node_property_is_null(&self, node: NodeRef, key: &str) -> bool {
+        if matches!(key, "generic_type" | "type_info") {
+            return self
+                .node(node)
+                .is_none_or(|n| props::node_property_is_null(self.graph(node.source), &n, key));
+        }
+        self.node_property(node, key).is_null()
+    }
     fn node_keys(&self, node: NodeRef) -> Vec<String> {
         let mut keys = self
             .node(node)
@@ -369,6 +377,12 @@ impl GraphContext for Executor {
             Some(md) => props::method_properties(g, md, self.graph_id_opt(m.source)),
             None => IndexMap::new(),
         }
+    }
+    fn method_property_is_null(&self, method: MethodRef, key: &str) -> bool {
+        let g = self.graph(method.source);
+        g.methods().get(method.index as usize).is_none_or(|md| {
+            props::method_property_is_null(g, md, key, self.graph_id_opt(method.source))
+        })
     }
     fn method_signature(&self, m: MethodRef) -> String {
         let g = self.graph(m.source);
