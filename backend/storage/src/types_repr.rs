@@ -2,6 +2,7 @@
 #[cfg(test)]
 use super::TypeError;
 use crate::strings::StringTable;
+use hashbrown::HashTable;
 use indexmap::{Equivalent, IndexMap};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
@@ -72,23 +73,12 @@ impl Texts for TextStore {
 
 #[derive(Debug, PartialEq, Eq)]
 struct StoredKey<const N: usize> {
-    fingerprint: u64,
     ids: [usize; N],
-}
-impl<const N: usize> Hash for StoredKey<N> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.fingerprint.hash(state);
-    }
 }
 struct Lookup<'a, const N: usize> {
     fingerprint: u64,
     values: [&'a str; N],
     texts: &'a dyn Texts,
-}
-impl<const N: usize> Hash for Lookup<'_, N> {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.fingerprint.hash(state);
-    }
 }
 impl<const N: usize> Equivalent<StoredKey<N>> for Lookup<'_, N> {
     fn equivalent(&self, key: &StoredKey<N>) -> bool {
@@ -96,6 +86,71 @@ impl<const N: usize> Equivalent<StoredKey<N>> for Lookup<'_, N> {
             .iter()
             .zip(key.ids)
             .all(|(value, id)| *value == self.texts.text(id))
+    }
+}
+
+/// File-ordered entries with an index containing only entry positions. Hashes are
+/// computed from complete text values and recomputed only when the index grows.
+#[derive(Debug)]
+struct MemberIndex<const N: usize, V> {
+    entries: Vec<(StoredKey<N>, V)>,
+    positions: HashTable<usize>,
+}
+impl<const N: usize, V> Default for MemberIndex<N, V> {
+    fn default() -> Self {
+        Self {
+            entries: Vec::new(),
+            positions: HashTable::new(),
+        }
+    }
+}
+impl<const N: usize, V> MemberIndex<N, V> {
+    fn reserve_initial(&mut self, count: usize) -> Result<(), String> {
+        if !self.entries.is_empty() {
+            return Err("initial member capacity requested after insertion".into());
+        }
+        self.entries
+            .try_reserve_exact(count)
+            .map_err(|error| error.to_string())?;
+        self.positions
+            .try_reserve(count, |_| unreachable!("initial index is empty"))
+            .map_err(|error| error.to_string())
+    }
+    fn len(&self) -> usize {
+        self.entries.len()
+    }
+    fn get_index(&self, index: usize) -> Option<(&StoredKey<N>, &V)> {
+        self.entries.get(index).map(|(key, value)| (key, value))
+    }
+    fn iter(&self) -> impl ExactSizeIterator<Item = (&StoredKey<N>, &V)> {
+        self.entries.iter().map(|(key, value)| (key, value))
+    }
+    fn get(&self, key: &Lookup<'_, N>) -> Option<&V> {
+        self.positions
+            .find(key.fingerprint, |index| {
+                key.equivalent(&self.entries[*index].0)
+            })
+            .map(|index| &self.entries[*index].1)
+    }
+    fn contains_key(&self, key: &Lookup<'_, N>) -> bool {
+        self.get(key).is_some()
+    }
+    fn insert_unique(
+        &mut self,
+        ids: [usize; N],
+        value: V,
+        fingerprint: u64,
+        rehash: impl Fn(&StoredKey<N>) -> u64,
+    ) {
+        let index = self.entries.len();
+        self.entries.push((StoredKey { ids }, value));
+        let entries = &self.entries;
+        self.positions
+            .insert_unique(fingerprint, index, |index| rehash(&entries[*index].0));
+    }
+    #[cfg(test)]
+    fn values(&self) -> impl ExactSizeIterator<Item = &V> {
+        self.entries.iter().map(|(_, value)| value)
     }
 }
 
@@ -117,11 +172,11 @@ pub(super) struct CompactTable {
     pub(super) texts: TextStore,
     pub(super) types: Vec<TypeExpr<usize>>,
     // Private keys: all inserts and lookups compare full actual text values.
-    fields: IndexMap<StoredKey<3>, usize>,
-    methods: IndexMap<StoredKey<3>, StoredMethod>,
+    fields: MemberIndex<3, usize>,
+    methods: MemberIndex<3, StoredMethod>,
     method_parameters: Vec<usize>,
     method_formals: Vec<TypeParameter<usize>>,
-    classes: IndexMap<StoredKey<1>, ClassTypes<usize>>,
+    classes: MemberIndex<1, ClassTypes<usize>>,
     fingerprints: RandomState,
 }
 #[derive(Debug)]
@@ -131,17 +186,17 @@ struct StoredMethod {
     type_parameters: Range<usize>,
 }
 impl CompactTable {
-    pub(super) fn reserve_fields(&mut self, n: usize) -> Result<(), indexmap::TryReserveError> {
-        self.fields.try_reserve_exact(n)
+    pub(super) fn reserve_fields(&mut self, n: usize) -> Result<(), String> {
+        self.fields.reserve_initial(n)
     }
-    pub(super) fn reserve_methods(&mut self, n: usize) -> Result<(), indexmap::TryReserveError> {
-        self.methods.try_reserve_exact(n)
+    pub(super) fn reserve_methods(&mut self, n: usize) -> Result<(), String> {
+        self.methods.reserve_initial(n)
     }
-    pub(super) fn reserve_classes(&mut self, n: usize) -> Result<(), indexmap::TryReserveError> {
-        self.classes.try_reserve_exact(n)
+    pub(super) fn reserve_classes(&mut self, n: usize) -> Result<(), String> {
+        self.classes.reserve_initial(n)
     }
     fn insert<const N: usize, V>(
-        map: &mut IndexMap<StoredKey<N>, V>,
+        map: &mut MemberIndex<N, V>,
         state: &RandomState,
         texts: &dyn Texts,
         ids: [usize; N],
@@ -149,14 +204,17 @@ impl CompactTable {
     ) -> bool {
         let values = ids.map(|id| texts.text(id));
         let fingerprint = state.hash_one(values);
-        Self::insert_fingerprinted(map, texts, ids, value, fingerprint)
+        Self::insert_fingerprinted(map, texts, ids, value, fingerprint, |key| {
+            state.hash_one(key.ids.map(|id| texts.text(id)))
+        })
     }
     fn insert_fingerprinted<const N: usize, V>(
-        map: &mut IndexMap<StoredKey<N>, V>,
+        map: &mut MemberIndex<N, V>,
         texts: &dyn Texts,
         ids: [usize; N],
         value: V,
         fingerprint: u64,
+        rehash: impl Fn(&StoredKey<N>) -> u64,
     ) -> bool {
         let lookup = Lookup {
             fingerprint,
@@ -166,7 +224,7 @@ impl CompactTable {
         if map.contains_key(&lookup) {
             return false;
         }
-        map.insert(StoredKey { fingerprint, ids }, value);
+        map.insert_unique(ids, value, fingerprint, rehash);
         true
     }
     pub(super) fn insert_field(
@@ -197,13 +255,15 @@ impl CompactTable {
         self.method_parameters.extend(value.parameters);
         let formal_start = self.method_formals.len();
         self.method_formals.extend(value.type_parameters);
-        self.methods.insert(
-            StoredKey { fingerprint, ids },
+        self.methods.insert_unique(
+            ids,
             StoredMethod {
                 parameters: parameter_start..self.method_parameters.len(),
                 returns: value.returns,
                 type_parameters: formal_start..self.method_formals.len(),
             },
+            fingerprint,
+            |key| self.fingerprints.hash_one(key.ids.map(|id| texts.text(id))),
         );
         true
     }
@@ -864,14 +924,15 @@ mod compact_tests {
                 .chain([Arc::from("text-0")])
                 .collect(),
         );
-        let mut map = IndexMap::new();
+        let mut map = MemberIndex::default();
         for i in 0..256 {
             assert!(CompactTable::insert_fingerprinted(
                 &mut map,
                 &texts,
                 [i, i + 1, i + 2],
                 i,
-                7
+                7,
+                |_| 7
             ));
         }
         assert!(!CompactTable::insert_fingerprinted(
@@ -879,7 +940,8 @@ mod compact_tests {
             &texts,
             [260, 1, 2],
             999,
-            7
+            7,
+            |_| 7
         ));
         for i in 0..256 {
             let key = Lookup {
@@ -900,20 +962,22 @@ mod compact_tests {
             map.values().copied().collect::<Vec<_>>(),
             (0..256).collect::<Vec<_>>()
         );
-        let mut classes = IndexMap::new();
+        let mut classes = MemberIndex::default();
         assert!(CompactTable::insert_fingerprinted(
             &mut classes,
             &texts,
             [0],
             1,
-            7
+            7,
+            |_| 7
         ));
         assert!(!CompactTable::insert_fingerprinted(
             &mut classes,
             &texts,
             [260],
             2,
-            7
+            7,
+            |_| 7
         ));
     }
 
