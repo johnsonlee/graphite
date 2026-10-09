@@ -14057,3 +14057,68 @@ PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-audit-pressure-1.py
 PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-pressure-independent-audit.py --all-six-terminal --output /tmp/graphite-attempt186-pressure-independent-audit.json
 node .github/scripts/benchmark-multigraph-pressure.mjs /tmp/graphite-attempt186-pressure-1/plan.json /tmp/graphite-attempt186-pressure-1 /tmp/graphite-attempt186-pressure-1/comparison
 ```
+
+### Attempt187 — temporary declaration snapshots from retained ASM nodes; correctness verified, performance unmeasured (2026-10-10)
+
+**Decision: keep isolated for a matched real multi-graph construction comparison.**
+`ParsedClassLocation` retained a `ClassDeclarations` snapshot for every parsed
+class, while the class sources already retained the ASM nodes used for lazy member
+and body resolution. This candidate removes that persistent declaration cache.
+Regular and annotation class sources expose their existing ASM node through an
+internal bridge; foreign sources retain the resource-based fallback. Annotation
+sources remain `AsmAnnotationClassSource` instances and do not enter the regular
+streaming-method path. The existing field-signature cache remains intact.
+
+The adapter builds declaration snapshots, the deduplicated type table and inherited
+field aliases in one final construction helper. Its temporary map is no longer a
+local retained across the large method-processing pass. Full loaded-class coverage
+is preserved; no library declarations or inherited aliases are pruned. This moves
+work within construction, so any future measurement must include the complete
+construction-through-usable-save boundary. It is not evidence of reduced work,
+loading gains or query gains. String IDs, type IDs and the storage format are
+unchanged. Cheap parse-time non-null checks retain malformed-class rejection in
+the original parse/catch boundary rather than allowing a later whole-build failure.
+
+Source: `/tmp/graphite-attempt187-source`, based on production42377 only; it does
+not contain the isolated native184/185/186 changes. Final lineage:
+`/tmp/graphite-attempt187-source-lineage-3.json`; cumulative patch SHA
+`0ecf9b763ca4f6dd21ed16af085f20491cd99062f2c59246459b975573e7b312`.
+No production source is integrated by this record.
+
+Two failed validation attempts remain preserved. The first compilation exposed
+that final inherited-field binding still referenced the old long-lived locals;
+the final helper now performs both type construction and alias binding together.
+The second run passed609/610 tests. The new closed-input test compared local type
+IDs generated from different `JavaView` iteration orders. The test now asserts
+exact class-key coverage, reconstructs in the original type-table class order,
+and still compares the entire structural table. No declaration assertion or
+existing test was removed.
+
+The third run passes all610 SootUp tests, with zero failures, errors or skipped
+tests. Independent XML review verifies that all608 prior test names remain and
+the two new checks are present. The new checks cover full declaration reuse after
+JAR/directory closure and deletion, including generic fields and annotation
+returns, plus parse-time rejection of an invalid null field descriptor alongside
+a valid class. Existing inherited-field, expansion fallback, source-cache,
+streaming-method and frontend correctness checks remain in the full suite.
+`detekt` and `sootup:koverVerify` pass. Source/control hashes remain unchanged and
+the owned process group is empty after completion.
+
+Command: `PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt187-validation-3/run.py`.
+Gradle runs with4g heap, two workers and an in-process Kotlin compiler; tests use
+one512m fork and ActiveProcessorCount4. Test caching/up-to-date reuse is disabled
+for this correctness run. JMH source compilation is a Gradle dependency only;
+no benchmark or single-graph performance measurement was run.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability |610 tests, lint, coverage gate and owned cleanup PASS |
+| Multi-graph construction time / CPU / RSS | Not measured |
+| Multi-graph loading / query p50 / p95 / CPU / RSS | Not measured for187 |
+| Production integration / overall recovery / CI / merge readiness | Not established |
+
+Evidence: `/tmp/graphite-attempt187-validation-1/attempt-1/` and
+`/tmp/graphite-attempt187-validation-2/attempt-1/` preserve the failed runs;
+`/tmp/graphite-attempt187-validation-3/attempt-1/` contains the final raw output.
+Independent audit: `/tmp/graphite-attempt187-validation-independent-audit-3.json`,
+SHA `3ddae48c5baa548506d68ce3fcce75e54ebf28e079a0d0dc21b7ea7a1b883647`.
