@@ -12762,3 +12762,27 @@ Before measurement, source review corrected an unbounded cleanup ps call and a m
 Source inspection identifies repeated shared-dictionary decoding to temporary Strings and UTF-8 byte arrays in validation/hash/length paths as a hypothesis for the additional allocation and CPU. This is not yet a measured attribution; an actual startup allocation/CPU profile and a separately validated candidate are the next steps. Full validation and compatibility must remain intact.
 
 Evidence: `/tmp/graphite-shared-loading/` retains protocol, all raw startup/resource/host samples, report, cleanup and final identities. Independent source and result are `/tmp/graphite-shared-loading-audit.py` and `/tmp/graphite-shared-loading-independent-audit.json`. Protocol SHA `bf7968c7c9723dd600c54ac8c24861ad91b5f1502e9e7af5cac3a283d8579df2`; seal `fd955379a46ee547a18483b32b22dee56e478e5a72fd43d8a1406891e11c2eb0`; original final-cohort preflight `87bccb18d5b58fe45aaffefc0f975a880a503646bd061052da92b39a9d1cb4cf`; independent raw audit `7ab8f30546e04c991fbe4395cf8035c9e56bb1a75d226aea30ff97e0b1485eae`. The PR remains draft with required performance checks unresolved.
+
+### Attempt173 diagnostic follow-up — shared-string allocation paths (2026-10-09)
+
+The completed loading regression above remains unresolved. One instrumented startup of the exact frozen `ae316747` JVM loads all three current GTY03 graphs at8GiB/APC4, consumes and validates the complete readiness body, then stops without queries. Before/after identity checks cover411 files and1,466,083,440 bytes; the normal SIGTERM exit143 leaves owned group65522 empty. The311,074-byte raw JFR is retained. Instrumented timings do not establish performance acceptance.
+
+Allocation sampling is enabled at1000/s, Java execution sampling10ms and native20ms, with stack depth128 and recording cap256MiB. A bounded512MiB binary RecordingFile consumer traverses every event and writes compact allocation/execution journals plus complete stack dictionaries. Compiler and consumer exit0, owned groups are empty, and source/input/helper pins remain unchanged. An independent reviewer reparses the journals and confirms boundaries, weights and counts; no event is dropped to improve attribution.
+
+There are844 allocation samples:842 fall within launch..complete-body consumption, and two occur0.600/0.800ms afterward and are excluded. Eligible weights total1,636,305,352 bytes. These are sampling estimates, not exact allocation totals, retained memory or predicted savings. Two eligible samples have null stacks (2,200 weighted bytes); none has a truncated stack. No DataLoss event is present.
+
+| Eligible allocation ancestry | Samples | Estimated weight bytes |
+|---|---:|---:|
+|SharedDeclaredTypeTexts.hash|569|1,108,368,088|
+|MappedTypes.atomTextLength|83|171,929,664|
+|SharedDeclaredTypeTexts.validateId|239|419,724,568|
+|MappedTypes.atomTextEquals|16|33,537,496|
+|FrontCodedStringList.get|409|791,076,768|
+
+These ancestry categories overlap and must not be summed. The hashes repeatedly call `text → StringTable.get`, allocating front-coded decoded buffers and Strings; the length path additionally allocates UTF-8 bytes. `validateId` already validates each referenced ID only once through its BitSet; the profile does not imply repeated per-reference Unicode validation. Its first validation still allocates an encoder and decoded text. Primitive text statistics computed during that required first scan could remove subsequent hash/length decodes without retaining decoded declarations or deferring checks.
+
+All138 execution/native observations are inside the startup boundary (133 Java and five native), with no missing or truncated stack. Non-additive ancestry counts include SHA2 compression55, shared hash33 and shared length4. They are not CPU percentages or additive removable time. SHA remains a separate cost; this allocation hypothesis does not authorize removing any digest, duplicate-key-by-value, UTF-16, shape, reference or DAG validation.
+
+The next isolated candidate174 targets load-scoped reusable decoding and primitive hash/UTF-8-length statistics, discarded after complete validation before publication. Query-facing views and legacy formats must remain thread-safe and compatible. No candidate test, matched comparison or integration is implied by this diagnostic.
+
+Evidence: `/tmp/graphite-shared-profile/` retains source/configuration, raw JFR, complete ready body, original cleanup/final pins, streaming consumer logs/journals, `analysis.json` and `independent-stream-analysis-review.json`. Analysis SHA `5e810f2b5bffe51a3d406785b39c988123a797dc6814d1e862b7e69785583a4e`; raw recording SHA `4a4dc0c435bea20cfe27a8cb6a79d74e0b18956c26d83683268cc915b3427401`. This diagnostic does not change any prior failure, gate tolerance, performance threshold or PR acceptance state.
