@@ -14625,3 +14625,75 @@ oracle is correctness preparation only and is insufficient evidence for large
 projections. A larger persisted-data-derived workload is required. Attempt192's
 separate runtime remains fixed for its own parent-relative comparison; this change
 must not be silently included in that measurement.
+
+
+### Attempt192 follow-up — completed fixed64-graph query comparison (2026-10-10)
+
+The fixed C-A-B-B-A-C query cohort completed all six rounds and its automatic
+independent raw/cohort audits. C is accepted `4f2ccf33b969`, A is Attempt191
+`64d77daaac83`, and B is Attempt192 `8754ec4d9ea7`. A/B use the identical audited
+`acd11a69` GTY05 graphs; C uses its own accepted writer output. Runtime192 excludes
+Attempt193. The workload has39 cases at concurrency4:37 target64 graphs, two
+routing cases target exactly two. Each cell retains one correctness, two warmup
+and20 measured requests per case, with complete body consumption and validation.
+All5,382 bodies pass, with no skipped/unissued request or cleanup failure.
+Per-case p50/p95 use the predeclared nearest-rank method over20 requests per cell;
+all samples and both directions remain retained.
+
+| Direction / query | C p50 / p95 ms | A p50 / p95 ms | B p50 / p95 ms |
+|---|---:|---:|---:|
+| forward / feature-methods | 908.194 / 920.562 | 2935.286 / 2955.306 | 437.836 / 455.293 |
+| forward / slow-dynamicHit | 461.475 / 556.539 | 408.942 / 467.095 | 493.782 / 565.688 |
+| forward / slow-dynamicMiss | 412.297 / 456.745 | 410.774 / 448.426 | 453.324 / 526.497 |
+| forward / schema-key-histogram | 1.747 / 2.167 | 1.879 / 4.314 | 1.971 / 2.280 |
+| reverse / feature-methods | 901.956 / 951.595 | 2928.954 / 2950.602 | 445.674 / 463.146 |
+| reverse / slow-dynamicHit | 459.886 / 550.018 | 407.207 / 467.430 | 473.320 / 561.743 |
+| reverse / slow-dynamicMiss | 407.148 / 488.172 | 399.082 / 450.093 | 438.416 / 485.083 |
+| reverse / schema-key-histogram | 1.866 / 4.059 | 1.987 / 5.550 | 1.955 / 2.987 |
+
+Method-presence latency improves in both directions: C→B p95 falls by465.269
+and488.448ms; A→B falls by2,500.013 and2,487.455ms. This is a verified benefit.
+It does not imply every query improves: dynamic-hit p50 is32.307/13.434ms above
+C; dynamic-miss p50 is41.027/31.267ms above C, and its forward p95 adds69.752ms
+while reverse p95 improves3.089ms. Other slower observations remain in the
+complete39-case table; no small absolute change is promoted to an optimization
+priority or silently waived. No isolated percentile or aggregate substitutes
+for those per-case observations.
+
+| Cell | Pressure wall ms | Query CPU seconds | RSS lower / upper bytes |
+|---|---:|---:|---:|
+| 01-C | 78840.828 | 458.34–458.48 | 22,349,070,336 / 22,355,361,792 |
+| 02-A | 83652.824 | 480.42–480.56 | 21,332,000,768 / 21,334,933,504 |
+| 03-B | 70859.277 | 421.68–421.76 | 22,039,248,896 / 22,044,065,792 |
+| 04-B | 71444.571 | 427.80–427.88 | 24,210,767,872 / 24,223,973,376 |
+| 05-A | 83465.032 | 479.43–479.53 | 23,485,874,176 / 23,530,455,040 |
+| 06-C | 78873.862 | 456.61–456.68 | 23,947,083,776 / 23,962,501,120 |
+
+Both baseline-matched query CPU and RSS comparisons satisfy the independent+5%
+bounds in this cohort, including conservative upper/lower comparisons. Query CPU
+falls from458.46/456.66s to421.74/427.86s; pressure wall falls by7,981.551 and
+7,429.292ms. RSS remains variable: the two candidate lifecycle upper bounds are
+22.044GB and24.224GB (decimal), both retained. RSS upper bounds cover the whole
+fresh-server lifecycle, whereas the sampled lower bound covers the pressure
+stage; this is not separate zero-query loading evidence. Host OS caches were
+uncontrolled, only two paired directions were collected, and no quiet-host,
+confidence-interval or saturation claim is established.
+
+**Decision: retain192 for its verified Method-query, CPU and wall improvements.**
+Correctness and observed cleanup pass for the requested responses. Full projection
+is absent from these39 cases, complete graph semantic authority is still missing,
+and other per-case latency regressions remain. Construction/loading are not
+measured here; the previous separate loading findings remain. The report status
+is `DIAGNOSTIC_COMPLETE_WITH_SEMANTIC_PROOF_GAP`, and every overall performance,
+semantic, CI and merge-acceptance flag remains false.
+
+Command:
+`python3 -B /private/tmp/graphite-attempt192-pressure-prep-1/query/run_diagnostic_pressure.py run --plan /private/tmp/graphite-attempt192-pressure-prep-1/query-plan.json --output /private/tmp/graphite-attempt192-pressure-query-run-1`.
+The raw cohort and automatic report are under that output directory. Root
+independently checked all six audit/result/plan bindings and clean groups and
+recomputed every per-case p50/p95 from retained request records, without repeating
+the full corpus audit. The complete table is `root-all-case-observations.md`;
+root recomputation is `root-independent-statistics-review.json`.
+SHA-256 `diagnostic-report.json`: `6f0b89d5f50a08a7d6d6b27c6070cb7b9453bb46422238ef7738abcc7edb1d4d`.
+SHA-256 `root-independent-statistics-review.json`: `9b448fc9ae9edca4d5d30e02479e622dac03a55135013368640b6cc1059747be`.
+SHA-256 `root-all-case-observations.md`: `033e976fea86361be62bcbd6c8ce834fa161b219e0ff52d7f548429fcf7872fe`.
