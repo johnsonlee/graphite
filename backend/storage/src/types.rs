@@ -30,6 +30,7 @@ struct Reader<'a> {
     dictionary: Vec<Arc<str>>,
     pooled: bool,
     shared: Option<&'a StringTable>,
+    structural: bool,
 }
 impl<'a> Reader<'a> {
     fn at(bytes: &'a [u8], pos: usize) -> Self {
@@ -40,6 +41,7 @@ impl<'a> Reader<'a> {
             dictionary: Vec::new(),
             pooled: false,
             shared: None,
+            structural: false,
         }
     }
 
@@ -140,16 +142,63 @@ impl<'a> Reader<'a> {
     fn references(&mut self, count: usize) -> Result<Vec<usize>, TypeError> {
         (0..self.count()?).map(|_| self.reference(count)).collect()
     }
-    fn parameters(&mut self, count: usize) -> Result<Vec<TypeParameter<usize>>, TypeError> {
-        (0..self.count()?)
+    fn parameters(&mut self, count: usize) -> Result<Vec<TypeParameter<usize, u64>>, TypeError> {
+        (0..self.section_count(if self.structural { 16 } else { 12 })?)
             .map(|_| {
                 Ok(TypeParameter {
                     name: self.string()?,
-                    scope: self.string()?,
+                    scope: if self.structural {
+                        let tag = self.take(1)?[0];
+                        if self.take(3)? != [0, 0, 0] {
+                            return Err(TypeError("nonzero reserved formal bytes".into()));
+                        }
+                        self.scope_reference(tag)?
+                    } else {
+                        self.string()? as u64
+                    },
                     bounds: self.references(count)?,
                 })
             })
             .collect()
+    }
+    fn scope_reference(&mut self, tag: u8) -> Result<u64, TypeError> {
+        let target = self.int()?;
+        match (tag, target) {
+            (0, -1) => Ok(0),
+            (1..=4, 0..) => Ok(((target as u64) << 3) | u64::from(tag)),
+            _ => Err(TypeError("invalid declaration scope encoding".into())),
+        }
+    }
+    fn structural_type(&mut self, count: usize) -> Result<TypeExpr<usize, u64>, TypeError> {
+        let tags = self.take(4)?;
+        let (kind, variance, scope_tag) = (tags[0], tags[1], tags[2]);
+        if kind > 4 || variance > 3 || tags[3] != 0 {
+            return Err(TypeError(
+                "invalid structural type tags or reserved byte".into(),
+            ));
+        }
+        let name = self.int()?;
+        let name = match name {
+            -1 => usize::MAX,
+            0.. => {
+                self.shared
+                    .expect("structural strings context")
+                    .strict_get(name as usize)
+                    .map_err(|error| TypeError(error.to_string()))?;
+                name as usize
+            }
+            _ => return Err(TypeError("invalid optional name string ID".into())),
+        };
+        let scope = self.scope_reference(scope_tag)?;
+        Ok(TypeExpr {
+            kind: kind as usize,
+            variance: variance as usize,
+            name,
+            scope,
+            owner: self.optional(count)?,
+            component: self.optional(count)?,
+            arguments: self.references(count)?,
+        })
     }
     fn key(&mut self) -> Result<[usize; 3], TypeError> {
         Ok([self.string()?, self.string()?, self.string()?])
@@ -240,7 +289,7 @@ impl DeclaredTypes {
         Ok(Some(binding.to_owned()))
     }
 
-    /// Advisory only. The actual GTY03 parser independently requires verified strings.
+    /// Advisory only. Shared-table parsers independently require verified strings.
     pub(crate) fn needs_shared_strings(source: &GraphSource) -> Result<bool, TypeError> {
         if Self::binding(source)?.is_none() {
             return Ok(false);
@@ -250,7 +299,7 @@ impl DeclaredTypes {
             .map_err(|(path, error)| TypeError(format!("{path}: {error}")))?;
         Ok(bytes
             .as_ref()
-            .is_some_and(|bytes| bytes.get(..4) == Some(&0x47545903i32.to_be_bytes())))
+            .is_some_and(|bytes| matches!(bytes.get(..4), Some([0x47, 0x54, 0x59, 3 | 4]))))
     }
 
     pub fn load(source: &GraphSource) -> Result<Option<Self>, TypeError> {
@@ -311,7 +360,7 @@ impl DeclaredTypes {
     ) -> Result<Self, TypeError> {
         let mut r = Reader::at(bytes, 0);
         let version = r.int()?;
-        if !matches!(version, 0x47545901..=0x47545903) {
+        if !matches!(version, 0x47545901..=0x47545904) {
             return Err(TypeError("unsupported header/version".into()));
         }
         if r.take(32)? != Sha256::digest(metadata).as_slice() {
@@ -319,32 +368,39 @@ impl DeclaredTypes {
         }
         if version == 0x47545902 {
             r.dictionary()?;
-        } else if version == 0x47545903 {
-            let strings = strings
-                .ok_or_else(|| TypeError("GTY03 requires verified graph.strings context".into()))?;
+        } else if version >= 0x47545903 {
+            r.structural = version == 0x47545904;
+            let strings = strings.ok_or_else(|| {
+                TypeError("GTY03/GTY04 requires verified graph.strings context".into())
+            })?;
             let digest = strings.serialized_digest().ok_or_else(|| {
-                TypeError("GTY03 requires verified serialized graph.strings digest".into())
+                TypeError("GTY03/GTY04 requires verified serialized graph.strings digest".into())
             })?;
             if r.take(32)? != digest {
                 return Err(TypeError("serialized graph.strings digest mismatch".into()));
             }
             r.shared = Some(strings);
         }
-        let count = r.section_count(28)?;
+        let count = r.section_count(if r.structural { 24 } else { 28 })?;
         let mut table = CompactTable::default();
+        table.structural = r.structural;
         table
             .types
             .try_reserve_exact(count)
             .map_err(|error| TypeError(format!("type section allocation: {error}")))?;
         for _ in 0..count {
-            table.types.push(TypeExpr {
-                kind: r.string()?,
-                name: r.string()?,
-                scope: r.string()?,
-                owner: r.optional(count)?,
-                component: r.optional(count)?,
-                variance: r.string()?,
-                arguments: r.references(count)?,
+            table.types.push(if r.structural {
+                r.structural_type(count)?
+            } else {
+                TypeExpr {
+                    kind: r.string()?,
+                    name: r.string()?,
+                    scope: r.string()? as u64,
+                    owner: r.optional(count)?,
+                    component: r.optional(count)?,
+                    variance: r.string()?,
+                    arguments: r.references(count)?,
+                }
             });
         }
         let field_count = r.section_count(16)?;
@@ -391,6 +447,7 @@ impl DeclaredTypes {
         if r.pos != bytes.len() {
             return Err(TypeError("trailing bytes".into()));
         }
+        table.validate_scopes()?;
         table.finish_method_buffers();
         table.texts = match r.shared {
             Some(strings) => repr::TextStore::Shared(strings.clone()),
@@ -426,7 +483,8 @@ impl DeclaredTypes {
                 return Err(TypeError("type nesting exceeds 256".into()));
             }
             state[id] = 1;
-            let t = table.type_expr(id);
+            let t = table.type_expr_without_scope(id);
+            let scope_bytes = table.scope_length(id);
             let shape = match t.kind {
                 "class" => !t.name.is_empty() && t.component.is_none() && t.variance.is_empty(),
                 "primitive" => {
@@ -454,7 +512,7 @@ impl DeclaredTypes {
                 }
                 "variable" => {
                     !t.name.is_empty()
-                        && !t.scope.is_empty()
+                        && scope_bytes != 0
                         && t.owner.is_none()
                         && t.component.is_none()
                         && t.arguments.is_empty()
@@ -480,7 +538,7 @@ impl DeclaredTypes {
                 .kind
                 .len()
                 .saturating_add(t.name.len())
-                .saturating_add(t.scope.len())
+                .saturating_add(scope_bytes)
                 .saturating_add(t.variance.len());
             for next in t
                 .owner
@@ -530,7 +588,7 @@ impl DeclaredTypes {
         Ok(())
     }
     pub fn render(&self, id: usize) -> String {
-        let t = self.type_expr(id);
+        let t = self.type_expr_without_scope(id);
         match t.kind {
             "array" => format!("{}[]", self.render(t.component.unwrap())),
             "wildcard" => t
@@ -543,7 +601,7 @@ impl DeclaredTypes {
                         "{}.{}",
                         self.render(owner),
                         t.name
-                            .strip_prefix(&format!("{}$", self.type_expr(owner).name))
+                            .strip_prefix(&format!("{}$", self.type_expr_without_scope(owner).name))
                             .unwrap_or(t.name)
                     ),
                     None => t.name.to_string(),

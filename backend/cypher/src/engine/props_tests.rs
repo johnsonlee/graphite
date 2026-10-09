@@ -1144,10 +1144,11 @@ fn scalar_properties_preserve_declared_and_non_declared_node_contracts() {
 }
 
 #[test]
-fn java_all_three_wire_formats_preserve_full_properties_and_shared_string_queries() {
+fn java_all_four_wire_formats_preserve_full_properties_and_shared_string_queries() {
     let variables = [
         "GRAPHITE_TYPES_V1_FIXTURE",
         "GRAPHITE_TYPES_V2_FIXTURE",
+        "GRAPHITE_TYPES_V3_FIXTURE",
         "GRAPHITE_TYPES_FIXTURE",
     ];
     let paths = variables
@@ -1157,9 +1158,11 @@ fn java_all_three_wire_formats_preserve_full_properties_and_shared_string_querie
     let Some(paths) = paths else {
         assert!(
             std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
-            "all three wire fixtures required"
+            "all four wire fixtures required"
         );
-        eprintln!("all three GTY01/02/03 fixtures unset; skipping shared string interoperability");
+        eprintln!(
+            "all four GTY01/02/03/04 fixtures unset; skipping shared string interoperability"
+        );
         return;
     };
     let temporary = std::env::temp_dir().join(format!(
@@ -1187,7 +1190,7 @@ fn java_all_three_wire_formats_preserve_full_properties_and_shared_string_querie
             };
             let graph = Arc::new(Graph::load(actual_path).unwrap());
             assert_complete_declared_graph_equivalence(&expected, &graph);
-            assert_eq!(graph.strings().serialized_digest().is_some(), i == 2);
+            assert_eq!(graph.strings().serialized_digest().is_some(), i >= 2);
             sources.push(Source {
                 id: Arc::from(format!(
                     "v{}-{}",
@@ -1207,8 +1210,10 @@ fn java_all_three_wire_formats_preserve_full_properties_and_shared_string_querie
         "v2-packed",
         "v3-directory",
         "v3-packed",
+        "v4-directory",
+        "v4-packed",
     ];
-    assert_eq!(fields.rows.len(), 6);
+    assert_eq!(fields.rows.len(), 8);
     for (row, expected_source) in fields.rows.iter().zip(source_ids) {
         assert_eq!(row["source"].as_str(), Some(expected_source));
         let Value::List(ids) = &row[crate::engine::INTERNAL_PROVENANCE_KEY] else {

@@ -4,6 +4,7 @@ use super::TypeError;
 use crate::strings::StringTable;
 use hashbrown::HashTable;
 use indexmap::{Equivalent, IndexMap};
+use std::borrow::Cow;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash, Hasher};
@@ -11,30 +12,30 @@ use std::ops::Range;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TypeExpr<T = Arc<str>> {
+pub struct TypeExpr<T = Arc<str>, S = T> {
     pub kind: T,
     pub name: T,
-    pub scope: T,
+    pub scope: S,
     pub owner: Option<usize>,
     pub component: Option<usize>,
     pub variance: T,
     pub arguments: Vec<usize>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct TypeParameter<T = Arc<str>> {
+pub struct TypeParameter<T = Arc<str>, S = T> {
     pub name: T,
-    pub scope: T,
+    pub scope: S,
     pub bounds: Vec<usize>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct MethodTypes<T = Arc<str>> {
+pub struct MethodTypes<T = Arc<str>, S = T> {
     pub parameters: Vec<usize>,
     pub returns: usize,
-    pub type_parameters: Vec<TypeParameter<T>>,
+    pub type_parameters: Vec<TypeParameter<T, S>>,
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ClassTypes<T = Arc<str>> {
-    pub type_parameters: Vec<TypeParameter<T>>,
+pub struct ClassTypes<T = Arc<str>, S = T> {
+    pub type_parameters: Vec<TypeParameter<T, S>>,
     pub superclass: Option<usize>,
     pub interfaces: Vec<usize>,
 }
@@ -170,13 +171,16 @@ impl Equivalent<MemberKey> for BorrowedMemberKey<'_> {
 #[derive(Debug, Default)]
 pub(super) struct CompactTable {
     pub(super) texts: TextStore,
-    pub(super) types: Vec<TypeExpr<usize>>,
+    // GTY04 stores enum codes instead of string IDs and packs each scope as
+    // (declaration row << 3) | scope tag. Legacy tables retain string IDs.
+    pub(super) structural: bool,
+    pub(super) types: Vec<TypeExpr<usize, u64>>,
     // Private keys: all inserts and lookups compare full actual text values.
     fields: MemberIndex<3, usize>,
     methods: MemberIndex<3, StoredMethod>,
     method_parameters: Vec<usize>,
-    method_formals: Vec<TypeParameter<usize>>,
-    classes: MemberIndex<1, ClassTypes<usize>>,
+    method_formals: Vec<TypeParameter<usize, u64>>,
+    classes: MemberIndex<1, ClassTypes<usize, u64>>,
     fingerprints: RandomState,
 }
 #[derive(Debug)]
@@ -186,6 +190,113 @@ struct StoredMethod {
     type_parameters: Range<usize>,
 }
 impl CompactTable {
+    fn kind(&self, id: usize) -> &str {
+        if self.structural {
+            ["class", "primitive", "array", "variable", "wildcard"][id]
+        } else {
+            self.texts.text(id)
+        }
+    }
+    fn variance(&self, id: usize) -> &str {
+        if self.structural {
+            ["", "extends", "super", "unbounded"][id]
+        } else {
+            self.texts.text(id)
+        }
+    }
+    fn name(&self, id: usize) -> &str {
+        if self.structural && id == usize::MAX {
+            ""
+        } else {
+            self.texts.text(id)
+        }
+    }
+    fn scope_length(&self, scope: u64) -> usize {
+        if !self.structural {
+            return self.texts.text(scope as usize).len();
+        }
+        let tag = scope & 7;
+        if tag == 0 {
+            return 0;
+        }
+        let row = (scope >> 3) as usize;
+        let prefix = if tag >= 3 { "unresolved:".len() } else { 0 };
+        if tag == 1 || tag == 3 {
+            let (key, _) = self
+                .classes
+                .get_index(row)
+                .expect("validated class scope row");
+            prefix + "class:".len() + self.texts.text(key.ids[0]).len()
+        } else {
+            let (key, _) = self
+                .methods
+                .get_index(row)
+                .expect("validated method scope row");
+            key.ids.iter().fold(prefix + "method:#".len(), |len, id| {
+                len.saturating_add(self.texts.text(*id).len())
+            })
+        }
+    }
+    fn scope(&self, scope: u64) -> Cow<'_, str> {
+        if !self.structural {
+            return Cow::Borrowed(self.texts.text(scope as usize));
+        }
+        let tag = scope & 7;
+        if tag == 0 {
+            return Cow::Borrowed("");
+        }
+        let row = (scope >> 3) as usize;
+        let prefix = if tag >= 3 { "unresolved:" } else { "" };
+        if tag == 1 || tag == 3 {
+            let (key, _) = self
+                .classes
+                .get_index(row)
+                .expect("validated class scope row");
+            Cow::Owned(format!("{prefix}class:{}", self.texts.text(key.ids[0])))
+        } else {
+            let (key, _) = self
+                .methods
+                .get_index(row)
+                .expect("validated method scope row");
+            Cow::Owned(format!(
+                "{prefix}method:{}#{}{}",
+                self.texts.text(key.ids[0]),
+                self.texts.text(key.ids[1]),
+                self.texts.text(key.ids[2])
+            ))
+        }
+    }
+    pub(super) fn validate_scopes(&self) -> Result<(), super::TypeError> {
+        if !self.structural {
+            return Ok(());
+        }
+        for scope in self
+            .types
+            .iter()
+            .map(|t| t.scope)
+            .chain(self.method_formals.iter().map(|p| p.scope))
+            .chain(
+                self.classes
+                    .iter()
+                    .flat_map(|(_, c)| c.type_parameters.iter().map(|p| p.scope)),
+            )
+        {
+            let tag = scope & 7;
+            let row = scope >> 3;
+            let valid = match tag {
+                0 => scope == 0,
+                1 | 3 => row < self.classes.len() as u64,
+                2 | 4 => row < self.methods.len() as u64,
+                _ => false,
+            };
+            if !valid {
+                return Err(super::TypeError(
+                    "invalid declaration scope reference".into(),
+                ));
+            }
+        }
+        Ok(())
+    }
     pub(super) fn reserve_fields(&mut self, n: usize) -> Result<(), String> {
         self.fields.reserve_initial(n)
     }
@@ -239,7 +350,7 @@ impl CompactTable {
         &mut self,
         texts: &dyn Texts,
         ids: [usize; 3],
-        value: MethodTypes<usize>,
+        value: MethodTypes<usize, u64>,
     ) -> bool {
         let values = ids.map(|id| texts.text(id));
         let fingerprint = self.fingerprints.hash_one(values);
@@ -275,7 +386,7 @@ impl CompactTable {
         &mut self,
         texts: &dyn Texts,
         id: usize,
-        value: ClassTypes<usize>,
+        value: ClassTypes<usize, u64>,
     ) -> bool {
         Self::insert(&mut self.classes, &self.fingerprints, texts, [id], value)
     }
@@ -313,7 +424,7 @@ impl From<MutableDeclaredTypes> for DeclaredTypes {
 pub struct TypeView<'a> {
     pub kind: &'a str,
     pub name: &'a str,
-    pub scope: &'a str,
+    pub scope: Cow<'a, str>,
     pub owner: Option<usize>,
     pub component: Option<usize>,
     pub variance: &'a str,
@@ -323,14 +434,14 @@ pub struct TypeView<'a> {
 pub enum Formals<'a> {
     // The compact backing remains private through these borrowed views.
     #[doc(hidden)]
-    Compact(&'a [TypeParameter<usize>], &'a DeclaredTypes),
+    Compact(&'a [TypeParameter<usize, u64>], &'a DeclaredTypes),
     #[doc(hidden)]
     Owned(&'a [TypeParameter]),
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct FormalView<'a> {
     pub name: &'a str,
-    pub scope: &'a str,
+    pub scope: Cow<'a, str>,
     pub bounds: &'a [usize],
 }
 impl<'a> Formals<'a> {
@@ -342,12 +453,12 @@ impl<'a> Formals<'a> {
         (0..len).map(move |i| match self {
             Self::Compact(p, table) => FormalView {
                 name: table.text(p[i].name),
-                scope: table.text(p[i].scope),
+                scope: table.scope(p[i].scope),
                 bounds: &p[i].bounds,
             },
             Self::Owned(p) => FormalView {
                 name: &p[i].name,
-                scope: &p[i].scope,
+                scope: Cow::Borrowed(&p[i].scope),
                 bounds: &p[i].bounds,
             },
         })
@@ -400,6 +511,12 @@ impl DeclaredTypes {
             Storage::Owned(_) => unreachable!("owned views do not use IDs"),
         }
     }
+    fn scope(&self, scope: u64) -> Cow<'_, str> {
+        match &self.storage {
+            Storage::Compact(t) => t.scope(scope),
+            Storage::Owned(_) => unreachable!("owned views do not use scope IDs"),
+        }
+    }
     pub fn type_count(&self) -> usize {
         match &self.storage {
             Storage::Compact(t) => t.types.len(),
@@ -424,17 +541,33 @@ impl DeclaredTypes {
             Storage::Owned(t) => t.classes.len(),
         }
     }
+    pub(super) fn scope_length(&self, id: usize) -> usize {
+        match &self.storage {
+            Storage::Compact(t) => t.scope_length(t.types[id].scope),
+            Storage::Owned(t) => t.types[id].scope.len(),
+        }
+    }
+    pub(super) fn type_expr_without_scope(&self, id: usize) -> TypeView<'_> {
+        self.type_view(id, false)
+    }
     pub fn type_expr(&self, id: usize) -> TypeView<'_> {
+        self.type_view(id, true)
+    }
+    fn type_view(&self, id: usize, include_scope: bool) -> TypeView<'_> {
         match &self.storage {
             Storage::Compact(table) => {
                 let t = &table.types[id];
                 TypeView {
-                    kind: table.texts.text(t.kind),
-                    name: table.texts.text(t.name),
-                    scope: table.texts.text(t.scope),
+                    kind: table.kind(t.kind),
+                    name: table.name(t.name),
+                    scope: if include_scope {
+                        table.scope(t.scope)
+                    } else {
+                        Cow::Borrowed("")
+                    },
                     owner: t.owner,
                     component: t.component,
-                    variance: table.texts.text(t.variance),
+                    variance: table.variance(t.variance),
                     arguments: &t.arguments,
                 }
             }
@@ -443,7 +576,7 @@ impl DeclaredTypes {
                 TypeView {
                     kind: &t.kind,
                     name: &t.name,
-                    scope: &t.scope,
+                    scope: Cow::Borrowed(&t.scope),
                     owner: t.owner,
                     component: t.component,
                     variance: &t.variance,
@@ -613,74 +746,65 @@ impl DeclaredTypes {
         if let Storage::Owned(t) = &self.storage {
             return t.clone();
         }
-        let Storage::Compact(t) = &self.storage else {
-            unreachable!()
+        let mut strings: HashMap<Arc<str>, ()> = HashMap::new();
+        let mut text = |value: &str| {
+            if let Some((stored, ())) = strings.get_key_value(value) {
+                return stored.clone();
+            }
+            let stored: Arc<str> = Arc::from(value);
+            strings.insert(stored.clone(), ());
+            stored
         };
-        let mut strings: HashMap<&str, Arc<str>> = HashMap::new();
-        let mut text = |id| {
-            strings
-                .entry(t.texts.text(id))
-                .or_insert_with(|| Arc::from(t.texts.text(id)))
-                .clone()
-        };
-        fn formals(
-            p: &[TypeParameter<usize>],
-            text: &mut impl FnMut(usize) -> Arc<str>,
-        ) -> Vec<TypeParameter> {
+        fn formals(p: Formals<'_>, text: &mut impl FnMut(&str) -> Arc<str>) -> Vec<TypeParameter> {
             p.iter()
                 .map(|p| TypeParameter {
                     name: text(p.name),
-                    scope: text(p.scope),
-                    bounds: p.bounds.clone(),
+                    scope: text(&p.scope),
+                    bounds: p.bounds.to_vec(),
                 })
                 .collect()
         }
         MutableDeclaredTypes {
-            types: t
-                .types
-                .iter()
-                .map(|v| TypeExpr {
-                    kind: text(v.kind),
-                    name: text(v.name),
-                    scope: text(v.scope),
-                    owner: v.owner,
-                    component: v.component,
-                    variance: text(v.variance),
-                    arguments: v.arguments.clone(),
+            types: (0..self.type_count())
+                .map(|id| {
+                    let v = self.type_expr(id);
+                    TypeExpr {
+                        kind: text(v.kind),
+                        name: text(v.name),
+                        scope: text(&v.scope),
+                        owner: v.owner,
+                        component: v.component,
+                        variance: text(v.variance),
+                        arguments: v.arguments.to_vec(),
+                    }
                 })
                 .collect(),
-            fields: t
-                .fields
-                .iter()
-                .map(|(k, v)| ((text(k.ids[0]), text(k.ids[1]), text(k.ids[2])), *v))
+            fields: self
+                .field_entries()
+                .map(|(k, v)| ((text(k[0]), text(k[1]), text(k[2])), v))
                 .collect(),
-            methods: t
-                .methods
-                .iter()
+            methods: self
+                .method_entries()
                 .map(|(k, v)| {
                     (
-                        (text(k.ids[0]), text(k.ids[1]), text(k.ids[2])),
+                        (text(k[0]), text(k[1]), text(k[2])),
                         MethodTypes {
-                            parameters: t.method_parameters[v.parameters.clone()].to_vec(),
+                            parameters: v.parameters.to_vec(),
                             returns: v.returns,
-                            type_parameters: formals(
-                                &t.method_formals[v.type_parameters.clone()],
-                                &mut text,
-                            ),
+                            type_parameters: formals(v.type_parameters, &mut text),
                         },
                     )
                 })
                 .collect(),
-            classes: t
-                .classes
-                .iter()
+            classes: self
+                .class_entries()
                 .map(|(k, v)| {
                     (
-                        text(k.ids[0]),
+                        text(k),
                         ClassTypes {
-                            type_parameters: formals(&v.type_parameters, &mut text),
+                            type_parameters: formals(v.type_parameters, &mut text),
                             superclass: v.superclass,
-                            interfaces: v.interfaces.clone(),
+                            interfaces: v.interfaces.to_vec(),
                         },
                     )
                 })
@@ -816,7 +940,7 @@ mod compact_tests {
             generic.type_parameters.iter().collect::<Vec<_>>(),
             vec![FormalView {
                 name: "T",
-                scope: "scope",
+                scope: "scope".into(),
                 bounds: &[1, 0],
             }]
         );
@@ -908,7 +1032,7 @@ mod compact_tests {
                 method.type_parameters.iter().collect::<Vec<_>>(),
                 vec![FormalView {
                     name: &name,
-                    scope: "name-298",
+                    scope: "name-298".into(),
                     bounds: &[i, i + 1],
                 }]
             );

@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.DeclaredType
+import io.johnsonlee.graphite.graph.DeclaredTypeTextField
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import java.util.concurrent.CancellationException
 
@@ -50,18 +51,14 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private fun matchMappedType(id: Int, source: DeclaredTypeAtoms): Int {
-        var position = source.typeOffset(id)
-        var mask = matchAtom(source, position, "kind", matchText("arguments", 0))
-        position = source.nextTextField(position)
-        mask = matchAtom(source, position, "name", mask)
-        position = source.nextTextField(position)
-        mask = matchAtom(source, position, "scope", mask)
-        position = source.nextTextField(position)
-        val owner = source.atomInt(position)
-        val component = source.atomInt(position + Int.SIZE_BYTES)
-        position += 2 * Int.SIZE_BYTES
-        mask = matchAtom(source, position, "variance", mask)
-        position = source.nextTextField(position)
+        var mask = matchText("arguments", 0)
+        for (field in DeclaredTypeTextField.entries) {
+            mask = matchAtom(source, source.fieldOffset(id, field), FIELD_KEYS[field.ordinal], mask)
+        }
+        val references = source.referencesOffset(id)
+        val owner = source.atomInt(references)
+        val component = source.atomInt(references + Int.SIZE_BYTES)
+        var position = source.argumentsOffset(id)
         if (owner >= 0) mask = matchText("owner", mask) or matchReference(owner)
         if (component >= 0) mask = matchText("component", mask) or matchReference(component)
         val argumentCount = source.atomInt(position)
@@ -131,6 +128,7 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private companion object {
+        val FIELD_KEYS = listOf("kind", "name", "scope", "variance")
         const val ASCII_MAX = 127
         const val COMPLETE = 4
         const val CANCELLATION_MASK = 255
