@@ -12802,3 +12802,62 @@ Gradle uses4GiB/APC4/two workers with in-process Kotlin; fresh webgraph tests us
 The command completes in2m47s with exit0, an empty owned group and unchanged source/harness/patch pins. These are validation runtime observations, not a performance benchmark. Independent source review finds no correctness/thread-safety blocker; the raw XML audit separately proves counts, names, heaps, cache provenance, cleanup and coverage. Actual runtime export, new-runtime server correctness, loading comparisons, full first-use/warm query p50/p95 and separate CPU/RSS constraints remain outstanding.
 
 Evidence: `/tmp/graphite-attempt174-source/`, `/tmp/graphite-attempt174.patch`, `/tmp/graphite-attempt174-source-manifest.json`, `/tmp/graphite-attempt174-validation/attempt-1/` and `/tmp/graphite-attempt174-independent-jvm-audit.json`. Independent audit SHA `3981eb201c485f41d555d897330a09ec27b6c20cbf362458c98d899a0c750146`. Root remains on the shared-string implementation while this candidate is tested in isolation; PR acceptance is unchanged.
+
+### Attempt173 query follow-up — existing real3 dynamic searches remain slower (2026-10-09)
+
+**Decision: retain the shared-string representation for continued optimization; both existing query workloads fail cumulative performance acceptance.** All 384 complete typed responses and cleanup proofs pass. Full-node dynamic search regresses in both directions against retained163 and accepted4f. CallSite search has a mixed parent-relative result and small adverse cumulative latencies; those small timing differences are retained without making them the main optimization target. CPU and RSS remain independent constraints. This is evidence for unchanged `ae316747`, not candidate174.
+
+C=accepted `4f2ccf33`, A=retained163 `37eff123`, and B=shared GTY03 `ae316747a573739b6a55c98458b2f3fa9f98130f` use their frozen explore runtimes and audited original/GTY02/fresh GTY03 graphs. Every request targets all three Tika/Hive/Kotlin graphs. The two exact retained queries are `dynamic-miss` and `callsite-dynamic-miss`: exhaustive dynamic-property searches for the absent marker `GraphiteDeclaredAbsent293746X`, across all nodes and CallSite nodes respectively. Full empty response envelopes, columns, graph scope, limits and scalar types match the authoritative retained JVM oracle; no native or single-graph oracle substitutes for them.
+
+Each case uses a fresh C,A,B,B,A,C process sequence: 12 processes total. JDK17.0.20.1, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, MAPPED, server/client c4 and full identity warming before launch match the loading environment. Each process executes first-use4, warmup8 and warm20 complete responses, giving384 total and240 warm observations. Sampling/order/counts were fixed before launch; no retries, replacement samples or timing-based case removal occurred. Latency runs from before HTTP connection through full response consumption. Per-process nearest-rank warm p50/p95 use ranks10/19 of20; phases/cases/processes are never pooled. First-use/warmup remain separate small-n observations, not cold-tail acceptance evidence.
+
+| Query | Comparison / directional pair | p50 baseline → shared ms | Δ ms | p95 baseline → shared ms | Δ ms |
+|---|---|---:|---:|---:|---:|
+| dynamic-miss | 163 1→2 | 761.228 → 873.875 | +112.647 | 771.971 → 908.562 | +136.591 |
+| dynamic-miss | 163 4→3 | 740.404 → 868.001 | +127.597 | 782.382 → 887.092 | +104.710 |
+| dynamic-miss | 4f 0→2 | 720.655 → 873.875 | +153.220 | 745.416 → 908.562 | +163.146 |
+| dynamic-miss | 4f 5→3 | 664.572 → 868.001 | +203.429 | 682.498 → 887.092 | +204.594 |
+| callsite-dynamic-miss | 163 1→2 | 168.193 → 163.514 | -4.678 | 170.483 → 165.607 | -4.877 |
+| callsite-dynamic-miss | 163 4→3 | 143.754 → 175.145 | +31.390 | 145.179 → 177.490 | +32.311 |
+| callsite-dynamic-miss | 4f 0→2 | 160.030 → 163.514 | +3.485 | 162.122 → 165.607 | +3.485 |
+| callsite-dynamic-miss | 4f 5→3 | 172.504 → 175.145 | +2.641 | 174.973 → 177.490 | +2.517 |
+
+Full-node dynamic p95 increases104.710–136.591ms versus163 and163.146–204.594ms versus4f. CallSite parent p95 changes−4.877/+32.311ms; cumulative p95 changes+3.485/+2.517ms. No favorable mean replaces either adverse direction. Two fresh processes per arm and20 warm observations per process limit tail precision and causal inference.
+
+CPU below is user+system seconds from retained raw ps endpoints. F/P/U mean proven failure/proven pass/unresolved under the independent+5% gate with±0.02s endpoint-delta uncertainty. Complete post-ready CPU includes first-use, warmup, warm requests and intervening work; phase CPU is not substituted for this total.
+
+| Query | Comparison / pair | First-use CPU s | Warmup CPU s | Warm CPU s | Complete post-ready CPU s |
+|---|---|---:|---:|---:|---:|
+| dynamic-miss | 163 1→2 | 4.61 → 4.98 F | 6.11 → 7.07 F | 15.27 → 17.55 F | 25.99 → 29.60 F |
+| dynamic-miss | 163 4→3 | 4.39 → 4.84 F | 6.12 → 6.87 F | 14.97 → 17.19 F | 25.48 → 28.91 F |
+| dynamic-miss | 4f 0→2 | 4.11 → 4.98 F | 5.86 → 7.07 F | 14.44 → 17.55 F | 24.41 → 29.60 F |
+| dynamic-miss | 4f 5→3 | 3.96 → 4.84 F | 5.43 → 6.87 F | 13.35 → 17.19 F | 22.75 → 28.91 F |
+| callsite-dynamic-miss | 163 1→2 | 1.56 → 1.46 P | 1.56 → 1.48 P | 3.39 → 3.31 P | 6.52 → 6.25 P |
+| callsite-dynamic-miss | 163 4→3 | 1.83 → 2.00 F | 1.31 → 1.52 F | 2.90 → 3.54 F | 6.04 → 7.07 F |
+| callsite-dynamic-miss | 4f 0→2 | 1.86 → 1.46 P | 1.44 → 1.48 U | 3.22 → 3.31 P | 6.53 → 6.25 P |
+| callsite-dynamic-miss | 4f 5→3 | 1.68 → 2.00 F | 1.55 → 1.52 P | 3.47 → 3.54 P | 6.70 → 7.07 U |
+
+All16 full-node CPU gates fail. CallSite163 pair4→3 fails in all four boundaries;4f pair5→3 fails first-use. The two unresolved CallSite CPU gates are4f pair0→2 warmup, ratio[1.000000,1.056338], and4f pair5→3 complete post-ready, ratio[1.049107,1.061377]. The other nine CPU gates pass. These unresolved bounds are not accepted as passes.
+
+**All32 RSS pair/phase gates fail.** RSS lower bounds use only complete5ms reads entirely within the phase, including the explicit phase-boundary sample; exact time-l lifecycle peaks supply conservative upper bounds. All four phase boundaries fail in every pair. The ranges below summarize those four ratio enclosures per pair (minimum lower endpoint..maximum upper endpoint), not averaged peaks or a compensating resource tradeoff.
+
+| Query | Comparison / pair | Range covering all four RSS ratio enclosures |
+|---|---|---:|
+| dynamic-miss | 163 1→2 | 1.202783..1.301007 |
+| dynamic-miss | 163 4→3 | 1.210145..1.308410 |
+| dynamic-miss | 4f 0→2 | 1.415396..1.526261 |
+| dynamic-miss | 4f 5→3 | 1.388922..1.494725 |
+| callsite-dynamic-miss | 163 1→2 | 1.212389..1.232862 |
+| callsite-dynamic-miss | 163 4→3 | 1.224557..1.243414 |
+| callsite-dynamic-miss | 4f 0→2 | 1.357107..1.391279 |
+| callsite-dynamic-miss | 4f 5→3 | 1.384407..1.396116 |
+
+Independent audit verifies all384 raw bodies and request hashes, exact32-request inventories, every phase clock and c4 overlap, all quantiles, raw ps/time-l parity, strict RSS cutoffs, all pair/aggregate report values and full post-ready CPU charges. All12 server groups and the runner are empty with no forced group-cleanup signals or errors; normal server shutdown uses SIGTERM. Before/after identity receipts pass. Root measured session97097 exits0. Three preflight snapshots and227 during-run host observations are retained. Preflight recorded searchpartyuseragent79.8%CPU; the shared host was not quiet, and no background process or adverse sample was removed. Heavy build/benchmark work was serialized. This is a warm-filesystem batched c4 workload with validation gaps, not sustained saturation, disk-cold evidence or a quiet-host guarantee.
+
+Before measurement, the first identity-only seal failed before any JVM because a historical core-proof source receipt had been overwritten by later preparation. The exact original bytes were restored; no proof was repinned. Review also replaced inherited OS signal masking around spawn with parent-only deferred SIGINT/SIGTERM handlers through PID assignment and ownership journaling. This avoids passing a blocked signal mask to children while preserving owned cleanup. The corrected source passes33 no-child tests; original source/control/failure records remain under `/tmp/graphite-shared-query/pre-deferred-signals-1/`. Corrected seal1812 exits0 (43 direct pins/177 fixture files). The sealed protocol retains an unused inherited `measuredProcesses` list; executable `stageCases`/`cases` and all launch journals match the authorized12/384 schedule. No36-process result is claimed.
+
+Execution command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/graphite-shared-query/execute.py measure existing`. Independent command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/graphite-shared-query-independent-audit.py --execute-after-terminal --output /tmp/graphite-shared-query-independent-audit-1.json`. The auditor imports no harness report code; its four independent arithmetic/JSON/concurrency tests pass. It rechecks completed raw receipts without rehashing graph/runtime payloads or launching processes.
+
+Evidence: `/tmp/graphite-shared-query/` retains raw bodies, commands, clocks/resources, host observations, authorizations, report and cleanup/identity receipts. Independent results and every one of the32 resource rows are in `/tmp/graphite-shared-query-independent-audit-1.{json,md}`. Protocol SHA `ad947fbf4820223629f5c1e5bea8922cdde38e38d7b23bb2618ed10c0aa044c7`; seal `a4db7f16cf3bca3c61fa00a652eed655edb314a8ee5041fcd63ebf74ab638348`; preflight `aa2d938108c4f398b2b7371f7e1004d995eb43d5aafec56c22ed460ceb07cdb2`; independent auditor source `a95a5c8f7ee684b97dcb34530bd10355fe4cafed206d51693e07ae93e577bce0`.
+
+The separately declared feature stage remains unmeasured: node-declaration coverage and method-declaration coverage each use A,B,B,A, eight processes/256 complete responses total. C absent-property correctness is already established but is not equivalent-work feature latency evidence. Existing field/value paths also remain open; no authoritative JVM real3 collect/order oracle was available. This cohort establishes neither whole-engine recovery nor construction/loading acceptance, and does not change prior loading failures, gate tolerances or PR acceptance.
