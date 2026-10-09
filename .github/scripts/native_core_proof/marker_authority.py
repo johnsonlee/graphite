@@ -20,6 +20,19 @@ class Marker:
         need(set(ref)=={'path','sha256'},'explicit marker export reference')
         record_path=Path(ref['path']);need(sha(record_path)==ref['sha256'],'marker export record changed')
         record=json.loads(record_path.read_text());root=record_path.parent
+        if record.get('schema') == 'graphite.native-core-marker-export-audit.v1':
+            # New owned producer receipt shape is independently replayed; the
+            # retained historical path below remains byte-for-byte unchanged.
+            import export_native_core_marker as exporter
+            checked=exporter.audit(root)
+            need(record==checked,'portable marker audit differs from raw evidence')
+            self.pins={**checked['pins'],str(record_path):ref['sha256']}
+            self.raw=Path(checked['rawClass']['path']).read_bytes()
+            self.digest=hashlib.sha256(self.raw).hexdigest()
+            need(self.digest==checked['rawClass']['sha256'],'portable raw marker identity')
+            self.parsed=marker_class(self.raw);self.record_ref=ref
+            self.pins[str(Path(__file__))]=sha(Path(__file__))
+            return
         need(record['status']=='PASS_EXACT_RUNTIME_MARKER_CLASS' and not record['errors'] and record['before']==record['after'],'completed and unchanged marker export')
         need([p['name'] for p in record['phases']]==['compile-bootstrap-marker','export-bootstrap-marker'],'exact owned marker phases')
         for phase in record['phases']:

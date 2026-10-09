@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 6eec9034647b96fb547f53c5617b3f43f40520e7de6ef027854c4fefd6d9b2c6
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: c60514c5c3c70b91413f73539644f07349c39a10271e256005a9caf250431489
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: cd6864ec19d1b3eef95f805c3be6ef39ef6083faf8322dc694f3d6ed7fdc2f69
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -105,6 +105,9 @@ jobs:
 
     - name: Test fresh native dictionary export and audit without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_export_native_core_strings.py'
+
+    - name: Test native bootstrap marker export protocol
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_export_native_core_marker.py'
 
     - name: Test native multi-graph snapshot harness
       run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
@@ -2858,6 +2861,16 @@ jobs:
           produce_arm base "${BASE_SHA}" parent A
         fi
         produce_arm candidate "${CANDIDATE_SHA}" candidate B
+        for ARM in A B; do
+          if [[ "${ARM}" == A && "${BASE_SHA}" == "${ACCEPTED_SHA}" ]]; then
+            continue
+          fi
+          python3 candidate/.github/scripts/export_native_core_marker.py \
+            --reference-audit native-pressure-artifacts/C/artifact-audit.json \
+            --actual-audit "native-pressure-artifacts/${ARM}/artifact-audit.json" \
+            --source-inputs native-pressure-artifacts/source-inputs.json \
+            --output "native-pressure-artifacts/${ARM}/core-marker"
+        done
         python3 - <<'PYARMS'
         import json, os, pathlib
         accepted = '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
@@ -2896,6 +2909,7 @@ jobs:
           native-pressure-artifacts/*/*/*.log
           native-pressure-artifacts/*/query-correctness/**
           native-pressure-artifacts/*/core-string-exports/**
+          native-pressure-artifacts/*/core-marker/**
           native-pressure-artifacts/*/runtime/**
           native-pressure-artifacts/*/graphs/**
           native-pressure-producers/**
