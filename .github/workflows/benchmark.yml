@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: b093034329f31e30bbd3f8e3aadab8f8d5d265aa30b7d5aa859d39159198e159
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 301e864b09c44cfb404f9ab65716098fbc2be022aa95b066c08b8f15840826ca
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: ed162e1f0146c1c7b0dc037de224cf8b8c329e354cfd8358b400c12db09a6761
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 35b9b95f3d417192325556928014a657accefaf4ed98fbd86c4f40179b87926a
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 71e2a8d48313f6f5cedfbc6b161861a2e10e98c5cdaad8760fd65b1d612434aa
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -90,6 +90,9 @@ jobs:
 
     - name: Test native correctness execution and independent audit without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_native_query_correctness.py'
+
+    - name: Test native producer evidence assembly without child processes
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_assemble_native_pressure_producers.py'
 
     - name: Test native multi-graph snapshot harness
       run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
@@ -2850,6 +2853,17 @@ jobs:
             'status': 'ARTIFACTS_ONLY_INDEPENDENT_PROOFS_REQUIRED', 'performanceAcceptance': False}, indent=2) + '\n')
         PYARMS
 
+    - name: Assemble audited native producer evidence
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        python3 candidate/.github/scripts/assemble_native_pressure_producers.py \
+          --artifacts native-pressure-artifacts \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output native-pressure-producers
+
     - name: Retain raw independent artifact production evidence
       if: always()
       uses: actions/upload-artifact@v7
@@ -2866,6 +2880,7 @@ jobs:
           native-pressure-artifacts/*/query-correctness/**
           native-pressure-artifacts/*/runtime/**
           native-pressure-artifacts/*/graphs/**
+          native-pressure-producers/**
 
     # Archive an honest preparation result from outputs actually available in this job.
     # The candidate-only corpus cannot be used as the accepted4f fixture. Missing producer

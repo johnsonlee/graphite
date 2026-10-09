@@ -437,3 +437,36 @@ mutation, failed cleanup and sparse node IDs. Corpus matching is bypassed only
 in these tiny protocol fixtures; the portable-oracle tests separately enforce
 the real JAR hashes. The final producer packet and source-correction equivalence
 policy remain pending, so this wiring alone cannot pass the performance gate.
+
+
+## CI producer evidence bundle (2026-10-10)
+
+The CI workflow now writes `native-pressure-producers/packet.json` through
+`assemble_native_pressure_producers.py` after each distinct C/A/B writer and
+runtime has passed its artifact audit and fresh39-query correctness audit.
+A aliases C only when the parent revision is exactly accepted4f; the artifact's
+original accepted-baseline role remains recorded separately from the parent role.
+All distinct arms must use the same direct toolchain and source-input manifest.
+
+The assembler recomputes each raw query audit, checks complete source/runtime/
+writer links, preserves all39 request scopes and response/oracle bindings, and
+rejects conflicting input pins. It launches no process and cannot create a
+performance pass. The new `graphite.native-pressure.producer-bundle.v1` explicitly
+retains `completeSemanticEquivalence=false`, `performanceAcceptance=false` and
+`acceptanceEligible=false`. Original artifact audits keep their original partial
+status; successful queries do not retroactively rewrite them.
+
+Preparation revalidates the bundle and reports the completed per-arm inputs, but
+still returns UNAVAILABLE without a pressure plan while full cross-arm core,
+topology and index equivalence, or the remaining independently source-proven
+corrections, are missing. The existing strict legacy plan proof gate is unchanged.
+This closes the missing handoff-file implementation; it does not complete the
+semantic-equivalence proof, execute real CI or establish performance acceptance.
+
+Validation:11 new protocol tests pass; the native-related Python group passes100
+and the pressure-related group115 (the groups overlap). All174 JavaScript tests
+pass. The workflow parses as YAML, all101 shell run blocks pass `bash -n`, and the
+updated preparation control manifest matches every reviewed source file. The new
+protocol tests exercise real versioned response payloads with tiny mocked graph/
+process fixtures for correctness only, including forged audit, wrong input,
+wrong parent alias, toolchain drift and false-equivalence rejection.
