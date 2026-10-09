@@ -14739,3 +14739,37 @@ SHA-256 is `f17960dce92344fab30313ddc68f53f1076e7f5b59060af0b5e34758f3c63234`.
 Webgraph's separate array-local test was unchanged but not rerun by this SootUp
 suite; its prior result is not represented as new evidence. Overall performance
 acceptance and PR merge readiness remain unproven.
+
+### Attempt193 follow-up — complete-projection ordering mismatch (2026-10-10)
+
+The first real complete-projection comparison stopped at the accepted baseline's
+oracle stage. The frozen protocol used C=`4f2ccf33`, A=`8754ec4d` and B=`b2f9ebd0`,
+in CABBAC order, with64 resident graphs and each request targeting both the Tika
+and Kotlin compiler cohorts. Complete requests contain1959 Field,1921 Parameter,
+2028 Return or1974 Method rows; no cohort was trimmed. Six Field/Parameter/Return
+responses matched. Both Method responses had precisely the expected complete row
+multiset and envelope, but a different row order. This is not evidence of a
+missing declaration or an incorrect generic value.
+
+The prepared queries used `ORDER BY value.graphId, value.signature,
+value.return_type` after `RETURN m AS value` or `RETURN properties(m) AS value`.
+Accepted baseline `pipeline.rs:1390` evaluates property ordering expressions on
+the pre-projection row, which contains `m` but no `value`; `eval.rs:188` therefore
+returns null for that alias. All sort keys become null and the server retains
+scan order. The independent generator instead sorted the final JSON properties.
+Source inspection explains the mismatch without changing an expected body to
+match an observed response. The next protocol must use the original bound
+variable in its ordering expressions and retain the independent complete oracle.
+
+Command: `python3 -B /tmp/graphite-large-projection-pressure-prep-1/run.py
+--execute-assigned-slot --output /tmp/graphite-large-projection-pressure-run-1`.
+The driver exited1, with8 oracle requests issued,6 passed and2 failed. No warmup,
+measured request or later cell ran. The owned server group89921 was terminated
+normally by the harness, cleanup reported no errors or remaining processes, and
+input identities matched before and after. Raw bodies, failure records and source
+diagnosis remain under the output directory. `terminal-review.json` records the
+result digest `b248dc8e73f50962a0f4ff493c080e0b0787a953a12076b79a6baf7a0f5d290b`.
+
+Decision: preserve this failed protocol and correct the query contract in a new
+version. There are no paired latency, CPU or RSS results from this run;193's
+performance benefit and complete-projection acceptance remain unproven.
