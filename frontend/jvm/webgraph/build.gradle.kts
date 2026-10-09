@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
     testImplementation(project(":sootup"))
+    testImplementation(libs.asm)
+    testImplementation("org.ow2.asm:asm-tree:$asmVersion")
     add(androidIntegrationFixture.name, libs.android.all)
     add(largeCorpusFixtures.name, libs.tika.app)
     add(largeCorpusFixtures.name, libs.hive.exec)
