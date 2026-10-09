@@ -8,6 +8,7 @@ import sys
 from . import core_semantics as core
 from . import declarations
 from . import wire_gty05 as wire
+from . import raw_local_export
 WIRE=Path(__file__).resolve().parent
 
 def props(raw):
@@ -50,7 +51,7 @@ def properties(actual,reference,type_digest):
             'unchangedProperties':len(a)-len(differences),'compressionExceptions':sorted(set(differences)&ENCODING_KEYS),
             'independentStatisticsRecomputeClaim':False,'requiresCompleteTopology':True}
 
-def execute(a,b,ae,be,out,export_row,authority,source_rule):
+def execute(a,b,ae,be,out,export_row,authority,source_rule,raw_local_exports=None):
     out.mkdir(exist_ok=False)
     table=declarations.load(a,export_row)
     types=(a/'graph.types').read_bytes()
@@ -66,7 +67,7 @@ def execute(a,b,ae,be,out,export_row,authority,source_rule):
     property_check=properties((a/'forward.properties').read_bytes(),(b/'forward.properties').read_bytes(),hashlib.sha256(types).hexdigest())
     (out/'properties.json').write_text(json.dumps(property_check,indent=2)+'\n')
     core.need(property_check['status']=='PASS_REQUIRES_COMPLETE_TOPOLOGY','forward.properties differ; exact all differences retained')
-    result=core.prove(a,b,ae,be,out/'core',True,field_authority_spec=authority,method_array_corrections=True,source_local_arrays=True,parameter_arrays=True,legacy_overload_collisions=True,synthetic_method_keys=True,inherited_fields=True,source_rule=source_rule)
+    result=core.prove(a,b,ae,be,out/'core',True,field_authority_spec=authority,method_array_corrections=True,source_local_arrays=True,parameter_arrays=True,legacy_overload_collisions=True,synthetic_method_keys=True,inherited_fields=True,source_rule=source_rule,**({"raw_local_exports":raw_local_exports} if raw_local_exports is not None else {}))
     (out/'record.json').write_text(json.dumps({'status':'PASS_CORE_WITH_TYPE_OVERLOAD_SYNTHETIC_AND_INHERITED_FIELD_CORRECTIONS_REQUIRES_TOPOLOGY','core':result,'declarations':declaration,'properties':property_check,'strictEquivalence':False,'fieldCorrectionCount':result['fieldCorrectionCount'],'methodCorrectionCount':result['methodCorrectionCount'],'localArrayCorrectionCount':result['localArrayCorrectionCount'],'parameterArrayCorrectionCount':result['parameterArrayCorrectionCount'],'legacyOrdinalGroupCount':result['legacyOrdinalGroupCount'],'legacyMetadataGroupCount':result['legacyMetadataGroupCount'],'legacyReturnOmittedGroupCount':result['legacyReturnOmittedGroupCount'],'recoveredMetadataMethodCount':result['recoveredMetadataMethodCount'],'legacyOrdinalBindingCount':result['legacyOrdinalBindingCount'],'syntheticMethodKeyCorrectionCount':result['syntheticMethodKeyCorrectionCount'],'syntheticConstructorCollisionGroupCount':result['syntheticConstructorCollisionGroupCount'],'recoveredSyntheticIdentityCount':result['recoveredSyntheticIdentityCount'],'inheritedFieldCorrectionCount':result['inheritedFieldCorrectionCount']},indent=2)+'\n')
 
 def main():
@@ -79,6 +80,6 @@ def main():
     row=rows[0]
     execute(Path(row['B']),Path(row['C']),Path(row['BExport']['stringsExport']['path']).parent,
             Path(row['CExport']['stringsExport']['path']).parent,Path(plan['output'])/'graphs'/row['id'],
-            row['BExport'],row['fieldAuthority'],plan['sourceRule'])
+            row['BExport'],row['fieldAuthority'],plan['sourceRule'],raw_local_export.binding(plan,row) if 'rawLocalExports' in plan else None)
 
 if __name__=='__main__':main()

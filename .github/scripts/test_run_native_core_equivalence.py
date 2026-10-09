@@ -103,7 +103,7 @@ class LifecycleTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name).resolve()
         self.out=self.root/'proof';self.input=self.root/'input';self.input.write_bytes(b'pinned actual input')
-        self.plan={'output':str(self.out),'referenceRoot':str(self.root/'C'),'actualRoot':str(self.root/'B'),
+        self.plan={'maxOwnedPhases':129,'output':str(self.out),'referenceRoot':str(self.root/'C'),'actualRoot':str(self.root/'B'),
             'java':str(self.root/'jdk/bin/java'),'javac':str(self.root/'jdk/bin/javac'),'writerJar':str(self.root/'writer.jar'),
             'python':'/exact/python','graphs':[{'id':f'fixture-{i:02d}','B':f'/actual/{i}','C':f'/reference/{i}'} for i in range(64)],
             'pins':{str(self.input):r.common.sha(self.input)},'revisions':{'C':'c'*40,'B':'b'*40},

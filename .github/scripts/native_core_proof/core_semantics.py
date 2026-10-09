@@ -10,6 +10,7 @@ from . import callsite_ordinals
 from . import field_authority
 from . import method_authority
 from . import local_array_corrections
+from . import raw_local_types
 from . import parameter_array_corrections
 from . import legacy_method_collisions
 from . import synthetic_metadata
@@ -186,7 +187,8 @@ def validate_node_index(data, offsets, identities):
     reader.done();need(seen==set(identities),'node index incomplete IDs')
     return {'status':'PASS','rows':count,'allUniqueIDsTagsAndPerFileOffsetsChecked':True}
 
-def prove(actual,reference,actual_export,reference_export,out,allow_field_bijection=False,field_authority_spec=None,method_array_corrections=False,source_local_arrays=False,parameter_arrays=False,legacy_overload_collisions=False,synthetic_method_keys=False,inherited_fields=False,source_rule=None):
+def prove(actual,reference,actual_export,reference_export,out,allow_field_bijection=False,field_authority_spec=None,method_array_corrections=False,source_local_arrays=False,parameter_arrays=False,legacy_overload_collisions=False,synthetic_method_keys=False,inherited_fields=False,source_rule=None,raw_local_exports=None):
+    need(raw_local_exports is None or (source_local_arrays and allow_field_bijection), 'raw Local authority requires complete corrected node inventory')
     need(not inherited_fields or synthetic_method_keys,'inherited field mode requires all preceding explicit corrections')
     need(not synthetic_method_keys or legacy_overload_collisions,'synthetic key mode requires all explicit overload/type modes')
     need(not legacy_overload_collisions or parameter_arrays,'legacy overload mode requires all explicit array correction modes')
@@ -202,12 +204,14 @@ def prove(actual,reference,actual_export,reference_export,out,allow_field_biject
         parameter_rows=[] if parameter_arrays else None
         collisions=legacy_method_collisions.Corrections(out) if legacy_overload_collisions else None
         synthetic=synthetic_metadata.Corrections(out,source_rule,field_authority_spec) if synthetic_method_keys else None
+        raw_locals=raw_local_types.Authority(raw_local_exports,out) if raw_local_exports is not None else None
         completed=False
         try:
-            result=_prove(actual,reference,actual_export,reference_export,out,allow_field_bijection,field_authority_spec,authority,local_rules,parameter_rows,collisions,synthetic,inherited_fields)
+            result=_prove(actual,reference,actual_export,reference_export,out,allow_field_bijection,field_authority_spec,authority,local_rules,parameter_rows,collisions,synthetic,inherited_fields,raw_locals)
             completed=True
             return result
         finally:
+            if raw_locals is not None:raw_locals.save()
             if local_rules is not None:local_rules.save()
             if parameter_rows is not None:
                 authority.save()
@@ -221,7 +225,7 @@ def prove(actual,reference,actual_export,reference_export,out,allow_field_biject
                 synthetic.complete=completed
                 synthetic.save()
 
-def _prove(actual,reference,actual_export,reference_export,out,allow_field_bijection=False,field_authority_spec=None,method_corrections=None,local_rules=None,parameter_rows=None,collisions=None,synthetic=None,inherited_fields=False):
+def _prove(actual,reference,actual_export,reference_export,out,allow_field_bijection=False,field_authority_spec=None,method_corrections=None,local_rules=None,parameter_rows=None,collisions=None,synthetic=None,inherited_fields=False,raw_locals=None):
     if method_corrections is None:out.mkdir(exist_ok=False)
     required=['forward.graph','forward.offsets','forward.properties','graph.labels','graph.labelprefix','graph.strings','graph.nodedata','graph.nodeoffsets','graph.typeindex','graph.metadata','graph.comparisons','graph.branchdefs','graph.callsite-ordinals','graph.classoverview','graph.resources']
     required.extend(['graph.nodeindex','graph.strings.identity','graph.callsite-string-index','graph.callsite-string-content.identity'])
@@ -303,6 +307,9 @@ def _prove(actual,reference,actual_export,reference_export,out,allow_field_bijec
                 need(av is not None and bv is not None,'node count mismatch')
                 aid,at,ak,ac=av;bid,bt,bk,bc=bv
                 need(aid==bid and at==bt,'node identity/tag order mismatch')
+                if raw_locals is not None and at==8:
+                    need(len(actual_methods)==1,'one complete raw Local method identity')
+                    raw_locals.observe(ac,actual_methods[0]['method'].key)
                 if at==9:
                     reference_key=correspondence[ak]
                     if ak in corrected_keys:
@@ -323,6 +330,8 @@ def _prove(actual,reference,actual_export,reference_export,out,allow_field_bijec
                 total+=1
         else:
             total=compare_exact_nodes(nodes(*args[0]),nodes(*args[1]))
+        if raw_locals is not None:
+            raw_locals.finish();pins.update(raw_locals.pins)
 
     actual_methods=[];reference_methods=[]
     actual_synthetic=[];reference_synthetic=[]

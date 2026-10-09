@@ -21,7 +21,7 @@ import produce_native_pressure_artifacts as producer
 import multigraph_pressure as common
 from assemble_native_pressure_producers import merge_pins
 from prepare_native_pressure_plan import preparation_control_pins
-from native_core_proof import formatter_binding,source_bindings
+from native_core_proof import formatter_binding,source_bindings,raw_local_export
 
 PACKAGE=Path(__file__).resolve().parent/'native_core_proof'
 CORE_PASS='PASS_CORE_WITH_TYPE_OVERLOAD_SYNTHETIC_AND_INHERITED_FIELD_CORRECTIONS_REQUIRES_TOPOLOGY'
@@ -79,9 +79,9 @@ def field_authority(graph_id,graphs,roots,fixtures,refs,marker_ref,pins):
             'jar':selected[0],'arms':arms,'platformMarker':marker_ref}
 
 
-def bind(reference,actual,output):
+def bind(reference,actual,output,raw_locals=False):
     roots={'C':Path(reference).resolve(),'B':Path(actual).resolve()};out=Path(output).resolve()
-    exports={};audits={};fixtures={};fixture_refs={};pins={};upstream={};source_inputs=[]
+    exports={};audits={};fixtures={};fixture_refs={};pins={};upstream={};source_inputs=[];toolchains={}
     controls=preparation_control_pins()
     require(all(str(p) in controls for p in (Path(__file__).resolve(),PACKAGE/'check_graph.py',PACKAGE/'VerifyTopology.java')),
             'reviewed complete proof helper controls')
@@ -98,6 +98,7 @@ def bind(reference,actual,output):
         require(not any(out.is_relative_to(Path(p)) for p in (source['root'],root/'graphs',root/'runtime')),
                 'proof output outside measured source/runtime/graph roots')
         plan=common.read(root/'core-string-exports/plan.json');source_inputs.append(plan['sourceInputs'])
+        if raw_locals:toolchains[arm]=(plan['java'],plan['javac'])
         exports[arm]=export;audits[arm]=artifact;fixtures[arm]=fixture;fixture_refs[arm]=artifact['fixtureManifest']
         merge_pins(pins,export['pins']);merge_pins(pins,{ref['path']:ref['sha256']})
         upstream[arm+'Strings']=ref
@@ -128,20 +129,22 @@ def bind(reference,actual,output):
             'CExport':exports['C']['graphs'][index],'BExport':exports['B']['graphs'][index],
             'fieldAuthority':field_authority(graph_id,pair,roots,fixtures,fixture_refs,marker_ref,pins)})
     artifacts.verify_pins(pins)
-    return {'schema':'graphite.native-core-equivalence-plan.v1','referenceRoot':str(roots['C']),
+    result={'schema':'graphite.native-core-equivalence-plan.v1','referenceRoot':str(roots['C']),
         'actualRoot':str(roots['B']),'output':str(out),'revisions':{a:audits[a]['revision'] for a in ('C','B')},
         'fixtureManifests':fixture_refs,'upstream':upstream,'sourceRule':bound['rule'],'graphs':graphs,'pins':pins,
         'python':python,'java':marker_plan['java'],'javac':marker_plan['javac'],'writerJar':marker_plan['writerJar'],
         'maxOwnedPhases':129,'stopAtFirstFailure':True,**{k:False for k in FALSE_CLAIMS}}
+    return raw_local_export.configure(result,fixtures,roots,toolchains) if raw_locals else result
 
 
-def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'])
+def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'],'rawLocalExports' in plan)
 
 
 def commands(plan):
     out=Path(plan['output']);classes=out/'classes'
     yield 'compile-topology',[plan['javac'],'-J-Xmx4g','-J-XX:ActiveProcessorCount=4','-proc:none',
           '-cp',plan['writerJar'],'-d',str(classes),str(PACKAGE/'VerifyTopology.java')],180
+    if 'rawLocalExports' in plan:yield from raw_local_export.commands(plan)
     for row in plan['graphs']:
         proof=out/'graphs'/row['id']
         yield row['id']+'-core',[plan['python'],'-B','-m','native_core_proof.check_graph',
@@ -153,7 +156,10 @@ def commands(plan):
 
 def compiled(plan):
     root=Path(plan['output'])/'classes';value=artifacts.inventory(root)
-    require(set(value)=={str(root/'VerifyTopology.class')},'exact compiled topology helper closure');return value
+    expected={str(root/'VerifyTopology.class')}
+    if 'rawLocalExports' in plan:expected.update(str(root/('raw-'+arm)/'ExportRawLocals.class') for arm in ('C','B'))
+    require(set(value)==expected,'exact topology/raw Local helper closure')
+    return value
 
 
 def graph_result(plan,row):
@@ -173,6 +179,12 @@ def graph_result(plan,row):
             core['declarations']['sourceToDeclarationCompletenessClaim'] is False and
             core['declarations']['queryExpectedAuthority'] is False and
             core['properties']['status']=='PASS_REQUIRES_COMPLETE_TOPOLOGY','declaration/property scope')
+    if 'rawLocalExports' in plan:
+        expected=raw_local_export.binding(plan,row)
+        report=common.read(root/'core/raw-local-type-proof.json')
+        require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
+        require(report['inputs']=={r['path']:r['sha256'] for r in expected['exports'].values()} and
+                all(receipt['inputs'].get(p)==h for p,h in report['inputs'].items()),'actual raw Local export linkage')
     return {'id':row['id'],'core':artifacts.ref(root/'record.json'),'topology':artifacts.ref(root/'topology.json'),
             **{k:top[k] for k in COUNTS},'strictEquivalence':False,'files':artifacts.inventory(root)}
 
@@ -189,12 +201,14 @@ def execute(plan):
         for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
         artifacts.verify_pins(plan['pins'])
         for index,(name,argv,timeout) in enumerate(commands(plan)):
-            producer.phase(name,argv,PACKAGE.parent,strings.environment(plan['java']),out,timeout)
+            producer.phase(name,argv,PACKAGE.parent,strings.environment(raw_local_export.phase_java(plan,name)),out,timeout)
             record['phases'].append(artifacts.ref(out/name/'record.json'))
-            if index==0:helper=compiled(plan)
-            elif index%2==0:record['graphs'].append(graph_result(plan,plan['graphs'][index//2-1]))
+            if name==('compile-raw-B' if 'rawLocalExports' in plan else 'compile-topology'):helper=compiled(plan)
+            elif name.endswith('-topology') and name!='compile-topology':
+                row=next(r for r in plan['graphs'] if r['id']==name[:-len('-topology')])
+                record['graphs'].append(graph_result(plan,row))
             (out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
-        require(len(record['graphs'])==64 and len(record['phases'])==129,'all64 complete proofs required')
+        require(len(record['graphs'])==64 and len(record['phases'])==plan['maxOwnedPhases'],'all64 complete proofs required')
         record.update({k:sum(g[k] for g in record['graphs']) for k in COUNTS});record['status']=PASS
     except BaseException as error:record['errors'].append(repr(error))
     finally:
@@ -219,7 +233,7 @@ def audit(output):
             record['plan']==artifacts.ref(out/'plan.json') and all(record[k] is False for k in FALSE_CLAIMS),
             'completed owned all64 comparison')
     require(common.typed(plan)==common.typed(rebind(plan)),'audited plan differs from actual pair')
-    expected=list(commands(plan));require(len(record['phases'])==len(expected)==129,'all129 owned phases')
+    expected=list(commands(plan));require(len(record['phases'])==len(expected)==plan['maxOwnedPhases'],'all declared owned phases')
     helper=compiled(plan);require(helper==record['compiledHelper'],'actual topology helper')
     pins=dict(plan['pins']);merge_pins(pins,helper)
     for ref,(name,argv,timeout) in zip(record['phases'],expected):
@@ -236,7 +250,7 @@ def audit(output):
     artifacts.verify_pins(pins)
     return {'schema':'graphite.native-core-equivalence-audit.v1','status':AUDIT_PASS,'record':artifacts.ref(out/'record.json'),
         'revisions':plan['revisions'],'fixtureManifests':plan['fixtureManifests'],'upstream':plan['upstream'],
-        'graphs':rows,'phases':129,'pins':pins,**{k:record[k] for k in COUNTS},**{k:False for k in FALSE_CLAIMS},
+        'graphs':rows,'phases':plan['maxOwnedPhases'],'pins':pins,**{k:record[k] for k in COUNTS},**{k:False for k in FALSE_CLAIMS},
         'completeCoreTopologyIndexComparison':True,'productionFormatterTestsVerified':True,
         'proofModel':'EXPLICIT_CLASSFILE_AND_FORMATTER_SOURCE_CORRECTIONS_WITH_ADDITIVE_DECLARATION_VALIDITY',
         'missingAuthority':['Independent actual SootUp Type rank and local creation/cache/identity linkage for every persisted local; formatter-model projection is insufficient.'],
@@ -246,11 +260,12 @@ def audit(output):
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reference',type=Path);parser.add_argument('--actual',type=Path)
+    parser.add_argument('--raw-local-types',action='store_true',help='Require both actual-writer raw no-fold Local.type inventories')
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--audit-only',action='store_true')
     args=parser.parse_args()
     if not args.audit_only:
         require(args.reference and args.actual,'actual producer pair required')
-        if execute(bind(args.reference,args.actual,args.output))['status']!=PASS:return 1
+        if execute(bind(args.reference,args.actual,args.output,args.raw_local_types))['status']!=PASS:return 1
     common.save(args.output/'audit.json',audit(args.output));return 0
 
 if __name__=='__main__':sys.exit(main())
