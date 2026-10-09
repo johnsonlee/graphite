@@ -757,3 +757,29 @@ local correction or replace a complete comparison of fresh CI graph artifacts.
 In particular, nested ArrayType values must not be normalized by indiscriminately
 collapsing every array to rank one. No performance claim follows from these
 correctness tests.
+
+
+## Portable independent core comparison package (2026-10-10)
+
+The retained source16 comparison implementation and its172 tests now live in
+`.github/scripts/native_core_proof`. Fourteen additional tests bind the exact
+per-pair source rules to the actual writer revisions, fixture manifests and
+source-manifest hashes. The source-backed array and synthetic-identity policies
+retain their existing limits: this does not independently prove SootUp local
+inference or newly recovered fingerprints. Strict comparison remains the default;
+explicit correction switches and pinned source rules are required when used.
+The topology wrapper is the actual execution-prep14 implementation with an explicit
+portable helper directory; the complete topology algorithm is unchanged.
+
+All186 tiny Python tests passed in the integration audit and again in the root's
+independent check. The root verified the36 frozen package-file hashes and every
+preparation-control hash, preserving the preceding72 entries. CI now runs the
+package tests. These checks perform no Java compilation or real graph comparison.
+The integration receipt is
+`/tmp/graphite-native-core-package-integration-1/record.json`, SHA-256
+`d72166fd3788202b058baf170488aab4e8cdf6c8c83374e3ef8efb8da22a9d2d`.
+
+Fresh dictionary exports, GTY01–05 validation, bootstrap-marker and formatter-test
+authorities, the owned all64 execution runner and completed producer-contract
+adapter remain required. Packaging the comparator does not make a partial fixture
+eligible for pressure or establish complete semantic/performance acceptance.
