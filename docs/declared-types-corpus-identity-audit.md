@@ -318,3 +318,29 @@ all-64 comparison records explicit source-backed corrections and limitations, so
 it cannot be relabelled as that stronger claim. Construction, loading, JVM query
 pressure and the native CI producer remain outstanding acceptance work. The
 historical CI failure and the local correctness evidence remain separate records.
+
+### Exact-revision native artifact production
+
+The CI job now invokes `produce_native_pressure_artifacts.py` sequentially for C,
+A when distinct from C, and B. Each uses a clean ordinary Git checkout and the
+same JDK, Rust toolchain and four pinned input JARs. The accepted C revision is
+fixed to `4f2ccf33b969e684972e56b5e810034e6e67c1b3`; the parent aliases C only when
+the full base revision matches it. Every distinct arm builds its own writer and
+native executable, generates its own 64 graphs, and runs its writer's complete
+provenance verification. Candidate graphs are never substituted for C's graphs.
+
+Gradle, writer and build subprocess JVMs are capped at 4 GiB; the version probe
+uses 512 MiB. Rust compilation uses two jobs and the recorded host target. Raw
+source, JAR, runtime and fixture hashes, toolchain identity, commands, logs and
+owned-process cleanup records are retained. Final input/configuration checks
+reject changes even after earlier phases succeeded. The source checkout is not
+modified to make an old writer support a new format.
+
+A successful producer reports `ARTIFACTS_COMPLETE_INDEPENDENT_PROOFS_PENDING`,
+with `acceptanceEligible: false`. This records artifact production only. It does
+not generate the downstream pressure producer packet, certify complete semantic
+equivalence, establish independent query oracles, or report performance recovery.
+Those independent audits and packet assembly are still required before CI can
+execute and accept the pressure comparison. No actual run of this new CI stage
+is claimed by the source change; existing local C/B graph receipts were used only
+to verify the portable metadata parser without rebuilding their corpora.
