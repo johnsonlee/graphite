@@ -6,12 +6,13 @@ import run_prepared_native_pressure as r
 
 
 class Execution(unittest.TestCase):
-    def exercise(self,mode='pass'):
+    def exercise(self,mode='pass',preparation_status=None):
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder);prep=root/'preparation';prep.mkdir();output=root/'execution';prefix=root/'reports/native-query'
             plan={'engine':'native','operation':'query','cells':[{'id':str(i),'arm':arm} for i,arm in enumerate('CABBAC')]}
             plan_path=prep/'plan.json';plan_path.write_text(json.dumps(plan));digest=r.pressure.sha(plan_path)
             ready={'status':'UNAVAILABLE' if mode=='unavailable' else 'PLAN_READY_NOT_MEASURED','planSha256':'0'*64 if mode=='plan-drift' else digest}
+            if preparation_status is not None:ready=preparation_status
             (prep/'preparation-status.json').write_text(json.dumps(ready));events=[]
             def run(plan_file,cell,directory):
                 events.append(('run',cell));p=Path(directory);p.mkdir()
@@ -56,6 +57,33 @@ class Execution(unittest.TestCase):
     def test_missing_authority_cannot_launch_or_compare(self):
         result,verdict,events=self.exercise('unavailable')
         self.assertEqual(events,[]);self.assertEqual(result['status'],'UNAVAILABLE');self.assertFalse(verdict['passed'])
+
+    def test_actual_unavailable_shape_preserves_original_missing_authority(self):
+        reason='Complete C/A/B core, topology and index semantic equivalence or independently proven source corrections; fresh39 response correctness does not establish this.'
+        ready={'schema':'graphite.native-pressure.preparation.v1','engine':'native','operation':'query',
+            'passed':False,'status':'UNAVAILABLE','performanceAcceptance':False,
+            'unavailableOperations':['construction','loading'],'unavailableFamilies':[],
+            'missingProducers':[reason]}
+        result,verdict,events=self.exercise(preparation_status=ready)
+        self.assertEqual([],events);self.assertEqual('UNAVAILABLE',result['status'])
+        self.assertEqual([reason],result['missingProducers']);self.assertEqual([reason],verdict['missingProducers'])
+        self.assertEqual(['Matched producer plan is not ready: UNAVAILABLE',reason],verdict['errors'])
+        self.assertFalse(result['performanceAcceptance']);self.assertFalse(verdict['passed'])
+        self.assertFalse(verdict['queryEvidenceComplete']);self.assertNotIn('evidence',verdict)
+
+    def test_preparation_failure_retains_actual_error_and_cannot_start(self):
+        result,verdict,events=self.exercise(preparation_status={'status':'FAIL','errors':['Exact writer digest changed']})
+        self.assertEqual([],events);self.assertEqual('FAIL',verdict['status'])
+        self.assertEqual(['Matched producer plan is not ready: FAIL','Exact writer digest changed'],result['errors'])
+        self.assertFalse(verdict['passed'])
+
+    def test_malformed_missing_reasons_fail_without_launching(self):
+        for value in ('text', [None], ['']):
+            with self.subTest(value=value):
+                result,verdict,events=self.exercise(preparation_status={'status':'UNAVAILABLE','missingProducers':value})
+                self.assertEqual([],events);self.assertEqual('FAIL',result['status'])
+                self.assertIn('malformed preparation missingProducers',result['errors'][0])
+                self.assertFalse(verdict['passed'])
 
     def test_changed_plan_prevents_execution(self):
         result,verdict,events=self.exercise('plan-drift')

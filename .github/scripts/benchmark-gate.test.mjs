@@ -3109,6 +3109,47 @@ test("complete correctness and legacy reports cannot substitute for missing mult
     } finally {fs.rmSync(directory,{recursive:true,force:true});}
 });
 
+test("unavailable native pressure retains the actual missing-producer reason without measurement paths", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "native-pressure-unavailable-"));
+    const reason = "Complete C/A/B core, topology and index semantic equivalence or independently proven source corrections; fresh39 response correctness does not establish this.";
+    const metadata = {baseSha:"a".repeat(40),candidateSha:"b".repeat(40),runner:"test",runUrl:"https://example.invalid"};
+    const unavailable = {schema:"graphite.multigraph-pressure.comparison.v1",scope:"multi-graph-pressure",
+        engine:"native",operation:"query",passed:false,status:"UNAVAILABLE",
+        errors:["Matched producer plan is not ready: UNAVAILABLE",reason],missingProducers:[reason],
+        queryEvidenceComplete:false,otherOperationsEligible:false};
+    const file = path.join(directory,"multigraph-native-query-status.json");
+    const report = value => {
+        fs.writeFileSync(file,JSON.stringify(value));
+        return aggregateReports(directory,metadata);
+    };
+    try {
+        const result=report(unavailable);
+        assert.equal(result.passed,false);
+        assert.equal(result.operationEvidence.find(x=>x.name==="native-query").status,"UNAVAILABLE");
+        assert.ok(result.errors.some(x=>x.includes(reason)));
+        assert.ok(!result.errors.some(x=>x.includes("Evidence must be artifact-relative")));
+        assert.ok(result.body.includes(reason));
+        for (const changes of [{passed:true},{schema:"other"},{engine:"jvm"},{operation:"loading"},
+            {queryEvidenceComplete:true},{otherOperationsEligible:true},{errors:[]},{errors:[null]},
+            {missingProducers:"missing"}]) {
+            const malformed=report({...unavailable,...changes});
+            assert.equal(malformed.passed,false);
+            assert.ok(malformed.errors.some(x=>x.includes("Malformed unavailable pressure evidence")));
+        }
+        const pass=report({...unavailable,status:"PASS",passed:true});
+        assert.equal(pass.passed,false);
+        assert.ok(pass.errors.some(x=>x.includes("Evidence must be artifact-relative")));
+        for (const status of ["PASS","UNAVAILABLE"]) {
+            for (const evidence of [{plan:"/absolute/plan.json",directory:"cells"},
+                {plan:"../escape/plan.json",directory:"cells"},{plan:null,directory:"cells"}]) {
+                const invalid=report({...unavailable,status,passed:status==="PASS",evidence});
+                assert.equal(invalid.passed,false);
+                assert.ok(invalid.errors.some(x=>/Evidence (must be artifact-relative|escaped artifact root)/.test(x)));
+            }
+        }
+    } finally {fs.rmSync(directory,{recursive:true,force:true});}
+});
+
 test("taxonomy rollout publishes an exact Pages-compatible report and status pair", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-rollout-"));
     try {

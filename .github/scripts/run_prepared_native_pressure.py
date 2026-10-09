@@ -30,7 +30,8 @@ def execute(preparation,output,prefix):
     def failed_report(status,errors):
         write(Path(str(prefix)+'-status.json'),{'schema':'graphite.multigraph-pressure.comparison.v1',
             'scope':'multi-graph-pressure','engine':'native','operation':'query','passed':False,'status':status,
-            'errors':errors,'queryEvidenceComplete':False,'otherOperationsEligible':False})
+            'errors':errors,'queryEvidenceComplete':False,'otherOperationsEligible':False,
+            **({'missingProducers':record['missingProducers']} if 'missingProducers' in record else {})})
         Path(str(prefix)+'-report.md').write_text('### Native multi-graph pressure\n\n'+status+'\n\n'+'\n'.join(errors)+'\n')
     save()
     try:
@@ -38,7 +39,15 @@ def execute(preparation,output,prefix):
         record['preparation']={'path':str(ready_file),'sha256':pressure.sha(ready_file)}
         if ready['status']!='PLAN_READY_NOT_MEASURED':
             pressure.require(ready['status'] in ('UNAVAILABLE','FAIL'),'unknown preparation status')
-            record['status']=ready['status'];record['errors']=['Matched producer plan is not ready: '+ready['status']]
+            reasons=[]
+            for key in ('missingProducers','errors'):
+                values=ready.get(key,[])
+                pressure.require(isinstance(values,list) and all(isinstance(value,str) and value.strip() for value in values),
+                                 'malformed preparation '+key)
+                reasons.extend(values)
+            if 'missingProducers' in ready:record['missingProducers']=ready['missingProducers']
+            record['status']=ready['status']
+            record['errors']=['Matched producer plan is not ready: '+ready['status'],*reasons]
             failed_report(record['status'],record['errors']);return record
         plan_file=preparation/'plan.json'
         pressure.require(pressure.sha(plan_file)==ready['planSha256'],'prepared plan digest changed')

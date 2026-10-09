@@ -94,3 +94,14 @@ replay11649583685, downloaded under `/tmp/graphite-2f50299c-ci-results-1`.
 The aggregate status, preparation status and Native replay status were read
 directly. The full raw producer artifact11649562956 remains separately archived;
 it was not downloaded or substituted for an executed complete comparison.
+
+The subsequent diagnostic fix preserves preparation's `missingProducers` in the
+unexecuted pressure result and reports that reason directly for a well-formed
+UNAVAILABLE result. It never treats missing measurement paths as passing evidence;
+PASS results still require the original artifact-relative paths and full raw
+comparison. Replaying this run's actual preparation status retains exit1, zero
+issued cells and failed acceptance, while the aggregate now names the missing
+core/topology/index authority. Root reran11 Python and146 JavaScript protocol
+tests, including malformed UNAVAILABLE, forged PASS and escaping-path rejection;
+all passed. Both control manifests and their workflow bindings were verified.
+Replay evidence is `/tmp/graphite-native-unavailable-reason-replay-1`.
