@@ -402,3 +402,38 @@ graph files and 14 raw build/writer phase records pass. That actual replay cover
 these validator functions on historical artifacts; it is not a new execution of
 the portable producer or the entire new auditor on a fresh CI build. No server
 or performance workload ran during this validation.
+
+### Fresh native query execution and raw response audit (2026-10-10)
+
+After each distinct C/A/B artifact audit, CI now starts that arm's actual native
+executable with its own 64 graph directories, then executes the 39 versioned
+queries. Each request has a complete-body deadline and size cap. The original
+request, response bytes, failures, readiness attempts, process owner and cleanup
+are retained, including partial output after a failure. Queries execute once
+each, sequentially; this stage does not measure performance. The separate
+continuous-pressure workload remains the performance acceptance path.
+
+Readiness expectations come from persisted data before launch: actual node
+records from `graph.nodedata`, arcs from `forward.properties`, methods from
+`graph.metadata`, and verified fixture call-site counts. BVGraph's `nodes` is an
+ID capacity and includes shard gaps; an initial real-data replay exposed that
+distinction. The initial mismatch remains recorded, the reader now uses the
+actual record count, and a sparse-ID correctness test protects that behavior.
+The corrected reader matches all readiness statistics across 128 historical
+C/B graphs, including their different method counts. This checks the new reader
+against real saved data and captured readiness, not a fresh server execution.
+
+`audit_native_query_correctness.py` separately reconstructs persisted readiness,
+reloads versioned expectations, and checks all 39 raw response bodies, request
+digests, scope, journal entries, runtime identity and owned cleanup. It does not
+import the execution controller. Neither this audit nor the execution record
+claims full fixture semantic equivalence or performance acceptance. Historical
+expectation revisions remain distinct from the newly executed runtime revision.
+
+Eleven execution/audit tests use tiny artifact fixtures, mocked transport and the
+unaltered versioned response payloads; they start no child processes. They cover
+complete catalog execution, wrong/missing responses, query replacement, input
+mutation, failed cleanup and sparse node IDs. Corpus matching is bypassed only
+in these tiny protocol fixtures; the portable-oracle tests separately enforce
+the real JAR hashes. The final producer packet and source-correction equivalence
+policy remain pending, so this wiring alone cannot pass the performance gate.
