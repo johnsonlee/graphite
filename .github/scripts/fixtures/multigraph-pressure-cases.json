@@ -251,7 +251,7 @@
               "rows": 26
             },
             "candidate": {
-              "digest": "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a",
+              "digest": "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
               "rows": 28
             }
           },
@@ -263,7 +263,7 @@
             },
             "querySha256": "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
             "baseDigest": "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c",
-            "candidateDigest": "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a",
+            "candidateDigest": "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
             "baseRows": 26,
             "candidateRows": 28
           }
@@ -3682,7 +3682,7 @@
   },
   "provenance": {
     "nativeCatalogRepositoryPath": ".github/scripts/fixtures/declared-types-native-responses.json",
-    "nativeCatalogSha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81",
+    "nativeCatalogSha256": "c97bba4c80ddc36d04994111159bfdee0a135950ebd9ff083bdcf1a1dea31255",
     "jvmQueries": "Retained accepted4f-compatible real3 HTTP cases; full expected envelopes are fixed rather than sampled first-response references.",
     "limitation": "This catalog declares39 native requests and fixed independently established expected results. Per-revision source/runtime/own-fixture proofs and actual response audits are still required before pressure. Catalog coverage alone is never correctness or performance acceptance; construction and loading remain separate.",
     "independentNativePolicies": {

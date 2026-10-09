@@ -420,7 +420,7 @@ export const RUST_DECLARED_TYPES_RESPONSE_TRANSITION = Object.freeze({
         "rust.fixture64.schema-key-histogram[selectivity=schema]": Object.freeze({
             querySha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
             baseDigest: "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c", baseRows: 26,
-            candidateDigest: "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a", candidateRows: 28
+            candidateDigest: "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41", candidateRows: 28
         }),
         "rust.fixture64.shape-all-nodes[selectivity=broad]": Object.freeze({
             querySha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
