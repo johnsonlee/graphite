@@ -449,7 +449,8 @@ class SootUpAdapter(
             (sootClass.classSource.analysisInputLocation as? ParsedClassLocation)?.declarations(name)
                 ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
         }.associateBy { it.name }
-        graphBuilder.setDeclaredTypes(DeclaredTypesReader(declarations).build())
+        val declaredTypes = DeclaredTypesReader(declarations).build()
+        graphBuilder.setDeclaredTypes(declaredTypes)
         val indexedClasses: List<IndexedClass>
         val loadedClassSources: Set<String>
         if (singleArtifactSource == null) {
@@ -534,6 +535,8 @@ class SootUpAdapter(
         }
 
         log("Starting graphBuilder.build()")
+        val interfaces = classes.filter { it.isInterface }.mapTo(HashSet()) { it.type.fullyQualifiedName }
+        graphBuilder.setDeclaredTypes(InheritedFieldTypes(declarations, declaredTypes, interfaces).bind(fieldNodes.values))
         graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
