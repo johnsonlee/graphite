@@ -150,6 +150,23 @@ Readers also accept v2 with its file-local UTF-8 dictionary and v1 with inline t
 Fields, parameters and returns resolve that binding using their erased declaration key.
 A formatted value such as `List<User>` is rendered on demand rather than stored as a string.
 
+For example, `Map<String, List<Foo>>` uses the existing name entries for
+`java.util.Map`, `java.lang.String`, `java.util.List` and `Foo`. Its type rows can
+be represented as follows (irrelevant columns are omitted):
+
+| Type ID | Kind | Name string ID | Argument type IDs |
+|---|---|---|---|
+| T0 | class | ID of `java.lang.String` | [] |
+| T1 | class | ID of `Foo` | [] |
+| T2 | class | ID of `java.util.List` | [T1] |
+| T3 | class | ID of `java.util.Map` | [T0, T2] |
+
+A field, parameter or return binding references T3; another occurrence of the same
+expression reuses T3. Neither `List<Foo>` nor `Map<String, List<Foo>>` needs a
+string-table entry. A name found only in a generic signature is collected into the
+shared dictionary if it is not already present. The `class` kind also references
+a shared string entry in the wire format; the table above shows its decoded value.
+
 The `graph.types` binding is authoritative in `forward.properties`: no binding means a
 legacy graph and any orphan type file is ignored; a binding with a missing or mismatched
 file is a load error. The embedded metadata digest prevents attaching the table to another

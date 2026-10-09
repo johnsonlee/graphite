@@ -13663,3 +13663,209 @@ Evidence: plan `/tmp/graphite-attempt184-pressure-1/plan.json`, SHA `415d8674ccf
 The user explicitly accepts the previously reported approximately1–2s native64 loading time and CPU overhead as an imperceptible user-facing tradeoff for the feature. This changes the acceptance decision for the completed shared-string loading cohort's wall deltas+1,630.718/+1,647.832ms and ready CPU deltas+2.10/+2.04s against accepted4f, including its CPU increase above the default5% constraint. Original raw values and historical FAIL calculations remain intact; the new disposition is **accepted loading time/CPU overhead**, not recovered performance. Further optimization effort should target outstanding RSS and query-latency issues rather than eliminate this approved cost.
 
 The exception is scoped to this native64 loading tradeoff. RSS remains unresolved (+567,574,528/+586,563,584 sampled bytes in that cohort), and query latency, correctness, stability, heap limits, final cumulative evidence and required CI gates remain applicable. No query, construction or other-workload overhead is silently accepted. The measured source/runtime and historical cohort limitations remain those in the original loading record; approval does not turn an older cohort into a current-head measurement.
+
+### Attempt185 — graph-local method parameter arenas; correctness verified, performance pending (2026-10-10)
+
+**Decision: keep the experiment isolated pending real multi-graph measurements.**
+The hypothesis is that storing method parameters and formal parameters in two
+graph-local contiguous buffers, with ranges in each method record, reduces the
+retained headers, spare capacity and allocation count of per-method vectors.
+This composes with the retained184 shared-string candidate; it does not establish
+that184's observed RSS increase is resolved. Formal-parameter bounds retain their
+existing representation. Type IDs remain `usize`, all integrity/expansion checks
+remain eager, and owning mutation continues to materialize an independent table.
+
+Source: `/tmp/graphite-attempt185-source`, based on production `42377d8c` plus the
+exact retained184 patch SHA
+`1d3dfeebed1388a2b885c6a7ba5360c7c37185ac897b0b7e8ce3c20a1be4ca83`.
+Only `types.rs` and `types_repr.rs` differ from the final184 source. The
+incremental patch is `/tmp/graphite-attempt185-incremental.patch`, SHA
+`0c74d268a3e6044acae464c75d82ec7b93d79bb46e81fa304ee57fb08eb6232c`.
+The source checkout remains isolated; no production change is integrated here.
+
+Command: `PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt185-validate-1.py`.
+The wrapper runs Rust1.93 workspace tests and all-target/all-feature Clippy with
+two jobs, offline locked dependencies, the retained GTY01/02/03 and inherited
+field correctness fixtures, followed by formatting checks. All413 tests pass,
+with zero failures or ignored tests; Clippy and formatting pass. Raw review
+retains all411 final184 test names and adds two cases covering empty and unequal
+parameter ranges, formal bounds, growth, duplicate text identities, ordered
+views and isolation after owning mutation. The initial review used one obsolete
+pre-equality-fix184 test name; the final review checks184's separately retained
+equality-fix run. No test was removed to make this comparison pass.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / process cleanup |413 tests, Clippy, format, unchanged source pins and all owned phase cleanup pass |
+| Native64 loading wall / CPU / RSS | Not measured for185 |
+| Actual multi-graph query p50 / p95 / CPU / RSS | Not measured for185 |
+| Construction | Not measured; writer unchanged by this reader experiment |
+| Final regression recovery / CI acceptance | Not established |
+
+Evidence: `/tmp/graphite-attempt185-validation-1/record.json`, complete raw phase
+logs and `/tmp/graphite-attempt185-validation-review-2.json`. These are
+correctness checks only; no single-graph timing or representation estimate is
+used to select the candidate. Release/runtime binding, explicit format interop
+and matched multi-graph loading/query measurements remain pending. The accepted
+baseline for cumulative comparison remains `4f2ccf33`.
+
+#### Explicit format compatibility and release binding
+
+All six explicit interoperability checks pass: for each GTY01, GTY02 and GTY03
+fixture, both `a_packed_graph_is_the_same_graph_as_its_directory` and
+`schema_describes_a_loaded_graph` execute successfully. The release command is
+`cargo build --offline --locked --release -p graphite-cli --jobs 2` with the same
+Rust1.93 toolchain and unchanged candidate source as the413-test validation.
+The command succeeds; the first export wrapper then fails because it looks under
+`release/` instead of the configured `aarch64-apple-darwin/release/` directory.
+The original failure record is retained. Exporting the existing arm64 executable
+from the configured directory resolves this script error without rerunning the
+build or tests.
+
+The exported binary SHA is
+`04e6ff41c5fc48935c1ba379896060ef5d9aa4610bd95ddd68e1044ce4d6eeab`.
+Independent raw review verifies the six exact test names, all seven successful
+owned phases and empty cleanup, log hashes, unchanged native sources and patch,
+the release completion log, arm64 executable format and identical exported bytes.
+Evidence: `/tmp/graphite-attempt185-interop-build-1/record.json` (original export
+failure), `export-record.json` (corrected export) and `independent-review.json`.
+These checks establish compatibility and runtime identity, not memory savings.
+
+The next comparison is predeclared in
+`/tmp/graphite-attempt185-pressure-1/plan.json`: accepted4f / retained184 /
+candidate185 / candidate185 / retained184 / accepted4f, with six unchanged queries
+whose actual request scope is64 real persisted graphs, concurrency4, two warmup
+requests and20 measured requests per case per process. Every response is fully
+consumed and canonically checked. Per-process p50/p95 use nearest ranks10/19;
+both directions and all failures are retained rather than pooled selectively.
+This uses the previously verified historical64 fixture bytes. It does not cover
+the newer own-writer fixtures, missing query families, construction or loading,
+and cannot establish final CI acceptance. Execution has started; the complete
+results and independent audit remain pending.
+
+#### Completed real64 query comparison — mixed increment, RSS unresolved
+
+All six owned processes complete successfully. Independent raw audit checks828
+complete responses (36 correctness,72 warmup,720 measured), per-worker journals,
+actual all64 scope, full result values, CPU/RSS intervals, immutable input receipts
+and empty process cleanup. The repository comparator agrees with the independent
+reconstruction. Its overall status is `UNAVAILABLE` because query coverage remains
+incomplete; measured constraints also fail. This is local evidence, not CI.
+
+The following per-process p50/p95 values are in milliseconds. F and R retain the
+two predeclared directions separately; no favorable samples are discarded.
+
+| Comparison / direction | Case | Reference p50 →185 | Reference p95 →185 |
+|---|---|---:|---:|
+| 184 / F | shape-collect | 2188.225→2201.064 | 2232.047→2244.607 |
+| 184 / F | schema-key-histogram | 1.862→1.851 | 1.968→3.566 |
+| 184 / F | shape-order-by | 2768.677→2756.790 | 2804.677→2780.878 |
+| 184 / F | schema-label-histogram | 1.248→1.229 | 2.309→2.056 |
+| 184 / F | shape-with-filter | 2888.909→2847.164 | 3207.521→3151.136 |
+| 184 / F | global-wide-wrapped-case-insensitive-distinct-dense | 4.594→4.445 | 5.428→5.612 |
+| 184 / R | shape-collect | 2188.232→2188.852 | 2229.494→2212.089 |
+| 184 / R | schema-key-histogram | 1.821→1.890 | 3.455→3.000 |
+| 184 / R | shape-order-by | 2768.595→2759.895 | 2793.215→2783.486 |
+| 184 / R | schema-label-histogram | 1.259→1.239 | 2.875→1.509 |
+| 184 / R | shape-with-filter | 2912.464→2945.755 | 3125.312→3128.867 |
+| 184 / R | global-wide-wrapped-case-insensitive-distinct-dense | 4.527→4.366 | 6.278→6.720 |
+| 4f / F | shape-collect | 2550.913→2201.064 | 2580.784→2244.607 |
+| 4f / F | schema-key-histogram | 1.839→1.851 | 3.323→3.566 |
+| 4f / F | shape-order-by | 3101.043→2756.790 | 3115.893→2780.878 |
+| 4f / F | schema-label-histogram | 1.331→1.229 | 1.920→2.056 |
+| 4f / F | shape-with-filter | 3255.081→2847.164 | 3535.433→3151.136 |
+| 4f / F | global-wide-wrapped-case-insensitive-distinct-dense | 4.447→4.445 | 5.412→5.612 |
+| 4f / R | shape-collect | 2539.211→2188.852 | 2578.288→2212.089 |
+| 4f / R | schema-key-histogram | 1.826→1.890 | 3.346→3.000 |
+| 4f / R | shape-order-by | 3075.559→2759.895 | 3123.174→2783.486 |
+| 4f / R | schema-label-histogram | 1.328→1.239 | 1.521→1.509 |
+| 4f / R | shape-with-filter | 3118.235→2945.755 | 3451.528→3128.867 |
+| 4f / R | global-wide-wrapped-case-insensitive-distinct-dense | 4.484→4.366 | 6.459→6.720 |
+
+Resources below cover the whole measured120-request mixture. RSS uses decimal GB
+and retains sampled lower / lifecycle upper bounds. These bounds describe
+measurement scope; they are not statistical confidence intervals.
+
+| Comparison / direction | Wall ms reference →185 (delta) | CPU seconds reference →185 / gate | RSS GB reference →185 / gate |
+|---|---:|---|---|
+| 184 / F | 40835.773→40438.075 (-397.697) | [156.640, 156.730]→[156.550, 156.590] / PASS | [22.610, 22.638]→[21.921, 21.944] / PASS |
+| 184 / R | 40611.132→40504.658 (-106.473) | [156.940, 157.040]→[156.560, 156.670] / PASS | [21.308, 21.335]→[22.794, 22.816] / FAIL |
+| 4f / F | 46116.466→40438.075 (-5678.391) | [177.100, 177.190]→[156.550, 156.590] / PASS | [20.110, 20.122]→[21.921, 21.944] / FAIL |
+| 4f / R | 45032.848→40504.658 (-4528.190) | [175.750, 175.850]→[156.560, 156.670] / PASS | [21.545, 21.612]→[22.794, 22.816] / FAIL |
+
+Separate conclusions: correctness and observed process stability pass. Relative
+to184, order p50/p95 improve in both directions, while collect/filter latency is
+mixed. Wall and CPU improve slightly in both directions, and CPU stays within
+the resource limit. RSS falls by about0.69GB forward but rises by about1.49GB
+in reverse, where it exceeds+5%; a stable memory benefit is not established.
+Relative to accepted4f, all three slow cases improve p50/p95 in both directions,
+and wall/CPU improve, but RSS exceeds+5% in both directions. The fast-case
+adverse quantiles remain recorded; their small absolute differences
+are not the next optimization target.
+
+**Decision: keep185 isolated while separate loading measurements determine its
+effect on retained declaration memory.** No query recovery, merge readiness or
+CI acceptance follows. Do not infer the cause of the RSS variation from type-row
+layout estimates. Loading and construction remain unmeasured in this query cohort.
+
+Evidence: `/tmp/graphite-attempt185-pressure-1/plan.json`, SHA
+`1f24ff5bc05c44bea3df3969b8d9164b9eba59fba67145921e61cf7cc77010e9`; raw cells and comparison report in that directory;
+`/tmp/graphite-attempt185-pressure-independent-audit.json`, SHA
+`c3efcefb2bedd7ed1fd2f336d4473d726d0eb8fb36b616901f5464320ec7787a`;
+and `/tmp/graphite-attempt185-pressure-1/comparison-review.json`.
+
+The separate loading cohort is now launched from
+`/tmp/graphite-attempt185-loading.py` using the same C/184/185 runtime and real64
+fixture bindings in C/A/B/B/A/C order. Its boundary is spawn through complete
+validated64-graph readiness; it sends zero query requests. Every process has
+matched full-input hash sweeps before and after execution. The readiness helper,
+sampler and owned cleanup reuse the reviewed controller. Four no-process tests
+check exclusion of straddling reads, empty intervals, foreign process identities,
+forged raw samples and impossible resource bounds. Loading results remain pending.
+
+#### Completed real64 loading comparison — retained memory benefit, RSS still above limit
+
+The independent raw audit passes for all six processes and384 graph-readiness
+records. Every process reaches the complete expected registry, performs zero
+query requests, retains all raw resource samples and terminates through owned
+cleanup. Input hashes match before and after every run. RSS is decimal GB; the
+interval combines wholly-in-loading sampled reads with the lifecycle peak.
+
+| Comparison / direction | Wall ms reference →185 (delta) | CPU seconds reference →185 / raw +5% gate | RSS GB reference →185 / +5% gate |
+|---|---:|---|---|
+| 184 / F | 20869.840→21387.112 (+517.272) | [20.560, 20.600]→[20.980, 21.020] / PASS | [6.752, 6.752]→[6.711, 6.714] / PASS |
+| 184 / R | 21066.572→21339.487 (+272.915) | [20.670, 20.710]→[21.070, 21.110] / PASS | [6.751, 6.757]→[6.715, 6.717] / PASS |
+| 4f / F | 19666.457→21387.112 (+1720.655) | [19.090, 19.130]→[20.980, 21.020] / FAIL | [6.370, 6.375]→[6.711, 6.714] / FAIL |
+| 4f / R | 19730.023→21339.487 (+1609.464) | [19.120, 19.170]→[21.070, 21.110] / FAIL | [6.376, 6.379]→[6.715, 6.717] / FAIL |
+
+Separate conclusions: loading correctness and observed stability pass. Relative
+to184, the entire candidate RSS interval is lower in both directions: approximately
+38–42MB forward and35–42MB reverse. Loading wall increases273–517ms and CPU
+increases about0.4s; the parent-relative CPU gate passes. This measured retained
+memory benefit supports keeping185 for continued composition despite mixed query
+results.
+
+Against accepted4f, loading remains approximately1.61–1.72s slower and uses about
+1.9–2.0s more CPU. The raw default CPU FAIL results remain visible; the existing
+user-approved native64 loading time/CPU tradeoff is recorded above. RSS has no
+such exception and still fails+5% in both directions. Query RSS also remains
+unresolved independently. This cohort does not measure construction or establish
+current own-writer/full-catalog/CI acceptance. JVM heap and performance remain
+subject to their separate gates.
+
+**Decision: retain185 isolated for its verified loading-memory benefit.** Continue
+reducing representation overhead without dropping declarations, weakening integrity
+validation or changing query results. Do not call the overall regression recovered.
+
+Evidence: `/tmp/graphite-attempt185-loading-1/protocol.json`, six raw cell directories,
+and `/tmp/graphite-attempt185-loading-independent-audit.json`, SHA
+`5337a22063b0765a916a26149df52d8b16dd2484af5a5a7298feab94afedffb0`.
+The local run command was
+`python3 /tmp/graphite-attempt185-loading.py --plan /tmp/graphite-attempt185-pressure-1/plan.json --output /tmp/graphite-attempt185-loading-1`.
+
+An additional observation-only review of the completed query traces is retained in
+`/tmp/graphite-attempt185-pressure-peak-overlap.json`. Several RSS peaks occur with
+the same combination of in-flight requests; two occur near the end while only a
+filter request remains. Client intervals do not attribute server allocations or
+retained allocator pages. These correlations do not explain away the failed RSS
+gates or justify replacing them with loading measurements.
