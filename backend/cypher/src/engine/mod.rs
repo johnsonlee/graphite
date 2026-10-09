@@ -268,6 +268,21 @@ impl GraphContext for Executor {
                 return Value::Int(i64::from(value));
             }
         }
+        if matches!(
+            key,
+            "caller_class" | "caller_name" | "callee_class" | "callee_name"
+        ) {
+            let graph = self.graph(node.source);
+            if let Some(fields) = graph.call_site_scalar_strings(node.id) {
+                let id = match key {
+                    "caller_class" => fields.caller_class,
+                    "caller_name" => fields.caller_name,
+                    "callee_class" => fields.callee_class,
+                    _ => fields.callee_name,
+                };
+                return Value::str(graph.str(id));
+            }
+        }
         match self.node(node) {
             Some(n) => props::node_property(self.graph(node.source), &n, key),
             None => Value::Null,
@@ -369,3 +384,6 @@ impl GraphContext for Executor {
 
 #[cfg(test)]
 mod int_constant_tests;
+
+#[cfg(test)]
+mod call_site_scalar_tests;
