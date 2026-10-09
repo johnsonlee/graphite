@@ -833,3 +833,29 @@ repeated complete artifact audits per graph. Fresh source/formatter authority,
 whole core/topology/index comparison and the completed producer adapter still
 remain. Complete semantic equivalence, inference and performance acceptance
 flags remain false.
+
+
+## Fresh formatter source-rule binding (2026-10-10)
+
+The portable source-rule binder now consumes the actual C/A or C/B producer pair
+through the independently replayed bootstrap/artifact audits. It binds exact
+source and fixture manifests and checks the reviewed old/new array formatter,
+seven adapter boundaries (including both method-descriptor overloads), identity
+cache declarations and unchanged dependency/build definitions. The historical
+contract provenance path is not read. A C=C alias requires strict comparison
+without a formatter correction rule. Outputs use the existing Local authority
+schema; comparator policy is unchanged.
+
+Root reviewed the implementation and all new behavioral tests, verified every
+frozen/base/control hash, parsed workflow YAML, and checked the extracted producer
+shell. All224 package tests and5 composition tests pass. Raw logs are
+`/tmp/graphite-core-formatter-root-package-tests.log` and
+`/tmp/graphite-core-formatter-root-adapter-tests.log`. Frozen source is
+`/tmp/graphite-native-core-formatter-prep-1/formatter-source-ready.json`, SHA-256
+`6e4887dae570b179c397bb144c30c8da69de7125ff87aa4c2ee1217915bab316`.
+
+This establishes source-model binding only. Fresh owned production formatter
+tests, actual whole64 semantic execution and completed producer evidence remain
+required. `productionFormatterTestsVerified`, complete semantic equivalence,
+synthetic-local inference and performance acceptance remain false. Historical
+unsupported inference cases are not promoted by checking source fragments.
