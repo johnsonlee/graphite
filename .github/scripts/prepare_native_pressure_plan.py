@@ -148,8 +148,12 @@ def oracle_side(arm, base_sha):
     return 'base' if arm == 'C' or (arm == 'A' and base_sha == ACCEPTED) else 'candidate'
 
 
-def independent_case_oracle(packet, case, arm_id, expected):
-    """Bind fresh persisted-graph oracle and actual HTTP proof to this exact arm."""
+def independent_case_oracle(packet, case, arm_id, expected, verified_normalizations=None):
+    """Bind persisted-graph expectations and fresh HTTP proof to this exact arm.
+
+    Portable normalization retains its historical derivation scope; complete
+    fresh fixture equivalence is independently required by assemble().
+    """
     origin = 'C' if arm_id == 'A' and pressure.same_accepted_artifacts(packet, 'A') else arm_id
     refs = packet.get('independentCaseOracles', {}).get(origin, {}).get(case['id'])
     if refs is None:
@@ -177,8 +181,17 @@ def independent_case_oracle(packet, case, arm_id, expected):
                 'PASS_TWENTY_COMPLETE_NATIVE_DISCOVERY_ROUTING_RESPONSES_INDEPENDENT_RAW_AUDIT',
                 'PASS_SIXTEEN_COMPLETE_NATIVE_SLOW_NODE_RESPONSES_INDEPENDENT_RAW_AUDIT',
                 'PASS_EIGHT_COMPLETE_NATIVE_DATAFLOW_LEGAL_RESPONSES_INDEPENDENT_RAW_AUDIT'}
-    require(audit['status'] in statuses and audit['performanceClaim'] is False,
-            'completed independently audited actual responses')
+    from normalize_native_pressure_oracles import STATUS as NORMALIZED_STATUS, verify as verify_normalized
+    if audit['status'] == NORMALIZED_STATUS:
+        key = (origin, refs['plan']['path'], refs['plan']['sha256'],
+               refs['audit']['path'], refs['audit']['sha256'])
+        if verified_normalizations is None or key not in verified_normalizations:
+            verify_normalized(packet, refs, origin)
+            if verified_normalizations is not None:
+                verified_normalizations.add(key)
+    else:
+        require(audit['status'] in statuses and audit['performanceClaim'] is False,
+                'completed independently audited actual responses')
     require(all(packet['pins'].get(path) == digest for path, digest in audit['pins'].items()),
             'complete actual independent audit input closure')
     observed = [proof for proof in audit['proofs'] if proof['arm'] == origin and proof['case'] == case['id']]
@@ -269,6 +282,7 @@ def assemble(packet, base_sha, candidate_sha, catalog):
     candidate = pressure.candidate_authority(packet) if 'candidateAuthority' in packet else None
     bindings = oracle_bindings(packet, declared['cases'], candidate)
     cases = []
+    verified_normalizations = set()
     for case in declared['cases']:
         independent = case.get('sourceKind') == 'independent-persisted-graph-oracle-v1'
         if not independent:
@@ -280,7 +294,7 @@ def assemble(packet, base_sha, candidate_sha, catalog):
         for arm in 'CAB':
             expected = case['expected']['base'] if arm == 'C' or arm not in bindings else bindings[arm]['cases'][case['id']]
             if independent:
-                oracles[arm] = independent_case_oracle(packet, case, arm, expected)
+                oracles[arm] = independent_case_oracle(packet, case, arm, expected, verified_normalizations)
                 continue
             proof = original
             if arm == 'B' and candidate is not None and case['id'] == 'schema-key-histogram':

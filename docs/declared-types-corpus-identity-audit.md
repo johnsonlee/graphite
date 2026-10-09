@@ -698,3 +698,29 @@ an independent rerun of eight resource tests also passes. Evidence is retained
 at `/tmp/graphite-construction-capture-integration-1/record.json`. No real
 construction measurement has run with this change yet. Construction, loading
 and query regression acceptance remain separate and unproven by these tests.
+
+## Portable oracle handoff (2026-10-10)
+
+The fresh 39-query audit and pressure preparation used different evidence
+shapes. `normalize_native_pressure_oracles.py` now adapts the existing audit
+into per-case plan, audit, expected-payload and actual-body references. It
+recomputes the raw response audit, preserves the historical persisted-graph
+oracle derivation, and binds the current request, runtime, graph scope and
+complete response. It does not claim to derive historical expected values from
+newly written graphs.
+
+Pressure preparation independently recomputes this normalized evidence once per
+arm within an assembly call, then retains every per-case check. The separate
+complete fixture-equivalence requirement is unchanged. Normalization does not
+emit that proof, promote a partial producer bundle, or establish performance
+acceptance. Fresh whole-core, topology and index verification remains required
+before continuous-pressure eligibility can be established.
+
+All 115 adjacent protocol tests pass; an independent root rerun of the 11 new
+adapter tests also passes. Positive cases cover accepted C, distinct parent A,
+candidate B and the existing exact A=C alias, checking all 39 responses each.
+Changed queries, revisions, graph scope, payload/body pins and forged semantic
+claims are rejected. CI runs the new tests; control hashes remain verified.
+Evidence: `/tmp/graphite-native-fresh39-adapter-prep-1/validation-2.json` and
+`/tmp/graphite-fresh39-root-tests.log`. Actual fresh CI normalization and the
+complete producer adapter have not run yet.

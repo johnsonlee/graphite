@@ -16,7 +16,9 @@ class ArtifactAuditTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name).resolve()
         producer_fixture = fixtures.ArtifactCompositionTests()
-        self.packet, calls, self.out = producer_fixture.execute(self.root)
+        self.revision = getattr(self, 'revision', 'b' * 40)
+        self.role = getattr(self, 'role', 'candidate')
+        self.packet, calls, self.out = producer_fixture.execute(self.root, revision=self.revision, role=self.role)
         self.checkout = self.root / 'checkout'
         self.inputs_path = self.root / 'inputs.json'
         self.runtime = auditor.common.read(self.out / 'runtime-manifest.json')
@@ -69,8 +71,8 @@ class ArtifactAuditTests(unittest.TestCase):
     def run_audit(self, require_construction=False):
         with patch.object(auditor, 'source_inventory', return_value=self.source), \
              patch('subprocess.Popen', side_effect=AssertionError('no build or server allowed')):
-            return auditor.audit(self.out / 'packet.json', self.checkout, 'b' * 40,
-                                 'candidate', self.inputs_path, self.tools, require_construction)
+            return auditor.audit(self.out / 'packet.json', self.checkout, self.revision,
+                                 self.role, self.inputs_path, self.tools, require_construction)
 
     def test_complete_raw_artifacts_are_verified_without_claiming_query_or_semantics(self):
         result = self.run_audit()

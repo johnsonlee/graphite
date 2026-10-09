@@ -17,6 +17,8 @@ import test_audit_native_pressure_artifacts as fixtures
 class QueryCorrectnessTests(unittest.TestCase):
     def setUp(self):
         self.fixture = fixtures.ArtifactAuditTests()
+        self.fixture.revision = getattr(self, 'revision', 'b' * 40)
+        self.fixture.role = getattr(self, 'role', 'candidate')
         self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
         self.root = self.fixture.root
@@ -39,7 +41,7 @@ class QueryCorrectnessTests(unittest.TestCase):
         corpus_match.start()
         self.addCleanup(corpus_match.stop)
         self.plan = runner.prepare(self.artifact_path, self.fixture.inputs_path,
-                                   'b' * 40, 'candidate', self.out, 22840)
+                                   self.fixture.revision, self.fixture.role, self.out, 22840)
 
     def run_queries(self, failed_case=None, cleanup_error=False, close_error=False, final_drift=False):
         plan = self.plan
