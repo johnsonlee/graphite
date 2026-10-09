@@ -391,6 +391,7 @@ impl DeclaredTypes {
         if r.pos != bytes.len() {
             return Err(TypeError("trailing bytes".into()));
         }
+        table.finish_method_buffers();
         table.texts = match r.shared {
             Some(strings) => repr::TextStore::Shared(strings.clone()),
             None => repr::TextStore::Owned(r.strings.into_iter().collect()),

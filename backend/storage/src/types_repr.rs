@@ -6,6 +6,7 @@ use indexmap::{Equivalent, IndexMap};
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash, Hasher};
+use std::ops::Range;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -117,9 +118,17 @@ pub(super) struct CompactTable {
     pub(super) types: Vec<TypeExpr<usize>>,
     // Private keys: all inserts and lookups compare full actual text values.
     fields: IndexMap<StoredKey<3>, usize>,
-    methods: IndexMap<StoredKey<3>, MethodTypes<usize>>,
+    methods: IndexMap<StoredKey<3>, StoredMethod>,
+    method_parameters: Vec<usize>,
+    method_formals: Vec<TypeParameter<usize>>,
     classes: IndexMap<StoredKey<1>, ClassTypes<usize>>,
     fingerprints: RandomState,
+}
+#[derive(Debug)]
+struct StoredMethod {
+    parameters: Range<usize>,
+    returns: usize,
+    type_parameters: Range<usize>,
 }
 impl CompactTable {
     pub(super) fn reserve_fields(&mut self, n: usize) -> Result<(), indexmap::TryReserveError> {
@@ -174,7 +183,33 @@ impl CompactTable {
         ids: [usize; 3],
         value: MethodTypes<usize>,
     ) -> bool {
-        Self::insert(&mut self.methods, &self.fingerprints, texts, ids, value)
+        let values = ids.map(|id| texts.text(id));
+        let fingerprint = self.fingerprints.hash_one(values);
+        let lookup = Lookup {
+            fingerprint,
+            values,
+            texts,
+        };
+        if self.methods.contains_key(&lookup) {
+            return false;
+        }
+        let parameter_start = self.method_parameters.len();
+        self.method_parameters.extend(value.parameters);
+        let formal_start = self.method_formals.len();
+        self.method_formals.extend(value.type_parameters);
+        self.methods.insert(
+            StoredKey { fingerprint, ids },
+            StoredMethod {
+                parameters: parameter_start..self.method_parameters.len(),
+                returns: value.returns,
+                type_parameters: formal_start..self.method_formals.len(),
+            },
+        );
+        true
+    }
+    pub(super) fn finish_method_buffers(&mut self) {
+        self.method_parameters.shrink_to_fit();
+        self.method_formals.shrink_to_fit();
     }
     pub(super) fn insert_class(
         &mut self,
@@ -376,9 +411,12 @@ impl DeclaredTypes {
             Storage::Compact(t) => {
                 let m = t.methods.get(&t.lookup([owner, name, descriptor]))?;
                 Some(MethodView {
-                    parameters: &m.parameters,
+                    parameters: &t.method_parameters[m.parameters.clone()],
                     returns: m.returns,
-                    type_parameters: Formals::Compact(&m.type_parameters, self),
+                    type_parameters: Formals::Compact(
+                        &t.method_formals[m.type_parameters.clone()],
+                        self,
+                    ),
                 })
             }
             Storage::Owned(t) => {
@@ -430,9 +468,12 @@ impl DeclaredTypes {
                 (
                     key.ids.map(|id| t.texts.text(id)),
                     MethodView {
-                        parameters: &v.parameters,
+                        parameters: &t.method_parameters[v.parameters.clone()],
                         returns: v.returns,
-                        type_parameters: Formals::Compact(&v.type_parameters, self),
+                        type_parameters: Formals::Compact(
+                            &t.method_formals[v.type_parameters.clone()],
+                            self,
+                        ),
                     },
                 )
             }
@@ -560,9 +601,12 @@ impl DeclaredTypes {
                     (
                         (text(k.ids[0]), text(k.ids[1]), text(k.ids[2])),
                         MethodTypes {
-                            parameters: v.parameters.clone(),
+                            parameters: t.method_parameters[v.parameters.clone()].to_vec(),
                             returns: v.returns,
-                            type_parameters: formals(&v.type_parameters, &mut text),
+                            type_parameters: formals(
+                                &t.method_formals[v.type_parameters.clone()],
+                                &mut text,
+                            ),
                         },
                     )
                 })
@@ -650,6 +694,167 @@ impl MutableDeclaredTypes {
 #[cfg(test)]
 mod compact_tests {
     use super::*;
+
+    #[test]
+    fn method_arena_ranges_preserve_empty_parameters_formals_and_owning_mutation() {
+        let texts = TextStore::Owned(
+            [
+                "Owner", "empty", "()V", "generic", "(T)T", "T", "scope", "pair", "(TT)T",
+            ]
+            .into_iter()
+            .map(Arc::from)
+            .collect(),
+        );
+        let mut table = CompactTable::default();
+        for (ids, parameters, type_parameters) in [
+            ([0, 1, 2], vec![], vec![]),
+            (
+                [0, 3, 4],
+                vec![2],
+                vec![TypeParameter {
+                    name: 5,
+                    scope: 6,
+                    bounds: vec![1, 0],
+                }],
+            ),
+            ([0, 7, 8], vec![1, 2], vec![]),
+        ] {
+            assert!(table.insert_method(
+                &texts,
+                ids,
+                MethodTypes {
+                    parameters,
+                    returns: 0,
+                    type_parameters
+                }
+            ));
+        }
+        // A duplicate must leave the existing method and subsequent ranges intact.
+        assert!(!table.insert_method(
+            &texts,
+            [0, 3, 4],
+            MethodTypes {
+                parameters: vec![99; 100],
+                returns: 99,
+                type_parameters: vec![],
+            }
+        ));
+        table.finish_method_buffers();
+        table.texts = texts;
+        let declarations = DeclaredTypes {
+            storage: Storage::Compact(table),
+        };
+        let empty = declarations.method_types("Owner", "empty", "()V").unwrap();
+        assert!(empty.parameters.is_empty());
+        assert_eq!(empty.type_parameters.iter().count(), 0);
+        let generic = declarations
+            .method_types("Owner", "generic", "(T)T")
+            .unwrap();
+        assert_eq!(generic.parameters, [2]);
+        assert_eq!(generic.returns, 0);
+        assert_eq!(
+            generic.type_parameters.iter().collect::<Vec<_>>(),
+            vec![FormalView {
+                name: "T",
+                scope: "scope",
+                bounds: &[1, 0],
+            }]
+        );
+        let pair = declarations.method_types("Owner", "pair", "(TT)T").unwrap();
+        assert_eq!(pair.parameters, [1, 2]);
+        assert_eq!(pair.type_parameters.iter().count(), 0);
+        assert_eq!(
+            declarations
+                .method_entries()
+                .map(|(key, method)| (key[1], method.parameters.to_vec()))
+                .collect::<Vec<_>>(),
+            vec![
+                ("empty", vec![]),
+                ("generic", vec![2]),
+                ("pair", vec![1, 2])
+            ]
+        );
+        let mut owned = declarations.to_mutable();
+        assert_eq!(declarations, DeclaredTypes::from(owned.clone()));
+        owned
+            .methods
+            .get_mut(&BorrowedMemberKey("Owner", "generic", "(T)T"))
+            .unwrap()
+            .parameters
+            .push(1);
+        assert_eq!(
+            declarations
+                .method_types("Owner", "generic", "(T)T")
+                .unwrap()
+                .parameters,
+            [2]
+        );
+        assert_eq!(
+            owned
+                .method_types("Owner", "generic", "(T)T")
+                .unwrap()
+                .parameters,
+            [2, 1]
+        );
+    }
+
+    #[test]
+    fn method_arena_ranges_survive_growth_and_duplicate_text_ids() {
+        let texts = TextStore::Owned(
+            (0..300)
+                .map(|i| Arc::from(format!("name-{i}")))
+                .chain([Arc::from("name-0")])
+                .collect(),
+        );
+        let mut table = CompactTable::default();
+        for i in 0..256 {
+            assert!(table.insert_method(
+                &texts,
+                [i, 298, 299],
+                MethodTypes {
+                    parameters: vec![i; i % 7],
+                    returns: i,
+                    type_parameters: vec![TypeParameter {
+                        name: i,
+                        scope: 298,
+                        bounds: vec![i, i + 1],
+                    }],
+                }
+            ));
+        }
+        assert!(!table.insert_method(
+            &texts,
+            [300, 298, 299],
+            MethodTypes {
+                parameters: vec![],
+                returns: 999,
+                type_parameters: vec![],
+            }
+        ));
+        table.finish_method_buffers();
+        table.texts = texts;
+        let declarations = DeclaredTypes {
+            storage: Storage::Compact(table),
+        };
+        assert_eq!(declarations.method_count(), 256);
+        for i in 0..256 {
+            let name = format!("name-{i}");
+            let method = declarations
+                .method_types(&name, "name-298", "name-299")
+                .unwrap();
+            assert_eq!(method.parameters, vec![i; i % 7]);
+            assert_eq!(method.returns, i);
+            assert_eq!(
+                method.type_parameters.iter().collect::<Vec<_>>(),
+                vec![FormalView {
+                    name: &name,
+                    scope: "name-298",
+                    bounds: &[i, i + 1],
+                }]
+            );
+        }
+        assert_eq!(declarations, DeclaredTypes::from(declarations.to_mutable()));
+    }
 
     #[test]
     fn compact_fingerprint_collisions_keep_full_text_equality_across_resizes() {
