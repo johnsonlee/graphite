@@ -13134,3 +13134,17 @@ The exact three-file03-based candidate completed its first full validation succe
 Core and Cypher tasks use `FROM-CACHE` outputs with exact source/dependency/config/XML lineage to validated175 and the retained original shared-format executions. Webgraph4GiB and memory256MiB tests run freshly. Gradle4GiB/APC4/two workers and core/Cypher512MiB stay bounded. All458 source/config pins, the exact three-file patch, harness identities and owned cleanup are unchanged and successful. Root session28746 exits0; no failed or repeated validation precedes this result. Independent audit `/tmp/graphite-attempt180-independent-jvm-audit.json`, SHA `eef4c06d550284e7a6244143670ab4ab4c379d46b05fca16ce8c46edfa35c53d`; source manifest and patch remain the previously recorded9ce7/200d identities.
 
 This is correctness/static validation, not a measured allocation, latency, CPU or RSS gain.180 remains isolated from root178 and candidate179. Runtime export and matched real3 loading/representative multi-graph query evidence are still required before a retention decision; no loading-regression recovery or PR acceptance follows from the test pass.
+
+### Current-head CI follow-up — mapped loading still fails (2026-10-09)
+
+The [large-corpus job](https://github.com/johnsonlee/graphite/actions/runs/37882909532/job/113666472741) independently compares candidate `067f0cab4a01cdaea95d92d7e09048fd96ee6f9b` with accepted baseline `4f2ccf33b969e684972e56b5e810034e6e67c1b3`. API metadata and checkout logs bind both revisions. Corpus Gradle tests pass; the comparison fails on all three mapped-load timings and obsolete persisted-size increments. These are the same failure categories as the earlier03 CI run; differences between separate CI runs do not establish a measured optimization gain.
+
+| Corpus | Initial mapped load, baseline→candidate | Reverse confirmation, baseline→candidate | Initial persisted-byte increment | Old pinned increment |
+|---|---:|---:|---:|---:|
+| Tika | 139→346ms (+207) | 139→359ms (+220) | 18,148,723 | 61,386,645 |
+| Hive | 207→453ms (+246) | 213→462ms (+249) | 28,492,338 | 101,839,125 |
+| Kotlin compiler | 119→305ms (+186) | 129→368ms (+239) | 21,184,278 | 67,384,686 |
+
+The mapped-load statistic is the median of five loads. Each failure exceeds the existing30%/50ms gate and repeats in reverse order. All six size checks exceed the existing4,096-byte tolerance against their old pins. No thresholds or expected byte increments were changed: updating size pins alone would leave the loading failures. Build, save, query and pipeline timing gates pass. Tika branch-definition time initially increases1,072→1,422ms, then reverses1,423→1,031ms and is classified as noise by the existing gate. No shape mismatch or OOM is reported. These4GiB per-corpus CI diagnostics do not prove multi-graph request p50/p95 or CPU/RSS recovery; peak heap is not RSS.
+
+Original job logs, metadata and report artifact are preserved under `/tmp/graphite-pr174-067-large-corpus-failure/`; independent diagnosis SHA `a336b94847e1013c194e44b80c68c11ec22596e6368ff0c57a6573d56c1ebfd4`. The same head's Rust format, Clippy and declared-type JVM/native interoperability steps pass, including the explicitly invoked changed declaration-key fallback test. That Linux CI result is not a new local release build or native64 performance result. PR174 remains a draft with unresolved performance gates.
