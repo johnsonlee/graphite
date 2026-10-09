@@ -30,6 +30,7 @@ internal object DeclaredTypeStore {
     private const val PROPERTIES_FILE = "forward.properties"
     private const val LEGACY_HEADER = 0x47545901 // GTY, inline UTF-8
     private const val HEADER = 0x47545902 // GTY, table-local string dictionary
+    private const val SHARED_HEADER = 0x47545903 // GTY, graph.strings IDs
     private const val DIGEST_SIZE = 32
     private const val TYPE_MIN_BYTES = 28
     private const val FIELD_MIN_BYTES = 16
@@ -39,7 +40,25 @@ internal object DeclaredTypeStore {
     private const val HASH_SPREAD_SHIFT = 16
     private const val HASH_MULTIPLIER = 31
 
-    fun save(table: DeclaredTypeTable, dir: Path) {
+    fun collectStrings(table: DeclaredTypeTable, target: MutableSet<String>) {
+        DeclaredTypeStringIds(table).collect(target)
+    }
+
+    /** Advisory optimization only: load still independently requires the verified digest for GTY03. */
+    fun needsSerializedStrings(dir: Path): Boolean {
+        val path = dir.resolve(FILE_NAME)
+        if (!Files.isRegularFile(path)) return false
+        return java.io.DataInputStream(Files.newInputStream(path)).use {
+            if (Files.size(path) < Int.SIZE_BYTES) false else it.readInt() == SHARED_HEADER
+        }
+    }
+
+    fun save(table: DeclaredTypeTable, dir: Path, strings: StringTable) = saveTable(table, dir, strings)
+
+    /** Explicit legacy wire fixture writer; GraphStore always writes GTY03. */
+    internal fun saveLegacyV2(table: DeclaredTypeTable, dir: Path) = saveTable(table, dir, null)
+
+    private fun saveTable(table: DeclaredTypeTable, dir: Path, strings: StringTable?) {
         val path = dir.resolve(FILE_NAME)
         if (table == DeclaredTypeTable.EMPTY) {
             Files.deleteIfExists(path)
@@ -51,7 +70,7 @@ internal object DeclaredTypeStore {
         // serialization completes, so save(load(dir), dir) never truncates its input.
         val temporary = Files.createTempFile(dir, "graph.types-", ".tmp")
         try {
-            writeTable(table, dir, temporary)
+            writeTable(table, dir, temporary, strings)
             try {
                 Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             } catch (_: AtomicMoveNotSupportedException) {
@@ -63,12 +82,21 @@ internal object DeclaredTypeStore {
         }
     }
 
-    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path) {
-        val strings = DeclaredTypeStringIds(table)
+    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?) {
+        val local = if (shared == null) DeclaredTypeStringIds(table) else null
+        val strings: (String) -> Int = { value ->
+            Charsets.UTF_8.newEncoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+                .encode(java.nio.CharBuffer.wrap(value))
+            if (shared == null) checkNotNull(local)[value] else shared.findId(value).also {
+                require(it >= 0) { "Missing declared text in graph.strings" }
+            }
+        }
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(path))).use { out ->
-            out.writeInt(HEADER)
+            out.writeInt(if (shared == null) HEADER else SHARED_HEADER)
             out.write(digest(dir.resolve("graph.metadata")))
-            strings.write(out)
+            if (shared == null) checkNotNull(local).write(out) else {
+                out.write(requireNotNull(shared.serializedDigest()) { "Unverified graph.strings bytes" })
+            }
             out.writeInt(table.types.size)
             for (type in table.types) {
                 out.text(type.kind, strings)
@@ -101,7 +129,7 @@ internal object DeclaredTypeStore {
         }
     }
 
-    fun load(dir: Path): DeclaredTypeTable {
+    fun load(dir: Path, stringTable: StringTable? = null): DeclaredTypeTable {
         val binding = readBinding(dir) ?: return DeclaredTypeTable.EMPTY
         val path = dir.resolve(FILE_NAME)
         require(Files.isRegularFile(path)) { "Missing graph.types referenced by forward.properties" }
@@ -115,12 +143,20 @@ internal object DeclaredTypeStore {
             }
             val reader = Reader(channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()))
             val header = reader.int()
-            require(header == HEADER || header == LEGACY_HEADER) { "Unsupported graph.types header/version" }
+            require(header == HEADER || header == LEGACY_HEADER || header == SHARED_HEADER) { "Unsupported graph.types header/version" }
             val metadataHash = ByteArray(DIGEST_SIZE).also(reader.bytes::get)
             require(MessageDigest.isEqual(metadataHash, digest(dir.resolve("graph.metadata")))) {
                 "graph.types does not match graph.metadata"
             }
             if (header == HEADER) reader.strings = DeclaredTypeStringPool.read(reader.bytes)
+            if (header == SHARED_HEADER) {
+                require(reader.bytes.remaining() >= DIGEST_SIZE) { "Truncated graph.types" }
+                val expected = ByteArray(DIGEST_SIZE).also(reader.bytes::get)
+                val shared = stringTable ?: StringTable.load(dir, verifySerializedDigest = true)
+                val actual = requireNotNull(shared.serializedDigest()) { "Unverified graph.strings bytes" }
+                require(MessageDigest.isEqual(expected, actual)) { "graph.types does not match graph.strings" }
+                reader.strings = SharedDeclaredTypeTexts(shared)
+            }
             val typeCount = reader.rowCount(TYPE_MIN_BYTES)
             val typeOffsets = IntArray(typeCount) {
                 reader.bytes.position().also { reader.skipType(typeCount) }
@@ -172,20 +208,20 @@ internal object DeclaredTypeStore {
         return digest.digest()
     }
 
-    private fun DataOutputStream.text(value: String, strings: DeclaredTypeStringIds) = writeInt(strings[value])
+    private fun DataOutputStream.text(value: String, strings: (String) -> Int) = writeInt(strings(value))
 
     private fun DataOutputStream.ids(values: List<Int>) {
         writeInt(values.size)
         values.forEach(::writeInt)
     }
 
-    private fun DataOutputStream.key(key: MemberTypeKey, strings: DeclaredTypeStringIds) {
+    private fun DataOutputStream.key(key: MemberTypeKey, strings: (String) -> Int) {
         text(key.owner, strings)
         text(key.name, strings)
         text(key.descriptor, strings)
     }
 
-    private fun DataOutputStream.parameters(parameters: List<TypeParameter>, strings: DeclaredTypeStringIds) {
+    private fun DataOutputStream.parameters(parameters: List<TypeParameter>, strings: (String) -> Int) {
         writeInt(parameters.size)
         for (parameter in parameters) {
             text(parameter.name, strings)
@@ -198,7 +234,7 @@ internal object DeclaredTypeStore {
     private class MappedTypes(
         private val bytes: ByteBuffer,
         private val offsets: IntArray,
-        private val strings: DeclaredTypeStringPool?
+        private val strings: DeclaredTypeTexts?
     ) :
         AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess {
         private val validationAccess = MappedDeclaredTypeValidationAccess(this, offsets.size)
@@ -218,7 +254,18 @@ internal object DeclaredTypeStore {
         }
         override fun atomInt(offset: Int): Int = bytes.getInt(offset)
         override fun atomByte(offset: Int): Byte = bytes.get(offset)
-        override fun atomTextOffset(position: Int): Int = strings?.offset(bytes.getInt(position)) ?: position
+        override fun atomTextOffset(position: Int): Int = (strings as? DeclaredTypeStringPool)?.offset(bytes.getInt(position))
+            ?: position.also { check(strings == null) { "Shared strings have no graph.types byte offset" } }
+        override fun atomText(position: Int): String = strings?.text(bytes.getInt(position)) ?: super.atomText(position)
+        override fun atomTextLength(position: Int): Int = if (strings is SharedDeclaredTypeTexts) {
+            strings.text(bytes.getInt(position)).toByteArray(Charsets.UTF_8).size
+        } else super.atomTextLength(position)
+        override fun atomTextEquals(position: Int, expected: String): Boolean = if (strings is SharedDeclaredTypeTexts) {
+            strings.text(bytes.getInt(position)) == expected
+        } else super.atomTextEquals(position, expected)
+        override fun atomContains(position: Int, fragment: String): Boolean = if (strings is SharedDeclaredTypeTexts) {
+            strings.text(bytes.getInt(position)).contains(fragment)
+        } else super.atomContains(position, fragment)
         override fun nextTextField(position: Int): Int =
             position + Int.SIZE_BYTES + if (strings == null) bytes.getInt(position) else 0
         override val size: Int get() = offsets.size
@@ -244,7 +291,7 @@ internal object DeclaredTypeStore {
         private val slots: IntArray,
         private val key: (Reader) -> K,
         private val value: (Reader) -> V,
-        private val strings: DeclaredTypeStringPool?,
+        private val strings: DeclaredTypeTexts?,
         private val references: TypeReferenceCheck
     ) : AbstractMap<K, V>(), DeclaredTypeReferences {
         override val size: Int get() = offsets.size
@@ -321,29 +368,24 @@ internal object DeclaredTypeStore {
         return (0 until firstEnd - first).all { bytes.get(first + it) == bytes.get(second + it) }
     }
 
-    private fun checkElementIndex(index: Int, size: Int) {
-        if (index !in 0 until size) throw IndexOutOfBoundsException("index=$index, size=$size")
-    }
-
     private fun Reader.optionalId(): Int? = int().also { require(it >= -1) { "Invalid graph.types reference" } }.takeIf { it >= 0 }
 
-    private class Reader(val bytes: ByteBuffer, var strings: DeclaredTypeStringPool? = null) {
+    private class Reader(val bytes: ByteBuffer, var strings: DeclaredTypeTexts? = null) {
         fun int(): Int {
             require(bytes.remaining() >= Int.SIZE_BYTES) { "Truncated graph.types" }
             return bytes.int
         }
-        fun count(): Int = rowCount(Int.SIZE_BYTES)
         fun rowCount(minimumBytes: Int): Int = int().also {
             require(it >= 0 && it <= bytes.remaining() / minimumBytes) { "Invalid graph.types count" }
         }
-        fun ids(): List<Int> = List(count()) { int() }
+        fun ids(): List<Int> = List(rowCount(Int.SIZE_BYTES)) { int() }
         fun text(): String = strings?.text(int()) ?: readDeclaredTypeText(bytes)
         private fun skipText() {
             val pool = strings
-            if (pool == null) text() else pool.offset(int())
+            if (pool == null) text() else pool.validateId(int())
         }
         fun key(): MemberTypeKey = MemberTypeKey(text(), text(), text())
-        fun parameters(): List<TypeParameter> = List(count()) { TypeParameter(text(), text(), ids()) }
+        fun parameters(): List<TypeParameter> = List(rowCount(Int.SIZE_BYTES)) { TypeParameter(text(), text(), ids()) }
         fun type() = DeclaredType(text(), text(), text(), optionalId(), optionalId(), text(), ids())
         fun method() = MethodTypes(ids(), int(), parameters())
         fun classTypes() = ClassTypes(parameters(), optionalId(), ids())
@@ -355,7 +397,7 @@ internal object DeclaredTypeStore {
             val id = int()
             require(id == -1 || id in 0 until typeCount) { "Invalid graph.types reference" }
         }
-        private fun skipIds(typeCount: Int) { repeat(count()) { reference(typeCount) } }
+        private fun skipIds(typeCount: Int) { repeat(rowCount(Int.SIZE_BYTES)) { reference(typeCount) } }
         private fun skipParameters(typeCount: Int) {
             repeat(rowCount(PARAMETER_MIN_BYTES)) { skipText(); skipText(); skipIds(typeCount) }
         }
@@ -370,6 +412,12 @@ internal object DeclaredTypeStore {
         fun skipClass(typeCount: Int) {
             skipParameters(typeCount); optionalReference(typeCount); skipIds(typeCount)
         }
+
+        private fun <K> sameKey(key: (Reader) -> K, first: Int, firstEnd: Int, second: Int, secondEnd: Int): Boolean =
+            if (strings is SharedDeclaredTypeTexts) {
+                key(Reader(bytes.duplicate().apply { position(first) }, strings)) ==
+                    key(Reader(bytes.duplicate().apply { position(second) }, strings))
+            } else sameBytes(bytes, first, firstEnd, second, secondEnd)
 
         fun <K : Any, V : Any> rows(
             minimumBytes: Int,
@@ -398,7 +446,7 @@ internal object DeclaredTypeStore {
                 while (slots[slot] != 0) {
                     val previous = slots[slot] - 1
                     val duplicate = hashes[previous] == hash &&
-                        sameBytes(bytes, offsets[previous], valuesAt[previous], offsets[row], valuesAt[row])
+                        sameKey(key, offsets[previous], valuesAt[previous], offsets[row], valuesAt[row])
                     require(!duplicate) {
                         "Duplicate $name in graph.types"
                     }
@@ -409,4 +457,8 @@ internal object DeclaredTypeStore {
             return MappedRows(bytes, offsets, valuesAt, hashes, slots, key, value, strings, skipValue)
         }
     }
+}
+
+private fun checkElementIndex(index: Int, size: Int) {
+    if (index !in 0 until size) throw IndexOutOfBoundsException("index=$index, size=$size")
 }

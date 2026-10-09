@@ -910,7 +910,8 @@ fn assert_complete_declared_graph_equivalence(expected: &Graph, actual: &Graph) 
 fn java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries() {
     let (Some(v1_dir), Some(v2_dir)) = (
         std::env::var_os("GRAPHITE_TYPES_V1_FIXTURE"),
-        std::env::var_os("GRAPHITE_TYPES_FIXTURE"),
+        std::env::var_os("GRAPHITE_TYPES_V2_FIXTURE")
+            .or_else(|| std::env::var_os("GRAPHITE_TYPES_FIXTURE")),
     ) else {
         eprintln!("both GRAPHITE_TYPES_V1_FIXTURE and GRAPHITE_TYPES_FIXTURE required for wire interoperability");
         return;
@@ -1146,4 +1147,113 @@ fn scalar_properties_preserve_declared_and_non_declared_node_contracts() {
             }
         }
     }
+}
+
+#[test]
+fn java_all_three_wire_formats_preserve_full_properties_and_shared_string_queries() {
+    let variables = [
+        "GRAPHITE_TYPES_V1_FIXTURE",
+        "GRAPHITE_TYPES_V2_FIXTURE",
+        "GRAPHITE_TYPES_FIXTURE",
+    ];
+    let paths = variables
+        .iter()
+        .map(std::env::var_os)
+        .collect::<Option<Vec<_>>>();
+    let Some(paths) = paths else {
+        assert!(
+            std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+            "all three wire fixtures required"
+        );
+        eprintln!("all three GTY01/02/03 fixtures unset; skipping shared string interoperability");
+        return;
+    };
+    let temporary = std::env::temp_dir().join(format!(
+        "graphite-types-shared-props-{}",
+        std::process::id()
+    ));
+    std::fs::create_dir_all(&temporary).unwrap();
+    let expected = Arc::new(Graph::load(std::path::Path::new(&paths[0])).unwrap());
+    let mut sources = Vec::new();
+    for (i, path) in paths.iter().enumerate() {
+        let path = std::path::Path::new(path);
+        let source = graphite_storage::GraphSource::open(path).unwrap();
+        let raw = source.require("graph.types").unwrap();
+        assert_eq!(
+            i32::from_be_bytes(raw[..4].try_into().unwrap()),
+            0x47545901 + i as i32
+        );
+        for packed in [false, true] {
+            let packed_path = temporary.join(format!("v{}.graphite", i + 1));
+            let actual_path = if packed {
+                graphite_storage::container::pack(path, &packed_path).unwrap();
+                packed_path.as_path()
+            } else {
+                path
+            };
+            let graph = Arc::new(Graph::load(actual_path).unwrap());
+            assert_complete_declared_graph_equivalence(&expected, &graph);
+            assert_eq!(graph.strings().serialized_digest().is_some(), i == 2);
+            sources.push(Source {
+                id: Arc::from(format!(
+                    "v{}-{}",
+                    i + 1,
+                    if packed { "packed" } else { "directory" }
+                )),
+                graph,
+            });
+        }
+    }
+    let executor = Executor::new(sources, true);
+    let fields=executor.execute("MATCH (f:FieldNode) WHERE f.name = 'first' RETURN f.graphId AS source, f.generic_type AS declared, f.type_info AS info ORDER BY source",None).unwrap();
+    let source_ids = [
+        "v1-directory",
+        "v1-packed",
+        "v2-directory",
+        "v2-packed",
+        "v3-directory",
+        "v3-packed",
+    ];
+    assert_eq!(fields.rows.len(), 6);
+    for (row, expected_source) in fields.rows.iter().zip(source_ids) {
+        assert_eq!(row["source"].as_str(), Some(expected_source));
+        let Value::List(ids) = &row[crate::engine::INTERNAL_PROVENANCE_KEY] else {
+            panic!("source provenance required");
+        };
+        assert_eq!(ids.len(), 1);
+        assert_eq!(ids[0].as_str(), Some(expected_source));
+        assert_eq!(
+            row["declared"].as_str(),
+            Some("java.util.List<java.lang.String>")
+        );
+        let Value::Map(info) = &row["info"] else {
+            panic!("full type map required")
+        };
+        let Value::Map(expected_info) = &fields.rows[0]["info"] else {
+            panic!("full type map required")
+        };
+        assert_eq!(ordered_values(info), ordered_values(expected_info));
+    }
+    for query in [
+        "MATCH (n:ParameterNode) RETURN n.graphId AS source, n.generic_type AS declared, n.type_info AS info",
+        "MATCH (n:ReturnNode) RETURN n.graphId AS source, n.generic_type AS declared, n.type_info AS info",
+        "MATCH (m:Method) RETURN m.graphId AS source, m.generic_return_type AS result, m.generic_parameter_types AS parameters, m.type_parameters AS formals, m.return_type_info AS resultInfo, m.parameter_type_info AS parameterInfo",
+    ] {
+        let result=executor.execute(query,None).unwrap();
+        let mut groups=std::collections::BTreeMap::<String,Vec<String>>::new();
+        for mut row in result.rows {
+            let source=row.shift_remove("source").unwrap();
+            let Value::List(ids)=row.shift_remove(crate::engine::INTERNAL_PROVENANCE_KEY).unwrap() else { panic!("source provenance required"); };
+            assert_eq!(ids.len(),1);
+            assert_eq!(ids[0].as_str(),source.as_str());
+            groups.entry(source.as_str().unwrap().to_owned()).or_default().push(format!("{:?}",ordered_values(&row)));
+        }
+        assert_eq!(groups.keys().map(String::as_str).collect::<Vec<_>>(),source_ids, "{query}");
+        for rows in groups.values_mut() {rows.sort();}
+        let first=groups.values().next().unwrap();
+        assert!(!first.is_empty());
+        for rows in groups.values() {assert_eq!(rows,first,"{query}");}
+    }
+    drop(executor);
+    std::fs::remove_dir_all(temporary).unwrap();
 }

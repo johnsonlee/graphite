@@ -25,6 +25,7 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraph
@@ -637,6 +638,8 @@ object GraphStore {
             null
         }
 
+        val declaredTypes = graph.declaredTypes()
+
         // 2. Collect metadata
         val metadata = collectMetadata(graph)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
@@ -648,7 +651,8 @@ object GraphStore {
             ),
             allStrings
         )
-        val stringTable = StringTable.build(allStrings, dir)
+        DeclaredTypeStore.collectStrings(declaredTypes, allStrings)
+        val stringTable = StringTable.build(allStrings, dir, declaredTypes != DeclaredTypeTable.EMPTY)
         allStrings.clear()
 
         // 3. Build forward adjacency + labels + comparisons
@@ -705,7 +709,7 @@ object GraphStore {
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
-        DeclaredTypeStore.save(graph.declaredTypes(), dir)
+        DeclaredTypeStore.save(declaredTypes, dir, stringTable)
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
@@ -873,7 +877,7 @@ object GraphStore {
     private fun loadEager(dir: Path): Graph {
         val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
 
         val forward = forwardFuture.join()
@@ -914,7 +918,7 @@ object GraphStore {
             classOverview,
             PersistedResourceStore.load(dir),
             lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
-            DeclaredTypeStore.load(dir)
+            DeclaredTypeStore.load(dir, stringTable)
         )
     }
 
@@ -949,7 +953,7 @@ object GraphStore {
         val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
         val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
@@ -997,7 +1001,7 @@ object GraphStore {
             resourceAccessor = lazy { PersistedResourceStore.load(dir) },
             branchDefinitions = branchDefinitions,
             callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
-            declaredTypeTable = DeclaredTypeStore.load(dir)
+            declaredTypeTable = DeclaredTypeStore.load(dir, stringTable)
         )
         if (prepareCallSiteStringIndex) {
             try {

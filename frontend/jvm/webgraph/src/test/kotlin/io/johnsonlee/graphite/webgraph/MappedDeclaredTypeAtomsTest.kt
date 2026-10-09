@@ -134,7 +134,7 @@ class MappedDeclaredTypeAtomsTest {
             val table = DeclaredTypeTable(rows, emptyMap(), emptyMap(), emptyMap())
             for (version in 1..2) {
                 if (version == 1) DeclaredTypeWireFixture.write(directory, table, version)
-                else DeclaredTypeStore.save(table, directory)
+                else DeclaredTypeStore.saveLegacyV2(table, directory)
                 val restored = DeclaredTypeStore.load(directory).types
                 assertIs<DeclaredTypeAtoms>(restored)
                 block(restored)

@@ -73,29 +73,15 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private fun matchAtom(source: DeclaredTypeAtoms, position: Int, key: String, initial: Int): Int {
-        val textOffset = source.atomTextOffset(position)
-        val length = source.atomInt(textOffset)
+        val length = source.atomTextLength(position)
         var mask = if (length == 0) initial else matchText(key, initial)
         for ((index, fragment) in fragments.withIndex()) {
             val bit = 1 shl index
-            if (mask and bit == 0 && atomContains(source, textOffset + Int.SIZE_BYTES, length, fragment)) {
+            if (mask and bit == 0 && source.atomContains(position, fragment)) {
                 mask = mask or bit
             }
         }
         return mask
-    }
-
-    private fun atomContains(source: DeclaredTypeAtoms, position: Int, length: Int, fragment: String): Boolean {
-        for (start in 0..length - fragment.length) {
-            var matched = 0
-            while (matched < fragment.length &&
-                source.atomByte(position + start + matched).toInt() == fragment[matched].code
-            ) {
-                matched++
-            }
-            if (matched == fragment.length) return true
-        }
-        return false
     }
 
     private fun matchReference(id: Int): Int {

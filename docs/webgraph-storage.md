@@ -15,7 +15,7 @@ graph-dir/
 ├── graph.nodeoffsets  Mmap Node ID -> offset lookup
 ├── graph.typeindex    Mmap node type -> Node ID ranges lookup
 ├── graph.metadata     Methods, type hierarchy, enums, annotations, branch scopes
-├── graph.types        Optional deduplicated declared types + member bindings (own string dictionary)
+├── graph.types        Optional deduplicated declared types + member bindings (references graph.strings)
 ├── graph.classoverview Persisted explorer overview summary
 ├── graph.resources    Persisted text resources, including an explicit empty store
 ├── graph.callsite-string-index Optional CallSite CSR/trigram query index
@@ -113,7 +113,6 @@ text and bytes and does not reference `graph.strings` or store Node IDs.
 flowchart TB
     P["forward.properties<br/>authoritative declared-type binding"]
     T["graph.types<br/>type expressions + field/method/class bindings"]
-    TS["dictionary inside graph.types v2<br/>unique UTF-8 strings"]
     M["graph.metadata"]
     N["graph.nodedata"]
     D["graph.branchdefs<br/>branch-side/local definition triples"]
@@ -126,7 +125,8 @@ flowchart TB
     P -.->|"SHA-256 of complete type file"| T
     T -.->|"embedded SHA-256 of complete metadata file"| M
     T -->|"table-local type IDs: arguments, owner, component, bindings"| T
-    T -->|"table-local string IDs: names, scopes, kinds, member keys"| TS
+    T -->|"shared string IDs: names, scopes, kinds, member keys"| S
+    T -.->|"embedded SHA-256 of actual serialized string-table bytes"| S
     T ---|"full field/method key lookup"| N
     T ---|"full method key lookup"| M
     M -.->|"GRX trailer: branch payload digest"| D
@@ -142,19 +142,20 @@ flowchart TB
 ```
 
 A full member key is the declaring class, member name and **complete JVM descriptor**,
-including the return type for methods. The current writer emits `graph.types` v2,
-whose member keys and type text reference a dictionary inside that same file.
-It contains neither `graph.strings` IDs nor Node IDs. Its type references point
-only to its own deduplicated expression rows; its string references use a separate
-table-local ID space. Readers also accept v1, which stores text inline without
-the internal dictionary.
+including the return type for methods. The current writer emits `graph.types` v3,
+whose member keys and type text reference the shared `graph.strings` table.
+It contains no local string dictionary or Node IDs. Type references still point
+to its own deduplicated expression rows, in an ID space separate from string IDs.
+Readers also accept v2 with its file-local UTF-8 dictionary and v1 with inline text.
 Fields, parameters and returns resolve that binding using their erased declaration key.
 A formatted value such as `List<User>` is rendered on demand rather than stored as a string.
 
 The `graph.types` binding is authoritative in `forward.properties`: no binding means a
 legacy graph and any orphan type file is ignored; a binding with a missing or mismatched
 file is a load error. The embedded metadata digest prevents attaching the table to another
-metadata file. JVM loading validates the complete table and retains mapped rows/indexes;
+metadata file. Version 3 also binds the actual serialized bytes of the string table
+used for decoding; `graph.strings.identity` alone cannot satisfy this binding. JVM
+loading validates the complete table and retains mapped rows/indexes;
 Rust loading decodes the table into memory with graph-local shared strings. See [Declared JVM types](declared-types.md)
 for the complete wire format and query properties.
 
@@ -178,7 +179,7 @@ entry blocks; the diagram shows the file-level binding rather than those interna
 
 | File | Magic | Header |
 |------|-------|--------|
-| graph.types | `GTY` | `0x47545902` (independent version 2; readers also accept `0x47545901`) |
+| graph.types | `GTY` | `0x47545903` (independent version 3; readers also accept `0x47545901` and `0x47545902`) |
 | graph.metadata | `GRM` | `0x47524D03` (trailer `GRX` `0x47525801`, synthetic identities `GRS` `0x47525301`, ordinal binding `GRB` `0x47524202`, last) |
 | graph.nodedata | `GRN` | `0x47524E03` |
 | graph.nodeindex | `GRI` | `0x47524903` |
@@ -302,18 +303,16 @@ These save/load flows describe the JVM `GraphStore`; native loading builds CSR a
 eagerly and does not use the JVM backward-graph cache.
 
 ```
-BUILD                          SAVE                              LOAD
-SootUpAdapter                  GraphStore.save()                 GraphStore.load()
-  → DefaultGraph                 1. String collection              1. BVGraph.load       ┐
-                                 2. Metadata + StringTable         2. StringTable.load    ├ parallel
-                                 3. Forward adjacency + labels     3. Labels + comparisons mmap
-                                                                   4. Mapped node indexes + nodedata
-                                                                   5. Prepare/load backward on demand
-                                 4. BVGraph.store                  5. Read nodes + metadata
-                                 5. Labels + label prefix + comparisons write
-                                 6. Nodedata + node indexes write
-                                 7. Metadata + declared type table write
-                                 8. Class overview + resource store write
+BUILD                       SAVE                                              LOAD
+SootUpAdapter               GraphStore.save()                                 GraphStore.load()
+  → DefaultGraph            1. Node string collection                         1. BVGraph.load                  ┐
+                            2. Metadata + declaration strings + StringTable   2. StringTable.load (+ GTY03 SHA) ├ parallel
+                            3. Forward adjacency + labels                     3. Labels + comparisons mmap
+                            4. BVGraph.store                                  4. Mapped node indexes + nodedata
+                            5. Labels + label prefix + comparisons write      5. Prepare lazy backward loader
+                            6. Nodedata + node indexes write                  6. Read nodes + metadata
+                            7. Metadata + declared type table write           7. Validate bound graph.types
+                            8. Class overview + resource store write
 ```
 
 ### Save Flow
@@ -322,8 +321,8 @@ SootUpAdapter                  GraphStore.save()                 GraphStore.load
 graph TD
     A[Graph in memory] --> B[1. Stream nodes]
     B --> B1[Collect maxNodeId + nodeCount]
-    B --> B2[Collect unique strings]
-    B1 & B2 --> C[2. Collect metadata + build StringTable]
+    B --> B2[Collect unique node strings]
+    B1 & B2 --> C["2. Collect metadata + declaration strings; build StringTable"]
     C --> D["3. Build forward adjacency + labels"]
     D --> D1["Pass 1: Count outdegree per node"]
     D --> D2["Pass 2: Fill sorted targets + encode labels"]
@@ -331,7 +330,8 @@ graph TD
     E --> F[5. Write labels + label prefix + comparisons]
     F --> G["6. Write nodedata + nodeindex + mmap node indexes"]
     G --> H[7. Write metadata + trailer + synthetic identities + ordinal binding, branchdefs and ordinal sidecars]
-    H --> T[Write graph.types + forward.properties digest binding]
+    H --> T[Write or remove graph.types + forward.properties digest binding]
+    C -->|"serialized SHA for nonempty declarations"| T
     T --> I[8. Write class overview + resource store]
 ```
 
@@ -341,7 +341,7 @@ graph TD
 graph TD
     A[Graph directory] --> B[Parallel I/O]
     B --> B1["BVGraph.load(forward)"]
-    B --> B2[StringTable.load]
+    B --> B2["StringTable.load<br/>GTY03: capture complete serialized SHA"]
     B --> B3[Labels + comparisons mmap]
     B --> B4[Mmap node offset/type indexes]
     B1 --> C[Build cumulative outdegree]
@@ -355,6 +355,7 @@ graph TD
     E -->|Mapped| E2[mmap nodedata file]
     B2 --> F[Read metadata; branchdefs on first branch-scope access]
     F --> T[Read and validate graph.types when bound in forward.properties]
+    B2 -->|"string table; verified digest required for GTY03"| T
     C & D & B3 & B4 & E & F & T --> G[Construct Graph]
 ```
 

@@ -67,7 +67,8 @@ fn assert_fixture_csr(path: &Path) -> Graph {
 fn both_java_wire_versions_and_packed_sources_preserve_every_csr_edge_and_label() {
     let paths = [
         std::env::var_os("GRAPHITE_TYPES_V1_FIXTURE"),
-        std::env::var_os("GRAPHITE_TYPES_FIXTURE"),
+        std::env::var_os("GRAPHITE_TYPES_V2_FIXTURE")
+            .or_else(|| std::env::var_os("GRAPHITE_TYPES_FIXTURE")),
     ];
     if paths.iter().any(Option::is_none) {
         assert!(std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none());

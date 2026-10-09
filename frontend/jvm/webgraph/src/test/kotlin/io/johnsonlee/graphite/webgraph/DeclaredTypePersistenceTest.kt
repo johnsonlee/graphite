@@ -46,14 +46,14 @@ class DeclaredTypePersistenceTest {
     fun `table round trip preserves shared type IDs and legacy absence`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
         assertEquals(DeclaredTypeTable.EMPTY, DeclaredTypeStore.load(dir))
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val restored = DeclaredTypeStore.load(dir)
         assertEquals(table, restored)
         assertEquals(2, restored.types.size)
         assertEquals(setOf(1), restored.fields.values.toSet())
         assertEquals(1, restored.methods.values.single().returnType)
         assertEquals("java.util.List<java.lang.String>", restored.render(1))
-        DeclaredTypeStore.save(DeclaredTypeTable.EMPTY, dir)
+        DeclaredTypeStore.saveLegacyV2(DeclaredTypeTable.EMPTY, dir)
         assertFalse(Files.exists(dir.resolve(DeclaredTypeStore.FILE_NAME)))
     }
 
@@ -71,7 +71,7 @@ class DeclaredTypePersistenceTest {
                 name to ClassTypes(listOf(TypeParameter("T", "class:$name", listOf(index.mod(2)))), index.mod(2), listOf(0))
             }.toMap()
         )
-        DeclaredTypeStore.save(expected, dir)
+        DeclaredTypeStore.saveLegacyV2(expected, dir)
         val restored = DeclaredTypeStore.load(dir)
         assertEquals(expected, restored)
         assertEquals(restored, expected)
@@ -116,7 +116,7 @@ class DeclaredTypePersistenceTest {
             keys.mapIndexed { index, key -> key to MethodTypes(listOf(index.mod(2)), index.mod(2)) }.toMap(),
             names.mapIndexed { index, name -> name to ClassTypes(emptyList(), index.mod(2), emptyList()) }.toMap()
         )
-        DeclaredTypeStore.save(expected, dir)
+        DeclaredTypeStore.saveLegacyV2(expected, dir)
         val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val restored = DeclaredTypeStore.load(dir)
         assertEquals(expected, restored)
@@ -128,7 +128,7 @@ class DeclaredTypePersistenceTest {
         }
         for (name in names) assertEquals(expected.classes[name], restored.classes[name])
         assertEquals(keys, restored.fields.keys.toList())
-        DeclaredTypeStore.save(restored, dir)
+        DeclaredTypeStore.saveLegacyV2(restored, dir)
         assertContentEquals(original, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
     }
 
@@ -143,7 +143,7 @@ class DeclaredTypePersistenceTest {
             mapOf(key.copy(name = names[1]) to MethodTypes(emptyList(), 0)),
             mapOf(names[2] to ClassTypes(emptyList(), 0, emptyList()))
         )
-        DeclaredTypeStore.save(value, dir)
+        DeclaredTypeStore.saveLegacyV2(value, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         for (name in names) {
@@ -161,7 +161,7 @@ class DeclaredTypePersistenceTest {
     @Test
     fun `raw key lengths are validated before scanning bytes`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         val needle = "first".toByteArray(Charsets.UTF_8)
@@ -181,16 +181,16 @@ class DeclaredTypePersistenceTest {
     @Test
     fun `mapped table can be saved over its own file without changing IDs or bytes`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val mapped = DeclaredTypeStore.load(dir)
-        DeclaredTypeStore.save(mapped, dir)
+        DeclaredTypeStore.saveLegacyV2(mapped, dir)
         assertContentEquals(original, Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME)))
         assertEquals(table, DeclaredTypeStore.load(dir))
         assertEquals(table, mapped)
         inDirectory { other ->
             Files.copy(dir.resolve("graph.metadata"), other.resolve("graph.metadata"))
-            DeclaredTypeStore.save(mapped, other)
+            DeclaredTypeStore.saveLegacyV2(mapped, other)
             assertContentEquals(original, Files.readAllBytes(other.resolve(DeclaredTypeStore.FILE_NAME)))
             assertEquals(table, DeclaredTypeStore.load(other))
         }
@@ -208,7 +208,7 @@ class DeclaredTypePersistenceTest {
             base.copy(classes = listOf("Aa", "BB").associateWith { ClassTypes(emptyList(), null, emptyList()) }) to "class"
         )
         for ((value, section) in cases) {
-            DeclaredTypeStore.save(value, dir)
+            DeclaredTypeStore.saveLegacyV2(value, dir)
             val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
             val bytes = Files.readAllBytes(path)
             val typeStart = DeclaredTypeWireFixture.dictionaryEnd(bytes)
@@ -229,7 +229,7 @@ class DeclaredTypePersistenceTest {
     @Test
     fun `mapped tables reject malformed UTF8 shape and references during load`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         // First dictionary entry is the first type kind, after header/hash/count/length.
@@ -241,7 +241,7 @@ class DeclaredTypePersistenceTest {
         Files.write(path, invalidShape)
         rebind(dir)
         assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
-        DeclaredTypeStore.save(table.copy(methods = emptyMap()), dir)
+        DeclaredTypeStore.saveLegacyV2(table.copy(methods = emptyMap()), dir)
         val fieldTable = Files.readAllBytes(path)
         // Final field reference is followed by the empty method and class counts.
         ByteBuffer.wrap(fieldTable).putInt(fieldTable.size - 12, table.types.size)
@@ -275,11 +275,11 @@ class DeclaredTypePersistenceTest {
     fun `invalid references truncated payload and mismatched metadata are rejected`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "binding")
         assertFailsWith<IllegalArgumentException> {
-            DeclaredTypeStore.save(table.copy(fields = mapOf(fields.keys.first() to 99)), dir)
+            DeclaredTypeStore.saveLegacyV2(table.copy(fields = mapOf(fields.keys.first() to 99)), dir)
         }
         val cyclic = table.copy(types = listOf(DeclaredType("array", component = 0)), fields = emptyMap(), methods = emptyMap())
-        assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.save(cyclic, dir) }
-        DeclaredTypeStore.save(table, dir)
+        assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.saveLegacyV2(cyclic, dir) }
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         Files.write(path, valid.copyOf(valid.size - 1))
@@ -299,11 +299,11 @@ class DeclaredTypePersistenceTest {
     @Test
     fun `bound tables reject unsupported versions trailing bytes and invalid lengths`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "metadata")
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         val corruptions = listOf(
-            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545903) } to "Unsupported graph.types header/version",
+            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545904) } to "Unsupported graph.types header/version",
             valid.copyOf(valid.size + 1) to "Trailing bytes in graph.types",
             valid.copyOf().also { ByteBuffer.wrap(it).putInt(40, -1) } to "Invalid graph.types string length",
             valid.copyOf(35) to "Invalid graph.types length"
@@ -320,11 +320,11 @@ class DeclaredTypePersistenceTest {
     @Test
     fun `properties bind the actual generic table even when erased metadata is identical`() = inDirectory { dir ->
         Files.writeString(dir.resolve("graph.metadata"), "identical erased metadata")
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         val original = Files.readAllBytes(dir.resolve(DeclaredTypeStore.FILE_NAME))
         val properties = Files.readString(dir.resolve("forward.properties"))
         val changed = table.copy(types = listOf(DeclaredType("class", "java.lang.Integer"), table.types[1]))
-        DeclaredTypeStore.save(changed, dir)
+        DeclaredTypeStore.saveLegacyV2(changed, dir)
         assertEquals(changed, DeclaredTypeStore.load(dir))
         Files.write(dir.resolve(DeclaredTypeStore.FILE_NAME), original)
         assertFailsWith<IllegalArgumentException> { DeclaredTypeStore.load(dir) }
@@ -339,15 +339,15 @@ class DeclaredTypePersistenceTest {
         Files.writeString(dir.resolve("graph.metadata"), "metadata")
         val properties = "nodes=12\narcs=8\n"
         Files.writeString(dir.resolve("forward.properties"), properties)
-        DeclaredTypeStore.save(table, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
         assertTrue(Files.readString(dir.resolve("forward.properties")).startsWith(properties))
         // An older BVGraph writer replaces forward.properties without the new binding.
         Files.writeString(dir.resolve("forward.properties"), properties)
         assertEquals(DeclaredTypeTable.EMPTY, DeclaredTypeStore.load(dir))
         Files.writeString(dir.resolve(DeclaredTypeStore.FILE_NAME), "orphan is ignored even if damaged")
         assertEquals(DeclaredTypeTable.EMPTY, DeclaredTypeStore.load(dir))
-        DeclaredTypeStore.save(table, dir)
-        DeclaredTypeStore.save(DeclaredTypeTable.EMPTY, dir)
+        DeclaredTypeStore.saveLegacyV2(table, dir)
+        DeclaredTypeStore.saveLegacyV2(DeclaredTypeTable.EMPTY, dir)
         assertEquals(properties, Files.readString(dir.resolve("forward.properties")))
         assertFalse(Files.exists(dir.resolve(DeclaredTypeStore.FILE_NAME)))
     }
@@ -398,7 +398,15 @@ class DeclaredTypePersistenceTest {
                 }
             }
             DeclaredTypeWireFixture.write(legacy, types, 1)
-            for (fixture in listOf(output, legacy)) for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>(
+            val version2 = System.getenv("GRAPHITE_TYPES_V2_FIXTURE")?.let(Path::of) ?: dir.resolve("version2")
+            Files.createDirectories(version2)
+            Files.list(output).use { files ->
+                files.filter(Files::isRegularFile).forEach { path ->
+                    Files.copy(path, version2.resolve(path.fileName), StandardCopyOption.REPLACE_EXISTING)
+                }
+            }
+            DeclaredTypeWireFixture.write(version2, types, 2)
+            for (fixture in listOf(output, legacy, version2)) for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>(
                 { GraphStore.load(fixture) }, { GraphStore.loadMapped(fixture) }
             )) {
                 val restored = load()
@@ -417,6 +425,15 @@ class DeclaredTypePersistenceTest {
                         "MATCH (f:FieldNode) WHERE f.name = 'complex' RETURN f.generic_type"
                     ).rows.single()
                     assertEquals("java.util.Map<java.lang.String, java.util.List<? super java.lang.Number[]>>", field["f.generic_type"])
+                    val stringFields = executor.execute(
+                        "MATCH (f:FieldNode) WHERE f.generic_type CONTAINS 'String' RETURN f.name LIMIT 20"
+                    ).rows.map { it["f.name"] }.toSet()
+                    assertEquals(setOf("first", "second", "complex"), stringFields)
+                    val anyFields = executor.execute(
+                        "MATCH (f:FieldNode) WHERE ANY(k IN keys(f) WHERE toString(f[k]) CONTAINS 'java.lang.String') " +
+                            "RETURN f.name LIMIT 20"
+                    ).rows.map { it["f.name"] }.toSet()
+                    assertEquals(stringFields, anyFields)
                     val matrix = executor.execute(
                         "MATCH (f:FieldNode) WHERE f.name = 'matrix' RETURN f.type, f.generic_type"
                     ).rows.single()

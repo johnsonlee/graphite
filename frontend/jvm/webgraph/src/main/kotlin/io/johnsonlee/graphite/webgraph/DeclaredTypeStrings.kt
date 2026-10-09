@@ -8,6 +8,27 @@ import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 
 /** Save-local dictionary. First occurrence determines the ID; no process-wide string interning. */
+internal interface DeclaredTypeTexts {
+    fun text(id: Int): String
+    fun hash(id: Int): Int
+    fun validateId(id: Int)
+}
+
+/** Shared IDs retain no decoded declaration strings and validate every referenced UTF-16 value. */
+internal class SharedDeclaredTypeTexts(private val strings: StringTable) : DeclaredTypeTexts {
+    private val checked = java.util.BitSet()
+    override fun validateId(id: Int) {
+        require(id in 0 until strings.size()) { "Invalid graph.types string ID" }
+        if (!checked[id]) {
+            Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
+                .encode(CharBuffer.wrap(strings.get(id)))
+            checked.set(id)
+        }
+    }
+    override fun text(id: Int): String { validateId(id); return strings.get(id) }
+    override fun hash(id: Int): Int = text(id).hashCode()
+}
+
 internal class DeclaredTypeStringIds(table: DeclaredTypeTable) {
     private val ids = LinkedHashMap<String, Int>()
 
@@ -23,6 +44,8 @@ internal class DeclaredTypeStringIds(table: DeclaredTypeTable) {
     }
 
     operator fun get(value: String): Int = ids.getValue(value)
+
+    fun collect(target: MutableSet<String>) { target.addAll(ids.keys) }
 
     fun write(output: DataOutputStream) {
         output.writeInt(ids.size)
@@ -40,15 +63,17 @@ internal class DeclaredTypeStringPool private constructor(
     private val bytes: ByteBuffer,
     private val offsets: IntArray,
     private val hashes: IntArray
-) {
+) : DeclaredTypeTexts {
     fun offset(id: Int): Int {
         require(id in offsets.indices) { "Invalid graph.types string ID" }
         return offsets[id]
     }
 
-    fun text(id: Int): String = readDeclaredTypeText(bytes.duplicate().apply { position(offset(id)) })
+    override fun validateId(id: Int) { offset(id) }
 
-    fun hash(id: Int): Int { offset(id); return hashes[id] }
+    override fun text(id: Int): String = readDeclaredTypeText(bytes.duplicate().apply { position(offset(id)) })
+
+    override fun hash(id: Int): Int { offset(id); return hashes[id] }
 
     companion object {
         private const val HASH_SPREAD_SHIFT = 16

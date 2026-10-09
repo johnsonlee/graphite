@@ -625,3 +625,6 @@ fn section_footprint_multiplication_is_checked() {
         "section byte length overflow"
     );
 }
+
+#[path = "types_shared_tests.rs"]
+mod shared_tests;

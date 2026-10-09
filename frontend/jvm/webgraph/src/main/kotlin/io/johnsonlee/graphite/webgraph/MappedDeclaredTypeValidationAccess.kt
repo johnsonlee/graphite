@@ -8,21 +8,11 @@ internal class MappedDeclaredTypeValidationAccess(
     private val atoms: DeclaredTypeAtoms,
     override val size: Int
 ) : DeclaredTypeValidationAccess {
-    override fun text(id: Int, field: DeclaredTypeTextField): String {
-        val offset = textOffset(id, field)
-        return ByteArray(atoms.atomInt(offset)) { atoms.atomByte(offset + Int.SIZE_BYTES + it) }.toString(Charsets.UTF_8)
-    }
-
+    override fun text(id: Int, field: DeclaredTypeTextField): String = atoms.atomText(fieldOffset(id, field))
     override fun textIsEmpty(id: Int, field: DeclaredTypeTextField): Boolean = textUtf8Length(id, field) == 0
-
-    override fun textEquals(id: Int, field: DeclaredTypeTextField, expected: String): Boolean {
-        if (expected.any { it.code > ASCII_MAX }) return text(id, field) == expected
-        val offset = textOffset(id, field)
-        return atoms.atomInt(offset) == expected.length &&
-            expected.indices.all { atoms.atomByte(offset + Int.SIZE_BYTES + it).toInt() == expected[it].code }
-    }
-
-    override fun textUtf8Length(id: Int, field: DeclaredTypeTextField): Int = atoms.atomInt(textOffset(id, field))
+    override fun textEquals(id: Int, field: DeclaredTypeTextField, expected: String): Boolean =
+        atoms.atomTextEquals(fieldOffset(id, field), expected)
+    override fun textUtf8Length(id: Int, field: DeclaredTypeTextField): Int = atoms.atomTextLength(fieldOffset(id, field))
     override fun owner(id: Int): Int? = atoms.atomInt(referencesOffset(id)).takeUnless { it == -1 }
     override fun component(id: Int): Int? = atoms.atomInt(referencesOffset(id) + Int.SIZE_BYTES).takeUnless { it == -1 }
     override fun argumentCount(id: Int): Int = atoms.atomInt(argumentsOffset(id))
@@ -31,8 +21,6 @@ internal class MappedDeclaredTypeValidationAccess(
         if (index < 0 || index >= atoms.atomInt(offset)) throw IndexOutOfBoundsException("Argument index $index")
         return atoms.atomInt(offset + Int.SIZE_BYTES * (index + 1))
     }
-
-    private fun textOffset(id: Int, field: DeclaredTypeTextField): Int = atoms.atomTextOffset(fieldOffset(id, field))
 
     private fun fieldOffset(id: Int, field: DeclaredTypeTextField): Int {
         var offset = atoms.typeOffset(id)
@@ -44,7 +32,4 @@ internal class MappedDeclaredTypeValidationAccess(
     private fun referencesOffset(id: Int): Int = atoms.nextTextField(fieldOffset(id, DeclaredTypeTextField.SCOPE))
     private fun argumentsOffset(id: Int): Int = atoms.nextTextField(fieldOffset(id, DeclaredTypeTextField.VARIANCE))
 
-    private companion object {
-        const val ASCII_MAX = 0x7f
-    }
 }
