@@ -937,3 +937,38 @@ These tests use tiny classpath/JAR/XML fixtures with mocked execution. The new
 Groovy init script and complete actual-writer stage have not yet run in Gradle;
 they are not represented as production test success by this source integration.
 The separate615-test Attempt187 result remains separate evidence.
+
+### Fresh64 core, topology and index execution stage (2026-10-10)
+
+The workflow now runs the retained complete comparison on each actual accepted
+writer / feature writer pair after dictionary export, bootstrap marker, source
+binding and actual formatter tests. `run_native_core_equivalence.py` compiles the
+existing topology helper once and executes64 Python core checks followed by64
+Java topology checks, in129 sequential owned phases. Every Java child uses4g
+heap and APC4. A=C skips only the duplicate pair. Failed commands stop the run;
+raw phase logs, cleanup records and completed per-graph results remain archived.
+
+The per-graph marker consumer checks its exact bootstrap authority without
+rehashing unrelated graph payloads. Full producer/fixture authority is still
+verified at pair binding, final verification and independent audit. Core matching,
+explicit migrations, topology, node/index coverage and declaration wire checks
+retain their existing predicates. No pressure threshold or oracle is relaxed.
+
+This stage cannot close the historical10,410 unsupported synthetic-local type
+inference cases. A rule projecting candidate array rank2..255 to legacy rank1
+does not independently distinguish a correct rank2 from an incorrect rank3, or
+find a missed rank1 correction. The source checks and21 formatter tests support
+the conversion model, not every local's actual input type. The new audit retains
+`completeSemanticEquivalence=false`, explicit missing authority and per-graph
+correction counts. The original partial producer packet continues to block
+complete performance acceptance. No completion adapter promoting this result to
+full semantic equivalence is integrated.
+
+Root independently ran20 runner,15 marker and224 retained package protocol tests;
+all passed. Control hashes, YAML and109 Bash blocks passed validation. A trailing
+space in the prepared runner was removed, control hashes refreshed and all20
+runner tests rerun. These are tiny protocol tests; the actual129-phase comparison
+has not yet executed. Frozen preparation is
+`/tmp/graphite-native-core-runner-prep-2/source-ready.json`, SHA-256
+`97e11473e8fc4f7d2a4b226858501a20c83f13bcd98d645ab3d4619515ef2170`;
+root logs are `/tmp/graphite-whole64-root-*-tests.log`.

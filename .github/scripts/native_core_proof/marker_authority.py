@@ -21,11 +21,12 @@ class Marker:
         record_path=Path(ref['path']);need(sha(record_path)==ref['sha256'],'marker export record changed')
         record=json.loads(record_path.read_text());root=record_path.parent
         if record.get('schema') == 'graphite.native-core-marker-export-audit.v1':
-            # New owned producer receipt shape is independently replayed; the
-            # retained historical path below remains byte-for-byte unchanged.
+            # Independently replay the exact bootstrap authority, without carrying
+            # unrelated graph pins into this graph receipt. The outer pair runner
+            # separately replays complete artifact audits. Historical path stays unchanged.
             import export_native_core_marker as exporter
-            checked=exporter.audit(root)
-            need(record==checked,'portable marker audit differs from raw evidence')
+            checked=exporter.field_evidence(root)
+            need(record['rawClass']==checked['rawClass'],'portable marker audit differs from raw evidence')
             self.pins={**checked['pins'],str(record_path):ref['sha256']}
             self.raw=Path(checked['rawClass']['path']).read_bytes()
             self.digest=hashlib.sha256(self.raw).hexdigest()

@@ -146,6 +146,23 @@ class MarkerExportTests(unittest.TestCase):
         value['pins'][str(path)]=m.common.sha(path);self.fixture.write(self.actual,value)
         with self.assertRaises(ValueError):self.plan()
 
+    def test_field_authority_replays_marker_without_rehashing_unrelated_graphs(self):
+        self.execute();self.fixture.write(self.output/'audit.json',m.audit(self.output))
+        with patch.object(m.artifacts,'audit',side_effect=AssertionError('full pair audit is outside per-graph marker scope')):
+            value=m.field_evidence(self.output)
+            authority=m.marker_authority.Marker(m.artifacts.ref(self.output/'audit.json'))
+        self.assertEqual('EXACT_BOOTSTRAP_MARKER_ONLY_NOT_FIXTURE_AUDIT',value['scope'])
+        self.assertEqual('java.io.Serializable',authority.parsed['owner'])
+        self.assertTrue(all(not Path(path).is_relative_to(self.fixture.out/'graphs') for path in authority.pins))
+        self.assertIn(str(self.fixture.out/'fixture-manifest.json'),authority.pins)
+        self.assertIn(self.plan()['modules']['path'],authority.pins)
+
+    def test_narrow_marker_still_rejects_changed_actual_producer_inputs(self):
+        self.execute();self.fixture.write(self.output/'audit.json',m.audit(self.output))
+        path=self.fixture.out/'inputs-before.json';value=m.common.read(path)
+        value[self.plan()['modules']['path']]='0'*64;self.fixture.write(path,value)
+        with self.assertRaisesRegex(ValueError,'authority input pin'):m.field_evidence(self.output)
+
     def test_output_in_measured_roots_rejected(self):
         for root in (self.fixture.checkout,self.fixture.out/'graphs',self.fixture.out/'runtime'):
             with self.assertRaisesRegex(ValueError,'outside actual source/runtime/graph'):

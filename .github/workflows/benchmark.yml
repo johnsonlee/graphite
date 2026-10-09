@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 6eec9034647b96fb547f53c5617b3f43f40520e7de6ef027854c4fefd6d9b2c6
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 42dd9fafd9a3bb45e0ea7267439e459f1eba4be16e348980fa33de4e0ce2c710
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 749473858d751cbe12975a1b706bbb84d8e80ccc76af2a940c6a30367b462f97
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -93,6 +93,9 @@ jobs:
 
     - name: Test native producer evidence assembly without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_assemble_native_pressure_producers.py'
+
+    - name: Test native complete core proof protocol
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_native_core_equivalence.py'
     - name: Test portable oracle and fresh response normalization without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_normalize_native_pressure_oracles.py'
 
@@ -2896,6 +2899,21 @@ jobs:
             'status': 'ARTIFACTS_ONLY_INDEPENDENT_PROOFS_REQUIRED', 'performanceAcceptance': False}, indent=2) + '\n')
         PYARMS
 
+    - name: Execute complete native core topology and index migration checks
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        for ARM in A B; do
+          if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+            continue
+          fi
+          python3 candidate/.github/scripts/run_native_core_equivalence.py \
+            --reference native-pressure-artifacts/C \
+            --actual "native-pressure-artifacts/${ARM}" \
+            --output "native-pressure-artifacts/${ARM}/core-equivalence"
+        done
+
     - name: Assemble audited native producer evidence
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -2925,6 +2943,7 @@ jobs:
           native-pressure-artifacts/*/core-marker/**
           native-pressure-artifacts/*/core-formatter-source/**
           native-pressure-artifacts/*/formatter-tests/**
+          native-pressure-artifacts/*/core-equivalence/**
           native-pressure-artifacts/*/runtime/**
           native-pressure-artifacts/*/graphs/**
           native-pressure-producers/**
