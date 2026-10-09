@@ -47,6 +47,9 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
         return loadingStats?.utf8Length(id) ?: strings.get(id).toByteArray(Charsets.UTF_8).size
     }
 
+    fun queryMatcher(fragments: List<String>): SharedDeclaredTypeTextMatcher =
+        SharedDeclaredTypeTextMatcher(fragments) { id, target -> strings.get(id, target) }
+
     /** Called after complete validation and before any mapped view is published to query threads. */
     fun finishLoading() { loadingStats = null }
 }

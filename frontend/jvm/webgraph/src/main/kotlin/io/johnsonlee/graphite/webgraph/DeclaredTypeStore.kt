@@ -269,6 +269,11 @@ internal object DeclaredTypeStore {
         override fun atomContains(position: Int, fragment: String): Boolean = if (strings is SharedDeclaredTypeTexts) {
             strings.text(bytes.getInt(position)).contains(fragment)
         } else super.atomContains(position, fragment)
+        override fun queryMatcher(fragments: List<String>): DeclaredTypeAtomMatcher? {
+            if (strings !is SharedDeclaredTypeTexts || fragments.size > DeclaredTypeAtomMatcher.MAX_FRAGMENTS) return null
+            val matcher = strings.queryMatcher(fragments)
+            return DeclaredTypeAtomMatcher { position -> matcher.match(bytes.getInt(position)) }
+        }
         override fun nextTextField(position: Int): Int =
             position + Int.SIZE_BYTES + if (strings == null) bytes.getInt(position) else 0
         override val size: Int get() = offsets.size
