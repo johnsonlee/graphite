@@ -80,8 +80,8 @@ class ExpressionEvaluator private constructor(
         is CypherExpr.StringOp -> evaluateStringOp(expr, bindings)
         is CypherExpr.ListOp -> evaluateListOp(expr, bindings)
         is CypherExpr.RegexMatch -> evaluateRegex(expr, bindings)
-        is CypherExpr.IsNull -> evaluate(expr.expression, bindings) == null
-        is CypherExpr.IsNotNull -> evaluate(expr.expression, bindings) != null
+        is CypherExpr.IsNull -> !isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
+        is CypherExpr.IsNotNull -> isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
         is CypherExpr.CaseExpr -> evaluateCase(expr, bindings)
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }

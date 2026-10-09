@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.graph.DeclaredTypeReferences
 import io.johnsonlee.graphite.graph.DeclaredTypeTextField
 import io.johnsonlee.graphite.graph.DeclaredTypeValidationAccess
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
+import io.johnsonlee.graphite.graph.ImmutableDeclaredTypeStorage
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
 import io.johnsonlee.graphite.graph.TypeParameter
@@ -161,7 +162,6 @@ internal object DeclaredTypeStore {
             val typeOffsets = IntArray(typeCount) {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
-            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings)
             val fields = reader.rows(FIELD_MIN_BYTES, "field", typeCount, Reader::key, ::keyHash, Reader::reference, Reader::int)
             val methods = reader.rows(
                 METHOD_MIN_BYTES, "method", typeCount, Reader::key, ::keyHash, Reader::skipMethod, Reader::method
@@ -170,6 +170,7 @@ internal object DeclaredTypeStore {
                 CLASS_MIN_BYTES, "class", typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
             )
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
+            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes)
             DeclaredTypeTable(types, fields, methods, classes).also {
                 it.validate()
                 (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
@@ -237,9 +238,12 @@ internal object DeclaredTypeStore {
     private class MappedTypes(
         private val bytes: ByteBuffer,
         private val offsets: IntArray,
-        private val strings: DeclaredTypeTexts?
+        private val strings: DeclaredTypeTexts?,
+        override val immutableFields: Map<MemberTypeKey, Int>,
+        override val immutableMethods: Map<MemberTypeKey, MethodTypes>,
+        override val immutableClasses: Map<String, ClassTypes>
     ) :
-        AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess {
+        AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess, ImmutableDeclaredTypeStorage {
         private val validationAccess = MappedDeclaredTypeValidationAccess(this, offsets.size)
         override fun text(id: Int, field: DeclaredTypeTextField): String = validationAccess.text(id, field)
         override fun textIsEmpty(id: Int, field: DeclaredTypeTextField): Boolean = validationAccess.textIsEmpty(id, field)
