@@ -14487,3 +14487,11 @@ Command: `python3 -B /private/tmp/graphite-native-runtime-overlay-prep-1/query/r
 Plan SHA-256 `6f959b845271852a23f350dc9ee4d4a93e29d8a4059197d0f8e4da5270b946ea`. All 39 per-case results, raw samples,
 CPU/RSS bounds, source/runtime/fixture identities and errors are retained; the
 table above selects the changed paths, not a favorable aggregate.
+
+Coverage follow-up: this 39-case catalog does not include a complete `RETURN n`,
+`RETURN m` or `properties(...)` projection. `shape-collect` collects a scalar
+property; the two feature cases inspect nullness, and dynamic searches do not
+establish complete projection coverage. Therefore these results cannot close
+the review concern about full-node or full-Method generic expansion cost.
+Representative requests that consume complete projections from multiple actual
+graphs, with independently derived full responses, remain required.
