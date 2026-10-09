@@ -14796,3 +14796,106 @@ candidate is `8e9b054268504c5ca8a9f35dbceab80822f47e746d3aed4634b73fdeddde14ca`.
 The adjacent `root-review.json` records the independent source/JAR review.
 Measurement remains queued behind the complete-projection comparison, with the
 separate full semantic proof still required.
+
+### Attempt193 follow-up — completed large full-projection comparison (2026-10-10)
+
+The corrected original-variable ORDER BY protocol completes on macOS ARM64.
+C=`4f2ccf33`, A=`8754ec4d` and B=`b2f9ebd0` run in the fixed CABBAC order,
+with64 resident real graphs, two actual graphs per request and four continuous
+workers. All original complete expected bodies remain unchanged. Each case has
+one oracle, two warmups and20 measured requests per cell; nearest-rank p50/p95
+use indexes9/18, without pooling or selecting a favorable direction. Latency
+includes complete body consumption and canonical response validation. Fresh
+server processes precede the oracle/warmups; OS cache state is uncontrolled.
+
+All1104 complete responses, including nested generic values and exact ordering,
+pass. The960 measured responses contain the complete1959 Field,1921 Parameter,
+2028 Return or1974 Method rows. All six raw audits pass, input and control pins
+remain identical and owned server groups are empty after cleanup. Root separately
+bound every audit to its raw result/plan and recomputed all48 case/cell percentiles.
+The driver exits0. This proves the requested response cohort, not full graph
+semantic equivalence or other operations.
+
+#### 192→193 forward
+
+| Case | p50 base→193 (ms) | Δp50 (ms) | p95 base→193 (ms) | Δp95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 41.208 → 39.189 | -2.019 | 46.702 → 43.712 | -2.990 |
+| field-properties | 30.932 → 29.272 | -1.660 | 37.355 → 35.303 | -2.052 |
+| parameter-full | 36.441 → 36.047 | -0.394 | 43.279 → 42.413 | -0.865 |
+| parameter-properties | 41.790 → 36.778 | -5.013 | 48.011 → 43.802 | -4.209 |
+| return-full | 34.491 → 31.445 | -3.046 | 40.996 → 36.194 | -4.802 |
+| return-properties | 29.377 → 28.157 | -1.220 | 56.863 → 55.570 | -1.293 |
+| method-full | 752.659 → 725.144 | -27.515 | 787.997 → 738.658 | -49.339 |
+| method-properties | 767.422 → 739.231 | -28.191 | 789.044 → 750.458 | -38.586 |
+
+#### 192→193 reverse
+
+| Case | p50 base→193 (ms) | Δp50 (ms) | p95 base→193 (ms) | Δp95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 39.479 → 39.927 | +0.448 | 41.003 → 46.757 | +5.754 |
+| field-properties | 29.598 → 29.377 | -0.221 | 35.779 → 34.198 | -1.581 |
+| parameter-full | 36.797 → 36.025 | -0.773 | 40.114 → 44.112 | +3.998 |
+| parameter-properties | 38.347 → 38.382 | +0.036 | 45.177 → 45.767 | +0.591 |
+| return-full | 32.018 → 33.135 | +1.116 | 37.492 → 40.964 | +3.472 |
+| return-properties | 27.984 → 28.942 | +0.958 | 62.544 → 36.140 | -26.404 |
+| method-full | 734.112 → 724.176 | -9.936 | 776.019 → 749.068 | -26.952 |
+| method-properties | 750.447 → 737.931 | -12.516 | 766.132 → 752.425 | -13.707 |
+
+#### 4f→193 forward
+
+| Case | p50 base→193 (ms) | Δp50 (ms) | p95 base→193 (ms) | Δp95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 22.469 → 39.189 | +16.720 | 25.666 → 43.712 | +18.046 |
+| field-properties | 20.920 → 29.272 | +8.352 | 25.253 → 35.303 | +10.050 |
+| parameter-full | 20.928 → 36.047 | +15.119 | 25.293 → 42.413 | +17.120 |
+| parameter-properties | 20.787 → 36.778 | +15.991 | 25.090 → 43.802 | +18.712 |
+| return-full | 20.505 → 31.445 | +10.941 | 27.499 → 36.194 | +8.695 |
+| return-properties | 19.672 → 28.157 | +8.485 | 20.573 → 55.570 | +34.997 |
+| method-full | 699.344 → 725.144 | +25.800 | 710.265 → 738.658 | +28.393 |
+| method-properties | 702.492 → 739.231 | +36.739 | 715.185 → 750.458 | +35.274 |
+
+#### 4f→193 reverse
+
+| Case | p50 base→193 (ms) | Δp50 (ms) | p95 base→193 (ms) | Δp95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 22.063 → 39.927 | +17.863 | 34.048 → 46.757 | +12.709 |
+| field-properties | 22.162 → 29.377 | +7.215 | 26.742 → 34.198 | +7.456 |
+| parameter-full | 22.096 → 36.025 | +13.929 | 26.436 → 44.112 | +17.676 |
+| parameter-properties | 22.016 → 38.382 | +16.366 | 26.851 → 45.767 | +18.917 |
+| return-full | 21.467 → 33.135 | +11.667 | 31.201 → 40.964 | +9.763 |
+| return-properties | 21.165 → 28.942 | +7.777 | 31.402 → 36.140 | +4.737 |
+| method-full | 707.942 → 724.176 | +16.234 | 721.891 → 749.068 | +27.177 |
+| method-properties | 712.476 → 737.931 | +25.455 | 722.790 → 752.425 | +29.635 |
+
+#### Pressure-stage resources
+
+| Pair | Wall base→193 (ms) | CPU base→193 (s) | CPU bounds base /193 (s) | RSS bounds base /193 (bytes) |
+|---|---:|---:|---|---|
+| 192→193 forward | 8889.719 → 8494.313 | 30.570 → 29.450 | [30.520000000000003, 30.59] / [29.400000000000002, 29.47] | [6750027776, 6750027776] / [6751223808, 6751223808] |
+| 192→193 reverse | 8645.340 → 8534.682 | 30.060 → 29.670 | [30.000000000000004, 30.080000000000002] / [29.620000000000005, 29.69] | [6742360064, 6742360064] / [6754549760, 6754549760] |
+| 4f→193 forward | 7739.179 → 8494.313 | 28.870 → 29.450 | [28.830000000000002, 28.89] / [29.400000000000002, 29.47] | [6422380544, 6422380544] / [6751223808, 6751223808] |
+| 4f→193 reverse | 7913.885 → 8534.682 | 29.020 → 29.670 | [28.96, 29.04] / [29.620000000000005, 29.69] | [6425640960, 6425657344] / [6754549760, 6754549760] |
+
+Attempt193 improves Method p50/p95 in both parent-relative directions: full p50 −27.515/−9.936ms, p95 −49.339/−26.952ms; properties p50 −28.191/−12.516ms, p95 −38.586/−13.707ms. Parent-relative CPU falls1.12/0.39s. These measurements support a local benefit; other small mixed timing differences are not treated as selection evidence.
+
+Compared with accepted4f, all eight cases still have higher p50 and p95 in both directions. Conservative CPU ratios remain within5%. RSS remains approximately5.12% above C in both directions, around7.7MB beyond the5% threshold. The loading-time/CPU exception does not apply. Do not call this overall performance recovery.
+
+Only20 measured requests per case per cell and two fixed paired directions: no pooling, best-run selection or narrow uncertainty claim. Complete raw samples and failures are retained.
+
+
+**Decision: retain193 for the observed parent-relative Method and CPU benefit.**
+Do not prioritize the other few-millisecond mixed differences as optimization
+claims. Overall acceptance remains false: all eight case latencies are still
+above the accepted baseline, and both RSS comparisons exceed5%. Construction,
+zero-query loading, JVM queries and full graph semantic proof remain separate.
+
+Command: `python3 -B /tmp/graphite-large-projection-pressure-prep-2/run.py
+--execute-assigned-slot --output /tmp/graphite-large-projection-pressure-run-2`.
+The complete raw results and source/request pins remain in that output and frozen
+preparation. Independent root statistics are `root-independent-percentiles.json`,
+SHA-256 `f864a4ec097d4256b29dcf657b123554ee980767a712cddb1d35a52983c7b2de`.
+Automatic six-cell raw audit/report SHA-256 is
+`18fb2938119571574b7dae15f5fa618232fdb617f7f13ceef21fcafb58a551c4`.
+The first failed ordering-contract run remains intact; no failed sample was
+relabelled, discarded or included as a successful measurement.
