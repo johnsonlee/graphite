@@ -59,3 +59,38 @@ actual dictionary exports, fresh source-rule/formatter test authority, portable
 bootstrap-marker export receipts, the per-pair binder, owned all64 runner and
 completed producer-contract adapter. No full semantic or performance acceptance
 follows from packaging these sources. Preserve all raw failures when that work runs.
+
+
+## Fresh dictionaries and current declaration tables
+
+`export_native_core_strings.py` independently rechecks an actual CI producer
+audit, compiles the unchanged dependency-only `ExportStrings.java` against that
+writer's pinned JAR, then runs64 owned export phases sequentially. All Java work
+uses4g/APC4 and runs outside construction timing and source/runtime/graph roots.
+The independent raw audit checks every exact command, terminal process cleanup,
+compiled helper closure, source/dependency/input hashes, complete GSO01 semantic
+content, output closure and full ordered64 index. It retains failure evidence
+and stops at the first failed phase. No server/query API is used for dictionary
+contents and no composite generic strings are stored in production by this tool.
+
+```
+python3 .github/scripts/export_native_core_strings.py   --artifact-audit native-pressure-artifacts/B/artifact-audit.json   --source-inputs native-pressure-artifacts/source-inputs.json   --output native-pressure-artifacts/B/core-string-exports
+```
+
+`--audit-only --output <existing-export-root>` rechecks existing raw evidence and
+writes a new `audit.json`; it refuses to overwrite an existing audit. Both the
+export record and independent audit keep completeSemanticEquivalence=false and
+performanceAcceptance=false. The index retains `graphite.string-exports.v1`.
+The export audit is a fresh CI format; historical local export receipts stay
+unchanged. A future producer binder must bind the complete fresh audit before
+passing any one of its rows to `declarations.load(graph_root, export_row)`.
+That function independently resolves GTY01–05 through actual serialized string,
+metadata and export hashes. Decoder validity is not source completeness or
+cross-arm equivalence. The frozen structural reader's policy and17 tests are
+retained with package imports only.
+
+Bootstrap-marker export and actual formatter/source-rule authority binding,
+per-pair source-model approval, complete core/topology execution and producers.v1
+completion are still separate pending work. No status in this stage replaces them.
+
+The decoder additionally requires forward.properties to authorize the actual graph.types SHA-256. Missing authority/orphan sidecars, malformed or duplicate property syntax, wrong digests and missing/symlinked bound tables fail closed. Uppercase digests follow production matching semantics; unsupported escaped property forms are conservatively rejected. Prefeature graphs without declarations remain an explicit caller path.

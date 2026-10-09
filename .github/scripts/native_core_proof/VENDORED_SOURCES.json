@@ -124,6 +124,22 @@
     "VerifyTopology.java": {
       "source": "/tmp/graphite-current64-core-execution-prep-14/VerifyTopology.java",
       "sha256": "4893df7971334d451885b2a7574e4d2ff0da2c6ec3ff2139f7922b3082c17cd8"
+    },
+    "legacy_schema_wire.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/legacy_schema_wire.py",
+      "sha256": "709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b"
+    },
+    "wire_gty05.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/wire_gty05.py",
+      "sha256": "26568384d34845488ae39eef18971993f8df7c9b407f4c23c7e7254dbbb7218d"
+    },
+    "wire_gty05_test.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/test_wire_gty05.py",
+      "sha256": "e69f3de4e97e0dbad11a3290185099c6c078afb4e4221fba35bc0ebc86ce5908"
+    },
+    "ExportStrings.java": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/ExportStrings.java",
+      "sha256": "2957d2ddbcd32dd595e4496dfa12a597ef5dd88a07118a4e89fea611c9358835"
     }
   }
 }
