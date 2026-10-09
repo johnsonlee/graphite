@@ -262,11 +262,17 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 verifyBranchDefinitions(output, queryGraph, mappedDefinitions, expectedPositions, nodes.toInt())
             assertEquals(expectedIdentities, queryGraph.syntheticIdentities(), "Mapped graph must restore synthetic identities")
 
-            val persistedBytes = Files.walk(output).use { entries ->
-                entries.filter { path ->
-                    Files.isRegularFile(path) && path.fileName.toString() != CALL_SITE_INDEX_FILE
-                }.mapToLong(Files::size).sum()
+            // Keep the individual file sizes in CI evidence before the temporary graph is deleted.
+            // A total alone cannot distinguish a changed type table from a changed graph or index.
+            val fileSizes = Files.walk(output).use { entries ->
+                entries.filter(Files::isRegularFile).toList().associate { path ->
+                    output.relativize(path).toString() to Files.size(path)
+                }.toSortedMap()
             }
+            fileSizes.forEach { (name, size) ->
+                println("LARGE_CORPUS_FILE\t${baseline.id}\t$name\t$size")
+            }
+            val persistedBytes = fileSizes.filterKeys { it != CALL_SITE_INDEX_FILE }.values.sum()
             return GateMeasurement(
                 nodes = nodes,
                 sourceEdges = edgeCounts.logical,
