@@ -31,7 +31,44 @@ internal object DeclaredTypeWireFixture {
         fun inline(value: String) { val bytes = value.toByteArray(); out.writeInt(bytes.size); out.write(bytes) }
         fun text(value: String) { if (version == 1) inline(value) else out.writeInt(ids.getValue(value)) }
         fun refs(values: List<Int>) { out.writeInt(values.size); values.forEach(out::writeInt) }
-        fun writeKey(value: MemberTypeKey) { text(value.owner); text(value.name); text(value.descriptor) }
+        private val descriptors = table.methods.keys.map { it.descriptor }.distinct()
+
+        private fun rawDescriptor(id: Int): String {
+            val row = table.types[id]
+            return when (row.kind) {
+                "class" -> { require(row.arguments.isEmpty() && row.owner == null); "L${row.name.replace('.', '/')};" }
+                "array" -> "[" + rawDescriptor(requireNotNull(row.component))
+                "primitive" -> mapOf("void" to "V", "boolean" to "Z", "byte" to "B", "char" to "C", "short" to "S",
+                    "int" to "I", "long" to "J", "float" to "F", "double" to "D").getValue(row.name)
+                else -> error("Not a fixture raw type")
+            }
+        }
+
+        private fun rawId(descriptor: String): Int = table.types.indices.first { id ->
+            runCatching { rawDescriptor(id) }.getOrNull() == descriptor
+        }
+
+        fun writeKey(value: MemberTypeKey, method: Boolean = false) {
+            text(value.owner); text(value.name)
+            if (version < 5) text(value.descriptor)
+            else out.writeInt(if (method) descriptors.indexOf(value.descriptor) else rawId(value.descriptor))
+        }
+
+        private fun signatures() {
+            out.writeInt(descriptors.size)
+            descriptors.forEach { descriptor ->
+                val parameters = ArrayList<Int>()
+                var at = 1
+                while (descriptor[at] != ')') {
+                    val start = at
+                    while (descriptor[at] == '[') at++
+                    at = if (descriptor[at] == 'L') descriptor.indexOf(';', at) + 1 else at + 1
+                    parameters.add(rawId(descriptor.substring(start, at)))
+                }
+                refs(parameters)
+                out.writeInt(rawId(descriptor.substring(at + 1)))
+            }
+        }
 
         fun scope(value: String): Pair<Int, Int> {
             if (value.isEmpty()) return 0 to -1
@@ -77,11 +114,12 @@ internal object DeclaredTypeWireFixture {
             if (version >= 3) out.write(MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(dir.resolve("graph.strings"))))
             out.writeInt(table.types.size)
             table.types.forEach(::type)
+            if (version >= 5) signatures()
             out.writeInt(table.fields.size)
             table.fields.forEach { (key, value) -> writeKey(key); out.writeInt(value) }
             out.writeInt(table.methods.size)
             table.methods.forEach { (key, value) ->
-                writeKey(key); refs(value.parameterTypes); out.writeInt(value.returnType); params(value.typeParameters)
+                writeKey(key, method = true); refs(value.parameterTypes); out.writeInt(value.returnType); params(value.typeParameters)
             }
             out.writeInt(table.classes.size)
             table.classes.forEach { (name, value) ->

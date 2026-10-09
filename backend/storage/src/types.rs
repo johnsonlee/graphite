@@ -6,9 +6,12 @@ use indexmap::IndexMap;
 use indexmap::IndexSet;
 use sha2::{Digest, Sha256};
 #[cfg(test)]
-use std::hash::{Hash, Hasher};
+use std::hash::Hash;
+use std::hash::{BuildHasher, Hasher};
 use std::sync::Arc;
 
+#[path = "types_raw.rs"]
+mod raw;
 #[path = "types_repr.rs"]
 mod repr;
 #[cfg(test)]
@@ -200,6 +203,58 @@ impl<'a> Reader<'a> {
             arguments: self.references(count)?,
         })
     }
+    fn signatures(
+        &mut self,
+        types: &[TypeExpr<usize, u64>],
+        validation: &mut raw::RawValidation,
+    ) -> Result<Vec<raw::RawSignature>, TypeError> {
+        let count = self.section_count(8)?;
+        let mut signatures: Vec<raw::RawSignature> = Vec::new();
+        signatures
+            .try_reserve_exact(count)
+            .map_err(|error| TypeError(format!("signature allocation: {error}")))?;
+        let mut index = hashbrown::HashTable::<usize>::new();
+        index
+            .try_reserve(count, |_| unreachable!("empty signature index"))
+            .map_err(|error| TypeError(format!("signature index allocation: {error}")))?;
+        let state = std::collections::hash_map::RandomState::new();
+        for _ in 0..count {
+            let signature = raw::RawSignature {
+                parameters: self.references(types.len())?,
+                returns: self.reference(types.len())?,
+            };
+            for &parameter in &signature.parameters {
+                validation.validate(types, self, parameter, false)?;
+            }
+            validation.validate(types, self, signature.returns, true)?;
+            raw::check_descriptor_length(raw::signature_descriptor_length(
+                types, self, &signature,
+            ))?;
+            let hash = |signature: &raw::RawSignature| {
+                let mut hash = state.build_hasher();
+                raw::hash_bytes(&mut hash, raw::signature_bytes(types, self, signature));
+                hash.finish()
+            };
+            let fingerprint = hash(&signature);
+            if index
+                .find(fingerprint, |&other| {
+                    raw::signature_bytes(types, self, &signature).eq(raw::signature_bytes(
+                        types,
+                        self,
+                        &signatures[other],
+                    ))
+                })
+                .is_some()
+            {
+                return Err(TypeError("duplicate erased signature".into()));
+            }
+            index.insert_unique(fingerprint, signatures.len(), |&other| {
+                hash(&signatures[other])
+            });
+            signatures.push(signature);
+        }
+        Ok(signatures)
+    }
     fn key(&mut self) -> Result<[usize; 3], TypeError> {
         Ok([self.string()?, self.string()?, self.string()?])
     }
@@ -299,7 +354,7 @@ impl DeclaredTypes {
             .map_err(|(path, error)| TypeError(format!("{path}: {error}")))?;
         Ok(bytes
             .as_ref()
-            .is_some_and(|bytes| matches!(bytes.get(..4), Some([0x47, 0x54, 0x59, 3 | 4]))))
+            .is_some_and(|bytes| matches!(bytes.get(..4), Some([0x47, 0x54, 0x59, 3..=5]))))
     }
 
     pub fn load(source: &GraphSource) -> Result<Option<Self>, TypeError> {
@@ -360,7 +415,7 @@ impl DeclaredTypes {
     ) -> Result<Self, TypeError> {
         let mut r = Reader::at(bytes, 0);
         let version = r.int()?;
-        if !matches!(version, 0x47545901..=0x47545904) {
+        if !matches!(version, 0x47545901..=0x47545905) {
             return Err(TypeError("unsupported header/version".into()));
         }
         if r.take(32)? != Sha256::digest(metadata).as_slice() {
@@ -369,12 +424,12 @@ impl DeclaredTypes {
         if version == 0x47545902 {
             r.dictionary()?;
         } else if version >= 0x47545903 {
-            r.structural = version == 0x47545904;
+            r.structural = version >= 0x47545904;
             let strings = strings.ok_or_else(|| {
-                TypeError("GTY03/GTY04 requires verified graph.strings context".into())
+                TypeError("GTY03–GTY05 requires verified graph.strings context".into())
             })?;
             let digest = strings.serialized_digest().ok_or_else(|| {
-                TypeError("GTY03/GTY04 requires verified serialized graph.strings digest".into())
+                TypeError("GTY03–GTY05 requires verified serialized graph.strings digest".into())
             })?;
             if r.take(32)? != digest {
                 return Err(TypeError("serialized graph.strings digest mismatch".into()));
@@ -384,6 +439,7 @@ impl DeclaredTypes {
         let count = r.section_count(if r.structural { 24 } else { 28 })?;
         let mut table = CompactTable::default();
         table.structural = r.structural;
+        table.descriptorless = version == 0x47545905;
         table
             .types
             .try_reserve_exact(count)
@@ -403,12 +459,28 @@ impl DeclaredTypes {
                 }
             });
         }
+        let mut raw_validation =
+            raw::RawValidation::new(if table.descriptorless { count } else { 0 });
+        if table.descriptorless {
+            table.signatures = r.signatures(&table.types, &mut raw_validation)?;
+        }
         let field_count = r.section_count(16)?;
         table
             .reserve_fields(field_count)
             .map_err(|error| TypeError(format!("field section allocation: {error}")))?;
         for _ in 0..field_count {
-            let key = r.key()?;
+            let key = if table.descriptorless {
+                let key = [r.string()?, r.string()?, r.reference(count)?];
+                raw_validation.validate(&table.types, &r, key[2], false)?;
+                raw::check_descriptor_length(raw::type_descriptor_length(
+                    &table.types,
+                    &r,
+                    key[2],
+                ))?;
+                key
+            } else {
+                r.key()?
+            };
             let value = r.reference(count)?;
             if !table.insert_field(&r, key, value) {
                 return Err(TypeError("duplicate field".into()));
@@ -419,7 +491,15 @@ impl DeclaredTypes {
             .reserve_methods(method_count)
             .map_err(|error| TypeError(format!("method section allocation: {error}")))?;
         for _ in 0..method_count {
-            let key = r.key()?;
+            let key = if table.descriptorless {
+                [
+                    r.string()?,
+                    r.string()?,
+                    r.reference(table.signatures.len())?,
+                ]
+            } else {
+                r.key()?
+            };
             let method = MethodTypes {
                 parameters: r.references(count)?,
                 returns: r.reference(count)?,

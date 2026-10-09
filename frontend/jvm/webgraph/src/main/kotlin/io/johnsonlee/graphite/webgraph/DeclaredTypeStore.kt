@@ -33,6 +33,10 @@ internal object DeclaredTypeStore {
     private const val HEADER = 0x47545902 // GTY, table-local string dictionary
     private const val SHARED_HEADER = 0x47545903 // GTY, graph.strings IDs
     private const val STRUCTURAL_HEADER = 0x47545904 // GTY, enum tags and declaration scope references
+    private const val ERASED_HEADER = 0x47545905 // GTY, erased type and signature references
+    private const val CURRENT_VERSION = 5
+    private const val STRUCTURAL_VERSION = 4
+    private const val SHARED_VERSION = 3
     private const val DIGEST_SIZE = 32
     private const val TYPE_MIN_BYTES = 28
     private const val FIELD_MIN_BYTES = 16
@@ -40,29 +44,36 @@ internal object DeclaredTypeStore {
     private const val CLASS_MIN_BYTES = 16
     private const val PARAMETER_MIN_BYTES = 12
     private const val HASH_MULTIPLIER = 31
+    private const val FIELD_SECTION = "field"
+    private const val METHOD_SECTION = "method"
+    private const val CLASS_SECTION = "class"
 
-    fun collectStrings(table: DeclaredTypeTable, target: MutableSet<String>) {
-        DeclaredTypeStringIds(table, StructuralDeclaredTypeScopes.forTable(table) != null).collect(target)
+    fun collectStrings(table: DeclaredTypeTable, target: MutableSet<String>, maximumVersion: Int = CURRENT_VERSION) {
+        val structural = maximumVersion >= STRUCTURAL_VERSION && StructuralDeclaredTypeScopes.forTable(table) != null
+        val erased = maximumVersion >= CURRENT_VERSION && structural && ErasedDeclaredTypePlan.forTable(table) != null
+        DeclaredTypeStringIds(table, structural, erased).collect(target)
     }
 
-    /** Advisory optimization only: load still independently requires the verified digest for GTY03/GTY04. */
+    /** Advisory optimization only: load still independently requires the verified digest for GTY03–GTY05. */
     fun needsSerializedStrings(dir: Path): Boolean {
         val path = dir.resolve(FILE_NAME)
         if (!Files.isRegularFile(path)) return false
         return java.io.DataInputStream(Files.newInputStream(path)).use {
-            if (Files.size(path) < Int.SIZE_BYTES) false else it.readInt() in SHARED_HEADER..STRUCTURAL_HEADER
+            if (Files.size(path) < Int.SIZE_BYTES) false else it.readInt() in SHARED_HEADER..ERASED_HEADER
         }
     }
 
     fun save(table: DeclaredTypeTable, dir: Path, strings: StringTable) = saveTable(table, dir, strings)
 
-    /** Explicit legacy wire fixture writer; GraphStore writes GTY04 when all scopes have declaration references. */
+    /** Explicit legacy wire fixture writer; GraphStore chooses GTY05 when scopes and erased member keys have structural references. */
     internal fun saveLegacyV2(table: DeclaredTypeTable, dir: Path) = saveTable(table, dir, null)
 
-    internal fun saveLegacyV3(table: DeclaredTypeTable, dir: Path, strings: StringTable) =
-        saveTable(table, dir, strings, legacyShared = true)
+    internal fun saveLegacyShared(table: DeclaredTypeTable, dir: Path, strings: StringTable, version: Int) {
+        require(version in SHARED_VERSION..STRUCTURAL_VERSION)
+        saveTable(table, dir, strings, maximumVersion = version)
+    }
 
-    private fun saveTable(table: DeclaredTypeTable, dir: Path, strings: StringTable?, legacyShared: Boolean = false) {
+    private fun saveTable(table: DeclaredTypeTable, dir: Path, strings: StringTable?, maximumVersion: Int = CURRENT_VERSION) {
         val path = dir.resolve(FILE_NAME)
         if (table == DeclaredTypeTable.EMPTY) {
             Files.deleteIfExists(path)
@@ -74,7 +85,7 @@ internal object DeclaredTypeStore {
         // serialization completes, so save(load(dir), dir) never truncates its input.
         val temporary = Files.createTempFile(dir, "graph.types-", ".tmp")
         try {
-            writeTable(table, dir, temporary, strings, legacyShared)
+            writeTable(table, dir, temporary, strings, maximumVersion)
             try {
                 Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             } catch (_: AtomicMoveNotSupportedException) {
@@ -86,8 +97,9 @@ internal object DeclaredTypeStore {
         }
     }
 
-    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, legacyShared: Boolean) {
-        val structural = if (shared == null || legacyShared) null else StructuralDeclaredTypeScopes.forTable(table)
+    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, maximumVersion: Int) {
+        val structural = if (shared == null || maximumVersion < STRUCTURAL_VERSION) null else StructuralDeclaredTypeScopes.forTable(table)
+        val erased = if (structural != null && maximumVersion >= CURRENT_VERSION) ErasedDeclaredTypePlan.forTable(table) else null
         val local = if (shared == null) DeclaredTypeStringIds(table) else null
         val strings: (String) -> Int = { value ->
             Charsets.UTF_8.newEncoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
@@ -97,7 +109,7 @@ internal object DeclaredTypeStore {
             }
         }
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(path))).use { out ->
-            out.writeInt(if (shared == null) HEADER else if (structural == null) SHARED_HEADER else STRUCTURAL_HEADER)
+            out.writeInt(wireHeader(shared != null, structural != null, erased != null))
             out.write(WireIo.digest(dir.resolve("graph.metadata")))
             if (shared == null) checkNotNull(local).write(out) else {
                 out.write(requireNotNull(shared.serializedDigest()) { "Unverified graph.strings bytes" })
@@ -106,14 +118,15 @@ internal object DeclaredTypeStore {
             for (type in table.types) {
                 out.type(type, strings, structural)
             }
+            erased?.write(out)
             out.writeInt(table.fields.size)
             for ((key, type) in table.fields) {
-                out.key(key, strings)
+                out.key(key, strings, erased?.field(key.descriptor))
                 out.writeInt(type)
             }
             out.writeInt(table.methods.size)
             for ((key, method) in table.methods) {
-                out.key(key, strings)
+                out.key(key, strings, erased?.method(key.descriptor))
                 out.ids(method.parameterTypes)
                 out.writeInt(method.returnType)
                 out.parameters(method.typeParameters, strings, structural)
@@ -126,6 +139,13 @@ internal object DeclaredTypeStore {
                 out.ids(type.interfaces)
             }
         }
+    }
+
+    private fun wireHeader(shared: Boolean, structural: Boolean, erased: Boolean): Int = when {
+        !shared -> HEADER
+        !structural -> SHARED_HEADER
+        !erased -> STRUCTURAL_HEADER
+        else -> ERASED_HEADER
     }
 
     private fun DataOutputStream.type(
@@ -162,7 +182,7 @@ internal object DeclaredTypeStore {
             }
             val reader = Reader(channel.map(FileChannel.MapMode.READ_ONLY, 0, channel.size()))
             val header = reader.int()
-            require(header in LEGACY_HEADER..STRUCTURAL_HEADER) { "Unsupported graph.types header/version" }
+            require(header in LEGACY_HEADER..ERASED_HEADER) { "Unsupported graph.types header/version" }
             val metadataHash = ByteArray(DIGEST_SIZE).also(reader.bytes::get)
             require(MessageDigest.isEqual(metadataHash, WireIo.digest(dir.resolve("graph.metadata")))) {
                 "graph.types does not match graph.metadata"
@@ -176,32 +196,45 @@ internal object DeclaredTypeStore {
                 require(MessageDigest.isEqual(expected, actual)) { "graph.types does not match graph.strings" }
                 reader.strings = SharedDeclaredTypeTexts(shared)
             }
-            if (header == STRUCTURAL_HEADER) reader.structural = StructuralDeclaredTypeContext()
+            if (header >= STRUCTURAL_HEADER) reader.structural = StructuralDeclaredTypeContext()
             val typeCount = reader.rowCount(if (reader.structural == null) TYPE_MIN_BYTES else StructuralDeclaredTypeWire.TYPE_MIN_BYTES)
             val typeOffsets = IntArray(typeCount) {
                 reader.bytes.position().also { reader.skipType(typeCount) }
             }
             // Member index text is not part of generic_type/type_info and must not dilute their negative summary.
             val textSummary = (reader.strings as? SharedDeclaredTypeTexts)?.finishTypeTextSummary()
-            val fields = reader.rows(FIELD_MIN_BYTES, "field", typeCount, Reader::key, ::keyHash, Reader::reference, Reader::int)
+            if (header == ERASED_HEADER) {
+                val raw = ErasedDeclaredTypes(typeCount) { id ->
+                    Reader(reader.bytes.duplicate().apply { position(typeOffsets[id]) }, reader.strings, reader.structural)
+                        .type(resolveScope = false)
+                }
+                checkNotNull(reader.structural).erased = ErasedDeclaredTypeContext.read(reader.bytes, raw)
+            }
+            val fields = reader.rows(FIELD_MIN_BYTES, FIELD_SECTION, typeCount, { it.key() },
+                { keyHash(it, method = false) }, Reader::reference, Reader::int)
             val methods = reader.rows(
-                METHOD_MIN_BYTES, "method", typeCount, Reader::key, ::keyHash, Reader::skipMethod, Reader::method
+                METHOD_MIN_BYTES, METHOD_SECTION, typeCount, { it.key(method = true) },
+                { keyHash(it, method = true) }, Reader::skipMethod, Reader::method
             )
             val classes = reader.rows(
-                CLASS_MIN_BYTES, "class", typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
+                CLASS_MIN_BYTES, CLASS_SECTION, typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
             )
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
+            reader.structural?.erased?.finishIndexing()
             reader.structural?.let { context ->
                 context.classCount = classes.size
                 context.methodCount = methods.size
                 context.classKey = { index -> (classes as MappedRows<String, ClassTypes>).keyAt(index) }
                 context.methodKey = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyAt(index) }
+                context.classKeyLength = { index -> (classes as MappedRows<String, ClassTypes>).keyLength(index) }
+                context.methodKeyLength = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyLength(index) }
             }
             val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes, textSummary,
                 reader.structural)
-            types.finishStructuralSummary(textSummary)
             DeclaredTypeTable(types, fields, methods, classes).also {
                 it.validate()
+                types.finishProjectionRows()
+                types.finishStructuralSummary(textSummary)
                 (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
             }
         }
@@ -235,10 +268,10 @@ internal object DeclaredTypeStore {
         values.forEach(::writeInt)
     }
 
-    private fun DataOutputStream.key(key: MemberTypeKey, strings: (String) -> Int) {
+    private fun DataOutputStream.key(key: MemberTypeKey, strings: (String) -> Int, erased: Int?) {
         text(key.owner, strings)
         text(key.name, strings)
-        text(key.descriptor, strings)
+        if (erased == null) text(key.descriptor, strings) else writeInt(erased)
     }
 
     private fun DataOutputStream.parameters(
@@ -266,17 +299,43 @@ internal object DeclaredTypeStore {
         private val structural: StructuralDeclaredTypeContext?
     ) :
         AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess, ImmutableDeclaredTypeStorage {
+        private var projectionRows: java.util.BitSet? = null
+        override fun isProjectionType(id: Int): Boolean = projectionRows?.get(id) ?: true
+
+        fun finishProjectionRows() {
+            if (structural?.erased == null) return
+            val visited = java.util.BitSet(size)
+            val pending = IntArray(size)
+            var queued = 0
+            fun add(id: Int) {
+                if (!visited[id]) { visited.set(id); pending[queued++] = id }
+            }
+            listOf(immutableFields, immutableMethods, immutableClasses).forEach { rows ->
+                (rows as? MappedRows<*, *>)?.projectionRoots(::add)
+            }
+            var consumed = 0
+            while (consumed < queued) {
+                val id = pending[consumed++]
+                owner(id)?.let(::add)
+                component(id)?.let(::add)
+                repeat(argumentCount(id)) { add(argument(id, it)) }
+            }
+            projectionRows = visited
+        }
+
         fun finishStructuralSummary(textSummary: DeclaredTypeTextSummary?) {
             if (structural == null) return
             val generated = DeclaredTypeTextSummary.Builder()
-            val fields = listOf(DeclaredTypeTextField.KIND, DeclaredTypeTextField.SCOPE, DeclaredTypeTextField.VARIANCE)
+            val fields = if (structural.erased != null) DeclaredTypeTextField.entries else
+                listOf(DeclaredTypeTextField.KIND, DeclaredTypeTextField.SCOPE, DeclaredTypeTextField.VARIANCE)
             for (id in indices) {
+                if (!isProjectionType(id)) continue
                 for (field in fields) {
                     generated.beginText()
                     text(id, field).forEach(generated::add)
                 }
             }
-            this.textSummary = checkNotNull(textSummary).union(generated.build())
+            this.textSummary = if (structural.erased == null) checkNotNull(textSummary).union(generated.build()) else generated.build()
         }
 
         private val validationAccess = MappedDeclaredTypeValidationAccess(this, offsets.size)
@@ -327,6 +386,8 @@ internal object DeclaredTypeStore {
             if (token % StructuralDeclaredTypeWire.TEXT_FIELDS == DeclaredTypeTextField.NAME.ordinal) {
                 val id = bytes.getInt(typeOffset(token / StructuralDeclaredTypeWire.TEXT_FIELDS) + StructuralDeclaredTypeWire.NAME_OFFSET)
                 if (id == -1) 0 else (strings as SharedDeclaredTypeTexts).utf8Length(id)
+            } else if (token % StructuralDeclaredTypeWire.TEXT_FIELDS == DeclaredTypeTextField.SCOPE.ordinal) {
+                checkNotNull(structural).scopeLength(bytes, typeOffset(token / StructuralDeclaredTypeWire.TEXT_FIELDS) + 2)
             } else structuralText(position).toByteArray(Charsets.UTF_8).size
         } else if (strings is SharedDeclaredTypeTexts) {
             strings.utf8Length(bytes.getInt(position))
@@ -384,7 +445,8 @@ internal object DeclaredTypeStore {
         private val value: (Reader) -> V,
         private val strings: DeclaredTypeTexts?,
         private val references: TypeReferenceCheck,
-        private val structural: StructuralDeclaredTypeContext?
+        private val structural: StructuralDeclaredTypeContext?,
+        private val kind: String
     ) : AbstractMap<K, V>(), DeclaredTypeReferences {
         private val offsets get() = index.offsets
         private val valuesAt get() = index.valuesAt
@@ -393,7 +455,24 @@ internal object DeclaredTypeStore {
         override val size: Int get() = offsets.size
 
         private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) }, strings, structural)
+        fun projectionRoots(consume: (Int) -> Unit) {
+            valuesAt.forEach { offset ->
+                DeclaredTypeProjectionRows.visit(bytes.duplicate().apply { position(offset) }, kind, consume)
+            }
+        }
+
         fun keyAt(index: Int): K = key(reader(offsets[index]))
+        fun keyLength(index: Int): Int {
+            val input = reader(offsets[index])
+            val texts = strings as SharedDeclaredTypeTexts
+            var length = texts.utf8Length(input.int()).toLong()
+            if (kind != CLASS_SECTION) {
+                length += texts.utf8Length(input.int())
+                length += structural?.erased?.utf8Length(input.int(), method = kind == METHOD_SECTION)
+                    ?: texts.utf8Length(input.int())
+            }
+            return length.coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
+        }
 
         override fun validateTypeReferences(typeCount: Int) {
             val input = reader(0)
@@ -410,12 +489,19 @@ internal object DeclaredTypeStore {
             return if (row < 0) null else value(reader(valuesAt[row]))
         }
 
+        private fun keyMatches(input: Reader, key: K): Boolean {
+            val erased = structural?.erased
+            return if (erased == null || key !is MemberTypeKey) this.key(input) == key else
+                input.text() == key.owner && input.text() == key.name &&
+                    erased.matches(input.int(), method = kind == METHOD_SECTION, key.descriptor)
+        }
+
         private fun findRow(key: K): Int {
             val hash = key.hashCode()
             var slot = WireIo.hashSlot(hash, slots.size)
             while (slots[slot] != 0) {
                 val row = slots[slot] - 1
-                if (hashes[row] == hash && this.key(reader(offsets[row])) == key) {
+                if (hashes[row] == hash && keyMatches(reader(offsets[row]), key)) {
                     return row
                 }
                 slot = (slot + 1) and (slots.size - 1)
@@ -452,10 +538,11 @@ internal object DeclaredTypeStore {
 
     private fun textHash(reader: Reader): Int = reader.strings?.hash(reader.int()) ?: hashDeclaredTypeText(reader.bytes)
 
-    private fun keyHash(reader: Reader): Int {
+    private fun keyHash(reader: Reader, method: Boolean): Int {
         val owner = textHash(reader)
         val name = textHash(reader)
-        return HASH_MULTIPLIER * (HASH_MULTIPLIER * owner + name) + textHash(reader)
+        val descriptor = reader.structural?.erased?.let { it.hash(reader.int(), method) } ?: textHash(reader)
+        return HASH_MULTIPLIER * (HASH_MULTIPLIER * owner + name) + descriptor
     }
 
     private fun Reader.optionalId(): Int? = int().also { require(it >= -1) { "Invalid graph.types reference" } }.takeIf { it >= 0 }
@@ -477,18 +564,25 @@ internal object DeclaredTypeStore {
             val pool = strings
             if (pool == null) text() else pool.validateId(int())
         }
-        fun key(): MemberTypeKey = MemberTypeKey(text(), text(), text())
+        fun key(method: Boolean = false): MemberTypeKey {
+            val owner = text()
+            val name = text()
+            val erased = structural?.erased
+            val descriptor = if (erased == null) text() else if (method) erased.method(int()) else erased.field(int())
+            return MemberTypeKey(owner, name, descriptor)
+        }
         fun parameters(): List<TypeParameter> = List(rowCount(Int.SIZE_BYTES)) {
             TypeParameter(text(), if (structural == null) text() else checkNotNull(structural).readFormal(bytes), ids())
         }
-        fun type(): DeclaredType {
+        fun type(resolveScope: Boolean = true): DeclaredType {
             if (structural == null) return DeclaredType(text(), text(), text(), optionalId(), optionalId(), text(), ids())
             val kind = DECLARED_TYPE_KINDS[bytes.readDeclaredTypeByte()]
             val variance = DECLARED_TYPE_VARIANCES[bytes.readDeclaredTypeByte()]
             val tag = bytes.readDeclaredTypeByte()
             bytes.readDeclaredTypeReserved()
             val name = int().let { if (it == -1) "" else checkNotNull(strings).text(it) }
-            val scope = checkNotNull(structural).render(tag, int())
+            val target = int()
+            val scope = if (resolveScope) checkNotNull(structural).render(tag, target) else if (tag == 0) "" else "unresolved"
             return DeclaredType(kind, name, scope, optionalId(), optionalId(), variance, ids())
         }
         fun method() = MethodTypes(ids(), int(), parameters())
@@ -536,8 +630,14 @@ internal object DeclaredTypeStore {
             skipParameters(typeCount); optionalReference(typeCount); skipIds(typeCount)
         }
 
-        private fun <K> sameKey(key: (Reader) -> K, first: Int, firstEnd: Int, second: Int, secondEnd: Int): Boolean =
-            if (strings is SharedDeclaredTypeTexts) {
+        private fun <K> sameKey(
+            key: (Reader) -> K, first: Int, firstEnd: Int, second: Int, secondEnd: Int, kind: String
+        ): Boolean = if (structural?.erased != null && kind != CLASS_SECTION) {
+                val a = Reader(bytes.duplicate().apply { position(first) }, strings, structural)
+                val b = Reader(bytes.duplicate().apply { position(second) }, strings, structural)
+                a.text() == b.text() && a.text() == b.text() &&
+                    checkNotNull(structural?.erased).equivalent(a.int(), b.int(), method = kind == METHOD_SECTION)
+            } else if (strings is SharedDeclaredTypeTexts) {
                 key(Reader(bytes.duplicate().apply { position(first) }, strings, structural)) ==
                     key(Reader(bytes.duplicate().apply { position(second) }, strings, structural))
             } else WireIo.sameBytes(bytes, first, firstEnd, second, secondEnd)
@@ -569,7 +669,7 @@ internal object DeclaredTypeStore {
                 while (slots[slot] != 0) {
                     val previous = slots[slot] - 1
                     val duplicate = hashes[previous] == hash &&
-                        sameKey(key, offsets[previous], valuesAt[previous], offsets[row], valuesAt[row])
+                        sameKey(key, offsets[previous], valuesAt[previous], offsets[row], valuesAt[row], name)
                     require(!duplicate) {
                         "Duplicate $name in graph.types"
                     }
@@ -577,7 +677,7 @@ internal object DeclaredTypeStore {
                 }
                 slots[slot] = row + 1
             }
-            return MappedRows(bytes, RowIndex(offsets, valuesAt, hashes, slots), key, value, strings, skipValue, structural)
+            return MappedRows(bytes, RowIndex(offsets, valuesAt, hashes, slots), key, value, strings, skipValue, structural, name)
         }
     }
 }

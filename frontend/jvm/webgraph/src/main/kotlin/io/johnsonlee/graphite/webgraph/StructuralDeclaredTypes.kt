@@ -23,7 +23,7 @@ internal object StructuralDeclaredTypeWire {
     const val TRUNCATED = "Truncated graph.types"
 }
 
-/** GTY04 keeps scopes as declaration references; rendered scopes are never retained by a loaded table. */
+/** GTY04 and later keep scopes as declaration references; rendered scopes are never retained by a loaded table. */
 internal class StructuralDeclaredTypeScopes private constructor(private val scopes: Map<String, Scope>) {
     private data class Scope(val tag: Int, val target: Int)
 
@@ -68,10 +68,13 @@ internal class StructuralDeclaredTypeScopes private constructor(private val scop
 
 /** Declaration key readers borrow mapped rows. No decoded key or concatenated scope cache is kept. */
 internal class StructuralDeclaredTypeContext {
+    var erased: ErasedDeclaredTypeContext? = null
     var classCount: Int = 0
     var methodCount: Int = 0
     var classKey: ((Int) -> String)? = null
     var methodKey: ((Int) -> MemberTypeKey)? = null
+    var classKeyLength: ((Int) -> Int)? = null
+    var methodKeyLength: ((Int) -> Int)? = null
 
     fun validate(tag: Int, target: Int) {
         require(tag in 0..StructuralDeclaredTypeWire.UNRESOLVED_METHOD_SCOPE && if (tag == 0) target == -1 else target >= 0) {
@@ -94,6 +97,20 @@ internal class StructuralDeclaredTypeContext {
             else -> methodScope(checkNotNull(methodKey)(target))
         }
         return if (tag >= StructuralDeclaredTypeWire.UNRESOLVED_CLASS_SCOPE) "unresolved:$scope" else scope
+    }
+
+    fun scopeLength(bytes: ByteBuffer, offset: Int): Int {
+        val tag = bytes.get(offset).toInt() and StructuralDeclaredTypeWire.BYTE_MASK
+        val target = bytes.getInt(offset + StructuralDeclaredTypeWire.TYPE_SCOPE_TARGET_OFFSET)
+        validate(tag, target)
+        if (tag == 0) return 0
+        val unresolved = if (tag >= StructuralDeclaredTypeWire.UNRESOLVED_CLASS_SCOPE) "unresolved:".length else 0
+        val size = when (tag) {
+            StructuralDeclaredTypeWire.CLASS_SCOPE, StructuralDeclaredTypeWire.UNRESOLVED_CLASS_SCOPE ->
+                "class:".length.toLong() + checkNotNull(classKeyLength)(target)
+            else -> "method:#".length.toLong() + checkNotNull(methodKeyLength)(target)
+        }
+        return (size + unresolved).coerceAtMost(Int.MAX_VALUE.toLong()).toInt()
     }
 
     fun readFormal(bytes: ByteBuffer): String {

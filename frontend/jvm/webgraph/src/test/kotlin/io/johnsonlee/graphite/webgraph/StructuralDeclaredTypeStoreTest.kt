@@ -204,8 +204,8 @@ class StructuralDeclaredTypeStoreTest {
 
     private fun save(dir: Path, value: DeclaredTypeTable) {
         val names = linkedSetOf<String>()
-        DeclaredTypeStore.collectStrings(value, names)
-        DeclaredTypeStore.save(value, dir, StringTable.build(names, dir, true))
+        DeclaredTypeStore.collectStrings(value, names, maximumVersion = 4)
+        DeclaredTypeStore.saveLegacyShared(value, dir, StringTable.build(names, dir, true), version = 4)
     }
 
     private fun directory(block: (Path) -> Unit) {

@@ -101,7 +101,7 @@ private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
     }
 }
 
-internal class DeclaredTypeStringIds(table: DeclaredTypeTable, structural: Boolean = false) {
+internal class DeclaredTypeStringIds(table: DeclaredTypeTable, structural: Boolean = false, erased: Boolean = false) {
     private val ids = LinkedHashMap<String, Int>()
 
     init {
@@ -111,9 +111,12 @@ internal class DeclaredTypeStringIds(table: DeclaredTypeTable, structural: Boole
             if (!structural) { add(it.kind); add(it.scope); add(it.variance) }
             if (!structural || it.name.isNotEmpty()) add(it.name)
         }
-        table.fields.keys.forEach { add(it.owner); add(it.name); add(it.descriptor) }
+        table.fields.keys.forEach { add(it.owner); add(it.name); if (!erased) add(it.descriptor) }
         table.methods.forEach { (key, method) ->
-            add(key.owner); add(key.name); add(key.descriptor); parameters(method.typeParameters)
+            add(key.owner)
+            add(key.name)
+            if (!erased) add(key.descriptor)
+            parameters(method.typeParameters)
         }
         table.classes.forEach { (name, type) -> add(name); parameters(type.typeParameters) }
     }

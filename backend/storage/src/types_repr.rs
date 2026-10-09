@@ -1,4 +1,5 @@
 //! Loaded declarations use graph-local text IDs; mutation explicitly owns text.
+use super::raw::{self, RawSignature};
 #[cfg(test)]
 use super::TypeError;
 use crate::strings::StringTable;
@@ -76,17 +77,122 @@ impl Texts for TextStore {
 struct StoredKey<const N: usize> {
     ids: [usize; N],
 }
+#[derive(Clone, Copy)]
+enum Descriptors<'a> {
+    Legacy,
+    Fields(&'a [TypeExpr<usize, u64>]),
+    Methods(&'a [TypeExpr<usize, u64>], &'a [RawSignature]),
+}
+#[derive(Clone, Copy)]
+struct KeyContext<'a> {
+    texts: &'a dyn Texts,
+    descriptors: Descriptors<'a>,
+}
+impl<'a> KeyContext<'a> {
+    fn legacy(texts: &'a dyn Texts) -> Self {
+        Self {
+            texts,
+            descriptors: Descriptors::Legacy,
+        }
+    }
+    fn text(self, position: usize, id: usize) -> Cow<'a, str> {
+        if position == 2 {
+            match self.descriptors {
+                Descriptors::Fields(types) => {
+                    return Cow::Owned(raw::type_descriptor(types, self.texts, id))
+                }
+                Descriptors::Methods(types, signatures) => {
+                    return Cow::Owned(raw::signature_descriptor(
+                        types,
+                        self.texts,
+                        &signatures[id],
+                    ))
+                }
+                Descriptors::Legacy => {}
+            }
+        }
+        Cow::Borrowed(self.texts.text(id))
+    }
+    fn equals(self, position: usize, id: usize, value: &str) -> bool {
+        if position == 2 {
+            match self.descriptors {
+                Descriptors::Fields(types) => {
+                    return raw::type_bytes(types, self.texts, id).eq(value.bytes())
+                }
+                Descriptors::Methods(types, signatures) => {
+                    return raw::signature_bytes(types, self.texts, &signatures[id])
+                        .eq(value.bytes())
+                }
+                Descriptors::Legacy => {}
+            }
+        }
+        self.texts.text(id) == value
+    }
+    fn equal_keys<const N: usize>(self, first: [usize; N], second: [usize; N]) -> bool {
+        first
+            .into_iter()
+            .zip(second)
+            .enumerate()
+            .all(|(position, (a, b))| {
+                if a == b {
+                    return true;
+                }
+                if position == 2 {
+                    match self.descriptors {
+                        Descriptors::Fields(types) => {
+                            return raw::type_bytes(types, self.texts, a)
+                                .eq(raw::type_bytes(types, self.texts, b))
+                        }
+                        Descriptors::Methods(types, signatures) => {
+                            return raw::signature_bytes(types, self.texts, &signatures[a])
+                                .eq(raw::signature_bytes(types, self.texts, &signatures[b]))
+                        }
+                        Descriptors::Legacy => {}
+                    }
+                }
+                self.texts.text(a) == self.texts.text(b)
+            })
+    }
+    fn hash<const N: usize>(self, ids: [usize; N], state: &RandomState) -> u64 {
+        let mut hash = state.build_hasher();
+        N.hash(&mut hash);
+        for (position, id) in ids.into_iter().enumerate() {
+            if position == 2 {
+                match self.descriptors {
+                    Descriptors::Fields(types) => {
+                        raw::hash_bytes(&mut hash, raw::type_bytes(types, self.texts, id));
+                        continue;
+                    }
+                    Descriptors::Methods(types, signatures) => {
+                        raw::hash_bytes(
+                            &mut hash,
+                            raw::signature_bytes(types, self.texts, &signatures[id]),
+                        );
+                        continue;
+                    }
+                    Descriptors::Legacy => {}
+                }
+            }
+            raw::hash_text(&mut hash, self.texts.text(id));
+        }
+        hash.finish()
+    }
+    fn values<const N: usize>(self, ids: [usize; N]) -> [Cow<'a, str>; N] {
+        std::array::from_fn(|index| self.text(index, ids[index]))
+    }
+}
 struct Lookup<'a, const N: usize> {
     fingerprint: u64,
     values: [&'a str; N],
-    texts: &'a dyn Texts,
+    context: KeyContext<'a>,
 }
 impl<const N: usize> Equivalent<StoredKey<N>> for Lookup<'_, N> {
     fn equivalent(&self, key: &StoredKey<N>) -> bool {
         self.values
             .iter()
             .zip(key.ids)
-            .all(|(value, id)| *value == self.texts.text(id))
+            .enumerate()
+            .all(|(position, (value, id))| self.context.equals(position, id, value))
     }
 }
 
@@ -133,6 +239,13 @@ impl<const N: usize, V> MemberIndex<N, V> {
             })
             .map(|index| &self.entries[*index].1)
     }
+    fn contains_ids(&self, ids: [usize; N], fingerprint: u64, context: KeyContext<'_>) -> bool {
+        self.positions
+            .find(fingerprint, |index| {
+                context.equal_keys(ids, self.entries[*index].0.ids)
+            })
+            .is_some()
+    }
     fn contains_key(&self, key: &Lookup<'_, N>) -> bool {
         self.get(key).is_some()
     }
@@ -171,9 +284,11 @@ impl Equivalent<MemberKey> for BorrowedMemberKey<'_> {
 #[derive(Debug, Default)]
 pub(super) struct CompactTable {
     pub(super) texts: TextStore,
-    // GTY04 stores enum codes instead of string IDs and packs each scope as
+    // GTY04+ stores enum codes instead of string IDs and packs each scope as
     // (declaration row << 3) | scope tag. Legacy tables retain string IDs.
     pub(super) structural: bool,
+    pub(super) descriptorless: bool,
+    pub(super) signatures: Vec<RawSignature>,
     pub(super) types: Vec<TypeExpr<usize, u64>>,
     // Private keys: all inserts and lookups compare full actual text values.
     fields: MemberIndex<3, usize>,
@@ -232,9 +347,19 @@ impl CompactTable {
                 .methods
                 .get_index(row)
                 .expect("validated method scope row");
-            key.ids.iter().fold(prefix + "method:#".len(), |len, id| {
-                len.saturating_add(self.texts.text(*id).len())
-            })
+            let descriptor_length = if self.descriptorless {
+                raw::signature_descriptor_length(
+                    &self.types,
+                    &self.texts,
+                    &self.signatures[key.ids[2]],
+                )
+            } else {
+                self.texts.text(key.ids[2]).len()
+            };
+            (prefix + "method:#".len())
+                .saturating_add(self.texts.text(key.ids[0]).len())
+                .saturating_add(self.texts.text(key.ids[1]).len())
+                .saturating_add(descriptor_length)
         }
     }
     fn scope(&self, scope: u64) -> Cow<'_, str> {
@@ -262,7 +387,7 @@ impl CompactTable {
                 "{prefix}method:{}#{}{}",
                 self.texts.text(key.ids[0]),
                 self.texts.text(key.ids[1]),
-                self.texts.text(key.ids[2])
+                self.key_context(true).text(2, key.ids[2])
             ))
         }
     }
@@ -313,10 +438,9 @@ impl CompactTable {
         ids: [usize; N],
         value: V,
     ) -> bool {
-        let values = ids.map(|id| texts.text(id));
-        let fingerprint = state.hash_one(values);
+        let fingerprint = KeyContext::legacy(texts).hash(ids, state);
         Self::insert_fingerprinted(map, texts, ids, value, fingerprint, |key| {
-            state.hash_one(key.ids.map(|id| texts.text(id)))
+            KeyContext::legacy(texts).hash(key.ids, state)
         })
     }
     fn insert_fingerprinted<const N: usize, V>(
@@ -330,7 +454,7 @@ impl CompactTable {
         let lookup = Lookup {
             fingerprint,
             values: ids.map(|id| texts.text(id)),
-            texts,
+            context: KeyContext::legacy(texts),
         };
         if map.contains_key(&lookup) {
             return false;
@@ -344,7 +468,22 @@ impl CompactTable {
         ids: [usize; 3],
         value: usize,
     ) -> bool {
-        Self::insert(&mut self.fields, &self.fingerprints, texts, ids, value)
+        let context = KeyContext {
+            texts,
+            descriptors: if self.descriptorless {
+                Descriptors::Fields(&self.types)
+            } else {
+                Descriptors::Legacy
+            },
+        };
+        let fingerprint = context.hash(ids, &self.fingerprints);
+        if self.fields.contains_ids(ids, fingerprint, context) {
+            return false;
+        }
+        self.fields.insert_unique(ids, value, fingerprint, |key| {
+            context.hash(key.ids, &self.fingerprints)
+        });
+        true
     }
     pub(super) fn insert_method(
         &mut self,
@@ -352,14 +491,16 @@ impl CompactTable {
         ids: [usize; 3],
         value: MethodTypes<usize, u64>,
     ) -> bool {
-        let values = ids.map(|id| texts.text(id));
-        let fingerprint = self.fingerprints.hash_one(values);
-        let lookup = Lookup {
-            fingerprint,
-            values,
+        let context = KeyContext {
             texts,
+            descriptors: if self.descriptorless {
+                Descriptors::Methods(&self.types, &self.signatures)
+            } else {
+                Descriptors::Legacy
+            },
         };
-        if self.methods.contains_key(&lookup) {
+        let fingerprint = context.hash(ids, &self.fingerprints);
+        if self.methods.contains_ids(ids, fingerprint, context) {
             return false;
         }
         let parameter_start = self.method_parameters.len();
@@ -374,7 +515,7 @@ impl CompactTable {
                 type_parameters: formal_start..self.method_formals.len(),
             },
             fingerprint,
-            |key| self.fingerprints.hash_one(key.ids.map(|id| texts.text(id))),
+            |key| context.hash(key.ids, &self.fingerprints),
         );
         true
     }
@@ -390,11 +531,30 @@ impl CompactTable {
     ) -> bool {
         Self::insert(&mut self.classes, &self.fingerprints, texts, [id], value)
     }
-    fn lookup<'a, const N: usize>(&'a self, values: [&'a str; N]) -> Lookup<'a, N> {
+    fn lookup<'a, const N: usize>(&'a self, values: [&'a str; N], method: bool) -> Lookup<'a, N> {
         Lookup {
-            fingerprint: self.fingerprints.hash_one(values),
+            fingerprint: {
+                let mut hash = self.fingerprints.build_hasher();
+                N.hash(&mut hash);
+                for value in values {
+                    raw::hash_text(&mut hash, value);
+                }
+                hash.finish()
+            },
             values,
+            context: self.key_context(method),
+        }
+    }
+    fn key_context(&self, method: bool) -> KeyContext<'_> {
+        KeyContext {
             texts: &self.texts,
+            descriptors: if !self.descriptorless {
+                Descriptors::Legacy
+            } else if method {
+                Descriptors::Methods(&self.types, &self.signatures)
+            } else {
+                Descriptors::Fields(&self.types)
+            },
         }
     }
 }
@@ -587,7 +747,10 @@ impl DeclaredTypes {
     }
     pub fn field_type(&self, owner: &str, name: &str, descriptor: &str) -> Option<usize> {
         match &self.storage {
-            Storage::Compact(t) => t.fields.get(&t.lookup([owner, name, descriptor])).copied(),
+            Storage::Compact(t) => t
+                .fields
+                .get(&t.lookup([owner, name, descriptor], false))
+                .copied(),
             Storage::Owned(t) => t
                 .fields
                 .get(&BorrowedMemberKey(owner, name, descriptor))
@@ -602,7 +765,7 @@ impl DeclaredTypes {
     ) -> Option<MethodView<'_>> {
         match &self.storage {
             Storage::Compact(t) => {
-                let m = t.methods.get(&t.lookup([owner, name, descriptor]))?;
+                let m = t.methods.get(&t.lookup([owner, name, descriptor], true))?;
                 Some(MethodView {
                     parameters: &t.method_parameters[m.parameters.clone()],
                     returns: m.returns,
@@ -625,7 +788,7 @@ impl DeclaredTypes {
     fn class_types(&self, name: &str) -> Option<ClassView<'_>> {
         match &self.storage {
             Storage::Compact(t) => {
-                let c = t.classes.get(&t.lookup([name]))?;
+                let c = t.classes.get(&t.lookup([name], false))?;
                 Some(ClassView {
                     type_parameters: Formals::Compact(&c.type_parameters, self),
                     superclass: c.superclass,
@@ -642,24 +805,33 @@ impl DeclaredTypes {
             }
         }
     }
-    pub fn field_entries(&self) -> impl ExactSizeIterator<Item = ([&str; 3], usize)> {
+    pub fn field_entries(&self) -> impl ExactSizeIterator<Item = ([Cow<'_, str>; 3], usize)> {
         (0..self.field_count()).map(move |i| match &self.storage {
             Storage::Compact(t) => {
                 let (key, value) = t.fields.get_index(i).unwrap();
-                (key.ids.map(|id| t.texts.text(id)), *value)
+                (t.key_context(false).values(key.ids), *value)
             }
             Storage::Owned(t) => {
                 let (key, value) = t.fields.get_index(i).unwrap();
-                ([key.0.as_ref(), key.1.as_ref(), key.2.as_ref()], *value)
+                (
+                    [
+                        Cow::Borrowed(key.0.as_ref()),
+                        Cow::Borrowed(key.1.as_ref()),
+                        Cow::Borrowed(key.2.as_ref()),
+                    ],
+                    *value,
+                )
             }
         })
     }
-    pub fn method_entries(&self) -> impl ExactSizeIterator<Item = ([&str; 3], MethodView<'_>)> {
+    pub fn method_entries(
+        &self,
+    ) -> impl ExactSizeIterator<Item = ([Cow<'_, str>; 3], MethodView<'_>)> {
         (0..self.method_count()).map(move |i| match &self.storage {
             Storage::Compact(t) => {
                 let (key, v) = t.methods.get_index(i).unwrap();
                 (
-                    key.ids.map(|id| t.texts.text(id)),
+                    t.key_context(true).values(key.ids),
                     MethodView {
                         parameters: &t.method_parameters[v.parameters.clone()],
                         returns: v.returns,
@@ -673,7 +845,11 @@ impl DeclaredTypes {
             Storage::Owned(t) => {
                 let (key, v) = t.methods.get_index(i).unwrap();
                 (
-                    [key.0.as_ref(), key.1.as_ref(), key.2.as_ref()],
+                    [
+                        Cow::Borrowed(key.0.as_ref()),
+                        Cow::Borrowed(key.1.as_ref()),
+                        Cow::Borrowed(key.2.as_ref()),
+                    ],
                     MethodView {
                         parameters: &v.parameters,
                         returns: v.returns,
@@ -781,13 +957,13 @@ impl DeclaredTypes {
                 .collect(),
             fields: self
                 .field_entries()
-                .map(|(k, v)| ((text(k[0]), text(k[1]), text(k[2])), v))
+                .map(|(k, v)| ((text(&k[0]), text(&k[1]), text(&k[2])), v))
                 .collect(),
             methods: self
                 .method_entries()
                 .map(|(k, v)| {
                     (
-                        (text(k[0]), text(k[1]), text(k[2])),
+                        (text(&k[0]), text(&k[1]), text(&k[2])),
                         MethodTypes {
                             parameters: v.parameters.to_vec(),
                             returns: v.returns,
@@ -820,12 +996,12 @@ impl PartialEq for DeclaredTypes {
             && self.method_count() == other.method_count()
             && self.class_count() == other.class_count()
             && self.field_entries().all(|([owner, name, descriptor], id)| {
-                other.field_type(owner, name, descriptor) == Some(id)
+                other.field_type(&owner, &name, &descriptor) == Some(id)
             })
             && self
                 .method_entries()
                 .all(|([owner, name, descriptor], method)| {
-                    other.method_types(owner, name, descriptor) == Some(method)
+                    other.method_types(&owner, &name, &descriptor) == Some(method)
                 })
             && self
                 .class_entries()
@@ -950,12 +1126,12 @@ mod compact_tests {
         assert_eq!(
             declarations
                 .method_entries()
-                .map(|(key, method)| (key[1], method.parameters.to_vec()))
+                .map(|([_, name, _], method)| (name, method.parameters.to_vec()))
                 .collect::<Vec<_>>(),
             vec![
-                ("empty", vec![]),
-                ("generic", vec![2]),
-                ("pair", vec![1, 2])
+                ("empty".into(), vec![]),
+                ("generic".into(), vec![2]),
+                ("pair".into(), vec![1, 2])
             ]
         );
         let mut owned = declarations.to_mutable();
@@ -1071,7 +1247,7 @@ mod compact_tests {
             let key = Lookup {
                 fingerprint: 7,
                 values: [texts.text(i), texts.text(i + 1), texts.text(i + 2)],
-                texts: &texts,
+                context: KeyContext::legacy(&texts),
             };
             assert_eq!(map.get(&key), Some(&i));
         }
@@ -1079,7 +1255,7 @@ mod compact_tests {
             .get(&Lookup {
                 fingerprint: 7,
                 values: ["text-0", "text-2", "text-1"],
-                texts: &texts
+                context: KeyContext::legacy(&texts)
             })
             .is_none());
         assert_eq!(

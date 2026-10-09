@@ -226,7 +226,14 @@ fn assert_compact_values(actual: &crate::types::DeclaredTypes, expected: &Mutabl
         expected
             .fields
             .iter()
-            .map(|(k, v)| ([k.0.as_ref(), k.1.as_ref(), k.2.as_ref()], *v))
+            .map(|(k, v)| (
+                [
+                    std::borrow::Cow::Borrowed(k.0.as_ref()),
+                    std::borrow::Cow::Borrowed(k.1.as_ref()),
+                    std::borrow::Cow::Borrowed(k.2.as_ref())
+                ],
+                *v
+            ))
             .collect::<Vec<_>>()
     );
     for id in 0..expected.types.len() {

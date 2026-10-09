@@ -95,8 +95,8 @@ class ImmutableDeclaredTypePresenceTest {
             DeclaredTypeWireFixture.write(dir, table, version)
         } else {
             val strings = linkedSetOf<String>()
-            DeclaredTypeStore.collectStrings(table, strings)
-            DeclaredTypeStore.save(table, dir, StringTable.build(strings, dir, true))
+            DeclaredTypeStore.collectStrings(table, strings, maximumVersion = 3)
+            DeclaredTypeStore.saveLegacyShared(table, dir, StringTable.build(strings, dir, true), version = 3)
         }
         return DeclaredTypeStore.load(dir)
     }

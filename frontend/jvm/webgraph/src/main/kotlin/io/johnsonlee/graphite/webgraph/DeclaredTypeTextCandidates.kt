@@ -17,7 +17,8 @@ internal class DeclaredTypeTextCandidates(
     private val fragments: List<String>,
     private val work: GraphWorkConsumer?
 ) {
-    private val atoms = (types as? DeclaredTypeAtoms)?.takeIf {
+    private val projectionRows = types as? DeclaredTypeAtoms
+    private val atoms = projectionRows?.takeIf {
         fragments.all { fragment -> fragment.all { it.code <= ASCII_MAX } }
     }
     private val atomMatcher = atoms?.queryMatcher(fragments)
@@ -28,7 +29,7 @@ internal class DeclaredTypeTextCandidates(
     fun mayMatch(): Boolean {
         for (id in types.indices) {
             checkCancelled()
-            if (matchType(id) == required) return true
+            if (projectionRows?.isProjectionType(id) != false && matchType(id) == required) return true
         }
         return false
     }

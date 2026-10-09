@@ -5,6 +5,7 @@ import io.johnsonlee.graphite.graph.DeclaredTypeTextField
 /** Absolute reads over type rows whose UTF-8, references and record boundaries were validated on load. */
 internal interface DeclaredTypeAtoms {
     val textSummary: DeclaredTypeTextSummary? get() = null
+    fun isProjectionType(id: Int): Boolean = true
     fun fieldOffset(id: Int, field: DeclaredTypeTextField): Int {
         var offset = typeOffset(id)
         repeat(field.ordinal) { offset = nextTextField(offset) }
