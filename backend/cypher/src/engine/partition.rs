@@ -51,7 +51,9 @@ use crate::context::GraphContext;
 use crate::eval::{is_aggregation_name, Evaluator};
 use crate::value::{EdgeRef, NodeRef, SourceIdx, Value};
 use crate::CypherResult;
-use graphite_storage::node::{StrId, TAG_ANNOTATION_NODE, TAG_COUNT};
+use graphite_storage::node::{
+    StrId, TAG_ANNOTATION_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE,
+};
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
 use rayon::prelude::*;
@@ -314,7 +316,8 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
                 _ => Dep::CONTENT,
             }
         }
-        Expr::Distinct(e) | Expr::Not(e) | Expr::IsNull(e) | Expr::IsNotNull(e) => dep(e, scope),
+        Expr::IsNull(e) | Expr::IsNotNull(e) => null_dep(e, scope),
+        Expr::Distinct(e) | Expr::Not(e) => dep(e, scope),
         Expr::Unary { expr, .. } => dep(expr, scope),
         Expr::Binary { left, right, .. }
         | Expr::Comparison { left, right, .. }
@@ -397,6 +400,28 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
             d
         }
     }
+}
+
+fn null_dep(expr: &Expr, scope: &Scope) -> Dep {
+    if let Expr::Property { expr, key } = expr {
+        if let Expr::Variable(variable) = expr.as_ref() {
+            // UNWIND/comprehensions and WITH aliases can shadow a node variable.
+            // Only its original, still-bound declaration node has these keys.
+            if scope.bound(variable).is_none()
+                && matches!(key.as_str(), "generic_type" | "type_info")
+                && scope.node(variable).is_some_and(|ctx| {
+                    ctx.declared_keys
+                        && matches!(
+                            ctx.tag,
+                            Some(TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
+                        )
+                })
+            {
+                return Dep::KEYS;
+            }
+        }
+    }
+    dep(expr, scope)
 }
 
 /// `n.<key>` for a node of the context's type.
@@ -1664,7 +1689,66 @@ mod tests {
         assert_eq!(classify("keys(n)", true, &context), Dep::KEYS);
         assert_eq!(classify("n.generic_type", true, &context), Dep::CONTENT);
         assert_eq!(classify("n.type_info", true, &context), Dep::CONTENT);
+        assert_eq!(
+            classify("n.generic_type IS NULL", true, &context),
+            Dep::KEYS
+        );
+        assert_eq!(
+            classify("n.type_info IS NOT NULL", true, &context),
+            Dep::KEYS
+        );
         assert_eq!(classify("labels(n)", true, &context), Dep::TAG);
+    }
+
+    #[test]
+    fn declaration_null_dependency_keeps_shadowed_nodes_and_other_kinds_conservative() {
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            let ctx = TagCtx {
+                tag: Some(tag),
+                keys: &[],
+                declared_keys: true,
+                columns: &[],
+            };
+            for property in ["generic_type", "type_info"] {
+                assert_eq!(
+                    classify(&format!("n.{property} IS NULL"), true, &ctx),
+                    Dep::KEYS
+                );
+                assert_eq!(
+                    classify(&format!("n.{property} IS NOT NULL"), true, &ctx),
+                    Dep::KEYS
+                );
+            }
+            // Subscripts still evaluate the ordinary property, so cannot use a
+            // presence-only strategy until their evaluator path supports it.
+            assert_eq!(
+                classify("n['generic_type'] IS NULL", true, &ctx),
+                Dep::CONTENT
+            );
+            assert_eq!(
+                classify("[n IN [null] | n.generic_type IS NULL]", true, &ctx),
+                Dep::CONTENT
+            );
+            let scope = Scope {
+                cross: true,
+                nodes: vec![("n", &ctx)],
+                rel: None,
+                bound: vec![("n".into(), Dep::CONTENT)],
+            };
+            assert_eq!(
+                dep(&expr("n.generic_type IS NOT NULL"), &scope),
+                Dep::CONTENT
+            );
+        }
+        for tag in [Some(TAG_ANNOTATION_NODE), None] {
+            let ctx = TagCtx {
+                tag,
+                keys: &[],
+                declared_keys: true,
+                columns: &[],
+            };
+            assert_eq!(classify("n.generic_type IS NULL", true, &ctx), Dep::CONTENT);
+        }
     }
 
     #[test]

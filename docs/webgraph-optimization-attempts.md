@@ -14299,3 +14299,83 @@ validation; no performance acceptance claim. Evidence:
 `...-3/independent-review-coverage.json`). The matched JVM checkout records483
 source/configuration inputs in `/tmp/graphite-structural-v5-source-proof-3.json`.
 All workflow YAML parses, and157 Bash blocks pass syntax validation.
+
+#### Completed GTY05 full39 Native multi-graph diagnostic (2026-10-10)
+
+The fixed CABBAC comparison completed with accepted baseline C and alias A at
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3`, and GTY05 B runtime/producer at
+`acd11a6989c9d501ffac3803c41e629466c8883e`. Later CI/documentation commits did
+not change this runtime. Each case used one oracle request, two warmups and
+20 measured requests at concurrency4. Of39 cases,37 actually targeted all64
+real graphs and two routing cases targeted two graphs. All5,382 complete response
+bodies passed their bound canonical oracle; no failures, retries or unissued cells
+occurred, and all six server process groups exited cleanly.
+
+Per-case p50/p95 are nearest-rank samples10/19 of20, retained separately for
+both predefined directions; no pooling or favorable-direction selection. Four
+queries show reproducible material regressions (milliseconds):
+
+| Case | First direction p50 baseline → B | First p95 baseline → B | Reverse p50 baseline → B | Reverse p95 baseline → B |
+|---|---:|---:|---:|---:|
+| slow-dynamicHit | 452.658 → 16,140.188 | 491.290 → 16,211.376 | 460.514 → 16,142.965 | 574.661 → 16,193.237 |
+| slow-dynamicMiss | 393.443 → 16,290.094 | 437.348 → 16,338.590 | 413.669 → 16,287.867 | 562.452 → 16,359.227 |
+| feature-nodes | 1.684 → 5,848.553 | 15.837 → 5,880.738 | 1.679 → 5,885.505 | 4.507 → 5,906.645 |
+| feature-methods | 921.025 → 3,782.213 | 939.377 → 3,798.166 | 932.125 → 3,814.697 | 950.265 → 3,847.313 |
+
+Measured-stage wall time increased79.175→276.610s and79.134→276.871s;
+server CPU increased460.47→1,218.86s and457.46→1,218.70s. Query-process
+lifetime peak RSS decreased23,217,913,856→18,985,631,744 bytes and
+22,299,672,576→18,051,973,120 bytes. These RSS observations include readiness,
+queries and shutdown; they do not establish the separate loading RSS result.
+Raw sample bounds, all39 cases and all four parent/accepted comparisons remain
+in the paired JSON. Cache/host activity was uncontrolled; this is a fixed
+concurrent diagnostic, not saturation or complete performance acceptance.
+
+The protocol was `/tmp/graphite-native-diagnostic-pressure-1/plan.json`
+(SHA256 `852c0a6a0b6b63eb56b2c90659562ee4eaf5684810ffc451f7ab8109146b38ea`),
+executed by its `run_diagnostic_pressure.py run --plan <plan> --output
+/private/tmp/graphite-native-diagnostic-pressure-run-1` command on the local
+macOS ARM64 host. Evidence: that output's `diagnostic-report.json`
+(SHA256 `359c8ae3c8e8e9d96520d3bb113d023db8f91c34ea0d7ecb3f226a2e91662198`)
+and `paired-summary.json`
+(SHA256 `59ee0be666ea00778d8adafe2467128a801da9d5cde7ae08a1bf1d9a18cb05e6`).
+The original partial semantic-authority gaps remain explicit; every acceptance
+flag is false. Construction and zero-query loading are not measured by this run.
+Keep the storage representation for continued correction/optimization; do not
+claim cumulative regression recovery.
+
+### Attempt190 — generic property presence without value expansion (2026-10-10)
+
+Hypothesis: queries asking whether a declared property is null need its member
+binding, not a rendered generic string or recursively expanded type-info map.
+The four slow shapes above motivate this change; this attempt targets the two
+feature-presence shapes, while dynamic text scanning is a separate hypothesis.
+
+Parent: `bebf0e72e4c04073d200709fa4cd7a1053126a8e`; candidate: the commit
+containing this entry. The accepted performance baseline remains4f2ccf33.
+GraphContext nullness hooks retain ordinary property access as their default.
+Native declaration nodes and methods use exact existing binding lookup; missing
+bindings remain null. Annotation keys, maps, relationships, subscripts and other
+properties retain their normal evaluation. Grouped node-presence queries reuse
+the existing exact declared-key partitions, including their counts and fallback;
+no additional retained strings, bindings or storage files are introduced.
+
+Correctness tests compare full, partial and absent declarations, then invalidate
+the type-value backing while retaining bindings to prove presence checks do not
+render values. They cover invalid references/parameter ordinals, annotation
+fallback, map/null bases, errors, shadowed variables, aliases, grouped result
+parity, unsorted fallback and cancellation. Required GTY01–05 and inherited Java
+fixtures were supplied, not skipped. On an isolated six-file candidate snapshot,
+all431 Native workspace tests passed; all-target/all-feature Clippy with warnings
+denied and formatting checks passed. Evidence:
+`/tmp/graphite-attempt190-validation/record.json` and its owned phase logs.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | Native431 PASS; Clippy and formatting PASS; owned test groups cleaned |
+| Construction / loading | No measured effect; this changes query evaluation only |
+| Multi-graph query p50 / p95 / CPU / RSS | Candidate not yet measured; prior GTY05 diagnostic above remains a regression |
+| Overall recovery / merge readiness | Not established |
+
+Decision: preserve this correctness-verified candidate for matched multi-graph
+measurement. Source inference alone is not evidence of a performance benefit.

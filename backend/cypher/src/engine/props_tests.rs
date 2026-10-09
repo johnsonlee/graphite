@@ -2,6 +2,234 @@ use super::*;
 use crate::context::GraphContext;
 use crate::engine::{Executor, Source};
 
+#[test]
+fn generic_null_checks_preserve_binding_and_do_not_read_type_values() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        assert!(
+            std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none(),
+            "GRAPHITE_TYPES_FIXTURE required for generic presence validation"
+        );
+        return;
+    };
+    let path = std::path::Path::new(&dir);
+    for mode in ["full", "partial", "absent"] {
+        let mut graph = Graph::load(path).unwrap();
+        graph.update_declared_types(|table| match mode {
+            "partial" => {
+                let table = table.as_mut().unwrap();
+                table
+                    .fields
+                    .retain(|(_, name, _), _| name.as_ref() != "first");
+                table
+                    .methods
+                    .retain(|(_, name, _), _| name.as_ref() != "echo");
+            }
+            "absent" => *table = None,
+            _ => {}
+        });
+        let mut node_cases = Vec::new();
+        for tag in [
+            TAG_FIELD_NODE,
+            TAG_PARAMETER_NODE,
+            TAG_RETURN_NODE,
+            TAG_CALL_SITE_NODE,
+        ] {
+            for id in graph.ids_by_tag(tag) {
+                let node = graph.node(*id).unwrap();
+                for key in ["generic_type", "type_info"] {
+                    let expected = node_property(&graph, &node, key).is_null();
+                    assert_eq!(node_property_is_null(&graph, &node, key), expected);
+                    node_cases.push((*id, key, expected));
+                }
+            }
+        }
+        let method_cases: Vec<_> = graph
+            .methods()
+            .iter()
+            .enumerate()
+            .flat_map(|(index, method)| {
+                GENERIC_METHOD_KEYS.map(|key| {
+                    let expected = method_property(&graph, method, key, None).is_null();
+                    assert_eq!(method_property_is_null(&graph, method, key, None), expected);
+                    (index as u32, key, expected)
+                })
+            })
+            .collect();
+        assert!(!node_cases.is_empty() && !method_cases.is_empty());
+        if mode == "full" {
+            assert!(node_cases.iter().any(|(_, _, absent)| !absent));
+            assert!(method_cases.iter().any(|(_, _, absent)| !absent));
+        }
+        // Bindings remain, but rendering either text or a structured map would
+        // access invalid backing. Presence must not touch any type expression.
+        graph.update_declared_types(|table| {
+            if let Some(table) = table {
+                table.types.clear();
+            }
+        });
+        let executor = Executor::new(
+            vec![Source {
+                id: Arc::from(mode),
+                graph: Arc::new(graph),
+            }],
+            true,
+        );
+        let params = IndexMap::new();
+        let evaluator = crate::eval::Evaluator::new(&executor, &params);
+        for (value, key, expected) in node_cases
+            .into_iter()
+            .map(|(id, key, expected)| (Value::Node(NodeRef { source: 0, id }), key, expected))
+            .chain(method_cases.into_iter().map(|(index, key, expected)| {
+                (Value::Method(MethodRef { source: 0, index }), key, expected)
+            }))
+        {
+            let row = IndexMap::from([("n".into(), value)]);
+            let property = crate::ast::Expr::Property {
+                expr: Box::new(crate::ast::Expr::Variable("n".into())),
+                key: key.into(),
+            };
+            for (expr, expected) in [
+                (
+                    crate::ast::Expr::IsNull(Box::new(property.clone())),
+                    expected,
+                ),
+                (crate::ast::Expr::IsNotNull(Box::new(property)), !expected),
+            ] {
+                assert_eq!(
+                    evaluator.eval(&expr, &row).unwrap().as_bool(),
+                    Some(expected),
+                    "{mode}: {key}"
+                );
+            }
+        }
+        assert!(executor.node_property_is_null(
+            NodeRef {
+                source: 0,
+                id: u32::MAX
+            },
+            "generic_type"
+        ));
+        for key in GENERIC_METHOD_KEYS {
+            assert!(executor.method_property_is_null(
+                MethodRef {
+                    source: 0,
+                    index: u32::MAX
+                },
+                key
+            ));
+        }
+    }
+}
+
+#[test]
+fn generic_null_checks_preserve_parameter_bounds_and_annotation_fallback() {
+    let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+        assert!(std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none());
+        return;
+    };
+    let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+    let method = graph
+        .methods()
+        .iter()
+        .find(|m| graph.str(m.name) == "echo")
+        .unwrap();
+    for index in [-1, method.parameter_types.len() as i32] {
+        let node = Node {
+            id: 0,
+            kind: NodeKind::Parameter {
+                method: method.clone(),
+                index,
+                param_type: method.return_type,
+            },
+        };
+        for key in ["generic_type", "type_info"] {
+            assert!(node_property_is_null(&graph, &node, key));
+            assert!(node_property(&graph, &node, key).is_null());
+        }
+    }
+    let name = graph.strings().index_of("first").unwrap() as u32;
+    let mut annotation = Node {
+        id: 17,
+        kind: NodeKind::Annotation {
+            name,
+            class_name: name,
+            member_name: name,
+            values: vec![(name, AnyValue::Int(7))],
+        },
+    };
+    assert!(!node_property_is_null(&graph, &annotation, "first"));
+    assert!(node_property_is_null(&graph, &annotation, "generic_type"));
+    // Generic-looking keys must still traverse an annotation's dynamic values,
+    // including the same invalid-SID failure as ordinary property evaluation.
+    if let NodeKind::Annotation { values, .. } = &mut annotation.kind {
+        values[0].0 = u32::MAX;
+    }
+    for key in ["generic_type", "type_info"] {
+        assert!(std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            node_property_is_null(&graph, &annotation, key)
+        }))
+        .is_err());
+    }
+}
+
+#[test]
+fn null_predicates_preserve_maps_null_bases_and_subscript_semantics() {
+    use crate::ast::{Expr, Literal};
+    let executor = Executor::new(vec![], false);
+    let params = IndexMap::new();
+    let evaluator = crate::eval::Evaluator::new(&executor, &params);
+    for (value, expected) in [
+        (Value::Null, true),
+        (Value::Int(1), true),
+        (Value::map(IndexMap::new()), true),
+        (
+            Value::map(IndexMap::from([("generic_type".into(), Value::Null)])),
+            true,
+        ),
+        (
+            Value::map(IndexMap::from([(
+                "generic_type".into(),
+                Value::str("present"),
+            )])),
+            false,
+        ),
+    ] {
+        let row = IndexMap::from([("n".into(), value)]);
+        for expression in [
+            Expr::Property {
+                expr: Box::new(Expr::Variable("n".into())),
+                key: "generic_type".into(),
+            },
+            Expr::Subscript {
+                expr: Box::new(Expr::Variable("n".into())),
+                index: Box::new(Expr::Literal(Literal::Str("generic_type".into()))),
+            },
+        ] {
+            assert_eq!(
+                evaluator
+                    .eval(&Expr::IsNull(Box::new(expression.clone())), &row)
+                    .unwrap()
+                    .as_bool(),
+                Some(expected)
+            );
+            assert_eq!(
+                evaluator
+                    .eval(&Expr::IsNotNull(Box::new(expression)), &row)
+                    .unwrap()
+                    .as_bool(),
+                Some(!expected)
+            );
+        }
+    }
+    let bad_base = Expr::Property {
+        expr: Box::new(Expr::CountStar),
+        key: "generic_type".into(),
+    };
+    assert!(evaluator
+        .eval(&Expr::IsNull(Box::new(bad_base)), &IndexMap::new())
+        .is_err());
+}
+
 fn fixture() -> Option<Arc<Graph>> {
     let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
         eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping display property tests");
@@ -209,6 +437,13 @@ fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() 
         "MATCH (n:ReturnNode) WHERE 'generic_type' IN keys(n) RETURN keys(n) AS k, count(*) AS c",
         "MATCH (n:FieldNode) WHERE NOT ('generic_type' IN keys(n)) RETURN n.graphId AS graph, count(*) AS c",
         "MATCH (n) RETURN keys(n) AS k LIMIT 50",
+        "MATCH (n) RETURN n.graphId AS graph, labels(n) AS labels, n.generic_type IS NULL AS missing, n.type_info IS NOT NULL AS present, count(*) AS c",
+        "MATCH (n:FieldNode) WHERE n.generic_type IS NOT NULL RETURN n.class AS owner, count(*) AS c",
+        "MATCH (n:ParameterNode) WHERE n.type_info IS NULL RETURN n.graphId AS graph, count(*) AS c",
+        "MATCH (n:ReturnNode) RETURN n.generic_type IS NULL AS missing, count(*) AS c",
+        "MATCH (n:FieldNode) WITH n.generic_type IS NOT NULL AS present RETURN present, count(*) AS c",
+        "MATCH (n:FieldNode) WITH n AS aliased RETURN aliased.generic_type IS NULL AS missing, count(*) AS c",
+        "MATCH (n:FieldNode) UNWIND [null, {generic_type: 'shadowed'}] AS n RETURN n.generic_type IS NULL AS missing, count(*) AS c",
     ] {
         let expected = plain.execute(query, None).unwrap();
         let actual = fast.execute(query, None).unwrap();
@@ -222,6 +457,12 @@ fn declaration_key_partitions_preserve_mixed_source_rows_order_and_provenance() 
     assert!(cancelled
         .execute(
             "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c",
+            None
+        )
+        .is_err());
+    assert!(cancelled
+        .execute(
+            "MATCH (n) RETURN n.generic_type IS NOT NULL AS present, count(*) AS c",
             None
         )
         .is_err());
@@ -292,6 +533,8 @@ fn declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows() {
             "MATCH (n:FieldNode) RETURN n.class AS owner, keys(n) AS k, count(*) AS c".to_string(),
             "MATCH (n:FieldNode) WHERE n.name = 'first' RETURN keys(n) AS k, count(*) AS c".to_string(),
             "MATCH (n:FieldNode) WHERE NOT ('generic_type' IN keys(n)) RETURN keys(n) AS k, count(*) AS c".to_string(),
+            "MATCH (n:FieldNode) RETURN n.generic_type IS NULL AS missing, count(*) AS c LIMIT 1".to_string(),
+            "MATCH (n:ParameterNode) WHERE n.type_info IS NOT NULL RETURN n.graphId AS graph, count(*) AS c".to_string(),
             format!("MATCH (n) WHERE id(n) = {field_id} UNWIND keys(n) AS k RETURN k, count(*) AS c"),
         ] {
             let expected = plain.execute(&query, None).unwrap();

@@ -236,8 +236,8 @@ impl<'a> Evaluator<'a> {
                 let r = self.eval(right, row)?;
                 Ok(self.in_list(&l, &r))
             }
-            Expr::IsNull(e) => Ok(Value::Bool(self.eval(e, row)?.is_null())),
-            Expr::IsNotNull(e) => Ok(Value::Bool(!self.eval(e, row)?.is_null())),
+            Expr::IsNull(e) => Ok(Value::Bool(self.eval_is_null(e, row)?)),
+            Expr::IsNotNull(e) => Ok(Value::Bool(!self.eval_is_null(e, row)?)),
             Expr::Not(e) => {
                 let v = self.eval(e, row)?;
                 match v {
@@ -382,6 +382,18 @@ impl<'a> Evaluator<'a> {
             },
             _ => Value::Null,
         }
+    }
+
+    fn eval_is_null(&self, expr: &Expr, row: &Row) -> CypherResult<bool> {
+        if let Expr::Property { expr, key } = expr {
+            let base = self.eval(expr, row)?;
+            return Ok(match base {
+                Value::Node(node) => self.ctx.node_property_is_null(node, key),
+                Value::Method(method) => self.ctx.method_property_is_null(method, key),
+                _ => self.property(&base, key).is_null(),
+            });
+        }
+        Ok(self.eval(expr, row)?.is_null())
     }
 
     fn binary(&self, op: BinOp, l: &Value, r: &Value) -> CypherResult<Value> {
