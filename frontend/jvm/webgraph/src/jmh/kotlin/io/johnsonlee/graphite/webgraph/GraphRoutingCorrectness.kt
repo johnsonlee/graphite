@@ -20,18 +20,27 @@ object GraphRoutingCorrectness {
             suite.setupTrial()
             suite.setupInvocation()
             suite.replayBroadQueries(counters)
-            val metrics = STRUCTURAL_FIELDS.joinToString(",") { name ->
-                "\"$name\":" + counters.javaClass.getField(name).getLong(counters)
-            }
-            Files.writeString(
-                Path.of(args[OUTPUT_INDEX]),
-                "{\"scope\":\"correctness-only\",\"indexState\":\"${suite.indexState}\"," +
-                    "\"coverageFamily\":\"${suite.coverageFamily}\",\"metrics\":{$metrics}}\n"
-            )
+            writeMetrics(Path.of(args[OUTPUT_INDEX]), suite.indexState, suite.coverageFamily, counters)
         } finally {
             suite.tearDownTrial()
         }
         println("CORRECTNESS_PASS\tgraph-routing\t${args[0]}\t${args[1]}")
+    }
+
+    fun writeMetrics(
+        output: Path,
+        indexState: String,
+        coverageFamily: String,
+        counters: LargeBroadQueryPressureCounters
+    ) {
+        val metrics = STRUCTURAL_FIELDS.joinToString(",") { name ->
+            "\"$name\":" + counters.javaClass.getField(name).getLong(counters)
+        }
+        Files.writeString(
+            output,
+            "{\"scope\":\"correctness-only\",\"indexState\":\"$indexState\"," +
+                "\"coverageFamily\":\"$coverageFamily\",\"metrics\":{$metrics}}\n"
+        )
     }
 
     private const val ARGUMENT_COUNT = 4
