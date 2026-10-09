@@ -15,6 +15,8 @@ import test_native_query_correctness as query_fixtures
 class AuditedArmTests(unittest.TestCase):
     def setUp(self):
         self.fixture = query_fixtures.QueryCorrectnessTests()
+        self.fixture.revision = getattr(self, 'revision', 'b' * 40)
+        self.fixture.role = getattr(self, 'role', 'candidate')
         self.fixture.setUp()
         self.addCleanup(self.fixture.doCleanups)
         q = self.fixture
@@ -26,7 +28,7 @@ class AuditedArmTests(unittest.TestCase):
         q.out = self.root / 'query-correctness'
         q.out.mkdir()
         q.plan = query_fixtures.runner.prepare(q.artifact_path, q.fixture.inputs_path,
-                                              'b' * 40, 'candidate', q.out, 22840)
+                                              q.fixture.revision, q.fixture.role, q.out, 22840)
         q.run_queries()
         q.fixture.write(self.root / 'query-correctness-audit.json', bundle.queries.audit(q.out))
         self.source_inputs = bundle.artifacts.ref(q.fixture.inputs_path)
@@ -35,7 +37,8 @@ class AuditedArmTests(unittest.TestCase):
         self.addCleanup(self.no_child.stop)
 
     def read_arm(self):
-        return bundle.audited_arm(self.root, 'b' * 40, 'candidate', self.source_inputs)
+        return bundle.audited_arm(self.root, self.fixture.fixture.revision,
+                                  self.fixture.fixture.role, self.source_inputs)
 
     def test_full_current_arm_preserves_all39_requests_responses_and_scope(self):
         arm, pins, identity = self.read_arm()

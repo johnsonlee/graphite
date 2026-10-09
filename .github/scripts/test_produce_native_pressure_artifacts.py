@@ -212,7 +212,7 @@ class ProducerTests(unittest.TestCase):
 
 
 class ArtifactCompositionTests(unittest.TestCase):
-    def execute(self, root, drift=False, construction=False):
+    def execute(self, root, drift=False, construction=False, revision='b'*40, role='candidate'):
         checkout=root/'checkout';checkout.mkdir();(checkout/'.git').mkdir();(checkout/'source').write_text('source')
         out=root/'out';tools=root/'tools';tools.mkdir()
         for name in ('cargo','rustc'):(tools/name).write_text(name)
@@ -222,11 +222,11 @@ class ArtifactCompositionTests(unittest.TestCase):
         for corpus in producer.CORPORA:
             jar=root/(corpus+'.jar');jar.write_text(corpus)
             jars.append({'corpus':corpus,'path':str(jar),'sha256':producer.common.sha(jar)})
-        inputs={'jars':jars};args=SimpleNamespace(checkout=str(checkout),output=str(out),revision='b'*40,
-            role='candidate',fixture_manifest='fixture.json',java=str(jdk/'bin/java'),cargo=str(tools/'cargo'),rustc=str(tools/'rustc'),construction_metrics=construction)
+        inputs={'jars':jars};args=SimpleNamespace(checkout=str(checkout),output=str(out),revision=revision,
+            role=role,fixture_manifest='fixture.json',java=str(jdk/'bin/java'),cargo=str(tools/'cargo'),rustc=str(tools/'rustc'),construction_metrics=construction)
         calls=[];self.capture_options={}
         def git(path,*args):
-            if args[0]=='rev-parse':return 'b'*40
+            if args[0]=='rev-parse':return revision
             if args[0]=='status':return ''
             if args[0]=='ls-files':return 'source'
             self.fail('unexpected git operation')
