@@ -164,6 +164,89 @@ def audit(output):
             'syntheticLocalInferenceOracleClaim':False}
 
 
+def field_evidence(output):
+    """Replay only the exact marker authority needed by one graph's field oracle.
+
+    Full artifact audit remains audit() and is required once per pair by the
+    outer runner. This narrower proof checks actual producer metadata/JDK bytes,
+    raw owned export phases and the exact marker resource. It deliberately does
+    not export the other63 graph payload pins into a per-graph core receipt.
+    """
+    out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
+    exported=common.read(out/'audit.json')
+    require(exported['schema']=='graphite.native-core-marker-export-audit.v1' and exported['status']==AUDIT_PASS and
+            exported['plan']==artifacts.ref(out/'plan.json') and exported['record']==artifacts.ref(out/'record.json') and
+            exported['arms']==plan['arms'] and exported['modules']==plan['modules'] and plan['output']==str(out),
+            'bound completed marker audit metadata')
+    require(record['schema']=='graphite.native-core-marker-export-record.v1' and record['status']==PASS and
+            record['errors']==[] and record['finalIdentity']=='PASS' and record['plan']==exported['plan'] and
+            all(record[k] is exported[k] is False for k in
+                ('performanceAcceptance','completeSemanticEquivalence','syntheticLocalInferenceOracleClaim')),
+            'completed narrow marker export')
+    require(plan['helperSource']==artifacts.ref(SOURCE) and common.sha(SOURCE)==SOURCE_SHA,
+            'retained exact narrow marker helper')
+    pins={str(SOURCE):SOURCE_SHA,str(Path(__file__).resolve()):common.sha(__file__)}
+    def pin(ref):
+        path=Path(ref['path'])
+        require(path.is_absolute() and path.is_file() and not path.is_symlink() and
+                common.sha(path)==ref['sha256'] and exported['pins'].get(str(path))==ref['sha256'],
+                'narrow marker authority input pin')
+        require(str(path) not in pins or pins[str(path)]==ref['sha256'],'conflicting narrow marker authority pin')
+        pins[str(path)]=ref['sha256'];return common.read(path)
+    require(set(plan['arms'])=={'C','B'},'both actual marker producers')
+    for arm in ('C','B'):
+        item=plan['arms'][arm];artifact=pin(item['artifactAudit'])
+        require(artifact['schema']=='graphite.native-independent-artifact-audit.v1' and artifact['status']==artifacts.STATUS and
+                artifact['revision']==item['revision'] and artifact['role']==item['role'] and
+                artifact['producerPacket']==item['producerPacket'],'actual marker producer identity')
+        packet=pin(artifact['producerPacket']);source=pin(artifact['sourceManifest'])
+        runtime=pin(artifact['runtimeManifest']);fixture=pin(artifact['fixtureManifest'])
+        root=Path(artifact['producerPacket']['path']).parent
+        before=pin({'path':str(root/'inputs-before.json'),'sha256':artifact['pins'][str(root/'inputs-before.json')]})
+        require(packet['schema']=='graphite.native-artifact-producer.v1' and
+                packet['revision']==source['revision']==runtime['revision']==fixture['writerRevision']==item['revision'] and
+                packet['role']==item['role'] and packet['errors']==[] and packet['finalIdentity']['inputs']=='PASS' and
+                packet['runtimeManifest']==runtime and
+                runtime['sourceManifestSha256']==fixture['sourceManifestSha256']==artifact['sourceManifest']['sha256'],
+                'actual marker writer source/runtime metadata chain')
+        require(runtime['toolchainIdentity']['java']==plan['java'] and
+                packet['buildEnvironment']['JAVA_HOME']==plan['javaHome'] and
+                packet['buildEnvironment']['JAVA_TOOL_OPTIONS']=='-Xmx4g -XX:ActiveProcessorCount=4' and
+                plan['javaHome']==str(Path(plan['java']).parent.parent) and
+                plan['javac']==str(Path(plan['javaHome'])/'bin/javac') and
+                plan['modules']['path']==str(Path(plan['javaHome'])/'lib/modules'),
+                'same actual producer JDK and module location')
+        for path in (plan['java'],plan['javac'],plan['modules']['path']):
+            digest=before[path]
+            require(exported['pins'].get(path)==digest==common.sha(path),'actual producer JDK input bytes')
+            pins[path]=digest
+        require(before[plan['modules']['path']]==plan['modules']['sha256'],'actual producer module digest')
+        writer=str(root/'runtime/writer.jar')
+        require(runtime['files'][writer]==fixture['writerJarSha256'],'actual producer writer metadata')
+        if arm=='B':
+            require(plan['writerJar']==writer and exported['pins'][writer]==runtime['files'][writer]==common.sha(writer),
+                    'actual exporter writer classpath')
+            pins[writer]=runtime['files'][writer]
+    helper=compiled(plan);payload=raw_marker(plan)
+    require(record['compiledHelper']==helper and all(record[k]==exported[k]==v for k,v in payload.items()),
+            'actual narrow marker outputs')
+    require(len(record['phases'])==2,'exact narrow marker owned phases')
+    for ref,(name,argv,timeout) in zip(record['phases'],commands(plan)):
+        path=out/name/'record.json';require(ref==artifacts.ref(path),'narrow actual phase receipt')
+        phase=artifacts.check_phase(path,argv,out)
+        require(phase['name']==name and phase['timeoutSeconds']==timeout,'narrow bounded marker phase')
+        for leaf in ('record.json','owner.json','stdout.log','stderr.log'):
+            file=out/name/leaf
+            pins[str(file)]=common.sha(file)
+    pins.update(helper)
+    for path in (out/'plan.json',out/'record.json',out/'audit.json',out/'receipt.json',out/'Serializable.class'):
+        pins[str(path)]=common.sha(path)
+    require(all(exported['pins'].get(path)==digest for path,digest in pins.items() if path!=str(out/'audit.json')),
+            'narrow marker closure belongs to completed export audit')
+    artifacts.verify_pins(pins)
+    return {'scope':'EXACT_BOOTSTRAP_MARKER_ONLY_NOT_FIXTURE_AUDIT',**payload,'pins':pins}
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reference-audit',type=Path);parser.add_argument('--actual-audit',type=Path)
