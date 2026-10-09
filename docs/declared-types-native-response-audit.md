@@ -55,3 +55,18 @@ pre-existing expected response. This resolves a stale response-contract pin,
 not the separate proof of whole-graph migration, loading/resource acceptance or
 continuous-pressure eligibility. The recorded original latency failure remains
 historical evidence, and no response update waives a performance regression.
+
+
+The next archived CI run37993079843 at `64d77daa` reproduces the same stale
+histogram pin. All five complete candidate schema bodies again exactly match the
+pre-existing persisted-node-derived oracle. Replaying the current comparator
+against its unchanged base/candidate results removes every response error. It does
+not pass the whole replay: `shape-skip` changes3.527 → 6.094ms (+2.567ms), exceeding
+the existing initial threshold and requiring reverse-order confirmation in CI.
+The original run stopped at response errors, so no confirmation exists in those
+artifacts. This small absolute difference is retained, not a new primary
+optimization target or an excuse to weaken the gate. Replay status/report:
+`/tmp/graphite-64d-rust-replay.{json,md}`; archived Native result artifact11647643309.
+Native continuous pressure still reports UNAVAILABLE with zero cells because
+complete cross-arm core/topology/index authority is missing. Successful39-case
+response audits do not fill that gap.
