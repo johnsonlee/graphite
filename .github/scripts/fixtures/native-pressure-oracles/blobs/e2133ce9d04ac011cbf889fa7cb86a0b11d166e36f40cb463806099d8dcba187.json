@@ -1,0 +1,2767 @@
+{
+  "columns": [
+    "n.graph_id",
+    "caller",
+    "callerMethod",
+    "callee",
+    "calleeMethod"
+  ],
+  "rows": [
+    {
+      "caller": "org.apache.orc.tools.convert.JsonReader$ListColumnConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.ql.exec.vector.ColumnVector",
+      "calleeMethod": "ensureSize",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.filter.leaf.TimestampFilters$TimestampEquals",
+      "callerMethod": "allow",
+      "callee": "org.apache.hadoop.hive.ql.exec.vector.TimestampColumnVector",
+      "calleeMethod": "compareTo",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.TreeReaderFactory$Decimal64TreeReader",
+      "callerMethod": "nextVector",
+      "callee": "org.apache.hadoop.hive.ql.io.filter.FilterContext",
+      "calleeMethod": "isSelectedInUse",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.TreeReaderFactory$Decimal64TreeReader",
+      "callerMethod": "nextVector",
+      "callee": "org.apache.hadoop.hive.ql.io.filter.FilterContext",
+      "calleeMethod": "getSelectedSize",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.TreeReaderFactory$Decimal64TreeReader",
+      "callerMethod": "nextVector",
+      "callee": "org.apache.hadoop.hive.ql.io.filter.FilterContext",
+      "calleeMethod": "getSelected",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.TreeReaderFactory$Decimal64TreeReader",
+      "callerMethod": "nextVector",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveDecimalWritable",
+      "calleeMethod": "setFromLongAndScale",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.InStream$EncryptedStream",
+      "callerMethod": "setCurrent",
+      "callee": "org.apache.hadoop.hive.common.io.DiskRangeList",
+      "calleeMethod": "getOffset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.orc.impl.InStream$EncryptedStream",
+      "callerMethod": "setCurrent",
+      "callee": "org.apache.hadoop.hive.common.io.DiskRangeList",
+      "calleeMethod": "getData",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.UnionSketchUDAF$UnionSketchEvaluator",
+      "callerMethod": "init",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory",
+      "calleeMethod": "getPrimitiveWritableObjectInspector",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.UnionSketchUDAF$UnionSketchEvaluator",
+      "callerMethod": "init",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory",
+      "calleeMethod": "getStandardStructObjectInspector",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.UnionSketchUDAF$UnionSketchEvaluator",
+      "callerMethod": "initializeState",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getInt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.UnionSketchUDAF$UnionSketchEvaluator",
+      "callerMethod": "iterate",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesState",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator$AbstractAggregationBuffer",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToVariancesUDF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDF",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchToNumberOfRetainedEntriesUDF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDF",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getDouble",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "getPrimitiveCategory",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector$PrimitiveCategory",
+      "calleeMethod": "ordinal",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getLong",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getInt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getFloat",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getByte",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.tuple.ArrayOfDoublesSketchState",
+      "callerMethod": "update",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getBinary",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.theta.UnionSketchUDAF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.theta.UnionSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo",
+      "calleeMethod": "getParameterObjectInspectors",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.theta.UnionSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDFArgumentException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.theta.UnionSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo",
+      "calleeMethod": "getParameterObjectInspectors",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionItemsSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDFArgumentException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionDoublesSketchUDAF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.AbstractGenericUDAFResolver",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionDoublesSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.GenericUDAFParameterInfo",
+      "calleeMethod": "getParameterObjectInspectors",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.UnionDoublesSketchUDAF",
+      "callerMethod": "getEvaluator",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDFArgumentException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF$DataToStringsSketchEvaluator",
+      "callerMethod": "extractValue",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF$DataToStringsSketchEvaluator",
+      "callerMethod": "extractValue",
+      "callee": "org.apache.hadoop.hive.common.type.HiveChar",
+      "calleeMethod": "getValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF$DataToStringsSketchEvaluator",
+      "callerMethod": "extractValue",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "getValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.quantiles.DataToStringsSketchUDAF$DataToStringsSketchEvaluator",
+      "callerMethod": "extractValue",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDFArgumentTypeException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.kll.GetPmfUDF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDF",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.hll.SketchEvaluator",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.udf.generic.GenericUDAFEvaluator",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.hll.SketchEvaluator",
+      "callerMethod": "initializeState",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector",
+      "calleeMethod": "getStructFieldRef",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.hll.SketchEvaluator",
+      "callerMethod": "initializeState",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector",
+      "calleeMethod": "getStructFieldData",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.hll.SketchEvaluator",
+      "callerMethod": "merge",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector",
+      "calleeMethod": "getStructFieldRef",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.hll.SketchEvaluator",
+      "callerMethod": "merge",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StructObjectInspector",
+      "calleeMethod": "getStructFieldData",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.cpc.GetEstimateUDF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDF",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.org.apache.datasketches.hive.cpc.GetEstimateAndErrorBoundsUDF",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.ql.exec.UDF",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hive.common.HiveCompat",
+      "callerMethod": "getCompatLevel",
+      "callee": "org.apache.hadoop.hive.conf.HiveConf",
+      "calleeMethod": "getVar",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "<clinit>",
+      "callee": "org.apache.hive.com.google.common.collect.MapMaker",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "<clinit>",
+      "callee": "org.apache.hive.com.google.common.collect.MapMaker",
+      "calleeMethod": "weakKeys",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "<clinit>",
+      "callee": "org.apache.hive.com.google.common.collect.MapMaker",
+      "calleeMethod": "weakValues",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "<clinit>",
+      "callee": "org.apache.hive.com.google.common.collect.MapMaker",
+      "calleeMethod": "makeMap",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "<init>",
+      "callee": "org.apache.thrift.transport.TTransportFactory",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "getTransport",
+      "callee": "java.util.concurrent.ConcurrentMap",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "getTransport",
+      "callee": "org.apache.hadoop.hive.thrift.TUGIContainingTransport",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "getTransport",
+      "callee": "java.util.concurrent.ConcurrentMap",
+      "calleeMethod": "putIfAbsent",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "callerMethod": "getTransport",
+      "callee": "org.apache.hadoop.hive.thrift.TUGIContainingTransport$Factory",
+      "calleeMethod": "getTransport",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "doesPrimitiveMatchTypeParams",
+      "callee": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "doesPrimitiveMatchTypeParams",
+      "callee": "org.apache.hadoop.hive.common.type.HiveBaseChar",
+      "calleeMethod": "getCharacterLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "doesWritableMatchTypeParams",
+      "callee": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharTypeInfo",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "doesWritableMatchTypeParams",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveBaseCharWritable",
+      "calleeMethod": "getCharacterLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateCharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateCharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateCharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateCharParameter",
+      "callee": "java.lang.RuntimeException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateVarcharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateVarcharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateVarcharParameter",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "callerMethod": "validateVarcharParameter",
+      "callee": "java.lang.RuntimeException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "<init>",
+      "callee": "org.apache.commons.io.output.ByteArrayOutputStream",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "java.util.Collections",
+      "calleeMethod": "nCopies",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "java.lang.String",
+      "calleeMethod": "join",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "java.lang.String",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveCharWritable",
+      "calleeMethod": "getStrippedValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveCharWritable",
+      "calleeMethod": "getPaddedValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "java.lang.String",
+      "calleeMethod": "format",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeChar",
+      "callee": "java.io.IOException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDate",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedInteger",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDate",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDate",
+      "callee": "org.apache.hadoop.hive.common.type.Date",
+      "calleeMethod": "getYear",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDate",
+      "callee": "org.apache.hadoop.hive.common.type.Date",
+      "calleeMethod": "getMonth",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDate",
+      "callee": "org.apache.hadoop.hive.common.type.Date",
+      "calleeMethod": "getDay",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveDecimalWritable",
+      "calleeMethod": "getHiveDecimal",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "org.apache.hadoop.hive.common.type.HiveDecimal",
+      "calleeMethod": "scale",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "org.apache.hadoop.hive.common.type.HiveDecimal",
+      "calleeMethod": "unscaledValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.util.Collections",
+      "calleeMethod": "nCopies",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.lang.String",
+      "calleeMethod": "join",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.math.BigInteger",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.math.BigInteger",
+      "calleeMethod": "multiply",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.math.BigInteger",
+      "calleeMethod": "toByteArray",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "org.apache.commons.lang3.ArrayUtils",
+      "calleeMethod": "reverse",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDecimal",
+      "callee": "java.util.Arrays",
+      "calleeMethod": "fill",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeDouble",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedDouble",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeInt",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedInteger",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeLong",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedLong",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeShort",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedShort",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.util.Collections",
+      "calleeMethod": "nCopies",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.String",
+      "calleeMethod": "join",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.String",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "org.apache.hadoop.hive.serde2.io.TimestampWritableV2",
+      "calleeMethod": "getTimestamp",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "org.apache.hadoop.hive.common.type.Timestamp",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.String",
+      "calleeMethod": "length",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.String",
+      "calleeMethod": "substring",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeTimestamp",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarByte",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedShort",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarByte",
+      "callee": "org.apache.hadoop.io.BytesWritable",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarByte",
+      "callee": "org.apache.hadoop.io.BytesWritable",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarByte",
+      "callee": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarChar",
+      "callee": "org.apache.commons.io.EndianUtils",
+      "calleeMethod": "writeSwappedShort",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarChar",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveVarcharWritable",
+      "calleeMethod": "getTextValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarChar",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarChar",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "callerMethod": "writeVarChar",
+      "callee": "org.apache.hadoop.hive.serde2.teradata.TeradataBinaryDataOutputStream",
+      "calleeMethod": "write",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.proto.test.Complexpb$IntString",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveWritableObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "copyObject",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "create",
+      "callee": "java.sql.Date",
+      "calleeMethod": "getTime",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.common.type.Date",
+      "calleeMethod": "ofEpochMilli",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "set",
+      "callee": "java.sql.Date",
+      "calleeMethod": "getTime",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.common.type.Date",
+      "calleeMethod": "ofEpochMilli",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.WritableDateObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "<clinit>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Enum",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "<init>",
+      "callee": "java.lang.String",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "accept",
+      "callee": "java.lang.String",
+      "calleeMethod": "equalsIgnoreCase",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "valueOf",
+      "callee": "java.lang.Enum",
+      "calleeMethod": "valueOf",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils$FalseValues",
+      "callerMethod": "values",
+      "callee": "java.lang.Object",
+      "calleeMethod": "clone",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.ByteStream$Output",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "calleeMethod": "convert",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "getPrimitiveCategory",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector$PrimitiveCategory",
+      "calleeMethod": "ordinal",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.BooleanObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.io.Text",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "preferWritable",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.StringObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveCharWritable",
+      "calleeMethod": "getStrippedValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveCharObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.common.type.HiveChar",
+      "calleeMethod": "getStrippedValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveVarcharWritable",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveVarcharObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector",
+      "calleeMethod": "preferWritable",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.io.BytesWritable",
+      "calleeMethod": "getBytes",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.io.BytesWritable",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.BinaryObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "getTypeName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "java.lang.RuntimeException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveDecimalObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.PrimitiveObjectInspector",
+      "calleeMethod": "scale",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.common.type.HiveDecimal",
+      "calleeMethod": "toFormatString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalDayTimeObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.HiveIntervalYearMonthObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveIntervalYearMonthWritable",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampLocalTZObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.TimestampLocalTZWritable",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.TimestampObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.TimestampWritableV2",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.DateObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.DoubleObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "java.lang.String",
+      "calleeMethod": "valueOf",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.FloatObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.ByteStream$Output",
+      "calleeMethod": "reset",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.LongObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.lazy.LazyLong",
+      "calleeMethod": "writeUTF8NoException",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.ByteStream$Output",
+      "calleeMethod": "getData",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.ByteStream$Output",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.IntObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.lazy.LazyInteger",
+      "calleeMethod": "writeUTF8NoException",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.ShortObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$TextConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.ByteObjectInspector",
+      "calleeMethod": "get",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$IntConverter",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$IntConverter",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector",
+      "calleeMethod": "create",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$IntConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getInt",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$IntConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableIntObjectInspector",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$BinaryConverter",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$BinaryConverter",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector",
+      "calleeMethod": "create",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$BinaryConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorUtils",
+      "calleeMethod": "getBinary",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorConverter$BinaryConverter",
+      "callerMethod": "convert",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.SettableBinaryObjectInspector",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaShortObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaShortObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.io.ShortWritable",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getMaxLength",
+      "callee": "org.apache.hadoop.hive.serde2.typeinfo.VarcharTypeInfo",
+      "calleeMethod": "getLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "calleeMethod": "doesPrimitiveMatchTypeParams",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getPrimitiveWithParams",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWithParams",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWithParams",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getWritableWithParams",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getWritableWithParams",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveVarcharWritable",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getWritableWithParams",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "getWritableWithParams",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveVarcharWritable",
+      "calleeMethod": "set",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "calleeMethod": "getMaxLength",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.common.type.HiveVarchar",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveVarcharObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.serde2.typeinfo.BaseCharUtils",
+      "calleeMethod": "doesPrimitiveMatchTypeParams",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.AbstractPrimitiveJavaObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.common.type.HiveIntervalDayTime",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "getPrimitiveJavaObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "calleeMethod": "getPrimitiveJavaObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "calleeMethod": "getPrimitiveWritableObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "getPrimitiveWritableObject",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.common.type.HiveIntervalDayTime",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaHiveIntervalDayTimeObjectInspector",
+      "callerMethod": "set",
+      "callee": "org.apache.hadoop.hive.serde2.io.HiveIntervalDayTimeWritable",
+      "calleeMethod": "getHiveIntervalDayTime",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantFloatObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaFloatObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantFloatObjectInspector",
+      "callerMethod": "getWritableConstantValue",
+      "callee": "org.apache.hadoop.io.FloatWritable",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantDateObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaDateObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.primitive.JavaConstantDateObjectInspector",
+      "callerMethod": "getWritableConstantValue",
+      "callee": "org.apache.hadoop.hive.serde2.io.DateWritableV2",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "<init>",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.SettableUnionObjectInspector",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "create",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector$StandardUnion",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "getField",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.UnionObject",
+      "calleeMethod": "getObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "getTag",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.UnionObject",
+      "calleeMethod": "getTag",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "getTypeName",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorUtils",
+      "calleeMethod": "getStandardUnionTypeName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "setFieldAndTag",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector$StandardUnion",
+      "calleeMethod": "setObject",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "setFieldAndTag",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector$StandardUnion",
+      "calleeMethod": "setTag",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "java.lang.Object",
+      "calleeMethod": "getClass",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "java.lang.Class",
+      "calleeMethod": "getName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "calleeMethod": "getTypeName",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.apache.hadoop.hive.serde2.objectinspector.StandardUnionObjectInspector",
+      "callerMethod": "toString",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-00"
+        ]
+      }
+    }
+  ],
+  "rowCount": 250,
+  "graphCount": 64,
+  "total": {
+    "value": 251,
+    "relation": "gte"
+  }
+}

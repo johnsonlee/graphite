@@ -1,0 +1,567 @@
+{
+  "columns": [
+    "n.graph_id",
+    "caller",
+    "callerMethod",
+    "callee",
+    "calleeMethod"
+  ],
+  "rows": [
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "<clinit>",
+      "callee": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullParameter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.resolve.descriptorUtil.DescriptorUtilsKt",
+      "calleeMethod": "isEffectivelyExternal",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.descriptors.ClassDescriptor",
+      "calleeMethod": "getKind",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullExpressionValue",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "calleeMethod": "check$reportWrongExternalDeclaration",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.descriptors.PropertyDescriptor",
+      "calleeMethod": "isLateInit",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.descriptors.FunctionDescriptor",
+      "calleeMethod": "isTailrec",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check",
+      "callee": "org.jetbrains.kotlin.descriptors.FunctionDescriptor",
+      "calleeMethod": "isSuspend",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check$reportWrongExternalDeclaration",
+      "callee": "org.jetbrains.kotlin.resolve.checkers.DeclarationCheckerContext",
+      "calleeMethod": "getTrace",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check$reportWrongExternalDeclaration",
+      "callee": "org.jetbrains.kotlin.diagnostics.DiagnosticFactory1",
+      "calleeMethod": "on",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.diagnostics.WasmExternalDeclarationChecker",
+      "callerMethod": "check$reportWrongExternalDeclaration",
+      "callee": "org.jetbrains.kotlin.resolve.BindingTrace",
+      "calleeMethod": "report",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "<clinit>",
+      "callee": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "<init>",
+      "callee": "kotlin.collections.CollectionsKt",
+      "calleeMethod": "listOf",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "<init>",
+      "callee": "org.jetbrains.kotlin.resolve.calls.checkers.LateinitIntrinsicApplicabilityChecker",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "<init>",
+      "callee": "org.jetbrains.kotlin.resolve.PlatformConfiguratorBase",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleComponents",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullParameter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleComponents",
+      "callee": "org.jetbrains.kotlin.container.ContainerKt",
+      "calleeMethod": "registerSingleton",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleComponents",
+      "callee": "org.jetbrains.kotlin.container.DslKt",
+      "calleeMethod": "useInstance",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleDependentCheckers",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullParameter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleDependentCheckers",
+      "callee": "org.jetbrains.kotlin.resolve.PlatformConfiguratorBase",
+      "calleeMethod": "configureModuleDependentCheckers",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.resolve.WasmWasiPlatformConfigurator",
+      "callerMethod": "configureModuleDependentCheckers",
+      "callee": "org.jetbrains.kotlin.container.ContainerKt",
+      "calleeMethod": "registerSingleton",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "<clinit>",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section$Companion",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "<clinit>",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "constructor-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "box-impl",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "equals",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "equals-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "equals-impl",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "unbox-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "equals-impl0",
+      "callee": "kotlin.UShort",
+      "calleeMethod": "equals-impl0",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "hashCode",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "hashCode-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "hashCode-impl",
+      "callee": "kotlin.UShort",
+      "calleeMethod": "hashCode-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "toString",
+      "callee": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "calleeMethod": "toString-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "toString-impl",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "toString-impl",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "toString-impl",
+      "callee": "kotlin.UShort",
+      "calleeMethod": "toString-impl",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.convertors.WasmBinary$Section",
+      "callerMethod": "toString-impl",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "<init>",
+      "callee": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "bind",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullParameter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "equals",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "areEqual",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "getOwner",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "getOwner",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "append",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "getOwner",
+      "callee": "java.lang.StringBuilder",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "getOwner",
+      "callee": "java.lang.Object",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "getOwner",
+      "callee": "java.lang.IllegalStateException",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "hashCode",
+      "callee": "java.lang.Object",
+      "calleeMethod": "hashCode",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmSymbol",
+      "callerMethod": "toString",
+      "callee": "java.lang.Object",
+      "calleeMethod": "toString",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmStructFieldDeclaration",
+      "callerMethod": "<init>",
+      "callee": "kotlin.jvm.internal.Intrinsics",
+      "calleeMethod": "checkNotNullParameter",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    },
+    {
+      "caller": "org.jetbrains.kotlin.wasm.ir.WasmStructFieldDeclaration",
+      "callerMethod": "<init>",
+      "callee": "java.lang.Object",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-00"
+        ]
+      }
+    }
+  ],
+  "rowCount": 50,
+  "graphCount": 64,
+  "total": {
+    "value": 51,
+    "relation": "gte"
+  }
+}

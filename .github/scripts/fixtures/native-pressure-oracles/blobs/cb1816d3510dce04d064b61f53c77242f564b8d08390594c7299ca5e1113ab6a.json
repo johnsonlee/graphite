@@ -1,0 +1,101 @@
+{
+  "status": "PASS_EIGHT_COMPLETE_NATIVE_DATAFLOW_LEGAL_RESPONSES_INDEPENDENT_RAW_AUDIT",
+  "proofs": [
+    {
+      "arm": "C",
+      "case": "slow-dataflowSourceHit",
+      "rows": 5,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914",
+      "expectedSha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d"
+    },
+    {
+      "arm": "C",
+      "case": "slow-dataflowTargetHit",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7",
+      "expectedSha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6"
+    },
+    {
+      "arm": "C",
+      "case": "slow-dataflowSourceMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+      "expectedSha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd"
+    },
+    {
+      "arm": "C",
+      "case": "slow-dataflowTargetMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+      "expectedSha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dataflowSourceHit",
+      "rows": 5,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914",
+      "expectedSha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dataflowTargetHit",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7",
+      "expectedSha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dataflowSourceMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+      "expectedSha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd"
+    },
+    {
+      "arm": "B",
+      "case": "slow-dataflowTargetMiss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+      "expectedSha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab"
+    }
+  ],
+  "pins": {
+    "/tmp/graphite-native-dataflow-http-prep-2/plan.json": "3f2e0126d0e71a9ad67aeaa8cc3782bc6291dec95630deae3096a8555566847d",
+    "/tmp/graphite-native-dataflow-http-execution-2/record.json": "af4fa0706f4e6fa55121d1ce9d31aafde49f2dd8728092558bd1b6b0861aa51d",
+    "/tmp/graphite-native-dataflow-http-execution-2/C/record.json": "5893787b5e4e65d4bca27b8a3e0bbc164b2f22cff5758309a7ce719527de4469",
+    "/tmp/graphite-native-dataflow-http-execution-2/C/slow-dataflowSourceHit.body": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowSourceHit-legal-oracle.json": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d",
+    "/tmp/graphite-native-dataflow-http-execution-2/C/slow-dataflowTargetHit.body": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowTargetHit-legal-oracle.json": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6",
+    "/tmp/graphite-native-dataflow-http-execution-2/C/slow-dataflowSourceMiss.body": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowSourceMiss-legal-oracle.json": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd",
+    "/tmp/graphite-native-dataflow-http-execution-2/C/slow-dataflowTargetMiss.body": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowTargetMiss-legal-oracle.json": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab",
+    "/tmp/graphite-native-dataflow-http-execution-2/B/record.json": "41a97c7c43bb5b6e6eaff348322a0bba8b1692899f289b3c722e8543e0b83ab8",
+    "/tmp/graphite-native-dataflow-http-execution-2/B/slow-dataflowSourceHit.body": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowSourceHit-legal-oracle.json": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d",
+    "/tmp/graphite-native-dataflow-http-execution-2/B/slow-dataflowTargetHit.body": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowTargetHit-legal-oracle.json": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6",
+    "/tmp/graphite-native-dataflow-http-execution-2/B/slow-dataflowSourceMiss.body": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowSourceMiss-legal-oracle.json": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd",
+    "/tmp/graphite-native-dataflow-http-execution-2/B/slow-dataflowTargetMiss.body": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc",
+    "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowTargetMiss-legal-oracle.json": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab"
+  },
+  "scope": "All eight DATAFLOW responses checked independently against complete legal LIMIT multisets on C4f/B42377 own64 graphs, including typed values, provenance, multiplicity and total. No encounter-order or performance acceptance claim.",
+  "performanceClaim": false
+}

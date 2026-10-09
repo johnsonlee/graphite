@@ -1,0 +1,59 @@
+{
+  "columns": [
+    "id",
+    "labels",
+    "value",
+    "caller",
+    "graphId"
+  ],
+  "rows": [
+    {
+      "id": 391096,
+      "labels": [
+        "StringConstant",
+        "Constant"
+      ],
+      "graphId": "fixture-android-01",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-01"
+        ]
+      },
+      "value": "android.permission.INTERNET"
+    },
+    {
+      "id": 1176159,
+      "labels": [
+        "StringConstant",
+        "Constant"
+      ],
+      "graphId": "fixture-android-03",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-03"
+        ]
+      },
+      "value": "android.permission.INTERNET"
+    },
+    {
+      "id": 1614123,
+      "labels": [
+        "StringConstant",
+        "Constant"
+      ],
+      "graphId": "fixture-android-04",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-04"
+        ]
+      },
+      "value": "android.permission.INTERNET"
+    }
+  ],
+  "rowCount": 3,
+  "graphCount": 64,
+  "total": {
+    "value": 3,
+    "relation": "eq"
+  }
+}

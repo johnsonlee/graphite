@@ -344,3 +344,35 @@ Those independent audits and packet assembly are still required before CI can
 execute and accept the pressure comparison. No actual run of this new CI stage
 is claimed by the source change; existing local C/B graph receipts were used only
 to verify the portable metadata parser without rebuilding their corpora.
+
+### Portable native query expectations (2026-10-10)
+
+The repository now contains all 39 query expectations under
+`.github/scripts/fixtures/native-pressure-oracles/`. The index binds each exact
+request and target graph list to accepted/candidate payloads, the four source
+JAR hashes, original source revisions, and archived independent audit records.
+There are 38 unique expected payloads and eight archived audit records. Original
+absolute paths remain historical provenance only; the loader never reads them.
+
+Import verified all 78 actual full response bodies against the established
+expectations. The historical 15 retain the original catalog digests, except the
+candidate schema histogram's explicitly separate completed independent authority.
+The 24 additional cases retain persisted-graph-derived expectations. Four DATAFLOW
+cases retain complete legal multisets rather than one observed LIMIT response;
+their policy does not claim encounter order. The original schema catalog is not
+repinned to match the candidate's first response.
+
+CI checks this bundle against the resolved source-JAR manifest before building
+the independent runtime/graph arms. The loader emits
+`PASS_VERSIONED_EXPECTATIONS_FRESH_EXECUTION_PENDING`, not a current runtime or
+performance PASS. All payloads, audit records, the loader and its tests are in the
+preparation control hash closure. Parent-to-accepted aliasing still requires
+actual artifact identity outside this loader.
+
+Validation: 12 portable-loader tests, six legal-policy tests, 90 existing pressure
+tests and 174 JavaScript gate tests pass. Replay against the newly loaded bundle
+checks 78 retained actual bodies and 6,522 rows. Workflow YAML parsing and all 11
+native job shell blocks pass syntax checks. This is portable expectation and
+control validation only; no new server run, fresh fixture semantic-equivalence
+proof, final producer packet, performance acceptance, or successful CI run is
+claimed. Fresh independent artifact audits and HTTP execution remain required.

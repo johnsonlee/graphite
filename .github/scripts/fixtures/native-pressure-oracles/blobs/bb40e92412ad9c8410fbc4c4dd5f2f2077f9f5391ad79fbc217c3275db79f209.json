@@ -1,0 +1,233 @@
+{
+  "status": "PASS_TWENTY_COMPLETE_NATIVE_DISCOVERY_ROUTING_RESPONSES_INDEPENDENT_RAW_AUDIT",
+  "proofs": [
+    {
+      "arm": "C",
+      "case": "wrapped-zero_hit_query",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9",
+      "expectedSha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-dense_distributed_method_query",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000",
+      "expectedSha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-early_graph_prefix_query",
+      "rows": 1,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72",
+      "expectedSha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-middle_graphs_prefix_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc",
+      "expectedSha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-late_graph_prefix_query",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7",
+      "expectedSha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-broadly_distributed_prefix_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6",
+      "expectedSha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-first_last_graph_bimodal_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+      "expectedSha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+    },
+    {
+      "arm": "C",
+      "case": "wrapped-skewed_mixed_operator_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+      "expectedSha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+    },
+    {
+      "arm": "C",
+      "case": "routing-pair-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 2,
+      "bodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+      "expectedSha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6"
+    },
+    {
+      "arm": "C",
+      "case": "routing-pair-miss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 2,
+      "bodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "expectedSha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-zero_hit_query",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9",
+      "expectedSha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-dense_distributed_method_query",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000",
+      "expectedSha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-early_graph_prefix_query",
+      "rows": 1,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72",
+      "expectedSha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-middle_graphs_prefix_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc",
+      "expectedSha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-late_graph_prefix_query",
+      "rows": 50,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7",
+      "expectedSha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-broadly_distributed_prefix_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6",
+      "expectedSha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-first_last_graph_bimodal_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+      "expectedSha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+    },
+    {
+      "arm": "B",
+      "case": "wrapped-skewed_mixed_operator_query",
+      "rows": 250,
+      "graphCount": 64,
+      "actualTargetGraphs": 64,
+      "bodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+      "expectedSha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+    },
+    {
+      "arm": "B",
+      "case": "routing-pair-dense",
+      "rows": 200,
+      "graphCount": 64,
+      "actualTargetGraphs": 2,
+      "bodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+      "expectedSha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6"
+    },
+    {
+      "arm": "B",
+      "case": "routing-pair-miss",
+      "rows": 0,
+      "graphCount": 64,
+      "actualTargetGraphs": 2,
+      "bodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+      "expectedSha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70"
+    }
+  ],
+  "pins": {
+    "/tmp/graphite-native-discovery-http-prep-2/plan.json": "2d7924d511e266bb93bb1a881acc0e8ace443c57c535ab44fb33409d8ada2e1e",
+    "/tmp/graphite-native-discovery-http-execution-2/record.json": "40f815acae86182386163704a41c26927c707d595cc60a7d598c3cf487c68036",
+    "/tmp/graphite-native-discovery-http-execution-2/C/record.json": "8d6254c1d3a88610bcbe5a59bff3e9625d8f6aad517e2ce436f7e44b2ab23435",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-zero_hit_query.body": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-zero_hit_query-expected.json": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-dense_distributed_method_query.body": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-dense_distributed_method_query-expected.json": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-early_graph_prefix_query.body": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-early_graph_prefix_query-expected.json": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-middle_graphs_prefix_query.body": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-middle_graphs_prefix_query-expected.json": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-late_graph_prefix_query.body": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-late_graph_prefix_query-expected.json": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-broadly_distributed_prefix_query.body": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-broadly_distributed_prefix_query-expected.json": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-first_last_graph_bimodal_query.body": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-first_last_graph_bimodal_query-expected.json": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+    "/tmp/graphite-native-discovery-http-execution-2/C/wrapped-skewed_mixed_operator_query.body": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-skewed_mixed_operator_query-expected.json": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+    "/tmp/graphite-native-discovery-http-execution-2/C/routing-pair-dense.body": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/routing-pair-dense-expected.json": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6",
+    "/tmp/graphite-native-discovery-http-execution-2/C/routing-pair-miss.body": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/C/routing-pair-miss-expected.json": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70",
+    "/tmp/graphite-native-discovery-http-execution-2/B/record.json": "9463b263b97c0a89cd17385c7fa2d0b2d23df4671115b6196c8ec7677b43f864",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-zero_hit_query.body": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-zero_hit_query-expected.json": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-dense_distributed_method_query.body": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-dense_distributed_method_query-expected.json": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-early_graph_prefix_query.body": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-early_graph_prefix_query-expected.json": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-middle_graphs_prefix_query.body": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-middle_graphs_prefix_query-expected.json": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-late_graph_prefix_query.body": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-late_graph_prefix_query-expected.json": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-broadly_distributed_prefix_query.body": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-broadly_distributed_prefix_query-expected.json": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-first_last_graph_bimodal_query.body": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-first_last_graph_bimodal_query-expected.json": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+    "/tmp/graphite-native-discovery-http-execution-2/B/wrapped-skewed_mixed_operator_query.body": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-skewed_mixed_operator_query-expected.json": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+    "/tmp/graphite-native-discovery-http-execution-2/B/routing-pair-dense.body": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/routing-pair-dense-expected.json": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6",
+    "/tmp/graphite-native-discovery-http-execution-2/B/routing-pair-miss.body": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0",
+    "/private/tmp/graphite-native-discovery-execution-2/derived/B/routing-pair-miss-expected.json": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70"
+  },
+  "scope": "Exact discovery and routing responses on both C4f/B42377 own64 graphs, including full values, order, provenance and total. Sixteen responses target64 graphs; four target2 with64 loaded. Preserve existing null-first-projection provenance limitation; no complete cross-graph provenance or performance acceptance claim.",
+  "performanceClaim": false
+}
