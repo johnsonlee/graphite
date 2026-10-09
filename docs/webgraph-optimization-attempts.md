@@ -14773,3 +14773,26 @@ result digest `b248dc8e73f50962a0f4ff493c080e0b0787a953a12076b79a6baf7a0f5d290b`
 Decision: preserve this failed protocol and correct the query contract in a new
 version. There are no paired latency, CPU or RSS results from this run;193's
 performance benefit and complete-projection acceptance remain unproven.
+
+### Attempt187 follow-up — actual matched construction writers (2026-10-10)
+
+The parent `9fe388a9` and candidate `28624662` writer packages were built in
+separate clean ordinary clones using the frozen real64 construction preparation.
+Both offline `:webgraph:jmhJar` builds passed with4g heap, APC4, two workers and
+in-process Kotlin compilation. No JMH measurement ran. Each build's854 tracked
+source fingerprints remained unchanged, copied JAR bytes matched its actual
+build output, and both owned process groups exited without remaining processes
+or cleanup errors. Root independently rechecked those facts and the original
+accepted4f writer digest. This establishes the writers needed for the fixed
+CABBAC construction comparison; it supplies no construction performance samples.
+
+Command: `python3 -B /private/tmp/graphite-attempt187-real64-construction-prep-1/run.py
+build-writers --execute-assigned-slot`. Receipt:
+`/private/tmp/graphite-attempt187-real64-writers-1/writers.json`, SHA-256
+`fc3a8ea01aad22b45daa48ea22b0e20438fcf09be36cc71cc9ae455a391ae89a`.
+Parent JAR SHA-256 is
+`769049550d915ba08a23f02c1f74246c0a5acf066803f4450dfbcfbae08fd626`;
+candidate is `8e9b054268504c5ca8a9f35dbceab80822f47e746d3aed4634b73fdeddde14ca`.
+The adjacent `root-review.json` records the independent source/JAR review.
+Measurement remains queued behind the complete-projection comparison, with the
+separate full semantic proof still required.
