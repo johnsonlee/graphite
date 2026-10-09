@@ -14379,3 +14379,59 @@ denied and formatting checks passed. Evidence:
 
 Decision: preserve this correctness-verified candidate for matched multi-graph
 measurement. Source inference alone is not evidence of a performance benefit.
+
+### Attempt191 — conservative Native declared-text summary (2026-10-10)
+
+Hypothesis: adding generic_type/type_info turns declaration-bearing tags into
+per-node generic evaluation during dynamic keys(n) searches. A compact negative
+text summary can prove that a generic property cannot satisfy an exact CONTAINS
+literal and restore the existing raw/column scan for those tags. The prior
+full39 diagnostic measured dynamic-search p95 around16.2–16.4s versus0.4–0.6s
+on the accepted baseline; no benefit is claimed before a matched candidate run.
+
+Parent: presence-only attempt190 at `3e2020251c6c1509a934a9ef7d809bd32e675d61`;
+candidate: this entry's commit. Accepted baseline remains4f2ccf33. The immutable
+loader builds a31,768-byte ASCII unigram/bigram/trigram union from type atoms,
+kind/variance words, structured-map keys and complete generated scopes. GTY05
+method descriptors stream across raw-type boundaries so adjacent primitive
+parameters cannot produce a missing-gram false negative. Formatted generic
+strings are not retained. Construction stops after16MiB of inspected text and
+falls back conservatively; literals over4KiB also retain the complete path.
+Mutable/custom backings have no authoritative negative summary.
+
+Planning only considers untransformed keys-quantifier CONTAINS leaves, and a key
+is excluded only when every occurrence is proved impossible. Punctuation and
+Unicode split ASCII runs; neither creates a negative by itself. Unknown/mixed
+leaves retain the original full predicate. A borrowed traversal avoids cloning
+predicates and is skipped unless an applicable tag has a generic scan plan.
+Existing query budgets, cancellation checks and fallback paths remain in place.
+
+Independent review found two existing keys-expansion hazards newly exposed by
+more effective pruning: extra toString arguments could lose their evaluation,
+and a quantifier variable could shadow the scanned node. The expander now
+requires one toString argument and rejects that shadowing. Tests compare actual
+error/row behavior with a CASE-wrapped path that cannot use scan pushdown.
+Additional tests cover every short substring and complete text of actual rendered
+and structured properties from mandatory GTY01–05 fixtures, scope descriptor
+joins, mutation fallback and uncertain predicates.
+
+The first isolated workspace build failed because three new test assertions
+compared Value-containing rows with PartialEq, which Value intentionally does
+not implement. Only those assertions changed to ordered key/value-debug pairs;
+the tested queries project scalar IDs and graph IDs, preserving type and row
+order. The initial compiler log remains in `/tmp/graphite-attempt191-validation/`.
+The corrected cumulative candidate passed all440 Native workspace tests,
+all-target/all-feature Clippy with warnings denied, and formatting checks:
+`/tmp/graphite-attempt191-validation-2/record.json` and its phase logs.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | Native440 PASS; Clippy/format PASS; complete owned cleanup |
+| Construction | Writer unchanged; no construction performance claim |
+| Loading CPU / RSS / readiness | Extra bounded summary work and31,768 retained bytes per populated summary; real multi-graph effect not measured yet |
+| Query p50 / p95 / CPU / RSS | Candidate not measured yet; prior diagnostic regression remains unresolved |
+| Overall recovery / merge readiness | Not established |
+
+Decision: preserve the correctness-verified cumulative candidate for independent
+parent-relative and accepted-baseline multi-graph comparisons. Loading and
+queries require separate measurement; a query gain cannot waive a loading cost.

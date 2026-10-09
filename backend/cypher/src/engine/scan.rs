@@ -982,6 +982,23 @@ impl ScanPlan {
             }
             _ => None,
         };
+        // A negative summary only removes a generic leaf when every occurrence
+        // of that key is an untransformed CONTAINS proven absent. MAYBE retains
+        // the complete original predicate and its ordinary fallback.
+        let declaration_tags = [
+            graphite_storage::node::TAG_FIELD_NODE,
+            graphite_storage::node::TAG_PARAMETER_NODE,
+            graphite_storage::node::TAG_RETURN_NODE,
+        ];
+        let absent_generic = if declaration_tags.iter().any(|&tag| {
+            matches!(plans[tag as usize], TagPlan::Generic)
+                && !graph.ids_by_tag(tag).is_empty()
+                && super::props::has_declared_types_for_tag(graph, tag)
+        }) {
+            declared_text_absent(graph, &self.tree)
+        } else {
+            [false; 2]
+        };
         let mut streams: Vec<PreparedStream> = Vec::new();
         for &tag in &self.tags {
             let plan = &plans[tag as usize];
@@ -994,7 +1011,15 @@ impl ScanPlan {
                     | graphite_storage::node::TAG_PARAMETER_NODE
                     | graphite_storage::node::TAG_RETURN_NODE
             ) && !super::props::has_declared_types_for_tag(graph, tag);
-            let plan = if (tag == TAG_ANNOTATION_NODE || missing_declarations)
+            let declared_tag = matches!(
+                tag,
+                graphite_storage::node::TAG_FIELD_NODE
+                    | graphite_storage::node::TAG_PARAMETER_NODE
+                    | graphite_storage::node::TAG_RETURN_NODE
+            );
+            let plan = if (tag == TAG_ANNOTATION_NODE
+                || missing_declarations
+                || (declared_tag && absent_generic.iter().any(|absent| *absent)))
                 && matches!(plan, TagPlan::Generic)
             {
                 contextual_plan = tag_plan(
@@ -1005,7 +1030,11 @@ impl ScanPlan {
                             !matches!(key, "name" | "class" | "member" | "values")
                                 && graph.strings().index_of(key).is_none()
                         } else {
-                            matches!(key, "generic_type" | "type_info")
+                            match key {
+                                "generic_type" => missing_declarations || absent_generic[0],
+                                "type_info" => missing_declarations || absent_generic[1],
+                                _ => false,
+                            }
                         }
                     },
                     &synthetic,
@@ -3421,6 +3450,52 @@ impl ColumnLeaf {
     }
 }
 
+/// A key can be treated as absent only if all its leaves are independently
+/// impossible. Only keys-quantifier leaves qualify: arbitrary coalesce wrappers
+/// may introduce text on an absent binding. A second supported/unsupported test must never be
+/// hidden by a negative result for the first literal.
+fn declared_text_absent(graph: &Graph, tree: &PredTree) -> [bool; 2] {
+    let Some(table) = graph.declared_types() else {
+        return [false; 2];
+    };
+    fn visit(
+        tree: &PredTree,
+        table: &graphite_storage::types::DeclaredTypes,
+        seen: &mut [bool; 2],
+        absent: &mut [bool; 2],
+    ) {
+        match tree {
+            PredTree::Leaf(leaf) => {
+                let index = match leaf.prop() {
+                    "generic_type" => 0,
+                    "type_info" => 1,
+                    _ => return,
+                };
+                seen[index] = true;
+                if absent[index]
+                    && (!leaf.from_keys
+                        || leaf.shape != LeafShape::Text
+                        || leaf.op != PushOp::Contains
+                        || leaf.transform != Transform::None
+                        || (index == 1 && !leaf.via_to_string)
+                        || table.generic_text_may_contain(&leaf.literal))
+                {
+                    absent[index] = false;
+                }
+            }
+            PredTree::Or(children) | PredTree::And(children) => {
+                for child in children {
+                    visit(child, table, seen, absent);
+                }
+            }
+        }
+    }
+    let mut seen = [false; 2];
+    let mut absent = [true; 2];
+    visit(tree, table, &mut seen, &mut absent);
+    [seen[0] && absent[0], seen[1] && absent[1]]
+}
+
 /// A column plan resolved against one graph: the tree with each leaf's matching ids.
 enum ColumnTree {
     Leaf(ColumnLeaf),
@@ -3744,7 +3819,9 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
     else {
         return false;
     };
-    if !name.eq_ignore_ascii_case("any") {
+    // The quantifier binds its variable before evaluating the predicate. If it
+    // shadows the scan variable, n[n] reads the key string, not the graph node.
+    if !name.eq_ignore_ascii_case("any") || key_var == variable {
         return false;
     }
     match list.as_ref() {
@@ -3768,7 +3845,12 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
     let subscripted = |operand: &Expr| -> Option<bool> {
         let (inner, via) = match operand {
             Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("tostring") => {
-                (args.first()?, true)
+                // Extra arguments still evaluate (and can fail) in the ordinary
+                // evaluator. Pushdown must never discard their work or errors.
+                let [argument] = args.as_slice() else {
+                    return None;
+                };
+                (argument, true)
             }
             other => (other, false),
         };
@@ -4072,6 +4154,224 @@ mod tests {
             Pruned::True => "true",
             Pruned::Generic => "generic",
             Pruned::Tree(_) => "tree",
+        }
+    }
+
+    fn ordered_test_rows(rows: &[crate::semantics::Row]) -> Vec<Vec<(String, String)>> {
+        rows.iter()
+            .map(|row| {
+                row.iter()
+                    .map(|(key, value)| (key.clone(), format!("{value:?}")))
+                    .collect()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn keys_expansion_rejects_tostring_arity_and_shadowed_node_variables() {
+        for predicate in [
+            "any(k IN keys(n) WHERE toString(n[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(properties(n)[k], 'unused') CONTAINS 'first')",
+            "any(k IN keys(n) WHERE toString() CONTAINS 'ZZZAbsent')",
+            "any(n IN keys(n) WHERE toString(n[n]) CONTAINS 'first')",
+            "any(n IN keys(n) WHERE toString(properties(n)[n]) CONTAINS 'first')",
+        ] {
+            let query = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
+            let (patterns, condition) = parse_where(&query);
+            assert!(
+                ScanPlan::build(&patterns, condition.as_ref()).is_none(),
+                "{query}"
+            );
+        }
+        let (patterns, condition) = parse_where("MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'first') RETURN id(n)");
+        assert!(ScanPlan::build(&patterns, condition.as_ref()).is_some());
+    }
+
+    #[test]
+    fn keys_expansion_preserves_argument_errors_and_shadowed_variable_results() {
+        let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none()
+                    && std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_TYPES_FIXTURE required for keys expansion parity"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        assert!(graph.count_by_tag(TAG_FIELD_NODE) > 0);
+        let ex = Executor::single("generic", std::sync::Arc::new(graph));
+        let queries = |predicate: &str| {
+            let direct = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
+            // CASE is deliberately outside scan predicate extraction. It leaves
+            // WHERE truth/error semantics unchanged without global env mutation.
+            let fallback = format!("MATCH (n:FieldNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n)");
+            let (patterns, condition) = parse_where(&fallback);
+            assert!(
+                ScanPlan::build(&patterns, condition.as_ref()).is_none(),
+                "{fallback}"
+            );
+            (direct, fallback)
+        };
+        for predicate in [
+            "any(k IN keys(n) WHERE toString(n[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(properties(n)[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+        ] {
+            let (direct, fallback) = queries(predicate);
+            let actual = ex.execute(&direct, None).unwrap_err().to_string();
+            let expected = ex.execute(&fallback, None).unwrap_err().to_string();
+            assert!(actual.contains("Unknown function"), "{actual}");
+            assert_eq!(actual, expected);
+        }
+        for predicate in [
+            "any(n IN keys(n) WHERE toString(n[n]) CONTAINS 'first')",
+            "any(n IN keys(n) WHERE toString(properties(n)[n]) CONTAINS 'first')",
+        ] {
+            let (direct, fallback) = queries(predicate);
+            let actual = ex.execute(&direct, None).unwrap().rows;
+            assert!(actual.is_empty(), "shadowed n is a key string: {direct}");
+            assert_eq!(
+                ordered_test_rows(&actual),
+                ordered_test_rows(&ex.execute(&fallback, None).unwrap().rows)
+            );
+        }
+        let (direct, fallback) =
+            queries("any(k IN keys(n) WHERE toString(n[k], 'unused') CONTAINS 'first')");
+        let actual = ex.execute(&direct, None).unwrap().rows;
+        assert!(
+            !actual.is_empty(),
+            "the retained typed fixture has the first field"
+        );
+        assert_eq!(
+            ordered_test_rows(&actual),
+            ordered_test_rows(&ex.execute(&fallback, None).unwrap().rows)
+        );
+    }
+
+    #[test]
+    fn declared_summary_never_rejects_actual_rendered_and_structured_fixture_text() {
+        let variables = [
+            "GRAPHITE_TYPES_V1_FIXTURE",
+            "GRAPHITE_TYPES_V2_FIXTURE",
+            "GRAPHITE_TYPES_V3_FIXTURE",
+            "GRAPHITE_TYPES_V4_FIXTURE",
+            "GRAPHITE_TYPES_FIXTURE",
+        ];
+        for variable in variables {
+            let Some(dir) = std::env::var_os(variable) else {
+                assert!(
+                    std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                    "{variable} required"
+                );
+                continue;
+            };
+            let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+            let table = graph.declared_types().unwrap();
+            let mut checked = 0;
+            for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+                for &id in graph.ids_by_tag(tag) {
+                    let node = graph.node(id).unwrap();
+                    for key in ["generic_type", "type_info"] {
+                        let value = super::super::props::node_property(&graph, &node, key);
+                        if value.is_null() {
+                            continue;
+                        }
+                        let text = crate::semantics::kotlin_to_string_plain(&value);
+                        assert!(
+                            table.generic_text_may_contain(&text),
+                            "{variable}: {key}: {text}"
+                        );
+                        // Every possible negative is a missing 1/2/3-gram within
+                        // an ASCII run. Check every short substring of the actual
+                        // projection, including generated punctuation boundaries.
+                        let ends: Vec<_> = text
+                            .char_indices()
+                            .map(|(i, _)| i)
+                            .chain([text.len()])
+                            .collect();
+                        for a in 0..ends.len() {
+                            for b in a..(a + 5).min(ends.len()) {
+                                assert!(
+                                    table.generic_text_may_contain(&text[ends[a]..ends[b]]),
+                                    "{variable}: {key}: {:?}",
+                                    &text[ends[a]..ends[b]]
+                                );
+                            }
+                        }
+                        checked += 1;
+                    }
+                }
+            }
+            assert!(checked > 0, "{variable}: no generic projections checked");
+        }
+    }
+
+    #[test]
+    fn declared_negative_summary_preserves_uncertain_leaves_and_complete_query_rows() {
+        use super::super::Source;
+        use std::sync::Arc;
+        let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_TYPES_FIXTURE required for declared summary validation"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        let mut absent = leaf("generic_type", PushOp::Contains, "ZZZAbsent");
+        if let PredTree::Leaf(p) = &mut absent {
+            p.from_keys = true;
+        }
+        assert!(declared_text_absent(&graph, &absent)[0]);
+        for mut mixed in [
+            leaf("generic_type", PushOp::Contains, ""),
+            leaf("generic_type", PushOp::StartsWith, "ZZZAbsent"),
+            leaf("generic_type", PushOp::Contains, "ZZZAbsent"),
+        ] {
+            if let PredTree::Leaf(p) = &mut mixed {
+                p.from_keys = true;
+                if p.op == PushOp::Contains && !p.literal.is_empty() {
+                    p.transform = Transform::Lowercase;
+                }
+            }
+            assert!(!declared_text_absent(&graph, &PredTree::Or(vec![absent.clone(), mixed]))[0]);
+        }
+        assert!(
+            !declared_text_absent(&graph, &leaf("type_info", PushOp::Contains, "ZZZAbsent"))[1]
+        );
+        let mut owned = Graph::load(std::path::Path::new(&dir)).unwrap();
+        owned.update_declared_types(|_| {});
+        assert!(!declared_text_absent(&owned, &absent)[0]);
+        let ex = Executor::new(
+            vec![Source {
+                id: "generic".into(),
+                graph: Arc::new(graph),
+            }],
+            true,
+        );
+        let slow = Executor::new(
+            vec![Source {
+                id: "generic".into(),
+                graph: Arc::new(owned),
+            }],
+            true,
+        );
+        // Owning mutation is an independent fallback selector: same declarations,
+        // no negative summary, so generic leaves retain the full row predicate.
+        for literal in [
+            "ZZZAbsent",
+            "java",
+            "<",
+            "arguments=[]",
+            "scope=method:",
+            "",
+            "类型",
+        ] {
+            let query = format!("MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN id(n), n.graphId LIMIT 50");
+            assert_eq!(
+                ordered_test_rows(&ex.execute(&query, None).unwrap().rows),
+                ordered_test_rows(&slow.execute(&query, None).unwrap().rows),
+                "{query}"
+            );
         }
     }
 

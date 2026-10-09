@@ -14,6 +14,8 @@ use std::sync::Arc;
 mod raw;
 #[path = "types_repr.rs"]
 mod repr;
+#[path = "types_text_summary.rs"]
+mod text_summary;
 #[cfg(test)]
 use repr::{BorrowedMemberKey, MemberKey};
 pub use repr::{
@@ -533,10 +535,13 @@ impl DeclaredTypes {
             Some(strings) => repr::TextStore::Shared(strings.clone()),
             None => repr::TextStore::Owned(r.strings.into_iter().collect()),
         };
-        let table = Self {
+        let mut table = Self {
             storage: Storage::Compact(table),
         };
         table.validate()?;
+        if let Storage::Compact(compact) = &mut table.storage {
+            compact.finish_text_summary();
+        }
         Ok(table)
     }
     fn validate(&self) -> Result<(), TypeError> {

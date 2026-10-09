@@ -297,6 +297,7 @@ pub(super) struct CompactTable {
     method_formals: Vec<TypeParameter<usize, u64>>,
     classes: MemberIndex<1, ClassTypes<usize, u64>>,
     fingerprints: RandomState,
+    text_summary: Option<super::text_summary::TextSummary>,
 }
 #[derive(Debug)]
 struct StoredMethod {
@@ -305,6 +306,66 @@ struct StoredMethod {
     type_parameters: Range<usize>,
 }
 impl CompactTable {
+    /// Only validated immutable tables publish a negative summary. Each atom is
+    /// visited once; generated scope bytes are streamed across descriptor joins.
+    pub(super) fn finish_text_summary(&mut self) {
+        use super::text_summary::Builder;
+        self.text_summary = None;
+        let mut builder = Builder::new();
+        for t in &self.types {
+            for text in [
+                self.kind(t.kind),
+                self.name(t.name),
+                self.variance(t.variance),
+            ] {
+                builder.begin_text();
+                if !builder.add_bytes(text.bytes()) {
+                    return;
+                }
+            }
+            builder.begin_text();
+            if !self.add_scope_summary(t.scope, &mut builder) {
+                return;
+            }
+        }
+        self.text_summary = Some(builder.finish());
+    }
+    fn add_scope_summary(&self, scope: u64, builder: &mut super::text_summary::Builder) -> bool {
+        if !self.structural {
+            return builder.add_bytes(self.texts.text(scope as usize).bytes());
+        }
+        let tag = scope & 7;
+        if tag == 0 {
+            return true;
+        }
+        let row = (scope >> 3) as usize;
+        if tag >= 3 && !builder.add_bytes(b"unresolved:".iter().copied()) {
+            return false;
+        }
+        if tag == 1 || tag == 3 {
+            let (key, _) = self.classes.get_index(row).expect("validated class scope");
+            builder.add_bytes(b"class:".iter().copied())
+                && builder.add_bytes(self.texts.text(key.ids[0]).bytes())
+        } else {
+            let (key, _) = self.methods.get_index(row).expect("validated method scope");
+            if !(builder.add_bytes(b"method:".iter().copied())
+                && builder.add_bytes(self.texts.text(key.ids[0]).bytes())
+                && builder.add_bytes(b"#".iter().copied())
+                && builder.add_bytes(self.texts.text(key.ids[1]).bytes()))
+            {
+                return false;
+            }
+            if self.descriptorless {
+                builder.add_bytes(raw::signature_bytes(
+                    &self.types,
+                    &self.texts,
+                    &self.signatures[key.ids[2]],
+                ))
+            } else {
+                builder.add_bytes(self.texts.text(key.ids[2]).bytes())
+            }
+        }
+    }
     fn kind(&self, id: usize) -> &str {
         if self.structural {
             ["class", "primitive", "array", "variable", "wildcard"][id]
@@ -665,6 +726,17 @@ impl std::fmt::Debug for DeclaredTypes {
     }
 }
 impl DeclaredTypes {
+    /// Negative-only test for plain CONTAINS on rendered generic_type/type_info.
+    /// Mutable/custom tables have no validated summary and always answer MAYBE.
+    pub fn generic_text_may_contain(&self, literal: &str) -> bool {
+        match &self.storage {
+            Storage::Compact(table) => table
+                .text_summary
+                .as_ref()
+                .is_none_or(|summary| summary.may_contain(literal)),
+            Storage::Owned(_) => true,
+        }
+    }
     fn text(&self, id: usize) -> &str {
         match &self.storage {
             Storage::Compact(t) => t.texts.text(id),
