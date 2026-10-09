@@ -2,10 +2,12 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.graph.ClassTypes
 import io.johnsonlee.graphite.graph.DeclaredType
+import io.johnsonlee.graphite.graph.DeclaredTypeExpansionBudget
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
 import io.johnsonlee.graphite.graph.TypeParameter
+import it.unimi.dsi.fastutil.ints.IntArrayList
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
@@ -56,6 +58,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private val types = mutableListOf<DeclaredType>()
     private val ids = HashMap<DeclaredType, Int>()
     private val heights = mutableListOf<Int>()
+    private val expandedNodes = IntArrayList()
+    private val expandedBytes = IntArrayList()
     private val environments = HashMap<String, Map<String, String>>()
 
     fun build(): DeclaredTypeTable {
@@ -170,10 +174,20 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private fun classScope(name: String) = "class:$name"
     private fun methodScope(key: MemberTypeKey) = "method:${key.owner}#${key.name}${key.descriptor}"
     private fun intern(type: DeclaredType): Int = ids.getOrPut(type) {
-        val height = 1 + ((type.arguments + listOfNotNull(type.owner, type.component)).maxOfOrNull { heights[it] } ?: 0)
+        val children = type.arguments + listOfNotNull(type.owner, type.component)
+        val height = 1 + (children.maxOfOrNull { heights[it] } ?: 0)
         require(height <= DeclaredTypeTable.MAX_DEPTH) { "Excessive generic signature nesting" }
+        var nodes = 1
+        var bytes = DeclaredTypeExpansionBudget.textBytes(type)
+        children.forEach { child ->
+            nodes = DeclaredTypeExpansionBudget.addNodes(nodes, expandedNodes.getInt(child))
+            bytes = DeclaredTypeExpansionBudget.addBytes(bytes, expandedBytes.getInt(child))
+        }
+        DeclaredTypeExpansionBudget.validate(nodes, bytes)
         types.add(type)
         heights.add(height)
+        expandedNodes.add(nodes)
+        expandedBytes.add(bytes)
         types.lastIndex
     }
     private fun classType(name: String): Int = intern(DeclaredType("class", name))
@@ -197,6 +211,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         while (types.size > checkpoint) {
             ids.remove(types.removeAt(types.lastIndex))
             heights.removeAt(heights.lastIndex)
+            expandedNodes.removeInt(expandedNodes.size - 1)
+            expandedBytes.removeInt(expandedBytes.size - 1)
         }
     }
 
