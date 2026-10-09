@@ -14899,3 +14899,56 @@ Automatic six-cell raw audit/report SHA-256 is
 `18fb2938119571574b7dae15f5fa618232fdb617f7f13ceef21fcafb58a551c4`.
 The first failed ordering-contract run remains intact; no failed sample was
 relabelled, discarded or included as a successful measurement.
+
+
+### Attempt187 follow-up — completed real64 construction comparison (2026-10-10)
+
+The fixed CABBAC construction run completed on macOS ARM64 with the accepted
+`4f2ccf33` writer (C), parent `9fe388a9` (A), and candidate `28624662` (B).
+Each fresh JVM used `-Xmx4g -XX:ActiveProcessorCount=4` and produced its own
+64 real graphs, including production indexes and embedded readback before the
+measured process exited. Input hashing, splitting, graph construction, saving,
+and required preparation were inside the boundary; writer compilation and the
+subsequent independent `--verify` invocation were outside. The protocol used
+matched prewarming; these are not cold-cache measurements.
+
+| Cell | Wall (s) | Total CPU (s) | Peak RSS (bytes) |
+|---|---:|---:|---:|
+| 01 C | 238.09 | 303.50 | 4,114,595,840 |
+| 02 A | 267.40 | 356.26 | 4,182,753,280 |
+| 03 B | 268.29 | 360.75 | 3,682,107,392 |
+| 04 B | 269.19 | 357.60 | 3,670,622,208 |
+| 05 A | 264.99 | 345.22 | 3,699,703,808 |
+| 06 C | 246.13 | 321.21 | 3,624,747,008 |
+
+Against the parent, candidate wall time increases 0.89/4.20 seconds, CPU
+increases 4.49/12.38 seconds (+1.260/+3.586%), and peak RSS decreases
+500,645,888/29,081,600 bytes. Both parent-relative resource comparisons remain
+within the 5% limits. Retain the declaration-lifetime change for its observed
+RSS benefit; the two directions show substantial RSS variability and do not
+justify extrapolating the larger saving.
+
+Against accepted4f, wall time increases 30.20/23.06 seconds and CPU increases
+57.25/36.39 seconds (+18.863/+11.329%). RSS changes by
+−432,488,448/+45,875,200 bytes and passes the limit in both directions.
+Construction CPU and end-to-end recovery remain unresolved. Query p50/p95 and
+loading are separate operations and cannot be inferred from these samples.
+
+All six construction and six readback invocations exited normally, with no
+cleanup errors, retries, discarded cells, or remaining owned processes. Root
+independently parsed all six raw BSD time records, checked all 12 phase exits,
+cleanup and log hashes, and recomputed the four paired resource comparisons.
+This verifies execution and resource capture. Complete cross-revision graph
+semantic equivalence, including the independently justified local-array
+corrections, is still pending; performance acceptance remains false.
+
+Command: `python3 -B /private/tmp/graphite-attempt187-real64-construction-prep-1/run.py
+measure --execute-assigned-slot`. The single raw audit used the adjacent
+`audit.py --plan plan.json --root
+/private/tmp/graphite-attempt187-real64-construction-1 --output
+/private/tmp/graphite-attempt187-real64-construction-1/resource-audit.json`.
+Raw evidence and independent review are in that output directory.
+Resource audit SHA-256:
+`7a590fab2a4c852e9faeb8f3c7ae647f41b0be8540b17e63f80dddd03f93000c`;
+execution record SHA-256:
+`ad95c8a946df277c911f75944a75eb62edf6aeecdced56e92b83f763f6a56780`.
