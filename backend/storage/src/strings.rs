@@ -4,6 +4,7 @@
 use crate::javaser::{read_object, JavaSerError, Value};
 use crate::source::GraphSource;
 use sha2::{Digest, Sha256};
+use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error)]
 pub enum StringTableError {
@@ -15,12 +16,18 @@ pub enum StringTableError {
     Layout(String),
 }
 
+#[derive(Clone, Debug)]
 pub struct StringTable {
+    backing: Arc<StringBacking>,
+    identity: Option<[u8; 32]>,
+    serialized_digest: Option<[u8; 32]>,
+}
+
+#[derive(Debug)]
+struct StringBacking {
     arena: Vec<u8>,
     /// `offsets[i]..offsets[i+1]` is string i (UTF-8).
     offsets: Vec<u32>,
-    identity: Option<[u8; 32]>,
-    serialized_digest: Option<[u8; 32]>,
     invalid_utf16: Vec<usize>,
 }
 
@@ -168,17 +175,19 @@ impl StringTable {
         }
         arena.shrink_to_fit();
         Ok(StringTable {
-            arena,
-            offsets,
+            backing: Arc::new(StringBacking {
+                arena,
+                offsets,
+                invalid_utf16,
+            }),
             identity: None,
             serialized_digest: verified.then(|| Sha256::digest(data).into()),
-            invalid_utf16,
         })
     }
 
     #[inline]
     pub fn len(&self) -> usize {
-        self.offsets.len() - 1
+        self.backing.offsets.len() - 1
     }
 
     #[inline]
@@ -188,10 +197,10 @@ impl StringTable {
 
     #[inline]
     pub fn get(&self, i: usize) -> &str {
-        let s = self.offsets[i] as usize;
-        let e = self.offsets[i + 1] as usize;
+        let s = self.backing.offsets[i] as usize;
+        let e = self.backing.offsets[i + 1] as usize;
         // SAFETY: arena is built from valid UTF-8 strings at these boundaries.
-        unsafe { std::str::from_utf8_unchecked(&self.arena[s..e]) }
+        unsafe { std::str::from_utf8_unchecked(&self.backing.arena[s..e]) }
     }
 
     /// Available only when the same serialized input was fully hashed and decoded.
@@ -205,7 +214,7 @@ impl StringTable {
                 "unverified shared string table".into(),
             ));
         }
-        if i >= self.len() || self.invalid_utf16.binary_search(&i).is_ok() {
+        if i >= self.len() || self.backing.invalid_utf16.binary_search(&i).is_ok() {
             return Err(StringTableError::Layout(
                 "invalid shared string ID or UTF-16 text".into(),
             ));

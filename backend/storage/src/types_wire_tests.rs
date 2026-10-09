@@ -1,3 +1,4 @@
+use super::MutableDeclaredTypes as DeclaredTypes;
 use super::*;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::BuildHasherDefault;
@@ -212,11 +213,65 @@ fn full_table() -> DeclaredTypes {
     table
 }
 
+// Exercise the loaded ID/backing path directly, before any owned test-model
+// conversion. Expected values remain the independent wire writer's full model.
+fn assert_compact_values(actual: &crate::types::DeclaredTypes, expected: &MutableDeclaredTypes) {
+    assert!(matches!(
+        actual.storage,
+        crate::types::repr::Storage::Compact(_)
+    ));
+    assert_eq!(actual.to_mutable(), *expected);
+    assert_eq!(
+        actual.field_entries().collect::<Vec<_>>(),
+        expected
+            .fields
+            .iter()
+            .map(|(k, v)| ([k.0.as_ref(), k.1.as_ref(), k.2.as_ref()], *v))
+            .collect::<Vec<_>>()
+    );
+    for id in 0..expected.types.len() {
+        assert_eq!(actual.render(id), expected.render(id));
+    }
+    for ((owner, name, desc), id) in &expected.fields {
+        assert_eq!(actual.field_type(owner, name, desc), Some(*id));
+    }
+    for ((owner, name, desc), m) in &expected.methods {
+        let view = actual.method_types(owner, name, desc).unwrap();
+        assert_eq!(view.parameters, m.parameters);
+        assert_eq!(view.returns, m.returns);
+        assert_eq!(
+            view.type_parameters
+                .iter()
+                .map(|p| (p.name, p.scope, p.bounds))
+                .collect::<Vec<_>>(),
+            m.type_parameters
+                .iter()
+                .map(|p| (p.name.as_ref(), p.scope.as_ref(), p.bounds.as_slice()))
+                .collect::<Vec<_>>()
+        );
+    }
+    assert_eq!(
+        actual
+            .class_entries()
+            .map(|(key, c)| (key, c.superclass, c.interfaces))
+            .collect::<Vec<_>>(),
+        expected
+            .classes
+            .iter()
+            .map(|(key, c)| (key.as_ref(), c.superclass, c.interfaces.as_slice()))
+            .collect::<Vec<_>>()
+    );
+}
+
 #[test]
 fn v1_v2_complete_tables_renders_and_shared_text_identity_agree() {
     let expected = full_table();
     for pooled in [false, true] {
         let wire = encode(&expected, pooled, &[]);
+        assert_compact_values(
+            &crate::types::DeclaredTypes::parse(&wire.bytes, b"metadata").unwrap(),
+            &expected,
+        );
         let actual = DeclaredTypes::parse(&wire.bytes, b"metadata").unwrap();
         assert_eq!(actual, expected);
         assert_eq!(
