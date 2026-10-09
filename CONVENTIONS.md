@@ -15,14 +15,17 @@
 - Performance benchmarks and performance regression gates must use real persisted graph datasets
   representative of the production workload. If the required real graphs are unavailable, report
   the performance evidence as unavailable; never substitute synthetic measurements.
+- **Multi-graph load tests are the only performance regression acceptance standard. Single-graph
+  runs are correctness gates only.** Do not run or require single-graph performance measurements,
+  including JMH, for diagnosis, candidate selection or regression acceptance. Every measured query
+  must actually target multiple graphs; loading multiple graphs alone does not qualify.
 - After fixing or tightening unit tests for a performance-sensitive path, rerun the relevant module tests and lint gate.
 - Every PR must pass the required `benchmark-regression-gate` check. The check runs the base and PR revisions on the same GitHub runner and updates a benchmark result comment on the PR.
-- The benchmark comment is the standard method-level and end-to-end evidence. A PR body may link to it instead of copying the same tables.
+- The benchmark comment is the standard multi-graph load-test evidence. A PR body may link to it instead of copying the same tables. Historical single-graph timings do not establish performance acceptance.
 - Additional benchmark evidence in a PR body must include the benchmark command, environment summary, exact benchmark names, result table, and a comparison against `main`.
-- Method-level benchmark data must come from the most relevant JMH class for the touched code. For Cypher query changes, include `CypherBenchmark`.
-- Automated end-to-end data comes from `LargeCorpusPerformanceGateTest`, which covers `JAR -> build -> save -> mapped load -> Cypher query`; targeted manual investigations may add `GraphEndToEndBenchmark` data.
-- If a change touches persisted graph loading or large-corpus query behavior, also include the relevant load/query benchmark class, such as `AndroidQueryBenchmark`, `AndroidLoadBenchmark`, `LargeCorpusQueryBenchmark`, or `LargeCorpusLoadBenchmark`.
-- The PR body must explicitly state whether the benchmark comparison indicates a performance regression, including separate conclusions for method-level and end-to-end results.
+- Select benchmark implementations by their actual multi-graph workload and declared load, not their class names. Do not run a single-graph benchmark to satisfy a former method-level or end-to-end requirement. Retain its correctness checks as correctness gates.
+- For construction, loading and query changes, report their respective multi-graph workload boundaries and results. Query acceptance must include representative concurrent requests, p50/p95 latency, CPU, RSS and complete result consumption. Distinguish diagnostic batches from the declared load-test acceptance workload.
+- The PR body must explicitly state whether the multi-graph load-test comparison indicates a performance regression, with separate conclusions for each affected operation. Existing single-graph CI timing requirements must be reconciled with this rule rather than treated as performance acceptance evidence.
 - If benchmark results cannot be produced, state the blocker in the PR description rather than leaving performance unaddressed.
 
 ### Performance experiment history
