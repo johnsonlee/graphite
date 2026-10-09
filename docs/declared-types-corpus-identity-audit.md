@@ -724,3 +724,36 @@ claims are rejected. CI runs the new tests; control hashes remain verified.
 Evidence: `/tmp/graphite-native-fresh39-adapter-prep-1/validation-2.json` and
 `/tmp/graphite-fresh39-root-tests.log`. Actual fresh CI normalization and the
 complete producer adapter have not run yet.
+
+## Array conversion production-path correctness (2026-10-10)
+
+Five additional tests cover the production array formatter, descriptor cache,
+local identity/cache behavior and persisted local values. They check every JVM
+array rank from 1 through 255 for eight primitive bases and a reference base,
+nested ArrayType layers, caller overloads and first-encounter local retention.
+Hand-authored bytecode independently supplies byte/String allocations of ranks
+1, 2 and 3; complete Local values and caller/callee identities survive both
+EAGER and MAPPED save/load paths. The existing array-overload folding test also
+passes.
+
+The isolated unchanged production sources pass all 613 SootUp tests, all 375
+Webgraph tests and both modules' detekt checks, with no skipped tests. The first
+validation run incorrectly overrode Webgraph's configured 4 GiB test heap with
+512 MiB and failed three Android integration tests with OutOfMemoryError; its
+new array tests and SootUp suite passed. That failed run is retained. A separate
+run restores the repository's existing 4 GiB heap and one-class-per-fork policy,
+reruns the full Webgraph suite and executes both static checks successfully.
+The already-passed SootUp tests are not relabeled as a second fresh execution.
+
+Evidence: `/tmp/graphite-array-formatter-validation-1/independent-xml-review.json`
+and `/tmp/graphite-array-formatter-validation-2/independent-xml-review.json`
+(SHA-256 `a8b63a7931ed28edc0a9dc147ddbb00c990d3a8e48d8ea8750c7a9b1d3c92cf0`).
+An independent root review confirms complete XML counts, clean owned process
+exit, unchanged source pins and both successful static checks.
+
+This supports conversion correctness relative to the supplied SootUp type
+model. It does not independently prove SootUp's inferred type for each historical
+local correction or replace a complete comparison of fresh CI graph artifacts.
+In particular, nested ArrayType values must not be normalized by indiscriminately
+collapsing every array to rank one. No performance claim follows from these
+correctness tests.
