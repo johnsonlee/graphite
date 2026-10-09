@@ -36,7 +36,7 @@ impl StringTable {
         Self::load_mode(src, false)
     }
 
-    /// Bind GTY03/GTY04 to the exact serialized bytes used by this decode, not a sidecar.
+    /// Bind GTY03–GTY05 to the exact serialized bytes used by this decode, not a sidecar.
     pub fn load_for_declared_types(src: &GraphSource) -> Result<Self, StringTableError> {
         Self::load_mode(src, true)
     }

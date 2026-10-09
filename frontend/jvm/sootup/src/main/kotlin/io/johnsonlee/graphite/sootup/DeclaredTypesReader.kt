@@ -99,6 +99,10 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 } ?: descriptor
             }
         }
+        // Preserve previously assigned generic IDs; key erasures are appended only after declaration parsing.
+        declarations.values.forEach { declaration ->
+            declaration.fields.forEach { field -> Parser(field.descriptor, classScope(declaration.name), emptyMap()).completeType() }
+        }
         return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
     }
 

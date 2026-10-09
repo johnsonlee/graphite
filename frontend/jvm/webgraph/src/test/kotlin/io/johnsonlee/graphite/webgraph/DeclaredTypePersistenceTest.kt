@@ -303,7 +303,7 @@ class DeclaredTypePersistenceTest {
         val path = dir.resolve(DeclaredTypeStore.FILE_NAME)
         val valid = Files.readAllBytes(path)
         val corruptions = listOf(
-            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545905) } to "Unsupported graph.types header/version",
+            valid.copyOf().also { ByteBuffer.wrap(it).putInt(0, 0x47545906) } to "Unsupported graph.types header/version",
             valid.copyOf(valid.size + 1) to "Trailing bytes in graph.types",
             valid.copyOf().also { ByteBuffer.wrap(it).putInt(40, -1) } to "Invalid graph.types string length",
             valid.copyOf(35) to "Invalid graph.types length"
@@ -390,7 +390,7 @@ class DeclaredTypePersistenceTest {
             val output = System.getenv("GRAPHITE_TYPES_FIXTURE")?.let(Path::of) ?: dir.resolve("graph")
             Files.createDirectories(output)
             GraphStore.save(graph, output)
-            assertEquals(0x47545904, ByteBuffer.wrap(Files.readAllBytes(output.resolve("graph.types"))).int)
+            assertEquals(0x47545905, ByteBuffer.wrap(Files.readAllBytes(output.resolve("graph.types"))).int)
             val legacy = System.getenv("GRAPHITE_TYPES_V1_FIXTURE")?.let(Path::of) ?: dir.resolve("legacy")
             Files.createDirectories(legacy)
             Files.list(output).use { files ->
@@ -410,7 +410,11 @@ class DeclaredTypePersistenceTest {
             val version3 = System.getenv("GRAPHITE_TYPES_V3_FIXTURE")?.let(Path::of) ?: dir.resolve("version3")
             GraphStore.saveLegacyDeclaredTypesV3(graph, version3)
             assertEquals(0x47545903, ByteBuffer.wrap(Files.readAllBytes(version3.resolve("graph.types"))).int)
-            for (fixture in listOf(output, legacy, version2, version3)) for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>(
+            val version4 = System.getenv("GRAPHITE_TYPES_V4_FIXTURE")?.let(Path::of) ?: dir.resolve("version4")
+            GraphStore.saveLegacyDeclaredTypesV4(graph, version4)
+            assertEquals(0x47545904, ByteBuffer.wrap(Files.readAllBytes(version4.resolve("graph.types"))).int)
+            val fixtures = listOf(output, legacy, version2, version3, version4)
+            for (fixture in fixtures) for (load in listOf<() -> io.johnsonlee.graphite.graph.Graph>(
                 { GraphStore.load(fixture) }, { GraphStore.loadMapped(fixture) }
             )) {
                 val restored = load()

@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.jvmTypeDescriptor
+import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MemberTypeKey
@@ -292,6 +293,25 @@ class DeclaredTypesReaderTest {
         assertEquals("java.util.List<java.lang.String>",
             table.render(table.fields.getValue(MemberTypeKey("example.Bad", "good", "Ljava/util/List;"))))
         assertEquals(0, table.methods.getValue(MemberTypeKey("example.Bad", "read", "()Ljava/lang/Object;")).returnType)
+    }
+
+    @Test
+    fun `field erasures are appended without changing existing generic IDs`() {
+        val declaration = ClassDeclarations(
+            "example.RawFields", "<T:Lexample/Bound;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Number;", "TT;"),
+                MemberDeclaration("items", "Ljava/util/List;", "Ljava/util/List<Ljava/lang/String;>;")),
+            emptyList(), null, null, false
+        )
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+        assertEquals(listOf(
+            DeclaredType("class", "example.Bound"), DeclaredType("class", "java.lang.Object"),
+            DeclaredType("variable", "T", "class:example.RawFields"), DeclaredType("class", "java.lang.String"),
+            DeclaredType("class", "java.util.List", arguments = listOf(3)),
+            DeclaredType("class", "java.lang.Number"), DeclaredType("class", "java.util.List")
+        ), table.types)
+        assertEquals(2, table.fields[MemberTypeKey(declaration.name, "value", "Ljava/lang/Number;")])
+        assertEquals(4, table.fields[MemberTypeKey(declaration.name, "items", "Ljava/util/List;")])
     }
 
 }

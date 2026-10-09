@@ -605,14 +605,22 @@ object GraphStore {
         dir: Path,
         compressionThreads: Int = 2,
         prepareCallSiteStringIndex: Boolean
-    ) = saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex, legacyDeclaredTypes = false)
+    ) = saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
 
     /** Explicit compatibility fixture path; ordinary saves always choose the current representation. */
     internal fun saveLegacyDeclaredTypesV3(graph: Graph, dir: Path, compressionThreads: Int = 2) =
-        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, legacyDeclaredTypes = true)
+        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
+
+    internal fun saveLegacyDeclaredTypesV4(graph: Graph, dir: Path, compressionThreads: Int = 2) =
+        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false,
+            declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
+
+    private const val CURRENT_DECLARED_TYPE_VERSION = 5
+    private const val STRUCTURAL_DECLARED_TYPE_VERSION = 4
+    private const val SHARED_DECLARED_TYPE_VERSION = 3
 
     private fun saveGraph(
-        graph: Graph, dir: Path, compressionThreads: Int, prepareCallSiteStringIndex: Boolean, legacyDeclaredTypes: Boolean
+        graph: Graph, dir: Path, compressionThreads: Int, prepareCallSiteStringIndex: Boolean, declaredTypeVersion: Int
     ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
@@ -659,8 +667,7 @@ object GraphStore {
             ),
             allStrings
         )
-        if (legacyDeclaredTypes) DeclaredTypeStringIds(declaredTypes).collect(allStrings)
-        else DeclaredTypeStore.collectStrings(declaredTypes, allStrings)
+        DeclaredTypeStore.collectStrings(declaredTypes, allStrings, declaredTypeVersion)
         val stringTable = StringTable.build(allStrings, dir, declaredTypes != DeclaredTypeTable.EMPTY)
         allStrings.clear()
 
@@ -718,7 +725,8 @@ object GraphStore {
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
-        if (legacyDeclaredTypes) DeclaredTypeStore.saveLegacyV3(declaredTypes, dir, stringTable)
+        if (declaredTypeVersion < CURRENT_DECLARED_TYPE_VERSION)
+            DeclaredTypeStore.saveLegacyShared(declaredTypes, dir, stringTable, declaredTypeVersion)
         else DeclaredTypeStore.save(declaredTypes, dir, stringTable)
 
         // 8. Save class-level overview summary for explorer routes

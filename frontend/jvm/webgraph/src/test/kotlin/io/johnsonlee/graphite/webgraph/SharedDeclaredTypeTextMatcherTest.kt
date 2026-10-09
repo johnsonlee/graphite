@@ -205,9 +205,9 @@ class SharedDeclaredTypeTextMatcherTest {
                 2 -> DeclaredTypeStore.saveLegacyV2(table, directory)
                 else -> {
                     val values = mutableSetOf<String>()
-                    DeclaredTypeStore.collectStrings(table, values)
+                    DeclaredTypeStore.collectStrings(table, values, maximumVersion = 3)
                     val strings = StringTable.build(values, directory, captureSerializedDigest = true)
-                    DeclaredTypeStore.save(table, directory, strings)
+                    DeclaredTypeStore.saveLegacyShared(table, directory, strings, version = 3)
                 }
             }
             block(DeclaredTypeStore.load(directory).types)

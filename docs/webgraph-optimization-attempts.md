@@ -14222,3 +14222,80 @@ review in `...-4/independent-review.json`; source comparison
 `/tmp/graphite-structural-v4-native-workspace-{1,2}/`, and final independent review
 in `...-workspace-2/independent-review.json`. The revised workflow YAML parses and
 all117 shell blocks pass `bash -n`; coverage and size thresholds remain unchanged.
+
+### Attempt189 — erased type and signature references; correctness verified, performance unmeasured (2026-10-10)
+
+Hypothesis: GTY04 still adds full JVM member descriptors to the shared dictionary.
+GTY05 can represent field identity with a raw type reference and method identity
+with a deduplicated list of parameter type references plus a return type reference.
+Generic expressions, scope declarations and member bindings remain separate,
+structurally deduplicated relationships in `graph.types`. The extension adds only
+previously absent atomic names to `graph.strings`, not formatted generic types,
+scopes or descriptors. Existing node and metadata strings keep their representation.
+
+Base: `8f76315d754a50432655d10250f18a230b66a56a`; candidate: the GTY05 implementation
+commit containing this entry. The accepted performance baseline remains
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3`. No real multi-graph performance run has
+been completed for this candidate; storage normalization alone does not establish
+an RSS reduction or performance recovery. Attempt187 remains isolated.
+
+Ingestion appends missing field erasures after generic parsing to preserve existing
+type IDs. Saving never silently appends rows: custom or legacy tables lacking exact
+raw-key representations retain GTY04, and opaque scopes retain GTY03. All five wire
+readers remain supported. Return types distinguish covariant bridges; parameter
+order and array dimensions remain part of identity. Loading validates raw shapes,
+cycles, semantic duplicate signatures and keys before exposing the table. Length
+checks precede descriptor hashing or scope expansion and do not first materialize
+compressed text. Descriptor-only rows cannot enlarge generic candidate scans or
+weaken their negative text summary. No query budget or validation limit is relaxed.
+
+Review found and corrected two boundaries before verification: a legal class name
+can contain `)`, so parameter parsing must consume an entire class token before
+recognizing the method separator; small signature pools can expand beyond signed
+int32 text length, so checked length arithmetic must precede expanded traversal.
+The Native implementation retains no descriptor strings and uses shared graph-local
+text; JVM mapped rows render descriptors when requested. Repeated raw references
+reuse validated length facts rather than decoding the same name repeatedly, and
+load-only primitive hash caches preserve the former shared-string hash reuse.
+Member-index construction releases those caches; deterministic access-count tests
+verify reuse and release without treating synthetic timings as performance evidence.
+
+Local verification is serial, with Java17, Gradle heap4g, one test fork, and Rust1.93
+with two build jobs. Native storage115 tests passed, including8 independent GTY05
+wire tests. Strict workspace all-target/all-feature Clippy and formatting passed
+after replacing one OR pattern with an equivalent range; the initial failed lint
+record remains available. Full Native426 tests passed, including actual JVM
+v1–v5 directory/packed queries and inherited aliases. SootUp609, Cypher1,381,
+Webgraph374 and Explore224 tests passed, plus the separate Cypher7-test memory
+gate at its unchanged256m heap; all four modules' detekt checks passed.
+The final snapshot also contains a separate correctness-driver coverage fix:
+Cypher98.0578%, Webgraph98.2900% and Explore98.0563%, with the existing98%
+threshold and exclusions unchanged. These are local results, not exact-head CI
+acceptance. The initial JVM pass failed nine Webgraph lint rules after its test
+suites passed; the second pass found one remaining duplicated literal. The third
+pass completed the final Webgraph tests, remaining lint and coverage reports.
+All raw failures are retained.
+
+Final fixtures have identical type tables, string tables and metadata to the
+first export, but seven node-data files differ. The fourteen focused Java
+interoperability tests were therefore rerun against the final export and passed;
+the final run records its environment and all171 fixture-file hashes explicitly.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | SootUp609, Cypher1,381, Webgraph374, Explore224 and Native426 PASS; final Java interop14 PASS; lint/format/coverage PASS |
+| Real multi-graph construction time / CPU / RSS | Not measured for GTY05 |
+| Real multi-graph loading time / CPU / RSS | Not measured for GTY05 |
+| Real multi-graph query p50 / p95 / CPU / RSS | Not measured for GTY05 |
+| CI / complete semantic proof / overall recovery / merge readiness | Not established |
+
+Decision: retain the correctness-verified representation for real multi-graph
+validation; no performance acceptance claim. Evidence:
+`/tmp/graphite-structural-v5-native-storage-1/`,
+`/tmp/graphite-structural-v5-native-lint-{1,2}/`,
+`/tmp/graphite-structural-v5-native-workspace-1/independent-review.json`,
+`/tmp/graphite-structural-v5-native-interop-final-1/`, and
+`/tmp/graphite-structural-v5-jvm-check-{1,2,3}/` (final independent audit:
+`...-3/independent-review-coverage.json`). The matched JVM checkout records483
+source/configuration inputs in `/tmp/graphite-structural-v5-source-proof-3.json`.
+All workflow YAML parses, and157 Bash blocks pass syntax validation.

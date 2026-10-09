@@ -564,3 +564,6 @@ fn compact_legacy_pool_drops_unused_dictionary_values() {
 
 #[path = "types_structural_tests.rs"]
 mod structural_tests;
+
+#[path = "types_descriptor_tests.rs"]
+mod descriptor_tests;
