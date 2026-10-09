@@ -549,3 +549,17 @@ does not establish which code change caused the difference from that expectation
 The existing tolerance and expected deltas remain unchanged. The independent
 accounting is retained at
 `/tmp/graphite-8f-large-corpus/independent-file-delta-audit.json`.
+
+A subsequent `acd11a69` run (`37982619222`) passed the candidate control gate but
+synthetic correctness job `113996963656` still stopped at a duplicate inline
+installer pin. The manifest already referenced the reviewed driver; the installer
+retained its pre-coverage-test hash. That single inline hash now matches the same
+reviewed source. A new protocol assertion enumerates all four standalone
+correctness installer pins and checks each against its actual file and, where
+present, its manifest entry. All 175 JavaScript tests pass. Executing the exact
+installer shell block in a temporary candidate/base layout reproduces rejection
+with the old pin, succeeds with the corrected pin, and installs byte-identical
+Budgeted and Synthetic drivers. No JVM was launched. All 101 workflow Bash blocks
+remain syntactically valid. The shell replay is retained at
+`/tmp/graphite-acd11-installer-pin-shell-review.json`; the original CI failure log
+remains `/tmp/graphite-acd11-synthetic-correctness.log`.

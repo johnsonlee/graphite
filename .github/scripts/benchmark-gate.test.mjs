@@ -3787,6 +3787,30 @@ test("Explorer untimed overlay is exact-source pinned and preserves lifecycle as
     assert.match(workflow,/SingleGraphCorrectness explorer/);assert.match(workflow,/SingleGraphCorrectness capacity/);
 });
 
+test("every standalone correctness installer pins its actual reviewed source", () => {
+    const workflow = fs.readFileSync(new URL('../workflows/benchmark.yml', import.meta.url), 'utf8');
+    const manifest = new Map(fs.readFileSync(
+        new URL('./multigraph-correctness-controls.sha256', import.meta.url), 'utf8'
+    ).trim().split('\n').map(line => {
+        const [hash, relative] = line.split(/  /);
+        return [relative, hash];
+    }));
+    const pins = [...workflow.matchAll(/SOURCE='([^'\n]+Correctness\.kt)'\n[^\n]*= '([a-f0-9]{64})'/g)];
+    assert.deepEqual(pins.map(([, relative]) => relative), [
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt',
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt',
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt',
+        'frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedAdmissionCorrectness.kt',
+    ]);
+    for (const [, relative, pinned] of pins) {
+        const actual = crypto.createHash('sha256').update(
+            fs.readFileSync(new URL('../../' + relative, import.meta.url))
+        ).digest('hex');
+        assert.equal(pinned, actual, `stale standalone installer pin: ${relative}`);
+        if (manifest.has(relative)) assert.equal(pinned, manifest.get(relative), relative);
+    }
+});
+
 test("all Method shards retain complete results without mixed singleton timing", () => {
     const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
     const shard=workflow.slice(workflow.indexOf('  method-compatibility-shard:'),workflow.indexOf('  validate-cpu-accounting:'));
