@@ -12861,3 +12861,41 @@ Execution command: `/opt/homebrew/opt/python@3.14/bin/python3.14 /tmp/graphite-s
 Evidence: `/tmp/graphite-shared-query/` retains raw bodies, commands, clocks/resources, host observations, authorizations, report and cleanup/identity receipts. Independent results and every one of the32 resource rows are in `/tmp/graphite-shared-query-independent-audit-1.{json,md}`. Protocol SHA `ad947fbf4820223629f5c1e5bea8922cdde38e38d7b23bb2618ed10c0aa044c7`; seal `a4db7f16cf3bca3c61fa00a652eed655edb314a8ee5041fcd63ebf74ab638348`; preflight `aa2d938108c4f398b2b7371f7e1004d995eb43d5aafec56c22ed460ceb07cdb2`; independent auditor source `a95a5c8f7ee684b97dcb34530bd10355fe4cafed206d51693e07ae93e577bce0`.
 
 The separately declared feature stage remains unmeasured: node-declaration coverage and method-declaration coverage each use A,B,B,A, eight processes/256 complete responses total. C absent-property correctness is already established but is not equivalent-work feature latency evidence. Existing field/value paths also remain open; no authoritative JVM real3 collect/order oracle was available. This cohort establishes neither whole-engine recovery nor construction/loading acceptance, and does not change prior loading failures, gate tolerances or PR acceptance.
+
+### Attempt174 loading follow-up — retain shared-text allocation reduction for composition (2026-10-09)
+
+**Decision: integrate the verified beneficial loading increment into the working candidate for composition; cumulative performance acceptance still fails.** Both parent-relative pairs improve readiness, CPU and RSS, satisfying the independent resource limits. Both accepted4f comparisons still fail CPU/RSS by wide margins. Query p50/p95, construction and full acceptance remain pending for174; this result neither supersedes173's query failures nor establishes final recovery.
+
+The single hypothesis and exact tested patch remain unchanged from the correctness entry above: parent `ae316747a573739b6a55c98458b2f3fa9f98130f`, patch `723dd7da8e893c2f884d6bde43427b4dcde11d24440bf7fffc72f5105739cfa2`, two webgraph production files and five added tests. One load-local reusable MutableString and primitive per-referenced-ID UTF-16-hash/UTF-8-length facts replace repeated decoding. The map and buffer are discarded only after complete validation, before publication. All serialized bindings, strict Unicode, duplicate-by-value, reference, shape, DAG, depth and expansion checks remain; query-facing views, shared `graph.strings` and GTY01/02 support remain. No buffered-reader or digest-engine hypothesis is bundled.
+
+The independently audited2,197 tests, lint and unchanged>=98% coverage gates pass. The main-only explore export uses the same JDK17 with4GiB/APC4 and in-process Kotlin; the complete455-file tested source inventory matches before/after. Of348 frozen runtime files,345 are byte-identical to the parent, core/Cypher jars differ only in archive metadata with identical ordered entries/content, and only webgraph has changed executable payload. All original exported jars are retained; no archive normalization or substitution occurs. Candidate manifest SHA `71755a1bb3c54589882bac476355551d75898326ac177844af5e5f3d8b13b946`.
+
+Before loading measurement, a fresh candidate correctness server executes the six unchanged independent member/declaration cases, each spanning Tika, Hive and Kotlin compiler. All27 returned rows pass complete typed envelope, nested-value, multiset and provenance comparison; no field is removed or normalized. The independent audit also checks exact8GiB/APC4/c1 startup, full readiness, runtime/source bindings, six setup/run/arm identity receipts and normal owned cleanup. This adds six candidate responses to the retained18-response shared-format proof; none is a measured loading query. Audit SHA `dab4919df7c7d8d808d9b66501aac9e063252b8d4f59bdb24b190991c1e2b760`.
+
+The fixed C,A,B,B,A,C cohort compares accepted4f C, shared parentae A and174 B. A/B use exactly the same60 GTY03 files; C uses its original57 files. All three graphs load in every process. JDK17.0.20.1, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, MAPPED mode and server concurrency4 match. Identical full input verification before every launch defines warm-filesystem conditions. The boundary includes fresh process launch through complete response consumption and exact three-graph readiness validation, including all required text-statistic construction and validation. Measured processes issue zero queries.
+
+| Process | Through-ready ms | User+system CPU s | Strict loading RSS lower MB | Lifecycle RSS upper MB |
+|---|---:|---:|---:|---:|
+|0C|709.624|1.500|275.087|276.316|
+|1A|2188.835|3.960|668.598|669.188|
+|2B|1667.324|3.330|445.399|446.841|
+|3B|1680.368|3.220|441.795|442.679|
+|4A|2159.174|4.070|680.493|680.886|
+|5C|738.262|1.630|289.374|289.784|
+
+Parent→174 mean readiness **2174.004→1673.846ms (−500.159ms)**, CPU **4.015→3.275s (−0.740s)** and lifecycle RSS **675.037→444.760MB (−230.277MB)**. Both readiness pairs improve **−521.511/−478.806ms**, CPU **−0.630/−0.850s**. Accepted4f→174 mean readiness remains **723.943→1673.846ms (+949.903ms)**, CPU **1.565→3.275s (+1.710s)** and lifecycle RSS **283.050→444.760MB (+161.710MB)**. The cumulative wall changes are adverse in both pairs, **+957.700/+942.106ms**. Means are descriptive and never replace either directional decision.
+
+| Comparison | CPU ratio enclosure | Loading peak RSS ratio enclosure | CPU +5% | RSS +5% |
+|---|---:|---:|---|---|
+|ae→174, pair1|[0.831658,0.850254]|[0.665581,0.668325]|PASS|PASS|
+|ae→174, pair2|[0.782396,0.800000]|[0.648852,0.650527]|PASS|PASS|
+|4f→174, pair1|[2.177632,2.263514]|[1.611918,1.624360]|FAIL|FAIL|
+|4f→174, pair2|[1.939394,2.012422]|[1.524566,1.529781]|FAIL|FAIL|
+
+CPU enclosures apply the declared±0.02s sensitivity to the near-readiness ps observations; sample completion lags are4.34–5.75ms. Exact time-l lifecycle CPU is separately retained as1.50/3.97/3.33/3.22/4.08/1.62s. RSS lower bounds include only complete5ms reads inside launch..ready; lifecycle upper bounds include final CPU observation, monitor completion and shutdown. Three boundary reads are excluded and retained. MB is decimal. Two observations per arm do not establish a broad distribution, statistical confidence, cold-cache behavior or saturation result.
+
+The frozen independent raw auditor passes on its first execution: six complete readiness bodies/18 typed graph rows, all exact launch commands, every RSS inclusion/exclusion, raw ps and time-l parity, full report vectors/ranges/means and four paired decisions. Both final identity receipts cover110 direct pins and117 complete unique fixture files. All six unique journal-owned server groups and the runner are empty, without cleanup errors or forced escalation; measured root session41614 exits0. Thirty-nine unique no-child harness checks pass. The initial copied-test routing/scope failures and the intermediate duplicate imported-test count remain under `review-fix-1` and the four mock logs; no measured server failed, retried or replaced.
+
+All66 host observations are retained, including the three original preflight snapshots. Background maxima include separate mediaanalysisd processes at130.1% and101.9%, searchpartyuseragent78.1% and Codex Renderer67.1%. These observations are not attributable CPU costs; no unrelated process was stopped and no quiet-host claim is made. Correctness, stability and the8GiB ceiling pass within this loading scope. The verified positive increment is retained without accepting the remaining cumulative resource regression.
+
+Evidence: `/tmp/graphite-attempt174-loading/` contains exact export/source receipts, the separate six-response oracle, all loading/resource/host samples, full report, cleanup and final identities. Independent raw result is `/tmp/graphite-attempt174-loading-independent-audit.json`, SHA `ece1fe6ba091f11a66fa1d621600d46ae1cddfa003aecdbb2e136e2e34df6fc3`. Protocol SHA `f628c1c6bf2aec3891f6717b33f35fdcb8c6d87b9702d8ceb53005ed216aaa3f`; seal `e9d2758fc4b8f421cbee8a2973b88ba156d6ec517f402e85f9fbc2bb0d195595`; original preflight `743441b8f5f9af5f771e9a1f7df53fea3b1adedf063a3f49edbd603d14c33a6e`; measurement authorization `cafeb779038acd8e2eb282f73902fe5cdd7a376e88b8934756b4f754f851ea61`. No gate tolerance or performance threshold changes.

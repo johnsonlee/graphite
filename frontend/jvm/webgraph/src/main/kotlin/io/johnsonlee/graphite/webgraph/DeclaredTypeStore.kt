@@ -170,7 +170,10 @@ internal object DeclaredTypeStore {
                 CLASS_MIN_BYTES, "class", typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
             )
             require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
-            DeclaredTypeTable(types, fields, methods, classes).also { it.validate() }
+            DeclaredTypeTable(types, fields, methods, classes).also {
+                it.validate()
+                (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
+            }
         }
     }
 
@@ -258,7 +261,7 @@ internal object DeclaredTypeStore {
             ?: position.also { check(strings == null) { "Shared strings have no graph.types byte offset" } }
         override fun atomText(position: Int): String = strings?.text(bytes.getInt(position)) ?: super.atomText(position)
         override fun atomTextLength(position: Int): Int = if (strings is SharedDeclaredTypeTexts) {
-            strings.text(bytes.getInt(position)).toByteArray(Charsets.UTF_8).size
+            strings.utf8Length(bytes.getInt(position))
         } else super.atomTextLength(position)
         override fun atomTextEquals(position: Int, expected: String): Boolean = if (strings is SharedDeclaredTypeTexts) {
             strings.text(bytes.getInt(position)) == expected

@@ -2,10 +2,13 @@ package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.TypeParameter
+import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
+import it.unimi.dsi.lang.MutableString
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
+import java.nio.charset.MalformedInputException
 
 /** Save-local dictionary. First occurrence determines the ID; no process-wide string interning. */
 internal interface DeclaredTypeTexts {
@@ -17,16 +20,75 @@ internal interface DeclaredTypeTexts {
 /** Shared IDs retain no decoded declaration strings and validate every referenced UTF-16 value. */
 internal class SharedDeclaredTypeTexts(private val strings: StringTable) : DeclaredTypeTexts {
     private val checked = java.util.BitSet()
+    private var loadingStats: SharedDeclaredTypeTextStats? = SharedDeclaredTypeTextStats(strings)
+
     override fun validateId(id: Int) {
         require(id in 0 until strings.size()) { "Invalid graph.types string ID" }
         if (!checked[id]) {
-            Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
-                .encode(CharBuffer.wrap(strings.get(id)))
-            checked.set(id)
+            val stats = loadingStats
+            if (stats == null) {
+                Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
+                    .encode(CharBuffer.wrap(strings.get(id)))
+            } else {
+                stats.add(id)
+                checked.set(id)
+            }
         }
     }
+
     override fun text(id: Int): String { validateId(id); return strings.get(id) }
-    override fun hash(id: Int): Int = text(id).hashCode()
+    override fun hash(id: Int): Int {
+        validateId(id)
+        return loadingStats?.hash(id) ?: strings.get(id).hashCode()
+    }
+
+    fun utf8Length(id: Int): Int {
+        validateId(id)
+        return loadingStats?.utf8Length(id) ?: strings.get(id).toByteArray(Charsets.UTF_8).size
+    }
+
+    /** Called after complete validation and before any mapped view is published to query threads. */
+    fun finishLoading() { loadingStats = null }
+}
+
+/** Per-load primitive facts only. Both the decode buffer and the map are discarded before publication. */
+private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
+    private val values = Int2LongOpenHashMap()
+    private val buffer = MutableString()
+
+    fun add(id: Int) {
+        strings.get(id, buffer)
+        var hash = 0
+        var length = 0L
+        var position = 0
+        while (position < buffer.length) {
+            val character = buffer[position++]
+            hash = DECLARED_TEXT_HASH_MULTIPLIER * hash + character.code
+            length += when {
+                character.code < ASCII_LIMIT -> 1
+                character.code < TWO_BYTE_LIMIT -> 2
+                character.isHighSurrogate() -> {
+                    if (position == buffer.length || !buffer[position].isLowSurrogate()) throw MalformedInputException(1)
+                    hash = DECLARED_TEXT_HASH_MULTIPLIER * hash + buffer[position++].code
+                    SUPPLEMENTARY_BYTES
+                }
+                character.isLowSurrogate() -> throw MalformedInputException(1)
+                else -> THREE_BYTE_LENGTH
+            }
+        }
+        require(length <= Int.MAX_VALUE) { "Excessive graph.types string length" }
+        values.put(id, (hash.toLong() shl Int.SIZE_BITS) or length)
+    }
+
+    fun hash(id: Int): Int = (values.get(id) ushr Int.SIZE_BITS).toInt()
+    fun utf8Length(id: Int): Int = values.get(id).toInt()
+
+    private companion object {
+        const val ASCII_LIMIT = 0x80
+        const val TWO_BYTE_LIMIT = 0x800
+        const val THREE_BYTE_LENGTH = 3
+        const val SUPPLEMENTARY_BYTES = 4
+    }
 }
 
 internal class DeclaredTypeStringIds(table: DeclaredTypeTable) {
