@@ -13869,3 +13869,191 @@ the same combination of in-flight requests; two occur near the end while only a
 filter request remains. Client intervals do not attribute server allocations or
 retained allocator pages. These correlations do not explain away the failed RSS
 gates or justify replacing them with loading measurements.
+
+### Attempt186 — declaration index without retained full hashes; correctness verified, performance pending (2026-10-10)
+
+**Decision: keep this candidate isolated until real multi-graph measurements.**
+This composes with185's verified loading-memory benefit. Loaded field, method and
+class bindings previously retained a full fingerprint in each key in addition to
+the hash/index storage used by `IndexMap`. The new private `MemberIndex` keeps
+file-ordered entries and a `hashbrown::HashTable<usize>` of entry positions.
+It supplies hashes explicitly and recomputes them from complete text values when
+the index grows, so it does not retain another full hash per entry. The existing
+per-table randomized hasher and full text comparison remain in use, including
+when different string IDs resolve to equal text or different keys collide.
+
+String and type IDs retain their existing widths. The shared immutable string
+backing, type rows, method arenas, integrity validation, expansion limits and
+query API are unchanged. Iteration follows the entry vector, preserving wire
+order and owning mutation semantics. No wire-format change is introduced.
+The direct `hashbrown` dependency uses0.17.1, already locked through `indexmap`,
+with default features disabled; the lockfile change only adds it to
+`graphite-storage`'s dependency list.
+
+Source: `/tmp/graphite-attempt186-source`, base42377 plus retained185 and this
+increment. Only `Cargo.lock`, `backend/storage/Cargo.toml` and
+`backend/storage/src/types_repr.rs` differ from185. The source-lineage record is
+`/tmp/graphite-attempt186-source-lineage.json`; the cumulative patch SHA is
+`124f96f6cf9d718ddecc2a5eaee8ea8aee30f58ea46f519a48f1ee845f0a91b5`.
+The candidate source remains outside the production checkout.
+
+The first workspace compile caught a missing file-order iterator used when
+materializing the owning model. That failed run remains archived in
+`/tmp/graphite-attempt186-validation-1`. After implementing the iterator, all413
+workspace tests pass, with zero failures or ignored tests. The retained collision
+check still inserts256 distinct keys with the same hash across resizes, rejects
+a duplicate represented by another text ID, and verifies exact lookup values and
+iteration order. Existing method-arena growth, shared-backing, format, equality,
+mutation and inherited-field tests remain present. Strict all-target/all-feature
+Clippy and formatting pass. Independent raw review confirms all413 parent test
+names, complete raw logs, unchanged source hashes and all owned process cleanup.
+
+Command: `PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-validate-2.py`.
+The run uses Rust1.93, offline locked dependencies, two Cargo jobs and the same
+required correctness fixtures as185. It reuses the build cache sequentially;
+185's frozen source and exported binary remain unchanged.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / stability |413 tests, Clippy, formatting and owned cleanup pass |
+| Native64 loading wall / CPU / RSS | Not measured for186 |
+| Actual multi-graph query p50 / p95 / CPU / RSS | Not measured for186 |
+| Construction | Not measured; writer unchanged |
+| Overall recovery / CI / merge readiness | Not established |
+
+Evidence: `/tmp/graphite-attempt186-validation-2/record.json` and
+`/tmp/graphite-attempt186-validation-review-2.json`. Explicit GTY01/02/03
+interoperability checks and release export are running; performance measurements
+follow only after runtime binding and raw correctness review. No layout estimate
+or single-graph timing is used to accept the candidate. Accepted4f remains the
+cumulative performance baseline;185 is the incremental parent.
+
+#### Explicit interop and release completed; loading comparison started
+
+The six explicit GTY01/02/03 storage/container and schema interoperability tests
+also pass. Release compilation succeeds with offline locked dependencies and two
+jobs. Independent review confirms all raw logs, unchanged source and cumulative
+patch, empty owned process groups, the arm64 executable and exact exported bytes.
+The exported186 binary SHA is
+`325cc34565ed7bb843eaae05239cb568f92620c955f2b5ce301186c10d1ae1e5`;
+185's separately exported runtime remains byte-identical to its prior measurement.
+Evidence: `/tmp/graphite-attempt186-interop-build-1/record.json` and
+`independent-review.json`.
+
+The frozen comparison plan is `/tmp/graphite-attempt186-pressure-1/plan.json`, SHA
+`131d9f2cb3f716dee5e986349a0582fd6fe42b03b8e57a08fad6781ce3b9ee0c`.
+It binds accepted4f, parent185 and candidate186 to the unchanged historical64
+fixtures. The separate zero-query loading cohort has started in
+`/tmp/graphite-attempt186-loading-1` using the same reviewed loading runner and
+C/A/B/B/A/C order as185. Its scope is spawn through full validated64-graph
+readiness, with raw CPU/RSS bounds and full input verification on every process.
+Loading results and the subsequent multi-graph query comparison remain pending.
+
+#### Completed real64 loading comparison — RSS passes in both directions
+
+Independent raw review passes for all six processes,384 complete graph-readiness
+records, raw samples, direct invocation, immutable input receipts and owned cleanup.
+No query is issued in this cohort. RSS below uses decimal GB and retains the
+sampled lower / lifecycle upper interval.
+
+| Comparison / direction | Wall ms reference →186 (delta) | CPU seconds reference →186 / raw +5% gate | RSS GB reference →186 / +5% gate |
+|---|---:|---|---|
+| 185 / F | 21472.742→21679.908 (+207.165) | [21.090, 21.130]→[20.930, 20.980] / PASS | [6.711, 6.714]→[6.672, 6.675] / PASS |
+| 185 / R | 21723.660→21430.679 (-292.981) | [21.430, 21.470]→[20.980, 21.020] / PASS | [6.703, 6.704]→[6.674, 6.676] / PASS |
+| 4f / F | 19704.824→21679.908 (+1975.084) | [19.020, 19.070]→[20.930, 20.980] / FAIL | [6.376, 6.379]→[6.672, 6.675] / PASS |
+| 4f / R | 19839.202→21430.679 (+1591.477) | [19.150, 19.190]→[20.980, 21.020] / FAIL | [6.376, 6.378]→[6.674, 6.676] / PASS |
+
+Separate conclusions: correctness and observed stability pass. Relative to185,
+RSS is lower in both directions and CPU decreases; wall is mixed (+207ms /−293ms).
+Relative to accepted4f, RSS now passes+5% using conservative interval comparisons
+in both directions. Loading wall remains about1.59–1.98s higher and CPU about
+1.8–1.9s higher. Raw default CPU FAIL calculations remain visible alongside the
+existing user-approved native64 loading time/CPU tradeoff.
+
+**Decision: retain186 for its verified loading RSS and CPU improvement.** This
+resolves the measured loading RSS constraint for this historical64 fixture cohort;
+it does not establish query recovery, current own-writer equivalence, construction
+acceptance or CI/merge readiness. The separate continuous-c4 six-case query cohort
+has now started on the same frozen plan; every request actually targets64 graphs.
+
+Evidence: `/tmp/graphite-attempt186-loading-1/` and
+`/tmp/graphite-attempt186-loading-independent-audit.json`, SHA
+`c8dd516b12d75f829f3fdccd724040130574169371c6bbe4842fef7a1322df93`.
+Run command: `python3 /tmp/graphite-attempt185-loading.py --plan /tmp/graphite-attempt186-pressure-1/plan.json --output /tmp/graphite-attempt186-loading-1`.
+
+#### Completed scoped real64 query load — cumulative RSS passes; full acceptance remains unavailable
+
+The frozen six-case cohort completed in C/A/B/B/A/C order. Every query actually
+targeted64 graphs, with four persistent workers refilling after complete response
+validation. Each fresh process issued one oracle, two warmup and20 measured requests
+per case. Nearest ranks10/19 define p50/p95; forward and reverse comparisons remain
+separate, with no pooling, sample exclusion or selected favorable direction.
+Independent review passes all828 complete bodies (36 oracle,72 warmup,720 measured),
+raw worker journals, complete row values, resource bounds, source/runtime/fixture
+receipts and owned process cleanup. The independent auditor and comparator agree.
+
+| Comparison / direction | Query wall ms reference →186 (delta) | CPU seconds reference →186 / +5% gate | RSS GB reference →186 / +5% gate |
+|---|---:|---|---|
+| 185 / F | 41240.565→40790.029 (-450.536) | [158.350, 158.400]→[156.750, 156.840] / PASS | [22.600, 22.609]→[20.741, 20.761] / PASS |
+| 185 / R | 40125.536→40736.513 (+610.977) | [155.000, 155.080]→[157.080, 157.200] / PASS | [19.403, 19.412]→[21.081, 21.085] / FAIL |
+| 4f / F | 45570.926→40790.029 (-4780.897) | [176.520, 176.600]→[156.750, 156.840] / PASS | [21.317, 21.343]→[20.741, 20.761] / PASS |
+| 4f / R | 44973.130→40736.513 (-4236.618) | [175.570, 175.640]→[157.080, 157.200] / PASS | [20.199, 20.205]→[21.081, 21.085] / PASS |
+
+All six case distributions, including adverse small absolute changes, follow.
+Numbers are milliseconds; each triplet is reference → candidate (absolute delta).
+
+| Comparison / direction | Case | p50 ms | p95 ms |
+|---|---|---:|---:|
+| 185 / F | shape-collect | 2181.089→2191.934 (+10.845) | 2209.661→2217.974 (+8.313) |
+| 185 / F | schema-key-histogram | 1.863→1.873 (+0.011) | 3.273→3.470 (+0.198) |
+| 185 / F | shape-order-by | 2782.532→2774.137 (-8.395) | 2853.468→2796.424 (-57.044) |
+| 185 / F | schema-label-histogram | 1.205→1.241 (+0.037) | 1.358→2.741 (+1.383) |
+| 185 / F | shape-with-filter | 3016.751→2909.390 (-107.361) | 3157.169→3141.123 (-16.046) |
+| 185 / F | global-wide-wrapped-case-insensitive-distinct-dense | 4.458→4.687 (+0.229) | 5.151→5.944 (+0.793) |
+| 185 / R | shape-collect | 2171.071→2227.566 (+56.495) | 2210.144→2250.314 (+40.170) |
+| 185 / R | schema-key-histogram | 1.841→1.824 (-0.017) | 2.111→3.601 (+1.491) |
+| 185 / R | shape-order-by | 2764.799→2769.268 (+4.470) | 2797.635→2787.022 (-10.612) |
+| 185 / R | schema-label-histogram | 1.206→1.200 (-0.006) | 1.427→1.682 (+0.255) |
+| 185 / R | shape-with-filter | 2844.219→2878.321 (+34.102) | 3009.484→3151.575 (+142.092) |
+| 185 / R | global-wide-wrapped-case-insensitive-distinct-dense | 4.488→4.341 (-0.147) | 4.845→5.957 (+1.112) |
+| 4f / F | shape-collect | 2532.070→2191.934 (-340.137) | 2549.352→2217.974 (-331.379) |
+| 4f / F | schema-key-histogram | 1.795→1.873 (+0.078) | 3.300→3.470 (+0.170) |
+| 4f / F | shape-order-by | 3090.335→2774.137 (-316.198) | 3108.368→2796.424 (-311.945) |
+| 4f / F | schema-label-histogram | 1.225→1.241 (+0.016) | 1.380→2.741 (+1.361) |
+| 4f / F | shape-with-filter | 3191.027→2909.390 (-281.637) | 3526.911→3141.123 (-385.788) |
+| 4f / F | global-wide-wrapped-case-insensitive-distinct-dense | 4.424→4.687 (+0.263) | 6.035→5.944 (-0.091) |
+| 4f / R | shape-collect | 2524.380→2227.566 (-296.814) | 2553.705→2250.314 (-303.390) |
+| 4f / R | schema-key-histogram | 1.790→1.824 (+0.034) | 2.183→3.601 (+1.418) |
+| 4f / R | shape-order-by | 3113.756→2769.268 (-344.488) | 3152.273→2787.022 (-365.251) |
+| 4f / R | schema-label-histogram | 1.397→1.200 (-0.197) | 2.778→1.682 (-1.096) |
+| 4f / R | shape-with-filter | 3140.485→2878.321 (-262.164) | 3351.734→3151.575 (-200.159) |
+| 4f / R | global-wide-wrapped-case-insensitive-distinct-dense | 4.495→4.341 (-0.154) | 6.414→5.957 (-0.457) |
+
+Correctness and observed stability pass. Against accepted4f, the three slow cases
+improve both latency quantiles in both directions, the complete measured mix is
+4.24–4.78s faster, and CPU/RSS each pass+5% in both directions. Several millisecond
+cases have adverse p50/p95 changes, so measured constraints are not all passed.
+Against185, query wall and latency are mixed; CPU passes both directions, while
+RSS passes forward and fails reverse. This does not establish stable incremental
+query memory improvement and does not erase185 or184 observations.
+
+**Decision: retain186 for the separately verified loading improvement; cumulative
+scoped query evidence is promising but does not establish overall recovery.**
+The comparator correctly returns `UNAVAILABLE`, `coverageComplete=false` and
+`measuredConstraintsPassed=false`. The fixed catalog still lacks feature-presence,
+full slow-case, routing and wrapped-discovery families. These are local historical64
+fixtures, not fresh own-writer equivalence or CI evidence. There is no saturation
+or quiet-host claim. Construction, JVM and the required CI gate remain separate.
+No extra stabilization runs are scheduled merely to remove tiny timing deltas.
+
+Evidence: `/tmp/graphite-attempt186-pressure-1/`,
+`/tmp/graphite-attempt186-pressure-independent-audit.json` (SHA
+`870cf7d71764db7d502b7770744374923301ad7739f3284e881d565cf91e52dd`),
+and `comparison-review.json`. Commands:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-run-pressure-1.py
+PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-audit-pressure-1.py
+PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-pressure-independent-audit.py --all-six-terminal --output /tmp/graphite-attempt186-pressure-independent-audit.json
+node .github/scripts/benchmark-multigraph-pressure.mjs /tmp/graphite-attempt186-pressure-1/plan.json /tmp/graphite-attempt186-pressure-1 /tmp/graphite-attempt186-pressure-1/comparison
+```
