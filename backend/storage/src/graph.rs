@@ -11,8 +11,9 @@ use crate::metadata::{
     BranchComparison, ClassOverview, Comparisons, Metadata, MetadataError, Resources,
 };
 use crate::node::{
-    read_call_site_strings, CallSiteStrings, MethodDesc, Node, NodeDecodeError, NodeId, StrId,
-    NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_INT_CONSTANT,
+    read_call_site_scalar_strings, read_call_site_strings, CallSiteStrings, MethodDesc, Node,
+    NodeDecodeError, NodeId, StrId, NODE_HEADER_BYTES, TAG_CALL_SITE_NODE, TAG_COUNT,
+    TAG_INT_CONSTANT,
 };
 use crate::source::{GraphSource, SourceError};
 use crate::strings::{StringTable, StringTableError};
@@ -653,6 +654,12 @@ impl Graph {
     /// ordinary node-property fallback in those cases.
     pub fn int_constant_value(&self, id: NodeId) -> Option<i32> {
         read_int_constant_value(&self.nodedata, self.node_offset(id)?)
+    }
+
+    /// Selected scalar properties may avoid full Node allocation, but never accept
+    /// a CallSite whose complete variable-length record is truncated.
+    pub fn call_site_scalar_strings(&self, id: NodeId) -> Option<CallSiteStrings> {
+        read_call_site_scalar_strings(&self.nodedata, self.node_offset(id)?)
     }
 
     pub fn node(&self, id: NodeId) -> Option<Node> {
@@ -1545,3 +1552,7 @@ mod declared_key_tests {
 #[cfg(test)]
 #[path = "csr_prefix_tests.rs"]
 mod csr_prefix_tests;
+
+#[cfg(test)]
+#[path = "call_site_scalar_tests.rs"]
+mod call_site_scalar_tests;
