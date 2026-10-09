@@ -130,6 +130,17 @@ export const LARGE_CORPUS_SHARED_STRINGS_TRANSITION = Object.freeze({
     "kotlin-compiler": { ...LARGE_CORPUS_SHAPE_TRANSITION["kotlin-compiler"], persistedBytesDelta: 21_184_278 }
 });
 
+// GTY05 represents scopes and member descriptors with declaration/type references.
+// CI run 37983621250/job 114000873666 independently accounts for every saved file
+// against exact accepted 4f; the CallSite index remains separately excluded.
+// Preserve both historical transitions above and the exact shapes/4 KiB tolerance.
+// See docs/declared-types-corpus-identity-audit.md; correctness only, no performance waiver.
+export const LARGE_CORPUS_STRUCTURAL_TYPES_TRANSITION = Object.freeze({
+    tika: { ...LARGE_CORPUS_SHAPE_TRANSITION.tika, persistedBytesDelta: 13_556_633 },
+    hive: { ...LARGE_CORPUS_SHAPE_TRANSITION.hive, persistedBytesDelta: 19_390_410 },
+    "kotlin-compiler": { ...LARGE_CORPUS_SHAPE_TRANSITION["kotlin-compiler"], persistedBytesDelta: 12_093_850 }
+});
+
 function finiteNumber(value) {
     if (value === null || value === undefined || value === "") return null;
     const number = Number(value);
@@ -2828,6 +2839,9 @@ export function parseLargeCorpusLog(contents, correctnessOnly = false) {
 }
 
 export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = null, correctnessOnly = false } = {}) {
+    if (shapeTransition === LARGE_CORPUS_STRUCTURAL_TYPES_TRANSITION && !correctnessOnly) {
+        throw new Error("GTY05 storage transition requires correctness-only scope");
+    }
     const baseParsed = parseLargeCorpusLog(baseLog, correctnessOnly);
     const candidateParsed = parseLargeCorpusLog(candidateLog, correctnessOnly);
     const base = baseParsed.results;
@@ -3335,13 +3349,18 @@ function compareJmhCommand(args) {
 }
 
 function largeCorpusOptions(args) {
+    if (args["structural-types-transition"] === true && args["correctness-only"] !== true) {
+        throw new Error("GTY05 storage transition requires correctness-only scope");
+    }
     if (args["shared-strings-transition"] === true && args["correctness-only"] !== true) {
         throw new Error("GTY03 storage transition requires correctness-only scope");
     }
-    if (args["shared-strings-transition"] === true && args["shape-transition"] === true) {
+    if (["shape-transition", "shared-strings-transition", "structural-types-transition"]
+        .filter((flag) => args[flag] === true).length > 1) {
         throw new Error("Choose exactly one storage transition");
     }
-    return { shapeTransition: args["shared-strings-transition"] === true ? LARGE_CORPUS_SHARED_STRINGS_TRANSITION :
+    return { shapeTransition: args["structural-types-transition"] === true ? LARGE_CORPUS_STRUCTURAL_TYPES_TRANSITION :
+        args["shared-strings-transition"] === true ? LARGE_CORPUS_SHARED_STRINGS_TRANSITION :
         args["shape-transition"] === true ? LARGE_CORPUS_SHAPE_TRANSITION : null,
         correctnessOnly: args["correctness-only"] === true };
 }

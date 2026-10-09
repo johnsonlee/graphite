@@ -2813,7 +2813,7 @@ test("large-corpus shape transition confirmation keeps the transition and its sh
     assert.match(confirmed.errors.join("\n"), /hive\/sourceEdges: candidate graph shape 151/);
 });
 
-test("GTY03 correctness transition remains pinned and untimed with storage and semantic assertions", () => {
+test("GTY05 correctness transition remains pinned and untimed with storage and semantic assertions", () => {
     const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
     const bytes=fs.readFileSync(new URL('../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt',import.meta.url));
     const hash=crypto.createHash('sha256').update(bytes).digest('hex');
@@ -2821,7 +2821,8 @@ test("GTY03 correctness transition remains pinned and untimed with storage and s
     const job=workflow.slice(workflow.indexOf('  large-corpus:'),workflow.indexOf('  prepare-latency-fixtures:'));
     assert.match(job,/4f2ccf/);assert.match(job,/LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256/);
     assert.match(job,/MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256/);
-    assert.match(job,/--shared-strings-transition/);assert.match(job,/--correctness-only/);
+    assert.match(job,/--structural-types-transition/);assert.match(job,/--correctness-only/);
+    assert.doesNotMatch(job,/--shared-strings-transition/);
     assert.doesNotMatch(job,/large.corpus.record|confirmation|Benchmark PR/);
     assert.doesNotMatch(bytes.toString(),/nanoTime|pipelineMillis|peakHeapBytes/);
     for(const invariant of ['productionIndexPrepared','syntheticIdentities','branchDefinitionBytes','persistedBytes','CALL_SITE_INDEX_QUERY']) assert.ok(bytes.includes(invariant));
