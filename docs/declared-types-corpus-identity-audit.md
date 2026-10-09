@@ -972,3 +972,32 @@ has not yet executed. Frozen preparation is
 `/tmp/graphite-native-core-runner-prep-2/source-ready.json`, SHA-256
 `97e11473e8fc4f7d2a4b226858501a20c83f13bcd98d645ab3d4619515ef2170`;
 root logs are `/tmp/graphite-whole64-root-*-tests.log`.
+
+
+### Actual raw Local.type authority integration (2026-10-10)
+
+The existing all64 runner now supports `--raw-local-types`, and the CI comparison
+passes that option. Each actual writer compiles the same Java helper and exports
+the four original corpora through its own ParsedClassLocation and GraphiteJavaView.
+The original splitter reconstructs inputs only; shard bytecode hashes and class
+counts must match producer provenance. No saved graph type string, adapter type
+formatter or graph builder supplies the expected array rank.
+
+Every candidate Local is checked before legacy normalization, including unchanged
+rank-one values. The join includes graph/shard, owner, method name, full JVM
+descriptor including return type, and local name. Both writers' raw types must
+agree. Same-name conflicts, missing identities, duplicate persisted identities
+and array-related typed allocations remain failures rather than selecting a
+matching occurrence. Non-array notes are explicitly outside this array proof.
+Partial traversal cannot report complete coverage. Scope remains fixture64 with
+no folding; it does not independently prove SootUp's inference algorithm.
+
+Source review caught and fixed ambiguous Java Type wildcard imports and the
+missing workflow option. The root independently ran251 package tests (including
+27 new tests) and20 existing runner tests; all passed. Logs are
+`/tmp/graphite-raw-local-root-package-tests.log` and
+`/tmp/graphite-raw-local-root-runner-tests.log`. Actual Java compilation and raw
+corpus execution remain pending behind the existing exclusive construction run.
+The exporter may retain more method bodies than the production streaming adapter;
+its actual4g execution must succeed without raising the heap. All global semantic
+and performance acceptance flags remain false pending actual evidence and review.
