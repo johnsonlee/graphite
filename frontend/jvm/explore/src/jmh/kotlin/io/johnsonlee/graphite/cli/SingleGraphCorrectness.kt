@@ -1,20 +1,32 @@
 package io.johnsonlee.graphite.cli
 
+import kotlin.reflect.KFunction1
+
 /** Calls the existing behavioral assertions without JMH, timing or resource sampling. */
 object SingleGraphCorrectness {
     @JvmStatic
-    fun main(args: Array<String>) {
+    fun main(args: Array<String>) = execute(args)
+
+    fun execute(
+        args: Array<String>,
+        prepare: (Array<String>) -> CorrectnessRun<*> = ::prepare,
+        report: (String) -> Unit = ::println
+    ) {
+        prepare(args).execute()
+        report("CORRECTNESS_PASS\t${args.joinToString("\t")}")
+    }
+
+    fun prepare(args: Array<String>): CorrectnessRun<*> {
         require(args.isNotEmpty()) { "Expected explorer, capacity, or methods" }
-        when (args[0]) {
+        return when (args[0]) {
             "explorer" -> explorer()
             "capacity" -> capacity()
             "methods" -> methods(args)
             else -> error("Unknown correctness suite: ${args[0]}")
         }
-        println("CORRECTNESS_PASS\t${args.joinToString("\t")}")
     }
 
-    private fun explorer() {
+    private fun explorer(): CorrectnessRun<ExplorerMemoryCounters> {
         val suite = ExplorerMemoryBenchmark().apply {
             correctnessOnly = true
             loadMode = "MAPPED"
@@ -23,29 +35,21 @@ object SingleGraphCorrectness {
             waterlineWarmupCycles = 32
             waterlineMeasuredCycles = 256
         }
-        try {
-            suite.setup()
-            val counters = ExplorerMemoryCounters()
-            suite.android_initialExplorerSession(counters)
-            suite.android_browserForwardExploration(counters)
-            suite.android_longRunningExplorerWaterline(counters)
-            suite.android_incomingExplorerWaterline(counters)
-        } finally {
-            suite.tearDown()
-        }
+        return CorrectnessRun(suite, ExplorerMemoryCounters(), suite::setup, listOf(
+            suite::android_initialExplorerSession,
+            suite::android_browserForwardExploration,
+            suite::android_longRunningExplorerWaterline,
+            suite::android_incomingExplorerWaterline
+        ), suite::tearDown)
     }
 
-    private fun capacity() {
+    private fun capacity(): CorrectnessRun<CypherCapacityBenchmarkCounters> {
         val suite = CypherCapacityBenchmark().apply { correctnessOnly = true }
-        try {
-            suite.setup()
-            suite.fourWorstCaseQueriesRejectCancelAndRecover(CypherCapacityBenchmarkCounters())
-        } finally {
-            suite.tearDown()
-        }
+        return CorrectnessRun(suite, CypherCapacityBenchmarkCounters(), suite::setup,
+            listOf(suite::fourWorstCaseQueriesRejectCancelAndRecover), suite::tearDown)
     }
 
-    private fun methods(args: Array<String>) {
+    private fun methods(args: Array<String>): CorrectnessRun<MethodCompatibilityCounters> {
         require(args.size == 3) { "Expected methods <4|17|36> <scenario>" }
         val count = args[1].toInt()
         require(count in listOf(4, 17, 36))
@@ -54,11 +58,25 @@ object SingleGraphCorrectness {
             graphCount = count
             scenario = args[2]
         }
+        return CorrectnessRun(suite, MethodCompatibilityCounters(), suite::setup,
+            listOf(suite::methodScenarioGate), suite::tearDown)
+    }
+}
+
+/** Separates suite selection from its lifecycle so failures cannot bypass cleanup or publish PASS. */
+class CorrectnessRun<C>(
+    val suite: Any,
+    val counters: C,
+    val setup: () -> Unit,
+    val checks: List<KFunction1<C, Long>>,
+    val tearDown: () -> Unit
+) {
+    fun execute() {
         try {
-            suite.setup()
-            suite.methodScenarioGate(MethodCompatibilityCounters())
+            setup()
+            checks.forEach { it(counters) }
         } finally {
-            suite.tearDown()
+            tearDown()
         }
     }
 }

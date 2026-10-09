@@ -108,6 +108,13 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
     into(layout.buildDirectory.dir("benchmark-fixtures"))
 }
 
+// Correctness entrypoints remain in the standalone harness JAR and are exercised by unit tests.
+// includeTests=false below prevents the reverse dependency or packaging tests into that JAR.
+sourceSets.test {
+    compileClasspath += sourceSets.named("jmh").get().output
+    runtimeClasspath += sourceSets.named("jmh").get().runtimeClasspath
+}
+
 jmh {
     includeTests.set(false)
     val filter = project.findProperty("jmh.filter") as String?

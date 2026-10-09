@@ -79,7 +79,7 @@ object SyntheticQueryCorrectness {
         })
 
     /** An unordered LIMIT permits any full row sub-multiset, never invented or duplicated rows. */
-    private fun verify(name: String, actual: CypherResult, expected: CypherResult, limit: Int? = null) {
+    fun verify(name: String, actual: CypherResult, expected: CypherResult, limit: Int? = null) {
         check(actual.columns == expected.columns) { "$name: columns ${actual.columns}" }
         check(actual.rows.size == (limit ?: expected.rows.size)) { "$name: row count ${actual.rows.size}" }
         val remaining = expected.rows.groupingBy { it }.eachCount().toMutableMap()
@@ -92,7 +92,7 @@ object SyntheticQueryCorrectness {
         println("CORRECTNESS_PASS\t$name")
     }
 
-    private fun ordered(name: String, actual: CypherResult, expected: CypherResult) {
+    fun ordered(name: String, actual: CypherResult, expected: CypherResult) {
         check(actual == expected) { "$name: ordered result mismatch: $actual" }
         println("CORRECTNESS_PASS\t$name")
     }
