@@ -14058,6 +14058,27 @@ PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-attempt186-pressure-independent-
 node .github/scripts/benchmark-multigraph-pressure.mjs /tmp/graphite-attempt186-pressure-1/plan.json /tmp/graphite-attempt186-pressure-1 /tmp/graphite-attempt186-pressure-1/comparison
 ```
 
+#### Integrated retained native changes into the PR branch
+
+The cumulative native184/185/186 implementation is now integrated in three
+separate commits: `dde80308` (shared string backing), `342a949d` (method arenas),
+and `849e48db` (compact member index). All93 native source/build input files
+match the frozen cumulative186 candidate byte for byte. This is a source-equivalence
+claim; the prior exported binary is not relabelled as a new PR revision.
+
+A fresh workspace run at849e48db passes all413 tests, retaining every cumulative186
+test name, with no failures or ignored tests. Strict all-target/all-feature Clippy,
+formatting, source stability and owned cleanup pass. Command:
+`PYTHONDONTWRITEBYTECODE=1 python3 /tmp/graphite-native186-integration-validate.py`.
+Evidence: `/tmp/graphite-native186-integration-source-proof.json` and
+`/tmp/graphite-native186-integration-validation/independent-review.json`.
+
+This integration preserves the verified loading benefit and the complete mixed
+query evidence above. It does not change any performance gate or declare full
+recovery. Full-catalog current-own-writer query acceptance, cross-arm semantic
+proof, JVM/construction acceptance and successful required CI remain outstanding.
+Attempt187 remains isolated and is not part of these native commits.
+
 ### Attempt187 — temporary declaration snapshots from retained ASM nodes; correctness verified, performance unmeasured (2026-10-10)
 
 **Decision: keep isolated for a matched real multi-graph construction comparison.**
