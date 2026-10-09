@@ -348,6 +348,18 @@ def prepare(args):
                 'per-arm full-readiness and independent oracle bindings', 'closed matched runtime producer packet']
         else:
             packet = pressure.read(args.producers)
+            if packet.get('schema') == 'graphite.native-pressure.producer-bundle.v1':
+                # Fresh builds and all39 audited responses are concrete evidence,
+                # but they cannot manufacture the separate cross-arm core proof.
+                from assemble_native_pressure_producers import verify_bundle
+                bundle = verify_bundle(packet, args.base_sha, args.candidate_sha)
+                status['producerPacket'] = {'path': str(args.producers.resolve()),
+                                            'sha256': pressure.sha(args.producers)}
+                status['availableInputs']['matchedNativeBundle'] = {
+                    'status': bundle['status'],
+                    'revisions': {arm: value['revision'] for arm, value in bundle['arms'].items()},
+                    'auditedCasesByArm': {arm: len(value['cases']) for arm, value in bundle['arms'].items()}}
+                raise MissingAuthority('; '.join(bundle['missingAuthority']))
             # Retain the consumed packet and preparation controls as actual plan inputs.
             packet['pins'] = dict(packet['pins'])
             controls = preparation_control_pins()
