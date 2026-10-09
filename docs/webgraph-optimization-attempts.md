@@ -14697,3 +14697,45 @@ root recomputation is `root-independent-statistics-review.json`.
 SHA-256 `diagnostic-report.json`: `6f0b89d5f50a08a7d6d6b27c6070cb7b9453bb46422238ef7738abcc7edb1d4d`.
 SHA-256 `root-independent-statistics-review.json`: `9b448fc9ae9edca4d5d30e02479e622dac03a55135013368640b6cc1059747be`.
 SHA-256 `root-all-case-observations.md`: `033e976fea86361be62bcbd6c8ce834fa161b219e0ff52d7f548429fcf7872fe`.
+
+
+### Attempt187 follow-up — cumulative correctness and integration (2026-10-10)
+
+The retained declaration-lifetime candidate was rebased without expanding its
+six-file production/test scope onto `49e8360e`. Its final source bytes now include
+the current array-formatter fixes and all current SootUp tests. The original
+patch, two failed historical validations and610-test successful record remain
+untouched. The ordinary clone is `/tmp/graphite-attempt187-rebased-source-1`;
+root integration has identical bytes for all485 inputs of this validation.
+
+One owned full SootUp gate passes615 tests, zero failures/errors/skips, detekt
+and koverVerify. Root independently parsed every raw JUnit XML and verified that
+all613 parent test names remain, with exactly the two declaration-reuse and
+malformed-input tests added. The four array formatter and16 FoldSelection checks
+are included. Sources/control pins match before and after; driver86763 and owned
+group86768 are absent with successful empty cleanup. Gradle uses4g maximum heap,
+one512m test fork and APC4. No single-graph performance measurement ran.
+
+The production change reuses already-retained ASM nodes for regular and annotation
+sources and builds temporary declaration snapshots in the final type-table /
+inherited-field-binding helper. `ParsedClassLocation` no longer holds the second,
+long-lived `ClassDeclarations` map. Annotation source behavior, parse-time invalid
+input rejection, erased identities, full declaration coverage and field-signature
+cache remain intact. The foreign-source resource fallback still exists, and
+unreferenced declarations are not pruned; those review concerns remain open.
+
+Decision: integrate the correctness-verified lifecycle candidate for cumulative
+real multi-graph construction validation. The removal of persistent duplicate
+snapshots is established by source and reuse checks, but its CPU/RSS/time benefit
+has not been measured. No construction, loading or query recovery is claimed.
+The full-projection Native192/193 experiment stays on its separately pinned
+runtime and existing `acd11a69` graph producer; it must not be relabelled as a
+measurement of this changed JVM writer.
+
+Command:
+`python3 -B /tmp/graphite-attempt187-rebased-prep-1/run.py --execute-assigned-slot`.
+Evidence is `/tmp/graphite-attempt187-rebased-validation-1`; independent review
+SHA-256 is `f17960dce92344fab30313ddc68f53f1076e7f5b59060af0b5e34758f3c63234`.
+Webgraph's separate array-local test was unchanged but not rerun by this SootUp
+suite; its prior result is not represented as new evidence. Overall performance
+acceptance and PR merge readiness remain unproven.

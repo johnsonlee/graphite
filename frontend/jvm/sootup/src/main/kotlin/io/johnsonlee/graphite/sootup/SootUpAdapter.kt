@@ -35,6 +35,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
@@ -121,6 +122,7 @@ import sootup.java.bytecode.frontend.conversion.AsmMethodSource
 import sootup.java.bytecode.frontend.conversion.asStreamingMethod
 import sootup.java.bytecode.frontend.conversion.signatureFor
 import sootup.java.bytecode.frontend.conversion.streamingMethodSources
+import sootup.java.bytecode.frontend.conversion.parsedDeclarationNode
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -438,19 +440,24 @@ class SootUpAdapter(
         return classOriginsByName.toMap()
     }
 
+    /** Declaration snapshots are needed only while building the type table. */
+    private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
+        val declarations = classes.mapNotNull { sootClass ->
+            val name = sootClass.type.fullyQualifiedName
+            sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)
+                ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
+        }.associateBy { it.name }
+        val table = DeclaredTypesReader(declarations).build()
+        val interfaces = classes.filter { it.isInterface }.mapTo(HashSet()) { it.type.fullyQualifiedName }
+        return InheritedFieldTypes(declarations, table, interfaces).bind(fieldNodes.values)
+    }
+
     /**
      * Build the complete graph from the SootUp view
      */
     fun buildGraph(): Graph {
         val classes = view.classes.toList()
         classesByNameCache = classes.associateBy { it.type.fullyQualifiedName }
-        val declarations = classes.mapNotNull { sootClass ->
-            val name = sootClass.type.fullyQualifiedName
-            (sootClass.classSource.analysisInputLocation as? ParsedClassLocation)?.declarations(name)
-                ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
-        }.associateBy { it.name }
-        val declaredTypes = DeclaredTypesReader(declarations).build()
-        graphBuilder.setDeclaredTypes(declaredTypes)
         val indexedClasses: List<IndexedClass>
         val loadedClassSources: Set<String>
         if (singleArtifactSource == null) {
@@ -535,8 +542,7 @@ class SootUpAdapter(
         }
 
         log("Starting graphBuilder.build()")
-        val interfaces = classes.filter { it.isInterface }.mapTo(HashSet()) { it.type.fullyQualifiedName }
-        graphBuilder.setDeclaredTypes(InheritedFieldTypes(declarations, declaredTypes, interfaces).bind(fieldNodes.values))
+        graphBuilder.setDeclaredTypes(buildDeclaredTypes(classes))
         graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
