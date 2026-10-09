@@ -673,3 +673,28 @@ replay, not a rerun of CI, graph construction, or a performance measurement.
 Commands, source/input hashes and both outcomes are retained in
 `/tmp/graphite-untimed-workload-replay-1/record.json`. The complete test output is
 `/tmp/graphite-untimed-workload-all-js-tests.log`.
+
+## Construction resource capture (2026-10-10)
+
+The Native CI artifact producer now captures the resources of each revision's
+own real 64-graph writer using GNU time on Linux. The measured boundary starts
+with a fresh JVM and ends after all saved graphs, indexes and manifests,
+embedded readback validation, and clean writer exit. Compilation, the separate
+verification process and subsequent artifact hashing remain outside this
+boundary. This is graph preparation including validation, not pure serialization.
+
+The receipt retains raw wall, user and system time, their total CPU time, and
+maximum process RSS in bytes, together with the exact wrapped command and GNU
+time identity. Each writer retains the same 4 GiB heap and four active
+processors. Peak process RSS is not a sum of simultaneous processes. The
+independent auditor parses the raw metrics again, verifies the command and
+cleanup, and rejects missing metrics when CI requests capture. Historical
+unmeasured packets retain their original shape.
+
+All 100 producer, auditor and downstream handoff protocol tests pass, including
+failed writers, timeouts, invalid metrics, changed commands and missing captures.
+Three focused JavaScript contract tests and all control-manifest checks pass;
+an independent rerun of eight resource tests also passes. Evidence is retained
+at `/tmp/graphite-construction-capture-integration-1/record.json`. No real
+construction measurement has run with this change yet. Construction, loading
+and query regression acceptance remain separate and unproven by these tests.

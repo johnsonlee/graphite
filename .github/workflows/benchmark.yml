@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 6eec9034647b96fb547f53c5617b3f43f40520e7de6ef027854c4fefd6d9b2c6
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 075fae686e7a196a962a61e71eb3b19a6153b92f930cb216d6efabed7a462671
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 53994d0aab5c392bbc2e5f53bb764d40cc4436c3ea4fd9d0974aaba58d930182
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -2819,13 +2819,13 @@ jobs:
           python3 candidate/.github/scripts/produce_native_pressure_artifacts.py \
             --checkout "$1" --revision "$2" --role "$3" --output "native-pressure-artifacts/$4" \
             --fixture-manifest native-pressure-artifacts/source-inputs.json \
-            --java "${JAVA_EXE}" --cargo "${CARGO_EXE}" --rustc "${RUSTC_EXE}"
+            --java "${JAVA_EXE}" --cargo "${CARGO_EXE}" --rustc "${RUSTC_EXE}" --construction-metrics
           python3 candidate/.github/scripts/audit_native_pressure_artifacts.py \
             --packet "native-pressure-artifacts/$4/packet.json" \
             --checkout "$1" --revision "$2" --role "$3" \
             --source-inputs native-pressure-artifacts/source-inputs.json \
             --java "${JAVA_EXE}" --cargo "${CARGO_EXE}" --rustc "${RUSTC_EXE}" \
-            --output "native-pressure-artifacts/$4/artifact-audit.json"
+            --output "native-pressure-artifacts/$4/artifact-audit.json" --require-construction-metrics
           local correctness_port
           case "$4" in C) correctness_port=22830 ;; A) correctness_port=22831 ;; B) correctness_port=22832 ;; esac
           python3 candidate/.github/scripts/run_native_query_correctness.py \

@@ -5,6 +5,8 @@ This checks build and file identity only. HTTP readiness, query correctness,
 cross-arm semantic equivalence and performance acceptance are separate work.
 """
 import argparse
+import math
+import re
 import os
 from pathlib import Path
 import subprocess
@@ -17,6 +19,7 @@ from prepare_native_pressure_plan import native_build_identity, preparation_cont
 ACCEPTED = '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
 STATUS = 'PASS_ARTIFACTS_READINESS_AND_QUERY_PROOFS_PENDING'
 SCRIPTS = Path(__file__).resolve().parent
+CONSTRUCTION_SCOPE = 'fresh JVM through 64 saved graphs, persisted indexes, manifests, embedded readback validation and clean writer exit'
 PROVENANCE_HEADER = ('graphId\tcorpus\tshard\tsourceJar\tsourceJarSha256\tshardBytecodeSha256\tclassCount\tnodeCount'
                      '\tcallSiteCount\tzeroTerm\ttargetedTerm\tdenseTerm\tquerySemanticSha256\tresourceCount'
                      '\tresourceSemanticSha256\tworkloadIdentity\tcallSiteIndexBytes\tcallSiteIndexSha256\tgraphPath')
@@ -86,16 +89,38 @@ def source_inventory(checkout, revision):
     return result
 
 
-def check_phase(path, expected_argv, checkout):
+def check_phase(path, expected_argv, checkout, construction=False):
     record=common.read(path);owner=common.read(path.parent/'owner.json')
     require(record['status']=='PASS' and not record['errors'],'raw phase failed')
-    require(record['argv']==expected_argv==owner['argv'],'raw/owned actual command')
+    require(record['argv']==expected_argv,'raw actual command')
+    expected_logs = ['stdout.log','stderr.log']
+    if construction:
+        launch = ['/usr/bin/time','-v','-o',str(path.parent/'time-v.log'),'--',*expected_argv]
+        require(path.parent.name == 'prepare-real64' and record['launchArgv'] == owner['argv'] == launch and
+                record['environmentOverrides'] == {'LC_ALL':'C'}, 'actual GNU time construction wrapper')
+        raw = (path.parent/'time-v.log').read_text()
+        require(re.findall(r'^\s*Exit status:\s*([0-9]+)\s*$',raw,re.M) == ['0'], 'resource child exit status')
+        for label in ('User time (seconds)','System time (seconds)',
+                      'Elapsed (wall clock) time (h:mm:ss or m:ss)','Maximum resident set size (kbytes)'):
+            require(sum(line.strip().startswith(label+':') for line in raw.splitlines()) == 1,'unique GNU construction resource field')
+        require(re.search(r'^\s*Maximum resident set size \(kbytes\):\s*[0-9]+\s*$',raw,re.M), 'integer GNU time peak RSS')
+        resources = common.lifecycle_time(path.parent/'time-v.log')
+        require(all(math.isfinite(resources[k]) and resources[k] >= 0 for k in ('realSeconds','userSeconds','systemSeconds')) and resources['peakRssBytes'] > 0,'valid construction resources')
+        resources.update(scope=CONSTRUCTION_SCOPE,totalCpuSeconds=resources['userSeconds']+resources['systemSeconds'],
+                         graphCount=64,heapMaxBytes=4*1024**3,activeProcessorCount=4,
+                         cpuAccounting='GNU time waited JVM and its waited-for descendants; all JVM threads included',
+                         rssAccounting='GNU time maximum process RSS; not a sum of concurrent process RSS',
+                         performanceAcceptance=False)
+        require(record['constructionResources'] == resources,'construction raw resources differ from summary')
+        expected_logs.append('time-v.log')
+    else:
+        require(owner['argv']==expected_argv and not any(k in record for k in ('launchArgv','constructionResources','environmentOverrides')), 'unmeasured phase must remain unwrapped')
     require(type(owner['group']) is int and owner['group']>1 and type(owner['runnerPid']) is int and owner['runnerPid']>1,'owned PID identity')
     cleanup=record['cleanup']
     require(cleanup['group']==owner['group'] and cleanup['after']==[] and cleanup['errors']==[] and
             cleanup['exit'] ==0,'owned terminal cleanup')
     require(record['exit']==0 and record['cwd']==str(checkout) and record['timeoutSeconds']>0,'actual phase completion')
-    expected_logs={str(path.parent/n):common.sha(path.parent/n) for n in ('stdout.log','stderr.log')}
+    expected_logs={str(path.parent/n):common.sha(path.parent/n) for n in expected_logs}
     require(record['logs']==expected_logs,'raw phase logs closed')
     return record
 
@@ -155,7 +180,7 @@ def verify_fixture(root, fixture, runtime, inputs, catalog, revision):
     return graphs,source
 
 
-def audit(packet_path, checkout, revision, role, inputs_path, tools):
+def audit(packet_path, checkout, revision, role, inputs_path, tools, require_construction_metrics=False):
     packet_path, checkout, inputs_path = (Path(path).resolve() for path in
                                          (packet_path, checkout, inputs_path))
     root = packet_path.parent
@@ -173,8 +198,11 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
             packet['status'] == 'ARTIFACTS_COMPLETE_INDEPENDENT_PROOFS_PENDING' and
             packet['revision'] == revision and packet['role'] == role and packet['errors'] == [] and
             all(packet[key] is False for key in
-                ('independentlyAudited', 'acceptanceEligible', 'performanceMeasurement')),
+                ('independentlyAudited', 'acceptanceEligible')),
             'completed bounded artifact producer')
+    construction = 'constructionMeasurement' in packet
+    require(not require_construction_metrics or construction, 'required real64 construction resources missing')
+    require(packet['performanceMeasurement'] is construction, 'explicit construction measurement scope')
     source = common.read(root / 'source-manifest.json')
     runtime = common.read(root / 'runtime-manifest.json')
     fixture = common.read(root / 'fixture-manifest.json')
@@ -192,6 +220,11 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
     for name in ('produce_native_pressure_artifacts.py', 'multigraph_pressure.py', 'native_legal_response.py'):
         path = str(SCRIPTS / name)
         require(pins.get(path) == control_pins[path], 'executed reviewed producer dependency')
+    if construction:
+        version = root/'construction-time-version.txt'
+        require(packet['constructionMeasurement'] == {'tool':'/usr/bin/time','versionFile':str(version),
+                'scope':CONSTRUCTION_SCOPE,'performanceAcceptance':False}, 'bounded GNU time construction scope')
+        require('/usr/bin/time' in pins and str(version) in pins and version.read_text().startswith('time (GNU Time)'), 'pinned actual GNU time implementation/version')
     identity = native_build_identity(runtime)
     require({key: identity[key] for key in tools} == tools and set(tools) == {'java', 'cargo', 'rustc'},
             'requested direct toolchain')
@@ -231,7 +264,7 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
     receipts = packet['phaseReceipts']
     require(set(receipts) == {str(root / name / 'record.json') for name in commands}, 'exact seven build/writer phases')
     verify_pins(receipts)
-    phases = [check_phase(root / name / 'record.json', argv, checkout) for name, argv in commands.items()]
+    phases = [check_phase(root / name / 'record.json', argv, checkout, construction and name == 'prepare-real64') for name, argv in commands.items()]
     require(packet['phases'] == phases, 'ordered full raw phase records')
     require((root / 'rustc-version/stdout.log').read_text() == identity['rustcVersion'] and
             (root / 'cargo-version/stdout.log').read_text() == identity['cargoVersion'], 'actual compiler version output')
@@ -244,7 +277,7 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
     evidence = {**control_pins, **metadata, **pins, **receipts, **source_before,
                 **runtime['files'], **runtime['originalArtifacts'], **fixture['files']}
     for name in commands:
-        for leaf in ('owner.json', 'stdout.log', 'stderr.log'):
+        for leaf in ('owner.json', 'stdout.log', 'stderr.log', *(['time-v.log'] if construction and name == 'prepare-real64' else [])):
             path = root / name / leaf
             evidence[str(path)] = common.sha(path)
     # A final complete recheck also detects mutation while the auditor is reading.
@@ -253,7 +286,7 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
             inventory(root / 'runtime') == runtime['files'] and
             inventory(root / 'graphs') == fixture['files'] and
             configs(checkout, env) == packet['configurationAfter'], 'audit final closed inventories')
-    return {'schema': 'graphite.native-independent-artifact-audit.v1', 'status': STATUS,
+    result = {'schema': 'graphite.native-independent-artifact-audit.v1', 'status': STATUS,
             'revision': revision, 'role': role, 'producerPacket': ref(packet_path), 'auditor': ref(__file__),
             'sourceManifest': ref(root / 'source-manifest.json'),
             'runtimeManifest': ref(root / 'runtime-manifest.json'),
@@ -264,18 +297,23 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools):
             'writerRevision': revision, 'graphs': graphs, 'phaseCount': len(phases), 'pins': evidence,
             'readinessVerified': False, 'queryCorrectnessVerified': False,
             'completeSemanticEquivalence': False, 'performanceAcceptance': False, 'acceptanceEligible': False}
+    if construction:
+        result['constructionResources'] = phases[5]['constructionResources']
+    return result
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('packet', 'checkout', 'revision', 'role', 'source-inputs', 'java', 'cargo', 'rustc', 'output'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--require-construction-metrics', action='store_true')
     args = parser.parse_args()
     output = Path(args.output).resolve()
     require(not output.exists(), 'fresh audit output required')
     try:
         result = audit(args.packet, args.checkout, args.revision, args.role, args.source_inputs,
-                       {key: str(Path(getattr(args, key)).resolve()) for key in ('java', 'cargo', 'rustc')})
+                       {key: str(Path(getattr(args, key)).resolve()) for key in ('java', 'cargo', 'rustc')},
+                       args.require_construction_metrics)
     except (OSError, ValueError, KeyError, TypeError, subprocess.SubprocessError) as error:
         common.save(output, {'schema': 'graphite.native-independent-artifact-audit.v1', 'status': 'FAIL',
                              'errors': [repr(error)], 'acceptanceEligible': False})
