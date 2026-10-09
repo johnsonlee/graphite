@@ -19,6 +19,7 @@ internal class DeclaredTypeTextCandidates(
     private val atoms = (types as? DeclaredTypeAtoms)?.takeIf {
         fragments.all { fragment -> fragment.all { it.code <= ASCII_MAX } }
     }
+    private val atomMatcher = atoms?.queryMatcher(fragments)
     private val matches = ByteArray(types.size)
     private val required = (1 shl fragments.size) - 1
     private var inspected = 0
@@ -73,6 +74,11 @@ internal class DeclaredTypeTextCandidates(
     }
 
     private fun matchAtom(source: DeclaredTypeAtoms, position: Int, key: String, initial: Int): Int {
+        atomMatcher?.let { matcher ->
+            val facts = matcher.match(position)
+            val mask = initial or (facts and required)
+            return if (facts and DeclaredTypeAtomMatcher.NON_EMPTY == 0) mask else matchText(key, mask)
+        }
         val length = source.atomTextLength(position)
         var mask = if (length == 0) initial else matchText(key, initial)
         for ((index, fragment) in fragments.withIndex()) {

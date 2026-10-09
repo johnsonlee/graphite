@@ -7,6 +7,7 @@ internal interface DeclaredTypeAtoms {
     fun atomByte(offset: Int): Byte
     fun atomTextOffset(position: Int): Int
     fun nextTextField(position: Int): Int
+    fun queryMatcher(fragments: List<String>): DeclaredTypeAtomMatcher? = null
     fun atomText(position: Int): String {
         val offset = atomTextOffset(position)
         return ByteArray(atomInt(offset)) { atomByte(offset + Int.SIZE_BYTES + it) }.toString(Charsets.UTF_8)
@@ -29,3 +30,13 @@ internal interface DeclaredTypeAtoms {
 }
 
 private const val DECLARED_ATOM_ASCII_MAX = 127
+
+/** Query-owned fragment bits plus NON_EMPTY; callers still account every row/reference. */
+internal fun interface DeclaredTypeAtomMatcher {
+    fun match(position: Int): Int
+
+    companion object {
+        const val NON_EMPTY = 4
+        const val MAX_FRAGMENTS = 2
+    }
+}
