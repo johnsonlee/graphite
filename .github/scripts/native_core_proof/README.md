@@ -117,3 +117,16 @@ Production Kotlin test execution and full core/topology/index comparison remain
 mandatory separate authorities. The source contract is a portable textual copy
 of the reviewed source fragments; its historical sourceReview path is provenance
 only and is never loaded by the binder.
+
+The production formatter correctness stage executes the exact reviewed three test
+classes (21 cases) already present in the actual parent/candidate checkout. It
+never copies candidate tests into C. The pinned producer JDK and existing isolated
+Gradle homes/cache are reused, with --no-daemon and fresh isolated test results;
+all Test forks are bounded to4g/APC4. The original source/runtime/fixture artifact
+audits are replayed before and after. Raw JUnit XML requires the complete exact
+case set without failures/skips. Actual ordered test classpath contents are bound
+before/after, and every resolved matching Graphite/SootUp production class is
+compared to writer.jar, with required formatter/cache/persistence classes present.
+This proves the selected actual writer model tests, not universal bytecode
+inference or complete graph equivalence. Correctness time is outside performance
+boundaries. Absent tests in a distinct old parent fail rather than being backfilled.

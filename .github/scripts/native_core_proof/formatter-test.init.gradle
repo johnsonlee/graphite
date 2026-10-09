@@ -1,0 +1,72 @@
+// Correctness only, outside measured construction/loading/query boundaries.
+// Reuse the actual producer's Gradle cache; isolate this run's reports/results.
+def resultRoot = System.getProperty('graphite.formatter.outputRoot')
+def expectedJava = System.getProperty('graphite.formatter.expectedJava')
+if (!resultRoot || !expectedJava) throw new GradleException('explicit formatter output and actual JDK required')
+def selected = [
+    ':sootup': ['io.johnsonlee.graphite.sootup.ArrayTypeFormatterMigrationTest',
+                'io.johnsonlee.graphite.sootup.FoldSelectionTest'],
+    ':webgraph': ['io.johnsonlee.graphite.webgraph.ArrayLocalPersistenceTest']
+]
+def digest = { File file ->
+    def md = java.security.MessageDigest.getInstance('SHA-256')
+    file.withInputStream { stream ->
+        byte[] buffer = new byte[65536]
+        int count
+        while ((count = stream.read(buffer)) != -1) md.update(buffer, 0, count)
+    }
+    md.digest().encodeHex().toString()
+}
+def classpathSnapshot = { task ->
+    def roots = task.classpath.files.collect { original ->
+        if (java.nio.file.Files.isSymbolicLink(original.toPath())) throw new GradleException('symlinked test classpath root')
+        File file = original.canonicalFile
+        if (file.isDirectory()) {
+            def files = new TreeMap()
+            file.eachFileRecurse { member ->
+                if (java.nio.file.Files.isSymbolicLink(member.toPath())) throw new GradleException('symlinked test classpath member')
+                if (member.isFile()) files[file.toPath().relativize(member.toPath()).toString()] = digest(member)
+            }
+            [path: file.path, kind: 'directory', files: files]
+        } else if (file.isFile()) {
+            [path: file.path, kind: 'file', sha256: digest(file)]
+        } else [path: file.path, kind: 'absent']
+    }
+    [schema: 'graphite.formatter-test-classpath.v1',
+     java: task.javaLauncher.get().executablePath.asFile.canonicalPath,
+     maxHeapSize: task.maxHeapSize, maxParallelForks: task.maxParallelForks,
+     jvmArgs: task.jvmArgs, classpath: roots]
+}
+gradle.beforeProject { project ->
+    project.tasks.withType(org.gradle.api.tasks.testing.Test).configureEach { task ->
+        task.maxHeapSize = '4g'
+        task.maxParallelForks = 1
+        task.jvmArgs = task.jvmArgs.findAll { !it.startsWith('-Xmx') && !it.startsWith('-XX:ActiveProcessorCount=') }
+        task.jvmArgs('-XX:ActiveProcessorCount=4')
+        if (selected.containsKey(project.path) && task.name == 'test') {
+            selected[project.path].each { task.filter.includeTestsMatching(it) }
+            task.filter.failOnNoMatchingTests = true
+            task.reports.junitXml.required.set(true)
+            task.reports.junitXml.outputLocation.set(new File(resultRoot, 'xml/' + project.name))
+            task.reports.html.required.set(false)
+            task.binaryResultsDirectory.set(new File(resultRoot, 'binary/' + project.name))
+            task.doFirst {
+                if (task.javaLauncher.get().executablePath.asFile.canonicalPath != new File(expectedJava).canonicalPath) {
+                    throw new GradleException('formatter tests selected another JDK')
+                }
+                File before = new File(resultRoot, 'classpath-' + project.name + '-before.json')
+                if (before.exists()) throw new GradleException('fresh test classpath evidence required')
+                before.parentFile.mkdirs()
+                before.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(classpathSnapshot(task))) + '\n'
+            }
+            task.doLast {
+                File after = new File(resultRoot, 'classpath-' + project.name + '-after.json')
+                if (after.exists()) throw new GradleException('fresh final test classpath evidence required')
+                def actual = classpathSnapshot(task)
+                after.text = groovy.json.JsonOutput.prettyPrint(groovy.json.JsonOutput.toJson(actual)) + '\n'
+                def before = new groovy.json.JsonSlurper().parse(new File(resultRoot, 'classpath-' + project.name + '-before.json'))
+                if (before != actual) throw new GradleException('test classpath changed during correctness execution')
+            }
+        }
+    }
+}
