@@ -12724,3 +12724,41 @@ There are107 eligible execution/native samples. Non-additive ancestry counts inc
 A separate512MiB/APC4 metadata-only probe of the exact frozen ARM64 Homebrew17.0.20.1+0 executable reports `UseSHA=false` and `UseAES=false` as defaults, with `UseCRC32=true`. No production flag or runtime is changed. Host sysctl metadata reports SHA256/SHA1/AES support. Official [OpenJDK17u macOS ARM detection source](https://github.com/openjdk/jdk17u/blob/master/src/hotspot/os_cpu/bsd_aarch64/vm_version_bsd_aarch64.cpp) omits those SHA/AES feature registrations; [JDK-8297092](https://github.com/openjdk/jdk/commit/240830df7eaa04e0056e9585ebdbf6b02e8b747c) adds SHA feature registration upstream. This is a source-supported explanation of the observed defaults, not proof that the installed Homebrew bottle exactly matches that source branch. The bottle's release metadata has an empty SOURCE field. Forcing an unsupported intrinsic flag is not an accepted remedy; changing JDKs would require separately matched baseline/candidate measurements and would not erase current-JDK failures.
 
 Evidence: `/tmp/graphite-attempt169-profile/{launch-authorization.json,result/record.json,result/final-input-verification.json,stream-analysis.json,jdk-flags/}` and `/tmp/graphite-jvm169-sha-investigation.json`. Source manifest SHA `1d2492ce783b4dbcf8b89cfe14aa6d23034188ef905c8088602bbe05fc2b04ee`; profile config `bb695648434a55fa57a28af45834936bc51bebcd05d7d6b6f6d490537c4c5d3e`. Full digest, UTF-8, duplicate/reference/shape/DAG validation remain required before readiness; no validation is removed, cached or deferred. Construction/end-to-end, query p50/p95 and final CI remain separate outstanding obligations.
+
+### Attempt173 — shared string table: smaller saved graphs, loading regression identified (2026-10-09)
+
+**Decision: retain the requested shared-string representation for further optimization; this implementation does not pass performance acceptance.** Both directional pairs show higher loading time, CPU and peak RSS than retained163; cumulative accepted4f CPU/RSS also fail. The smaller saved graphs are a verified benefit, but do not offset those independent failures. No query p50/p95, construction or final CI recovery is claimed. Attempts170–172 remain separate, unintegrated investigations.
+
+Commit `ae316747a573739b6a55c98458b2f3fa9f98130f` makes GTY03 type/member text reference the existing `graph.strings` IDs and binds the actual serialized dictionary bytes. Type-expression deduplication remains separate. GTY01/02 readers remain supported in JVM and Rust. Complete shared-string implementation validation passes 2,192 JVM tests and 402 Rust workspace/explicit interoperability checks; relevant static checks pass. Failed intermediate lint/test attempts are retained under `/tmp/graphite-shared-strings-validation/`. The complete fresh real-JAR declaration, core-node, metadata, full labeled-topology and 18-response server proof is recorded in [the corpus audit](declared-types-corpus-identity-audit.md#gty03-fresh-corpus-correctness-follow-up-2026-10-09).
+
+Saved directory bytes decrease versus retained GTY02 by 4,213,590 for Tika, 7,001,360 for Hive and 3,491,577 for Kotlin compiler (14,706,527 total). These are complete file inventories from actual fresh usable saves, not timing evidence or revised CI size tolerances. The formal matched construction cohort and gate migration remain pending.
+
+The loading comparison uses C=accepted `4f2ccf33`, A=retained163 `37eff123` and B=`ae316747`, exact frozen explore runtimes, and the complete same Tika/Hive/Kotlin workload in every process. C reads original baseline graphs, A the audited GTY02 graphs, and B the fully certified fresh GTY03 graphs. One predeclared C,A,B,B,A,C cohort uses JDK17.0.20.1, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, MAPPED and server concurrency4. Identical full identity reads before each startup define warm-filesystem conditions. Timing includes launch through complete validated three-graph readiness; every required type/digest/reference/DAG check completes before readiness. There are no queries in these measured processes.
+
+| Process | Through-ready ms | User+system CPU s | Strict loading RSS lower MB | Lifecycle RSS upper MB |
+|---|---:|---:|---:|---:|
+|0C|729.638|1.490|285.573|286.179|
+|1A|1592.426|2.730|409.272|409.879|
+|2B|2189.773|4.000|687.440|689.357|
+|3B|2205.410|4.090|684.278|684.638|
+|4A|1595.372|2.730|415.171|416.530|
+|5C|751.082|1.540|281.870|282.427|
+
+Retained163→shared mean readiness **1593.899→2197.592ms (+603.692ms)**, CPU **2.730→4.045s (+1.315s)** and lifecycle RSS **413.204→686.998MB (+273.793MB)**. Accepted4f→shared readiness is **740.360→2197.592ms (+1457.232ms)**, CPU **1.515→4.045s (+2.530s)** and lifecycle RSS **284.303→686.998MB (+402.694MB)**. Means are descriptive; all individual observations and both directional pair decisions are retained.
+
+| Comparison | CPU ratio enclosure | Loading peak RSS ratio enclosure | CPU +5% | RSS +5% |
+|---|---:|---:|---|---|
+|163→shared, pair1|[1.447273,1.483395]|[1.677180,1.684347]|FAIL|FAIL|
+|163→shared, pair2|[1.480000,1.516605]|[1.642804,1.649053]|FAIL|FAIL|
+|4f→shared, pair1|[2.635762,2.734694]|[2.402130,2.413941]|FAIL|FAIL|
+|4f→shared, pair2|[2.608974,2.703947]|[2.422845,2.428912]|FAIL|FAIL|
+
+RSS uses only complete 5ms reads inside launch..readiness as the lower bound and exact time-l lifecycle maximum as the upper bound. The latter includes final CPU observation, monitor completion and shutdown. CPU enclosures conservatively apply ±0.02s to the recorded near-readiness ps observations; sampling lags are retained separately. Two observations per arm do not establish a statistical distribution or cold-cache behavior.
+
+Independent raw audit passes six complete readiness bodies/18 graph rows, all exact commands, every RSS sample and excluded boundary read, raw ps/time-l parity, all report vectors/means/ranges/pairs, cleanup ownership and both final identity receipts. All six server groups and the runner are empty, with no forced cleanup or cleanup error; root session14740 exits0. There are68 retained host observations including the three original preflight snapshots. Background maxima include Codex Renderer138.1%, mediaanalysisd104.6%, syspolicyd100.8%, searchpartyuseragent92.0% and PerfPowerServices78.5%. No unrelated process was stopped and no sample replaced; no quiet-host claim is made.
+
+Before measurement, source review corrected an unbounded cleanup ps call and a missing-resource-log path that could otherwise continue to the next arm. The original source, first identity-only seal and first completed preflight remain under `pre-measure-review-1`; they launched no measured JVM. The corrected runner passes28 no-child tests, including failure propagation and stopping after the first incomplete arm. The final cohort is sealed after those fixes.
+
+Source inspection identifies repeated shared-dictionary decoding to temporary Strings and UTF-8 byte arrays in validation/hash/length paths as a hypothesis for the additional allocation and CPU. This is not yet a measured attribution; an actual startup allocation/CPU profile and a separately validated candidate are the next steps. Full validation and compatibility must remain intact.
+
+Evidence: `/tmp/graphite-shared-loading/` retains protocol, all raw startup/resource/host samples, report, cleanup and final identities. Independent source and result are `/tmp/graphite-shared-loading-audit.py` and `/tmp/graphite-shared-loading-independent-audit.json`. Protocol SHA `bf7968c7c9723dd600c54ac8c24861ad91b5f1502e9e7af5cac3a283d8579df2`; seal `fd955379a46ee547a18483b32b22dee56e478e5a72fd43d8a1406891e11c2eb0`; original final-cohort preflight `87bccb18d5b58fe45aaffefc0f975a880a503646bd061052da92b39a9d1cb4cf`; independent raw audit `7ab8f30546e04c991fbe4395cf8035c9e56bb1a75d226aea30ff97e0b1485eae`. The PR remains draft with required performance checks unresolved.
