@@ -5,144 +5,38 @@ import crypto from "node:crypto";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { comparePressure } from "./benchmark-multigraph-pressure.mjs";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
 export const BENCHMARK_COVERAGE_DOMAINS = [
-    {
-        name: "Semantic correctness",
-        components: ["method-compatibility"],
-        missing: ["universal-correctness-manifest", "isolated-workload-identity"]
-    },
-    {
-        name: "Latency regression",
-        components: [
-            "rust-latency",
-            "method-level",
-            "budgeted-collection",
-            "budgeted-mapped-string",
-            "wrapped-query-latency",
-            "graph-routing-pressure",
-            "global-wide-pressure"
-        ],
-        missing: ["cross-graph-dataflow-latency", "storage-load-stage-latency"]
-    },
-    {
-        name: "Throughput and capacity",
-        components: ["cypher-capacity"],
-        missing: ["sustained-throughput", "saturation-capacity", "multi-client-capacity"]
-    },
-    {
-        name: "Memory and resources",
-        components: ["explorer", "wrapped-query-resources"],
-        missing: ["allocation-per-operation", "memory-leak", "disk-and-temporary-space-budget"]
-    },
-    {
-        name: "Scalability",
-        components: [],
-        missing: ["graph-build-scaling", "corpus-load-scaling", "concurrent-user-scaling"]
-    },
-    {
-        name: "Build and persistence lifecycle",
-        components: ["large-corpus"],
-        missing: ["dedicated-graph-build", "dedicated-save-load", "persisted-mapped-query", "persistence-migration"]
-    }
+    {name: "Semantic correctness", components: ["method-level", "explorer", "method-compatibility",
+        "cypher-capacity", "budgeted-collection", "budgeted-mapped-string", "graph-routing-pressure", "slow-query-shapes"],
+    missing: []},
+    {name: "Build and persistence lifecycle", components: ["large-corpus"],
+    missing: ["multi-graph-construction-acceptance", "multi-graph-loading-acceptance"]},
+    {name: "Existing multi-graph constraints", components: ["rust-latency", "wrapped-query-latency", "wrapped-query-resources", "global-wide-pressure"],
+    missing: ["continuous-c4-validated-request-latency", "independent-process-cpu-and-rss-bounds"]}
 ];
 
-// Advisory components still run and still report, but their verdict never flips the gate:
-// they measure the JVM query engine, which `graphite serve` no longer ships. `rust-latency`
-// is the paired base-vs-candidate measurement of the engine a release runs.
 export const BENCHMARK_COMPONENTS = [
-    {
-        name: "rust-latency",
-        report: "rust-latency-report.md",
-        status: "rust-latency-status.json",
-        coverage: "partial",
-        gap: "Sequential single-threaded passes on one hosted runner; rows under the 1 ms floor cannot block."
-    },
-    {
-        name: "method-level",
-        report: "method-report.md",
-        status: "method-status.json",
-        coverage: "partial",
-        gap: "Low sample count and hosted-runner variance."
-    },
-    {
-        name: "explorer",
-        advisory: true,
-        report: "explorer-report.md",
-        status: "explorer-status.json",
-        coverage: "partial",
-        gap: "Four fixture scenarios; no allocation or leak proof."
-    },
-    {
-        name: "method-compatibility",
-        advisory: true,
-        report: "method-compatibility-report.md",
-        status: "method-compatibility-status.json",
-        coverage: "partial",
-        gap: "Fixed discovery matrix only; no universal semantic coverage."
-    },
-    {
-        name: "cypher-capacity",
-        advisory: true,
-        report: "cypher-capacity-report.md",
-        status: "cypher-capacity-status.json",
-        coverage: "partial",
-        gap: "One composite point and limited concurrency shapes."
-    },
-    {
-        name: "budgeted-collection",
-        advisory: true,
-        report: "budgeted-collection-report.md",
-        status: "budgeted-collection-status.json",
-        coverage: "partial",
-        gap: "Fixed historical baseline; no current-base comparison."
-    },
-    {
-        name: "budgeted-mapped-string",
-        advisory: true,
-        report: "budgeted-string-report.md",
-        status: "budgeted-string-status.json",
-        coverage: "partial",
-        gap: "Fixed historical baseline; no current-base comparison."
-    },
-    {
-        name: "large-corpus",
-        report: "large-corpus-report.md",
-        status: "large-corpus-status.json",
-        coverage: "partial",
-        gap: "Three fixed corpora; stage rows do not provide universal corpus or lifecycle coverage."
-    },
-    {
-        name: "wrapped-query-latency",
-        advisory: true,
-        report: "latency-report.md",
-        status: "latency-status.json",
-        coverage: "complete",
-        gap: "No gate-specific gap identified."
-    },
-    {
-        name: "wrapped-query-resources",
-        report: "latency-resource-report.md",
-        status: "latency-resource-status.json",
-        coverage: "partial",
-        gap: "Exact point probes only; no long-duration leak or soak proof."
-    },
-    {
-        name: "graph-routing-pressure",
-        report: "graph-routing-report.md",
-        status: "graph-routing-status.json",
-        coverage: "complete",
-        gap: "No gate-specific gap identified."
-    },
-    {
-        name: "global-wide-pressure",
-        report: "global-wide-report.md",
-        status: "global-wide-status.json",
-        coverage: "complete",
-        gap: "No gate-specific gap identified."
-    }
+    ["method-level", "method"], ["explorer", "explorer"], ["method-compatibility", "method-compatibility"],
+    ["cypher-capacity", "cypher-capacity"], ["budgeted-collection", "budgeted-collection"],
+    ["budgeted-mapped-string", "budgeted-string"], ["large-corpus", "large-corpus"],
+    ["graph-routing-pressure", "graph-routing"], ["slow-query-shapes", "slow-query-shapes"]
+].map(([name, prefix]) => ({name, report: `${prefix}-report.md`, status: `${prefix}-status.json`,
+    correctnessOnly: true, coverage: "partial", gap: "Correctness only; cannot establish performance acceptance."})).concat([
+    ["rust-latency", "rust-latency"], ["wrapped-query-latency", "latency"],
+    ["wrapped-query-resources", "latency-resource"], ["global-wide-pressure", "global-wide"]
+].map(([name, prefix]) => ({name, report: `${prefix}-report.md`, status: `${prefix}-status.json`,
+    coverage: "partial", gap: "Historical multi-graph constraint retained; this replay is not continuous c4 server pressure."})));
+
+// A correctness-only report or a cross-case percentile can never fill these operation slots.
+export const REQUIRED_MULTIGRAPH_OPERATIONS = [
+    {name:"jvm-query", engine:"jvm", operation:"query"},
+    {name:"native-query", engine:"native", operation:"query"},
+    {name:"construction", engine:"jvm", operation:"construction"},
+    {name:"loading", engine:"jvm", operation:"loading"}
 ];
 
 const MIB = 1024 * 1024;
@@ -221,6 +115,19 @@ export const LARGE_CORPUS_SHAPE_TRANSITION = Object.freeze({
         candidate: { nodes: 3_292_214, sourceEdges: 3_906_617, persistedEdges: 3_785_858, methods: 249_669, callSites: 922_876 },
         persistedBytesDelta: 67_384_686
     }
+});
+
+// GTY03 stores declared text in the existing global dictionary. Keep the original GTY01
+// transition above as historical evidence. These are persistedBytes deltas (the separately
+// checked CallSite index is excluded) of usable saves
+// from exact 067f0cab vs accepted 4f, CI run 37882909532/job 113666472741. Reverse
+// deltas differ by at most two bytes, within the unchanged 4 KiB tolerance.
+// Full core/declaration/member proof and unchanged writer provenance are documented in
+// docs/declared-types-corpus-identity-audit.md. This is correctness, never a timing waiver.
+export const LARGE_CORPUS_SHARED_STRINGS_TRANSITION = Object.freeze({
+    tika: { ...LARGE_CORPUS_SHAPE_TRANSITION.tika, persistedBytesDelta: 18_148_723 },
+    hive: { ...LARGE_CORPUS_SHAPE_TRANSITION.hive, persistedBytesDelta: 28_492_338 },
+    "kotlin-compiler": { ...LARGE_CORPUS_SHAPE_TRANSITION["kotlin-compiler"], persistedBytesDelta: 21_184_278 }
 });
 
 function finiteNumber(value) {
@@ -825,7 +732,7 @@ export function compareLatencyBaseline(
     };
 }
 
-function parsePressureObservations(contents, revision, errors) {
+function parsePressureObservations(contents, revision, errors, correctnessOnly = false) {
     const lines = contents.trim().split(/\r?\n/);
     if (lines.length < 2) {
         errors.push(`${revision}: pressure observations are empty`);
@@ -834,7 +741,7 @@ function parsePressureObservations(contents, revision, errors) {
     const headers = lines[0].split("\t");
     const required = [
         "id", "family", "shape", "selectivity", "targetGraphId", "workloadIdentity", "outcome", "rowCount",
-        "responseBytes", "digest", "latencyNanos", "executionPath", "inputSourceCount", "accessedGraphCount",
+        "responseBytes", "digest", correctnessOnly ? "measurementScope" : "latencyNanos", "executionPath", "inputSourceCount", "accessedGraphCount",
         "targetGraphIds", "selectedGraphCount", "accessedGraphIds", "targetGraphAccessCount",
         "nonTargetGraphAccessCount", "parallelScanCount",
         "indexLookupCount", "peakActiveWorkers", "graphWorkUnits", "graphIdSourceSelections",
@@ -848,6 +755,10 @@ function parsePressureObservations(contents, revision, errors) {
         const values = line.split("\t");
         return Object.fromEntries(headers.map((header, index) => [header, values[index]]));
     }).filter((row) => ["graph-id", "graph-parameter", "graph-id-set", "graph-set-reference"].includes(row.family));
+    if (correctnessOnly && (headers.includes("latencyNanos") ||
+        rows.some(row => row.measurementScope !== "correctness-only"))) {
+        errors.push(`${revision}: correctness-only observations must not contain performance measurements`);
+    }
     const seen = new Set();
     for (const row of rows) {
         if (seen.has(row.id)) errors.push(`${revision}: duplicate graph-routing observation ${row.id}`);
@@ -1111,13 +1022,25 @@ export function compareGraphIdPressure(
     candidateObservations,
     baseCorrectnessContents,
     candidateCorrectnessContents,
-    minimumSpeedup = 10
+    minimumSpeedup = 10,
+    options = {}
 ) {
     const errors = [];
+    const correctnessOnly = options.correctnessOnly === true;
+    const metricValue = (result, name) => correctnessOnly
+        ? finiteNumber(result?.metrics?.[name]) : pressureMetric(result, name);
     const latencyErrors = [];
     const expectedBenchmark = "io.johnsonlee.graphite.webgraph.LargeBroadQueryPressureBenchmark.replayBroadQueries";
     const selectResult = (results, revision) => {
-        const matches = results.filter((result) => result.benchmark === expectedBenchmark &&
+        if (correctnessOnly) {
+            if (results?.scope !== "correctness-only" || results.coverageFamily !== "graph-routing" ||
+                !results.metrics || Object.keys(results.metrics).some(key =>
+                    /latency|wallNanos|processCpu|residentSet|usedHeap|gcMillis|gcCount/i.test(key))) {
+                errors.push(`${revision}: expected explicit untimed graph-routing structural evidence`);
+                return null;
+            }
+        }
+        const matches = correctnessOnly ? [results] : results.filter((result) => result.benchmark === expectedBenchmark &&
             result.params?.graphCount === "64" && result.params?.coverageFamily === "graph-routing");
         if (matches.length !== 1) {
             errors.push(`${revision}: expected exactly one 64-graph graph-routing pressure result`);
@@ -1130,15 +1053,15 @@ export function compareGraphIdPressure(
             ["graphIdTargetCount", 64], ["graphParameterTargetCount", 64],
             ["coverageShapeCount", 7], ["coverageFamilyCount", 4], ["coverageSelectivityCount", 3]
         ]) {
-            const actual = pressureMetric(result, metric);
+            const actual = metricValue(result, metric);
             if (actual !== expected) errors.push(`${revision}: ${metric}=${actual}; expected ${expected}`);
         }
         return result;
     };
     const baseResult = selectResult(baseResults, "base");
     const candidateResult = selectResult(candidateResults, "candidate");
-    const baseIndexState = baseResult?.params?.indexState;
-    const candidateIndexState = candidateResult?.params?.indexState;
+    const baseIndexState = (correctnessOnly ? baseResult?.indexState : baseResult?.params?.indexState);
+    const candidateIndexState = (correctnessOnly ? candidateResult?.indexState : candidateResult?.params?.indexState);
     if (!new Set(["cold", "warm", "startup-prepared"]).has(baseIndexState)) {
         errors.push(`base: invalid graph-routing indexState=${baseIndexState}`);
     }
@@ -1146,15 +1069,15 @@ export function compareGraphIdPressure(
         errors.push(`candidate: indexState=${candidateIndexState}; expected ${baseIndexState}`);
     }
     const resourceMetricNames = [
-        "cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
-        "gcCount", "gcMillis", "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
+        ...(correctnessOnly ? [] : ["cpuCoreUtilizationPermille", "peakUsedHeapBytes", "peakResidentSetBytes",
+            "gcCount", "gcMillis"]), "callSiteIndexAdmittedGraphs", "callSiteIndexRetainedBytes",
         "callSiteTrigramIndexedGraphs", "callSiteParallelScanCount", "callSiteParallelScanGraphCount",
         "callSiteStringIndexLookupCount", "callSiteStringIndexLookupGraphCount",
         "callSiteStringIndexLookupMinPerGraph", "callSiteStringIndexLookupMaxPerGraph",
         "callSiteScanPeakActiveWorkers"
     ];
     const resourceSnapshot = (result, revision) => Object.fromEntries(resourceMetricNames.map((name) => {
-        const value = pressureMetric(result, name);
+        const value = metricValue(result, name);
         if (value === null || value < 0) errors.push(`${revision}: ${name} requires a non-negative finite value`);
         return [name, value ?? 0];
     }));
@@ -1244,8 +1167,8 @@ export function compareGraphIdPressure(
         }
     }
 
-    const baseRows = parsePressureObservations(baseObservations, "base", errors);
-    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors);
+    const baseRows = parsePressureObservations(baseObservations, "base", errors, correctnessOnly);
+    const candidateRows = parsePressureObservations(candidateObservations, "candidate", errors, correctnessOnly);
     const coldFirstId = "request-selected-set-wrapped-contains-k64-group-00-zero";
     let coldFirst = null;
     if (candidateIndexState === "cold") {
@@ -1253,7 +1176,7 @@ export function compareGraphIdPressure(
         const candidateFirst = candidateRows[0];
         if (baseFirst?.id !== coldFirstId || candidateFirst?.id !== coldFirstId) {
             errors.push(`cold: first observation must be ${coldFirstId} in both revisions`);
-        } else {
+        } else if (!correctnessOnly) {
             const baseLatencyNanos = finiteNumber(baseFirst.latencyNanos);
             const candidateLatencyNanos = finiteNumber(candidateFirst.latencyNanos);
             if (baseFirst.outcome !== "success" || candidateFirst.outcome !== "success" ||
@@ -1415,8 +1338,8 @@ export function compareGraphIdPressure(
         const baseLatencyNanos = finiteNumber(base.latencyNanos);
         const candidateLatencyNanos = finiteNumber(candidate.latencyNanos);
         if (base.outcome !== "success" || candidate.outcome !== "success" ||
-            baseLatencyNanos === null || candidateLatencyNanos === null ||
-            baseLatencyNanos <= 0 || candidateLatencyNanos <= 0
+            (!correctnessOnly && (baseLatencyNanos === null || candidateLatencyNanos === null ||
+            baseLatencyNanos <= 0 || candidateLatencyNanos <= 0))
         ) {
             errors.push(`${id}: both revisions require successful positive latency samples`);
             continue;
@@ -1515,8 +1438,8 @@ export function compareGraphIdPressure(
             const baseReferenceRows = finiteNumber(baseReference.rowCount);
             const candidateReferenceRows = finiteNumber(candidateReference.rowCount);
             if (baseReference.outcome !== "success" || candidateReference.outcome !== "success" ||
-                baseReferenceLatency === null || candidateReferenceLatency === null ||
-                baseReferenceLatency <= 0 || candidateReferenceLatency <= 0 ||
+                (!correctnessOnly && (baseReferenceLatency === null || candidateReferenceLatency === null ||
+                baseReferenceLatency <= 0 || candidateReferenceLatency <= 0)) ||
                 baseReferenceRows === null || candidateReferenceRows === null
             ) {
                 errors.push(`${targetId}/${selectivity}: graph-parameter references require successful samples`);
@@ -1640,8 +1563,8 @@ export function compareGraphIdPressure(
                     }
                     const baseLatencyNanos = finiteNumber(baseRow.latencyNanos);
                     const candidateLatencyNanos = finiteNumber(candidateRow.latencyNanos);
-                    if (baseLatencyNanos === null || candidateLatencyNanos === null ||
-                        baseLatencyNanos <= 0 || candidateLatencyNanos <= 0
+                    if (!correctnessOnly && (baseLatencyNanos === null || candidateLatencyNanos === null ||
+                        baseLatencyNanos <= 0 || candidateLatencyNanos <= 0)
                     ) {
                         errors.push(`${candidateRow.id}: graph-set latency must be positive`);
                         continue;
@@ -1660,6 +1583,12 @@ export function compareGraphIdPressure(
             errors.push(`k${width}: deterministic disjoint groups cover ${coveredGraphIds.size}/64 real graphs`);
         }
     }
+    if (correctnessOnly) return {
+        passed: errors.length === 0, errors, scope: "correctness-only", performanceAcceptance: false,
+        indexState: candidateIndexState, observationsPerRevision: baseRows.length,
+        fullGraphSlots: targetIds.length, graphSetWidths: [...GRAPH_SET_WIDTHS.keys()],
+        baseStructuralCounters: baseResources, candidateStructuralCounters: candidateResources
+    };
     const baseLatencies = rows.map((row) => row.baseLatencyNanos);
     const candidateLatencies = rows.map((row) => row.candidateLatencyNanos);
     const baseGraphIdP50 = pressurePercentile(baseLatencies, 0.50);
@@ -2858,11 +2787,11 @@ export function combineLatencyShards(directory) {
     };
 }
 
-export function parseLargeCorpusLog(contents) {
+export function parseLargeCorpusLog(contents, correctnessOnly = false) {
     const results = new Map();
     const errors = [];
     for (const line of contents.split(/\r?\n/)) {
-        const marker = line.indexOf("LARGE_CORPUS_BASELINE");
+        const marker = line.indexOf(correctnessOnly ? "LARGE_CORPUS_CORRECTNESS" : "LARGE_CORPUS_BASELINE");
         if (marker < 0) continue;
         const tokens = line.slice(marker).trim().split(/\s+/);
         if (tokens.length < 3) {
@@ -2898,9 +2827,9 @@ export function parseLargeCorpusLog(contents) {
     return { results, errors };
 }
 
-export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = null } = {}) {
-    const baseParsed = parseLargeCorpusLog(baseLog);
-    const candidateParsed = parseLargeCorpusLog(candidateLog);
+export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = null, correctnessOnly = false } = {}) {
+    const baseParsed = parseLargeCorpusLog(baseLog, correctnessOnly);
+    const candidateParsed = parseLargeCorpusLog(candidateLog, correctnessOnly);
     const base = baseParsed.results;
     const candidate = candidateParsed.results;
     const errors = [
@@ -2985,6 +2914,19 @@ export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = nu
             ) {
                 errors.push(`${corpus}/${revision}: invalid production CallSite-index lifecycle measurement`);
             }
+            if (correctnessOnly) {
+                const fields = new Set(["corpus", ...LARGE_CORPUS_SHAPE_FIELDS, "persistedBytes",
+                    "callSiteIndexBytes", "productionIndexPrepared", "branchDefinitionBytes", "syntheticIdentities"]);
+                if (Object.keys(measurement).some(key => !fields.has(key))) {
+                    errors.push(`${corpus}/${revision}: unexpected correctness field (timings are prohibited)`);
+                }
+                for (const key of ["branchDefinitionBytes", "syntheticIdentities"]) {
+                    if (!Number.isSafeInteger(measurement[key]) || measurement[key] <= 0) {
+                        errors.push(`${corpus}/${revision}: invalid ${key}`);
+                    }
+                }
+                continue;
+            }
             const sampleCount = finiteNumber(measurement.mappedLoadSamples);
             const minimumLoad = finiteNumber(measurement.mappedLoadMinMs);
             const medianLoad = finiteNumber(measurement.mappedLoadMs);
@@ -3010,6 +2952,7 @@ export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = nu
             }
         }
 
+        if (correctnessOnly) continue;
         for (const metric of LARGE_CORPUS_METRICS) {
             const baseValue = finiteNumber(baseline[metric.key]);
             const candidateValue = finiteNumber(current[metric.key]);
@@ -3064,7 +3007,8 @@ export function compareLargeCorpus(baseLog, candidateLog, { shapeTransition = nu
         passed: errors.length === 0 && rows.every((row) => !row.blocked),
         errors,
         rows,
-        shapeTransition: shapeTransition !== null
+        shapeTransition: shapeTransition !== null,
+        ...(correctnessOnly ? { scope: "correctness-only", performanceAcceptance: false } : {})
     };
 }
 
@@ -3109,6 +3053,14 @@ function formatMeasurement(value, unit) {
 }
 
 export function renderLargeCorpusReport(comparison) {
+    if (comparison.scope === "correctness-only") {
+        return ["### Large-corpus persistence correctness", "",
+            "Single-graph construction/save/reload assertions only; no timing or resource measurements.",
+            "Exact graph shape and reviewed persisted-size migration remain required. Multi-graph performance evidence is separate.",
+            "", ...comparison.errors.map(error => `- ${error}`), "",
+            `Correctness: ${comparison.passed ? "PASS" : "FAIL"}. Performance acceptance: unavailable from this component.`, ""].join("\n");
+    }
+
     const lines = [
         "### Real-corpus end to end",
         "",
@@ -3170,12 +3122,47 @@ export function aggregateReports(directory, metadata) {
         }
         reports.set(component.name, fs.readFileSync(reportFile, "utf8").trim());
         const status = readJson(statusFile);
-        const componentPassed = status.passed === true;
+        const correctScope = !component.correctnessOnly ||
+            (status.scope === "correctness-only" && status.performanceAcceptance === false);
+        if (!correctScope) errors.push(`${component.name}: explicit untimed correctness evidence required`);
+        const componentPassed = status.passed === true && correctScope;
         if (advisory) results.set(component.name, componentPassed ? "PASS (advisory)" : "FAIL (advisory)");
         else results.set(component.name, componentPassed ? "PASS" : "FAIL");
         if (!componentPassed && !advisory) passed = false;
     }
 
+    const operationEvidence = REQUIRED_MULTIGRAPH_OPERATIONS.map(operation => {
+        const file = path.join(directory, `multigraph-${operation.name}-status.json`);
+        if (!fs.existsSync(file)) {
+            errors.push(`${operation.name}: required multi-graph operation evidence is unavailable`);
+            return {...operation, status:"UNAVAILABLE"};
+        }
+        const evidence = readJson(file);
+        try {
+            if (evidence.schema === "graphite.native-pressure.preparation.v1") {
+                throw new Error("Pressure preparation " + evidence.status + ": " +
+                    [...(evidence.missingProducers ?? []), ...(evidence.errors ?? [])].join("; "));
+            }
+            if (operation.operation !== "query") throw new Error("Complete multi-graph lifecycle auditor not installed");
+            const contained = relative => {
+                if (typeof relative !== "string" || path.isAbsolute(relative)) throw new Error("Evidence must be artifact-relative");
+                const target = path.resolve(directory, relative);
+                if (!target.startsWith(path.resolve(directory) + path.sep)) throw new Error("Evidence escaped artifact root");
+                return target;
+            };
+            const recomputed = comparePressure(contained(evidence.evidence?.plan), contained(evidence.evidence?.directory));
+            if (evidence.schema !== recomputed.schema || recomputed.engine !== operation.engine ||
+                recomputed.operation !== operation.operation || evidence.planSha256 !== recomputed.planSha256 ||
+                JSON.stringify(evidence.comparisons) !== JSON.stringify(recomputed.comparisons) ||
+                recomputed.candidateRevision !== metadata.candidateSha || !recomputed.passed) {
+                throw new Error("Required coverage, fixed comparisons, source or resource constraints failed");
+            }
+            return {...operation, status:"PASS"};
+        } catch (error) {
+            errors.push(`${operation.name}: ${error.message}`);
+            return {...operation, status:"UNAVAILABLE"};
+        }
+    });
     const componentByName = new Map(BENCHMARK_COMPONENTS.map((component) => [component.name, component]));
     const coverageRows = BENCHMARK_COVERAGE_DOMAINS.flatMap((domain) => domain.components.map((name) => {
         const component = componentByName.get(name);
@@ -3190,7 +3177,7 @@ export function aggregateReports(directory, metadata) {
                 ? "No implemented benchmark gate currently covers this domain."
                 : `Implemented gates: ${domain.components.map((name) => `\`${name}\``).join(", ")}.`,
             "",
-            `Not covered by this suite (non-blocking for this run): ${domain.missing.map((name) => `\`${name}\``).join(", ")}.`,
+            `Coverage still unavailable: ${domain.missing.map((name) => `\`${name}\``).join(", ")}.`,
             ""
         ];
         for (const name of domain.components) {
@@ -3223,7 +3210,8 @@ export function aggregateReports(directory, metadata) {
         "",
         "Coverage labels follow the gate model: ✅ has no identified gate-specific gap; ⚠️ is implemented but incomplete.",
         "Run result and coverage are separate: PASS is evidence only for the stated contract, not for a listed gap or an uncovered family.",
-        "Advisory gates measure the JVM query engine, which `graphite serve` no longer ships; their result is recorded but never blocks.",
+        "Correctness and all existing genuine multi-graph constraints remain blocking. Only complete multi-graph operation evidence can establish performance acceptance.",
+        ...operationEvidence.map(item => `- ${item.name}: ${item.status}`),
         "",
         "| Coverage domain | Gate | Run result | Coverage | Known gap |",
         "|---|---|:---:|:---:|---|",
@@ -3250,13 +3238,14 @@ export function aggregateReports(directory, metadata) {
         candidateSha: metadata.candidateSha,
         runner: metadata.runner,
         runUrl: metadata.runUrl,
+        operationEvidence,
         body: `${body}\n`
     };
 }
 
 const GRAPH_ROUTING_STATES = ["cold", "warm", "startup-prepared"];
 
-export function aggregateGraphRoutingStates(directory) {
+export function aggregateGraphRoutingStates(directory, correctnessOnly = false) {
     const errors = [];
     const states = {};
     const sections = [];
@@ -3277,6 +3266,9 @@ export function aggregateGraphRoutingStates(directory) {
             states[state] = { passed: false, errors: [message] };
             continue;
         }
+        if (correctnessOnly && (status.scope !== "correctness-only" || status.performanceAcceptance !== false)) {
+            errors.push(`${state}: required correctness-only evidence is missing`);
+        }
         states[state] = status;
         sections.push(fs.readFileSync(reportFile, "utf8").trim());
         if (status.passed !== true) {
@@ -3295,7 +3287,7 @@ export function aggregateGraphRoutingStates(directory) {
         ...sections,
         ...(errors.length > 0 ? ["", "Aggregate errors:", ...errors.map((error) => `- ${error}`)] : [])
     ].join("\n") + "\n";
-    return { passed, errors, states, body };
+    return { passed, errors, states, body, ...(correctnessOnly ? {scope: "correctness-only", performanceAcceptance: false} : {}) };
 }
 
 export function stageLatestArtifacts(directory, output) {
@@ -3343,7 +3335,15 @@ function compareJmhCommand(args) {
 }
 
 function largeCorpusOptions(args) {
-    return { shapeTransition: args["shape-transition"] === true ? LARGE_CORPUS_SHAPE_TRANSITION : null };
+    if (args["shared-strings-transition"] === true && args["correctness-only"] !== true) {
+        throw new Error("GTY03 storage transition requires correctness-only scope");
+    }
+    if (args["shared-strings-transition"] === true && args["shape-transition"] === true) {
+        throw new Error("Choose exactly one storage transition");
+    }
+    return { shapeTransition: args["shared-strings-transition"] === true ? LARGE_CORPUS_SHARED_STRINGS_TRANSITION :
+        args["shape-transition"] === true ? LARGE_CORPUS_SHAPE_TRANSITION : null,
+        correctnessOnly: args["correctness-only"] === true };
 }
 
 function compareLargeCorpusCommand(args) {
@@ -3379,9 +3379,12 @@ function compareGraphIdPressureCommand(args) {
         fs.readFileSync(requireArg(args, "candidate-observations"), "utf8"),
         fs.readFileSync(requireArg(args, "base-correctness"), "utf8"),
         fs.readFileSync(requireArg(args, "candidate-correctness"), "utf8"),
-        Number(args["minimum-speedup"] ?? 10)
+        Number(args["minimum-speedup"] ?? 10),
+        { correctnessOnly: args["correctness-only"] === true }
     );
-    writeFile(requireArg(args, "report"), renderGraphIdPressureReport(comparison));
+    writeFile(requireArg(args, "report"), comparison.scope === "correctness-only"
+        ? `### Graph-routing correctness\n\n${comparison.passed ? "PASS" : "FAIL"}. Complete result, routing, and index lifecycle assertions; no performance acceptance.\n${comparison.errors.join("\n")}\n`
+        : renderGraphIdPressureReport(comparison));
     writeJson(requireArg(args, "status"), comparison);
     if (!comparison.passed) process.exitCode = 1;
 }
@@ -3569,12 +3572,13 @@ function aggregateCommand(args) {
 }
 
 function aggregateGraphRoutingStatesCommand(args) {
-    const aggregated = aggregateGraphRoutingStates(requireArg(args, "directory"));
+    const aggregated = aggregateGraphRoutingStates(requireArg(args, "directory"), args["correctness-only"] === true);
     writeFile(requireArg(args, "report"), aggregated.body);
     writeJson(requireArg(args, "status"), {
         passed: aggregated.passed,
         errors: aggregated.errors,
-        states: aggregated.states
+        states: aggregated.states,
+        ...(aggregated.scope ? {scope: aggregated.scope, performanceAcceptance: false} : {})
     });
     if (!aggregated.passed) process.exitCode = 1;
 }

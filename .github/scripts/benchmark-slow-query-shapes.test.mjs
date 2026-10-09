@@ -110,7 +110,10 @@ test("additive reporting retains every existing component and coverage domain", 
     assert.deepEqual(module.BENCHMARK_COMPONENTS, [...previous, COMPONENT]);
     assert.deepEqual(module.BENCHMARK_COVERAGE_DOMAINS[0].components, ["existing-required", "slow-query-shapes"]);
     assert.deepEqual(module.BENCHMARK_COVERAGE_DOMAINS[1].components, ["untouched-memory"]);
-    assert.throws(() => addComponent(module), /Duplicate/);
+    addComponent(module);
+    assert.equal(module.BENCHMARK_COMPONENTS.length,2);
+    module.BENCHMARK_COMPONENTS[1].correctnessOnly=false;
+    assert.throws(()=>addComponent(module),/Conflicting/);
 });
 
 test("CLI aggregation adds the required report without allowing an existing failure to pass", async () => {
@@ -122,7 +125,7 @@ test("CLI aggregation adds the required report without allowing an existing fail
         const output = path.join(directory, "aggregate.json");
         for (const component of original.BENCHMARK_COMPONENTS) {
             fs.writeFileSync(path.join(directory, component.report), `### ${component.name}\n`);
-            fs.writeFileSync(path.join(directory, component.status), JSON.stringify({ passed: true }));
+            fs.writeFileSync(path.join(directory, component.status), JSON.stringify({passed:true,...(component.correctnessOnly?{scope:"correctness-only",performanceAcceptance:false}:{})}));
         }
         const invoke = () => spawnSync(process.execPath, [script, "aggregate", "--base-comparator", baseComparator,
             "--directory", directory, "--base-sha", "a".repeat(40), "--candidate-sha", "b".repeat(40),
@@ -130,26 +133,28 @@ test("CLI aggregation adds the required report without allowing an existing fail
             "--report", path.join(directory, "aggregate.md")], { encoding: "utf8" });
         assert.equal(invoke().status, 0);
         assert.equal(JSON.parse(fs.readFileSync(output)).passed, false);
-        assert.match(JSON.parse(fs.readFileSync(output)).errors.join(), /slow-query-shapes.*missing/);
+        assert.match(JSON.parse(fs.readFileSync(output)).errors.join(), /required multi-graph operation evidence is unavailable/);
         fs.writeFileSync(path.join(directory, COMPONENT.report), "### Five slow query families\n");
-        fs.writeFileSync(path.join(directory, COMPONENT.status), JSON.stringify(comparison()));
+        fs.writeFileSync(path.join(directory, COMPONENT.status), JSON.stringify({...comparison(),scope:"correctness-only",performanceAcceptance:false}));
         assert.equal(invoke().status, 0);
         const passed = JSON.parse(fs.readFileSync(output));
-        assert.equal(passed.passed, true);
-        assert.match(passed.body, /7\/7 blocking component reports passed; 6\/6 advisory JVM engine reports passed/);
+        assert.equal(passed.passed, false);
+        assert.match(passed.body, /13\/13 blocking component reports passed/);
         fs.writeFileSync(path.join(directory, original.BENCHMARK_COMPONENTS[0].status), JSON.stringify({ passed: false }));
         assert.equal(invoke().status, 0);
         assert.equal(JSON.parse(fs.readFileSync(output)).passed, false);
-        assert.equal(original.BENCHMARK_COMPONENTS.length, 12);
+        assert.equal(original.BENCHMARK_COMPONENTS.length, 13);
     } finally { fs.rmSync(directory, { recursive: true }); }
 });
 
-test("CLI fingerprints detect changed immutable fixture files", () => {
+test("CLI through a directory symlink fingerprints and rejects changed immutable fixture files", () => {
     const directory = fs.mkdtempSync(path.join(os.tmpdir(), "slow-shape-fixture-control-"));
     const source = path.join(directory, "source"); fs.mkdirSync(source);
     const script = fileURLToPath(new URL("./benchmark-slow-query-shapes.mjs", import.meta.url));
     const before = path.join(directory, "before.json"), verified = path.join(directory, "verified.json");
-    const invoke = args => spawnSync(process.execPath, [script, ...args], { encoding: "utf8" });
+    const alias = path.join(directory, "scripts");
+    fs.symlinkSync(path.dirname(script), alias, "dir");
+    const invoke = args => spawnSync(process.execPath, [path.join(alias, path.basename(script)), ...args], { encoding: "utf8" });
     try {
         fs.writeFileSync(path.join(source, "graph.nodedata"), "fixture identity check only");
         assert.equal(invoke(["fingerprint", "--fixture", source, "--output", before]).status, 0);

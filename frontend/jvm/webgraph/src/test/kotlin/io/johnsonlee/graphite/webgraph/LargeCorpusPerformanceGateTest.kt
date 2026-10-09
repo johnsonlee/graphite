@@ -18,8 +18,6 @@ import java.io.DataInputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
-import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicLong
 import java.util.jar.JarFile
 import org.junit.Test
 import kotlin.io.path.fileSize
@@ -28,8 +26,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 private const val FOUR_GIB_BYTES = 4L * 1024L * 1024L * 1024L
-private const val RECORD_PROPERTY = "large.corpus.record"
-private const val MAPPED_LOAD_SAMPLE_COUNT = 5
 private const val CALL_SITE_INDEX_FILE = "graph.callsite-string-index"
 private const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
 private const val METADATA_FILE = "graph.metadata"
@@ -91,8 +87,7 @@ data class CorpusBaseline(
     val sourceEdgeCount: Long,
     val persistedEdgeCount: Long,
     val methodCount: Long,
-    val callSiteCount: Long,
-    val maxPipelineMillis: Long
+    val callSiteCount: Long
 )
 
 /**
@@ -117,8 +112,7 @@ private object CorpusBaselines {
         sourceEdgeCount = 4_510_016,
         persistedEdgeCount = 4_353_588,
         methodCount = 312_852,
-        callSiteCount = 1_006_172,
-        maxPipelineMillis = 120_000
+        callSiteCount = 1_006_172
     )
     val hive = CorpusBaseline(
         id = "hive",
@@ -131,8 +125,7 @@ private object CorpusBaselines {
         sourceEdgeCount = 6_597_267,
         persistedEdgeCount = 6_376_682,
         methodCount = 404_043,
-        callSiteCount = 1_443_886,
-        maxPipelineMillis = 180_000
+        callSiteCount = 1_443_886
     )
     val kotlinCompiler = CorpusBaseline(
         id = "kotlin-compiler",
@@ -145,8 +138,7 @@ private object CorpusBaselines {
         sourceEdgeCount = 3_906_617,
         persistedEdgeCount = 3_785_858,
         methodCount = 249_669,
-        callSiteCount = 922_876,
-        maxPipelineMillis = 120_000
+        callSiteCount = 922_876
     )
 }
 
@@ -159,24 +151,14 @@ private data class GateMeasurement(
     val persistedBytes: Long,
     val callSiteIndexBytes: Long,
     val branchDefinitionBytes: Long,
-    val branchDefinitionsMillis: Long,
-    /** Synthetic members with a stable identity (the `GRS` section of `graph.metadata`), restored by the mapped graph. */
     val syntheticIdentities: Long,
-    val productionIndexPrepared: Boolean,
-    val buildMillis: Long,
-    val saveMillis: Long,
-    val mappedLoadSampleCount: Int,
-    val mappedLoadMinMillis: Long,
-    val mappedLoadMillis: Long,
-    val mappedLoadMaxMillis: Long,
-    val queryMillis: Long,
-    val pipelineMillis: Long,
-    val peakHeapBytes: Long
+    val productionIndexPrepared: Boolean
 )
+
 
 abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
     @Test(timeout = 240_000)
-    fun `build save mapped load and query stay within the large corpus gate`() {
+    fun `build save and mapped reload preserve complete corpus semantics`() {
         val jar = fixtureJar()
         assertEquals(baseline.jarBytes, jar.fileSize(), "Unexpected artifact size for ${baseline.coordinate}")
         assertEquals(baseline.sha256, sha256(jar), "Unexpected artifact checksum for ${baseline.coordinate}")
@@ -188,7 +170,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             "Gate must run with at most 4 GiB heap; maxMemory=${Runtime.getRuntime().maxMemory()}"
         )
 
-        val measurement = PeakHeapSampler().use { sampler -> runPipeline(jar, sampler) }
+        val measurement = runPipeline(jar)
         println(measurement.baselineLine(baseline))
 
         assertEquals(baseline.nodeCount, measurement.nodes, "Node baseline changed for ${baseline.id}")
@@ -200,12 +182,6 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         )
         assertEquals(baseline.methodCount, measurement.methods, "Method baseline changed for ${baseline.id}")
         assertEquals(baseline.callSiteCount, measurement.callSites, "Call-site baseline changed for ${baseline.id}")
-        if (!java.lang.Boolean.getBoolean(RECORD_PROPERTY)) {
-            assertTrue(
-                measurement.pipelineMillis <= baseline.maxPipelineMillis,
-                "${baseline.id} pipeline took ${measurement.pipelineMillis} ms; ceiling=${baseline.maxPipelineMillis} ms"
-            )
-        }
     }
 
     private fun fixtureJar(): Path {
@@ -214,12 +190,11 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         return Path.of(configured).also { require(Files.isRegularFile(it)) { "Fixture JAR not found at $it" } }
     }
 
-    private fun runPipeline(jar: Path, sampler: PeakHeapSampler): GateMeasurement {
+    private fun runPipeline(jar: Path): GateMeasurement {
         val output = Files.createTempDirectory("graphite-${baseline.id}-gate")
         var sourceGraph: Graph? = null
         var loadedGraph: Graph? = null
         try {
-            val buildStart = System.nanoTime()
             sourceGraph = JavaProjectLoader(
                 LoaderConfig(
                     buildCallGraph = false,
@@ -227,11 +202,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                     trackCrossMethodFunctionalDispatch = false
                 )
             ).load(jar)
-            val buildMillis = elapsedMillis(buildStart)
 
-            val saveStart = System.nanoTime()
             val productionIndexPrepared = saveWithProductionCallSiteIndex(sourceGraph, output)
-            val saveMillis = elapsedMillis(saveStart)
             val callSiteIndex = output.resolve(CALL_SITE_INDEX_FILE)
             val callSiteIndexBytes = if (Files.isRegularFile(callSiteIndex)) Files.size(callSiteIndex) else 0L
             if (productionIndexPrepared) {
@@ -258,26 +230,13 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             closeQuietly(sourceGraph)
             sourceGraph = null
 
-            val mappedLoadSamples = LongArray(MAPPED_LOAD_SAMPLE_COUNT)
-            repeat(MAPPED_LOAD_SAMPLE_COUNT) { index ->
-                val loadStart = System.nanoTime()
-                val sampleGraph = GraphStore.loadMapped(output)
-                mappedLoadSamples[index] = elapsedMillis(loadStart)
-                if (index == mappedLoadSamples.lastIndex) {
-                    loadedGraph = sampleGraph
-                } else {
-                    closeQuietly(sampleGraph)
-                }
-            }
-            val mappedLoadMillis = mappedLoadSamples.sorted()[mappedLoadSamples.size / 2]
-            val queryGraph = checkNotNull(loadedGraph) { "Mapped graph sample was not retained" }
+            loadedGraph = GraphStore.loadMapped(output)
+            val queryGraph = checkNotNull(loadedGraph)
 
-            val queryStart = System.nanoTime()
             val loadedCallSites = queryGraph.query(CALL_SITE_COUNT_QUERY)
             val loadedPropertyRows = queryGraph.query(PROPERTY_QUERY).rows
             val loadedRelationshipRows = queryGraph.query(RELATIONSHIP_QUERY).rows
             val loadedIndexedRows = queryGraph.query(CALL_SITE_INDEX_QUERY).rows
-            val queryMillis = elapsedMillis(queryStart)
             val mappedCallSites = (loadedCallSites.rows.single()["count"] as Number).toLong()
             val mappedNodes = queryGraph.nodeCount(Node::class.java)
                 ?: queryGraph.nodes(Node::class.java).count().toLong()
@@ -296,10 +255,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 "Mapped graph must preserve the source graph's persistable edge count for ${baseline.id}"
             )
             // First branch-definition access on the mapped graph: reads and verifies the sidecar, materialises
-            // every scope and table. Timed and reported separately; it is not part of the pipeline sum.
-            val branchDefinitionsStart = System.nanoTime()
+            // every scope and table. This is correctness-only, with no timing or resource sampling.
             val mappedDefinitions = definitionFingerprint(queryGraph)
-            val branchDefinitionsMillis = elapsedMillis(branchDefinitionsStart)
             assertEquals(expectedDefinitions, mappedDefinitions, "Mapped graph must restore the source graph's definitions")
             val branchDefinitionBytes =
                 verifyBranchDefinitions(output, queryGraph, mappedDefinitions, expectedPositions, nodes.toInt())
@@ -310,7 +267,6 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                     Files.isRegularFile(path) && path.fileName.toString() != CALL_SITE_INDEX_FILE
                 }.mapToLong(Files::size).sum()
             }
-            sampler.sample()
             return GateMeasurement(
                 nodes = nodes,
                 sourceEdges = edgeCounts.logical,
@@ -320,18 +276,8 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
                 persistedBytes = persistedBytes,
                 callSiteIndexBytes = callSiteIndexBytes,
                 branchDefinitionBytes = branchDefinitionBytes,
-                branchDefinitionsMillis = branchDefinitionsMillis,
                 syntheticIdentities = expectedIdentities.size.toLong(),
-                productionIndexPrepared = productionIndexPrepared,
-                buildMillis = buildMillis,
-                saveMillis = saveMillis,
-                mappedLoadSampleCount = mappedLoadSamples.size,
-                mappedLoadMinMillis = mappedLoadSamples.min(),
-                mappedLoadMillis = mappedLoadMillis,
-                mappedLoadMaxMillis = mappedLoadSamples.max(),
-                queryMillis = queryMillis,
-                pipelineMillis = buildMillis + saveMillis + mappedLoadMillis + queryMillis,
-                peakHeapBytes = sampler.peakBytes()
+                productionIndexPrepared = productionIndexPrepared
             )
         } finally {
             closeQuietly(loadedGraph)
@@ -522,7 +468,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
     }
 
     private fun GateMeasurement.baselineLine(baseline: CorpusBaseline): String = listOf(
-        "LARGE_CORPUS_BASELINE",
+        "LARGE_CORPUS_CORRECTNESS",
         baseline.id,
         "nodes=$nodes",
         "sourceEdges=$sourceEdges",
@@ -532,21 +478,9 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "persistedBytes=$persistedBytes",
         "callSiteIndexBytes=$callSiteIndexBytes",
         "branchDefinitionBytes=$branchDefinitionBytes",
-        "branchDefinitionsMs=$branchDefinitionsMillis",
         "syntheticIdentities=$syntheticIdentities",
-        "productionIndexPrepared=${if (productionIndexPrepared) 1 else 0}",
-        "buildMs=$buildMillis",
-        "saveMs=$saveMillis",
-        "mappedLoadSamples=$mappedLoadSampleCount",
-        "mappedLoadMinMs=$mappedLoadMinMillis",
-        "mappedLoadMs=$mappedLoadMillis",
-        "mappedLoadMaxMs=$mappedLoadMaxMillis",
-        "queryMs=$queryMillis",
-        "pipelineMs=$pipelineMillis",
-        "peakHeapBytes=$peakHeapBytes"
+        "productionIndexPrepared=${if (productionIndexPrepared) 1 else 0}"
     ).joinToString("\t")
-
-    private fun elapsedMillis(start: Long): Long = (System.nanoTime() - start) / 1_000_000
 
     private fun sourceEdgeCounts(graph: Graph): EdgeCounts {
         var logical = 0L
@@ -610,30 +544,3 @@ class TikaCorpusPerformanceGateTest : LargeCorpusGate(CorpusBaselines.tika)
 class HiveCorpusPerformanceGateTest : LargeCorpusGate(CorpusBaselines.hive)
 
 class KotlinCompilerCorpusPerformanceGateTest : LargeCorpusGate(CorpusBaselines.kotlinCompiler)
-
-private class PeakHeapSampler : Closeable {
-    private val running = AtomicBoolean(true)
-    private val peak = AtomicLong(0)
-    private val thread = Thread({
-        while (running.get()) {
-            sample()
-            Thread.sleep(10)
-        }
-    }, "large-corpus-heap-sampler").apply {
-        isDaemon = true
-        start()
-    }
-
-    fun sample() {
-        val runtime = Runtime.getRuntime()
-        peak.accumulateAndGet(runtime.totalMemory() - runtime.freeMemory(), ::maxOf)
-    }
-
-    fun peakBytes(): Long = peak.get()
-
-    override fun close() {
-        running.set(false)
-        thread.join()
-        sample()
-    }
-}

@@ -62,6 +62,8 @@ import kotlin.math.ceil
 @Suppress("TooManyFunctions")
 open class LargeBroadQueryPressureBenchmark {
 
+    var correctnessOnly: Boolean = false
+
     @Param("cold", "warm", "startup-prepared")
     lateinit var indexState: String
 
@@ -137,7 +139,7 @@ open class LargeBroadQueryPressureBenchmark {
         queryExecutor = Executors.newSingleThreadExecutor { runnable ->
             Thread(runnable, "broad-query-pressure-worker").apply { isDaemon = true }
         }
-        sampler = BroadQueryResourceSampler()
+        if (!correctnessOnly) sampler = BroadQueryResourceSampler()
     }
 
     @Setup(Level.Invocation)
@@ -152,8 +154,10 @@ open class LargeBroadQueryPressureBenchmark {
             STARTUP_PREPARED_INDEX_STATE -> Unit
         }
         resetCallSiteScanMetrics()
-        forcePressureGc()
-        sampler.start()
+        if (!correctnessOnly) {
+            forcePressureGc()
+            sampler.start()
+        }
     }
 
     @TearDown(Level.Trial)
@@ -171,6 +175,14 @@ open class LargeBroadQueryPressureBenchmark {
 
     @Benchmark
     fun replayBroadQueries(counters: LargeBroadQueryPressureCounters): Long {
+        if (correctnessOnly) {
+            val samples = replay(validateResults = true)
+            populateStructuralCounters(counters, samples)
+            writeCorrectnessManifest(samples)
+            writeObservations(samples)
+            enforceCorrectness(samples)
+            return samples.sumOf(BroadQuerySample::responseBytes) + samples.sumOf(BroadQuerySample::rowCount)
+        }
         val before = sampler.current()
         val beforeCpu = processCpuTimeNanos()
         val beforeGc = gcSnapshot()
@@ -233,7 +245,7 @@ open class LargeBroadQueryPressureBenchmark {
     private fun replay(validateResults: Boolean): List<BroadQuerySample> = workload.map { case ->
         resetCallSiteScanMetrics()
         resetGraphWorkerMetrics()
-        val started = System.nanoTime()
+        val started = if (correctnessOnly) 0L else System.nanoTime()
         val cancellation = CypherCancellationSignal()
         val context = CypherExecutionContext(CypherExecutionBudget(Long.MAX_VALUE), cancellation)
         val executionPath = case.executionPath()
@@ -249,7 +261,7 @@ open class LargeBroadQueryPressureBenchmark {
         })
         try {
             val result = task.get(case.timeoutMillis(timeoutMillis), TimeUnit.MILLISECONDS)
-            val latencyNanos = System.nanoTime() - started
+            val latencyNanos = if (correctnessOnly) 0L else System.nanoTime() - started
             val canonicalResult = canonicalResult(result)
             BroadQuerySample(
                 case = case,
@@ -277,7 +289,7 @@ open class LargeBroadQueryPressureBenchmark {
             awaitCancellation()
             BroadQuerySample(
                 case,
-                TimeUnit.MILLISECONDS.toNanos(effectiveTimeoutMillis),
+                if (correctnessOnly) 0L else TimeUnit.MILLISECONDS.toNanos(effectiveTimeoutMillis),
                 BroadQueryOutcome.TIMEOUT,
                 0L,
                 0L,
@@ -288,7 +300,7 @@ open class LargeBroadQueryPressureBenchmark {
         } catch (error: ExecutionException) {
             BroadQuerySample(
                 case,
-                System.nanoTime() - started,
+                if (correctnessOnly) 0L else System.nanoTime() - started,
                 BroadQueryOutcome.FAILED,
                 0L,
                 0L,
@@ -429,13 +441,6 @@ open class LargeBroadQueryPressureBenchmark {
         counters.availableProcessors = processors.toLong()
         counters.graphWorkerCount = split?.first?.toLong() ?: 0L
         counters.segmentWorkerCount = split?.second?.toLong() ?: 0L
-        counters.graphCount = graphCount.toLong()
-        counters.distinctGraphPathCount = graphPaths.map { it.toAbsolutePath().normalize() }.toSet().size.toLong()
-        counters.queryCount = samples.size.toLong()
-        counters.successCount = samples.count { it.outcome == BroadQueryOutcome.SUCCESS }.toLong()
-        counters.timeoutCount = samples.count { it.outcome == BroadQueryOutcome.TIMEOUT }.toLong()
-        counters.failureCount = samples.count { it.outcome == BroadQueryOutcome.FAILED }.toLong()
-        counters.totalRows = samples.sumOf(BroadQuerySample::rowCount)
         counters.p50LatencyNanos = percentile(latencies, 0.50)
         counters.p95LatencyNanos = percentile(latencies, 0.95)
         counters.maxLatencyNanos = latencies.last()
@@ -468,6 +473,34 @@ open class LargeBroadQueryPressureBenchmark {
         counters.graphIdP95LatencyNanos = familyP95(samples, BroadQueryFamily.GRAPH_ID)
         counters.graphIdSetP95LatencyNanos = familyP95(samples, BroadQueryFamily.GRAPH_ID_SET)
         counters.graphParameterP95LatencyNanos = familyP95(samples, BroadQueryFamily.GRAPH_PARAMETER)
+        counters.wallNanos = wallNanos
+        counters.processCpuNanos = processCpuNanos
+        counters.cpuCoreUtilizationPermille = if (wallNanos == 0L) 0L else processCpuNanos * 1_000L / wallNanos
+        counters.usedHeapBeforeBytes = before.usedHeapBytes
+        counters.peakUsedHeapBytes = peak.usedHeapBytes
+        counters.usedHeapAfterBytes = after.usedHeapBytes
+        counters.peakCommittedHeapBytes = peak.committedHeapBytes
+        counters.maxHeapBytes = Runtime.getRuntime().maxMemory()
+        counters.residentSetBeforeBytes = before.residentSetBytes
+        counters.peakResidentSetBytes = peak.residentSetBytes
+        counters.residentSetAfterBytes = after.residentSetBytes
+        counters.peakProcessCpuLoadPermille = peak.processCpuLoadPermille
+        counters.gcCount = (afterGc.count - beforeGc.count).coerceAtLeast(0L)
+        counters.gcMillis = (afterGc.millis - beforeGc.millis).coerceAtLeast(0L)
+        populateStructuralCounters(counters, samples)
+    }
+
+    private fun populateStructuralCounters(
+        counters: LargeBroadQueryPressureCounters,
+        samples: List<BroadQuerySample>
+    ) {
+        counters.graphCount = graphCount.toLong()
+        counters.distinctGraphPathCount = graphPaths.map { it.toAbsolutePath().normalize() }.toSet().size.toLong()
+        counters.queryCount = samples.size.toLong()
+        counters.successCount = samples.count { it.outcome == BroadQueryOutcome.SUCCESS }.toLong()
+        counters.timeoutCount = samples.count { it.outcome == BroadQueryOutcome.TIMEOUT }.toLong()
+        counters.failureCount = samples.count { it.outcome == BroadQueryOutcome.FAILED }.toLong()
+        counters.totalRows = samples.sumOf(BroadQuerySample::rowCount)
         counters.graphIdTargetCount = samples.asSequence()
             .filter { sample -> sample.case.family == BroadQueryFamily.GRAPH_ID }
             .mapNotNull { sample -> sample.case.targetGraphId }
@@ -486,20 +519,6 @@ open class LargeBroadQueryPressureBenchmark {
         counters.coverageProjectionCount = workload.map(BroadQueryCase::projection).toSet().size.toLong()
         counters.coverageOperatorCount = workload.map(BroadQueryCase::operator).toSet().size.toLong()
         counters.coverageBoundaryCount = workload.map(BroadQueryCase::boundary).toSet().size.toLong()
-        counters.wallNanos = wallNanos
-        counters.processCpuNanos = processCpuNanos
-        counters.cpuCoreUtilizationPermille = if (wallNanos == 0L) 0L else processCpuNanos * 1_000L / wallNanos
-        counters.usedHeapBeforeBytes = before.usedHeapBytes
-        counters.peakUsedHeapBytes = peak.usedHeapBytes
-        counters.usedHeapAfterBytes = after.usedHeapBytes
-        counters.peakCommittedHeapBytes = peak.committedHeapBytes
-        counters.maxHeapBytes = Runtime.getRuntime().maxMemory()
-        counters.residentSetBeforeBytes = before.residentSetBytes
-        counters.peakResidentSetBytes = peak.residentSetBytes
-        counters.residentSetAfterBytes = after.residentSetBytes
-        counters.peakProcessCpuLoadPermille = peak.processCpuLoadPermille
-        counters.gcCount = (afterGc.count - beforeGc.count).coerceAtLeast(0L)
-        counters.gcMillis = (afterGc.millis - beforeGc.millis).coerceAtLeast(0L)
         counters.rawStringMatchStateBytes = graphs.sumOf(MappedWebGraphBackedGraph::rawStringMatchStateBytes)
         val indexMetrics = callSiteIndexMetrics()
         counters.callSiteIndexAdmittedGraphs = indexMetrics.first
@@ -507,6 +526,13 @@ open class LargeBroadQueryPressureBenchmark {
         counters.callSiteTrigramIndexedGraphs = graphs.count { graph ->
             invokeInternalMetric(graph, "isCallSiteTrigramIndexInitialized") == true
         }.toLong()
+        populateAccessCounters(counters, samples)
+    }
+
+    private fun populateAccessCounters(
+        counters: LargeBroadQueryPressureCounters,
+        samples: List<BroadQuerySample>
+    ) {
         counters.requestSelectedSourceQueryCount = samples.count {
             it.execution.path == BroadQueryExecutionPath.REQUEST_SELECTED_SOURCE
         }.toLong()
@@ -630,7 +656,7 @@ open class LargeBroadQueryPressureBenchmark {
             "rowCount",
             "responseBytes",
             "digest",
-            "latencyNanos",
+            if (correctnessOnly) "measurementScope" else "latencyNanos",
             "fixtureDistributionId",
             "hitGraphIds",
             "executionPath",
@@ -667,7 +693,7 @@ open class LargeBroadQueryPressureBenchmark {
                 sample.rowCount,
                 sample.responseBytes,
                 sample.digest,
-                sample.latencyNanos,
+                if (correctnessOnly) "correctness-only" else sample.latencyNanos,
                 sample.case.fixtureDistributionId.orEmpty(),
                 sample.hitGraphIds.joinToString(","),
                 sample.execution.path.id,

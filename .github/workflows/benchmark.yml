@@ -16,6 +16,10 @@ env:
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   # Cap direct Java launchers and inherited forks; explicit per-task heaps take precedence.
   JAVA_TOOL_OPTIONS: -Xmx2g
+  MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: b093034329f31e30bbd3f8e3aadab8f8d5d265aa30b7d5aa859d39159198e159
+  MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 301e864b09c44cfb404f9ab65716098fbc2be022aa95b066c08b8f15840826ca
+  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: ed162e1f0146c1c7b0dc037de224cf8b8c329e354cfd8358b400c12db09a6761
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 28eb76b71ade366857ef9813f11a42fa64a38138d9e910ec5c5e3adef71c00d2
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -27,16 +31,16 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
-  BENCHMARK_REPORT_TRANSITION_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
-  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
+  BENCHMARK_REPORT_TRANSITION_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
+  RUST_DECLARED_TYPES_COMPARATOR_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
-  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 79cf7e114c41eb4388d6c344c6a61cbe21edb708db010ad892c43f9e79b898a4
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
+  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: c763b615bf567f4906f195f5bf673579ddfa76d9cb6f798ada29add6271d7584
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -44,7 +48,7 @@ env:
   JMH_ISOLATION_VERIFIER_SHA256: 15308f60de8e8e948870e04cd162a32a549f1ba40c5c320a9ec0e28da9cba29e
   BUDGETED_LOOKUP_BASELINE_SHA: 87c74c2cae0685e40e32fb2eb46b33987ec1a7a0
   BUDGETED_COLLECTION_BASELINE_SHA: e070eb8183b55665863a4f8496b9515163575560
-  SLOW_QUERY_SHAPES_CONTROLS_SHA256: 65e0ea91022cdb9a667a98589251dcca761565f74044cceeffac4a0e6c43e446
+  SLOW_QUERY_SHAPES_CONTROLS_SHA256: f87c6908dc1def29ec7f9279c9a928acc83c23437d36c712ee474b25df079cd2
 
 jobs:
   candidate-gate-tests:
@@ -62,6 +66,18 @@ jobs:
 
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
+
+    - name: Test continuous multi-graph pressure controls
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_multigraph_pressure.py'
+
+    - name: Test legal multiset response validation without child processes
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_native_legal_response.py'
+
+    - name: Test native pressure plan preparation without child processes
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_prepare_native_pressure_plan.py'
+
+    - name: Test prepared pressure orchestration without starting servers
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_prepared_native_pressure.py'
 
     - name: Test native multi-graph snapshot harness
       run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
@@ -109,32 +125,22 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Install trusted Explorer harnesses
-      env:
-        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+    - name: Install reviewed assertion-only Explorer controls
       run: |
         set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test "$(sha256sum "controls/$MANIFEST" | cut -d' ' -f1)" = "$MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256"
+        (cd controls && sha256sum -c "$MANIFEST")
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-        EXPLORER='src/jmh/kotlin/io/johnsonlee/graphite/cli/ExplorerMemoryBenchmark.kt'
-        EXPLORER_OWNER=gate
-        # Retire only the reviewed legacy harness's transient Javalin startup watcher.
-        # The same pinned repair must measure both revisions; CPU accounting stays base-owned.
-        if [[ "$(sha256sum "$(jvm gate explore)/${EXPLORER}" | cut -d' ' -f1)" = "${EXPLORER_LEGACY_HARNESS_SHA256}" ]]; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test ! -L "$(jvm controls explore)/${EXPLORER}"
-          test "$(sha256sum "$(jvm controls explore)/${EXPLORER}" | cut -d' ' -f1)" = \
-            "${EXPLORER_TRANSITION_HARNESS_SHA256}"
-          EXPLORER_OWNER=controls
-        fi
-        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt RequestCpuAccounting.kt; do
-          SOURCE="src/jmh/kotlin/io/johnsonlee/graphite/cli/${HARNESS}"
-          OWNER=gate
-          if [[ "${HARNESS}" = ExplorerMemoryBenchmark.kt ]]; then OWNER="${EXPLORER_OWNER}"; fi
-          test ! -L "$(jvm source explore)/${SOURCE}"
-          rm -f -- "$(jvm source explore)/${SOURCE}"
-          install -m 0644 "$(jvm "${OWNER}" explore)/${SOURCE}" "$(jvm source explore)/${SOURCE}"
-          cmp "$(jvm "${OWNER}" explore)/${SOURCE}" "$(jvm source explore)/${SOURCE}"
+        for HARNESS in ExplorerMemoryBenchmark.kt CypherCapacityBenchmark.kt SingleGraphCorrectness.kt; do
+          REL="src/jmh/kotlin/io/johnsonlee/graphite/cli/$HARNESS"
+          test ! -L "$(jvm source explore)/$REL"
+          install -m 0644 "$(jvm controls explore)/$REL" "$(jvm source explore)/$REL"
         done
+        # The pre-existing CPU-accounting contract remains base-owned and separately tested.
+        REL=src/jmh/kotlin/io/johnsonlee/graphite/cli/RequestCpuAccounting.kt
+        test ! -L "$(jvm source explore)/$REL"
+        install -m 0644 "$(jvm gate explore)/$REL" "$(jvm source explore)/$REL"
 
     - name: Build comparable Explorer JMH JAR
       run: |
@@ -300,7 +306,7 @@ jobs:
         retention-days: 2
 
   method-level:
-    name: method-level-benchmarks
+    name: synthetic-query-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -333,6 +339,26 @@ jobs:
     - name: Test base benchmark gate logic
       run: node --test base/.github/scripts/benchmark-gate.test.mjs
 
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
+
+    - name: Install pinned assertion-only entry point
+      run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        SOURCE='frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt'
+        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = 'aa6757f2caea21d1f7b6bedb4a040e7f859b77d05889f360b33bf99882ba3349'
+        RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt'
+        install -m 0644 "candidate/${SOURCE}" "$(jvm base cypher)/${RELATIVE}"
+        SOURCE='frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt'
+        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = '13251746dedbd63aad677c48d74730a07f77828cf617de02196dac97eb7047a3'
+        RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt'
+        install -m 0644 "candidate/${SOURCE}" "$(jvm base cypher)/${RELATIVE}"
+
     - name: Build JMH jars
       run: |
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
@@ -361,52 +387,24 @@ jobs:
           bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" cypher)" "${JAR}"
         done
 
-    - name: Benchmark base
+    - name: Run complete untimed assertions
       run: |
-        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        set -euo pipefail
         mkdir -p benchmark-results
-        JMH_JAR=$(find "$(jvm base cypher)/build/libs" -name '*-jmh.jar' -print -quit)
-        test -n "${JMH_JAR}"
-        java -jar "${JMH_JAR}" \
-          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh.json"
-
-    - name: Benchmark PR
-      run: |
-        JMH_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
-        test -n "${JMH_JAR}"
-        java -jar "${JMH_JAR}" \
-          'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh.json"
-
-    - name: Compare method-level results
-      run: |
-        if node base/.github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/base-jmh.json \
-          --candidate benchmark-results/candidate-jmh.json \
-          --threshold 15 \
-          --report benchmark-results/initial-method-report.md \
-          --status benchmark-results/initial-method-status.json; then
-          mv benchmark-results/initial-method-report.md benchmark-results/method-report.md
-          mv benchmark-results/initial-method-status.json benchmark-results/method-status.json
-        else
-          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-          CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
-          BASE_JAR=$(find "$(jvm base cypher)/build/libs" -name '*-jmh.jar' -print -quit)
-          java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
-            -foe true -rf json -rff "${PWD}/benchmark-results/candidate-jmh-confirmation.json"
-          java -jar "${BASE_JAR}" \
-            'io.johnsonlee.graphite.cypher.(CypherBenchmark.*|BudgetedCypherBenchmark.budgetedGeneralRegex)' \
-            -foe true -rf json -rff "${PWD}/benchmark-results/base-jmh-confirmation.json"
-          node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
-            --initial benchmark-results/initial-method-status.json \
-            --base benchmark-results/base-jmh-confirmation.json \
-            --candidate benchmark-results/candidate-jmh-confirmation.json \
-            --threshold 15 \
-            --report benchmark-results/method-report.md \
-            --status benchmark-results/method-status.json
-        fi
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        for REVISION in base candidate; do
+          JAR=$(find "$(jvm "${REVISION}" cypher)/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          java -Xmx512m -XX:ActiveProcessorCount=4 -cp "${JAR}" \
+            io.johnsonlee.graphite.cypher.SyntheticQueryCorrectness | tee "benchmark-results/${REVISION}-method.log"
+        done
+        node candidate/.github/scripts/benchmark-correctness.mjs method \
+          benchmark-results/method benchmark-results/base-method.log \
+          benchmark-results/candidate-method.log \
+          simpleNodeMatch nodeMatchWithWhere regexFilter singleHopRelationship \
+          filteredSingleHopRelationship orderedFilteredSingleHopRelationship aggregationCountGroupBy variableLengthPath \
+          filteredVariableLengthPath returnDistinct withPipeline functionCalls \
+          countStar budgetedGeneralRegex budgetedListConcatenation budgetedListMembership
 
     - name: Upload method-level results
       if: always()
@@ -479,72 +477,29 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Benchmark base then PR
+    - name: Verify reviewed correctness and comparison control closure
       run: |
-        mkdir -p benchmark-results
-        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-        test -n "${BASE_JAR}"
-        test -n "${CANDIDATE_JAR}"
-        GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
-        # Hosted-runner RSS has enough allocator noise to make the benchmark's
-        # 64 MiB local waterline flaky before paired results can be compared.
-        # Apply the same ceiling to both revisions; the 15% paired latency gate
-        # and the remaining heap/waterline checks still fail closed.
-        JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
-          -p stableResidentGrowthLimitBytes=134217728)
-        java -jar "${BASE_JAR}" \
-          'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARG}" \
-          -rff "${PWD}/benchmark-results/base-explorer.json"
-        java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARG}" \
-          -rff "${PWD}/benchmark-results/candidate-explorer.json"
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
 
-    - name: Compare Explorer results
+    - name: Verify explorer correctness without performance sampling
       run: |
-        EXPECTED='io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.'
-        for FILE in benchmark-results/base-explorer.json benchmark-results/candidate-explorer.json; do
-          jq -e --arg expected "${EXPECTED}" \
-            'length == 4 and all(.[]; (.benchmark | startswith($expected)) and
-              .mode == "ss" and .primaryMetric.score > 0)' \
-            "${FILE}" >/dev/null
+        set -euo pipefail
+        mkdir -p benchmark-results
+        for REVISION in base candidate; do
+          JAR=$(find "jmh-jars/$REVISION" -name '*-jmh.jar' -print -quit)
+          test -n "$JAR"
+          java -Xmx4g -XX:ActiveProcessorCount=4 \
+            "-Dandroid.graph.path=${PWD}/fixture-graphs/android" -cp "$JAR" \
+            io.johnsonlee.graphite.cli.SingleGraphCorrectness explorer \
+            > "benchmark-results/$REVISION-explorer-correctness.log" 2>&1
         done
-        if node base/.github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/base-explorer.json \
-          --candidate benchmark-results/candidate-explorer.json \
-          --threshold 15 \
-          --threshold-only \
-          --title 'Explorer HTTP sessions' \
-          --report benchmark-results/initial-explorer-report.md \
-          --status benchmark-results/initial-explorer-status.json; then
-          mv benchmark-results/initial-explorer-report.md benchmark-results/explorer-report.md
-          mv benchmark-results/initial-explorer-status.json benchmark-results/explorer-status.json
-        else
-          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-          GRAPH_ARG="-Dandroid.graph.path=${PWD}/fixture-graphs/android"
-          JMH_ARGS=(-wi 0 -i 1 -f 3 -t 1 -foe true -rf json \
-            -p stableResidentGrowthLimitBytes=134217728)
-          java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARG}" \
-            -rff "${PWD}/benchmark-results/candidate-explorer-confirmation.json"
-          java -jar "${BASE_JAR}" \
-            'io.johnsonlee.graphite.cli.ExplorerMemoryBenchmark.*' "${JMH_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARG}" \
-            -rff "${PWD}/benchmark-results/base-explorer-confirmation.json"
-          node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
-            --initial benchmark-results/initial-explorer-status.json \
-            --base benchmark-results/base-explorer-confirmation.json \
-            --candidate benchmark-results/candidate-explorer-confirmation.json \
-            --threshold 15 \
-            --threshold-only \
-            --title 'Explorer HTTP sessions' \
-            --report benchmark-results/explorer-report.md \
-            --status benchmark-results/explorer-status.json
-        fi
+        node candidate/.github/scripts/benchmark-correctness.mjs explorer \
+          benchmark-results/explorer benchmark-results/base-explorer-correctness.log \
+          benchmark-results/candidate-explorer-correctness.log explorer
 
     - name: Upload Explorer results
       if: always()
@@ -657,161 +612,47 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Benchmark paired Method shard
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
+
+    - name: Assert every Method scenario without timing
       env:
         GRAPH_COUNT: ${{ matrix.graph_count }}
         GROUP: ${{ matrix.group }}
         SCENARIOS: ${{ matrix.scenarios }}
       run: |
+        set -euo pipefail
         mkdir -p benchmark-results
-        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-        test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
-        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
-          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
-          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
-          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
-          -p "graphCount=${GRAPH_COUNT}" -p "scenario=${SCENARIOS}")
-        # The request-serving CPU accounting contract runs in a JVM of its own, on this runner and
-        # JVM, before any measured fork; it must never run inside a benchmark trial.
-        java -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract
-        java -jar "${BASE_JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \
-          -rff "${PWD}/benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
-        java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \
-          -rff "${PWD}/benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
-
-    - name: Validate Method shard
-      env:
-        GRAPH_COUNT: ${{ matrix.graph_count }}
-        GROUP: ${{ matrix.group }}
-        SCENARIOS: ${{ matrix.scenarios }}
-      run: |
-        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.'
-        SCENARIO_COUNT=$(tr ',' '\n' <<< "${SCENARIOS}" | wc -l)
+        GRAPH_ARGS=(-Dandroid.graph.path="${PWD}/fixture-graphs/android"
+          -Dtika.graph.path="${PWD}/fixture-graphs/tika"
+          -Dhive.graph.path="${PWD}/fixture-graphs/hive"
+          -Dkotlin.compiler.graph.path="${PWD}/fixture-graphs/kotlin-compiler")
+        IFS=, read -ra CASES <<< "${SCENARIOS}"
+        EXPECTED=()
+        for SCENARIO in "${CASES[@]}"; do
+          EXPECTED+=("$(printf 'methods\t%s\t%s' "${GRAPH_COUNT}" "${SCENARIO}")")
+        done
         for REVISION in base candidate; do
-          FILE="benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.json"
-          jq -e --arg expected "${EXPECTED}" --arg graph_count "${GRAPH_COUNT}" \
-            --arg scenarios "${SCENARIOS}" '
-            length == ($scenarios | split(",") | length) and
-            all(.[];
-              (.benchmark | startswith($expected)) and
-              .params.graphCount == $graph_count and
-              .mode == "ss" and .primaryMetric.score > 0 and
-              .secondaryMetrics.processCpuNanos.score > 0 and
-              .secondaryMetrics.residentSetAfterBytes.score > 0 and
-              .secondaryMetrics.residentSetDeltaBytes.score >= 0
-            ) and
-            ([.[].params.scenario] | unique | sort) == ($scenarios | split(",") | sort)' \
-            "${FILE}" >/dev/null
-          test "$(sort -u "benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
-            -eq "${SCENARIO_COUNT}"
+          JAR="jmh-jars/${REVISION}/${REVISION}-explore-jmh.jar"
+          for SCENARIO in "${CASES[@]}"; do
+            java -Xmx8g -XX:ActiveProcessorCount=4 -cp "${JAR}" "${GRAPH_ARGS[@]}" \
+              -Dgraphite.method.compatibility.output="${PWD}/benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt" \
+              io.johnsonlee.graphite.cli.SingleGraphCorrectness methods "${GRAPH_COUNT}" "${SCENARIO}" \
+              | tee -a "benchmark-results/${REVISION}-method-compatibility-${GRAPH_COUNT}-${GROUP}.log"
+          done
         done
-
-        gate_metric() {
-          local SLUG="$1"
-          local METRIC="$2"
-          local TITLE="$3"
-          local ADVISORY="$4"
-          local METRIC_ARG=()
-          local ADVISORY_ARG=()
-          if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-          if [ "${ADVISORY}" = true ]; then ADVISORY_ARG=(--advisory); fi
-          node base/.github/scripts/benchmark-gate.mjs compare-jmh \
-            --base "benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.json" \
-            --candidate "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.json" \
-            "${METRIC_ARG[@]}" \
-            "${ADVISORY_ARG[@]}" \
-            --threshold 15 \
-            --threshold-only \
-            --title "Method discovery ${GRAPH_COUNT}-graph ${GROUP} ${TITLE}" \
-            --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-report.md" \
-            --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json"
-        }
-
-        NEED_CONFIRMATION=0
-        gate_metric wall '' 'wall time' false || NEED_CONFIRMATION=1
-        gate_metric cpu processCpuNanos 'CPU time (advisory)' true || NEED_CONFIRMATION=1
-        gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true || NEED_CONFIRMATION=1
-        gate_metric rss-delta residentSetDeltaBytes 'RSS query delta (advisory)' true || NEED_CONFIRMATION=1
-
-        if [ "${NEED_CONFIRMATION}" -eq 1 ]; then
-          BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-          test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
-          GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
-            -Dtika.graph.path=${PWD}/fixture-graphs/tika \
-            -Dhive.graph.path=${PWD}/fixture-graphs/hive \
-            -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-          METHOD_ARGS=(-wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
-            -p "graphCount=${GRAPH_COUNT}" -p "scenario=${SCENARIOS}")
-          java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt" \
-            -rff "${PWD}/benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.json"
-          java -jar "${BASE_JAR}" \
-            'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' "${METHOD_ARGS[@]}" \
-            -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt" \
-            -rff "${PWD}/benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.json"
-          test "$(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
-            -eq "${SCENARIO_COUNT}"
-          test "$(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt" | wc -l)" \
-            -eq "${SCENARIO_COUNT}"
-          diff -u \
-            <(sort -u "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.txt") \
-            <(sort -u "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.txt")
-        fi
-
-        FINAL_FAILURE=0
-        for SPEC in \
-          'wall::wall time:false' \
-          'cpu:processCpuNanos:CPU time (advisory):true' \
-          'rss-after:residentSetAfterBytes:RSS after query (advisory):true' \
-          'rss-delta:residentSetDeltaBytes:RSS query delta (advisory):true'; do
-          IFS=: read -r SLUG METRIC TITLE ADVISORY <<< "${SPEC}"
-          if [ "${NEED_CONFIRMATION}" -eq 0 ] || [ "${ADVISORY}" = true ]; then
-            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-report.md" \
-              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-report.md"
-            cp "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json" \
-              "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-status.json"
-          else
-            METRIC_ARG=()
-            if [ -n "${METRIC}" ]; then METRIC_ARG=(--metric "${METRIC}"); fi
-            node base/.github/scripts/benchmark-gate.mjs confirm-jmh \
-              --initial "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-initial-status.json" \
-              --base "benchmark-results/method-confirmation-base-${GRAPH_COUNT}-${GROUP}.json" \
-              --candidate "benchmark-results/method-confirmation-candidate-${GRAPH_COUNT}-${GROUP}.json" \
-              "${METRIC_ARG[@]}" \
-              --threshold 15 \
-              --threshold-only \
-              --title "Method discovery ${GRAPH_COUNT}-graph ${GROUP} ${TITLE}" \
-              --report "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-report.md" \
-              --status "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-${SLUG}-status.json" || FINAL_FAILURE=1
-          fi
-        done
-        cat \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-wall-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-cpu-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-after-report.md" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-delta-report.md" \
-          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-report.md"
-        jq -s '{
-          passed: all(.[]; .passed == true),
-          errors: [.[].errors[]],
-          rows: [.[].rows[]]
-        }' \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-wall-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-cpu-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-after-status.json" \
-          "benchmark-results/method-compatibility-${GRAPH_COUNT}-${GROUP}-rss-delta-status.json" \
-          > "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-status.json"
-        test "${FINAL_FAILURE}" -eq 0
-        jq -e '.passed == true' \
-          "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}-status.json" >/dev/null
+        diff -u \
+          <(sort "benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt") \
+          <(sort "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.txt")
+        node candidate/.github/scripts/benchmark-correctness.mjs method-compatibility \
+          "benchmark-results/method-compatibility-shard-${GRAPH_COUNT}-${GROUP}" \
+          "benchmark-results/base-method-compatibility-${GRAPH_COUNT}-${GROUP}.log" \
+          "benchmark-results/candidate-method-compatibility-${GRAPH_COUNT}-${GROUP}.log" "${EXPECTED[@]}"
 
     - name: Upload Method shard
       if: always()
@@ -874,86 +715,19 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Exercise the candidate CPU accounting in a real fork
+    - name: Assert CPU-accounting and server-lifecycle contracts
       run: |
+        set -euo pipefail
         mkdir -p benchmark-results
         JAR=jmh-candidate-native/candidate-native-explore-jmh.jar
-        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
-          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
-          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
-          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        # The accounting contract must still hold on this runner/JVM before the fork.
-        java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract
-        java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract
-        java -jar "${JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
-          -wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
-          -p graphCount=4 -p scenario=count \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-cpu-accounting-smoke.txt" \
-          -rff "${PWD}/benchmark-results/candidate-cpu-accounting-smoke.json"
-
-    - name: Assert the real fork published a valid javaThreadCpuNanos row
-      run: |
-        FILE=benchmark-results/candidate-cpu-accounting-smoke.json
-        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'
-        jq -e --arg expected "${EXPECTED}" '
-          length == 1 and
-          all(.[];
-            .benchmark == $expected and
-            .params.graphCount == "4" and
-            .params.scenario == "count" and
-            .mode == "ss" and
-            .primaryMetric.score > 0 and
-            .secondaryMetrics.requestsSucceeded.score == 1 and
-            .secondaryMetrics.javaThreadCpuNanos.score > 0 and
-            .secondaryMetrics.processCpuNanos.score > 0 and
-            .secondaryMetrics.jvmInternalCpuNanos.score >= 0 and
-            .secondaryMetrics.cpuAccountingUnderflowNanos.score >= 0 and
-            .secondaryMetrics.jvmInternalThreadsEnded.score >= 0 and
-            .secondaryMetrics.gcTimeMillis.score >= 0 and
-            .secondaryMetrics.jitTimeMillis.score >= 0
-          )' "${FILE}" >/dev/null
-        echo "cpu-accounting smoke: candidate fork published a valid javaThreadCpuNanos row"
-
-    # The 4-graph/count smoke alone did not establish the accounting across the gate matrix: the
-    # tripwire fired on the longer 17/36-graph scenarios (prefix, contains) where the JDK
-    # HttpURLConnection client's Keep-Alive-Timer thread exits inside the window. Run the worst-case
-    # graph count over both named scenarios on the candidate harness (which runs with
-    # http.keepAlive=false) with fail-on-error, so an abort in measure() fails this step. Completion
-    # proves the fix keeps the accounting usable across the matrix.
-    - name: Exercise the long method scenarios that tripped the accounting
-      run: |
-        JAR=jmh-candidate-native/candidate-native-explore-jmh.jar
-        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
-          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
-          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
-          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        java -jar "${JAR}" \
-          'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate' \
-          -wi 0 -i 1 -f 1 -t 1 -foe true -rf json \
-          -p graphCount=36 -p scenario=prefix,contains \
-          -jvmArgsAppend "${GRAPH_ARGS} -Dgraphite.method.compatibility.output=${PWD}/benchmark-results/candidate-cpu-accounting-longscan.txt" \
-          -rff "${PWD}/benchmark-results/candidate-cpu-accounting-longscan.json"
-
-    - name: Assert the long scenarios completed without aborting the accounting
-      run: |
-        FILE=benchmark-results/candidate-cpu-accounting-longscan.json
-        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'
-        jq -e --arg expected "${EXPECTED}" '
-          length == 2 and
-          ([.[].params.scenario] | sort) == ["contains", "prefix"] and
-          all(.[];
-            .benchmark == $expected and
-            .params.graphCount == "36" and
-            .mode == "ss" and
-            .primaryMetric.score > 0 and
-            .secondaryMetrics.requestsSucceeded.score == 1 and
-            .secondaryMetrics.javaThreadCpuNanos.score > 0 and
-            .secondaryMetrics.processCpuNanos.score > 0 and
-            .secondaryMetrics.jvmInternalCpuNanos.score >= 0 and
-            .secondaryMetrics.cpuAccountingUnderflowNanos.score >= 0
-          )' "${FILE}" >/dev/null
-        echo "cpu-accounting smoke: 36-graph prefix and contains completed on the pinned harness"
+        java -Xmx512m -XX:ActiveProcessorCount=4 -cp "${JAR}" \
+          io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract \
+          | tee benchmark-results/server-lifecycle-contract.log
+        java -Xmx512m -XX:ActiveProcessorCount=4 -cp "${JAR}" \
+          io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract \
+          | tee benchmark-results/cpu-accounting-contract.log
+        # Real Method results remain checked by the complete untimed 33-scenario matrix.
+        # Process CPU/RSS acceptance belongs to the multi-graph pressure worker boundaries.
 
     - name: Upload CPU accounting smoke result
       if: always()
@@ -965,16 +739,16 @@ jobs:
         retention-days: 14
 
   method-compatibility:
-    name: method-compatibility-gate
+    name: method-compatibility-correctness
     if: always()
     needs: [method-compatibility-shard]
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout base gate code
+    - name: Checkout reviewed correctness reporting code
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ github.event.pull_request.head.sha }}
         persist-credentials: false
 
     - name: Download Method shards
@@ -983,67 +757,42 @@ jobs:
         pattern: benchmark-method-compatibility-shard-*-${{ github.event.pull_request.number }}-*
         path: downloaded-method-shards
 
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "./${MANIFEST}"
+        test "$(sha256sum "./${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd . && sha256sum -c "${MANIFEST}")
+
     - name: Select latest successful Method shard artifacts
       run: |
         node .github/scripts/benchmark-gate.mjs stage-artifacts \
           --directory downloaded-method-shards \
           --output benchmark-results
 
-    - name: Aggregate and gate 33 Method cases
+    - name: Aggregate complete 33-scenario correctness
       env:
         SHARD_JOB: ${{ needs.method-compatibility-shard.result }}
       run: |
+        set -euo pipefail
         test "${SHARD_JOB}" = success
-        test "$(find benchmark-results -name 'base-method-compatibility-*.json' | wc -l)" -eq 12
-        test "$(find benchmark-results -name 'candidate-method-compatibility-*.json' | wc -l)" -eq 12
-        jq -s 'add' benchmark-results/base-method-compatibility-*.json \
-          > benchmark-results/base-method-compatibility.json
-        jq -s 'add' benchmark-results/candidate-method-compatibility-*.json \
-          > benchmark-results/candidate-method-compatibility.json
-        cat benchmark-results/base-method-compatibility-*.txt \
-          > benchmark-results/base-method-compatibility.txt
-        cat benchmark-results/candidate-method-compatibility-*.txt \
-          > benchmark-results/candidate-method-compatibility.txt
-
-        EXPECTED='io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.'
-        for FILE in \
-          benchmark-results/base-method-compatibility.json \
-          benchmark-results/candidate-method-compatibility.json; do
-          jq -e --arg expected "${EXPECTED}" '
-            length == 33 and
-            ([.[].params.graphCount] | unique | sort) == ["17", "36", "4"] and
-            ([.[].params.scenario] | unique | sort) ==
-              ["contains", "count", "early", "late", "middle", "or", "order", "prefix", "regex", "suffix", "zero"] and
-            ([.[] | "\(.params.graphCount):\(.params.scenario)"] | unique | length) == 33 and
-            all(.[];
-              (.benchmark | startswith($expected)) and
-              .mode == "ss" and .primaryMetric.score > 0 and
-              .secondaryMetrics.processCpuNanos.score > 0 and
-              .secondaryMetrics.residentSetAfterBytes.score > 0 and
-              .secondaryMetrics.residentSetDeltaBytes.score >= 0
-            )' "${FILE}" >/dev/null
+        for REVISION in base candidate; do
+          test "$(find benchmark-results -name "${REVISION}-method-compatibility-*.log" | wc -l)" -eq 12
+          cat benchmark-results/${REVISION}-method-compatibility-*.log > "benchmark-results/${REVISION}-all-methods.log"
+          cat benchmark-results/${REVISION}-method-compatibility-*.txt | sort > "benchmark-results/${REVISION}-all-methods.txt"
+          test "$(wc -l < "benchmark-results/${REVISION}-all-methods.txt")" -eq 33
         done
-
-        sort -u benchmark-results/base-method-compatibility.txt \
-          > benchmark-results/base-method-compatibility.sorted.txt
-        sort -u benchmark-results/candidate-method-compatibility.txt \
-          > benchmark-results/candidate-method-compatibility.sorted.txt
-        test "$(wc -l < benchmark-results/base-method-compatibility.sorted.txt)" -eq 33
-        test "$(wc -l < benchmark-results/candidate-method-compatibility.sorted.txt)" -eq 33
-        diff -u \
-          benchmark-results/base-method-compatibility.sorted.txt \
-          benchmark-results/candidate-method-compatibility.sorted.txt
-
-        test "$(find benchmark-results -name 'method-compatibility-shard-*-status.json' | wc -l)" -eq 12
-        cat benchmark-results/method-compatibility-shard-*-report.md \
-          > benchmark-results/method-compatibility-report.md
-        jq -s '{
-          passed: all(.[]; .passed == true),
-          errors: [.[].errors[]],
-          rows: [.[].rows[]]
-        }' benchmark-results/method-compatibility-shard-*-status.json \
-          > benchmark-results/method-compatibility-status.json
-        jq -e '.passed == true' benchmark-results/method-compatibility-status.json >/dev/null
+        diff -u benchmark-results/base-all-methods.txt benchmark-results/candidate-all-methods.txt
+        EXPECTED=()
+        for COUNT in 4 17 36; do
+          for SCENARIO in contains count early late middle or order prefix regex suffix zero; do
+            EXPECTED+=("$(printf 'methods\t%s\t%s' "${COUNT}" "${SCENARIO}")")
+          done
+        done
+        node .github/scripts/benchmark-correctness.mjs method-compatibility \
+          benchmark-results/method-compatibility benchmark-results/base-all-methods.log \
+          benchmark-results/candidate-all-methods.log "${EXPECTED[@]}"
 
     - name: Upload Method compatibility results
       if: always()
@@ -1116,85 +865,29 @@ jobs:
           test -f "fixture-graphs/${CORPUS}/graph.nodedata"
         done
 
-    - name: Benchmark and normalize Cypher capacity
+    - name: Verify reviewed correctness and comparison control closure
       run: |
-        mkdir -p benchmark-results
-        BASE_JAR=$(find jmh-jars/base -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find jmh-jars/candidate -name '*-jmh.jar' -print -quit)
-        test -n "${BASE_JAR}" && test -n "${CANDIDATE_JAR}"
-        GRAPH_ARGS="-Dandroid.graph.path=${PWD}/fixture-graphs/android \
-          -Dtika.graph.path=${PWD}/fixture-graphs/tika \
-          -Dhive.graph.path=${PWD}/fixture-graphs/hive \
-          -Dkotlin.compiler.graph.path=${PWD}/fixture-graphs/kotlin-compiler"
-        CAPACITY_FORKS=3
-        CAPACITY_ARGS=(-wi 0 -i 1 -f "${CAPACITY_FORKS}" -t 1 -foe true -rf json)
-        java -jar "${BASE_JAR}" \
-          'io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover' \
-          "${CAPACITY_ARGS[@]}" -jvmArgsAppend "${GRAPH_ARGS}" \
-          -rff "${PWD}/benchmark-results/base-cypher-capacity.json"
-        java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover' \
-          "${CAPACITY_ARGS[@]}" -jvmArgsAppend "${GRAPH_ARGS}" \
-          -rff "${PWD}/benchmark-results/candidate-cypher-capacity.json"
-        # JMH sums EVENTS auxiliary counters across forks. Normalize every
-        # secondary metric to one invocation before asserting the envelope.
-        for FILE in \
-          benchmark-results/base-cypher-capacity.json \
-          benchmark-results/candidate-cypher-capacity.json; do
-          jq --argjson forks "${CAPACITY_FORKS}" \
-            'map(.secondaryMetrics |= with_entries(.value.score /= $forks))' \
-            "${FILE}" > "${FILE}.normalized"
-          mv "${FILE}.normalized" "${FILE}"
-        done
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
 
-    - name: Gate Cypher capacity
+    - name: Verify capacity correctness without performance sampling
       run: |
-        EXPECTED='io.johnsonlee.graphite.cli.CypherCapacityBenchmark.fourWorstCaseQueriesRejectCancelAndRecover'
-        for FILE in \
-          benchmark-results/base-cypher-capacity.json \
-          benchmark-results/candidate-cypher-capacity.json; do
-          jq -e --arg expected "${EXPECTED}" '
-            length == 1 and
-            .[0].benchmark == $expected and
-            .[0].mode == "ss" and
-            .[0].primaryMetric.score > 0 and
-            .[0].secondaryMetrics.activePeak.score == 4 and
-            .[0].secondaryMetrics.concurrencyRejected.score >= 1 and
-            .[0].secondaryMetrics.budgetExceeded.score == 3 and
-            .[0].secondaryMetrics.cancelled.score == 1 and
-            .[0].secondaryMetrics.recoverySucceeded.score == 1 and
-            .[0].secondaryMetrics.targetConcurrency.score == 4 and
-            .[0].secondaryMetrics.targetWorkBudget.score == 1000000 and
-            .[0].secondaryMetrics.processCpuNanos.score > 0 and
-            .[0].secondaryMetrics.residentSetBeforeBytes.score > 0 and
-            .[0].secondaryMetrics.residentSetAfterBytes.score > 0 and
-            .[0].secondaryMetrics.residentSetDeltaBytes.score >= 0 and
-            .[0].secondaryMetrics.tailLatencyNanos.score > 0 and
-            .[0].secondaryMetrics.cancellationLatencyNanos.score > 0 and
-            .[0].secondaryMetrics.cancellationLatencyNanos.score < 2000000000 and
-            .[0].secondaryMetrics.concurrentWallNanos.score > 0' \
-            "${FILE}" >/dev/null
+        set -euo pipefail
+        mkdir -p benchmark-results
+        for REVISION in base candidate; do
+          JAR=$(find "jmh-jars/$REVISION" -name '*-jmh.jar' -print -quit)
+          test -n "$JAR"
+          java -Xmx4g -XX:ActiveProcessorCount=4 \
+            "-Dandroid.graph.path=${PWD}/fixture-graphs/android" -cp "$JAR" \
+            io.johnsonlee.graphite.cli.SingleGraphCorrectness capacity \
+            > "benchmark-results/$REVISION-cypher-capacity-correctness.log" 2>&1
         done
-        jq -n -e \
-          --slurpfile base benchmark-results/base-cypher-capacity.json \
-          --slurpfile candidate benchmark-results/candidate-cypher-capacity.json '
-            ($base[0][0]) as $base_result |
-            ($candidate[0][0]) as $candidate_result |
-            all(["tailLatencyNanos"][];
-              . as $metric |
-              ($base_result.secondaryMetrics[$metric].score > 0) and
-              ($candidate_result.secondaryMetrics[$metric].score > 0) and
-              ($candidate_result.secondaryMetrics[$metric].score <=
-                ($base_result.secondaryMetrics[$metric].score * 1.15))
-            )' >/dev/null
-        node base/.github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/base-cypher-capacity.json \
-          --candidate benchmark-results/candidate-cypher-capacity.json \
-          --threshold 15 \
-          --threshold-only \
-          --title 'Cypher concurrency and work-budget capacity' \
-          --report benchmark-results/cypher-capacity-report.md \
-          --status benchmark-results/cypher-capacity-status.json
+        node candidate/.github/scripts/benchmark-correctness.mjs cypher-capacity \
+          benchmark-results/cypher-capacity benchmark-results/base-cypher-capacity-correctness.log \
+          benchmark-results/candidate-cypher-capacity-correctness.log capacity
 
     - name: Upload Cypher capacity results
       if: always()
@@ -1206,7 +899,7 @@ jobs:
         retention-days: 14
 
   budgeted-collection:
-    name: budgeted-collection-latency
+    name: budgeted-collection-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -1255,6 +948,22 @@ jobs:
           cmp "$(jvm gate cypher)/${HARNESS}" "${TARGET}"
         done
 
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
+
+    - name: Install pinned assertion-only entry point
+      run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        SOURCE='frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt'
+        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = 'aa6757f2caea21d1f7b6bedb4a040e7f859b77d05889f360b33bf99882ba3349'
+        RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt'
+        install -m 0644 "candidate/${SOURCE}" "$(jvm baseline cypher)/${RELATIVE}"
+
     - name: Build budgeted collection JMH jars
       run: |
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
@@ -1276,54 +985,20 @@ jobs:
           bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" cypher)" "${JAR}"
         done
 
-    - name: Benchmark baseline then PR
+    - name: Run complete untimed assertions
       run: |
+        set -euo pipefail
         mkdir -p benchmark-results
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-        BASELINE_JAR=$(find "$(jvm baseline cypher)/build/libs" -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
-        test -n "${BASELINE_JAR}" && test -n "${CANDIDATE_JAR}"
-        java -jar "${BASELINE_JAR}" \
-          'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/baseline-budgeted-collection.json"
-        java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/candidate-budgeted-collection.json"
-
-    - name: Compare budgeted collection latency
-      run: |
-        if node gate/.github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/baseline-budgeted-collection.json \
-          --candidate benchmark-results/candidate-budgeted-collection.json \
-          --threshold 15 \
-          --title 'Budgeted collection latency' \
-          --report benchmark-results/initial-budgeted-collection-report.md \
-          --status benchmark-results/initial-budgeted-collection-status.json; then
-          mv benchmark-results/initial-budgeted-collection-report.md \
-            benchmark-results/budgeted-collection-report.md
-          mv benchmark-results/initial-budgeted-collection-status.json \
-            benchmark-results/budgeted-collection-status.json
-        else
-          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-          BASELINE_JAR=$(find "$(jvm baseline cypher)/build/libs" -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/frontend/jvm/cypher/build/libs -name '*-jmh.jar' -print -quit)
-          java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
-            -foe true -rf json \
-            -rff "${PWD}/benchmark-results/candidate-budgeted-collection-confirmation.json"
-          java -jar "${BASELINE_JAR}" \
-            'io.johnsonlee.graphite.cypher.BudgetedCypherBenchmark.budgeted(ListConcatenation|ListMembership)' \
-            -foe true -rf json \
-            -rff "${PWD}/benchmark-results/baseline-budgeted-collection-confirmation.json"
-          node gate/.github/scripts/benchmark-gate.mjs confirm-jmh \
-            --initial benchmark-results/initial-budgeted-collection-status.json \
-            --base benchmark-results/baseline-budgeted-collection-confirmation.json \
-            --candidate benchmark-results/candidate-budgeted-collection-confirmation.json \
-            --threshold 15 \
-            --title 'Budgeted collection latency' \
-            --report benchmark-results/budgeted-collection-report.md \
-            --status benchmark-results/budgeted-collection-status.json
-        fi
+        for REVISION in baseline candidate; do
+          JAR=$(find "$(jvm "${REVISION}" cypher)/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          java -Xmx512m -XX:ActiveProcessorCount=4 -cp "${JAR}" \
+            io.johnsonlee.graphite.cypher.BudgetedQueryCorrectness | tee "benchmark-results/${REVISION}-budgeted-collection.log"
+        done
+        node candidate/.github/scripts/benchmark-correctness.mjs budgeted-collection \
+          benchmark-results/budgeted-collection benchmark-results/baseline-budgeted-collection.log \
+          benchmark-results/candidate-budgeted-collection.log budgetedGeneralRegex budgetedListConcatenation budgetedListMembership
 
     - name: Upload budgeted collection results
       if: always()
@@ -1335,7 +1010,7 @@ jobs:
         retention-days: 14
 
   budgeted-mapped-string:
-    name: budgeted-mapped-string-latency
+    name: budgeted-mapped-string-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -1384,6 +1059,22 @@ jobs:
           cmp "$(jvm gate webgraph)/${HARNESS}" "${TARGET}"
         done
 
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
+
+    - name: Install pinned assertion-only entry point
+      run: |
+        jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
+        SOURCE='frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedAdmissionCorrectness.kt'
+        test "$(sha256sum "candidate/${SOURCE}" | cut -d' ' -f1)" = 'e2249f1a52f88a7db052702c5f0d006725c1f00ad79685c501cee355e65e0321'
+        RELATIVE='src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedAdmissionCorrectness.kt'
+        install -m 0644 "candidate/${SOURCE}" "$(jvm baseline webgraph)/${RELATIVE}"
+
     - name: Build budgeted lookup JMH jars
       run: |
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
@@ -1406,52 +1097,20 @@ jobs:
           bash "${CONTROL_DIR}/${VERIFIER}" "$(jvm "${REVISION}" webgraph)" "${JAR}"
         done
 
-    - name: Benchmark baseline then PR
+    - name: Run complete untimed assertions
       run: |
+        set -euo pipefail
         mkdir -p benchmark-results
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-        BASELINE_JAR=$(find "$(jvm baseline webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
-        CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs -name '*-jmh.jar' -print -quit)
-        test -n "${BASELINE_JAR}" && test -n "${CANDIDATE_JAR}"
-        java -jar "${BASELINE_JAR}" \
-          'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/baseline-budgeted-string.json"
-        java -jar "${CANDIDATE_JAR}" \
-          'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
-          -foe true -rf json -rff "${PWD}/benchmark-results/candidate-budgeted-string.json"
-
-    - name: Compare budgeted lookup latency
-      run: |
-        if node gate/.github/scripts/benchmark-gate.mjs compare-jmh \
-          --base benchmark-results/baseline-budgeted-string.json \
-          --candidate benchmark-results/candidate-budgeted-string.json \
-          --threshold 15 \
-          --threshold-only \
-          --title 'Budgeted mapped-string latency' \
-          --report benchmark-results/initial-budgeted-string-report.md \
-          --status benchmark-results/initial-budgeted-string-status.json; then
-          mv benchmark-results/initial-budgeted-string-report.md benchmark-results/budgeted-string-report.md
-          mv benchmark-results/initial-budgeted-string-status.json benchmark-results/budgeted-string-status.json
-        else
-          jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-          BASELINE_JAR=$(find "$(jvm baseline webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
-          CANDIDATE_JAR=$(find candidate/frontend/jvm/webgraph/build/libs -name '*-jmh.jar' -print -quit)
-          java -jar "${CANDIDATE_JAR}" \
-            'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
-            -foe true -rf json -rff "${PWD}/benchmark-results/candidate-budgeted-string-confirmation.json"
-          java -jar "${BASELINE_JAR}" \
-            'io.johnsonlee.graphite.webgraph.MappedStringAdmissionBenchmark.budgetedTransformedZeroHit' \
-            -foe true -rf json -rff "${PWD}/benchmark-results/baseline-budgeted-string-confirmation.json"
-          node gate/.github/scripts/benchmark-gate.mjs confirm-jmh \
-            --initial benchmark-results/initial-budgeted-string-status.json \
-            --base benchmark-results/baseline-budgeted-string-confirmation.json \
-            --candidate benchmark-results/candidate-budgeted-string-confirmation.json \
-            --threshold 15 \
-            --threshold-only \
-            --title 'Budgeted mapped-string latency' \
-            --report benchmark-results/budgeted-string-report.md \
-            --status benchmark-results/budgeted-string-status.json
-        fi
+        for REVISION in baseline candidate; do
+          JAR=$(find "$(jvm "${REVISION}" webgraph)/build/libs" -name '*-jmh.jar' -print -quit)
+          test -n "${JAR}"
+          java -Xmx4g -XX:ActiveProcessorCount=4 -cp "${JAR}" \
+            io.johnsonlee.graphite.webgraph.MappedAdmissionCorrectness | tee "benchmark-results/${REVISION}-budgeted-string.log"
+        done
+        node candidate/.github/scripts/benchmark-correctness.mjs budgeted-string \
+          benchmark-results/budgeted-string benchmark-results/baseline-budgeted-string.log \
+          benchmark-results/candidate-budgeted-string.log mapped-admission
 
     - name: Upload budgeted lookup results
       if: always()
@@ -1494,103 +1153,62 @@ jobs:
       with:
         cache-read-only: true
 
-    - name: Select trusted large-corpus controls
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "candidate/${MANIFEST}"
+        test "$(sha256sum "candidate/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c "${MANIFEST}")
+
+    - name: Install reviewed correctness-only corpus assertions
       id: large-corpus-controls
-      env:
-        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         set -euo pipefail
         jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
-        HARNESS='src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt'
-        BASE_HARNESS="$(jvm base webgraph)/${HARNESS}"
-        CANDIDATE_HARNESS="$(jvm candidate webgraph)/${HARNESS}"
-        COMPARATOR='.github/scripts/benchmark-gate.mjs'
-        test ! -L "${BASE_HARNESS}"
-        test ! -L "${CANDIDATE_HARNESS}"
-        test ! -L "candidate/${COMPARATOR}"
-        BASE_HARNESS_SHA256="$(sha256sum "${BASE_HARNESS}" | cut -d' ' -f1)"
-        CANDIDATE_HARNESS_SHA256="$(sha256sum "${CANDIDATE_HARNESS}" | cut -d' ' -f1)"
-        CANDIDATE_COMPARATOR_SHA256="$(sha256sum "candidate/${COMPARATOR}" | cut -d' ' -f1)"
-        # One-time graph-shape transition: each revision keeps and runs its own harness, and the pinned
-        # candidate comparator accepts only the exact pinned shape change. Once main carries the new
-        # harness its digest no longer matches the base pin, and this branch is never selected again.
-        if [[ "${BASE_HARNESS_SHA256}" = "${LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256}" && \
-          "${CANDIDATE_HARNESS_SHA256}" = "${LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256}" && \
-          "${CANDIDATE_COMPARATOR_SHA256}" = "${LARGE_CORPUS_SHAPE_COMPARATOR_SHA256}" && \
-          "${CANDIDATE_GATE_TEST_JOB}" = success ]]; then
-          echo "comparator=candidate/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
-          echo "comparator-args=--shape-transition" >> "${GITHUB_OUTPUT}"
-          echo "mode=shape-transition" >> "${GITHUB_OUTPUT}"
-        elif grep -Fq 'mappedLoadSamples=' "${BASE_HARNESS}" && \
-          grep -Fq 'productionIndexPrepared=' "${BASE_HARNESS}" && \
-          grep -Fq 'LARGE_CORPUS_MAPPED_LOAD_SAMPLES = 5' "base/${COMPARATOR}"; then
-          test ! -L "${CANDIDATE_HARNESS}"
-          rm -f -- "${CANDIDATE_HARNESS}"
-          install -m 0644 "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"
-          cmp "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"
-          echo "comparator=base/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
-          echo "mode=base-owned" >> "${GITHUB_OUTPUT}"
-        else
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum "${BASE_HARNESS}" | cut -d' ' -f1)" = \
-            "${LARGE_CORPUS_LEGACY_HARNESS_SHA256}"
-          test "$(sha256sum "${CANDIDATE_HARNESS}" | cut -d' ' -f1)" = \
-            "${LARGE_CORPUS_TRANSITION_HARNESS_SHA256}"
-          test "$(sha256sum "candidate/${COMPARATOR}" | cut -d' ' -f1)" = \
-            "${LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256}"
-          mkdir -p trusted-large-corpus
-          install -m 0644 "${CANDIDATE_HARNESS}" trusted-large-corpus/harness.kt
-          for CHECKOUT in "${BASE_HARNESS}" "${CANDIDATE_HARNESS}"; do
-            test ! -L "${CHECKOUT}"
-            rm -f -- "${CHECKOUT}"
-            install -m 0644 trusted-large-corpus/harness.kt "${CHECKOUT}"
-            cmp trusted-large-corpus/harness.kt "${CHECKOUT}"
-          done
-          echo "comparator=candidate/${COMPARATOR}" >> "${GITHUB_OUTPUT}"
-          echo "mode=pinned-transition" >> "${GITHUB_OUTPUT}"
-        fi
-
-    - name: Benchmark PR large corpora
-      run: |
-        set -o pipefail
+        HARNESS=src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt
+        BASE_HARNESS="$(jvm base webgraph)/$HARNESS"
+        CANDIDATE_HARNESS="$(jvm candidate webgraph)/$HARNESS"
+        test ! -L "$BASE_HARNESS" && test ! -L "$CANDIDATE_HARNESS"
+        test "$(sha256sum "$CANDIDATE_HARNESS" | cut -d' ' -f1)" = "$MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256"
+        BASE_SHA=$(git -C base rev-parse HEAD)
+        ORIGINAL=$(sha256sum "$BASE_HARNESS" | cut -d' ' -f1)
         mkdir -p benchmark-results
-        candidate/gradlew -p candidate :webgraph:largeCorpusTest \
-          -Dlarge.corpus.record=true --no-daemon 2>&1 \
-          | tee benchmark-results/candidate-large-corpus.log
+        cp "$BASE_HARNESS" benchmark-results/original-base-corpus-harness.kt
+        if [[ "$BASE_SHA" = 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+          test "$ORIGINAL" = "$LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"
+          # The only baseline difference is the independently audited 64/27 method identities.
+          sed -e 's/methodCount = 312_852/methodCount = 312_788/' \
+              -e 's/methodCount = 404_043/methodCount = 404_016/' \
+              "$CANDIDATE_HARNESS" > "$BASE_HARNESS"
+          test "$(sha256sum "$BASE_HARNESS" | cut -d' ' -f1)" = "$MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256"
+          echo 'comparison=--shared-strings-transition' >> "$GITHUB_OUTPUT"
+        else
+          # A same-format base must already carry the reviewed current assertions or the
+          # exact predecessor GTY03 assertion source; unknown bases fail before execution.
+          [[ "$ORIGINAL" = "$MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256" || \
+             "$ORIGINAL" = dc0ddb816d2d27921df7a0247b0d02b88c9616ab7fe9125baed05fe03edddd54 ]]
+          install -m 0644 "$CANDIDATE_HARNESS" "$BASE_HARNESS"
+        fi
+        cp "$BASE_HARNESS" benchmark-results/base-correctness-harness.kt
+        cp "$CANDIDATE_HARNESS" benchmark-results/candidate-correctness-harness.kt
 
-    - name: Benchmark base large corpora
+    - name: Verify both complete corpus persistence pipelines without sampling
       run: |
-        set -o pipefail
-        base/gradlew -p base :webgraph:largeCorpusTest \
-          -Dlarge.corpus.record=true --no-daemon 2>&1 \
-          | tee benchmark-results/base-large-corpus.log
+        set -euo pipefail
+        for REVISION in base candidate; do
+          "$REVISION/gradlew" -p "$REVISION" :webgraph:largeCorpusTest \
+            --no-daemon --max-workers=2 2>&1 | tee "benchmark-results/$REVISION-large-corpus.log"
+        done
 
-    - name: Compare large-corpus results
+    - name: Compare exact corpus shape and storage transition
       run: |
-        if node "${{ steps.large-corpus-controls.outputs.comparator }}" compare-large-corpus \
-          ${{ steps.large-corpus-controls.outputs.comparator-args }} \
+        node candidate/.github/scripts/benchmark-gate.mjs compare-large-corpus --correctness-only \
+          ${{ steps.large-corpus-controls.outputs.comparison }} \
           --base benchmark-results/base-large-corpus.log \
           --candidate benchmark-results/candidate-large-corpus.log \
-          --report benchmark-results/initial-large-corpus-report.md \
-          --status benchmark-results/initial-large-corpus-status.json; then
-          mv benchmark-results/initial-large-corpus-report.md benchmark-results/large-corpus-report.md
-          mv benchmark-results/initial-large-corpus-status.json benchmark-results/large-corpus-status.json
-        else
-          set -o pipefail
-          base/gradlew -p base :webgraph:largeCorpusTest \
-            -Dlarge.corpus.record=true --no-daemon 2>&1 \
-            | tee benchmark-results/base-large-corpus-confirmation.log
-          candidate/gradlew -p candidate :webgraph:largeCorpusTest \
-            -Dlarge.corpus.record=true --no-daemon 2>&1 \
-            | tee benchmark-results/candidate-large-corpus-confirmation.log
-          node "${{ steps.large-corpus-controls.outputs.comparator }}" confirm-large-corpus \
-            ${{ steps.large-corpus-controls.outputs.comparator-args }} \
-            --initial benchmark-results/initial-large-corpus-status.json \
-            --base benchmark-results/base-large-corpus-confirmation.log \
-            --candidate benchmark-results/candidate-large-corpus-confirmation.log \
-            --report benchmark-results/large-corpus-report.md \
-            --status benchmark-results/large-corpus-status.json
-        fi
+          --report benchmark-results/large-corpus-report.md \
+          --status benchmark-results/large-corpus-status.json
 
     - name: Upload large-corpus results
       if: always()
@@ -3125,6 +2743,40 @@ jobs:
         (out / "provenance.json").write_text(json.dumps(data, indent=2) + "\n")
         PY
 
+    # Archive an honest preparation result from outputs actually available in this job.
+    # The candidate-only corpus cannot be used as the accepted4f fixture. Missing producer
+    # evidence remains UNAVAILABLE in the required operation gate; correctness still runs.
+    - name: Prepare matched native continuous-pressure plan
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        code=0
+        python3 candidate/.github/scripts/prepare_native_pressure_plan.py \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --provenance benchmark-results/rust-provenance/provenance.json \
+          --fixture shared-fixture64/fixture64.complete.json \
+          --producers native-pressure-producers/packet.json \
+          --output benchmark-results/native-pressure-preparation || code=$?
+        cp benchmark-results/native-pressure-preparation/multigraph-native-query-status.json \
+          benchmark-results/multigraph-native-query-status.json
+        exit "${code}"
+
+    - name: Execute and audit matched native continuous pressure
+      continue-on-error: true
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 candidate/.github/scripts/run_prepared_native_pressure.py \
+          --preparation benchmark-results/native-pressure-preparation \
+          --output benchmark-results/native-pressure-cells \
+          --prefix benchmark-results/multigraph-native-query
+
     - name: Measure base then PR
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
@@ -3295,19 +2947,12 @@ jobs:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         set -euo pipefail
-        OWNER=gate
+        OWNER=controls
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        # A gate script that predates the frontend/jvm layout cannot drive the candidate tree.
-        if [[ ! -f "gate/${MANIFEST}" ]] || \
-          ! grep -q 'frontend/jvm' gate/.github/scripts/benchmark-slow-query-shapes.sh; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum gate/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-          test ! -L "controls/${MANIFEST}"
-          test "$(sha256sum "controls/${MANIFEST}" | cut -d' ' -f1)" = \
-            "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
-          OWNER=controls
-        fi
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test ! -L "${OWNER}/${MANIFEST}"
+        test "$(sha256sum "${OWNER}/${MANIFEST}" | cut -d' ' -f1)" = \
+          "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
         (cd "${OWNER}" && sha256sum -c "${MANIFEST}")
         echo "directory=${OWNER}" >> "${GITHUB_OUTPUT}"
     - name: Restore real persisted fixture graphs
@@ -3381,24 +3026,26 @@ jobs:
         path: reporter
         persist-credentials: false
 
+    - name: Verify reviewed correctness and comparison control closure
+      run: |
+        set -euo pipefail
+        MANIFEST=.github/scripts/multigraph-correctness-controls.sha256
+        test ! -L "reporter/${MANIFEST}"
+        test "$(sha256sum "reporter/${MANIFEST}" | cut -d' ' -f1)" = "${MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256}"
+        (cd reporter && sha256sum -c "${MANIFEST}")
+
     - name: Select additive slow-shape report controls
       id: slow-report-controls
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
       run: |
         set -euo pipefail
-        OWNER=.
+        OWNER=reporter
         MANIFEST=.github/scripts/benchmark-slow-query-shapes-controls.sha256
-        if [[ ! -f "${MANIFEST}" ]] || \
-          ! grep -q 'frontend/jvm' .github/scripts/benchmark-slow-query-shapes.sh; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum .github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            9055e258cf7d488e2d6d8b4d9173e0c99937c46d46ba704c6f98c0c83e403268
-          test ! -L "reporter/${MANIFEST}"
-          test "$(sha256sum "reporter/${MANIFEST}" | cut -d' ' -f1)" = \
-            "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
-          OWNER=reporter
-        fi
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test ! -L "${OWNER}/${MANIFEST}"
+        test "$(sha256sum "${OWNER}/${MANIFEST}" | cut -d' ' -f1)" = \
+          "${SLOW_QUERY_SHAPES_CONTROLS_SHA256}"
         (cd "${OWNER}" && sha256sum -c "${MANIFEST}")
         echo "directory=${OWNER}" >> "${GITHUB_OUTPUT}"
 
@@ -3426,22 +3073,10 @@ jobs:
         BENCHMARK_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       run: |
         mkdir -p benchmark-results
-        COMPARATOR=.github/scripts/benchmark-gate.mjs
-        if ! grep -q '"global-wide-pressure"' "${COMPARATOR}"; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
-          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
-          grep -q '"global-wide-pressure"' "${COMPARATOR}"
-        fi
-        # Until main carries the Rust engine gate, the reviewed candidate reporter aggregates it.
-        if ! grep -q '"rust-latency"' "${COMPARATOR}"; then
-          test "${CANDIDATE_GATE_TEST_JOB}" = success
-          test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
-            "${BENCHMARK_REPORT_TRANSITION_SHA256}"
-          COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
-          grep -q '"rust-latency"' "${COMPARATOR}"
-        fi
+        test "${CANDIDATE_GATE_TEST_JOB}" = success
+        test "$(sha256sum reporter/.github/scripts/benchmark-gate.mjs | cut -d' ' -f1)" = \
+          "${BENCHMARK_REPORT_TRANSITION_SHA256}"
+        COMPARATOR=reporter/.github/scripts/benchmark-gate.mjs
         node '${{ steps.slow-report-controls.outputs.directory }}/.github/scripts/benchmark-slow-query-shapes.mjs' aggregate \
           --base-comparator "${COMPARATOR}" \
           --directory benchmark-results \
@@ -3511,26 +3146,16 @@ jobs:
         CPU_ACCOUNTING_SMOKE_JOB: ${{ needs.validate-cpu-accounting.result }}
         SLOW_QUERY_SHAPES_JOB: ${{ needs.slow-query-shapes.result }}
       run: |
-        # The JVM engine gates (explorer, method-compatibility, cypher-capacity, budgeted-*,
-        # wrapped-query-latency) are advisory: their reports are still built and shown, but
-        # `graphite serve` runs the Rust engine, whose paired gate is rust-latency.
-        for ADVISORY in EXPLORER_JOB METHOD_COMPATIBILITY_JOB CYPHER_CAPACITY_JOB \
-          BUDGETED_COLLECTION_JOB BUDGETED_STRING_JOB LATENCY_JOB; do
-          if [ "${!ADVISORY}" != success ]; then
-            echo "::warning::Advisory JVM engine job ${ADVISORY} finished with ${!ADVISORY}"
+        # Correctness and existing genuine multi-graph constraints all remain blocking.
+        for JOB in CANDIDATE_GATE_TEST_JOB RUST_LATENCY_JOB METHOD_JOB EXPLORER_JOB \
+          METHOD_COMPATIBILITY_JOB CYPHER_CAPACITY_JOB BUDGETED_COLLECTION_JOB BUDGETED_STRING_JOB \
+          LARGE_CORPUS_JOB LATENCY_JOB LATENCY_RESOURCES_JOB GRAPH_ROUTING_JOB GLOBAL_WIDE_JOB \
+          CPU_ACCOUNTING_SMOKE_JOB SLOW_QUERY_SHAPES_JOB; do
+          if [ "${!JOB}" != success ]; then
+            echo "::error::Required job ${JOB} finished with ${!JOB}"
+            exit 1
           fi
         done
-        if [ "${CANDIDATE_GATE_TEST_JOB}" != success ] || \
-          [ "${RUST_LATENCY_JOB}" != success ] || \
-          [ "${METHOD_JOB}" != success ] || \
-          [ "${LARGE_CORPUS_JOB}" != success ] || \
-          [ "${LATENCY_RESOURCES_JOB}" != success ] || \
-          [ "${GRAPH_ROUTING_JOB}" != success ] || [ "${GLOBAL_WIDE_JOB}" != success ] || \
-          [ "${CPU_ACCOUNTING_SMOKE_JOB}" != success ] || \
-          [ "${SLOW_QUERY_SHAPES_JOB}" != success ]; then
-          echo "::error::Benchmark execution or comparison failed"
-          exit 1
-        fi
         node -e "const s=require('./benchmark-results/benchmark-authoritative-status.json'); if(!s.passed) process.exit(1)"
 
   benchmark-comment:

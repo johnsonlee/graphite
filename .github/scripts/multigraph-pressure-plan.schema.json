@@ -1,0 +1,665 @@
+{
+  "type": "object",
+  "required": [
+    "schema",
+    "operation",
+    "engine",
+    "catalog",
+    "pins",
+    "proofs",
+    "coverage",
+    "arms",
+    "cells",
+    "cases",
+    "schedule",
+    "limits",
+    "comparisonPairs"
+  ],
+  "properties": {
+    "schema": {
+      "const": "graphite.multigraph-pressure.plan.v1"
+    },
+    "operation": {
+      "const": "query"
+    },
+    "engine": {
+      "enum": [
+        "jvm",
+        "native"
+      ]
+    },
+    "catalog": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "pins": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+      }
+    },
+    "proofs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "path",
+          "sha256",
+          "status",
+          "role",
+          "upstream",
+          "bindings"
+        ],
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "status": {
+            "type": "string",
+            "pattern": "^PASS($|_)"
+          },
+          "role": {
+            "enum": [
+              "fixture-equivalence",
+              "independent-correctness",
+              "source-runtime"
+            ]
+          },
+          "bindings": {
+            "type": "object"
+          },
+          "arm": {
+            "enum": [
+              "C",
+              "A",
+              "B"
+            ]
+          },
+          "upstream": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      },
+      "minItems": 3
+    },
+    "coverage": {
+      "type": "object",
+      "required": [
+        "coveredFamilies",
+        "requiredFamilies",
+        "unavailableFamilies",
+        "unavailableOperations"
+      ],
+      "properties": {
+        "coveredFamilies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "requiredFamilies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "unavailableFamilies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "unavailableOperations": {
+          "const": [
+            "construction",
+            "loading"
+          ]
+        }
+      }
+    },
+    "arms": {
+      "type": "object",
+      "required": [
+        "C",
+        "A",
+        "B"
+      ],
+      "properties": {
+        "C": {
+          "$ref": "#/$defs/arm"
+        },
+        "A": {
+          "$ref": "#/$defs/arm"
+        },
+        "B": {
+          "$ref": "#/$defs/arm"
+        }
+      },
+      "additionalProperties": false
+    },
+    "cells": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "arm",
+          "port"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9_-]+$"
+          },
+          "arm": {
+            "enum": [
+              "C",
+              "A",
+              "B"
+            ]
+          },
+          "port": {
+            "type": "integer",
+            "minimum": 1024,
+            "maximum": 65535
+          }
+        }
+      },
+      "minItems": 6,
+      "maxItems": 6
+    },
+    "cases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/case"
+      },
+      "minItems": 1
+    },
+    "schedule": {
+      "const": {
+        "concurrency": 4,
+        "warmupPerCase": 2,
+        "measuredPerCase": 20
+      }
+    },
+    "limits": {
+      "type": "object",
+      "required": [
+        "requestSeconds",
+        "stageSeconds",
+        "readinessSeconds",
+        "bodyBytes",
+        "rssIntervalSeconds"
+      ],
+      "properties": {
+        "requestSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 900
+        },
+        "stageSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 14400
+        },
+        "readinessSeconds": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "maximum": 600
+        },
+        "bodyBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 268435456
+        },
+        "rssIntervalSeconds": {
+          "type": "number",
+          "minimum": 0.005,
+          "maximum": 0.2
+        }
+      },
+      "additionalProperties": false
+    },
+    "comparisonPairs": {
+      "const": {
+        "parent": [
+          [
+            1,
+            2
+          ],
+          [
+            4,
+            3
+          ]
+        ],
+        "acceptedBaseline": [
+          [
+            0,
+            2
+          ],
+          [
+            5,
+            3
+          ]
+        ]
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "graphite.multigraph-pressure.plan.v1",
+  "title": "Finite continuous c4 validated HTTP query pressure plan",
+  "$defs": {
+    "arm": {
+      "type": "object",
+      "required": [
+        "role",
+        "revision",
+        "runtimeManifest",
+        "sourceManifest",
+        "runtimeFiles",
+        "runtimeRoots",
+        "serverArgv",
+        "graphs",
+        "readiness"
+      ],
+      "properties": {
+        "role": {
+          "enum": [
+            "accepted-baseline",
+            "parent",
+            "candidate"
+          ]
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "patchSha256": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "runtimeManifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "sourceManifest": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "runtimeFiles": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          }
+        },
+        "runtimeRoots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "serverArgv": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2
+        },
+        "maxHeapBytes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 8589934592
+        },
+        "graphs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "path"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              }
+            }
+          },
+          "minItems": 2
+        },
+        "readiness": {
+          "type": "object",
+          "required": [
+            "path",
+            "expected"
+          ],
+          "properties": {
+            "path": {
+              "const": "/api/graphs"
+            },
+            "expected": {
+              "type": "object",
+              "description": "Complete readiness without root data and per-graph loadedAt; retains all graph paths/counts/topology totals."
+            }
+          }
+        }
+      }
+    },
+    "case": {
+      "type": "object",
+      "required": [
+        "id",
+        "catalogId",
+        "request",
+        "targetGraphIds",
+        "oracleByArm"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "catalogId": {
+          "type": "string"
+        },
+        "targetGraphIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "uniqueItems": true
+        },
+        "request": {
+          "type": "object",
+          "required": [
+            "endpoint",
+            "body"
+          ],
+          "properties": {
+            "endpoint": {
+              "enum": [
+                "/api/cypher",
+                "/api/cypher/graphs"
+              ]
+            },
+            "body": {
+              "type": "object"
+            }
+          }
+        },
+        "oracleByArm": {
+          "type": "object",
+          "required": [
+            "C",
+            "A",
+            "B"
+          ],
+          "properties": {
+            "C": {
+              "$ref": "#/$defs/oracle"
+            },
+            "A": {
+              "$ref": "#/$defs/oracle"
+            },
+            "B": {
+              "$ref": "#/$defs/oracle"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
+    "oracle": {
+      "type": "object",
+      "required": [
+        "kind",
+        "digest",
+        "proof"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "native-full-json-sha256-v1",
+            "jvm-full-typed-envelope-v1",
+            "native-complete-legal-limit-multiset-v1"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "proof": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        },
+        "rows": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "value": {
+          "type": "object"
+        },
+        "rowOrder": {
+          "enum": [
+            "exact",
+            "outer-multiset"
+          ]
+        },
+        "valueProof": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "native-complete-legal-limit-multiset-v1"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "rows",
+              "value",
+              "valueProof"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "x-cli": [
+    "validate-plan --plan FILE",
+    "run --plan FILE --cell CELL_ID --output NEW_DIRECTORY",
+    "audit --plan FILE --output COMPLETED_DIRECTORY"
+  ],
+  "x-measurement-contract": {
+    "primaryLatency": "startNs through validationCompleteNs including full body spool and strict canonical oracle comparison",
+    "wireLatency": "startNs through wireCompleteNs is diagnostic only, never the gate",
+    "schedule": "four persistent independently replenished workers; immutable round-robin cases; no batch barrier or replacement",
+    "quantiles": "per case twenty individual warm requests/cell; ceil(p*n), ranks10/19, never across-case pooling",
+    "cpu": "server user+system enclosing boundary and strict-inner lower bound; Linux ticks/macOS .02s uncertainty and recorded lag",
+    "rss": "whole-read interval lower bound and independent lifecycle time-v/time-l upper bound, never heap substitution",
+    "missingCoverage": "unavailableFamilies and unavailableOperations remain unavailable even if completed queries pass",
+    "failure": "stop assignment, drain bounded issued requests, retain all partial bodies/errors/cleanup/final identities",
+    "platforms": "Linux /proc+GNU time; macOS ps+BSD time-l; strict common CPU/RSS bounds, unsupported platform fails",
+    "legalLimit": "Complete independently derived typed row multisets are compiled once before server requests. Each measured request validates every returned row, duplicate count, provenance, columns and probe total; no exact encounter order claim."
+  },
+  "x-result-contract": {
+    "schema": "graphite.multigraph-pressure.result.v1",
+    "files": [
+      "plan.json",
+      "command.json",
+      "launch-owner.json",
+      "readiness.body",
+      "host-before.json",
+      "host-after.json",
+      "{oracle,warmup,pressure}/stage.json",
+      "{stage}/worker-{0..3}.jsonl",
+      "{stage}/bodies/{sequence}.body",
+      "resources.jsonl",
+      "time-v.log",
+      "stdout.log",
+      "stderr.log",
+      "cleanup.json",
+      "identities-before.json",
+      "identities-after.json",
+      "result.json",
+      "audit.json"
+    ],
+    "required": [
+      "status",
+      "planSha256",
+      "cell",
+      "engine",
+      "operation",
+      "arm",
+      "coverage",
+      "stages",
+      "errors",
+      "acceptanceEligible",
+      "otherOperationsEligible",
+      "cleanup",
+      "lifecycle",
+      "cellWallNsIncludingFinalVerification"
+    ],
+    "stageFields": [
+      "status",
+      "expectedRequests",
+      "issued",
+      "unissued",
+      "concurrency",
+      "requests",
+      "startNs",
+      "endNs",
+      "wallNs",
+      "cpuStart",
+      "cpuEnd",
+      "caseStatistics",
+      "resources",
+      "journalErrors",
+      "allWorkersStopped",
+      "observedMaxWorkerConcurrency",
+      "observedMaxWireConcurrency"
+    ],
+    "caseStatisticsFields": [
+      "n",
+      "sampleIds",
+      "p50Ns",
+      "p95Ns"
+    ],
+    "resourcesFields": [
+      "cpuSeconds",
+      "cpuQuantizationSeconds",
+      "cpuLowerBoundSeconds",
+      "cpuUpperBoundSeconds",
+      "cpuStartLeadNs",
+      "cpuEndLagNs",
+      "cpuScope",
+      "rss"
+    ],
+    "rssFields": [
+      "lowerBoundBytes",
+      "upperBoundBytes",
+      "eligible",
+      "excluded",
+      "scope"
+    ],
+    "auditSchema": "graphite.multigraph-pressure.audit.v1",
+    "eligibilityMeaning": "complete declared query evidence AND no missing required query family; not comparative PASS; other operations remain ineligible"
+  },
+  "x-proof-contract": {
+    "allProofs": "Pinned actual successful receipt; status and every top-level bindings field must equal receipt. Receipt upstream map also equals plan map; every producer pin remains in full before/after input closure.",
+    "source-runtime": "Exactly one per arm. Required bindings: revision, patchSha256 (null for clean source), sourceManifestSha256, runtimeManifestSha256, runtimeFiles. Upstream includes exact source/runtime manifests and actual producer audit.",
+    "independent-correctness": "Exactly one per arm. Required bindings: graphIds, requestDigests (canonical full endpoint/body by case ID), oracleDigests (full typed/canonical expected body by case ID). Upstream includes each independently established oracle proof.",
+    "fixture-equivalence": "Exactly one across all arms. Required bindings: graphsByArm (ordered id/path maps), fixtureFiles (complete measured fixture SHA union), realPersistedGraphs:true, completeSemanticEquivalence:true. Upstream binds complete semantic migration/equivalence audits.",
+    "bindingLimitation": "Trusted workflow/local binder must derive these claims from actual evidence, never fill a standalone PASS placeholder. Existing artifacts remain immutable; a normalized receipt must preserve their exact producer hashes and evidence linkage."
+  }
+}

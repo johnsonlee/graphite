@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicLong
 @Measurement(iterations = 1)
 @Fork(1, jvmArgs = ["-Xmx8g"])
 open class CypherCapacityBenchmark {
+    var correctnessOnly: Boolean = false
     private lateinit var root: Path
     private lateinit var registry: GraphRegistry
     private lateinit var topology: TopologyService
@@ -59,7 +60,7 @@ open class CypherCapacityBenchmark {
             it.load(GRAPH_ID, ExplorerBenchmarkCorpus.persistedAndroidGraph(), GraphStore.LoadMode.MAPPED)
         }
         topology = TopologyService(registry, emptyList(), root).also { it.rebuild() }
-        recorder = CypherCapacityBenchmarkRecorder()
+        recorder = CypherCapacityBenchmarkRecorder(correctnessOnly)
         guard = CypherQueryGuard(TARGET_CONCURRENCY, TARGET_WORK_BUDGET, recorder)
         app = Javalin.create { config ->
             config.jsonMapper(JavalinGson(GsonBuilder().create()))
@@ -81,9 +82,9 @@ open class CypherCapacityBenchmark {
     fun fourWorstCaseQueriesRejectCancelAndRecover(counters: CypherCapacityBenchmarkCounters): Long {
         val executor = Executors.newFixedThreadPool(TARGET_CONCURRENCY)
         val sockets = mutableListOf<Socket>()
-        val beforeCpu = processCpuTimeNanos()
-        val beforeRss = residentSetBytes()
-        val startedAt = System.nanoTime()
+        val beforeCpu = if (correctnessOnly) 0L else processCpuTimeNanos()
+        val beforeRss = if (correctnessOnly) 0L else residentSetBytes()
+        val startedAt = if (correctnessOnly) 0L else System.nanoTime()
         try {
             val requests = List(TARGET_CONCURRENCY) {
                 openHeavyRequest().also(sockets::add)
@@ -103,13 +104,13 @@ open class CypherCapacityBenchmark {
                 "fifth query was not rejected by concurrency admission: $fifth"
             }
 
-            val cancellationStarted = System.nanoTime()
+            val cancellationStarted = if (correctnessOnly) 0L else System.nanoTime()
             sockets.first().setSoLinger(true, 0)
             sockets.first().close()
             check(waitUntil { recorder.count(CypherQueryOutcome.CANCELLED) == 1 }) {
                 "disconnected worst-case query was not cancelled: ${recorder.outcomeSnapshot()}"
             }
-            counters.cancellationLatencyNanos = System.nanoTime() - cancellationStarted
+            if (!correctnessOnly) counters.cancellationLatencyNanos = System.nanoTime() - cancellationStarted
 
             val recovery = waitForRecovery()
             validateRecovery(recovery)
@@ -122,13 +123,15 @@ open class CypherCapacityBenchmark {
                 "unexpected query outcomes: ${recorder.outcomeSnapshot()}"
             }
 
-            val afterRss = residentSetBytes()
-            counters.processCpuNanos = (processCpuTimeNanos() - beforeCpu).coerceAtLeast(0L)
-            counters.residentSetBeforeBytes = beforeRss
-            counters.residentSetAfterBytes = afterRss
-            counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
-            counters.tailLatencyNanos = recorder.maximumHeavyDurationNanos.get()
-            counters.concurrentWallNanos = System.nanoTime() - startedAt
+            if (!correctnessOnly) {
+                val afterRss = residentSetBytes()
+                counters.processCpuNanos = (processCpuTimeNanos() - beforeCpu).coerceAtLeast(0L)
+                counters.residentSetBeforeBytes = beforeRss
+                counters.residentSetAfterBytes = afterRss
+                counters.residentSetDeltaBytes = (afterRss - beforeRss).coerceAtLeast(0L)
+                counters.tailLatencyNanos = recorder.maximumHeavyDurationNanos.get()
+                counters.concurrentWallNanos = System.nanoTime() - startedAt
+            }
             counters.activePeak = recorder.peak.get().toLong()
             counters.concurrencyRejected = recorder.rejected.get().toLong()
             counters.budgetExceeded = recorder.count(CypherQueryOutcome.BUDGET_EXCEEDED).toLong()
@@ -268,7 +271,7 @@ open class CypherCapacityBenchmarkCounters {
     @JvmField var targetWorkBudget: Long = 0
 }
 
-private class CypherCapacityBenchmarkRecorder : CypherPerformanceRecorder {
+private class CypherCapacityBenchmarkRecorder(private val correctnessOnly: Boolean) : CypherPerformanceRecorder {
     val active = AtomicInteger()
     val peak = AtomicInteger()
     val rejected = AtomicInteger()
@@ -280,11 +283,11 @@ private class CypherCapacityBenchmarkRecorder : CypherPerformanceRecorder {
     override fun start(): Long {
         val current = active.incrementAndGet()
         peak.accumulateAndGet(current, ::maxOf)
-        return System.nanoTime()
+        return if (correctnessOnly) 0L else System.nanoTime()
     }
 
     override fun stop(startedAtNanos: Long, outcome: CypherQueryOutcome) {
-        val elapsed = (System.nanoTime() - startedAtNanos).coerceAtLeast(0L)
+        val elapsed = if (correctnessOnly) 0L else (System.nanoTime() - startedAtNanos).coerceAtLeast(0L)
         if (outcome == CypherQueryOutcome.BUDGET_EXCEEDED || outcome == CypherQueryOutcome.CANCELLED) {
             maximumHeavyDurationNanos.accumulateAndGet(elapsed, ::maxOf)
         }
