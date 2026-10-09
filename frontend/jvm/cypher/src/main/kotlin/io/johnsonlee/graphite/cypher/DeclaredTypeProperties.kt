@@ -8,17 +8,22 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.jvmTypeDescriptor
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.ImmutableDeclaredTypeStorage
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
 
 private const val GENERIC_TYPE_PROPERTY = "generic_type"
 private const val TYPE_INFO_PROPERTY = "type_info"
+private const val GENERIC_PARAMETER_TYPES_PROPERTY = "generic_parameter_types"
+private const val PARAMETER_TYPE_INFO_PROPERTY = "parameter_type_info"
+private const val TYPE_PARAMETERS_PROPERTY = "type_parameters"
 
 /** Declaration projections keep erased graph identities and declaration metadata separate. */
 object DeclaredTypeProperties {
     val nodePropertyNames: List<String> = listOf(GENERIC_TYPE_PROPERTY, TYPE_INFO_PROPERTY)
     val methodPropertyNames: List<String> = listOf(
-        "generic_return_type", "generic_parameter_types", "return_type_info", "parameter_type_info", "type_parameters"
+        "generic_return_type", GENERIC_PARAMETER_TYPES_PROPERTY, "return_type_info",
+        PARAMETER_TYPE_INFO_PROPERTY, TYPE_PARAMETERS_PROPERTY
     )
 
     fun isNodeProperty(node: Node, property: String): Boolean =
@@ -29,6 +34,42 @@ object DeclaredTypeProperties {
 
     fun hasMethodProperties(method: MethodDescriptor, graph: Graph?): Boolean =
         graph?.declaredTypes()?.methods?.containsKey(methodKey(method)) == true
+
+    /** Null means this property is outside the declaration specialization. */
+    internal fun nodePropertyPresent(node: Node, property: String, graph: Graph?): Boolean? {
+        if (!isNodeProperty(node, property)) return null
+        return nodeBinding(node, graph)?.let { (table, id) ->
+            if ((table.types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(table) == true) {
+                // render/info validate before traversing the selected type, including unrelated rows.
+                table.validate()
+            } else {
+                // Ordinary public collections may have changed since the cached validation succeeded.
+                when (property) {
+                    GENERIC_TYPE_PROPERTY -> table.render(id)
+                    else -> table.info(id)
+                }
+            }
+            true
+        } ?: false
+    }
+
+    internal fun methodPropertyPresent(method: MethodDescriptor, property: String, graph: Graph?): Boolean? {
+        if (property !in methodPropertyNames) return null
+        return methodBinding(method, graph)?.let { (table, declaration) ->
+            if ((table.types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(table) == true) {
+                // Empty projections do not call render/info. Preserve their original validation boundary.
+                val projectsType = when (property) {
+                    GENERIC_PARAMETER_TYPES_PROPERTY, PARAMETER_TYPE_INFO_PROPERTY -> declaration.parameterTypes.isNotEmpty()
+                    TYPE_PARAMETERS_PROPERTY -> declaration.typeParameters.any { it.bounds.isNotEmpty() }
+                    else -> true
+                }
+                if (projectsType) table.validate()
+                true
+            } else {
+                projectMethodProperty(table, declaration, property) != null
+            }
+        } ?: false
+    }
 
     fun nodeProperties(node: Node, graph: Graph?): Map<String, Any?> = nodeBinding(node, graph)?.let { (table, id) ->
         mapOf(GENERIC_TYPE_PROPERTY to table.render(id), TYPE_INFO_PROPERTY to table.info(id))
@@ -53,10 +94,10 @@ object DeclaredTypeProperties {
     private fun projectMethodProperty(table: DeclaredTypeTable, declaration: MethodTypes, property: String): Any? =
         when (property) {
             "generic_return_type" -> table.render(declaration.returnType)
-            "generic_parameter_types" -> declaration.parameterTypes.map(table::render)
+            GENERIC_PARAMETER_TYPES_PROPERTY -> declaration.parameterTypes.map(table::render)
             "return_type_info" -> table.info(declaration.returnType)
-            "parameter_type_info" -> declaration.parameterTypes.map(table::info)
-            "type_parameters" -> declaration.typeParameters.map { parameter ->
+            PARAMETER_TYPE_INFO_PROPERTY -> declaration.parameterTypes.map(table::info)
+            TYPE_PARAMETERS_PROPERTY -> declaration.typeParameters.map { parameter ->
                 mapOf(
                     "name" to parameter.name,
                     "scope" to parameter.scope,
