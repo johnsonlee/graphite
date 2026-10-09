@@ -70,3 +70,27 @@ optimization target or an excuse to weaken the gate. Replay status/report:
 Native continuous pressure still reports UNAVAILABLE with zero cells because
 complete cross-arm core/topology/index authority is missing. Successful39-case
 response audits do not fill that gap.
+
+### Current CI replay after response-pin fixes (2026-10-10)
+
+Run37999298326 on `2f50299c` completes with all13 component reports passing,
+including the Native fixture64 replay and graph-routing correctness. Native
+response errors are empty. `schema-key-histogram` is1.264 →1.179ms and `shape-skip`
+is4.170 →3.958ms; both pass their unchanged replay thresholds. These small timings
+are the existing replay contract, not continuous-pressure acceptance or a new
+optimization target. The older failed sample remains recorded above.
+
+The required aggregate still fails. JVM queries, construction and loading lack
+complete multi-graph operation evidence. Native continuous pressure also runs
+zero cells: both actual writers and their39 query responses were audited, but
+preparation reports missing complete core/topology/index semantic authority or
+independently proven source corrections. The aggregate currently obscures that
+reason with `Evidence must be artifact-relative`, because an explicit UNAVAILABLE
+execution result has no measured-evidence paths. This diagnostic issue does not
+change the missing evidence or justify passing the gate.
+
+Authoritative small artifacts are benchmark-report11650111707 and Native
+replay11649583685, downloaded under `/tmp/graphite-2f50299c-ci-results-1`.
+The aggregate status, preparation status and Native replay status were read
+directly. The full raw producer artifact11649562956 remains separately archived;
+it was not downloaded or substituted for an executed complete comparison.
