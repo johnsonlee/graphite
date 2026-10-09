@@ -259,17 +259,10 @@ fn declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows() {
         if [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE].contains(&bytes[pos]) {
             let count = i32::from_be_bytes(bytes[pos + 1..pos + 5].try_into().unwrap()) as usize;
             let offset = i64::from_be_bytes(bytes[pos + 5..pos + 13].try_into().unwrap()) as usize;
-            let mut ids: Vec<[u8; 4]> = bytes[offset..offset + count * 4]
-                .chunks_exact(4)
-                .map(|id| id.try_into().unwrap())
-                .collect();
-            ids.reverse();
-            for (slot, id) in bytes[offset..offset + count * 4]
-                .chunks_exact_mut(4)
-                .zip(ids)
-            {
-                slot.copy_from_slice(&id);
-            }
+            bytes[offset..offset + count * 4]
+                .as_chunks_mut::<4>()
+                .0
+                .reverse();
         }
     }
     std::fs::write(index, bytes).unwrap();
