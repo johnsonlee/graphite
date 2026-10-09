@@ -13401,3 +13401,53 @@ Command: `python3.14 /tmp/graphite-attempt182-validation-2/run.py --execute-assi
 The external auditor passes its first actual invocation, independently parsing complete test logs and checking exact test identities, phase commands, cleanup and identity receipts. Audit `/tmp/graphite-attempt182-independent-rust-audit.json`, SHA `d897e7d7079f4eb9a8ee81d9e4b7a1bb4feb8a9f363023aae7507e9049ed2b92`; auditor SHA `e897e1a057c16049699ffbb8a5805f50118b9a392c47b8c67f70cfca64807092`. These are correctness results; fixture size or test duration is not performance evidence.
 
 Keep182 isolated for release export and representative64-graph evaluation. Selected scalar reads now bypass the one-entry decoded Node cache, so multiple properties on one node can repeat the frame walk; allocation avoidance alone does not establish a speedup. The performance protocol must retain the five existing standard cases and supplement them with a catalog case that actually evaluates multiple selected properties through the changed path. No latency, CPU, RSS, construction or loading benefit is claimed yet, and the existing cumulative4f regressions and required CI benchmark gate remain unresolved.
+
+### Attempt181 — completed real3 feature-query follow-up (2026-10-09)
+
+The 179+180 composition preserves its independently measured loading RSS benefit, but this query cohort does not pass every parent-relative gate. Node presence coverage is mixed: the forward warm p50/p95 rises by 1,869.660/2,042.242ms against178, while reverse p50/p95 falls by5.585/617.694ms. Method presence coverage improves warm p50/p95 and CPU in both directions against178, but RSS exceeds the independent5% allowance in every query phase. Keep the verified loading increment and investigate the query tradeoff; neither automatic rejection of the composition nor overall recovery is justified.
+
+The fixed feature cohort compares C=original163 GTY02, A=actual178 GTY03 and B=actual181 GTY03 (manifest `5cb27f249a155cc26fab6997d53f71530e94663219ea6e36c465a2ab43be1d69`). Each request targets Tika, Hive and Kotlin compiler together. Two unchanged cases cover Field/Parameter/Return declaration presence/counts and Method return/parameter/formal-parameter presence/counts. Per case, C,A,B,B,A,C gives12 fresh server processes total. Each process consumes4 first-use,8 warmup and20 measured responses at HTTP/server concurrency4. Warm p50/p95 are nearest ranks10/19 for that process and case; no samples are pooled across processes or cases. JDK17.0.20.1, `-Xms512m -Xmx8g -XX:ActiveProcessorCount=4`, MAPPED mode, SHA-warmed inputs and complete typed-response boundaries remain fixed.
+
+Command: `python3.14 /tmp/graphite-attempt181-query-prep/execute.py measure feature`. Root session85078 terminates exit0. All384 complete typed envelopes/rows/provenance,12 server runs and36 readiness graph records pass independent raw audit, with observedc4 overlap, empty owned process groups and successful final identity receipts. No request failure, timeout or selective replacement is hidden. The prerequisite chain retains2234 JVM tests,463 candidate source pins and24 full-value oracle responses. Presence/count queries do not replace the separate full formatted-value oracle.
+
+Warm latency and CPU below are absolute values; F pairs A1/B2 or C0/B2, and R pairs A4/B3 or C5/B3. CPU columns report the whole20-request warm phase and the complete32-request post-ready interval, including validation/drain gaps.
+
+| Case / comparison / direction | p50 ms (reference→181; delta) | p95 ms (reference→181; delta) | Warm CPU s | Complete post-ready CPU s |
+|---|---:|---:|---:|---:|
+| Node / 178→181 / F | 10754.385→12624.045 (+1869.660) | 10869.904→12912.146 (+2042.242) | 255.96→292.00 | 466.97→463.86 |
+| Node / 178→181 / R | 10765.663→10760.078 (-5.585) | 11501.164→10883.470 (-617.694) | 259.54→256.15 | 434.08→430.02 |
+| Node / 163→181 / F | 13048.881→12624.045 (-424.836) | 13833.450→12912.146 (-921.303) | 311.11→292.00 | 482.08→463.86 |
+| Node / 163→181 / R | 12954.626→10760.078 (-2194.549) | 13104.314→10883.470 (-2220.844) | 303.27→256.15 | 538.91→430.02 |
+| Method / 178→181 / F | 3204.166→2943.845 (-260.320) | 3220.938→2952.396 (-268.541) | 63.95→58.67 | 104.15→95.71 |
+| Method / 178→181 / R | 3082.464→2879.518 (-202.946) | 3095.891→2894.990 (-200.901) | 61.58→57.58 | 100.26→94.17 |
+| Method / 163→181 / F | 3774.441→2943.845 (-830.596) | 3791.346→2952.396 (-838.950) | 75.49→58.67 | 123.53→95.71 |
+| Method / 163→181 / R | 3709.883→2879.518 (-830.366) | 3739.340→2894.990 (-844.350) | 74.27→57.58 | 121.36→94.17 |
+
+CPU and RSS remain separate5% gates for first-use, warmup, warm and complete-post-ready phases. CPU delta intervals include±0.02s endpoint precision. RSS lower bounds use5ms samples wholly inside the phase; the exact whole-process lifecycle peak supplies an upper bound. A PASS requires the conservative upper ratio≤1.05; a FAIL below is proven because the conservative lower ratio>1.05. These are measurement bounds, not confidence intervals. There are no unresolved-bound classifications in this cohort.
+
+The complete CPU failure list is:
+
+| Case / reference / direction / phase | CPU s (reference→181) | Conservative ratio interval |
+|---|---:|---:|
+| Node / 178 / F / warm | 255.96→292.00 | 1.140636–1.140971 (FAIL_PROVEN) |
+| Node / 178 / R / warmup | 98.73→114.43 | 1.158582–1.159457 (FAIL_PROVEN) |
+| Node / 163 / F / first-use | 53.99→62.72 | 1.160896–1.162498 (FAIL_PROVEN) |
+
+The complete RSS failure list is Method178→181 in both directions for all four phases:
+
+| Phase | Forward observed lower MiB (178→181) / ratio interval | Reverse observed lower MiB (178→181) / ratio interval |
+|---|---:|---:|
+| first-use | 872.547→1037.516 / 1.168065–1.197357 | 877.562→1041.219 / 1.165938–1.194626 |
+| warmup | 873.953→1039.172 / 1.169930–1.195430 | 880.188→1044.266 / 1.169349–1.191064 |
+| warm | 887.969→1044.469 / 1.175893–1.176562 | 892.766→1048.078 / 1.173619–1.174283 |
+| complete-post-ready | 887.969→1044.484 / 1.175911–1.176562 | 892.766→1048.078 / 1.173619–1.174283 |
+
+All other phase resource comparisons pass their respective bounds: Node RSS passes in both directions versus178 and163; Node complete-post-ready CPU passes in both directions despite its listed phase failures; Method CPU passes in both directions versus178; Method CPU and RSS pass every phase versus163. For Method, lifecycle RSS peaks are178 888.234/893.031MiB versus181 1044.750/1048.359MiB; the increase is observed and cannot be waived by its latency benefit. The163 reference has the same generic feature work but is not the accepted4f baseline. The original178 historical resource failures remain recorded independently.
+
+Loading remains a separate positive result:181 reduces lifecycle RSS by33,652,736/18,857,984bytes against178, with conservative loading RSS upper ratios0.932598/0.960768; parent loading CPU and RSS satisfy5% in both directions. Its accepted4f cumulative loading CPU and RSS still fail, so this retention is not loading recovery. No construction conclusion follows from either cohort.
+
+The audit retains406 host observations; unrelated mediaanalysisd reaches168.4% CPU, Chrome renderer121.3% and Codex renderer119.4%. These observations bound neither host interference nor a confidence interval and do not explain away the forward Node regression or Method RSS increases. Twelve fresh processes with twenty measured requests each provide matched batched evidence, not sustained saturation or inferential precision. Full field/value query paths and accepted4f existing-query recovery remain outstanding; this feature-only cohort cannot establish whole-engine recovery. All performance evidence here is multi-graph.
+
+Evidence: protocol `/tmp/graphite-attempt181-query-prep/protocol.json` SHA `3c7e89ee0a3564cae78e88884c26c5eba470723f1a7ecbf31b19d81e203f455b`; seal SHA `804c456ae38301eb1056046a3deb41444d88139b268ec58ba7b088ffbb5ff784`; raw bodies, timing/process records and host samples under `/tmp/graphite-attempt181-query-prep/`; report `feature-report.json`; independent audit `/tmp/graphite-attempt181-query-independent-audit.json` SHA `f871ee47b15756fe6bec3d06a2741f6c9a938944616a715f4831ec69722f3a86`. The auditor reads complete raw response/timing receipts, verifies report pairs and cleanup, and does not rehash graph/runtime payloads.
+
+Under the user's multi-graph-only load-test rule, this predeclared batched cohort remains diagnostic comparison evidence. Final acceptance still requires the declared multi-graph pressure workload; the CI reconciliation work must preserve complete correctness coverage and report missing pressure, loading or construction evidence as unavailable rather than infer a pass from these feature cases.
