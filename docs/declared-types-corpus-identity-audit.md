@@ -376,3 +376,29 @@ native job shell blocks pass syntax checks. This is portable expectation and
 control validation only; no new server run, fresh fixture semantic-equivalence
 proof, final producer packet, performance acceptance, or successful CI run is
 claimed. Fresh independent artifact audits and HTTP execution remain required.
+
+### Independent native artifact audit (2026-10-10)
+
+CI now runs `audit_native_pressure_artifacts.py` after each distinct C/A/B
+artifact producer. The auditor does not import the producer. It checks the
+requested clean source revision, raw source/runtime/writer hash chain, original
+build output locations, exact bounded build commands, selected JDK/Rust tools,
+configuration closure, seven owned successful phases and complete logs. It also
+rehashes the closed graph directory, checks all 64 own-writer paths and source JAR
+identities, and repeats identity checks at the end. Missing files, extra files,
+symlinks, mismatched artifacts and unsuccessful cleanup fail the audit.
+
+Success is `PASS_ARTIFACTS_READINESS_AND_QUERY_PROOFS_PENDING`. Readiness, query
+correctness, complete cross-arm semantic equivalence and performance acceptance
+remain explicitly false. The producer's original status is preserved. No old
+runtime is relabeled as the new source revision.
+
+Fourteen new audit tests pass, including altered binary/JAR/log contents, a
+different writer or graph directory, a missing verify phase, an increased heap,
+remaining children and metadata changes during the audit. All 104 pressure
+Python tests and 174 JavaScript gate tests pass. Separately, the new fixture and
+phase validators read the existing real C/B outputs: 128 graphs, 2,500 closed
+graph files and 14 raw build/writer phase records pass. That actual replay covers
+these validator functions on historical artifacts; it is not a new execution of
+the portable producer or the entire new auditor on a fresh CI build. No server
+or performance workload ran during this validation.
