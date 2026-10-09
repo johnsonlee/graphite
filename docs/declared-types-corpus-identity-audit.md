@@ -470,3 +470,43 @@ updated preparation control manifest matches every reviewed source file. The new
 protocol tests exercise real versioned response payloads with tiny mocked graph/
 process fixtures for correctness only, including forged audit, wrong input,
 wrong parent alias, toolchain drift and false-equivalence rejection.
+
+
+## Exact-head CI failures retained (2026-10-10, a21e8e3e)
+
+Benchmark run `37973928467`, large-corpus job `113967638359`, completed both
+accepted-baseline and candidate construction/save/load correctness pipelines.
+All declared node, source-edge, persisted-edge, method and call-site counts
+matched their reviewed expectations. The subsequent comparison failed its
+unchanged 4,096-byte persisted-size tolerance:
+
+| Corpus | Baseline bytes | Candidate bytes | Observed delta | Previously reviewed delta | Difference |
+|---|---:|---:|---:|---:|---:|
+| Tika | 344,993,420 | 363,218,271 | 18,224,851 | 18,148,723 | +76,128 |
+| Hive | 540,289,069 | 568,960,397 | 28,671,328 | 28,492,338 | +178,990 |
+| Kotlin compiler | 318,590,674 | 339,795,030 | 21,204,356 | 21,184,278 | +20,078 |
+
+These are correctness-only artifact sizes, not performance samples. The old
+reviewed deltas came from `067f0cab`; subsequent source changes include inherited
+field bindings. The total alone does not prove the cause of each difference.
+The test harness now emits a sorted `LARGE_CORPUS_FILE` inventory before deleting
+the temporary output, including the separately accounted CallSite index. The
+existing total, index accounting, comparison constants and tolerance are unchanged.
+No size transition is accepted on the strength of this diagnostic change.
+
+Raw CI evidence: artifact `11638550422` (`benchmark-large-corpus-174-1`), retained
+locally at `/tmp/graphite-ci-a21-large-corpus/`; job log at
+`/tmp/graphite-ci-113967638359.log`. Unit run `37973928466` also completed its
+build/check step but failed the final 98% coverage threshold: Cypher 97.0648%,
+Explore 97.3919%, Webgraph 97.4775%. GitHub exposed no artifacts for that run,
+so the exact missed CI lines are unavailable. These failures remain open.
+
+The retained attempt181 Cypher coverage report provides a diagnostic lead, not
+an explanation proven for CI: its main-source files are byte-identical to a21
+and it reports 6,647/6,780 covered lines (98.0383%). The CI percentage also
+rounds to 6,647/6,848, a possible increase of 68 uncovered lines. CI compiles the
+JMH source set, including newly named correctness entrypoints absent from that
+old report. Fresh CI XML is required to establish the counted source set and
+missed lines. The build workflow now generates XML/HTML alongside the log and
+uploads them after the threshold check even on failure. No coverage threshold,
+source exclusion or failure behavior has been relaxed.

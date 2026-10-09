@@ -16,8 +16,8 @@ env:
   JVM_OPTS: -Xmx2g -XX:MetaspaceSize=512m -Dfile.encoding=UTF-8
   # Cap direct Java launchers and inherited forks; explicit per-task heaps take precedence.
   JAVA_TOOL_OPTIONS: -Xmx2g
-  MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: b093034329f31e30bbd3f8e3aadab8f8d5d265aa30b7d5aa859d39159198e159
-  MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 301e864b09c44cfb404f9ab65716098fbc2be022aa95b066c08b8f15840826ca
+  MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
+  MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: ed162e1f0146c1c7b0dc037de224cf8b8c329e354cfd8358b400c12db09a6761
   MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 71e2a8d48313f6f5cedfbc6b161861a2e10e98c5cdaad8760fd65b1d612434aa
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
@@ -1202,6 +1202,7 @@ jobs:
           # A same-format base must already carry the reviewed current assertions or the
           # exact predecessor GTY03 assertion source; unknown bases fail before execution.
           [[ "$ORIGINAL" = "$MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256" || \
+             "$ORIGINAL" = b093034329f31e30bbd3f8e3aadab8f8d5d265aa30b7d5aa859d39159198e159 || \
              "$ORIGINAL" = dc0ddb816d2d27921df7a0247b0d02b88c9616ab7fe9125baed05fe03edddd54 ]]
           install -m 0644 "$CANDIDATE_HARNESS" "$BASE_HARNESS"
         fi
