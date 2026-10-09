@@ -1538,6 +1538,31 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         0,
         `${root}\n${initialVerification.stdout}\n${initialVerification.stderr}`
     );
+    const observationFiles = [referenceObservations, baseColdObservations, candidateColdObservations,
+        baseWarmObservations, candidateWarmObservations];
+    const timedContents = observationFiles.map(file => fs.readFileSync(file, "utf8"));
+    const untimedContents = timedContents.map(text => {
+        const rows = text.trimEnd().split("\n").map(line => line.split("\t"));
+        const column = rows[0].indexOf("latencyNanos");
+        rows[0][column] = "measurementScope";
+        for (const row of rows.slice(1)) row[column] = "correctness-only";
+        return rows.map(row => row.join("\t")).join("\n") + "\n";
+    });
+    observationFiles.forEach((file, i) => fs.writeFileSync(file, untimedContents[i]));
+    const untimedVerification = verify();
+    assert.equal(untimedVerification.status, 0, `${untimedVerification.stdout}\n${untimedVerification.stderr}`);
+    const candidateUntimed = untimedContents[2];
+    for (const invalid of [
+        candidateUntimed.replace("\tcorrectness-only\n", "\tperformance\n"),
+        candidateUntimed.replace("\tmeasurementScope\n", "\tmissingScope\n"),
+        candidateUntimed.replace("\tmeasurementScope\n", "\tmeasurementScope\tlatencyNanos\n"),
+        candidateUntimed.replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t"),
+        candidateUntimed.replace("graph-id-property-wrapped-contains-target-00-zero", "unbound-query-id")
+    ]) {
+        fs.writeFileSync(candidateColdObservations, invalid);
+        assert.notEqual(verify().status, 0, "untimed scope and correctness remain mandatory");
+    }
+    observationFiles.forEach((file, i) => fs.writeFileSync(file, timedContents[i]));
     fs.writeFileSync(
         path.join(evidence, "fixture-provenance.tsv"),
         provenance.replace("\t100\t20\t", "\t1\t20\t")
@@ -1672,16 +1697,37 @@ test("fixture workload verifier rejects unpruned graph-set fanout on base and ca
         fs.writeFileSync(files[`candidate-${state}-correctness`], correctnessFromObservations(strictObservations));
     }
     const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
-    const verify = () => spawnSync("bash", [
+    const verify = (includeStartup = false) => spawnSync("bash", [
         verifier.pathname, evidence, recomputed,
         files["reference-observations"], files["reference-correctness"], files["semantic-oracle"],
         files["base-cold-observations"], files["base-cold-correctness"],
         files["candidate-cold-observations"], files["candidate-cold-correctness"],
         files["base-warm-observations"], files["base-warm-correctness"],
-        files["candidate-warm-observations"], files["candidate-warm-correctness"]
+        files["candidate-warm-observations"], files["candidate-warm-correctness"],
+        ...(includeStartup ? [files["base-warm-observations"], files["base-warm-correctness"],
+            files["candidate-warm-observations"], files["candidate-warm-correctness"]] : [])
     ], { encoding: "utf8" });
     const accepted = verify();
     assert.equal(accepted.status, 0, `${accepted.stdout}\n${accepted.stderr}`);
+
+    const timedFiles = Object.entries(files).filter(([name]) => name.endsWith("observations"))
+        .map(([, file]) => [file, fs.readFileSync(file, "utf8")]);
+    for (const [file, text] of timedFiles) {
+        const rows = text.trimEnd().split("\n").map(line => line.split("\t"));
+        const column = rows[0].indexOf("latencyNanos");
+        rows[0][column] = "measurementScope";
+        for (const row of rows.slice(1)) row[column] = "correctness-only";
+        fs.writeFileSync(file, rows.map(row => row.join("\t")).join("\n") + "\n");
+    }
+    const untimedStartup = verify(true);
+    assert.equal(untimedStartup.status, 0, `${untimedStartup.stdout}\n${untimedStartup.stderr}`);
+    const untimedRows = fs.readFileSync(files["candidate-cold-observations"], "utf8")
+        .trimEnd().split("\n").map(line => line.split("\t"));
+    const setRow = untimedRows.slice(1).find(row => row[familyIndex] === "graph-id-set");
+    setRow[nonTargetAccessCountIndex] = "1";
+    fs.writeFileSync(files["candidate-cold-observations"], untimedRows.map(row => row.join("\t")).join("\n") + "\n");
+    assert.notEqual(verify(true).status, 0, "untimed multi-graph rows still reject non-target access");
+    for (const [file, text] of timedFiles) fs.writeFileSync(file, text);
 
     const referenceWithoutK64ZeroAccess = referenceRows.map((row) => {
         const values = row.split("\t");

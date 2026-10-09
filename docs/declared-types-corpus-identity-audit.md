@@ -640,3 +640,36 @@ with `scope: correctness-only` and `performanceAcceptance: false`; replaying
 those same logs with the unchanged GTY03 option retains all three original
 size failures. Commands, source/log hashes and both results are retained at
 `/tmp/graphite-gty05-storage-transition-validation-1/record.json`.
+
+## Untimed routing workload verification (2026-10-10)
+
+Candidate `6c9f9fee71592afdae0167e0ccff288bdf4c4493` passes JVM and Rust CI,
+including the unchanged coverage checks, and the correctness-only large-corpus
+storage comparison. Its
+[routing job 114011754588](https://github.com/johnsonlee/graphite/actions/runs/37986345288/job/114011754588)
+fails after the cold, warm and startup-prepared correctness comparisons all pass.
+Artifact `11643069455` preserves those results and the original failure.
+
+The trailing workload verifier still required a `latencyNanos` column, while the
+untimed driver emits `measurementScope=correctness-only`. The verifier now accepts
+that explicit untimed schema or the historical timing schema, rejecting headers
+that contain both or neither. Every untimed row must declare `correctness-only`.
+Canonical query IDs, shard identities, complete result records and graph-access
+checks remain mandatory. No timing value is manufactured, and this verifier does
+not establish performance acceptance.
+
+Behavioral tests cover both 13-argument and 17-argument invocation forms, including
+multi-graph routing and startup-prepared records. Invalid scopes, ambiguous or
+missing measurement columns, changed results, unbound query IDs and non-target
+graph accesses remain failures. All 179 JavaScript protocol tests, Bash syntax
+validation and `git diff --check` pass.
+
+A replay uses the unchanged archived CI observations and correctness files. All
+64 workload identities match the independently produced local GTY05 corpus;
+the replay supplies its retained manifests because CI manifest paths are absent
+from the failed artifact. The original verifier exits 1; the corrected verifier
+exits 0, checking all three index states. This is a scoped format/correctness
+replay, not a rerun of CI, graph construction, or a performance measurement.
+Commands, source/input hashes and both outcomes are retained in
+`/tmp/graphite-untimed-workload-replay-1/record.json`. The complete test output is
+`/tmp/graphite-untimed-workload-all-js-tests.log`.

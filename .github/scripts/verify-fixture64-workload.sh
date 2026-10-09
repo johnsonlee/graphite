@@ -80,15 +80,18 @@ for RESULT_INDEX in "${!OBSERVATIONS[@]}"; do
     }
     FNR == 1 {
       for (column = 1; column <= NF; column++) columns[$column] = column
-      required = "id family shape selectivity targetGraphId workloadIdentity outcome rowCount responseBytes digest latencyNanos"
+      required = "id family shape selectivity targetGraphId workloadIdentity outcome rowCount responseBytes digest"
       split(required, names, " ")
       for (nameIndex in names) if (!columns[names[nameIndex]]) exit 1
+      untimed = columns["measurementScope"] > 0
+      if (untimed ? columns["latencyNanos"] : !columns["latencyNanos"]) exit 1
       enhanced = columns["targetGraphIds"] && columns["selectedGraphCount"]
       if (enhanced && (!columns["accessedGraphCount"] || !columns["accessedGraphIds"] ||
           !columns["targetGraphAccessCount"] || !columns["nonTargetGraphAccessCount"])) exit 1
       next
     }
     {
+      if (untimed && $columns["measurementScope"] != "correctness-only") exit 1
       target = $columns["targetGraphId"]
       if (!(target in targetOrdinal)) exit 1
       ordinal = targetOrdinal[target]
@@ -216,7 +219,7 @@ compare_records() {
   diff -u <(normalize_correctness "${correctness}") <(normalize_observations "${observations}")
 }
 
-# Every latency-bearing observation must reproduce a separately emitted correctness record.
+# Every observation, including untimed checks, must reproduce a separate correctness record.
 compare_records "${REFERENCE_OBSERVATIONS}" "${REFERENCE_CORRECTNESS}"
 compare_records "${BASE_COLD_OBSERVATIONS}" "${BASE_COLD_CORRECTNESS}"
 compare_records "${CANDIDATE_COLD_OBSERVATIONS}" "${CANDIDATE_COLD_CORRECTNESS}"
@@ -245,4 +248,4 @@ if [[ $# -eq 17 ]]; then
     <(normalize_correctness "${17}")
 fi
 
-echo "Every fixture64 latency row has a canonical ID and a matching independent correctness record"
+echo "Every fixture64 observation has a canonical ID and a matching independent correctness record"
