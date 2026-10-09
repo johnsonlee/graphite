@@ -49,7 +49,7 @@ use super::Executor;
 use crate::ast::{BinOp, Clause, Direction, Expr, Literal, Pattern, ReturnItem};
 use crate::context::GraphContext;
 use crate::eval::{is_aggregation_name, Evaluator};
-use crate::value::{EdgeRef, NodeRef, SourceIdx, Value};
+use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use crate::CypherResult;
 use graphite_storage::node::{
     StrId, TAG_ANNOTATION_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE,
@@ -142,6 +142,9 @@ impl Dep {
     }
 }
 
+// Analysis-only sentinel: Method is a metadata row, never a persisted node tag.
+const METHOD_TAG: u8 = TAG_COUNT as u8;
+
 /// The raw string columns a type exposes, by property name, in a fixed order so a
 /// column bit means the same thing everywhere.
 const COLUMN_PROPS: [&str; 12] = [
@@ -189,7 +192,10 @@ struct Scope<'a> {
 
 impl<'a> Scope<'a> {
     fn node(&self, v: &str) -> Option<&'a TagCtx<'a>> {
-        self.nodes.iter().find(|(n, _)| *n == v).map(|(_, c)| *c)
+        self.nodes
+            .iter()
+            .find(|(n, c)| *n == v && (c.tag != Some(METHOD_TAG) || self.bound(v).is_none()))
+            .map(|(_, c)| *c)
     }
     fn bound(&self, v: &str) -> Option<Dep> {
         self.bound
@@ -297,6 +303,7 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
                     // An annotation's values add keys of their own: its key set is
                     // read off each node, and partitions the type by itself.
                     Some(ctx) => match ctx.tag {
+                        Some(METHOD_TAG) => Dep::CONTENT,
                         Some(t) if t != TAG_ANNOTATION_NODE && !ctx.declared_keys => Dep::TAG,
                         Some(_) => Dep::KEYS,
                         None => Dep::CONTENT,
@@ -408,13 +415,17 @@ fn null_dep(expr: &Expr, scope: &Scope) -> Dep {
             // UNWIND/comprehensions and WITH aliases can shadow a node variable.
             // Only its original, still-bound declaration node has these keys.
             if scope.bound(variable).is_none()
-                && matches!(key.as_str(), "generic_type" | "type_info")
                 && scope.node(variable).is_some_and(|ctx| {
-                    ctx.declared_keys
-                        && matches!(
-                            ctx.tag,
-                            Some(TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
-                        )
+                    if ctx.tag == Some(METHOD_TAG) {
+                        super::props::GENERIC_METHOD_KEYS.contains(&key.as_str())
+                    } else {
+                        ctx.declared_keys
+                            && matches!(key.as_str(), "generic_type" | "type_info")
+                            && matches!(
+                                ctx.tag,
+                                Some(TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
+                            )
+                    }
                 })
             {
                 return Dep::KEYS;
@@ -433,6 +444,11 @@ fn property_dep(ctx: &TagCtx, key: &str, cross: bool) -> Dep {
         // A hop's end: only what the graph decides is known without the record.
         return Dep::CONTENT;
     };
+    if tag == METHOD_TAG {
+        // Method values, including generic text and maps, still require the
+        // ordinary pipeline. Only null_dep can classify declaration presence.
+        return Dep::CONTENT;
+    }
     if cross && (key == "elementId" || key == "qualifiedId") {
         return Dep::CONTENT;
     }
@@ -486,6 +502,9 @@ enum Step {
 }
 
 enum Shape {
+    Method {
+        variable: String,
+    },
     Node {
         variable: String,
         tags: Vec<u8>,
@@ -594,9 +613,15 @@ impl PartitionPlan {
             _ => None,
         };
         let shape = match (p.nodes.len(), p.rels.len()) {
-            (1, 0) => Shape::Node {
-                variable: p.nodes[0].variable.clone()?,
-                tags: tags(&p.nodes[0].labels)?,
+            (1, 0) => match resolve_node_class(&p.nodes[0].labels) {
+                NodeClass::Method => Shape::Method {
+                    variable: p.nodes[0].variable.clone()?,
+                },
+                NodeClass::Tags(tags) => Shape::Node {
+                    variable: p.nodes[0].variable.clone()?,
+                    tags,
+                },
+                NodeClass::None => return None,
             },
             (2, 1) => {
                 let rel = &p.rels[0];
@@ -751,6 +776,36 @@ impl PartitionPlan {
         };
 
         match &shape {
+            Shape::Method { variable } => {
+                let method = TagCtx {
+                    tag: Some(METHOD_TAG),
+                    keys: &[],
+                    declared_keys: true,
+                    columns: &[],
+                };
+                let mut scope = Scope {
+                    cross: ex.cross,
+                    nodes: vec![(variable.as_str(), &method)],
+                    rel: None,
+                    bound: Vec::new(),
+                };
+                let d = plan_deps(&mut scope);
+                // Keep this extension scoped to declaration presence. Existing
+                // count-only fast paths and all method-content paths stay intact.
+                if d.level != Level::Keys {
+                    return None;
+                }
+                Some((
+                    PartitionPlan {
+                        shape,
+                        where_clause,
+                        strategies: Vec::new(),
+                        scan: None,
+                        merge: ex.cross && !d.graph,
+                    },
+                    consumed,
+                ))
+            }
             Shape::Hop { a, r, b, .. } => {
                 let end = TagCtx {
                     tag: None,
@@ -884,6 +939,7 @@ impl PartitionPlan {
     /// first meet each partition.
     pub fn rows(&self, ex: &Executor, ev: &Evaluator) -> CypherResult<Vec<Row>> {
         match &self.shape {
+            Shape::Method { variable } => self.method_rows(ex, ev, variable),
             Shape::Node { variable, tags } => self.node_rows(ex, ev, variable, tags),
             Shape::Hop {
                 a,
@@ -1005,6 +1061,67 @@ impl PartitionPlan {
             Some(w) => Ok(ev.eval(w, row)?.as_bool() == Some(true)),
             None => Ok(true),
         }
+    }
+
+    /// Method metadata remains publicly mutable. Summaries are query-local,
+    /// so neither metadata edits nor declared-type edits can leave stale counts.
+    /// Exactly one identity lookup and scan tick per method replaces repeated
+    /// property lookups; no rendered type or erased descriptor is retained.
+    fn method_rows(&self, ex: &Executor, ev: &Evaluator, variable: &str) -> CypherResult<Vec<Row>> {
+        let mut out = Vec::new();
+        let mut shared: HashMap<bool, Option<usize>> = HashMap::new();
+        for (si, source) in ex.sources.iter().enumerate() {
+            ex.cancel.check()?;
+            let graph = &source.graph;
+            let table = graph.declared_types();
+            let mut partitions: [Option<(u32, i64)>; 2] = [None, None];
+            for (index, method) in graph.methods().iter().enumerate() {
+                // Also poll absent-table scans: skipping identity lookup does
+                // not skip the logical metadata traversal or cancellation.
+                ex.tick()?;
+                let bound = table.is_some_and(|t| t.method(method, graph.strings()).is_some());
+                let part = partitions[usize::from(bound)].get_or_insert((index as u32, 0));
+                part.1 += 1;
+            }
+            let mut ordered: Vec<_> = partitions
+                .into_iter()
+                .enumerate()
+                .filter_map(|(bound, part)| part.map(|(first, count)| (first, count, bound != 0)))
+                .collect();
+            ordered.sort_by_key(|(first, _, _)| *first);
+            for (index, weight, bound) in ordered {
+                ex.cancel.check()?;
+                if self.merge {
+                    if let Some(joined) = shared.get(&bound) {
+                        if let Some(at) = *joined {
+                            weigh(ex, &mut out[at], si as SourceIdx, weight);
+                        }
+                        continue;
+                    }
+                }
+                let mut row = Row::with_capacity(3);
+                bind(
+                    ex,
+                    &mut row,
+                    variable,
+                    Value::Method(MethodRef {
+                        source: si as SourceIdx,
+                        index,
+                    }),
+                );
+                if weight != 1 {
+                    row.insert(INTERNAL_WEIGHT_KEY.to_string(), Value::Int(weight));
+                }
+                let kept = self.keep(ev, &row)?;
+                if self.merge {
+                    shared.insert(bound, kept.then_some(out.len()));
+                }
+                if kept {
+                    out.push(row);
+                }
+            }
+        }
+        Ok(out)
     }
 
     fn node_rows(
@@ -2321,3 +2438,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "partition_method_tests.rs"]
+mod method_tests;

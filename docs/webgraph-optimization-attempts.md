@@ -14540,3 +14540,48 @@ Command: `python3 -B /private/tmp/graphite-native-runtime-overlay-prep-1/loading
 Plan SHA-256 `94f102b2a10ad3fd97e4c8dfa4446c4b68cb47eadf28b920a1b4e7b7836a2d9a`.
 The local macOS ARM64 environment and per-cell complete input verification are
 retained in the plan and raw records; no single-graph performance was measured.
+
+
+### Attempt192 — query-local Method declaration-presence partitions (2026-10-10)
+
+The accepted-baseline 64-graph comparison above leaves Method-presence p95 at
+929.983 → 2956.096 ms forward and 922.887 → 2973.112 ms reverse. The hypothesis
+is to resolve each metadata Method binding once per request and use the existing
+weighted pipeline for generic-property nullness. Two query-local partitions
+retain first occurrence, multiplicity and graph provenance. No persistent cache,
+rendered generic string or erased descriptor is retained. Mutable method metadata
+and declaration tables are re-read on each query. Content, dynamic subscripts,
+keys, aliases and shadowed receivers retain conservative fallback paths.
+
+Production parent is `64d77daaac8339ff93fa0d6b1a8b7646c3a1d971`; integration
+parent `9b6c2b2f` has the same Native source. Candidate patch SHA-256 is
+`35d8e83c06df9d2211ae8bd5488d85dd79833b7f3d659082d94c7b22259a4ad6`.
+Correctness validation uses the existing small GTY01–05 Java interoperability
+fixtures. The intended performance fixture remains the accepted4f own-writer
+64 graphs versus the audited `acd11a69` GTY05 64 graphs, under the matched
+concurrent workload. This candidate has not yet been measured on that workload.
+
+The first validation found an incorrect new single-graph assertion: existing
+`graphId(m)` is null outside cross-graph mode, including the ordinary path.
+Only that expected value changed; the complete initial failure remains in
+`/tmp/graphite-attempt192-validation-1`. No production behavior was changed to
+satisfy the assertion. The retry passed all446 Native workspace tests, with no
+failed, ignored or filtered tests, plus all-target/all-feature Clippy with
+warnings denied and formatting. Six new tests verify all five generic-property
+presence values, full/partial/absent bindings, ordering, aggregation, provenance,
+shadowing, errors, mutable metadata, scan accounting and cancellation.
+
+The root independently checked the raw test counts, phase log hashes and exact
+139-file tested Native source tree before integration. Evidence is
+`/tmp/graphite-attempt192-validation-2/independent-review.json`, SHA-256
+`ff3ec9227fdecbfa83c0d8044e58106c21050793e8ff396db55d3585e4e7d02f`.
+
+| Operation / metric | Result |
+|---|---|
+| Correctness / observed stability | 446 tests PASS; strict Clippy and format PASS; owned processes exited cleanly |
+| Construction / loading | No writer or persistent-summary change; no new performance measurement |
+| Query p50 / p95 / CPU / RSS | Not measured; accepted-baseline regression remains unresolved |
+| Overall recovery / merge readiness | Not established |
+
+Decision: retain the correctness-verified candidate for matched multi-graph
+measurement. No single-graph timing or performance acceptance is claimed.
