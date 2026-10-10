@@ -130,3 +130,31 @@ compared to writer.jar, with required formatter/cache/persistence classes presen
 This proves the selected actual writer model tests, not universal bytecode
 inference or complete graph equivalence. Correctness time is outside performance
 boundaries. Absent tests in a distinct old parent fail rather than being backfilled.
+
+## Corrected fixture comparability for native pressure
+
+The producer assembler can consume the completed actual64 core/topology/index
+execution audit for each non-accepted arm. The139-phase raw-Local path is required:
+both actual writer exports, every graph's complete persisted Local inventory and
+zero unproved array identities. It retains the classfile/source correction counts,
+actual pair revisions, fixture manifests, raw reports and complete upstream pins.
+The old audit's historical Local warning is not silently deleted; the new scoped
+binding separately establishes precisely the array authority supplied by those
+reports. Non-array inference is not a new claim.
+
+This is an explicit corrected-comparability mode, not strict semantic equivalence.
+`completeSemanticEquivalence`, `strictEquivalence` and
+`sourceToDeclarationCompletenessClaim` remain false. Existing declaration parser,
+wire and query correctness gates cover the additive feature; this binding does not
+claim that every source Signature was independently reconstructed. Partial artifact
+and39-response bundles still cannot produce a pressure plan. The original strict
+proof path remains available and unchanged in scope.
+
+Preparation reuses the actual independently audited runtime, saved readiness and
+all39 captured complete responses and their original expected payloads. It launches
+no server and does not alter old receipts. The pressure validator replays the bound
+producer evidence and matches every planned request, graph scope and oracle to it.
+The fixed CABBAC/c4/2-warmup/20-sample protocol and resource limits are unchanged.
+No record or plan readiness establishes a performance pass; actual pressure results
+remain necessary. Missing raw proofs, incomplete pairs or conflicting corrections
+block preparation.

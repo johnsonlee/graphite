@@ -304,18 +304,7 @@ def assemble(packet, base_sha, candidate_sha, catalog):
             oracles[arm] = {'kind': case['oracleKind'], **expected, 'proof': proof}
         cases.append({'id': case['id'], 'catalogId': case['id'], 'request': case['request'],
                       'targetGraphIds': pressure.declared_query_scope(case, declared['graphIds']), 'oracleByArm': oracles})
-    coverage = {'coveredFamilies': declared['coveredFamilies'], 'requiredFamilies': declared['requiredFamilies'],
-                'unavailableFamilies': sorted(set(declared['requiredFamilies']) - set(declared['coveredFamilies'])),
-                'unavailableOperations': ['construction', 'loading']}
-    plan = {'schema': pressure.PLAN_SCHEMA, 'engine': 'native', 'operation': 'query', 'pins': dict(packet['pins']),
-            'catalog': {'path': str(CATALOG), 'sha256': pressure.sha(CATALOG)}, 'arms': packet['arms'],
-            'proofs': packet['proofs'], 'cases': cases, 'coverage': coverage,
-            'nativeOracleBindings': bindings,
-            'cells': [{'id': f'{i}-{arm}', 'arm': arm, 'port': 22840+i} for i, arm in enumerate('CABBAC')],
-            'schedule': {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20},
-            'limits': {'requestSeconds': 240, 'stageSeconds': 3600, 'readinessSeconds': 300,
-                       'bodyBytes': 67108864, 'rssIntervalSeconds': .01},
-            'comparisonPairs': {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]}}
+    plan = pressure_plan(packet, cases, bindings, packet['proofs'], catalog)
     plan['pins'][str(CATALOG)] = plan['catalog']['sha256']
     if candidate is not None:
         plan['producerAuthority'] = packet['_producerRef']
@@ -342,6 +331,73 @@ def preparation_control_pins():
     return pins
 
 
+def corrected_plan(bundle, producer_ref, output, catalog):
+    """Adapt completed actual audits; preserve the original strict producer path."""
+    from assemble_native_pressure_producers import CORRECTED_STATUS, merge_pins, corrected_fixture_bindings, pressure_arms
+    require(bundle['status'] == CORRECTED_STATUS and not bundle['missingAuthority'], 'completed corrected comparability')
+    pins = dict(bundle['pins'])
+    merge_pins(pins, preparation_control_pins())
+    merge_pins(pins, {producer_ref['path']: producer_ref['sha256']})
+    packet = dict(bundle, pins=pins, arms=pressure_arms(bundle))
+    declared = catalog['engines']['native']
+    cases = []
+    for index, source in enumerate(declared['cases']):
+        oracles = {}
+        for name, arm in bundle['arms'].items():
+            observed = arm['cases'][index]
+            require(observed['id'] == source['id'] and observed['request'] == source['request'] and
+                    observed['targetGraphIds'] == pressure.declared_query_scope(source, declared['graphIds']),
+                    'actual complete audited request and graph scope')
+            oracles[name] = observed['oracle']
+        cases.append({'id': source['id'], 'catalogId': source['id'], 'request': source['request'],
+                      'targetGraphIds': pressure.declared_query_scope(source, declared['graphIds']), 'oracleByArm': oracles})
+    proofs = []
+    def proof(role, claims, upstream, arm=None):
+        path = output / (role + ('-' + arm if arm else '') + '.json')
+        value = {'status': 'PASS_BOUND_ACTUAL_SCOPED_EVIDENCE', 'upstream': upstream, **claims}
+        pressure.save(path, value)
+        digest = pressure.sha(path);pins[str(path)] = digest
+        proofs.append({'path': str(path), 'sha256': digest, 'status': value['status'], 'role': role,
+                       **({'arm': arm} if arm else {}), 'bindings': claims, 'upstream': upstream})
+    bindings = {}
+    for name, arm in bundle['arms'].items():
+        upstream = {arm[k]['path']: arm[k]['sha256'] for k in ('sourceManifest', 'runtimeManifest', 'artifactAudit', 'queryAudit')}
+        upstream[producer_ref['path']] = producer_ref['sha256']
+        proof('source-runtime', {'revision': arm['revision'], 'patchSha256': None,
+              'sourceManifestSha256': arm['sourceManifest']['sha256'],
+              'runtimeManifestSha256': arm['runtimeManifest']['sha256'], 'runtimeFiles': arm['runtimeFiles']}, upstream, name)
+        oracle_upstream = {c['oracleByArm'][name]['proof']['path']: c['oracleByArm'][name]['proof']['sha256'] for c in cases}
+        proof('independent-correctness', {'graphIds': [g['id'] for g in arm['graphs']],
+              'requestDigests': {c['id']: pressure.digest_bytes(pressure.canonical(c['request'])) for c in cases},
+              'oracleDigests': {c['id']: c['oracleByArm'][name]['digest'] for c in cases}}, {**upstream, **oracle_upstream}, name)
+        if name != 'C' and not (name == 'A' and pressure.same_accepted_artifacts(bundle, name)):
+            bindings[name] = {'revision': arm['revision'], 'graphs': arm['graphs'],
+                'sourceManifestSha256': arm['sourceManifest']['sha256'], 'runtimeManifestSha256': arm['runtimeManifest']['sha256'],
+                'cases': {c['id']: {k: c['oracleByArm'][name][k] for k in ('digest', 'rows')} for c in cases}}
+    proof('fixture-equivalence', corrected_fixture_bindings(bundle),
+          {producer_ref['path']: producer_ref['sha256'],
+           **{v['audit']['path']: v['audit']['sha256'] for v in bundle['correctedComparisons'].values()},
+           **{a['artifactAudit']['path']: a['artifactAudit']['sha256'] for a in bundle['arms'].values()}})
+    return pressure_plan(packet, cases, bindings, proofs, catalog,
+                         correctedProducerAuthority=producer_ref)
+
+
+def pressure_plan(packet, cases, bindings, proofs, catalog, **extra):
+    """The same workload and resource boundary for strict and corrected fixtures."""
+    declared = catalog['engines']['native']
+    return {'schema': pressure.PLAN_SCHEMA, 'engine': 'native', 'operation': 'query', 'pins': dict(packet['pins']),
+        'catalog': {'path': str(CATALOG), 'sha256': pressure.sha(CATALOG)}, 'arms': packet['arms'],
+        'proofs': proofs, 'cases': cases, 'nativeOracleBindings': bindings,
+        'coverage': {'coveredFamilies': declared['coveredFamilies'], 'requiredFamilies': declared['requiredFamilies'],
+            'unavailableFamilies': sorted(set(declared['requiredFamilies']) - set(declared['coveredFamilies'])),
+            'unavailableOperations': ['construction', 'loading']},
+        'cells': [{'id': f'{i}-{arm}', 'arm': arm, 'port': 22840+i} for i, arm in enumerate('CABBAC')],
+        'schedule': {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20},
+        'limits': {'requestSeconds': 240, 'stageSeconds': 3600, 'readinessSeconds': 300,
+            'bodyBytes': 67108864, 'rssIntervalSeconds': .01},
+        'comparisonPairs': {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]}, **extra}
+
+
 def prepare(args):
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
@@ -365,7 +421,7 @@ def prepare(args):
             if packet.get('schema') == 'graphite.native-pressure.producer-bundle.v1':
                 # Fresh builds and all39 audited responses are concrete evidence,
                 # but they cannot manufacture the separate cross-arm core proof.
-                from assemble_native_pressure_producers import verify_bundle
+                from assemble_native_pressure_producers import verify_bundle, CORRECTED_STATUS
                 bundle = verify_bundle(packet, args.base_sha, args.candidate_sha)
                 status['producerPacket'] = {'path': str(args.producers.resolve()),
                                             'sha256': pressure.sha(args.producers)}
@@ -373,24 +429,46 @@ def prepare(args):
                     'status': bundle['status'],
                     'revisions': {arm: value['revision'] for arm, value in bundle['arms'].items()},
                     'auditedCasesByArm': {arm: len(value['cases']) for arm, value in bundle['arms'].items()}}
-                raise MissingAuthority('; '.join(bundle['missingAuthority']))
+                if bundle['status'] != CORRECTED_STATUS:
+                    raise MissingAuthority('; '.join(bundle['missingAuthority']))
+                plan = corrected_plan(bundle, status['producerPacket'], output, catalog)
+                pressure.validate_plan(plan, catalog)
+                pressure.verify_inputs(plan)
+                pressure.save(output / 'plan.json', plan)
+                status.update(status='PLAN_READY_NOT_MEASURED', planSha256=pressure.sha(output / 'plan.json'))
+                packet = None
             # Retain the consumed packet and preparation controls as actual plan inputs.
-            packet['pins'] = dict(packet['pins'])
-            controls = preparation_control_pins()
-            controls[str(args.producers.resolve())] = pressure.sha(args.producers)
-            for path, digest in controls.items():
-                require(path not in packet['pins'] or packet['pins'][path] == digest,
-                        'conflicting preparation input pin')
-                packet['pins'][path] = digest
-            packet['_producerRef'] = {'path': str(args.producers.resolve()), 'sha256': pressure.sha(args.producers)}
-            plan = assemble(packet, args.base_sha, args.candidate_sha, catalog)
-            pressure.save(output / 'plan.json', plan)
-            status.update(status='PLAN_READY_NOT_MEASURED', planSha256=pressure.sha(output / 'plan.json'),
-                          producerPacket={'path': str(args.producers.resolve()), 'sha256': pressure.sha(args.producers)})
+            if packet is not None:
+                return prepare_strict(packet, args, output, status, catalog)
     except MissingAuthority as error:
         status.update(status='UNAVAILABLE', missingProducers=[str(error)])
     except (OSError, ValueError, KeyError, TypeError) as error:
         status.update(status='FAIL', errors=[f'{type(error).__name__}: {error}'])
+    return save_status(output, status)
+
+
+def prepare_strict(packet, args, output, status, catalog):
+    try:
+        packet['pins'] = dict(packet['pins'])
+        controls = preparation_control_pins()
+        controls[str(args.producers.resolve())] = pressure.sha(args.producers)
+        for path, digest in controls.items():
+            require(path not in packet['pins'] or packet['pins'][path] == digest,
+                    'conflicting preparation input pin')
+            packet['pins'][path] = digest
+        packet['_producerRef'] = {'path': str(args.producers.resolve()), 'sha256': pressure.sha(args.producers)}
+        plan = assemble(packet, args.base_sha, args.candidate_sha, catalog)
+        pressure.save(output / 'plan.json', plan)
+        status.update(status='PLAN_READY_NOT_MEASURED', planSha256=pressure.sha(output / 'plan.json'),
+                      producerPacket={'path': str(args.producers.resolve()), 'sha256': pressure.sha(args.producers)})
+    except MissingAuthority as error:
+        status.update(status='UNAVAILABLE', missingProducers=[str(error)])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        status.update(status='FAIL', errors=[f'{type(error).__name__}: {error}'])
+    return save_status(output, status)
+
+
+def save_status(output, status):
     pressure.save(output / 'preparation-status.json', status)
     pressure.save(output / 'multigraph-native-query-status.json', status)
     (output / 'preparation-report.md').write_text('### Native multi-graph pressure preparation\n\n' +
