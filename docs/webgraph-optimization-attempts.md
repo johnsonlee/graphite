@@ -15692,3 +15692,52 @@ graph workload, but the first wall-time comparison must not be presented as an
 uncontended final acceptance measurement. The original six-cell schedule remains
 unchanged. The observation is retained in
 `/tmp/graphite-attempt198-measurement-environment-note.json`.
+
+The original six constructions, six independent readbacks and resource audit
+have now completed successfully. The original session33394 exited0; root and an
+independent reviewer checked every raw BSD time/RSS record, phase argv, log hash,
+exit/cleanup result, ordered64 fixture receipt and writer binding. All original
+owned processes and groups are absent. This verifies capture and readback, not
+the additional complete semantic proof required for final acceptance.
+
+| Fixed cell | Writer | Wall ms | Total CPU seconds | Peak RSS bytes |
+|---|---|---:|---:|---:|
+| 01-C | accepted4f | 243,030 | 318.74 | 3,757,965,312 |
+| 02-A | parent197 | 254,680 | 345.99 | 3,617,046,528 |
+| 03-B | candidate198 | 261,570 | 342.84 | 3,883,696,128 |
+| 04-B | candidate198 | 263,450 | 352.34 | 3,701,915,648 |
+| 05-A | parent197 | 254,200 | 334.99 | 3,964,665,856 |
+| 06-C | accepted4f | 246,780 | 327.19 | 3,525,853,184 |
+
+Against parent197, the two fixed comparisons are 254,680→261,570ms and
+254,200→263,450ms: wall time increases6,890/9,250ms. CPU changes by
+−3.15/+17.35 seconds, and RSS by +266.65/−262.75 decimal MB. The first parent
+RSS comparison and the second parent CPU comparison exceed5%. These are mixed
+observations, not a repeatable overall improvement; retain both directions.
+
+Against accepted4f, wall changes from243,030→261,570ms and
+246,780→263,450ms (+18,540/+16,670ms). CPU rises318.74→342.84 and
+327.19→352.34 seconds (+24.10/+25.15 seconds, +7.56/+7.69%); both CPU
+comparisons fail5%. RSS rises3,757,965,312→3,883,696,128 and
+3,525,853,184→3,701,915,648 bytes (+125.73/+176.06 decimal MB,
++3.35/+4.99%); both raw RSS comparisons meet5%, with the latter close to the
+limit. Only two samples per arm exist, so these observations do not establish
+uncertainty bounds. The previously recorded27.058-second lightweight-test
+overlap still limits the first baseline pair. No sample is removed or replaced.
+
+Output: `/tmp/graphite-attempt198-real64-construction-1`.
+Execution SHA-256:
+`f218fbeb3f0e36ba9bc2f0ade083fd9de5161787d0f000e72c57d1b428aa356e`.
+Resource audit SHA-256:
+`08a4bb403365e6ff5cbcb38cc1155a164d255f567c870e27c95f4c48b14fe839`.
+Independent terminal review SHA-256:
+`b5e7f4244f35200436670c287a5c73af3cd8340238db57ada585bdeb773d3da9`.
+Root review SHA-256:
+`6efcf943e384ac5e175325c90d3048539be1c059352e6ee6387eab3cac1122c1`.
+
+Decision: preserve the isolated198 source and all mixed observations for further
+investigation, including the one-direction CPU saving and opposite-direction RSS
+saving. Do not integrate this candidate into the PR: wall time is worse in both
+parent comparisons, and accepted-baseline CPU remains above the limit in both
+directions. Query p50/p95 and loading are unmeasured; complete semantic and final
+performance acceptance remain unproven.
