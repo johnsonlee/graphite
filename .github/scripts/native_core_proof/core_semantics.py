@@ -204,7 +204,7 @@ def prove(actual,reference,actual_export,reference_export,out,allow_field_biject
         parameter_rows=[] if parameter_arrays else None
         collisions=legacy_method_collisions.Corrections(out,source_rule,field_authority_spec) if legacy_overload_collisions else None
         synthetic=synthetic_metadata.Corrections(out,source_rule,field_authority_spec) if synthetic_method_keys else None
-        raw_locals=raw_local_types.Authority(raw_local_exports,out) if raw_local_exports is not None else None
+        raw_locals=raw_local_types.Authority(raw_local_exports,out,local_rules) if raw_local_exports is not None else None
         completed=False
         try:
             result=_prove(actual,reference,actual_export,reference_export,out,allow_field_bijection,field_authority_spec,authority,local_rules,parameter_rows,collisions,synthetic,inherited_fields,raw_locals)

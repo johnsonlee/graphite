@@ -14,6 +14,44 @@ FOLDING='frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/Const
 ADAPTER='frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt'
 
 
+def adapter_boundaries(adapter,contract):
+    boundaries={}
+    for name,fragments in contract['boundaries'].items():
+        need(len(re.findall(r'(?m)^    private fun '+re.escape(name)+r'\(',adapter))==len(fragments),
+             'complete reviewed adapter overload set: '+name)
+        for fragment in fragments:need(adapter.count(fragment)==1,'reviewed adapter body changed: '+name)
+        boundaries[name]=len(fragments)
+    for cache in contract['cacheDeclarations']:
+        need(adapter.count(cache)==1,'reviewed identity cache declaration changed')
+    for pattern,count in contract['localCreationCounts'].items():
+        need(len(re.findall(pattern,adapter))==count,'reviewed Local creation/cache call sites changed')
+    return boundaries
+
+
+def local_creation_rule(authority):
+    """Recheck exact creation semantics against both already bound actual writers."""
+    need(authority is not None,'typed allocation requires bound Local source rules')
+    pins=dict(authority.pins)
+    need(all(sha(path)==digest for path,digest in pins.items()),'Local source authority changed')
+    need(pins.get(str(CONTRACT))==sha(CONTRACT),'reviewed Local creation contract required')
+    contract=json.loads(CONTRACT.read_text())
+    for arm in ('C','B'):
+        item=authority.rule['arms'][arm]
+        need(pins.get(item['adapter'])==item['adapterSha256'],'actual Local adapter authority')
+        adapter_boundaries(Path(item['adapter']).read_text(),contract)
+        manifest=json.loads(Path(item['manifest']).read_text())
+        node=contract['localNode'];path=Path(manifest['root'])/node['path']
+        need(path.is_file() and not path.is_symlink(),'immutable Local source path')
+        digest=sha(path)
+        need(manifest['files'].get(str(path),manifest['files'].get(node['path']))==digest,
+             'immutable Local source manifest')
+        text=path.read_text()
+        need(text.count(node['body'])==1 and len(re.findall(r'\bclass LocalVariable\b',text))==1,
+             'reviewed immutable LocalVariable changed')
+        pins[str(path)]=digest
+    return pins
+
+
 def source_rule(sources, fixtures, control_pins):
     """Bind explicit actual manifests already covered by independent artifact audits.
 
@@ -51,14 +89,10 @@ def source_rule(sources, fixtures, control_pins):
         expected=contract['formatters'][arm]
         need(folding.count(expected)==1 and len(re.findall(r'(?m)^internal fun graphTypeName\(',folding))==1,
              'exact reviewed formatter source')
-        boundaries={}
-        for name,fragments in contract['boundaries'].items():
-            need(len(re.findall(r'(?m)^    private fun '+re.escape(name)+r'\(',adapter))==len(fragments),
-                 'complete reviewed adapter overload set: '+name)
-            for fragment in fragments:need(adapter.count(fragment)==1,'reviewed adapter body changed: '+name)
-            boundaries[name]=len(fragments)
-        for cache in contract['cacheDeclarations']:
-            need(adapter.count(cache)==1,'reviewed identity cache declaration changed')
+        boundaries=adapter_boundaries(adapter,contract)
+        local_node=contract['localNode'];node_text=content(local_node['path'])
+        need(node_text.count(local_node['body'])==1 and len(re.findall(r'\bclass LocalVariable\b',node_text))==1,
+             'reviewed immutable LocalVariable changed')
         dependency.append({name:content(name) for name in contract['dependencyFiles']})
         arms[arm]={'revision':source['revision'],'manifest':source_ref['path'],'manifestSha256':source_ref['sha256'],
                    'folding':str(root/FOLDING),'foldingSha256':pins[str(root/FOLDING)],

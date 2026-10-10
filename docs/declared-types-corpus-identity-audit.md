@@ -1256,3 +1256,64 @@ then all12 tests in that module passed. Both logs remain retained. The seven
 Node comparator tests also passed, including rejection of a26-case receipt for
 the expanded workload. These results verify the harness changes, not execution
 of the34 requests against the real corpus.
+
+### Hosted Tika12 Local creation-order evidence (2026-10-10)
+
+Run38026419105 on `adde7c32` completed28 graph comparisons, then failed the
+68th owned phase, `fixture-tika-12-core`. The raw record, rather than its
+continue-on-error step conclusion, is authoritative. Its complete128397-local
+inventory contains10924 proved array rows and one unproved row:
+`OutlookExtractor.normalizeHeaders([Ljava/lang/String;)Ljava/util/Map;`, local
+`vals`, node9106319. Both writers' raw types and the saved type are `String[]`.
+Both also record a later same-name `ArrayList` allocation at statement57.
+The old checker cannot establish creation order and correctly retains that
+missing proof. This failure is not an observed array-rank mismatch. Core metadata
+and topology for this graph and the remaining35 graphs are still unproved.
+Both downstream pressure runners issued zero cells; neither supplies latency,
+CPU or RSS acceptance. The job terminated with failure, and all raw evidence is
+retained under `/tmp/graphite-ci38026419105-core-review-1`.
+
+The exporter now records ordinary assignments directly from each raw
+`JAssignStmt` whose left operand is a Local and whose right operand is not an
+object creation. A prior such assignment guarantees Local creation under the
+independently checked adapter dispatch, value conversion and first-write cache
+rules. The checker requires this assignment to precede every same-name typed
+allocation, unique matching raw array types in both writers, and an exact saved
+type match. It continues to reject conflicting types, missing identities,
+incorrect ranks and absent or invalid assignment evidence. Uses and `body.locals`
+alone cannot establish this proof.
+
+The source check also binds cache mutation sites and immutable Local fields.
+Source evidence is retained separately from the two raw export inputs and must
+be present in the core audit closure. Whether proof is required comes from the
+raw array/allocation facts; deleting both the optional proof and source fields
+cannot remove that requirement. Audit replay recomputes the assignment witness
+and rejects altered ordinals or missing source pins.
+
+An actual local reproduction compiled and ran the frozen exporter against both
+accepted4f and the integrated195 writer, at4g/APC4. Its Tika source JAR, selected
+shard bytecode and2106 classes match the CI provenance. Both complete selected
+shard exports contain15814 methods and show `vals` ordinary assignments at
+17,55,60,66, preceding the first typed allocation at57. All four compile/export
+phases exited0, owned process groups were empty, and final input hashes matched.
+This is local macOS/JDK17 correctness evidence, not a hosted-runtime match or a
+single-graph performance result. Evidence is retained under
+`/tmp/graphite-tika12-raw-reproduction-1`. Complete64 proof and actual34-case JVM
+pressure acceptance remain pending a fresh CI run.
+
+Local verification passed277 core-package tests and64 runner/assembly tests.
+Independent review confirmed the final source rules and raw assignment facts;
+all166 preparation pins,10 correctness pins and the workflow digest match.
+Earlier fixture/import failures and the initial receipt-field review finding
+remain in `/tmp/graphite-raw-local-creation-witness-1`; the final tests include
+missing-proof, changed-order and missing-source-input rejection.
+
+The fixed consumer also replayed the one CI-reported saved row against the two
+actual raw exports and passed its source-bound creation-order check. This local
+diagnostic preserves `completeNodeInventory=false`: it neither rereads the saved
+graph nor enumerates all persisted nodes. B195 has no complete original producer
+packet, so its source/fixture link is explicitly diagnostic-derived from the
+actual writer build and original fixture, with all868 B and641 C source files
+checked. Original receipts remain unchanged; CI producer authority and all global
+acceptance flags remain false. Root independently checked the output and input
+hashes under `/tmp/graphite-tika12-raw-diagnostic-1`.
