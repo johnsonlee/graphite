@@ -15741,3 +15741,53 @@ saving. Do not integrate this candidate into the PR: wall time is worse in both
 parent comparisons, and accepted-baseline CPU remains above the limit in both
 directions. Query p50/p95 and loading are unmeasured; complete semantic and final
 performance acceptance remain unproven.
+
+### Attempt199 — share bounded atomic type-info maps within a request (2026-10-10)
+
+Isolated candidate `6362a19d961524aebaddc2c98b48014aea70a96c` has parent
+`e61a91a24cdec08cf0b21a5b3a1af23736ff65a5` and changes seven Native files.
+The single hypothesis is to share the existing Arc-backed map for repeated atomic
+`type_info` projections. An Executor owns16 slots across all its sources, keyed by
+source index and type ID. Scope guards cover query execution and HTTP result
+materialization separately. Nested or concurrent scopes may overlap; the final
+guard releases every cache-owned reference. Borrowing the Executor prevents source
+mutation within that scope; a later scope starts empty.
+
+Admission requires class/primitive, a name of at most256 UTF-8 bytes, and no
+owner, component, arguments, scope or variance. Only shallow maps are retained;
+recursive projections may share their leaves but never their whole trees.
+The cache retains at most16 shallow maps and4096 name bytes plus fixed metadata,
+not a bound on the complete response or process RSS. Returned values retain their
+normal lifetimes. Rendered generic strings, type-view lookup, presence checks,
+key ordering, cancellation, work accounting and complete result consumption are
+unchanged. A mutex and16-entry search introduce costs that still need measurement.
+
+Actual full-workspace correctness passed461 tests: all452 retained cases plus9
+new cases covering isolation, scope cleanup, concurrency, eviction, UTF-8 and
+structural admission limits, complete ordered Node/Method projections across
+GTY01–05, shared leaves, and graph updates between scopes. Strict all-target,
+all-feature Clippy and formatting also passed. Independent review checked143
+source inputs, all controls,190 mandatory fixture files, raw logs and empty owned
+process groups. No test fixture supplies performance evidence.
+
+Source: `/tmp/graphite-atomic-type-info-source`.
+Correctness output: `/tmp/graphite-atomic-type-info-validation-1`.
+Execution SHA-256:
+`9e04c1caca5dcb71244cebd37a52050e4d305a705fe1bb03790b301ac54d22f0`.
+Independent source/correctness review SHA-256:
+`a56a32cb30a011016616cf2526900398f219eef578348eacbe9d9f0acb155ff5`.
+
+Release uses the existing owned offline/locked CLI build with jobs2, in a
+dedicated target directory. It has started but has not yet supplied a reviewed
+runtime. Planned measurement reuses the unchanged194 eight-case CABBAC protocol:
+64 resident real graphs, each request actually targets two graphs, concurrency4,
+one oracle pass, two warmups and20 measured requests per case/cell, with all1104
+complete response bodies and CPU/RSS records retained. This particular workload
+does not replace the final Native39/JVM26 CI acceptance. Parent A keeps its actual
+isolated194 revision `582f632662f0568204400fa77188d3549afffd91`;99 Native parent
+source files match the candidate's parent byte for byte. C remains accepted4f.
+Runtime and graph-producer identities remain distinct.
+
+Decision: retain the independently correctness-checked candidate in isolation for
+release binding and multi-graph measurement. Do not integrate it into the PR or
+claim query p50/p95, CPU, RSS, loading or construction improvement before evidence.
