@@ -201,17 +201,21 @@ class JvmSharedLifecycleTests(unittest.TestCase):
             if 'id' in values: values['id'] = 17
             if 'graphId' in values: values['graphId'] = case['targetGraphIds'][0]
             row = jvm.projected_row(values, [case['targetGraphIds'][0]])
+            rows = [row]
+            if case['family'] == 'full-projection':
+                rows = [jvm.projected_row({'value': {'id': 17, 'graphId': gid}}, [gid])
+                        for gid in case['targetGraphIds']]
             universe = {'schema': 'graphite.jvm-legal-row-universe.v1', 'policy': jvm.POLICY,
                         'caseId': case['id'], **{key: case[key] for key in (
                             'requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
                             'targetGraphIds', 'columns', 'effectiveLimit')},
-                        'totalMatches': 1, 'allGraphScansComplete': True,
-                        'exactEncounterOrderClaim': False, 'rows': [{'value': row, 'multiplicity': 1}]}
+                        'totalMatches': len(rows), 'allGraphScansComplete': True,
+                        'exactEncounterOrderClaim': False, 'rows': [{'value': r, 'multiplicity': 1} for r in rows]}
             case['oracleByArm'] = {'B': {'kind': 'jvm-complete-legal-limit-multiset-v1',
-                                        'value': universe, 'digest': jvm.digest(universe), 'rows': 1}}
+                                        'value': universe, 'digest': jvm.digest(universe), 'rows': len(rows)}}
             self.bodies[case['id']] = common.canonical({
                 'mode': 'cross-graph', 'graphs': case['requestedGraphIds'], 'graphCount': 64,
-                'columns': case['columns'], 'rows': [row], 'rowCount': 1, 'limit': case['effectiveLimit']})
+                'columns': case['columns'], 'rows': rows, 'rowCount': len(rows), 'limit': case['effectiveLimit']})
         self.closure = MagicMock()
         self.contract = runner._ExecutionContract('jvm', 'graphite.jvm-query-correctness-plan.v1',
             runner.JVM_SCHEMA, runner.JVM_PASS, tuple(c['id'] for c in self.cases), self.closure)
@@ -255,34 +259,34 @@ class JvmSharedLifecycleTests(unittest.TestCase):
         self.assertEqual(previous, {sig: signal.getsignal(sig) for sig in previous})
         return result, fetched
 
-    def test_exact26_complete_bodies_and_scope_use_shared_lifecycle(self):
+    def test_exact34_complete_bodies_and_scope_use_shared_lifecycle(self):
         result, fetched = self.run_queries()
         self.assertEqual(runner.JVM_PASS, result['status'], result['errors'])
         self.assertEqual(runner.JVM_SCHEMA, result['schema'])
         self.assertEqual(self.contract.expected_case_ids, tuple(fetched))
-        self.assertEqual(26, len(result['responses']))
+        self.assertEqual(34, len(result['responses']))
         for response in result['responses']:
             self.assertEqual(self.bodies[response['id']], Path(response['body']['path']).read_bytes())
-            self.assertEqual(1, response['validation']['rows'])
+            self.assertEqual(json.loads(self.bodies[response['id']])['rowCount'], response['validation']['rows'])
         self.assertEqual(2, len(next(r for r in result['responses'] if r['id']=='routing-pair-dense')['targetGraphIds']))
-        self.assertEqual(26, len((self.out/'responses.jsonl').read_text().splitlines()))
+        self.assertEqual(34, len((self.out/'responses.jsonl').read_text().splitlines()))
         self.assertFalse(result['performanceAcceptance']); self.assertFalse(result['completeSemanticEquivalence'])
 
-    def test_wrong_body_is_retained_and_remaining25_are_not_issued(self):
+    def test_wrong_body_is_retained_and_remaining33_are_not_issued(self):
         result, fetched = self.run_queries(failure='body')
         self.assertEqual('FAIL', result['status']); self.assertEqual([self.cases[0]['id']], fetched)
         self.assertEqual(b'{}', Path(result['responses'][0]['body']['path']).read_bytes())
         self.assertEqual('FAIL', result['responses'][0]['status'])
         self.assertEqual(1, len((self.out/'responses.jsonl').read_text().splitlines()))
 
-    def test_cleanup_failure_cannot_pass_after_complete26(self):
+    def test_cleanup_failure_cannot_pass_after_complete34(self):
         result, fetched = self.run_queries(cleanup_failure=True)
-        self.assertEqual(26, len(fetched)); self.assertEqual('FAIL', result['status'])
+        self.assertEqual(34, len(fetched)); self.assertEqual('FAIL', result['status'])
         self.assertTrue(any('owned server cleanup' in e for e in result['errors']))
 
-    def test_final_closure_failure_cannot_pass_after_complete26(self):
+    def test_final_closure_failure_cannot_pass_after_complete34(self):
         result, fetched = self.run_queries(closure_failure=True)
-        self.assertEqual(26, len(fetched)); self.assertEqual('FAIL', result['status'])
+        self.assertEqual(34, len(fetched)); self.assertEqual('FAIL', result['status'])
         self.assertEqual('FAIL', result['finalIdentity'])
 
     def test_signal_retains_failed_response_and_restores_handlers_after_cleanup(self):
@@ -293,7 +297,7 @@ class JvmSharedLifecycleTests(unittest.TestCase):
 
     def test_contract_rejects_missing_duplicate_reordered_ids_and_unknown_engine(self):
         for ids in (self.contract.expected_case_ids[:-1], self.contract.expected_case_ids[::-1],
-                    (self.contract.expected_case_ids[0],)*26):
+                    (self.contract.expected_case_ids[0],)*34):
             with self.subTest(ids=ids), self.assertRaisesRegex(ValueError, 'fixed engine'):
                 runner._execute_validated(self.plan, self.out, replace(self.contract, expected_case_ids=ids))
         for changes in ({'engine': 'other'}, {'record_schema': runner.SCHEMA}, {'pass_status': runner.PASS}):

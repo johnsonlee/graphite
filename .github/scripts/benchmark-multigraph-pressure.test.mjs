@@ -76,3 +76,36 @@ test('pressure CLI through a directory symlink writes the verdict and rejects in
  assert.match(failed.errors.join(),/complete request boundary/);
  assert.match(fs.readFileSync(prefix+'-report.md','utf8'),/FAIL/);
 });
+
+test('JVM34 retains every full-projection case and complete body count', t=>{
+ const f=fixture(t);
+ const catalog=JSON.parse(fs.readFileSync(new URL('./fixtures/jvm-multigraph-pressure-cases.json',import.meta.url))).engines.jvm;
+ f.plan.engine='jvm'; f.plan.cases=catalog.cases;
+ f.plan.coverage={requiredFamilies:catalog.requiredFamilies,coveredFamilies:catalog.coveredFamilies,unavailableFamilies:[]};
+ assert.equal(f.plan.cases.length,34);
+ assert.equal(f.plan.cases.filter(c=>c.family==='full-projection').length,8);
+ put(f.file,f.plan);
+ for(const [i,cell] of f.plan.cells.entries()) {
+  f.rewrite(i,r=>{
+   r.engine='jvm';r.planSha256=digest(f.file);r.coverage=f.plan.coverage;
+   const stage=r.stages.pressure,lat=cell.arm==='B'?80:100;
+   stage.requests=Array.from({length:34*20},(_,sequence)=>({sequence,caseId:f.plan.cases[sequence%34].id,
+    status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:sequence*1000,
+    wireCompleteNs:sequence*1000+lat-1,validationCompleteNs:sequence*1000+lat,latencyNs:lat}));
+   stage.wallNs=(34*20-1)*1000+lat;
+   stage.caseStatistics=Object.fromEntries(f.plan.cases.map((c,j)=>[c.id,{n:20,
+    sampleIds:Array.from({length:20},(_,k)=>k*34+j),p50Ns:lat,p95Ns:lat}]));
+  });
+  const file=path.join(f.root,cell.id,'audit.json'),audit=JSON.parse(fs.readFileSync(file));
+  audit.planSha256=digest(f.file);audit.coverage=f.plan.coverage;audit.completeBodies=34*23;put(file,audit);
+ }
+ const verdict=comparePressure(f.file,f.root);
+ assert.equal(verdict.passed,true);
+ assert.ok(verdict.comparisons.every(pair=>pair.cases.length===34));
+ const complete=f.plan.cells.reduce((sum,cell)=>sum+JSON.parse(fs.readFileSync(path.join(f.root,cell.id,'audit.json'))).completeBodies,0);
+ const measured=f.plan.cells.reduce((sum,cell)=>sum+JSON.parse(fs.readFileSync(path.join(f.root,cell.id,'result.json'))).stages.pressure.requests.length,0);
+ assert.equal(complete,4692);assert.equal(measured,4080);
+ const file=path.join(f.root,'c2','audit.json'),audit=JSON.parse(fs.readFileSync(file));
+ audit.completeBodies=26*23;put(file,audit);
+ assert.throws(()=>comparePressure(f.file,f.root),/raw audit/);
+});

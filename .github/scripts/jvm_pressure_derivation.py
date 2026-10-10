@@ -1,4 +1,4 @@
-"""Independent JVM properties and the exact 26 pressure-case row universes.
+"""Independent JVM properties and the exact 34 pressure-case row universes.
 
 Only raw persisted payloads enter this module, never an HTTP response or native
 collector result. Source/runtime authority and actual-input receipt replay remain
@@ -151,6 +151,58 @@ def node_properties(row, graph_id, table, type_cache=None):
     return values, keys
 
 
+
+def full_projection_matches(case, row, graph_id):
+    """The fixed two-source prefixes, before projection or LIMIT."""
+    if graph_id not in case['targetGraphIds']: return False
+    kind = case['id'].split('-')[0]
+    if kind != 'method' and row['tag'] != {'field': 9, 'parameter': 10, 'return': 11}[kind]: return False
+    kotlin = graph_id == 'fixture-kotlin-compiler-15'
+    if kind == 'field':
+        value = row['owner']; prefixes = ('org.jetbrains.kotlin.com.intellij.psi.', 'org.jetbrains.kotlin.backend.common.') if kotlin else ('org.openxmlformats.',)
+    elif kind == 'parameter':
+        value = row['type']; prefixes = ('java.util.',) if kotlin else ('com.',)
+    elif kind == 'return':
+        value = row['method'].signature; prefixes = ('org.jetbrains.kotlin.backend.jvm.lower.',) if kotlin else ('org.apache.logging.',)
+    else:
+        value = row.owner; prefixes = ('org.jetbrains.kotlin.ir.backend.js.lower.',) if kotlin else ('org.apache.logging.',)
+    return any(value.startswith(prefix) for prefix in prefixes)
+
+
+def full_node_projection(row, graph_id, table, *, properties):
+    """Independent nodeToMap/getAllProperties rules; never serialize accessor fallbacks."""
+    tag = row['tag']; value = {'id': row['id']}
+    if tag == 9:
+        value.update(name=row['name'], type=row['type'], **{'class': row['owner'], 'static': row['static']})
+    elif tag == 10:
+        value.update(index=row['index'], type=row['type'], method=row['method'].signature)
+    else:
+        need(tag == 11, 'full projection field/parameter/return kind')
+        if not properties: value['type'] = 'ReturnNode'
+        value.update(method=row['method'].signature, actual_type=row['actual_type'])
+    type_id = declaration_id(row, table)
+    if type_id is not None:
+        value.update(generic_type=table.render(type_id), type_info=table.info(type_id))
+    value.update(graphId=graph_id, elementId=f"{graph_id}:{row['id']}", qualifiedId=f"{graph_id}:{row['id']}")
+    return value
+
+
+def full_method_projection(method, graph_id, table):
+    """MethodValue.properties uses full metadata descriptors, including return type."""
+    value = dict(signature=method.signature, **{'class': method.owner}, name=method.name,
+                 parameter_types=list(method.parameters), return_type=method.result)
+    declaration = table.methods.get(method.key)
+    if declaration is not None:
+        value.update(generic_return_type=table.render(declaration['result']),
+                     generic_parameter_types=[table.render(i) for i in declaration['parameters']],
+                     return_type_info=table.info(declaration['result']),
+                     parameter_type_info=[table.info(i) for i in declaration['parameters']],
+                     type_parameters=[dict(name=f['name'], scope=f['scope'],
+                         bounds=[table.render(i) for i in f['bounds']],
+                         bound_info=[table.info(i) for i in f['bounds']]) for f in declaration['formals']])
+    value['graphId'] = graph_id
+    return value
+
 def _string_contains(value, needle): return type(value) is str and needle in value
 
 
@@ -218,6 +270,7 @@ class Collector:
         self.counts = {c['id']: Counter() for c in self.cases}; self.rows = {c['id']: {} for c in self.cases}
         self.distinct = {c['id']: distinct.DistinctGroups(self._number_text)
                          for c in self.cases if c['family'] == 'wrapped-discovery'}
+        self.projection_bindings = {c['id']: Counter() for c in self.cases if c['family'] == 'full-projection'}
         self.seen = []; self.graph_counts = []; self.failed = False
 
     def _number_text(self, raw):
@@ -242,7 +295,8 @@ class Collector:
         need(graph['fullNodeScanConsumed'] is True, 'complete raw node scan required')
         if self.primitive_facts is not None: self.primitive_facts.bind_graph(graph)
         nodes = graph['nodes']; table = graph['declarations']; cache = {}; properties = {}; groups = Counter()
-        node_cases = [c for c in self.cases if c['id'] not in DATAFLOW_IDS and c['family'] != 'feature-presence']
+        node_cases = [c for c in self.cases if c['id'] not in DATAFLOW_IDS and c['family'] not in ('feature-presence', 'full-projection')]
+        projection_cases = [c for c in self.cases if c['family'] == 'full-projection']
         for node_id, row in nodes.items():
             need(node_id == row['id'], 'actual node ID binding')
             values, keys = node_properties(row, gid, table, cache); properties[node_id] = values
@@ -253,11 +307,21 @@ class Collector:
                     else:
                         self._add(case, node_projection(case, row, values, self.primitive_facts), gid)
             if row['tag'] in (9, 10, 11):
+                for case in projection_cases:
+                    if not case['id'].startswith('method-') and full_projection_matches(case, row, gid):
+                        self.projection_bindings[case['id']][gid] += int(declaration_id(row, table) is not None)
+                        self._add(case, {'value': full_node_projection(row, gid, table,
+                                  properties=case['id'].endswith('-properties'))}, gid)
                 present = declaration_id(row, table) is not None
                 groups[(LABELS[row['tag']][0], present)] += 1
         feature = next(c for c in self.cases if c['id'] == 'feature-nodes')
         for (kind, present), count in groups.items():
             self._add(feature, dict(graphId=gid, kind=kind, rendered=present, structured=present, members=count), gid)
+        for method in graph['methods'].values():
+            for case in projection_cases:
+                if case['id'].startswith('method-') and full_projection_matches(case, method, gid):
+                    self.projection_bindings[case['id']][gid] += int(method.key in table.methods)
+                    self._add(case, {'value': full_method_projection(method, gid, table)}, gid)
         methods = Counter(method.key in table.methods for method in graph['methods'].values())
         feature = next(c for c in self.cases if c['id'] == 'feature-methods')
         for present, count in methods.items():
@@ -303,6 +367,8 @@ class Collector:
             model.CompiledLegalLimitOracle(universe, case)
             results[case_id] = universe
         return {'universes': results, 'graphs': self.graph_counts,
+                'fullProjectionBindings': {c['id']: {gid: self.projection_bindings[c['id']][gid] for gid in c['targetGraphIds']}
+                                           for c in self.cases if c['family'] == 'full-projection'},
                 'scope': 'JVM_SOURCE_MODEL_DERIVATION_FROM_SUPPLIED_RAW_INPUTS_NOT_AUDIT_AUTHORITY',
                 'sourceRuntimeBindingsRequired': True, 'oracleAuthorityVerified': False,
                 'fresh64Acceptance': False, 'performanceAcceptance': False}

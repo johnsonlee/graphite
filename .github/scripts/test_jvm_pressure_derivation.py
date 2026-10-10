@@ -37,6 +37,8 @@ def edges(g, values=()):
 
 def complete(selected):
     collector = d.Collector()
+    # Original26 component fixtures intentionally isolate their existing predicates.
+    collector.cases = [c for c in collector.cases if c['family'] != 'full-projection']
     for gid in model.FIXTURE_GRAPH_IDS:
         g, links = selected.get(gid, (graph(gid), [])); collector.add_graph(g, edges(g, links), len(links))
     return collector.finish()
@@ -46,7 +48,7 @@ def rows(result, name): return result['universes'][name]['rows']
 
 
 class DerivationTests(unittest.TestCase):
-    def setUp(self): self.cases = {c['id']: c for c in model.cases()}
+    def setUp(self): self.cases = {c['id']: c for c in model.cases() if c['family'] != 'full-projection'}
 
     def complete_with_facts(self, selected, spellings):
         # Illustrative primitive facts test the collector integration; these
@@ -70,6 +72,7 @@ class DerivationTests(unittest.TestCase):
                   'sourceGraphBytesVerified': False, 'queryImplementationUsed': False}
         facts = primitive.PrimitiveFacts(raw, path, json.dumps(output).encode())
         collector = d.Collector(primitive_facts=facts)
+        collector.cases = [c for c in collector.cases if c['family'] != 'full-projection']
         for g in graphs: collector.add_graph(g, edges(g), 0)
         return collector.finish()
 
@@ -171,7 +174,7 @@ class DerivationTests(unittest.TestCase):
         row = checks['routing-pair-dense']; values, keys = d.node_properties(row, model.FIXTURE_GRAPH_IDS[1], wire.Types())
         self.assertFalse(d.node_matches(self.cases['routing-pair-dense'], row, values, keys))
 
-    def test_complete26_universes_include_named_miss_positive_controls_and_all_dataflow_cases(self):
+    def test_original26_universes_include_named_miss_positive_controls_and_all_dataflow_cases(self):
         gid = model.FIXTURE_GRAPH_IDS[0]
         nodes = [dict(id=1, tag=1, value=d.HIT), dict(id=2, tag=1, value=d.MISS),
                  dict(id=3, tag=1, value=d.DECLARED_MISS), call(4), call(5, d.MISS), call(6, d.DECLARED_MISS),
@@ -253,7 +256,7 @@ class DerivationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.CompiledLegalLimitOracle(universe, self.cases[name]).validate(self.distinct_body(self.cases[name], []))
 
-    def test_exact26_scope_uses_v2_only_for_eight_distinct_requests(self):
+    def test_original26_scope_uses_v2_only_for_eight_distinct_requests(self):
         result = complete({})
         v2 = []
         for case in self.cases.values():
@@ -330,4 +333,108 @@ class DerivationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'ID binding'): d.Collector().add_graph(bad, edges(bad), 0)
 
 
-if __name__ == '__main__': unittest.main()
+
+
+
+class FullProjectionTests(unittest.TestCase):
+    def complex_table(self):
+        def row(kind, name='', scope='', owner=None, component=None, arguments=(), variance=''):
+            return dict(kind=kind, name=name, scope=scope, owner=owner, component=component,
+                        arguments=list(arguments), variance=variance)
+        return wire.Types([row('class', 'pkg.Outer', arguments=(1,)),
+            row('variable', 'T', 'class:pkg.Outer'), row('array', component=1),
+            row('wildcard', component=2, variance='extends'),
+            row('class', 'pkg.Outer$Inner', owner=0, arguments=(3,))])
+
+    def expected_info(self):
+        # Handwritten contract; deliberately not derived through the new projector/formatter.
+        variable = {'kind': 'variable', 'name': 'T', 'scope': 'class:pkg.Outer', 'arguments': []}
+        array = {'kind': 'array', 'component': copy.deepcopy(variable), 'arguments': []}
+        return {'kind': 'class', 'name': 'pkg.Outer$Inner',
+                'owner': {'kind': 'class', 'name': 'pkg.Outer', 'arguments': [copy.deepcopy(variable)]},
+                'arguments': [{'kind': 'wildcard', 'variance': 'extends', 'component': array, 'arguments': []}]}
+
+    def test_handwritten_nested_types_return_shape_null_omission_and_full_method_identity(self):
+        table = self.complex_table(); gid = 'fixture-tika-10'
+        m = method('org.apache.logging.M', 'm', 'pkg.Outer$Inner', ('java.util.List',))
+        other = method(m.owner, m.name, 'void', m.parameters)
+        declaration = {'result': 4, 'parameters': [2], 'formals': [dict(name='T', scope='', bounds=[4])]}
+        table.methods[m.key] = declaration
+        node = dict(id=9, tag=11, method=m, actual_type=None)
+        expected = {'id': 9, 'type': 'ReturnNode', 'method': 'org.apache.logging.M.m(java.util.List)',
+                    'generic_type': 'pkg.Outer<T>.Inner<? extends T[]>', 'type_info': self.expected_info(),
+                    'graphId': gid, 'elementId': gid+':9', 'qualifiedId': gid+':9'}
+        self.assertEqual(expected, model.gson_value(d.full_node_projection(node, gid, table, properties=False)))
+        expected.pop('type')
+        self.assertEqual(expected, model.gson_value(d.full_node_projection(node, gid, table, properties=True)))
+        value = d.full_method_projection(m, gid, table)
+        variable = {'kind': 'variable', 'name': 'T', 'scope': 'class:pkg.Outer', 'arguments': []}
+        self.assertEqual({'signature': 'org.apache.logging.M.m(java.util.List)', 'class': m.owner, 'name': 'm',
+            'parameter_types': ['java.util.List'], 'return_type': 'pkg.Outer$Inner',
+            'generic_return_type': 'pkg.Outer<T>.Inner<? extends T[]>',
+            'generic_parameter_types': ['T[]'], 'return_type_info': self.expected_info(),
+            'parameter_type_info': [{'kind': 'array', 'component': variable, 'arguments': []}],
+            'type_parameters': [{'name': 'T', 'scope': '', 'bounds': ['pkg.Outer<T>.Inner<? extends T[]>'],
+                                 'bound_info': [self.expected_info()]}], 'graphId': gid}, value)
+        self.assertEqual(m.signature, other.signature)
+        self.assertEqual({'signature': m.signature, 'class': m.owner, 'name': 'm',
+                          'parameter_types': ['java.util.List'], 'return_type': 'void', 'graphId': gid},
+                         d.full_method_projection(other, gid, table))
+        self.assertNotIn('generic_type', d.full_node_projection(node, gid, wire.Types(), properties=False))
+        self.assertEqual([None, {}], model.gson_value([None, {'x': None}]))
+
+    def test_parameter_bounds_and_return_nonnull_actual_type_preserve_erased_properties(self):
+        table = self.complex_table(); m = method('Owner', 'm', 'void', ('java.util.List',))
+        table.methods[m.key] = dict(parameters=[4], result=4, formals=[])
+        for index in (-1, 1):
+            node = dict(id=2, tag=10, index=index, type='java.util.List', method=m)
+            value = d.full_node_projection(node, 'graph', table, properties=True)
+            self.assertEqual(index, value['index']); self.assertNotIn('type_info', value)
+            self.assertNotIn('generic_type', value)
+        node = dict(id=3, tag=11, method=m, actual_type='java.lang.String')
+        for properties in (True, False):
+            value = d.full_node_projection(node, 'graph', table, properties=properties)
+            self.assertEqual('java.lang.String', value['actual_type'])
+            self.assertEqual(not properties, 'type' in value)
+
+    def selected_graph(self, gid):
+        kotlin = gid == 'fixture-kotlin-compiler-15'
+        owner = 'org.jetbrains.kotlin.com.intellij.psi.F' if kotlin else 'org.openxmlformats.F'
+        return_owner = 'org.jetbrains.kotlin.backend.jvm.lower.R' if kotlin else 'org.apache.logging.R'
+        method_owner = 'org.jetbrains.kotlin.ir.backend.js.lower.M' if kotlin else 'org.apache.logging.M'
+        m = method(method_owner, 'm', 'void'); other = method(method_owner, 'm', 'int')
+        rows = [dict(id=1, tag=9, owner=owner, name='field', type='java.util.List', static=False),
+                dict(id=2, tag=10, index=0, type='java.util.List' if kotlin else 'com.Argument', method=m),
+                dict(id=3, tag=11, method=method(return_owner, 'r'), actual_type=None)]
+        return graph(gid, rows, (m, other))
+
+    def test_complete34_collector_keeps_both_sources_and_return_inclusive_methods(self):
+        collector = d.Collector()
+        for gid in model.FIXTURE_GRAPH_IDS:
+            g = self.selected_graph(gid) if gid in ('fixture-kotlin-compiler-15', 'fixture-tika-10') else graph(gid)
+            collector.add_graph(g, edges(g), 0)
+        result = collector.finish()
+        self.assertEqual(34, len(result['universes']))
+        for case in model.cases():
+            if case['family'] != 'full-projection': continue
+            universe = result['universes'][case['id']]
+            self.assertEqual(4 if case['id'].startswith('method-') else 2, universe['totalMatches'])
+            self.assertEqual(set(case['targetGraphIds']), {e['value']['value']['graphId'] for e in universe['rows']})
+        values = [e['value']['value'] for e in result['universes']['method-full']['rows']]
+        self.assertEqual({'void', 'int'}, {v['return_type'] for v in values})
+        self.assertEqual(4, len(values))
+        full = result['universes']['return-full']['rows'][0]['value']['value']
+        props = result['universes']['return-properties']['rows'][0]['value']['value']
+        self.assertEqual('ReturnNode', full['type']); self.assertNotIn('type', props)
+        self.assertNotIn('actual_type', full); self.assertNotIn('actual_type', props)
+
+    def test_missing_second_source_fails_closed(self):
+        collector = d.Collector()
+        for gid in model.FIXTURE_GRAPH_IDS:
+            g = self.selected_graph(gid) if gid == 'fixture-kotlin-compiler-15' else graph(gid)
+            collector.add_graph(g, edges(g), 0)
+        with self.assertRaisesRegex(ValueError, 'both target'): collector.finish()
+
+
+if __name__ == '__main__':
+    unittest.main()

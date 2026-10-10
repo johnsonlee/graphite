@@ -128,12 +128,12 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         self.assertEqual(1, launch.call_count); self.assertEqual(1, stop.call_count)
         return result, fetched
 
-    def test_all26_raw_expectations_then_actual_response_audit(self):
+    def test_all34_raw_expectations_then_actual_response_audit(self):
         record, fetched = self.execute(); self.assertEqual(p.lifecycle.JVM_PASS, record['status'], record['errors'])
         self.assertEqual(['raw-replay', 'source-rules'], self.order)
         result = p.audit(self.out)
         self.assertEqual(['raw-replay', 'source-rules']*2, self.order)
-        self.assertEqual(p.AUDIT, result['status']); self.assertEqual(26, len(result['cases']))
+        self.assertEqual(p.AUDIT, result['status']); self.assertEqual(34, len(result['cases']))
         self.assertEqual([case['id'] for case in p.model.cases()], fetched)
         self.assertTrue(result['oracleAuthorityVerified']); self.assertFalse(result['fresh64Acceptance'])
         self.assertFalse(result['completeSemanticEquivalence']); self.assertFalse(result['performanceAcceptance'])
@@ -172,7 +172,7 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
 
     def test_missing_universe_and_changed_derived_bytes_rejected(self):
         missing = self.replayed['universes'].pop(self.base.cases[0]['id'])
-        with self.assertRaisesRegex(ValueError, 'complete26'): p.prepare(self.raw, self.out, 22840)
+        with self.assertRaisesRegex(ValueError, 'complete34'): p.prepare(self.raw, self.out, 22840)
         self.replayed['universes'][self.base.cases[0]['id']] = missing
         Path(missing['path']).write_text('{}')
         with self.assertRaisesRegex(ValueError, 'authority metadata changed'): p.prepare(self.raw, self.out, 22840)
@@ -187,9 +187,9 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         self.assertEqual(b'{}', Path(result['responses'][0]['body']['path']).read_bytes())
         with self.assertRaisesRegex(ValueError, 'complete successful'): p.audit(self.out)
 
-    def test_cleanup_failure_cannot_pass_after_all26(self):
+    def test_cleanup_failure_cannot_pass_after_all34(self):
         result, fetched = self.execute(cleanup_failure=True)
-        self.assertEqual(26, len(fetched)); self.assertEqual('FAIL', result['status'])
+        self.assertEqual(34, len(fetched)); self.assertEqual('FAIL', result['status'])
         with self.assertRaisesRegex(ValueError, 'complete successful'): p.audit(self.out)
 
     def test_repinning_observed_body_and_journal_never_changes_independent_expectation(self):

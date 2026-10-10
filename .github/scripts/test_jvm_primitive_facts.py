@@ -82,11 +82,12 @@ class PrimitiveFactsTests(unittest.TestCase):
         self.assertEqual('org.jetbrains.kotlin.test', d.lowered('org.jetbrains.\u212aotlin.Test', facts))
         self.assertEqual('ascii', d.lowered('ASCII', facts))
 
-    def test_complete26_injection_uses_same_bound_sources_and_preserves_original_projection(self):
+    def test_original26_injection_uses_same_bound_sources_and_preserves_original_projection(self):
         # Actual 26-predicate derivation from the tiny raw data, not a response
         # body injected as an expected answer. Primitive facts are illustrative.
         self.graphs[0]['nodes'][2] = examples.call(2, 'android.app.Activity', callee=examples.method('org.jetbrains.\u212aotlin.Test'))
         packet = self.packet(); facts = self.consume(packet); collector = d.Collector(primitive_facts=facts)
+        collector.cases = [c for c in collector.cases if c['family'] != 'full-projection']
         for graph in self.graphs:
             links = [(1, 2, 0)] if graph['id'] == model.FIXTURE_GRAPH_IDS[0] else []
             collector.add_graph(graph, examples.edges(graph, links), len(links))

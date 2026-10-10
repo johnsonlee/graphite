@@ -1211,3 +1211,48 @@ metadata check does not verify the declaration digest against type bytes and
 does not replace any core/topology proof. Evidence is
 `/tmp/graphite-5a2-core-success-selected-1/all64-forward-properties`; root review
 SHA-256: `56e6491c0b80c67db8d77201c2892acda88b2936d915bb3f65e6b95e45c7e6f7`.
+
+
+### JVM complete node and properties projection coverage (2026-10-10)
+
+The initial26 JVM requests above exercise declared-property presence but do not
+cover complete `RETURN n` or `properties(n)` projections. Passing that catalog
+cannot close the full-projection review. The in-flight hosted run38026419105
+still uses26; its results must retain that scope.
+
+The expanded catalog preserves those26 definitions and adds eight requests:
+Field, Parameter, Return and Method, each as a complete value and a properties
+map. Each request registers64 real graphs and selects the existing large-projection
+Kotlin/Tika pair using the reviewed graph-specific prefixes. These are two logical
+target graphs, not a claim that the engine physically reads only two graphs.
+The new requests have no `ORDER BY`; their independent complete multisets must
+fit the5000-row limit and contain rows from both targets. Candidate derivation
+also requires actual declaration bindings for each projection in each target
+graph. An empty, one-graph, truncated or unbound candidate workload cannot stand
+in for the intended multi-graph feature coverage.
+
+Independent values come from raw saved nodes, complete return-inclusive method
+metadata and structural declared types. The oracle distinguishes JVM `nodeToMap`
+from `getAllProperties`: a complete Return node contains `type: "ReturnNode"`,
+while its properties map does not. Method lookup uses the full descriptor rather
+than its display signature. Nested type information, formal bounds, qualified
+node identities, row provenance and Gson's map-null omission/list-null retention
+remain part of complete response validation. Expected values are never learned
+from the measured HTTP output.
+
+The34-case, seven-family catalog retains concurrency4, two warm requests and20
+measured requests per case in six CABBAC cells:4692 complete bodies, including
+4080 measured responses. Ten requests have two logical target graphs; the other24
+target64. Correctness tests of the expanded oracle and lifecycle do not establish
+actual JVM query p50/p95, CPU or RSS acceptance. Complete real multi-graph
+execution against accepted4f and the exact PR base is still required.
+
+Source validation checked all23 changed implementation/test/control files,166
+preparation pins,10 unchanged correctness pins and the workflow manifest hash.
+Independent review verified the original26 definitions and the new projection
+rules against the accepted and candidate JVM sources. Of232 associated Python
+tests,230 passed initially; two preparation-test fixture errors were corrected,
+then all12 tests in that module passed. Both logs remain retained. The seven
+Node comparator tests also passed, including rejection of a26-case receipt for
+the expanded workload. These results verify the harness changes, not execution
+of the34 requests against the real corpus.

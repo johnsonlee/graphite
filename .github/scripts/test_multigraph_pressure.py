@@ -830,10 +830,15 @@ class JvmLegalDispatchTests(unittest.TestCase):
             if 'labels' in values:values['labels']=['StringConstant','Constant']
             row=jvm.projected_row(values,[gid])
             universe['rows']=[{'value':row,'multiplicity':1}]
+        rows = [row]
+        if case['family'] == 'full-projection':
+            rows = [jvm.projected_row({'value': {'id': 7, 'graphId': graph}}, [graph])
+                    for graph in case['targetGraphIds']]
+            universe.update(rows=[{'value': r, 'multiplicity': 1} for r in rows], totalMatches=len(rows))
         case['oracleByArm']={'B':{'kind':'jvm-complete-legal-limit-multiset-v1','value':universe,
-                                 'digest':jvm.digest(universe),'rows':1}}
+                                 'digest':jvm.digest(universe),'rows':len(rows)}}
         body={'mode':'cross-graph','graphs':case['requestedGraphIds'],'graphCount':64,'columns':case['columns'],
-              'rows':[row],'rowCount':1,'limit':case['effectiveLimit']}
+              'rows':rows,'rowCount':len(rows),'limit':case['effectiveLimit']}
         return case,body
 
     def test_actual_body_digest_is_separate_from_universe_and_no_request_recompile(self):
@@ -884,19 +889,16 @@ class JvmLegalDispatchTests(unittest.TestCase):
                 oracle['digest']=jvm.digest(oracle['value'])
             with self.subTest(mutation=mutation),self.assertRaises(ValueError):p.compile_response_validator([case],'B')
 
-    def test_all26_known_definitions_dispatch_but_do_not_relax_plan_authority(self):
+    def test_all34_known_definitions_dispatch_but_do_not_relax_plan_authority(self):
         import jvm_pressure_oracles as jvm
-        cases=[]
+        cases=[]; bodies={}
         for source in jvm.cases():
-            case,body=self.fixture(source['id']);oracle=case['oracleByArm']['B']
-            oracle['value']['rows']=[];oracle['value']['totalMatches']=0;oracle['rows']=0
-            oracle['digest']=jvm.digest(oracle['value']);cases.append(case)
+            case,body=self.fixture(source['id']); cases.append(case); bodies[case['id']]=body
         validator=p.compile_response_validator(cases,'B')
-        self.assertEqual(26,len(cases))
+        self.assertEqual(34,len(cases))
         for case in cases:
-            body={'mode':'cross-graph','graphs':case['requestedGraphIds'],'graphCount':64,'columns':case['columns'],
-                  'rows':[],'rowCount':0,'limit':case['effectiveLimit']}
-            self.assertEqual(0,validator(p.canonical(body),case)['rows'])
+            body=bodies[case['id']]
+            self.assertEqual(body['rowCount'],validator(p.canonical(body),case)['rows'])
         legacy=make_plan();legacy['cases'][0]['oracleByArm']['B']=cases[0]['oracleByArm']['B']
         with self.assertRaises(ValueError):p.validate_plan(legacy,CATALOG)
 
