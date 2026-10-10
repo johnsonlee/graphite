@@ -15527,3 +15527,20 @@ full test/detekt/kover validation requires successful static evidence first.
 Both retain4g/APC4 and bounded owned process cleanup. Packaging and matched real64
 construction remain unexecuted; no new query, loading, CPU or RSS result exists.
 Decision: isolated source candidate pending correctness and multi-graph evidence.
+
+The static gate and full correctness run have now completed. Root independently
+rehashed all489 frozen source files and39 fresh XML reports, checked the exact
+387 retained plus5 new test inventory, and verified392 passes with zero failures,
+errors or skips. Every suite timestamp and XML mtime falls within this run.
+Static detekt executed successfully; the full run used the same frozen source
+and executed koverVerify successfully with an empty verification error file.
+The owned runner/process groups are absent after cleanup.
+
+Full correctness output: `/tmp/graphite-attempt197-validation-1`.
+Execution SHA-256:
+`bdcdcc54108c405954b0728e9101313ee7927a5cc94193842993cca3160567a0`.
+Root independent review SHA-256:
+`3b8a6a542af2fbe5cf7a567363e9cdcee4209403d2f0d26bcb05cf4c08b7d88e`.
+Decision: retain the isolated candidate for matched real64 measurement. This
+correctness result provides no construction, loading or query performance
+acceptance and does not resolve196's resource tradeoff.
