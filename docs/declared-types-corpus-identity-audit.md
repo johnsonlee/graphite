@@ -1160,3 +1160,54 @@ Root test log: `/tmp/graphite-pressure-reuse-root-tests-2.log`.
 Independent implementation review:
 `/tmp/graphite-pressure-execution-reuse-independent-review-1.json`, SHA-256
 `7bdc19840f50878650a363b60c85d07f3407e3c298fb820b1eb2b887addac7e0`.
+
+### Hosted successor-gap statistics classification failure (2026-10-10)
+
+Run38020531962 on5a2b7ef completed with failure. The core step's API conclusion
+was `success` because the workflow continues after its error; that conclusion
+does not prove the core comparison passed. The retained original record says
+`FAIL` at `fixture-android-08-core`, with eight completed graphs and27 successful
+phase references. There is no complete core audit. Producer assembly reports
+`ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING`; the subsequent short
+pressure/construction/loading steps do not establish performance measurements.
+
+The ninth graph failed before `core.prove`: `check_graph.properties` classified
+`successoravgloggap` and `successorexpstats` as semantic differences. The former
+is3.120472257978582 versus3.1204745680797217; the latter moves one count between
+adjacent bins. The report also retains differences in three already recognized
+residual encoding statistics. Raw records, stderr and the complete property-delta
+report are preserved under `/tmp/graphite-5a2-core-success-selected-1`; the
+directory's historical name is not a success claim.
+
+The official WebGraph3.6.12 source JAR confirms `BVGraph.storeInternal` derives
+`successorexpstats`, `successoravggap` and `successoravgloggap` from its successor
+gap histogram (BVGraph.java2592–2611). These fields are written statistics, not
+decoder parameters. The fix recognizes exactly those three fields alongside
+the existing residual statistics. It retains all actual/reference differences,
+requires matching key sets and valid finite nonnegative decimal or bin values,
+and still rejects changes in node/arc counts, graph class, decoder options and
+unknown fields. Its result remains `PASS_REQUIRES_COMPLETE_TOPOLOGY`;
+complete core and topology verification remain mandatory. The ninth graph's
+actual topology has not yet been proved.
+
+All31 runner protocol tests and264 core package tests passed. Six added cases
+reproduce the hosted classification failure, retain every observed delta, reject
+malformed or missing statistics on either arm, preserve semantic-property
+failures and prove a core failure cannot produce a completed receipt. These are
+correctness tests, not actual64-graph equivalence or performance evidence.
+Logs: `/tmp/graphite-successor-statistics-tests-1.log` and
+`/tmp/graphite-successor-statistics-core-tests-1.log`. Root independently inspected
+the official source, actual failure records, implementation and logs, then checked
+all166 refreshed control pins and parsed the workflow. The required benchmark
+gate remains failing pending a complete rerun.
+
+Before rerunning CI, all128 C/B `forward.properties` files were extracted by
+bounded ZIP ranges from the same hosted artifact, without graph payloads. Root
+independently checked their recorded hashes and replayed all64 classifications.
+Only Android08/10/14/15 differ, entirely in the five recorded residual/successor
+statistics; the remaining60 pairs match except for the expected declaration-hash
+addition. There are no further unknown or semantic-property differences. This
+metadata check does not verify the declaration digest against type bytes and
+does not replace any core/topology proof. Evidence is
+`/tmp/graphite-5a2-core-success-selected-1/all64-forward-properties`; root review
+SHA-256: `56e6491c0b80c67db8d77201c2892acda88b2936d915bb3f65e6b95e45c7e6f7`.
