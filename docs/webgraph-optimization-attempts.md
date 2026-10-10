@@ -16150,3 +16150,440 @@ report bindings and fresh process-group absence. Review:
 SHA256 `1ad1a62ff70f035c0af9845b6ae3adfa0778a77012880f51b686027e01e5dc47`.
 Only this experiment history changed after the measured cc6b7971 commit; all
 production, test and workflow files remain identical to the validated candidate.
+
+
+### Attempt203 — bounded Method source guard (source candidate; validation pending)
+
+**Hypothesis and parent.** On cumulative parent
+`d0c7abd055853a116dcd641c8b8157ace4f2baa2` (including Attempt202), the two Method
+full-value queries in the existing eight-case diagnostic still enumerate metadata
+from 64 registered sources although their WHERE selects results from two graphs.
+A restricted source predicate can avoid allocating Method rows and evaluating
+safe string predicates for excluded sources. This is separate from Attempt202's
+terminal-row copy removal and does not include the isolated Attempt199 cache.
+
+**One change.** A private Method source guard is eligible only in cross-graph mode
+with fast paths enabled, an empty seed row, one named Method node, no path,
+relationship or inline properties, and an entire WHERE made of that variable's
+literal graphId equality and literal class STARTS WITH, composed with AND/OR.
+At least one graphId leaf is required. A borrowed AST is bounded to 32 levels and
+256 logical nodes; unrecognized or larger predicates use the existing matcher.
+The proof treats class predicates as unknown/possibly true. Surviving sources
+still evaluate the complete original WHERE. This restriction matters because the
+evaluator does not short-circuit AND/OR: arbitrary predicate pruning could hide
+errors. Invalid class string IDs retain original row/evaluation behavior whenever
+the predicate reads class; graphId-only predicates do not introduce class reads.
+
+**Preserved boundary.** Source arrays, source indices, duplicate source IDs,
+metadata order, duplicate methods and complete return-descriptor identities stay
+unchanged. Every Method candidate, including excluded sources, retains the
+original cancellation tick; LIMIT/consumer stop and errors propagate immediately.
+Thus 64-source candidate enumeration and response graphCount remain unchanged;
+this is not a claim that only two physical sources are visited. Renderers,
+projection payloads, work-budget/error handling, and request shapes are unchanged.
+The guard retains only borrowed predicate references and fixed-size state.
+
+**Correctness plan.** New tests exercise actual parsed standalone WHERE clauses,
+full-shape fallback, predicate depth/size limits on empty input, 64 source indices,
+shared graphs and duplicate IDs/methods, different return descriptors, provenance,
+per-candidate polling, early stop, consumer budget errors, cancellation in rejected
+sources, and malformed class IDs. Full Method, properties, scalar aliases, ordered
+SKIP/LIMIT/probe, DISTINCT provenance and fallback cases have explicit expectations and are compared with
+an independently launched test process using GRAPHITE_NO_FASTPATH=1. That flag's
+process-wide OnceLock is not mutated inside an existing executor. These synthetic
+metadata/source arrangements use the existing JVM-produced GTY05 correctness
+fixture; they are not performance workloads. The mandatory JVM-to-native CI
+fixture gate explicitly runs the new module and fails if its fixture is missing.
+
+**Status and next evidence.** Source and rustfmt/static review only at this point;
+no Cargo test, Clippy, build, release or performance measurement has run for this
+candidate. The planned validation reuses the owned offline/locked workspace
+all-feature test, strict all-target/all-feature Clippy and fmt workflow with all
+seven required JVM/index fixture roots. Source/test identities and new test names
+must be frozen from this candidate, not copied from earlier experiment metadata.
+Any future latency decision requires the unchanged representative multi-graph
+protocol, both fixed comparison directions, complete response consumption and
+separate p50/p95, wall, CPU and RSS results against parent and accepted4f. There is
+currently no speed, resource, stability or cumulative recovery claim; previous
+semantic-proof gaps and all acceptance limits remain in force.
+
+
+**First correctness run retained (test-scope correction pending rerun).** The owned
+Attempt203 validation of isolated commit `fd0d7ff88a27d8670fd76f212518c8a3de58e7cb`
+ended with Cargo exit101: CLI41 passed and Cypher179 passed/one failed. Remaining
+workspace tests, Clippy and fmt phases did not run. Original record/logs stay at
+`/tmp/graphite-attempt203-validation-1`; the failed run is not a pass.
+
+The failed new DISTINCT-properties assertion expected return-type ordering from
+`ORDER BY m.graphId, m.return_type` after projecting only `properties(m) AS value`,
+without LIMIT. Parent `d0c7abd0` already gates pre-DISTINCT sort-value retention on
+a positive row budget. Without it, `project_row` retains only the projected value
+and provenance; missing `m` evaluates to null and sorting preserves encounter
+order. The new guard did not change this rule. The test now orders the returned
+map explicitly via `value.graphId, value.return_type`, and also asserts the
+original hidden-binding query's encounter order in both enabled and disabled
+fast-path processes. Only the test and this history change; production guard bytes
+remain identical. This correction still needs a new owned correctness run and
+creates no performance evidence.
+
+**Second correctness run — passed, not a performance result.** The fresh owned
+run `/tmp/graphite-attempt203-validation-2` tested commit
+`96e2f078eab2ea8d330b13b94169264466cac065` against parent `d0c7abd0`.
+All465 workspace tests passed: all457 retained names and exactly the eight new
+Method-guard names. Mandatory fixtures were present; the enabled/disabled
+fast-path contract test successfully launched its fresh child and compared the
+complete output. Strict workspace/all-target/all-feature Clippy and fmt passed.
+Independent review checked143 source inputs, all190 files in the seven mandatory
+fixture roots, exact command/environment bindings, raw phase logs and empty owned
+process groups. The first failed run remains unchanged and is not reclassified.
+
+Review: `/tmp/graphite-attempt203-validation-2/root-independent-review.json`,
+SHA256 `9f0c1b14bf9d899521001fe9d8df4ee67b7e43957a2f0865011192f31fc2b26d`.
+Raw record SHA256:
+`f996c6ff2776d60b5ac74777080d49b8646029761a54f00a62003958c943aae0`.
+This history amendment changes no production, test or CI bytes relative to the
+verified commit. Release/export is still pending. Query p50/p95, end-to-end time,
+CPU, RSS, construction and loading have not been measured for Attempt203;
+correctness success does not establish a performance or CI acceptance result.
+
+
+**Release and matched multi-graph diagnostic — complete, mixed; retained isolated.**
+The actual B executable/source identity remains
+`7ae7e4ee492452077f0b20cdc59d893a4a183a36`; this later history-only amendment does
+not relabel it. Release/export completed once using the owned offline/locked
+CLI release command with jobs2,102 unchanged Native source inputs and143 tested
+inputs. Export SHA256
+`656eb99ed08b8374f8259fce56e30f7c8b4653e3c892aed2c89acbe69f09b99e`;
+binary SHA256
+`dcd1618a238e883f4684685392730f2b21b53746925720a97a2da3773c55da8e`.
+The original tested commit96e2 and its input manifest,465-test record, strict
+Clippy/fmt evidence and first failed run remain immutable. Only experiment history changes after7ae7.
+
+**Fixed comparison and scope.** The original eight-case CABBAC protocol ran once,
+without retries, omitted cells, changed requests or favorable-direction selection.
+C is accepted4f (`4f2ccf33b969e684972e56b5e810034e6e67c1b3`); A is the actual
+Attempt202 runtime (`cc6b7971b877269af0e79d206b0aba8e1f2ec23a`), whose100 Native
+source files equal203's cumulative parent `d0c7abd0`; B is actual7ae7. A/B use the
+same previously audited acd11 GTY05 graph artifacts and expected bodies; C keeps
+its original graph artifacts and expected bodies. Runtime identities are not
+substituted for graph-producer identities. A's historical metadata errata stays
+A-only; B uses the exact eight new/457 retained/465 total correctness inventory.
+
+Each cell starts a new MAPPED server with64 resident graphs. Every request has
+two result/predicate target graphs (`fixture-kotlin-compiler-15` and
+`fixture-tika-10`); both Method cases still visit candidate indices across64
+sources and retain each original cancellation tick. There is no physical
+single-source or two-source access claim. Four workers continuously take the
+next original request, with no inter-request sleep. Each case/cell has one oracle,
+two warmups and20 measured requests, for1104 complete bodies and960 pressure
+samples. The full ordered JSON body, nested generic values, metadata, totals and
+graphCount are consumed and validated at limit5000 with no truncation. The
+original-variable ORDER BY queries, request240s/readiness900s/stage3600s limits,
+64MiB body cap and10ms resource sampling remain unchanged. OS cache state is
+uncontrolled; these are warmed pressure intervals after oracle/warmup, not a
+cold-loading claim. Nearest-rank per-case p50 is sorted[9], p95 sorted[18]. Two
+fixed paired repetitions do not establish tight p95 uncertainty, saturation or
+a quiet host. Timing across heterogeneous cases is not pooled.
+
+**Full request results (milliseconds).** Positive deltas are slower. Direction0
+pairs02-A/03-B and01-C/03-B; direction1 pairs05-A/04-B and06-C/04-B.
+
+
+**parent direction0: 02-A→03-B.**
+
+| Case | p50 baseline→candidate ms | Δ ms | p95 baseline→candidate ms | Δ ms |
+|---|---:|---:|---:|---:|
+| field-full | 38.385→52.088 | +13.703 | 44.657→75.075 | +30.418 |
+| field-properties | 28.037→71.268 | +43.231 | 35.804→93.574 | +57.770 |
+| parameter-full | 33.850→67.811 | +33.961 | 56.033→82.201 | +26.168 |
+| parameter-properties | 35.478→73.869 | +38.391 | 42.024→86.345 | +44.321 |
+| return-full | 30.664→63.351 | +32.687 | 35.788→84.505 | +48.717 |
+| return-properties | 26.823→59.223 | +32.400 | 36.373→65.927 | +29.554 |
+| method-full | 670.140→69.298 | -600.842 | 680.361→78.174 | -602.188 |
+| method-properties | 683.539→78.904 | -604.635 | 690.683→107.404 | -583.280 |
+
+**parent direction1: 05-A→04-B.**
+
+| Case | p50 baseline→candidate ms | Δ ms | p95 baseline→candidate ms | Δ ms |
+|---|---:|---:|---:|---:|
+| field-full | 39.685→52.096 | +12.411 | 42.770→75.414 | +32.644 |
+| field-properties | 29.035→68.514 | +39.479 | 35.035→93.917 | +58.882 |
+| parameter-full | 34.278→69.917 | +35.639 | 43.089→85.251 | +42.162 |
+| parameter-properties | 37.408→72.620 | +35.212 | 51.852→87.966 | +36.114 |
+| return-full | 31.642→63.548 | +31.906 | 40.400→83.993 | +43.594 |
+| return-properties | 28.160→55.330 | +27.169 | 40.379→70.226 | +29.847 |
+| method-full | 667.280→69.968 | -597.312 | 696.064→79.076 | -616.988 |
+| method-properties | 679.070→83.733 | -595.338 | 688.839→116.354 | -572.485 |
+
+**acceptedBaseline direction0: 01-C→03-B.**
+
+| Case | p50 baseline→candidate ms | Δ ms | p95 baseline→candidate ms | Δ ms |
+|---|---:|---:|---:|---:|
+| field-full | 21.203→52.088 | +30.885 | 25.786→75.075 | +49.289 |
+| field-properties | 20.791→71.268 | +50.477 | 24.757→93.574 | +68.817 |
+| parameter-full | 20.544→67.811 | +47.267 | 25.572→82.201 | +56.629 |
+| parameter-properties | 20.462→73.869 | +53.407 | 24.923→86.345 | +61.422 |
+| return-full | 19.698→63.351 | +43.653 | 25.566→84.505 | +58.939 |
+| return-properties | 19.358→59.223 | +39.865 | 29.099→65.927 | +36.828 |
+| method-full | 699.267→69.298 | -629.969 | 715.215→78.174 | -637.042 |
+| method-properties | 703.176→78.904 | -624.272 | 717.103→107.404 | -609.699 |
+
+**acceptedBaseline direction1: 06-C→04-B.**
+
+| Case | p50 baseline→candidate ms | Δ ms | p95 baseline→candidate ms | Δ ms |
+|---|---:|---:|---:|---:|
+| field-full | 22.035→52.096 | +30.061 | 41.392→75.414 | +34.022 |
+| field-properties | 21.204→68.514 | +47.309 | 40.809→93.917 | +53.108 |
+| parameter-full | 21.452→69.917 | +48.465 | 31.939→85.251 | +53.312 |
+| parameter-properties | 21.564→72.620 | +51.055 | 29.940→87.966 | +58.026 |
+| return-full | 21.233→63.548 | +42.315 | 26.467→83.993 | +57.527 |
+| return-properties | 20.553→55.330 | +34.776 | 22.473→70.226 | +47.753 |
+| method-full | 699.190→69.968 | -629.221 | 717.538→79.076 | -638.462 |
+| method-properties | 701.965→83.733 | -618.232 | 727.438→116.354 | -611.085 |
+
+
+**Pressure wall/CPU/RSS.** Wall spans request start through complete response
+consumption and independent validation. CPU is the enclosing server user+system
+interval; lower/upper bounds retain sampling and quantization uncertainty.
+The RSS lower bound is the maximum complete-read sample wholly inside the
+pressure interval. The RSS upper bound uses the peak over the entire owned server
+lifecycle as a conservative upper bound; it is not a pressure-only sampled peak.
+Both measure process RSS, not heap use. Lifecycle CPU and wall time remain
+separately in raw records and do not replace pressure-interval accounting or
+zero-query loading evidence.
+
+| Cell | Pressure wall ms | CPU s | CPU lower/upper s | RSS lower/upper bytes |
+|---|---:|---:|---:|---:|
+| 01-C | 7742.311 | 28.78 | 28.73/28.80 | 6427181056/6427181056 |
+| 02-A | 7937.886 | 27.44 | 27.38/27.46 | 6734413824/6734413824 |
+| 03-B | 2822.358 | 2.88 | 2.82/2.90 | 6716801024/6717014016 |
+| 04-B | 2864.604 | 2.88 | 2.83/2.90 | 6726582272/6726582272 |
+| 05-A | 7937.302 | 27.19 | 27.14/27.21 | 6726483968/6726483968 |
+| 06-C | 7791.604 | 28.85 | 28.79/28.87 | 6417793024/6417809408 |
+
+| Fixed pair | Pressure wall ms (Δ) | CPU s (Δ) | RSS [lower, upper] bytes baseline→candidate |
+|---|---:|---:|---|
+| parent 0 | 7937.886→2822.358 (-5115.528) | 27.44→2.88 (-24.56) | [6734413824, 6734413824]→[6716801024, 6717014016] |
+| parent 1 | 7937.302→2864.604 (-5072.697) | 27.19→2.88 (-24.31) | [6726483968, 6726483968]→[6726582272, 6726582272] |
+| acceptedBaseline 0 | 7742.311→2822.358 (-4919.954) | 28.78→2.88 (-25.90) | [6427181056, 6427181056]→[6716801024, 6717014016] |
+| acceptedBaseline 1 | 7791.604→2864.604 (-4926.999) | 28.85→2.88 (-25.97) | [6417793024, 6417809408]→[6726582272, 6726582272] |
+
+
+**Separate conclusions and decision.** Both fixed parent comparisons show a
+substantial Method improvement: full p50 falls600.842/597.312ms and p95
+602.188/616.988ms; properties p50 falls604.635/595.338ms and p95
+583.280/572.485ms. Both Method p50/p95 also improve relative to accepted4f.
+Pressure wall and server CPU fall in both directions. Parent RSS is lower in the
+forward pair and slightly higher in the reverse pair; accepted-baseline RSS is
+higher, but both matched bounds remain within the5% allowance. These gains are
+real observations for this declared workload, not evidence of universal speedup.
+
+All six Field/Parameter/Return cases have worse p50 and p95 than both parent and
+accepted4f in both directions. Parent p50 increases12.411–43.231ms and p95
+26.168–58.882ms. Faster Method requests, lower overall CPU or lower pressure wall
+do not compensate for those per-workload regressions. The cause of these mixed
+latencies is not established; decomposition of already recorded wire/validation
+boundaries is pending and no causal explanation is assumed. Retain203 as an
+isolated beneficial increment pending targeted tradeoff validation; do not
+integrate it into the cumulative root or declare overall recovery. No acceptance
+threshold is relaxed and no additional performance run is implied by retention.
+
+Correctness/stability evidence for this diagnostic: all1104 bodies passed the
+original six cell audits and cohort audit; all960 measured samples were retained.
+The original session67819/driver23907 terminated with exit0, errors and unissued
+cells empty, and fresh checks found all seven owned groups/eight owned PIDs gone.
+Independent root review recomputed the raw statistics/resources. The result stays
+`DIAGNOSTIC_COMPLETE_WITH_SEMANTIC_PROOF_GAP`: complete C/A/B core/topology/index
+semantic equivalence is still missing. All five semantic/acceptance flags remain
+false; this eight-case workload does not replace Native39/JVM34 acceptance.
+Construction and loading were not measured for203. Only the previously approved
+specific native64 loading tradeoff remains accepted: wall +1,630.718/+1,647.832ms
+and ready CPU +2.10/+2.04s versus accepted4f. That scoped exception does not establish
+current loading acceptance or waive RSS, query latency, correctness or stability.
+
+Immutable measured sources/runtime and original evidence remain at their original
+paths. This history is written in a separate ordinary clone, not into the frozen
+`/tmp/graphite-method-source-guard-source` checkout. Evidence:
+
+- Plan `/tmp/graphite-attempt203-pressure-preparation-1`, SHA256
+  `54191ad731f0877db0f8da8f560ac824cc74981a81ccd096ac6d1bb83cdd5e42`.
+- Original report `/tmp/graphite-attempt203-pressure-query-run-1/diagnostic-report.json`,
+  SHA256 `35dc194cb77853b5b1e0bd78d5ff735497c02d8590ec90f7f72713949bf4fda5`.
+- Terminal summary in the same directory, SHA256
+  `2c67c2db039a67ca730e71b75efda4f3d55d3c9b628bf7264cfbb627a21ec2cf`.
+- Independent review in the same directory, SHA256
+  `2c128fdc2708ed217cf62cee61a33c63006e890e29112a81cd8e2e8485190d63`.
+- First failed correctness run `/tmp/graphite-attempt203-validation-1` and actual
+  successful run `/tmp/graphite-attempt203-validation-2` remain separate and unchanged.
+
+### Attempt203 follow-up — separate spawn-client diagnostic and cumulative retention (2026-10-10)
+
+**Hypothesis and boundary.** The original thread-client result above remains intact.
+Its six shorter cases worsened as the Method improvement increased request cadence;
+wire and post-wire timestamps suggested client contention but did not establish a
+cause. This separate diagnostic uses four spawned Python workers with the original
+HTTP transport and complete-response validator. It does not remove validation time,
+change a query, relax an oracle, or reinterpret the original measurement as passing.
+The prototype and wrapper each passed 22 bounded correctness controls before one
+fixed real run. The original 7052-pin plan and runtime/artifact inputs stayed frozen.
+
+C is accepted `4f2ccf33b969e684972e56b5e810034e6e67c1b3`; A is the actual
+Attempt202 runtime `cc6b7971b877269af0e79d206b0aba8e1f2ec23a`; B is the actual
+Attempt203 runtime `7ae7e4ee492452077f0b20cdc59d893a4a183a36`. This is the same
+real Android/Tika/Hive/Kotlin 64-graph resident corpus and eight projection requests
+as the previous run. Every request targets Kotlin15 and Tika10; Method enumeration
+still visits all 64 sources and preserves candidate ticks. Each CABBAC cell has one
+oracle, two warmups and 20 measured requests per case, concurrency 4, no think time,
+limit 5000 and complete ordered responses. Nearest-rank p50/p95 use zero-based sorted indices
+9/18, without pooling, trimming, selecting a direction, or changing statistics after
+measurement. The host remains the local macOS environment, not hosted CI; OS caches
+are uncontrolled. Fresh processes, oracle/warmup and validation overhead are declared;
+this does not establish a cold-cache or saturation result or tight p95 uncertainty.
+
+Only worker isolation changes. Driver and worker CPU are recorded separately from
+server CPU. Full-body consumption and independent validation remain inside each
+request's latency. Spawn interpreter setup is outside individual request latency;
+client metadata retains startup and loop CPU separately. The wrapper requires both
+original body/resource audits and new client ownership/claim/CPU/cleanup audits.
+Its complete original cohort audit still reports missing full core/topology/index
+semantic authority, so all final-acceptance flags remain false.
+
+Command (one real run, session22115, terminal exit0):
+
+```sh
+env PYTHONDONTWRITEBYTECODE=1 python3 -B /private/tmp/graphite-attempt203-spawn-wrapper-prep-1/wrapper.py run --manifest /private/tmp/graphite-attempt203-spawn-wrapper-prep-1/manifest.json --output /private/tmp/graphite-attempt203-spawn-diagnostic-run-1 --execute-assigned-slot
+```
+
+The original plan SHA is `54191ad731f0877db0f8da8f560ac824cc74981a81ccd096ac6d1bb83cdd5e42`;
+the separate wrapper manifest SHA is `a6c5977230d0e5a5743daee655f972f5cbcfef219010617b2dddf5c190a1593b`.
+All comparisons below are absolute milliseconds, baseline → candidate.
+
+**Parent forward: 02-A → 03-B.**
+
+| Case | p50 ms | Delta p50 ms | p95 ms | Delta p95 ms |
+|---|---:|---:|---:|---:|
+| field-full | 19.754→19.849 | +0.095 | 20.935→21.786 | +0.851 |
+| field-properties | 19.873→19.980 | +0.107 | 21.538→20.790 | -0.748 |
+| parameter-full | 24.882→25.103 | +0.221 | 26.509→27.817 | +1.308 |
+| parameter-properties | 25.153→25.383 | +0.231 | 27.022→27.737 | +0.715 |
+| return-full | 21.237→21.349 | +0.112 | 22.020→22.548 | +0.527 |
+| return-properties | 21.221→21.481 | +0.260 | 21.848→22.948 | +1.100 |
+| method-full | 663.586→51.126 | -612.460 | 676.251→52.163 | -624.087 |
+| method-properties | 664.084→53.058 | -611.027 | 679.554→55.441 | -624.113 |
+
+**Parent reverse: 05-A → 04-B.**
+
+| Case | p50 ms | Delta p50 ms | p95 ms | Delta p95 ms |
+|---|---:|---:|---:|---:|
+| field-full | 19.553→19.441 | -0.112 | 21.254→20.850 | -0.404 |
+| field-properties | 19.801→19.711 | -0.090 | 21.361→20.438 | -0.923 |
+| parameter-full | 24.760→24.969 | +0.209 | 26.161→25.834 | -0.327 |
+| parameter-properties | 25.011→25.260 | +0.249 | 26.770→26.946 | +0.176 |
+| return-full | 21.237→21.091 | -0.146 | 22.348→22.099 | -0.248 |
+| return-properties | 21.017→21.106 | +0.089 | 22.126→22.971 | +0.845 |
+| method-full | 682.581→50.581 | -631.999 | 688.121→51.860 | -636.261 |
+| method-properties | 684.374→52.338 | -632.036 | 687.819→54.253 | -633.566 |
+
+**Accepted4f forward: 01-C → 03-B.**
+
+| Case | p50 ms | Delta p50 ms | p95 ms | Delta p95 ms |
+|---|---:|---:|---:|---:|
+| field-full | 14.258→19.849 | +5.591 | 16.338→21.786 | +5.448 |
+| field-properties | 14.232→19.980 | +5.747 | 14.912→20.790 | +5.879 |
+| parameter-full | 14.123→25.103 | +10.981 | 14.584→27.817 | +13.233 |
+| parameter-properties | 13.975→25.383 | +11.408 | 15.187→27.737 | +12.550 |
+| return-full | 14.731→21.349 | +6.619 | 16.825→22.548 | +5.723 |
+| return-properties | 14.495→21.481 | +6.986 | 14.996→22.948 | +7.952 |
+| method-full | 693.607→51.126 | -642.481 | 710.656→52.163 | -658.493 |
+| method-properties | 692.828→53.058 | -639.771 | 711.886→55.441 | -656.445 |
+
+**Accepted4f reverse: 06-C → 04-B.**
+
+| Case | p50 ms | Delta p50 ms | p95 ms | Delta p95 ms |
+|---|---:|---:|---:|---:|
+| field-full | 14.248→19.441 | +5.193 | 14.692→20.850 | +6.159 |
+| field-properties | 14.297→19.711 | +5.414 | 14.856→20.438 | +5.582 |
+| parameter-full | 14.130→24.969 | +10.840 | 15.699→25.834 | +10.136 |
+| parameter-properties | 14.172→25.260 | +11.088 | 15.806→26.946 | +11.140 |
+| return-full | 14.821→21.091 | +6.270 | 15.297→22.099 | +6.803 |
+| return-properties | 14.292→21.106 | +6.814 | 14.851→22.971 | +8.120 |
+| method-full | 696.949→50.581 | -646.367 | 710.917→51.860 | -659.057 |
+| method-properties | 697.028→52.338 | -644.689 | 711.540→54.253 | -657.287 |
+
+Resource bounds cover the pressure interval. CPU is total server user plus system;
+RSS uses complete-read sampled lower bounds and the separately recorded lifecycle
+peak as a conservative upper bound. These are not construction or loading results.
+
+| Pair | Pressure wall ms | CPU bounds seconds | RSS bounds bytes |
+|---|---:|---:|---:|
+| Parent forward | 7363.884→1221.842 | [27.36, 27.44]→[2.85, 2.94] | [6702678016, 6702678016]→[6717227008, 6717227008] |
+| Parent reverse | 7557.118→1203.082 | [28.10, 28.19]→[2.87, 2.93] | [6706003968, 6706003968]→[6715326464, 6715326464] |
+| Accepted4f forward | 7427.522→1221.842 | [28.71, 28.78]→[2.85, 2.94] | [6408060928, 6408060928]→[6717227008, 6717227008] |
+| Accepted4f reverse | 7449.794→1203.082 | [28.85, 28.92]→[2.87, 2.93] | [6426017792, 6426017792]→[6715326464, 6715326464] |
+
+Client CPU is additional diagnostic information, not a substitute for server CPU.
+Driver process CPU excludes children; worker loop CPU includes full validation,
+journaling and claim waits. Worker total-through-final includes interpreter startup
+but excludes final-report/exit tail and the multiprocessing resource tracker.
+
+| Cell | Driver CPU seconds | Worker loop CPU seconds | Worker total-through-final CPU seconds |
+|---|---:|---:|---:|
+| 01-C | 0.835571 | 1.451318 | 1.711224 |
+| 02-A | 1.023098 | 2.540878 | 2.801957 |
+| 03-B | 0.253498 | 2.566279 | 2.844685 |
+| 04-B | 0.247792 | 2.538667 | 2.801814 |
+| 05-A | 1.206683 | 2.525803 | 2.785331 |
+| 06-C | 1.140311 | 1.453536 | 1.717190 |
+
+**Separate conclusions.** The large Method improvement persists: parent full p95
+676.251/688.121→52.163/51.860ms and properties p95
+679.554/687.819→55.441/54.253ms. Six shorter cases have parent p50 changes
+−0.146..+0.260ms and p95 changes −0.923..+1.308ms, with mixed signs.
+Against accepted4f, these six still regress: p50 +5.193..+11.408ms and
+p95 +5.448..+13.233ms. Method p50/p95 improve strongly against accepted4f.
+Server pressure wall/CPU improve in both fixed directions; each conservative CPU
+and RSS comparison satisfies its independent 5% limit. No zero-query loading,
+construction, JVM-query or unrelated query-family recovery is established here.
+
+Changing client execution substantially changes both wire and post-wire observations.
+For example, 03-B field-full wire p50 is 30.436→7.987ms and post-wire p50
+23.831→11.851ms across the old/new diagnostic runs. These component quantiles
+are not additive and do not replace full latency. The runs are separate sequential
+experiments, not a randomized client-mode trial; they support sensitivity to client
+execution but do not prove that GIL contention alone caused the original regressions.
+Both complete reports and all samples remain available. The original client mode's
+mixed result is not erased or silently replaced for CI acceptance.
+
+Correctness/stability: all1104 complete bodies, including960 measured requests,
+passed the six original per-cell and client audits and final cohort audit. No
+unissued/uncertain request remains. Root independently recomputed all960 sample
+quantiles and four fixed comparison/resource tables, checked every complete body
+hash and bound client record, and verified owned groups absent after terminal exit0.
+This is request-level evidence, not the missing complete64 semantic proof.
+
+**Decision: retain and integrate the verified Method increment into the cumulative
+local branch.** The exact864b source delta applies on2e8507 without overlapping its
+nine proof/control files. The inherited mandatory CI fix remains in ancestry.
+All143 tested source inputs and102 runtime source inputs match the verified465-test
+candidate; production/test bytes were not changed to integrate it. Existing465
+workspace tests, strict Clippy and fmt evidence therefore remains applicable to
+those exact inputs; this is not a new local suite execution or new-head CI result.
+The new head still requires normal CI. No push interrupts the running2e8507 complete
+semantic proof. Tiny parent differences do not justify repeated stabilization runs;
+accepted-baseline short-query regressions and complete operation-specific acceptance
+remain open. The known build/save gaps stay lower priority.
+
+Evidence: `/tmp/graphite-attempt203-spawn-diagnostic-run-1`.
+Original cohort report SHA256:
+`0534d26af0ca617e1a4875fd0e7c82b5c929507bce595a5141b9ae15a23ad3c1`.
+Wrapper report SHA256:
+`f3b988946d9c8fe55ca391f1b7f936bbea895d0e424921dfcb48c6e95efe1045`.
+Complete old/new fixed pair and wire/post-wire table:
+`fixed-pair-client-comparison.md`, SHA256
+`91f0230a50afc2b11e10c9e345a8ecf2f1e7b567477caaab5c54351da39943cb`.
+Root independent raw review:
+`/tmp/graphite-attempt203-spawn-root-review-1/review.json`, SHA256
+`f569077414dc1c4b49d9383625f75d1930462c23796c7d3f7cb8087af27f8c68`.
+Source integration review:
+`/tmp/graphite-attempt203-integration-review-2e8507-1/review.json`, SHA256
+`ddbdbb46610a7cbba84ce2ed874a051130cfb942683a373437c49dc1c64e8b06`.

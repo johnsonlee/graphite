@@ -878,6 +878,11 @@ impl Executor {
         {
             return plan.run(self, &mut emit);
         }
+        if let Some(plan) =
+            super::method_source_guard::MethodSourceGuard::build(self, patterns, where_clause, row)
+        {
+            return plan.run(self, &mut emit);
+        }
         matcher.match_patterns(row, patterns, &mut emit)
     }
 }

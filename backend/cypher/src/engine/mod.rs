@@ -4,6 +4,7 @@ pub mod fastpath;
 pub mod hop;
 mod id_candidate;
 pub mod matching;
+mod method_source_guard;
 pub mod partition;
 pub mod pipeline;
 pub mod props;
