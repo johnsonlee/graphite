@@ -23,14 +23,18 @@ def props(raw):
     return result
 
 ENCODING_INTEGER_KEYS={'bitsforblocks','bitsforintervals','bitsforreferences','bitsforresiduals','copiedarcs','residualarcs'}
-ENCODING_DECIMAL_KEYS={'residualavggap','residualavgloggap'}
-ENCODING_KEYS=ENCODING_INTEGER_KEYS|ENCODING_DECIMAL_KEYS|{'residualexpstats'}
+# BVGraph 3.6.12 storeInternal derives both successor/residual gap summaries
+# from exponential histograms (BVGraph.java:2592-2633). They are statistics,
+# not decoder parameters; accepting them still requires complete topology.
+ENCODING_DECIMAL_KEYS={'residualavggap','residualavgloggap','successoravggap','successoravgloggap'}
+ENCODING_BIN_KEYS={'residualexpstats','successorexpstats'}
+ENCODING_KEYS=ENCODING_INTEGER_KEYS|ENCODING_DECIMAL_KEYS|ENCODING_BIN_KEYS
 
 def statistic(key,value):
     core.need(isinstance(value,str),'missing encoding statistic '+key)
     if key in ENCODING_INTEGER_KEYS:
         core.need(re.fullmatch(r'[0-9]+',value),'invalid integer statistic '+key)
-    elif key=='residualexpstats':
+    elif key in ENCODING_BIN_KEYS:
         core.need(bool(re.fullmatch(r'[0-9]+(?:,[0-9]+)*',value)),'invalid gap-bin statistic')
     else:
         try: number=Decimal(value)

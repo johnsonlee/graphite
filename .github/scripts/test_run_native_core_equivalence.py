@@ -27,6 +27,88 @@ class PropertiesTests(unittest.TestCase):
         for before,after in ((b'1.2',b'NaN'),(b'1.2',b'-1'),(b'bitsforblocks=7',b'bitsforblocks=-1')):
             with self.assertRaises(ValueError):check.properties(a.replace(before,after),b,'abc')
 
+    def hosted_gap_properties(self):
+        # Exact differing statistics retained by hosted 5a2 android-08 failure.
+        values={
+            'bitsforresiduals':('2181785','2181788'),
+            'residualavgloggap':('3.094255886783927','3.0942584635959753'),
+            'residualexpstats':('75970,89836,94030,47550,27853,15300,10151,7023,5021,3345,2563,1950,1329,873,785,506,458,443,162,35',
+                                '75970,89836,94030,47550,27853,15299,10152,7023,5021,3345,2563,1950,1329,873,785,506,458,443,162,35'),
+            'successoravgloggap':('3.120472257978582','3.1204745680797217'),
+            'successorexpstats':('80490,101233,105551,54623,31039,16958,11546,8151,6007,4307,2909,2076,1435,904,775,530,509,418,162,31',
+                                 '80490,101233,105551,54623,31039,16957,11547,8151,6007,4307,2909,2076,1435,904,775,530,509,418,162,31')}
+        prefix='graphclass=it.unimi.dsi.webgraph.BVGraph\nnodes=4\narcs=5\n'
+        actual=(prefix+''.join(k+'='+v[0]+'\n' for k,v in values.items())+'graphite.declaredTypes.sha256=abc\n').encode()
+        reference=(prefix+''.join(k+'='+v[1]+'\n' for k,v in values.items())).encode()
+        return actual,reference,values
+
+    def test_hosted_successor_gap_deltas_retained_and_still_require_topology(self):
+        actual,reference,values=self.hosted_gap_properties()
+        with patch.object(check,'ENCODING_KEYS',check.ENCODING_KEYS-{'successoravggap','successoravgloggap','successorexpstats'}):
+            previous=check.properties(actual,reference,'abc')
+        self.assertEqual('FAIL',previous['status'])
+        self.assertEqual({'successoravgloggap','successorexpstats'},set(previous['semanticDifferences']))
+        result=check.properties(actual,reference,'abc')
+        self.assertEqual('PASS_REQUIRES_COMPLETE_TOPOLOGY',result['status'])
+        self.assertEqual({k:{'actual':v[0],'reference':v[1]} for k,v in values.items()},result['differingProperties'])
+        self.assertEqual(sorted(values),result['compressionExceptions'])
+        self.assertEqual({},result['semanticDifferences'])
+        self.assertTrue(result['requiresCompleteTopology']);self.assertFalse(result['independentStatisticsRecomputeClaim'])
+
+    def test_both_successor_decimal_summaries_accept_only_finite_nonnegative_values(self):
+        for key in ('successoravggap','successoravgloggap'):
+            actual=('graphite.declaredTypes.sha256=abc\n'+key+'=1.25').encode();reference=(key+'=2.5').encode()
+            self.assertEqual({key:{'actual':'1.25','reference':'2.5'}},check.properties(actual,reference,'abc')['differingProperties'])
+            for bad in ('NaN','sNaN','Infinity','-Infinity','-1','-0.001','','garbage'):
+                for side in ('actual','reference'):
+                    with self.subTest(key=key,bad=bad,side=side),self.assertRaises(ValueError):
+                        check.properties(actual.replace(b'1.25',bad.encode()) if side=='actual' else actual,
+                                         reference.replace(b'2.5',bad.encode()) if side=='reference' else reference,'abc')
+
+    def test_both_histograms_reject_bad_bin_syntax_on_either_arm(self):
+        for key in ('successorexpstats','residualexpstats'):
+            actual=('graphite.declaredTypes.sha256=abc\n'+key+'=1,2').encode();reference=(key+'=2,1').encode()
+            self.assertEqual('PASS_REQUIRES_COMPLETE_TOPOLOGY',check.properties(actual,reference,'abc')['status'])
+            for bad in ('','-1,2','1,-2','1,,2','1,','1, 2','1.0,2','NaN','+1,2'):
+                for side in ('actual','reference'):
+                    with self.subTest(key=key,bad=bad,side=side),self.assertRaises(ValueError):
+                        check.properties(actual.replace(b'1,2',bad.encode()) if side=='actual' else actual,
+                                         reference.replace(b'2,1',bad.encode()) if side=='reference' else reference,'abc')
+
+    def test_successor_missing_keys_still_rejected_and_unknown_keys_not_exempted(self):
+        for key in ('successoravggap','successoravgloggap','successorexpstats'):
+            for actual,reference in ((('graphite.declaredTypes.sha256=abc\n'+key+'=1').encode(),b''),
+                                     (b'graphite.declaredTypes.sha256=abc',(key+'=1').encode())):
+                with self.subTest(key=key),self.assertRaisesRegex(ValueError,'key set differs'):
+                    check.properties(actual,reference,'abc')
+        actual,reference,_=self.hosted_gap_properties()
+        result=check.properties(actual+b'successorFutureStatistic=1\n',reference+b'successorFutureStatistic=2\n','abc')
+        self.assertEqual('FAIL',result['status'])
+        self.assertEqual({'successorFutureStatistic':{'actual':'1','reference':'2'}},result['semanticDifferences'])
+
+    def test_node_arc_and_decoder_parameters_still_block_with_gap_changes(self):
+        actual,reference,_=self.hosted_gap_properties()
+        for key,before,after in (('nodes','4','6'),('arcs','5','7'),('graphclass','it.unimi.dsi.webgraph.BVGraph','other.Graph'),
+                                  ('compressionflags','0','1'),('windowsize','7','8'),('version','0','1')):
+            a,b=actual,reference
+            if key not in ('nodes','arcs','graphclass'):
+                a+=(key+'='+before+'\n').encode();b+=(key+'='+before+'\n').encode()
+            result=check.properties(a.replace((key+'='+before).encode(),(key+'='+after).encode()),b,'abc')
+            self.assertEqual('FAIL',result['status'])
+            self.assertEqual({key:{'actual':after,'reference':before}},result['semanticDifferences'])
+
+    def test_gap_statistics_do_not_bypass_core_proof_or_write_completed_receipt(self):
+        f=declarations_test.DeclarationBindingTests();f.setUp();self.addCleanup(f.doCleanups)
+        reference=f.root/'reference';reference.mkdir()
+        (reference/'forward.properties').write_text('graphclass=example.Graph\nsuccessoravgloggap=2.5\nsuccessorexpstats=2,1\n')
+        props=f.graph/'forward.properties';props.write_text(props.read_text()+'successoravgloggap=1.25\nsuccessorexpstats=1,2\n')
+        with patch.object(check.core,'prove',side_effect=ValueError('independent core mismatch')) as prove:
+            with self.assertRaisesRegex(ValueError,'independent core mismatch'):
+                check.execute(f.graph,reference,f.output,f.output,f.root/'proof',f.row,{}, {})
+        prove.assert_called_once()
+        self.assertEqual('PASS_REQUIRES_COMPLETE_TOPOLOGY',r.common.read(f.root/'proof/properties.json')['status'])
+        self.assertFalse((f.root/'proof/record.json').exists())
+
     def test_property_authority_and_duplicate_key_fail_closed(self):
         for actual,reference,digest in [(b'graphite.declaredTypes.sha256=x',b'', 'wrong'),
             (b'graphite.declaredTypes.sha256=x',b'graphite.declaredTypes.sha256=x','x'),
