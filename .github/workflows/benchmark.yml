@@ -2687,7 +2687,9 @@ jobs:
     runs-on: ubuntu-latest
     # Build each pressure arm and its own real64 corpus sequentially. Independent
     # audits/oracles must complete before any pressure plan can become executable.
-    timeout-minutes: 180
+    # Full64 proof and six cells per operation need a larger job budget; individual
+    # request/process deadlines, heap limits and all acceptance gates stay unchanged.
+    timeout-minutes: 360
     env:
       PYTHONDONTWRITEBYTECODE: '1'
     permissions:
