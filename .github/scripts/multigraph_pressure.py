@@ -133,6 +133,12 @@ def validate_response(raw, case, arm, compiled_legal=None):
         require(isinstance(compiled_legal, CompiledDataflowOracle), 'legal oracle must be compiled before requests')
         compiled_legal.validate(value)
         actual = digest_bytes(canonical(value))
+    elif oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1':
+        from jvm_pressure_oracles import CompiledLegalLimitOracle
+        require(isinstance(compiled_legal, CompiledLegalLimitOracle), 'JVM legal oracle must be compiled before requests')
+        compiled_legal.validate(value)
+        # This is the observed body identity, not the typed universe digest.
+        actual = digest_bytes(canonical(value))
     elif oracle['kind'] == 'jvm-full-typed-envelope-v1':
         actual = digest_bytes(canonical(typed_envelope(value, oracle['rowOrder'])))
         expected = typed_envelope(oracle['value'], oracle['rowOrder'])
@@ -149,6 +155,23 @@ def compile_response_validator(cases, arm):
     require(len({case['id'] for case in cases}) == len(cases), 'unique compiled cases')
     for case in cases:
         oracle = case['oracleByArm'][arm]
+        if oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1':
+            import jvm_pressure_oracles as jvm
+            definitions = {item['id']: item for item in jvm.cases(case['request']['body']['graphs'])}
+            require(case['id'] in definitions, 'known complete26 JVM request definition')
+            definition = definitions[case['id']]
+            for field in ('request', 'targetGraphIds'):
+                require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact JVM request/scope binding')
+            for field in ('family', 'registeredGraphIds', 'requestedGraphIds', 'columns', 'effectiveLimit',
+                          'requestSha256', 'querySha256'):
+                if field in case:
+                    require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact supplied JVM definition field: ' + field)
+            require(jvm.digest(oracle['value']) == oracle['digest'], 'complete typed JVM universe digest')
+            validator = jvm.CompiledLegalLimitOracle(oracle['value'], definition)
+            require(type(oracle['rows']) is int and oracle['rows'] == min(validator.total, validator.limit),
+                    'JVM legal oracle row count')
+            compiled[case['id']] = validator
+            continue
         if oracle['kind'] != 'native-complete-legal-limit-multiset-v1':
             continue
         require(digest_bytes(canonical(oracle['value'])) == oracle['digest'], 'complete legal oracle digest')
