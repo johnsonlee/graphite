@@ -15439,3 +15439,54 @@ Root review SHA-256:
 Next compare the isolated candidate against the retained195 writer and accepted4f
 using the existing real64 protocol. Correctness success alone does not establish
 the intended CPU benefit or accept the additional temporary cache memory.
+
+
+### Attempt196 follow-up — completed real64 construction comparison (2026-10-10)
+
+The frozen six-cell CABBAC run completed using the accepted4f C writer,
+retained195 A writer (`7e6a61d5`) and isolated196 B writer (`6288122a`). Each
+cell constructed fresh64 graphs with the same four real JARs, JDK17,4g/APC4,
+input-prewarmed protocol and usable-save boundary described above. All six
+construction and six mandatory second-readback phases exited normally; no
+failures or unissued cells were omitted. The original resource auditor passed.
+Root independently recomputed it from the raw logs/receipts and checked that
+all13 recorded driver/phase process IDs and groups were absent from fresh `ps`.
+
+| Cell | Writer | Wall seconds | Total CPU seconds | Peak RSS bytes |
+|---|---|---:|---:|---:|
+| 01-C | accepted4f | 247.28 | 317.24 | 4,074,438,656 |
+| 02-A | retained195 | 265.41 | 356.40 | 3,349,479,424 |
+| 03-B | isolated196 | 273.39 | 349.48 | 3,854,991,360 |
+| 04-B | isolated196 | 272.61 | 347.59 | 3,776,724,992 |
+| 05-A | retained195 | 279.58 | 371.33 | 3,399,761,920 |
+| 06-C | accepted4f | 253.20 | 332.34 | 3,783,147,520 |
+
+Parent-relative CPU decreases by6.92 and23.74 seconds (1.94% and6.39%). Wall
+changes by+7.98 and-6.97 seconds, so no consistent wall improvement is established.
+Peak RSS increases by505,511,936 and376,963,072 bytes (15.09% and11.09%). This is
+a measured process-memory tradeoff; it does not by itself attribute those bytes
+to the primitive cache. Both comparisons and their order remain visible; these
+two fixed directions do not establish a confidence interval or sustained-query
+latency distribution.
+
+Against accepted4f, wall remains26.11 and19.41 seconds slower. CPU increases by
+32.24 seconds (10.16%, fails5%) and15.25 seconds (4.59%, passes5%). RSS decreases
+by219,447,296 and6,422,528 bytes, satisfying the independent5% bound in both
+pairs. Correctness remains387 passing cases with detekt/kover; construction and
+readback are stable in this cohort. Loading and query p50/p95 were not measured
+for196, and complete independent semantic equivalence of these fresh outputs is
+still a separate outstanding proof. No construction or other-operation acceptance
+is claimed.
+
+Decision: **retain196 as an isolated CPU-beneficial candidate for continued
+composition**, with its parent RSS cost and cumulative wall/CPU gap explicitly
+open. Do not integrate it as a completed recovery or discard the verified CPU
+increment merely because cumulative acceptance is incomplete. The PR branch
+still retains195 while the additional resource tradeoff is investigated.
+
+Raw output: `/tmp/graphite-attempt196-real64-construction-1`.
+Execution SHA-256: `dcb5dc6d17ca4c0ee3df32f6f2cd2ecc056b8054d57c95bf94b1ec70b170d126`.
+Original resource audit SHA-256:
+`475f2e59977a8aa6f6aded5fa6fbd2d65b2f174f1533503a2d1e22c383f60b07`.
+Root independent review SHA-256:
+`bbde78e5d9d0c72ded4494c701c3c4057fbff602720b981e618850af71fcf3a1`.
