@@ -15336,3 +15336,33 @@ recorded above. The integrated four-file JVM patch is byte-identical to the
 fully tested isolated candidate; the shared dictionary and wire format are
 unchanged. Further CPU work requires matching construction profiling rather
 than attributing this whole-operation gap to an unmeasured source-level guess.
+
+
+#### Attempt195 follow-up — matched construction hotspot diagnosis
+
+The remaining construction CPU gap will be diagnosed with one accepted4f and
+one candidate7e6a61d5 full64 run, in that fixed order. This reuses the frozen195
+writer packages, four input JARs, prewarm, 4 GiB/APC4 settings, complete usable-save
+boundary and owned process runner. Only construction receives JFR flags; the
+mandatory second verification stays uninstrumented. The original181 JFC and
+streaming Java extractor are byte-identical. This is hotspot diagnosis, not a
+new optimization or performance-acceptance comparison.
+
+Preparation: `/tmp/graphite-real64-construction-profile-prep-1`.
+Plan SHA-256: `00258c4045ffdac3cf5268422836f60e09e66029a2f7a4e0fbe57018688c2852`.
+Root reviewed the command/ownership/analysis paths, verified23 source/control
+pins and passed9 tiny protocol tests. Root review SHA-256:
+`440ba4497bad32679afa923f6cede16104b00aa2bc5281406fcf814efd320a91`.
+Fresh output: `/tmp/graphite-real64-construction-profile-1`.
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B /tmp/graphite-real64-construction-profile-prep-1/run.py --execute-assigned-slot
+```
+
+Both runs and all extraction phases are serial under one local heavy-work owner.
+Raw recordings, samples, full stacks, summary and cleanup receipts are retained.
+JFR chunk lifecycle, retention and DataLoss checks prevent silently using a
+rotated suffix as the complete sampled interval. Startup before recording and
+exit after recording remain unsampled. Sample shares are not CPU-time shares;
+allocation weights are estimates, not retained heap or RSS. No hotspot, CPU
+cause, new optimization benefit or acceptance is claimed before actual output.
