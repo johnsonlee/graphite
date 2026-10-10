@@ -158,3 +158,28 @@ The fixed CABBAC/c4/2-warmup/20-sample protocol and resource limits are unchange
 No record or plan readiness establishes a performance pass; actual pressure results
 remain necessary. Missing raw proofs, incomplete pairs or conflicting corrections
 block preparation.
+
+### Construction uses the same sealed writers
+
+`run_real64_construction.py --producers <packet.json> --base-sha <A> --candidate-sha <B>
+--output <fresh-directory> --prefix <report-prefix>` consumes the corrected bundle
+and the already built writer JARs. It does not compile or start query servers.
+It measures six sequential fresh64 outputs in fixed CABBAC order with the same
+four source JARs, JDK, `-Xmx4g` and `-XX:ActiveProcessorCount=4`. Each timed writer
+must finish saving all graphs, indexes and manifests, its embedded readback, and
+normal exit. A second `--verify` and full inventory are mandatory untimed gates.
+Source/JAR reads before each cell are matched; disk-cold behavior is not claimed.
+
+`audit_real64_construction.py` independently reconstructs the original GNU time,
+owned phase exits, exact writer commands, provenance, index bytes and saved64
+inventory. Cross-version comparability belongs to the pinned same-source writer
+bundle; each fresh output has its own validity checks. Nondeterministic saved
+bytes are not treated as a semantic difference, and complete semantic/source
+Signature completeness flags remain false. Failed and unissued cells are retained.
+
+`benchmark-construction.mjs` rechecks archived raw resources and both fixed
+accepted-baseline comparisons. Each requires wall time no greater than baseline,
+and CPU and RSS individually within5%. This does not apply the separate accepted
+Native loading tradeoff and cannot authorize loading or query acceptance.
+The workflow must actually execute the six cells: neither a prepared plan nor the
+producer's initial single CAB construction capture can satisfy this operation.

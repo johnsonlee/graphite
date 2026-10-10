@@ -140,8 +140,9 @@ def expected_commands(root, checkout, runtime, inputs):
             'verify-real64':[*writer,'--verify',str(root/'graphs/graphs.tsv'),str(root/'graphs/fixture-provenance.tsv')]}
 
 
-def verify_fixture(root, fixture, runtime, inputs, catalog, revision):
-    require(fixture['writerRevision']==revision and fixture['writerJarSha256']==runtime['files'][str(root/'runtime/writer.jar')], 'own revision writer')
+def verify_fixture(root, fixture, runtime, inputs, catalog, revision, writer_path=None):
+    writer_path = str(root/'runtime/writer.jar') if writer_path is None else str(writer_path)
+    require(fixture['writerRevision']==revision and fixture['writerJarSha256']==runtime['files'][writer_path], 'own revision writer')
     require(inventory(root/'graphs')==fixture['files'],'closed complete fixture output')
     lines = (root/'graphs/fixture-provenance.tsv').read_text().splitlines()
     require(lines and lines[0] == PROVENANCE_HEADER, 'fixture provenance header')
