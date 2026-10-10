@@ -15081,3 +15081,61 @@ CPU is29.830/29.390s versus193's29.600/29.470s and accepted4f's28.600/28.790s. A
 Command: `python3 -B /tmp/graphite-attempt194-followup-prep-1/pressure/run.py --execute-assigned-slot --first-port 23060 --output /tmp/graphite-attempt194-pressure-query-run-1`.
 Complete raw evidence, requests, audits and failures are retained in that output. Root's first statistics-reader invocation treated the plan's paired cell indices as names and failed before writing a report; the corrected reader uses the original declared indices and changes no measurements. Final independent statistics SHA-256:
 `697b38bdaf9f57561060ffd6134b0a0b12ad53f344b86c48074a2b6295e50011`.
+
+
+### Attempt194 follow-up — separate loading result and integration (2026-10-10)
+
+The predeclared zero-query loading comparison completed in fixed CABBAC order.
+Each fresh Native process loaded all 64 real graphs through readiness; no oracle,
+warmup or query request was issued. All six cells completed without errors, the
+single final raw audit passed, and all six owned process groups were absent after
+normal termination. Root independently parsed the raw ps samples, lifecycle RSS
+and readiness timestamps and reproduced every resource interval below.
+
+| Cell | Runtime | Readiness wall (ms) | CPU bounds (s) | Peak RSS bounds (bytes) |
+|---|---|---:|---|---|
+| 01-C | accepted4f | 18478.098 | [18.68, 18.72] | [6374277120, 6375882752] |
+| 02-A | 193 | 20811.804 | [21.14, 21.18] | [6633701376, 6637453312] |
+| 03-B | 194 | 20918.568 | [21.22, 21.26] | [6618693632, 6621560832] |
+| 04-B | 194 | 20901.575 | [21.21, 21.25] | [6619119616, 6620479488] |
+| 05-A | 193 | 21056.023 | [21.31, 21.35] | [6639435776, 6642302976] |
+| 06-C | accepted4f | 18703.744 | [18.92, 18.96] | [6375161856, 6377111552] |
+
+Against parent193, candidate194 reduces loading RSS by 12.14–18.76 MB in the
+forward pair and 18.96–23.18 MB in the reverse pair. Wall changes are +106.764 ms
+and −154.448 ms; CPU changes are +0.04–0.12 s and −0.14–0.06 s. Both parent CPU
+and RSS comparisons satisfy their independent 5% limits. The opposing wall/CPU
+directions do not establish a loading speedup.
+
+Against accepted4f, RSS increases by 242.81–247.28 MB and 242.01–245.32 MB;
+both comparisons pass the 5% RSS limit. Dividing by 64 gives 3.794–3.864 and
+3.781–3.833 decimal MB extra per resident graph. This is a process-level loading
+increment averaged across the corpus, not an isolated graph's total memory or a
+query-stage measurement. Wall still increases by 2440.470/2197.831 ms and CPU
+by 2.50–2.58/2.25–2.33 s. Both raw baseline CPU comparisons fail 5%; the earlier
+limited loading tradeoff is not expanded to label these results recovered.
+No query p50/p95 is inferred from readiness timing.
+
+**Decision: integrate candidate194 for verified memory reductions in both
+loading and the separately measured concurrent multi-graph query workload.**
+Its exact three production/test files are retained unchanged from tested commit
+`582f632662f0568204400fa77188d3549afffd91`; no format, graph data, feature or
+correctness check is removed. Query latency remains mixed relative to193 and
+above accepted4f, loading baseline CPU is unresolved, and construction/JVM
+query recovery and complete cross-revision semantic authority remain separate
+open requirements. Overall performance acceptance remains false. These two
+fixed paired directions give no tight statistical uncertainty or saturation
+claim; all samples and failures remain in the evidence directories.
+
+Commands (run and audit sequentially):
+
+```sh
+python3 -B /tmp/graphite-attempt194-followup-prep-1/pressure/loading/run_loading.py run --plan /tmp/graphite-attempt194-followup-prep-1/loading-plan.json --output /tmp/graphite-attempt194-pressure-loading-run-1
+python3 -B /tmp/graphite-attempt194-followup-prep-1/pressure/loading/audit_loading.py --plan /tmp/graphite-attempt194-followup-prep-1/loading-plan.json --root /tmp/graphite-attempt194-pressure-loading-run-1 --output /tmp/graphite-attempt194-pressure-loading-audit-1.json
+```
+
+Final raw audit SHA-256:
+`cb2fddca90dd0acb49722679289f3cb341cef5ea21a4f5845497704c3f846660`.
+Root independent resource reconstruction:
+`/tmp/graphite-attempt194-pressure-loading-run-1/root-resource-review.json`,
+SHA-256 `4014ba0c224eafdee94490c3e2496a0fd8bc1cc5ce183d52a02849e34e25aed0`.

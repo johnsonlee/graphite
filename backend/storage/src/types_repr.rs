@@ -1,6 +1,5 @@
 //! Loaded declarations use graph-local text IDs; mutation explicitly owns text.
 use super::raw::{self, RawSignature};
-#[cfg(test)]
 use super::TypeError;
 use crate::strings::StringTable;
 use hashbrown::HashTable;
@@ -9,6 +8,7 @@ use std::borrow::Cow;
 use std::collections::hash_map::RandomState;
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hash, Hasher};
+use std::num::NonZeroU32;
 use std::ops::Range;
 use std::sync::Arc;
 
@@ -21,6 +21,58 @@ pub struct TypeExpr<T = Arc<str>, S = T> {
     pub component: Option<usize>,
     pub variance: T,
     pub arguments: Vec<usize>,
+}
+/// Immutable wire rows retain only IDs and an exact-sized argument slice. The public
+/// owning mutation model deliberately keeps usize references and growable vectors.
+#[derive(Debug)]
+pub(super) struct StoredType {
+    pub(super) kind: usize,
+    pub(super) name: usize,
+    pub(super) scope: u64,
+    owner: Option<NonZeroU32>,
+    component: Option<NonZeroU32>,
+    pub(super) variance: usize,
+    pub(super) arguments: Box<[usize]>,
+}
+impl TryFrom<TypeExpr<usize, u64>> for StoredType {
+    type Error = TypeError;
+
+    fn try_from(value: TypeExpr<usize, u64>) -> Result<Self, Self::Error> {
+        Ok(Self {
+            kind: value.kind,
+            name: value.name,
+            scope: value.scope,
+            owner: Self::pack(value.owner)?,
+            component: Self::pack(value.component)?,
+            variance: value.variance,
+            arguments: value.arguments.into_boxed_slice(),
+        })
+    }
+}
+impl StoredType {
+    fn pack(id: Option<usize>) -> Result<Option<NonZeroU32>, TypeError> {
+        id.map(|id| {
+            u32::try_from(id)
+                .ok()
+                .filter(|id| *id <= i32::MAX as u32)
+                .and_then(|id| id.checked_add(1))
+                .and_then(NonZeroU32::new)
+                .ok_or_else(|| TypeError("type reference exceeds signed wire ID range".into()))
+        })
+        .transpose()
+    }
+
+    pub(super) fn owner(&self) -> Option<usize> {
+        self.owner.map(|id| {
+            usize::try_from(id.get() - 1).expect("wire reference fits the target pointer width")
+        })
+    }
+
+    pub(super) fn component(&self) -> Option<usize> {
+        self.component.map(|id| {
+            usize::try_from(id.get() - 1).expect("wire reference fits the target pointer width")
+        })
+    }
 }
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct TypeParameter<T = Arc<str>, S = T> {
@@ -80,8 +132,8 @@ struct StoredKey<const N: usize> {
 #[derive(Clone, Copy)]
 enum Descriptors<'a> {
     Legacy,
-    Fields(&'a [TypeExpr<usize, u64>]),
-    Methods(&'a [TypeExpr<usize, u64>], &'a [RawSignature]),
+    Fields(&'a [StoredType]),
+    Methods(&'a [StoredType], &'a [RawSignature]),
 }
 #[derive(Clone, Copy)]
 struct KeyContext<'a> {
@@ -289,7 +341,7 @@ pub(super) struct CompactTable {
     pub(super) structural: bool,
     pub(super) descriptorless: bool,
     pub(super) signatures: Vec<RawSignature>,
-    pub(super) types: Vec<TypeExpr<usize, u64>>,
+    pub(super) types: Vec<StoredType>,
     // Private keys: all inserts and lookups compare full actual text values.
     fields: MemberIndex<3, usize>,
     methods: MemberIndex<3, StoredMethod>,
@@ -797,8 +849,8 @@ impl DeclaredTypes {
                     } else {
                         Cow::Borrowed("")
                     },
-                    owner: t.owner,
-                    component: t.component,
+                    owner: t.owner(),
+                    component: t.component(),
                     variance: table.variance(t.variance),
                     arguments: &t.arguments,
                 }
@@ -1126,6 +1178,107 @@ impl MutableDeclaredTypes {
 #[cfg(test)]
 mod compact_tests {
     use super::*;
+
+    fn stored_row(owner: Option<usize>, component: Option<usize>) -> TypeExpr<usize, u64> {
+        TypeExpr {
+            kind: 0,
+            name: 1,
+            scope: 2,
+            owner,
+            component,
+            variance: 2,
+            arguments: vec![0, 3, 1],
+        }
+    }
+
+    #[test]
+    fn packed_optional_ids_distinguish_absence_zero_and_maximum_wire_value() {
+        let maximum = usize::try_from(i32::MAX).unwrap();
+        for (owner, component) in [
+            (None, None),
+            (Some(0), None),
+            (None, Some(0)),
+            (Some(maximum), Some(0)),
+            (Some(0), Some(maximum)),
+        ] {
+            let row = StoredType::try_from(stored_row(owner, component)).unwrap();
+            assert_eq!(row.owner(), owner);
+            assert_eq!(row.component(), component);
+            assert_eq!(row.arguments.as_ref(), [0, 3, 1]);
+            assert_eq!((row.kind, row.name, row.scope, row.variance), (0, 1, 2, 2));
+        }
+    }
+
+    #[test]
+    fn packed_optional_ids_reject_oversized_values_without_truncation() {
+        let first_invalid = usize::try_from(i32::MAX).unwrap() + 1;
+        for invalid in [first_invalid, usize::MAX] {
+            for (owner, component) in [(Some(invalid), None), (None, Some(invalid))] {
+                let error = StoredType::try_from(stored_row(owner, component)).unwrap_err();
+                assert_eq!(error.0, "type reference exceeds signed wire ID range");
+            }
+        }
+    }
+
+    #[test]
+    fn packed_views_borrow_arguments_and_owning_mutation_keeps_original_types() {
+        let mut table = CompactTable {
+            texts: TextStore::Owned(
+                ["class", "Outer", "", "Outer$Inner", "array", "String"]
+                    .into_iter()
+                    .map(Arc::from)
+                    .collect(),
+            ),
+            ..Default::default()
+        };
+        for (kind, name, owner, component, arguments) in [
+            (0, 1, None, None, vec![]),
+            (0, 3, Some(0), None, vec![3]),
+            (4, 2, None, Some(1), vec![]),
+            (0, 5, None, None, vec![]),
+        ] {
+            table.types.push(
+                StoredType::try_from(TypeExpr {
+                    kind,
+                    name,
+                    scope: 2,
+                    owner,
+                    component,
+                    variance: 2,
+                    arguments,
+                })
+                .unwrap(),
+            );
+        }
+        let declarations = DeclaredTypes {
+            storage: Storage::Compact(table),
+        };
+        declarations.validate().unwrap();
+        let view = declarations.type_expr(1);
+        assert_eq!(view.owner, Some(0));
+        assert_eq!(view.component, None);
+        assert_eq!(view.arguments, [3]);
+        assert_eq!(
+            view.arguments.as_ptr(),
+            declarations.type_expr(1).arguments.as_ptr()
+        );
+        assert_eq!(declarations.type_expr(2).component, Some(1));
+        assert_eq!(declarations.render(2), "Outer.Inner<String>[]");
+        let mut owned = declarations.to_mutable();
+        assert_eq!(declarations, DeclaredTypes::from(owned.clone()));
+        owned.types[1].arguments[0] = 0;
+        owned.types[1].owner = None;
+        assert_eq!(owned.render(2), "Outer$Inner<Outer>[]");
+        assert_eq!(declarations.render(2), "Outer.Inner<String>[]");
+        assert_eq!(declarations.into_mutable().types[1].arguments, [3]);
+    }
+
+    #[test]
+    #[cfg(target_pointer_width = "64")]
+    fn packed_row_inline_layout_is_smaller_without_a_process_memory_claim() {
+        assert_eq!(std::mem::size_of::<TypeExpr<usize, u64>>(), 88);
+        assert_eq!(std::mem::size_of::<StoredType>(), 56);
+    }
 
     #[test]
     fn method_arena_ranges_preserve_empty_parameters_formals_and_owning_mutation() {
