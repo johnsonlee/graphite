@@ -2997,6 +2997,32 @@ jobs:
           fi
         done
 
+    # Preserve completed core evidence before JVM derivation consumes the remaining job budget.
+    - name: Retain raw independent artifact production evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-pressure-artifacts-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+        path: |
+          native-pressure-artifacts/*.json
+          native-pressure-artifacts/*/*.json
+          native-pressure-artifacts/*/*/*.json
+          native-pressure-artifacts/*/*/*.log
+          native-pressure-artifacts/*/query-correctness/**
+          native-pressure-artifacts/*/jvm-raw-derivation/**
+          native-pressure-artifacts/*/jvm-query-correctness/**
+          native-pressure-artifacts/*/core-string-exports/**
+          native-pressure-artifacts/*/core-marker/**
+          native-pressure-artifacts/*/core-formatter-source/**
+          native-pressure-artifacts/*/formatter-tests/**
+          native-pressure-artifacts/*/core-equivalence/**
+          native-pressure-artifacts/*/runtime/**
+          native-pressure-artifacts/*/graphs/**
+          native-pressure-producers/**
+
     - name: Derive and independently check JVM responses on each real64 writer corpus
       continue-on-error: true
       env:
@@ -3041,11 +3067,13 @@ jobs:
           --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
           --output native-pressure-producers
 
-    - name: Retain raw independent artifact production evidence
+    # Restore this supplement over the original artifact at the same workspace root.
+    # Either upload can contain failure evidence; only the existing audits authorize pressure.
+    - name: Retain supplemental JVM and producer assembly evidence
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: native-pressure-artifacts-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        name: native-pressure-jvm-artifacts-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         if-no-files-found: warn
         retention-days: 14
         include-hidden-files: true
@@ -3054,16 +3082,8 @@ jobs:
           native-pressure-artifacts/*/*.json
           native-pressure-artifacts/*/*/*.json
           native-pressure-artifacts/*/*/*.log
-          native-pressure-artifacts/*/query-correctness/**
           native-pressure-artifacts/*/jvm-raw-derivation/**
           native-pressure-artifacts/*/jvm-query-correctness/**
-          native-pressure-artifacts/*/core-string-exports/**
-          native-pressure-artifacts/*/core-marker/**
-          native-pressure-artifacts/*/core-formatter-source/**
-          native-pressure-artifacts/*/formatter-tests/**
-          native-pressure-artifacts/*/core-equivalence/**
-          native-pressure-artifacts/*/runtime/**
-          native-pressure-artifacts/*/graphs/**
           native-pressure-producers/**
 
     # Archive an honest preparation result from outputs actually available in this job.
