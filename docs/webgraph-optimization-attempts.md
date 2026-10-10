@@ -15193,3 +15193,34 @@ sample/failure and report both paired directions for wall, total CPU and peak
 RSS; existing independent limits and complete semantic-proof requirements stay
 unchanged. No construction run, CPU/RSS benefit, latency recovery or overall
 acceptance is claimed by this preparation.
+
+
+#### Attempt195 lint follow-up — preserve both failures, run static gate first
+
+The second complete run again passed all 380 tests with the same 37 XML suites
+and exact prior/new inventory, but detekt also rejects 20 functions at its
+configured threshold of 20. The first correction had therefore not reduced the
+count far enough. This second run remains FAIL and kover was again not executed;
+none of its records are relabelled. Root independently checked the 487 unchanged
+inputs and complete raw/XML output in `/tmp/graphite-attempt195-validation-2`.
+Its independent review SHA-256 is
+`c0f24e7a0cab867d808672072985a17de2b0032386d814a3193811d9903ce72c`.
+
+The next minimal correction inlines the single call to `wireHeader`, retaining
+all four original branches, their order and constants, and removes that private
+function. No test or validation rule changes. A proposed broader header-constant
+migration was never executed and remains superseded in prep-4. The final inline
+diff in prep-5 has SHA-256
+`567a84a0d35e993c96098979daa2ece02737cb06efdf107aed5b5d36885b543a`.
+
+Before another complete test run, an isolated `:webgraph:detekt` command passed
+in `/tmp/graphite-attempt195-static-validation-1`, exit 0 with empty owned cleanup
+and all 487 source inputs unchanged. Root independently verified that result:
+raw record SHA-256
+`8c32d628dfb07fc785da27472994ce71fae3b5c1983bd08cf97dbc3e73744c25`.
+Old XML files copied with that static-only archive are explicitly not evidence of
+new test execution. The unchanged frozen source then started a fresh complete
+`:webgraph:test :webgraph:detekt :webgraph:koverVerify` run in
+`/tmp/graphite-attempt195-validation-3`; its terminal result is still required.
+No construction performance run or source integration is authorized by static
+success alone.
