@@ -91,6 +91,30 @@ def reshape(actual,reference,a,a_end,b,authority,evidence):
     return bytes(payload)+actual[a_end:],rows
 
 
+def check_streamed_method_sources(text):
+    # Both actual producers iterate the same retained ClassNode passed to the
+    # superclass. Bind the entire class body, not a freestanding sort snippet:
+    # a matching expression on another node would not prove visitation order.
+    variants=[]
+    for declaration,node,interface in (
+            ('private val node: ClassNode','node',''),
+            ('override val parsedDeclarationNode: ClassNode','parsedDeclarationNode',', ParsedDeclarationSource')):
+        variants.append(
+            'internal class GraphiteAsmClassSource(\n'
+            '    location: AnalysisInputLocation,\n'
+            '    path: Path,\n'
+            '    type: ClassType,\n'
+            '    '+declaration+'\n'
+            ') : AsmClassSource(location, path, type, '+node+')'+interface+' {\n'
+            '    fun methodSources(): List<AsmMethodSource> =\n'
+            '        '+node+'.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))\n'
+            '}')
+    need(text.count('internal class GraphiteAsmClassSource(')==1
+         and text.count('fun methodSources(')==1
+         and sum(text.count(block) for block in variants)==1,
+         'streamed raw descriptor order or retained node identity changed')
+
+
 def bind_sources(types):
     from pathlib import Path
     import json,hashlib
@@ -103,8 +127,7 @@ def bind_sources(types):
         'frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/core/Node.kt':[
             'data class MethodDescriptor(',
             'val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"'],
-        'frontend/jvm/sootup/src/main/kotlin/sootup/java/bytecode/frontend/conversion/GraphiteAsmClassSource.kt':[
-            'node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))'],
+        'frontend/jvm/sootup/src/main/kotlin/sootup/java/bytecode/frontend/conversion/GraphiteAsmClassSource.kt':[],
         'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt':[
             'resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)',
             '.sortedWith(compareBy({ (it.bodySource as? MethodNode)?.name ?: it.name }, { (it.bodySource as? MethodNode)?.desc ?: it.signature.toString() }))']}
@@ -114,5 +137,6 @@ def bind_sources(types):
             path=root/rel;raw=path.read_bytes();digest=hashlib.sha256(raw).hexdigest()
             need(manifest['files'].get(str(path),manifest['files'].get(rel))==digest,'actual metadata producer source changed')
             text=raw.decode();need(all(part in text for part in required),'exact metadata insertion/iteration rule changed')
+            if rel.endswith('/GraphiteAsmClassSource.kt'):check_streamed_method_sources(text)
             pins[str(path)]=digest
     return pins

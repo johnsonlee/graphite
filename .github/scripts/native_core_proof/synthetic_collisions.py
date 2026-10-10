@@ -109,6 +109,7 @@ class SourceRules:
         import json,hashlib
         from pathlib import Path
         from .source_bindings import load_rule
+        from .metadata_signature_collisions import check_streamed_method_sources
         rule,self.pins=load_rule(source_rule,producer_spec);fingerprints=[]
         for arm in ('C','B'):
             info=rule['arms'][arm];manifest_path=Path(info['manifest'])
@@ -127,7 +128,7 @@ class SourceRules:
                 self.pins[str(path)]=digest;source[name]=raw.decode()
             fingerprints.append(source['identity'])
             need(source['identity'].count('return members.associate { it.key to it.fingerprint!! }')==1,'last-write collector source')
-            need('node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))' in source['asm'],'streamed raw descriptor order')
+            check_streamed_method_sources(source['asm'])
             need('resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)' in source['adapter'],'fallback signature order')
             need('.sortedWith(compareBy({ (it.bodySource as? MethodNode)?.name ?: it.name }, { (it.bodySource as? MethodNode)?.desc ?: it.signature.toString() }))' in source['adapter'],'bytecode descriptor order')
             need('syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)' in source['adapter'],'exact identity key input')

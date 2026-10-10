@@ -1056,3 +1056,41 @@ reproduced the exact hosted TypeError. Logs are
 The control manifest and workflow binding are refreshed only for these verifier
 changes. A complete remote rerun remains pending; no JVM, Cargo, corpus scan or
 performance run was performed for this fix.
+
+### Current-head CI source-binding rejection (2026-10-10)
+
+Run38013423274, job114102716796, on remote head3eb39113 completed with
+a failed core-comparison step. The11 preceding compile/export phases succeeded;
+the first `fixture-android-00-core` phase rejected its producer-source binding
+before completing any graph proof. The final input-identity check passed.
+
+The actual stderr reports `Invalid('exact metadata insertion/iteration rule
+changed')` through `metadata_signature_collisions.bind_sources`. The check still
+requires `node.methods.map`; the candidate uses `parsedDeclarationNode.methods.map`
+and passes that same node to `AsmClassSource`. Both retain ascending method name
+and descriptor ordering. The accepted4f source retains the older spelling. A
+second identical stale assumption exists in the synthetic-collision verifier and
+must be fixed with the first; neither failure warrants relaxing ordering or
+producer-source identity checks.
+
+Evidence: `/tmp/graphite-ci-114102716796-core-failure`. The failed phase stderr
+SHA-256 is `0650eb0d7cd08b3822cf56ffbfdf625469f29da57b4a30de76cb0aad190b6029`;
+the bounded diagnosis SHA-256 is
+`0d48bacfbc5ab926a0fca813eee36efcd9cba9ceea6071a3f2be5c13e79f25e2`.
+Only ZIP directory ranges and small diagnostic records were retrieved; no graph
+payload was used to infer equivalence. Zero completed graph proofs means that
+complete equivalence and continuous-pressure acceptance remain unavailable.
+
+The correction now shares one exact class/constructor/method-source check between
+the metadata and synthetic verifiers. It accepts the two actual producer forms
+while requiring the same retained ClassNode and ascending name/descriptor order.
+Re-pinned mismatched constructor nodes, changed iteration receivers, reversed
+sort keys, altered visitation and duplicate class bodies are rejected; original
+source-manifest hashes and insertion rules remain mandatory.
+
+Source-only replay of eight actual files from4f2ccf33 and3eb39113 reproduces the
+hosted rejection with the old verifier and passes with the correction. Root
+independently ran264 package tests and25 core-runner tests successfully. The
+source reproduction review SHA-256 is
+`b24fe8d78f78439022211d22896ab63bc17afa2d75cf307bff4023f91e81a868`.
+These checks verify the correction, not the unexecuted complete graph proof.

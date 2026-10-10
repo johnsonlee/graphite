@@ -39,6 +39,18 @@ COUNTER_BINDING = '''        bodyCallOrdinals = preFoldOrdinals(method.signature
         }'''
 
 
+ASM_OLD = '''internal class GraphiteAsmClassSource(
+    location: AnalysisInputLocation,
+    path: Path,
+    type: ClassType,
+    private val node: ClassNode
+) : AsmClassSource(location, path, type, node) {
+    fun methodSources(): List<AsmMethodSource> =
+        node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))
+}'''
+ASM_NEW = ASM_OLD.replace('private val node: ClassNode', 'override val parsedDeclarationNode: ClassNode').replace('type, node) {', 'type, parsedDeclarationNode), ParsedDeclarationSource {').replace('node.methods', 'parsedDeclarationNode.methods')
+
+
 class SourceBindingTests(unittest.TestCase):
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
@@ -60,7 +72,7 @@ class SourceBindingTests(unittest.TestCase):
                           '.sortedWith(compareBy({ (it.bodySource as? MethodNode)?.name ?: it.name }, { (it.bodySource as? MethodNode)?.desc ?: it.signature.toString() }))\n'
                           'syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)\n' + COUNTER_BINDING),
                 IDENTITY: 'return members.associate { it.key to it.fingerprint!! }',
-                ASM: 'node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))',
+                ASM: ASM_OLD if arm=='C' else ASM_NEW,
                 SERIALIZER: 'for ((member, fingerprint) in metadata.syntheticIdentities.toSortedMap())',
                 BUILDER: ('private val methods = linkedSetOf<MethodDescriptor>()\nmethods.add(method)\n'
                           'val methodIndex = LinkedHashMap<String, MethodDescriptor>(methods.size)\n'
@@ -216,6 +228,28 @@ class SourceBindingTests(unittest.TestCase):
         self.replace_source('B', ASM, path.read_text().replace('it.desc', 'it.name'))
         with self.assertRaisesRegex(Invalid, 'streamed raw descriptor order'):
             synthetic.SourceRules(self.rule_ref, self.spec)
+
+    def test_repinning_streamed_constructor_identity_or_order_rejected_by_both_rules(self):
+        mutations = [
+            ASM_NEW.replace('type, parsedDeclarationNode)', 'type, otherNode)'),
+            ASM_NEW.replace('parsedDeclarationNode.methods', 'otherNode.methods'),
+            ASM_NEW.replace('it.name }, { it.desc', 'it.desc }, { it.name'),
+            ASM_NEW.replace('.sortedWith', '.reversed().sortedWith'),
+            ASM_NEW + '\n' + ASM_OLD,
+        ]
+        for text in mutations:
+            self.replace_source('B', ASM, text)
+            for construct in (lambda: synthetic.SourceRules(self.rule_ref, self.spec),
+                              lambda: collisions.Corrections(self.out, self.rule_ref, self.spec)):
+                with self.subTest(text=text, construct=construct), self.assertRaisesRegex(Invalid, 'streamed raw descriptor order'):
+                    construct()
+
+    def test_streamed_source_mutation_without_repin_is_rejected_by_both_rules(self):
+        Path(self.manifests['B']['root'], ASM).write_text(ASM_OLD)
+        for construct in (lambda: synthetic.SourceRules(self.rule_ref, self.spec),
+                          lambda: collisions.Corrections(self.out, self.rule_ref, self.spec)):
+            with self.subTest(construct=construct), self.assertRaisesRegex(Invalid, 'source outside actual producer manifest|actual metadata producer source changed'):
+                construct()
 
     def test_legacy_collision_constructor_binds_both_actual_writers_and_lifecycle(self):
         correction = collisions.Corrections(self.out, self.rule_ref, self.spec)
