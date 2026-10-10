@@ -95,13 +95,27 @@ def audit(directory):
                 'totals': {key: sum(g[key] for g in expected_graphs)
                            for key in ('nodes', 'edges', 'methods', 'callSites')}}
     require(common.typed(plan['readiness']['expected']) == common.typed(expected), 'independent saved readiness counts')
+    receipts, evidence = audit_response_journal(root, record, bundle['cases'], variant)
+    artifacts.verify_pins({**plan['pins'], **evidence})
+    require(artifacts.inventory(Path(plan['fixtureManifest']['path']).parent / 'graphs') == fixture['files'] and
+            artifacts.inventory(Path(plan['runtimeManifest']['path']).parent / 'runtime') == runtime['files'],
+            'final closed graph/runtime inventories')
+    return {'schema': 'graphite.native-query-correctness-audit.v1', 'status': STATUS,
+            'revision': plan['revision'], 'role': plan['role'], 'artifactAudit': plan['artifactAudit'],
+            'plan': artifacts.ref(root / 'plan.json'), 'record': artifacts.ref(root / 'record.json'),
+            'readiness': record['readiness'], 'cases': receipts, 'pins': {**plan['pins'], **evidence},
+            'performanceAcceptance': False, 'completeSemanticEquivalence': False}
+
+
+def audit_response_journal(root, record, cases, variant):
+    """Replay every stored full body against independently supplied case oracles."""
     journal = [common.parse(line) for line in (root / 'responses.jsonl').read_text().splitlines()]
-    require(journal == record['responses'] and len(journal) == len(bundle['cases']) == 39, 'complete response journal')
-    validate = common.compile_response_validator(bundle['cases'], variant)
+    require(journal == record['responses'] and len(journal) == len(cases), 'complete response journal')
+    validate = common.compile_response_validator(cases, variant)
     receipts = []
     evidence = {str(root / name): common.sha(root / name) for name in
                 ('plan.json', 'record.json', 'owner.json', 'readiness.body', 'responses.jsonl', 'stdout.log', 'stderr.log')}
-    for case, response in zip(bundle['cases'], journal):
+    for case, response in zip(cases, journal):
         path = root / (case['id'] + '.body')
         require(response['id'] == case['id'] and response['targetGraphIds'] == case['targetGraphIds'] and
                 response['status'] == 'PASS' and response['httpStatus'] == 200 and
@@ -116,15 +130,7 @@ def audit(directory):
     for path in (root / 'readiness-attempts').iterdir():
         require(path.is_file() and not path.is_symlink(), 'readiness attempt evidence')
         evidence[str(path)] = common.sha(path)
-    artifacts.verify_pins({**plan['pins'], **evidence})
-    require(artifacts.inventory(Path(plan['fixtureManifest']['path']).parent / 'graphs') == fixture['files'] and
-            artifacts.inventory(Path(plan['runtimeManifest']['path']).parent / 'runtime') == runtime['files'],
-            'final closed graph/runtime inventories')
-    return {'schema': 'graphite.native-query-correctness-audit.v1', 'status': STATUS,
-            'revision': plan['revision'], 'role': plan['role'], 'artifactAudit': plan['artifactAudit'],
-            'plan': artifacts.ref(root / 'plan.json'), 'record': artifacts.ref(root / 'record.json'),
-            'readiness': record['readiness'], 'cases': receipts, 'pins': {**plan['pins'], **evidence},
-            'performanceAcceptance': False, 'completeSemanticEquivalence': False}
+    return receipts, evidence
 
 
 def main():
