@@ -94,4 +94,20 @@ class ReturnOmittedMetadata(unittest.TestCase):
         bm.append(dict(tb[0],start=len(b),end=len(b)+len(rb),tableRow=False))
         self.assertEqual(collisions.compare_metadata(a+ra,b+rb,am,bm,authority(),[],return_evidence=[]),b+rb)
 
+class StreamedMethodSourceRules(unittest.TestCase):
+    def test_both_actual_source_forms_keep_constructor_and_sorted_method_identity(self):
+        from .source_bindings_test import ASM_OLD, ASM_NEW
+        for text in (ASM_OLD, ASM_NEW):
+            with self.subTest(text=text):
+                self.assertIsNone(model.check_streamed_method_sources(text))
+
+    def test_matching_sort_alone_or_constructor_mismatch_is_not_authority(self):
+        from .source_bindings_test import ASM_OLD, ASM_NEW
+        for text in (ASM_OLD.splitlines()[-2],
+                     ASM_OLD.replace('type, node)', 'type, otherNode)'),
+                     ASM_NEW.replace('parsedDeclarationNode.methods', 'node.methods'),
+                     ASM_NEW.replace('it.desc', 'it.name')):
+            with self.subTest(text=text), self.assertRaisesRegex(Invalid, 'streamed raw descriptor order'):
+                model.check_streamed_method_sources(text)
+
 if __name__=='__main__':unittest.main()
