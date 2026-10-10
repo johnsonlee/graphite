@@ -183,3 +183,32 @@ and CPU and RSS individually within5%. This does not apply the separate accepted
 Native loading tradeoff and cannot authorize loading or query acceptance.
 The workflow must actually execute the six cells: neither a prepared plan nor the
 producer's initial single CAB construction capture can satisfy this operation.
+
+### JVM loading ends at complete registry readiness
+
+`run_real64_loading.py` takes the same producer/base/candidate/output/prefix
+arguments and reuses its sealed CLI JARs and saved64 fixtures. It validates the
+actual packaged `MainKt serve` classes/options before launch; the minimized CLI
+JAR need not contain the standalone explorer entrypoint. Six fresh processes run
+sequentially in CABBAC order with the same JDK, `-Xmx4g`, APC4 and MAPPED mode.
+The fixed boundary starts before the owned wrapper spawn and ends after consuming
+and validating the complete `/api/graphs` response against all saved counts.
+There is no oracle query, warmup or measured query. Startup topology work is
+included; deferred first-query work remains a separate query obligation.
+
+Linux cumulative process CPU is charged from process zero, including early JVM
+startup before the first sample. Complete samples within the boundary give the
+lower bound; the first post-ready sample gives the upper bound, with two clock
+ticks of uncertainty. RSS uses the in-boundary sampled maximum as its lower
+bound and the first post-ready `/proc/PID/status` VmHWM as a conservative upper
+bound, checking PID/start identity on both sides. The original status/stat reads,
+timestamps, complete readiness bytes, owned cleanup and all failures are kept.
+GNU time covers shutdown too: its peak only corroborates VmHWM and never replaces
+the ready peak. The audit and comparator independently reconstruct these bounds.
+
+The comparator requires both fixed accepted-baseline directions to satisfy wall
+time and independent CPU/RSS limits. An uncertain interval cannot pass, and the
+Native loading time/CPU exception does not apply to JVM loading. Input reads are
+matched, not disk-cold. Complete semantic/source-declaration claims remain false;
+this evidence cannot satisfy construction or sustained query requirements. CI
+must actually run and audit all six cells before loading becomes available.

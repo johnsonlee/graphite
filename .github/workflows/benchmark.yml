@@ -18,8 +18,8 @@ env:
   JAVA_TOOL_OPTIONS: -Xmx2g
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
-  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: b0d7387aefbf18897ad7965cbea7bcc659ece6533d1ad66678dcab83b9a15d6f
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: bf8c3ed384e77ad4eaa83fe1c7a4808c4f4e6b21cb1c43c745bfc09eeb8f37ca
+  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 90e0175de03d7ecc2b79afc8ed607ce9dcd6e4572950d038b7a6a449fbe694fd
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 00fea417ddce51563c8a473e7019834b1041c421ca1a9ef2917351b5e77a6e80
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -31,16 +31,16 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
-  BENCHMARK_REPORT_TRANSITION_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
-  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
+  BENCHMARK_REPORT_TRANSITION_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
+  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
-  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 6b200b32a52509c7153f4931cb499f16ad95019d80316e39ef5204b926bab957
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
+  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 4bda56e24363cebcce273931530328472117f0657874d2e59bb77fc10a4dffd9
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -81,6 +81,12 @@ jobs:
 
     - name: Test six-cell construction and independent audit without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_real64_construction.py'
+
+    - name: Test zero-query loading bounds and owned cleanup without child processes
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_real64_loading.py'
+
+    - name: Test JVM pressure oracles from saved node and type tables
+      run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_oracles.py'
 
     - name: Test exact-revision native artifact production without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_produce_native_pressure_artifacts.py'
@@ -3047,6 +3053,21 @@ jobs:
           --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
           --output benchmark-results/real64-construction \
           --prefix benchmark-results/multigraph-construction
+
+    - name: Measure and audit six JVM real64 zero-query loads
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 candidate/.github/scripts/run_real64_loading.py \
+          --producers native-pressure-producers/packet.json \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output benchmark-results/real64-loading \
+          --prefix benchmark-results/multigraph-loading
 
     - name: Measure base then PR
       env:

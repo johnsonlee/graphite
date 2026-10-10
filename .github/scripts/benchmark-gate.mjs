@@ -7,6 +7,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { comparePressure } from "./benchmark-multigraph-pressure.mjs";
 import { compareConstruction } from "./benchmark-construction.mjs";
+import { compareLoading } from "./benchmark-loading.mjs";
 
 export const COMMENT_MARKER = "<!-- graphite-benchmark-regression-gate -->";
 
@@ -3158,16 +3159,17 @@ export function aggregateReports(directory, metadata) {
                 throw new Error("Pressure preparation " + evidence.status + ": " +
                     [...(evidence.missingProducers ?? []), ...(evidence.errors ?? [])].join("; "));
             }
-            if (operation.operation === "loading") throw new Error("Complete multi-graph loading auditor not installed");
-            if (operation.operation === "construction" && evidence.evidence === undefined) {
-                if (evidence.schema !== "graphite.real64-construction.comparison.v1" ||
-                    evidence.engine !== "jvm" || evidence.operation !== "construction" || evidence.passed !== false ||
+            const lifecycle = ["construction", "loading"].includes(operation.operation);
+            if (lifecycle && evidence.evidence === undefined) {
+                const schema = operation.operation === "construction" ? "graphite.real64-construction.comparison.v1" : "graphite.jvm64-loading.comparison.v1";
+                if (evidence.schema !== schema ||
+                    evidence.engine !== "jvm" || evidence.operation !== operation.operation || evidence.passed !== false ||
                     !["FAIL", "UNAVAILABLE"].includes(evidence.status) || evidence.otherOperationsEligible !== false ||
                     !Array.isArray(evidence.errors) || evidence.errors.length === 0 ||
                     !evidence.errors.every(value => typeof value === "string" && value.trim())) {
-                    throw new Error("Malformed unavailable construction evidence");
+                    throw new Error("Malformed unavailable " + operation.operation + " evidence");
                 }
-                throw new Error("Construction " + evidence.status + ": " + evidence.errors.join("; "));
+                throw new Error(operation.operation + " " + evidence.status + ": " + evidence.errors.join("; "));
             }
             // An unprepared plan has no measurement paths. Keep its concrete
             // missing-authority reason; this branch can never produce a pass.
@@ -3191,13 +3193,14 @@ export function aggregateReports(directory, metadata) {
                 if (!target.startsWith(path.resolve(directory) + path.sep)) throw new Error("Evidence escaped artifact root");
                 return target;
             };
-            const compare = operation.operation === "construction" ? compareConstruction : comparePressure;
+            const compare = operation.operation === "construction" ? compareConstruction :
+                operation.operation === "loading" ? compareLoading : comparePressure;
             const recomputed = compare(contained(evidence.evidence?.plan), contained(evidence.evidence?.directory));
             if (evidence.schema !== recomputed.schema || recomputed.engine !== operation.engine ||
                 recomputed.operation !== operation.operation || evidence.planSha256 !== recomputed.planSha256 ||
                 JSON.stringify(evidence.comparisons) !== JSON.stringify(recomputed.comparisons) ||
                 recomputed.candidateRevision !== metadata.candidateSha ||
-                (operation.operation === "construction" && recomputed.parentRevision !== metadata.baseSha) || !recomputed.passed) {
+                (lifecycle && recomputed.parentRevision !== metadata.baseSha) || !recomputed.passed) {
                 throw new Error("Required coverage, fixed comparisons, source or resource constraints failed");
             }
             return {...operation, status:"PASS"};
@@ -3213,8 +3216,9 @@ export function aggregateReports(directory, metadata) {
         return `| ${domain.name} | \`${name}\` | **${results.get(name) ?? "MISSING"}** | ${coverage} | ${component.gap} |`;
     }));
     const productSections = BENCHMARK_COVERAGE_DOMAINS.flatMap((domain) => {
-        const missing = domain.missing.filter(name => !(name === "multi-graph-construction-acceptance" &&
-            operationEvidence.some(operation => operation.name === "construction" && operation.status === "PASS")));
+        const missing = domain.missing.filter(name => !operationEvidence.some(operation =>
+            ["construction", "loading"].includes(operation.name) &&
+            name === `multi-graph-${operation.name}-acceptance` && operation.status === "PASS"));
         const section = [
             `#### ${domain.name}`,
             "",
