@@ -287,16 +287,29 @@ jobs:
         GRAPHITE_TYPES_V2_FIXTURE: ${{ runner.temp }}/declared-types-v2-graph
         GRAPHITE_TYPES_V3_FIXTURE: ${{ runner.temp }}/declared-types-v3-graph
         GRAPHITE_TYPES_V4_FIXTURE: ${{ runner.temp }}/declared-types-v4-graph
+        GRAPHITE_INHERITED_TYPES_FIXTURE: ${{ runner.temp }}/inherited-types-graphs
         GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES: "1"
+        GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE: "1"
         JAVA_TOOL_OPTIONS: -Xmx4g
       run: |
         # The JVM writer saves structural v5; the test also creates v1 through v4 equivalents.
         # Rerun this task so Gradle's cached success cannot omit the temp fixture.
-        ./gradlew :webgraph:test --tests '*DeclaredTypePersistenceTest' --rerun --no-daemon -q
+        test ! -e "${GRAPHITE_INHERITED_TYPES_FIXTURE}"
+        ./gradlew :webgraph:test --tests '*DeclaredTypePersistenceTest' \
+          --tests '*InheritedFieldPersistenceTest' --rerun --no-daemon -q
         for FIXTURE in "${GRAPHITE_TYPES_V1_FIXTURE}" "${GRAPHITE_TYPES_V2_FIXTURE}" "${GRAPHITE_TYPES_V3_FIXTURE}" "${GRAPHITE_TYPES_V4_FIXTURE}" "${GRAPHITE_TYPES_FIXTURE}"; do
           test -f "${FIXTURE}/graph.types"
           grep -E '^graphite\.declaredTypes\.sha256=[[:xdigit:]]{64}$' "${FIXTURE}/forward.properties"
         done
+        for BUILDER in default mmap; do
+          for GENERATION in original resaved; do
+            FIXTURE="${GRAPHITE_INHERITED_TYPES_FIXTURE}/${BUILDER}/${GENERATION}"
+            test -f "${FIXTURE}/graph.types"
+            TYPES_SHA=$(sha256sum "${FIXTURE}/graph.types" | cut -d ' ' -f 1)
+            grep -Fx "graphite.declaredTypes.sha256=${TYPES_SHA}" "${FIXTURE}/forward.properties"
+          done
+        done
+        cargo test --release --locked -p graphite-cypher --test inherited_fields_interop -- --nocapture
         cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture
         cargo test --release --locked -p graphite-cypher declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows -- --nocapture
         cargo test --release --locked -p graphite-cypher java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries -- --nocapture
