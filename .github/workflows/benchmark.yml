@@ -3126,36 +3126,8 @@ jobs:
           --output benchmark-results/jvm-pressure-cells \
           --prefix benchmark-results/multigraph-jvm-query
 
-    - name: Measure and audit six real64 usable-save constructions
-      continue-on-error: true
-      env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        set -euo pipefail
-        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
-        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
-        python3 candidate/.github/scripts/run_real64_construction.py \
-          --producers native-pressure-producers/packet.json \
-          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
-          --output benchmark-results/real64-construction \
-          --prefix benchmark-results/multigraph-construction
-
-    - name: Measure and audit six JVM real64 zero-query loads
-      continue-on-error: true
-      env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        set -euo pipefail
-        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
-        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
-        python3 candidate/.github/scripts/run_real64_loading.py \
-          --producers native-pressure-producers/packet.json \
-          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
-          --output benchmark-results/real64-loading \
-          --prefix benchmark-results/multigraph-loading
-
+    # Complete query gates before independent loading and build/save measurements.
+    # Keep collecting operation evidence after a query failure without clearing that failure.
     - name: Measure base then PR
       env:
         HARNESS: ${{ steps.controls.outputs.harness }}
@@ -3278,6 +3250,51 @@ jobs:
       with:
         name: benchmark-rust-latency-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: benchmark-results/
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Measure and audit six JVM real64 zero-query loads
+      if: ${{ !cancelled() }}
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 candidate/.github/scripts/run_real64_loading.py \
+          --producers native-pressure-producers/packet.json \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output benchmark-results/real64-loading \
+          --prefix benchmark-results/multigraph-loading
+
+    - name: Measure and audit six real64 usable-save constructions
+      if: ${{ !cancelled() }}
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 candidate/.github/scripts/run_real64_construction.py \
+          --producers native-pressure-producers/packet.json \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output benchmark-results/real64-construction \
+          --prefix benchmark-results/multigraph-construction
+
+    - name: Upload Rust job lifecycle results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: benchmark-rust-lifecycle-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        path: |
+          benchmark-results/real64-loading/**
+          benchmark-results/real64-construction/**
+          benchmark-results/multigraph-loading*
+          benchmark-results/multigraph-construction*
         if-no-files-found: warn
         retention-days: 14
 

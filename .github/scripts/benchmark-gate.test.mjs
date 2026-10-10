@@ -4153,6 +4153,38 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
     } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
+test("Rust job preserves query gates before independent lifecycle measurements", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const names = [
+        "Execute and audit matched native continuous pressure",
+        "Execute and audit matched JVM continuous pressure",
+        "Measure base then PR", "Compare Rust engine latency",
+        "Diagnose confirmed Rust shape regression", "Upload Rust engine latency results",
+        "Measure and audit six JVM real64 zero-query loads",
+        "Measure and audit six real64 usable-save constructions", "Upload Rust job lifecycle results"
+    ];
+    const offsets = names.map(name => job.indexOf(`    - name: ${name}\n`));
+    offsets.forEach((offset, index) => assert.ok(offset >= 0 && (index === 0 || offset > offsets[index - 1]), names[index]));
+    const step = name => job.split(`    - name: ${name}\n`)[1].split("\n    - name: ")[0];
+    for (const name of names.slice(2, 4)) assert.doesNotMatch(step(name), /continue-on-error:/);
+    for (const name of names.slice(6, 8)) {
+        assert.match(step(name), /if: \$\{\{ !cancelled\(\) \}\}/);
+        assert.match(step(name), /continue-on-error: true/);
+    }
+    const queryUpload = step(names[5]), lifecycleUpload = step(names[8]);
+    for (const upload of [queryUpload, lifecycleUpload]) assert.match(upload, /if: always\(\)/);
+    assert.match(queryUpload, /name: benchmark-rust-latency-/);
+    assert.match(queryUpload, /path: benchmark-results\//);
+    assert.match(lifecycleUpload, /name: benchmark-rust-lifecycle-/);
+    const paths = lifecycleUpload.split("        path: |\n")[1].split("        if-no-files-found:")[0]
+        .trim().split("\n").map(value => value.trim());
+    assert.deepEqual(paths, [
+        "benchmark-results/real64-loading/**", "benchmark-results/real64-construction/**",
+        "benchmark-results/multigraph-loading*", "benchmark-results/multigraph-construction*"
+    ]);
+});
+
 test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
