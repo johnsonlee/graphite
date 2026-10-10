@@ -368,6 +368,16 @@ def validate_plan(plan, catalog=None):
         require(flags[0] == flags[1] == flags[2], 'matched JVM flags')
     require([c['id'] for c in plan['cases']] == [c['id'] for c in declared['cases']], 'complete declared case inventory')
     candidate = None
+    jvm_packet = None
+    if 'jvmProducerAuthority' in plan:
+        require(plan['engine'] == 'jvm' and 'correctedProducerAuthority' not in plan and
+                'producerAuthority' not in plan, 'explicit separate JVM producer proof mode')
+        from prepare_jvm_pressure_plan import verify_bundle, pressure_arms
+        packet = pinned_authority_metadata(plan, plan['jvmProducerAuthority'])
+        jvm_packet = verify_bundle(packet, plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+        require(pressure_arms(jvm_packet) == plan['arms'] and
+                all(plan['pins'].get(p) == h for p, h in jvm_packet['pins'].items()),
+                'actual JVM source runtime fixture and oracle closure')
     if plan['engine'] == 'native' and 'producerAuthority' in plan:
         packet = pinned_authority_metadata(plan, plan['producerAuthority'])
         require(all(packet['arms'][k] == plan['arms'][k] for k in 'CAB') and
@@ -394,12 +404,22 @@ def validate_plan(plan, catalog=None):
                     compile_response_validator([case], name)
                 if candidate is not None and name == 'B' and source['id'] == 'schema-key-histogram':
                     require(ref == candidate['proof'], 'current B oracle must retain completed schema authority')
+            elif oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1':
+                require(jvm_packet is not None, 'complete JVM legal universe requires actual producer authority')
+                observed = jvm_packet['arms'][name]['cases'][plan['cases'].index(case)]
+                require(observed['id'] == case['id'] and observed['request'] == case['request'] and
+                        observed['targetGraphIds'] == case['targetGraphIds'] and
+                        typed(observed['oracle']) == typed(oracle), 'actual independently audited JVM oracle')
+                value_ref = oracle['valueProof']
+                require(plan['pins'].get(value_ref['path']) == value_ref['sha256'] == sha(value_ref['path']) and
+                        typed(read(value_ref['path'])) == typed(oracle['value']), 'complete JVM universe payload pin')
+                compile_response_validator([case], name)
             else:
                 require(oracle['rowOrder'] == source['rowOrder'], 'fixed row ordering')
                 require(oracle['value'] == source['expected'], 'independent JVM expected envelope')
                 require(digest_bytes(canonical(typed_envelope(oracle['value'], oracle['rowOrder']))) == oracle['digest'], 'JVM typed expected digest')
     require(plan['proofs'] and all((p['status'] == 'PASS' or p['status'].startswith('PASS_')) and plan['pins'].get(p['path']) == p['sha256'] for p in plan['proofs']), 'required fixture/build/oracle proofs')
-    validate_proof_claims(plan)
+    validate_proof_claims(plan, jvm_packet)
     coverage = plan['coverage']
     require(coverage['coveredFamilies'] == declared['coveredFamilies'], 'coverage must come from catalog')
     require(set(coverage['requiredFamilies']) >= set(declared['requiredFamilies']), 'required families cannot shrink')
@@ -414,7 +434,7 @@ def validate_plan(plan, catalog=None):
     return plan
 
 
-def validate_proof_claims(plan):
+def validate_proof_claims(plan, jvm_packet=None):
     """A PASS receipt alone is not source/fixture/oracle authority for any arm.
 
     The trusted binder supplies receipts with these explicit claims, retaining
@@ -470,6 +490,28 @@ def validate_proof_claims(plan):
                         'corrected oracles retain actual complete response authority')
         expected = corrected
         require(matches[0]['upstream'].get(ref['path']) == ref['sha256'], 'corrected producer upstream')
+    if 'jvmProducerAuthority' in plan:
+        require(plan['engine'] == 'jvm' and 'correctedProducerAuthority' not in plan and
+                'producerAuthority' not in plan, 'explicit separate JVM fixture proof mode')
+        from prepare_jvm_pressure_plan import verify_bundle, fixture_bindings, pressure_arms
+        ref = plan['jvmProducerAuthority']
+        if jvm_packet is None:
+            packet = pinned_authority_metadata(plan, ref)
+            jvm_packet = verify_bundle(packet, plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+        require(pressure_arms(jvm_packet) == plan['arms'] and
+                all(plan['pins'].get(p) == h for p, h in jvm_packet['pins'].items()),
+                'complete actual JVM producer closure')
+        corrected = fixture_bindings(jvm_packet)
+        require(corrected['fixtureFiles'] == expected['fixtureFiles'], 'complete JVM corrected graph inventory')
+        for arm_id, arm in jvm_packet['arms'].items():
+            require(len(arm['cases']) == len(plan['cases']), 'complete JVM query inventory')
+            for source, case in zip(arm['cases'], plan['cases']):
+                require(source['id'] == case['id'] and source['request'] == case['request'] and
+                        source['targetGraphIds'] == case['targetGraphIds'] and
+                        typed(source['oracle']) == typed(case['oracleByArm'][arm_id]),
+                        'JVM complete independent oracle authority')
+        expected = corrected
+        require(matches[0]['upstream'].get(ref['path']) == ref['sha256'], 'JVM producer upstream')
     require(typed(matches[0].get('bindings')) == typed(expected), 'complete actual fixture equivalence claims')
     require(matches[0].get('upstream') and all(plan['pins'].get(path) == digest for path, digest in matches[0]['upstream'].items()), 'full fixture proof producer pins')
 

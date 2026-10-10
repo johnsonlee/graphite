@@ -142,6 +142,15 @@ class PressureTests(unittest.TestCase):
             self.assertTrue(plan['coverage']['unavailableFamilies'])
             self.assertEqual(plan['coverage']['unavailableOperations'], ['construction', 'loading'])
 
+    def test_jvm_producer_authority_never_enters_native_or_mixed_proof_modes(self):
+        for engine, extra in [('native', None), ('jvm', 'producerAuthority'), ('jvm', 'correctedProducerAuthority')]:
+            plan = make_plan(engine)
+            ref = {'path': '/proof.json', 'sha256': plan['pins']['/proof.json']}
+            plan['jvmProducerAuthority'] = ref
+            if extra: plan[extra] = ref
+            with self.subTest(engine=engine, extra=extra), self.assertRaisesRegex(ValueError, 'separate JVM producer'):
+                p.validate_plan(plan, CATALOG)
+
     def test_singleton_or_semantically_narrowed_query_cannot_replace_catalog(self):
         for mutation in ['scope', 'endpoint', 'query', 'graphIds']:
             plan = make_plan()

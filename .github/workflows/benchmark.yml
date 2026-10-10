@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: df66c9ef10b8cf45b968dd85479008ee73dd5e7306acafe730a6e790bc7ab0b9
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 30feb5b253ad2767fb1d57764ab2d1a84d94d53f3746649b6d90a479765971f4
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 477bd7591ee905d77b452def588088444024b5789b401ba4434875133a56bb86
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -75,6 +75,9 @@ jobs:
 
     - name: Test native pressure plan preparation without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_prepare_native_pressure_plan.py'
+
+    - name: Test independently audited JVM pressure plan preparation without child processes
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_prepare_jvm_pressure_plan.py'
 
     - name: Test prepared pressure orchestration without starting servers
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_prepared_native_pressure.py'
@@ -2991,6 +2994,38 @@ jobs:
           fi
         done
 
+    - name: Derive and independently check JVM responses on each real64 writer corpus
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        for ARM in C A B; do
+          if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+            continue
+          fi
+          case "${ARM}" in
+            C) CORE_ARM=B; EXPECTATION_ARM=C; JVM_PORT=22840 ;;
+            A) CORE_ARM=A; EXPECTATION_ARM=B; JVM_PORT=22841 ;;
+            B) CORE_ARM=B; EXPECTATION_ARM=B; JVM_PORT=22842 ;;
+          esac
+          python3 -B candidate/.github/scripts/derive_jvm_pressure_oracles.py \
+            --producer-root "native-pressure-artifacts/${ARM}" \
+            --core-root "native-pressure-artifacts/${CORE_ARM}/core-equivalence" \
+            --arm "${EXPECTATION_ARM}" \
+            --output "native-pressure-artifacts/${ARM}/jvm-raw-derivation"
+          python3 -B candidate/.github/scripts/jvm_query_correctness.py \
+            --raw-derivation "native-pressure-artifacts/${ARM}/jvm-raw-derivation" \
+            --output "native-pressure-artifacts/${ARM}/jvm-query-correctness" --port "${JVM_PORT}"
+          python3 -B candidate/.github/scripts/jvm_query_correctness.py \
+            --output "native-pressure-artifacts/${ARM}/jvm-query-correctness" --audit-only \
+            > "native-pressure-artifacts/${ARM}/jvm-query-correctness/audit.json.tmp"
+          mv "native-pressure-artifacts/${ARM}/jvm-query-correctness/audit.json.tmp" \
+            "native-pressure-artifacts/${ARM}/jvm-query-correctness/audit.json"
+        done
+
     - name: Assemble audited native producer evidence
       continue-on-error: true
       env:
@@ -3017,6 +3052,8 @@ jobs:
           native-pressure-artifacts/*/*/*.json
           native-pressure-artifacts/*/*/*.log
           native-pressure-artifacts/*/query-correctness/**
+          native-pressure-artifacts/*/jvm-raw-derivation/**
+          native-pressure-artifacts/*/jvm-query-correctness/**
           native-pressure-artifacts/*/core-string-exports/**
           native-pressure-artifacts/*/core-marker/**
           native-pressure-artifacts/*/core-formatter-source/**
@@ -3059,6 +3096,35 @@ jobs:
           --preparation benchmark-results/native-pressure-preparation \
           --output benchmark-results/native-pressure-cells \
           --prefix benchmark-results/multigraph-native-query
+
+    - name: Prepare matched JVM continuous-pressure plan
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        PARENT_ARM=A
+        if [[ "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then PARENT_ARM=C; fi
+        python3 -B candidate/.github/scripts/prepare_jvm_pressure_plan.py \
+          --c native-pressure-artifacts/C/jvm-query-correctness \
+          --a "native-pressure-artifacts/${PARENT_ARM}/jvm-query-correctness" \
+          --b native-pressure-artifacts/B/jvm-query-correctness \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output benchmark-results/jvm-pressure-preparation
+
+    - name: Execute and audit matched JVM continuous pressure
+      continue-on-error: true
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 -B candidate/.github/scripts/run_prepared_native_pressure.py --engine jvm \
+          --preparation benchmark-results/jvm-pressure-preparation \
+          --output benchmark-results/jvm-pressure-cells \
+          --prefix benchmark-results/multigraph-jvm-query
 
     - name: Measure and audit six real64 usable-save constructions
       continue-on-error: true
