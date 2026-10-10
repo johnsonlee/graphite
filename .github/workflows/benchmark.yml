@@ -88,6 +88,9 @@ jobs:
     - name: Test JVM pressure oracles from saved node and type tables
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_oracles.py'
 
+    - name: Test original JVM pressure node and edge decoding
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_inputs.py'
+
     - name: Test exact-revision native artifact production without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_produce_native_pressure_artifacts.py'
 
