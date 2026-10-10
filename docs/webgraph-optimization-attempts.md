@@ -15559,3 +15559,50 @@ The reused real64 CABBAC plan is frozen at
 `/tmp/graphite-attempt197-real64-construction-prep-1/plan.json`, SHA-256
 `b21ac1b3135707c6546a3f867775ebaa022d70b0ee101ad47addfe17d254ebb7`.
 All operation/resource acceptance remains pending actual measurements and review.
+
+
+The matched real64 construction measurement has completed in the original fixed
+CABBAC execution. All six constructions and six mandatory second readbacks exited
+successfully. Each fresh JVM used 4g/APC4 and the same Android/Tika/Hive/Kotlin
+source JAR corpus, producing 64 usable saved graphs before the timed boundary
+ended. The separate second readback is correctness evidence, not part of the
+construction timing. The original resource audit completed once; all 13 owned
+process IDs/groups are absent after cleanup.
+
+| Cell | Writer | Wall seconds | Total CPU seconds | Peak process RSS bytes |
+|---|---|---:|---:|---:|
+| 01-C | accepted4f | 245.78 | 316.07 | 4,069,376,000 |
+| 02-A | attempt196 | 272.03 | 349.81 | 3,768,582,144 |
+| 03-B | attempt197 | 263.02 | 344.80 | 3,623,354,368 |
+| 04-B | attempt197 | 262.80 | 345.86 | 3,666,837,504 |
+| 05-A | attempt196 | 261.25 | 334.27 | 3,773,956,096 |
+| 06-C | accepted4f | 249.80 | 333.45 | 3,587,883,008 |
+
+Against the parent, wall time changes by −9.01/+1.55 seconds and CPU by
+−5.01/+11.59 seconds. RSS falls by 145.23/107.12 decimal MB in the two fixed
+comparisons. Both parent-relative CPU and RSS increases remain within 5%, but
+this is a mixed result, not a consistent CPU or wall-time improvement.
+
+Against accepted4f, wall time remains +17.24/+13.00 seconds and CPU remains
++28.73/+12.41 seconds (+9.09/+3.72%). The first CPU comparison still fails the 5%
+limit. RSS changes by −446.02/+78.95 decimal MB (−10.96/+2.20%); both comparisons
+meet the RSS limit. Baseline CPU varies from 316.07 to 333.45 seconds across the
+fixed order; both samples remain reported without selecting a favorable result.
+No query p50/p95 or loading result is established by this construction experiment.
+
+Output: `/tmp/graphite-attempt197-real64-construction-1`.
+Execution SHA-256:
+`2a8987193418fcdb42333f1c8e471a6e69a90708ee231f4bb05ab96d4978c63d`.
+Resource audit SHA-256:
+`b6e261800cbb3f92b6a59ec792e29c9ae041c44fd189152c845b76a3b873907e`.
+Root independently checked the raw BSD clock/RSS fields, all 12 phase records and
+logs, six 64-graph manifest/writer bindings, fixed comparisons and fresh process
+absence. That review does not rehash graph payloads or establish complete semantic
+equivalence; the original completed runner audit remains part of the evidence.
+Root review SHA-256:
+`7711dcdaabd5ef15c496b1078fb607b4303f49a0600df67fd24ecafef1e255db`.
+
+Decision: retain isolated 197 commit `19c89f4769a7b7720434bd48c2ad261813285dbc`
+for its measured RSS benefit and continued composition. Do not integrate or claim
+final recovery: accepted-baseline construction CPU remains unresolved, and full
+semantic and separate loading/query acceptance are still required.
