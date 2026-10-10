@@ -15366,3 +15366,24 @@ rotated suffix as the complete sampled interval. Startup before recording and
 exit after recording remain unsampled. Sample shares are not CPU-time shares;
 allocation weights are estimates, not retained heap or RSS. No hotspot, CPU
 cause, new optimization benefit or acceptance is claimed before actual output.
+
+The paired diagnosis completed with all ten owned phases exiting and cleaning up
+successfully. Both recordings retained their single chunk, reported zero DataLoss,
+and matched the complete extracted sample counts. Root independently checked the
+raw phase receipts, recording and extraction hashes, timestamps and process cleanup.
+Root review SHA-256:
+`4c7da57972394435301d2c4b643094344ab27bc24f617b0403744c201041c952`.
+
+Accepted4f supplied 12,751 execution/native samples and candidate7e6a61d5 supplied
+14,025. The candidate has 487 samples containing `DeclaredTypeStore.load`, including
+228 containing its file-digest work; all `WireIo.digest` paths account for 285
+samples. `DeclaredTypeStore.writeTable` appears in 92. Root independently counted
+the load, digest and write paths from every extracted execution/native event.
+These inclusive counts overlap and cannot be converted into CPU seconds. They
+support inspecting declaration readback and erased-signature decoding before
+another writer-encoding experiment. Required validation stays inside usable-save;
+skipping it or moving it outside the boundary is not an optimization candidate.
+
+The instrumented pair is diagnostic only. It does not replace the uninstrumented
+CABBAC measurements above or establish a speedup, a new RSS result, query latency
+or final performance acceptance. No production change follows from sampling alone.
