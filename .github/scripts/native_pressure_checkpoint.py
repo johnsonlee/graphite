@@ -20,7 +20,9 @@ SCHEMA = 'graphite.pressure-checkpoint.v1'
 ACCEPTED = '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
 DIGEST = re.compile(r'[0-9a-f]{64}\Z')
 SYSTEM_JDK_PARENT = Path('/usr/lib/jvm')
-SYSTEM_CACERTS = Path('/etc/ssl/certs/java/cacerts')
+# Temurin's Debian package uses adoptium-ca-certificates; older images use java.
+# Both targets remain pinned preexisting dependencies, never restore destinations.
+SYSTEM_CACERTS = frozenset((Path('/etc/ssl/certs/java/cacerts'), Path('/etc/ssl/certs/adoptium/cacerts')))
 SYSTEM_JDK_NAME = re.compile(r'temurin-[1-9][0-9]*-jdk-(?:amd64|arm64)\Z')
 IMAGE_KEYS = ('ImageOS', 'ImageVersion', 'RUNNER_OS', 'RUNNER_ARCH')
 PRODUCER_TREES = ('runtime', 'graphs', 'query-correctness', 'core-string-exports',
@@ -128,7 +130,7 @@ class Collector:
             for name, facts in value.get('systemJdkLinks', {}).items():
                 self.links[name] = value['links'][name]
                 target = facts['resolved']
-                if target == str(SYSTEM_CACERTS):
+                if Path(target) in SYSTEM_CACERTS:
                     self.files[target] = value['files'][target]
         self.verification_only = {name for value in inherited for name in value.get('verificationOnly', [])}
         self.jdk_roots = set()
@@ -155,12 +157,13 @@ class Collector:
         members = []
         for p in sorted(root.rglob('*')):
             if p.is_symlink():
-                target = p.resolve()
-                external_certificate = (tool and system_jdk(root) and p == root/'lib/security/cacerts' and target == SYSTEM_CACERTS)
-                require(tool and (target.is_relative_to(root) or external_certificate), 'unsafe symlink: '+str(p))
-                self.links[str(p)] = os.readlink(p)
+                raw_target = os.readlink(p); target = p.resolve()
+                details = f'link={p}, root={root}, rawTarget={raw_target!r}, resolved={target}, tool={tool}'
+                external_certificate = (tool and system_jdk(root) and p == root/'lib/security/cacerts' and target in SYSTEM_CACERTS)
+                require(tool and (target.is_relative_to(root) or external_certificate), 'unsafe symlink: '+details)
+                self.links[str(p)] = raw_target
                 if tool and system_jdk(root):
-                    require(target.exists(), 'dangling system JDK symlink: '+str(p))
+                    require(target.exists(), 'dangling system JDK symlink: '+details)
                     self.system_jdk_links[str(p)] = {'resolved': str(target), 'mode': stat.S_IMODE(p.lstat().st_mode)}
                     if external_certificate:
                         self.add_file(target); self.verification_only.add(str(target)); self.system_files.add(str(target))
@@ -261,7 +264,7 @@ def check_system_jdks(manifest):
         require(system_jdk(root) and root.is_dir() and
                 stat.S_IMODE(root.stat().st_mode) == manifest['systemJdkRootModes'][str(root)], 'system JDK root identity/mode')
     for name in manifest['payload']:
-        require(name != str(SYSTEM_CACERTS) and not any(Path(name).is_relative_to(root) for root in roots),
+        require(Path(name) not in SYSTEM_CACERTS and not any(Path(name).is_relative_to(root) for root in roots),
                 'read-only system JDK in payload')
     links = manifest.get('systemJdkLinks', {})
     require(set(links) == {name for name in manifest['links'] if any(Path(name).is_relative_to(root) for root in roots)},
@@ -270,11 +273,14 @@ def check_system_jdks(manifest):
         p = Path(name); containing = [root for root in roots if p.is_relative_to(root)]
         require(len(containing) == 1, 'system JDK link root')
         root = containing[0]; target = Path(facts['resolved'])
-        require(target.is_relative_to(root) or p == root/'lib/security/cacerts' and target == SYSTEM_CACERTS,
-                'unapproved external system JDK target')
-        require(p.is_symlink() and os.readlink(p) == manifest['links'][name] and
-                p.resolve() == target and target.exists() and stat.S_IMODE(p.lstat().st_mode) == facts['mode'],
-                'system JDK link identity/target/mode')
+        raw_target = os.readlink(p) if p.is_symlink() else None
+        resolved = p.resolve()
+        details = f'link={p}, root={root}, rawTarget={raw_target!r}, resolved={resolved}, expectedResolved={target}'
+        require(target.is_relative_to(root) or p == root/'lib/security/cacerts' and target in SYSTEM_CACERTS,
+                'unapproved external system JDK target: '+details)
+        require(p.is_symlink() and raw_target == manifest['links'][name] and
+                resolved == target and target.exists() and stat.S_IMODE(p.lstat().st_mode) == facts['mode'],
+                'system JDK link identity/target/mode: '+details)
         if not target.is_relative_to(root):
             require(str(target) in manifest['files'] and str(target) in manifest['verificationOnly'], 'system certificate pin missing')
     for name in manifest['directories']:
@@ -379,7 +385,7 @@ def restore(args):
         require(p.is_relative_to(workspace) or (p.is_relative_to(Path('/opt/hostedtoolcache/Java_Temurin-Hotspot_jdk')) and len(p.parts) >= 6), 'unsafe JDK root')
     def writable(name):
         p = canonical(Path(name))
-        require(p != SYSTEM_CACERTS and not any(p.is_relative_to(root) for root in readonly_jdks), 'read-only system JDK write prohibited')
+        require(p not in SYSTEM_CACERTS and not any(p.is_relative_to(root) for root in readonly_jdks), 'read-only system JDK write prohibited')
         require(p.is_relative_to(workspace) or any(p.is_relative_to(root) for root in jdk_roots), 'outside restore roots')
         require(not p.is_relative_to(directory), 'payload overlaps checkpoint')
         require('.git' not in p.parts, 'Git metadata overwrite prohibited')

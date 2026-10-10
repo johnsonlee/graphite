@@ -77,10 +77,11 @@ class CheckpointTests(unittest.TestCase):
     def mutate_manifest(self, update):
         p = self.directory/'manifest.json'; value = checkpoint.read(p); update(value); checkpoint.save(p, value)
 
-    def system_jdk_fixture(self):
+    def system_jdk_fixture(self, provider='java'):
         parent = self.workspace.parent/'usr/lib/jvm'
-        certificate = self.workspace.parent/'etc/ssl/certs/java/cacerts'
-        for name, value in (('SYSTEM_JDK_PARENT', parent), ('SYSTEM_CACERTS', certificate)):
+        certificate = self.workspace.parent/f'etc/ssl/certs/{provider}/cacerts'
+        allowed = frozenset(self.workspace.parent/f'etc/ssl/certs/{name}/cacerts' for name in ('java', 'adoptium'))
+        for name, value in (('SYSTEM_JDK_PARENT', parent), ('SYSTEM_CACERTS', allowed)):
             mocked = patch.object(checkpoint, name, value); mocked.start(); self.addCleanup(mocked.stop)
         root = parent/'temurin-17-jdk-amd64'
         for name in ('bin/java', 'bin/javac', 'release', 'lib/modules'):
@@ -195,6 +196,61 @@ class CheckpointTests(unittest.TestCase):
         self.remove_payload(jvm); checkpoint.restore(args)
         certificate.write_bytes(b'changed')
         with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.restore(args)
+
+    def test_official_adoptium_target_roundtrip_delta_and_mutations_remain_readonly(self):
+        root, certificate, link = self.system_jdk_fixture('adoptium')
+        producer = self.seal(); self.remove_payload(producer)
+        checkpoint.restore(self.args())
+        self.assertIn(str(certificate), producer['verificationOnly'])
+        self.assertNotIn(str(certificate), producer['payload'])
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        producer_ref = self.directory/'manifest.json'; core_dir = self.workspace/'pressure-checkpoints/core-B'
+        core_args = self.args('core', 'B', core_dir, [producer_ref]); core = checkpoint.seal(core_args)
+        self.remove_payload(core); checkpoint.restore(core_args)
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'C'/name/'plan.json', {'pins': pins})
+        args = self.args('jvm', 'C', self.workspace/'pressure-checkpoints/jvm-C', [producer_ref, core_dir/'manifest.json'])
+        jvm = checkpoint.seal(args); self.remove_payload(jvm); checkpoint.restore(args)
+        for value in (producer, core, jvm):
+            self.assertIn(str(certificate), value['verificationOnly'])
+            self.assertEqual(producer['files'][str(certificate)], value['files'][str(certificate)])
+            self.assertEqual(producer['systemJdkLinks'], value['systemJdkLinks'])
+            self.assertNotIn(str(certificate), value['payload'])
+        # Re-run producer restoration with its payload absent, so any dependency
+        # rejection must happen before recreating the saved runtime binary.
+        self.remove_payload(producer)
+        original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        for change, reset in (
+            (lambda: certificate.write_bytes(b'changed'), lambda: certificate.write_bytes(original)),
+            (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
+            (certificate.unlink, lambda: certificate.write_bytes(original)),
+        ):
+            change()
+            with self.assertRaises(ValueError): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); reset()
+        legacy = certificate.parent.parent/'java/cacerts'; self.write(legacy, 'opaque certificate bytes')
+        link.unlink(); link.symlink_to(legacy)
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        self.mutate_manifest(lambda v: v['payload'].append(str(certificate)))
+        with self.assertRaisesRegex(ValueError, 'read-only system JDK in payload'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); self.assertEqual(original, certificate.read_bytes())
+
+    def test_rejected_certificate_reports_actual_link_and_resolved_context(self):
+        root, certificate, link = self.system_jdk_fixture('adoptium')
+        foreign = certificate.with_name('unapproved'); self.write(foreign, 'foreign')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaises(ValueError) as error: self.seal()
+        for part in ('link='+str(link), 'root='+str(root), 'rawTarget='+repr(str(foreign)),
+                     'resolved='+str(foreign), 'tool=True'):
+            self.assertIn(part, str(error.exception))
+        link.unlink(); link.symlink_to(certificate); self.seal()
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaises(ValueError) as error: checkpoint.restore(self.args())
+        for part in ('link='+str(link), 'root='+str(root), 'rawTarget='+repr(str(foreign)),
+                     'resolved='+str(foreign), 'expectedResolved='+str(certificate)):
+            self.assertIn(part, str(error.exception))
 
     def test_actual_seal_restore_closure_modes_empty_dirs_without_unrelated_cache(self):
         manifest = self.seal()
