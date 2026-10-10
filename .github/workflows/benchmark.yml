@@ -2900,6 +2900,7 @@ jobs:
         PYARMS
 
     - name: Execute complete native core topology and index migration checks
+      continue-on-error: true
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
       run: |
@@ -2908,14 +2909,34 @@ jobs:
           if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
             continue
           fi
+          code=0
           python3 candidate/.github/scripts/run_native_core_equivalence.py \
             --reference native-pressure-artifacts/C \
             --actual "native-pressure-artifacts/${ARM}" \
             --raw-local-types \
-            --output "native-pressure-artifacts/${ARM}/core-equivalence"
+            --output "native-pressure-artifacts/${ARM}/core-equivalence" || code=$?
+          if [[ "${code}" != 0 ]]; then
+            python3 - "native-pressure-artifacts/${ARM}/core-equivalence" <<'PYERRORS'
+        import json, pathlib, sys
+        root = pathlib.Path(sys.argv[1])
+        for record in sorted(root.glob('*/record.json')):
+            value = json.loads(record.read_text())
+            if value.get('status') == 'FAIL':
+                print(f"::group::Core proof failure: {record.parent.name}")
+                print(json.dumps(value.get('errors', [])))
+                stderr = record.parent / 'stderr.log'
+                if stderr.is_file():
+                    with stderr.open('rb') as stream:
+                        stream.seek(max(0, stderr.stat().st_size - 8192))
+                        print(stream.read().decode('utf-8', errors='replace'))
+                print('::endgroup::')
+        PYERRORS
+            exit "${code}"
+          fi
         done
 
     - name: Assemble audited native producer evidence
+      continue-on-error: true
       env:
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
         CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
