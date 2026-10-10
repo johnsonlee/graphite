@@ -15426,3 +15426,16 @@ unchanged488 source inputs and an empty owned process group. Root checked the ra
 log, exact arguments, source identities and cleanup before authorizing the frozen
 full suite. Static record SHA-256:
 `55b9ddb853c5534e0b8ea4b421a8f4e1418d3ebed4543167b5087cb34fedbe95`.
+
+Full correctness completed successfully in3m46s. All38 current-run XML files
+contain exactly the previous380 plus the seven new cases, with zero failures,
+errors or skips. Kover verification executed successfully; detekt reused the
+successful static result on the same frozen source. Root independently checked
+the raw log, exact case inventory, suite timestamps, all488 source pins and owned
+process cleanup. Full record SHA-256:
+`4729d0301cdec2865f05a1322a8ccf3783179730b16acb789f821eb3394c0d94`.
+Root review SHA-256:
+`cc6b0dd2bb40c9e3ce59a7b416a959998a256dbb14d354501b5937b6035e3688`.
+Next compare the isolated candidate against the retained195 writer and accepted4f
+using the existing real64 protocol. Correctness success alone does not establish
+the intended CPU benefit or accept the additional temporary cache memory.
