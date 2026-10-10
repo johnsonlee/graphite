@@ -4,6 +4,7 @@ pub mod fastpath;
 pub mod hop;
 mod id_candidate;
 pub mod matching;
+mod method_source_guard;
 pub mod partition;
 pub mod pipeline;
 pub mod props;
@@ -268,6 +269,21 @@ impl GraphContext for Executor {
                 return Value::Int(i64::from(value));
             }
         }
+        if matches!(
+            key,
+            "caller_class" | "caller_name" | "callee_class" | "callee_name"
+        ) {
+            let graph = self.graph(node.source);
+            if let Some(fields) = graph.call_site_scalar_strings(node.id) {
+                let id = match key {
+                    "caller_class" => fields.caller_class,
+                    "caller_name" => fields.caller_name,
+                    "callee_class" => fields.callee_class,
+                    _ => fields.callee_name,
+                };
+                return Value::str(graph.str(id));
+            }
+        }
         match self.node(node) {
             Some(n) => props::node_property(self.graph(node.source), &n, key),
             None => Value::Null,
@@ -285,6 +301,23 @@ impl GraphContext for Executor {
             m.insert("qualifiedId".into(), Value::str(eid));
         }
         m
+    }
+    fn node_property_is_null(&self, node: NodeRef, key: &str) -> bool {
+        if matches!(key, "generic_type" | "type_info") {
+            return self
+                .node(node)
+                .is_none_or(|n| props::node_property_is_null(self.graph(node.source), &n, key));
+        }
+        self.node_property(node, key).is_null()
+    }
+    fn node_keys(&self, node: NodeRef) -> Vec<String> {
+        let mut keys = self
+            .node(node)
+            .map_or_else(Vec::new, |n| props::node_keys(self.graph(node.source), &n));
+        if self.cross {
+            keys.extend(["graphId", "elementId", "qualifiedId"].map(str::to_owned));
+        }
+        keys
     }
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = self.node_display_properties(node);
@@ -346,11 +379,17 @@ impl GraphContext for Executor {
             None => IndexMap::new(),
         }
     }
+    fn method_property_is_null(&self, method: MethodRef, key: &str) -> bool {
+        let g = self.graph(method.source);
+        g.methods().get(method.index as usize).is_none_or(|md| {
+            props::method_property_is_null(g, md, key, self.graph_id_opt(method.source))
+        })
+    }
     fn method_signature(&self, m: MethodRef) -> String {
         let g = self.graph(m.source);
         g.methods()
             .get(m.index as usize)
-            .map(|md| md.signature(&g.strings))
+            .map(|md| md.signature(g.strings()))
             .unwrap_or_default()
     }
     fn check_cancelled(&self) -> CypherResult<()> {
@@ -360,3 +399,6 @@ impl GraphContext for Executor {
 
 #[cfg(test)]
 mod int_constant_tests;
+
+#[cfg(test)]
+mod call_site_scalar_tests;

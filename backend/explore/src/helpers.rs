@@ -66,8 +66,8 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
         NodeKind::CallSite { caller, callee, .. } => {
             m.insert("type".into(), json!("CallSiteNode"));
             m.insert("id".into(), id);
-            m.insert("caller".into(), json!(caller.signature(&g.strings)));
-            m.insert("callee".into(), json!(callee.signature(&g.strings)));
+            m.insert("caller".into(), json!(caller.signature(g.strings())));
+            m.insert("callee".into(), json!(callee.signature(g.strings())));
             m.insert(
                 "label".into(),
                 json!(format!(
@@ -222,13 +222,13 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert("index".into(), json!(index));
             m.insert("paramType".into(), s(*param_type));
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), json!(format!("param#{index}")));
         }
         NodeKind::Return { method, .. } => {
             m.insert("type".into(), json!("ReturnNode"));
             m.insert("id".into(), id);
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), json!("return"));
         }
         NodeKind::LocalVariable {
@@ -240,7 +240,7 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             m.insert("id".into(), id);
             m.insert("name".into(), s(*name));
             m.insert("varType".into(), s(*var_type));
-            m.insert("method".into(), json!(method.signature(&g.strings)));
+            m.insert("method".into(), json!(method.signature(g.strings())));
             m.insert("label".into(), s(*name));
         }
         NodeKind::Annotation {
@@ -262,6 +262,33 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
             for (k, v) in values {
                 put(&mut m, g.str(*k), any_json(g, v));
             }
+        }
+    }
+    if matches!(
+        node.kind,
+        NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+    ) {
+        // Declared type projections contain only nulls, strings, lists and maps.
+        fn declared_json(v: &graphite_cypher::Value) -> J {
+            use graphite_cypher::Value;
+            match v {
+                Value::Str(s) => json!(s.as_ref()),
+                Value::List(items) => J::Array(items.iter().map(declared_json).collect()),
+                Value::Map(items) => J::Object(
+                    items
+                        .iter()
+                        .map(|(key, value)| (key.clone(), declared_json(value)))
+                        .collect(),
+                ),
+                _ => J::Null,
+            }
+        }
+        for key in ["generic_type", "type_info"] {
+            put(
+                &mut m,
+                key,
+                declared_json(&graphite_cypher::engine::props::node_property(g, node, key)),
+            );
         }
     }
     J::Object(m)

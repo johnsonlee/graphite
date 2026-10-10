@@ -1,0 +1,28 @@
+{
+  "columns": [
+    "n.graph_id",
+    "caller",
+    "callerMethod",
+    "callee",
+    "calleeMethod"
+  ],
+  "rows": [
+    {
+      "caller": "com.google.android.mms.util.PduCache",
+      "callerMethod": "<clinit>",
+      "callee": "android.content.UriMatcher",
+      "calleeMethod": "<init>",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      }
+    }
+  ],
+  "rowCount": 1,
+  "graphCount": 64,
+  "total": {
+    "value": 2,
+    "relation": "gte"
+  }
+}

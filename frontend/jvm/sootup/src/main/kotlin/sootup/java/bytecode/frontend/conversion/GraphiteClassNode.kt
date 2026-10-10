@@ -48,7 +48,7 @@ internal class GraphiteClassNode(
  * on code the JIT has not compiled yet; a class the graph never visits pays the same.
  */
 internal fun lazyClassSource(location: AnalysisInputLocation, path: Path, type: ClassType, node: ClassNode): JavaSootClassSource =
-    if (node.access and Opcodes.ACC_ANNOTATION != 0) AsmAnnotationClassSource(location, path, type, node)
+    if (node.access and Opcodes.ACC_ANNOTATION != 0) GraphiteAsmAnnotationClassSource(location, path, type, node)
     else GraphiteAsmClassSource(location, path, type, node)
 
 /** Whether [source] came from the bytecode frontend, with an ASM method node behind each method. */

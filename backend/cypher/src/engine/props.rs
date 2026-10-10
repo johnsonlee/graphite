@@ -50,11 +50,219 @@ pub fn any_to_kotlin_string(g: &Graph, v: &AnyValue) -> String {
 }
 
 fn sig(g: &Graph, m: &MethodDesc) -> Value {
-    Value::str(m.signature(&g.strings))
+    Value::str(m.signature(g.strings()))
 }
 
 fn s(g: &Graph, id: StrId) -> Value {
     Value::str(g.str(id))
+}
+
+fn type_info(table: &graphite_storage::types::DeclaredTypes, id: usize) -> Value {
+    let t = table.type_expr(id);
+    let mut map = IndexMap::new();
+    map.insert("kind".into(), Value::str(t.kind));
+    if !t.name.is_empty() {
+        map.insert("name".into(), Value::str(t.name));
+    }
+    if !t.scope.is_empty() {
+        map.insert("scope".into(), Value::str(t.scope));
+    }
+    if let Some(owner) = t.owner {
+        map.insert("owner".into(), type_info(table, owner));
+    }
+    if let Some(component) = t.component {
+        map.insert("component".into(), type_info(table, component));
+    }
+    if !t.variance.is_empty() {
+        map.insert("variance".into(), Value::str(t.variance));
+    }
+    map.insert(
+        "arguments".into(),
+        Value::list(t.arguments.iter().map(|id| type_info(table, *id)).collect()),
+    );
+    Value::map(map)
+}
+
+fn declared_method<'a>(
+    g: &'a Graph,
+    m: &MethodDesc,
+) -> Option<(
+    &'a graphite_storage::types::DeclaredTypes,
+    graphite_storage::types::MethodView<'a>,
+)> {
+    let table = g.declared_types()?;
+    Some((table, table.method(m, g.strings())?))
+}
+
+pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
+    g.declared_types().is_some_and(|table| match tag {
+        TAG_FIELD_NODE => table.field_count() != 0,
+        TAG_PARAMETER_NODE | TAG_RETURN_NODE => table.method_count() != 0,
+        _ => false,
+    })
+}
+
+fn declared_node_type(g: &Graph, node: &Node) -> Option<usize> {
+    g.declared_types()?.node_type_id(node, g.strings())
+}
+
+pub(super) fn has_declared_node_type(g: &Graph, node: &Node) -> bool {
+    declared_node_type(g, node).is_some()
+}
+
+/// Declaration-bearing nodes have two possible key sets. Reading those sets
+/// requires member binding, never rendering or expanding the bound type tree.
+pub fn node_keys(g: &Graph, node: &Node) -> Vec<String> {
+    let fixed: &[&str] = match &node.kind {
+        NodeKind::Field {
+            declaring_class,
+            name,
+            field_type,
+            ..
+        } => {
+            for id in [name, field_type, declaring_class] {
+                let _ = g.str(*id);
+            }
+            &["id", "name", "type", "class", "static"]
+        }
+        NodeKind::Parameter {
+            method, param_type, ..
+        } => {
+            let _ = g.str(*param_type);
+            check_method_signature_strings(g, method);
+            &["id", "index", "type", "method"]
+        }
+        NodeKind::Return {
+            method,
+            actual_type,
+        } => {
+            check_method_signature_strings(g, method);
+            if let Some(id) = actual_type {
+                let _ = g.str(*id);
+            }
+            &["id", "method", "actual_type"]
+        }
+        _ => return node_properties(g, node).into_keys().collect(),
+    };
+    let mut keys: Vec<String> = fixed.iter().map(|key| (*key).to_owned()).collect();
+    if has_declared_node_type(g, node) {
+        keys.extend(["generic_type", "type_info"].map(str::to_owned));
+    }
+    keys
+}
+
+fn check_method_signature_strings(g: &Graph, method: &MethodDesc) {
+    let _ = g.str(method.declaring_class);
+    let _ = g.str(method.name);
+    for parameter in &method.parameter_types {
+        let _ = g.str(*parameter);
+    }
+}
+
+fn declared_node_property(g: &Graph, node: &Node, key: &str) -> Value {
+    declared_node_type(g, node)
+        .map(|id| {
+            let table = g.declared_types().unwrap();
+            if key == "generic_type" {
+                Value::str(table.render(id))
+            } else {
+                type_info(table, id)
+            }
+        })
+        .unwrap_or(Value::Null)
+}
+
+fn generic_method_property(g: &Graph, m: &MethodDesc, key: &str) -> Value {
+    let Some((table, types)) = declared_method(g, m) else {
+        return Value::Null;
+    };
+    project_generic_method_property(table, &types, key)
+}
+
+/// A full Method map shares one exact declaration binding across its properties.
+/// No projected values or descriptor strings survive beyond the returned map.
+fn project_generic_method_property(
+    table: &graphite_storage::types::DeclaredTypes,
+    types: &graphite_storage::types::MethodView<'_>,
+    key: &str,
+) -> Value {
+    match key {
+        "generic_return_type" => Value::str(table.render(types.returns)),
+        "generic_parameter_types" => Value::list(
+            types
+                .parameters
+                .iter()
+                .map(|id| Value::str(table.render(*id)))
+                .collect(),
+        ),
+        "return_type_info" => type_info(table, types.returns),
+        "parameter_type_info" => Value::list(
+            types
+                .parameters
+                .iter()
+                .map(|id| type_info(table, *id))
+                .collect(),
+        ),
+        "type_parameters" => Value::list(
+            types
+                .type_parameters
+                .iter()
+                .map(|p| {
+                    Value::map(IndexMap::from([
+                        ("name".into(), Value::str(p.name)),
+                        ("scope".into(), Value::str(p.scope)),
+                        (
+                            "bounds".into(),
+                            Value::list(
+                                p.bounds
+                                    .iter()
+                                    .map(|id| Value::str(table.render(*id)))
+                                    .collect(),
+                            ),
+                        ),
+                        (
+                            "bound_info".into(),
+                            Value::list(p.bounds.iter().map(|id| type_info(table, *id)).collect()),
+                        ),
+                    ]))
+                })
+                .collect(),
+        ),
+        _ => Value::Null,
+    }
+}
+
+pub const GENERIC_METHOD_KEYS: [&str; 5] = [
+    "generic_return_type",
+    "generic_parameter_types",
+    "return_type_info",
+    "parameter_type_info",
+    "type_parameters",
+];
+
+pub(super) fn node_property_is_null(g: &Graph, node: &Node, key: &str) -> bool {
+    if matches!(key, "generic_type" | "type_info")
+        && matches!(
+            node.kind,
+            NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+        )
+    {
+        return !has_declared_node_type(g, node);
+    }
+    // Annotation properties are dynamic and can use a generic property's name.
+    node_property(g, node, key).is_null()
+}
+
+pub(super) fn method_property_is_null(
+    g: &Graph,
+    method: &MethodDesc,
+    key: &str,
+    graph_id: Option<&str>,
+) -> bool {
+    if GENERIC_METHOD_KEYS.contains(&key) {
+        return declared_method(g, method).is_none();
+    }
+    method_property(g, method, key, graph_id).is_null()
 }
 
 /// `getProperty(node, key)`.
@@ -73,11 +281,11 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "callee_class" => s(g, callee.declaring_class),
             "callee_name" => s(g, callee.name),
             "callee_signature" => sig(g, callee),
-            "callee_descriptor" => Value::str(callee.descriptor(&g.strings)),
+            "callee_descriptor" => Value::str(callee.descriptor(g.strings())),
             "caller_class" => s(g, caller.declaring_class),
             "caller_name" => s(g, caller.name),
             "caller_signature" => sig(g, caller),
-            "caller_descriptor" => Value::str(caller.descriptor(&g.strings)),
+            "caller_descriptor" => Value::str(caller.descriptor(g.strings())),
             "line" => line.map(|l| Value::Int(l as i64)).unwrap_or(Value::Null),
             "ordinal" => ordinal.map(|o| Value::Int(o as i64)).unwrap_or(Value::Null),
             _ => Value::Null,
@@ -140,6 +348,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "type" => s(g, *field_type),
             "class" => s(g, *declaring_class),
             "static" => Value::Bool(*is_static),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::Parameter {
@@ -150,6 +359,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
             "index" => Value::Int(*index as i64),
             "type" => s(g, *param_type),
             "method" => sig(g, method),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::Return {
@@ -158,6 +368,7 @@ pub fn node_property(g: &Graph, node: &Node, key: &str) -> Value {
         } => match key {
             "method" => sig(g, method),
             "actual_type" => actual_type.map(|t| s(g, t)).unwrap_or(Value::Null),
+            "generic_type" | "type_info" => declared_node_property(g, node, key),
             _ => Value::Null,
         },
         NodeKind::ResourceFile {
@@ -265,7 +476,7 @@ fn node_properties_impl(
                 put("callee_signature", sig(g, callee));
                 put(
                     "callee_descriptor",
-                    Value::str(callee.descriptor(&g.strings)),
+                    Value::str(callee.descriptor(g.strings())),
                 );
             } else {
                 check_method_detail_strings(g, callee);
@@ -276,7 +487,7 @@ fn node_properties_impl(
                 put("caller_signature", sig(g, caller));
                 put(
                     "caller_descriptor",
-                    Value::str(caller.descriptor(&g.strings)),
+                    Value::str(caller.descriptor(g.strings())),
                 );
             } else {
                 check_method_detail_strings(g, caller);
@@ -390,6 +601,11 @@ fn node_properties_impl(
                 m.insert(g.str(*k).to_string(), any_to_value(g, v));
             }
         }
+    }
+    if let Some(id) = declared_node_type(g, node) {
+        let table = g.declared_types().unwrap();
+        m.insert("generic_type".into(), Value::str(table.render(id)));
+        m.insert("type_info".into(), type_info(table, id));
     }
     m
 }
@@ -507,6 +723,14 @@ pub fn method_properties(
         Value::list(m.parameter_types.iter().map(|p| s(g, *p)).collect()),
     );
     map.insert("return_type".to_string(), s(g, m.return_type));
+    if let Some((table, types)) = declared_method(g, m) {
+        for key in GENERIC_METHOD_KEYS {
+            map.insert(
+                key.into(),
+                project_generic_method_property(table, &types, key),
+            );
+        }
+    }
     if let Some(gid) = graph_id {
         map.insert("graphId".to_string(), Value::str(gid));
     }
@@ -520,6 +744,11 @@ pub fn method_property(g: &Graph, m: &MethodDesc, key: &str, graph_id: Option<&s
         "name" => s(g, m.name),
         "parameter_types" => Value::list(m.parameter_types.iter().map(|p| s(g, *p)).collect()),
         "return_type" => s(g, m.return_type),
+        "generic_return_type"
+        | "generic_parameter_types"
+        | "return_type_info"
+        | "parameter_type_info"
+        | "type_parameters" => generic_method_property(g, m, key),
         "graphId" => graph_id.map(Value::str).unwrap_or(Value::Null),
         _ => Value::Null,
     }
@@ -531,3 +760,7 @@ fn _unused(_: NodeRef, _: MethodRef, _: Arc<str>) {}
 #[cfg(test)]
 #[path = "props_tests.rs"]
 mod tests;
+
+#[cfg(test)]
+#[path = "method_map_tests.rs"]
+mod method_map_tests;

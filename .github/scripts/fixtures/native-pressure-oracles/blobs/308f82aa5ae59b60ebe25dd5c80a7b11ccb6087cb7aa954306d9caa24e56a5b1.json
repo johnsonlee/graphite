@@ -1,0 +1,53 @@
+{
+  "status": "PASS_FOUR_COMPLETE_NATIVE_FEATURE_RESPONSES_INDEPENDENT_RAW_AUDIT",
+  "proofs": [
+    {
+      "arm": "C",
+      "case": "feature-nodes",
+      "rows": 192,
+      "graphCount": 64,
+      "bodySha256": "980ee028e1bf40f17f1cc4dc68bcc782a0c681dcdb7f06d88f792912b7373daa",
+      "expectedSha256": "1c98aadba915550704921b208d3af55e1ef3db092efc19c5ab9e286fa10cb48d"
+    },
+    {
+      "arm": "C",
+      "case": "feature-methods",
+      "rows": 64,
+      "graphCount": 64,
+      "bodySha256": "d7614631d383199e849a6e38f787e1d4d42a2528533f579da9507c36749e2129",
+      "expectedSha256": "8bbd3481326cb712f9f0996957809df9a29afe33d1978085cff572dc2497fe4c"
+    },
+    {
+      "arm": "B",
+      "case": "feature-nodes",
+      "rows": 256,
+      "graphCount": 64,
+      "bodySha256": "139cc08b79f80241a8b581b213e52b225b3e370e44f71a995cc8d3e8580a5753",
+      "expectedSha256": "a99832a2591b3ce4683111e10f52942d230371b9218511418cd039a6ef9675d5"
+    },
+    {
+      "arm": "B",
+      "case": "feature-methods",
+      "rows": 64,
+      "graphCount": 64,
+      "bodySha256": "2753e236c4fe4154c3eba915916fbf562bc58c62fead73977aa186513fa91a23",
+      "expectedSha256": "2f783c88655fd85aac2149825cbe3b4189ea69ad18ded5102a095166b08dd0b6"
+    }
+  ],
+  "pins": {
+    "/tmp/graphite-native-feature-http-prep-1/plan.json": "5cf356eb347f3786925975781c3c471fbed1f5c53222b9f6a45e381e854ee0d4",
+    "/tmp/graphite-native-feature-http-execution-1/record.json": "d7779da21187f319d042f04b59d7ca81a344c7f8f53c4569ffd0a0b4938bf37d",
+    "/tmp/graphite-native-feature-http-execution-1/C/record.json": "1414c8df2f131a69ea63ac068fe4a5ddef1906f6019ca5c1613fe5e460797b2c",
+    "/tmp/graphite-native-feature-http-execution-1/C/feature-nodes.body": "980ee028e1bf40f17f1cc4dc68bcc782a0c681dcdb7f06d88f792912b7373daa",
+    "/private/tmp/graphite-native-feature-presence-execution-1/derived/C/feature-nodes-expected.json": "1c98aadba915550704921b208d3af55e1ef3db092efc19c5ab9e286fa10cb48d",
+    "/tmp/graphite-native-feature-http-execution-1/C/feature-methods.body": "d7614631d383199e849a6e38f787e1d4d42a2528533f579da9507c36749e2129",
+    "/private/tmp/graphite-native-feature-presence-execution-1/derived/C/feature-methods-expected.json": "8bbd3481326cb712f9f0996957809df9a29afe33d1978085cff572dc2497fe4c",
+    "/tmp/graphite-native-feature-http-execution-1/B/record.json": "8781ec87a362c79b35b2d1ef944f11943255bb07333096638c132fa4e079c37e",
+    "/tmp/graphite-native-feature-http-execution-1/B/feature-nodes.body": "139cc08b79f80241a8b581b213e52b225b3e370e44f71a995cc8d3e8580a5753",
+    "/private/tmp/graphite-native-feature-presence-execution-1/derived/B/feature-nodes-expected.json": "a99832a2591b3ce4683111e10f52942d230371b9218511418cd039a6ef9675d5",
+    "/tmp/graphite-native-feature-http-execution-1/B/feature-methods.body": "2753e236c4fe4154c3eba915916fbf562bc58c62fead73977aa186513fa91a23",
+    "/private/tmp/graphite-native-feature-presence-execution-1/derived/B/feature-methods-expected.json": "2f783c88655fd85aac2149825cbe3b4189ea69ad18ded5102a095166b08dd0b6"
+  },
+  "scope": "Exact full property-presence query responses on both actual C4f/B42377 own64 graphs; not full generic value or performance acceptance",
+  "performanceClaim": false
+}

@@ -49,9 +49,11 @@ use super::Executor;
 use crate::ast::{BinOp, Clause, Direction, Expr, Literal, Pattern, ReturnItem};
 use crate::context::GraphContext;
 use crate::eval::{is_aggregation_name, Evaluator};
-use crate::value::{EdgeRef, NodeRef, SourceIdx, Value};
+use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use crate::CypherResult;
-use graphite_storage::node::{StrId, TAG_ANNOTATION_NODE, TAG_COUNT};
+use graphite_storage::node::{
+    StrId, TAG_ANNOTATION_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE,
+};
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
 use rayon::prelude::*;
@@ -140,6 +142,9 @@ impl Dep {
     }
 }
 
+// Analysis-only sentinel: Method is a metadata row, never a persisted node tag.
+const METHOD_TAG: u8 = TAG_COUNT as u8;
+
 /// The raw string columns a type exposes, by property name, in a fixed order so a
 /// column bit means the same thing everywhere.
 const COLUMN_PROPS: [&str; 12] = [
@@ -171,6 +176,8 @@ struct TagCtx<'a> {
     tag: Option<u8>,
     /// The keys a node of the type exposes (`keys(n)`), read off one node.
     keys: &'a [String],
+    /// Declaration properties may be present on only some nodes of this tag.
+    declared_keys: bool,
     columns: &'a [(&'static str, StringField)],
 }
 
@@ -185,7 +192,10 @@ struct Scope<'a> {
 
 impl<'a> Scope<'a> {
     fn node(&self, v: &str) -> Option<&'a TagCtx<'a>> {
-        self.nodes.iter().find(|(n, _)| *n == v).map(|(_, c)| *c)
+        self.nodes
+            .iter()
+            .find(|(n, c)| *n == v && (c.tag != Some(METHOD_TAG) || self.bound(v).is_none()))
+            .map(|(_, c)| *c)
     }
     fn bound(&self, v: &str) -> Option<Dep> {
         self.bound
@@ -293,7 +303,8 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
                     // An annotation's values add keys of their own: its key set is
                     // read off each node, and partitions the type by itself.
                     Some(ctx) => match ctx.tag {
-                        Some(t) if t != TAG_ANNOTATION_NODE => Dep::TAG,
+                        Some(METHOD_TAG) => Dep::CONTENT,
+                        Some(t) if t != TAG_ANNOTATION_NODE && !ctx.declared_keys => Dep::TAG,
                         Some(_) => Dep::KEYS,
                         None => Dep::CONTENT,
                     },
@@ -312,7 +323,8 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
                 _ => Dep::CONTENT,
             }
         }
-        Expr::Distinct(e) | Expr::Not(e) | Expr::IsNull(e) | Expr::IsNotNull(e) => dep(e, scope),
+        Expr::IsNull(e) | Expr::IsNotNull(e) => null_dep(e, scope),
+        Expr::Distinct(e) | Expr::Not(e) => dep(e, scope),
         Expr::Unary { expr, .. } => dep(expr, scope),
         Expr::Binary { left, right, .. }
         | Expr::Comparison { left, right, .. }
@@ -397,6 +409,32 @@ fn dep(e: &Expr, scope: &Scope) -> Dep {
     }
 }
 
+fn null_dep(expr: &Expr, scope: &Scope) -> Dep {
+    if let Expr::Property { expr, key } = expr {
+        if let Expr::Variable(variable) = expr.as_ref() {
+            // UNWIND/comprehensions and WITH aliases can shadow a node variable.
+            // Only its original, still-bound declaration node has these keys.
+            if scope.bound(variable).is_none()
+                && scope.node(variable).is_some_and(|ctx| {
+                    if ctx.tag == Some(METHOD_TAG) {
+                        super::props::GENERIC_METHOD_KEYS.contains(&key.as_str())
+                    } else {
+                        ctx.declared_keys
+                            && matches!(key.as_str(), "generic_type" | "type_info")
+                            && matches!(
+                                ctx.tag,
+                                Some(TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
+                            )
+                    }
+                })
+            {
+                return Dep::KEYS;
+            }
+        }
+    }
+    dep(expr, scope)
+}
+
 /// `n.<key>` for a node of the context's type.
 fn property_dep(ctx: &TagCtx, key: &str, cross: bool) -> Dep {
     if key == "graphId" {
@@ -406,6 +444,11 @@ fn property_dep(ctx: &TagCtx, key: &str, cross: bool) -> Dep {
         // A hop's end: only what the graph decides is known without the record.
         return Dep::CONTENT;
     };
+    if tag == METHOD_TAG {
+        // Method values, including generic text and maps, still require the
+        // ordinary pipeline. Only null_dep can classify declaration presence.
+        return Dep::CONTENT;
+    }
     if cross && (key == "elementId" || key == "qualifiedId") {
         return Dep::CONTENT;
     }
@@ -414,6 +457,9 @@ fn property_dep(ctx: &TagCtx, key: &str, cross: bool) -> Dep {
     }
     if tag == TAG_ANNOTATION_NODE {
         // Values and the keys they add.
+        return Dep::CONTENT;
+    }
+    if ctx.declared_keys && matches!(key, "generic_type" | "type_info") {
         return Dep::CONTENT;
     }
     if ctx.keys.iter().any(|k| k == key) {
@@ -456,6 +502,9 @@ enum Step {
 }
 
 enum Shape {
+    Method {
+        variable: String,
+    },
     Node {
         variable: String,
         tags: Vec<u8>,
@@ -481,6 +530,8 @@ enum Strategy {
     /// One row per distinct (key set, masked columns), the record decoded for its
     /// keys: the annotations.
     Keys(u8),
+    /// Fixed keys plus optional declared-type keys, determined by member binding.
+    DeclaredKeys(u8),
     /// One row per node.
     Each,
 }
@@ -562,9 +613,15 @@ impl PartitionPlan {
             _ => None,
         };
         let shape = match (p.nodes.len(), p.rels.len()) {
-            (1, 0) => Shape::Node {
-                variable: p.nodes[0].variable.clone()?,
-                tags: tags(&p.nodes[0].labels)?,
+            (1, 0) => match resolve_node_class(&p.nodes[0].labels) {
+                NodeClass::Method => Shape::Method {
+                    variable: p.nodes[0].variable.clone()?,
+                },
+                NodeClass::Tags(tags) => Shape::Node {
+                    variable: p.nodes[0].variable.clone()?,
+                    tags,
+                },
+                NodeClass::None => return None,
             },
             (2, 1) => {
                 let rel = &p.rels[0];
@@ -719,10 +776,41 @@ impl PartitionPlan {
         };
 
         match &shape {
+            Shape::Method { variable } => {
+                let method = TagCtx {
+                    tag: Some(METHOD_TAG),
+                    keys: &[],
+                    declared_keys: true,
+                    columns: &[],
+                };
+                let mut scope = Scope {
+                    cross: ex.cross,
+                    nodes: vec![(variable.as_str(), &method)],
+                    rel: None,
+                    bound: Vec::new(),
+                };
+                let d = plan_deps(&mut scope);
+                // Keep this extension scoped to declaration presence. Existing
+                // count-only fast paths and all method-content paths stay intact.
+                if d.level != Level::Keys {
+                    return None;
+                }
+                Some((
+                    PartitionPlan {
+                        shape,
+                        where_clause,
+                        strategies: Vec::new(),
+                        scan: None,
+                        merge: ex.cross && !d.graph,
+                    },
+                    consumed,
+                ))
+            }
             Shape::Hop { a, r, b, .. } => {
                 let end = TagCtx {
                     tag: None,
                     keys: &[],
+                    declared_keys: false,
                     columns: &[],
                 };
                 let mut nodes = Vec::new();
@@ -757,12 +845,10 @@ impl PartitionPlan {
                 let scan = ScanPlan::build(patterns, where_clause.as_ref());
                 let columns: Vec<Vec<(&'static str, StringField)>> =
                     (0..TAG_COUNT as u8).map(tag_columns).collect();
-                // What the segment reads of a type is decided by the type, not the
-                // graph: a type's key set is fixed by its kind (an annotation's is
-                // not, and its properties read the record whatever the keys), so the
-                // analysis runs once per type present anywhere and every graph reuses
-                // it. `None` declines the segment.
-                let mut by_tag: [Option<Option<Strategy>>; TAG_COUNT] = [None; TAG_COUNT];
+                // Reuse analysis per tag and declaration availability. Optional
+                // declarations make keys vary within a tag, like annotation keys;
+                // legacy graphs retain their whole-tag partition. `None` declines.
+                let mut by_tag: [[Option<Option<Strategy>>; TAG_COUNT]; 2] = [[None; TAG_COUNT]; 2];
                 let mut strategies = Vec::with_capacity(ex.sources.len());
                 let mut any_partitioned = false;
                 let mut reads_graph = false;
@@ -772,20 +858,18 @@ impl PartitionPlan {
                         let Some(&first) = s.graph.ids_by_tag(tag).first() else {
                             continue;
                         };
-                        let strategy = match by_tag[tag as usize] {
+                        let declared_keys = super::props::has_declared_types_for_tag(&s.graph, tag);
+                        let strategy = match by_tag[declared_keys as usize][tag as usize] {
                             Some(decided) => decided,
                             None => {
-                                let keys: Vec<String> = ex
-                                    .node_properties(NodeRef {
-                                        source: si as SourceIdx,
-                                        id: first,
-                                    })
-                                    .keys()
-                                    .cloned()
-                                    .collect();
+                                let keys = ex.node_keys(NodeRef {
+                                    source: si as SourceIdx,
+                                    id: first,
+                                });
                                 let ctx = TagCtx {
                                     tag: Some(tag),
                                     keys: &keys,
+                                    declared_keys,
                                     columns: &columns[tag as usize],
                                 };
                                 let mut scope = Scope {
@@ -811,14 +895,18 @@ impl PartitionPlan {
                                         if !final_aggregated && d.columns != 0 {
                                             None
                                         } else if d.level == Level::Keys {
-                                            Some(Strategy::Keys(d.columns))
+                                            Some(if declared_keys {
+                                                Strategy::DeclaredKeys(d.columns)
+                                            } else {
+                                                Strategy::Keys(d.columns)
+                                            })
                                         } else {
                                             Some(Strategy::Columns(d.columns))
                                         }
                                     }
                                     _ => Some(Strategy::Whole),
                                 };
-                                by_tag[tag as usize] = Some(decided);
+                                by_tag[declared_keys as usize][tag as usize] = Some(decided);
                                 decided
                             }
                         };
@@ -851,6 +939,7 @@ impl PartitionPlan {
     /// first meet each partition.
     pub fn rows(&self, ex: &Executor, ev: &Evaluator) -> CypherResult<Vec<Row>> {
         match &self.shape {
+            Shape::Method { variable } => self.method_rows(ex, ev, variable),
             Shape::Node { variable, tags } => self.node_rows(ex, ev, variable, tags),
             Shape::Hop {
                 a,
@@ -909,7 +998,7 @@ impl PartitionPlan {
                 for (si, slots) in swept.into_iter().enumerate() {
                     let source = si as SourceIdx;
                     let graph = &ex.sources[si].graph;
-                    let v2 = graph.node_version < 3;
+                    let v2 = graph.node_version() < 3;
                     let csr = match direction {
                         Direction::Outgoing => &graph.forward,
                         _ => &graph.backward,
@@ -974,6 +1063,67 @@ impl PartitionPlan {
         }
     }
 
+    /// Method metadata remains publicly mutable. Summaries are query-local,
+    /// so neither metadata edits nor declared-type edits can leave stale counts.
+    /// Exactly one identity lookup and scan tick per method replaces repeated
+    /// property lookups; no rendered type or erased descriptor is retained.
+    fn method_rows(&self, ex: &Executor, ev: &Evaluator, variable: &str) -> CypherResult<Vec<Row>> {
+        let mut out = Vec::new();
+        let mut shared: HashMap<bool, Option<usize>> = HashMap::new();
+        for (si, source) in ex.sources.iter().enumerate() {
+            ex.cancel.check()?;
+            let graph = &source.graph;
+            let table = graph.declared_types();
+            let mut partitions: [Option<(u32, i64)>; 2] = [None, None];
+            for (index, method) in graph.methods().iter().enumerate() {
+                // Also poll absent-table scans: skipping identity lookup does
+                // not skip the logical metadata traversal or cancellation.
+                ex.tick()?;
+                let bound = table.is_some_and(|t| t.method(method, graph.strings()).is_some());
+                let part = partitions[usize::from(bound)].get_or_insert((index as u32, 0));
+                part.1 += 1;
+            }
+            let mut ordered: Vec<_> = partitions
+                .into_iter()
+                .enumerate()
+                .filter_map(|(bound, part)| part.map(|(first, count)| (first, count, bound != 0)))
+                .collect();
+            ordered.sort_by_key(|(first, _, _)| *first);
+            for (index, weight, bound) in ordered {
+                ex.cancel.check()?;
+                if self.merge {
+                    if let Some(joined) = shared.get(&bound) {
+                        if let Some(at) = *joined {
+                            weigh(ex, &mut out[at], si as SourceIdx, weight);
+                        }
+                        continue;
+                    }
+                }
+                let mut row = Row::with_capacity(3);
+                bind(
+                    ex,
+                    &mut row,
+                    variable,
+                    Value::Method(MethodRef {
+                        source: si as SourceIdx,
+                        index,
+                    }),
+                );
+                if weight != 1 {
+                    row.insert(INTERNAL_WEIGHT_KEY.to_string(), Value::Int(weight));
+                }
+                let kept = self.keep(ev, &row)?;
+                if self.merge {
+                    shared.insert(bound, kept.then_some(out.len()));
+                }
+                if kept {
+                    out.push(row);
+                }
+            }
+        }
+        Ok(out)
+    }
+
     fn node_rows(
         &self,
         ex: &Executor,
@@ -997,21 +1147,29 @@ impl PartitionPlan {
                     .collect()
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
-                Strategy::Whole => (Vec::new(), Vec::new()),
-                Strategy::Columns(mask) => (masked(mask), Vec::new()),
+                Strategy::Whole => (Vec::new(), KeySet::Fixed),
+                Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
                     masked(mask),
-                    ex.node_properties(NodeRef {
+                    KeySet::Dynamic(ex.node_keys(NodeRef {
                         source: source as SourceIdx,
                         id,
-                    })
-                    .keys()
-                    .cloned()
-                    .collect(),
+                    })),
+                ),
+                Strategy::DeclaredKeys(mask) => (
+                    masked(mask),
+                    if graph
+                        .node(id)
+                        .is_some_and(|node| super::props::has_declared_node_type(graph, &node))
+                    {
+                        KeySet::Declared
+                    } else {
+                        KeySet::Fixed
+                    },
                 ),
                 // A node of its own: the id keeps it apart.
-                Strategy::Each => (vec![id as StrId], Vec::new()),
+                Strategy::Each => (vec![id as StrId], KeySet::Fixed),
             };
             parts[source]
                 .entry((tag, ids, keys))
@@ -1045,8 +1203,12 @@ impl PartitionPlan {
                     // Ascending lists make that walk id order, so each type can be
                     // swept on its own and the partitions sorted by first node
                     // afterwards, without the merge's comparison per node.
-                    let by_id = lists.clone().all(|(_, ids)| ascending(ids));
-                    let mut meet = |tag: u8, id: u32| -> CypherResult<()> {
+                    let by_id = lists.clone().all(|(tag, ids)| {
+                        matches!(self.strategies[si][tag as usize], Strategy::DeclaredKeys(0))
+                            && s.graph.declared_key_partitions(tag).is_some()
+                            || ascending(ids)
+                    });
+                    let mut meet = |tag: u8, id: u32, parts: &mut Vec<Parts>| -> CypherResult<()> {
                         polled = polled.wrapping_add(1);
                         if polled & 1023 == 0 {
                             ex.cancel.check()?;
@@ -1054,24 +1216,46 @@ impl PartitionPlan {
                         match self.strategies[si][tag as usize] {
                             Strategy::Whole => {
                                 parts[si].insert(
-                                    (tag, Vec::new(), Vec::new()),
+                                    (tag, Vec::new(), KeySet::Fixed),
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
-                            _ => note(si, tag, id, &mut parts),
+                            _ => note(si, tag, id, parts),
                         }
                         Ok(())
                     };
                     if by_id {
                         for (tag, ids) in lists {
+                            if matches!(
+                                self.strategies[si][tag as usize],
+                                Strategy::DeclaredKeys(0)
+                            ) {
+                                if let Some(summary) = s.graph.declared_key_partitions(tag) {
+                                    ex.cancel.check()?;
+                                    for (bound, partition) in summary.iter().enumerate() {
+                                        if partition.count > 0 {
+                                            let key = if bound == 0 {
+                                                KeySet::Fixed
+                                            } else {
+                                                KeySet::Declared
+                                            };
+                                            parts[si].insert(
+                                                (tag, Vec::new(), key),
+                                                (partition.first, partition.count as i64),
+                                            );
+                                        }
+                                    }
+                                    continue;
+                                }
+                            }
                             for &id in ids {
-                                meet(tag, id)?;
+                                meet(tag, id, &mut parts)?;
                             }
                         }
                         parts[si].sort_by_cached_key(|_, (first, _)| *first);
                     } else {
                         for (tag, id) in MergedWalk::new(lists) {
-                            meet(tag, id)?;
+                            meet(tag, id, &mut parts)?;
                         }
                     }
                 }
@@ -1080,7 +1264,7 @@ impl PartitionPlan {
         let mut out: Vec<Row> = Vec::new();
         // A whole type, or a key set, met again in a later graph: the row it joined,
         // or `None` when the WHERE dropped it.
-        let mut shared: HashMap<(u8, Vec<String>), Option<usize>> = HashMap::new();
+        let mut shared: HashMap<(u8, KeySet), Option<usize>> = HashMap::new();
         for (si, per_source) in parts.into_iter().enumerate() {
             let source = si as SourceIdx;
             // Partitions in the order the walk first meets them: the pushdown's, or
@@ -1122,7 +1306,14 @@ fn ascending(ids: &[u32]) -> bool {
 
 /// The partitions of one source: (first id, weight), keyed by (tag, column ids,
 /// property keys).
-type Parts = IndexMap<(u8, Vec<StrId>, Vec<String>), (u32, i64)>;
+type Parts = IndexMap<(u8, Vec<StrId>, KeySet), (u32, i64)>;
+
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+enum KeySet {
+    Fixed,
+    Declared,
+    Dynamic(Vec<String>),
+}
 
 /// Add a later graph's partition to the row of the same one: its weight and its
 /// graph.
@@ -1324,7 +1515,7 @@ fn sweep_edges(
         Direction::Outgoing => &graph.forward,
         _ => &graph.backward,
     };
-    let v2 = graph.node_version < 3;
+    let v2 = graph.node_version() < 3;
     let mut type_ok: [u8; 256] = [0; 256];
     // The slot table is two zero-initialised arrays, which the allocator hands out
     // as untouched pages, and the list of slots met: a graph pays for the slots it
@@ -1423,6 +1614,7 @@ mod tests {
         TagCtx {
             tag: Some(TAG_CALL_SITE_NODE),
             keys,
+            declared_keys: false,
             columns,
         }
     }
@@ -1599,12 +1791,91 @@ mod tests {
     }
 
     #[test]
+    fn optional_declarations_partition_keys_only_when_available_in_the_source() {
+        use graphite_storage::node::TAG_FIELD_NODE;
+        let columns = tag_columns(TAG_FIELD_NODE);
+        let mut context = TagCtx {
+            tag: Some(TAG_FIELD_NODE),
+            keys: &[],
+            declared_keys: false,
+            columns: &columns,
+        };
+        assert_eq!(classify("keys(n)", true, &context), Dep::TAG);
+        assert_eq!(classify("n.generic_type", true, &context), Dep::TAG);
+        context.declared_keys = true;
+        assert_eq!(classify("keys(n)", true, &context), Dep::KEYS);
+        assert_eq!(classify("n.generic_type", true, &context), Dep::CONTENT);
+        assert_eq!(classify("n.type_info", true, &context), Dep::CONTENT);
+        assert_eq!(
+            classify("n.generic_type IS NULL", true, &context),
+            Dep::KEYS
+        );
+        assert_eq!(
+            classify("n.type_info IS NOT NULL", true, &context),
+            Dep::KEYS
+        );
+        assert_eq!(classify("labels(n)", true, &context), Dep::TAG);
+    }
+
+    #[test]
+    fn declaration_null_dependency_keeps_shadowed_nodes_and_other_kinds_conservative() {
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            let ctx = TagCtx {
+                tag: Some(tag),
+                keys: &[],
+                declared_keys: true,
+                columns: &[],
+            };
+            for property in ["generic_type", "type_info"] {
+                assert_eq!(
+                    classify(&format!("n.{property} IS NULL"), true, &ctx),
+                    Dep::KEYS
+                );
+                assert_eq!(
+                    classify(&format!("n.{property} IS NOT NULL"), true, &ctx),
+                    Dep::KEYS
+                );
+            }
+            // Subscripts still evaluate the ordinary property, so cannot use a
+            // presence-only strategy until their evaluator path supports it.
+            assert_eq!(
+                classify("n['generic_type'] IS NULL", true, &ctx),
+                Dep::CONTENT
+            );
+            assert_eq!(
+                classify("[n IN [null] | n.generic_type IS NULL]", true, &ctx),
+                Dep::CONTENT
+            );
+            let scope = Scope {
+                cross: true,
+                nodes: vec![("n", &ctx)],
+                rel: None,
+                bound: vec![("n".into(), Dep::CONTENT)],
+            };
+            assert_eq!(
+                dep(&expr("n.generic_type IS NOT NULL"), &scope),
+                Dep::CONTENT
+            );
+        }
+        for tag in [Some(TAG_ANNOTATION_NODE), None] {
+            let ctx = TagCtx {
+                tag,
+                keys: &[],
+                declared_keys: true,
+                columns: &[],
+            };
+            assert_eq!(classify("n.generic_type IS NULL", true, &ctx), Dep::CONTENT);
+        }
+    }
+
+    #[test]
     fn annotation_keys_and_hop_ends_are_not_decided_by_the_type_alone() {
         let keys = keys();
         let cols = tag_columns(TAG_ANNOTATION_NODE);
         let annotation = TagCtx {
             tag: Some(TAG_ANNOTATION_NODE),
             keys: &keys,
+            declared_keys: false,
             columns: &cols,
         };
         assert_eq!(classify("keys(n)", true, &annotation), Dep::KEYS);
@@ -1621,6 +1892,7 @@ mod tests {
         let end = TagCtx {
             tag: None,
             keys: &[],
+            declared_keys: false,
             columns: &[],
         };
         assert_eq!(classify("keys(n)", true, &end), Dep::CONTENT);
@@ -2166,3 +2438,7 @@ mod tests {
         );
     }
 }
+
+#[cfg(test)]
+#[path = "partition_method_tests.rs"]
+mod method_tests;

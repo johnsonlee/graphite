@@ -1,0 +1,52 @@
+{
+  "schema": "graphite.production-formatter-test-contract.v1",
+  "classes": [
+    {
+      "module": "sootup",
+      "className": "io.johnsonlee.graphite.sootup.ArrayTypeFormatterMigrationTest",
+      "source": "frontend/jvm/sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/ArrayTypeFormatterMigrationTest.kt",
+      "sourceSha256": "69da206e8556295b392ee04bc72b79808aadcbaefb9f3e72c5f614c0635dce8c",
+      "testCases": [
+        "production formatter and descriptor preserve each JVM array rank",
+        "nested ArrayType preserves every layer instead of assuming a flat base",
+        "descriptor cache preserves dimension and element identity across Type objects",
+        "local cache keeps first encounter and separates full caller identities"
+      ]
+    },
+    {
+      "module": "sootup",
+      "className": "io.johnsonlee.graphite.sootup.FoldSelectionTest",
+      "source": "frontend/jvm/sootup/src/test/kotlin/io/johnsonlee/graphite/sootup/FoldSelectionTest.kt",
+      "sourceSha256": "4eacb80a5933d39ad1bdf00a3df98a005676f0d98e16b7381b4399b273f0d7ea",
+      "testCases": [
+        "a call resolved to a lambda body remembers the call it was resolved from",
+        "a boolean folds through an erased call, its cast and its unboxing",
+        "an enum constant folds through an erased call and its cast",
+        "a number is boxed as the result type and a string stands as itself",
+        "interprocedural dataflow carries a key through a helper's return to the gate",
+        "a select rule with args folds the selected call whose argument is that constant and names the other",
+        "a selected call whose key is a parameter is not the key's to fold and says whose it is",
+        "a key cannot fold a gate fed by another call's result",
+        "without args a selected call folds where every argument is a constant",
+        "array dimension overloads have distinct keys and only the selected caller folds",
+        "an invoke that survives with a folded argument keeps the key it had",
+        "a key in the receiver is held to the call that produced the receiver",
+        "a call the clean-up rebuilt keeps its ordinal",
+        "a string constant used as a receiver stays in its local and the fold terminates",
+        "statements are counted once per method, whatever the number of rules that folded there",
+        "two methods one return type apart are two callers"
+      ]
+    },
+    {
+      "module": "webgraph",
+      "className": "io.johnsonlee.graphite.webgraph.ArrayLocalPersistenceTest",
+      "source": "frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/ArrayLocalPersistenceTest.kt",
+      "sourceSha256": "9b50b233a354aed2186544a643df1a9135c9b2efac8a2d6da4fd10fa477f2eb0",
+      "testCases": [
+        "bytecode allocation local rank and complete identity survive both load modes"
+      ]
+    }
+  ],
+  "scope": "Candidate production formatter/model, identity/cache, selected folding and six-allocation persistence correctness only; no complete bytecode inference",
+  "syntheticLocalInferenceOracleClaim": false
+}

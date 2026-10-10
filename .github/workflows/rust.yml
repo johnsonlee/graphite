@@ -280,6 +280,50 @@ jobs:
         set -e
         test "${STATUS}" -eq 2
 
+    - name: Declared types JVM-to-native interoperability
+      env:
+        GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph
+        GRAPHITE_TYPES_FIXTURE: ${{ runner.temp }}/declared-types-graph
+        GRAPHITE_TYPES_V1_FIXTURE: ${{ runner.temp }}/declared-types-v1-graph
+        GRAPHITE_TYPES_V2_FIXTURE: ${{ runner.temp }}/declared-types-v2-graph
+        GRAPHITE_TYPES_V3_FIXTURE: ${{ runner.temp }}/declared-types-v3-graph
+        GRAPHITE_TYPES_V4_FIXTURE: ${{ runner.temp }}/declared-types-v4-graph
+        GRAPHITE_INHERITED_TYPES_FIXTURE: ${{ runner.temp }}/inherited-types-graphs
+        GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES: "1"
+        GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE: "1"
+        JAVA_TOOL_OPTIONS: -Xmx4g
+      run: |
+        # The JVM writer saves structural v5; the test also creates v1 through v4 equivalents.
+        # Rerun this task so Gradle's cached success cannot omit the temp fixture.
+        test ! -e "${GRAPHITE_INHERITED_TYPES_FIXTURE}"
+        ./gradlew :webgraph:test --tests '*DeclaredTypePersistenceTest' \
+          --tests '*InheritedFieldPersistenceTest' --rerun --no-daemon -q
+        for FIXTURE in "${GRAPHITE_TYPES_V1_FIXTURE}" "${GRAPHITE_TYPES_V2_FIXTURE}" "${GRAPHITE_TYPES_V3_FIXTURE}" "${GRAPHITE_TYPES_V4_FIXTURE}" "${GRAPHITE_TYPES_FIXTURE}"; do
+          test -f "${FIXTURE}/graph.types"
+          grep -E '^graphite\.declaredTypes\.sha256=[[:xdigit:]]{64}$' "${FIXTURE}/forward.properties"
+        done
+        for BUILDER in default mmap; do
+          for GENERATION in original resaved; do
+            FIXTURE="${GRAPHITE_INHERITED_TYPES_FIXTURE}/${BUILDER}/${GENERATION}"
+            test -f "${FIXTURE}/graph.types"
+            TYPES_SHA=$(sha256sum "${FIXTURE}/graph.types" | cut -d ' ' -f 1)
+            grep -Fx "graphite.declaredTypes.sha256=${TYPES_SHA}" "${FIXTURE}/forward.properties"
+          done
+        done
+        cargo test --release --locked -p graphite-cypher --test inherited_fields_interop -- --nocapture
+        cargo test --release --locked -p graphite-cypher matching::matching_tests -- --nocapture
+        cargo test --release --locked -p graphite-cypher method_source_guard::tests -- --nocapture
+        cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture
+        cargo test --release --locked -p graphite-cypher declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows -- --nocapture
+        cargo test --release --locked -p graphite-cypher java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries -- --nocapture
+        cargo test --release --locked -p graphite-cypher java_all_five_wire_formats_preserve_full_properties_and_shared_string_queries -- --nocapture
+        GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES=1 cargo test --release --locked -p graphite-storage dual_java_wire_versions_directory_and_packed_summaries_match_all_bindings -- --nocapture
+        GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES=1 cargo test --release --locked -p graphite-cypher scalar_properties_preserve_declared_and_non_declared_node_contracts -- --nocapture
+        for FIXTURE in "${GRAPHITE_TYPES_V1_FIXTURE}" "${GRAPHITE_TYPES_V2_FIXTURE}" "${GRAPHITE_TYPES_V3_FIXTURE}" "${GRAPHITE_TYPES_V4_FIXTURE}" "${GRAPHITE_TYPES_FIXTURE}"; do
+          GRAPHITE_INDEX_FIXTURE="${FIXTURE}" cargo test --release --locked -p graphite-storage a_packed_graph_is_the_same_graph_as_its_directory -- --nocapture
+          GRAPHITE_INDEX_FIXTURE="${FIXTURE}" cargo test --release --locked -p graphite-explore schema_describes_a_loaded_graph -- --nocapture
+        done
+
     - name: Persisted-index equivalence and relaxed scan plans against the real fixture
       env:
         GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph

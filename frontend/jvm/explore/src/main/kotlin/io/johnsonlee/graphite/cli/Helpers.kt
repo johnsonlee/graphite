@@ -1,5 +1,7 @@
 package io.johnsonlee.graphite.cli
 
+import io.johnsonlee.graphite.cypher.DeclaredTypeProperties
+import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.BooleanConstant
 import io.johnsonlee.graphite.core.CallEdge
@@ -42,6 +44,12 @@ internal fun formatNode(node: Node): String = when (node) {
     is ReturnNode -> "Return[${node.id}] ${node.method.name}"
     is LocalVariable -> "Local[${node.id}] ${node.name}: ${node.type.simpleName}"
     is AnnotationNode -> "Annotation[${node.id}] @${node.name.substringAfterLast('.')} on ${node.className.substringAfterLast('.')}.${node.memberName}"
+}
+
+internal fun nodeToMap(node: Node, graph: Graph?): Map<String, Any?> {
+    val properties = nodeToMap(node)
+    val declared = DeclaredTypeProperties.nodeProperties(node, graph)
+    return if (declared.isEmpty()) properties else properties + declared
 }
 
 internal fun nodeToMap(node: Node): Map<String, Any?> = when (node) {

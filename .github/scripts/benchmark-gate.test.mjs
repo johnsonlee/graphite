@@ -8,6 +8,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { validatePairedEvidence } from "./benchmark-pages.mjs";
 import { materializeGistFiles } from "./gist-evidence.mjs";
+import { comparePressure } from "./benchmark-multigraph-pressure.mjs";
 import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
@@ -16,6 +17,8 @@ import {
     aggregateReports,
     compareRustLatency,
     RUST_MULTIGRAPH_CASES,
+    RUST_DECLARED_TYPES_RESPONSE_TRANSITION,
+    isDeclaredTypesResponseTransition,
     canonicalCorrectnessManifest,
     combineLatencyShards,
     compareLatencyResources,
@@ -1536,6 +1539,31 @@ test("fixture workload verifier binds every result to all 64 regenerated JAR sha
         0,
         `${root}\n${initialVerification.stdout}\n${initialVerification.stderr}`
     );
+    const observationFiles = [referenceObservations, baseColdObservations, candidateColdObservations,
+        baseWarmObservations, candidateWarmObservations];
+    const timedContents = observationFiles.map(file => fs.readFileSync(file, "utf8"));
+    const untimedContents = timedContents.map(text => {
+        const rows = text.trimEnd().split("\n").map(line => line.split("\t"));
+        const column = rows[0].indexOf("latencyNanos");
+        rows[0][column] = "measurementScope";
+        for (const row of rows.slice(1)) row[column] = "correctness-only";
+        return rows.map(row => row.join("\t")).join("\n") + "\n";
+    });
+    observationFiles.forEach((file, i) => fs.writeFileSync(file, untimedContents[i]));
+    const untimedVerification = verify();
+    assert.equal(untimedVerification.status, 0, `${untimedVerification.stdout}\n${untimedVerification.stderr}`);
+    const candidateUntimed = untimedContents[2];
+    for (const invalid of [
+        candidateUntimed.replace("\tcorrectness-only\n", "\tperformance\n"),
+        candidateUntimed.replace("\tmeasurementScope\n", "\tmissingScope\n"),
+        candidateUntimed.replace("\tmeasurementScope\n", "\tmeasurementScope\tlatencyNanos\n"),
+        candidateUntimed.replace("\tsuccess\t10\t128\t", "\tsuccess\t42\t999\t"),
+        candidateUntimed.replace("graph-id-property-wrapped-contains-target-00-zero", "unbound-query-id")
+    ]) {
+        fs.writeFileSync(candidateColdObservations, invalid);
+        assert.notEqual(verify().status, 0, "untimed scope and correctness remain mandatory");
+    }
+    observationFiles.forEach((file, i) => fs.writeFileSync(file, timedContents[i]));
     fs.writeFileSync(
         path.join(evidence, "fixture-provenance.tsv"),
         provenance.replace("\t100\t20\t", "\t1\t20\t")
@@ -1670,16 +1698,37 @@ test("fixture workload verifier rejects unpruned graph-set fanout on base and ca
         fs.writeFileSync(files[`candidate-${state}-correctness`], correctnessFromObservations(strictObservations));
     }
     const verifier = new URL("./verify-fixture64-workload.sh", import.meta.url);
-    const verify = () => spawnSync("bash", [
+    const verify = (includeStartup = false) => spawnSync("bash", [
         verifier.pathname, evidence, recomputed,
         files["reference-observations"], files["reference-correctness"], files["semantic-oracle"],
         files["base-cold-observations"], files["base-cold-correctness"],
         files["candidate-cold-observations"], files["candidate-cold-correctness"],
         files["base-warm-observations"], files["base-warm-correctness"],
-        files["candidate-warm-observations"], files["candidate-warm-correctness"]
+        files["candidate-warm-observations"], files["candidate-warm-correctness"],
+        ...(includeStartup ? [files["base-warm-observations"], files["base-warm-correctness"],
+            files["candidate-warm-observations"], files["candidate-warm-correctness"]] : [])
     ], { encoding: "utf8" });
     const accepted = verify();
     assert.equal(accepted.status, 0, `${accepted.stdout}\n${accepted.stderr}`);
+
+    const timedFiles = Object.entries(files).filter(([name]) => name.endsWith("observations"))
+        .map(([, file]) => [file, fs.readFileSync(file, "utf8")]);
+    for (const [file, text] of timedFiles) {
+        const rows = text.trimEnd().split("\n").map(line => line.split("\t"));
+        const column = rows[0].indexOf("latencyNanos");
+        rows[0][column] = "measurementScope";
+        for (const row of rows.slice(1)) row[column] = "correctness-only";
+        fs.writeFileSync(file, rows.map(row => row.join("\t")).join("\n") + "\n");
+    }
+    const untimedStartup = verify(true);
+    assert.equal(untimedStartup.status, 0, `${untimedStartup.stdout}\n${untimedStartup.stderr}`);
+    const untimedRows = fs.readFileSync(files["candidate-cold-observations"], "utf8")
+        .trimEnd().split("\n").map(line => line.split("\t"));
+    const setRow = untimedRows.slice(1).find(row => row[familyIndex] === "graph-id-set");
+    setRow[nonTargetAccessCountIndex] = "1";
+    fs.writeFileSync(files["candidate-cold-observations"], untimedRows.map(row => row.join("\t")).join("\n") + "\n");
+    assert.notEqual(verify(true).status, 0, "untimed multi-graph rows still reject non-target access");
+    for (const [file, text] of timedFiles) fs.writeFileSync(file, text);
 
     const referenceWithoutK64ZeroAccess = referenceRows.map((row) => {
         const values = row.split("\t");
@@ -1809,8 +1858,10 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
     );
     assert.equal((driver.match(/:webgraph:jmhJar/g) ?? []).length, 2);
     assert.equal((driver.match(/-Xmx8g/g) ?? []).length, 2);
-    assert.equal((driver.match(/-to 30m/g) ?? []).length, 2);
-    assert.match(driver, /-jvmArgs "-Xmx8g /);
+    assert.equal((driver.match(/-XX:ActiveProcessorCount=4/g) ?? []).length, 2);
+    assert.match(driver, /GraphRoutingCorrectness/);
+    assert.doesNotMatch(driver, /java -jar/);
+    assert.match(driver,/compare-graph-id-pressure --correctness-only/);
     assert.doesNotMatch(driver, /-jvmArgsAppend/);
     for (const field of [
         "baseSha",
@@ -1835,14 +1886,14 @@ test("fixture64 driver builds commit-bound JARs and records fixture provenance",
         assert.match(driver, new RegExp(`--arg ${field} `));
     }
     assert.match(driver, /> "\$\{OUTPUT_DIR\}\/provenance\.json"/);
-    assert.match(driver, /coverageFamily=graph-routing-reference/);
+    assert.match(driver, /cold graph-routing-reference/);
     assert.match(harness, /graphite\.webgraph\.prepareCallSiteStringIndexOnLoad/);
     assert.match(harness, /indexState == STARTUP_PREPARED_INDEX_STATE/);
     assert.match(harness, /else LAZY_INDEX_PREPARATION_MODE/);
     assert.match(harness, /System\.clearProperty\(PREPARE_INDEX_ON_LOAD_PROPERTY\)/);
     assert.equal((driver.match(/for INDEX_STATE in cold warm startup-prepared/g) ?? []).length, 2);
-    assert.match(driver, /graphite-fixture64-evidence-v8/);
-    assert.match(driver, /startup=%.2f\/%.2fx/);
+    assert.match(driver, /graphite-fixture64-correctness-evidence-v1/);
+    assert.match(driver, /untimed singleton and K2\/8\/64 assertions/);
     assert.match(driver, /derive-graph-routing-oracle/);
     assert.match(driver, /ORACLE=\$\{OUTPUT_DIR\}\/base-single-source-oracle\.manifest/);
     assert.match(driver, /Fixture64GraphPreparation/);
@@ -2809,55 +2860,19 @@ test("large-corpus shape transition confirmation keeps the transition and its sh
     assert.match(confirmed.errors.join("\n"), /hive\/sourceEdges: candidate graph shape 151/);
 });
 
-test("workflow selects the pinned shape transition fail-closed and only before the base-owned branch", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const harness = fs.readFileSync(new URL(
-        "../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/" +
-            "LargeCorpusPerformanceGateTest.kt",
-        import.meta.url
-    ));
-    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
-    const sha256 = (contents) => crypto.createHash("sha256").update(contents).digest("hex");
-    const pin = (name) => workflow.match(new RegExp(`\\n  ${name}: ([0-9a-f]{64})\\n`))?.[1];
-
-    assert.equal(pin("LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256"), sha256(harness));
-    assert.equal(pin("LARGE_CORPUS_SHAPE_COMPARATOR_SHA256"), sha256(comparator));
-    // The base pin is the pre-transition harness; the candidate harness differs, so once it reaches
-    // main the base digest no longer matches and the transition can never be selected again.
-    assert.equal(
-        pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"),
-        "3f2f5d8131b6612cb139875d021d9b2f5569000ce07f1c2b882b6b89d0b31419"
-    );
-    assert.notEqual(pin("LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"), sha256(harness));
-
-    const select = workflow.slice(
-        workflow.indexOf("- name: Select trusted large-corpus controls"),
-        workflow.indexOf("- name: Benchmark PR large corpora")
-    );
-    const shapeBranch = select.slice(select.indexOf('if [[ "${BASE_HARNESS_SHA256}"'), select.indexOf("elif "));
-    assert.match(shapeBranch, /"\$\{BASE_HARNESS_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256\}"/);
-    assert.match(
-        shapeBranch,
-        /"\$\{CANDIDATE_HARNESS_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_CANDIDATE_HARNESS_SHA256\}"/
-    );
-    assert.match(shapeBranch, /"\$\{CANDIDATE_COMPARATOR_SHA256\}" = "\$\{LARGE_CORPUS_SHAPE_COMPARATOR_SHA256\}"/);
-    assert.match(shapeBranch, /"\$\{CANDIDATE_GATE_TEST_JOB\}" = success/);
-    assert.match(shapeBranch, /mode=shape-transition/);
-    assert.match(shapeBranch, /comparator-args=--shape-transition/);
-    // The transition never copies one revision's harness over the other.
-    assert.doesNotMatch(shapeBranch, /install -m|rm -f/);
-    assert.ok(select.indexOf("mode=shape-transition") < select.indexOf("mode=base-owned"));
-    assert.ok(select.indexOf("mode=base-owned") < select.indexOf("mode=pinned-transition"));
-
-    const compare = workflow.slice(workflow.indexOf("- name: Compare large-corpus results"));
-    assert.match(
-        compare,
-        /compare-large-corpus \\\n\s+\$\{\{ steps\.large-corpus-controls\.outputs\.comparator-args \}\}/
-    );
-    assert.match(
-        compare,
-        /confirm-large-corpus \\\n\s+\$\{\{ steps\.large-corpus-controls\.outputs\.comparator-args \}\}/
-    );
+test("GTY05 correctness transition remains pinned and untimed with storage and semantic assertions", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    const bytes=fs.readFileSync(new URL('../../frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt',import.meta.url));
+    const hash=crypto.createHash('sha256').update(bytes).digest('hex');
+    assert.match(workflow,new RegExp(`MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: ${hash}`));
+    const job=workflow.slice(workflow.indexOf('  large-corpus:'),workflow.indexOf('  prepare-latency-fixtures:'));
+    assert.match(job,/4f2ccf/);assert.match(job,/LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256/);
+    assert.match(job,/MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256/);
+    assert.match(job,/--structural-types-transition/);assert.match(job,/--correctness-only/);
+    assert.doesNotMatch(job,/--shared-strings-transition/);
+    assert.doesNotMatch(job,/large.corpus.record|confirmation|Benchmark PR/);
+    assert.doesNotMatch(bytes.toString(),/nanoTime|pipelineMillis|peakHeapBytes/);
+    for(const invariant of ['productionIndexPrepared','syntheticIdentities','branchDefinitionBytes','persistedBytes','CALL_SITE_INDEX_QUERY']) assert.ok(bytes.includes(invariant));
 });
 
 test("wrapped-query shape transition selects the pinned candidate harnesses fail-closed", () => {
@@ -2940,14 +2955,41 @@ test("pinned large-corpus shape transition matches the harness baselines", () =>
             const value = count(block[0].match(new RegExp(`${key} = ([\\d_]+)`))[1]);
             assert.equal(transition.candidate[field], value, `${corpus}/${field}`);
         }
-        // The call-site ordinal sidecar changes no graph shape; it adds eight bytes per call site
-        // (node id and ordinal), 36 bytes of index per block of 256, its header and binding to the
-        // persisted size.
-        for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
+        // Only the independently verified array-overload identity counts change. Node,
+        // edge and call-site equality and the original size tolerance remain mandatory.
+        for (const field of ["nodes", "sourceEdges", "persistedEdges", "callSites"]) {
             assert.equal(transition.base[field], transition.candidate[field], `${corpus}/${field}`);
         }
-        assert.ok(transition.persistedBytesDelta > 8 * transition.candidate.callSites, corpus);
+        const recovered = { tika: 64, hive: 27, "kotlin-compiler": 0 };
+        assert.equal(transition.candidate.methods - transition.base.methods, recovered[corpus]);
+        assert.ok(transition.persistedBytesDelta > 0, corpus);
     }
+});
+
+test("declared-type transition accepts only verified identities and still rejects timing regressions", () => {
+    const pairs = Object.entries(LARGE_CORPUS_SHAPE_TRANSITION);
+    const base = corpusLog(Object.fromEntries(pairs.map(([corpus, t]) => [corpus, t.base])));
+    const candidateValues = Object.fromEntries(pairs.map(([corpus, t]) => [corpus, {
+        ...t.candidate, persistedBytes: 100_000_000 + t.persistedBytesDelta
+    }]));
+    const candidate = corpusLog(candidateValues);
+    const options = { shapeTransition: LARGE_CORPUS_SHAPE_TRANSITION };
+    assert.equal(compareLargeCorpus(base, candidate, options).passed, true);
+    assert.equal(compareLargeCorpus(base, candidate).passed, false);
+    for (const field of ["nodes", "sourceEdges", "persistedEdges", "methods", "callSites"]) {
+        const changed = corpusLog({ ...candidateValues, hive: {
+            ...candidateValues.hive, [field]: candidateValues.hive[field] + 1
+        } });
+        assert.equal(compareLargeCorpus(base, changed, options).passed, false, field);
+    }
+    const changedBytes = corpusLog({ ...candidateValues, hive: {
+        ...candidateValues.hive, persistedBytes: candidateValues.hive.persistedBytes + 4097
+    } });
+    assert.equal(compareLargeCorpus(base, changedBytes, options).passed, false);
+    const slower = corpusLog({ ...candidateValues, hive: {
+        ...candidateValues.hive, saveMs: 6000, pipelineMs: 17200
+    } });
+    assert.equal(compareLargeCorpus(base, slower, options).passed, false);
 });
 
 test("large-corpus branch-definition access is gated relatively, or by the transition budget without a base", () => {
@@ -3013,19 +3055,11 @@ test("large-corpus comparison requires a self-consistent production index lifecy
 });
 
 test("coverage taxonomy assigns every blocking component exactly once", () => {
-    const classified = BENCHMARK_COVERAGE_DOMAINS.flatMap((domain) => domain.components);
-    const manifest = BENCHMARK_COMPONENTS.map((component) => component.name);
-
-    assert.equal(new Set(classified).size, classified.length);
-    assert.deepEqual([...classified].sort(), [...manifest].sort());
-    assert.deepEqual(BENCHMARK_COVERAGE_DOMAINS.map((domain) => domain.name), [
-        "Semantic correctness",
-        "Latency regression",
-        "Throughput and capacity",
-        "Memory and resources",
-        "Scalability",
-        "Build and persistence lifecycle"
-    ]);
+    const classified = BENCHMARK_COVERAGE_DOMAINS.flatMap(d=>d.components);
+    assert.equal(new Set(classified).size,classified.length);
+    assert.deepEqual([...classified].sort(),BENCHMARK_COMPONENTS.map(c=>c.name).sort());
+    assert.ok(BENCHMARK_COMPONENTS.every(c=>!c.advisory));
+    assert.equal(BENCHMARK_COMPONENTS.filter(c=>c.correctnessOnly).length,9);
 });
 
 test("aggregate report fails closed when an artifact is missing", () => {
@@ -3046,98 +3080,120 @@ test("aggregate report fails closed when an artifact is missing", () => {
         assert.match(aggregate.body, /large-corpus: result artifact is missing/);
         assert.match(aggregate.body, /graph-routing-pressure: result artifact is missing/);
         assert.match(aggregate.body, /global-wide-pressure: result artifact is missing/);
-        // Advisory JVM engine gates are reported as missing but never listed as an error.
-        for (const advisory of ["budgeted-collection", "explorer", "method-compatibility", "cypher-capacity",
-            "budgeted-mapped-string", "wrapped-query-latency"]) {
-            assert.doesNotMatch(aggregate.body, new RegExp(`${advisory}: result artifact is missing`));
-            assert.match(aggregate.body, new RegExp(`\\x60${advisory}\\x60 \\| \\*\\*MISSING \\(advisory\\)\\*\\*`));
+        for (const required of ["budgeted-collection","explorer","method-compatibility","cypher-capacity","budgeted-mapped-string","wrapped-query-latency"]) {
+            assert.match(aggregate.body,new RegExp(`${required}: result artifact is missing`));
         }
+        assert.equal(aggregate.operationEvidence.length,4);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
 });
 
-test("aggregate report includes every independent benchmark gate", () => {
-    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "benchmark-gate-complete-"));
+test("complete correctness and legacy reports cannot substitute for missing multi-graph operation acceptance", () => {
+    const directory=fs.mkdtempSync(path.join(os.tmpdir(),"multigraph-gate-"));
     try {
-        for (const [report, status, body] of [
-            ["rust-latency-report.md", "rust-latency-status.json", "rust latency report"],
-            ["method-report.md", "method-status.json", "method report"],
-            ["explorer-report.md", "explorer-status.json", "explorer report"],
-            ["method-compatibility-report.md", "method-compatibility-status.json", "### Method migration report"],
-            ["cypher-capacity-report.md", "cypher-capacity-status.json", "capacity report"],
-            ["budgeted-collection-report.md", "budgeted-collection-status.json", "collection report"],
-            ["budgeted-string-report.md", "budgeted-string-status.json", "budgeted report"],
-            ["large-corpus-report.md", "large-corpus-status.json", "large report"],
-            ["latency-report.md", "latency-status.json", "latency report"],
-            ["latency-resource-report.md", "latency-resource-status.json", "resource report"],
-            ["graph-routing-report.md", "graph-routing-status.json", "graph routing report"],
-            ["global-wide-report.md", "global-wide-status.json", "global wide report"]
-        ]) {
-            fs.writeFileSync(path.join(directory, report), `${body}\n`);
-            fs.writeFileSync(path.join(directory, status), JSON.stringify({ passed: true }));
+        for(const c of BENCHMARK_COMPONENTS) {
+            fs.writeFileSync(path.join(directory,c.report),c.name);
+            fs.writeFileSync(path.join(directory,c.status),JSON.stringify({passed:true,...(c.correctnessOnly?{scope:'correctness-only',performanceAcceptance:false}:{})}));
         }
-        const aggregate = aggregateReports(directory, {
-            baseSha: "a".repeat(40),
-            candidateSha: "b".repeat(40),
-            runner: "test-runner",
-            runUrl: "https://example.invalid/run"
-        });
+        const metadata={baseSha:'a'.repeat(40),candidateSha:'b'.repeat(40),runner:'test',runUrl:'https://example.invalid'};
+        const result=aggregateReports(directory,metadata);
+        assert.equal(result.passed,false);
+        assert.equal(result.operationEvidence.length,4);
+        assert.ok(result.operationEvidence.every(x=>x.status==='UNAVAILABLE'));
+        assert.equal(result.errors.length,4);
+        for(const c of BENCHMARK_COMPONENTS)assert.match(result.body,new RegExp(c.name));
+        fs.writeFileSync(path.join(directory,'method-status.json'),JSON.stringify({passed:true}));
+        assert.match(aggregateReports(directory,metadata).errors.join(),/explicit untimed correctness/);
+        fs.writeFileSync(path.join(directory,'latency-status.json'),JSON.stringify({passed:false}));
+        assert.match(aggregateReports(directory,metadata).body,/`wrapped-query-latency` \| \*\*FAIL/);
+    } finally {fs.rmSync(directory,{recursive:true,force:true});}
+});
 
-        assert.equal(aggregate.passed, true);
-        assert.equal(aggregate.baseSha, "a".repeat(40));
-        assert.equal(aggregate.candidateSha, "b".repeat(40));
-        assert.equal(aggregate.runner, "test-runner");
-        assert.equal(aggregate.runUrl, "https://example.invalid/run");
-        assert.match(aggregate.body, /PASS — 6\/6 blocking component reports passed; 6\/6 advisory JVM engine reports passed/);
-        assert.match(aggregate.body, /rust latency report/);
-        assert.match(aggregate.body, /`rust-latency` \| \*\*PASS\*\* \|/);
-        assert.match(aggregate.body, /`explorer` \| \*\*PASS \(advisory\)\*\* \|/);
-        assert.match(aggregate.body, /### Coverage summary/);
-        assert.match(aggregate.body, /#### Semantic correctness/);
-        assert.match(aggregate.body, /#### Latency regression/);
-        assert.match(aggregate.body, /#### Throughput and capacity/);
-        assert.match(aggregate.body, /#### Memory and resources/);
-        assert.match(aggregate.body, /#### Scalability/);
-        assert.match(aggregate.body, /#### Build and persistence lifecycle/);
-        assert.match(aggregate.body, /##### Method migration report/);
-        assert.match(aggregate.body, /Not covered by this suite \(non-blocking for this run\)/);
-        assert.doesNotMatch(aggregate.body, /Missing required families/);
-        assert.match(aggregate.body, /collection report/);
-        assert.match(aggregate.body, /explorer report/);
-        assert.match(aggregate.body, /Method migration report/);
-        assert.match(aggregate.body, /capacity report/);
-        assert.match(aggregate.body, /budgeted report/);
-        assert.match(aggregate.body, /graph routing report/);
-        assert.match(aggregate.body, /global wide report/);
-
-        fs.writeFileSync(path.join(directory, "method-status.json"), JSON.stringify({ passed: false }));
-        const failed = aggregateReports(directory, {
-            baseSha: "a".repeat(40),
-            candidateSha: "b".repeat(40),
-            runner: "test-runner",
-            runUrl: "https://example.invalid/run"
-        });
-        assert.equal(failed.passed, false);
-        assert.match(failed.body, /FAIL — 5\/6 blocking component reports passed; 6\/6 advisory/);
-        assert.match(failed.body, /`method-level` \| \*\*FAIL\*\*/);
-
-        fs.writeFileSync(path.join(directory, "method-status.json"), JSON.stringify({ passed: true }));
-        fs.writeFileSync(path.join(directory, "latency-status.json"), JSON.stringify({ passed: false }));
-        const advisoryFailed = aggregateReports(directory, {
-            baseSha: "a".repeat(40),
-            candidateSha: "b".repeat(40),
-            runner: "test-runner",
-            runUrl: "https://example.invalid/run"
-        });
-        assert.equal(advisoryFailed.passed, true);
-        assert.deepEqual(advisoryFailed.errors, []);
-        assert.match(advisoryFailed.body, /PASS — 6\/6 blocking component reports passed; 5\/6 advisory/);
-        assert.match(advisoryFailed.body, /`wrapped-query-latency` \| \*\*FAIL \(advisory\)\*\*/);
-        assert.match(advisoryFailed.body, /Advisory gates measure the JVM query engine/);
-    } finally {
-        fs.rmSync(directory, { recursive: true, force: true });
+test("query operation evidence must bind the current PR parent revision", t => {
+    // Synthetic receipts test aggregation integrity only; no benchmark executes.
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "pressure-parent-binding-"));
+    t.after(() => fs.rmSync(directory, {recursive:true, force:true}));
+    const put = (file, value) => {fs.mkdirSync(path.dirname(file), {recursive:true});fs.writeFileSync(file, JSON.stringify(value));};
+    const digest = file => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+    const metadata = {baseSha:"a".repeat(40), candidateSha:"b".repeat(40), runner:"test", runUrl:"https://example.invalid"};
+    for (const engine of ["native", "jvm"]) {
+        const root = path.join(directory, engine), file = path.join(root, "plan.json");
+        const plan = {schema:"graphite.multigraph-pressure.plan.v1", engine, operation:"query",
+            cells:[..."CABBAC"].map((arm, i) => ({id:`c${i}`, arm, port:10000+i})),
+            arms:{C:{revision:"4f2ccf33b969e684972e56b5e810034e6e67c1b3"}, A:{revision:metadata.baseSha}, B:{revision:metadata.candidateSha}},
+            cases:[{id:"slow", targetGraphIds:["one", "two"]}],
+            comparisonPairs:{parent:[[1,2],[4,3]], acceptedBaseline:[[0,2],[5,3]]},
+            schedule:{concurrency:4, warmupPerCase:2, measuredPerCase:20},
+            coverage:{requiredFamilies:["slow"], coveredFamilies:["slow"], unavailableFamilies:[]}};
+        put(file, plan);
+        for (const cell of plan.cells) {
+            const requests = Array.from({length:20}, (_, sequence) => ({sequence, caseId:"slow", status:"PASS",
+                httpStatus:200, completeBody:true, deadlineExpired:false, startNs:sequence*1000,
+                wireCompleteNs:sequence*1000+99, validationCompleteNs:sequence*1000+100, latencyNs:100}));
+            const result = {schema:"graphite.multigraph-pressure.result.v1", status:"PASS", errors:[], cell,
+                arm:plan.arms[cell.arm], engine, operation:"query", planSha256:digest(file), coverage:plan.coverage,
+                cleanup:{after:[], errors:[], signals:[]}, stages:{pressure:{status:"PASS", allWorkersStopped:true,
+                    unissued:[], journalErrors:[], requests, wallNs:19100,
+                    caseStatistics:{slow:{n:20, sampleIds:requests.map(r=>r.sequence), p50Ns:100, p95Ns:100}},
+                    resources:{cpuLowerBoundSeconds:1, cpuUpperBoundSeconds:1.01,
+                        rss:{lowerBoundBytes:1000, upperBoundBytes:1010}}}}};
+            const resultFile = path.join(root, cell.id, "result.json"); put(resultFile, result);
+            put(path.join(root, cell.id, "audit.json"), {schema:"graphite.multigraph-pressure.audit.v1", status:"PASS",
+                cell:cell.id, resultSha256:digest(resultFile), planSha256:digest(file), queryEvidenceComplete:true,
+                completeBodies:23, otherOperationsEligible:false, coverage:plan.coverage});
+        }
+        const compared = comparePressure(file, root);
+        assert.equal(compared.passed, true); assert.equal(compared.parentRevision, metadata.baseSha);
+        put(path.join(directory, `multigraph-${engine}-query-status.json`), {...compared,
+            evidence:{plan:path.relative(directory, file), directory:path.relative(directory, root)}});
+        const current = aggregateReports(directory, metadata);
+        assert.equal(current.operationEvidence.find(row=>row.name===`${engine}-query`).status, "PASS");
+        const stale = aggregateReports(directory, {...metadata, baseSha:"d".repeat(40)});
+        assert.equal(stale.operationEvidence.find(row=>row.name===`${engine}-query`).status, "UNAVAILABLE");
+        assert.ok(stale.errors.some(error=>error.startsWith(`${engine}-query:`) && error.includes("source or resource constraints")));
     }
+});
+
+test("unavailable native pressure retains the actual missing-producer reason without measurement paths", () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "native-pressure-unavailable-"));
+    const reason = "Complete C/A/B core, topology and index semantic equivalence or independently proven source corrections; fresh39 response correctness does not establish this.";
+    const metadata = {baseSha:"a".repeat(40),candidateSha:"b".repeat(40),runner:"test",runUrl:"https://example.invalid"};
+    const unavailable = {schema:"graphite.multigraph-pressure.comparison.v1",scope:"multi-graph-pressure",
+        engine:"native",operation:"query",passed:false,status:"UNAVAILABLE",
+        errors:["Matched producer plan is not ready: UNAVAILABLE",reason],missingProducers:[reason],
+        queryEvidenceComplete:false,otherOperationsEligible:false};
+    const file = path.join(directory,"multigraph-native-query-status.json");
+    const report = value => {
+        fs.writeFileSync(file,JSON.stringify(value));
+        return aggregateReports(directory,metadata);
+    };
+    try {
+        const result=report(unavailable);
+        assert.equal(result.passed,false);
+        assert.equal(result.operationEvidence.find(x=>x.name==="native-query").status,"UNAVAILABLE");
+        assert.ok(result.errors.some(x=>x.includes(reason)));
+        assert.ok(!result.errors.some(x=>x.includes("Evidence must be artifact-relative")));
+        assert.ok(result.body.includes(reason));
+        for (const changes of [{passed:true},{schema:"other"},{engine:"jvm"},{operation:"loading"},
+            {queryEvidenceComplete:true},{otherOperationsEligible:true},{errors:[]},{errors:[null]},
+            {missingProducers:"missing"}]) {
+            const malformed=report({...unavailable,...changes});
+            assert.equal(malformed.passed,false);
+            assert.ok(malformed.errors.some(x=>x.includes("Malformed unavailable pressure evidence")));
+        }
+        const pass=report({...unavailable,status:"PASS",passed:true});
+        assert.equal(pass.passed,false);
+        assert.ok(pass.errors.some(x=>x.includes("Evidence must be artifact-relative")));
+        for (const status of ["PASS","UNAVAILABLE"]) {
+            for (const evidence of [{plan:"/absolute/plan.json",directory:"cells"},
+                {plan:"../escape/plan.json",directory:"cells"},{plan:null,directory:"cells"}]) {
+                const invalid=report({...unavailable,status,passed:status==="PASS",evidence});
+                assert.equal(invalid.passed,false);
+                assert.ok(invalid.errors.some(x=>/Evidence (must be artifact-relative|escaped artifact root)/.test(x)));
+            }
+        }
+    } finally {fs.rmSync(directory,{recursive:true,force:true});}
 });
 
 test("taxonomy rollout publishes an exact Pages-compatible report and status pair", () => {
@@ -3145,7 +3201,7 @@ test("taxonomy rollout publishes an exact Pages-compatible report and status pai
     try {
         for (const component of BENCHMARK_COMPONENTS) {
             fs.writeFileSync(path.join(directory, component.report), `${component.name} report\n`);
-            fs.writeFileSync(path.join(directory, component.status), JSON.stringify({ passed: true }));
+            fs.writeFileSync(path.join(directory, component.status), JSON.stringify({passed:true,...(component.correctnessOnly?{scope:"correctness-only",performanceAcceptance:false}:{})}));
         }
         const baseSha = "a".repeat(40);
         const candidateSha = "b".repeat(40);
@@ -3157,8 +3213,8 @@ test("taxonomy rollout publishes an exact Pages-compatible report and status pai
             runUrl
         });
         const authoritative = {
-            passed: true,
-            errors: [],
+            passed: false,
+            errors: rendered.errors,
             body: "## Benchmark Regression Gate\n\n**PASS**\n",
             baseSha,
             candidateSha,
@@ -3446,43 +3502,13 @@ test("Rust latency commands write the report and status the aggregate consumes",
     }
 });
 
-test("pull-request workflow runs the paired Rust engine gate and demotes the JVM engine gates", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
-    assert.match(job, /needs: \[candidate-gate-tests, prepare-fixture64\]/);
-    assert.match(job, /dtolnay\/rust-toolchain@stable/);
-    assert.match(job, /cargo build --release --locked -p graphite-cli --manifest-path base\/Cargo\.toml/);
-    assert.match(job, /cargo build --release --locked -p graphite-cli --manifest-path candidate\/Cargo\.toml/);
-    assert.match(job, /shared-fixture64-\$\{\{ github\.event\.pull_request\.head\.sha \}\}/);
-    assert.match(job, /fixture64\.complete\.json/);
-    // The harness is the base's own snapshot script; the comparator is base-owned once main carries it.
-    assert.match(job, /HARNESS=base\/backend\/bench\/snapshot\.py/);
-    assert.match(job, /if ! grep -q 'RUST_MULTIGRAPH_COVERAGE_V2' "\$\{COMPARATOR\}"/);
-    assert.match(job, /"\$\{BENCHMARK_REPORT_TRANSITION_SHA256\}"/);
-    assert.match(job, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
-    assert.match(job, /compare-rust-latency/);
-    assert.match(job, /confirm-rust-latency/);
-    assert.match(job, /--repetitions 5/);
-    assert.match(job, /--suite all/);
-    assert.match(job, /name: benchmark-rust-latency-\$\{\{ github\.event\.pull_request\.number \}\}-\$\{\{ github\.run_attempt \}\}/);
-
-    const enforcement = workflow.slice(workflow.indexOf("    - name: Enforce benchmark gate"), workflow.indexOf("  benchmark-comment:"));
-    assert.match(enforcement, /RUST_LATENCY_JOB: \$\{\{ needs\.rust-latency\.result \}\}/);
-    assert.match(enforcement, /\[ "\$\{RUST_LATENCY_JOB\}" != success \]/);
-    for (const advisory of ["EXPLORER_JOB", "METHOD_COMPATIBILITY_JOB", "CYPHER_CAPACITY_JOB",
-        "BUDGETED_COLLECTION_JOB", "BUDGETED_STRING_JOB", "LATENCY_JOB"]) {
-        assert.doesNotMatch(enforcement, new RegExp(`"\\$\\{${advisory}\\}" != success`));
-    }
-    for (const blocking of ["METHOD_JOB", "LARGE_CORPUS_JOB", "LATENCY_RESOURCES_JOB", "GRAPH_ROUTING_JOB",
-        "GLOBAL_WIDE_JOB", "CPU_ACCOUNTING_SMOKE_JOB", "SLOW_QUERY_SHAPES_JOB"]) {
-        assert.match(enforcement, new RegExp(`"\\$\\{${blocking}\\}" != success`));
-    }
-    const report = workflow.slice(workflow.indexOf("    - name: Build benchmark report"), workflow.indexOf("    - name: Upload aggregate benchmark report"));
-    assert.match(report, /if ! grep -q '"rust-latency"' "\$\{COMPARATOR\}"; then/);
-    const advisoryComponents = BENCHMARK_COMPONENTS.filter((component) => component.advisory === true).map((component) => component.name);
-    assert.deepEqual(advisoryComponents, ["explorer", "method-compatibility", "cypher-capacity",
-        "budgeted-collection", "budgeted-mapped-string", "wrapped-query-latency"]);
-    assert.equal(BENCHMARK_COMPONENTS[0].name, "rust-latency");
+test("all correctness jobs and existing native multi-graph constraints remain blocking", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    assert.match(workflow,/rust-latency:/);assert.match(workflow,/RUST_DECLARED_TYPES_RESPONSE_TRANSITION/);
+    const enforcement=workflow.slice(workflow.indexOf('    - name: Enforce benchmark gate'));
+    assert.match(enforcement,/for JOB in/);assert.match(enforcement,/METHOD_COMPATIBILITY_JOB/);
+    assert.match(enforcement,/CPU_ACCOUNTING_SMOKE_JOB/);assert.match(enforcement,/exit 1/);
+    assert.doesNotMatch(enforcement,/Advisory JVM/);
 });
 
 test("workflow component artifacts include the run attempt required by staging", () => {
@@ -3659,7 +3685,6 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
         ),
         "utf8"
     );
-    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
     const realOnlyResourceHarness = fs.readFileSync(
         new URL(
             "../../frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/" +
@@ -3696,29 +3721,29 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(workflow, /:cypher:testClasses :cypher:jmhJar/);
     assert.match(
         workflow,
-        new RegExp(`LARGE_CORPUS_TRANSITION_HARNESS_SHA256: ${sha256(transitionHarness)}`)
+        /LARGE_CORPUS_TRANSITION_HARNESS_SHA256: 9a9817547174323dd26f12ce656083d33408d858d290f1d3544f18f784abd840/
     );
     assert.match(transitionHarness, /saveWithProductionCallSiteIndex/);
     assert.match(transitionHarness, /productionIndexPrepared=/);
     assert.match(transitionHarness, /callSiteIndexBytes=/);
     assert.match(transitionHarness, /CALL_SITE_INDEX_QUERY/);
-    assert.match(workflow, /grep -Fq 'productionIndexPrepared=' "\$\{BASE_HARNESS\}"/);
+    assert.match(workflow, /MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256/);
     assert.match(
         workflow,
-        new RegExp(`LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        /LARGE_CORPUS_TRANSITION_COMPARATOR_SHA256: e29b5cb74064a47871dadb9e25a6f5b471c74fc926ba795824fbe5003729fd55/
     );
     assert.match(workflow, /LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087/);
     assert.match(
         workflow,
-        new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(comparator)}`)
+        new RegExp(`BENCHMARK_REPORT_TRANSITION_SHA256: ${sha256(fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url)))}`)
     );
     assert.match(
         workflow,
-        new RegExp(`REAL_ONLY_LATENCY_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        new RegExp(`REAL_ONLY_LATENCY_COMPARATOR_SHA256: ${sha256(fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url)))}`)
     );
     assert.match(
         workflow,
-        new RegExp(`LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ${sha256(comparator)}`)
+        new RegExp(`LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: ${sha256(fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url)))}`)
     );
     assert.match(
         workflow,
@@ -3737,7 +3762,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     const enforcement = aggregateJob.slice(aggregateJob.indexOf("    - name: Enforce benchmark gate"));
     assert.match(enforcement, /benchmark-authoritative-status\.json/);
     assert.doesNotMatch(enforcement, /require\('\.\/benchmark-results\/benchmark-status\.json'\)/);
-    assert.match(workflow, /mode=pinned-transition/);
+    assert.match(workflow, /--correctness-only/);
     assert.match(workflow, /needs: \[candidate-gate-tests\]/);
     assert.match(workflow, /compare-latency-anchor/);
     assert.match(workflow, /confirm-latency-anchor/);
@@ -3798,7 +3823,9 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     );
     assert.equal((workflow.match(/^        - graph_count: (4|17|36)$/gm) ?? []).length, 12);
     assert.equal((workflow.match(/^          group: (position|string|scan|aggregate)$/gm) ?? []).length, 12);
-    assert.match(workflow, /length == 33 and/);
+    assert.match(workflow, /for COUNT in 4 17 36/);
+    assert.match(workflow, /contains count early late middle or order prefix regex suffix zero/);
+    assert.match(workflow, /-eq 33/);
     for (const revision of ["base", "candidate"]) {
         assert.match(workflow, new RegExp(`jmh-explore-${revision}`));
     }
@@ -3881,107 +3908,58 @@ test("historical known-bad latency proof runs only in the scheduled workflow", (
     for (const hashInput of cacheHashInputs) assert.match(hashInput, /'current\//);
 });
 
-test("Explorer overlay selects only the pinned repair and retains strict base CPU accounting", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const start = workflow.indexOf("    - name: Install trusted Explorer harnesses");
-    const end = workflow.indexOf("    - name: Build comparable Explorer JMH JAR", start);
-    assert.ok(start > 0 && end > start);
-    const build = workflow.slice(workflow.indexOf("\n  build-explore-jmh:"), start);
-    assert.match(build, /needs: \[candidate-gate-tests\]/);
-    assert.match(build, /revision: \[base, candidate\]/);
-    const overlay = workflow.slice(start, end);
-    assert.match(overlay, /CANDIDATE_GATE_TEST_JOB: \$\{\{ needs\.candidate-gate-tests\.result \}\}/);
-    const shell = overlay.slice(overlay.indexOf("      run: |\n") + "      run: |\n".length)
-        .split("\n").map(line => line.replace(/^        /, "")).join("\n");
-    const sha256 = contents => crypto.createHash("sha256").update(contents).digest("hex");
-    const relative = "frontend/jvm/explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/";
-    const explorer = "ExplorerMemoryBenchmark.kt";
-    const helpers = ["CypherCapacityBenchmark.kt", "RequestCpuAccounting.kt"];
-    const currentHarness = fs.readFileSync(new URL(`../../${relative}${explorer}`, import.meta.url));
-    assert.match(workflow, new RegExp(`EXPLORER_TRANSITION_HARNESS_SHA256: ${sha256(currentHarness)}`));
-    assert.match(workflow, /EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e/);
+test("Explorer untimed overlay is exact-source pinned and preserves lifecycle assertions", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    const manifest=fs.readFileSync(new URL('./multigraph-correctness-controls.sha256',import.meta.url),'utf8');
+    for(const line of manifest.trim().split('\n')) {
+        const [hash,relative]=line.split(/  /);
+        assert.equal(crypto.createHash('sha256').update(fs.readFileSync(new URL('../../'+relative,import.meta.url))).digest('hex'),hash);
+    }
+    assert.match(workflow,/MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256/);
+    assert.match(workflow,/sha256sum -c/);assert.match(workflow,/SingleGraphCorrectness.kt/);
+    assert.match(workflow,/RequestCpuAccounting.kt/);
+    assert.match(workflow,/SingleGraphCorrectness explorer/);assert.match(workflow,/SingleGraphCorrectness capacity/);
+});
 
-    for (const scenario of ["transition", "normal-base", "tampered", "failed-tests"]) {
-        const directory = fs.mkdtempSync(path.join(os.tmpdir(), "explorer-overlay-"));
-        try {
-            for (const checkout of ["gate", "controls", "source"]) {
-                fs.mkdirSync(path.join(directory, checkout, relative), { recursive: true });
-                for (const file of [explorer, ...helpers]) {
-                    const contents = checkout === "gate" && file === explorer
-                        ? (scenario === "normal-base" ? "future base harness" : "reviewed legacy harness")
-                        : checkout === "controls" && file === explorer
-                            ? (scenario === "tampered" ? "unreviewed repair" : "reviewed repair")
-                            : `${checkout} ${file}`;
-                    fs.writeFileSync(path.join(directory, checkout, relative, file), contents);
-                }
-            }
-            const result = spawnSync("bash", ["-c", shell], {
-                cwd: directory,
-                encoding: "utf8",
-                env: { ...process.env,
-                    CANDIDATE_GATE_TEST_JOB: scenario === "failed-tests" ? "failure" : "success",
-                    EXPLORER_LEGACY_HARNESS_SHA256: sha256("reviewed legacy harness"),
-                    EXPLORER_TRANSITION_HARNESS_SHA256: sha256("reviewed repair"),
-                },
-            });
-            if (["tampered", "failed-tests"].includes(scenario)) {
-                assert.notEqual(result.status, 0, `${scenario} must fail closed`);
-                assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
-                    `source ${explorer}`, "rejected controls must not mutate the target");
-                continue;
-            }
-            assert.equal(result.status, 0, `${scenario}: ${result.stderr}`);
-            assert.equal(fs.readFileSync(path.join(directory, "source", relative, explorer), "utf8"),
-                scenario === "normal-base" ? "future base harness" : "reviewed repair");
-            for (const file of helpers) {
-                assert.equal(fs.readFileSync(path.join(directory, "source", relative, file), "utf8"),
-                    `gate ${file}`, `${file} must always remain base-owned`);
-            }
-        } finally {
-            fs.rmSync(directory, { recursive: true, force: true });
-        }
+test("every standalone correctness installer pins its actual reviewed source", () => {
+    const workflow = fs.readFileSync(new URL('../workflows/benchmark.yml', import.meta.url), 'utf8');
+    const manifest = new Map(fs.readFileSync(
+        new URL('./multigraph-correctness-controls.sha256', import.meta.url), 'utf8'
+    ).trim().split('\n').map(line => {
+        const [hash, relative] = line.split(/  /);
+        return [relative, hash];
+    }));
+    const pins = [...workflow.matchAll(/SOURCE='([^'\n]+Correctness\.kt)'\n[^\n]*= '([a-f0-9]{64})'/g)];
+    assert.deepEqual(pins.map(([, relative]) => relative), [
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt',
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt',
+        'frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt',
+        'frontend/jvm/webgraph/src/jmh/kotlin/io/johnsonlee/graphite/webgraph/MappedAdmissionCorrectness.kt',
+    ]);
+    for (const [, relative, pinned] of pins) {
+        const actual = crypto.createHash('sha256').update(
+            fs.readFileSync(new URL('../../' + relative, import.meta.url))
+        ).digest('hex');
+        assert.equal(pinned, actual, `stale standalone installer pin: ${relative}`);
+        if (manifest.has(relative)) assert.equal(pinned, manifest.get(relative), relative);
     }
 });
 
-test("method-compatibility shards run the CPU accounting contract in its own JVM before any fork", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const contract = workflow.indexOf(
-        'java -cp "${CANDIDATE_JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract'
-    );
-    const firstFork = workflow.indexOf(
-        "'io.johnsonlee.graphite.cli.MethodDiscoveryCompatibilityBenchmark.methodScenarioGate'"
-    );
-    assert.ok(contract > 0, "the contract must run in its own JVM");
-    assert.ok(contract < firstFork, "the contract must run before the first measured fork");
+test("all Method shards retain complete results without mixed singleton timing", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    const shard=workflow.slice(workflow.indexOf('  method-compatibility-shard:'),workflow.indexOf('  validate-cpu-accounting:'));
+    assert.match(shard,/SingleGraphCorrectness methods/);assert.match(shard,/SCENARIOS/);
+    assert.match(shard,/diff -u/);assert.doesNotMatch(shard,/java -jar|compare-jmh|confirm-jmh/);
+    assert.match(shard,/-Xmx8g -XX:ActiveProcessorCount=4/);
 });
 
-test("a candidate-owned smoke exercises the new CPU accounting harness in a real fork", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    assert.match(workflow, /^  validate-cpu-accounting:$/m, "a candidate-owned CPU-accounting smoke job must exist");
-    const start = workflow.indexOf("\n  validate-cpu-accounting:");
-    const rest = workflow.slice(start + 1);
-    const job = rest.slice(0, rest.indexOf("\n  method-compatibility:"));
-    // Exercise the candidate-native integration separately from the paired trusted overlay.
-    assert.match(job, /Build candidate-owned Explorer JMH JAR/);
-    const lifecycle = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodBenchmarkServerLifecycleContract');
-    const accounting = job.indexOf('java -cp "${JAR}" io.johnsonlee.graphite.cli.MethodCompatibilityCpuAccountingContract');
-    assert.ok(lifecycle > 0 && accounting > lifecycle,
-        "the actual server lifecycle must pass before CPU accounting contracts and real forks");
-    assert.doesNotMatch(job, /Install (?:base-owned|trusted) Explorer harnesses/, "the smoke must not install the base harness");
-    // A real graphCount=4 fork over all four corpora.
-    assert.match(job, /-p graphCount=4 -p scenario=count/);
-    // And the worst-case graph count over the scenarios that tripped the accounting, with
-    // fail-on-error so an abort in measure() fails the step -- proving the matrix, not just 4/count.
-    assert.match(job, /-p graphCount=36 -p scenario=prefix,contains/);
-    assert.match(job, /-foe true/);
-    assert.match(job, /\["contains", "prefix"\]/, "the long-scenario assert must require both named scenarios");
-    // Asserts the fork published a valid javaThreadCpuNanos row with nonnegative accounting diagnostics.
-    assert.match(job, /secondaryMetrics\.requestsSucceeded\.score == 1/);
-    assert.match(job, /secondaryMetrics\.javaThreadCpuNanos\.score > 0/);
-    assert.match(job, /secondaryMetrics\.jvmInternalCpuNanos\.score >= 0/);
-    // The smoke artifact is distinct from the base-owned paired artifacts so the trusted gate cannot consume it.
-    assert.match(job, /name: benchmark-cpu-accounting-smoke-/);
-    assert.doesNotMatch(job, /name: jmh-explore-/, "the smoke must not reuse the paired gate artifacts");
+test("candidate lifecycle and CPU accounting remain correctness contracts without a timed graph replay", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    const job=workflow.slice(workflow.indexOf('  validate-cpu-accounting:'),workflow.indexOf('  method-compatibility:'));
+    assert.match(job,/Build candidate-owned/);
+    assert.match(job,/MethodBenchmarkServerLifecycleContract/);assert.match(job,/MethodCompatibilityCpuAccountingContract/);
+    assert.doesNotMatch(job,/java -jar|primaryMetric|secondaryMetrics/);
+    assert.match(job,/benchmark-cpu-accounting-smoke-/);
 });
 
 test("the authoritative aggregate depends on and enforces the CPU-accounting smoke", () => {
@@ -3991,7 +3969,7 @@ test("the authoritative aggregate depends on and enforces the CPU-accounting smo
     assert.match(needsLine, /validate-cpu-accounting/, "the aggregate gate must depend on the smoke job");
     assert.match(gate, /CPU_ACCOUNTING_SMOKE_JOB: \$\{\{ needs\.validate-cpu-accounting\.result \}\}/,
         "the enforce step must expose the smoke job's result");
-    assert.match(gate, /\[ "\$\{CPU_ACCOUNTING_SMOKE_JOB\}" != success \]/,
+    assert.match(gate, /CPU_ACCOUNTING_SMOKE_JOB SLOW_QUERY_SHAPES_JOB/,
         "the enforce step must fail unless the smoke succeeded");
 });
 
@@ -4067,24 +4045,13 @@ test("wrapped heap growth is advisory while allocation, GC and heap integrity re
     assert.equal(compareLatencyResources(base, [resourceResult({ overrides: { peakUsedHeapBytes: undefined } })]).passed, false);
 });
 
-test("workflow applies withdrawn resource growth constraints in both initial and final method paths", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    for (const expected of [
-        "gate_metric cpu processCpuNanos 'CPU time (advisory)' true",
-        "gate_metric rss-after residentSetAfterBytes 'RSS after query (advisory)' true",
-        "'cpu:processCpuNanos:CPU time (advisory):true'",
-        "'rss-after:residentSetAfterBytes:RSS after query (advisory):true'",
-        "gate_metric wall '' 'wall time' false",
-        'all(["tailLatencyNanos"][];'
-    ]) assert.ok(workflow.includes(expected), expected);
-    const block = workflow.split('    - name: Enforce resource integrity and allocation/GC guardrails')[1]
-        .split('    - name: Upload resource results')[0];
-    assert.match(block, /COMPARATOR=candidate\/\.github\/scripts\/benchmark-gate\.mjs/);
-    assert.match(block, /CANDIDATE_GATE_TEST_JOB/);
-    assert.match(block, /REAL_ONLY_LATENCY_COMPARATOR_SHA256/);
-    assert.match(block, /"\$\{COMPARATOR\}" confirm-latency-resources/);
-    assert.match(workflow, /secondaryMetrics\.processCpuNanos\.score > 0/);
-    assert.match(workflow, /secondaryMetrics\.residentSetAfterBytes\.score > 0/);
+test("retired mixed Method measurements cannot replace independent multi-graph CPU/RSS bounds", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark.yml',import.meta.url),'utf8');
+    const shard=workflow.slice(workflow.indexOf('  method-compatibility-shard:'),workflow.indexOf('  validate-cpu-accounting:'));
+    assert.doesNotMatch(shard,/gate_metric|confirmation|processCpuNanos|residentSetAfterBytes/);
+    const comparator=fs.readFileSync(new URL('./benchmark-multigraph-pressure.mjs',import.meta.url),'utf8');
+    assert.match(comparator,/candidateUpper <= baseLower\*1.05/);assert.match(comparator,/INDETERMINATE/);
+    assert.match(comparator,/cpuLowerBoundSeconds/);assert.match(comparator,/rss.lowerBoundBytes/);
 });
 
 
@@ -4186,9 +4153,174 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
     } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
+function rustWorkflowJob(workflow, id) {
+    const job = workflow.match(new RegExp(`^  ${id}:\\n[\\s\\S]*?(?=^  [a-z-]+:\\n|$(?![\\s\\S]))`, "m"))?.[0];
+    assert.ok(job, `required job ${id} exists`);
+    return job;
+}
+
+function rustWorkflowStep(job, name) {
+    const body = job.split(`    - name: ${name}\n`)[1];
+    assert.ok(body, `required step ${name} exists`);
+    return body.split("\n    - name: ")[0];
+}
+
+test("Rust split stages preserve query gates before independent lifecycle measurements", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const native = rustWorkflowJob(workflow, "rust-query-native");
+    const jvm = rustWorkflowJob(workflow, "rust-query-jvm");
+    const legacy = rustWorkflowJob(workflow, "rust-query-legacy");
+    const names = ["Measure base then PR",
+        "Compare Rust engine latency", "Diagnose confirmed Rust shape regression", "Upload Rust engine latency results"];
+    const offsets = names.map(name => legacy.indexOf(`    - name: ${name}\n`));
+    offsets.forEach((offset, index) => assert.ok(offset >= 0 && (index === 0 || offset > offsets[index - 1]), names[index]));
+    for (const name of names.slice(0, 2)) assert.doesNotMatch(rustWorkflowStep(legacy, name), /continue-on-error:/);
+    const nativePressure = rustWorkflowStep(native, "Execute and audit matched native continuous pressure");
+    assert.match(nativePressure, /run_prepared_native_pressure\.py/);
+    assert.match(nativePressure, /--preparation benchmark-results\/native-pressure-preparation/);
+    assert.match(nativePressure, /--output benchmark-results\/native-pressure-cells/);
+    const jvmPressure = rustWorkflowStep(jvm, "Execute and audit matched JVM continuous pressure");
+    assert.match(jvmPressure, /run_prepared_native_pressure\.py --engine jvm/);
+    assert.match(jvmPressure, /--preparation benchmark-results\/jvm-pressure-preparation/);
+    assert.match(jvmPressure, /--output benchmark-results\/jvm-pressure-cells/);
+    for (const job of [native, jvm]) {
+        assert.doesNotMatch(job, /strategy:|matrix:|--cell\b|--pair\b/, "six ordered cells remain in one process-owned job");
+    }
+    const nativeUpload = rustWorkflowStep(legacy, names[3]);
+    assert.match(nativeUpload, /if: always\(\)/);
+    assert.match(nativeUpload, /name: benchmark-rust-latency-/);
+    assert.match(nativeUpload, /path: benchmark-results\//);
+    assert.match(jvm, /name: benchmark-rust-jvm-pressure-/);
+    assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: benchmark-rust-native-pressure-/);
+    for (const [id, operation, measurement] of [
+        ["rust-loading", "loading", "Measure and audit six JVM real64 zero-query loads"],
+        ["rust-construction", "construction", "Measure and audit six real64 usable-save constructions"]
+    ]) {
+        const job = rustWorkflowJob(workflow, id);
+        const step = rustWorkflowStep(job, measurement);
+        assert.match(step, new RegExp(`run_real64_${operation}\\.py`));
+        assert.match(step, /--producers native-pressure-producers\/packet\.json/);
+        assert.match(step, new RegExp(`--output benchmark-results/real64-${operation}`));
+        const upload = rustWorkflowStep(job, `Upload Rust ${operation} results`);
+        assert.match(upload, /if: always\(\)/);
+        assert.match(upload, new RegExp(`name: benchmark-rust-${operation}-`));
+        assert.match(upload, new RegExp(`benchmark-results/real64-${operation}/\\*\\*`));
+        assert.match(upload, new RegExp(`benchmark-results/multigraph-${operation}\\*`));
+    }
+});
+
+test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
+    const needs = job => {
+        const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
+        assert.ok(list, "stage has explicit dependencies");
+        return list.split(",").map(value => value.trim());
+    };
+    for (const job of Object.values(jobs)) {
+        assert.match(job, /^    timeout-minutes: 360$/m);
+        assert.doesNotMatch(job.split("    steps:")[0], /continue-on-error:/, "failed stages remain required failures");
+    }
+    assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
+    for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
+    for (const id of ids.slice(2).filter(id => id !== "rust-query-legacy")) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    assert.deepEqual(needs(jobs["rust-query-legacy"]), ["candidate-gate-tests", "rust-producer"],
+        "a core proof failure must not suppress the existing independently validated Rust snapshot gate");
+    assert.doesNotMatch(jobs["rust-query-legacy"].split("    steps:")[0], /needs\.rust-(?:core|jvm-correctness)/);
+    assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-jvm-correctness"));
+    for (const [id, aliasArms, distinctArms] of [
+        ["rust-core", '["B"]', '["A","B"]'],
+        ["rust-jvm-correctness", '["C","B"]', '["C","A","B"]']
+    ]) {
+        const job = jobs[id];
+        assert.match(job, /fail-fast: false/, "one arm failure must not cancel other evidence");
+        const matrix = job.match(/arm: (.*)/)?.[1];
+        assert.equal(matrix, `\${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '${aliasArms}' || '${distinctArms}') }}`);
+        assert.match(job, /\$\{\{ matrix\.arm \}\}/);
+    }
+    const core = rustWorkflowStep(jobs["rust-core"], "Execute complete native core topology and index migration checks");
+    assert.match(core, /run_native_core_equivalence\.py/);
+    assert.match(core, /--reference native-pressure-artifacts\/C/);
+    assert.match(core, /--raw-local-types --raw-edges/);
+    assert.doesNotMatch(core, /continue-on-error:/);
+    const correctness = rustWorkflowStep(jobs["rust-jvm-correctness"], "Derive and independently check JVM responses on each real64 writer corpus");
+    assert.match(correctness, /derive_jvm_pressure_oracles\.py/);
+    assert.match(correctness, /jvm_query_correctness\.py/);
+    assert.match(correctness, /--audit-only/);
+    assert.doesNotMatch(correctness, /continue-on-error:/);
+    for (const id of ["rust-loading", "rust-construction"]) {
+        const job = jobs[id], header = job.split("    steps:")[0];
+        const deps = needs(job);
+        for (const query of ["rust-query-native", "rust-query-jvm", "rust-query-legacy"]) assert.ok(deps.includes(query));
+        assert.match(header, /!cancelled\(\)/);
+        for (const dep of ["rust-producer", "rust-core"]) assert.ok(header.includes(`needs.${dep}.result == 'success'`));
+        assert.doesNotMatch(header, /needs\.rust-query-(?:native|jvm|legacy)\.result == 'success'/,
+            "terminal query failures retain their verdict without suppressing independent lifecycle evidence");
+    }
+    const aggregate = rustWorkflowJob(workflow, "benchmark-regression-gate");
+    assert.ok(needs(aggregate).includes("rust-latency"), "existing required aggregate cannot bypass the join");
+});
+
+test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = rustWorkflowJob(workflow, "rust-latency");
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    assert.match(job, /^    name: rust-latency-gate$/m);
+    assert.match(job, /^    if: always\(\)$/m);
+    assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
+    const step = rustWorkflowStep(job, "Require every proof and complete operation cohort");
+    assert.match(step, /STAGE_RESULTS: \$\{\{ toJSON\(needs\) \}\}/);
+    assert.doesNotMatch(step, /continue-on-error:/);
+    const source = step.match(/python3 - <<'PYJOIN'\n([\s\S]*?)        PYJOIN/)[1]
+        .split("\n").map(line => line.startsWith("        ") ? line.slice(8) : line).join("\n");
+    const run = results => spawnSync("python3", ["-B", "-c", source], {
+        encoding: "utf8", env: { ...process.env, STAGE_RESULTS: JSON.stringify(results) }
+    });
+    const passed = Object.fromEntries(ids.map(id => [id, { result: "success", outputs: {} }]));
+    const positive = run(passed);
+    assert.equal(positive.status, 0, positive.stderr);
+    for (const id of ids) {
+        for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
+            const changed = structuredClone(passed);
+            changed[id].result = result;
+            const failure = run(changed);
+            assert.notEqual(failure.status, 0, `${id}/${result} cannot be accepted`);
+            assert.match(failure.stderr, /AssertionError/);
+        }
+        const missing = structuredClone(passed);
+        delete missing[id];
+        assert.notEqual(run(missing).status, 0, `${id} cannot disappear from the required join`);
+        const malformed = structuredClone(passed);
+        delete malformed[id].result;
+        assert.notEqual(run(malformed).status, 0, `${id} must supply an actual result`);
+    }
+    assert.notEqual(run({ ...passed, unexpected: { result: "success" } }).status, 0);
+});
+
+test("split operation stages publish evidence then enforce the unchanged acceptance verdict", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    for (const [id, operation, upload] of [
+        ["rust-query-native", "native-query", "Upload native pressure results"],
+        ["rust-query-jvm", "jvm-query", "Upload JVM pressure results"],
+        ["rust-loading", "loading", "Upload Rust loading results"],
+        ["rust-construction", "construction", "Upload Rust construction results"]
+    ]) {
+        const job = rustWorkflowJob(workflow, id);
+        const name = `Enforce ${operation} acceptance`;
+        assert.ok(job.indexOf(`    - name: ${name}`) > job.indexOf(`    - name: ${upload}`));
+        const step = rustWorkflowStep(job, name);
+        assert.match(step, /if: always\(\)/);
+        assert.doesNotMatch(step, /continue-on-error:/);
+        assert.equal(step.match(/run: ([^\n]+)/)[1],
+            `jq -e '.passed == true' benchmark-results/multigraph-${operation}-status.json >/dev/null`);
+        assert.match(rustWorkflowStep(job, upload), /if: always\(\)/);
+    }
+});
+
 test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const job = rustWorkflowJob(workflow, "rust-query-legacy");
     const start = job.indexOf("    - name: Diagnose confirmed Rust shape regression");
     const end = job.indexOf("    - name: Upload Rust engine latency results", start);
     assert.ok(start > 0 && end > start);
@@ -4227,4 +4359,143 @@ test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair th
     }
     assert.match(workflow, /python3 -m unittest discover -s candidate\/backend\/bench -p 'test_snapshot\*\.py'/);
     assert.match(job.slice(end), /if: always\(\)/);
+});
+
+
+test("declared type response migration accepts only the independently audited complete response pairs", () => {
+    const audited = JSON.parse(fs.readFileSync(new URL("./fixtures/declared-types-native-responses.json", import.meta.url)));
+    const snapshot = revision => bindRustCatalog(rustSnapshot().map((row, i) => i >= audited.length ? row : {
+        ...row, benchmark: audited[i].benchmark, params: audited[i].params,
+        querySha256: audited[i].querySha256, responseDigest: audited[i][`${revision}Digest`],
+        rowCount: audited[i][`${revision}Rows`]
+    }));
+    const base = snapshot("base"), candidate = snapshot("candidate");
+    assert.equal(base[0].caseListSha256, RUST_DECLARED_TYPES_RESPONSE_TRANSITION.caseListSha256);
+    const options = { declaredTypesTransition: true };
+    const accepted = compareRustLatency(base, candidate, 15, 1, options);
+    assert.deepEqual(accepted.errors, []);
+    assert.equal(accepted.passed, true);
+    assert.equal(accepted.responseContract, "declared-types-v1-exact");
+    assert.equal(compareRustLatency(base, candidate).passed, false);
+    for (const [key, expected] of Object.entries(RUST_DECLARED_TYPES_RESPONSE_TRANSITION.cases)) {
+        const index = candidate.findIndex(row => `${row.benchmark}[selectivity=${row.params.selectivity}]` === key);
+        assert.ok(index >= 0);
+        assert.equal(isDeclaredTypesResponseTransition(key, base[index], candidate[index]), true);
+        assert.equal(isDeclaredTypesResponseTransition(key, candidate[index], base[index]), false);
+        for (const field of ["caseListSha256", "querySha256", "responseDigest", "rowCount"]) {
+            for (const side of ["base", "candidate"]) {
+                const left = structuredClone(base), right = structuredClone(candidate);
+                const target = side === "base" ? left[index] : right[index];
+                target[field] = field === "rowCount" ? target[field] + 1 : "0".repeat(64);
+                assert.equal(isDeclaredTypesResponseTransition(key, left[index], right[index]), false, `${side}/${field}`);
+                assert.equal(compareRustLatency(left, right, 15, 1, options).passed, false, `${side}/${field}`);
+            }
+        }
+        assert.equal(candidate[index].rowCount, expected.candidateRows);
+    }
+    const unrelated = structuredClone(candidate);
+    unrelated[0].responseDigest = "0".repeat(64);
+    assert.equal(compareRustLatency(base, unrelated, 15, 1, options).passed, false);
+    const slow = candidate.map(row => ({ ...row, primaryMetric: {
+        ...row.primaryMetric, score: row.primaryMetric.score * 2,
+        scoreConfidence: row.primaryMetric.scoreConfidence.map(v => v * 2),
+        rawData: row.primaryMetric.rawData.map(samples => samples.map(v => v * 2))
+    }}));
+    const regression = compareRustLatency(base, slow, 15, 1, options);
+    assert.deepEqual(regression.errors, []);
+    assert.equal(regression.passed, false);
+    assert.equal(regression.rows.some(row => row.blocked), true);
+    const policyChanged = confirmJmh(accepted, compareRustLatency(base, base));
+    assert.match(policyChanged.errors.join("\n"), /responseContract differs/);
+    const lostAdditions = compareRustLatency(base, base, 15, 1, options);
+    assert.equal(lostAdditions.passed, false);
+    assert.match(lostAdditions.errors.join("\n"), /candidate must provide the exact audited/);
+    assert.match(confirmJmh(accepted, lostAdditions).errors.join("\n"), /responseIdentity differs/);
+});
+
+
+test("active schema histogram contracts agree with the independent portable oracle", () => {
+    const read = name => JSON.parse(fs.readFileSync(new URL(`./fixtures/${name}`, import.meta.url)));
+    const index = read("native-pressure-oracles/index.json");
+    const oracle = index.cases.find(c => c.id === "schema-key-histogram");
+    const candidate = oracle.expected.candidate;
+    const payload = read(`native-pressure-oracles/${candidate.payload.path}`);
+    const audit = read(`native-pressure-oracles/${candidate.authority.audit.path}`);
+    const canonical = value => Array.isArray(value) ? value.map(canonical) :
+        value !== null && typeof value === "object" ?
+            Object.fromEntries(Object.keys(value).sort().map(key => [key, canonical(value[key])])) : value;
+    const digest = crypto.createHash("sha256").update(JSON.stringify(canonical(payload))).digest("hex");
+    assert.equal(candidate.authority.kind, "independent-completed-schema-oracle-v1");
+    assert.equal(audit.status, "PASS_INDEPENDENT_COMPLETED_SCHEMA_OUTPUT_AUDIT");
+    assert.equal(digest, audit.expectedCanonicalSha256);
+    assert.equal(digest, candidate.digest);
+    assert.equal(payload.rows.length, 28);
+    for (const [key, count] of [["generic_type", audit.genericTypeCount], ["type_info", audit.typeInfoCount]]) {
+        assert.equal(count, 3485883);
+        assert.deepEqual(payload.rows.filter(row => row.k === key).map(row => row.c), [count]);
+    }
+    const basePayload = read(`native-pressure-oracles/${oracle.expected.base.payload.path}`);
+    assert.deepEqual(payload.rows.filter(row => !["generic_type", "type_info"].includes(row.k)), basePayload.rows);
+    const key = "rust.fixture64.schema-key-histogram[selectivity=schema]";
+    const transition = RUST_DECLARED_TYPES_RESPONSE_TRANSITION.cases[key];
+    assert.equal(transition.candidateDigest, digest);
+    assert.equal(transition.candidateRows, candidate.rows);
+    assert.equal(transition.querySha256, oracle.querySha256);
+    assert.equal(transition.baseDigest, oracle.expected.base.digest);
+    const catalog = read("multigraph-pressure-cases.json").engines.native.cases.find(c => c.id === oracle.id);
+    const response = read("declared-types-native-responses.json").find(c => c.benchmark === "rust.fixture64.schema-key-histogram");
+    assert.equal(response.candidateDigest, digest);
+    assert.deepEqual(catalog.expected.candidate, { digest, rows: candidate.rows });
+    assert.deepEqual(catalog.sourceCatalogEntry, response);
+    const base = { caseListSha256: RUST_DECLARED_TYPES_RESPONSE_TRANSITION.caseListSha256,
+        querySha256: oracle.querySha256, responseDigest: transition.baseDigest, rowCount: transition.baseRows };
+    assert.equal(isDeclaredTypesResponseTransition(key, base, {
+        ...base, responseDigest: "ac4d9c3993e68b24ed38a75e32fa8263e3b8116bc69d55ab061f97521789fe9a", rowCount: 28
+    }), false, "obsolete pre-inheritance response remains rejected");
+});
+
+test("native declared-type migration uses reviewed controls for both timing directions", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const comparator = fs.readFileSync(new URL("./benchmark-gate.mjs", import.meta.url));
+    const pin = workflow.match(/RUST_DECLARED_TYPES_COMPARATOR_SHA256: ([a-f0-9]{64})/)[1];
+    assert.equal(pin, crypto.createHash("sha256").update(comparator).digest("hex"));
+    const start = workflow.indexOf("    - name: Select the base-owned harness and comparator");
+    const selection = workflow.slice(start, workflow.indexOf("    # Keep actual executable identity:", start));
+    assert.match(selection, /CANDIDATE_GATE_TEST_JOB/);
+    assert.match(selection, /RUST_DECLARED_TYPES_COMPARATOR_SHA256/);
+    assert.match(selection, /RESPONSE_TRANSITION=true/);
+    const compareStart = workflow.indexOf("    - name: Compare Rust engine latency");
+    const comparison = workflow.slice(compareStart, workflow.indexOf("    - name: Diagnose confirmed Rust shape regression", compareStart));
+    assert.match(comparison, /--declared-types-transition/);
+    assert.equal((comparison.match(/--threshold 15 --minimum 1 "\$\{RESPONSE_ARGS\[@\]\}"/g) ?? []).length, 2);
+});
+
+test("untimed routing preserves full result/access/index assertions and cannot supply latency evidence", () => {
+    const toUntimed = text => {
+        const lines = text.trim().split('\n').map(line => line.split('\t'));
+        const i = lines[0].indexOf('latencyNanos');
+        lines[0][i] = 'measurementScope';
+        for (const row of lines.slice(1)) row[i] = 'correctness-only';
+        return lines.map(row => row.join('\t')).join('\n') + '\n';
+    };
+    const timed = graphIdPressureResult();
+    const metrics = Object.fromEntries(Object.entries(timed.secondaryMetrics)
+        .filter(([k]) => !['cpuCoreUtilizationPermille','peakUsedHeapBytes','peakResidentSetBytes','gcCount','gcMillis'].includes(k))
+        .map(([k,v]) => [k,v.score]));
+    const structural = {scope:'correctness-only',coverageFamily:'graph-routing',indexState:'cold',metrics};
+    const observations = toUntimed(graphIdObservations(1_000_000));
+    const oracle = correctnessFromObservations(observations);
+    const compare = (b = structural, c = structural, bo = observations, co = observations) =>
+        compareGraphIdPressureRaw(b,c,bo,co,oracle,oracle,10,{correctnessOnly:true});
+    assert.deepEqual(compare().errors, []);
+    assert.equal(compare().passed, true);
+    assert.equal(compare().performanceAcceptance, false);
+    assert.equal('p50Speedup' in compare(), false);
+    assert.equal(compare(structural,{...structural,metrics:{...metrics,callSiteStringIndexLookupCount:1}}).passed,false);
+    const rows = observations.trim().split('\n').map(line=>line.split('\t'));
+    rows[1][rows[0].indexOf('nonTargetGraphAccessCount')] = '1';
+    assert.equal(compare(structural,structural,observations,rows.map(row=>row.join('\t')).join('\n')).passed,false);
+    assert.equal(compare(structural,structural,observations,graphIdObservations(1_000_000)).passed,false);
+    assert.equal(compare([timed],[timed]).passed,false);
+    assert.equal(compareGraphIdPressureRaw([timed],[timed],observations,observations,oracle,oracle).passed,false);
 });

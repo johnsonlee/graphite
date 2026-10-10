@@ -1,0 +1,15 @@
+{
+  "columns": [
+    "id",
+    "labels",
+    "qualifiedId",
+    "graphId"
+  ],
+  "rows": [],
+  "rowCount": 0,
+  "graphCount": 64,
+  "total": {
+    "value": 0,
+    "relation": "eq"
+  }
+}

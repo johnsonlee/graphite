@@ -1,10 +1,16 @@
 package io.johnsonlee.graphite.cypher
 
+import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.DoubleConstant
 import io.johnsonlee.graphite.core.IntConstant
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.StringConstant
+import io.johnsonlee.graphite.graph.DeclaredType
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
+import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
@@ -16,6 +22,45 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class DynamicPropertyCandidatesTest {
+
+    @Test
+    fun `declared metadata requires explicit candidate coverage and preserves negative any`() {
+        val field = FieldNode(NodeId(1), FieldDescriptor(TypeDescriptor("Owner"), "value", TypeDescriptor("java.util.List")), false)
+        val table = DeclaredTypeTable(
+            listOf(DeclaredType("class", "OnlyInDeclaration")),
+            mapOf(MemberTypeKey("Owner", "value", "Ljava/util/List;") to 0), emptyMap(), emptyMap()
+        )
+        val backing = DefaultGraph.Builder().apply {
+            addNode(field)
+            setDeclaredTypes(table)
+        }.build()
+        for (coversDeclarations in listOf(false, true)) {
+            var candidates = 0
+            var scans = 0
+            val graph = object : Graph by backing, NodePropertyTextCandidates {
+                override val includesDeclaredTypeProperties = coversDeclarations
+                override fun <T : Node> nodes(type: Class<T>): Sequence<T> {
+                    scans++
+                    return backing.nodes(type)
+                }
+                override fun <T : Node> propertyTextCandidates(
+                    type: Class<T>, fragment: String, workConsumer: GraphWorkConsumer?
+                ): Sequence<T> {
+                    check(coversDeclarations) { "Legacy candidate provider must retain the complete scan" }
+                    candidates++
+                    return backing.nodes(type)
+                }
+            }
+            val executor = CypherExecutor(graph)
+            val condition = "any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'OnlyInDeclaration')"
+            assertEquals(listOf(mapOf("id" to 1)), executor.execute("MATCH (n) WHERE $condition RETURN n.id AS id LIMIT 1").rows)
+            assertEquals(if (coversDeclarations) 1 else 0, candidates)
+            assertEquals(if (coversDeclarations) 0 else 1, scans)
+            assertEquals(emptyList(), executor.execute("MATCH (n) WHERE NOT $condition RETURN n.id AS id LIMIT 1").rows)
+            assertEquals(if (coversDeclarations) 1 else 0, candidates)
+            assertEquals(if (coversDeclarations) 1 else 2, scans)
+        }
+    }
 
     @Test
     fun `query passes both fragments and still applies exact residual predicate`() {

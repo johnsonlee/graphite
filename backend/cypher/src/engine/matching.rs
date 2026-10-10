@@ -149,7 +149,11 @@ impl<'a> Matcher<'a> {
         let pattern = &patterns[idx];
         let used_before = state.used.len();
         let mut inner = |r: Row, st: &mut MatchState| -> CypherResult<bool> {
-            self.match_from(&r, patterns, idx + 1, st, emit)
+            if idx + 1 == patterns.len() {
+                emit(r)
+            } else {
+                self.match_from(&r, patterns, idx + 1, st, emit)
+            }
         };
         let cont = self.match_pattern(row, pattern, state, &mut inner)?;
         state.used.truncate(used_before);
@@ -701,3 +705,7 @@ mod walk_tests {
         assert_eq!(MergedWalk::new([(0u8, &e[..])]).count(), 0);
     }
 }
+
+#[cfg(test)]
+#[path = "matching_tests.rs"]
+mod matching_tests;

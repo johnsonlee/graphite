@@ -35,6 +35,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
@@ -121,6 +122,7 @@ import sootup.java.bytecode.frontend.conversion.AsmMethodSource
 import sootup.java.bytecode.frontend.conversion.asStreamingMethod
 import sootup.java.bytecode.frontend.conversion.signatureFor
 import sootup.java.bytecode.frontend.conversion.streamingMethodSources
+import sootup.java.bytecode.frontend.conversion.parsedDeclarationNode
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -438,6 +440,18 @@ class SootUpAdapter(
         return classOriginsByName.toMap()
     }
 
+    /** Declaration snapshots are needed only while building the type table. */
+    private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
+        val declarations = classes.mapNotNull { sootClass ->
+            val name = sootClass.type.fullyQualifiedName
+            sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)
+                ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
+        }.associateBy { it.name }
+        val table = DeclaredTypesReader(declarations).build()
+        val interfaces = classes.filter { it.isInterface }.mapTo(HashSet()) { it.type.fullyQualifiedName }
+        return InheritedFieldTypes(declarations, table, interfaces).bind(fieldNodes.values)
+    }
+
     /**
      * Build the complete graph from the SootUp view
      */
@@ -528,6 +542,7 @@ class SootUpAdapter(
         }
 
         log("Starting graphBuilder.build()")
+        graphBuilder.setDeclaredTypes(buildDeclaredTypes(classes))
         graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
@@ -4109,9 +4124,12 @@ class SootUpAdapter(
         fieldName: String,
         fallbackType: TypeDescriptor
     ): TypeDescriptor {
-        return signatureReader?.getFieldType(declaringClass, fieldName)
+        val generic = signatureReader?.getFieldType(declaringClass, fieldName)
             ?: fieldGenericTypes(declaringClass)[fieldName]
-            ?: fallbackType
+            ?: return fallbackType
+        // A Signature can name T or an owner-qualified inner type; neither replaces the JVM
+        // descriptor used to identify this field. Retain arguments for existing type analysis.
+        return generic.copy(className = fallbackType.className)
     }
 
     private fun fieldGenericTypes(className: String): Map<String, TypeDescriptor> =

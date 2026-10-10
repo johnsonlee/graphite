@@ -25,6 +25,7 @@ import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.Graph
 import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
@@ -34,7 +35,20 @@ import java.util.concurrent.ConcurrentHashMap
 object NodePropertyAccessor {
     private val propertyNamesByType = ConcurrentHashMap<Class<out Node>, List<String>>()
 
-    internal fun getPropertyNames(node: Node): List<String> = if (node is AnnotationNode) {
+    private val declaredPropertyNamesByType = ConcurrentHashMap<Class<out Node>, List<String>>()
+
+    internal fun getPropertyNames(node: Node, graph: Graph? = null): List<String> {
+        val erased = erasedPropertyNames(node)
+        return if (DeclaredTypeProperties.hasNodeProperties(node, graph)) {
+            declaredPropertyNamesByType.computeIfAbsent(node.javaClass) {
+                Collections.unmodifiableList(erased + DeclaredTypeProperties.nodePropertyNames)
+            }
+        } else {
+            erased
+        }
+    }
+
+    private fun erasedPropertyNames(node: Node): List<String> = if (node is AnnotationNode) {
         getAllProperties(node).keys.toList()
     } else {
         propertyNamesByType[node.javaClass] ?: propertyNamesByType.computeIfAbsent(node.javaClass) {
@@ -80,6 +94,13 @@ object NodePropertyAccessor {
         "annotation" to AnnotationNode::class.java,
         "node" to Node::class.java
     )
+
+    fun getProperty(node: Node, property: String, graph: Graph?): Any? =
+        if (DeclaredTypeProperties.isNodeProperty(node, property)) {
+            DeclaredTypeProperties.nodeProperty(node, property, graph)
+        } else {
+            getProperty(node, property)
+        }
 
     fun getProperty(node: Node, property: String): Any? {
         // Check global properties first (except PROPERTY_TYPE which is ambiguous)
@@ -239,6 +260,12 @@ object NodePropertyAccessor {
     /**
      * Returns all properties of a node as a map.
      */
+    fun getAllProperties(node: Node, graph: Graph?): Map<String, Any?> {
+        val properties = getAllProperties(node)
+        val declared = DeclaredTypeProperties.nodeProperties(node, graph)
+        return if (declared.isEmpty()) properties else properties + declared
+    }
+
     fun getAllProperties(node: Node): Map<String, Any?> = when (node) {
         is CallSiteNode -> mapOf(
             PROPERTY_ID to node.id.value,

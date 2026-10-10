@@ -303,9 +303,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
             val statementsBefore = builder.controlFlowGraph.nodes.size
             val caller = render(builder.methodSignature)
             val callerDescriptor = descriptorOf(builder.methodSignature)
-            // What a method's resolution recorded is kept under its full identity: a bridge and
-            // the covariant method it forwards to share a signature, not a descriptor, and
-            // overloads that differ in array dimensions share both, so the Jimple signature it is.
+            // Keep resolution results under the full Jimple identity; a covariant bridge and
+            // its target share the graph's method signature but have different return descriptors.
             val identity = builder.methodSignature.toString()
             // The same numbering the adapter gives the graph's `CallSite.ordinal`, computed by the
             // one function from the unfiltered body (`callOrdinals`), so a key read off a graph
@@ -562,10 +561,9 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
         }
 
         /**
-         * Why a key naming [signature] as its [role] names more than one method, or `null`: the
-         * graph writes an array as its base type and one `[]`, so overloads that differ only in
-         * array dimensions (`run(int[])`, `run(int[][])`) share a signature and a descriptor, and
-         * a key cannot tell their calls apart. Such a key folds nothing rather than both.
+         * Guard against any distinct source methods that share a rendered key. Full array
+         * dimensions and return descriptors normally distinguish every overload; if a source
+         * still supplies a collision, folding must not apply a selection to both methods.
          */
         private fun ambiguity(view: View, signature: MethodSignature, role: String): String? {
             val others = collidingOverloads.getOrPut(signature) {
@@ -575,8 +573,8 @@ internal class ConstantFolding(private val folds: List<FoldRule>) {
                 }.orElse(emptyList()).map { it.toString() }.sorted()
             }
             if (others.isEmpty()) return null
-            return "the key's $role ${render(signature)} names ${others.size + 1} methods that differ only in array " +
-                "dimensions, which the graph does not record: $signature and ${others.joinToString(" and ")}; not folded"
+            return "the key's $role ${render(signature)} names ${others.size + 1} methods with the same rendered identity: " +
+                "$signature and ${others.joinToString(" and ")}; not folded"
         }
 
         /** What an argument that is no constant is, for the report: a parameter, a call's result, or something computed. */
@@ -1337,12 +1335,12 @@ private fun descriptorOf(signature: MethodSignature): String =
 
 /**
  * A type's name as the graph's `TypeDescriptor` holds it: the one rule the adapter and the fold
- * pass both name types by, so a key read off the graph and one computed from a body agree. An
- * array is its base type and one `[]` whatever its dimensions, as the adapter has always written it.
+ * pass both name types by, so a key read off the graph and one computed from a body agree.
+ * Every array dimension is retained so overloads and declaration references stay distinct.
  */
 internal fun graphTypeName(type: Type): String = when (type) {
     is ClassType -> type.fullyQualifiedName
-    is ArrayType -> "${graphTypeName(type.baseType)}[]"
+    is ArrayType -> graphTypeName(type.baseType) + "[]".repeat(type.dimension)
     else -> type.toString()
 }
 

@@ -495,47 +495,14 @@ test("render CLI writes a bounded HTML report, summary, and audit manifest", () 
     }
 });
 
-test("tag diff workflow is tag-only, publishes only Pages, and stays isolated from release publishing", () => {
-    const workflow = fs.readFileSync(new URL("../workflows/benchmark-tag-diff.yml", import.meta.url), "utf8");
-    const publish = fs.readFileSync(new URL("../workflows/publish.yml", import.meta.url), "utf8");
-    assert.match(workflow, /on:\n  push:\n    tags: \['v\*']\n/);
-    assert.doesNotMatch(workflow, /pull_request|workflow_dispatch|repository_dispatch|workflow_call/);
-    assert.match(workflow, /permissions:\n  contents: read/);
-    assert.doesNotMatch(workflow, /contents: write|actions: write|packages: write/);
-    assert.match(workflow, /concurrency:\n  group: pages\n  cancel-in-progress: false\n  queue: max/);
-    assert.match(workflow, /actions\/checkout@v7/g);
-    assert.match(workflow, /actions\/setup-java@v5/g);
-    assert.match(workflow, /gradle\/actions\/setup-gradle@v6/g);
-    assert.match(workflow, /actions\/upload-artifact@v7/g);
-    assert.match(workflow, /actions\/download-artifact@v8/g);
-    assert.match(workflow, /persist-credentials: false/g);
-    assert.match(workflow, /retention-days: 90/);
-    assert.match(workflow, /steps\.report\.outputs\.artifact-url/);
-    assert.match(workflow, /benchmark-tag-diff\.mjs extract-history/);
-    assert.match(workflow, /--history tag-resolution\/history\.json/);
-    assert.match(workflow, /actions\/configure-pages@v6/);
-    assert.match(workflow, /actions\/upload-pages-artifact@v5/);
-    assert.match(workflow, /actions\/deploy-pages@v5/);
-    assert.match(workflow, /pages: write/);
-    assert.match(workflow, /id-token: write/);
-    assert.match(workflow, /_site\/releases\/index\.html/);
-    assert.match(workflow, /benchmark-tag-diff\.test\.mjs/);
-    assert.match(workflow, /previous_available/);
-    assert.equal((workflow.match(/benchmark-jmh-isolation\.init\.gradle/g) ?? []).length, 2);
-    assert.equal((workflow.match(/verify-jmh-jar-isolation\.sh/g) ?? []).length, 2);
-    assert.equal((workflow.match(/:cypher:testClasses :cypher:jmhJar/g) ?? []).length, 2);
-    assert.match(workflow, /Checkout exact current isolation controls/);
-    assert.doesNotMatch(workflow, /continue-on-error/);
-    assert.doesNotMatch(workflow, /publish\.yml|softprops|release:/);
-    assert.doesNotMatch(publish, /benchmark-tag-diff/);
-    const uploadNames = [...workflow.matchAll(
-        /uses: actions\/upload-artifact@v7\n\s+with:\n\s+name: ([^\n]+)/g,
-    )].map((match) => match[1]);
-    assert.equal(uploadNames.length, 5);
-    assert.ok(uploadNames.every((name) => name.includes("github.run_attempt")));
-    for (const name of uploadNames.slice(0, 4)) {
-        assert.match(workflow, new RegExp(
-            `uses: actions\\/download-artifact@v8\\n\\s+with:\\n\\s+name: ${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`,
-        ));
-    }
+test("tag workflow retires synthetic timings and does not overwrite history without multi-graph evidence", () => {
+    const workflow=fs.readFileSync(new URL('../workflows/benchmark-tag-diff.yml',import.meta.url),'utf8');
+    const publish=fs.readFileSync(new URL('../workflows/publish.yml',import.meta.url),'utf8');
+    assert.match(workflow,/tags: \['v\*']/);
+    assert.match(workflow,/contents: read/);assert.match(workflow,/status.*UNAVAILABLE/);
+    assert.match(workflow,/exit 1/);assert.match(workflow,/historicalResultsPreserved/);
+    assert.doesNotMatch(workflow,/java -jar|:cypher:jmhJar|deploy-pages|configure-pages/);
+    assert.doesNotMatch(workflow,/contents: write|packages: write|publish\.yml|softprops/);
+    assert.doesNotMatch(publish,/benchmark-tag-diff/);
+    assert.match(workflow,/tag-multigraph-unavailable-.*github.run_attempt/);
 });

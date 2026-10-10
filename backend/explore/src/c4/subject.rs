@@ -118,7 +118,7 @@ pub fn analyze_main_reachability(
         .methods()
         .iter()
         .filter(|m| is_internal_class(g.str(m.declaring_class), boundary))
-        .map(|m| m.signature(&g.strings))
+        .map(|m| m.signature(g.strings()))
         .collect();
     // Index call sites by caller signature. Only call sites whose caller *class* is
     // internal can contribute, and that test reads two raw ints instead of decoding
@@ -134,10 +134,10 @@ pub fn analyze_main_reachability(
         }
         if let Some(node) = g.node(id) {
             if let NodeKind::CallSite { caller, callee, .. } = &node.kind {
-                let caller_sig = caller.signature(&g.strings);
+                let caller_sig = caller.signature(g.strings());
                 if internal_signatures.contains(&caller_sig) {
                     outgoing.entry(caller_sig).or_default().push((
-                        callee.signature(&g.strings),
+                        callee.signature(g.strings()),
                         g.str(callee.declaring_class).to_string(),
                     ));
                 }
@@ -152,7 +152,7 @@ pub fn analyze_main_reachability(
         .map(|i| {
             let m = &g.methods()[*i];
             (
-                m.signature(&g.strings),
+                m.signature(g.strings()),
                 g.str(m.declaring_class).to_string(),
             )
         })

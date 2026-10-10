@@ -350,6 +350,8 @@ LIMIT 50
 
 `Method` 值是虚拟元数据记录，并非存储在图中的节点。可以通过 `elementId(method)` 获取其稳定的字符串标识；由于不存在数值型图节点 ID，`id(method)` 返回 `null`。
 
+JVM 声明中的泛型可通过 `Method.generic_return_type`、`Method.generic_parameter_types`，以及字段、参数、返回节点的 `generic_type` 查询。结构化类型信息保留嵌套泛型、类型变量作用域和通配符；类型保存在独立的去重表中。查询属性、存储格式与旧图兼容行为见 [JVM 声明类型](docs/declared-types.md)。
+
 每个 Cypher 响应都会说明返回的行是否为全部结果。除了 `rowCount`（响应中的行数），还包含 `total`，其结构与 Elasticsearch 的 `hits.total` 一致：
 
 ```json

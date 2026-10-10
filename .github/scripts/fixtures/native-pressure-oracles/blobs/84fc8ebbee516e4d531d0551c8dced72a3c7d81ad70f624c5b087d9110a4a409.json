@@ -1,0 +1,523 @@
+{
+  "columns": [
+    "id",
+    "labels",
+    "qualifiedId",
+    "graphId"
+  ],
+  "rows": [
+    {
+      "id": 938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-02",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-02"
+        ]
+      },
+      "qualifiedId": "fixture-android-02:938826"
+    },
+    {
+      "id": 1938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-android-05",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-05"
+        ]
+      },
+      "qualifiedId": "fixture-android-05:1938826"
+    },
+    {
+      "id": 2938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-07",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-07"
+        ]
+      },
+      "qualifiedId": "fixture-android-07:2938826"
+    },
+    {
+      "id": 3938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-android-10",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-10"
+        ]
+      },
+      "qualifiedId": "fixture-android-10:3938826"
+    },
+    {
+      "id": 4938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-android-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-13"
+        ]
+      },
+      "qualifiedId": "fixture-android-13:4938826"
+    },
+    {
+      "id": 5938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-android-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-15"
+        ]
+      },
+      "qualifiedId": "fixture-android-15:5938826"
+    },
+    {
+      "id": 10938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-hive-02",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-02"
+        ]
+      },
+      "qualifiedId": "fixture-hive-02:10938826"
+    },
+    {
+      "id": 11938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-hive-04",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-04"
+        ]
+      },
+      "qualifiedId": "fixture-hive-04:11938826"
+    },
+    {
+      "id": 12938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-hive-07",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-07"
+        ]
+      },
+      "qualifiedId": "fixture-hive-07:12938826"
+    },
+    {
+      "id": 13938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-hive-10",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-10"
+        ]
+      },
+      "qualifiedId": "fixture-hive-10:13938826"
+    },
+    {
+      "id": 14938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-hive-12",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-12"
+        ]
+      },
+      "qualifiedId": "fixture-hive-12:14938826"
+    },
+    {
+      "id": 15938826,
+      "labels": [
+        "ReturnNode"
+      ],
+      "graphId": "fixture-hive-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-hive-15"
+        ]
+      },
+      "qualifiedId": "fixture-hive-15:15938826"
+    },
+    {
+      "id": 16938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-04",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-04"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-04:16938826"
+    },
+    {
+      "id": 17938826,
+      "labels": [
+        "ParameterNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-08",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-08"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-08:17938826"
+    },
+    {
+      "id": 18938826,
+      "labels": [
+        "ReturnNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-13"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-13:18938826"
+    },
+    {
+      "id": 19388260,
+      "labels": [
+        "FieldNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388260"
+    },
+    {
+      "id": 19388261,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388261"
+    },
+    {
+      "id": 19388262,
+      "labels": [
+        "FieldNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388262"
+    },
+    {
+      "id": 19388263,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388263"
+    },
+    {
+      "id": 19388264,
+      "labels": [
+        "FieldNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388264"
+    },
+    {
+      "id": 19388265,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388265"
+    },
+    {
+      "id": 19388266,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388266"
+    },
+    {
+      "id": 19388267,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388267"
+    },
+    {
+      "id": 19388268,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388268"
+    },
+    {
+      "id": 19388269,
+      "labels": [
+        "FieldNode"
+      ],
+      "graphId": "fixture-kotlin-compiler-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-kotlin-compiler-15"
+        ]
+      },
+      "qualifiedId": "fixture-kotlin-compiler-15:19388269"
+    },
+    {
+      "id": 6938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-03",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-03"
+        ]
+      },
+      "qualifiedId": "fixture-tika-03:6938826"
+    },
+    {
+      "id": 7938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-tika-07",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-07"
+        ]
+      },
+      "qualifiedId": "fixture-tika-07:7938826"
+    },
+    {
+      "id": 8938826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-tika-11",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-11"
+        ]
+      },
+      "qualifiedId": "fixture-tika-11:8938826"
+    },
+    {
+      "id": 9388260,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388260"
+    },
+    {
+      "id": 9388261,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388261"
+    },
+    {
+      "id": 9388262,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388262"
+    },
+    {
+      "id": 9388263,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388263"
+    },
+    {
+      "id": 9388264,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388264"
+    },
+    {
+      "id": 9388265,
+      "labels": [
+        "ReturnNode"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388265"
+    },
+    {
+      "id": 9388266,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388266"
+    },
+    {
+      "id": 9388267,
+      "labels": [
+        "ReturnNode"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388267"
+    },
+    {
+      "id": 9388268,
+      "labels": [
+        "ParameterNode"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388268"
+    },
+    {
+      "id": 9388269,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-13",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-13"
+        ]
+      },
+      "qualifiedId": "fixture-tika-13:9388269"
+    },
+    {
+      "id": 9938826,
+      "labels": [
+        "LocalVariable"
+      ],
+      "graphId": "fixture-tika-15",
+      "$metadata": {
+        "graphIds": [
+          "fixture-tika-15"
+        ]
+      },
+      "qualifiedId": "fixture-tika-15:9938826"
+    }
+  ],
+  "rowCount": 39,
+  "graphCount": 64,
+  "total": {
+    "value": 39,
+    "relation": "eq"
+  }
+}

@@ -19,6 +19,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
 import java.util.function.IntPredicate
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
@@ -164,7 +165,8 @@ internal class MappedWebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     private val resourceAccessor: Lazy<ResourceAccessor>,
     private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
-    private val callSiteOrdinals: Lazy<CallSiteOrdinals> = lazy { CallSiteOrdinals.EMPTY }
+    private val callSiteOrdinals: Lazy<CallSiteOrdinals> = lazy { CallSiteOrdinals.EMPTY },
+    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
 ) : Graph,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
@@ -195,6 +197,8 @@ internal class MappedWebGraphBackedGraph(
     private val localDefinitionIndex: Map<NodeId, List<LocalDefinition>> by lazy {
         BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
     }
+
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
@@ -299,6 +303,8 @@ internal class MappedWebGraphBackedGraph(
         }
     }
 
+    override val includesDeclaredTypeProperties: Boolean = true
+
     override fun <T : Node> propertyTextCandidates(
         type: Class<T>,
         fragment: String,
@@ -313,7 +319,7 @@ internal class MappedWebGraphBackedGraph(
         if (fragments.isEmpty() || fragments.size > 2 || fragments.distinct().size != fragments.size ||
             fragments.any { propertyTextFragment(it) != it }
         ) return null
-        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable)
+        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable, declaredTypeTable)
             .ids(type, fragments, workConsumer).mapNotNull { nodeId ->
                 node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
             }
