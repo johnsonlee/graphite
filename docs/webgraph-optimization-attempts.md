@@ -15251,3 +15251,33 @@ final tested patch, SHA-256
 The source clone is clean. This is permission to proceed to the predeclared
 real64 construction comparison, not evidence of CPU/RSS improvement or overall
 recovery. The candidate remains isolated until actual performance evidence.
+
+
+#### Attempt195 writer package verified; real64 comparison started
+
+Only the B package was built; A/C reuse their original sealed packages. The
+single owned Gradle phase executed `:webgraph:jmhJar` successfully (packaging,
+not a JMH timing run), with 4 GiB/APC4. Root verified all actual JAR digests,
+A's unchanged original seal, A's 854 and B's 868 current source inventory hashes,
+B's source-built artifact, receipt/log and normal empty cleanup. The new writer
+seal is `/tmp/graphite-attempt195-real64-writers-1/writers.json`, SHA-256
+`1103909b50f655e92a70900a0b5edfa082d080aed418be034ed6132274a2d013`;
+B JAR SHA-256 is
+`1c4c85c0ef9f6d1bb39c70043ccdf226668f0a4f8be094f8138f5a3f901db917`.
+The root build review SHA-256 is
+`ef7f25cf66d6d816aa7913b3e75fc7663795fdb945b6033bcd899e24d14b8e8b`.
+
+The frozen comparison plan SHA-256 is
+`1bfdf910e92c111741dbbbe6962d95ca5f35501da740e78d2d565bb065a55b2a`.
+Root independently verified its controls, exact writer lineage, and unchanged
+187 measurement/resource/environment functions and raw auditor. The declared
+CABBAC comparison has started under exclusive local heavy-work ownership:
+
+```sh
+PYTHONDONTWRITEBYTECODE=1 python3 -B /tmp/graphite-attempt195-real64-construction-prep-1/run.py measure --execute-assigned-slot
+```
+
+Fresh output: `/private/tmp/graphite-attempt195-real64-construction-1`.
+No timing or resource result is yet claimed; all six actual construction,
+mandatory verification and inventory phases plus the final resource audit are
+still required. The complete independent semantic-proof gap remains explicit.
