@@ -1094,3 +1094,37 @@ independently ran264 package tests and25 core-runner tests successfully. The
 source reproduction review SHA-256 is
 `b24fe8d78f78439022211d22896ab63bc17afa2d75cf307bff4023f91e81a868`.
 These checks verify the correction, not the unexecuted complete graph proof.
+
+
+### JVM query authority and pressure integration (2026-10-10)
+
+The JVM query path now separates three required checks: replay the complete raw
+saved-node/type/edge derivation, verify the exact reviewed JVM source/build rules,
+and validate all 26 actual full HTTP responses against those independent results.
+Expected values never come from an observed response. The source applicability
+profiles cover 146 accepted4f and 166 candidate5a runtime/build files; a changed or
+new runtime source fails until its rules are reviewed. A source-only or controls-only
+revision may reuse a profile only when its complete runtime/build bytes match.
+The actual revision, writer, HTTP JAR, JDK and graph identities remain explicit.
+
+The pressure workload is declared separately in
+`.github/scripts/fixtures/jvm-multigraph-pressure-cases.json`. Its 26 requests cover
+six families. Each request names 64 real persisted graphs; the two routing cases
+actually target two graphs, and the other 24 target 64. The shared schedule remains
+CABBAC, concurrency 4, two warm requests and 20 measured requests per case. Across
+six cells this requires 3588 complete bodies, including 3120 measured responses.
+The digest of a complete legal result universe is distinct from an actual HTTP
+body digest. DISTINCT universes preserve complete pre-serialization groups.
+
+The JVM producer proof mode must retain the existing corrected core comparability
+contract, including `completeSemanticEquivalence:false`, `strictEquivalence:false`
+and `sourceToDeclarationCompletenessClaim:false`. Every nonaccepted arm requires
+its own complete corrected 64 comparison and actual query audit. Parent/accepted
+aliasing is allowed only for the same exact 4f artifacts. Aggregation also checks
+the current PR base revision for query evidence, as it already did for construction
+and loading; a valid result for another parent is not current-PR acceptance.
+
+Local mocked-process tests verify the binding and rejection paths, including
+re-pinned incorrect responses, foreign revisions, missing evidence and cleanup
+failure. They do not represent real graph performance. CI execution and archived
+complete operation evidence are still required before any acceptance claim.
