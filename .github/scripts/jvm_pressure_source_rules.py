@@ -1,4 +1,4 @@
-"""Exact reviewed JVM source rules for the fixed 26 raw-derived requests.
+"""Exact reviewed JVM source rules for the fixed 34 raw-derived requests.
 
 This module checks applicability against a separately replayed derivation plan.
 It does not replay graphs or certify an owned producer by trusting a PASS field.
@@ -188,8 +188,8 @@ SOURCE_BYTES = {
     'settings.gradle.kts': ('77177fcc30a91e87a3dda17102347b05da95b0ea9a9f998f7f39b197c2de6052', '77177fcc30a91e87a3dda17102347b05da95b0ea9a9f998f7f39b197c2de6052'),
 }
 REVIEWED_AT = {'accepted4f': '4f2ccf33b969e684972e56b5e810034e6e67c1b3', 'declared5a': '5a2b7efafccd20a61b8eadd640176e912922fb3f'}
-REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '99e130fb8dc7cdeb88906c0ba7352ff8989ab6774974ca9b1a21c132730b0cb6', 'jvm_pressure_derivation.py': 'f9931190b22dd02f60d2aafd6e437ebaa9471350c8d05e3f1ffd5ad65409d049', 'jvm_pressure_distinct.py': '398dd5c085c95ab8cf6f3900bc08ea0131ba3ab7919c8876ed5375274fd30faf', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
-REQUEST_CONTRACT_SHA = '6e0f62cea140385010f55ca8517d5ccabb5f8d7271e410951c896133f1184a85'
+REVIEWED_HELPERS = {'jvm_pressure_oracles.py': 'a3e8defe62c08ace77e690b4b67d150aa9dc07acd5d6aaaa1385545a8a235a25', 'jvm_pressure_derivation.py': 'ea69669d5e98e459a11ff9743609a770a250322e6f7820fc97903d61bf936c48', 'jvm_pressure_distinct.py': '398dd5c085c95ab8cf6f3900bc08ea0131ba3ab7919c8876ed5375274fd30faf', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
+REQUEST_CONTRACT_SHA = '1016657d3bd2791f73cfd7dcc97b68a740e10503fa069ae0ef4f48289fc95721'
 
 
 def kt(module, package, name):
@@ -204,7 +204,7 @@ RULES = {
         'Fixed accessor precedence, annotation map key/value distinction, concrete labels plus aliases, qualified graph keys, and declared keys only for actual bindings.',
         tuple(kt('cypher', 'cypher', n) for n in ('NodePropertyAccessor', 'CypherFunctions', 'DynamicPropertyContains'))),
     'predicates-projections-and-limit': (
-        'The fixed26 grammar/AST uses String-only CONTAINS, coalesce plus ROOT lowercase, exact graph filters, complete projected rows and legal LIMIT; no ORDER is added.',
+        'The fixed34 grammar/AST uses String-only CONTAINS, coalesce plus ROOT lowercase, exact graph filters, complete projected rows and legal LIMIT; eight full projections add fixed STARTS WITH filters without ORDER and require all matches within5000 across both sources.',
         tuple(kt('cypher', 'cypher', n) for n in ('ParsedQuery', 'CypherClause', 'CypherPattern', 'ImmutableCypherAst',
                                                'ExpressionEvaluator', 'SourcePredicatePushdown', 'QueryPipeline')) +
         ('frontend/jvm/cypher/src/main/antlr/CypherLexer.g4', 'frontend/jvm/cypher/src/main/antlr/CypherParser.g4')),
@@ -214,6 +214,9 @@ RULES = {
     'distinct-numeric-whole-row-representatives': (
         'cypherValueKey strips BigDecimal trailing zeroes; Float/Double use bound JDK toString; annotation fastpath guard reaches normalized DISTINCT; only actual whole-row JSON representatives are legal.',
         tuple(kt('cypher', 'cypher', n) for n in ('CypherValueSemantics', 'CypherExecutor', 'QueryPipeline'))),
+    'full-node-versus-properties-materialization': (
+        'RETURN qualified nodes uses nodeToMap plus declarations and graph identity; properties uses getAllProperties. ReturnNode full output includes type=ReturnNode while properties omits it. Method full/properties both use MethodValue.properties with full descriptor identity and all declared return/parameter/formal maps. No accessor virtual fallback is projected.',
+        tuple(kt('cypher', 'cypher', n) for n in ('CypherExecutor', 'NodePropertyAccessor', 'CypherFunctions', 'CrossGraphValues', 'DeclaredTypeProperties'))),
     'full-response-and-gson': (
         'Explicit64 cross-graph request returns its64 graphs in the seven-field envelope; default Gson2.11 omits map nulls, preserves array nulls and reflects EnumValueReference fields.',
         (kt('explore', 'cli', 'ExploreRoutes'), kt('explore', 'cli', 'CypherResponseSerializer'),
@@ -319,7 +322,7 @@ def audit(plan):
     require(all(plan['pins'].get(path) == digest == common.sha(path) for path, digest in helpers.items()), 'reviewed exact oracle rule implementation closure')
     cases = model.cases()
     require(hashlib.sha256(json.dumps(cases, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest() ==
-            REQUEST_CONTRACT_SHA, 'reviewed exact26 request contracts')
+            REQUEST_CONTRACT_SHA, 'reviewed exact34 request contracts')
     rules = []
     for name, (statement, paths) in RULES.items():
         require(all(path in SOURCE_BYTES for path in paths), 'every named source rule has reviewed bytes')

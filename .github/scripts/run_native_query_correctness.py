@@ -23,7 +23,7 @@ from prepare_native_pressure_plan import preparation_control_pins
 SCHEMA = 'graphite.native-query-correctness.v1'
 PASS = 'PASS_ALL39_NATIVE_RESPONSES_FRESH_PRESSURE_PENDING'
 JVM_SCHEMA = 'graphite.jvm-query-correctness.v1'
-JVM_PASS = 'PASS_ALL26_JVM_RESPONSES_FRESH_PRESSURE_PENDING'
+JVM_PASS = 'PASS_ALL34_JVM_RESPONSES_FRESH_PRESSURE_PENDING'
 require = common.require
 
 
@@ -142,7 +142,7 @@ def _check_execution_contract(plan, contract):
         import jvm_pressure_oracles as jvm
         graph_ids = [graph['id'] for graph in plan['graphs']]
         definitions = jvm.cases(graph_ids)
-        expected = ('graphite.jvm-query-correctness-plan.v1', JVM_SCHEMA, JVM_PASS, 26)
+        expected = ('graphite.jvm-query-correctness-plan.v1', JVM_SCHEMA, JVM_PASS, 34)
         kinds = {'jvm-complete-legal-limit-multiset-v1'}
     else:
         raise ValueError('known correctness execution engine required')

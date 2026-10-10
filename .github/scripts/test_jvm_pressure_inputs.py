@@ -84,7 +84,7 @@ class RawInputsTests(unittest.TestCase):
     def ref(self, path): return {'path': str(path), 'sha256': sha(path.read_bytes())}
 
     def refresh(self):
-        self.spec = {'id': self.row['id'], 'root': str(self.graph), 'revision': 'b'*40, 'nodes': 16,
+        self.spec = {'id': self.row['id'], 'root': str(self.graph), 'revision': 'b'*40, 'nodes': len(self.records),
                      'callSites': 1, 'files': {str(f): sha(f.read_bytes()) for f in self.graph.iterdir()},
                      'export': copy.deepcopy(self.row)}
 

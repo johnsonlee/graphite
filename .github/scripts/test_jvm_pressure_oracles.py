@@ -34,23 +34,49 @@ class JvmPressureOracleTests(unittest.TestCase):
                 'graphCount': len(case['requestedGraphIds']), 'columns': list(case['columns']),
                 'rows': copy.deepcopy(rows), 'rowCount': len(rows), 'limit': case['effectiveLimit']}
 
-    def test_all26_definitions_preserve_queries_and_six_families(self):
+    def test_all34_definitions_preserve_original_queries_and_seven_families(self):
         catalog = json.loads(Path(__file__).with_name('fixtures').joinpath('multigraph-pressure-cases.json').read_text())
         queries = {c['id']: c['request']['body']['query'] for engine in catalog['engines'].values() for c in engine['cases']}
-        self.assertEqual(26, len(self.cases))
+        self.assertEqual(34, len(self.cases))
         self.assertEqual(set(oracle.FAMILIES), {c['family'] for c in self.cases.values()})
         for case in self.cases.values():
             with self.subTest(case=case['id']):
-                self.assertEqual(queries[case['id']], case['request']['body']['query'])
+                if case['family'] != 'full-projection':
+                    self.assertEqual(queries[case['id']], case['request']['body']['query'])
                 self.assertNotIn('ORDER BY', case['request']['body']['query'])
                 self.assertEqual('/api/cypher/graphs', case['request']['endpoint'])
                 self.assertEqual(case['registeredGraphIds'], case['requestedGraphIds'])
                 self.assertEqual(case['requestedGraphIds'], case['request']['body']['graphs'])
                 self.assertEqual(64, len(case['requestedGraphIds']))
-                self.assertEqual(2 if case['family'] == 'graph-routing' else 64, len(case['targetGraphIds']))
-                self.assertEqual(hashlib.sha256(queries[case['id']].encode()).hexdigest(), case['querySha256'])
+                self.assertEqual(2 if case['family'] in ('graph-routing', 'full-projection') else 64, len(case['targetGraphIds']))
+                self.assertEqual(hashlib.sha256(case['request']['body']['query'].encode()).hexdigest(), case['querySha256'])
                 self.assertEqual(case, oracle.validate_case(case))
         self.assertEqual(12, sum(c['family'] == 'full-slow-shape-catalog' for c in self.cases.values()))
+
+    def test_full_projection_requires_all_rows_from_two_graphs_and_rejects_nested_tamper(self):
+        case = self.cases['return-full']
+        entries = [(oracle.projected_row({'value': {'id': 7, 'type': 'ReturnNode', 'graphId': gid,
+                    'type_info': {'kind': 'class', 'name': 'List', 'arguments': [
+                        {'kind': 'variable', 'name': 'T', 'scope': 'Owner', 'arguments': []}]}}}, [gid]), 1)
+                   for gid in case['targetGraphIds']]
+        universe = self.universe(entries, case)
+        compiled = oracle.CompiledLegalLimitOracle(universe, case)
+        rows = [r for r, _ in entries]
+        self.assertEqual(2, compiled.validate(self.response(rows[::-1], case))['rows'])
+        for mutate in ('type', 'nested', 'provenance', 'duplicate', 'missing'):
+            bad = copy.deepcopy(rows)
+            if mutate == 'type': bad[0]['value'].pop('type')
+            elif mutate == 'nested': bad[0]['value']['type_info']['arguments'][0]['scope'] = 'wrong'
+            elif mutate == 'provenance': bad[0]['$metadata']['graphIds'] = [case['targetGraphIds'][1]]
+            elif mutate == 'duplicate': bad[1] = bad[0]
+            else: bad.pop()
+            with self.subTest(mutate=mutate), self.assertRaises(ValueError): compiled.validate(self.response(bad, case))
+        with self.assertRaisesRegex(ValueError, 'both target'):
+            oracle.CompiledLegalLimitOracle(self.universe(entries[:1], case), case)
+        with self.assertRaisesRegex(ValueError, 'within limit'):
+            oracle.CompiledLegalLimitOracle(self.universe([(entries[0][0], 5000), entries[1]], case), case)
+        with self.assertRaisesRegex(ValueError, 'within limit'):
+            oracle.CompiledLegalLimitOracle(self.universe([], case), case)
 
     def test_incomplete_singleton_duplicate_or_foreign_graphs_rejected(self):
         for ids in ([self.graph], list(oracle.FIXTURE_GRAPH_IDS)[:-1],

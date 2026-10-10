@@ -16,7 +16,7 @@ import math
 from types import MappingProxyType
 
 FAMILIES = ('global-dynamic-miss', 'global-callsite-dynamic-miss',
-            'wrapped-discovery', 'graph-routing', 'full-slow-shape-catalog', 'feature-presence')
+            'wrapped-discovery', 'graph-routing', 'full-slow-shape-catalog', 'feature-presence', 'full-projection')
 POLICY = 'jvm-complete-legal-limit-multiset-no-order-by'
 ENVELOPE = {'mode', 'graphs', 'graphCount', 'columns', 'rows', 'rowCount', 'limit'}
 # Literal workload definitions only, copied from the reviewed catalog query text.
@@ -352,6 +352,74 @@ _DEFINITIONS = (('dynamic-miss',
   None))
 
 
+# Complete large projections retain the reviewed two-graph predicates, without ORDER.
+# Their universes must fit the limit and contain results from both sources.
+_PROJECTION_DEFINITIONS = (('field-full',
+  'full-projection',
+  "MATCH (n:FieldNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.class STARTS WITH "
+  "'org.jetbrains.kotlin.com.intellij.psi.' OR n.class STARTS WITH 'org.jetbrains.kotlin.backend.common.')) "
+  "OR (n.graphId = 'fixture-tika-10' AND (n.class STARTS WITH 'org.openxmlformats.')) RETURN n AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('field-properties',
+  'full-projection',
+  "MATCH (n:FieldNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.class STARTS WITH "
+  "'org.jetbrains.kotlin.com.intellij.psi.' OR n.class STARTS WITH 'org.jetbrains.kotlin.backend.common.')) "
+  "OR (n.graphId = 'fixture-tika-10' AND (n.class STARTS WITH 'org.openxmlformats.')) RETURN properties(n) "
+  'AS value',
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('parameter-full',
+  'full-projection',
+  "MATCH (n:ParameterNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.type STARTS WITH "
+  "'java.util.')) OR (n.graphId = 'fixture-tika-10' AND (n.type STARTS WITH 'com.')) RETURN n AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('parameter-properties',
+  'full-projection',
+  "MATCH (n:ParameterNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.type STARTS WITH "
+  "'java.util.')) OR (n.graphId = 'fixture-tika-10' AND (n.type STARTS WITH 'com.')) RETURN properties(n) AS "
+  'value',
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('return-full',
+  'full-projection',
+  "MATCH (n:ReturnNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.method STARTS WITH "
+  "'org.jetbrains.kotlin.backend.jvm.lower.')) OR (n.graphId = 'fixture-tika-10' AND (n.method STARTS WITH "
+  "'org.apache.logging.')) RETURN n AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('return-properties',
+  'full-projection',
+  "MATCH (n:ReturnNode) WHERE (n.graphId = 'fixture-kotlin-compiler-15' AND (n.method STARTS WITH "
+  "'org.jetbrains.kotlin.backend.jvm.lower.')) OR (n.graphId = 'fixture-tika-10' AND (n.method STARTS WITH "
+  "'org.apache.logging.')) RETURN properties(n) AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('method-full',
+  'full-projection',
+  "MATCH (m:Method) WHERE (m.graphId = 'fixture-kotlin-compiler-15' AND (m.class STARTS WITH "
+  "'org.jetbrains.kotlin.ir.backend.js.lower.')) OR (m.graphId = 'fixture-tika-10' AND (m.class STARTS WITH "
+  "'org.apache.logging.')) RETURN m AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']),
+ ('method-properties',
+  'full-projection',
+  "MATCH (m:Method) WHERE (m.graphId = 'fixture-kotlin-compiler-15' AND (m.class STARTS WITH "
+  "'org.jetbrains.kotlin.ir.backend.js.lower.')) OR (m.graphId = 'fixture-tika-10' AND (m.class STARTS WITH "
+  "'org.apache.logging.')) RETURN properties(m) AS value",
+  ['value'],
+  5000,
+  ['fixture-kotlin-compiler-15', 'fixture-tika-10']))
+_DEFINITIONS += _PROJECTION_DEFINITIONS
+
 def need(condition, message):
     if not condition:
         raise ValueError(message)
@@ -508,6 +576,17 @@ class CompiledLegalLimitOracle:
             need(identity not in allowed, 'unique encoded universe row')
             allowed[identity] = entry['multiplicity']
         if not grouped: need(sum(allowed.values()) == oracle['totalMatches'], 'complete multiset total')
+        if case['family'] == 'full-projection':
+            need(0 < oracle['totalMatches'] <= case['effectiveLimit'],
+                 'full projection must consume every match within limit')
+            graph_ids = set()
+            for entry in oracle['rows']:
+                row = entry['value']; value = row.get('value')
+                need(type(value) is dict and type(value.get('graphId')) is str and
+                     row['$metadata']['graphIds'] == [value['graphId']],
+                     'full projection value identity and exact provenance')
+                graph_ids.add(value['graphId'])
+            need(graph_ids == set(case['targetGraphIds']), 'full projection requires rows from both target graphs')
         self.allowed = MappingProxyType(dict(allowed))
         self.total = oracle['totalMatches']
         self.limit = case['effectiveLimit']

@@ -159,7 +159,7 @@ def compile_response_validator(cases, arm):
         if oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1':
             import jvm_pressure_oracles as jvm
             definitions = {item['id']: item for item in jvm.cases(case['request']['body']['graphs'])}
-            require(case['id'] in definitions, 'known complete26 JVM request definition')
+            require(case['id'] in definitions, 'known complete34 JVM request definition')
             definition = definitions[case['id']]
             for field in ('request', 'targetGraphIds'):
                 require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact JVM request/scope binding')

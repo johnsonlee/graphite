@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Bind actual JVM26 audits and existing corrected64 proofs to the shared schedule.
+"""Bind actual JVM34 audits and existing corrected64 proofs to the shared schedule.
 
 No graph, JVM, or HTTP execution occurs here. Auditing the upstream evidence can
 be substantial and always happens outside every measured request boundary.
@@ -28,11 +28,11 @@ def audited_arm(directory, revision, role):
     require(observed['schema'] == 'graphite.jvm-query-correctness-audit.v1' and
             observed['status'] == queries.AUDIT and observed['revision'] == revision and observed['role'] == role and
             all(observed[k] is True for k in ('independentRawExpectationsVerified', 'sourceRuleApplicabilityVerified',
-                                             'all26ActualResponsesVerified', 'oracleAuthorityVerified')) and
+                                             'all34ActualResponsesVerified', 'oracleAuthorityVerified')) and
             all(observed[k] is False for k in ('fresh64Acceptance', 'performanceAcceptance', 'completeSemanticEquivalence')),
-            'complete actual independently audited JVM26 evidence')
+            'complete actual independently audited JVM34 evidence')
     audit_ref = artifacts.ref(root/'audit.json')
-    require(common.typed(common.read(audit_ref['path'])) == common.typed(observed), 'stored JVM26 audit differs from raw replay')
+    require(common.typed(common.read(audit_ref['path'])) == common.typed(observed), 'stored JVM34 audit differs from raw replay')
     pins = dict(observed['pins']); merge_pins(pins, {audit_ref['path']: audit_ref['sha256']})
     plan = common.pinned_authority_metadata({'pins': pins}, observed['plan'])
     raw_root = Path(plan['rawDerivationRoot'])
@@ -49,7 +49,7 @@ def audited_arm(directory, revision, role):
     variant = plan['expectationVariant']
     require(variant == ('C' if role == 'accepted-baseline' else 'B'), 'actual JVM expectation arm')
     cases = []
-    require(len(plan['cases']) == len(observed['cases']) == 26, 'complete JVM26 case inventory')
+    require(len(plan['cases']) == len(observed['cases']) == 34, 'complete JVM34 case inventory')
     for definition, case, receipt in zip(model.cases(), plan['cases'], observed['cases']):
         require(all(common.typed(case[k]) == common.typed(definition[k]) for k in definition) and
                 receipt['case'] == case['id'] and receipt['targetGraphIds'] == case['targetGraphIds'],
@@ -129,8 +129,8 @@ def bind_plan(packet, producer_ref, output, catalog_path):
     output, catalog_path = Path(output).resolve(), Path(catalog_path).resolve()
     catalog = common.read(catalog_path); declared = catalog['engines']['jvm']
     require(declared['graphIds'] == list(model.FIXTURE_GRAPH_IDS) and
-            declared['requiredFamilies'] == declared['coveredFamilies'] == list(model.FAMILIES), 'exact JVM64 six families')
-    require(len(declared['cases']) == 26, 'exact catalog26 inventory')
+            declared['requiredFamilies'] == declared['coveredFamilies'] == list(model.FAMILIES), 'exact JVM64 seven families')
+    require(len(declared['cases']) == 34, 'exact catalog34 inventory')
     cases = []
     for definition, source in zip(model.cases(), declared['cases']):
         require(all(common.typed(source[k]) == common.typed(v) for k, v in definition.items()) and

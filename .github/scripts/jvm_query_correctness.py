@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""JVM26 correctness from replayed raw derivation, never learned HTTP output.
+"""JVM34 correctness from replayed raw derivation, never learned HTTP output.
 
 Reuse the owned Native correctness lifecycle. This stage runs one complete
 response per case and cannot claim sustained load or performance acceptance.
@@ -21,7 +21,7 @@ from run_real64_loading import entrypoint
 
 require = common.require
 PLAN = 'graphite.jvm-query-correctness-plan.v1'
-AUDIT = 'PASS_ALL26_JVM_RESPONSES_INDEPENDENT_RAW_AUDIT'
+AUDIT = 'PASS_ALL34_JVM_RESPONSES_INDEPENDENT_RAW_AUDIT'
 
 
 def source_rules(plan):
@@ -81,8 +81,8 @@ def prepare(raw_derivation_dir, output, port):
     cases = model.cases([g['id'] for g in graphs])
     contracts = [{key: case[key] for key in ('id', 'requestSha256', 'querySha256',
                                             'requestedGraphIds', 'targetGraphIds')} for case in cases]
-    require(common.typed(rules['requestContracts']) == common.typed(contracts), 'same complete26 source-bound requests')
-    require(set(replayed['universes']) == {case['id'] for case in cases}, 'complete26 independent raw universes')
+    require(common.typed(rules['requestContracts']) == common.typed(contracts), 'same complete34 source-bound requests')
+    require(set(replayed['universes']) == {case['id'] for case in cases}, 'complete34 independent raw universes')
     variant = raw_plan['arm']
     require(variant in ('C', 'B'), 'actual reference/candidate derivation arm')
     for case in cases:
@@ -124,7 +124,7 @@ def audit(directory):
     plan, record = common.read(root/'plan.json'), common.read(root/'record.json')
     require(plan['schema'] == PLAN and record['schema'] == lifecycle.JVM_SCHEMA and
             record['status'] == lifecycle.JVM_PASS and record['errors'] == [] and record['finalIdentity'] == 'PASS',
-            'complete successful JVM26 execution')
+            'complete successful JVM34 execution')
     expected = prepare(plan['rawDerivationRoot'], root, plan['port'])
     require(common.typed(plan) == common.typed(expected), 'independent JVM plan differs from actual raw/source evidence')
     require(record['plan'] == artifacts.ref(root/'plan.json') and record['revision'] == plan['revision'] and
@@ -150,7 +150,7 @@ def audit(directory):
             'rawDerivationReplay': plan['rawDerivationReplay'], 'sourceRuleAudit': plan['sourceRuleAudit'],
             'readiness': record['readiness'], 'cases': receipts, 'pins': pins,
             'independentRawExpectationsVerified': True, 'sourceRuleApplicabilityVerified': True,
-            'all26ActualResponsesVerified': True, 'oracleAuthorityVerified': True,
+            'all34ActualResponsesVerified': True, 'oracleAuthorityVerified': True,
             'fresh64Acceptance': False, 'performanceAcceptance': False, 'completeSemanticEquivalence': False}
 
 
