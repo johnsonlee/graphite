@@ -21,6 +21,7 @@ from pathlib import Path
 import re
 import signal
 import socket
+import stat
 import subprocess
 import sys
 import threading
@@ -549,6 +550,174 @@ def verify_inputs(plan):
             expected = {p for p in plan['pins'] if Path(p).is_relative_to(root)}
             require(files == expected, 'closed graph inventory')
     return {'status': 'PASS', 'pins': hashes}
+
+
+def _execution_closure(plan):
+    """Filesystem invariants of the two reviewed corrected-producer audit chains.
+
+    Called before AND after the full semantic replay, then around every reused
+    operation. Paths come from pinned original manifests, never a saved cache.
+    Unknown/legacy proof modes do not use this optimization.
+    """
+    import audit_native_pressure_artifacts as artifacts
+    key = 'jvmProducerAuthority' if 'jvmProducerAuthority' in plan else 'correctedProducerAuthority'
+    packet = pinned_authority_metadata(plan, plan[key])
+    roots, sources, configurations = set(), {}, {}
+
+    def metadata(path):
+        path = str(Path(path))
+        require(path in plan['pins'], 'reuse metadata outside complete pins: ' + path)
+        return pinned_authority_metadata(plan, {'path': path, 'sha256': plan['pins'][path]})
+
+    def add(path):
+        path = Path(path)
+        require(path.is_absolute() and str(path.resolve()) == str(path), 'reuse root must be canonical')
+        roots.add(path)
+
+    for arm in packet['arms'].values():
+        artifact = metadata(arm['artifactAudit']['path'])
+        source = metadata(artifact['sourceManifest']['path'])
+        checkout = Path(source['root'])
+        producer = metadata(artifact['producerPacket']['path'])
+        producer_root = Path(artifact['producerPacket']['path']).parent
+        if str(checkout) not in sources:
+            sources[str(checkout)] = artifacts.source_inventory(checkout, arm['revision'])
+            configurations[str(checkout)] = artifacts.configs(checkout, producer['buildEnvironment'])
+        require(sources[str(checkout)] == source['files'], 'reuse tracked source inventory')
+        require(configurations[str(checkout)] == producer['configurationBefore'] == producer['configurationAfter'],
+                'reuse original build configuration')
+        # The artifact auditor requires exactly one matching source-built writer;
+        # ignored build output additions are invisible to Git status/ls-files.
+        add(checkout/'frontend/jvm/webgraph/build/libs')
+        add(producer_root/'runtime'); add(producer_root/'graphs')
+        for phase in producer['phaseReceipts']:
+            metadata(phase); add(Path(phase).parent)
+        query = metadata(arm['queryAudit']['path'])
+        query_path = Path(query['plan']['path'])
+        query_plan = metadata(query_path); add(query_path.parent)
+        if key == 'jvmProducerAuthority':
+            raw = Path(query_plan['rawDerivationRoot'])
+            metadata(raw/'plan.json'); add(raw)
+
+    for comparison in packet['correctedComparisons'].values():
+        core_root = Path(comparison['audit']['path']).parent
+        core_plan = metadata(core_root/'plan.json'); add(core_root)
+        require(set(core_plan['upstream']) == {'CStrings', 'BStrings', 'marker', 'formatterTests', 'formatterSource'},
+                'known complete core upstream closure required for reuse')
+        for ref in core_plan['upstream'].values():
+            metadata(ref['path']); add(Path(ref['path']).parent)
+        tests_root = Path(core_plan['upstream']['formatterTests']['path']).parent
+        # Production test classpaths may contain external directories or absent
+        # roots. Pins alone cannot detect an added class or an appeared root.
+        for module in ('sootup', 'webgraph'):
+            classpath = metadata(tests_root/f'results/classpath-{module}-before.json')
+            for item in classpath['classpath']:
+                require(item['kind'] in ('directory', 'file', 'absent'), 'known formatter classpath kind')
+                add(item['path'])
+
+    trees = {}
+    # Skip nested scans, but preserve every directory (including empty ones),
+    # entry type and unpinned byte. Pinned bytes are checked by verify_inputs.
+    for root in sorted(roots):
+        if any(root != other and root.is_relative_to(other) for other in roots):
+            continue
+        entries = {}
+        def visit(path):
+            require(not path.is_symlink(), 'reuse closure symlink: ' + str(path))
+            if not path.exists():
+                entries[str(path)] = 'absent'
+                return
+            mode = path.stat().st_mode
+            if stat.S_ISDIR(mode):
+                entries[str(path)] = 'directory'
+                for child in sorted(path.iterdir()): visit(child)
+            else:
+                require(stat.S_ISREG(mode), 'reuse closure special file: ' + str(path))
+                entries[str(path)] = ('file', None if str(path) in plan['pins'] else sha(path))
+        visit(root)
+        trees[str(root)] = entries
+    return {'sources': sources, 'configurations': configurations, 'trees': trees}
+
+
+class _VerifiedPressureExecution:
+    """Private, one-execute lifetime; not a serialized authority or CLI option."""
+    def __init__(self):
+        raise TypeError('use the full-audit factory')
+
+    def __reduce_ex__(self, protocol):
+        raise TypeError('execution authority cannot be serialized')
+
+    @classmethod
+    def open(cls, plan_path):
+        value = object.__new__(cls)
+        path = Path(plan_path).absolute()
+        require(not path.is_symlink() and path == path.resolve(), 'canonical regular execution plan path')
+        value._path = str(path)
+        value._sha = sha(value._path)
+        candidate = read(value._path)
+        value._reuse = ('jvmProducerAuthority' in candidate or 'correctedProducerAuthority' in candidate)
+        value._valid = False
+        # Capture before replay as well: a mutation during the full audit must
+        # not become the new trusted inventory merely by being captured later.
+        verify_inputs(candidate)
+        before = _execution_closure(candidate) if value._reuse else None
+        value._plan = validate_plan(candidate)
+        value._canonical = canonical(value._plan)
+        verify_inputs(value._plan)
+        value._closure = _execution_closure(value._plan) if value._reuse else None
+        require(before == value._closure and sha(value._path) == value._sha and
+                canonical(read(value._path)) == value._canonical, 'inputs changed during complete authority replay')
+        value._valid = True
+        return value
+
+    @property
+    def plan(self):
+        # The orchestrator may inspect cells; it never gets a mutable reference
+        # to the object whose authority was established by the full replay.
+        return parse(self._canonical)
+
+    def _check_unchanged(self):
+        try:
+            self._verify_unchanged()
+        except BaseException:
+            self._valid = False
+            raise
+
+    def _verify_unchanged(self):
+        require(self._valid, 'execution authority invalidated')
+        require(not Path(self._path).is_symlink() and str(Path(self._path).resolve()) == self._path,
+                'execution plan path changed')
+        require(sha(self._path) == self._sha and canonical(read(self._path)) == self._canonical and
+                canonical(self._plan) == self._canonical, 'execution plan changed')
+        verify_inputs(self._plan)
+        if self._reuse:
+            require(_execution_closure(self._plan) == self._closure, 'execution upstream closure changed')
+
+    def _call(self, operation, output, cell_id=None):
+        try:
+            self._check_unchanged()
+            target = Path(output).resolve()
+            if self._reuse:
+                require(not any(target.is_relative_to(Path(root)) or Path(root).is_relative_to(target)
+                                for root in self._closure['trees']), 'pressure output overlaps frozen evidence')
+                result = (_run_cell(self._path, cell_id, output, self._plan) if operation == 'run'
+                          else _audit(self._path, output, self._plan))
+            else:
+                # Legacy modes retain their original complete public audit path.
+                result = (run_cell(self._path, cell_id, output) if operation == 'run'
+                          else audit(self._path, output))
+            self._check_unchanged()
+            require(result['status'] == 'PASS', 'cell execution/audit failed')
+            return result
+        except BaseException:
+            self._valid = False
+            raise
+
+    def run_cell(self, cell_id, output):
+        return self._call('run', output, cell_id)
+
+    def audit_cell(self, output):
+        return self._call('audit', output)
 
 
 def nearest_rank(samples, fraction):
@@ -1095,8 +1264,11 @@ def graph_arguments(graphs):
 
 
 def run_cell(plan_path, cell_id, output):
+    return _run_cell(plan_path, cell_id, output, validate_plan(read(plan_path)))
+
+
+def _run_cell(plan_path, cell_id, output, plan):
     require(sys.platform in ('linux', 'darwin'), 'unsupported actual CPU/RSS resource backend')
-    plan = validate_plan(read(plan_path))
     cells = [c for c in plan['cells'] if c['id'] == cell_id]
     require(len(cells) == 1, 'unknown cell')
     cell = cells[0]
@@ -1208,7 +1380,10 @@ def run_cell(plan_path, cell_id, output):
 
 def audit(plan_path, output):
     """Recompute completed raw request/body/resource evidence; no process launches."""
-    plan = validate_plan(read(plan_path))
+    return _audit(plan_path, output, validate_plan(read(plan_path)))
+
+
+def _audit(plan_path, output, plan):
     root = Path(output)
     result = read(root / 'result.json')
     require(read(root / 'plan.json') == plan, 'archived plan')

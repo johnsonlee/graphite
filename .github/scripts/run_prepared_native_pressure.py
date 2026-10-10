@@ -59,7 +59,7 @@ def execute(preparation,output,prefix,*,engine='native'):
             failed_report(record['status'],record['errors']);return record
         plan_file=preparation/'plan.json'
         pressure.require(pressure.sha(plan_file)==ready['planSha256'],'prepared plan digest changed')
-        plan=pressure.validate_plan(pressure.read(plan_file));pressure.verify_inputs(plan)
+        context=pressure._VerifiedPressureExecution.open(plan_file);plan=context.plan
         pressure.require(plan['engine']==engine and plan['operation']=='query','matching query engine required')
         pressure.require([c['arm'] for c in plan['cells']]==list('CABBAC'),'fixed six-cell comparison order')
         record['plan']={'path':str(plan_file),'sha256':ready['planSha256']}
@@ -69,20 +69,22 @@ def execute(preparation,output,prefix,*,engine='native'):
             attempt={'id':cell['id'],'status':'RUNNING'};record['cells'].append(attempt);save()
             directory=output/cell['id']
             try:
-                result=pressure.run_cell(str(plan_file),cell['id'],str(directory))
+                result=context.run_cell(cell['id'],str(directory))
                 pressure.require(result['status']=='PASS','pressure cell failed '+cell['id'])
-                audit=pressure.audit(str(plan_file),str(directory))
+                audit=context.audit_cell(str(directory))
                 pressure.require(audit['status']=='PASS','pressure audit failed '+cell['id'])
                 pressure.save(directory/'audit.json',audit)
                 attempt.update(status='PASS',resultSha256=pressure.sha(directory/'result.json'),auditSha256=pressure.sha(directory/'audit.json'))
             except BaseException as error:
                 attempt.update(status='FAIL',error=repr(error));raise
             finally:save()
+        context._check_unchanged()
         node=shutil.which('node');pressure.require(node is not None,'Node executable missing')
         comparator=SCRIPTS/'benchmark-multigraph-pressure.mjs'
         command=[str(Path(node).resolve()),str(comparator),str(plan_file),str(output),str(prefix)]
         completed=subprocess.run(command,capture_output=True,text=True,timeout=60,check=False)
         (output/'comparison.stdout.log').write_text(completed.stdout);(output/'comparison.stderr.log').write_text(completed.stderr)
+        context._check_unchanged()
         record['comparisonCommand']=command;record['comparisonExit']=completed.returncode
         verdict=pressure.read(Path(str(prefix)+'-status.json'))
         pressure.require(completed.returncode in (0,1) and verdict['schema']=='graphite.multigraph-pressure.comparison.v1','comparison failed to produce a verdict')
