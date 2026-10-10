@@ -15777,9 +15777,10 @@ Execution SHA-256:
 Independent source/correctness review SHA-256:
 `a56a32cb30a011016616cf2526900398f219eef578348eacbe9d9f0acb155ff5`.
 
-Release uses the existing owned offline/locked CLI build with jobs2, in a
-dedicated target directory. It has started but has not yet supplied a reviewed
-runtime. Planned measurement reuses the unchanged194 eight-case CABBAC protocol:
+Release completed with the existing owned offline/locked CLI build with jobs2,
+in a dedicated target directory. Independent review verified the runtime and
+source binding;91 adapter tests and the original preparation passed. The actual
+measurement reused the unchanged194 eight-case CABBAC protocol:
 64 resident real graphs, each request actually targets two graphs, concurrency4,
 one oracle pass, two warmups and20 measured requests per case/cell, with all1104
 complete response bodies and CPU/RSS records retained. This particular workload
@@ -15788,6 +15789,73 @@ isolated194 revision `582f632662f0568204400fa77188d3549afffd91`;99 Native parent
 source files match the candidate's parent byte for byte. C remains accepted4f.
 Runtime and graph-producer identities remain distinct.
 
-Decision: retain the independently correctness-checked candidate in isolation for
-release binding and multi-graph measurement. Do not integrate it into the PR or
+Initial decision: retain the independently correctness-checked candidate in isolation
+for release binding and multi-graph measurement. Do not integrate it into the PR or
 claim query p50/p95, CPU, RSS, loading or construction improvement before evidence.
+
+The six-cell run completed with exit0 and all1104 complete HTTP response bodies
+passed the original per-cell and final cohort audits. Output:
+`/tmp/graphite-attempt199-pressure-query-run-1`. The fixed twenty measured samples
+per case/cell use nearest-rank p50/p95 (sorted indexes9/18); both fixed directions
+are retained separately, without pooling or favorable selection. Oracle and
+warmup requests remain separate. Query latency includes complete response
+consumption and validation. OS cache state was uncontrolled; this is not a
+cold-cache or saturation claim.
+
+| Case | Parent forward p50 / p95 ms | Parent reverse p50 / p95 ms | Accepted4f forward p50 / p95 ms | Accepted4f reverse p50 / p95 ms |
+|---|---:|---:|---:|---:|
+| Field full |38.472→38.835 /42.469→42.951|38.967→39.824 /46.221→46.946|20.783→38.835 /24.685→42.951|22.702→39.824 /29.998→46.946|
+| Field properties |28.750→29.793 /36.423→39.088|29.674→28.504 /40.456→35.361|20.569→29.793 /34.611→39.088|22.173→28.504 /30.125→35.361|
+| Parameter full |33.609→35.146 /44.928→48.599|34.991→33.261 /43.041→38.013|20.009→35.146 /30.954→48.599|22.150→33.261 /26.942→38.013|
+| Parameter properties |37.589→39.223 /48.268→54.452|37.718→35.531 /56.172→43.163|20.207→39.223 /29.732→54.452|22.043→35.531 /26.316→43.163|
+| Return full |31.809→33.662 /59.528→43.248|31.560→31.884 /53.715→35.629|19.818→33.662 /28.684→43.248|21.815→31.884 /30.526→35.629|
+| Return properties |27.849→30.106 /60.143→50.677|27.820→27.857 /55.173→35.036|19.206→30.106 /27.866→50.677|21.139→27.857 /27.473→35.036|
+| Method full |719.477→737.153 /740.337→771.833|720.991→733.335 /744.457→749.022|712.472→737.153 /727.604→771.833|699.204→733.335 /710.138→749.022|
+| Method properties |732.875→751.938 /748.258→772.530|737.803→747.706 /766.656→761.996|715.962→751.938 /731.613→772.530|700.401→747.706 /717.702→761.996|
+
+Resource boundaries cover the measured query interval, not construction or
+zero-query loading. RSS bounds coincide in these records. MB below is decimal.
+
+| Comparison | Pressure wall ms | CPU seconds | Peak RSS MB |
+|---|---:|---:|---:|
+| Parent forward |8535.551→8723.732 (+188.181)|29.31→29.94 (+0.63)|6725.845→6708.150 (−17.695)|
+| Parent reverse |8508.486→8583.939 (+75.454)|29.42→29.91 (+0.49)|6722.126→6708.167 (−13.959)|
+| Accepted4f forward |7859.379→8723.732 (+864.353)|29.43→29.94 (+0.51)|6423.298→6708.150 (+284.852)|
+| Accepted4f reverse |7789.684→8583.939 (+794.255)|28.76→29.91 (+1.15)|6423.724→6708.167 (+284.443)|
+
+Latency remains mixed against the parent: Return p95 improves in both directions,
+but its p50 does not; Method full p50 worsens by17.676/12.344ms and p95 by
+31.496/4.565ms. Parent CPU and wall time increase in both directions. RSS is
+13.959–17.695MB lower across64 resident graphs (0.218–0.276MB per graph on
+average), which is a positive observation, not grounds to ignore the latency
+tradeoff. Against accepted4f, every case's p50 and p95 is higher in both
+directions, while measured CPU and RSS remain individually within5%. This
+establishes neither cumulative latency recovery nor other-operation acceptance.
+Two directional cells do not establish statistical significance; retain all
+samples and their variation rather than claiming a universal cache benefit.
+
+Correctness and stability:461 workspace tests,91 adapter tests, and1104 complete
+responses passed; all six owned server groups were cleaned up without forced
+kills. The complete core/topology/index semantic proof gap remains explicit.
+This eight-case diagnostic does not replace Native39/JVM26 CI acceptance.
+Construction and loading were not measured in this attempt.
+
+Final decision: retain6362a19d in isolation with its observed RSS and Return-p95
+benefits for possible composition. Do not integrate this mixed candidate into
+the PR: its Method latency and query CPU/wall tradeoffs do not establish an
+overall improvement. Do not spend stabilization runs on small timing differences
+or claim the feature's regression is closed.
+
+Execution SHA-256:
+`cbd5843ce5688383627903f8f2b48803c0d7cb7bfa77ede33b709ddad94f8e81`.
+Final cohort report SHA-256:
+`ea3be35d307de1f039e4574b39123f105ef5c5716b9431b53c5a2cdaf50d482f`.
+
+Independent post-run review re-read all1104 complete bodies (1,242,494,776 bytes)
+against16 frozen independent expected responses, all worker journals,960 measured
+latencies and9,510 resource samples. It recomputed per-case quantiles, CPU/RSS
+bounds, readiness and cleanup checks against the final report. This bounded
+review reused the original before/after identity receipts rather than hashing
+all graph files again; the original execution performed that verification.
+Independent review SHA-256:
+`de1442002829c98931ea6fad655f93a6267d99be5bd10f0d7e88c18f12bbe487`.
