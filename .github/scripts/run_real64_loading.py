@@ -62,6 +62,7 @@ def prepare(packet, base, candidate):
     producer = common.read(plan['producers']['path'])
     plan.update(schema=SCHEMA, operation='loading', queriesIssued=0, scope=SCOPE)
     plan.pop('timeouts'); plan.pop('cachePolicy')
+    plan.pop('retentionPolicy'); plan.pop('retentionSources')
     plan['limits'] = {'readinessSeconds': 900, 'rssIntervalSeconds': .01}
     plan['python'] = str(Path(sys.executable).resolve())
     plan['pins'][plan['python']] = common.sha(plan['python'])

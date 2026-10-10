@@ -170,6 +170,14 @@ must finish saving all graphs, indexes and manifests, its embedded readback, and
 normal exit. A second `--verify` and full inventory are mandatory untimed gates.
 Source/JAR reads before each cell are matched; disk-cold behavior is not claimed.
 
+After the second readback and full inventory, identical completed output files
+share storage through hardlinks to sealed producer files or earlier completed
+outputs. This untimed retention step checks actual SHA-256, size, file mode and
+filesystem before replacing an output inode. Every measured writer starts with
+fresh output paths; all output paths and manifests remain available, and the
+final audit still checks their complete bytes. This bounds duplicate disk usage
+without changing the construction measurement or claiming a memory saving.
+
 `audit_real64_construction.py` independently reconstructs the original GNU time,
 owned phase exits, exact writer commands, provenance, index bytes and saved64
 inventory. Cross-version comparability belongs to the pinned same-source writer

@@ -7,9 +7,11 @@ or complete semantic equivalence with the producer's earlier graph files.
 """
 import argparse
 import json
+import os
 from pathlib import Path
 import shutil
 import signal
+import stat
 import subprocess
 import sys
 
@@ -24,6 +26,7 @@ SCHEMA = 'graphite.real64-construction.plan.v1'
 RESULT = 'graphite.real64-construction.execution.v1'
 PAIRS = {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]}
 SCOPE = producer.CONSTRUCTION_SCOPE
+RETENTION = 'After second readback, hardlink identical verified files; retain every output path and final byte audit'
 FALSE = {'completeSemanticEquivalence': False, 'strictEquivalence': False,
          'sourceToDeclarationCompletenessClaim': False, 'performanceAcceptance': False,
          'otherOperationsEligible': False}
@@ -73,13 +76,57 @@ def prepare(packet_path, base, candidate):
                        'argv': argv}
     require(len({a['argv'][0] for a in arms.values()}) == 1, 'same JDK across all writers')
     require('/usr/bin/time' in pins, 'audited GNU time binary')
+    graph_roots = [Path(g['path']) for arm in packet['arms'].values() for g in arm['graphs']]
+    retained = {p: h for p, h in pins.items() if any(Path(p).is_relative_to(root) for root in graph_roots)}
+    require(retained, 'sealed graph files for untimed retention')
     return {'schema': SCHEMA, 'engine': 'jvm', 'operation': 'construction', 'graphCount': 64,
             'scope': SCOPE, 'comparisonModel': bundle.CORRECTED_MODEL,
             'producers': artifacts.ref(packet_path), 'sourceInputs': packet['sourceInputs'],
             'arms': arms, 'cells': [{'id': f'{i+1:02}-{arm}', 'arm': arm} for i, arm in enumerate('CABBAC')],
             'comparisonPairs': PAIRS, 'maxHeapBytes': 4 * 1024**3, 'activeProcessorCount': 4,
             'cachePolicy': 'Identical untimed source-JAR and writer reads before every sample; no disk-cold claim',
-            'timeouts': {'prepare-real64': 14400, 'verify-real64': 7200}, 'pins': pins, **FALSE}
+            'timeouts': {'prepare-real64': 14400, 'verify-real64': 7200},
+            'retentionPolicy': RETENTION, 'retentionSources': retained, 'pins': pins, **FALSE}
+
+
+def retention_pool(files):
+    pool = {}
+    for name, digest in files.items():
+        path = Path(name)
+        info = path.lstat()
+        require(stat.S_ISREG(info.st_mode), 'retention requires regular files')
+        pool.setdefault((digest, info.st_size, stat.S_IMODE(info.st_mode), info.st_dev), name)
+    return pool
+
+
+def retain_outputs(files, pool):
+    """Only completed, verified outputs share storage; every measured writer starts fresh."""
+    links = []
+    for name, digest in files.items():
+        path = Path(name)
+        info = path.lstat()
+        require(stat.S_ISREG(info.st_mode), 'retained output must be a regular file')
+        key = (digest, info.st_size, stat.S_IMODE(info.st_mode), info.st_dev)
+        source = Path(pool.setdefault(key, name))
+        require(source.is_file() and not source.is_symlink(), 'retention source must remain regular')
+        if os.path.samefile(source, path):
+            continue
+        # Recheck both actual byte streams before replacing any output inode.
+        require(common.sha(source) == common.sha(path) == digest, 'retention bytes changed')
+        temporary = path.with_name('.' + path.name + '.retention-link')
+        created = False
+        try:
+            with common.deferred_signals():
+                os.link(source, temporary, follow_symlinks=False)
+                created = True
+                os.replace(temporary, path)
+        finally:
+            if created:
+                temporary.unlink(missing_ok=True)
+        require(common.sha(path) == digest, 'retained output changed')
+        links.append({'path': name, 'source': str(source), 'sha256': digest, 'bytes': info.st_size})
+    return {'policy': RETENTION, 'links': links,
+            'duplicateLogicalBytes': sum(row['bytes'] for row in links)}
 
 
 def validate(plan):
@@ -127,6 +174,7 @@ def run(plan_file, output):
         for sig in (signal.SIGINT, signal.SIGTERM):
             original_handlers[sig] = signal.signal(sig, interrupted)
         artifacts.verify_pins(plan['pins'])
+        retained = retention_pool(plan['retentionSources'])
         common.save(output / 'identities-before.json', {'pins': plan['pins']})
         for cell in plan['cells']:
             arm, directory = plan['arms'][cell['arm']], output / cell['id']
@@ -150,6 +198,7 @@ def run(plan_file, output):
                            'sourceManifestSha256': arm['sourceManifest']['sha256'],
                            'graphs': producer.fixture_records(graphs, inputs), 'files': producer.inventory(graphs),
                            'inputJars': inputs['jars'], **FALSE}
+                row['retention'] = retain_outputs(fixture['files'], retained)
                 common.save(directory/'fixture-manifest.json', fixture)
                 row['fixture'] = artifacts.ref(directory/'fixture-manifest.json')
                 artifacts.verify_pins(input_pins)

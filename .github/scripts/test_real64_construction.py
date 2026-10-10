@@ -41,6 +41,7 @@ class ConstructionTests(unittest.TestCase):
         self.packet = {'status': runner.bundle.CORRECTED_STATUS, 'missingAuthority': [],
                        'sourceInputs': runner.artifacts.ref(self.inputs), 'arms': {}, 'pins': {}}
         pins = self.packet['pins']
+        pins.update(runner.producer.inventory(reference))
         pins.update({str(java): p.sha(java), '/usr/bin/time': p.sha('/usr/bin/time')})
         for label, revision, role in [('C',runner.artifacts.ACCEPTED,'accepted-baseline'),('A','a'*40,'parent'),('B','b'*40,'candidate')]:
             root = self.root/label; (root/'runtime').mkdir(parents=True)
@@ -54,7 +55,8 @@ class ConstructionTests(unittest.TestCase):
             art = root/'artifact.json'; write(art, {'sourceBefore':self.source,'sourceAfter':self.source,
                                                     'constructionResources':{'heapMaxBytes':4*1024**3}})
             self.packet['arms'][label] = {'revision':revision,'role':role,'sourceManifest':runner.artifacts.ref(sm),
-                                         'runtimeManifest':runner.artifacts.ref(rm),'artifactAudit':runner.artifacts.ref(art)}
+                                         'runtimeManifest':runner.artifacts.ref(rm),'artifactAudit':runner.artifacts.ref(art),
+                                         'graphs':[{'path':str(d)} for d in reference.iterdir() if d.is_dir()]}
             pins.update(files); pins.update(self.source)
             pins.update({str(f):p.sha(f) for f in (sm,rm,art)})
         self.packet_file = self.root/'packet.json'; write(self.packet_file,self.packet)
@@ -193,6 +195,54 @@ class ConstructionTests(unittest.TestCase):
         self.assertEqual('FAIL',result['status'])
         self.assertIn('InterruptedError',result['cells'][0]['errors'][0])
         self.assertEqual(['02-A','03-B','04-B','05-A','06-C'],result['unissued'])
+        self.assertEqual(original,{sig:signal.getsignal(sig) for sig in original})
+
+    def test_retention_preserves_paths_and_bytes_after_second_readback(self):
+        result = self.execute()
+        self.assertEqual('PASS_ALL_SIX_USABLE_SAVED64', result['status'])
+        self.assertEqual('PASS_RAW_USABLE_SAVE_AUDIT', self.audit()['status'])
+        links = result['cells'][0]['retention']['links']
+        self.assertEqual(64, len(links))
+        for link in links:
+            self.assertTrue(Path(link['path']).samefile(link['source']))
+            self.assertEqual(link['sha256'], p.sha(link['path']))
+        self.assertFalse(list((self.root/'cells').rglob('*.retention-link')))
+
+    def test_retention_source_mutation_fails_without_replacing_output(self):
+        source, dest = self.root/'old', self.root/'new'
+        source.write_bytes(b'unchanged'); dest.write_bytes(b'unchanged')
+        digest = p.sha(source); pool = runner.retention_pool({str(source):digest})
+        source.write_bytes(b'corrupted')
+        with self.assertRaisesRegex(ValueError, 'retention bytes changed'):
+            runner.retain_outputs({str(dest):digest}, pool)
+        self.assertEqual(b'unchanged', dest.read_bytes())
+        self.assertFalse(source.samefile(dest))
+
+    def test_retention_replace_failure_cleans_only_its_temporary_link(self):
+        source, dest = self.root/'old', self.root/'new'
+        source.write_bytes(b'same'); dest.write_bytes(b'same')
+        digest = p.sha(source); pool = runner.retention_pool({str(source):digest})
+        with patch.object(runner.os, 'replace', side_effect=OSError('replace failed')):
+            with self.assertRaisesRegex(OSError, 'replace failed'):
+                runner.retain_outputs({str(dest):digest}, pool)
+        self.assertEqual(b'same', dest.read_bytes())
+        self.assertFalse(source.samefile(dest))
+        self.assertFalse(list(self.root.glob('*.retention-link')))
+
+    def test_retention_signal_after_link_keeps_valid_output_and_cleans_temporary(self):
+        source, dest = self.root/'old', self.root/'new'
+        source.write_bytes(b'same'); dest.write_bytes(b'same')
+        digest = p.sha(source); pool = runner.retention_pool({str(source):digest})
+        link = runner.os.link
+        original = {sig:signal.getsignal(sig) for sig in (signal.SIGINT,signal.SIGTERM)}
+        def interrupted_link(*args, **kwargs):
+            link(*args, **kwargs)
+            signal.raise_signal(signal.SIGTERM)
+        with patch.object(runner.os, 'link', side_effect=interrupted_link):
+            with self.assertRaises(InterruptedError):
+                runner.retain_outputs({str(dest):digest}, pool)
+        self.assertEqual(b'same', dest.read_bytes())
+        self.assertFalse(list(self.root.glob('*.retention-link')))
         self.assertEqual(original,{sig:signal.getsignal(sig) for sig in original})
 
 

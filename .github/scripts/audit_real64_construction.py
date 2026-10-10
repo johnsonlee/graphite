@@ -31,6 +31,7 @@ def audit(plan_path, root):
             == {'pins': plan['pins']}, 'unchanged complete source/runtime/workload/proof inputs')
     catalog = common.read(Path(__file__).parent/'fixtures/multigraph-pressure-cases.json')
     rows, groups = [], []
+    retained = dict(plan['retentionSources'])
     for cell, result in zip(plan['cells'], record['cells']):
         directory, arm = root/cell['id'], plan['arms'][cell['arm']]
         require(common.read(directory/'cell.json') == result and result['status'] == 'PASS_USABLE_SAVED64'
@@ -53,6 +54,18 @@ def audit(plan_path, root):
         runtime = common.pinned_authority_metadata(plan, arm['runtimeManifest'])
         artifacts.verify_fixture(directory, fixture, runtime, plan['sourceInputs']['path'], catalog,
                                  arm['revision'], writer_path=arm['writer']['path'])
+        retained.update(fixture['files'])
+        retention = result['retention']
+        require(retention['policy'] == plan['retentionPolicy'] == construction.RETENTION,
+                'untimed retention policy')
+        links = retention['links']
+        require(len({link['path'] for link in links}) == len(links), 'unique retained output paths')
+        for link in links:
+            require(fixture['files'].get(link['path']) == retained.get(link['source']) == link['sha256']
+                    and Path(link['path']).stat().st_size == link['bytes'], 'retained output and source byte identity')
+            artifacts.verify_pins({link['source']: link['sha256']})
+        require(retention['duplicateLogicalBytes'] == sum(link['bytes'] for link in links),
+                'retention byte accounting')
         for line in (graphs/'fixture-provenance.tsv').read_text().splitlines()[1:]:
             row = line.split('\t')
             index = graphs/row[0]/'graph.callsite-string-index'
