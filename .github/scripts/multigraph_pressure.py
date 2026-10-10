@@ -326,10 +326,15 @@ def validate_plan(plan, catalog=None):
             heap = int(heaps[0][4:-1]) * (1024 ** (3 if heaps[0][-1].lower() == 'g' else 2))
             require(heap <= 8 * 1024 ** 3 and heap == arm['maxHeapBytes'], 'JVM heap ceiling')
             require(not any(a.startswith(('-XX:MaxRAM', '-XX:MaxHeapSize', '@', '-javaagent', '-agentlib')) for a in argv), 'JVM override')
-            require(argv.count('-cp') == 1 and argv.index('-cp') == len(argv) - 3, 'one direct classpath')
+            require(argv.count('-cp') == 1, 'one direct classpath')
+            # The query distribution retains MainKt/ServeCommand; its minimized
+            # JAR does not retain the standalone explorer's ExploreMainKt.
+            entrypoint = argv[argv.index('-cp') + 2:]
+            require(entrypoint in (['io.johnsonlee.graphite.cli.ExploreMainKt'],
+                                   ['io.johnsonlee.graphite.cli.MainKt', 'serve']),
+                    'reviewed JVM entrypoint')
             for entry in argv[argv.index('-cp') + 1].split(os.pathsep):
                 require(Path(entry).is_absolute() and (entry in arm['runtimeFiles'] or entry in arm['runtimeRoots']), 'closed classpath entry')
-            require('-cp' in argv and argv[-1] == 'io.johnsonlee.graphite.cli.ExploreMainKt', 'reviewed JVM entrypoint')
         else:
             require(len(argv) == 2 and argv[1] == 'serve', 'direct native serve')
     if plan['engine'] == 'jvm':

@@ -208,6 +208,32 @@ class PressureTests(unittest.TestCase):
             with self.assertRaises(ValueError, msg=mutation):
                 p.validate_plan(plan, CATALOG)
 
+    def test_packaged_jvm_serve_entrypoint_preserves_launch_constraints(self):
+        for entrypoint in [['io.johnsonlee.graphite.cli.ExploreMainKt'],
+                           ['io.johnsonlee.graphite.cli.MainKt', 'serve']]:
+            plan = make_plan()
+            for arm in plan['arms'].values():
+                arm['serverArgv'][-1:] = entrypoint
+            p.validate_plan(plan, CATALOG)
+            for suffix in [[], ['io.johnsonlee.graphite.cli.MainKt'],
+                           ['io.johnsonlee.graphite.cli.MainKt', 'query'],
+                           ['io.johnsonlee.graphite.cli.MainKt', 'serve', '--load-mode', 'EAGER'],
+                           ['io.johnsonlee.graphite.cli.ExploreMainKt', 'serve']]:
+                bad = copy.deepcopy(plan)
+                argv = bad['arms']['B']['serverArgv']
+                argv[argv.index('-cp') + 2:] = suffix
+                with self.subTest(entrypoint=entrypoint, suffix=suffix), self.assertRaisesRegex(ValueError, 'reviewed JVM entrypoint'):
+                    p.validate_plan(bad, CATALOG)
+            bad = copy.deepcopy(plan)
+            bad['arms']['B']['serverArgv'][1] = '-Xmx9g'
+            with self.assertRaisesRegex(ValueError, 'JVM heap ceiling'):
+                p.validate_plan(bad, CATALOG)
+            bad = copy.deepcopy(plan)
+            argv = bad['arms']['B']['serverArgv']
+            argv[argv.index('-cp') + 1] = '/untracked.jar'
+            with self.assertRaisesRegex(ValueError, 'closed classpath entry'):
+                p.validate_plan(bad, CATALOG)
+
     def test_fixed_per_case_sample_schedule_and_pairs(self):
         for key, value in [('concurrency', 1), ('measuredPerCase', 19), ('warmupPerCase', 0)]:
             plan = make_plan()
