@@ -7,6 +7,7 @@ candidate-matching type. Legacy correction policy and global claims stay intact.
 """
 import hashlib
 import json
+import re
 from pathlib import Path
 from .legacy_wire import need
 from .local_array_corrections import local_slot
@@ -104,7 +105,48 @@ def needs_creation_proof(row):
     return relevant and any(arms[arm]['typedAllocations'] for arm in ('C','B'))
 
 
+def allocation_first_witnesses(arms):
+    """Derive the first creation type, never search for a saved-matching allocation.
+
+    Every statement use/def is exported, including statements the adapter ignores.
+    Requiring the allocation to be the first such occurrence is conservative:
+    no earlier statement can have created this Local through a value-node path.
+    body.locals is an inventory, not a writer creation event.
+    """
+    witnesses={};raw_types={};allocations={}
+    for arm in ('C','B'):
+        row=arms[arm];values=row['occurrences'];typed=row['typedAllocations']
+        count=row.get('statementCount')
+        if not values or not typed or type(count) is not int or count<0:return None
+        raw=values[0]['type']
+        if raw.get('kind')!='array' or any(v['type']!=raw for v in values):return None
+        raw_types[arm]=raw
+        events={'stmt':set(),'typed-allocation':set(),'ordinary-assignment':set()}
+        for value in values:
+            origin=value['origin']
+            if origin=='body.locals':continue
+            match=re.fullmatch(r'(stmt|typed-allocation|ordinary-assignment):(0|[1-9][0-9]*)',origin)
+            if match is None:return None
+            ordinal=int(match[2])
+            if not 0<=ordinal<count:return None
+            events[match[1]].add(ordinal)
+        # Require both source observations of every allocation/ordinary left
+        # Local, so an omitted earlier statement cannot be hidden by its label.
+        if events['typed-allocation']!={a['ordinal'] for a in typed}:return None
+        if events['ordinary-assignment']!={a['ordinal'] for a in row.get('ordinaryAssignments',[])}:return None
+        if not (events['typed-allocation']|events['ordinary-assignment'])<=events['stmt']:return None
+        first=typed[0]
+        if first['type'].get('kind')!='class' or not events['stmt'] or min(events['stmt'])!=first['ordinal']:return None
+        allocations[arm]=first
+        witnesses[arm]={'firstTypedAllocation':first,'firstStatementOrdinal':first['ordinal']}
+    if raw_types['C']!=raw_types['B'] or allocations['C']!=allocations['B']:return None
+    return {'rule':'typed-allocation-at-first-local-statement','rawType':raw_types['B'],
+            'expectedType':render(allocations['B']['type']),'arms':witnesses}
+
+
 def creation_witnesses(arms,saved):
+    allocation=allocation_first_witnesses(arms)
+    if allocation is not None and allocation['expectedType']==saved:return allocation
     unique={}
     for arm in ('C','B'):
         values=arms[arm]['occurrences']
@@ -129,8 +171,14 @@ def verify_creation_inputs(report, source_authority, core_inputs):
         if needs_creation_proof(row):
             proof=creation_witnesses(row['arms'],row['savedType'])
             need(proof is not None and row.get('creationOrderProof')==proof,
-                 'required exact ordinary-assignment creation proof')
+                 'required exact ordinary-assignment or typed-allocation creation proof')
+            if proof['rule']=='typed-allocation-at-first-local-statement':
+                need(row['status']=='PASS_TYPED_ALLOCATION' and row.get('rawType')==proof['rawType'] and
+                     row.get('expectedType')==proof['expectedType'], 'exact allocation-first result classification')
+            else:need(row['status']=='PASS_ARRAY','ordinary creation must preserve raw array')
         else:need('creationOrderProof' not in row,'unexpected Local creation proof')
+        need(row['status']!='PASS_TYPED_ALLOCATION' or needs_creation_proof(row),
+             'typed allocation classification requires complete creation proof')
     expected = local_creation_rule(source_authority) if required else {}
     need(report.get('sourceCreationInputs', {}) == expected, 'exact Local creation source input closure')
     need(all(core_inputs.get(path) == digest for path,digest in expected.items()),
@@ -171,6 +219,7 @@ class Authority:
             values = row['locals'].get(name) if row else None
             allocations = row['typedAllocations'].get(name, []) if row else []
             result['arms'][arm] = {'occurrences': values, 'typedAllocations': allocations,
+                                    'statementCount': row['statementCount'] if row else None,
                                     'ordinaryAssignments': row.get('ordinaryAssignments', {}).get(name, []) if row else []}
             if not values:
                 issues.append(arm + ':missing raw method/local')
@@ -182,15 +231,19 @@ class Authority:
             else:
                 unique[arm] = json.loads(next(iter(candidates)))
 
+        allocation=allocation_first_witnesses(result['arms']) if len(unique)==2 else None
         if len(unique) == 2:
             if unique['C'] != unique['B']:
                 issues.append('actual writer raw inference differs')
             expected = render(unique['B'])
             if unique['B']['kind'] == 'array':
                 result['rawDimension'] = unique['B']['dimension']
+                result['rawType'] = unique['B']
+                if allocation is not None:expected=allocation['expectedType']
                 result['expectedType'] = expected
                 if actual != expected:
-                    issues.append('persisted array differs from raw Local.type')
+                    issues.append('persisted type differs from first typed allocation' if allocation is not None else
+                                  'persisted array differs from raw Local.type')
             elif actual.endswith('[]'):
                 issues.append('persisted array has no raw array authority')
         allocated = [arm for arm in ('C','B') if result['arms'][arm]['typedAllocations']]
@@ -208,7 +261,8 @@ class Authority:
             result['outsideArrayScopeNotes'] = issues
             issues = []
         result['issues'] = issues
-        result['status'] = 'UNPROVED' if issues else ('PASS_ARRAY' if 'rawDimension' in result else 'NON_ARRAY')
+        result['status'] = 'UNPROVED' if issues else ('PASS_TYPED_ALLOCATION' if allocation is not None else
+                          ('PASS_ARRAY' if 'rawDimension' in result else 'NON_ARRAY'))
         self.rows.append(result)
 
     def save(self):
@@ -216,8 +270,9 @@ class Authority:
         failures = [r for r in self.rows if r['status'] == 'UNPROVED']
         result = {'status': 'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' if self.complete and not failures else
                   'PARTIAL_RAW_LOCAL_TYPE_PROOF', 'completeNodeInventory': self.complete,
-                  'scope': 'fixture64-no-fold; raw SootUp type result, not independent inference algorithm',
+                  'scope': 'fixture64-no-fold; raw SootUp type or exact source-bound first typed allocation; not independent inference algorithm',
                   'localCount': len(self.rows), 'arrayCount': sum(r['status'] == 'PASS_ARRAY' for r in self.rows),
+                  'typedAllocationCount': sum(r['status'] == 'PASS_TYPED_ALLOCATION' for r in self.rows),
                   'unprovedCount': len(failures), 'occurrences': self.rows, 'inputs': self.export_pins,
                   'sourceCreationInputs': self.creation_pins or {},
                   'strictEquivalence': False, 'completeSemanticEquivalence': False, 'performanceAcceptance': False}
