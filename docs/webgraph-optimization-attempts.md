@@ -15860,6 +15860,39 @@ all graph files again; the original execution performed that verification.
 Independent review SHA-256:
 `de1442002829c98931ea6fad655f93a6267d99be5bd10f0d7e88c18f12bbe487`.
 
+Follow-up diagnosis (2026-10-10): before choosing another implementation, run
+only the unchanged parent02-A cell with the original64-resident/two-result-target/C4
+eight-case protocol. The two Method cases still enumerate candidate methods from
+all64 sources before their predicates restrict results to the two named graphs;
+two result targets do not imply only two physically accessed graphs. One macOS
+`sample` capture requested5 seconds at1ms intervals
+against the verified Native PID, start identity, process group and executable.
+The entire sampler interval fell inside the pressure stage. All184 complete
+responses (8 oracle,16 warmup,160 pressure) passed the original independent cell
+audit; server and sampler groups were empty afterward. No product, plan or runner
+source changed. All timings, CPU and RSS from this run are profiler-affected and
+excluded from comparisons, candidate selection and acceptance.
+
+The collapsed top-of-stack report contains1339 evaluator samples,1334 memory-copy
+samples,946 allocator samples,835 deallocator samples and790 SipHasher-write
+samples. These are sampled stack observations, not invocation counts, timings or
+CPU percentages; waiting threads and recursive inclusive counts are not used to
+derive shares. The observed ancestry includes the fused match pipeline, matcher
+and predicate evaluator. `DeclaredTypes::render` has a readable symbol and appears
+in the call tree, but does not enter the collapsed leaf list with its threshold
+of five samples. This mixed eight-case window does not establish rendering as a
+principal cost, attribute all evaluator/map-copy samples to Method queries, or
+identify feature-added overhead. Defer the proposed single-buffer renderer;
+trace the observed evaluation and row-copy paths before selecting another change.
+The complete semantic proof gap and final Native39/JVM34 CI requirements remain.
+
+Evidence: `/tmp/graphite-parent-fullprojection-profile-1/review.json`, SHA-256
+`d00849de5031f6b70c97aa9de812e5d5c468373f5faa09fe286a52f4996dbff9`.
+Raw sample SHA-256:
+`dba9d43a5fe3cb23aa67504bfccbdb7259d2f4f9f5efea675098147d377e1248`.
+Root independently rehashed ten receipts, checked raw sample counts, the capture
+window and actual process cleanup in `root-review.json`; no workload was repeated.
+
 
 ### Attempt200 — use one marker replay per core binding (2026-10-10)
 
