@@ -15544,3 +15544,18 @@ Root independent review SHA-256:
 Decision: retain the isolated candidate for matched real64 measurement. This
 correctness result provides no construction, loading or query performance
 acceptance and does not resolve196's resource tradeoff.
+
+The exact tested three-file candidate is isolated commit
+`19c89f4769a7b7720434bd48c2ad261813285dbc`. The writer package has been built
+and independently reviewed against the original source, build log, JAR bytes and
+owned-process cleanup. Only B was built; A reuses196 and C retains4f.
+Writer packet: `/tmp/graphite-attempt197-real64-writers-1/writers.json`, SHA-256
+`01fc1af4990e9aa613c04411a018637edd5ca97312e18367cb26d3a45a018f1c`.
+B JAR SHA-256:
+`7fdc0304d6ccc93940f49ca165152ce4f3886a9a414107483c33136c9cd058a1`.
+Root writer review SHA-256:
+`7af183e6dc85f17661c7e0fbb424161de9ba5fbb56b660677439ef22a3842f54`.
+The reused real64 CABBAC plan is frozen at
+`/tmp/graphite-attempt197-real64-construction-prep-1/plan.json`, SHA-256
+`b21ac1b3135707c6546a3f867775ebaa022d70b0ee101ad47addfe17d254ebb7`.
+All operation/resource acceptance remains pending actual measurements and review.
