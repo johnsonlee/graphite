@@ -287,6 +287,18 @@ class CorrectedComparisonTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'raw complete comparison audit changed'):
             bundle.corrected_comparison(self.packet,'B',self.path)
 
+    def test_audited_allocation_classification_is_bound_without_array_or_global_promotion(self):
+        # This adapter test stubs upstream replay; the real creation proof and
+        # source closure are exercised through graph_result in raw_local_types_test.
+        path=self.root/'proof/graphs/g00/core/raw-local-type-proof.json';value=bundle.common.read(path)
+        value.update(arrayCount=0,typedAllocationCount=1)
+        value['occurrences'][0]['status']='PASS_TYPED_ALLOCATION'
+        self.repin(path,value);self.audit['graphs'][0]['files'][str(path)]=bundle.common.sha(path)
+        result=self.check()
+        self.replayed.assert_called_once_with(self.path.parent)
+        self.assertEqual(64,len(result['rawArrayProofs']))
+        self.assertTrue(all(self.audit[k] is False for k in self.core.FALSE_CLAIMS))
+
     def test_wrong_revision_manifest_missing_graph_or_upstream_is_rejected(self):
         original=copy.deepcopy(self.audit)
         changes=[lambda a:a['revisions'].update(B='e'*40),
@@ -309,6 +321,8 @@ class CorrectedComparisonTests(unittest.TestCase):
         path=self.root/'proof/graphs/g00/core/raw-local-type-proof.json';original=bundle.common.read(path)
         original_audit=copy.deepcopy(self.audit)
         changes=[lambda r:r.update(unprovedCount=1),lambda r:r.update(completeNodeInventory=False),
+                 lambda r:r.update(typedAllocationCount=1),
+                 lambda r:r['occurrences'][0].update(status='PASS_TYPED_ALLOCATION'),
                  lambda r:r['occurrences'][0].update(issues=['typed allocation requires creation-order proof']),
                  lambda r:r['inputs'].clear(),lambda r:r['occurrences'][0].update(graphId='other')]
         for change in changes:

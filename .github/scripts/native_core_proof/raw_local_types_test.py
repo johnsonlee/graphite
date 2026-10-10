@@ -98,6 +98,96 @@ class RawLocalTests(unittest.TestCase):
         self.assertEqual(57,proof['arms']['B']['firstTypedAllocationOrdinal'])
         self.assertFalse(report['completeSemanticEquivalence'])
 
+    def allocation_first(self):
+        for row in self.rows.values():
+            row['statementCount']=8
+            row['typedAllocations']={'$stack4':[{'ordinal':2,'type':{'kind':'class','name':'First'}}]}
+            row['ordinaryAssignments']={'$stack4':[{'ordinal':5,'type':copy.deepcopy(A)}]}
+            row['locals']['$stack4']=[{'type':copy.deepcopy(A),'origin':origin} for origin in
+                ('body.locals','stmt:2','typed-allocation:2','stmt:5','ordinary-assignment:5')]
+
+    def allocation_check(self, saved='First'):
+        _,source=self.creation_source();oracle=self.authority(source_authority=source)
+        oracle.observe(local(saved),M);return oracle
+
+    def test_first_allocation_derives_class_without_claiming_raw_array_match(self):
+        self.allocation_first();report=self.allocation_check().finish();row=report['occurrences'][0]
+        self.assertEqual((0,1),(report['arrayCount'],report['typedAllocationCount']))
+        self.assertEqual('PASS_TYPED_ALLOCATION',row['status'])
+        self.assertEqual(A,row['rawType']);self.assertEqual('First',row['expectedType'])
+        self.assertEqual('typed-allocation-at-first-local-statement',row['creationOrderProof']['rule'])
+        self.assertTrue(report['sourceCreationInputs']);self.assertFalse(report['completeSemanticEquivalence'])
+
+    def test_allocation_first_requires_both_arms_earliest_statement_and_witnesses(self):
+        mutations=[
+            lambda row:row['locals']['$stack4'].append({'type':A,'origin':'stmt:0'}),
+            lambda row:row['locals']['$stack4'].pop(1),
+            lambda row:row['locals']['$stack4'].pop(2),
+            lambda row:row['locals']['$stack4'].append({'type':A,'origin':'unknown:0'}),
+            lambda row:row['locals']['$stack4'].append({'type':A,'origin':'stmt:8'}),
+            lambda row:row['locals']['$stack4'].append({'type':A,'origin':'stmt:-1'}),
+            lambda row:row['typedAllocations']['$stack4'][0]['type'].update(name='Other'),
+            lambda row:row['typedAllocations'].clear(),
+            lambda row:row['locals']['$stack4'].append({'type':dict(A,dimension=1),'origin':'stmt:3'}),
+        ]
+        for index,mutate in enumerate(mutations):
+            with self.subTest(index=index):
+                self.allocation_first();mutate(self.rows['C'])
+                with self.assertRaises(ValueError):self.allocation_check().finish()
+
+    def test_allocation_first_never_selects_saved_matching_later_allocation(self):
+        self.allocation_first()
+        for row in self.rows.values():
+            row['typedAllocations']['$stack4'].append({'ordinal':6,'type':{'kind':'class','name':'Later'}})
+            row['locals']['$stack4'].extend({'type':A,'origin':origin} for origin in ('stmt:6','typed-allocation:6'))
+        self.assertEqual('First',self.allocation_check().finish()['occurrences'][0]['expectedType'])
+        for saved in ('Later','byte[][]','byte[]'):
+            with self.subTest(saved=saved),self.assertRaises(ValueError):self.allocation_check(saved).finish()
+
+    def test_allocation_first_without_source_authority_cannot_pass(self):
+        self.allocation_first();oracle=self.authority();oracle.observe(local('First'),M)
+        with self.assertRaises(ValueError):oracle.finish()
+
+    def test_observed_hive_short_writable_allocation_precedes_byte_array_assignments(self):
+        # Actual failed CI row plus independently reproduced statementCount=157.
+        # C/B target-method.json SHA256 bec8a5c25d326e04b5f116b9c5c94a328
+        # 483a0ece04e88d5d16134dc373c770d. This unit fixture retains r only;
+        # it does not claim to replay the real full-shard export authority.
+        method=['org.apache.hadoop.hive.serde2.teradata.TeradataBinarySerde','deserializeField',
+                '(Lorg/apache/hadoop/hive/serde2/teradata/TeradataBinaryDataInputStream;'
+                'Lorg/apache/hadoop/hive/serde2/typeinfo/TypeInfo;Ljava/lang/Object;Z)Ljava/lang/Object;']
+        raw={'kind':'array','dimension':1,'base':{'kind':'primitive','name':'byte'}}
+        saved='org.apache.hadoop.hive.serde2.io.ShortWritable'
+        origins=['body.locals','stmt:30','typed-allocation:30','stmt:31','stmt:33',
+                 'ordinary-assignment:33','stmt:34','stmt:35','stmt:130',
+                 'ordinary-assignment:130','stmt:154','stmt:155']
+        for arm in self.rows:
+            self.rows[arm]={'record':'method','method':method,'statementCount':157,
+                'locals':{'r':[{'type':raw,'origin':origin} for origin in origins]},
+                'typedAllocations':{'r':[{'ordinal':30,'type':{'kind':'class','name':saved}}]},
+                'ordinaryAssignments':{'r':[{'ordinal':i,'type':raw} for i in (33,130)]}}
+        _,source=self.creation_source();oracle=self.authority(source_authority=source)
+        oracle.observe(local(saved,name='r',node=15864636),method);report=oracle.finish()
+        row=report['occurrences'][0]
+        self.assertEqual('PASS_TYPED_ALLOCATION',row['status'])
+        self.assertEqual((0,1,0),(report['arrayCount'],report['typedAllocationCount'],report['unprovedCount']))
+        self.assertEqual(raw,row['rawType']);self.assertEqual(saved,row['expectedType'])
+        self.assertEqual(30,row['creationOrderProof']['arms']['B']['firstStatementOrdinal'])
+        r.verify_creation_inputs(report,source,oracle.pins)
+
+    def test_allocation_first_report_cannot_drop_proof_or_change_classification(self):
+        self.allocation_first();oracle=self.allocation_check();report=oracle.finish()
+        r.verify_creation_inputs(report,oracle.source_authority,oracle.pins)
+        for mutation in (
+            lambda x:x['occurrences'][0].pop('creationOrderProof'),
+            lambda x:x['occurrences'][0].update(status='PASS_ARRAY'),
+            lambda x:x['occurrences'][0].update(expectedType='byte[][]'),
+            lambda x:x['occurrences'][0]['arms']['B'].pop('statementCount'),
+            lambda x:x.pop('sourceCreationInputs'),
+        ):
+            changed=copy.deepcopy(report);mutation(changed)
+            with self.assertRaises(ValueError):r.verify_creation_inputs(changed,oracle.source_authority,oracle.pins)
+
     def test_ordinary_assignment_without_source_authority_still_blocks(self):
         self.ordinary_before_allocation()
         with self.assertRaisesRegex(ValueError,'conflicts/missing'):self.check().finish()
@@ -157,11 +247,21 @@ class RawLocalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'changed'):oracle.finish()
 
     def test_real_creation_report_flows_through_graph_receipt_with_exact_source_pins(self):
+        self.creation_graph_report(False)
+
+    def test_allocation_first_report_flows_through_graph_receipt_with_exact_source_pins(self):
+        self.creation_graph_report(True)
+
+    def creation_graph_report(self, allocation):
         # Only the exporter-binding input is injected; source manifests, source
         # rules, raw Local reader, creation proof and graph receipt audit are real.
         from unittest.mock import patch
         import run_native_core_equivalence as runner
-        self.ordinary_before_allocation();fixture,oracle=self.with_creation_source()
+        if allocation:
+            self.allocation_first();fixture,source=self.creation_source()
+            oracle=self.authority(source_authority=source);oracle.observe(local('First'),M)
+        else:
+            self.ordinary_before_allocation();fixture,oracle=self.with_creation_source()
         graph_id=oracle.spec['graphId'];proof=self.root/'graphs'/graph_id
         (proof/'core').mkdir(parents=True);oracle.out=proof/'core';report=oracle.finish()
         self.assertEqual(2,len(report['inputs']));self.assertTrue(report['sourceCreationInputs'])
@@ -201,7 +301,8 @@ class RawLocalTests(unittest.TestCase):
             save(proof/'core/raw-local-type-proof.json',report)
             with self.assertRaisesRegex(ValueError,'required exact ordinary'):runner.graph_result(plan,row)
             report=copy.deepcopy(oracle.finish())
-            report['occurrences'][0]['creationOrderProof']['arms']['B']['firstTypedAllocationOrdinal']=58
+            key='firstStatementOrdinal' if allocation else 'firstTypedAllocationOrdinal'
+            report['occurrences'][0]['creationOrderProof']['arms']['B'][key]=58
             save(proof/'core/raw-local-type-proof.json',report)
             with self.assertRaisesRegex(ValueError,'required exact ordinary'):runner.graph_result(plan,row)
             report=oracle.finish();del receipt['inputs'][source_pin];write_receipts()

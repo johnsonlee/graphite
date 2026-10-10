@@ -230,6 +230,11 @@ def graph_result(plan,row):
         expected=raw_local_export.binding(plan,row)
         report=common.read(root/'core/raw-local-type-proof.json')
         require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
+        require(report['localCount']==len(report['occurrences']) and
+                report['arrayCount']==sum(r['status']=='PASS_ARRAY' for r in report['occurrences']) and
+                report.get('typedAllocationCount',0)==sum(r['status']=='PASS_TYPED_ALLOCATION' for r in report['occurrences']) and
+                all(r['status'] in ('PASS_ARRAY','PASS_TYPED_ALLOCATION','NON_ARRAY') and r['issues']==[]
+                    for r in report['occurrences']), 'complete raw or creation-derived Local classifications')
         require(report['inputs']=={r['path']:r['sha256'] for r in expected['exports'].values()} and
                 all(receipt['inputs'].get(p)==h for p,h in report['inputs'].items()),'actual raw Local export linkage')
         source = local_array_corrections.Authority(root,plan['sourceRule'],row['fieldAuthority']) if any(

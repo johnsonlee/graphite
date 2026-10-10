@@ -32,11 +32,18 @@
     ],
     "clearMethodState": [
       "    private fun clearMethodState(method: MethodDescriptor) {\n        activeMethodLocals.forEach { key ->\n            localNodes.remove(key)\n            allocationNodes.remove(key)\n            localToParamIndex.remove(key)\n            dynamicTargets.remove(key)\n            arrayDynamicTargets.remove(key)\n            localeSpecsByLocal.remove(key)\n            localeBuilderSpecsByLocal.remove(key)\n            stringValuesByLocal.remove(key)\n            bundleControlFormatsByLocal.remove(key)\n            resourceHandlePathsByLocal.remove(key)\n            propertiesPathsByLocal.remove(key)\n            resourceBundlePaths.remove(key)\n            bundleControlSpecsByLocal.remove(key)\n        }\n        activeMethodParameters.forEach { parameterNodes.remove(it) }\n        methodReturnNodes.remove(method)\n        stmtNodeIds.clear()\n        stmtLocalWrites.clear()\n        stmtIdentityWrites.clear()\n        activeMethod = null\n        activeMethodLocals = mutableListOf()\n        bodyCallOrdinals = emptyMap()\n        activeLocalKeysByName = mutableMapOf()\n        activeMethodParameters = mutableListOf()\n        activeParameterBindingsByIndex = mutableMapOf()\n    }"
+    ],
+    "processMethod": [
+      "    private fun processMethod(method: SootMethod) {\n        val methodDescriptor = toMethodDescriptor(method)\n        graphBuilder.addMethod(methodDescriptor)\n\n        // Create return node for this method\n        val returnNode = ReturnNode(\n            id = nextNodeId(\"return\"),\n            method = methodDescriptor\n        )\n        methodReturnNodes[methodDescriptor] = returnNode\n        graphBuilder.addNode(returnNode)\n        interprocedural?.method(methodDescriptor, returnNode.id)\n\n        activeMethod = methodDescriptor\n        activeMethodLocals = mutableListOf()\n        bodyCallOrdinals = emptyMap()\n        activeLocalKeysByName = mutableMapOf()\n        activeMethodParameters = mutableListOf()\n        activeParameterBindingsByIndex = mutableMapOf()\n\n        try {\n            // Process method body if available\n            if (method.hasBody()) {\n                processMethodBody(method, methodDescriptor)\n            }\n            // Rendered here, while the body is materialised, rather than in a pass of its own:\n            // streamed methods are rebuilt on every enumeration.\n            val syntheticMethod = SyntheticIdentity.isSyntheticMethod(method)\n            if (activeSyntheticClass || syntheticMethod) {\n                syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)\n            }\n        } catch (oom: OutOfMemoryError) {\n            // Android/large corpus can contain a few pathological methods whose CFG\n            // materialization explodes heap. Skip the offending method so graph build\n            // can continue instead of failing the entire load.\n            log { \"Skipping method due to OOM while building ${methodDescriptor.signature}: ${oom.message}\" }\n            System.gc()\n        } finally {\n            clearMethodState(methodDescriptor)\n            releaseConversionState(method)\n        }\n    }"
+    ],
+    "processParameters": [
+      "    private fun processParameters(method: SootMethod, methodDescriptor: MethodDescriptor) {\n        val nodes = method.parameterTypes.mapIndexed { index, paramType ->\n            val paramNode = ParameterNode(\n                id = nextNodeId(\"param\"),\n                index = index,\n                type = toTypeDescriptor(paramType),\n                method = methodDescriptor\n            )\n            parameterNodes[parameterBinding(methodDescriptor, index)] = paramNode\n            graphBuilder.addNode(paramNode)\n            paramNode.id\n        }\n        interprocedural?.parameters(methodDescriptor, nodes)\n    }"
     ]
   },
   "cacheDeclarations": [
     "private val methodDescriptorCache = mutableMapOf<MethodSignature, MethodDescriptor>()",
-    "private val typeDescriptorCache = identityMutableMap<Type, TypeDescriptor>()"
+    "private val typeDescriptorCache = identityMutableMap<Type, TypeDescriptor>()",
+    "    private class LocalKey(val method: MethodDescriptor, val name: String) {\n        override fun equals(other: Any?): Boolean =\n            other is LocalKey && method === other.method && name == other.name\n\n        override fun hashCode(): Int = 31 * System.identityHashCode(method) + name.hashCode()\n    }"
   ],
   "formatters": {
     "C": "internal fun graphTypeName(type: Type): String = when (type) {\n    is ClassType -> type.fullyQualifiedName\n    is ArrayType -> \"${graphTypeName(type.baseType)}[]\"\n    else -> type.toString()\n}",
@@ -58,6 +65,8 @@
     "\\bgetOrCreateLocalWithType\\s*\\(": 2,
     "\\bLocalVariable\\s*\\(": 2,
     "\\blocalNodes\\b": 6,
-    "\\bclearMethodState\\s*\\(": 3
+    "\\bclearMethodState\\s*\\(": 3,
+    "\\bgetOrCreateLocal\\s*\\(": 3,
+    "\\bgetOrCreateValueNode\\s*\\(": 10
   }
 }

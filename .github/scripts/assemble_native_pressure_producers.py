@@ -166,7 +166,8 @@ def corrected_comparison(packet, arm_id, path):
                 report['performanceAcceptance'] is False, 'complete scoped raw array authority')
         require(report['localCount'] == len(report['occurrences']) and
                 report['arrayCount'] == sum(r['status'] == 'PASS_ARRAY' for r in report['occurrences']) and
-                all(r['graphId'] == row['id'] and r['status'] in ('PASS_ARRAY', 'NON_ARRAY') and
+                report.get('typedAllocationCount',0) == sum(r['status'] == 'PASS_TYPED_ALLOCATION' for r in report['occurrences']) and
+                all(r['graphId'] == row['id'] and r['status'] in ('PASS_ARRAY', 'PASS_TYPED_ALLOCATION', 'NON_ARRAY') and
                     r['issues'] == [] for r in report['occurrences']), 'no missing conflicting or unproved raw locals')
         require(len(report['inputs']) == 2 and all(actual['pins'].get(p) == h for p, h in report['inputs'].items()),
                 'both actual raw export input closure')

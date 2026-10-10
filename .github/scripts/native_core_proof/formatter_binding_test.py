@@ -17,8 +17,9 @@ class FormatterBindingTests(unittest.TestCase):
             root=self.root/arm;root.mkdir()
             files={f.FOLDING:self.contract['formatters'][arm],
                 f.ADAPTER:'\n'.join(['private val localNodes = mutableMapOf<LocalKey, LocalVariable>()',
-                    'clearMethodState(methodDescriptor)', 'clearMethodState(methodDescriptor)',
-                    'localNodes[key]?.type', 'localNodes[key]?.type',*self.contract['cacheDeclarations'],
+                    'clearMethodState(methodDescriptor)',
+                    'localNodes[key]?.type', 'localNodes[key]?.type',
+                    *(['getOrCreateValueNode(stmtOperand, method)'] * 7),*self.contract['cacheDeclarations'],
                     *(text for texts in self.contract['boundaries'].values() for text in texts)]),
                 self.contract['localNode']['path']:self.contract['localNode']['body'],
                 **{name:'same dependency input' for name in self.contract['dependencyFiles']}}
@@ -48,7 +49,7 @@ class FormatterBindingTests(unittest.TestCase):
             'arms':{arm:{'fixtureManifest':self.fixtures[arm]} for arm in ('C','B')}})
         self.assertEqual('b'*40,authority.rule['arms']['B']['revision'])
         self.assertEqual(2,report['boundaries']['B']['exactBodyCounts']['toMethodDescriptor'])
-        self.assertEqual(10,len(report['boundaries']['C']['exactBodyCounts']))
+        self.assertEqual(12,len(report['boundaries']['C']['exactBodyCounts']))
         self.assertFalse(report['productionFormatterTestsVerified'])
         self.assertFalse(report['syntheticLocalInferenceOracleClaim']);self.assertFalse(report['completeSemanticEquivalence'])
         self.assertTrue(all(f.sha(path)==digest for path,digest in report['pins'].items()))
@@ -76,6 +77,9 @@ class FormatterBindingTests(unittest.TestCase):
         mutations=[(f.ADAPTER,'is JAssignStmt -> processAssignment(stmt, method)','is JAssignStmt -> Unit'),
                    (f.ADAPTER,'is Local -> getOrCreateLocal(value, method)','is Local -> null'),
                    (f.ADAPTER,'localNodes.remove(key)','localNodes.clear()'),
+                   (f.ADAPTER,'method === other.method','method == other.method'),
+                   (f.ADAPTER,'val nodes = method.parameterTypes.mapIndexed','getOrCreateLocal(extra, methodDescriptor)\n        val nodes = method.parameterTypes.mapIndexed'),
+                   (f.ADAPTER,'activeMethodLocals = mutableListOf()','activeMethodLocals = oldLocals'),
                    (self.contract['localNode']['path'],'val type: TypeDescriptor','var type: TypeDescriptor')]
         for name,old,new in mutations:
             with self.subTest(old=old):
@@ -86,7 +90,8 @@ class FormatterBindingTests(unittest.TestCase):
 
     def test_extra_typed_factory_or_cache_mutation_callsite_rejected(self):
         for extra in ('getOrCreateLocalWithType(local, method, other)',
-                      'LocalVariable(id, name, type, method)', 'localNodes[key] = replacement'):
+                      'LocalVariable(id, name, type, method)', 'localNodes[key] = replacement',
+                      'getOrCreateLocal(extra, method)', 'getOrCreateValueNode(extra, method'):
             with self.subTest(extra=extra):
                 path=Path(self.manifests['B']['root'])/f.ADAPTER;original=path.read_text()
                 self.change('B',f.ADAPTER,lambda x:x+'\n'+extra)
