@@ -34,8 +34,8 @@ internal object DeclaredTypeStore {
     private const val SHARED_HEADER = 0x47545903 // GTY, graph.strings IDs
     private const val STRUCTURAL_HEADER = 0x47545904 // GTY, enum tags and declaration scope references
     private const val ERASED_HEADER = 0x47545905 // GTY, erased type and signature references
-    private const val CURRENT_VERSION = 5
-    private const val STRUCTURAL_VERSION = 4
+    private const val CURRENT_VERSION = DeclaredTypeSavePlan.CURRENT_VERSION
+    private const val STRUCTURAL_VERSION = DeclaredTypeSavePlan.STRUCTURAL_VERSION
     private const val SHARED_VERSION = 3
     private const val DIGEST_SIZE = 32
     private const val TYPE_MIN_BYTES = 28
@@ -48,10 +48,10 @@ internal object DeclaredTypeStore {
     private const val METHOD_SECTION = "method"
     private const val CLASS_SECTION = "class"
 
-    fun collectStrings(table: DeclaredTypeTable, target: MutableSet<String>, maximumVersion: Int = CURRENT_VERSION) {
-        val structural = maximumVersion >= STRUCTURAL_VERSION && StructuralDeclaredTypeScopes.forTable(table) != null
-        val erased = maximumVersion >= CURRENT_VERSION && structural && ErasedDeclaredTypePlan.forTable(table) != null
-        DeclaredTypeStringIds(table, structural, erased).collect(target)
+    fun collectStrings(
+        table: DeclaredTypeTable, target: MutableSet<String>, maximumVersion: Int = CURRENT_VERSION
+    ): DeclaredTypeSavePlan = DeclaredTypeSavePlan.prepare(table, maximumVersion).also { plan ->
+        DeclaredTypeStringIds(table, plan.structural != null, plan.erased != null).collect(target)
     }
 
     /** Advisory optimization only: load still independently requires the verified digest for GTY03–GTY05. */
@@ -65,6 +65,12 @@ internal object DeclaredTypeStore {
 
     fun save(table: DeclaredTypeTable, dir: Path, strings: StringTable) = saveTable(table, dir, strings)
 
+    /** Consume the exact format decision used to collect this save's shared dictionary. */
+    fun save(plan: DeclaredTypeSavePlan, dir: Path, strings: StringTable) = plan.use {
+        it.requireOpen()
+        saveTable(it.table, dir, strings, prepared = it)
+    }
+
     /** Explicit legacy wire fixture writer; GraphStore chooses GTY05 when scopes and erased member keys have structural references. */
     internal fun saveLegacyV2(table: DeclaredTypeTable, dir: Path) = saveTable(table, dir, null)
 
@@ -73,7 +79,10 @@ internal object DeclaredTypeStore {
         saveTable(table, dir, strings, maximumVersion = version)
     }
 
-    private fun saveTable(table: DeclaredTypeTable, dir: Path, strings: StringTable?, maximumVersion: Int = CURRENT_VERSION) {
+    private fun saveTable(
+        table: DeclaredTypeTable, dir: Path, strings: StringTable?, maximumVersion: Int = CURRENT_VERSION,
+        prepared: DeclaredTypeSavePlan? = null
+    ) {
         val path = dir.resolve(FILE_NAME)
         if (table == DeclaredTypeTable.EMPTY) {
             Files.deleteIfExists(path)
@@ -85,7 +94,9 @@ internal object DeclaredTypeStore {
         // serialization completes, so save(load(dir), dir) never truncates its input.
         val temporary = Files.createTempFile(dir, "graph.types-", ".tmp")
         try {
-            writeTable(table, dir, temporary, strings, maximumVersion)
+            // Do not retain descriptor/scope indexes through the remaining graph index writes.
+            val plan = prepared ?: DeclaredTypeSavePlan.prepare(table, if (strings == null) SHARED_VERSION else maximumVersion)
+            plan.use { writeTable(table, dir, temporary, strings, it) }
             try {
                 Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             } catch (_: AtomicMoveNotSupportedException) {
@@ -97,9 +108,9 @@ internal object DeclaredTypeStore {
         }
     }
 
-    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, maximumVersion: Int) {
-        val structural = if (shared == null || maximumVersion < STRUCTURAL_VERSION) null else StructuralDeclaredTypeScopes.forTable(table)
-        val erased = if (structural != null && maximumVersion >= CURRENT_VERSION) ErasedDeclaredTypePlan.forTable(table) else null
+    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, plan: DeclaredTypeSavePlan) {
+        val structural = plan.structural
+        val erased = plan.erased
         val local = if (shared == null) DeclaredTypeStringIds(table) else null
         val strings: (String) -> Int = { value ->
             Charsets.UTF_8.newEncoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
@@ -109,7 +120,12 @@ internal object DeclaredTypeStore {
             }
         }
         DataOutputStream(BufferedOutputStream(Files.newOutputStream(path))).use { out ->
-            out.writeInt(wireHeader(shared != null, structural != null, erased != null))
+            out.writeInt(when {
+                shared == null -> HEADER
+                structural == null -> SHARED_HEADER
+                erased == null -> STRUCTURAL_HEADER
+                else -> ERASED_HEADER
+            })
             out.write(WireIo.digest(dir.resolve("graph.metadata")))
             if (shared == null) checkNotNull(local).write(out) else {
                 out.write(requireNotNull(shared.serializedDigest()) { "Unverified graph.strings bytes" })
@@ -139,13 +155,6 @@ internal object DeclaredTypeStore {
                 out.ids(type.interfaces)
             }
         }
-    }
-
-    private fun wireHeader(shared: Boolean, structural: Boolean, erased: Boolean): Int = when {
-        !shared -> HEADER
-        !structural -> SHARED_HEADER
-        !erased -> STRUCTURAL_HEADER
-        else -> ERASED_HEADER
     }
 
     private fun DataOutputStream.type(

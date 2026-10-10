@@ -15281,3 +15281,58 @@ Fresh output: `/private/tmp/graphite-attempt195-real64-construction-1`.
 No timing or resource result is yet claimed; all six actual construction,
 mandatory verification and inventory phases plus the final resource audit are
 still required. The complete independent semantic-proof gap remains explicit.
+
+
+#### Attempt195 real64 result — retain lower peak RSS, no CPU speedup
+
+The fixed CABBAC comparison completed all six fresh construction JVMs and all six
+mandatory separate readback JVMs, each with exit/cleanup 0. No sample failed,
+was retried, or was omitted. The original resource auditor ran once and passed;
+root independently reparsed all six BSD time records, checked the actual writer,
+4 GiB/APC4 arguments, 64-graph manifests, raw phase/log bindings and empty owned
+process groups. The measured boundary includes input splitting, construction,
+saving, query-index production and embedded usable-output validation through
+normal JVM exit. Separate second verification and artifact inventory remain
+outside the timing boundary, as predeclared.
+
+| Cell | Actual writer | Wall seconds | Total CPU seconds | Peak process RSS bytes |
+|---|---|---:|---:|---:|
+| 01-C | accepted4f | 239.77 | 307.59 | 3,984,965,632 |
+| 02-A | parent28624662 | 263.54 | 337.03 | 4,050,960,384 |
+| 03-B | candidate7e6a61d5 | 262.77 | 350.26 | 3,617,538,048 |
+| 04-B | candidate7e6a61d5 | 263.54 | 344.14 | 3,619,553,280 |
+| 05-A | parent28624662 | 262.83 | 332.60 | 3,891,052,544 |
+| 06-C | accepted4f | 248.09 | 330.11 | 3,886,809,088 |
+
+Both predeclared parent-relative pairs show lower RSS: 4,050.96 to 3,617.54 MB
+(-433.42 MB, -10.70%) and 3,891.05 to 3,619.55 MB (-271.50 MB, -6.98%).
+Wall time changes by -0.77 and +0.71 seconds. CPU increases from 337.03 to
+350.26 seconds (+13.23, +3.93%) and from 332.60 to 344.14 seconds
+(+11.54, +3.47%); both parent-relative CPU/RSS constraints pass. The intended
+CPU saving is not established. Retain and integrate the exact tested source for
+its consistent RSS benefit, with the CPU tradeoff explicit. Two directional
+pairs show the observed variation; they do not establish a confidence interval
+or a general speedup, and no cause for the RSS/CPU behavior is inferred.
+
+Against accepted4f, RSS falls by 367.43 and 267.26 MB, passing both 5% checks.
+Wall remains 239.77 to 262.77 seconds (+23.00) and 248.09 to 263.54 seconds
+(+15.45). CPU remains 307.59 to 350.26 seconds (+42.67, raw 5% FAIL) and
+330.11 to 344.14 seconds (+14.03, raw 5% PASS). The cumulative construction
+regression is therefore unresolved. Query p50/p95 were not measured by this
+construction comparison, and these results do not change loading/query verdicts.
+All executions were stable and existing correctness gates pass, but complete
+independent graph semantic equivalence remains pending. No final performance,
+semantic-equivalence or PR-readiness flag is promoted.
+
+Evidence root: `/private/tmp/graphite-attempt195-real64-construction-1`.
+Execution SHA-256:
+`d36ccfcdd52f315eed1b47a4ba73c432cd74d9cd90265c7f9543dc9a0ce4c361`.
+Original resource audit SHA-256:
+`2da83861094ce7a92a03a67c729bf2f3cb4130cdc5483ff1535079282e75e5d0`.
+Root raw-resource/cleanup review SHA-256:
+`ca268eb73b3934c53ca52994dd27e605a7754ee56d098fa386a3798d8719b791`.
+The original command, environment, package and source bindings remain those
+recorded above. The integrated four-file JVM patch is byte-identical to the
+fully tested isolated candidate; the shared dictionary and wire format are
+unchanged. Further CPU work requires matching construction profiling rather
+than attributing this whole-operation gap to an unmeasured source-level guess.

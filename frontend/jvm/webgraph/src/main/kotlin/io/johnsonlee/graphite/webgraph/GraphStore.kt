@@ -667,7 +667,7 @@ object GraphStore {
             ),
             allStrings
         )
-        DeclaredTypeStore.collectStrings(declaredTypes, allStrings, declaredTypeVersion)
+        val declaredTypePlan = DeclaredTypeStore.collectStrings(declaredTypes, allStrings, declaredTypeVersion)
         val stringTable = StringTable.build(allStrings, dir, declaredTypes != DeclaredTypeTable.EMPTY)
         allStrings.clear()
 
@@ -725,9 +725,7 @@ object GraphStore {
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
-        if (declaredTypeVersion < CURRENT_DECLARED_TYPE_VERSION)
-            DeclaredTypeStore.saveLegacyShared(declaredTypes, dir, stringTable, declaredTypeVersion)
-        else DeclaredTypeStore.save(declaredTypes, dir, stringTable)
+        DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
