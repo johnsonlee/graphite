@@ -4,7 +4,9 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 from . import core_semantics as core
+from . import legacy_method_collisions as collisions
 from . import local_array_corrections as local
 from . import source_bindings as binding
 from . import synthetic_collisions as synthetic
@@ -15,6 +17,26 @@ ADAPTER = 'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/Soo
 IDENTITY = 'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SyntheticIdentity.kt'
 ASM = 'frontend/jvm/sootup/src/main/kotlin/sootup/java/bytecode/frontend/conversion/GraphiteAsmClassSource.kt'
 SERIALIZER = 'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/NodeSerializer.kt'
+BUILDER = 'frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/MmapGraphBuilder.kt'
+NODE = 'frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/core/Node.kt'
+COUNTER = '''internal fun callOrdinals(statements: Iterable<Stmt>, declaring: (MethodSignature) -> String): Map<Stmt, Int> {
+    val counts = HashMap<String, Int>()
+    val ordinals = IdentityHashMap<Stmt, Int>()
+    for (stmt in statements) {
+        val invoke = invokeExprOf(stmt) ?: continue
+        ordinals[stmt] = counts.merge(declaring(invoke.methodSignature), 1, Int::plus)!! - 1
+    }
+    return ordinals
+}'''
+RENDERING = '''private fun render(signature: MethodSignature): String {
+    val parameters = signature.parameterTypes.joinToString(",", transform = ::graphTypeName)
+    return "${signature.declClassType.fullyQualifiedName}.${signature.name}($parameters)"
+}'''
+COUNTER_BINDING = '''        bodyCallOrdinals = preFoldOrdinals(method.signature) ?: callOrdinals(statements) { signature ->
+            val resolved = resolveMethodDefiningClass(signature)
+            bodyResolvedCallees[signature] = resolved
+            renderedDefiningClass.getOrPut(resolved) { renderSignature(resolved) }
+        }'''
 
 
 class SourceBindingTests(unittest.TestCase):
@@ -33,13 +55,18 @@ class SourceBindingTests(unittest.TestCase):
                 FOLDING: ('internal fun graphTypeName(type: Type): String = when (type) {\n'
                           '    is ClassType -> type.fullyQualifiedName\n'
                           '    is ArrayType -> ' + expression + '\n'
-                          '    else -> type.toString()\n}'),
+                          '    else -> type.toString()\n}\n' + COUNTER + '\n' + RENDERING),
                 ADAPTER: ('resolveMethodsOrEmpty(sootClass).sortedBy { it.signature.toString() }.forEach(action)\n'
                           '.sortedWith(compareBy({ (it.bodySource as? MethodNode)?.name ?: it.name }, { (it.bodySource as? MethodNode)?.desc ?: it.signature.toString() }))\n'
-                          'syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)'),
+                          'syntheticIdentities.addMethod(method, methodDescriptor.signature, syntheticMethod)\n' + COUNTER_BINDING),
                 IDENTITY: 'return members.associate { it.key to it.fingerprint!! }',
                 ASM: 'node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))',
                 SERIALIZER: 'for ((member, fingerprint) in metadata.syntheticIdentities.toSortedMap())',
+                BUILDER: ('private val methods = linkedSetOf<MethodDescriptor>()\nmethods.add(method)\n'
+                          'val methodIndex = LinkedHashMap<String, MethodDescriptor>(methods.size)\n'
+                          'methods.forEach { methodIndex[it.signature] = it }'),
+                NODE: ('data class MethodDescriptor(\n'
+                       'val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"'),
             }
             for relative, text in contents.items():
                 path = source / relative; path.parent.mkdir(parents=True, exist_ok=True); path.write_text(text)
@@ -189,6 +216,110 @@ class SourceBindingTests(unittest.TestCase):
         self.replace_source('B', ASM, path.read_text().replace('it.desc', 'it.name'))
         with self.assertRaisesRegex(Invalid, 'streamed raw descriptor order'):
             synthetic.SourceRules(self.rule_ref, self.spec)
+
+    def test_legacy_collision_constructor_binds_both_actual_writers_and_lifecycle(self):
+        correction = collisions.Corrections(self.out, self.rule_ref, self.spec)
+        self.assertEqual(self.rule, correction.source.types.rule)
+        for arm in ('C', 'B'):
+            fixture = self.spec['arms'][arm]['fixtureManifest']
+            self.assertEqual(fixture['sha256'], correction.source.pins[fixture['path']])
+            for relative in self.manifests[arm]['files']:
+                path = str(Path(self.manifests[arm]['root']) / relative)
+                # Synthetic identity/serializer rules belong to the separate checker.
+                if relative not in (IDENTITY, SERIALIZER):
+                    self.assertEqual(binding.sha(path), correction.source.pins[path])
+        proof = self.out / 'method-corrections.json'; proof.write_text('{}')
+        partial = correction.save()
+        self.assertEqual('PARTIAL_LEGACY_METHOD_COLLISION_EVIDENCE_NOT_CORE_PASS', partial['status'])
+        self.assertEqual(binding.sha(proof), partial['methodCorrectionProofSha256'])
+        correction.complete = True
+        complete = correction.save()
+        self.assertEqual('PASS_EXPLICIT_LEGACY_METHOD_COLLISION_CORRECTIONS', complete['status'])
+        self.assertEqual(0, complete['ordinalGroupCount'])
+        self.assertEqual([], complete['ordinalBindingCorrections'])
+        self.assertFalse(complete['strictEquivalence'])
+        self.assertFalse(complete['independentInvocationOrderOracleClaim'])
+
+    def test_legacy_collision_constructor_requires_pinned_rule(self):
+        for ref in (None, {}, dict(self.rule_ref, sha256='0'*64)):
+            with self.subTest(ref=ref), self.assertRaises(Invalid):
+                collisions.Corrections(self.out, ref, self.spec)
+
+    def test_legacy_collision_constructor_rejects_other_actual_writer(self):
+        self.spec['arms']['B']['fixtureManifest'] = self.write('B-fixture.json', {
+            'writerRevision': 'b'*40, 'sourceManifestSha256': '0'*64})
+        with self.assertRaisesRegex(Invalid, 'actual writer source manifest'):
+            collisions.Corrections(self.out, self.rule_ref, self.spec)
+
+    def test_repinning_changed_legacy_counter_is_not_authority(self):
+        path = Path(self.rule['arms']['B']['folding'])
+        self.replace_source('B', FOLDING, path.read_text().replace('!! - 1', '!! - 2'))
+        with self.assertRaisesRegex(Invalid, 'counter/rendering differs'):
+            collisions.Corrections(self.out, self.rule_ref, self.spec)
+
+    def test_repinning_changed_legacy_metadata_order_is_not_authority(self):
+        path = Path(self.manifests['B']['root']) / BUILDER
+        self.replace_source('B', BUILDER, path.read_text().replace('linkedSetOf', 'hashSetOf'))
+        with self.assertRaisesRegex(Invalid, 'metadata insertion/iteration rule changed'):
+            collisions.Corrections(self.out, self.rule_ref, self.spec)
+
+    def test_legacy_collision_finish_rejects_source_mutation(self):
+        correction = collisions.Corrections(self.out, self.rule_ref, self.spec)
+        (Path(self.manifests['C']['root']) / NODE).write_text('changed')
+        with self.assertRaisesRegex(Invalid, 'source rule changed during validation'):
+            correction.save()
+
+    def invoke_corrected_core(self, output, compare):
+        # Only graph/classfile I/O is replaced. Every source-bound correction
+        # constructor and receipt writer executes against actual tiny manifests.
+        with patch.object(core.method_authority, 'Authority') as authority, patch.object(core, '_prove', side_effect=compare):
+            entered = authority.return_value.__enter__.return_value
+            entered.save.side_effect = lambda: (output/'method-corrections.json').write_text('{}')
+            return core.prove(self.root/'missing-B', self.root/'missing-C', None, None, output,
+                              True, self.spec, method_array_corrections=True, source_local_arrays=True,
+                              parameter_arrays=True, legacy_overload_collisions=True,
+                              synthetic_method_keys=True, inherited_fields=True, source_rule=self.rule_ref)
+
+    def test_corrected_core_propagates_actual_source_pair_before_comparison(self):
+        output = self.root/'corrected-core'
+        def compare(*args):
+            local_rules, legacy, synthetic_rules = args[8], args[10], args[11]
+            self.assertIsInstance(legacy, collisions.Corrections)
+            self.assertEqual(self.rule, local_rules.rule)
+            self.assertEqual(self.rule, legacy.source.types.rule)
+            self.assertTrue(args[12])  # inherited-field mode remains enabled
+            for authority in (local_rules, legacy.source, synthetic_rules.source):
+                self.assertEqual(self.rule_ref['sha256'], authority.pins[self.rule_ref['path']])
+                for arm in ('C', 'B'):
+                    ref = self.spec['arms'][arm]['fixtureManifest']
+                    self.assertEqual(ref['sha256'], authority.pins[ref['path']])
+            return {'unitTestComparison': 'complete'}
+        self.assertEqual({'unitTestComparison': 'complete'}, self.invoke_corrected_core(output, compare))
+        receipt = json.loads((output/'legacy-method-collisions.json').read_text())
+        self.assertEqual('PASS_EXPLICIT_LEGACY_METHOD_COLLISION_CORRECTIONS', receipt['status'])
+        self.assertFalse(receipt['strictEquivalence'])
+
+    def test_corrected_core_failure_retains_partial_correction_receipts(self):
+        output = self.root/'failed-core'
+        def compare(*args):
+            self.assertIsInstance(args[10], collisions.Corrections)
+            raise Invalid('unit test semantic mismatch')
+        with self.assertRaisesRegex(Invalid, 'unit test semantic mismatch'):
+            self.invoke_corrected_core(output, compare)
+        receipt = json.loads((output/'legacy-method-collisions.json').read_text())
+        self.assertEqual('PARTIAL_LEGACY_METHOD_COLLISION_EVIDENCE_NOT_CORE_PASS', receipt['status'])
+        self.assertFalse(receipt['strictEquivalence'])
+        self.assertTrue(json.loads((output/'synthetic-method-key-corrections.json').read_text())['status'].startswith('PARTIAL_'))
+
+    def test_corrected_core_rejects_wrong_writer_before_comparison(self):
+        self.spec['arms']['B']['fixtureManifest'] = self.write('B-fixture.json', {
+            'writerRevision': 'b'*40, 'sourceManifestSha256': '0'*64})
+        def compare(*args):
+            self.fail('unbound writer must not enter graph comparison')
+        output = self.root/'unbound-core'
+        with self.assertRaisesRegex(Invalid, 'actual writer source manifest'):
+            self.invoke_corrected_core(output, compare)
+        self.assertFalse((output/'legacy-method-collisions.json').exists())
 
 
 if __name__ == '__main__':

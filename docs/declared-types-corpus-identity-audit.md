@@ -1014,3 +1014,45 @@ Evidence: `/private/tmp/graphite-attempt187-raw-local-helper-compile-1`, record
 SHA-256 `94ec66b028e24ea8544a2bca4a5de4853d77b6b24dc5067ff5066e428b32d89b`.
 This resolves compilation compatibility only; raw corpus execution and complete
 semantic acceptance remain pending.
+
+### Hosted whole64 initialization failure and explicit binding fix (2026-10-10)
+
+[Run38003744479, job114071304148](https://github.com/johnsonlee/graphite/actions/runs/38003744479/job/114071304148)
+at5a7ca7c6 completed actual writer construction and topology-helper compilation,
+then failed the first graph, `fixture-android-00`, before entering its core
+comparison. `legacy_method_collisions.SourceRules` called `Authority(out)` without
+the now-required `source_rule` and `producer_spec` arguments. The whole64 record
+has `graphs=[]`, `finalIdentity=PASS` and all semantic/strict/inference/performance
+acceptance flags false. This is a verifier initialization error, not evidence of
+a product semantic regression or a semantic/performance pass.
+
+The exact hosted records and traceback are retained under
+`/tmp/graphite-5a7-whole64-failure-1/selected/native-pressure-artifacts/B/core-equivalence`.
+The top-level record SHA-256 is
+`f1953d16626929ba4d852f25d7dcedd3b4dafe8ec1772b99d4e7ea9de0244480`;
+the first-graph record SHA-256 is
+`22be40c461c1cdc07dd07f49734f91b1e70522f7362fd8b08a361204b7969698`.
+Only ZIP directory ranges and seven small diagnostics were downloaded, totaling
+1,468,335bytes; the1.69GB artifact and graph contents were not downloaded.
+
+The fix explicitly propagates the existing pinned rule and actual producer spec
+from `core.prove` through `Corrections` and `SourceRules` into `Authority`.
+All constructor callsites were checked. The adjacent synthetic correction path
+already passed both bindings. No decoder, correction policy, scope, fixture
+inventory, source authority or acceptance flag changed. The newer raw Local.type
+stage did not address this earlier constructor error and still requires actual
+whole64 execution after this fix.
+
+Local validation passed260 package tests and20 runner protocol tests. Nine added
+tests exercise real source-bound constructors and tiny manifests: both producer
+bindings, rejected missing/stale authority and changed counter/metadata rules,
+source mutation detection, and complete/partial correction-receipt lifecycle.
+The core orchestration tests replace only graph/classfile I/O; they are not real
+graph proofs. The same new orchestration test against unchanged pre-fix source
+reproduced the exact hosted TypeError. Logs are
+`/tmp/graphite-legacy-source-propagation-package-tests-1.log`,
+`/tmp/graphite-legacy-source-propagation-runner-tests-1.log` and
+`/tmp/graphite-legacy-source-propagation-regression-1/before-fix.log`.
+The control manifest and workflow binding are refreshed only for these verifier
+changes. A complete remote rerun remains pending; no JVM, Cargo, corpus scan or
+performance run was performed for this fix.

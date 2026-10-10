@@ -202,7 +202,7 @@ def prove(actual,reference,actual_export,reference_export,out,allow_field_biject
     with method_authority.Authority(field_authority_spec,actual,reference,out,allow_legacy_collisions=legacy_overload_collisions,allow_inherited_class_methods=legacy_overload_collisions) as authority:
         local_rules=local_array_corrections.Authority(out,source_rule,field_authority_spec) if source_local_arrays else None
         parameter_rows=[] if parameter_arrays else None
-        collisions=legacy_method_collisions.Corrections(out) if legacy_overload_collisions else None
+        collisions=legacy_method_collisions.Corrections(out,source_rule,field_authority_spec) if legacy_overload_collisions else None
         synthetic=synthetic_metadata.Corrections(out,source_rule,field_authority_spec) if synthetic_method_keys else None
         raw_locals=raw_local_types.Authority(raw_local_exports,out) if raw_local_exports is not None else None
         completed=False
