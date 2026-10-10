@@ -1317,3 +1317,23 @@ actual writer build and original fixture, with all868 B and641 C source files
 checked. Original receipts remain unchanged; CI producer authority and all global
 acceptance flags remain false. Root independently checked the output and input
 hashes under `/tmp/graphite-tika12-raw-diagnostic-1`.
+
+### Candidate gate job time budget (2026-10-10)
+
+Run38034244868 at `84457461` did not reach the core or pressure execution jobs.
+The candidate-gate-tests job114161279002 hit its five-minute job timeout while
+running response-normalization protocol tests. GitHub's check annotation
+explicitly reports `maximum execution time of 5m0s`; the completed test steps
+passed. The expanded JVM preparation tests took47 seconds and native producer
+assembly tests took189.9 seconds. The following core protocol tests passed,
+then the job was cancelled and its remaining test steps and dependent benchmark
+jobs were skipped. The independently generated shared fixture64 completed.
+This cancellation is not evidence of a failing assertion or a performance result.
+
+The candidate-gate job now has a15-minute budget so the complete correctness
+suite can run. Its steps, assertions, request/process deadlines, heap limits,
+coverage requirements and all operation acceptance thresholds are unchanged.
+The previously extended360-minute real multi-graph job budget is also unchanged.
+Fifteen minutes is a prospective execution allowance; a fresh complete run must
+still prove that the suite finishes and passes. Actual cancelled logs remain at
+`/tmp/graphite-candidate-gate-84457461.log`.
