@@ -1337,3 +1337,44 @@ The previously extended360-minute real multi-graph job budget is also unchanged.
 Fifteen minutes is a prospective execution allowance; a fresh complete run must
 still prove that the suite finishes and passes. Actual cancelled logs remain at
 `/tmp/graphite-candidate-gate-84457461.log`.
+
+Fresh run38035255257 at `09316b10` completed all29 test steps in250 seconds,
+including every step skipped or interrupted in the prior run. Independent raw-log
+review confirmed the test commands and thresholds were unchanged. The shared
+fixture64 preparation also passed and the dependent core/pressure job started;
+these prerequisite successes do not establish that job's eventual acceptance.
+
+### Inherited-field CI interoperability coverage (2026-10-10)
+
+The exact-head Rust run38035255268 at `09316b10` completed successfully, but
+inspection of its test environment and source found a coverage gap. The initial
+Rust test invocation reports the inherited-field integration test as passed even
+when it returns early because `GRAPHITE_INHERITED_TYPES_FIXTURE` is unset. The
+later JVM interoperability step generated and required GTY01–05 fixtures, but
+did not generate the inherited-field fixture or rerun its native test. This run
+therefore does not establish JVM-to-native inherited-field interoperability.
+Its Linux test, Clippy and format results and Windows compile check retain their
+actual scope. Raw evidence is preserved under
+`/tmp/graphite-ci38035255268-rust-review-1`.
+
+The CI interoperability step now generates both builders' inherited-field
+fixtures with the existing JVM persistence tests and `--rerun`. It requires all
+four original/resaved outputs and invokes the complete native
+`inherited_fields_interop` test binary with
+`GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE=1`. Existing assertions cover the four
+graphs as directories and packed containers, declaration aliases and shadowing,
+complete field properties, and all32 rows across eight graph sources. These are
+correctness checks; they do not establish performance acceptance.
+
+Local verification reran the same two JVM fixture classes together:15 declared
+type tests and2 inherited-field tests passed without skips. All four fresh
+inherited graphs have GTY05 headers and matching type-table digests. The complete
+native integration test passed with the required-fixture flag; removing only
+the fixture-path environment variable made the same binary fail with exit101
+and the expected missing-fixture message. The JVM run reused a checkout with
+all481 JVM/Gradle source files identical to the current tree; Native used the
+current tree. Root independently verified1102 source pins, saved XML, output
+digests, logs and process cleanup. Evidence is retained under
+`/tmp/graphite-inherited-interop-validation-1`. YAML parsing, shell syntax and
+independent wiring review also passed. Hosted execution of the updated CI step
+remains pending; the existing live core/pressure run is preserved until it ends.

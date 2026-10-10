@@ -230,6 +230,13 @@ four as directories and packed containers, including full type structures and
 cross-graph provenance. Set `GRAPHITE_REQUIRE_INHERITED_TYPES_FIXTURE=1` together
 with that directory to make a missing fixture fail the native gate.
 
+The Rust CI interoperability step generates this inherited-field fixture alongside
+the five wire-format fixtures with Gradle's `--rerun` option. It checks all four
+saved outputs and runs the entire `inherited_fields_interop` test binary with the
+required-fixture flag. The initial Rust unit-test pass alone does not establish
+this coverage: without a fixture path or required-fixture flag, that integration
+test returns before exercising the JVM-produced graphs.
+
 The declaration references also correct two historical type-name errors: generic
 fields retain their erased bytecode class instead of a variable name such as `T`,
 and arrays retain all dimensions. Existing collection type arguments remain available
