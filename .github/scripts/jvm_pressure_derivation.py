@@ -12,6 +12,7 @@ import struct
 
 import jvm_pressure_inputs as inputs
 import jvm_pressure_oracles as model
+import jvm_primitive_facts as primitive
 
 need = model.need
 LABELS = (('IntConstant', 'Constant'), ('StringConstant', 'Constant'), ('LongConstant', 'Constant'),
@@ -38,9 +39,10 @@ class MapText:
     values: dict
 
 
-def projected_value(value):
+def projected_value(value, primitive_facts=None):
     """Cypher materialization followed by default Gson's typed JSON shape."""
     if isinstance(value, inputs.FloatBits):
+        if primitive_facts is not None: return primitive_facts.number(value)
         if value.width == 32:
             raise MissingJvmSemantics('projected Float32 needs bound JDK Float.toString authority: ' + value.bits.hex())
         need(value.width == 64 and len(value.bits) == 8, 'raw Double bits')
@@ -55,8 +57,8 @@ def projected_value(value):
         return {'enumClass': value.owner, 'enumName': value.name}
     if isinstance(value, MapText):
         raise MissingJvmSemantics('projected complete Map.toString needs bound JDK numeric text authority')
-    if type(value) is list: return [projected_value(v) for v in value]
-    if type(value) is dict: return {k: projected_value(v) for k, v in value.items()}
+    if type(value) is list: return [projected_value(v, primitive_facts) for v in value]
+    if type(value) is dict: return {k: projected_value(v, primitive_facts) for k, v in value.items()}
     need(value is None or type(value) in (bool, int, str), 'supported JVM projected raw value')
     return value
 
@@ -82,12 +84,13 @@ def contains_text(value, needle):
     return False
 
 
-def lowered(value):
+def lowered(value, primitive_facts=None):
     # coalesce(x, '') does not coerce a non-null Number/list to String. Kotlin's
     # lowercase() is locale-independent, but its JDK Unicode version matters.
     if value is None: return ''
     if type(value) is not str: return None
     if not value.isascii():
+        if primitive_facts is not None: return primitive_facts.lowercase(value)
         raise MissingJvmSemantics('non-ASCII lowercase needs bound JDK Locale.ROOT authority: ' + repr(value))
     return value.lower()
 
@@ -150,8 +153,8 @@ def node_properties(row, graph_id, table, type_cache=None):
 def _string_contains(value, needle): return type(value) is str and needle in value
 
 
-def _discovery(case_id, properties):
-    lower = {key: lowered(properties.get(key)) for key in CALL_PROPERTIES}
+def _discovery(case_id, properties, primitive_facts=None):
+    lower = {key: lowered(properties.get(key), primitive_facts) for key in CALL_PROPERTIES}
     def matches(keys, op, word):
         return any(v is not None and (word in v if op == 'contains' else v.startswith(word) if op == 'starts' else v.endswith(word))
                    for v in (lower[k] for k in keys))
@@ -172,10 +175,10 @@ def _discovery(case_id, properties):
     raise ValueError('unknown discovery request')
 
 
-def node_matches(case, row, properties, keys):
+def node_matches(case, row, properties, keys, primitive_facts=None):
     case_id = case['id']
     if properties['graphId'] not in case['targetGraphIds']: return False
-    if case['family'] in ('wrapped-discovery', 'graph-routing'): return _discovery(case_id, properties)
+    if case['family'] in ('wrapped-discovery', 'graph-routing'): return _discovery(case_id, properties, primitive_facts)
     if case_id == 'callsite-dynamic-miss' and row['tag'] != 12: return False
     if case_id in ('dynamic-miss', 'callsite-dynamic-miss', 'slow-dynamicHit', 'slow-dynamicMiss'):
         needle = HIT if case_id == 'slow-dynamicHit' else MISS if case_id == 'slow-dynamicMiss' else DECLARED_MISS
@@ -189,7 +192,7 @@ def node_matches(case, row, properties, keys):
     raise ValueError('not a node predicate case: ' + case_id)
 
 
-def node_projection(case, row, values):
+def node_projection(case, row, values, primitive_facts=None):
     if case['family'] == 'wrapped-discovery':
         result = dict(zip(case['columns'], [values.get('graph_id'), *(values.get(k) for k in CALL_PROPERTIES)]))
         # DISTINCT equality for arbitrary mixed numeric projections needs the
@@ -201,13 +204,15 @@ def node_projection(case, row, values):
         result = {'id': row['id'], 'labels': list(LABELS[row['tag']]), 'graphId': values['graphId']}
         if 'qualifiedId' in case['columns']: result['qualifiedId'] = values['qualifiedId']
         else: result.update(value=values.get('value'), caller=values.get('caller_class'))
-    return {k: projected_value(v) for k, v in result.items()}
+    return {k: projected_value(v, primitive_facts) for k, v in result.items()}
 
 
 class Collector:
     """One all64 traversal builds exact multisets, without LIMIT truncation."""
-    def __init__(self, graph_ids=model.FIXTURE_GRAPH_IDS):
+    def __init__(self, graph_ids=model.FIXTURE_GRAPH_IDS, primitive_facts=None):
         self.cases = model.cases(graph_ids); self.graph_ids = tuple(graph_ids)
+        need(primitive_facts is None or isinstance(primitive_facts, primitive.PrimitiveFacts), 'primitive facts consumer type')
+        self.primitive_facts = primitive_facts
         self.counts = {c['id']: Counter() for c in self.cases}; self.rows = {c['id']: {} for c in self.cases}
         self.distinct = {c['id']: {} for c in self.cases if c['family'] == 'wrapped-discovery'}
         self.seen = []; self.graph_counts = []; self.failed = False
@@ -230,13 +235,15 @@ class Collector:
     def _add_graph(self, graph, raw_edges, edge_count):
         gid = graph['id']; need(gid in self.graph_ids and gid not in self.seen, 'unique registered graph derivation')
         need(graph['fullNodeScanConsumed'] is True, 'complete raw node scan required')
+        if self.primitive_facts is not None: self.primitive_facts.bind_graph(graph)
         nodes = graph['nodes']; table = graph['declarations']; cache = {}; properties = {}; groups = Counter()
         node_cases = [c for c in self.cases if c['id'] not in DATAFLOW_IDS and c['family'] != 'feature-presence']
         for node_id, row in nodes.items():
             need(node_id == row['id'], 'actual node ID binding')
             values, keys = node_properties(row, gid, table, cache); properties[node_id] = values
             for case in node_cases:
-                if node_matches(case, row, values, keys): self._add(case, node_projection(case, row, values), gid)
+                if node_matches(case, row, values, keys, self.primitive_facts):
+                    self._add(case, node_projection(case, row, values, self.primitive_facts), gid)
             if row['tag'] in (9, 10, 11):
                 present = declaration_id(row, table) is not None
                 groups[(LABELS[row['tag']][0], present)] += 1
@@ -262,8 +269,8 @@ class Collector:
                 matches = _string_contains(src.get('value'), HIT if hit else MISS) if source_case else _string_contains(dst.get('caller_class'), ACTIVITY if hit else MISS)
                 if matches:
                     self._add(case, dict(source=source, target=target, relationship='DATAFLOW',
-                                         value=projected_value(src.get('value')),
-                                         caller=projected_value(dst.get('caller_class')), graphId=gid), gid)
+                                         value=projected_value(src.get('value'), self.primitive_facts),
+                                         caller=projected_value(dst.get('caller_class'), self.primitive_facts), graphId=gid), gid)
         self.seen.append(gid); self.graph_counts.append({'id': gid, 'nodes': len(nodes), 'methods': len(graph['methods']),
                                                       'edges': scanned, 'dataflowEdges': dataflow})
 
