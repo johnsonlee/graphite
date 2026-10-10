@@ -4153,41 +4153,174 @@ test("zero-valid-run comparator failure still seals every evidence hash and exit
     } finally { fs.rmSync(directory, { recursive: true, force: true }); }
 });
 
-test("Rust job preserves query gates before independent lifecycle measurements", () => {
+function rustWorkflowJob(workflow, id) {
+    const job = workflow.match(new RegExp(`^  ${id}:\\n[\\s\\S]*?(?=^  [a-z-]+:\\n|$(?![\\s\\S]))`, "m"))?.[0];
+    assert.ok(job, `required job ${id} exists`);
+    return job;
+}
+
+function rustWorkflowStep(job, name) {
+    const body = job.split(`    - name: ${name}\n`)[1];
+    assert.ok(body, `required step ${name} exists`);
+    return body.split("\n    - name: ")[0];
+}
+
+test("Rust split stages preserve query gates before independent lifecycle measurements", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
-    const names = [
-        "Execute and audit matched native continuous pressure",
-        "Execute and audit matched JVM continuous pressure",
-        "Measure base then PR", "Compare Rust engine latency",
-        "Diagnose confirmed Rust shape regression", "Upload Rust engine latency results",
-        "Measure and audit six JVM real64 zero-query loads",
-        "Measure and audit six real64 usable-save constructions", "Upload Rust job lifecycle results"
-    ];
-    const offsets = names.map(name => job.indexOf(`    - name: ${name}\n`));
+    const native = rustWorkflowJob(workflow, "rust-query-native");
+    const jvm = rustWorkflowJob(workflow, "rust-query-jvm");
+    const legacy = rustWorkflowJob(workflow, "rust-query-legacy");
+    const names = ["Measure base then PR",
+        "Compare Rust engine latency", "Diagnose confirmed Rust shape regression", "Upload Rust engine latency results"];
+    const offsets = names.map(name => legacy.indexOf(`    - name: ${name}\n`));
     offsets.forEach((offset, index) => assert.ok(offset >= 0 && (index === 0 || offset > offsets[index - 1]), names[index]));
-    const step = name => job.split(`    - name: ${name}\n`)[1].split("\n    - name: ")[0];
-    for (const name of names.slice(2, 4)) assert.doesNotMatch(step(name), /continue-on-error:/);
-    for (const name of names.slice(6, 8)) {
-        assert.match(step(name), /if: \$\{\{ !cancelled\(\) \}\}/);
-        assert.match(step(name), /continue-on-error: true/);
+    for (const name of names.slice(0, 2)) assert.doesNotMatch(rustWorkflowStep(legacy, name), /continue-on-error:/);
+    const nativePressure = rustWorkflowStep(native, "Execute and audit matched native continuous pressure");
+    assert.match(nativePressure, /run_prepared_native_pressure\.py/);
+    assert.match(nativePressure, /--preparation benchmark-results\/native-pressure-preparation/);
+    assert.match(nativePressure, /--output benchmark-results\/native-pressure-cells/);
+    const jvmPressure = rustWorkflowStep(jvm, "Execute and audit matched JVM continuous pressure");
+    assert.match(jvmPressure, /run_prepared_native_pressure\.py --engine jvm/);
+    assert.match(jvmPressure, /--preparation benchmark-results\/jvm-pressure-preparation/);
+    assert.match(jvmPressure, /--output benchmark-results\/jvm-pressure-cells/);
+    for (const job of [native, jvm]) {
+        assert.doesNotMatch(job, /strategy:|matrix:|--cell\b|--pair\b/, "six ordered cells remain in one process-owned job");
     }
-    const queryUpload = step(names[5]), lifecycleUpload = step(names[8]);
-    for (const upload of [queryUpload, lifecycleUpload]) assert.match(upload, /if: always\(\)/);
-    assert.match(queryUpload, /name: benchmark-rust-latency-/);
-    assert.match(queryUpload, /path: benchmark-results\//);
-    assert.match(lifecycleUpload, /name: benchmark-rust-lifecycle-/);
-    const paths = lifecycleUpload.split("        path: |\n")[1].split("        if-no-files-found:")[0]
-        .trim().split("\n").map(value => value.trim());
-    assert.deepEqual(paths, [
-        "benchmark-results/real64-loading/**", "benchmark-results/real64-construction/**",
-        "benchmark-results/multigraph-loading*", "benchmark-results/multigraph-construction*"
-    ]);
+    const nativeUpload = rustWorkflowStep(legacy, names[3]);
+    assert.match(nativeUpload, /if: always\(\)/);
+    assert.match(nativeUpload, /name: benchmark-rust-latency-/);
+    assert.match(nativeUpload, /path: benchmark-results\//);
+    assert.match(jvm, /name: benchmark-rust-jvm-pressure-/);
+    assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: benchmark-rust-native-pressure-/);
+    for (const [id, operation, measurement] of [
+        ["rust-loading", "loading", "Measure and audit six JVM real64 zero-query loads"],
+        ["rust-construction", "construction", "Measure and audit six real64 usable-save constructions"]
+    ]) {
+        const job = rustWorkflowJob(workflow, id);
+        const step = rustWorkflowStep(job, measurement);
+        assert.match(step, new RegExp(`run_real64_${operation}\\.py`));
+        assert.match(step, /--producers native-pressure-producers\/packet\.json/);
+        assert.match(step, new RegExp(`--output benchmark-results/real64-${operation}`));
+        const upload = rustWorkflowStep(job, `Upload Rust ${operation} results`);
+        assert.match(upload, /if: always\(\)/);
+        assert.match(upload, new RegExp(`name: benchmark-rust-${operation}-`));
+        assert.match(upload, new RegExp(`benchmark-results/real64-${operation}/\\*\\*`));
+        assert.match(upload, new RegExp(`benchmark-results/multigraph-${operation}\\*`));
+    }
+});
+
+test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
+    const needs = job => {
+        const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
+        assert.ok(list, "stage has explicit dependencies");
+        return list.split(",").map(value => value.trim());
+    };
+    for (const job of Object.values(jobs)) {
+        assert.match(job, /^    timeout-minutes: 360$/m);
+        assert.doesNotMatch(job.split("    steps:")[0], /continue-on-error:/, "failed stages remain required failures");
+    }
+    assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
+    for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
+    for (const id of ids.slice(2).filter(id => id !== "rust-query-legacy")) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    assert.deepEqual(needs(jobs["rust-query-legacy"]), ["candidate-gate-tests", "rust-producer"],
+        "a core proof failure must not suppress the existing independently validated Rust snapshot gate");
+    assert.doesNotMatch(jobs["rust-query-legacy"].split("    steps:")[0], /needs\.rust-(?:core|jvm-correctness)/);
+    assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-jvm-correctness"));
+    for (const [id, aliasArms, distinctArms] of [
+        ["rust-core", '["B"]', '["A","B"]'],
+        ["rust-jvm-correctness", '["C","B"]', '["C","A","B"]']
+    ]) {
+        const job = jobs[id];
+        assert.match(job, /fail-fast: false/, "one arm failure must not cancel other evidence");
+        const matrix = job.match(/arm: (.*)/)?.[1];
+        assert.equal(matrix, `\${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '${aliasArms}' || '${distinctArms}') }}`);
+        assert.match(job, /\$\{\{ matrix\.arm \}\}/);
+    }
+    const core = rustWorkflowStep(jobs["rust-core"], "Execute complete native core topology and index migration checks");
+    assert.match(core, /run_native_core_equivalence\.py/);
+    assert.match(core, /--reference native-pressure-artifacts\/C/);
+    assert.match(core, /--raw-local-types --raw-edges/);
+    assert.doesNotMatch(core, /continue-on-error:/);
+    const correctness = rustWorkflowStep(jobs["rust-jvm-correctness"], "Derive and independently check JVM responses on each real64 writer corpus");
+    assert.match(correctness, /derive_jvm_pressure_oracles\.py/);
+    assert.match(correctness, /jvm_query_correctness\.py/);
+    assert.match(correctness, /--audit-only/);
+    assert.doesNotMatch(correctness, /continue-on-error:/);
+    for (const id of ["rust-loading", "rust-construction"]) {
+        const job = jobs[id], header = job.split("    steps:")[0];
+        const deps = needs(job);
+        for (const query of ["rust-query-native", "rust-query-jvm", "rust-query-legacy"]) assert.ok(deps.includes(query));
+        assert.match(header, /!cancelled\(\)/);
+        for (const dep of ["rust-producer", "rust-core"]) assert.ok(header.includes(`needs.${dep}.result == 'success'`));
+        assert.doesNotMatch(header, /needs\.rust-query-(?:native|jvm|legacy)\.result == 'success'/,
+            "terminal query failures retain their verdict without suppressing independent lifecycle evidence");
+    }
+    const aggregate = rustWorkflowJob(workflow, "benchmark-regression-gate");
+    assert.ok(needs(aggregate).includes("rust-latency"), "existing required aggregate cannot bypass the join");
+});
+
+test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const job = rustWorkflowJob(workflow, "rust-latency");
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    assert.match(job, /^    name: rust-latency-gate$/m);
+    assert.match(job, /^    if: always\(\)$/m);
+    assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
+    const step = rustWorkflowStep(job, "Require every proof and complete operation cohort");
+    assert.match(step, /STAGE_RESULTS: \$\{\{ toJSON\(needs\) \}\}/);
+    assert.doesNotMatch(step, /continue-on-error:/);
+    const source = step.match(/python3 - <<'PYJOIN'\n([\s\S]*?)        PYJOIN/)[1]
+        .split("\n").map(line => line.startsWith("        ") ? line.slice(8) : line).join("\n");
+    const run = results => spawnSync("python3", ["-B", "-c", source], {
+        encoding: "utf8", env: { ...process.env, STAGE_RESULTS: JSON.stringify(results) }
+    });
+    const passed = Object.fromEntries(ids.map(id => [id, { result: "success", outputs: {} }]));
+    const positive = run(passed);
+    assert.equal(positive.status, 0, positive.stderr);
+    for (const id of ids) {
+        for (const result of ["failure", "cancelled", "skipped", "unknown"]) {
+            const changed = structuredClone(passed);
+            changed[id].result = result;
+            const failure = run(changed);
+            assert.notEqual(failure.status, 0, `${id}/${result} cannot be accepted`);
+            assert.match(failure.stderr, /AssertionError/);
+        }
+        const missing = structuredClone(passed);
+        delete missing[id];
+        assert.notEqual(run(missing).status, 0, `${id} cannot disappear from the required join`);
+        const malformed = structuredClone(passed);
+        delete malformed[id].result;
+        assert.notEqual(run(malformed).status, 0, `${id} must supply an actual result`);
+    }
+    assert.notEqual(run({ ...passed, unexpected: { result: "success" } }).status, 0);
+});
+
+test("split operation stages publish evidence then enforce the unchanged acceptance verdict", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    for (const [id, operation, upload] of [
+        ["rust-query-native", "native-query", "Upload native pressure results"],
+        ["rust-query-jvm", "jvm-query", "Upload JVM pressure results"],
+        ["rust-loading", "loading", "Upload Rust loading results"],
+        ["rust-construction", "construction", "Upload Rust construction results"]
+    ]) {
+        const job = rustWorkflowJob(workflow, id);
+        const name = `Enforce ${operation} acceptance`;
+        assert.ok(job.indexOf(`    - name: ${name}`) > job.indexOf(`    - name: ${upload}`));
+        const step = rustWorkflowStep(job, name);
+        assert.match(step, /if: always\(\)/);
+        assert.doesNotMatch(step, /continue-on-error:/);
+        assert.equal(step.match(/run: ([^\n]+)/)[1],
+            `jq -e '.passed == true' benchmark-results/multigraph-${operation}-status.json >/dev/null`);
+        assert.match(rustWorkflowStep(job, upload), /if: always\(\)/);
+    }
 });
 
 test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair the gate", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const job = workflow.match(/^  rust-latency:\n[\s\S]*?(?=^  [a-z-]+:\n)/m)?.[0] ?? "";
+    const job = rustWorkflowJob(workflow, "rust-query-legacy");
     const start = job.indexOf("    - name: Diagnose confirmed Rust shape regression");
     const end = job.indexOf("    - name: Upload Rust engine latency results", start);
     assert.ok(start > 0 && end > start);
