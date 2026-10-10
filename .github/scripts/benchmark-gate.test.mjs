@@ -8,6 +8,7 @@ import test from "node:test";
 import { fileURLToPath } from "node:url";
 import { validatePairedEvidence } from "./benchmark-pages.mjs";
 import { materializeGistFiles } from "./gist-evidence.mjs";
+import { comparePressure } from "./benchmark-multigraph-pressure.mjs";
 import {
     BENCHMARK_COMPONENTS,
     BENCHMARK_COVERAGE_DOMAINS,
@@ -3107,6 +3108,51 @@ test("complete correctness and legacy reports cannot substitute for missing mult
         fs.writeFileSync(path.join(directory,'latency-status.json'),JSON.stringify({passed:false}));
         assert.match(aggregateReports(directory,metadata).body,/`wrapped-query-latency` \| \*\*FAIL/);
     } finally {fs.rmSync(directory,{recursive:true,force:true});}
+});
+
+test("query operation evidence must bind the current PR parent revision", t => {
+    // Synthetic receipts test aggregation integrity only; no benchmark executes.
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "pressure-parent-binding-"));
+    t.after(() => fs.rmSync(directory, {recursive:true, force:true}));
+    const put = (file, value) => {fs.mkdirSync(path.dirname(file), {recursive:true});fs.writeFileSync(file, JSON.stringify(value));};
+    const digest = file => crypto.createHash("sha256").update(fs.readFileSync(file)).digest("hex");
+    const metadata = {baseSha:"a".repeat(40), candidateSha:"b".repeat(40), runner:"test", runUrl:"https://example.invalid"};
+    for (const engine of ["native", "jvm"]) {
+        const root = path.join(directory, engine), file = path.join(root, "plan.json");
+        const plan = {schema:"graphite.multigraph-pressure.plan.v1", engine, operation:"query",
+            cells:[..."CABBAC"].map((arm, i) => ({id:`c${i}`, arm, port:10000+i})),
+            arms:{C:{revision:"4f2ccf33b969e684972e56b5e810034e6e67c1b3"}, A:{revision:metadata.baseSha}, B:{revision:metadata.candidateSha}},
+            cases:[{id:"slow", targetGraphIds:["one", "two"]}],
+            comparisonPairs:{parent:[[1,2],[4,3]], acceptedBaseline:[[0,2],[5,3]]},
+            schedule:{concurrency:4, warmupPerCase:2, measuredPerCase:20},
+            coverage:{requiredFamilies:["slow"], coveredFamilies:["slow"], unavailableFamilies:[]}};
+        put(file, plan);
+        for (const cell of plan.cells) {
+            const requests = Array.from({length:20}, (_, sequence) => ({sequence, caseId:"slow", status:"PASS",
+                httpStatus:200, completeBody:true, deadlineExpired:false, startNs:sequence*1000,
+                wireCompleteNs:sequence*1000+99, validationCompleteNs:sequence*1000+100, latencyNs:100}));
+            const result = {schema:"graphite.multigraph-pressure.result.v1", status:"PASS", errors:[], cell,
+                arm:plan.arms[cell.arm], engine, operation:"query", planSha256:digest(file), coverage:plan.coverage,
+                cleanup:{after:[], errors:[], signals:[]}, stages:{pressure:{status:"PASS", allWorkersStopped:true,
+                    unissued:[], journalErrors:[], requests, wallNs:19100,
+                    caseStatistics:{slow:{n:20, sampleIds:requests.map(r=>r.sequence), p50Ns:100, p95Ns:100}},
+                    resources:{cpuLowerBoundSeconds:1, cpuUpperBoundSeconds:1.01,
+                        rss:{lowerBoundBytes:1000, upperBoundBytes:1010}}}}};
+            const resultFile = path.join(root, cell.id, "result.json"); put(resultFile, result);
+            put(path.join(root, cell.id, "audit.json"), {schema:"graphite.multigraph-pressure.audit.v1", status:"PASS",
+                cell:cell.id, resultSha256:digest(resultFile), planSha256:digest(file), queryEvidenceComplete:true,
+                completeBodies:23, otherOperationsEligible:false, coverage:plan.coverage});
+        }
+        const compared = comparePressure(file, root);
+        assert.equal(compared.passed, true); assert.equal(compared.parentRevision, metadata.baseSha);
+        put(path.join(directory, `multigraph-${engine}-query-status.json`), {...compared,
+            evidence:{plan:path.relative(directory, file), directory:path.relative(directory, root)}});
+        const current = aggregateReports(directory, metadata);
+        assert.equal(current.operationEvidence.find(row=>row.name===`${engine}-query`).status, "PASS");
+        const stale = aggregateReports(directory, {...metadata, baseSha:"d".repeat(40)});
+        assert.equal(stale.operationEvidence.find(row=>row.name===`${engine}-query`).status, "UNAVAILABLE");
+        assert.ok(stale.errors.some(error=>error.startsWith(`${engine}-query:`) && error.includes("source or resource constraints")));
+    }
 });
 
 test("unavailable native pressure retains the actual missing-producer reason without measurement paths", () => {
