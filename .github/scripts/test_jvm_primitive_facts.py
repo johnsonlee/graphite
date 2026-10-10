@@ -93,7 +93,7 @@ class PrimitiveFactsTests(unittest.TestCase):
         result = collector.finish(); self.assertEqual(26, len(result['universes']))
         projected = result['universes']['slow-dataflowTargetHit']['rows'][0]['value']
         self.assertEqual(0.1, projected['value']); self.assertEqual((1, 2), (projected['source'], projected['target']))
-        wrapped = result['universes']['wrapped-late_graph_prefix_query']['rows'][0]['value']
+        wrapped = result['universes']['wrapped-late_graph_prefix_query']['groups'][0]['variants'][0]
         self.assertEqual('org.jetbrains.\u212aotlin.Test', wrapped['callee'])
         self.assertFalse(result['oracleAuthorityVerified']); self.assertFalse(result['fresh64Acceptance'])
 

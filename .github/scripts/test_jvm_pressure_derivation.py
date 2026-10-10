@@ -1,11 +1,15 @@
 """Meaningful tiny raw-payload cases, not a real-graph or performance run."""
 import copy
+import hashlib
+import json
 import struct
 import unittest
 
 import jvm_pressure_derivation as d
 import jvm_pressure_inputs as inputs
 import jvm_pressure_oracles as model
+import jvm_primitive_facts as primitive
+import jvm_pressure_distinct as distinct
 from native_core_proof import legacy_wire as wire
 from native_core_proof.wire_gty05_test import parse as type_fixture
 import test_jvm_pressure_inputs as raw_fixture
@@ -43,6 +47,35 @@ def rows(result, name): return result['universes'][name]['rows']
 
 class DerivationTests(unittest.TestCase):
     def setUp(self): self.cases = {c['id']: c for c in model.cases()}
+
+    def complete_with_facts(self, selected, spellings):
+        # Illustrative primitive facts test the collector integration; these
+        # fixtures do not claim owned JDK execution or real graph authority.
+        graphs = [selected.get(gid, graph(gid)) for gid in model.FIXTURE_GRAPH_IDS]
+        requests = primitive.RequestCollector()
+        for g in graphs:
+            g['consumedPins'] = {f"/tiny-distinct/{g['id']}/payload": 'a'*64}
+            requests.add_graph(g)
+        ref = lambda name: {'path': name, 'sha256': 'b'*64}
+        packet = requests.finish(ref('/tiny-distinct/JvmPrimitiveFacts.java'),
+                                 ref('/tiny-distinct/JvmPrimitiveFacts.class'),
+                                 {'home': '/tiny-jdk', 'files': {n: ref('/tiny-jdk/'+n) for n in primitive.JDK_FILES}})
+        raw = json.dumps(packet).encode(); path = '/tiny-distinct/requests.json'
+        output = {'schema': 'graphite.jvm-primitive-facts.v1', 'scope': 'JDK_PRIMITIVE_CONVERSIONS_NOT_GRAPH_ORACLE',
+                  'request': {'path': path, 'sha256': hashlib.sha256(raw).hexdigest()},
+                  **{k: packet[k] for k in ('helperSource', 'helperClass', 'jdkImage')},
+                  'graphCount': 64, 'operationCount': len(packet['operations']),
+                  'results': [dict(index=i, **op, output=spellings[(op['operation'], op['input'])])
+                              for i, op in enumerate(packet['operations'])],
+                  'sourceGraphBytesVerified': False, 'queryImplementationUsed': False}
+        facts = primitive.PrimitiveFacts(raw, path, json.dumps(output).encode())
+        collector = d.Collector(primitive_facts=facts)
+        for g in graphs: collector.add_graph(g, edges(g), 0)
+        return collector.finish()
+
+    def distinct_body(self, case, selected):
+        return dict(mode='cross-graph', graphs=case['requestedGraphIds'], graphCount=64,
+                    columns=case['columns'], rows=selected, rowCount=len(selected), limit=case['effectiveLimit'])
 
     def test_accessor_keys_and_annotation_precedence_differ_from_property_map(self):
         row = dict(id=7, tag=13, name='VisibleAnnotation', owner='Owner', member='m', values={
@@ -159,12 +192,79 @@ class DerivationTests(unittest.TestCase):
         first, last = model.FIXTURE_GRAPH_IDS[0], model.FIXTURE_GRAPH_IDS[-1]
         a = graph(first, [call(1), call(2)]); b = graph(last, [call(3)])
         result = complete({first: (a, []), last: (b, [])})
-        entry = rows(result, 'wrapped-early_graph_prefix_query')[0]
-        self.assertEqual(1, entry['multiplicity']); self.assertNotIn('n.graph_id', entry['value'])
-        self.assertEqual([first, last], entry['value']['$metadata']['graphIds'])
+        universe = result['universes']['wrapped-early_graph_prefix_query']
+        self.assertEqual(distinct.SCHEMA, universe['schema']); self.assertEqual(1, universe['totalMatches'])
+        entry = universe['groups'][0]
+        self.assertEqual(1, len(entry['variants'])); self.assertNotIn('n.graph_id', entry['variants'][0])
+        self.assertEqual([first, last], entry['graphIds'])
         routing = rows(result, 'routing-pair-dense')
         self.assertEqual([2, 1], [r['multiplicity'] for r in routing])
         self.assertEqual([[first], [last]], [r['value']['$metadata']['graphIds'] for r in routing])
+
+    def test_distinct_raw_numeric_groups_keep_only_observed_whole_row_representatives(self):
+        first, last = model.FIXTURE_GRAPH_IDS[0], model.FIXTURE_GRAPH_IDS[-1]
+        double = inputs.FloatBits(64, bytes.fromhex('3ff0000000000000'))
+        floating = inputs.FloatBits(32, bytes.fromhex('3f800000'))
+        def annotation(node, caller, callee):
+            return dict(id=node, tag=13, name='A', owner='X', member='m',
+                        values={'caller_class': 'android.Test', 'caller_name': caller, 'callee_name': callee})
+        result = self.complete_with_facts({
+            first: graph(first, [annotation(1, 1, double), annotation(2, 2, 2)]),
+            last: graph(last, [annotation(3, double, 1), annotation(4, floating, 1)])},
+            {('double', double.bits.hex()): '1.0', ('float32', floating.bits.hex()): '1.0'})
+        name = 'wrapped-first_last_graph_bimodal_query'; universe = result['universes'][name]
+        self.assertEqual(2, universe['totalMatches']); mixed, other = universe['groups']
+        self.assertEqual([first, last], mixed['graphIds'])
+        self.assertEqual(2, len(mixed['variants']))
+        self.assertEqual({(int, float), (float, int)},
+                         {(type(v['callerMethod']), type(v['calleeMethod'])) for v in mixed['variants']})
+        case = self.cases[name]; oracle = model.CompiledLegalLimitOracle(universe, case)
+        actual = model.projected_row(mixed['variants'][0], mixed['graphIds'])
+        alternative = model.projected_row(mixed['variants'][1], mixed['graphIds'])
+        other_row = model.projected_row(other['variants'][0], other['graphIds'])
+        oracle.validate(self.distinct_body(case, [actual, other_row]))
+        oracle.validate(self.distinct_body(case, [alternative, other_row]))
+        with self.assertRaisesRegex(ValueError, 'group capacity'):
+            oracle.validate(self.distinct_body(case, [actual, alternative]))
+        invented = copy.deepcopy(actual); invented['callerMethod'] = 1.0; invented['calleeMethod'] = 1.0
+        with self.assertRaisesRegex(ValueError, 'group capacity'):
+            oracle.validate(self.distinct_body(case, [invented, other_row]))
+        self.assertFalse(result['oracleAuthorityVerified']); self.assertFalse(result['fresh64Acceptance'])
+
+    def test_distinct_gson_collisions_remain_separate_raw_groups(self):
+        gid = model.FIXTURE_GRAPH_IDS[0]
+        values = [inputs.EnumReference('E', 'N'), {'enumClass': 'E', 'enumName': 'N'}]
+        nodes = [dict(id=i, tag=13, name='A', owner='X', member='m',
+                      values={'caller_class': 'android.Test', 'caller_name': value}) for i, value in enumerate(values)]
+        result = complete({gid: (graph(gid, nodes), [])})
+        name = 'wrapped-first_last_graph_bimodal_query'; universe = result['universes'][name]
+        self.assertEqual(2, universe['totalMatches']); a, b = universe['groups']
+        self.assertNotEqual(a['semanticKey'], b['semanticKey']); self.assertEqual(a['variants'], b['variants'])
+        selected = [model.projected_row(g['variants'][0], g['graphIds']) for g in (a, b)]
+        model.CompiledLegalLimitOracle(universe, self.cases[name]).validate(self.distinct_body(self.cases[name], selected))
+
+    def test_nonfinite_distinct_group_keeps_total_without_fabricating_successful_row(self):
+        gid = model.FIXTURE_GRAPH_IDS[0]; raw = inputs.FloatBits(32, bytes.fromhex('7fc00000'))
+        node = dict(id=1, tag=13, name='A', owner='X', member='m',
+                    values={'caller_class': 'android.Test', 'caller_name': raw})
+        result = self.complete_with_facts({gid: graph(gid, [node])}, {('float32', raw.bits.hex()): 'NaN'})
+        name = 'wrapped-first_last_graph_bimodal_query'; universe = result['universes'][name]
+        self.assertEqual(1, universe['totalMatches']); self.assertEqual([], universe['groups'][0]['variants'])
+        with self.assertRaises(ValueError):
+            model.CompiledLegalLimitOracle(universe, self.cases[name]).validate(self.distinct_body(self.cases[name], []))
+
+    def test_exact26_scope_uses_v2_only_for_eight_distinct_requests(self):
+        result = complete({})
+        v2 = []
+        for case in self.cases.values():
+            universe = result['universes'][case['id']]
+            if case['family'] == 'wrapped-discovery':
+                self.assertEqual(distinct.SCHEMA, universe['schema']); self.assertNotIn('rows', universe)
+                self.assertEqual([], universe['groups']); v2.append(case['id'])
+            else:
+                self.assertEqual('graphite.jvm-legal-row-universe.v1', universe['schema'])
+                self.assertIn('rows', universe); self.assertNotIn('groups', universe)
+        self.assertEqual(8, len(v2)); self.assertEqual(26, len(result['universes']))
 
     def test_unordered_limit_retains_full_universe_and_validates_any_legal_complete_subset(self):
         gid = model.FIXTURE_GRAPH_IDS[0]; nodes = [dict(id=n, tag=1, value=d.HIT) for n in range(60)]
@@ -214,12 +314,12 @@ class DerivationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'complete successful'): collector.finish()
         with self.assertRaisesRegex(ValueError, 'unique registered'): collector.add_graph(g, edges(g), 0)
 
-    def test_projected_float_dataflow_and_mixed_distinct_are_explicit_authority_gaps(self):
+    def test_projected_float_dataflow_and_numeric_distinct_without_facts_fail_closed(self):
         gid = model.FIXTURE_GRAPH_IDS[0]
         g = graph(gid, [dict(id=1, tag=3, value=inputs.FloatBits(32, bytes.fromhex('3dcccccd'))), call(2)])
         with self.assertRaisesRegex(d.MissingJvmSemantics, 'Float32'): complete({gid: (g, [(1, 2, 0)])})
-        annotation = dict(id=1, tag=13, name='A', owner='X', member='m', values={'caller_class': 'android.Test', 'caller_name': 123})
-        with self.assertRaisesRegex(d.MissingJvmSemantics, 'non-string projection'): complete({gid: (graph(gid, [annotation]), [])})
+        annotation = dict(id=1, tag=13, name='A', owner='X', member='m', values={'caller_class': 'android.Test', 'caller_name': inputs.FloatBits(64, bytes.fromhex('3ff0000000000000'))})
+        with self.assertRaisesRegex(d.MissingJvmSemantics, 'JDK number text'): complete({gid: (graph(gid, [annotation]), [])})
 
     def test_invalid_dataflow_kind_truncation_and_wrong_node_identity_rejected(self):
         gid = model.FIXTURE_GRAPH_IDS[0]; g = graph(gid, [dict(id=1, tag=1, value=d.HIT), call(2)])

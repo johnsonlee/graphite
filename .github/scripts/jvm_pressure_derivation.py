@@ -13,6 +13,7 @@ import struct
 import jvm_pressure_inputs as inputs
 import jvm_pressure_oracles as model
 import jvm_primitive_facts as primitive
+import jvm_pressure_distinct as distinct
 
 need = model.need
 LABELS = (('IntConstant', 'Constant'), ('StringConstant', 'Constant'), ('LongConstant', 'Constant'),
@@ -192,19 +193,20 @@ def node_matches(case, row, properties, keys, primitive_facts=None):
     raise ValueError('not a node predicate case: ' + case_id)
 
 
-def node_projection(case, row, values, primitive_facts=None):
+def raw_node_projection(case, row, values):
+    """Original JVM values, before DISTINCT comparison or Gson projection."""
     if case['family'] == 'wrapped-discovery':
         result = dict(zip(case['columns'], [values.get('graph_id'), *(values.get(k) for k in CALL_PROPERTIES)]))
-        # DISTINCT equality for arbitrary mixed numeric projections needs the
-        # full Cypher numeric normalization rule, not JSON typed equality.
-        if not all(v is None or type(v) is str for v in result.values()):
-            raise MissingJvmSemantics('wrapped DISTINCT non-string projection needs Cypher value-key authority')
     elif case['family'] == 'graph-routing': result = dict(zip(case['columns'], (values.get(k) for k in CALL_PROPERTIES)))
     else:
         result = {'id': row['id'], 'labels': list(LABELS[row['tag']]), 'graphId': values['graphId']}
         if 'qualifiedId' in case['columns']: result['qualifiedId'] = values['qualifiedId']
         else: result.update(value=values.get('value'), caller=values.get('caller_class'))
-    return {k: projected_value(v, primitive_facts) for k, v in result.items()}
+    return result
+
+
+def node_projection(case, row, values, primitive_facts=None):
+    return {k: projected_value(v, primitive_facts) for k, v in raw_node_projection(case, row, values).items()}
 
 
 class Collector:
@@ -214,16 +216,19 @@ class Collector:
         need(primitive_facts is None or isinstance(primitive_facts, primitive.PrimitiveFacts), 'primitive facts consumer type')
         self.primitive_facts = primitive_facts
         self.counts = {c['id']: Counter() for c in self.cases}; self.rows = {c['id']: {} for c in self.cases}
-        self.distinct = {c['id']: {} for c in self.cases if c['family'] == 'wrapped-discovery'}
+        self.distinct = {c['id']: distinct.DistinctGroups(self._number_text)
+                         for c in self.cases if c['family'] == 'wrapped-discovery'}
         self.seen = []; self.graph_counts = []; self.failed = False
 
+    def _number_text(self, raw):
+        if self.primitive_facts is None:
+            raise MissingJvmSemantics('wrapped numeric DISTINCT needs bound JDK number text authority')
+        return self.primitive_facts.text('float32' if raw.width == 32 else 'double', raw.bits.hex())
+
     def _add(self, case, values, graph_id, multiplicity=1):
-        if case['family'] == 'wrapped-discovery':
-            visible = model.gson_value(values); key = model.key(visible)
-            entry = self.distinct[case['id']].setdefault(key, [visible, set()]); entry[1].add(graph_id)
-        else:
-            row = model.projected_row(values, [graph_id]); key = model.key(row)
-            self.counts[case['id']][key] += multiplicity; self.rows[case['id']][key] = row
+        need(case['family'] != 'wrapped-discovery', 'DISTINCT requires raw pre-Gson values')
+        row = model.projected_row(values, [graph_id]); key = model.key(row)
+        self.counts[case['id']][key] += multiplicity; self.rows[case['id']][key] = row
 
     def add_graph(self, graph, raw_edges, edge_count):
         need(not self.failed, 'previous graph derivation failed')
@@ -243,7 +248,10 @@ class Collector:
             values, keys = node_properties(row, gid, table, cache); properties[node_id] = values
             for case in node_cases:
                 if node_matches(case, row, values, keys, self.primitive_facts):
-                    self._add(case, node_projection(case, row, values, self.primitive_facts), gid)
+                    if case['id'] in self.distinct:
+                        self.distinct[case['id']].add(raw_node_projection(case, row, values), gid)
+                    else:
+                        self._add(case, node_projection(case, row, values, self.primitive_facts), gid)
             if row['tag'] in (9, 10, 11):
                 present = declaration_id(row, table) is not None
                 groups[(LABELS[row['tag']][0], present)] += 1
@@ -279,17 +287,19 @@ class Collector:
         results = {}
         for case in self.cases:
             case_id = case['id']
+            universe = {'policy': model.POLICY, 'caseId': case_id,
+                        **{k: case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
+                                              'targetGraphIds', 'columns', 'effectiveLimit')},
+                        'allGraphScansComplete': True, 'exactEncounterOrderClaim': False}
             if case_id in self.distinct:
-                entries = [{'value': model.projected_row(visible, sorted(ids)), 'multiplicity': 1}
-                           for visible, ids in self.distinct[case_id].values()]
+                groups = self.distinct[case_id].finish()
+                universe.update(schema=distinct.SCHEMA, equalityPolicy=distinct.EQUALITY,
+                                totalMatches=len(groups), groups=groups)
             else:
                 entries = [{'value': self.rows[case_id][key], 'multiplicity': count}
                            for key, count in self.counts[case_id].items()]
-            universe = {'schema': 'graphite.jvm-legal-row-universe.v1', 'policy': model.POLICY, 'caseId': case_id,
-                        **{k: case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
-                                              'targetGraphIds', 'columns', 'effectiveLimit')},
-                        'allGraphScansComplete': True, 'exactEncounterOrderClaim': False,
-                        'totalMatches': sum(e['multiplicity'] for e in entries), 'rows': entries}
+                universe.update(schema='graphite.jvm-legal-row-universe.v1',
+                                totalMatches=sum(e['multiplicity'] for e in entries), rows=entries)
             model.CompiledLegalLimitOracle(universe, case)
             results[case_id] = universe
         return {'universes': results, 'graphs': self.graph_counts,
