@@ -3200,7 +3200,7 @@ export function aggregateReports(directory, metadata) {
                 recomputed.operation !== operation.operation || evidence.planSha256 !== recomputed.planSha256 ||
                 JSON.stringify(evidence.comparisons) !== JSON.stringify(recomputed.comparisons) ||
                 recomputed.candidateRevision !== metadata.candidateSha ||
-                (lifecycle && recomputed.parentRevision !== metadata.baseSha) || !recomputed.passed) {
+                recomputed.parentRevision !== metadata.baseSha || !recomputed.passed) {
                 throw new Error("Required coverage, fixed comparisons, source or resource constraints failed");
             }
             return {...operation, status:"PASS"};
