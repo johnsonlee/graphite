@@ -148,10 +148,10 @@ def compare_metadata(actual, reference, a_spans, b_spans, authority, evidence, o
 
 class SourceRules:
     """Bind the counter and signature rule to both actual producer manifests."""
-    def __init__(self, out):
+    def __init__(self, out, source_rule, producer_spec):
         from pathlib import Path
         from . import local_array_corrections
-        self.types = local_array_corrections.Authority(out)
+        self.types = local_array_corrections.Authority(out, source_rule, producer_spec)
         counter = '''internal fun callOrdinals(statements: Iterable<Stmt>, declaring: (MethodSignature) -> String): Map<Stmt, Int> {
     val counts = HashMap<String, Int>()
     val ordinals = IdentityHashMap<Stmt, Int>()
@@ -186,9 +186,9 @@ class SourceRules:
 
 
 class Corrections:
-    def __init__(self, out):
+    def __init__(self, out, source_rule, producer_spec):
         self.out = out
-        self.source = SourceRules(out)
+        self.source = SourceRules(out, source_rule, producer_spec)
         self.ordinal_groups = []
         self.metadata_groups = []
         self.return_groups = []
