@@ -5,6 +5,7 @@ Correctness only. Each per-graph subprocess uses the original explicit migration
 policies; no new normalization or unsupported bytecode-inference claim is made.
 """
 import argparse
+import copy
 import csv
 import json
 import os
@@ -43,10 +44,13 @@ def replay(path,function):
     return value
 
 
-def source_evidence(path):
+def _source_evidence_with_marker(path,expected_marker_ref=None):
     """Reconstruct the saved source report through its exact original producer chain."""
     path=Path(path).resolve();stored=common.read(path)
-    sources,fixtures,controls,upstream=formatter.bind(stored['upstream']['markerAudit']['path'],path.parent)
+    if expected_marker_ref is not None:
+        require(stored['upstream']['markerAudit']==expected_marker_ref,'same actual formatter marker pair')
+    bindings,marked=formatter._bind_with_marker(stored['upstream']['markerAudit']['path'],path.parent)
+    sources,fixtures,controls,upstream=bindings
     rule,report=formatter_binding.source_rule(sources,fixtures,controls)
     ref=artifacts.ref(path.parent/'local-array-source-rule.json')
     require(common.read(ref['path'])==rule,'saved formatter rule differs from actual source')
@@ -56,7 +60,12 @@ def source_evidence(path):
     report['pins'].update({str(Path(formatter.__file__).resolve()):common.sha(formatter.__file__),
                           upstream['markerAudit']['path']:upstream['markerAudit']['sha256']})
     require(common.typed(stored)==common.typed(report),'source-only formatter report differs from actual source')
-    artifacts.verify_pins(report['pins']);return report
+    artifacts.verify_pins(report['pins']);return copy.deepcopy(report),copy.deepcopy(marked)
+
+
+def source_evidence(path):
+    report,_=_source_evidence_with_marker(path)
+    return report
 
 
 def field_authority(graph_id,graphs,roots,fixtures,refs,marker_ref,pins):
@@ -105,9 +114,10 @@ def bind(reference,actual,output,raw_locals=False,raw_edges=False):
         upstream[arm+'Strings']=ref
     require(source_inputs[0]==source_inputs[1] and fixtures['C']['inputJars']==fixtures['B']['inputJars'],
             'same exact input corpus and manifest')
-    marker_ref=artifacts.ref(roots['B']/'core-marker/audit.json');marked=replay(marker_ref['path'],marker.audit)
+    marker_ref=artifacts.ref(roots['B']/'core-marker/audit.json')
     test_ref=artifacts.ref(roots['B']/'formatter-tests/audit.json');tested=replay(test_ref['path'],tests.audit)
-    source_ref=artifacts.ref(roots['B']/'core-formatter-source/source-binding.json');bound=source_evidence(source_ref['path'])
+    source_ref=artifacts.ref(roots['B']/'core-formatter-source/source-binding.json')
+    bound,marked=_source_evidence_with_marker(source_ref['path'],marker_ref)
     require(tested['artifactAudit']==artifacts.ref(roots['B']/'artifact-audit.json') and tested['productionFormatterTestsVerified'] is True,
             'actual candidate compiled formatter test authority')
     require(bound['upstream']['markerAudit']==marker_ref and bound['fixtureManifests']==fixture_refs,

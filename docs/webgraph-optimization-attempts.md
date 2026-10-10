@@ -15859,3 +15859,52 @@ review reused the original before/after identity receipts rather than hashing
 all graph files again; the original execution performed that verification.
 Independent review SHA-256:
 `de1442002829c98931ea6fad655f93a6267d99be5bd10f0d7e88c18f12bbe487`.
+
+
+### Attempt200 — use one marker replay per core binding (2026-10-10)
+
+Parent revision: `221c8b441546e659f3077171e5171433d9d50821`. This is an
+optimization of CI verification work, not graph construction, loading or query
+execution. The hypothesis is that one complete marker audit can serve both
+consumers within the same core binding. Previously `core.bind` audited the marker,
+then its formatter-source replay audited the same marker again. Each marker audit
+independently audits both complete producer artifacts.
+
+The formatter's private full-binding helper now returns its actual audited marker
+alongside the existing bindings. Core consumes that result from the same formatter
+source replay. There is no caller-supplied cached result, persisted trust token or
+cross-call reuse. Public formatter binding and source-evidence calls still perform
+the full replay every time. Before/after marker-receipt identity, exact writer-pair
+checks, independently reconstructed source rules, complete artifact audits and
+final merged-pin verification remain enforced. Returned results are deep copies.
+No graph wire format, product code, measurement boundary or threshold changes.
+
+The successful-path call graph has five full producer-artifact audits per core
+binding instead of seven; the four normal core bindings have twenty instead of
+twenty-eight. These are source-level work counts, not measured elapsed-time,
+CPU or RSS improvements. The current real64 CI run38026419105 still executes
+`adde7c32`; it cannot validate this local change. The180-minute job budget remains
+unproven. No single-graph or synthetic performance measurement is used.
+
+The166-entry preparation-control manifest binds the four changed implementation
+and test files; its workflow digest is
+`b3caea429d19c82a86e0c6ee88a306156d3a2b575a5616d98d1ac351d5c648b0`.
+Validation:60 formatter/core/marker tests and264 core-package tests passed.
+The nine new behavior tests cover old double-replay versus new single-replay
+complete plan equality, public calls always replaying, wrong pairs, failures,
+mutable-object isolation, and marker/source/final-pin changes. Independent source
+review found no bypass of actual marker/producer checks. Root separately verified
+all166 control hashes, the workflow digest, frozen sources and raw test logs.
+The first run's45 changed-module tests passed but15 actual-marker tiny fixtures
+stopped at stale control hashes during setup; that failure is retained. After
+refreshing the four reviewed entries, the complete60 tests passed without a
+verification bypass. These are correctness tests, not performance evidence.
+
+Evidence: `/tmp/graphite-core-marker-single-bind-review-1/source-ready.json`,
+SHA-256 `cbe002840232b97bfe30433e1815521500c4061f301a29542d33208e57076b6b`.
+Root review: `/tmp/graphite-core-marker-single-bind-review-1/root-review.json`.
+
+Decision: retain the small composition change with the complete public audit
+contract. Keep it local while the current CI run is live. Actual end-to-end CI
+wall time, CPU/RSS and the180-minute budget remain unmeasured for this revision;
+construction/loading/query conclusions from earlier attempts are unchanged.
