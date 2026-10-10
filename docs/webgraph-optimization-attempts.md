@@ -15224,3 +15224,30 @@ new test execution. The unchanged frozen source then started a fresh complete
 `/tmp/graphite-attempt195-validation-3`; its terminal result is still required.
 No construction performance run or source integration is authorized by static
 success alone.
+
+
+#### Attempt195 full correctness passed; isolated candidate fixed
+
+The fresh full run in `/tmp/graphite-attempt195-validation-3` exited 0. Root
+independently parsed all 37 XML suites: 380 tests, zero failures/errors/skips,
+exactly the previous 375 identities plus the five new save-plan tests. Every
+suite timestamp and XML modification time lies within this full run. The static
+phase actually executed detekt successfully on the identical 487 source inputs;
+the full run reused that up-to-date result and actually executed koverCachedVerify
+and koverVerify, with an empty verification-error file. Both owned process groups
+were absent, and all 487 source hashes match before, after and in the final tree.
+Both earlier lint failures remain recorded above.
+
+The root correctness review is
+`/tmp/graphite-attempt195-validation-3/root-independent-review.json`, SHA-256
+`6e9f005837e5e92bdeec644fb3123ec232b4f5dadecefa5a7c73a10a133e7461`;
+raw full-run record SHA-256 is
+`3d1571362345760bdfb48ffd6f307e380255a06a7cc5c0a8431de496d621a0bb`.
+The isolated candidate is now commit
+`7e6a61d5f04eaefbb21704d8f498c11932191c29`, with exactly four changed files
+and parent884f2470. Root confirmed its committed binary diff exactly matches the
+final tested patch, SHA-256
+`a0fbf16d7b8ba9d1bd8df10addbe61df66579019a3fafeb29d48df6be8b0d998`.
+The source clone is clean. This is permission to proceed to the predeclared
+real64 construction comparison, not evidence of CPU/RSS improvement or overall
+recovery. The candidate remains isolated until actual performance evidence.
