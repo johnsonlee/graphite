@@ -5,6 +5,7 @@ This executable stage binds source only. It cannot substitute for owned Kotlin
 production-test evidence or the complete core/topology/index comparison.
 """
 import argparse
+import copy
 import json
 from pathlib import Path
 import sys
@@ -15,8 +16,10 @@ from prepare_native_pressure_plan import preparation_control_pins
 from native_core_proof import formatter_binding
 
 
-def bind(marker_audit,output):
+def _bind_with_marker(marker_audit,output):
+    """Return the actual full replay alongside bindings; never accept cached authority."""
     path=Path(marker_audit).resolve();out=Path(output).resolve()
+    marker_ref=marker.artifacts.ref(path)
     audit=common.read(path);checked=marker.audit(path.parent)
     common.require(common.typed(audit)==common.typed(checked),'actual marker audit differs from independent raw replay')
     sources={};fixtures={};artifact_refs={}
@@ -31,7 +34,14 @@ def bind(marker_audit,output):
                    'identical writer pair requires strict comparison without a formatter correction rule')
     controls=preparation_control_pins()
     common.require(str(Path(__file__).resolve()) in controls,'reviewed formatter binder control')
-    return sources,fixtures,controls,{'markerAudit':marker.artifacts.ref(path),'artifactAudits':artifact_refs}
+    common.require(marker.artifacts.ref(path)==marker_ref,'marker audit changed during formatter binding')
+    bindings=(sources,fixtures,controls,{'markerAudit':marker_ref,'artifactAudits':artifact_refs})
+    return copy.deepcopy(bindings),copy.deepcopy(checked)
+
+
+def bind(marker_audit,output):
+    bindings,_=_bind_with_marker(marker_audit,output)
+    return bindings
 
 
 def execute(marker_audit,output):

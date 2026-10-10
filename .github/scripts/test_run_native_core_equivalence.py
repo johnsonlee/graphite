@@ -149,6 +149,29 @@ class SourceReplayTests(unittest.TestCase):
     def test_reconstructs_existing_rule_and_upstream_exactly(self):
         path=self.fixture.out/'source-binding.json';self.assertEqual(r.common.read(path),r.source_evidence(path))
 
+    def test_full_marker_replay_result_is_shared_without_mutable_aliases(self):
+        f=self.fixture;path=f.out/'source-binding.json'
+        with patch.object(r.marker,'audit',side_effect=lambda root:copy.deepcopy(f.audit)) as replay:
+            public=r.source_evidence(path)
+            report,marked=r._source_evidence_with_marker(path,r.artifacts.ref(f.path))
+        self.assertEqual(2,replay.call_count);self.assertEqual(public,report);self.assertEqual(f.audit,marked)
+        marked['arms']['B']['artifactAudit']['path']='foreign'
+        self.assertEqual(public,report);self.assertEqual(f.audit,r.common.read(f.path))
+
+    def test_wrong_marker_pair_rejected_before_replay(self):
+        f=self.fixture;wrong={**r.artifacts.ref(f.path),'path':str(f.path.parent/'foreign.json')}
+        with patch.object(r.marker,'audit',side_effect=AssertionError('wrong pair must not replay')):
+            with self.assertRaisesRegex(ValueError,'same actual formatter marker pair'):
+                r._source_evidence_with_marker(f.out/'source-binding.json',wrong)
+
+    def test_source_mutation_after_marker_replay_still_rejected(self):
+        f=self.fixture
+        def change(root):
+            Path(f.f.sources['B']['path']).write_text('{}')
+            return copy.deepcopy(f.audit)
+        with patch.object(r.marker,'audit',side_effect=change):
+            with self.assertRaises(ValueError):r.source_evidence(f.out/'source-binding.json')
+
     def test_status_or_rule_repin_cannot_authorize_changed_source_policy(self):
         path=self.fixture.out/'source-binding.json';value=r.common.read(path);value['productionFormatterTestsVerified']=True
         path.write_text(json.dumps(value))
@@ -298,13 +321,15 @@ class PairBindingTests(unittest.TestCase):
             fixture=put(root/'fixture.json',{'graphs':graphs,'files':{str(prov):r.common.sha(prov)},'inputJars':[input_jar]})
             self.fixture_refs[arm]=fixture
             artifact={'role':role,'revision':revision,'sourceManifest':source,'fixtureManifest':fixture,
+                'producerPacket':{'path':str(root/'packet.json'),'sha256':'a'*64},
                 'graphs':graphs,'pins':{ref['path']:ref['sha256'] for ref in (source,fixture)}}
             artifact_ref=put(root/'artifact-audit.json',artifact);self.artifacts[arm]=artifact_ref
             export={'artifactAudit':artifact_ref,'graphs':[{'id':key,'input':{'path':str(root/'graphs'/key/'graph.strings')}} for key in self.ids],
                     'pins':{**artifact['pins'],artifact_ref['path']:artifact_ref['sha256']}}
             path=root/'core-string-exports/audit.json';put(path,export);self.values[str(path.parent)]=export
             put(path.parent/'plan.json',{'sourceInputs':r.artifacts.ref(source_inputs)})
-        marked={'arms':{a:{'artifactAudit':ref} for a,ref in self.artifacts.items()},'pins':{}}
+        marked={'arms':{a:{'artifactAudit':ref,'revision':r.artifacts.ACCEPTED if a=='C' else 'b'*40} for a,ref in self.artifacts.items()},
+                'pins':{ref['path']:ref['sha256'] for ref in self.artifacts.values()}}
         path=self.roots['B']/'core-marker/audit.json';marker_ref=put(path,marked);self.values[str(path.parent)]=marked
         put(path.parent/'plan.json',{'java':'/actual/jdk/bin/java','javac':'/actual/jdk/bin/javac','writerJar':'/actual/writer.jar'})
         tested={'artifactAudit':self.artifacts['B'],'productionFormatterTestsVerified':True,'pins':{}}
@@ -314,7 +339,12 @@ class PairBindingTests(unittest.TestCase):
         put(self.roots['B']/'core-formatter-source/source-binding.json',self.bound)
         for module in (r.strings,r.marker,r.tests):
             p=patch.object(module,'audit',side_effect=lambda root:copy.deepcopy(self.values[str(root)]));p.start();self.addCleanup(p.stop)
-        p=patch.object(r,'source_evidence',side_effect=lambda path:copy.deepcopy(self.bound));p.start();self.addCleanup(p.stop)
+        def source_evidence(path,expected):
+            r.require(self.bound['upstream']['markerAudit']==expected,'same actual formatter marker pair')
+            _,marked=r.formatter._bind_with_marker(expected['path'],Path(path).parent)
+            return copy.deepcopy(self.bound),marked
+        p=patch.object(r,'_source_evidence_with_marker',side_effect=source_evidence);p.start();self.addCleanup(p.stop)
+        p=patch.object(r.formatter,'preparation_control_pins',return_value={str(Path(r.formatter.__file__).resolve()):r.common.sha(r.formatter.__file__)});p.start();self.addCleanup(p.stop)
         p=patch.object(r,'preparation_control_pins',return_value={str(p):r.common.sha(p) for p in
                 (Path(r.__file__).resolve(),r.PACKAGE/'check_graph.py',r.PACKAGE/'VerifyTopology.java')});p.start();self.addCleanup(p.stop)
 
@@ -324,6 +354,35 @@ class PairBindingTests(unittest.TestCase):
         self.assertEqual({'C':r.artifacts.ACCEPTED,'B':'b'*40},plan['revisions'])
         self.assertEqual(self.bound['rule'],plan['sourceRule']);self.assertEqual(129,plan['maxOwnedPhases'])
         self.assertEqual(self.fixture_refs['B'],plan['graphs'][-1]['fieldAuthority']['arms']['B']['fixtureManifest'])
+    def test_complete_bind_replays_marker_once_and_keeps_exact_public_plan(self):
+        composed=r._source_evidence_with_marker
+        def legacy_double_replay(path,expected_ref):
+            r.replay(expected_ref['path'],r.marker.audit)
+            return composed(path,expected_ref)
+        with patch.object(r.marker,'audit',side_effect=lambda root:copy.deepcopy(self.values[str(root)])) as replay:
+            with patch.object(r,'_source_evidence_with_marker',side_effect=legacy_double_replay):
+                expected=self.bind()
+            self.assertEqual(2,replay.call_count);replay.reset_mock()
+            actual=self.bind()
+            self.assertEqual(1,replay.call_count)
+        self.assertEqual(r.common.typed(expected),r.common.typed(actual))
+        self.assertEqual(self.bound['upstream']['markerAudit'],actual['upstream']['marker'])
+
+    def test_marker_failure_cannot_be_replaced_by_source_report(self):
+        with patch.object(r.marker,'audit',side_effect=ValueError('actual marker failed')):
+            with self.assertRaisesRegex(ValueError,'actual marker failed'):self.bind()
+
+    def test_marker_pin_mutation_after_binding_fails_final_identity(self):
+        real=r.field_authority;changed=False
+        def mutate(*args):
+            nonlocal changed
+            if not changed:
+                changed=True
+                path=Path(self.artifacts['B']['path']);path.write_text(path.read_text()+' ')
+            return real(*args)
+        with patch.object(r,'field_authority',side_effect=mutate):
+            with self.assertRaisesRegex(ValueError,'actual pinned input changed'):self.bind()
+
     def test_reordered_export_row_rejected_before_any_child(self):
         path=self.roots['B']/'core-string-exports/audit.json';value=self.values[str(path.parent)]
         value['graphs'].reverse();self.put(path,value)

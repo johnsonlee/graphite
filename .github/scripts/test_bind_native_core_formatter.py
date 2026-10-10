@@ -34,6 +34,30 @@ class FormatterAdapterTests(unittest.TestCase):
             self.assertIs(False,result[key])
         b.marker.artifacts.verify_pins(result['pins'])
 
+    def test_private_result_matches_public_and_replays_on_every_call(self):
+        with patch.object(b.marker,'audit',side_effect=lambda root:copy.deepcopy(self.audit)) as replay:
+            public=b.bind(self.path,self.out)
+            bindings,checked=b._bind_with_marker(self.path,self.out)
+        self.assertEqual(2,replay.call_count)
+        self.assertEqual(public,bindings);self.assertEqual(self.audit,checked)
+        checked['arms']['B']['artifactAudit']['path']='corrupted caller value'
+        bindings[3]['artifactAudits']['B']['path']='different caller value'
+        self.assertEqual(self.audit,b.common.read(self.path))
+        self.assertEqual(public,b.bind(self.path,self.out))
+
+    def test_failed_replay_is_propagated_and_next_call_replays(self):
+        with patch.object(b.marker,'audit',side_effect=[ValueError('raw marker failure'),copy.deepcopy(self.audit)]) as replay:
+            with self.assertRaisesRegex(ValueError,'raw marker failure'):b._bind_with_marker(self.path,self.out)
+            self.assertEqual(self.audit,b._bind_with_marker(self.path,self.out)[1])
+        self.assertEqual(2,replay.call_count)
+
+    def test_marker_receipt_changed_during_replay_rejected(self):
+        def changed(root):
+            self.path.write_text(self.path.read_text()+' ')
+            return copy.deepcopy(self.audit)
+        with patch.object(b.marker,'audit',side_effect=changed):
+            with self.assertRaisesRegex(ValueError,'marker audit changed'):b._bind_with_marker(self.path,self.out)
+
     def test_forged_stored_marker_status_cannot_override_raw_replay(self):
         value=copy.deepcopy(self.audit);value['completeSemanticEquivalence']=True
         self.path.write_text(__import__('json').dumps(value))
