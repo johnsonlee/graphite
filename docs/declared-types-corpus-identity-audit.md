@@ -1128,3 +1128,35 @@ Local mocked-process tests verify the binding and rejection paths, including
 re-pinned incorrect responses, foreign revisions, missing evidence and cleanup
 failure. They do not represent real graph performance. CI execution and archived
 complete operation evidence are still required before any acceptance claim.
+
+### Execution-local reuse of complete upstream audits (2026-10-10)
+
+The six-cell executor previously validated its plan at entry and again for every
+cell execution and audit: 13 complete replays of the same producer evidence.
+For the new JVM path with A=C, those replays alone required 52 complete raw64
+decoding passes. These are outside request timing, but consume CI time. Historical
+hosted runs took 50–54 minutes in the producer step; neither those prefixes nor
+local macOS measurements prove that the complete pipeline fits the 180-minute
+hosted job limit.
+
+The executor now creates a private, nonserializable context after one full
+upstream semantic replay. Before and after reuse it still hashes all pinned
+bytes and checks the exact plan, actual Git revision and clean source inventory,
+build configuration presence/content, writer output inventory, runtime and graph
+directories, formatter classpaths (including absent roots), and all upstream
+proof directory entries and types. The directory snapshots bracket the initial
+full replay, so a change during that replay cannot establish a new trusted state.
+Any failure permanently invalidates the context. No context is saved for another
+run; standalone `run_cell` and `audit` still perform complete upstream replay.
+
+Every cell's actual HTTP response bodies, journals, resource records and cleanup
+evidence are independently audited as before. Root independently ran 105 protocol
+tests, including both corrected Native and JVM modes, source/configuration and
+directory mutation rejection, and actual raw-cell body/resource/cleanup tampering.
+These tiny fixtures establish correctness only. No measured CI speedup or final
+performance acceptance is claimed.
+
+Root test log: `/tmp/graphite-pressure-reuse-root-tests-2.log`.
+Independent implementation review:
+`/tmp/graphite-pressure-execution-reuse-independent-review-1.json`, SHA-256
+`7bdc19840f50878650a363b60c85d07f3407e3c298fb820b1eb2b887addac7e0`.

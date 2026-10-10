@@ -901,5 +901,308 @@ class JvmLegalDispatchTests(unittest.TestCase):
         with self.assertRaises(ValueError):p.validate_plan(legacy,CATALOG)
 
 
+class ExecutionAuthorityReuse(unittest.TestCase):
+    """Tiny filesystem/Git protocols; semantic replay and HTTP launches are mocked.
+
+    All closure/pin/config checks use their real implementations. The fixture is
+    deliberately not a usable pressure plan or a substitute real64 authority.
+    """
+    def setUp(self):
+        import subprocess
+        import audit_native_pressure_artifacts as artifacts
+        self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
+        self.root = Path(self.tmp.name).resolve(); self.checkout = self.root/'checkout'
+        self.checkout.mkdir(); self.producer = self.root/'producer'; self.producer.mkdir()
+        self.pins = {}
+        def git(*args):
+            return subprocess.check_output(['git', '-C', str(self.checkout), *args], stderr=subprocess.DEVNULL).decode().strip()
+        self.git = git
+        git('init', '-q'); git('config', 'user.name', 'Protocol'); git('config', 'user.email', 'protocol@example.invalid')
+        (self.checkout/'.gitignore').write_text('frontend/jvm/webgraph/build/\n')
+        (self.checkout/'source.kt').write_text('class Original\n')
+        git('add', '.'); git('commit', '-qm', 'original')
+        revision = git('rev-parse', 'HEAD')
+        source_files = artifacts.source_inventory(self.checkout, revision); self.pins.update(source_files)
+        env = {key: str(self.producer/key.lower()) for key in ('HOME', 'CARGO_HOME', 'GRADLE_USER_HOME')}
+        self.env = env
+        configuration = artifacts.configs(self.checkout, env)
+        self.writer = self.checkout/'frontend/jvm/webgraph/build/libs/writer-jmh.jar'; self.file(self.writer, 'writer')
+        self.phase = self.producer/'build-jvm'; phase = self.metadata(self.phase/'record.json', {'status': 'PASS'})
+        packet = self.metadata(self.producer/'producer.json', {'buildEnvironment': env,
+            'configurationBefore': configuration, 'configurationAfter': configuration,
+            'phaseReceipts': {phase['path']: phase['sha256']}})
+        source = self.metadata(self.producer/'source-manifest.json', {'root': str(self.checkout), 'revision': revision, 'files': source_files})
+        artifact = self.metadata(self.producer/'artifact-audit.json', {'producerPacket': packet, 'sourceManifest': source})
+        runtime_file = self.producer/'runtime/writer.jar'; self.file(runtime_file, 'writer')
+        graph = self.producer/'graphs/g0'; self.file(graph/'graph.nodes', 'tiny raw node')
+        self.raw = self.root/'raw'; self.metadata(self.raw/'plan.json', {})
+        self.file(self.raw/'universes/case.json', '{}')
+        self.query = self.root/'query'
+        query_plan = self.metadata(self.query/'plan.json', {'rawDerivationRoot': str(self.raw)})
+        query = self.metadata(self.query/'audit.json', {'plan': query_plan})
+        self.file(self.query/'bodies/case.json', '{"value":1}')
+        (self.query/'readiness-attempts').mkdir()
+        self.core = self.root/'core'; upstream = {}
+        for name in ('CStrings', 'BStrings', 'marker', 'formatterTests', 'formatterSource'):
+            upstream[name] = self.metadata(self.root/name/'audit.json', {})
+            self.file(self.root/name/'classes/Helper.class', 'class')
+        self.file(self.root/'CStrings/exports/g0/strings.bin', 'strings')
+        self.file(self.root/'formatterTests/results/xml/module/test.xml', '<testsuite/>')
+        self.classpath = self.root/'test-classpath'; self.file(self.classpath/'Test.class', 'class')
+        self.absent = self.root/'absent-classpath'
+        for module in ('sootup', 'webgraph'):
+            self.metadata(self.root/f'formatterTests/results/classpath-{module}-before.json', {
+                'classpath': [{'path': str(self.classpath), 'kind': 'directory'}, {'path': str(self.absent), 'kind': 'absent'}]})
+        self.metadata(self.core/'plan.json', {'upstream': upstream})
+        core_ref = self.metadata(self.core/'audit.json', {})
+        self.file(self.core/'graphs/g0/topology.json', '{}')
+        arm = {'revision': revision, 'artifactAudit': artifact, 'queryAudit': query,
+               'runtimeRoots': [str(self.producer/'runtime')], 'runtimeFiles': {str(runtime_file): self.pins[str(runtime_file)]},
+               'graphs': [{'id': 'g0', 'path': str(graph)}]}
+        authority = self.metadata(self.root/'authority.json', {'arms': {'B': arm}, 'correctedComparisons': {'B': {'audit': core_ref}}})
+        self.plan = {'jvmProducerAuthority': authority, 'pins': dict(self.pins), 'proofs': [], 'arms': {'B': arm},
+                     'cells': [{'id': str(i)} for i in range(6)]}
+        self.plan_file = self.root/'pressure-plan.json'; p.save(self.plan_file, self.plan)
+        self.stack = contextlib.ExitStack(); self.addCleanup(self.stack.close)
+        self.replay = self.stack.enter_context(patch.object(p, 'validate_plan', side_effect=lambda value: value))
+
+    def file(self, path, value):
+        path.parent.mkdir(parents=True, exist_ok=True); path.write_text(value); self.pins[str(path)] = p.sha(path)
+
+    def metadata(self, path, value):
+        self.file(path, json.dumps(value)); return {'path': str(path), 'sha256': self.pins[str(path)]}
+
+    def context(self):
+        return p._VerifiedPressureExecution.open(self.plan_file)
+
+    def test_six_cells_one_full_replay_and_six_real_raw_audit_calls(self):
+        context = self.context(); calls = []
+        def run(plan_path, cell, output, plan):
+            calls.append(('run', cell)); Path(output).mkdir(parents=True); p.save(Path(output)/'raw.json', {'body': cell, 'cpu': 3, 'cleanup': []})
+            return {'status': 'PASS'}
+        def audit(plan_path, output, plan):
+            raw = p.read(Path(output)/'raw.json'); self.assertEqual(raw, {'body': Path(output).name, 'cpu': 3, 'cleanup': []})
+            calls.append(('audit', raw['body'])); return {'status': 'PASS'}
+        with patch.object(p, '_run_cell', side_effect=run), patch.object(p, '_audit', side_effect=audit):
+            for i in range(6):
+                out = self.root/'execution'/str(i); context.run_cell(str(i), out); context.audit_cell(out)
+        self.assertEqual(self.replay.call_count, 1)
+        self.assertEqual(calls, [(op, str(i)) for i in range(6) for op in ('run', 'audit')])
+
+    def test_native_corrected_mode_reuses_one_full_replay(self):
+        self.plan['correctedProducerAuthority'] = self.plan.pop('jvmProducerAuthority')
+        self.plan_file.write_text(json.dumps(self.plan)); context = self.context()
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), patch.object(p, '_audit', return_value={'status': 'PASS'}):
+            context.run_cell('0', self.root/'out'); context.audit_cell(self.root/'out')
+        self.assertEqual(self.replay.call_count, 1)
+
+    def test_public_run_and_audit_each_replay_upstream(self):
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), patch.object(p, '_audit', return_value={'status': 'PASS'}):
+            p.run_cell(self.plan_file, '0', self.root/'out'); p.audit(self.plan_file, self.root/'out')
+        self.assertEqual(self.replay.call_count, 2)
+
+    def test_corrected_native_mode_reuses_authority_but_rechecks_query_evidence(self):
+        self.plan['correctedProducerAuthority'] = self.plan.pop('jvmProducerAuthority')
+        self.plan_file.write_text(json.dumps(self.plan))
+        context = self.context()
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}) as run, \
+                patch.object(p, '_audit', return_value={'status': 'PASS'}) as audit:
+            for i in range(6):
+                output = self.root/'execution'/str(i)
+                context.run_cell(str(i), output); context.audit_cell(output)
+            self.assertEqual((self.replay.call_count, run.call_count, audit.call_count), (1, 6, 6))
+            (self.query/'readiness-attempts/extra.body').write_text('changed')
+            with self.assertRaisesRegex(ValueError, 'closure changed'):
+                context.audit_cell(output)
+            self.assertEqual(audit.call_count, 6)
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_legacy_context_keeps_public_full_replay(self):
+        del self.plan['jvmProducerAuthority']; self.plan_file.write_text(json.dumps(self.plan))
+        context = self.context()
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), patch.object(p, '_audit', return_value={'status': 'PASS'}):
+            context.run_cell('0', self.root/'out'); context.audit_cell(self.root/'out')
+        self.assertEqual(self.replay.call_count, 3)
+
+    def test_cannot_construct_serialize_or_mutate_plan_copy(self):
+        import pickle
+        with self.assertRaises(TypeError): p._VerifiedPressureExecution()
+        context = self.context()
+        with self.assertRaises(TypeError): pickle.dumps(context)
+        context.plan['cells'].clear(); self.assertEqual(len(context.plan['cells']), 6)
+        context._check_unchanged()
+
+    def assert_mutation_rejected(self, mutate):
+        context = self.context(); mutate()
+        with patch.object(p, '_run_cell') as run:
+            with self.assertRaises((ValueError, OSError)): context.run_cell('0', self.root/'execution')
+            run.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_tracked_dirty_source_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.checkout/'source.kt').write_text('class Changed'))
+
+    def test_untracked_source_addition_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.checkout/'new.kt').write_text('class Added'))
+
+    def test_changed_source_head_rejected_even_same_tree(self):
+        self.assert_mutation_rejected(lambda: self.git('commit', '--allow-empty', '-qm', 'new revision'))
+
+    def test_absent_configuration_appearing_rejected(self):
+        def mutate():
+            path = Path(self.env['GRADLE_USER_HOME'])/'gradle.properties'; path.parent.mkdir(); path.write_text('changed=true')
+        self.assert_mutation_rejected(mutate)
+
+    def test_absent_init_directory_appearing_rejected(self):
+        self.assert_mutation_rejected(lambda: (Path(self.env['GRADLE_USER_HOME'])/'init.d').mkdir(parents=True))
+
+    def test_source_writer_added_ignored_jar_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.writer.parent/'added-jmh.jar').write_text('other'))
+
+    def test_absent_classpath_appearing_rejected(self):
+        self.assert_mutation_rejected(lambda: self.absent.mkdir())
+
+    def test_classpath_new_class_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.classpath/'Extra.class').write_text('class'))
+
+    def test_new_empty_directory_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.query/'readiness-attempts/extra').mkdir())
+
+    def test_new_xml_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.root/'formatterTests/results/xml/extra.xml').write_text('<testsuite/>'))
+
+    def test_new_string_export_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.root/'CStrings/exports/g0/new.bin').write_text('extra'))
+
+    def test_deleted_core_payload_rejected(self):
+        self.assert_mutation_rejected(lambda: (self.core/'graphs/g0/topology.json').unlink())
+
+    def test_symlink_substitution_rejected(self):
+        def mutate():
+            target = self.root/'external'; target.write_text('class')
+            path = self.classpath/'Test.class'; path.unlink(); path.symlink_to(target)
+        self.assert_mutation_rejected(mutate)
+
+    def test_same_bytes_symlink_root_rejected(self):
+        def mutate():
+            other = self.root/'relocated'; self.classpath.rename(other); self.classpath.symlink_to(other, target_is_directory=True)
+        self.assert_mutation_rejected(mutate)
+
+    def test_plan_same_bytes_symlink_substitution_rejected(self):
+        def mutate():
+            other = self.root/'plan-copy.json'; other.write_bytes(self.plan_file.read_bytes())
+            self.plan_file.unlink(); self.plan_file.symlink_to(other)
+        self.assert_mutation_rejected(mutate)
+
+    def test_plan_repinned_to_changed_raw_input_rejected(self):
+        def mutate():
+            path = self.raw/'universes/case.json'; path.write_text('{"changed":true}')
+            self.plan['pins'][str(path)] = p.sha(path); self.plan_file.write_text(json.dumps(self.plan))
+        self.assert_mutation_rejected(mutate)
+
+    def test_capture_is_bracketed_by_full_authority_replay(self):
+        def changed(plan):
+            (self.classpath/'New.class').write_text('class'); return plan
+        self.replay.side_effect = changed
+        with self.assertRaisesRegex(ValueError, 'during complete'): self.context()
+
+    def test_mutation_during_run_or_raw_audit_invalidates(self):
+        for operation in ('run', 'audit'):
+            with self.subTest(operation=operation):
+                context = self.context()
+                def changed(*args):
+                    (self.query/'readiness-attempts/extra').mkdir(); return {'status': 'PASS'}
+                with patch.object(p, '_run_cell', side_effect=changed), patch.object(p, '_audit', side_effect=changed):
+                    with self.assertRaisesRegex(ValueError, 'closure changed'):
+                        (context.run_cell('0', self.root/'out') if operation == 'run' else context.audit_cell(self.root/'out'))
+                (self.query/'readiness-attempts/extra').rmdir()
+                with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_failed_operation_permanently_invalidates(self):
+        context = self.context()
+        with patch.object(p, '_run_cell', return_value={'status': 'FAIL'}):
+            with self.assertRaisesRegex(ValueError, 'cell execution/audit failed'): context.run_cell('0', self.root/'out')
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context.audit_cell(self.root/'out')
+
+    def test_output_cannot_mutate_frozen_upstream_tree(self):
+        context = self.context()
+        with patch.object(p, '_run_cell') as run:
+            with self.assertRaisesRegex(ValueError, 'overlaps'): context.run_cell('0', self.raw/'new-output')
+            run.assert_not_called()
+
+    def test_raw_response_resource_cleanup_validation_is_never_cached(self):
+        context = self.context(); output = self.root/'out'; output.mkdir()
+        path = output/'raw.json'; good = {'body': 1, 'cpu': 3, 'cleanup': []}; p.save(path, good)
+        def audit(*args):
+            p.require(p.read(path) == good, 'raw evidence changed'); return {'status': 'PASS'}
+        with patch.object(p, '_audit', side_effect=audit) as checked:
+            context.audit_cell(output); path.write_text(json.dumps({**good, 'cleanup': ['live-child']}))
+            with self.assertRaisesRegex(ValueError, 'raw evidence changed'): context.audit_cell(output)
+        self.assertEqual(checked.call_count, 2)
+
+    def actual_audit_fixture(self):
+        """Arbitrary protocol timestamps, never measurements or performance evidence."""
+        output = self.root/'actual-audit'; output.mkdir()
+        body = p.canonical({'columns': ['v'], 'rows': [{'v': 7}]})
+        case = {'id': 'tiny', 'request': {'endpoint': '/api/cypher', 'body': {'query': 'RETURN 7 AS v'}},
+                'oracleByArm': {'B': {'kind': 'native-full-json-sha256-v1', 'rows': 1, 'digest': p.digest_bytes(body)}}}
+        self.plan.update(engine='native', operation='query', cases=[case], limits={'requestSeconds': 60},
+                         coverage={'unavailableFamilies': ['synthetic-protocol-only']}, cells=[{'id': '0', 'arm': 'B', 'port': 23333}])
+        arm = self.plan['arms']['B']; arm['serverArgv'] = ['/never-executed/graphite', 'serve']
+        arm['readiness'] = {'expected': {'count': 1, 'graphs': [{'id': 'g0', 'nodes': 1, 'edges': 0}]}}
+        self.plan_file.write_text(json.dumps(self.plan)); p.save(output/'plan.json', self.plan)
+        for name in ('identities-before.json', 'identities-after.json'): p.save(output/name, {'status': 'PASS', 'pins': self.plan['pins']})
+        readiness = copy.deepcopy(arm['readiness']['expected']); readiness['data'] = str(output/'data')
+        readiness['graphs'][0]['loadedAt'] = '2026-10-10T00:00:00Z'; (output/'readiness.body').write_bytes(p.canonical(readiness))
+        command = ['/usr/bin/time', '-l', '--', *arm['serverArgv'], '--data', str(output/'data'), '--port', '23333',
+                   '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '60000', '--metrics', *p.graph_arguments(arm['graphs'])]
+        p.save(output/'command.json', command)
+        cleanup = {'group': 22, 'after': [], 'errors': [], 'exit': 0, 'signals': []}
+        p.save(output/'cleanup.json', cleanup); p.save(output/'launch-owner.json', {'group': 22, 'runnerPid': 23})
+        (output/'server.pid').write_text('22')
+        (output/'time-v.log').write_text('1.0 real 0.1 user 0.1 sys\n1048576 maximum resident set size\n')
+        lifecycle = p.lifecycle_time(output/'time-v.log'); stages = {}; samples = []
+        def sample(start, end): return p.parse_macos_sample('Fri Oct  9 12:03:04 2026 00:04.25 1024', 22, start, end)
+        for index, (name, count) in enumerate((('oracle', 1), ('warmup', 2), ('pressure', 20))):
+            directory = output/name; (directory/'bodies').mkdir(parents=True); records = []; begin = 1000*index+100
+            for i in range(count):
+                start = begin+10*i; (directory/f'bodies/{i:06}.body').write_bytes(body)
+                records.append({'worker': 0, 'sequence': i, 'caseId': 'tiny', 'status': 'PASS', 'bodyFile': f'bodies/{i:06}.body',
+                    'endpoint': '/api/cypher', 'requestBodySha256': p.digest_bytes(p.canonical(case['request']['body'])),
+                    'httpStatus': 200, 'completeBody': True, 'deadlineExpired': False, 'startNs': start,
+                    'wireCompleteNs': start+2, 'validationCompleteNs': start+5, 'latencyNs': 5,
+                    'bodyBytes': len(body), 'bodySha256': p.digest_bytes(body), 'canonicalSha256': p.digest_bytes(body), 'rows': 1})
+            end = records[-1]['validationCompleteNs']; inner = sample(begin+1, begin+2); samples.append(inner)
+            stage = {'status': 'PASS', 'requests': records, 'unissued': [], 'allWorkersStopped': True, 'journalErrors': [],
+                'cpuStart': sample(begin-10, begin-9), 'cpuEnd': sample(end+10, end+11), 'startNs': begin, 'endNs': end,
+                'observedMaxWorkerConcurrency': 1, 'observedMaxWireConcurrency': 1, 'caseStatistics': p.statistics(records)}
+            for worker in range(4):
+                (directory/f'worker-{worker}.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in records if row['worker'] == worker))
+            p.save(directory/'stage.json', stage)
+            stages[name] = {**stage, 'resources': p.resource_summary(stage, [inner], lifecycle)}
+        for stage in stages.values(): stage['resources'] = p.resource_summary(stage, samples, lifecycle)
+        (output/'resources.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in samples))
+        result = {'schema': p.RESULT_SCHEMA, 'planSha256': p.sha(self.plan_file), 'status': 'PASS', 'errors': [],
+            'acceptanceEligible': False, 'cell': self.plan['cells'][0], 'arm': arm, 'engine': 'native', 'operation': 'query',
+            'coverage': self.plan['coverage'], 'otherOperationsEligible': False, 'cleanup': cleanup, 'lifecycle': lifecycle, 'stages': stages}
+        p.save(output/'result.json', result)
+        return output
+
+    def test_actual_raw_audit_pass_then_body_resource_and_cleanup_tampering_rejected(self):
+        output = self.actual_audit_fixture()
+        for filename, mutation, message in (
+                ('pressure/bodies/000000.body', lambda raw: raw.replace('7', '8'), 'raw body'),
+                ('resources.jsonl', lambda raw: raw.replace('"rssBytes": 1048576', '"rssBytes": 1048577'), 'raw macOS sample'),
+                ('cleanup.json', lambda raw: raw.replace('"after": []', '"after": [22]'), 'cleanup proof')):
+            with self.subTest(filename=filename):
+                context = self.context(); result = context.audit_cell(output)
+                self.assertEqual(result['completeBodies'], 23); self.assertFalse(result['acceptanceEligible'])
+                path = output/filename; original = path.read_text(); changed = mutation(original)
+                self.assertNotEqual(original, changed); path.write_text(changed)
+                with self.assertRaisesRegex(ValueError, message): context.audit_cell(output)
+                path.write_text(original)
+                with self.assertRaisesRegex(ValueError, 'invalidated'): context.audit_cell(output)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
