@@ -468,12 +468,16 @@ class CompiledLegalLimitOracle:
     """
     def __init__(self, oracle, case):
         case = validate_case(case)
+        grouped = type(oracle) is dict and oracle.get('schema') == 'graphite.jvm-distinct-row-universe.v2'
+        if grouped:
+            from jvm_pressure_distinct import SCHEMA, EQUALITY, CompiledGroups
         required = {'schema', 'policy', 'caseId', 'requestSha256', 'querySha256',
                     'registeredGraphIds', 'requestedGraphIds', 'targetGraphIds',
                     'columns', 'effectiveLimit', 'allGraphScansComplete',
                     'exactEncounterOrderClaim', 'totalMatches', 'rows'}
+        if grouped: required = required - {'rows'} | {'groups', 'equalityPolicy'}
         need(type(oracle) is dict and set(oracle) == required, 'complete supplied JVM oracle shape')
-        need(oracle['schema'] == 'graphite.jvm-legal-row-universe.v1' and
+        need(oracle['schema'] == (SCHEMA if grouped else 'graphite.jvm-legal-row-universe.v1') and
              oracle['policy'] == POLICY and oracle['caseId'] == case['id'], 'explicit JVM multiset policy and case')
         for name in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
                      'targetGraphIds', 'columns', 'effectiveLimit'):
@@ -481,10 +485,16 @@ class CompiledLegalLimitOracle:
         need(oracle['allGraphScansComplete'] is True and oracle['exactEncounterOrderClaim'] is False,
              'complete scan and explicit no-encounter-order contract')
         need(type(oracle['totalMatches']) is int and oracle['totalMatches'] >= 0 and
-             type(oracle['rows']) is list, 'complete row universe count')
+             type(oracle['groups'] if grouped else oracle['rows']) is list, 'complete row universe count')
+        self.distinct = None
+        if grouped:
+            need(case['family'] == 'wrapped-discovery' and oracle['equalityPolicy'] == EQUALITY,
+                 'v2 only for the eight wrapped DISTINCT cases')
+            self.distinct = CompiledGroups(oracle['groups'], case)
+            need(self.distinct.total == oracle['totalMatches'], 'complete DISTINCT group total')
         allowed = Counter()
         distinct_visible = set()
-        for entry in oracle['rows']:
+        for entry in ([] if grouped else oracle['rows']):
             need(type(entry) is dict and set(entry) == {'value', 'multiplicity'} and
                  type(entry['multiplicity']) is int and entry['multiplicity'] > 0, 'positive exact row multiplicity')
             row = entry['value']
@@ -497,7 +507,7 @@ class CompiledLegalLimitOracle:
             identity = key(row)
             need(identity not in allowed, 'unique encoded universe row')
             allowed[identity] = entry['multiplicity']
-        need(sum(allowed.values()) == oracle['totalMatches'], 'complete multiset total')
+        if not grouped: need(sum(allowed.values()) == oracle['totalMatches'], 'complete multiset total')
         self.allowed = MappingProxyType(dict(allowed))
         self.total = oracle['totalMatches']
         self.limit = case['effectiveLimit']
@@ -518,8 +528,11 @@ class CompiledLegalLimitOracle:
         need(type(value['rowCount']) is int and value['rowCount'] == len(value['rows']) == count, 'exact legal LIMIT cardinality')
         for row in value['rows']:
             validate_row(row, self.columns, self.targets, self.family)
-        actual = Counter(key(row) for row in value['rows'])
-        need(all(n <= self.allowed.get(k, 0) for k, n in actual.items()), 'typed projected values/provenance/multiplicity mismatch')
+        if self.distinct is not None:
+            self.distinct.validate(value['rows'])
+        else:
+            actual = Counter(key(row) for row in value['rows'])
+            need(all(n <= self.allowed.get(k, 0) for k, n in actual.items()), 'typed projected values/provenance/multiplicity mismatch')
         return {'status': 'PASS_RESPONSE_AGAINST_SUPPLIED_JVM_UNIVERSE', 'rows': count,
                 'completeMatches': self.total, 'policy': POLICY,
                 'exactEncounterOrderClaim': False, 'oracleAuthorityVerified': False,

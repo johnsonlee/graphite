@@ -239,5 +239,107 @@ class JvmPressureOracleTests(unittest.TestCase):
         with self.assertRaises(TypeError): compiled.allowed['anything'] = 2
 
 
+class JvmDistinctV2Tests(unittest.TestCase):
+    def setUp(self):
+        import jvm_pressure_distinct as distinct
+        import test_jvm_pressure_distinct as fixture
+        self.d=distinct; self.f=fixture
+        self.case=next(c for c in oracle.cases() if c['id']=='wrapped-dense_distributed_method_query')
+        self.g,self.h=self.case['targetGraphIds'][:2]
+
+    def universe(self, groups, case=None):
+        case=case or self.case
+        return {'schema':self.d.SCHEMA,'policy':oracle.POLICY,'equalityPolicy':self.d.EQUALITY,
+                'caseId':case['id'],**{k:copy.deepcopy(case[k]) for k in ('requestSha256','querySha256',
+                    'registeredGraphIds','requestedGraphIds','targetGraphIds','columns','effectiveLimit')},
+                'allGraphScansComplete':True,'exactEncounterOrderClaim':False,'totalMatches':len(groups),'groups':groups}
+
+    def response(self, rows):
+        return {'mode':'cross-graph','graphs':self.case['requestedGraphIds'],'graphCount':64,
+                'columns':self.case['columns'],'rows':rows,'rowCount':len(rows),'limit':self.case['effectiveLimit']}
+
+    def row(self, value, ids=None): return oracle.projected_row(value,ids or [self.g])
+
+    def test_mixed_numeric_representatives_each_allowed_but_group_capacity_is_one(self):
+        groups=self.f.groups((self.f.visible(),self.g),(self.f.visible(callerMethod=self.f.f(1)),self.h))
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        for variant in groups[0]['variants']:
+            self.assertEqual(1,checker.validate(self.response([self.row(variant,[self.g,self.h])]))['rows'])
+        with self.assertRaises(ValueError):checker.validate(self.response([self.row(groups[0]['variants'][0])]))
+        # Add a second group so cardinality passes; two representations of the first must still fail.
+        groups+=self.f.groups((self.f.visible(callerMethod=2),self.g))
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        with self.assertRaisesRegex(ValueError,'capacity'):
+            checker.validate(self.response([self.row(v,[self.g,self.h]) for v in groups[0]['variants']]))
+
+    def test_json_collision_requires_augmenting_match_not_greedy_selection(self):
+        groups=self.f.groups((self.f.visible(calleeMethod={}),self.g),
+            (self.f.visible(callerMethod=self.f.f(1),calleeMethod={}),self.g),
+            (self.f.visible(calleeMethod={'x':None}),self.g))
+        self.assertEqual(2,len(groups))
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        # Integer row can fill either group; floating row can only fill the first.
+        values=[self.row(v) for v in groups[0]['variants']]
+        self.assertEqual(2,checker.validate(self.response(values))['rows'])
+        self.assertEqual(2,checker.validate(self.response(list(reversed(values))))['rows'])
+        identical=self.row(groups[0]['variants'][0])
+        self.assertEqual(2,checker.validate(self.response([identical,identical]))['rows'])
+        only_float=self.row(groups[0]['variants'][1])
+        with self.assertRaisesRegex(ValueError,'capacity'):checker.validate(self.response([only_float,only_float]))
+
+    def test_enum_and_map_json_collision_keep_two_distinct_groups(self):
+        import jvm_pressure_inputs as raw
+        groups=self.f.groups((self.f.visible(callerMethod=raw.EnumReference('E','N')),self.g),
+            (self.f.visible(callerMethod={'enumClass':'E','enumName':'N'}),self.g))
+        self.assertEqual(2,len(groups));self.assertEqual(groups[0]['variants'],groups[1]['variants'])
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        same=self.row(groups[0]['variants'][0])
+        self.assertEqual(2,checker.validate(self.response([same,same]))['rows'])
+
+    def test_whole_row_variants_cannot_be_recombined(self):
+        groups=self.f.groups((self.f.visible(callerMethod=1,calleeMethod=self.f.f(1)),self.g),
+                            (self.f.visible(callerMethod=self.f.f(1),calleeMethod=1),self.g))
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        invented=self.f.visible(callerMethod=1,calleeMethod=1)
+        with self.assertRaisesRegex(ValueError,'capacity'):checker.validate(self.response([self.row(invented)]))
+
+    def test_v2_only_eight_wrapped_and_old_v1_shape_remains_strict(self):
+        for case in oracle.cases():
+            source=self.universe([],case)
+            if case['family']=='wrapped-discovery':oracle.CompiledLegalLimitOracle(source,case)
+            else:
+                with self.assertRaisesRegex(ValueError,'eight wrapped'):oracle.CompiledLegalLimitOracle(source,case)
+        source=self.universe([]);source['schema']='graphite.jvm-legal-row-universe.v1'
+        with self.assertRaisesRegex(ValueError,'shape'):oracle.CompiledLegalLimitOracle(source,self.case)
+
+    def test_groups_provenance_shape_counts_and_key_canonicality_are_strict(self):
+        original=self.universe(self.f.groups((self.f.visible(),self.g)))
+        for name in ('duplicate','foreign','missing-column','variant-null','extra','count','policy','empty'):
+            bad=copy.deepcopy(original)
+            if name=='duplicate':bad['groups']*=2;bad['totalMatches']=2
+            if name=='foreign':bad['groups'][0]['graphIds']=['foreign']
+            if name=='missing-column':bad['groups'][0]['semanticKey'][1].pop()
+            if name=='variant-null':bad['groups'][0]['variants'][0]['caller']=None
+            if name=='extra':bad['groups'][0]['variants'][0]['unexpected']='x'
+            if name=='count':bad['totalMatches']=2
+            if name=='policy':bad['equalityPolicy']='plain'
+            if name=='empty':bad['groups'][0]['variants']=[]
+            with self.subTest(name=name),self.assertRaises(ValueError):oracle.CompiledLegalLimitOracle(bad,self.case)
+
+    def test_precompiled_snapshot_and_limit_keep_all_groups(self):
+        groups=self.f.groups(*[(self.f.visible(callerMethod=i),self.g) for i in range(60)])
+        source=self.universe(groups);checker=oracle.CompiledLegalLimitOracle(source,self.case)
+        selected=[self.row(g['variants'][0]) for g in groups[10:]][::-1]
+        source['groups'].clear()
+        self.assertEqual(50,checker.validate(self.response(selected))['rows'])
+        with self.assertRaises(TypeError):checker.distinct.index['x']=(0,)
+
+    def test_unserializable_group_is_not_silently_dropped(self):
+        groups=self.f.groups((self.f.visible(callerMethod=self.f.f(float('inf'))),self.g))
+        checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
+        self.assertEqual(1,checker.total)
+        with self.assertRaisesRegex(ValueError,'cardinality'):checker.validate(self.response([]))
+
+
 if __name__ == '__main__':
     unittest.main()
