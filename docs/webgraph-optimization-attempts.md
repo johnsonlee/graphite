@@ -15387,3 +15387,42 @@ skipping it or moving it outside the boundary is not an optimization candidate.
 The instrumented pair is diagnostic only. It does not replace the uninstrumented
 CABBAC measurements above or establish a speedup, a new RSS result, query latency
 or final performance acceptance. No production change follows from sampling alone.
+
+### Attempt196 — reuse raw descriptor hashes across method signatures (2026-10-10)
+
+The paired195 JFR stacks identify repeated raw-type decoding while constructing
+erased-signature indexes. The isolated candidate caches a descriptor's hash and
+`31^UTF16Length` by raw type ID, then combines those primitive facts across distinct
+method signatures. It retains the existing signature cache and discards both maps
+at `finishIndexing()`. Type objects and rendered strings are not retained. Wire
+format, dictionary contents, validation and the usable-save boundary are unchanged.
+
+Source baseline: `ed166872f76e0b62d1ce723c40b098a9e901bdf5` in the ordinary clone
+`/tmp/graphite-attempt196-source`. Candidate patch SHA-256:
+`a63637cd8ac5b9f2e61dcf59a6a3b7de0eab54ac5f3fd17777d2ebae8ed776d3`.
+The only production change is in `ErasedDeclaredTypes.kt`; seven new tests cover
+reuse across distinct signatures, void positions, Unicode/order/array depth,
+zero hashes, real collisions and duplicate raw IDs, compressed length overflow,
+malformed surrogate rejection, and release after indexing. All380 previous
+Webgraph cases remain required, giving387 cases. Root reviewed the change and
+verified488 source inputs, control pins, the frozen diff and unchanged owned
+runner logic before assigning the sole local heavy slot to static validation.
+
+Preparation: `/tmp/graphite-attempt196-prep-1`; full validation plan SHA-256:
+`ac52a0ead80779d164bd82a91de172756b0f75a63a6fb29c43e18141e1ce3c11`.
+Reuse195's detekt-first, then full test/detekt/kover protocol, with4g/APC4 and one
+worker/test fork. Static and full validation outputs are separate fresh directories.
+No correctness pass or performance improvement is claimed before actual results.
+
+The temporary Long-valued map covers parameter and return types as well as fields,
+so its key domain and entry width exceed the old field-only Int cache. Any CPU or
+allocation benefit must be checked against actual peak RSS on the same real64
+construction workload. Query p50/p95, construction wall/CPU/RSS and loading results
+are unmeasured for this candidate; the195 conclusions remain in force. The candidate
+is isolated pending correctness and multi-graph validation, not accepted recovery.
+
+Static validation completed: `:webgraph:detekt` executed successfully with exit0,
+unchanged488 source inputs and an empty owned process group. Root checked the raw
+log, exact arguments, source identities and cleanup before authorizing the frozen
+full suite. Static record SHA-256:
+`55b9ddb853c5534e0b8ea4b421a8f4e1418d3ebed4543167b5087cb34fedbe95`.
