@@ -15606,3 +15606,66 @@ Decision: retain isolated 197 commit `19c89f4769a7b7720434bd48c2ad261813285dbc`
 for its measured RSS benefit and continued composition. Do not integrate or claim
 final recovery: accepted-baseline construction CPU remains unresolved, and full
 semantic and separate loading/query acceptance are still required.
+
+### Attempt198 — summarize each structural text atom once (2026-10-10)
+
+The isolated candidate builds on197 commit
+`19c89f4769a7b7720434bd48c2ad261813285dbc`. Its single hypothesis is to avoid
+repeated decoding and n-gram insertion in the final structural type summary.
+KIND and VARIANCE use separate enum masks, NAME uses its existing shared string
+ID, and SCOPE uses the complete tag/target pair. Projection reachability is
+checked before recording an identity. The first occurrence still uses the
+original renderer and text boundary; no composite strings are persisted or
+retained. GTY04 keeps its original name-summary union, and GTY05 keeps its
+reachable-only summary. Complete table validation and initial string statistics
+remain unchanged. Duplicate and unreachable rows check cancellation every256 rows.
+
+The temporary primitive sets introduce a transient memory tradeoff. The earlier
+real64 JFR contains42 execution samples in this final-summary path, including18
+Builder bit-setting leaves, but these samples neither measure this candidate nor
+show that all of the path's cost is removable. Query p50/p95, construction and
+loading time, CPU and RSS are unmeasured for198. The intended comparison remains
+the matched Android/Tika/Hive/Kotlin64 corpus, against197 and accepted4f, with
+the existing operation boundaries and resource constraints.
+
+Independent source review found no blocker. Five new behavior cases compare
+actual GTY04/05 loaded summaries with the old per-row builder, exhaust all legal
+one/two/three-character identifiers, distinguish scope tags and targets, verify
+one decode per atom, exclude unreachable rows before deduplication, and retain
+cancellation on repeated rows. All392 previous cases and their source files
+remain unchanged; the expected full inventory is397.
+
+The first actual static check failed only because the exhaustive test exceeded
+the nesting limit. Its original record and log remain at
+`/tmp/graphite-attempt198-static-validation-1`. Extracting an identical assertion
+helper changed only the new test. The second static check executed detekt and
+passed; root rechecked491 source pins, control pins, successful cleanup and
+absence of the owned processes. Full test/detekt/kover validation is the next
+step; no correctness-suite or performance success is claimed yet.
+
+Source: `/tmp/graphite-unique-type-summary-source`.
+Current preparation: `/tmp/graphite-attempt198-prep-2`.
+Candidate patch SHA-256:
+`5933bfc3dcf6b00c861c3e9df483460e754947af333f224d1215f028936e81de`.
+Independent initial source review SHA-256:
+`b40eb9a0f53a6524d189d4e0654f46447107d1bbb36ae25962a6797bf933f935`.
+Root successful static review SHA-256:
+`80cdbeda9d63c7dad7be4245cb6c8e4972f82139bc43d0d8db18ef29b81ffdbc`.
+Decision: isolated candidate pending full correctness and real multi-graph
+evidence; do not integrate or claim regression recovery.
+
+Full correctness has now completed. Root independently checked491 frozen source
+and control identities and40 fresh XML reports against the actual392-case parent
+inventory plus the five new cases. All397 pass with zero failures, errors or
+skips; suite timestamps and XML mtimes fall within the original run. The earlier
+static gate executed detekt; the full run reused that same-source result and
+executed koverVerify successfully, with an empty verification error file.
+The original runner exited0 and both owned process IDs/groups are absent.
+
+Full output: `/tmp/graphite-attempt198-validation-1`.
+Execution SHA-256:
+`dea8f1144fc9fc511051fb7342f227908564bf6da37403b2df5e3c9c1aff9b62`.
+Root independent review SHA-256:
+`00c2e96909e3d65f8ebedf560b6f8b785112ba8eff2c7bf487330ce7a11f2583`.
+Decision: retain isolated198 for packaging and matched real64 measurement.
+No construction, loading, query latency, CPU or RSS acceptance is established.
