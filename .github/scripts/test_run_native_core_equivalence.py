@@ -4,6 +4,7 @@ import csv
 import json
 from pathlib import Path
 import tempfile
+import struct
 import unittest
 from unittest.mock import patch
 import run_native_core_equivalence as r
@@ -252,6 +253,76 @@ class PairBindingTests(unittest.TestCase):
     def test_foreign_source_rule_pair_cannot_be_joined(self):
         self.bound['fixtureManifests']={**self.fixture_refs,'B':self.fixture_refs['C']}
         with self.assertRaisesRegex(ValueError,'same actual formatter source pair'):self.bind()
+
+
+class RawEdgeExportTests(unittest.TestCase):
+    """Tiny raw files bind the optional format; Java execution remains a separate check."""
+    def setUp(self):
+        self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name).resolve()
+        self.proof=self.root/'proof';self.proof.mkdir();(self.root/'classes').mkdir()
+        (self.root/'classes/VerifyTopology.class').write_bytes(b'tiny compiled identity')
+        self.plan={'output':str(self.root),'rawEdgeExports':True,'pins':{},'graphs':[],
+                   'java':'/jdk/java','javac':'/jdk/javac','writerJar':'/writer.jar','python':'/python'}
+        source=r.artifacts.ref(r.PACKAGE/'VerifyTopology.java');self.plan['pins'][source['path']]=source['sha256']
+        self.row={'id':'g'};self.top={'nodeSlots':3,'labeledEdges':2,'rawEdgeExports':{},'inputPins':{}}
+        for name,arm,edges in [('actual','B',[(0,2,255),(2,1,2)]),('reference','C',[(0,1,2),(2,2,255)])]:
+            graph=self.root/arm;graph.mkdir();self.row[arm]=str(graph);inputs={}
+            for leaf in r.EDGE_INPUTS:
+                path=graph/leaf;path.write_bytes((arm+leaf).encode());ref=r.artifacts.ref(path)
+                inputs[leaf]=ref;self.plan['pins'][ref['path']]=ref['sha256'];self.top['inputPins'][ref['path']]=ref['sha256']
+            output=self.proof/(name+'-edges.bin');output.write_bytes(struct.pack('>iiq',0x47534501,3,2)+b''.join(struct.pack('>iiB',*edge) for edge in edges))
+            self.top['rawEdgeExports'][name]={'schema':'graphite.raw-labeled-edge-export.v1','format':'GSE01','graphRoot':str(graph),
+                'sourceInputs':inputs,'output':r.artifacts.ref(output),'nodeSlots':3,'labeledEdges':2,'helperSource':source,
+                'helperClass':r.artifacts.ref(self.root/'classes/VerifyTopology.class'),'allSequentialOffsetsChecked':True,
+                'allRandomAccessOffsetsChecked':True,'allLabelPrefixOffsetsChecked':True,'rawNodeIdsPreserved':True,
+                'mappingApplied':False,'fullScanConsumed':True}
+        self.plan['graphs']=[self.row]
+        (self.root/'plan.json').write_text('{}')
+
+    def verify(self):r.raw_edge_exports(self.plan,self.row,self.top,self.proof)
+
+    def test_optional_command_adds_two_paths_without_an_extra_phase(self):
+        legacy=copy.deepcopy(self.plan);legacy.pop('rawEdgeExports')
+        old=list(r.commands(legacy));new=list(r.commands(self.plan))
+        self.assertEqual(3,len(old));self.assertEqual(3,len(new));self.assertEqual(old[:2],new[:2])
+        self.assertEqual(old[-1][1],new[-1][1][:-2]);self.assertEqual(old[-1][2],new[-1][2])
+        self.assertEqual([str(self.root/'graphs/g/actual-edges.bin'),str(self.root/'graphs/g/reference-edges.bin')],new[-1][1][-2:])
+        self.verify()
+        data=(self.proof/'actual-edges.bin').read_bytes()
+        self.assertEqual((0x47534501,3,2),struct.unpack('>iiq',data[:16]))
+        self.assertEqual([(0,2,255),(2,1,2)],list(struct.iter_unpack('>iiB',data[16:])))
+
+    def test_repin_truncated_header_extra_record_and_wrong_counts_still_reject(self):
+        file=self.proof/'actual-edges.bin';original=file.read_bytes()
+        for data in (original[:15],original+b'\0',struct.pack('>iiq',0x47534501,4,2)+original[16:],
+                     struct.pack('>iiq',0x47534502,3,2)+original[16:]):
+            file.write_bytes(data);self.top['rawEdgeExports']['actual']['output']=r.artifacts.ref(file)
+            with self.subTest(size=len(data)),self.assertRaisesRegex(ValueError,'GSE01'):self.verify()
+
+    def test_foreign_root_input_output_helper_and_mapping_claim_reject(self):
+        original=copy.deepcopy(self.top)
+        for changed in ('root','input','output','class','source','mapping','incomplete','missing'):
+            self.top=copy.deepcopy(original);value=self.top['rawEdgeExports']['actual']
+            if changed=='root':value['graphRoot']=self.row['C']
+            elif changed=='input':value['sourceInputs']['graph.labels']=self.top['rawEdgeExports']['reference']['sourceInputs']['graph.labels']
+            elif changed=='output':value['output']=self.top['rawEdgeExports']['reference']['output']
+            elif changed=='class':value['helperClass']={'path':'/foreign/class','sha256':value['helperClass']['sha256']}
+            elif changed=='source':value['helperSource']={**value['helperSource'],'sha256':'0'*64}
+            elif changed=='mapping':value['mappingApplied']=True
+            elif changed=='incomplete':value['fullScanConsumed']=False
+            else:self.top['rawEdgeExports'].pop('reference')
+            with self.subTest(changed=changed),self.assertRaises(ValueError):self.verify()
+
+    def test_changed_export_or_compiled_helper_cannot_reuse_receipt(self):
+        file=self.proof/'actual-edges.bin';original=file.read_bytes();file.write_bytes(original[:-1]+b'\1')
+        with self.assertRaisesRegex(ValueError,'output pin'):self.verify()
+        file.write_bytes(original);(self.root/'classes/VerifyTopology.class').write_bytes(b'changed helper')
+        with self.assertRaisesRegex(ValueError,'compiled raw edge helper'):self.verify()
+
+    def test_raw_mode_is_rebound_instead_of_silently_dropped(self):
+        self.plan.update(referenceRoot=self.row['C'],actualRoot=self.row['B'])
+        with patch.object(r,'bind',return_value={}) as binder:r.rebind(self.plan)
+        self.assertEqual((self.row['C'],self.row['B'],str(self.root),False,True),binder.call_args.args)
 
 
 if __name__=='__main__':unittest.main()

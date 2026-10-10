@@ -2,11 +2,38 @@ import com.google.gson.*;
 import it.unimi.dsi.fastutil.io.BinIO;
 import it.unimi.dsi.webgraph.*;
 import java.nio.file.*;
+import java.io.*;
+import java.security.*;
 import java.util.*;
 public final class VerifyTopology {
     static void check(boolean ok,String message){if(!ok)throw new AssertionError(message);}
     static int mapped(int id,Map<Integer,Integer> mapping){return mapping.getOrDefault(id,id);}
-    static Map<String,Object> topologyProof(Path actual, Path expected, Map<Integer,Integer> mapping) throws Exception {
+    static DataOutputStream edgeOutput(Path output, int nodes, long edges, MessageDigest digest) throws Exception {
+        if(output==null)return null;
+        var stream=new DataOutputStream(new BufferedOutputStream(new DigestOutputStream(
+            Files.newOutputStream(output,StandardOpenOption.CREATE_NEW),digest),65536));
+        try {stream.writeInt(0x47534501);stream.writeInt(nodes);stream.writeLong(edges);return stream;}
+        catch(Exception error){stream.close();throw error;}
+    }
+    static Map<String,Object> fileRef(Path path)throws Exception {
+        return Map.of("path",path.toAbsolutePath().normalize().toString(),"sha256",hash(path));
+    }
+    static Map<String,Object> edgeReceipt(Path graph,Path output,String digest,int nodes,long edges,Path helperRoot,JsonObject pins)throws Exception {
+        Map<String,Object> inputs=new LinkedHashMap<>();
+        for(String name:List.of("forward.graph","forward.offsets","forward.properties","graph.labels","graph.labelprefix"))
+            inputs.put(name,Map.of("path",graph.resolve(name).toAbsolutePath().normalize().toString(),"sha256",pins.get(graph.resolve(name).toString()).getAsString()));
+        Path helperClass=Path.of(VerifyTopology.class.getProtectionDomain().getCodeSource().getLocation().toURI()).resolve("VerifyTopology.class");
+        Map<String,Object> result=new LinkedHashMap<>();
+        result.put("schema","graphite.raw-labeled-edge-export.v1");result.put("format","GSE01");
+        result.put("graphRoot",graph.toAbsolutePath().normalize().toString());result.put("sourceInputs",inputs);
+        result.put("output",Map.of("path",output.toAbsolutePath().normalize().toString(),"sha256",digest));
+        result.put("nodeSlots",nodes);result.put("labeledEdges",edges);
+        result.put("helperSource",fileRef(helperRoot.resolve("VerifyTopology.java")));result.put("helperClass",fileRef(helperClass));
+        for(String key:List.of("allSequentialOffsetsChecked","allRandomAccessOffsetsChecked","allLabelPrefixOffsetsChecked","rawNodeIdsPreserved","fullScanConsumed"))result.put(key,true);
+        result.put("mappingApplied",false);return result;
+    }
+    static Map<String,Object> topologyProof(Path actual, Path expected, Map<Integer,Integer> mapping,
+                                           Path actualOutput,Path referenceOutput,Path helperRoot,JsonObject pins) throws Exception {
         ImmutableGraph a = BVGraph.load(actual.resolve("forward").toString());
         ImmutableGraph b = BVGraph.load(expected.resolve("forward").toString());
         check(a.numNodes() == b.numNodes() && a.numArcs() == b.numArcs(), "node/edge counts");
@@ -16,25 +43,44 @@ public final class VerifyTopology {
         check(ap.length == a.numNodes()+1 && bp.length == b.numNodes()+1, "label prefix size");
         NodeIterator ai = a.nodeIterator(), bi = b.nodeIterator();
         int apos=0,bpos=0,nodes=0; long edges=0;
-        while (ai.hasNext()) {
-            int id=ai.nextInt(); check(bi.hasNext() && bi.nextInt()==id, "iterator ids");
-            int ad=ai.outdegree(), bd=bi.outdegree(); int[] ase=ai.successorArray(), bse=bi.successorArray();
-            check(ap[id]==apos && bp[id]==bpos, "exact prefix offset " + id);
-            check(a.outdegree(id)==ad && b.outdegree(id)==bd, "random degree " + id);
-            int[] ara=a.successorArray(id), bra=b.successorArray(id);
-            for (int i=0;i<ad;i++) check(ara[i]==ase[i], "actual random offset " + id + ":" + i);
-            for (int i=0;i<bd;i++) check(bra[i]==bse[i], "reference random offset " + id + ":" + i);
-            int target=mapped(id,mapping), td=b.outdegree(target); int[] ts=b.successorArray(target);
-            check(ad==td, "mapped outdegree " + id);
-            long[] actualEdges=new long[ad];
-            for (int i=0;i<ad;i++) actualEdges[i]=((long)mapped(ase[i],mapping)<<8)|(al[apos+i]&255);
-            Arrays.sort(actualEdges);
-            for (int i=0;i<td;i++) check(actualEdges[i]==(((long)ts[i]<<8)|(bl[bp[target]+i]&255)), "complete mapped labeled edge " + id + ":" + i);
-            nodes++; edges+=ad; apos+=ad; bpos+=bd;
+        MessageDigest actualDigest=MessageDigest.getInstance("SHA-256"),referenceDigest=MessageDigest.getInstance("SHA-256");
+        try(DataOutputStream actualEdgesOut=edgeOutput(actualOutput,a.numNodes(),a.numArcs(),actualDigest);
+            DataOutputStream referenceEdgesOut=edgeOutput(referenceOutput,b.numNodes(),b.numArcs(),referenceDigest)) {
+            while (ai.hasNext()) {
+                int id=ai.nextInt(); check(bi.hasNext() && bi.nextInt()==id, "iterator ids");
+                int ad=ai.outdegree(), bd=bi.outdegree(); int[] ase=ai.successorArray(), bse=bi.successorArray();
+                check(ap[id]==apos && bp[id]==bpos, "exact prefix offset " + id);
+                check(a.outdegree(id)==ad && b.outdegree(id)==bd, "random degree " + id);
+                int[] ara=a.successorArray(id), bra=b.successorArray(id);
+                // Write each original edge during the existing offset check, before mapping or sorting.
+                for (int i=0;i<ad;i++) {
+                    check(ara[i]==ase[i], "actual random offset " + id + ":" + i);
+                    if(actualEdgesOut!=null) {
+                        actualEdgesOut.writeInt(id);actualEdgesOut.writeInt(ase[i]);actualEdgesOut.writeByte(al[apos+i]&255);
+                    }
+                }
+                for (int i=0;i<bd;i++) {
+                    check(bra[i]==bse[i], "reference random offset " + id + ":" + i);
+                    if(referenceEdgesOut!=null) {
+                        referenceEdgesOut.writeInt(id);referenceEdgesOut.writeInt(bse[i]);referenceEdgesOut.writeByte(bl[bpos+i]&255);
+                    }
+                }
+                int target=mapped(id,mapping), td=b.outdegree(target); int[] ts=b.successorArray(target);
+                check(ad==td, "mapped outdegree " + id);
+                long[] actualEdges=new long[ad];
+                for (int i=0;i<ad;i++) actualEdges[i]=((long)mapped(ase[i],mapping)<<8)|(al[apos+i]&255);
+                Arrays.sort(actualEdges);
+                for (int i=0;i<td;i++) check(actualEdges[i]==(((long)ts[i]<<8)|(bl[bp[target]+i]&255)), "complete mapped labeled edge " + id + ":" + i);
+                nodes++; edges+=ad; apos+=ad; bpos+=bd;
+            }
+            check(!bi.hasNext() && nodes==a.numNodes() && edges==a.numArcs(), "topology end");
+            check(apos==al.length && bpos==bl.length && ap[nodes]==apos && bp[nodes]==bpos, "label/prefix end");
         }
-        check(!bi.hasNext() && nodes==a.numNodes() && edges==a.numArcs(), "topology end");
-        check(apos==al.length && bpos==bl.length && ap[nodes]==apos && bp[nodes]==bpos, "label/prefix end");
-        return Map.of("nodeSlots",nodes,"labeledEdges",edges,"allRandomAccessOffsetsChecked",true,"allPrefixOffsetsChecked",true,"unmatchedEdges",0);
+        Map<String,Object> result=new LinkedHashMap<>(Map.of("nodeSlots",nodes,"labeledEdges",edges,"allRandomAccessOffsetsChecked",true,"allPrefixOffsetsChecked",true,"unmatchedEdges",0));
+        if(actualOutput!=null)result.put("rawEdgeExports",Map.of(
+            "actual",edgeReceipt(actual,actualOutput,HexFormat.of().formatHex(actualDigest.digest()),nodes,edges,helperRoot,pins),
+            "reference",edgeReceipt(expected,referenceOutput,HexFormat.of().formatHex(referenceDigest.digest()),nodes,edges,helperRoot,pins)));
+        return result;
     }
     static String hash(Path path)throws Exception {
         var digest=java.security.MessageDigest.getInstance("SHA-256");
@@ -45,9 +91,17 @@ public final class VerifyTopology {
         for(var entry:pins.entrySet())check(hash(Path.of(entry.getKey())).equals(entry.getValue().getAsString()),"input changed: "+entry.getKey());
     }
     public static void main(String[] args)throws Exception {
-        check(args.length==5,"expected actual reference mapping output helperRoot");
+        check(args.length==5 || args.length==7,"expected actual reference mapping output helperRoot [actualEdges referenceEdges]");
         Path actual=Path.of(args[0]),reference=Path.of(args[1]),mappingFile=Path.of(args[2]),out=Path.of(args[3]);
         check(!Files.exists(out),"output exists");
+        Path actualOutput=args.length==7?Path.of(args[5]).toAbsolutePath().normalize():null;
+        Path referenceOutput=args.length==7?Path.of(args[6]).toAbsolutePath().normalize():null;
+        if(actualOutput!=null) {
+            Path parent=out.toAbsolutePath().normalize().getParent();
+            check(actualOutput.getParent().equals(parent) && referenceOutput.getParent().equals(parent),"edge outputs outside proof directory");
+            check(!actualOutput.equals(referenceOutput) && !actualOutput.equals(out.toAbsolutePath().normalize()) && !referenceOutput.equals(out.toAbsolutePath().normalize()),"edge output aliases");
+            check(!Files.exists(actualOutput) && !Files.exists(referenceOutput),"edge output exists");
+        }
         check(mappingFile.getFileName().toString().equals("field-bijection.tsv"),"unexpected mapping file");
         Path receiptFile=mappingFile.getParent().resolve("receipt.json");
         JsonObject receipt=JsonParser.parseString(Files.readString(receiptFile)).getAsJsonObject();
@@ -169,7 +223,7 @@ public final class VerifyTopology {
         }
         check(mapping.keySet().equals(new HashSet<>(mapping.values())),"not closed bijection");
         check(mapping.size()==receipt.get("movedFields").getAsInt(),"mapping count");
-        Map<String,Object> result=new LinkedHashMap<>(topologyProof(actual,reference,mapping));
+        Map<String,Object> result=new LinkedHashMap<>(topologyProof(actual,reference,mapping,actualOutput,referenceOutput,helperRoot,pins));
         verifyPins(pins);
         check(hash(receiptFile).equals(receiptHash) && hash(mappingFile).equals(mappingHash),"upstream proof changed");
         result.put("coreReceiptSha256",receiptHash);result.put("mappingSha256",mappingHash);result.put("inputPins",pins);
