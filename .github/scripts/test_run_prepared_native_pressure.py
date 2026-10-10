@@ -6,12 +6,13 @@ import run_prepared_native_pressure as r
 
 
 class Execution(unittest.TestCase):
-    def exercise(self,mode='pass',preparation_status=None):
+    def exercise(self,mode='pass',preparation_status=None,engine='native'):
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder);prep=root/'preparation';prep.mkdir();output=root/'execution';prefix=root/'reports/native-query'
-            plan={'engine':'native','operation':'query','cells':[{'id':str(i),'arm':arm} for i,arm in enumerate('CABBAC')]}
+            plan={'engine':'native' if mode=='wrong-engine' else engine,'operation':'query','cells':[{'id':str(i),'arm':arm} for i,arm in enumerate('CABBAC')]}
             plan_path=prep/'plan.json';plan_path.write_text(json.dumps(plan));digest=r.pressure.sha(plan_path)
             ready={'status':'UNAVAILABLE' if mode=='unavailable' else 'PLAN_READY_NOT_MEASURED','planSha256':'0'*64 if mode=='plan-drift' else digest}
+            if engine=='jvm':ready.update(schema='graphite.jvm-pressure.preparation.v1',engine=engine,operation='query')
             if preparation_status is not None:ready=preparation_status
             (prep/'preparation-status.json').write_text(json.dumps(ready));events=[]
             def run(plan_file,cell,directory):
@@ -26,7 +27,7 @@ class Execution(unittest.TestCase):
                 events.append(('compare',None));self.assertEqual(kwargs['timeout'],60);self.assertFalse(kwargs['check'])
                 passed=mode not in ('regression','bad-verdict')
                 prefix.parent.mkdir(parents=True,exist_ok=True)
-                Path(str(prefix)+'-status.json').write_text(json.dumps({'schema':'graphite.multigraph-pressure.comparison.v1','passed':passed,'status':'PASS' if passed else 'FAIL','planSha256':digest}))
+                Path(str(prefix)+'-status.json').write_text(json.dumps({'schema':'graphite.multigraph-pressure.comparison.v1','engine':'native' if mode=='wrong-verdict-engine' else engine,'operation':'query','passed':passed,'status':'PASS' if passed else 'FAIL','planSha256':digest}))
                 Path(str(prefix)+'-report.md').write_text('actual comparison test verdict')
                 return SimpleNamespace(returncode=0 if mode=='bad-verdict' or passed else 1,stdout='done',stderr='')
             stack.enter_context(patch.object(r.pressure,'validate_plan',side_effect=lambda p:p))
@@ -42,7 +43,7 @@ class Execution(unittest.TestCase):
                     p=Path(path);calls[str(p)]=calls.get(str(p),0)+1
                     return '0'*64 if p.name=='run_prepared_native_pressure.py' and calls[str(p)]>1 else sha(path)
                 stack.enter_context(patch.object(r.pressure,'sha',side_effect=changed))
-            result=r.execute(prep,output,prefix)
+            result=r.execute(prep,output,prefix,engine=engine)
             stored=json.loads((output/'execution.json').read_text());self.assertEqual(result,stored)
             verdict=json.loads(Path(str(prefix)+'-status.json').read_text())
             self.assertFalse(result['otherOperationsEligible'])
@@ -110,5 +111,31 @@ class Execution(unittest.TestCase):
     def test_control_drift_invalidates_success(self):
         result,verdict,events=self.exercise('control-drift')
         self.assertEqual(result['status'],'FAIL');self.assertFalse(result['performanceAcceptance']);self.assertFalse(verdict['passed'])
+
+    def test_jvm_reuses_all_six_owned_cells_and_retains_engine_identity(self):
+        result,verdict,events=self.exercise(engine='jvm')
+        self.assertEqual('graphite.jvm-pressure.execution.v1',result['schema'])
+        self.assertEqual('jvm',result['engine']);self.assertEqual('jvm',verdict['engine'])
+        self.assertEqual([(kind,str(i)) for i in range(6) for kind in ('run','audit')]+[('compare',None)],events)
+        self.assertTrue(result['performanceAcceptance'])
+        self.assertTrue(all(str(r.SCRIPTS/name) in result['controls'] for name in
+                            ('jvm_pressure_oracles.py','jvm_pressure_distinct.py','jvm_pressure_inputs.py')))
+
+    def test_jvm_requires_explicit_preparation_and_matching_plan_engine(self):
+        for mode,ready in [('wrong-engine',None),('pass',{'status':'UNAVAILABLE'})]:
+            result,verdict,events=self.exercise(mode,preparation_status=ready,engine='jvm')
+            self.assertEqual([],events);self.assertEqual('FAIL',result['status'])
+            self.assertEqual('jvm',verdict['engine']);self.assertFalse(verdict['passed'])
+
+    def test_jvm_retains_failed_cell_and_unissued_suffix(self):
+        result,verdict,events=self.exercise('cell-failure',engine='jvm')
+        self.assertEqual([('run','0'),('audit','0'),('run','1')],events)
+        self.assertEqual(['2','3','4','5'],result['unissued']);self.assertFalse(result['performanceAcceptance'])
+        self.assertEqual('jvm',verdict['engine'])
+
+    def test_jvm_rejects_wrong_engine_comparison_even_with_matching_plan_digest(self):
+        result,verdict,events=self.exercise('wrong-verdict-engine',engine='jvm')
+        self.assertEqual(('compare',None),events[-1]);self.assertEqual('FAIL',result['status'])
+        self.assertIn('comparison engine binding',result['errors'][0]);self.assertFalse(verdict['passed'])
 
 if __name__=='__main__':unittest.main()
