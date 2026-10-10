@@ -23,6 +23,15 @@
     "toMethodDescriptor": [
       "    private fun toMethodDescriptor(method: SootMethod): MethodDescriptor {\n        return toMethodDescriptor(method.signature)\n    }",
       "    private fun toMethodDescriptor(sig: MethodSignature): MethodDescriptor {\n        return methodDescriptorCache.getOrPut(sig) {\n            MethodDescriptor(\n                declaringClass = toTypeDescriptor(sig.declClassType),\n                name = sig.name,\n                parameterTypes = sig.parameterTypes.map { toTypeDescriptor(it) },\n                returnType = toTypeDescriptor(sig.type)\n            )\n        }\n    }"
+    ],
+    "processStatement": [
+      "    private fun processStatement(stmt: Stmt, method: MethodDescriptor) {\n        when (stmt) {\n            is JAssignStmt -> processAssignment(stmt, method)\n            is JIdentityStmt -> processIdentity(stmt, method)\n            is JInvokeStmt -> processInvoke(stmt, method)\n            is JReturnStmt -> processReturn(stmt, method)\n            // JIfStmt is handled in processControlFlow (pass 2)\n        }\n    }"
+    ],
+    "getOrCreateValueNode": [
+      "    private fun getOrCreateValueNode(value: Value, method: MethodDescriptor): ValueNode? {\n        return when (value) {\n            is Local -> getOrCreateLocal(value, method)\n            is SootConstant -> getOrCreateConstant(value)\n            is JFieldRef -> getOrCreateField(value)\n            is JArrayRef -> {\n                // For array references like $r1[0], return the base array's node\n                // This creates edges from array elements to the array itself,\n                // enabling backward tracing from arrays to their elements\n                getOrCreateLocal(value.base, method)\n            }\n            is AbstractInvokeExpr -> null // Handled separately\n            else -> null\n        }\n    }"
+    ],
+    "clearMethodState": [
+      "    private fun clearMethodState(method: MethodDescriptor) {\n        activeMethodLocals.forEach { key ->\n            localNodes.remove(key)\n            allocationNodes.remove(key)\n            localToParamIndex.remove(key)\n            dynamicTargets.remove(key)\n            arrayDynamicTargets.remove(key)\n            localeSpecsByLocal.remove(key)\n            localeBuilderSpecsByLocal.remove(key)\n            stringValuesByLocal.remove(key)\n            bundleControlFormatsByLocal.remove(key)\n            resourceHandlePathsByLocal.remove(key)\n            propertiesPathsByLocal.remove(key)\n            resourceBundlePaths.remove(key)\n            bundleControlSpecsByLocal.remove(key)\n        }\n        activeMethodParameters.forEach { parameterNodes.remove(it) }\n        methodReturnNodes.remove(method)\n        stmtNodeIds.clear()\n        stmtLocalWrites.clear()\n        stmtIdentityWrites.clear()\n        activeMethod = null\n        activeMethodLocals = mutableListOf()\n        bodyCallOrdinals = emptyMap()\n        activeLocalKeysByName = mutableMapOf()\n        activeMethodParameters = mutableListOf()\n        activeParameterBindingsByIndex = mutableMapOf()\n    }"
     ]
   },
   "cacheDeclarations": [
@@ -40,5 +49,15 @@
   "sourceReview": {
     "path": "/tmp/graphite-array-formatter-migration-prep-1/source-invariant.json",
     "sha256": "9e65802d13161121b504cf54a5bf697f200789a6453cb745e5e346e3fb700905"
+  },
+  "localNode": {
+    "path": "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/core/Node.kt",
+    "body": "data class LocalVariable(\n    override val id: NodeId,\n    val name: String,\n    val type: TypeDescriptor,\n    val method: MethodDescriptor\n) : ValueNode"
+  },
+  "localCreationCounts": {
+    "\\bgetOrCreateLocalWithType\\s*\\(": 2,
+    "\\bLocalVariable\\s*\\(": 2,
+    "\\blocalNodes\\b": 6,
+    "\\bclearMethodState\\s*\\(": 3
   }
 }

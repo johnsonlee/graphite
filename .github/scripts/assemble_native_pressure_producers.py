@@ -170,6 +170,8 @@ def corrected_comparison(packet, arm_id, path):
                     r['issues'] == [] for r in report['occurrences']), 'no missing conflicting or unproved raw locals')
         require(len(report['inputs']) == 2 and all(actual['pins'].get(p) == h for p, h in report['inputs'].items()),
                 'both actual raw export input closure')
+        require(all(actual['pins'].get(p) == h for p,h in report.get('sourceCreationInputs',{}).items()),
+                'actual raw Local creation source closure')
         require(all(actual['pins'].get(p) == h for p, h in receipt['files'].items()), 'complete raw graph proof closure')
         raw_refs.append(raw)
     for name in ('C', arm_id):

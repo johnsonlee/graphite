@@ -77,6 +77,7 @@ public final class ExportRawLocals {
                             var key=method(m);
                             var locals=new LinkedHashMap<String,List<Map<String,Object>>>();
                             var allocations=new LinkedHashMap<String,List<Map<String,Object>>>();
+                            var assignments=new LinkedHashMap<String,List<Map<String,Object>>>();
                             // Materialise once; streamed bodies and encounter order must not be rebuilt.
                             var body=m.getBody();
                             for (var l:body.getLocals()) local(l,"body.locals",locals);
@@ -84,13 +85,18 @@ public final class ExportRawLocals {
                             for (var stmt:body.getControlFlowGraph().getStmts()) {
                                 var seen=Collections.newSetFromMap(new IdentityHashMap<Value,Boolean>());
                                 for(var v:stmt.getUsesAndDefs()) value(v,"stmt:"+ordinal,locals,seen);
-                                if(stmt instanceof JAssignStmt assign && assign.getLeftOp() instanceof Local left && assign.getRightOp() instanceof JNewExpr allocation) {
-                                    local(left,"typed-allocation:"+ordinal,locals);
-                                    allocations.computeIfAbsent(left.getName(),ignored->new ArrayList<>()).add(row("ordinal",ordinal,"type",type(allocation.getType())));
+                                if(stmt instanceof JAssignStmt assign && assign.getLeftOp() instanceof Local left) {
+                                    if (assign.getRightOp() instanceof JNewExpr allocation) {
+                                        local(left,"typed-allocation:"+ordinal,locals);
+                                        allocations.computeIfAbsent(left.getName(),ignored->new ArrayList<>()).add(row("ordinal",ordinal,"type",type(allocation.getType())));
+                                    } else {
+                                        local(left,"ordinary-assignment:"+ordinal,locals);
+                                        assignments.computeIfAbsent(left.getName(),ignored->new ArrayList<>()).add(row("ordinal",ordinal,"type",type(left.getType())));
+                                    }
                                 }
                                 ordinal++;
                             }
-                            sink.write(JSON.toJson(row("record","method","method",key,"locals",locals,"typedAllocations",allocations,"statementCount",ordinal))+"\n");
+                            sink.write(JSON.toJson(row("record","method","method",key,"locals",locals,"typedAllocations",allocations,"ordinaryAssignments",assignments,"statementCount",ordinal))+"\n");
                             sink.flush(); count++;
                         }
                     }

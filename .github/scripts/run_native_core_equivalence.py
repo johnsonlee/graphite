@@ -23,7 +23,7 @@ import produce_native_pressure_artifacts as producer
 import multigraph_pressure as common
 from assemble_native_pressure_producers import merge_pins
 from prepare_native_pressure_plan import preparation_control_pins
-from native_core_proof import formatter_binding,source_bindings,raw_local_export
+from native_core_proof import formatter_binding,source_bindings,raw_local_export,raw_local_types,local_array_corrections
 
 PACKAGE=Path(__file__).resolve().parent/'native_core_proof'
 CORE_PASS='PASS_CORE_WITH_TYPE_OVERLOAD_SYNTHETIC_AND_INHERITED_FIELD_CORRECTIONS_REQUIRES_TOPOLOGY'
@@ -232,6 +232,9 @@ def graph_result(plan,row):
         require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
         require(report['inputs']=={r['path']:r['sha256'] for r in expected['exports'].values()} and
                 all(receipt['inputs'].get(p)==h for p,h in report['inputs'].items()),'actual raw Local export linkage')
+        source = local_array_corrections.Authority(root,plan['sourceRule'],row['fieldAuthority']) if any(
+            raw_local_types.needs_creation_proof(item) for item in report['occurrences']) else None
+        raw_local_types.verify_creation_inputs(report,source,receipt['inputs'])
     if plan.get('rawEdgeExports'):raw_edge_exports(plan,row,top,root)
     else:require('rawEdgeExports' not in top, 'undeclared raw edge export mode')
     return {'id':row['id'],'core':artifacts.ref(root/'record.json'),'topology':artifacts.ref(root/'topology.json'),
