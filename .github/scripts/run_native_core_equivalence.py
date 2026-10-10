@@ -38,6 +38,15 @@ FALSE_CLAIMS=('completeSemanticEquivalence','strictEquivalence','syntheticLocalI
 require=common.require
 
 
+def progress(stage,event,**details):
+    """Best-effort CI visibility only; saved receipts remain the proof authority."""
+    try:
+        print('CORE_PROGRESS '+json.dumps({'diagnosticOnly':True,'stage':stage,'event':event,**details}),
+              file=sys.stderr,flush=True)
+    except (OSError,ValueError):
+        pass  # A closed/broken diagnostic stream must not interrupt proof or cleanup.
+
+
 def replay(path,function):
     path=Path(path).resolve();value=common.read(path)
     require(common.typed(value)==common.typed(function(path.parent)),'stored upstream differs from independent raw replay: '+str(path))
@@ -247,43 +256,70 @@ def graph_result(plan,row):
 
 
 def execute(plan):
+    progress('execution','start')
     require(common.typed(plan)==common.typed(rebind(plan)),'execution plan differs from actual pair')
     out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False);(out/'classes').mkdir();(out/'graphs').mkdir()
     common.save(out/'plan.json',plan)
     record={'schema':'graphite.native-core-equivalence-record.v1','status':'FAIL','plan':artifacts.ref(out/'plan.json'),
             'errors':[],'phases':[],'graphs':[],**{k:False for k in FALSE_CLAIMS}}
-    previous={};helper={}
+    previous={};helper={};active_phase=None
     def interrupted(signum,frame):raise InterruptedError('signal '+str(signum))
     try:
         for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
         artifacts.verify_pins(plan['pins'])
         for index,(name,argv,timeout) in enumerate(commands(plan)):
+            active_phase=name
+            progress('phase','start',phase=name,ordinal=index+1,total=plan['maxOwnedPhases'],completedGraphs=len(record['graphs']))
             producer.phase(name,argv,PACKAGE.parent,strings.environment(raw_local_export.phase_java(plan,name)),out,timeout)
+            progress('phase','child-complete',phase=name,completedGraphs=len(record['graphs']))
             record['phases'].append(artifacts.ref(out/name/'record.json'))
             if name==('compile-raw-B' if 'rawLocalExports' in plan else 'compile-topology'):helper=compiled(plan)
             elif name.endswith('-topology') and name!='compile-topology':
                 row=next(r for r in plan['graphs'] if r['id']==name[:-len('-topology')])
+                progress('graph-validation','start',graph=row['id'],completedGraphs=len(record['graphs']))
                 record['graphs'].append(graph_result(plan,row))
+                progress('graph-validation','complete',graph=row['id'],completedGraphs=len(record['graphs']))
             (out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
+            progress('phase','complete',phase=name,completedGraphs=len(record['graphs']))
+            active_phase=None
         require(len(record['graphs'])==64 and len(record['phases'])==plan['maxOwnedPhases'],'all64 complete proofs required')
         record.update({k:sum(g[k] for g in record['graphs']) for k in COUNTS});record['status']=PASS
-    except BaseException as error:record['errors'].append(repr(error))
+    except BaseException as error:
+        record['errors'].append(repr(error))
+        progress('phase' if active_phase else 'execution','failed',phase=active_phase,
+                 completedGraphs=len(record['graphs']),error=repr(error))
     finally:
         for sig in previous:signal.signal(sig,signal.SIG_IGN)
+        progress('final-validation','start',completedGraphs=len(record['graphs']))
         try:
             require(common.typed(plan)==common.typed(rebind(plan)),'final actual source/runtime/fixture identity drift')
             if helper:require(compiled(plan)==helper,'topology helper changed')
             require([graph_result(plan,r) for r in plan['graphs'][:len(record['graphs'])]]==record['graphs'],
                     'completed proof outputs changed')
             record['finalIdentity']='PASS'
-        except BaseException as error:record['errors'].append('final verification: '+repr(error));record['finalIdentity']='FAIL'
+            progress('final-validation','complete',completedGraphs=len(record['graphs']))
+        except BaseException as error:
+            record['errors'].append('final verification: '+repr(error));record['finalIdentity']='FAIL'
+            progress('final-validation','failed',completedGraphs=len(record['graphs']),error=repr(error))
         if record['errors']:record['status']='FAIL'
         record['compiledHelper']=helper;(out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
         for sig,handler in previous.items():signal.signal(sig,handler)
+    progress('execution','complete' if record['status']==PASS else 'failed',completedGraphs=len(record['graphs']))
     return record
 
 
 def audit(output):
+    progress('audit','start',output=str(output))
+    try:
+        result=_audit(output)
+    except BaseException as error:
+        progress('audit','failed',error=repr(error))
+        raise
+    progress('audit','complete',completedGraphs=len(result['graphs']),phases=result['phases'])
+    return result
+
+
+def _audit(output):
     out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
     require(plan['output']==str(out) and record['schema']=='graphite.native-core-equivalence-record.v1' and
             record['status']==PASS and record['errors']==[] and record['finalIdentity']=='PASS' and
@@ -321,9 +357,16 @@ def main():
     parser.add_argument('--raw-edges',action='store_true',help='Export both original labeled edge streams during the existing topology proof')
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--audit-only',action='store_true')
     args=parser.parse_args()
-    if not args.audit_only:
-        require(args.reference and args.actual,'actual producer pair required')
-        if execute(bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges))['status']!=PASS:return 1
-    common.save(args.output/'audit.json',audit(args.output));return 0
+    try:
+        if not args.audit_only:
+            require(args.reference and args.actual,'actual producer pair required')
+            progress('binding','start')
+            plan=bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges)
+            progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
+            if execute(plan)['status']!=PASS:return 1
+        common.save(args.output/'audit.json',audit(args.output));return 0
+    except BaseException as error:
+        progress('runner','failed',error=repr(error))
+        raise
 
 if __name__=='__main__':sys.exit(main())

@@ -1,6 +1,7 @@
 """Tiny protocol/lifecycle fixtures; never invoke a JVM or real graph reader."""
 import copy
 import csv
+import io
 import json
 from pathlib import Path
 import tempfile
@@ -215,9 +216,16 @@ class LifecycleTests(unittest.TestCase):
             'pins':{str(self.input):r.common.sha(self.input)},'revisions':{'C':'c'*40,'B':'b'*40},
             'fixtureManifests':{'C':{},'B':{}},'upstream':{}}
         self.calls=[];self.failed_phase=None;self.bad_count=False
+        self.progress=io.StringIO()
+        p=patch.object(r.sys,'stderr',self.progress);p.start();self.addCleanup(p.stop)
         p=patch.object(r,'rebind',side_effect=lambda plan:copy.deepcopy(self.plan));p.start();self.addCleanup(p.stop)
         p=patch.object(r.producer,'phase',side_effect=self.phase);p.start();self.addCleanup(p.stop)
         p=patch('subprocess.Popen',side_effect=AssertionError('no subprocess permitted'));p.start();self.addCleanup(p.stop)
+
+    def events(self,stage,event):
+        values=[json.loads(line.removeprefix('CORE_PROGRESS ')) for line in self.progress.getvalue().splitlines()]
+        self.assertTrue(all(value['diagnosticOnly'] is True for value in values))
+        return [value for value in values if (value['stage'],value['event'])==(stage,event)]
 
     def phase(self,name,argv,cwd,env,out,timeout):
         self.calls.append((name,argv,env));path=out/name;path.mkdir()
@@ -253,6 +261,14 @@ class LifecycleTests(unittest.TestCase):
         audit=r.audit(self.out);self.assertEqual(r.AUDIT_PASS,audit['status']);self.assertEqual(64,len(audit['graphs']))
         self.assertEqual([x['id'] for x in self.plan['graphs']],[x['id'] for x in audit['graphs']])
         for key in r.FALSE_CLAIMS:self.assertFalse(audit[key])
+        names=[name for name,_,_ in self.calls]
+        for event in ('start','child-complete','complete'):
+            self.assertEqual(names,[value['phase'] for value in self.events('phase',event)])
+        self.assertEqual(list(range(1,130)),[value['ordinal'] for value in self.events('phase','start')])
+        self.assertEqual(list(range(1,65)),[value['completedGraphs'] for value in self.events('graph-validation','complete')])
+        self.assertEqual(64,self.events('final-validation','complete')[0]['completedGraphs'])
+        self.assertEqual(64,self.events('audit','complete')[0]['completedGraphs'])
+        self.assertNotIn('PASS',self.progress.getvalue())
         for name,argv,env in self.calls:
             self.assertEqual('-Xmx4g -XX:ActiveProcessorCount=4',env['JAVA_TOOL_OPTIONS'])
             if name!='compile-topology' and name.endswith('-topology'):
@@ -265,11 +281,21 @@ class LifecycleTests(unittest.TestCase):
         self.assertEqual('FAIL',result['status']);self.assertEqual(3,len(self.calls));self.assertEqual([],result['graphs'])
         self.assertEqual(17,r.common.read(self.out/self.failed_phase/'record.json')['exit'])
         with self.assertRaisesRegex(ValueError,'completed owned'):r.audit(self.out)
+        self.assertEqual(self.failed_phase,self.events('phase','failed')[0]['phase'])
+        self.assertNotIn(self.failed_phase,[x['phase'] for x in self.events('phase','child-complete')])
+        self.assertEqual([],self.events('graph-validation','complete'))
+        self.assertEqual([],self.events('execution','complete'))
+        self.assertEqual([],self.events('audit','complete'))
+        self.assertEqual(1,len(self.events('audit','failed')))
 
     def test_missing_pair_or_topology_count_disagreement_never_passes(self):
         self.bad_count=True;result=r.execute(self.plan)
         self.assertEqual('FAIL',result['status']);self.assertEqual(3,len(self.calls))
         self.assertIn('matching correction counts',result['errors'][0])
+        self.assertEqual('fixture-00-topology',self.events('phase','child-complete')[-1]['phase'])
+        self.assertEqual('fixture-00',self.events('graph-validation','start')[-1]['graph'])
+        self.assertEqual([],self.events('graph-validation','complete'))
+        self.assertNotIn('fixture-00-topology',[x['phase'] for x in self.events('phase','complete')])
 
     def test_actual_input_drift_after_execution_fails(self):
         original=self.phase
@@ -282,6 +308,33 @@ class LifecycleTests(unittest.TestCase):
             def rebind(plan):r.artifacts.verify_pins(plan['pins']);return copy.deepcopy(self.plan)
             with patch.object(r,'rebind',side_effect=rebind):record=r.execute(self.plan)
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertEqual(1,len(self.events('final-validation','failed')))
+        self.assertEqual([],self.events('final-validation','complete'))
+        self.assertEqual([],self.events('execution','complete'))
+
+    def test_broken_stderr_does_not_change_execution_audit_or_saved_evidence(self):
+        class Broken:
+            def write(self,value):raise OSError('diagnostic stream closed')
+            def flush(self):raise OSError('diagnostic flush closed')
+        with patch.object(r.sys,'stderr',Broken()):
+            record=r.execute(self.plan);first=r.audit(self.out)
+        self.assertEqual(r.PASS,record['status'])
+        before={str(p):p.read_bytes() for p in self.out.rglob('*') if p.is_file()}
+        second=r.audit(self.out)
+        self.assertEqual(first,second)
+        self.assertEqual(before,{str(p):p.read_bytes() for p in self.out.rglob('*') if p.is_file()})
+
+    def test_progress_flushes_each_event_and_ignores_flush_failure(self):
+        class Stream(io.StringIO):
+            flushes=0
+            def flush(self):
+                self.flushes+=1
+                raise OSError('flush unavailable')
+        stream=Stream()
+        with patch.object(r.sys,'stderr',stream):r.progress('phase','start',phase='fixture-00-core')
+        self.assertEqual(1,stream.flushes)
+        self.assertEqual({'diagnosticOnly':True,'stage':'phase','event':'start','phase':'fixture-00-core'},
+                         json.loads(stream.getvalue().removeprefix('CORE_PROGRESS ')))
 
     def test_repin_modified_raw_command_cannot_hide_unbounded_heap(self):
         r.execute(self.plan);path=self.out/'compile-topology/record.json';phase=r.common.read(path)
