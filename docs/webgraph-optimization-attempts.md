@@ -15490,3 +15490,40 @@ Original resource audit SHA-256:
 `475f2e59977a8aa6f6aded5fa6fbd2d65b2f174f1533503a2d1e22c383f60b07`.
 Root independent review SHA-256:
 `bbde78e5d9d0c72ded4494c701c3c4057fbff602720b981e618850af71fcf3a1`.
+
+
+### Attempt197 — combine initial raw validation and descriptor hash facts (2026-10-10)
+
+The isolated candidate composes with196 (`6288122a`) in the ordinary clone
+`/tmp/graphite-attempt197-source`. Its single hypothesis is to eliminate the
+second raw type/name decode by computing hash/power during the first existing
+shape/length validation. The same primitive cache moves into ErasedDeclaredTypes;
+no extra cache, retained name, Shape or DeclaredType object is introduced.
+The method-signature hash cache and arithmetic composition remain unchanged.
+
+All reference, shape, void, UTF8/UTF16 length and duplicate-signature checks remain.
+Compressed signature overflow is still rejected before signature expansion/hash
+composition. Failed reads release the temporary facts; successful reads release
+them at finishIndexing, after which published hash access retains its prior
+fallback. Lengths computed before indexing are explicitly supported. Earlier
+cache population may change temporary overlap and GC/RSS despite the same final
+cache contents; neither CPU nor memory recovery is claimed before measurement.
+
+The existing196 decode-count test now requires one decode instead of two, keeping
+its post-finish decode increments. All387 previous case names remain; five new
+behavior cases cover Unicode/arrays, pre-index lengths, cached void restrictions,
+invalid-reference cleanup and duplicate/truncated-pool cleanup. Expected full
+correctness inventory is392, with no assertion relaxation in the retained storage
+suite. Root inspected the three-file patch, preserved validation boundaries and
+exception cleanup, and verified both runner plans and489 source/control pins.
+
+Preparation: `/tmp/graphite-attempt197-prep-1`.
+Candidate patch SHA-256:
+`3ece23461a2e2621e8a848e819c73c9ec141793bce848aaa70797df9f008d3dc`.
+Root source review SHA-256:
+`6d6544607965814be999885e06af44b37bf8269a6142c322e7863b5dcfe8470b`.
+The reused static-detekt protocol has been assigned the sole local heavy slot;
+full test/detekt/kover validation requires successful static evidence first.
+Both retain4g/APC4 and bounded owned process cleanup. Packaging and matched real64
+construction remain unexecuted; no new query, loading, CPU or RSS result exists.
+Decision: isolated source candidate pending correctness and multi-graph evidence.
