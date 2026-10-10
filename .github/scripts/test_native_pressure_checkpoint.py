@@ -77,6 +77,125 @@ class CheckpointTests(unittest.TestCase):
     def mutate_manifest(self, update):
         p = self.directory/'manifest.json'; value = checkpoint.read(p); update(value); checkpoint.save(p, value)
 
+    def system_jdk_fixture(self):
+        parent = self.workspace.parent/'usr/lib/jvm'
+        certificate = self.workspace.parent/'etc/ssl/certs/java/cacerts'
+        for name, value in (('SYSTEM_JDK_PARENT', parent), ('SYSTEM_CACERTS', certificate)):
+            mocked = patch.object(checkpoint, name, value); mocked.start(); self.addCleanup(mocked.stop)
+        root = parent/'temurin-17-jdk-amd64'
+        for name in ('bin/java', 'bin/javac', 'release', 'lib/modules'):
+            self.write(root/name, 'jdk '+name)
+        (root/'bin/java').chmod(0o755)
+        self.write(certificate, 'opaque certificate bytes')
+        link = root/'lib/security/cacerts'; link.parent.mkdir()
+        link.symlink_to(certificate)
+        (root/'bin/java-link').symlink_to('java')
+        self.system_tools = {'java': str(root/'bin/java')}
+        for name in ('cargo', 'rustc'):
+            tool = self.workspace.parent/'toolchain/bin'/name; self.write(tool, name+' bytes')
+            self.system_tools[name] = str(tool)
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': self.system_tools})
+        return root, certificate, link
+
+    def test_system_jdk_roundtrip_verifies_preexisting_files_and_never_writes_external_paths(self):
+        root, certificate, link = self.system_jdk_fixture()
+        manifest = self.seal()
+        self.assertEqual([str(root)], manifest['systemJdkRoots'])
+        self.assertEqual(str(certificate), manifest['systemJdkLinks'][str(link)]['resolved'])
+        for p in (root/'bin/java', root/'lib/modules', certificate):
+            self.assertIn(str(p), manifest['verificationOnly']); self.assertNotIn(str(p), manifest['payload'])
+        with tarfile.open(self.directory/'payload.tar.gz', 'r:gz') as tar:
+            self.assertNotIn(b'opaque certificate bytes', b''.join(tar.extractfile(m).read() for m in tar.getmembers()))
+        self.remove_payload(manifest)
+        original_mkdir, original_chmod, original_symlink = Path.mkdir, Path.chmod, Path.symlink_to
+        def writable(p):
+            self.assertTrue(p.is_relative_to(self.workspace), 'attempted external write: '+str(p))
+        def mkdir(p, *args, **kwargs):
+            writable(p); return original_mkdir(p, *args, **kwargs)
+        def chmod(p, *args, **kwargs):
+            writable(p); return original_chmod(p, *args, **kwargs)
+        def symlink(p, *args, **kwargs):
+            writable(p); return original_symlink(p, *args, **kwargs)
+        with patch.object(Path, 'mkdir', mkdir), patch.object(Path, 'chmod', chmod), patch.object(Path, 'symlink_to', symlink):
+            checkpoint.restore(self.args())
+        checkpoint.check_files(manifest)
+        self.assertEqual('opaque certificate bytes', certificate.read_text())
+
+    def test_system_jdk_external_dependency_changes_rejected_before_payload_writes(self):
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest)
+        original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        for change, reset in (
+            (lambda: certificate.write_bytes(b'changed'), lambda: certificate.write_bytes(original)),
+            (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
+            (certificate.unlink, lambda: certificate.write_bytes(original)),
+        ):
+            change()
+            with self.assertRaises(ValueError): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); reset()
+
+    def test_system_jdk_link_root_and_directory_changes_rejected_before_writes(self):
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest)
+        # A different spelling of the same canonical target is still a different link identity.
+        link.unlink(); link.symlink_to(certificate.parent/'..'/'java/cacerts')
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        foreign = certificate.with_name('foreign'); self.write(foreign, 'opaque certificate bytes')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        java = root/'bin/java'; java.chmod(0o644)
+        with self.assertRaisesRegex(ValueError, 'preexisting dependency'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); java.chmod(0o755)
+        for directory in (root, root/'lib/security'):
+            mode = directory.stat().st_mode & 0o777; directory.chmod(0o700)
+            with self.assertRaisesRegex(ValueError, 'mode'): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); directory.chmod(mode)
+        moved = root.with_name('temurin-17-jdk-arm64'); root.rename(moved)
+        with self.assertRaisesRegex(ValueError, 'root identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); moved.rename(root)
+        extra = root/'unexpected'; self.write(extra, 'extra')
+        with self.assertRaisesRegex(ValueError, 'closed directory'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists())
+
+    def test_system_jdk_unapproved_or_dangling_external_links_rejected_at_seal(self):
+        root, certificate, link = self.system_jdk_fixture()
+        foreign = certificate.with_name('foreign'); self.write(foreign, 'foreign')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+        link.unlink(); link.symlink_to(certificate); certificate.unlink()
+        with self.assertRaisesRegex(ValueError, 'dangling'): self.seal()
+        self.write(certificate, 'opaque certificate bytes')
+        (root/'bin/foreign').symlink_to(certificate)
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+        (root/'bin/foreign').unlink()
+        renamed = root.with_name('other-17-jdk-amd64'); root.rename(renamed)
+        self.system_tools['java'] = str(renamed/'bin/java')
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': self.system_tools})
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+
+    def test_system_jdk_delta_inherits_readonly_links_and_external_target_authority(self):
+        root, certificate, link = self.system_jdk_fixture(); producer = self.seal()
+        producer_ref = self.directory/'manifest.json'
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        core_dir = self.workspace/'pressure-checkpoints/core-B'
+        core_args = self.args('core', 'B', core_dir, [producer_ref]); core = checkpoint.seal(core_args)
+        self.remove_payload(core); checkpoint.restore(core_args)
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'C'/name/'plan.json', {'pins': pins})
+        args = self.args('jvm', 'C', self.workspace/'pressure-checkpoints/jvm-C', [producer_ref, core_dir/'manifest.json'])
+        jvm = checkpoint.seal(args)
+        for value in (core, jvm):
+            self.assertEqual(producer['systemJdkLinks'], value['systemJdkLinks'])
+            self.assertEqual(producer['systemJdkRootModes'], value['systemJdkRootModes'])
+            self.assertIn(str(certificate), value['verificationOnly'])
+            self.assertFalse(any(Path(p).is_relative_to(root) or p == str(certificate) for p in value['payload']))
+        self.remove_payload(jvm); checkpoint.restore(args)
+        certificate.write_bytes(b'changed')
+        with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.restore(args)
+
     def test_actual_seal_restore_closure_modes_empty_dirs_without_unrelated_cache(self):
         manifest = self.seal()
         self.assertFalse(manifest['proofAuthority']); self.assertFalse(manifest['performanceAcceptance'])
