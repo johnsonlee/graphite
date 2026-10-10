@@ -269,6 +269,23 @@
           ]
         ]
       }
+    },
+    "jvmProducerAuthority": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "description": "JVM-specific producer packet, replayed from exact C/A/B raw-derived full-response correctness and scoped corrected core comparability evidence. This does not promote strict or complete semantic equivalence."
     }
   },
   "$schema": "https://json-schema.org/draft/2020-12/schema",
@@ -482,7 +499,8 @@
           "enum": [
             "native-full-json-sha256-v1",
             "jvm-full-typed-envelope-v1",
-            "native-complete-legal-limit-multiset-v1"
+            "native-complete-legal-limit-multiset-v1",
+            "jvm-complete-legal-limit-multiset-v1"
           ]
         },
         "digest": {
@@ -541,6 +559,22 @@
             "properties": {
               "kind": {
                 "const": "native-complete-legal-limit-multiset-v1"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "rows",
+              "value",
+              "valueProof"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "jvm-complete-legal-limit-multiset-v1"
               }
             }
           },
@@ -658,9 +692,10 @@
   "x-proof-contract": {
     "allProofs": "Pinned actual successful receipt; status and every top-level bindings field must equal receipt. Receipt upstream map also equals plan map; every producer pin remains in full before/after input closure.",
     "source-runtime": "Exactly one per arm. Required bindings: revision, patchSha256 (null for clean source), sourceManifestSha256, runtimeManifestSha256, runtimeFiles. Upstream includes exact source/runtime manifests and actual producer audit.",
-    "independent-correctness": "Exactly one per arm. Required bindings: graphIds, requestDigests (canonical full endpoint/body by case ID), oracleDigests (full typed/canonical expected body by case ID). Upstream includes each independently established oracle proof.",
+    "independent-correctness": "Exactly one per arm. Required bindings: graphIds, requestDigests (canonical full endpoint/body by case ID), oracleDigests (full typed/canonical expected body or independently derived complete legal row universe by case ID). Upstream includes each independently established oracle proof; observed-body hashes stay in response receipts.",
     "fixture-equivalence": "Exactly one across all arms. Required bindings: graphsByArm (ordered id/path maps), fixtureFiles (complete measured fixture SHA union), realPersistedGraphs:true, completeSemanticEquivalence:true. Upstream binds complete semantic migration/equivalence audits.",
     "bindingLimitation": "Trusted workflow/local binder must derive these claims from actual evidence, never fill a standalone PASS placeholder. Existing artifacts remain immutable; a normalized receipt must preserve their exact producer hashes and evidence linkage.",
-    "fixture-equivalence-corrected-mode": "Native plans may instead bind correctedProducerAuthority to a freshly replayed actual producer bundle. Required bindings retain completeSemanticEquivalence:false, strictEquivalence:false and sourceToDeclarationCompletenessClaim:false, and add the explicit corrected comparison model and exact per-arm audit/raw-array references. Every nonaccepted arm must have complete64 core/topology/index proofs with individually authorized source corrections and all persisted array Local raw-type authority; graph/source/runtime/query identities and pins cannot be substituted. The original strict fixture-equivalence contract remains unchanged."
+    "fixture-equivalence-corrected-mode": "Native plans may instead bind correctedProducerAuthority to a freshly replayed actual producer bundle. Required bindings retain completeSemanticEquivalence:false, strictEquivalence:false and sourceToDeclarationCompletenessClaim:false, and add the explicit corrected comparison model and exact per-arm audit/raw-array references. Every nonaccepted arm must have complete64 core/topology/index proofs with individually authorized source corrections and all persisted array Local raw-type authority; graph/source/runtime/query identities and pins cannot be substituted. The original strict fixture-equivalence contract remains unchanged.",
+    "fixture-equivalence-jvm-corrected-mode": "JVM legal-universe plans bind jvmProducerAuthority to a freshly replayed JVM producer packet. All26 actual responses for each distinct arm must match independently raw-derived expectations and reviewed source rules. Core comparability reuses the existing complete64 corrected model with completeSemanticEquivalence, strictEquivalence and sourceToDeclarationCompletenessClaim all false. Actual source/runtime/graph/query identities and raw-array evidence remain required. Legacy JVM and Native proof modes are unchanged."
   }
 }
