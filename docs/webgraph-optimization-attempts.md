@@ -14952,3 +14952,62 @@ Resource audit SHA-256:
 `7a590fab2a4c852e9faeb8f3c7ae647f41b0be8540b17e63f80dddd03f93000c`;
 execution record SHA-256:
 `ad95c8a946df277c911f75944a75eb62edf6aeecdced56e92b83f763f6a56780`.
+
+
+### Attempt194 — pack immutable Native type rows (2026-10-10)
+
+**Hypothesis.** GTY05 already references shared atomic text and structural type
+IDs. Its immutable Native rows still retain two `Option<usize>` references and a
+`Vec<usize>` argument header per row. Store the two optional IDs as checked
+`Option<NonZeroU32>` values and arguments as `Box<[usize]>`. Keep the public,
+mutable TypeExpr unchanged and expose the same borrowed argument slices. The
+signed wire-ID range is checked before packing, including zero and overflow;
+no text, reference, disk-format validation, or query property is removed.
+
+Candidate `582f632662f0568204400fa77188d3549afffd91` is isolated in the ordinary
+`/tmp/graphite-attempt194-source` clone on `695c196a`. The three-file change is
+limited to storage types, raw descriptor traversal and representation. All99
+Native Rust/Cargo files in its parent match the already-built193 runtime
+`b2f9ebd0`; that runtime will provide the parent comparison. Accepted4f remains
+the cumulative baseline. The production patch is not yet integrated into the
+PR branch, and no performance benefit has been accepted.
+
+**Correctness.** The first all-features workspace run passed452 tests in9
+sections, retaining all448 prior test names and adding four packed-row tests.
+Strict Clippy then failed solely on a new test's field assignment after
+`Default::default()`; fmt was not issued. The failed run remains intact in
+`/tmp/graphite-attempt194-validation-1`. Changing only that test's initializer
+resolved the lint. The second run passed the complete124-test storage module,
+strict workspace/all-target/all-feature Clippy and workspace fmt, preserved in
+`/tmp/graphite-attempt194-validation-2`. Neither raw status is rewritten and the
+second run is not represented as another complete workspace run.
+
+Root independently checked both raw records and logs, verified140 final input
+hashes and all190 mandatory GTY01–05/inherited/index fixtures, and reversed the
+test-only correction to reconstruct the first tested file exactly. Production
+bytes did not change between runs. The combined review is
+`/tmp/graphite-attempt194-independent-correctness-review.json`, SHA-256
+`840400ea69da6fdb2ec5707ee9f5ca169a287c362dc6854876a3df9ef2cce3a2`.
+All owned test/lint/format groups exited with empty cleanup records.
+
+The actual64-bit layout test confirms88→56 bytes per immutable row. Reading only
+the headers of the64 existing GTY05 files counted521,616 rows, so the theoretical
+inline payload difference is16,691,712 bytes. This is not a process RSS result.
+Argument-vector shrinking may change allocation and loading CPU, which must be
+measured separately.
+
+**Declared measurement before execution.** Reuse the193 complete-projection
+protocol and existing persisted real64 graph bundle without rebuilding graphs.
+C=accepted4f, A=193, B=194, fixed CABBAC;64 resident graphs, actual two-graph
+Tika/Kotlin request scope,8 unchanged full/properties cases,4 continuous workers,
+and1 oracle +2 warmups +20 measured requests per case/cell. Consume and validate
+all1104 complete responses. Keep every sample/failure and nearest-rank p50/p95
+per cell (indexes9/18), without pooling or selecting the better direction.
+Measure zero-query64-graph readiness separately with the existing loading
+runner and the same CABBAC order. Report absolute wall/CPU/RSS pairs, both
+baseline and parent comparisons, and the existing independent resource limits.
+No single-graph performance measurement is used.
+
+**Decision pending actual measurement.** Correctness and layout have passed the
+specified gates. Release, loading and query results remain separate requirements;
+no latency, CPU, process-memory or overall recovery claim follows from layout.
