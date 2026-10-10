@@ -15669,3 +15669,26 @@ Root independent review SHA-256:
 `00c2e96909e3d65f8ebedf560b6f8b785112ba8eff2c7bf487330ce7a11f2583`.
 Decision: retain isolated198 for packaging and matched real64 measurement.
 No construction, loading, query latency, CPU or RSS acceptance is established.
+
+The exact tested candidate is now isolated commit
+`a7ca5b6115cbf0e40a44e9e5742003ae7ec41554`. Packaging completed successfully;
+root and an independent reviewer checked C/A/B JAR hashes, A's 870 and B's 872
+tracked source files, the actual 4g/APC4 build command, original logs and empty
+owned process groups. A reuses the actual197 writer, and C remains accepted4f.
+Writer packet: `/tmp/graphite-attempt198-real64-writers-1/writers.json`, SHA-256
+`bfc09f47cacaf161f4af060dfa23bf95c6e2903c6a898e4de8478dd1b316c650`.
+B JAR SHA-256:
+`93d1cf4e10feecbd70c571553aa58f7822ca3f60db1f3e78c3ed870c7c2f381d`.
+Root writer review SHA-256:
+`847e26401366544a0e510b882471b1ff940d3afcef4149eba4786ede3eca0f5b`.
+
+The existing CABBAC construction protocol has started with plan SHA-256
+`5231993fb3668089bfce02f4ad212c0dd64136918e94756065f01375e6b2cec5`
+at `/tmp/graphite-attempt198-real64-construction-prep-1/plan.json`. Preserve every
+original sample and failure; results remain pending. An environment limitation
+must accompany the first baseline sample: a 27.058-second lightweight Python
+correctness run overlapped the start of 01-C construction. It launched no JVM or
+graph workload, but the first wall-time comparison must not be presented as an
+uncontended final acceptance measurement. The original six-cell schedule remains
+unchanged. The observation is retained in
+`/tmp/graphite-attempt198-measurement-environment-note.json`.
