@@ -798,5 +798,99 @@ class ExpandedProductionCatalogTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'payload pin'):p.validate_plan(plan,catalog)
 
 
+
+
+class JvmLegalDispatchTests(unittest.TestCase):
+    def fixture(self, name='slow-dynamicHit', grouped=False):
+        import jvm_pressure_oracles as jvm
+        import jvm_pressure_distinct as distinct
+        case=copy.deepcopy(next(c for c in jvm.cases() if c['id']==name)); gid=case['targetGraphIds'][0]
+        universe={'schema':'graphite.jvm-legal-row-universe.v1','policy':jvm.POLICY,'caseId':name,
+                  **{k:copy.deepcopy(case[k]) for k in ('requestSha256','querySha256','registeredGraphIds',
+                      'requestedGraphIds','targetGraphIds','columns','effectiveLimit')},
+                  'allGraphScansComplete':True,'exactEncounterOrderClaim':False,'totalMatches':1}
+        if grouped:
+            values={'n.graph_id':None,'caller':'android.Test','callerMethod':1,'callee':None,'calleeMethod':None}
+            collector=distinct.DistinctGroups();collector.add(values,gid)
+            universe.update(schema=distinct.SCHEMA,equalityPolicy=distinct.EQUALITY,groups=collector.finish())
+            row=jvm.projected_row(universe['groups'][0]['variants'][0],[gid])
+        else:
+            values={column: 'getValue' for column in case['columns']}
+            if 'graphId' in values:values['graphId']=gid
+            if 'id' in values:values['id']=7
+            if 'labels' in values:values['labels']=['StringConstant','Constant']
+            row=jvm.projected_row(values,[gid])
+            universe['rows']=[{'value':row,'multiplicity':1}]
+        case['oracleByArm']={'B':{'kind':'jvm-complete-legal-limit-multiset-v1','value':universe,
+                                 'digest':jvm.digest(universe),'rows':1}}
+        body={'mode':'cross-graph','graphs':case['requestedGraphIds'],'graphCount':64,'columns':case['columns'],
+              'rows':[row],'rowCount':1,'limit':case['effectiveLimit']}
+        return case,body
+
+    def test_actual_body_digest_is_separate_from_universe_and_no_request_recompile(self):
+        import jvm_pressure_oracles as jvm
+        case,body=self.fixture();validator=p.compile_response_validator([case],'B')
+        expected={'rows':1,'canonicalSha256':p.digest_bytes(p.canonical(body))}
+        self.assertNotEqual(expected['canonicalSha256'],case['oracleByArm']['B']['digest'])
+        with patch.object(jvm,'validate_case',side_effect=AssertionError('request must not compile')):
+            for _ in range(3):self.assertEqual(expected,validator(p.canonical(body),case))
+        altered=copy.deepcopy(body);altered['rows'][0]['id']='7'
+        with self.assertRaises(ValueError):validator(p.canonical(altered),case)
+
+    def test_routing_preserves_requested64_and_target2_and_checks_entire_envelope(self):
+        case,body=self.fixture('routing-pair-dense');validator=p.compile_response_validator([case],'B')
+        self.assertEqual(64,len(body['graphs']));self.assertEqual(2,len(case['targetGraphIds']))
+        self.assertEqual(1,validator(p.canonical(body),case)['rows'])
+        for field in ('graphs','provenance','value','duplicate-key'):
+            bad=copy.deepcopy(body)
+            if field=='graphs':bad['graphs']=case['targetGraphIds'];bad['graphCount']=2
+            elif field=='provenance':bad['rows'][0]['$metadata']['graphIds']=[case['requestedGraphIds'][1]]
+            elif field=='value':bad['rows'][0]['caller']=999
+            raw=p.canonical(bad)
+            if field=='duplicate-key':raw=raw[:-1]+b',"rowCount":1}'
+            with self.subTest(field=field),self.assertRaises(ValueError):validator(raw,case)
+
+    def test_v2_dispatch_retains_group_matching(self):
+        case,body=self.fixture('wrapped-dense_distributed_method_query',grouped=True)
+        validator=p.compile_response_validator([case],'B');self.assertEqual(1,validator(p.canonical(body),case)['rows'])
+        body['rows'][0]['callerMethod']=True
+        with self.assertRaisesRegex(ValueError,'capacity'):validator(p.canonical(body),case)
+
+    def test_compilation_rejects_unbound_definition_universe_and_row_count(self):
+        import jvm_pressure_oracles as jvm
+        original,body=self.fixture()
+        with self.assertRaisesRegex(ValueError,'compiled before requests'):p.validate_response(p.canonical(body),original,'B')
+        for mutation in ('id','query','requested','target','family','columns','digest','rows','universe-scope'):
+            case=copy.deepcopy(original);oracle=case['oracleByArm']['B']
+            if mutation=='id':case['id']='unknown'
+            elif mutation=='query':case['request']['body']['query']+=' LIMIT 1'
+            elif mutation=='requested':case['request']['body']['graphs']=case['requestedGraphIds'][:1]
+            elif mutation=='target':case['targetGraphIds']=case['targetGraphIds'][:2]
+            elif mutation=='family':case['family']='feature-presence'
+            elif mutation=='columns':case['columns']=['invented']
+            elif mutation=='digest':oracle['digest']='0'*64
+            elif mutation=='rows':oracle['rows']=True
+            else:
+                oracle['value']['requestedGraphIds']=oracle['value']['requestedGraphIds'][:2]
+                oracle['digest']=jvm.digest(oracle['value'])
+            with self.subTest(mutation=mutation),self.assertRaises(ValueError):p.compile_response_validator([case],'B')
+
+    def test_all26_known_definitions_dispatch_but_do_not_relax_plan_authority(self):
+        import jvm_pressure_oracles as jvm
+        cases=[]
+        for source in jvm.cases():
+            case,body=self.fixture(source['id']);oracle=case['oracleByArm']['B']
+            oracle['value']['rows']=[];oracle['value']['totalMatches']=0;oracle['rows']=0
+            oracle['digest']=jvm.digest(oracle['value']);cases.append(case)
+        validator=p.compile_response_validator(cases,'B')
+        self.assertEqual(26,len(cases))
+        for case in cases:
+            body={'mode':'cross-graph','graphs':case['requestedGraphIds'],'graphCount':64,'columns':case['columns'],
+                  'rows':[],'rowCount':0,'limit':case['effectiveLimit']}
+            self.assertEqual(0,validator(p.canonical(body),case)['rows'])
+        legacy=make_plan();legacy['cases'][0]['oracleByArm']['B']=cases[0]['oracleByArm']['B']
+        with self.assertRaises(ValueError):p.validate_plan(legacy,CATALOG)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
