@@ -22,7 +22,7 @@ pub use repr::{
     ClassTypes, DeclaredTypes, MethodTypes, MethodView, MutableDeclaredTypes, TypeExpr,
     TypeParameter, TypeView,
 };
-use repr::{CompactTable, Storage, Texts};
+use repr::{CompactTable, Storage, StoredType, Texts};
 
 #[derive(Debug, Clone, thiserror::Error)]
 #[error("graph.types: {0}")]
@@ -207,7 +207,7 @@ impl<'a> Reader<'a> {
     }
     fn signatures(
         &mut self,
-        types: &[TypeExpr<usize, u64>],
+        types: &[StoredType],
         validation: &mut raw::RawValidation,
     ) -> Result<Vec<raw::RawSignature>, TypeError> {
         let count = self.section_count(8)?;
@@ -447,7 +447,7 @@ impl DeclaredTypes {
             .try_reserve_exact(count)
             .map_err(|error| TypeError(format!("type section allocation: {error}")))?;
         for _ in 0..count {
-            table.types.push(if r.structural {
+            let decoded = if r.structural {
                 r.structural_type(count)?
             } else {
                 TypeExpr {
@@ -459,7 +459,8 @@ impl DeclaredTypes {
                     variance: r.string()?,
                     arguments: r.references(count)?,
                 }
-            });
+            };
+            table.types.push(StoredType::try_from(decoded)?);
         }
         let mut raw_validation =
             raw::RawValidation::new(if table.descriptorless { count } else { 0 });

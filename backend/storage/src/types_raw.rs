@@ -1,5 +1,5 @@
 //! GTY05 erased descriptors are projected from validated type/signature references.
-use super::repr::{Texts, TypeExpr};
+use super::repr::{StoredType, Texts};
 use super::TypeError;
 
 #[derive(Debug)]
@@ -31,7 +31,7 @@ impl RawValidation {
     }
     pub(super) fn validate(
         &mut self,
-        types: &[TypeExpr<usize, u64>],
+        types: &[StoredType],
         texts: &dyn Texts,
         id: usize,
         allow_void: bool,
@@ -56,7 +56,7 @@ impl RawValidation {
 }
 
 pub(super) fn validate_raw(
-    types: &[TypeExpr<usize, u64>],
+    types: &[StoredType],
     texts: &dyn Texts,
     mut id: usize,
     allow_void: bool,
@@ -67,12 +67,12 @@ pub(super) fn validate_raw(
             .get(id)
             .ok_or_else(|| TypeError("invalid erased type reference".into()))?;
         let invalid = || TypeError("invalid canonical erased type".into());
-        if t.scope != 0 || t.owner.is_some() || !t.arguments.is_empty() || t.variance != 0 {
+        if t.scope != 0 || t.owner().is_some() || !t.arguments.is_empty() || t.variance != 0 {
             return Err(invalid());
         }
         match t.kind {
             0 => {
-                if t.name == usize::MAX || t.component.is_some() {
+                if t.name == usize::MAX || t.component().is_some() {
                     return Err(invalid());
                 }
                 let name = texts.text(t.name);
@@ -82,7 +82,7 @@ pub(super) fn validate_raw(
                 return Ok(());
             }
             1 => {
-                if t.name == usize::MAX || t.component.is_some() {
+                if t.name == usize::MAX || t.component().is_some() {
                     return Err(invalid());
                 }
                 let name = texts.text(t.name);
@@ -104,7 +104,7 @@ pub(super) fn validate_raw(
                         "erased array nesting exceeds 255 or is cyclic".into(),
                     ));
                 }
-                id = t.component.ok_or_else(invalid)?;
+                id = t.component().ok_or_else(invalid)?;
             }
             _ => return Err(invalid()),
         }
@@ -113,14 +113,14 @@ pub(super) fn validate_raw(
 
 /// Stream canonical descriptor bytes without expanding repeated pool references.
 pub(super) fn type_bytes<'a>(
-    types: &'a [TypeExpr<usize, u64>],
+    types: &'a [StoredType],
     texts: &'a dyn Texts,
     mut id: usize,
 ) -> impl Iterator<Item = u8> + 'a {
     let mut arrays = 0;
     while types[id].kind == 2 {
         arrays += 1;
-        id = types[id].component.expect("validated array");
+        id = types[id].component().expect("validated array");
     }
     let t = &types[id];
     let class = t.kind == 0;
@@ -138,7 +138,7 @@ pub(super) fn type_bytes<'a>(
         .chain(class.then_some(b';'))
 }
 pub(super) fn signature_bytes<'a>(
-    types: &'a [TypeExpr<usize, u64>],
+    types: &'a [StoredType],
     texts: &'a dyn Texts,
     signature: &'a RawSignature,
 ) -> impl Iterator<Item = u8> + 'a {
@@ -152,15 +152,11 @@ pub(super) fn signature_bytes<'a>(
         .chain(std::iter::once(b')'))
         .chain(type_bytes(types, texts, signature.returns))
 }
-pub(super) fn type_descriptor(
-    types: &[TypeExpr<usize, u64>],
-    texts: &dyn Texts,
-    id: usize,
-) -> String {
+pub(super) fn type_descriptor(types: &[StoredType], texts: &dyn Texts, id: usize) -> String {
     String::from_utf8(type_bytes(types, texts, id).collect()).expect("validated descriptor UTF-8")
 }
 pub(super) fn signature_descriptor(
-    types: &[TypeExpr<usize, u64>],
+    types: &[StoredType],
     texts: &dyn Texts,
     signature: &RawSignature,
 ) -> String {
@@ -168,7 +164,7 @@ pub(super) fn signature_descriptor(
         .expect("validated descriptor UTF-8")
 }
 pub(super) fn type_descriptor_length(
-    types: &[TypeExpr<usize, u64>],
+    types: &[StoredType],
     texts: &dyn Texts,
     mut id: usize,
 ) -> usize {
@@ -184,14 +180,14 @@ pub(super) fn type_descriptor_length(
             1 => return arrays.saturating_add(1),
             2 => {
                 arrays += 1;
-                id = t.component.expect("validated array");
+                id = t.component().expect("validated array");
             }
             _ => unreachable!("validated erased type"),
         }
     }
 }
 pub(super) fn signature_descriptor_length(
-    types: &[TypeExpr<usize, u64>],
+    types: &[StoredType],
     texts: &dyn Texts,
     signature: &RawSignature,
 ) -> usize {
