@@ -15139,3 +15139,57 @@ Final raw audit SHA-256:
 Root independent resource reconstruction:
 `/tmp/graphite-attempt194-pressure-loading-run-1/root-resource-review.json`,
 SHA-256 `4014ba0c224eafdee94490c3e2496a0fd8bc1cc5ce183d52a02849e34e25aed0`.
+
+
+### Attempt195 — reuse one save's declared-type format plan (2026-10-10)
+
+**Hypothesis.** `GraphStore.save` currently computes structural scope and erased
+member indexes once while collecting dictionary atoms and again when writing
+`graph.types`. Retaining the first plan through that one save avoids the duplicate
+traversal. This may reduce construction CPU, but retaining indexes across graph
+compression and node serialization may increase peak RSS; neither benefit nor
+acceptance follows from source inspection or traversal counts.
+
+The isolated source starts at `884f2470` and changes four files: a private
+`DeclaredTypeSavePlan`, the store, its GraphStore caller and five correctness
+tests. Dictionary collection and writing consume the same format decision;
+writing or failure releases the indexes, and a consumed plan cannot be reused.
+The direct/legacy save entry points still prepare their own plan. Full table
+validation, malformed UTF-16 and missing string-ID rejection, digest binding,
+same-directory replacement and GTY03/04/05 fallback decisions remain in place.
+No strings, wire format, query semantics or validation checks are removed.
+
+**First actual verification.** The complete Webgraph run produced 37 XML files:
+380 tests, zero failures/errors/skips, preserving all previous 375 test identities
+and adding exactly five tests. These cover traversal reuse, capped/fallback
+formats, same-directory resaving through both loaders, dictionary/text failures,
+and full expression validation before data replacement. They are correctness
+checks only, not performance measurements. Gradle and the single test fork used
+4 GiB maximum heap and APC4; no single-graph timing is used for acceptance.
+
+This run is retained as **FAIL**: detekt reports `DeclaredTypeStore` has 21
+functions against a limit of 20. The subsequent kover gate was not executed.
+All 487 frozen source/build inputs match before and after execution, and the
+owned process group was empty after exit. Root independently checked the raw
+record, XML inventory and lint log:
+`/tmp/graphite-attempt195-validation-1/root-independent-review.json`, SHA-256
+`169ed6f05e0fd149adc6a544871a30e9a7c126d45ba4bac5b6aa2bb294b63ce4`.
+
+The minimal lint correction moves the unchanged preparation factory and its
+GTY04/05 version constants into the plan's companion, with a private constructor.
+The caller and all five tests are unchanged. It adds no suppression or relaxed
+gate. Its exact diff is `/tmp/graphite-attempt195-prep-3/lint-fix.patch`, SHA-256
+`29fc1711fad3fdf35d3d1729a018be2cd091bccd7e212c06c3fff97ae06fce72`.
+A fresh complete test/detekt/kover run is required before performance execution.
+
+**Declared follow-up and decision.** Keep this candidate isolated pending the
+complete correctness gates and matched real64 construction evidence. Reuse the
+existing187 fixed CABBAC protocol, 4 GiB/APC4 settings and usable-saved-output
+boundary; C is accepted4f, A is actual writer28624662, and B must be the exact
+committed195 source and its own built package. All 479 JVM/Gradle writer blobs
+are identical between28624662 and the candidate's884f2470 base, so the sealed A
+writer can be reused with its original provenance. Build only B. Preserve every
+sample/failure and report both paired directions for wall, total CPU and peak
+RSS; existing independent limits and complete semantic-proof requirements stay
+unchanged. No construction run, CPU/RSS benefit, latency recovery or overall
+acceptance is claimed by this preparation.
