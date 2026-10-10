@@ -15011,3 +15011,73 @@ No single-graph performance measurement is used.
 **Decision pending actual measurement.** Correctness and layout have passed the
 specified gates. Release, loading and query results remain separate requirements;
 no latency, CPU, process-memory or overall recovery claim follows from layout.
+
+
+### Attempt194 follow-up — complete multi-graph projection results (2026-10-10)
+The declared CABBAC comparison completed with all1104 complete responses and960 measured requests. All six independent cell audits and the final cohort audit passed their declared query-evidence contracts; all server groups were stopped and empty. C uses accepted4f, A uses193, and B uses isolated candidate582f6326. The exact64-resident/two-selected-graph/C4/8-case protocol, full response bodies, warmups and20-request nearest-rank statistics are unchanged. Root independently recomputed all48 p50/p95 pairs from raw request timestamps and sample IDs and checked the terminal report bindings.
+
+#### parent 02-A → 03-B
+| Case | p50 base → candidate (ms) | Δ p50 (ms) | p95 base → candidate (ms) | Δ p95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 39.660 → 38.307 | -1.353 | 43.046 → 46.819 | +3.773 |
+| field-properties | 29.144 → 30.034 | +0.891 | 37.336 → 35.650 | -1.685 |
+| parameter-full | 35.131 → 35.008 | -0.122 | 39.427 → 46.540 | +7.113 |
+| parameter-properties | 38.414 → 36.870 | -1.544 | 50.436 → 47.662 | -2.775 |
+| return-full | 31.624 → 31.897 | +0.273 | 43.175 → 53.113 | +9.938 |
+| return-properties | 28.256 → 28.058 | -0.199 | 34.964 → 61.406 | +26.442 |
+| method-full | 729.570 → 734.353 | +4.783 | 748.477 → 765.532 | +17.055 |
+| method-properties | 739.595 → 746.571 | +6.976 | 757.936 → 780.733 | +22.797 |
+
+#### parent 05-A → 04-B
+| Case | p50 base → candidate (ms) | Δ p50 (ms) | p95 base → candidate (ms) | Δ p95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 39.286 → 38.968 | -0.318 | 45.551 → 42.861 | -2.690 |
+| field-properties | 28.922 → 28.858 | -0.065 | 40.002 → 38.128 | -1.873 |
+| parameter-full | 32.313 → 35.462 | +3.149 | 35.512 → 47.984 | +12.472 |
+| parameter-properties | 36.591 → 38.817 | +2.225 | 48.004 → 46.323 | -1.682 |
+| return-full | 31.807 → 32.855 | +1.048 | 57.003 → 38.298 | -18.705 |
+| return-properties | 28.265 → 28.104 | -0.161 | 61.452 → 57.195 | -4.257 |
+| method-full | 725.640 → 719.268 | -6.372 | 742.755 → 738.158 | -4.597 |
+| method-properties | 737.197 → 733.933 | -3.263 | 757.439 → 747.982 | -9.457 |
+
+#### acceptedBaseline 01-C → 03-B
+| Case | p50 base → candidate (ms) | Δ p50 (ms) | p95 base → candidate (ms) | Δ p95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 21.872 → 38.307 | +16.435 | 26.100 → 46.819 | +20.719 |
+| field-properties | 20.831 → 30.034 | +9.204 | 22.141 → 35.650 | +13.509 |
+| parameter-full | 20.910 → 35.008 | +14.098 | 26.294 → 46.540 | +20.245 |
+| parameter-properties | 21.190 → 36.870 | +15.680 | 25.079 → 47.662 | +22.583 |
+| return-full | 20.518 → 31.897 | +11.379 | 22.741 → 53.113 | +30.372 |
+| return-properties | 19.993 → 28.058 | +8.065 | 20.682 → 61.406 | +40.724 |
+| method-full | 692.647 → 734.353 | +41.706 | 697.078 → 765.532 | +68.454 |
+| method-properties | 694.244 → 746.571 | +52.327 | 701.996 → 780.733 | +78.737 |
+
+#### acceptedBaseline 06-C → 04-B
+| Case | p50 base → candidate (ms) | Δ p50 (ms) | p95 base → candidate (ms) | Δ p95 (ms) |
+|---|---:|---:|---:|---:|
+| field-full | 22.346 → 38.968 | +16.621 | 31.201 → 42.861 | +11.660 |
+| field-properties | 21.438 → 28.858 | +7.420 | 26.810 → 38.128 | +11.318 |
+| parameter-full | 21.646 → 35.462 | +13.815 | 28.266 → 47.984 | +19.717 |
+| parameter-properties | 21.978 → 38.817 | +16.839 | 28.668 → 46.323 | +17.655 |
+| return-full | 21.620 → 32.855 | +11.234 | 26.831 → 38.298 | +11.467 |
+| return-properties | 20.780 → 28.104 | +7.324 | 27.959 → 57.195 | +29.236 |
+| method-full | 699.234 → 719.268 | +20.035 | 712.273 → 738.158 | +25.886 |
+| method-properties | 699.696 → 733.933 | +34.237 | 713.443 → 747.982 | +34.538 |
+
+#### Pressure-stage resources
+| Comparison | Wall base → candidate (ms) | CPU base → candidate (s) | CPU bounds base / candidate (s) | RSS bounds base / candidate (bytes) |
+|---|---:|---:|---|---|
+| parent 02-A → 03-B | 8537.306 → 8650.894 | 29.600 → 29.830 | [29.550, 29.620] / [29.780, 29.850] | [6744473600, 6744473600] / [6722830336, 6722830336] |
+| parent 05-A → 04-B | 8508.940 → 8485.074 | 29.470 → 29.390 | [29.400, 29.490] / [29.340, 29.410] | [6752468992, 6752501760] / [6736855040, 6736855040] |
+| acceptedBaseline 01-C → 03-B | 7667.170 → 8650.894 | 28.600 → 29.830 | [28.550, 28.620] / [29.780, 29.850] | [6422216704, 6422216704] / [6722830336, 6722830336] |
+| acceptedBaseline 06-C → 04-B | 7770.748 → 8485.074 | 28.790 → 29.390 | [28.740, 28.810] / [29.340, 29.410] | [6426836992, 6426836992] / [6736855040, 6736855040] |
+
+Against193, observed candidate RSS is lower by21,643,264/15,613,952 bytes in the two directions. Against accepted4f, the conservative increases are300,613,632/310,018,048 bytes (+4.681/+4.824%); both now pass the5% RSS bound in this full-projection workload. Dividing the process-level increase across64 resident graphs gives4.697/4.844 decimalMB per graph. These are averages, not isolated per-graph measurements, and query-phase values must not be substituted for the separate loading measurement or compared directly with historical loading-only figures.
+
+CPU is29.830/29.390s versus193's29.600/29.470s and accepted4f's28.600/28.790s. All four conservative CPU comparisons remain within5%. Parent-relative latency is mixed: Method full p95 changes748.477→765.532ms and742.755→738.158ms; Method properties changes757.936→780.733ms and757.439→747.982ms. This supports no query-speedup claim. The accepted-baseline Method deltas are still positive, as shown above; memory recovery does not establish latency recovery.
+
+**Decision: retain the isolated candidate for its verified RSS reduction and continue the separately declared loading check before integration.** The earlier193 full-projection RSS overrun is resolved for this measured query workload. Overall performance acceptance remains false: loading, construction, JVM queries and complete cross-revision graph semantic authority remain separate. The cohort has only20 measured requests per case/cell and two fixed paired directions; no best-run selection, pooling, tight p95 uncertainty or saturation claim is made.
+
+Command: `python3 -B /tmp/graphite-attempt194-followup-prep-1/pressure/run.py --execute-assigned-slot --first-port 23060 --output /tmp/graphite-attempt194-pressure-query-run-1`.
+Complete raw evidence, requests, audits and failures are retained in that output. Root's first statistics-reader invocation treated the plan's paired cell indices as names and failed before writing a report; the corrected reader uses the original declared indices and changes no measurements. Final independent statistics SHA-256:
+`697b38bdaf9f57561060ffd6134b0a0b12ad53f344b86c48074a2b6295e50011`.
