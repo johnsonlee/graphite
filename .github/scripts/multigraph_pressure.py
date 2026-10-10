@@ -421,6 +421,27 @@ def validate_proof_claims(plan):
     expected = {'graphsByArm': {key: arm['graphs'] for key, arm in plan['arms'].items()},
                 'fixtureFiles': {path: digest for path, digest in plan['pins'].items() if any(Path(path).is_relative_to(root) for root in roots)},
                 'realPersistedGraphs': True, 'completeSemanticEquivalence': True}
+    if 'correctedProducerAuthority' in plan:
+        require(plan['engine'] == 'native' and 'producerAuthority' not in plan,
+                'corrected comparison is an explicit native proof mode')
+        from assemble_native_pressure_producers import verify_bundle, corrected_fixture_bindings, pressure_arms
+        ref = plan['correctedProducerAuthority']
+        packet = pinned_authority_metadata(plan, ref)
+        packet = verify_bundle(packet, plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+        require(pressure_arms(packet) == plan['arms'] and
+                all(plan['pins'].get(p) == h for p, h in packet['pins'].items()),
+                'corrected actual source runtime fixture and proof closure')
+        corrected = corrected_fixture_bindings(packet)
+        require(corrected['fixtureFiles'] == expected['fixtureFiles'], 'complete corrected graph inventory')
+        for arm_id, arm in packet['arms'].items():
+            require(len(arm['cases']) == len(plan['cases']), 'complete corrected query inventory')
+            for source, case in zip(arm['cases'], plan['cases']):
+                require(source['id'] == case['id'] and source['request'] == case['request'] and
+                        source['targetGraphIds'] == case['targetGraphIds'] and
+                        typed(source['oracle']) == typed(case['oracleByArm'][arm_id]),
+                        'corrected oracles retain actual complete response authority')
+        expected = corrected
+        require(matches[0]['upstream'].get(ref['path']) == ref['sha256'], 'corrected producer upstream')
     require(typed(matches[0].get('bindings')) == typed(expected), 'complete actual fixture equivalence claims')
     require(matches[0].get('upstream') and all(plan['pins'].get(path) == digest for path, digest in matches[0]['upstream'].items()), 'full fixture proof producer pins')
 

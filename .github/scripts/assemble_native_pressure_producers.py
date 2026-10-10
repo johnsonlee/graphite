@@ -18,6 +18,8 @@ from prepare_native_pressure_plan import native_build_identity, normalize_source
 
 SCHEMA = 'graphite.native-pressure.producer-bundle.v1'
 STATUS = 'ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING'
+CORRECTED_STATUS = 'ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED'
+CORRECTED_MODEL = 'complete-core-topology-index-with-source-corrections-and-additive-declarations-v1'
 require = common.require
 
 
@@ -115,12 +117,70 @@ def assemble(artifacts_root, base_sha, candidate_sha):
         identities.append(identity)
     require(all(identity == identities[0] for identity in identities), 'matched native build toolchains')
     artifacts.verify_pins(pins)
-    return {'schema': SCHEMA, 'status': STATUS, 'artifactsRoot': str(root),
+    packet = {'schema': SCHEMA, 'status': STATUS, 'artifactsRoot': str(root),
             'acceptedRevision': artifacts.ACCEPTED, 'baseRevision': base_sha, 'candidateRevision': candidate_sha,
             'armDirectories': directories_ref, 'sourceInputs': source_inputs, 'arms': arms, 'pins': pins,
             'completeSemanticEquivalence': False, 'performanceAcceptance': False, 'acceptanceEligible': False,
             'missingAuthority': ['Complete C/A/B core, topology and index semantic equivalence or independently '
                                  'proven source corrections; fresh39 response correctness does not establish this.']}
+    required = [name for name in ('A', 'B') if expected[name] != 'C']
+    paths = {name: root / expected[name] / 'core-equivalence/audit.json' for name in required}
+    if all(path.is_file() for path in paths.values()):
+        comparisons = {name: corrected_comparison(packet, name, path) for name, path in paths.items()}
+        packet.update(status=CORRECTED_STATUS, comparisonModel=CORRECTED_MODEL,
+                      correctedComparisons=comparisons, missingAuthority=[],
+                      strictEquivalence=False, sourceToDeclarationCompletenessClaim=False)
+    return packet
+
+
+def corrected_comparison(packet, arm_id, path):
+    """Rebind the actual complete pair; no partial upstream claim is promoted."""
+    import run_native_core_equivalence as core
+    ref = artifacts.ref(path)
+    actual = core.audit(path.parent)
+    require(common.typed(common.read(path)) == common.typed(actual), 'raw complete comparison audit changed')
+    require(actual['schema'] == 'graphite.native-core-equivalence-audit.v1' and
+            actual['status'] == core.AUDIT_PASS and actual['completeCoreTopologyIndexComparison'] is True and
+            actual['productionFormatterTestsVerified'] is True and
+            actual['proofModel'] == 'EXPLICIT_CLASSFILE_AND_FORMATTER_SOURCE_CORRECTIONS_WITH_ADDITIVE_DECLARATION_VALIDITY' and
+            all(actual[k] is False for k in core.FALSE_CLAIMS), 'scoped complete corrected comparison')
+    arms = packet['arms']
+    require(actual['revisions'] == {'C': arms['C']['revision'], 'B': arms[arm_id]['revision']} and
+            actual['fixtureManifests'] == {'C': arms['C']['fixtureManifest'], 'B': arms[arm_id]['fixtureManifest']},
+            'comparison exact arm revisions and manifests')
+    record = common.pinned_authority_metadata(actual, actual['record'])
+    plan = common.pinned_authority_metadata(actual, record['plan'])
+    require('rawLocalExports' in plan and len(plan['rawLocalExports']) == 8 and
+            actual['phases'] == plan['maxOwnedPhases'] == 139, 'complete actual raw Local phases required')
+    ids = [g['id'] for g in arms['C']['graphs']]
+    require(len(ids) == len(set(ids)) == 64 and ids == [g['id'] for g in arms[arm_id]['graphs']] ==
+            [g['id'] for g in plan['graphs']] == [g['id'] for g in actual['graphs']], 'complete ordered64 comparison')
+    raw_refs = []
+    for c, b, row, receipt in zip(arms['C']['graphs'], arms[arm_id]['graphs'], plan['graphs'], actual['graphs']):
+        require(row['C'] == c['path'] and row['B'] == b['path'], 'comparison actual graph roots')
+        raw = artifacts.ref(path.parent / 'graphs' / row['id'] / 'core/raw-local-type-proof.json')
+        report = common.pinned_authority_metadata(actual, raw)
+        require(report['status'] == 'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and
+                report['completeNodeInventory'] is True and report['unprovedCount'] == 0 and
+                report['strictEquivalence'] is report['completeSemanticEquivalence'] is
+                report['performanceAcceptance'] is False, 'complete scoped raw array authority')
+        require(report['localCount'] == len(report['occurrences']) and
+                report['arrayCount'] == sum(r['status'] == 'PASS_ARRAY' for r in report['occurrences']) and
+                all(r['graphId'] == row['id'] and r['status'] in ('PASS_ARRAY', 'NON_ARRAY') and
+                    r['issues'] == [] for r in report['occurrences']), 'no missing conflicting or unproved raw locals')
+        require(len(report['inputs']) == 2 and all(actual['pins'].get(p) == h for p, h in report['inputs'].items()),
+                'both actual raw export input closure')
+        require(all(actual['pins'].get(p) == h for p, h in receipt['files'].items()), 'complete raw graph proof closure')
+        raw_refs.append(raw)
+    for name in ('C', arm_id):
+        for key in ('artifactAudit', 'fixtureManifest', 'sourceManifest', 'runtimeManifest'):
+            upstream = arms[name][key]
+            require(actual['pins'].get(upstream['path']) == upstream['sha256'], 'comparison actual producer upstream')
+    merge_pins(packet['pins'], actual['pins'])
+    merge_pins(packet['pins'], {ref['path']: ref['sha256']})
+    return {'audit': ref, 'rawArrayProofs': raw_refs, 'revisions': actual['revisions'],
+            'fixtureManifests': actual['fixtureManifests'],
+            'correctionCounts': {key: actual[key] for key in core.COUNTS}}
 
 
 def verify_bundle(packet, base_sha, candidate_sha):
@@ -129,6 +189,30 @@ def verify_bundle(packet, base_sha, candidate_sha):
     actual = assemble(packet['artifactsRoot'], base_sha, candidate_sha)
     require(common.typed(packet) == common.typed(actual), 'producer bundle differs from current raw evidence')
     return actual
+
+
+def corrected_fixture_bindings(packet):
+    require(packet['status'] == CORRECTED_STATUS and packet['comparisonModel'] == CORRECTED_MODEL and
+            packet['missingAuthority'] == [] and packet['completeSemanticEquivalence'] is
+            packet['strictEquivalence'] is packet['sourceToDeclarationCompletenessClaim'] is
+            packet['performanceAcceptance'] is packet['acceptanceEligible'] is False,
+            'explicit corrected scope without promoted claims')
+    expected = {'B'} | (set() if common.same_accepted_artifacts(packet, 'A') else {'A'})
+    require(set(packet['correctedComparisons']) == expected, 'all nonaccepted arms have actual comparisons')
+    roots = {Path(g['path']) for arm in packet['arms'].values() for g in arm['graphs']}
+    return {'graphsByArm': {key: arm['graphs'] for key, arm in packet['arms'].items()},
+            'fixtureFiles': {path: digest for path, digest in packet['pins'].items()
+                             if any(Path(path).is_relative_to(root) for root in roots)},
+            'realPersistedGraphs': True, 'completeSemanticEquivalence': False,
+            'strictEquivalence': False, 'sourceToDeclarationCompletenessClaim': False,
+            'comparisonModel': CORRECTED_MODEL, 'correctedComparisons': packet['correctedComparisons']}
+
+
+def pressure_arms(packet):
+    # The fresh query auditor checks the raw /api/graphs body and independently
+    # recomputes these saved counts; only the older pressure shape adds the path.
+    return {name: dict(arm, readiness={**arm['readiness'], 'path': '/api/graphs'})
+            for name, arm in packet['arms'].items()}
 
 
 def main():
@@ -147,7 +231,7 @@ def main():
         return 1
     common.save(args.output / 'packet.json', result)
     common.save(args.output / 'assembly-status.json',
-                {'status': STATUS, 'packet': artifacts.ref(args.output / 'packet.json'),
+                {'status': result['status'], 'packet': artifacts.ref(args.output / 'packet.json'),
                  'missingAuthority': result['missingAuthority'], 'performanceAcceptance': False})
     return 0
 
