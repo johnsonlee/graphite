@@ -1,7 +1,7 @@
 """Tiny packet contracts, not actual upstream execution or performance evidence.
 
 Only JVM correctness/core audit boundaries are modeled. All metadata files,
-ordered34 universes, pins, plan/proof checks and request digests are real.
+ordered35 universes, pins, plan/proof checks and request digests are real.
 """
 import copy
 import json
@@ -80,7 +80,7 @@ class JvmPreparationTests(unittest.TestCase):
             'revision': revision, 'role': role, **refs, 'plan': plan_ref, 'pins': pins,
             'cases': [{'case': c['id'], 'targetGraphIds': c['targetGraphIds']} for c in cases],
             'independentRawExpectationsVerified': True, 'sourceRuleApplicabilityVerified': True,
-            'all34ActualResponsesVerified': True, 'oracleAuthorityVerified': True,
+            'all35ActualResponsesVerified': True, 'oracleAuthorityVerified': True,
             'fresh64Acceptance': False, 'performanceAcceptance': False, 'completeSemanticEquivalence': False}
         self.write(http/'audit.json', result); self.observed[str(http)] = result
         self.write(root/'core/audit.json', {'tiny': 'modeled corrected comparison boundary'})
@@ -105,22 +105,33 @@ class JvmPreparationTests(unittest.TestCase):
             plan = p.bind_plan(packet, ref, output, p.CATALOG)
         return packet, plan
 
-    def test_actual_three_audits_and_each_comparison_once_with_all34_oracles(self):
+    def test_actual_three_audits_and_each_comparison_once_with_all35_oracles(self):
         packet = self.packet()
         self.assertEqual(3, self.audit_mock.call_count); self.assertEqual(['A', 'B'], self.comparison_calls)
         for arm in packet['arms'].values():
-            self.assertEqual(34, len(arm['cases'])); self.assertEqual(4*1024**3, arm['maxHeapBytes'])
+            self.assertEqual(35, len(arm['cases'])); self.assertEqual(4*1024**3, arm['maxHeapBytes'])
             self.assertEqual('io.johnsonlee.graphite.cli.MainKt', arm['serverArgv'][5])
         for key in ('strictEquivalence', 'completeSemanticEquivalence', 'sourceToDeclarationCompletenessClaim',
                     'performanceAcceptance', 'acceptanceEligible'): self.assertIs(False, packet[key])
         self.assertEqual(p.assembled.CORRECTED_MODEL, p.fixture_bindings(packet)['comparisonModel'])
 
-    def test_previous26_audit_cannot_authorize_new34_pressure(self):
+    def test_previous26_and34_audits_cannot_authorize_new35_pressure(self):
+        root = Path(self.roots['B']); original = copy.deepcopy(self.observed[str(root)])
+        for count in (26, 34):
+            value = copy.deepcopy(original)
+            value['status'] = f'PASS_ALL{count}_JVM_RESPONSES_INDEPENDENT_RAW_AUDIT'
+            value[f'all{count}ActualResponsesVerified'] = value.pop('all35ActualResponsesVerified')
+            self.observed[str(root)] = value
+            self.write(root/'audit.json', value)
+            with self.subTest(count=count), self.assertRaisesRegex(ValueError, 'complete actual independently audited JVM35'):
+                p.audited_arm(root, 'b'*40, 'candidate')
+
+    def test_new_claim_cannot_hide_missing_raw_zero_response(self):
         root = Path(self.roots['B']); value = self.observed[str(root)]
-        value['status'] = 'PASS_ALL26_JVM_RESPONSES_INDEPENDENT_RAW_AUDIT'
-        value['all26ActualResponsesVerified'] = value.pop('all34ActualResponsesVerified')
+        self.assertEqual('global-wide-four-properties-zero', value['cases'][-1]['case'])
+        value['cases'].pop()
         self.write(root/'audit.json', value)
-        with self.assertRaisesRegex(ValueError, 'complete actual independently audited JVM34'):
+        with self.assertRaisesRegex(ValueError, 'complete JVM35 case inventory'):
             p.audited_arm(root, 'b'*40, 'candidate')
 
     def test_same4f_parent_reuses_exact_audit_and_actual_artifact_role(self):
@@ -150,7 +161,7 @@ class JvmPreparationTests(unittest.TestCase):
     def test_stored_audit_mismatch_missing_claim_and_observed_digest_not_authority(self):
         root = Path(self.roots['B']); audit = self.observed[str(root)]
         path = root/'audit.json'; original = path.read_bytes(); path.write_text('{}')
-        with self.assertRaisesRegex(ValueError, 'stored JVM34'): p.audited_arm(root, 'b'*40, 'candidate')
+        with self.assertRaisesRegex(ValueError, 'stored JVM35'): p.audited_arm(root, 'b'*40, 'candidate')
         path.write_bytes(original); audit['oracleAuthorityVerified'] = False
         with self.assertRaisesRegex(ValueError, 'complete actual'): p.audited_arm(root, 'b'*40, 'candidate')
         audit['oracleAuthorityVerified'] = True
@@ -179,7 +190,7 @@ class JvmPreparationTests(unittest.TestCase):
             with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, 'differs from actual'):
                 p.verify_bundle(bad, 'a'*40, 'b'*40)
 
-    def test_shared_rejects_unbound_jvm34_foreign_oracle_and_promoted_fixture(self):
+    def test_shared_rejects_unbound_jvm35_foreign_oracle_and_promoted_fixture(self):
         packet, plan = self.bound_plan()
         for mutation in ('unbound', 'foreign-value', 'fixture-claim', 'routing', 'native-mode'):
             bad = copy.deepcopy(plan)

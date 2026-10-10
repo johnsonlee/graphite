@@ -1,4 +1,4 @@
-"""Independent JVM properties and the exact 34 pressure-case row universes.
+"""Independent JVM properties and the exact 35 pressure-case row universes.
 
 Only raw persisted payloads enter this module, never an HTTP response or native
 collector result. Source/runtime authority and actual-input receipt replay remain
@@ -26,6 +26,7 @@ MISS = 'GraphiteSlowShapeAbsent293746X'
 DECLARED_MISS = 'GraphiteDeclaredAbsent293746X'
 ACTIVITY = 'android.app.Activity'
 TEXT_NEEDLES = {HIT, MISS, DECLARED_MISS, ACTIVITY}
+GLOBAL_WIDE_MISS = '__graphite_fixture64_absent_fixture-android-00__'
 CALL_PROPERTIES = ('caller_class', 'caller_name', 'callee_class', 'callee_name')
 DATAFLOW_IDS = tuple('slow-dataflow' + side + suffix for side in ('Source', 'Target') for suffix in ('Hit', 'Miss'))
 
@@ -232,6 +233,8 @@ def node_matches(case, row, properties, keys, primitive_facts=None):
     case_id = case['id']
     if properties['graphId'] not in case['targetGraphIds']: return False
     if case['family'] in ('wrapped-discovery', 'graph-routing'): return _discovery(case_id, properties, primitive_facts)
+    if case_id == 'global-wide-four-properties-zero':
+        return any(_string_contains(properties.get(k), GLOBAL_WIDE_MISS) for k in CALL_PROPERTIES)
     if case_id == 'callsite-dynamic-miss' and row['tag'] != 12: return False
     if case_id in ('dynamic-miss', 'callsite-dynamic-miss', 'slow-dynamicHit', 'slow-dynamicMiss'):
         needle = HIT if case_id == 'slow-dynamicHit' else MISS if case_id == 'slow-dynamicMiss' else DECLARED_MISS
@@ -249,7 +252,7 @@ def raw_node_projection(case, row, values):
     """Original JVM values, before DISTINCT comparison or Gson projection."""
     if case['family'] == 'wrapped-discovery':
         result = dict(zip(case['columns'], [values.get('graph_id'), *(values.get(k) for k in CALL_PROPERTIES)]))
-    elif case['family'] == 'graph-routing': result = dict(zip(case['columns'], (values.get(k) for k in CALL_PROPERTIES)))
+    elif case['family'] in ('graph-routing', 'global-wide'): result = dict(zip(case['columns'], (values.get(k) for k in CALL_PROPERTIES)))
     else:
         result = {'id': row['id'], 'labels': list(LABELS[row['tag']]), 'graphId': values['graphId']}
         if 'qualifiedId' in case['columns']: result['qualifiedId'] = values['qualifiedId']

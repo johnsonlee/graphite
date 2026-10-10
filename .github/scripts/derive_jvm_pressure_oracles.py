@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Derive all34 JVM row universes from one audited own-writer64 arm.
+"""Derive all35 JVM row universes from one audited own-writer64 arm.
 
 This correctness entry point reuses completed core/string/producer evidence and
 original GSE01 edges. It never queries a server or learns an expected response.
@@ -26,7 +26,7 @@ import produce_native_pressure_artifacts as producer
 import run_native_core_equivalence as core
 
 SOURCE = Path(__file__).resolve().with_name('JvmPrimitiveFacts.java')
-PASS = 'COMPLETE_ALL34_RAW_DERIVATION_REQUIRES_INDEPENDENT_SOURCE_RULE_AUDIT'
+PASS = 'COMPLETE_ALL35_RAW_DERIVATION_REQUIRES_INDEPENDENT_SOURCE_RULE_AUDIT'
 FALSE_CLAIMS = ('oracleAuthorityVerified', 'completeSemanticEquivalence', 'fresh64Acceptance', 'performanceAcceptance')
 require = common.require
 
@@ -211,7 +211,7 @@ def replay(output):
     result = derive(plan, consume_facts(plan)); universes = result.pop('universes')
     require(common.typed(result) == common.typed(record['derivation']), 'complete per-graph derivation counts')
     require(set(record['universes']) == set(universes) and
-            {p.name for p in (out/'universes').iterdir()} == {name+'.json' for name in universes}, 'closed exact34 outputs')
+            {p.name for p in (out/'universes').iterdir()} == {name+'.json' for name in universes}, 'closed exact35 outputs')
     for name, expected in universes.items():
         path = out/'universes'/(name+'.json')
         require(record['universes'][name] == artifacts.ref(path) and

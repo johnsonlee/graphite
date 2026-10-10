@@ -162,7 +162,7 @@ class DeriveProtocolTests(unittest.TestCase):
         result, phases = self.execute()
         self.assertEqual(p.PASS, result['status'], result['errors']); self.assertEqual(1, self.audit_mock.call_count)
         self.assertEqual(['compile-primitives', 'primitive-facts'], [c.args[0] for c in phases.call_args_list])
-        self.assertEqual(34, len(result['universes'])); self.assertEqual(64, len(result['derivation']['graphs']))
+        self.assertEqual(35, len(result['universes'])); self.assertEqual(64, len(result['derivation']['graphs']))
         self.assertTrue(all(g['nodes'] == len(self.raw.records) and g['edges'] == 2 and g['dataflowEdges'] == 2 for g in result['derivation']['graphs']))
         universe = p.common.read(result['universes']['slow-dataflowSourceHit']['path'])
         self.assertEqual(64, universe['totalMatches'])

@@ -34,14 +34,14 @@ class JvmPressureOracleTests(unittest.TestCase):
                 'graphCount': len(case['requestedGraphIds']), 'columns': list(case['columns']),
                 'rows': copy.deepcopy(rows), 'rowCount': len(rows), 'limit': case['effectiveLimit']}
 
-    def test_all34_definitions_preserve_original_queries_and_seven_families(self):
+    def test_all35_definitions_preserve_original_queries_and_eight_families(self):
         catalog = json.loads(Path(__file__).with_name('fixtures').joinpath('multigraph-pressure-cases.json').read_text())
         queries = {c['id']: c['request']['body']['query'] for engine in catalog['engines'].values() for c in engine['cases']}
-        self.assertEqual(34, len(self.cases))
+        self.assertEqual(35, len(self.cases))
         self.assertEqual(set(oracle.FAMILIES), {c['family'] for c in self.cases.values()})
         for case in self.cases.values():
             with self.subTest(case=case['id']):
-                if case['family'] != 'full-projection':
+                if case['family'] not in ('full-projection', 'global-wide'):
                     self.assertEqual(queries[case['id']], case['request']['body']['query'])
                 self.assertNotIn('ORDER BY', case['request']['body']['query'])
                 self.assertEqual('/api/cypher/graphs', case['request']['endpoint'])
@@ -52,6 +52,30 @@ class JvmPressureOracleTests(unittest.TestCase):
                 self.assertEqual(hashlib.sha256(case['request']['body']['query'].encode()).hexdigest(), case['querySha256'])
                 self.assertEqual(case, oracle.validate_case(case))
         self.assertEqual(12, sum(c['family'] == 'full-slow-shape-catalog' for c in self.cases.values()))
+
+    def test_raw_global_wide_query_and_non_distinct_complete_scalar_rows(self):
+        case = list(self.cases.values())[-1]
+        self.assertEqual('global-wide-four-properties-zero', case['id'])
+        needle = '__graphite_fixture64_absent_fixture-android-00__'
+        expected_query = (
+            'MATCH (n)\n'
+            f"WHERE n.caller_class CONTAINS '{needle}' OR n.caller_name CONTAINS '{needle}' OR "
+            f"n.callee_class CONTAINS '{needle}' OR n.callee_name CONTAINS '{needle}'\n"
+            'RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200')
+        self.assertEqual(expected_query, case['request']['body']['query'])
+        columns = ['n.caller_class', 'n.caller_name', 'n.callee_class', 'n.callee_name']
+        self.assertEqual(columns, case['columns'])
+        self.assertEqual(200, case['effectiveLimit'])
+        self.assertEqual(list(oracle.FIXTURE_GRAPH_IDS), case['targetGraphIds'])
+        row = oracle.projected_row(dict(zip(columns, [needle, 'm', 'Callee', 'f'])), [self.graph])
+        compiled = oracle.CompiledLegalLimitOracle(self.universe([(row, 2)], case), case)
+        self.assertEqual(2, compiled.validate(self.response([row, row], case))['rows'])
+        with self.assertRaises(ValueError): compiled.validate(self.response([row], case))
+        bad = copy.deepcopy(row); bad['n.callee_name'] = 'tampered'
+        with self.assertRaises(ValueError): compiled.validate(self.response([row, bad], case))
+        empty = oracle.CompiledLegalLimitOracle(self.universe([], case), case)
+        self.assertEqual(0, empty.validate(self.response([], case))['rows'])
+        with self.assertRaises(ValueError): empty.validate(self.response([row], case))
 
     def test_full_projection_requires_all_rows_from_two_graphs_and_rejects_nested_tamper(self):
         case = self.cases['return-full']

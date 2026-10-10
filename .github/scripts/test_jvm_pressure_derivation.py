@@ -37,7 +37,7 @@ def edges(g, values=()):
 
 def complete(selected):
     collector = d.Collector()
-    # Original26 component fixtures intentionally isolate their existing predicates.
+    # Component fixtures isolate node predicates, including the raw global-wide case.
     collector.cases = [c for c in collector.cases if c['family'] != 'full-projection']
     for gid in model.FIXTURE_GRAPH_IDS:
         g, links = selected.get(gid, (graph(gid), [])); collector.add_graph(g, edges(g, links), len(links))
@@ -174,7 +174,7 @@ class DerivationTests(unittest.TestCase):
         row = checks['routing-pair-dense']; values, keys = d.node_properties(row, model.FIXTURE_GRAPH_IDS[1], wire.Types())
         self.assertFalse(d.node_matches(self.cases['routing-pair-dense'], row, values, keys))
 
-    def test_original26_universes_include_named_miss_positive_controls_and_all_dataflow_cases(self):
+    def test_node_universes_include_named_miss_positive_controls_and_all_dataflow_cases(self):
         gid = model.FIXTURE_GRAPH_IDS[0]
         nodes = [dict(id=1, tag=1, value=d.HIT), dict(id=2, tag=1, value=d.MISS),
                  dict(id=3, tag=1, value=d.DECLARED_MISS), call(4), call(5, d.MISS), call(6, d.DECLARED_MISS),
@@ -256,7 +256,45 @@ class DerivationTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.CompiledLegalLimitOracle(universe, self.cases[name]).validate(self.distinct_body(self.cases[name], []))
 
-    def test_original26_scope_uses_v2_only_for_eight_distinct_requests(self):
+    def test_raw_global_wide_matches_each_field_without_case_folding_or_coercion(self):
+        case = self.cases['global-wide-four-properties-zero']
+        gid = model.FIXTURE_GRAPH_IDS[0]; needle = '__graphite_fixture64_absent_fixture-android-00__'
+        for index, field in enumerate(('caller_class', 'caller_name', 'callee_class', 'callee_name')):
+            values = ['Owner', 'method', 'Target', 'callee']; values[index] = 'prefix' + needle + 'suffix'
+            row = call(index, values[0], values[1], method(values[2], values[3]))
+            props, keys = d.node_properties(row, gid, wire.Types())
+            with self.subTest(field=field):
+                self.assertTrue(d.node_matches(case, row, props, keys))
+                self.assertEqual(dict(zip(case['columns'], values)), d.node_projection(case, row, props))
+                props[field] = needle.upper()
+                self.assertFalse(d.node_matches(case, row, props, keys))
+                for non_string in ([needle], {'key': needle}, inputs.EnumReference(needle, 'Member'), None, 1):
+                    props[field] = non_string
+                    self.assertFalse(d.node_matches(case, row, props, keys))
+
+    def test_raw_global_wide_complete_collector_preserves_duplicates_and_graph_provenance(self):
+        case_id = 'global-wide-four-properties-zero'; needle = '__graphite_fixture64_absent_fixture-android-00__'
+        first, last = model.FIXTURE_GRAPH_IDS[0], model.FIXTURE_GRAPH_IDS[-1]
+        hit = call(1, needle, 'm'); duplicate = call(2, needle, 'm')
+        annotation = dict(id=3, tag=13, owner='Annotation', name='marker', member='',
+                          values={'caller_class': ['not a string', needle], 'callee_name': needle})
+        miss = call(4, needle.upper(), 'm')
+        a = graph(first, [hit, duplicate, miss]); b = graph(last, [annotation])
+        result = complete({first: (a, []), last: (b, [])})
+        universe = result['universes'][case_id]
+        self.assertEqual(3, universe['totalMatches'])
+        expected = [
+            {'value': {'n.caller_class': needle, 'n.caller_name': 'm',
+                       'n.callee_class': 'java.lang.String', 'n.callee_name': 'valueOf',
+                       '$metadata': {'graphIds': [first]}}, 'multiplicity': 2},
+            {'value': {'n.caller_class': ['not a string', needle], 'n.callee_name': needle,
+                       '$metadata': {'graphIds': [last]}}, 'multiplicity': 1}]
+        self.assertEqual(sorted(expected, key=lambda e: model.key(e['value'])),
+                         sorted(universe['rows'], key=lambda e: model.key(e['value'])))
+        empty = complete({first: (graph(first, [miss]), [])})['universes'][case_id]
+        self.assertEqual(0, empty['totalMatches']); self.assertEqual([], empty['rows'])
+
+    def test_node_scope_uses_v2_only_for_eight_distinct_requests(self):
         result = complete({})
         v2 = []
         for case in self.cases.values():
@@ -267,7 +305,7 @@ class DerivationTests(unittest.TestCase):
             else:
                 self.assertEqual('graphite.jvm-legal-row-universe.v1', universe['schema'])
                 self.assertIn('rows', universe); self.assertNotIn('groups', universe)
-        self.assertEqual(8, len(v2)); self.assertEqual(26, len(result['universes']))
+        self.assertEqual(8, len(v2)); self.assertEqual(27, len(result['universes']))
 
     def test_unordered_limit_retains_full_universe_and_validates_any_legal_complete_subset(self):
         gid = model.FIXTURE_GRAPH_IDS[0]; nodes = [dict(id=n, tag=1, value=d.HIT) for n in range(60)]
@@ -408,13 +446,13 @@ class FullProjectionTests(unittest.TestCase):
                 dict(id=3, tag=11, method=method(return_owner, 'r'), actual_type=None)]
         return graph(gid, rows, (m, other))
 
-    def test_complete34_collector_keeps_both_sources_and_return_inclusive_methods(self):
+    def test_complete35_collector_keeps_both_sources_and_return_inclusive_methods(self):
         collector = d.Collector()
         for gid in model.FIXTURE_GRAPH_IDS:
             g = self.selected_graph(gid) if gid in ('fixture-kotlin-compiler-15', 'fixture-tika-10') else graph(gid)
             collector.add_graph(g, edges(g), 0)
         result = collector.finish()
-        self.assertEqual(34, len(result['universes']))
+        self.assertEqual(35, len(result['universes']))
         for case in model.cases():
             if case['family'] != 'full-projection': continue
             universe = result['universes'][case['id']]

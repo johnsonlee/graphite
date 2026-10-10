@@ -61,11 +61,11 @@ class SourceRuleTests(unittest.TestCase):
                 'sourceManifest': source_ref, 'runtimeManifest': runtime_ref, 'producerRoot': str(self.producer),
                 'java': str(home/'bin/java'), 'jdkImage': jdk, 'writerJar': str(self.producer/'runtime/writer.jar'), 'pins': pins}
 
-    def test_candidate_all_rules_and_exact34_scope_keep_execution_and_http_claims_false(self):
+    def test_candidate_all_rules_and_exact35_scope_keep_execution_and_http_claims_false(self):
         plan = self.fixture(); result = p.audit(plan)
         self.assertEqual('declared5a', result['profile']); self.assertEqual(plan['revision'], result['revision'])
         self.assertEqual(set(p.RULES)|{'closed-runtime-source-and-build-dependencies'}, {r['id'] for r in result['rules']})
-        self.assertEqual(34, len(result['requestContracts'])); self.assertTrue(result['sourceRuleApplicabilityVerified'])
+        self.assertEqual(35, len(result['requestContracts'])); self.assertTrue(result['sourceRuleApplicabilityVerified'])
         self.assertTrue(result['upstreamExecutionReplayRequired'])
         for key in ('oracleAuthorityVerified', 'fresh64Acceptance', 'performanceAcceptance'): self.assertIs(False, result[key])
         self.assertEqual(str(self.producer/'runtime/graphite.jar'), result['packagedRuntime']['graphiteJar']['path'])

@@ -16,7 +16,7 @@ import math
 from types import MappingProxyType
 
 FAMILIES = ('global-dynamic-miss', 'global-callsite-dynamic-miss',
-            'wrapped-discovery', 'graph-routing', 'full-slow-shape-catalog', 'feature-presence', 'full-projection')
+            'wrapped-discovery', 'graph-routing', 'full-slow-shape-catalog', 'feature-presence', 'full-projection', 'global-wide')
 POLICY = 'jvm-complete-legal-limit-multiset-no-order-by'
 ENVELOPE = {'mode', 'graphs', 'graphCount', 'columns', 'rows', 'rowCount', 'limit'}
 # Literal workload definitions only, copied from the reviewed catalog query text.
@@ -419,6 +419,21 @@ _PROJECTION_DEFINITIONS = (('field-full',
   5000,
   ['fixture-kotlin-compiler-15', 'fixture-tika-10']))
 _DEFINITIONS += _PROJECTION_DEFINITIONS
+
+# Exact global-wide diagnostic shape: raw, case-sensitive scalar predicates and
+# projection. This does not use properties(n), wrappers, or DISTINCT.
+_DEFINITIONS += (('global-wide-four-properties-zero',
+  'global-wide',
+  "MATCH (n)\n"
+  "WHERE n.caller_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR "
+  "n.caller_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR "
+  "n.callee_class CONTAINS '__graphite_fixture64_absent_fixture-android-00__' OR "
+  "n.callee_name CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\n"
+  "RETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\n"
+  "LIMIT 200",
+  ['n.caller_class', 'n.caller_name', 'n.callee_class', 'n.callee_name'],
+  200,
+  None),)
 
 def need(condition, message):
     if not condition:

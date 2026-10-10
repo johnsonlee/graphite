@@ -223,6 +223,15 @@ tests exercise all five as directories and packed containers; set
 `GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES=1` to require every fixture. These fixtures establish correctness, not performance. Performance comparisons must
 use the repository's representative real multi-graph workloads.
 
+The JVM concurrent pressure catalog contains 35 requests, including all eight full
+node/property projections and a raw four-field `CONTAINS` zero-hit query across
+64 graphs. The latter returns four named caller/callee properties, not `properties(n)`;
+wrapped `DISTINCT` queries use a different execution path and do not substitute
+for it. Its expected rows are derived from the actual saved graphs rather than
+assuming an empty response. Acceptance requires every request's independently
+verified complete response and concurrent p50/p95, CPU and RSS evidence; a
+34-request audit or a cold diagnostic replay is insufficient.
+
 `InheritedFieldPersistenceTest` checks both graph builders through save, reload and
 resave. Set `GRAPHITE_INHERITED_TYPES_FIXTURE` to a fresh output directory to retain
 its four graphs. The native `inherited_fields_interop` integration test checks all

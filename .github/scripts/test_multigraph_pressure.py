@@ -889,13 +889,13 @@ class JvmLegalDispatchTests(unittest.TestCase):
                 oracle['digest']=jvm.digest(oracle['value'])
             with self.subTest(mutation=mutation),self.assertRaises(ValueError):p.compile_response_validator([case],'B')
 
-    def test_all34_known_definitions_dispatch_but_do_not_relax_plan_authority(self):
+    def test_all35_known_definitions_dispatch_but_do_not_relax_plan_authority(self):
         import jvm_pressure_oracles as jvm
         cases=[]; bodies={}
         for source in jvm.cases():
             case,body=self.fixture(source['id']); cases.append(case); bodies[case['id']]=body
         validator=p.compile_response_validator(cases,'B')
-        self.assertEqual(34,len(cases))
+        self.assertEqual(35,len(cases))
         for case in cases:
             body=bodies[case['id']]
             self.assertEqual(body['rowCount'],validator(p.canonical(body),case)['rows'])
