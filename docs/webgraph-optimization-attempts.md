@@ -15941,3 +15941,212 @@ Decision: retain the small composition change with the complete public audit
 contract. Keep it local while the current CI run is live. Actual end-to-end CI
 wall time, CPU/RSS and the180-minute budget remain unmeasured for this revision;
 construction/loading/query conclusions from earlier attempts are unchanged.
+
+### Attempt202 — transfer the final matched row without copying (2026-10-10)
+
+**Hypothesis and source.** A terminal `Matcher::match_from` callback already owns
+its row, but borrowed it into the final recursive call, which cloned the complete
+`Row` before emitting it. The isolated candidate based on
+`c195ea41b7a2cdbeca217c133dea5f7442ea9dce`, at
+`/tmp/graphite-terminal-row-source`, moves that row directly to `emit` only when
+this is the last pattern. Empty-pattern entry behavior, other row copies,
+candidate order, relationship state, parent state truncation, error propagation,
+work polling and cancellation remain unchanged. The bypassed terminal call had
+no work or cancellation check. This attempt does not change predicate evaluation,
+query routing, stored types, rendering, or caching.
+
+The hypothesis follows one actual parent-only profile:
+`/tmp/graphite-parent-fullprojection-profile-1/sample.txt`
+(SHA256 `dba9d43a5fe3cb23aa67504bfccbdb7259d2f4f9f5efea675098147d377e1248`).
+Its lines1821–1845 show `match_from` callback → `IndexMap` clone → bucket/string
+clone → allocation/memory-copy ancestry. These are sampled stacks, not CPU shares
+or proof of feature-added cost. No inclusive recursive counts are added together.
+The existing full-projection workload has64 resident real graphs and two result
+targets, `fixture-kotlin-compiler-15` and `fixture-tika-10`, at concurrency4.
+**The two Method queries physically enumerate Method candidates across all64
+sources**, then apply predicates selecting those two result graphs. The other
+six cases' physical access scope is not inferred from that observation. The one
+profile's latency/CPU/RSS are contaminated by sampling and cannot select or accept
+this candidate. At this initial correctness checkpoint, no new profile or
+performance comparison had been run for202; the completed comparison follows below.
+
+**Correctness and failures retained.** Five new matcher behavior tests check the
+empty-pattern ordered seed and consumer mutation, bound plus unbound multi-pattern
+Method rows with exact source/index/order/provenance and early stop, exact consumer
+error propagation and candidate count, and non-short-circuit WHERE errors plus
+cancellation. The fifth test independently selects a persisted node with two
+outgoing edges, then checks two comma-separated patterns sharing that start:
+fixed and variable-length1..1 named paths must produce exactly the two different-edge
+permutations. It asserts full nodes/edges/provenance and restores the same edge
+tracking state after early stop before a complete fresh enumeration. No invented
+node IDs or matcher-derived expected results are used. These tests do not assert
+allocation counts or mirror the new branch. The four fixture-dependent tests
+retain the mandatory-fixture failure rule. CI now explicitly runs the entire
+`matching::matching_tests` group inside the existing declared-type interoperability
+step, where `GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES=1` and fresh Java fixtures exist.
+That step also binds `GRAPHITE_INDEX_FIXTURE` to the already produced fixture graph
+for the stateful test. The initial fixture-free unit-test invocation alone is not
+credited as that coverage.
+
+Validation reuses the existing owned-process runner, cargo jobs2 and mandatory
+GTY01–05, inherited-field and persisted-index correctness fixtures. No JVM or graph
+producer was launched. Before/after inventories match all190 small fixture files.
+The first launch failed before cargo because the copied helper closure lacked
+`environment.py`; its original stderr and plan are retained. After copying that
+unchanged existing helper, all4 new tests and **456 workspace tests** passed with
+zero failures or ignored tests:41 CLI,171 Cypher,1 inherited-field integration,
+118 Explore,1 Explore integration and124 Storage. Strict Clippy then rejected one
+new test assertion's unnecessary `clone`. Its failure remains at
+`/tmp/graphite-attempt202-validation-1/clippy/clippy.log`.
+
+Replacing only that assertion with `std::slice::from_ref` preserves its comparison.
+All production source files stayed byte-identical to the passed workspace run.
+The entire affected Cypher module and integration test were rerun: **172 passed**,
+zero failed or ignored, including all4 new tests and mandatory inherited-field
+interoperability; strict Clippy and format checks passed. Independent review
+then requested the stateful path test described above. After that addition, the
+final frozen source completed a single full **457-test workspace** receipt
+(41 CLI,172 Cypher,1 inherited integration,118 Explore,1 Explore integration,
+124 Storage), zero failures or ignored tests, followed by strict
+workspace/all-targets/all-features Clippy with `-D warnings` and
+`cargo fmt --all -- --check`. All five new tests actually ran successfully.
+Workflow YAML parsing, the exact interoperability step's `bash -n`, and
+`git diff --check` also passed. All owned process groups were empty after
+completion; all190 fixture file hashes still matched. Raw outputs and
+before/after bindings remain in `/tmp/graphite-attempt202-validation-1`, `...-2`
+and `...-3`; final evidence review is
+`/tmp/graphite-attempt202-validation-3/review.json` (SHA256
+`2f1264be155ec0ba19fa2c20e74b19dc54976f90110fb2b6b8659e3e2b3d4f1c`).
+The final raw three-phase record SHA256 is
+`6f783d6cbec54b29172b96fcefb3c006f306a95b2e1e5d6edf62373e1278cd18`;
+it does not substitute a partially failed earlier receipt.
+
+**Initial conclusions before measurement.** Correctness and static checks pass in the
+bounded scope above. Candidate query p50/p95, end-to-end time, total CPU and peak
+RSS are **unmeasured**. No construction or loading improvement is claimed.
+Retain202 as an isolated candidate for independent review and a separately
+authorized representative multi-graph comparison against the current parent and
+accepted4f; it is not integrated or accepted as a performance improvement.201's
+build/save candidate remains deferred. This commit contains only this one query
+hypothesis, its behavioral checks, required CI invocation and this record.
+
+### Attempt202 — fixed real64 full-projection follow-up (2026-10-10)
+
+The original driver completed with exit0 after all six cells and the original
+cohort audit. Root confirmed1104 complete bodies,960 measured samples and cleanup,
+and released the exclusive local heavy slot. Root independently recomputed all
+per-case sample quantiles. This supplement reads the existing small records;
+it does not run another auditor, workload or graph scan.
+
+**Identity and metadata correction.** The measured candidate is isolated commit
+`cc6b7971b877269af0e79d206b0aba8e1f2ec23a`, parent
+`c195ea41b7a2cdbeca217c133dea5f7442ea9dce`. The actual attribution runtime A is
+Attempt194 `582f632662f0568204400fa77188d3549afffd91`; C is accepted pre-feature
+`4f2ccf33b969e684972e56b5e810034e6e67c1b3`. Runtime revisions are distinct from
+producer revisions: A/B consume the same frozen `acd11a6989c9d501ffac3803c41e629466c8883e`
+GTY05 graph artifacts and the same independent B expected bodies. B executable
+SHA256 is `364b06b456cfdd510b861b4c0493f0b929bc9c03e7c0ce81e4986e769fedd32d`.
+
+The raw correctness plan retains the erroneous `requiredNewTests: 9`; actual
+source and logs contain **five** new tests, with452 retained tests, totaling457.
+Its raw `base` is the intermediate isolated checkout
+`6e6c5c1287fd976de84b789e1015ca2822c3461d`, not the experiment's parent.
+The final amended commit is cc6b7971, based on c195ea41. Exact tested source
+maps bind the final bytes; the original receipt is not rewritten or promoted.
+The pinned correction is `/tmp/graphite-attempt202-metadata-errata-1/errata.json`,
+SHA256 `1467ed6e6a2d136dd51a804407ef3cc6d07d029c33e1cadca565573cfbedc7d6`.
+The independent457-test review and release source binding separately retain
+these distinctions. Earlier helper/Clippy failures remain recorded.
+
+**Workload and statistics.** The original CABBAC sequence is01-C,02-A,03-B,
+04-B,05-A,06-C, with64 resident graphs and exactly two result-bearing target
+graphs per request: Kotlin compiler15 and Tika10. Four workers continuously
+consume the eight full-projection cases, with one oracle, two warmup and twenty
+measured requests per case/cell. That is960 measured requests and1104 complete
+bodies including oracle/warmup phases. Each response contains the entire selected
+cohort: Field1959, Parameter1921, Return2028 or Method1974 rows, including generic
+structures and metadata, through `/api/cypher?limit=5000`. No response truncation,
+cohort reduction or generic-nullness substitution is used. Method cases physically
+enumerate candidates from all64 sources before selecting the two result graphs.
+
+Latency runs from request start through complete body consumption and independent
+validation. Each cell's twenty measured observations use nearest-rank p50/p95,
+sorted indexes9/18. Fixed forward pairs are02-A→03-B and01-C→03-B; reverse pairs
+are05-A→04-B and06-C→04-B. No pooling, sample selection or rerun was used. New
+MAPPED servers receive oracle/warmup traffic first; OS cache state is uncontrolled.
+This is neither a cold-cache nor saturation result.
+
+All values below are absolute milliseconds, baseline→candidate, p50 / p95.
+
+| Case | Parent forward p50 / p95 ms | Parent reverse p50 / p95 ms | Accepted4f forward p50 / p95 ms | Accepted4f reverse p50 / p95 ms |
+|---|---:|---:|---:|---:|
+| Field full | 38.341→38.248 / 41.860→43.960 | 39.312→39.531 / 47.910→45.634 | 21.168→38.248 / 25.556→43.960 | 26.172→39.531 / 27.638→45.634 |
+| Field properties | 28.815→28.733 / 38.520→42.887 | 34.842→29.884 / 44.699→43.769 | 20.238→28.733 / 24.018→42.887 | 25.907→29.884 / 27.008→43.769 |
+| Parameter full | 34.050→31.652 / 46.663→41.914 | 33.957→36.031 / 42.510→45.692 | 20.180→31.652 / 24.494→41.914 | 25.710→36.031 / 28.176→45.692 |
+| Parameter properties | 37.733→37.486 / 46.286→44.259 | 39.607→37.398 / 45.996→49.513 | 20.140→37.486 / 24.649→44.259 | 25.118→37.398 / 28.985→49.513 |
+| Return full | 31.787→31.060 / 60.111→34.562 | 31.733→31.824 / 66.570→62.135 | 19.813→31.060 / 24.977→34.562 | 26.407→31.824 / 35.780→62.135 |
+| Return properties | 27.604→27.602 / 59.436→52.837 | 31.130→27.458 / 63.156→55.113 | 19.268→27.602 / 24.043→52.837 | 21.967→27.458 / 33.181→55.113 |
+| Method full | 723.939→679.630 / 737.651→714.122 | 724.724→676.148 / 758.538→698.268 | 701.359→679.630 / 709.717→714.122 | 719.554→676.148 / 729.431→698.268 |
+| Method properties | 734.473→694.851 / 749.938→727.245 | 745.431→689.134 / 752.815→715.317 | 701.983→694.851 / 710.189→727.245 | 723.014→689.134 / 735.124→715.317 |
+
+Resource comparisons cover the measured pressure interval, not construction or
+readiness. CPU is user plus system; the interval's lower/upper accounting bounds
+are retained below. Peak RSS bounds coincide in these records; MB is decimal.
+Entire-process lifecycle time/CPU is separately retained in the raw report and
+is not substituted for the pressure boundary or a zero-query loading result.
+
+| Comparison | Pressure wall ms | CPU seconds | CPU bounds seconds, baseline→candidate | Peak RSS MB |
+|---|---:|---:|---:|---:|
+| Parent forward | 8475.423→8055.819 (-419.605) | 29.44→27.65 (-1.79) | [29.38, 29.46]→[27.60, 27.67] | 6726.631→6723.584 (-3.047) |
+| Parent reverse | 8648.498→8076.420 (-572.078) | 29.34→27.65 (-1.69) | [29.29, 29.36]→[27.60, 27.67] | 6726.877→6721.946 (-4.932) |
+| Accepted4f forward | 7730.257→8055.819 (+325.561) | 28.87→27.65 (-1.22) | [28.82, 28.89]→[27.60, 27.67] | 6422.135→6723.584 (+301.449) |
+| Accepted4f reverse | 8071.410→8076.420 (+5.010) | 29.26→27.65 (-1.61) | [29.21, 29.28]→[27.60, 27.67] | 6426.919→6721.946 (+295.027) |
+
+**Separate conclusions.** Against the parent, Method full p50 improves by
+44.309/48.576ms and p95 by23.529/60.269ms; Method properties p50 improves by
+39.621/56.297ms and p95 by22.692/37.498ms. Pressure wall falls419.605/572.078ms,
+CPU falls1.79/1.69s, and RSS falls3.047/4.932MB. Those are observed useful increments,
+not statistical-significance or universal-speedup claims. Other cases are mixed:
+Field p95 worsens forward; Parameter full worsens in reverse; Parameter properties
+p95 also worsens in reverse. Return p95 improves in both directions, with mixed p50.
+
+Against accepted4f, every Field/Parameter/Return p50 and p95 is still higher in
+both directions. Both Method p50s improve, but Method p95 is mixed: full
+709.717→714.122ms forward and729.431→698.268ms reverse; properties
+710.189→727.245ms forward and735.124→715.317ms reverse. Thus the server latency
+constraint is not restored. Pressure wall is325.561/5.010ms higher. CPU is lower
+in both directions even using conservative interval bounds; RSS is higher by
+301.449/295.027MB, or4.694%/4.590%, individually within the5% resource limit.
+These resource results cannot compensate for unresolved query latency.
+
+Correctness and stability: all1104 complete bodies passed the six per-cell audits
+and original cohort audit; the original driver exited0, with no errors or unissued
+cells, and owned process cleanup completed. The protocol retains its explicit
+incomplete C/A/B core/topology/index semantic authority; all acceptance flags
+remainfalse. Two fixed paired repetitions
+do not establish tight p95 uncertainty, a quiet host or saturation. This diagnostic
+does not replace complete Native/JVM CI acceptance. Construction and zero-query
+loading were not measured; the scoped accepted loading-time/CPU tradeoff is unchanged.
+
+**Decision.** Retain Attempt202 for its consistent Method latency, pressure CPU/wall
+and small RSS benefits and carry the increment into continued cumulative validation.
+The reviewed change is integrated into the local cumulative branch; the pinned
+isolated source and all original evidence remain immutable. This retention is not overall acceptance:
+remaining Field/Parameter/Return latency and mixed Method p95 versus accepted4f
+stay open. No performance threshold or scoped loading exception is changed.
+
+Evidence: `/tmp/graphite-attempt202-pressure-query-run-1`;
+plan `/tmp/graphite-attempt202-pressure-preparation-1`, SHA256
+`30150d0430b2d1bc5b2082e2d0e60b77c3c5bab870a79a446e09a0fc3f4661a6`.
+
+Observed diagnostic-report.json SHA256: `94dadc89577b40718b05fbeb99c6dacc874ab6cb7a7f63d18928414ac272a7e4`.
+
+Observed execution.json SHA256: `f83f40c910ff8f1d2790898a861586df9b767b335000c9a020340d068afea787`.
+
+Root independently recomputed all960 pressure sample quantiles and the CPU/RSS
+bounds from raw journals, resource samples and `/usr/bin/time` output, checked
+report bindings and fresh process-group absence. Review:
+`/tmp/graphite-attempt202-pressure-query-run-1/root-independent-review.json`,
+SHA256 `1ad1a62ff70f035c0af9845b6ae3adfa0778a77012880f51b686027e01e5dc47`.
+Only this experiment history changed after the measured cc6b7971 commit; all
+production, test and workflow files remain identical to the validated candidate.

@@ -282,6 +282,7 @@ jobs:
 
     - name: Declared types JVM-to-native interoperability
       env:
+        GRAPHITE_INDEX_FIXTURE: ${{ runner.temp }}/fixture-graph
         GRAPHITE_TYPES_FIXTURE: ${{ runner.temp }}/declared-types-graph
         GRAPHITE_TYPES_V1_FIXTURE: ${{ runner.temp }}/declared-types-v1-graph
         GRAPHITE_TYPES_V2_FIXTURE: ${{ runner.temp }}/declared-types-v2-graph
@@ -310,6 +311,7 @@ jobs:
           done
         done
         cargo test --release --locked -p graphite-cypher --test inherited_fields_interop -- --nocapture
+        cargo test --release --locked -p graphite-cypher matching::matching_tests -- --nocapture
         cargo test --release --locked -p graphite-cypher declared_types_java_fixture_query_roundtrip_and_graph_local_identity -- --nocapture
         cargo test --release --locked -p graphite-cypher declaration_key_summary_and_unsorted_fallback_preserve_filtered_rows -- --nocapture
         cargo test --release --locked -p graphite-cypher java_v1_v2_and_packed_graphs_preserve_all_properties_and_mixed_graph_queries -- --nocapture
