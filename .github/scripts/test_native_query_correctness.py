@@ -1,8 +1,11 @@
 """Full catalog execution and raw auditing with no child process or network."""
 import copy
+from dataclasses import replace
 import json
 from pathlib import Path
 import struct
+import signal
+import tempfile
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -181,6 +184,137 @@ class QueryCorrectnessTests(unittest.TestCase):
         self.fixture.write(self.out / 'record.json', record)
         with self.assertRaisesRegex(ValueError, 'predetermined full query catalog'):
             raw_audit.audit(self.out)
+
+
+class JvmSharedLifecycleTests(unittest.TestCase):
+    """Explicitly modeled JVM authority/process; real shared response validation."""
+    def setUp(self):
+        import jvm_pressure_oracles as jvm
+        self.jvm = jvm
+        temporary = tempfile.TemporaryDirectory(); self.addCleanup(temporary.cleanup)
+        self.out = Path(temporary.name).resolve()
+        self.cases = jvm.cases()
+        self.bodies = {}
+        for case in self.cases:
+            # A small complete legal universe, not a claim about any real graph.
+            values = {key: None for key in case['columns']}
+            if 'id' in values: values['id'] = 17
+            if 'graphId' in values: values['graphId'] = case['targetGraphIds'][0]
+            row = jvm.projected_row(values, [case['targetGraphIds'][0]])
+            universe = {'schema': 'graphite.jvm-legal-row-universe.v1', 'policy': jvm.POLICY,
+                        'caseId': case['id'], **{key: case[key] for key in (
+                            'requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
+                            'targetGraphIds', 'columns', 'effectiveLimit')},
+                        'totalMatches': 1, 'allGraphScansComplete': True,
+                        'exactEncounterOrderClaim': False, 'rows': [{'value': row, 'multiplicity': 1}]}
+            case['oracleByArm'] = {'B': {'kind': 'jvm-complete-legal-limit-multiset-v1',
+                                        'value': universe, 'digest': jvm.digest(universe), 'rows': 1}}
+            self.bodies[case['id']] = common.canonical({
+                'mode': 'cross-graph', 'graphs': case['requestedGraphIds'], 'graphCount': 64,
+                'columns': case['columns'], 'rows': [row], 'rowCount': 1, 'limit': case['effectiveLimit']})
+        self.closure = MagicMock()
+        self.contract = runner._ExecutionContract('jvm', 'graphite.jvm-query-correctness-plan.v1',
+            runner.JVM_SCHEMA, runner.JVM_PASS, tuple(c['id'] for c in self.cases), self.closure)
+        graphs = [{'id': gid, 'path': str(self.out/gid)} for gid in jvm.FIXTURE_GRAPH_IDS]
+        ready_graphs = [dict(g, loadMode='MAPPED', nodes=1, edges=0, methods=0, callSites=0) for g in graphs]
+        self.plan = {'schema': self.contract.plan_schema, 'revision': 'b'*40, 'role': 'candidate',
+                     'cases': self.cases, 'graphs': graphs, 'expectationVariant': 'B',
+                     'argv': ['modeled-java-server'], 'port': 22840, 'data': str(self.out/'data'),
+                     'performanceAcceptance': False,
+                     'limits': {'requestSeconds': 240, 'bodyBytes': 64*1024*1024, 'readinessSeconds': 900},
+                     'readiness': {'expected': {'loadMode': 'MAPPED', 'count': 64,
+                         'graphs': sorted(ready_graphs, key=lambda g: g['id']),
+                         'totals': {'nodes': 64, 'edges': 0, 'methods': 0, 'callSites': 0}}}}
+
+    def run_queries(self, failure=None, cleanup_failure=False, closure_failure=False):
+        bodies = self.bodies; fetched = []; closed = []
+        class Process:
+            pid = 12345
+            def poll(self): return None
+        class Transport:
+            def __init__(self, port, limits): pass
+            def fetch(self, case, path, record):
+                fetched.append(case['id'])
+                path.write_bytes(b'{}' if failure == 'body' else bodies[case['id']])
+                if failure == 'signal': signal.getsignal(signal.SIGTERM)(signal.SIGTERM, None)
+                record.update(httpStatus=200, completeBody=True, deadlineExpired=False)
+            def close_all(self): closed.append(True)
+        value = copy.deepcopy(self.plan['readiness']['expected']); value['data'] = self.plan['data']
+        for graph in value['graphs']: graph['loadedAt'] = '2026-10-10T00:00:00Z'
+        if closure_failure: self.closure.side_effect = [None, ValueError('source changed during server lifetime')]
+        previous = {sig: signal.getsignal(sig) for sig in (signal.SIGINT, signal.SIGTERM)}
+        with patch.object(runner.subprocess, 'Popen', return_value=Process()) as launched, \
+             patch.object(runner.socket, 'socket', return_value=MagicMock()), \
+             patch.object(common, 'HTTPTransport', Transport), \
+             patch.object(common, 'readiness', return_value=common.canonical(value)), \
+             patch.object(common, 'stop_owned', return_value={'group': 12345, 'after': [12345] if cleanup_failure else [],
+                                                            'errors': [], 'exit': -15}) as stopped:
+            result = runner._execute_validated(self.plan, self.out, self.contract)
+        self.assertEqual(1, launched.call_count); self.assertEqual(1, stopped.call_count)
+        self.assertEqual([True], closed); self.assertEqual(2, self.closure.call_count)
+        self.assertEqual(previous, {sig: signal.getsignal(sig) for sig in previous})
+        return result, fetched
+
+    def test_exact26_complete_bodies_and_scope_use_shared_lifecycle(self):
+        result, fetched = self.run_queries()
+        self.assertEqual(runner.JVM_PASS, result['status'], result['errors'])
+        self.assertEqual(runner.JVM_SCHEMA, result['schema'])
+        self.assertEqual(self.contract.expected_case_ids, tuple(fetched))
+        self.assertEqual(26, len(result['responses']))
+        for response in result['responses']:
+            self.assertEqual(self.bodies[response['id']], Path(response['body']['path']).read_bytes())
+            self.assertEqual(1, response['validation']['rows'])
+        self.assertEqual(2, len(next(r for r in result['responses'] if r['id']=='routing-pair-dense')['targetGraphIds']))
+        self.assertEqual(26, len((self.out/'responses.jsonl').read_text().splitlines()))
+        self.assertFalse(result['performanceAcceptance']); self.assertFalse(result['completeSemanticEquivalence'])
+
+    def test_wrong_body_is_retained_and_remaining25_are_not_issued(self):
+        result, fetched = self.run_queries(failure='body')
+        self.assertEqual('FAIL', result['status']); self.assertEqual([self.cases[0]['id']], fetched)
+        self.assertEqual(b'{}', Path(result['responses'][0]['body']['path']).read_bytes())
+        self.assertEqual('FAIL', result['responses'][0]['status'])
+        self.assertEqual(1, len((self.out/'responses.jsonl').read_text().splitlines()))
+
+    def test_cleanup_failure_cannot_pass_after_complete26(self):
+        result, fetched = self.run_queries(cleanup_failure=True)
+        self.assertEqual(26, len(fetched)); self.assertEqual('FAIL', result['status'])
+        self.assertTrue(any('owned server cleanup' in e for e in result['errors']))
+
+    def test_final_closure_failure_cannot_pass_after_complete26(self):
+        result, fetched = self.run_queries(closure_failure=True)
+        self.assertEqual(26, len(fetched)); self.assertEqual('FAIL', result['status'])
+        self.assertEqual('FAIL', result['finalIdentity'])
+
+    def test_signal_retains_failed_response_and_restores_handlers_after_cleanup(self):
+        result, fetched = self.run_queries(failure='signal')
+        self.assertEqual('FAIL', result['status']); self.assertEqual(1, len(fetched))
+        self.assertIn('InterruptedError', result['responses'][0]['error'])
+        self.assertEqual(self.bodies[fetched[0]], Path(result['responses'][0]['body']['path']).read_bytes())
+
+    def test_contract_rejects_missing_duplicate_reordered_ids_and_unknown_engine(self):
+        for ids in (self.contract.expected_case_ids[:-1], self.contract.expected_case_ids[::-1],
+                    (self.contract.expected_case_ids[0],)*26):
+            with self.subTest(ids=ids), self.assertRaisesRegex(ValueError, 'fixed engine'):
+                runner._execute_validated(self.plan, self.out, replace(self.contract, expected_case_ids=ids))
+        for changes in ({'engine': 'other'}, {'record_schema': runner.SCHEMA}, {'pass_status': runner.PASS}):
+            with self.subTest(changes=changes), self.assertRaises(ValueError):
+                runner._execute_validated(self.plan, self.out, replace(self.contract, **changes))
+        self.assertEqual([], list(self.out.iterdir()))
+        self.closure.assert_not_called()
+
+    def test_native_entry_and_jvm_contract_reject_wrong_plan_cases_or_oracles_before_launch(self):
+        with self.assertRaisesRegex(ValueError, 'validated plan engine/scope'):
+            runner.execute(self.plan, self.out)
+        original = copy.deepcopy(self.plan)
+        changes = [lambda p: p['cases'].pop(),
+                   lambda p: p['cases'][0]['request']['body'].update(query='RETURN 1'),
+                   lambda p: p['cases'][0]['oracleByArm']['B'].update(kind='native-full-json-sha256-v1'),
+                   lambda p: p['limits'].update(bodyBytes=1)]
+        for change in changes:
+            plan = copy.deepcopy(original); change(plan)
+            with self.subTest(change=change), self.assertRaises(ValueError):
+                runner._execute_validated(plan, self.out, self.contract)
+        self.assertEqual([], list(self.out.iterdir()))
 
 
 if __name__ == '__main__':

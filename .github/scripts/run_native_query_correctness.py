@@ -5,6 +5,7 @@ One full response per case is a correctness check, not a latency distribution or
 load test. Keep this stage separate from the continuous pressure measurement.
 """
 import argparse
+from dataclasses import dataclass
 import os
 from pathlib import Path
 import signal
@@ -21,6 +22,8 @@ from prepare_native_pressure_plan import preparation_control_pins
 
 SCHEMA = 'graphite.native-query-correctness.v1'
 PASS = 'PASS_ALL39_NATIVE_RESPONSES_FRESH_PRESSURE_PENDING'
+JVM_SCHEMA = 'graphite.jvm-query-correctness.v1'
+JVM_PASS = 'PASS_ALL26_JVM_RESPONSES_FRESH_PRESSURE_PENDING'
 require = common.require
 
 
@@ -112,12 +115,71 @@ def prepare(audit_path, inputs_path, revision, role, output, port):
     return plan
 
 
+
+@dataclass(frozen=True)
+class _ExecutionContract:
+    """Trusted preparation supplies authority; this contract fixes execution scope.
+
+    A contract is not an oracle-authority receipt. A future JVM wrapper must
+    independently bind its own raw derivation and source/runtime applicability
+    before invoking the shared lifecycle; no JVM public entry point exists here.
+    """
+    engine: str
+    plan_schema: str
+    record_schema: str
+    pass_status: str
+    expected_case_ids: tuple
+    verify_closure: object
+
+
+def _check_execution_contract(plan, contract):
+    if contract.engine == 'native':
+        catalog = common.read(portable.CATALOG)['engines']['native']
+        definitions = catalog['cases']; graph_ids = catalog['graphIds']
+        expected = ('graphite.native-query-correctness-plan.v1', SCHEMA, PASS, 39)
+        kinds = {'native-full-json-sha256-v1', 'native-complete-legal-limit-multiset-v1'}
+    elif contract.engine == 'jvm':
+        import jvm_pressure_oracles as jvm
+        graph_ids = [graph['id'] for graph in plan['graphs']]
+        definitions = jvm.cases(graph_ids)
+        expected = ('graphite.jvm-query-correctness-plan.v1', JVM_SCHEMA, JVM_PASS, 26)
+        kinds = {'jvm-complete-legal-limit-multiset-v1'}
+    else:
+        raise ValueError('known correctness execution engine required')
+    require((contract.plan_schema, contract.record_schema, contract.pass_status,
+             len(contract.expected_case_ids)) == expected and
+            contract.expected_case_ids == tuple(case['id'] for case in definitions),
+            'fixed engine schema/status and exact complete case IDs')
+    require(callable(contract.verify_closure), 'explicit trusted closure verifier')
+    require(plan['schema'] == contract.plan_schema and
+            [graph['id'] for graph in plan['graphs']] == graph_ids and
+            plan['performanceAcceptance'] is False, 'validated plan engine/scope')
+    require(plan['limits'] == {'requestSeconds': 240, 'bodyBytes': 64 * 1024 * 1024,
+                               'readinessSeconds': 900}, 'unchanged correctness resource limits')
+    require(tuple(case['id'] for case in plan['cases']) == contract.expected_case_ids,
+            'exact complete ordered correctness cases')
+    for case, definition in zip(plan['cases'], definitions):
+        require(all(common.typed(case[key]) == common.typed(definition[key])
+                    for key in ('request', 'targetGraphIds')), 'exact correctness request/scope')
+        require(case['oracleByArm'][plan['expectationVariant']]['kind'] in kinds,
+                'same-engine correctness oracle required')
+
+
 def execute(plan, output):
+    """The public entry remains Native39 only, with its existing closure check."""
+    ids = tuple(case['id'] for case in common.read(portable.CATALOG)['engines']['native']['cases'])
+    contract = _ExecutionContract('native', 'graphite.native-query-correctness-plan.v1',
+                                  SCHEMA, PASS, ids, verify_closure)
+    return _execute_validated(plan, output, contract)
+
+
+def _execute_validated(plan, output, contract):
+    _check_execution_contract(plan, contract)
     output = Path(output).resolve()
     require(output.is_dir() and not list(output.iterdir()), 'fresh empty correctness output')
     require(Path(plan['data']) == output / 'data', 'owned data path')
     common.save(output / 'plan.json', plan)
-    record = {'schema': SCHEMA, 'status': 'RUNNING', 'revision': plan['revision'], 'role': plan['role'],
+    record = {'schema': contract.record_schema, 'status': 'RUNNING', 'revision': plan['revision'], 'role': plan['role'],
               'plan': artifacts.ref(output / 'plan.json'), 'argv': plan['argv'], 'responses': [], 'errors': [],
               'performanceAcceptance': False, 'completeSemanticEquivalence': False}
     proc = transport = None
@@ -127,7 +189,7 @@ def execute(plan, output):
     try:
         for sig in (signal.SIGINT, signal.SIGTERM):
             handlers[sig] = signal.signal(sig, interrupted)
-        verify_closure(plan)
+        contract.verify_closure(plan)
         validator = common.compile_response_validator(plan['cases'], plan['expectationVariant'])
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', plan['port']))
@@ -179,17 +241,15 @@ def execute(plan, output):
         except BaseException as error:
             record['errors'].append('cleanup: ' + repr(error))
         try:
-            verify_closure(plan)
+            contract.verify_closure(plan)
             require(common.sha(output / 'plan.json') == record['plan']['sha256'], 'execution plan changed')
             record['finalIdentity'] = 'PASS'
         except BaseException as error:
             record['finalIdentity'] = 'FAIL'
             record['errors'].append('final identity: ' + repr(error))
-        expected_ids = [case['id'] for case in plan['cases']]
-        complete = (len(expected_ids) == 39 and len(set(expected_ids)) == 39 and
-                    [row['id'] for row in record['responses']] == expected_ids and
+        complete = (tuple(row['id'] for row in record['responses']) == contract.expected_case_ids and
                     all(row['status'] == 'PASS' for row in record['responses']))
-        record['status'] = PASS if complete and not record['errors'] else 'FAIL'
+        record['status'] = contract.pass_status if complete and not record['errors'] else 'FAIL'
         common.save(output / 'record.json', record)
         for sig, handler in handlers.items():
             signal.signal(sig, handler)
