@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import struct
 import sys
 sys.dont_write_bytecode=True
 import audit_native_pressure_artifacts as artifacts
@@ -79,7 +80,7 @@ def field_authority(graph_id,graphs,roots,fixtures,refs,marker_ref,pins):
             'jar':selected[0],'arms':arms,'platformMarker':marker_ref}
 
 
-def bind(reference,actual,output,raw_locals=False):
+def bind(reference,actual,output,raw_locals=False,raw_edges=False):
     roots={'C':Path(reference).resolve(),'B':Path(actual).resolve()};out=Path(output).resolve()
     exports={};audits={};fixtures={};fixture_refs={};pins={};upstream={};source_inputs=[];toolchains={}
     controls=preparation_control_pins()
@@ -134,10 +135,11 @@ def bind(reference,actual,output,raw_locals=False):
         'fixtureManifests':fixture_refs,'upstream':upstream,'sourceRule':bound['rule'],'graphs':graphs,'pins':pins,
         'python':python,'java':marker_plan['java'],'javac':marker_plan['javac'],'writerJar':marker_plan['writerJar'],
         'maxOwnedPhases':129,'stopAtFirstFailure':True,**{k:False for k in FALSE_CLAIMS}}
+    if raw_edges:result['rawEdgeExports']=True
     return raw_local_export.configure(result,fixtures,roots,toolchains) if raw_locals else result
 
 
-def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'],'rawLocalExports' in plan)
+def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'],'rawLocalExports' in plan,plan.get('rawEdgeExports',False))
 
 
 def commands(plan):
@@ -151,7 +153,8 @@ def commands(plan):
               str(out/'plan.json'),common.sha(out/'plan.json'),row['id']],3600
         yield row['id']+'-topology',[plan['java'],'-Xmx4g','-XX:ActiveProcessorCount=4','-cp',
               str(classes)+os.pathsep+plan['writerJar'],'VerifyTopology',row['B'],row['C'],
-              str(proof/'core/field-bijection.tsv'),str(proof/'topology.json'),str(PACKAGE)],1800
+              str(proof/'core/field-bijection.tsv'),str(proof/'topology.json'),str(PACKAGE),
+              *([str(proof/'actual-edges.bin'),str(proof/'reference-edges.bin')] if plan.get('rawEdgeExports') else [])],1800
 
 
 def compiled(plan):
@@ -160,6 +163,40 @@ def compiled(plan):
     if 'rawLocalExports' in plan:expected.update(str(root/('raw-'+arm)/'ExportRawLocals.class') for arm in ('C','B'))
     require(set(value)==expected,'exact topology/raw Local helper closure')
     return value
+
+
+EDGE_INPUTS=('forward.graph','forward.offsets','forward.properties','graph.labels','graph.labelprefix')
+
+
+def raw_edge_exports(plan,row,top,root):
+    """Bind optional single-pass exports without another BVGraph traversal."""
+    require(plan.get('rawEdgeExports') is True, 'explicit raw edge export mode')
+    exports=top.get('rawEdgeExports')
+    require(type(exports) is dict and set(exports)=={'actual','reference'}, 'both raw edge exports required')
+    fields={'schema','format','graphRoot','sourceInputs','output','nodeSlots','labeledEdges','helperSource','helperClass',
+            'allSequentialOffsetsChecked','allRandomAccessOffsetsChecked','allLabelPrefixOffsetsChecked',
+            'rawNodeIdsPreserved','mappingApplied','fullScanConsumed'}
+    helper_source=artifacts.ref(PACKAGE/'VerifyTopology.java')
+    helper_class=artifacts.ref(Path(plan['output'])/'classes/VerifyTopology.class')
+    require(plan['pins'].get(helper_source['path'])==helper_source['sha256'], 'raw edge helper source pin')
+    for name,arm in (('actual','B'),('reference','C')):
+        value=exports[name];graph=Path(row[arm]);output=root/(name+'-edges.bin')
+        require(type(value) is dict and set(value)==fields and value['schema']=='graphite.raw-labeled-edge-export.v1'
+                and value['format']=='GSE01' and value['graphRoot']==str(graph), 'raw edge export identity')
+        require(value['helperSource']==helper_source and value['helperClass']==helper_class, 'actual compiled raw edge helper')
+        require(all(value[key] is True for key in ('allSequentialOffsetsChecked','allRandomAccessOffsetsChecked',
+                    'allLabelPrefixOffsetsChecked','rawNodeIdsPreserved','fullScanConsumed'))
+                and value['mappingApplied'] is False, 'complete original unremapped edge scope')
+        expected={name:{'path':str(graph/name),'sha256':plan['pins'].get(str(graph/name))} for name in EDGE_INPUTS}
+        require(all(common.valid_digest(ref['sha256']) and top['inputPins'].get(ref['path'])==ref['sha256']
+                    for ref in expected.values()) and value['sourceInputs']==expected, 'five original topology input pins')
+        require(not output.is_symlink() and value['output']==artifacts.ref(output), 'complete raw edge output pin')
+        with output.open('rb') as stream:header=stream.read(16)
+        require(len(header)==16, 'complete GSE01 header')
+        magic,nodes,edges=struct.unpack('>iiq',header)
+        require(magic==0x47534501 and type(value['nodeSlots']) is int and type(value['labeledEdges']) is int
+                and 0<=nodes==value['nodeSlots']==top['nodeSlots'] and 0<=edges==value['labeledEdges']==top['labeledEdges']
+                and output.stat().st_size==16+9*edges, 'GSE01 exact counts and length')
 
 
 def graph_result(plan,row):
@@ -185,6 +222,8 @@ def graph_result(plan,row):
         require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
         require(report['inputs']=={r['path']:r['sha256'] for r in expected['exports'].values()} and
                 all(receipt['inputs'].get(p)==h for p,h in report['inputs'].items()),'actual raw Local export linkage')
+    if plan.get('rawEdgeExports'):raw_edge_exports(plan,row,top,root)
+    else:require('rawEdgeExports' not in top, 'undeclared raw edge export mode')
     return {'id':row['id'],'core':artifacts.ref(root/'record.json'),'topology':artifacts.ref(root/'topology.json'),
             **{k:top[k] for k in COUNTS},'strictEquivalence':False,'files':artifacts.inventory(root)}
 
@@ -261,11 +300,12 @@ def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--reference',type=Path);parser.add_argument('--actual',type=Path)
     parser.add_argument('--raw-local-types',action='store_true',help='Require both actual-writer raw no-fold Local.type inventories')
+    parser.add_argument('--raw-edges',action='store_true',help='Export both original labeled edge streams during the existing topology proof')
     parser.add_argument('--output',type=Path,required=True);parser.add_argument('--audit-only',action='store_true')
     args=parser.parse_args()
     if not args.audit_only:
         require(args.reference and args.actual,'actual producer pair required')
-        if execute(bind(args.reference,args.actual,args.output,args.raw_local_types))['status']!=PASS:return 1
+        if execute(bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges))['status']!=PASS:return 1
     common.save(args.output/'audit.json',audit(args.output));return 0
 
 if __name__=='__main__':sys.exit(main())

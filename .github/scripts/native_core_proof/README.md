@@ -40,9 +40,26 @@ resulting authority closure. Source/fixture/rule/diagnostic mutations fail check
 Java wrapper stored beside source16. Its first four arguments remain actual root,
 reference root, field-bijection.tsv and output JSON. A required fifth argument is
 the absolute package directory containing the pinned Python helpers. The complete
-`topologyProof` algorithm is unchanged. Compile against the audited writer.jar
-when the full runner is implemented; no Java compilation is claimed by the tiny
-Python tests.
+topology validation is unchanged. The existing runner compiles against the
+audited writer.jar; tiny Python tests do not establish Java execution.
+
+`run_native_core_equivalence.py --raw-edges` adds two optional helper arguments:
+`actual-edges.bin` and `reference-edges.bin`, both inside that graph's proof
+directory. The existing iterator/random-offset checks write the original source,
+target and raw label before applying the field bijection or sorting. The GSE01
+stream has a big-endian `int32 0x47534501`, `int32 nodeSlots`, `int64 labeledEdges`
+header, then exactly that many `(int32 source, int32 target, uint8 label)` records.
+SHA-256 is computed while writing; no extra graph traversal or owned phase occurs.
+The old five-argument invocation and plans without `--raw-edges` stay available.
+
+Each `topology.json.rawEdgeExports.actual/reference` receipt binds the five
+original topology input references, exact graph root, helper source/class and
+output hash/counts. `sourceInputs` maps file names to `{path, sha256}` references.
+`graph_result` checks these links and exact header/length; the independent query
+input consumer must still parse every edge and validate the full sequence. A
+partial file is retained on failure but receives no successful export receipt.
+This supplies original persisted edges for JVM DATAFLOW expectation derivation;
+it does not turn native HTTP responses into JVM authority or prove query results.
 
 The original limitations remain. Source Local corrections do not independently
 prove SootUp synthetic-local inference; their receipt keeps
