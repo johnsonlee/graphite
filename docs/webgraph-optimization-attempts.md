@@ -19780,3 +19780,58 @@ Evidence: /tmp/graphite-attempt261-workflow-tests.log,
 /tmp/graphite-attempt261-independent-review.json. CONVENTIONS.md records this
 workflow for later PRs; the fast job retains its existing15-minute work timeout,
 which is not a promised total duration including setup and queues.
+
+Hosted follow-up: run38180272516 on eb8016f8 completes the fast checks in552s
+and the whole draft workflow in564s. All38 expensive jobs are skipped; the
+required aggregate fails only its explicit draft/full-acceptance-not-run step.
+No benchmark artifact or comment is published. Separate Rust38180272513 and
+unit38180272533 workflows both complete successfully. Evidence:
+/tmp/graphite-attempt261-hosted-draft-review/summary.json. This verifies the draft
+dispatch contract and its actual duration, not complete ready-PR runtime.
+
+### Attempt262 — bound cumulative Native64 validation before another full CI (2026-10-12)
+
+No production change. Reuse exact historical hosted91 own-writer graph bytes and
+their completed corrected-core proof; compare accepted4f reader0baf2eb1 with
+cumulative247 reader967a44d5 whose144 Native production inputs match eb8016f8.
+Keep the original39 cases, four concurrent clients, complete body consumption,
+one oracle response, two warmups and20 measured responses per case per cell.
+Requests actually target64 graphs for37 cases and two graphs for the other two.
+Run the frozen six-process CABBAC order on local macOS; A aliases accepted C.
+No current-writer or hosted acceptance authority is inferred from this reuse.
+
+Command: python3 -B /tmp/graphite-native-hosted91-cabbac-prep-1/execute.py execute.
+The1200s work plus60s cleanup budget completes in885.056s, exit0. All5382 bodies
+and six independent cell audits pass, with no unissued cells or surviving owned
+process groups. Initial/final graph and control identities remain checked.
+Independent review recomputes per-case percentiles from every original sample
+and CPU/RSS bounds from resource records; it does not rerun graph/body hashing.
+
+| Accepted baseline to cumulative candidate | Forward | Reverse |
+|---|---:|---:|
+| Pressure wall, ms |79509.642 → 61824.280|78775.250 → 62317.973|
+| Pressure CPU, seconds |458.98 → 354.29|456.35 → 357.26|
+| Pressure peak RSS interval, decimal GB |22.485–22.495 → 25.215–25.237|23.892–23.911 → 22.089–22.120|
+| shape-order-by p95, ms |3158.453 → 2497.113|3161.810 → 2516.367|
+| slow-dynamicMiss p50, ms |418.595 → 508.422|423.611 → 498.558|
+| slow-dynamicMiss p95, ms |461.412 → 536.007|506.125 → 526.049|
+
+CPU passes both directions; RSS fails the5% limit forward and passes reverse.
+Do not select the favorable direction or claim resource recovery. Dynamic-miss
+p95 increases74.595ms and19.924ms; the large ordering gain remains a retained
+positive increment, not complete query acceptance. Preserve all39 case results,
+including small and mixed changes. Correctness passes this historical-input
+diagnostic; construction/loading and current-writer acceptance remain unproven.
+
+Peak concurrency overlaps wide CallSite queries, but that is correlation, not
+causal attribution. A proposed bounded sorting sink is already present in the
+actual measured reader and these two sorting queries already use it. Do not
+repeat that implementation as a new candidate. Continue investigating meaningful
+regressions while shortening the validator feedback path; no full CI is launched.
+
+Evidence: /tmp/graphite-native-hosted91-cabbac-prep-1/{execution.json,
+cohort-complete.json,comparison.json,root-completion-review.json}, all original
+cell requests/responses/resources, and
+/tmp/graphite-native-hosted91-cabbac-independent-summary.{json,md,log}.
+Static sorting-path review:
+/tmp/graphite-native-order-topk-static-feasibility.json.
