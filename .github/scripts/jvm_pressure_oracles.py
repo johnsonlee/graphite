@@ -493,7 +493,64 @@ def decode_key(encoded):
 
 
 def digest(value):
-    return hashlib.sha256(key(value).encode('utf-8')).hexdigest()
+    """Hash key()'s exact UTF-8 bytes without materializing its typed tree."""
+    hashed = hashlib.sha256()
+    buffer = bytearray()
+    capacity = 65536
+
+    def emit(raw):
+        if len(raw) <= capacity:
+            if len(buffer) + len(raw) > capacity:
+                hashed.update(buffer)
+                buffer.clear()
+            buffer.extend(raw)
+            return
+        for offset in range(0, len(raw), capacity):
+            part = raw[offset:offset + capacity]
+            if len(buffer) + len(part) > capacity:
+                hashed.update(buffer)
+                buffer.clear()
+            buffer.extend(part)
+
+    def string(text):
+        emit(b'"')
+        # JSON string escaping is local to each code point. Keep UTF-8 strict:
+        # unpaired surrogate code units fail just as key(value).encode() does.
+        for offset in range(0, len(text), 8192):
+            escaped = json.dumps(text[offset:offset + 8192], ensure_ascii=False,
+                                 separators=(',', ':'), allow_nan=False)
+            emit(escaped[1:-1].encode('utf-8'))
+        emit(b'"')
+
+    def visit(item):
+        if item is None:
+            emit(b'["null"]')
+        elif type(item) in (bool, int):
+            emit(b'["bool",' if type(item) is bool else b'["int",')
+            emit(json.dumps(item, allow_nan=False).encode('utf-8'))
+            emit(b']')
+        elif type(item) is str:
+            emit(b'["str",'); string(item); emit(b']')
+        elif type(item) is float:
+            need(math.isfinite(item), 'nonfinite JVM JSON scalar needs separate serializer authority')
+            emit(b'["float",'); string(item.hex()); emit(b']')
+        elif type(item) is list:
+            emit(b'["array",[')
+            for index, child in enumerate(item):
+                if index: emit(b',')
+                visit(child)
+            emit(b']]')
+        else:
+            need(type(item) is dict and all(type(k) is str for k in item), 'JSON object with string keys')
+            emit(b'["object",[')
+            for index, name in enumerate(sorted(item)):
+                if index: emit(b',')
+                emit(b'['); string(name); emit(b','); visit(item[name]); emit(b']')
+            emit(b']]')
+
+    visit(value)
+    if buffer: hashed.update(buffer)
+    return hashed.hexdigest()
 
 
 def cases(graph_ids=FIXTURE_GRAPH_IDS):

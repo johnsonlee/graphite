@@ -19971,3 +19971,105 @@ preparation-review.json,root-prelaunch-review.json,root-result-review.json,super
 plan.json}, /tmp/graphite-attempt264-integration-tests.log,
 /tmp/graphite-attempt264-workflow-tests.log and
 /tmp/graphite-attempt264-integration-review.json.
+
+### Attempt265 — hash typed JVM universes with a bounded byte buffer (2026-10-12)
+
+Attempt264 stops while preparing the largest1,517,383,837-byte universe at
+14,153,940,992 bytes peak RSS. model.digest formerly materialized typed(value),
+the complete JSON string and its complete UTF-8 encoding. Stream the identical
+encoding directly into SHA-256 with a64KiB buffer and bounded8192-character
+string chunks. Keep typed, key and decode_key unchanged (independently checked
+AST equality). Preserve exact scalar types, object-key sorting, array order,
+float.hex including signed zero, original JSON escaping and strict UTF-8.
+Invalid values, nonfinite numbers, surrogate code units, cycles and excessive
+recursion still fail. Recursive failure thresholds and the first error among
+multiple invalid values are not promised identical; no partial digest returns.
+
+Correctness tests capture the actual hash input bytes and compare them to the
+old key(value).encode expression, test35 universe shapes, nonempty grouped and
+plain universes, Unicode/chunk boundaries, floats, invalid values, cycles, deep
+inputs and absence of mutation. A root fixed-seed500-value comparison also
+passes. The initial full-projection tiny fixtures incorrectly used empty
+universes and failed the unchanged original semantic guard; the failures are
+retained and corrected fixtures include both actual target graph identities.
+Focused38 tests pass in0.883s, integrated251 tests pass in76.767s and236 Node
+workflow tests pass in17.061s. All194 preparation pins, exact source-helper
+binding, workflow manifest binding, structural actionlint and diff checks pass.
+These tiny fixtures are correctness evidence only.
+
+Base fffdbd73; candidate module SHA
+5d76d7083abe42d307f42cafbe736a04e960cdd9fe428bb0c26107aa4b45786d,
+full code patch SHA
+3d20ed44f8fe303dc499ef387e7e587b0131f810c8367c4ec0c21efe382af2d3.
+The next diagnostic selects only the largest wrapped-first_last_graph_bimodal_query
+universe from the original64 real graphs. Despite the case name, its actual
+requested and target scopes both contain all64 graphs; preserve them exactly.
+The original complete universe has1,376,800 matches; the original complete
+response has250 rows and73,593 bytes. No graph production or server runs.
+
+Command: python3 -B
+/tmp/graphite-jvm-largest-ref-validator-prep-1/execute.py execute. Local macOS,
+Python3.14.7;180s work including two actual parse/digest passes, original full
+compiler, response validation and final consumed-input verification, plus30s
+cleanup;12GiB sampled RSS stop. Preparation uses the actual callable API smoke
+on the new frozen source (PASS0.029s),229 copied source files and234 pinned
+controls. The historical HTTP run remains failed; its reviewed body is reused
+only for this diagnostic, not promoted to canonical or current-writer authority.
+
+The first diagnostic reaches the180s deadline and stops after180.993s. It
+completes preparation in71.729s and saves9,206 bytes of ref-case metadata.
+The actual compiler repeats the mandatory read/digest and reaches its original
+constructor at142.141s; construction does not complete before the deadline.
+Observed stage peak RSS is7,292,977,152 bytes, below the sampled guard; no
+response or final identity check completes. A second stop signal interrupts
+its final failure-record write, so execution.json is missing. Preserve this
+as a failed diagnostic using the supervisor, complete stage journal and raw
+traceback. The owned group is empty and the leader is reaped. This absolute
+fresh-process result must not be represented as a matched RSS comparison with
+attempt264, which prepared20 earlier cases in the same process.
+
+A separate compile-only follow-up reuses the exact saved9,206-byte metadata
+with a fresh pin and complete case/scope comparison. The unmodified actual
+compiler independently rereads and hashes the original file, checks its typed
+digest and builds the complete semantic index. No previous PASS or digest
+alone grants authority. Its budget remains180s work plus30s cleanup/12GiB;
+this removes the already completed71.729s preparation from the new work,
+without claiming the earlier failure passed. The stop handler now ignores
+subsequent stop signals before raising, and protects the final record; tiny
+actual-handler checks cover ALRM, TERM and INT as the first signal followed by
+all stop signals and verify the saved failure receipt (PASS0.104s).
+
+The follow-up completes in121.373s with worker120.757s, CPU120.432s and
+peak RSS7,278,870,528 bytes. Its actual compiler takes119.519s, including
+mandatory reading/digest and48.151s in the original semantic constructor.
+The complete250-row body validates in0.006761s; final input identities and
+closed source/import inventories pass, the retained index survives through
+that boundary, and the owned group is empty. The previous180.993s run remains
+failed; this121.373s is the follow-up boundary, not total campaign time or a
+claim that preparation plus complete verification takes two minutes.
+
+Retain the bounded digest implementation. Exact-byte correctness and the
+largest64-graph-universe complete compiler/body result establish a positive
+availability increment; the earlier complete-tree digest failed the guard
+before finishing preparation in its broader process. These different scopes
+are not a matched memory/time comparison. Do not claim a percentage reduction,
+query performance recovery or complete35 readiness.
+
+This single case spans64 graphs, but is validator correctness/capacity evidence,
+not server query latency evidence. It cannot establish all35 indices fitting
+together, Linux16GiB fit, complete current-writer correctness, CPU/RSS recovery
+against main or a complete hosted CI duration. Complete acceptance remains open.
+
+Evidence: /tmp/graphite-jvm-largest-ref-validator-prep-1/{plan.json,
+preparation-review.json,root-prelaunch-review.json,root-result-review.json,supervisor.json}, original
+execution/stage journals under its declared output,
+/tmp/graphite-attempt265-integration-review.json,
+/tmp/graphite-attempt265-root-digest-review.json and
+/tmp/graphite-attempt265-{oracle-tests,oracle-tests-final,integration-tests,workflow-tests}.log.
+
+Follow-up command: python3 -B
+/tmp/graphite-jvm-largest-ref-compile-prep-1/execute.py execute. Its plan SHA is
+0338e939a52458fce5e5c39b792e0648e4151e340ee6a1374e164e555e99b838.
+Evidence: /tmp/graphite-jvm-largest-ref-compile-prep-1/{plan.json,
+preparation-review.json,root-prelaunch-review.json,root-result-review.json,
+supervisor.json} and /private/tmp/graphite-jvm-largest-ref-compile-1.

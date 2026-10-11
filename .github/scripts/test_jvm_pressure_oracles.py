@@ -40,6 +40,89 @@ class TypedKeyInverseTests(unittest.TestCase):
         self.assertEqual(1,original['a']['z'])
 
 
+class StreamingDigestTests(unittest.TestCase):
+    def assert_original_digest(self, value):
+        encoded = oracle.key(value).encode('utf-8')
+        before = copy.deepcopy(value)
+        self.assertEqual(hashlib.sha256(encoded).hexdigest(), oracle.digest(value))
+        self.assertEqual(oracle.key(before), oracle.key(value))
+
+    def test_exact_original_bytes_types_unicode_escaping_and_float_boundaries(self):
+        values = [None, True, False, 0, -1, 9007199254740993, 10**100,
+                  0.0, -0.0, 1.0, -1.5,
+                  float.fromhex('0x0.0000000000001p-1022'),
+                  float.fromhex('0x1.fffffffffffffp+1023'), '',
+                  '\\"\b\f\n\r\t\x00\x1f/é中😀\u2028\u2029',
+                  [], {}, {'😀': [True, 1, 1.0, -0.0], 'é': {'z': None, 'a': ''}},
+                  ('x'*8191 + '\n😀"\\é')*3]
+        for value in values:
+            with self.subTest(kind=type(value).__name__): self.assert_original_digest(value)
+        self.assertEqual(oracle.digest({'z': 1, 'a': 2}), oracle.digest({'a': 2, 'z': 1}))
+        self.assertEqual(7, len({oracle.digest(v) for v in [True, 1, 1.0, '1', None, -0.0, 0.0]}))
+        self.assertNotEqual(oracle.digest([1, 2]), oracle.digest([2, 1]))
+
+    def test_all35_universe_shapes_and_nonempty_v1_v2_match_original(self):
+        plain = JvmPressureOracleTests(); plain.setUp()
+        distinct = JvmDistinctV2Tests(); distinct.setUp()
+        for case in oracle.cases():
+            entries = [(oracle.projected_row({'value': {'graphId': gid, 'id': 7}}, [gid]), 1)
+                       for gid in case['targetGraphIds']] if case['family'] == 'full-projection' else []
+            universe = (distinct.universe([], case) if case['family'] == 'wrapped-discovery'
+                        else plain.universe(entries, case))
+            with self.subTest(case=case['id']):
+                oracle.CompiledLegalLimitOracle(universe, case)
+                self.assert_original_digest(universe)
+        self.assert_original_digest(plain.universe([(plain.first, 3), (plain.second, 1)]))
+        groups = distinct.f.groups((distinct.f.visible(), distinct.g),
+                                   (distinct.f.visible(callerMethod=distinct.f.f(1)), distinct.h))
+        self.assert_original_digest(distinct.universe(groups))
+
+    def test_bounded_updates_are_exact_original_stream_without_typed_or_key(self):
+        value = {'nested': ['é\\\n😀'*20000, {'a': [True, 1, 1.0, None]}]}
+        expected = oracle.key(value).encode('utf-8')
+        updates = []
+        real_sha256 = hashlib.sha256
+        class ObservedHash:
+            def __init__(self): self.actual = real_sha256()
+            def update(self, raw):
+                updates.append(bytes(raw)); self.actual.update(raw)
+            def hexdigest(self): return self.actual.hexdigest()
+        with patch.object(oracle.hashlib, 'sha256', side_effect=ObservedHash), \
+                patch.object(oracle, 'typed', side_effect=AssertionError('whole typed tree')), \
+                patch.object(oracle, 'key', side_effect=AssertionError('whole encoded key')):
+            actual = oracle.digest(value)
+        self.assertEqual(expected, b''.join(updates))
+        self.assertEqual(real_sha256(expected).hexdigest(), actual)
+        self.assertGreater(len(updates), 1)
+        self.assertTrue(all(0 < len(chunk) <= 65536 for chunk in updates))
+
+    def test_invalid_types_nonfinite_and_surrogates_fail_like_original(self):
+        class Integer(int): pass
+        class Text(str): pass
+        invalid = [float('nan'), float('inf'), -float('inf'), (), set(), b'x',
+                   Integer(1), Text('x'), {1: 'x'}, {Text('x'): 1}, object()]
+        for value in invalid:
+            with self.subTest(kind=type(value).__name__):
+                with self.assertRaises(ValueError): oracle.key(value).encode('utf-8')
+                with self.assertRaises(ValueError): oracle.digest(value)
+        for text in ('\ud800', '\udfff', '\ud83d\ude00', 'x'*8191+'\ud800'):
+            for value in (text, {text: 1}, [text]):
+                with self.assertRaises(UnicodeEncodeError): oracle.key(value).encode('utf-8')
+                with self.assertRaises(UnicodeEncodeError): oracle.digest(value)
+
+    def test_cycles_and_excessive_recursion_fail_without_returning_partial_digest(self):
+        array = []; array.append(array)
+        mapping = {}; mapping['self'] = mapping
+        deep = None
+        for _ in range(2000): deep = [deep]
+        for value in (array, mapping, deep):
+            with self.assertRaises(RecursionError): oracle.key(value).encode('utf-8')
+            with self.assertRaises(RecursionError): oracle.digest(value)
+        supported = None
+        for _ in range(40): supported = {'child': [supported]}
+        self.assert_original_digest(supported)
+
+
 class JvmPressureOracleTests(unittest.TestCase):
     def setUp(self):
         self.cases = {c['id']: c for c in oracle.cases()}
