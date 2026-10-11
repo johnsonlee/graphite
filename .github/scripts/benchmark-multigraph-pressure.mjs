@@ -15,7 +15,7 @@ const equal = (a,b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 // The Python finalizer replays the full raw proof. The portable report retains
 // its original metadata bytes so the aggregate can check the exact join again
 // without downloading graph/runtime payloads or changing the measured plan.
-function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inputs) {
+export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inputs) {
     const pending='pendingComparabilityAuthority' in plan || plan.comparabilityPending===true;
     if (!pending) {require(!receiptFile,'Unexpected comparability receipt');return true;}
     require(plan.engine==='native' && plan.comparabilityPending===true && plan.pendingComparabilityAuthority &&

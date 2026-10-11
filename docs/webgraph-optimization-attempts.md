@@ -17699,3 +17699,60 @@ heap/resource constraints and the scoped Native-loading exception are unchanged.
 No single-graph performance measurement, new benchmark, CI launch, push or
 cancellation was performed. This JVM lifecycle split does not add or claim a
 new Native64 loading acceptance cohort.
+
+### Attempt223 — capture Native64 loading inside the existing query processes (2026-10-12)
+
+Parent:47ea5e87. Historical Attempt194 cannot close current-head Native64 loading:
+124 of1280 saved graph hashes differ from the current producer, and the existing
+03f query records lack the immediate pre-spawn timestamp and ready VmHWM needed
+to reconstruct this boundary. These records retain their original provenance;
+no historical query or loading sample is relabeled or retroactively accepted.
+
+Linux pending measurement plans now declare a versioned Native64 loading boundary
+before execution. The same six CABBAC processes and39 query cases are retained;
+no job, server launch, graph cohort or query-body replay is added. Capture starts
+immediately before Popen. After complete readiness-body consumption and exact64
+validation, it freezes readiness time, cumulative process CPU, raw Linux VmHWM
+and process identity before any oracle, warmup or pressure request. The existing
+initial identity sample is retained. Existing query timestamps, calculations,
+request counts and full-result consumption remain unchanged.
+
+The existing raw-cell audit reconstructs loading wall, CPU and RSS bounds using
+already-loaded samples and request records. Every request must start after the
+watermark's final identity read; PID/startTicks, units, raw status and sample
+ordering are verified. Query-time RSS is excluded from loading; lifetime GNU
+RSS is corroboration only. The existing finalizer repeats its six original raw
+audits once and produces independent query and Native-loading reports through
+the same complete, matching core receipt. Either metric failure leaves both
+reports visible. Missing or failing core cannot authorize either acceptance.
+The loading comparator requires the original pending producer and explicit
+core join; direct pending comparisons remain PENDING with passed=false.
+
+Aggregation now requires Native loading independently of JVM loading and both
+query engines, with exact engine/operation dispatch. Old plans and strict or
+Darwin query diagnostics without the prospective capture report loading as
+UNAVAILABLE; ordinary query compatibility is preserved. Loading wall and both
+5% resource gates remain strict. The historical1–2s Native-loading exception is
+not automatically transferred to this new cohort, and no query latency waiver
+is introduced.
+
+Verification: all229 Node contracts passed in16.402s, including separate query
+and loading verdicts, pending CLI rejection, missing/mismatched receipt, forged
+engine, missing declaration, wrong PID/VmHWM and early requests in each stage.
+All28 prepared-runner tests passed in2.874s. Root independently passed all six
+Native-loading Node contracts and all six Python boundary tests; a second
+reviewer passed five focused compatibility/finalization/boundary tests and
+reported no blocking finding. Existing prepare23, pressure92 and JVM-loading6
+Python contracts also passed during implementation. Actionlint with shellcheck
+disabled, all201 manifest entries, both manifest bindings and six comparator
+bindings passed. Evidence: `/tmp/graphite-attempt223-node-final.log`,
+`/tmp/graphite-attempt223-orchestration-final.log`,
+`/tmp/graphite-attempt223-{prepare,pressure,jvm-loading,actionlint}.log` and
+`/tmp/graphite-attempt223-controls.json`.
+
+**Decision: retain locally after independent review; prospective hosted evidence
+is still required.** This closes the capture and acceptance wiring gap without
+another expensive cohort. It does not establish measured Native loading,
+query p50/p95, CPU, RSS, stability or end-to-end recovery, nor a whole-workflow
+runtime bound. No new benchmark, single-graph performance measurement, CI launch,
+push or cancellation was performed.

@@ -20,13 +20,45 @@ JOIN_SCHEMA = 'graphite.native-pressure.core-comparability-join.v1'
 JOIN_PASS = 'PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN'
 
 
-def execute(preparation,output,prefix,*,engine='native'):
+def loading_comparison(plan_file, output, prefix, receipt=None):
+    prefix=Path(prefix).resolve()
+    node=shutil.which('node');pressure.require(node is not None,'Node executable missing')
+    command=[str(Path(node).resolve()),str(SCRIPTS/'benchmark-native-loading.mjs'),
+             str(plan_file),str(output),str(prefix)]
+    if receipt is not None:command.extend(['--comparability-receipt',str(receipt)])
+    completed=subprocess.run(command,capture_output=True,text=True,timeout=60,check=False)
+    Path(str(prefix)+'-comparison.stdout.log').write_text(completed.stdout)
+    Path(str(prefix)+'-comparison.stderr.log').write_text(completed.stderr)
+    value=pressure.read(str(prefix)+'-status.json')
+    pressure.require(completed.returncode in (0,1) and value.get('schema')=='graphite.native64-loading.comparison.v1' and
+                     value.get('engine')=='native' and value.get('operation')=='loading' and
+                     value.get('passed')==(completed.returncode==0),'actual independent Native loading verdict')
+    return value
+
+
+def unavailable_loading(prefix, errors):
+    if prefix is None:return
+    prefix=Path(prefix).resolve();prefix.parent.mkdir(parents=True,exist_ok=True)
+    for suffix in ('status.json','report.md'):
+        path=Path(str(prefix)+'-'+suffix)
+        if path.exists():path.rename(Path(str(prefix)+'-original-'+suffix))
+    pressure.save(str(prefix)+'-status.json',{'schema':'graphite.native64-loading.comparison.v1','engine':'native',
+        'operation':'loading','status':'UNAVAILABLE','passed':False,'errors':errors,
+        'performanceAcceptance':False,'otherOperationsEligible':False})
+    Path(str(prefix)+'-report.md').write_text('Native64 loading unavailable\n'+'\n'.join(errors)+'\n')
+
+
+def execute(preparation,output,prefix,*,engine='native',loading_prefix=None):
     pressure.require(engine in ('native','jvm'),'known query engine required')
     preparation=preparation.resolve();output=output.resolve();prefix=prefix.resolve()
     output.mkdir(parents=True,exist_ok=False)
     record={'schema':f'graphite.{engine}-pressure.execution.v1','engine':engine,'status':'RUNNING','errors':[],
             'cells':[],'unissued':[],'performanceAcceptance':False,'otherOperationsEligible':False,
             'controls':{str(p):pressure.sha(p) for p in [Path(__file__).resolve(),SCRIPTS/'multigraph_pressure.py',SCRIPTS/'native_legal_response.py',SCRIPTS/'benchmark-multigraph-pressure.mjs']}}
+    if loading_prefix is not None:
+        pressure.require(engine == 'native', 'Native loading prefix requires Native query processes')
+        for name in ('native_loading.py','benchmark-native-loading.mjs'):
+            control=SCRIPTS/name;record['controls'][str(control)]=pressure.sha(control)
     if engine=='jvm':
         for name in ('jvm_pressure_oracles.py','jvm_pressure_distinct.py','jvm_pressure_inputs.py'):
             control=SCRIPTS/name;record['controls'][str(control)]=pressure.sha(control)
@@ -60,7 +92,7 @@ def execute(preparation,output,prefix,*,engine='native'):
             if 'missingProducers' in ready:record['missingProducers']=ready['missingProducers']
             record['status']=ready['status']
             record['errors']=['Matched producer plan is not ready: '+ready['status'],*reasons]
-            failed_report(record['status'],record['errors']);return record
+            failed_report(record['status'],record['errors']);unavailable_loading(loading_prefix,record['errors']);return record
         plan_file=preparation/'plan.json'
         pressure.require(pressure.sha(plan_file)==ready['planSha256'],'prepared plan digest changed')
         context_started=time.monotonic()
@@ -134,10 +166,28 @@ def execute(preparation,output,prefix,*,engine='native'):
             pressure.require(verdict['passed'] is False and verdict['status'] == PENDING and
                              verdict.get('comparabilityPending') is True,
                              'unjoined measurement cannot become performance acceptance')
+        if loading_prefix is not None:
+            loading=loading_comparison(plan_file,output,loading_prefix)
+            unavailable=('loadingMeasurement' not in plan and loading['passed'] is False and loading['status']=='UNAVAILABLE')
+            if 'pendingComparabilityAuthority' in plan:
+                pressure.require(unavailable or (loading.get('planSha256')==ready['planSha256'] and loading['passed'] is False and
+                                 loading.get('comparabilityPending') is True and loading['status']==PENDING),
+                                 'pending Native loading cannot authorize performance acceptance')
+            else:
+                pressure.require(unavailable or (loading.get('planSha256')==ready['planSha256'] and
+                                 loading.get('coreComparabilityVerified') is True and loading.get('comparabilityPending') is False),
+                                 'complete Native loading must bind its original plan')
+            record['nativeLoadingComparison']={'path':str(Path(str(loading_prefix)+'-status.json').resolve()),
+                                               'sha256':pressure.sha(str(loading_prefix)+'-status.json')}
         record['status']=verdict['status'];record['performanceAcceptance']=verdict['passed']
         record['comparisonSha256']=pressure.sha(Path(str(prefix)+'-status.json'))
+        if loading_prefix is not None and 'pendingComparabilityAuthority' not in plan:
+            record.update(queryPerformanceAcceptance=verdict['passed'],nativeLoadingPerformanceAcceptance=loading['passed'],
+                          performanceAcceptance=verdict['passed'] and loading['passed'],
+                          status='PASS' if verdict['passed'] and loading['passed'] else 'FAIL')
     except BaseException as error:
         record['status']='FAIL';record['errors'].append(repr(error));failed_report('FAIL',record['errors'])
+        unavailable_loading(loading_prefix,record['errors'])
     finally:
         for p,h in record['controls'].items():
             try:unchanged=pressure.sha(p)==h
@@ -145,11 +195,12 @@ def execute(preparation,output,prefix,*,engine='native'):
             if not unchanged:
                 record['status']='FAIL';record['performanceAcceptance']=False;record['errors'].append('execution control changed '+p)
                 failed_report('FAIL',record['errors'])
+                unavailable_loading(loading_prefix,record['errors'])
         save()
     return record
 
 
-def finalize(preparation, output, prefix, producers):
+def finalize(preparation, output, prefix, producers, loading_prefix=None):
     """Join complete core evidence to immutable measured cells; never rerun a server.
 
     The original plan and raw cell evidence stay bound to their measurement-time
@@ -159,6 +210,11 @@ def finalize(preparation, output, prefix, producers):
     import assemble_native_pressure_producers as bundle
     preparation, output, prefix, producers = (p.resolve() for p in (preparation, output, prefix, producers))
     prefix.parent.mkdir(parents=True, exist_ok=True)
+    if loading_prefix is not None:
+        loading_prefix=Path(loading_prefix).resolve()
+        pressure.require(not loading_prefix.is_relative_to(output) and not loading_prefix.is_relative_to(preparation) and
+                         loading_prefix != prefix and not any(loading_prefix.parent.glob(loading_prefix.name+'*')),
+                         'fresh separate Native loading report prefix')
     paths = [Path(str(prefix)+suffix) for suffix in
              ('-status.json', '-report.md', '-comparability.json', '-comparability-evidence',
               '-finalization.json', '-comparison.stdout.log', '-comparison.stderr.log',
@@ -256,6 +312,13 @@ def finalize(preparation, output, prefix, producers):
         completed = subprocess.run(command, capture_output=True, text=True, timeout=60, check=False)
         Path(str(prefix)+'-comparison.stdout.log').write_text(completed.stdout)
         Path(str(prefix)+'-comparison.stderr.log').write_text(completed.stderr)
+        loading=None
+        if loading_prefix is not None:
+            loading=loading_comparison(plan_file,output,loading_prefix,receipt_file)
+            pressure.require((loading.get('planSha256')==ready['planSha256'] and
+                              loading.get('coreComparabilityVerified') is True and loading.get('comparabilityPending') is False) or
+                             ('loadingMeasurement' not in plan and loading['passed'] is False and loading['status']=='UNAVAILABLE'),
+                             'Native loading requires the same complete core join or remains unavailable')
         context._check_unchanged()
         pressure.require(all(pressure.sha(path) == digest for path, digest in pins.items()), 'joined input drift')
         verdict = pressure.read(Path(str(prefix)+'-status.json'))
@@ -269,8 +332,14 @@ def finalize(preparation, output, prefix, producers):
                       comparabilityReceipt=ref(receipt_file), comparisonCommand=command,
                       comparisonExit=completed.returncode,
                       comparison=ref(Path(str(prefix)+'-status.json')))
+        if loading is not None:
+            result.update(queryPerformanceAcceptance=verdict['passed'],nativeLoadingPerformanceAcceptance=loading['passed'],
+                          nativeLoadingComparison=ref(Path(str(loading_prefix)+'-status.json')),
+                          performanceAcceptance=verdict['passed'] and loading['passed'],
+                          status='PASS' if verdict['passed'] and loading['passed'] else 'FAIL')
     except BaseException as error:
         result['status'] = 'FAIL'; result['errors'].append(repr(error))
+        unavailable_loading(loading_prefix,result['errors'])
         # Preserve the comparator's raw output if a subsequent identity check
         # fails; only the final status below is the acceptance result.
         for suffix in ('status.json', 'report.md'):
@@ -291,12 +360,12 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--preparation',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--prefix',type=Path,required=True)
     p.add_argument('--engine',choices=('native','jvm'),default='native')
-    p.add_argument('--finalize-producers',type=Path);args=p.parse_args()
+    p.add_argument('--finalize-producers',type=Path);p.add_argument('--loading-prefix',type=Path);args=p.parse_args()
     if args.finalize_producers:
         pressure.require(args.engine == 'native', 'core join is native-only')
-        result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers)
+        result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers,args.loading_prefix)
     else:
-        result=execute(args.preparation,args.output,args.prefix,engine=args.engine)
+        result=execute(args.preparation,args.output,args.prefix,engine=args.engine,loading_prefix=args.loading_prefix)
     print(json.dumps({'status':result['status'],'issuedCells':len(result.get('cells',[])),
                       'unissuedCells':result.get('unissued',[])}))
     sys.exit(0 if result['performanceAcceptance'] or

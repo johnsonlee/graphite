@@ -304,6 +304,9 @@ def validate_plan(plan, catalog=None):
     require(__debug__, 'Python optimization forbidden')
     require(plan.get('schema') == PLAN_SCHEMA and plan.get('operation') == 'query', 'plan schema/operation')
     require(plan.get('engine') in ('native', 'jvm'), 'engine')
+    if 'loadingMeasurement' in plan:
+        from native_loading import validate_declaration
+        validate_declaration(plan)
     if 'pendingComparabilityAuthority' in plan:
         require(plan['engine'] == 'native' and plan.get('comparabilityPending') is True and
                 not any(k in plan for k in ('producerAuthority', 'correctedProducerAuthority', 'jvmProducerAuthority')),
@@ -1371,6 +1374,11 @@ def run_cell(plan_path, cell_id, output):
 
 def _run_cell(plan_path, cell_id, output, plan):
     require(sys.platform in ('linux', 'darwin'), 'unsupported actual CPU/RSS resource backend')
+    loading = 'loadingMeasurement' in plan
+    if loading:
+        import native_loading
+        native_loading.validate_declaration(plan)
+        require(sys.platform == 'linux', 'Native64 loading requires original Linux VmHWM evidence')
     cells = [c for c in plan['cells'] if c['id'] == cell_id]
     require(len(cells) == 1, 'unknown cell')
     cell = cells[0]
@@ -1402,9 +1410,14 @@ def _run_cell(plan_path, cell_id, output, plan):
         save(out / 'command.json', command)
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', cell['port']))
+        launch_env = clean_env()
         with deferred_signals():
             with (out / 'stdout.log').open('x') as stdout, (out / 'stderr.log').open('x') as stderr:
-                proc = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, env=clean_env())
+                if loading:
+                    record['loading'] = {'schema': 'graphite.native64-loading.cell.v1', 'graphCount': 64,
+                                         'queriesIssuedDuringLoading': 0}
+                    record['loading']['startNs'] = time.perf_counter_ns()
+                proc = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, env=launch_env)
             save(out / 'launch-owner.json', {'runnerPid': os.getpid(), 'group': proc.pid})
         deadline = time.monotonic() + 10
         while not (out / 'server.pid').exists():
@@ -1412,10 +1425,16 @@ def _run_cell(plan_path, cell_id, output, plan):
             time.sleep(.01)
         pid = int((out / 'server.pid').read_text())
         require(os.getpgid(pid) == proc.pid, 'server outside owned group')
-        pid_start = proc_sample(pid)['startTicks']
+        initial_sample = proc_sample(pid)
+        pid_start = initial_sample['startTicks']
+        if loading: record['loading']['initialSample'] = initial_sample
         monitor = Monitor(lambda: proc_sample(pid, pid_start), plan['limits']['rssIntervalSeconds'], out / 'resources.jsonl')
         monitor.thread.start()
         raw = readiness(cell['port'], arm, data, plan['limits']['readinessSeconds'], proc, out)
+        if loading:
+            record['loading']['readyNs'] = time.perf_counter_ns()
+            record['loading']['cpuAfterReady'] = proc_sample(pid, pid_start)
+            record['loading']['readyWatermark'] = native_loading.ready_watermark(pid, pid_start)
         (out / 'readiness.body').write_bytes(raw)
         record['readyNs'] = time.perf_counter_ns()
         transport = HTTPTransport(cell['port'], plan['limits'])
@@ -1449,6 +1468,10 @@ def _run_cell(plan_path, cell_id, output, plan):
                 if cleanup['errors'] or cleanup['after']:
                     record['errors'].append('owned cleanup failed')
                 record['lifecycle'] = lifecycle_time(out / 'time-v.log')
+                if loading and 'readyWatermark' in record.get('loading', {}):
+                    observed = record['loading']
+                    observed['resources'] = native_loading.bounds(observed['startNs'], observed['readyNs'],
+                        observed['cpuAfterReady'], monitor.samples, observed['readyWatermark'])
                 for stage in record['stages'].values():
                     if stage['status'] == 'PASS':
                         # Oracle/warmups remain visible but are not repeated-request acceptance.
@@ -1566,7 +1589,11 @@ def _audit(plan_path, output, plan):
             require(0 <= active <= 4, 'actual request concurrency')
         require(active == 0, 'undrained request interval')
         total += len(records)
-    return {'schema': 'graphite.multigraph-pressure.audit.v1', 'status': 'PASS', 'cell': cell['id'],
+    loading_audit = {}
+    if 'loadingMeasurement' in plan:
+        from native_loading import audit as audit_loading
+        loading_audit['loading'] = audit_loading(plan, result, root, samples, lifecycle, server_pid)
+    return {'schema': 'graphite.multigraph-pressure.audit.v1', 'status': 'PASS', 'cell': cell['id'], **loading_audit,
             'completeBodies': total, 'resultSha256': sha(root / 'result.json'), 'planSha256': sha(plan_path),
             'coverage': plan['coverage'], 'queryEvidenceComplete': True,
             'acceptanceEligible': result['acceptanceEligible'], 'otherOperationsEligible': False}

@@ -6,12 +6,14 @@ import run_prepared_native_pressure as r
 
 
 class Execution(unittest.TestCase):
-    def exercise(self,mode='pass',preparation_status=None,engine='native'):
+    def exercise(self,mode='pass',preparation_status=None,engine='native',loading_mode=None):
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder);prep=root/'preparation';prep.mkdir();output=root/'execution';prefix=root/'reports/native-query'
             plan={'engine':'native' if mode=='wrong-engine' else engine,'operation':'query','cells':[{'id':str(i),'arm':arm} for i,arm in enumerate('CABBAC')]}
             if mode.startswith('pending'):
                 plan.update(pendingComparabilityAuthority={'path':str(root/'producer.json'),'sha256':'a'*64},comparabilityPending=True)
+            loading_prefix=root/'reports/native-loading' if loading_mode is not None else None
+            if loading_mode not in (None,'unavailable'):plan['loadingMeasurement']={'schema':'test-declaration'}
             plan_path=prep/'plan.json';plan_path.write_text(json.dumps(plan));digest=r.pressure.sha(plan_path)
             ready={'status':'UNAVAILABLE' if mode=='unavailable' else 'PLAN_READY_NOT_MEASURED','planSha256':'0'*64 if mode=='plan-drift' else digest}
             if engine=='jvm':ready.update(schema='graphite.jvm-pressure.preparation.v1',engine=engine,operation='query')
@@ -26,6 +28,17 @@ class Execution(unittest.TestCase):
                 if mode=='audit-failure' and cell=='1':raise ValueError('invalid complete body')
                 return {'status':'PASS'}
             def compare(command,**kwargs):
+                if Path(command[1]).name=='benchmark-native-loading.mjs':
+                    events.append(('loading-compare',None))
+                    passed=loading_mode=='pass' and mode!='pending'
+                    pending=mode=='pending' and loading_mode!='unavailable'
+                    value={'schema':'graphite.native64-loading.comparison.v1','engine':'native','operation':'loading',
+                           'passed':passed,'status':'UNAVAILABLE' if loading_mode=='unavailable' else r.PENDING if pending else 'PASS' if passed else 'FAIL',
+                           'planSha256':digest,'comparabilityPending':pending,'coreComparabilityVerified':not pending}
+                    loading_prefix.parent.mkdir(parents=True,exist_ok=True)
+                    Path(str(loading_prefix)+'-status.json').write_text(json.dumps(value))
+                    Path(str(loading_prefix)+'-report.md').write_text('independent loading')
+                    return SimpleNamespace(returncode=0 if passed else 1,stdout='',stderr='')
                 if '--progress' in command:
                     count=int(command[-1]);events.append(('progress',str(count)))
                     if mode=='progress-timeout':raise r.subprocess.TimeoutExpired(command,60)
@@ -62,10 +75,11 @@ class Execution(unittest.TestCase):
                     p=Path(path);calls[str(p)]=calls.get(str(p),0)+1
                     return '0'*64 if p.name=='run_prepared_native_pressure.py' and calls[str(p)]>1 else sha(path)
                 stack.enter_context(patch.object(r.pressure,'sha',side_effect=changed))
-            result=r.execute(prep,output,prefix,engine=engine)
+            result=r.execute(prep,output,prefix,engine=engine,loading_prefix=loading_prefix)
             stored=json.loads((output/'execution.json').read_text());self.assertEqual(result,stored)
             verdict=json.loads(Path(str(prefix)+'-status.json').read_text())
             self.assertFalse(result['otherOperationsEligible'])
+            if loading_prefix is not None:self.loading_verdict=json.loads(Path(str(loading_prefix)+'-status.json').read_text())
             return result,verdict,events
 
     def test_progress_distinguishes_context_verification_run_audit_and_terminal_check(self):
@@ -212,13 +226,23 @@ class Execution(unittest.TestCase):
         self.assertEqual(('compare',None),events[-1]);self.assertEqual('FAIL',result['status'])
         self.assertIn('comparison engine binding',result['errors'][0]);self.assertFalse(verdict['passed'])
 
+    def test_direct_complete_plan_loading_preserves_independent_query_verdict(self):
+        for query,loading in [('pass','pass'),('regression','pass'),('pass','regression'),('pass','unavailable')]:
+            with self.subTest(query=query,loading=loading):
+                result,verdict,events=self.exercise(query,loading_mode=loading)
+                self.assertEqual(query=='pass',verdict['passed'])
+                self.assertEqual(loading=='pass',self.loading_verdict['passed'])
+                self.assertEqual(query==loading=='pass',result['performanceAcceptance'])
+                self.assertEqual(6,sum(kind=='run' for kind,_ in events))
+                self.assertEqual(6,sum(kind=='audit' for kind,_ in events))
+
 class Finalization(unittest.TestCase):
     """Only external authority replay/Node execution are mocked, never disk pins.
 
     Existing bundle/raw audit suites exercise those authorities independently;
     these tests exercise the join and immutable original measurement binding.
     """
-    def exercise(self,mode='pass'):
+    def exercise(self,mode='pass',loading_mode=None):
         import assemble_native_pressure_producers as bundle
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder).resolve();prep=root/'prep';prep.mkdir();out=root/'cells';out.mkdir();prefix=root/'final/query'
@@ -240,6 +264,10 @@ class Finalization(unittest.TestCase):
             plan={'engine':'native','comparabilityPending':True,'pendingComparabilityAuthority':pending_ref,
                   'pins':{**pins,pending_ref['path']:pending_ref['sha256']},'arms':pending['arms'],
                   'cells':[{'id':str(i),'arm':arm} for i,arm in enumerate('CABBAC')]}
+            if loading_mode is not None:
+                from native_loading import DECLARATION
+                plan['loadingMeasurement']=dict(DECLARATION)
+            loading_prefix=root/'final/loading' if loading_mode is not None else None
             plan_ref=put('prep/plan.json',plan)
             ready=put('prep/preparation-status.json',{'status':'PLAN_READY_NOT_MEASURED',
                       'comparabilityPending':True,'planSha256':plan_ref['sha256']})
@@ -275,13 +303,22 @@ class Finalization(unittest.TestCase):
                 return dict(pending,arms={}) if mode=='different-producer' else pending
             stack.enter_context(patch.object(bundle,'assemble',side_effect=reassemble))
             def compare(command,**kwargs):
-                events.append(('compare',None));self.assertEqual('--comparability-receipt',command[-2])
+                is_loading=Path(command[1]).name=='benchmark-native-loading.mjs'
+                events.append(('loading-compare' if is_loading else 'compare',None));self.assertEqual('--comparability-receipt',command[-2])
                 receipt=r.pressure.read(command[-1]);self.assertEqual(pending_ref['sha256'],receipt['measurementInputsSha256'])
                 self.assertEqual(6,len(receipt['cells']));self.assertFalse(receipt['completeSemanticEquivalence'])
                 self.assertFalse(receipt['performanceAcceptance']);self.assertTrue(receipt['coreComparabilityVerified'])
                 self.assertIn(phase['path'],[row['path'] for row in receipt['metadata']])
                 for row in receipt['metadata']:
                     self.assertEqual(row['sha256'],r.pressure.sha(prefix.parent/row['relativePath']))
+                if is_loading:
+                    passed=loading_mode!='regression'
+                    value={'schema':'graphite.native64-loading.comparison.v1','planSha256':plan_ref['sha256'],
+                           'engine':'native','operation':'loading','passed':passed,'status':'PASS' if passed else 'FAIL',
+                           'coreComparabilityVerified':True,'comparabilityPending':False}
+                    Path(str(loading_prefix)+'-status.json').write_text(json.dumps(value))
+                    Path(str(loading_prefix)+'-report.md').write_text('independent raw loading comparison')
+                    return SimpleNamespace(returncode=0 if passed else 1,stdout='',stderr='')
                 passed=mode!='regression'
                 Path(str(prefix)+'-status.json').write_text(json.dumps({'schema':'graphite.multigraph-pressure.comparison.v1',
                     'planSha256':plan_ref['sha256'],'engine':'native','operation':'query','passed':passed,
@@ -292,13 +329,14 @@ class Finalization(unittest.TestCase):
             stack.enter_context(patch.object(r.subprocess,'run',side_effect=compare))
             stack.enter_context(patch.object(r.shutil,'which',return_value='/usr/bin/node'))
             stack.enter_context(patch('subprocess.Popen',side_effect=AssertionError('no server permitted')))
-            result=r.finalize(prep,out,prefix,Path(corrected_ref['path']))
+            result=r.finalize(prep,out,prefix,Path(corrected_ref['path']),loading_prefix)
             self.assertEqual(original,{str(p):p.read_bytes() for parent in (prep,out) for p in parent.rglob('*') if p.is_file()})
             self.assertEqual(result,r.pressure.read(Path(str(prefix)+'-finalization.json')))
             verdict=r.pressure.read(Path(str(prefix)+'-status.json'))
             if mode=='post-join-drift':
                 raw=r.pressure.read(Path(str(prefix)+'-comparison-original-status.json'))
                 self.assertTrue(raw['passed']);self.assertFalse(verdict['passed'])
+            if loading_prefix is not None:self.loading_verdict=r.pressure.read(str(loading_prefix)+'-status.json')
             return result,events,verdict
 
     def test_join_reaudits_six_original_cells_and_preserves_every_measurement_byte(self):
@@ -329,5 +367,21 @@ class Finalization(unittest.TestCase):
         result,events,verdict=self.exercise('post-join-drift')
         self.assertEqual('FAIL',result['status']);self.assertFalse(result['performanceAcceptance'])
         self.assertIn('joined input drift',result['errors'][0]);self.assertFalse(verdict['passed'])
+
+    def test_native_loading_and_query_verdicts_are_independent_without_second_raw_replay(self):
+        for query, loading in [('pass','pass'),('regression','pass'),('pass','regression'),('regression','regression')]:
+            with self.subTest(query=query,loading=loading):
+                result,events,verdict=self.exercise(query,loading)
+                self.assertEqual(6,sum(kind=='audit' for kind,_ in events))
+                self.assertEqual(query=='pass',verdict['passed'])
+                self.assertEqual(loading=='pass',self.loading_verdict['passed'])
+                self.assertEqual(query==loading=='pass',result['performanceAcceptance'])
+                self.assertEqual([('compare',None),('loading-compare',None)],events[-2:])
+
+    def test_missing_core_or_post_join_drift_cannot_leave_native_loading_pass(self):
+        for mode in ('missing-core','failed-core','different-producer','post-join-drift'):
+            result,events,verdict=self.exercise(mode,'pass')
+            self.assertFalse(result['performanceAcceptance']);self.assertFalse(verdict['passed'])
+            self.assertFalse(self.loading_verdict['passed']);self.assertEqual('UNAVAILABLE',self.loading_verdict['status'])
 
 if __name__=='__main__':unittest.main()

@@ -3083,7 +3083,7 @@ test("aggregate report fails closed when an artifact is missing", () => {
         for (const required of ["budgeted-collection","explorer","method-compatibility","cypher-capacity","budgeted-mapped-string","wrapped-query-latency"]) {
             assert.match(aggregate.body,new RegExp(`${required}: result artifact is missing`));
         }
-        assert.equal(aggregate.operationEvidence.length,4);
+        assert.equal(aggregate.operationEvidence.length,5);
     } finally {
         fs.rmSync(directory, { recursive: true, force: true });
     }
@@ -3099,9 +3099,9 @@ test("complete correctness and legacy reports cannot substitute for missing mult
         const metadata={baseSha:'a'.repeat(40),candidateSha:'b'.repeat(40),runner:'test',runUrl:'https://example.invalid'};
         const result=aggregateReports(directory,metadata);
         assert.equal(result.passed,false);
-        assert.equal(result.operationEvidence.length,4);
+        assert.equal(result.operationEvidence.length,5);
         assert.ok(result.operationEvidence.every(x=>x.status==='UNAVAILABLE'));
-        assert.equal(result.errors.length,4);
+        assert.equal(result.errors.length,5);
         for(const c of BENCHMARK_COMPONENTS)assert.match(result.body,new RegExp(c.name));
         fs.writeFileSync(path.join(directory,'method-status.json'),JSON.stringify({passed:true}));
         assert.match(aggregateReports(directory,metadata).errors.join(),/explicit untimed correctness/);
@@ -4377,7 +4377,12 @@ test("split operation stages publish evidence then enforce the unchanged accepta
         const step = rustWorkflowStep(job, name);
         assert.match(step, /if: always\(\)/);
         assert.doesNotMatch(step, /continue-on-error:/);
-        assert.equal(step.match(/run: ([^\n]+)/)[1],
+        if(operation==='native-query') {
+            const commands=step.split('run: |\n')[1].trim().split('\n').map(line=>line.trim());
+            assert.deepEqual(commands,['set -euo pipefail',
+                "jq -e '.passed == true' benchmark-results/multigraph-native-query-status.json >/dev/null",
+                "jq -e '.passed == true' benchmark-results/multigraph-native-loading-status.json >/dev/null"]);
+        } else assert.equal(step.match(/run: ([^\n]+)/)[1],
             `jq -e '.passed == true' benchmark-results/multigraph-${operation}-status.json >/dev/null`);
         assert.match(rustWorkflowStep(job, upload), /if: always\(\)/);
     }

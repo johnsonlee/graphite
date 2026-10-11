@@ -18,8 +18,8 @@ env:
   JAVA_TOOL_OPTIONS: -Xmx2g
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
-  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 1651d9c6dd0c5b66f07c373c7ae733ddf01f0a5e37708f96a07c52900eebe042
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: f19c52ef70c58ba470f8e6f4bb4fcd5f0c549fbb27c85272fdd061d3985415c4
+  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 96cf91f4a263ec2095e9e0925ffd1c6f6a8b62cdf40e6c8db18035181e468502
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 28d2ec7d4aed3e36f416f5dac6cb9a468aaceda670b00715ee2dd6ecd923ab87
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -31,16 +31,16 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
-  BENCHMARK_REPORT_TRANSITION_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
-  RUST_DECLARED_TYPES_COMPARATOR_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
+  BENCHMARK_REPORT_TRANSITION_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
+  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
-  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: c7bfe07130769a711b97f7e42611bda1edd81c0c5409790f8c5aac5464f2c7f8
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
+  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -94,6 +94,9 @@ jobs:
 
     - name: Test independently audited JVM pressure plan preparation without child processes
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_prepare_jvm_pressure_plan.py'
+
+    - name: Test Native loading boundaries in existing query processes
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_loading.py'
 
     - name: Test prepared pressure orchestration without starting servers
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_prepared_native_pressure.py'
@@ -3670,7 +3673,8 @@ jobs:
         python3 candidate/.github/scripts/run_prepared_native_pressure.py \
           --preparation benchmark-results/native-pressure-preparation \
           --output benchmark-results/native-pressure-cells \
-          --prefix benchmark-results/multigraph-native-query-measurement
+          --prefix benchmark-results/multigraph-native-query-measurement \
+          --loading-prefix benchmark-results/multigraph-native-loading-measurement
 
     - name: Upload native pressure results
       if: always()
@@ -3682,6 +3686,7 @@ jobs:
           benchmark-results/native-pressure-preparation/**
           benchmark-results/native-pressure-cells/**
           benchmark-results/multigraph-native-query-measurement*
+          benchmark-results/multigraph-native-loading-measurement*
         if-no-files-found: warn
         retention-days: 14
 
@@ -3785,7 +3790,8 @@ jobs:
           --preparation benchmark-results/native-pressure-preparation \
           --output benchmark-results/native-pressure-cells \
           --prefix benchmark-results/multigraph-native-query \
-          --finalize-producers native-pressure-producers/packet.json
+          --finalize-producers native-pressure-producers/packet.json \
+          --loading-prefix benchmark-results/multigraph-native-loading
 
     - name: Upload native pressure results
       if: always()
@@ -3796,13 +3802,17 @@ jobs:
           benchmark-results/native-pressure-preparation/**
           benchmark-results/native-pressure-cells/**
           benchmark-results/multigraph-native-query*
+          benchmark-results/multigraph-native-loading*
           benchmark-results/multigraph-native-query-comparability-evidence/**
         if-no-files-found: warn
         retention-days: 14
 
     - name: Enforce native-query acceptance
       if: always()
-      run: jq -e '.passed == true' benchmark-results/multigraph-native-query-status.json >/dev/null
+      run: |
+        set -euo pipefail
+        jq -e '.passed == true' benchmark-results/multigraph-native-query-status.json >/dev/null
+        jq -e '.passed == true' benchmark-results/multigraph-native-loading-status.json >/dev/null
 
   rust-query-legacy:
     name: rust-query-legacy

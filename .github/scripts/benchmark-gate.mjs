@@ -6,6 +6,7 @@ import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { comparePressure } from "./benchmark-multigraph-pressure.mjs";
+import { compareNativeLoading } from "./benchmark-native-loading.mjs";
 import { compareConstruction } from "./benchmark-construction.mjs";
 import { compareLoading } from "./benchmark-loading.mjs";
 
@@ -38,7 +39,8 @@ export const REQUIRED_MULTIGRAPH_OPERATIONS = [
     {name:"jvm-query", engine:"jvm", operation:"query"},
     {name:"native-query", engine:"native", operation:"query"},
     {name:"construction", engine:"jvm", operation:"construction"},
-    {name:"loading", engine:"jvm", operation:"loading"}
+    {name:"loading", engine:"jvm", operation:"loading"},
+    {name:"native-loading", engine:"native", operation:"loading"}
 ];
 
 const MIB = 1024 * 1024;
@@ -3161,9 +3163,10 @@ export function aggregateReports(directory, metadata) {
             }
             const lifecycle = ["construction", "loading"].includes(operation.operation);
             if (lifecycle && evidence.evidence === undefined) {
-                const schema = operation.operation === "construction" ? "graphite.real64-construction.comparison.v1" : "graphite.jvm64-loading.comparison.v1";
+                const schema = operation.operation === "construction" ? "graphite.real64-construction.comparison.v1" :
+                    operation.engine === "native" ? "graphite.native64-loading.comparison.v1" : "graphite.jvm64-loading.comparison.v1";
                 if (evidence.schema !== schema ||
-                    evidence.engine !== "jvm" || evidence.operation !== operation.operation || evidence.passed !== false ||
+                    evidence.engine !== operation.engine || evidence.operation !== operation.operation || evidence.passed !== false ||
                     !["FAIL", "UNAVAILABLE"].includes(evidence.status) || evidence.otherOperationsEligible !== false ||
                     !Array.isArray(evidence.errors) || evidence.errors.length === 0 ||
                     !evidence.errors.every(value => typeof value === "string" && value.trim())) {
@@ -3194,11 +3197,12 @@ export function aggregateReports(directory, metadata) {
                 return target;
             };
             const compare = operation.operation === "construction" ? compareConstruction :
-                operation.operation === "loading" ? compareLoading : comparePressure;
+                operation.operation === "loading" ? (operation.engine === "native" ? compareNativeLoading : compareLoading) : comparePressure;
             const receipt = evidence.evidence?.comparabilityReceipt;
             const recomputed = compare(contained(evidence.evidence?.plan), contained(evidence.evidence?.directory),
                 receipt === undefined ? undefined : contained(receipt));
-            if (evidence.schema !== recomputed.schema || recomputed.engine !== operation.engine ||
+            if (evidence.schema !== recomputed.schema || evidence.engine !== operation.engine ||
+                evidence.operation !== operation.operation || recomputed.engine !== operation.engine ||
                 recomputed.operation !== operation.operation || evidence.planSha256 !== recomputed.planSha256 ||
                 JSON.stringify(evidence.comparisons) !== JSON.stringify(recomputed.comparisons) ||
                 recomputed.candidateRevision !== metadata.candidateSha ||

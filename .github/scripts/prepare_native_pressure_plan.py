@@ -9,6 +9,7 @@ import argparse
 import hashlib
 import json
 import re
+import sys
 from pathlib import Path
 import multigraph_pressure as pressure
 
@@ -391,7 +392,10 @@ def corrected_plan(bundle, producer_ref, output, catalog, *, measurement_only=Fa
 def pressure_plan(packet, cases, bindings, proofs, catalog, **extra):
     """The same workload and resource boundary for strict and corrected fixtures."""
     declared = catalog['engines']['native']
-    return {'schema': pressure.PLAN_SCHEMA, 'engine': 'native', 'operation': 'query', 'pins': dict(packet['pins']),
+    from native_loading import DECLARATION
+    return {**({'loadingMeasurement': dict(DECLARATION)}
+                if sys.platform == 'linux' and 'pendingComparabilityAuthority' in extra else {}),
+        'schema': pressure.PLAN_SCHEMA, 'engine': 'native', 'operation': 'query', 'pins': dict(packet['pins']),
         'catalog': {'path': str(CATALOG), 'sha256': pressure.sha(CATALOG)}, 'arms': packet['arms'],
         'proofs': proofs, 'cases': cases, 'nativeOracleBindings': bindings,
         'coverage': {'coveredFamilies': declared['coveredFamilies'], 'requiredFamilies': declared['requiredFamilies'],
