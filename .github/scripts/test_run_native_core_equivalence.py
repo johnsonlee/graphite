@@ -660,6 +660,113 @@ class ShardLifecycleTests(unittest.TestCase):
             self.assertEqual(0,r.main());join.assert_called_once_with(self.out,8)
 
 
+class ShardTerminalReuseTests(unittest.TestCase):
+    """Real tiny output bytes; only upstream semantics and subprocesses are stubbed."""
+    def fixture(self):
+        case=ShardLifecycleTests(methodName='runTest');case.setUp();self.addCleanup(case.doCleanups)
+        r.prepare(case.plan)
+        return case
+
+    def test_worker_keeps_two_complete_semantic_passes_and_standalone_replays(self):
+        case=self.fixture();original=r.graph_result
+        with patch.object(r,'graph_result',wraps=original) as replay:
+            result=r.run_shard(case.out,0,8)
+            assigned=[row['id'] for row in r.shard_rows(case.plan,0)]
+            self.assertEqual(r.SHARD_PASS,result['status'])
+            self.assertEqual(assigned*2,[call.args[1]['id'] for call in replay.call_args_list])
+            audit=r.common.read(case.out/'shards/0/audit.json')
+            self.assertEqual(result['graphs'],audit['graphs'])
+            replay.reset_mock()
+            with patch.object(r,'rebind',wraps=r.rebind) as authority:
+                self.assertEqual(audit,r.audit_shard(case.plan,0))
+                authority.assert_called_once()
+            self.assertEqual(assigned,[call.args[1]['id'] for call in replay.call_args_list])
+
+    def test_terminal_rejects_real_output_and_frozen_result_drift(self):
+        import os
+        for kind in ('bytes','same-size-restored-mtime','missing','added-file','added-directory',
+                     'removed-directory','directory-to-file','symlink','root-symlink','claim'):
+            with self.subTest(kind=kind):
+                case=self.fixture();root=case.out/'graphs/fixture-00';original=case.f.phase
+                saved=[];graph_result=r.graph_result;mutated=False
+                def phase(*args):
+                    value=original(*args)
+                    if args[0]=='fixture-00-topology':(root/'empty').mkdir()
+                    return value
+                def capture(*args):
+                    value=graph_result(*args);saved.append(value);return value
+                checked=r.checked_phases
+                def mutate(plan,refs,commands):
+                    nonlocal mutated
+                    value=checked(plan,refs,commands)
+                    if mutated or not saved:return value
+                    mutated=True;path=root/'core/field-bijection.tsv'
+                    if kind=='bytes':path.write_bytes(b'changed bytes')
+                    elif kind=='same-size-restored-mtime':
+                        before=path.stat();path.write_bytes(b'MAPPING');os.utime(path,ns=(before.st_atime_ns,before.st_mtime_ns))
+                    elif kind=='missing':path.unlink()
+                    elif kind=='added-file':(root/'extra').write_bytes(b'new')
+                    elif kind=='added-directory':(root/'new-empty').mkdir()
+                    elif kind=='removed-directory':(root/'empty').rmdir()
+                    elif kind=='directory-to-file':(root/'empty').rmdir();(root/'empty').write_bytes(b'')
+                    elif kind=='symlink':
+                        external=case.f.root/'external';external.write_bytes(path.read_bytes());path.unlink();path.symlink_to(external)
+                    elif kind=='root-symlink':
+                        external=case.f.root/'external';root.rename(external);root.symlink_to(external,target_is_directory=True)
+                    else:saved[0][r.COUNTS[0]]+=1
+                    return value
+                with patch.object(r.producer,'phase',side_effect=phase),patch.object(r,'graph_result',side_effect=capture), \
+                        patch.object(r,'checked_phases',side_effect=mutate),patch.object(r,'_audit_shard',wraps=r._audit_shard) as audit:
+                    result=r.run_shard(case.out,0,8)
+                self.assertTrue(mutated);self.assertEqual('FAIL',result['status']);self.assertEqual('FAIL',result['finalIdentity'])
+                self.assertTrue(any('final verification:' in error for error in result['errors']))
+                self.assertEqual(result,r.common.read(case.out/'shards/0/record.json'))
+                audit.assert_not_called();self.assertFalse((case.out/'shards/0/audit.json').exists())
+
+    def test_inventory_change_during_terminal_byte_read_is_rejected(self):
+        case=self.fixture();root=case.out/'graphs/fixture-00';inventory=r.artifacts.inventory;reads=0
+        def drift(path):
+            nonlocal reads
+            value=inventory(path)
+            if Path(path)==root:
+                reads+=1
+                if reads==2:(root/'after-byte-read').mkdir()
+            return value
+        with patch.object(r.artifacts,'inventory',side_effect=drift):result=r.run_shard(case.out,0,8)
+        self.assertEqual(2,reads);self.assertEqual('FAIL',result['status']);self.assertEqual('FAIL',result['finalIdentity'])
+        self.assertTrue(any('output shape changed' in error for error in result['errors']))
+        self.assertEqual(result,r.common.read(case.out/'shards/0/record.json'))
+        self.assertFalse((case.out/'shards/0/audit.json').exists())
+
+    def test_mutation_after_terminal_still_fails_independent_semantic_audit(self):
+        case=self.fixture();audit=r._audit_shard
+        def mutate(*args):
+            path=case.out/'graphs/fixture-00/topology.json';value=r.common.read(path)
+            value['reference']='/foreign';path.write_text(json.dumps(value))
+            return audit(*args)
+        with patch.object(r,'_audit_shard',side_effect=mutate):
+            with self.assertRaisesRegex(ValueError,'raw core topology proof identity'):r.run_shard(case.out,0,8)
+        record=r.common.read(case.out/'shards/0/record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertFalse((case.out/'shards/0/audit.json').exists())
+
+    def test_partial_phase_failure_still_fresh_checks_completed_outputs(self):
+        case=self.fixture();original=case.f.phase;assigned=r.shard_rows(case.plan,0)
+        failed=assigned[1]['id']+'-core'
+        def phase(*args):
+            if args[0]==failed:
+                (case.out/'graphs'/assigned[0]['id']/'core/field-bijection.tsv').write_bytes(b'MAPPING')
+                raise RuntimeError('phase interrupted after completed graph')
+            return original(*args)
+        with patch.object(r.producer,'phase',side_effect=phase):result=r.run_shard(case.out,0,8)
+        self.assertEqual('FAIL',result['status']);self.assertEqual('FAIL',result['finalIdentity'])
+        self.assertEqual(1,len(result['graphs']))
+        self.assertTrue(any('phase interrupted' in error for error in result['errors']))
+        self.assertTrue(any('output bytes changed' in error for error in result['errors']))
+        self.assertEqual(result,r.common.read(case.out/'shards/0/record.json'))
+        self.assertFalse((case.out/'shards/0/audit.json').exists())
+
+
 class FreshPreparationTests(unittest.TestCase):
     """Actual tiny Git/input closures with the existing owned-phase fixture."""
     def setUp(self):

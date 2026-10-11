@@ -18766,7 +18766,7 @@ Preparation manifest SHA256:
 Retain this removal of repeated complete assembly. No hosted rerun or product
 performance measurement was performed. The old9m54 stage is not a guaranteed net
 saving: retained audits, fresh checks and publishing the generated packet still
-cost time. Complete CI remains unbounded below two hours; product query latency,
+cost time. Complete CI has no verified two-hour bound; product query latency,
 loading CPU/RSS, construction CPU and fresh JVM35 acceptance gaps remain open.
 
 #### Workflow contract follow-up for attempts238 and242
@@ -18783,3 +18783,78 @@ both successful and failed exit propagation. All138 Node gate tests pass in
 16.510s, with no skips. Root reviewed the diff and original log:
 `/tmp/graphite-stale-workflow-contracts-node.log`. No production, Python verifier
 or measurement code changes are included in this follow-up.
+
+### Attempt243 — recheck shard bytes without decoding each proof again (2026-10-12)
+
+Integration parent:4ae7f02f. Tested source parent:c31dfc2f; the intervening commit
+only corrects Node workflow tests and their history. A shard fully decoded each
+graph proof immediately after producing it, again at its terminal boundary, and
+again in the independent shard audit. Freeze the first successful small result
+and closed file/directory shape inside execute_stage. At the middle boundary,
+require the result to remain identical, freshly hash every output file, and
+check the closed shape both before and after hashing. Retain the first complete
+semantic check, the independent full shard audit, preparation/source authority,
+all phase receipts and final result pins. Clear the private snapshots at exit;
+no cache, serialized authorization or caller-supplied bypass survives the call.
+
+This affects only the middle shard check. Preparation, standalone audit and join
+semantics are unchanged. Directory membership checks also reject symlinks,
+special files, additions and removals, including a directory inserted during
+terminal hashing. Same-size/restored-mtime byte changes, mutated in-memory
+claims, partial phase failure and mutation before the independent audit still
+fail. Synthetic tiny files supply correctness evidence only.
+
+The frozen isolated source passes115 Python runner/worker/control tests in
+38.633s. Root reviewed the patch, original logs and exact equality of both
+integrated Python files, manifest and workflow. The separate stale Node contracts
+were corrected in4ae7f02f; the integrated candidate then passes all138 Node gate
+tests in16.222s (16.247s wrapper wall), without skips. Actionlint, all193 pins and
+whitespace checks pass. Evidence:
+`/tmp/graphite-attempt243-final-python-tests.log`,
+`/tmp/graphite-attempt243-integrated-node.log`,
+`/tmp/graphite-attempt243-root-review.json`.
+Preparation manifest SHA256:
+54beaf56c09e1d9b0edbf351b4579f5d7c6260bb849c93b00ea600c02645df17.
+
+Retain the eliminated repeated semantic decoding. Old91's slowest shard execute
+window was31m44, but there are no substage timings separating its semantic
+replays. Do not treat that entire window as removable or infer a hosted saving
+from three semantic passes becoming two. No product performance run was added.
+
+#### Completed91 finalization and bounded JVM35 input preparation
+
+Run38151918852 is now terminal FAILURE, approximately3h42 end to end. Construction
+finalization completed its full six-output graph audit and core join: errors are
+empty, coreComparabilityVerified=true and comparabilityPending=false. The job
+took55m35, including27m24 in the final join. Original wall/CPU gates fail and RSS
+passes; this is a completed audit with a remaining performance regression.
+Independent local reconstruction verified144 portable metadata records,66 raw
+file pins, six CABBAC cells,12 owned phases and75 unchanged original measurement
+files. It replayed the original portable comparator; it did not redownload or
+re-audit the large saved graphs. Evidence:
+`/tmp/graphite-ci91ee70-construction-finalizer-review/review.json`;
+artifact11712237922 SHA256:
+11bc494f3137edaa7e123b947bb2cb947ca2e2fb2df2500404e3f15903d3a5d8.
+
+The original local acd11 GTY05 real64 corpus now has a complete original-ID GSE01
+export:21,081,154 arcs,189,731,410 output bytes. Compiling the helper, exporting,
+fully consuming all edges, checking input identities and owned cleanup took
+86.246s under a180s work budget. Command:
+`python3 -B /tmp/graphite-jvm35-raw-export-prep-1/run.py`.
+Root review:`/tmp/graphite-jvm35-raw-export-1/root-review.json`.
+
+A four-real-graph phase-cost preflight completed in28.066s: raw graph reading
+24.389s, primitive-request collection2.997s, complete raw-edge consumption0.348s.
+It estimated the full primitive stage before launch. Complete original64
+collection and actual JDK conversions then passed in409.034s under a600s work
+budget plus60s cleanup reserve, with all19,438,199 actual nodes and25,917 primitive
+operations. Every graph emitted stage progress; all actual inputs were checked
+on read and at completion. Owned Java phases use-Xmx4g/ActiveProcessorCount4;
+this macOS/JDK17/Python3.14 diagnostic ran alongside small correctness tests.
+Command:`python3 -B /tmp/graphite-jvm35-primitive-facts-prep-1/run.py`.
+Root review:`/tmp/graphite-jvm35-primitive-facts-1/root-review.json`.
+
+These are historical-writer correctness inputs and scheduling diagnostics, not
+current fresh-writer acceptance, all35 query derivation or performance samples.
+Actual query comparison and remaining product regressions stay open. Complete CI
+has not been shown to finish within two hours; no new hosted run was launched.

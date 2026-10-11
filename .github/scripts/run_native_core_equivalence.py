@@ -541,6 +541,24 @@ def _check_worker_inputs(plan,authority):
         authority.check(plan)
 
 
+def _graph_output_shape(root):
+    """Closed file/directory membership; byte identity is checked separately."""
+    root=Path(root)
+    require(root==root.resolve(),'canonical graph output root')
+    entries=[]
+    def visit(path):
+        mode=path.lstat().st_mode
+        if stat.S_ISDIR(mode):
+            entries.append((str(path),'directory'))
+            for child in sorted(path.iterdir()):visit(child)
+        else:
+            require(stat.S_ISREG(mode),'graph output must be a regular file or directory')
+            entries.append((str(path),'file'))
+    visit(root)
+    require(entries[0][1]=='directory','real graph output directory')
+    return tuple(entries)
+
+
 def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     """Own one bounded serial stage; distinct workers never write shared receipts."""
     out=Path(plan['output']);is_preparation=rows is None
@@ -550,7 +568,7 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     if not is_preparation:
         record.update(shardIndex=int(path.parent.name),shardCount=plan['execution']['shardCount'],
                       preparation=artifacts.ref(out/'preparation.json'),graphs=[])
-    previous={}
+    previous={};completed_graphs=[]
     def interrupted(signum,frame):raise InterruptedError('signal '+str(signum))
     try:
         for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
@@ -562,7 +580,13 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
             record['phases'].append(artifacts.ref(out/name/'record.json'))
             if not is_preparation and name.endswith('-topology'):
                 row=next(row for row in rows if row['id']==name[:-len('-topology')])
-                record['graphs'].append(graph_result(plan,row))
+                result=graph_result(plan,row)
+                root=out/'graphs'/row['id'];shape=_graph_output_shape(root)
+                require({name for name,kind in shape if kind=='file'}==set(result['files']),
+                        'completed graph file inventory changed')
+                # Only this invocation owns the frozen successful semantic result.
+                completed_graphs.append((root,json.dumps(result,sort_keys=True),shape))
+                record['graphs'].append(result)
             path.write_text(json.dumps(record,indent=2)+'\n')
             progress('phase','complete',phase=name,completedGraphs=len(record.get('graphs',[])))
         checked_phases(plan,record['phases'],expected)
@@ -587,12 +611,18 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
             if not is_preparation:
                 check_preparation(plan)
                 require(record['preparation']==artifacts.ref(out/'preparation.json'),'preparation changed during shard')
-                require(record['graphs']==[graph_result(plan,row) for row in rows[:len(record['graphs'])]],
-                        'completed shard outputs changed')
+                require(len(record['graphs'])==len(completed_graphs),'completed shard proof inventory changed')
+                for result,(root,frozen,shape) in zip(record['graphs'],completed_graphs):
+                    require(json.dumps(result,sort_keys=True)==frozen,'completed shard proof changed')
+                    require(_graph_output_shape(root)==shape,'completed shard output shape changed')
+                    require(artifacts.inventory(root)==json.loads(frozen)['files'],
+                            'completed shard output bytes changed')
+                    require(_graph_output_shape(root)==shape,'completed shard output shape changed')
                 if record['status']==SHARD_PASS:check_worker_graphs(plan,rows)
             record['finalIdentity']='PASS'
         except BaseException as error:
             record['errors'].append('final verification: '+repr(error));record['finalIdentity']='FAIL'
+        completed_graphs.clear()
         if record['errors']:record['status']='FAIL'
         path.write_text(json.dumps(record,indent=2)+'\n')
         for sig,handler in previous.items():signal.signal(sig,handler)
