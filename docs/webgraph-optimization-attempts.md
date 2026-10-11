@@ -16962,3 +16962,50 @@ remain separate, incomplete conclusions. Evidence:
 `/tmp/graphite-ci7d3805-native-measurement-review/rss-envelope-parent-recomputation.json`,
 `/tmp/graphite-feedback-rss-python-tests.log` and
 `/tmp/graphite-feedback-rss-node-tests.log`.
+
+
+### Attempt212 — avoid CallSite body reads for a synthetic identity leaf (2026-10-11)
+
+**Hypothesis.** A CallSite predicate containing only one synthetic identity leaf
+uses its graph prefix and node ID. The raw sweep nevertheless read caller/callee
+descriptors and line data for every candidate. Skip those irrelevant body reads
+for this single-leaf case, retaining the node-offset existence check and exactly
+the original string matching operation. Mixed predicates and all other leaves
+retain the raw-record path; no longer-lived cache or second optimization is added.
+
+Base: `51cb766236b3ac5f11d8974078ab05b30b22cefd`; candidate: this commit.
+Motivation is the preserved real64 CABBAC diagnostic from run38120724071.
+For `slow-qualifiedIdHit`, accepted4f/candidate7d p95 was2359.171→2580.301ms
+(+221.130ms) in the forward pair and2465.000→2545.873ms (+80.872ms) in the
+reverse pair. Corresponding p50 was2083.445→2241.638ms (+158.193ms) and
+2150.191→2111.632ms (−38.559ms). A and C both identify accepted4f; A is the
+PR-base alias, not another production revision. All4680 measured requests and
+all39 cases/four comparisons are retained. The last C cell's original resource
+FAIL and incomplete core comparability prevent acceptance of that old cohort.
+
+The query searches `n.qualifiedId CONTAINS '938826'` across64 graphs and returns
+39 complete rows, fewer than LIMIT50. It does not render generic types. The
+principal sweep implementation predates this feature, so this candidate removes
+an existing cost; it is not evidence that generic decoding caused the observed
+latency difference. Unfavorable observations remain in the complete diagnostic
+report. No new performance measurements were run for this attempt.
+
+Correctness:184 release Cypher unit tests and one inherited JVM-interoperability
+test passed with all declared-type/index fixtures required. Four new tests prove
+no record-body access for the single synthetic leaf, missing-offset exclusion,
+matching results and order against the old raw path, preserved mixed/other record
+access, and complete two-graph results with LIMIT and cancellation. Workspace
+formatting and release Cypher all-targets Clippy with warnings denied passed.
+The integrated files and validation logs match the reviewed prototype hashes.
+Identity queries no longer trigger the old incidental raw-reader panic on an
+irrelevant malformed body; loader validation is unchanged and missing offsets
+remain excluded. This is not a promise to preserve that incidental panic.
+
+**Decision: retain for the next matched multi-graph measurement.** Source-access
+tests establish eliminated reads, not elapsed-time gains. Query p50/p95, CPU/RSS,
+construction/loading and complete regression acceptance remain pending for the
+cumulative candidate. Tiny fixtures were used only for correctness, never for
+performance selection or acceptance. Exact validation commands, fixture paths,
+source/log hashes and scope are in
+`/tmp/graphite-synthetic-id-sweep-prototype-report.json`; prior diagnostic evidence is
+`/tmp/graphite-ci7d3805-native-measurement-review/request-diagnostic-summary.json`.

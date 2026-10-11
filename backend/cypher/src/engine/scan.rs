@@ -1684,6 +1684,26 @@ impl RawRecord {
 }
 
 impl RawTree {
+    /// Synthetic identity is independent of the record body. Keep the offset
+    /// existence check: a stale type-index entry must still be skipped.
+    fn matches_at(
+        &self,
+        graph: &Graph,
+        data: &[u8],
+        offset: Option<usize>,
+        id: u32,
+        st: &mut RawSweepState,
+    ) -> bool {
+        let Some(offset) = offset else {
+            return false;
+        };
+        if let RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) = self {
+            return synthetic_matches(prefix, *with_id, p, id, &mut st.text);
+        }
+        let record = RawRecord::read(data, offset, id);
+        self.eval(graph, data, &record, st)
+    }
+
     fn build(
         graph: &Graph,
         graph_id: &str,
@@ -1764,13 +1784,7 @@ impl RawTree {
             },
             RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
             RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) => {
-                st.text.clear();
-                st.text.push_str(prefix);
-                if *with_id {
-                    let mut buf = [0u8; 10];
-                    st.text.push_str(u32_text(r.id, &mut buf));
-                }
-                p.matches_raw(&st.text)
+                synthetic_matches(prefix, *with_id, p, r.id, &mut st.text)
             }
             RawTree::Leaf(RawLeaf::Signature { callee, memo }, p) => {
                 let start = if *callee { r.callee } else { r.caller };
@@ -1778,6 +1792,22 @@ impl RawTree {
             }
         }
     }
+}
+
+fn synthetic_matches(
+    prefix: &str,
+    with_id: bool,
+    pred: &StringPredicate,
+    id: u32,
+    text: &mut String,
+) -> bool {
+    text.clear();
+    text.push_str(prefix);
+    if with_id {
+        let mut buf = [0u8; 10];
+        text.push_str(u32_text(id, &mut buf));
+    }
+    pred.matches_raw(text)
 }
 
 /// A number read off the record against the leaf: equal to the literal number, or as
@@ -1811,12 +1841,7 @@ fn raw_sweep(graph: &Graph, graph_id: &str, tree: &PredTree, tests: usize) -> Ve
             chunk
                 .iter()
                 .copied()
-                .filter(|&id| {
-                    graph.node_offset(id).is_some_and(|offset| {
-                        let record = RawRecord::read(data, offset, id);
-                        raw.eval(graph, data, &record, &mut st)
-                    })
-                })
+                .filter(|&id| raw.matches_at(graph, data, graph.node_offset(id), id, &mut st))
                 .collect()
         })
         .collect();
@@ -4124,6 +4149,10 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         PredTree::And(children) => children.iter().all(|c| may_match(graph, c)),
     }
 }
+
+#[cfg(test)]
+#[path = "synthetic_id_sweep_tests.rs"]
+mod synthetic_id_sweep_tests;
 
 #[cfg(test)]
 mod tests {
