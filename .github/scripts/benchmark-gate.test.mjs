@@ -4769,10 +4769,11 @@ test("native core shard downloads restore all numbered artifacts and reject miss
                 fs.writeFileSync(path.join(bin,"python3"),`#!${process.execPath}\n`+`
 const fs=require("node:fs"), assert=require("node:assert/strict"), args=process.argv.slice(2);
 const values=key=>args.flatMap((v,i)=>v===key?[args[i+1]]:[]), value=key=>values(key)[0];
-if (process.env.RESTORE_JOB === "rust-core") {
+if (["rust-core","rust-core-shard"].includes(process.env.RESTORE_JOB)) {
     const arm=process.env.CHECKPOINT_ARM;
-    assert.deepEqual(args,["-B","candidate/.github/scripts/native_pressure_checkpoint.py","restore-core-chain",
-        "--stage","core-shard","--arm",arm,"--shard-count","8","--directory","pressure-checkpoints",
+    const join=process.env.RESTORE_JOB === "rust-core", action=join?"restore-core-chain":"restore-worker-chain";
+    assert.deepEqual(args,["-B","candidate/.github/scripts/native_pressure_checkpoint.py",action,
+        "--stage",join?"core-shard":"core-prepare","--arm",arm,"--shard-count","8","--directory","pressure-checkpoints",
         "--workspace",process.env.GITHUB_WORKSPACE,"--head-sha",process.env.CANDIDATE_SHA,
         "--base-sha",process.env.BASE_SHA,"--run-id","1234","--run-attempt","2"]);
     const check=(directory,stage,checkpointArm,shardIndex=null)=>{
@@ -4781,8 +4782,8 @@ if (process.env.RESTORE_JOB === "rust-core") {
     };
     check("producer-producer","producer","producer");
     check("core-prepare-"+arm,"core-prepare",arm);
-    for(let index=0;index<8;index++) check("native-checkpoint-core-shard-"+arm+"-"+index+"-1234-2","core-shard",arm,index);
-    fs.appendFileSync(process.env.RESTORE_CALLS,"restore-core-chain:"+arm+"\\n");
+    if(join) for(let index=0;index<8;index++) check("native-checkpoint-core-shard-"+arm+"-"+index+"-1234-2","core-shard",arm,index);
+    fs.appendFileSync(process.env.RESTORE_CALLS,action+":"+arm+"\\n");
     process.exit(0);
 }
 assert.ok(args.includes("restore"));
@@ -4796,7 +4797,8 @@ fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":
 `,{mode:0o755});
                 const step=rustWorkflowStep(job,"Verify and restore exact checkpoint closure");
                 const start=step.indexOf(id==="rust-core" ?
-                    "        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-core-chain" : "        PRODUCER=");
+                    "        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-core-chain" : id==="rust-core-shard" ?
+                    "        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-worker-chain" : "        PRODUCER=");
                 assert.ok(start>=0,`${id}: checkpoint restore entry must exist`);
                 const shell="set -euo pipefail\n"+step.slice(start).split("\n").map(line=>line.replace(/^        /,"")).join("\n");
                 const calls=path.join(directory,"calls"),env={...process.env,PATH:`${bin}:${process.env.PATH}`,BASE_SHA:base,
@@ -4804,7 +4806,7 @@ fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":
                     GITHUB_RUN_ID:"1234",GITHUB_RUN_ATTEMPT:"2",RESTORE_CALLS:calls,RESTORE_JOB:id};
                 const run=()=>spawnSync("bash",["-c",shell],{cwd:directory,env,encoding:"utf8"});
                 const good=run();assert.equal(good.status,0,`${id}/${base}/${arm}: ${good.stderr}`);
-                const expected=id==="rust-core" ? [`restore-core-chain:${arm}`] :
+                const expected=id==="rust-core" ? [`restore-core-chain:${arm}`] : id==="rust-core-shard" ? [`restore-worker-chain:${arm}`] :
                     ["producer:producer",...(id==="rust-core-prepare"?[]:[`core-prepare:${arm}`])];
                 assert.deepEqual(fs.readFileSync(calls,"utf8").trim().split("\n"),expected);
                 // Test every shard, not only the last: a pattern download with seven artifacts must fail.

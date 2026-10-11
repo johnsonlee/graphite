@@ -627,6 +627,29 @@ def restore_core_chain(args):
                         'shardCount': 8}, 'proofAuthority': False, 'performanceAcceptance': False}
 
 
+def restore_worker_chain(args):
+    """Restore the fixed producer/preparation pair before a core worker runs."""
+    require(args.stage == 'core-prepare' and args.arm in ('A', 'B') and
+            type(getattr(args, 'shard_count', None)) is int and args.shard_count == 8 and
+            getattr(args, 'shard_index', None) is None and not args.upstream,
+            'fixed worker chain arguments')
+    ident = identity(args)
+    root = canonical(Path(args.directory).absolute())
+    producer = root/'producer-producer'
+    entries = []
+    for stage, arm, directory, upstream in (
+            ('producer', 'producer', producer, []),
+            ('core-prepare', args.arm, root/('core-prepare-'+args.arm), [producer/'manifest.json'])):
+        values = vars(args).copy()
+        values.update(stage=stage, arm=arm, directory=str(directory), shard_index=None,
+                      shard_count=None if stage == 'producer' else 8,
+                      upstream=[str(path) for path in upstream])
+        entries.append(argparse.Namespace(**values))
+    _restore_chain(args, entries)
+    return {'identity': {**ident, 'stage': 'worker-chain'},
+            'proofAuthority': False, 'performanceAcceptance': False}
+
+
 def restore_consumer_chain(args):
     """Restore the fixed complete core or JVM consumer input closure.
 
@@ -749,7 +772,7 @@ def _restore_chain(args, entries):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain', 'restore-consumer-chain'))
+    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain', 'restore-worker-chain', 'restore-consumer-chain'))
     for name in ('stage', 'arm', 'directory', 'workspace', 'head-sha', 'base-sha', 'run-id', 'run-attempt'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--upstream', action='append', default=[])
@@ -758,6 +781,7 @@ def main():
     args = parser.parse_args()
     value = (seal(args) if args.action == 'seal' else
              restore_core_chain(args) if args.action == 'restore-core-chain' else
+             restore_worker_chain(args) if args.action == 'restore-worker-chain' else
              restore_consumer_chain(args) if args.action == 'restore-consumer-chain' else restore(args))
     print(json.dumps({'checkpointTransport': args.action, 'identity': value['identity'],
                       'proofAuthority': False, 'performanceAcceptance': False}))

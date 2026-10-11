@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: da7b20e5261df8567c26d0cdc5d865913d2d6a0b7300dc8a89845f3af5aab3b3
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 836a4cce13c3754785c8e3ef6af5cc840aa135513878914aacd372b312771d1c
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 3e12a038f2e6f4661ac63308a51fdd566612e1c516afb73d20edfc2f823d1e92
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -85,6 +85,9 @@ jobs:
 
     - name: Test complete consumer checkpoint chain restoration
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_consumer_chain.py'
+
+    - name: Test complete worker checkpoint chain restoration
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_worker_chain.py'
 
     - name: Test native pressure plan preparation without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_prepare_native_pressure_plan.py'
@@ -3211,15 +3214,9 @@ jobs:
         set -euo pipefail
         test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
         (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
-        PRODUCER=pressure-checkpoints/producer-producer/manifest.json
-        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
-          --stage producer --arm producer --directory pressure-checkpoints/producer-producer --workspace "${GITHUB_WORKSPACE}" \
-          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
-          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
-        PREPARATION="pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}/manifest.json"
-        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-worker-chain \
           --stage core-prepare --arm "${CHECKPOINT_ARM}" --shard-count 8 \
-          --directory "${PREPARATION%/manifest.json}" --upstream "${PRODUCER}" --workspace "${GITHUB_WORKSPACE}" \
+          --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 

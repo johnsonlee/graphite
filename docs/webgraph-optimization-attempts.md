@@ -17279,3 +17279,69 @@ head/run identity and published archive digest
 This is03f CI stage evidence; the local Attempt213–216 changes have not run in
 hosted CI, and no total-CI speedup is attributed to them. Log:
 `/tmp/graphite-ci03f4dd-producer.log`.
+
+### Attempt217 — restore worker producer and preparation inputs in one transaction (2026-10-11)
+
+The complete historical shard inventory corrects the earlier critical-path proxy:
+the slowest worker was B,2 at85m40s, rather than the roughly59m sampled workers.
+Together with producer58m36s and core preparation34m20s this is178m36s before
+the final core join or JVM consumers. A two-hour complete acceptance bound is
+not established. The current03f run has reached Native measurement and core
+preparation, but has not yet established the new complete path's duration.
+
+The completed B,2 log separates12m43s in checkpoint restore,11m59.5s before
+the first core phase,17m23.4s in16 core/topology phases,31m54.1s after the last
+phase, and10m27s in sealing. Those outer windows include multiple kinds of
+work; they are not all removable overhead. The earlier worker input authority
+already addresses repeated outer rebinds and must not be counted as a new fix.
+
+One remaining duplication is independently identifiable: each worker restores
+the producer and core preparation in two separate processes. The existing join
+transaction and Attempt215 consumer transaction do not cover this worker input
+boundary. Add a fixed producer-plus-preparation profile to the same private
+restore transaction and use it in the worker workflow. Its entire manifest
+preflight, conflict rejection, source and runner identity checks, closed
+inventories, archive verification and independent final byte reread remain.
+No graph checker or pressure measurement executes inside the transaction.
+
+Parent:35db915c; accepted baseline:4f2ccf3. Product code and the real64
+Native39/JVM35 matched six-cell workloads are unchanged. This is a transport
+optimization; small-fixture tests establish correctness and source-access
+behavior only. Hosted latency, CPU/RSS, construction, loading and complete
+regression acceptance remain pending. The12m43s historical restore window
+cannot be presented as predicted savings. Replacing the active run still
+requires fresh preparation and the same downstream core/JVM chain, so this
+local change alone does not establish that an immediate restart is faster.
+
+Historical evidence: `/tmp/graphite-ci7d3805-core-shard2.log` and
+`/tmp/graphite-ci7d3805-core-shard2-timings.json`.
+
+Verification:14 new worker-chain tests,41 existing checkpoint tests,11 existing
+core-chain tests,18 consumer-chain tests and3 public-CLI handoff smoke tests
+passed (87 total). The new tests exercise real sealing, named ZIP download
+layout, restoration and consumption for B and distinct-base A; reject incorrect
+identities, upstreams, partitions, missing or corrupt archives and conflicting
+writes; and detect same-size/same-mtime content mutation during the independent
+final read. An initial new-fixture assertion failed because the preparation did
+not explicitly share the asserted producer input; the fixture was corrected to
+pin the actual shared graph and writer, then all14 tests passed. This was a test
+fixture correction, not a weakened assertion or skipped validation.
+
+The workflow tests execute the exact restore shell for every required arm and
+reject missing or wrongly identified downloaded artifacts. All217 Node gate
+tests passed. Actionlint passed with shellcheck disabled, all185 correctness and
+preparation file pins and their workflow bindings verified, and diff checks
+passed. Independent read-only review found no blocker and confirmed that the
+actual historical producer's closed subtrees allow the preparation additions.
+
+Untimed A/B fixture instrumentation records4 shared graph/writer digest reads
+with the old sequential restores versus2 with the worker transaction: one
+initial read and one fresh final read. This proves removal of duplicate reads
+in this boundary only. Evidence: `/tmp/graphite-worker-chain-read-counts.json`,
+`/tmp/graphite-worker-chain-tests.log`,
+`/tmp/graphite-worker-chain-existing-{checkpoint,restore,consumer,smoke}-tests.log`,
+`/tmp/graphite-worker-chain-node-tests.log` and
+`/tmp/graphite-worker-chain-control-verification.json`.
+
+**Decision: retain locally.** Hosted CI has not exercised this change; no
+end-to-end speedup or cumulative product regression recovery is claimed.
