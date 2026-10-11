@@ -595,6 +595,98 @@ class CheckpointTests(unittest.TestCase):
         args.shard_count = 8; args.shard_index = index
         return args
 
+    def seal_overlap_fixture(self):
+        graph = self.root/'B/graphs/graph.nodes'
+        original_json = self.json
+        def with_graph_pins(path, value):
+            if path.name == 'plan.json' and value.get('schema') == 'graphite.native-core-equivalence-plan.v1':
+                value['pins'].update({str(p): checkpoint.sha(p) for p in (graph, self.writer)})
+            original_json(path, value)
+        with patch.object(self, 'json', side_effect=with_graph_pins):
+            core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        return args, graph, out
+
+    def test_seal_reads_overlapping_graph_and_writer_once_per_fresh_boundary(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        original_sha = checkpoint.sha; reads = []
+        def counting(path):
+            reads.append(str(path)); return original_sha(path)
+        with patch.object(checkpoint, 'sha', side_effect=counting):
+            manifest = checkpoint.seal(args)
+        for path in (graph, self.writer):
+            self.assertEqual(2, reads.count(str(path)), str(path))
+            self.assertNotIn(str(path), manifest['payload'])
+            self.assertEqual(original_sha(path), manifest['files'][str(path)]['sha256'])
+        # Scope cannot escape a seal invocation, including a later identical seal.
+        args.directory += '-again'; reads.clear()
+        with patch.object(checkpoint, 'sha', side_effect=counting):
+            again = checkpoint.seal(args)
+        for path in (graph, self.writer): self.assertEqual(2, reads.count(str(path)))
+        self.assertEqual(manifest['files'], again['files'])
+        self.assertEqual(manifest['payload'], again['payload'])
+
+    def test_seal_fresh_final_reads_reject_same_size_same_mtime_mutations(self):
+        args, graph, out = self.seal_overlap_fixture()
+        upstream_only = self.workspace/'shared-fixture64/graphs/graphs.tsv'
+        payload = out/'graphs/alpha-00/topology.json'
+        source = self.workspace/'candidate/tracked'
+        original_sha = checkpoint.sha
+        for index, target in enumerate((graph, self.writer, upstream_only, payload, source)):
+            with self.subTest(target=target):
+                before = target.read_bytes(); times = target.stat()
+                args.directory = str(self.workspace/f'pressure-checkpoints/mutation-{index}')
+                def mutate_after_archive(path):
+                    result = original_sha(path)
+                    if Path(path) == Path(args.directory)/'payload.tar.gz':
+                        target.write_bytes(bytes([before[0] ^ 1])+before[1:])
+                        os.utime(target, ns=(times.st_atime_ns, times.st_mtime_ns))
+                    return result
+                try:
+                    with patch.object(checkpoint, 'sha', side_effect=mutate_after_archive):
+                        with self.assertRaises(ValueError): checkpoint.seal(args)
+                    self.assertFalse((Path(args.directory)/'manifest.json').exists())
+                finally:
+                    target.write_bytes(before); os.utime(target, ns=(times.st_atime_ns, times.st_mtime_ns))
+
+    def test_seal_reuse_rejects_conflicting_upstream_file_declarations(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        preparation = Path(args.upstream[1]); original = preparation.read_bytes()
+        for key, value in (('sha256', '0'*64), ('size', graph.stat().st_size+1), ('mode', 0o700)):
+            with self.subTest(attribute=key):
+                mutated = json.loads(original)
+                mutated['files'][str(graph)][key] = value
+                checkpoint.save(preparation, mutated)
+                with self.assertRaises(ValueError): checkpoint.seal(args)
+                self.assertFalse(Path(args.directory).exists())
+                preparation.write_bytes(original)
+
+    def test_seal_fresh_final_boundary_keeps_structural_and_upstream_checks(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        original_sha = checkpoint.sha
+        preparation = Path(args.upstream[1]); original_manifest = preparation.read_bytes()
+        original_mode = graph.stat().st_mode & 0o777
+        extra = graph.parent/'unexpected'; removed = graph.with_name('moved')
+        def wrong_mode(): graph.chmod(0o700)
+        def new_member(): self.write(extra, 'unexpected')
+        def changed_upstream(): preparation.write_bytes(original_manifest+b' ')
+        def replaced_link(): graph.rename(removed); graph.symlink_to(removed.name)
+        for index, mutation in enumerate((wrong_mode, new_member, changed_upstream, replaced_link)):
+            with self.subTest(mutation=mutation.__name__):
+                args.directory = str(self.workspace/f'pressure-checkpoints/structure-{index}')
+                def mutate_after_archive(path):
+                    result = original_sha(path)
+                    if Path(path) == Path(args.directory)/'payload.tar.gz': mutation()
+                    return result
+                try:
+                    with patch.object(checkpoint, 'sha', side_effect=mutate_after_archive):
+                        with self.assertRaises(ValueError): checkpoint.seal(args)
+                    self.assertFalse((Path(args.directory)/'manifest.json').exists())
+                finally:
+                    if graph.is_symlink(): graph.unlink(); removed.rename(graph)
+                    graph.chmod(original_mode); extra.unlink(missing_ok=True)
+                    preparation.write_bytes(original_manifest)
+
     def test_sharded_core_roundtrip_preserves_disjoint_leaves_and_shared_preparation(self):
         core, out, plan, prep_args, prep = self.sharded_core_fixture()
         args, manifests = [], []
@@ -694,7 +786,7 @@ class CheckpointTests(unittest.TestCase):
         args = self.write_core_shard(core, out, plan, prep_args, 0)
         checkpoint.check_files(prep)
         self.write(out/'classes/VerifyTopology.class', 'changed helper')
-        with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.seal(args)
+        with self.assertRaisesRegex(ValueError, 'restored file identity|chain file type/mode/size changed'): checkpoint.seal(args)
 
 
 if __name__ == '__main__':

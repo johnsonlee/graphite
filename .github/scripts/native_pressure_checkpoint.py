@@ -214,8 +214,9 @@ def check_shard_transport(workspace, ident, files):
 
 
 class Collector:
-    def __init__(self, workspace, inherited=()):
+    def __init__(self, workspace, inherited=(), _authority=None):
         self.workspace = workspace
+        self._authority = _authority
         self.files = {}
         self.directories = set()
         self.closed = {}
@@ -241,13 +242,20 @@ class Collector:
         p = canonical(path)
         require(p.is_file() and not p.is_symlink(), 'missing artifact: '+str(p))
         prior = self.files.get(str(p))
-        actual = prior['sha256'] if prior is not None else sha(p)
+        if prior is None and self._authority is not None:
+            prior = self._authority.verified.get(str(p))
+        actual = (self._authority.digest(p, prior) if prior is not None and self._authority is not None
+                  else prior['sha256'] if prior is not None else sha(p))
         require(digest is None or actual == digest, 'artifact digest: '+str(p))
         mode = stat.S_IMODE(p.stat().st_mode)
         require(not mode & 0o6000, 'setuid/setgid payload prohibited')
         value = {'sha256': actual, 'mode': mode, 'size': p.stat().st_size}
         require(str(p) not in self.files or self.files[str(p)] == value, 'conflicting file')
         self.files[str(p)] = value
+        if self._authority is not None:
+            require(str(p) not in self._authority.verified or self._authority.verified[str(p)] == value,
+                    'conflicting collected file attributes')
+            self._authority.verified[str(p)] = dict(value)
 
     def tree(self, root, closed=True, tool=False):
         root = canonical(root)
@@ -442,8 +450,15 @@ def seal(args):
     ident = identity(args); workspace = Path(ident['workspace']); directory = Path(args.directory).absolute()
     require(not directory.exists(), 'fresh checkpoint directory required')
     sources = git_sources(workspace, ident['base'], ident['head'])
-    upstream = upstreams(args, ident)
-    collector = Collector(workspace, [read(path) for path in args.upstream]).collect(evidence_paths(workspace, args.stage, args.arm, ident))
+    # Share byte reads only inside this entry boundary. Structural checks still
+    # run for every upstream and collection. This authority never survives into
+    # the independent verification after archive creation.
+    entry = _RestoreChainAuthority(sources); entry.preflight = False
+    upstream = upstreams(args, ident, entry)
+    collector = Collector(workspace, [read(path) for path in args.upstream], entry).collect(
+        evidence_paths(workspace, args.stage, args.arm, ident))
+    collector._authority = None
+    del entry
     if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, collector.files)
     # No unrelated upstream files are copied into delta payloads, but every pin is
     # still in the manifest and verified after restore.
@@ -473,8 +488,11 @@ def seal(args):
                 'systemJdkRootModes': collector.system_jdk_modes,
                 'systemFiles': sorted(collector.system_files), 'verificationOnly': sorted(collector.verification_only), 'payload': payload,
                 'archiveSha256': sha(archive), 'proofAuthority': False, 'performanceAcceptance': False}
-    check_files(manifest)
-    require(upstreams(args, ident) == upstream, 'upstream changed during seal')
+    # No entry digest is reused here: independently hash each unique final
+    # file, then check every declaration's attributes and complete inventories.
+    final = _RestoreChainAuthority(sources); final.preflight = False
+    check_files(manifest, final)
+    require(upstreams(args, ident, final) == upstream, 'upstream changed during seal')
     require(git_sources(workspace, ident['base'], ident['head']) == sources, 'source changed during seal')
     if ident['stage'] == 'core-shard':
         core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)

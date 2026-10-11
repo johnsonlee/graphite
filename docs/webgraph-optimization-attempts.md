@@ -17481,3 +17481,69 @@ CPU, RSS, stability and construction/loading recovery remain unverified for the
 cumulative candidate. Correctness coverage, 8GiB heap ceiling, resource gates
 and the scoped accepted Native-loading overhead are unchanged. The active03f
 run is preserved; no push, restart or cancellation is part of this attempt.
+
+### Attempt220 — share duplicate checkpoint reads within each seal boundary (2026-10-11)
+
+The completed03f B/0 worker spent747s sealing its checkpoint, compared with
+338–442s in the completed sibling observations. Its complete job took3908s.
+These are CI critical-path observations from run38134638126, job114473193151;
+they do not attribute the delay to hashing or predict an improvement. Source
+inspection identifies overlapping producer, preparation and collected pins
+hashed independently at entry and again at exit. The preceding restore-chain
+changes do not affect seal. Parent:7f65fe3a5a7dac65356ccb956ddb694a2143b3a4;
+accepted performance baseline:4f2ccf3. Hosted acceptance remains the matched
+own-writer64 real graphs, complete core/topology/index correctness and
+Native39/JVM35 concurrent multi-graph pressure.
+
+Seal now creates a private file-verification authority for its entry boundary:
+upstream checks and collection share verified bytes while retaining every
+file-type/mode/size check and rejecting conflicting digest declarations. It
+releases that authority before archive creation. A separate, initially empty
+authority independently hashes the final on-disk bytes across the output and
+all upstream manifests before publishing success. Complete directory inventory,
+absence, symlink, system JDK, source checkout, interpreter/runner, upstream
+identity and shard-audit closure checks remain. Archive creation, archive SHA,
+payload exclusions, restore validation and public transport format are unchanged.
+No public skip option, external authority, global cache or mtime trust was added.
+Producer sealing with no upstream continues through both independent boundaries.
+
+An actual-call source-access comparison on the same tiny persisted-byte fixture
+runs the parent and candidate seal implementations: one graph file shared by
+producer/preparation/shard pins is read6 times by the parent and2 times by the
+candidate; the shared writer likewise changes6→2. Each candidate count includes
+one independently fresh final read. A second seal performs both reads again.
+These deterministic access counts are correctness evidence only; the fixture
+is not a performance workload. They do not establish hosted latency, CPU/RSS
+savings or a complete feedback-loop duration. Other work, including archive
+compression and source checks, remains.
+
+Verification:48 checkpoint and transport-smoke tests passed in17.957s. New cases
+cover selected-file read counts and invocation scope, same-size/same-mtime
+mutation of graph, writer, upstream-only bytes, payload and source after archive
+creation, conflicting upstream SHA/size/mode declarations, changed final modes,
+new members in a closed directory, replaced symlinks and changed upstream
+manifest bytes. All failures prevent manifest publication. Existing producer,
+JDK, delta payload, archive-corruption and full download/restore/consumer checks
+remain exercised. The changed error-message assertion still requires rejection
+of the same pinned-helper drift. Evidence:
+`/tmp/graphite-seal-source-access-counts.json` and
+`/tmp/graphite-seal-all-checkpoint-tests.log`. All217 Node tests passed
+in14.815s, actionlint with shellcheck disabled and diff checks passed, and all185
+control file pins plus both workflow bindings were verified. Additional evidence:
+`/tmp/graphite-seal-node-tests.log`, `/tmp/graphite-seal-actionlint.log` and
+`/tmp/graphite-seal-control-verification.json`.
+
+Root additionally ran all11 restore-chain tests: PASS in39.244s, recorded in
+`/tmp/graphite-seal-restore-chain-tests.log`, and independently verified all185
+pins and both workflow bindings. Independent review reran five focused tests
+(overlapping the48 above) and compared parent/candidate producer and shard
+archives: manifest fields other than archive SHA and all member names, modes,
+sizes and bytes matched. This is bounded transport correctness evidence, not
+a hosted performance result.
+
+**Decision: retain locally after independent review; hosted validation pending.**
+Hosted speedup is unknown. Query p50/p95, end-to-end wall, CPU, RSS, stability and
+construction/loading recovery are not established by these transport checks.
+No single-graph performance run was made; all correctness coverage, resource
+limits and the scoped Native-loading exception remain unchanged. The active03f
+run remains in place; this attempt does not push, restart or cancel it.
