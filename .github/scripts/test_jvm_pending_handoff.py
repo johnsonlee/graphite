@@ -1,8 +1,10 @@
 """Small original-byte transport/authority contracts; never performance evidence."""
 import copy
+import json
 from pathlib import Path
 import shutil
 import struct
+import tempfile
 import unittest
 from unittest.mock import patch
 import native_pressure_checkpoint as checkpoint
@@ -10,6 +12,92 @@ import test_native_pressure_checkpoint as transport_fixtures
 import jvm_pressure_inputs as inputs
 import prepare_jvm_pressure_plan as prepare
 import test_prepare_jvm_pressure_plan as preparation_fixtures
+import export_jvm_raw_edges as raw_export
+
+
+class RawExportAudit(unittest.TestCase):
+    """Real export run/audit and owned phase replay over tiny persisted64 bytes.
+
+    Only the upstream producer binder and Java execution are substituted; the
+    exporter audit, phase/owner/log checks and all original-edge reads are real.
+    """
+    def setUp(self):
+        folder=tempfile.TemporaryDirectory();self.addCleanup(folder.cleanup)
+        self.root=Path(folder.name).resolve();self.out=self.root/'exports'
+        self.producer=self.root/'producer';self.producer.mkdir()
+        pins={str(raw_export.SOURCE):raw_export.common.sha(raw_export.SOURCE)}
+        for name in ('java','javac','writer.jar','authority.json'):
+            p=self.root/name;p.write_text('{}');pins[str(p)]=raw_export.common.sha(p)
+        authority=raw_export.artifacts.ref(self.root/'authority.json')
+        graphs=[]
+        for gid in raw_export.model.FIXTURE_GRAPH_IDS:
+            graph=self.producer/'graphs'/gid;graph.mkdir(parents=True)
+            sources={}
+            for name in inputs.TOPOLOGY_FILES:
+                p=graph/name;p.write_bytes(b'tiny bound original topology')
+                sources[name]=raw_export.artifacts.ref(p);pins[str(p)]=sources[name]['sha256']
+            graphs.append({'id':gid,'root':str(graph),'sourceInputs':sources})
+        self.plan={'schema':'graphite.jvm-raw-edge-export-plan.v1','producerRoot':str(self.producer),
+            'output':str(self.out),'graphs':graphs,'pins':pins,'revision':'b'*40,'role':'candidate',
+            'helperSource':raw_export.artifacts.ref(raw_export.SOURCE),
+            'java':str(self.root/'java'),'javac':str(self.root/'javac'),'writerJar':str(self.root/'writer.jar'),
+            **{key:authority for key in ('sourceManifest','runtimeManifest','fixtureManifest','artifactAudit','stringAudit')}}
+        binder=patch.object(raw_export,'bind',side_effect=lambda *args:copy.deepcopy(self.plan))
+        binder.start();self.addCleanup(binder.stop)
+        child=patch.object(raw_export.producer,'phase',side_effect=self.phase)
+        child.start();self.addCleanup(child.stop)
+        self.record=raw_export.run(self.producer,self.out)
+        self.assertEqual(raw_export.PASS,self.record['status'],self.record['errors'])
+
+    def phase(self,name,argv,cwd,env,out,timeout):
+        directory=out/name;directory.mkdir()
+        for log in ('stdout.log','stderr.log'):(directory/log).write_text('tiny owned phase\n')
+        raw_export.common.save(directory/'owner.json',{'argv':argv,'group':12345,'runnerPid':1234})
+        phase={'name':name,'argv':argv,'cwd':str(cwd),'timeoutSeconds':timeout,'status':'PASS','errors':[],
+            'exit':0,'cleanup':{'group':12345,'after':[],'errors':[],'exit':0},
+            'logs':{str(directory/log):raw_export.common.sha(directory/log) for log in ('stdout.log','stderr.log')}}
+        raw_export.common.save(directory/'record.json',phase)
+        clazz=out/'classes/ExportJvmRawEdges.class'
+        if name=='compile-raw-edges':clazz.write_bytes(b'tiny compiled helper')
+        else:
+            for row in self.plan['graphs']:
+                graph_out=out/'exports'/row['id'];graph_out.mkdir()
+                edges=graph_out/'edges.bin';edges.write_bytes(struct.pack('>iiqiiB',0x47534501,2,1,0,1,3))
+                receipt={'schema':'graphite.raw-labeled-edge-export.v1','format':'GSE01',
+                    'graphRoot':row['root'],'sourceInputs':row['sourceInputs'],'output':raw_export.artifacts.ref(edges),
+                    'nodeSlots':2,'labeledEdges':1,'helperSource':self.plan['helperSource'],
+                    'helperClass':raw_export.artifacts.ref(clazz),'mappingApplied':False,
+                    **{key:True for key in ('allSequentialOffsetsChecked','allRandomAccessOffsetsChecked',
+                        'allLabelPrefixOffsetsChecked','rawNodeIdsPreserved','fullScanConsumed')}}
+                raw_export.common.save(graph_out/'receipt.json',receipt)
+
+    def test_actual_export_audit_replays_phase_owners_and_original_bytes(self):
+        audit=raw_export.audit(self.out)
+        self.assertEqual(raw_export.AUDIT,audit['status'])
+        self.assertEqual(list(raw_export.model.FIXTURE_GRAPH_IDS),[row['id'] for row in audit['graphs']])
+        for row in audit['graphs']:
+            raw=Path(row['edges']['output']['path']).read_bytes()
+            self.assertEqual([(0,1,3)],list(inputs.edge_records(raw,range(2),2,1)))
+        self.assertFalse(audit['performanceAcceptance']);self.assertFalse(audit['completeCoreTopologyIndexComparison'])
+
+    def test_actual_phase_audit_rejects_changed_owner_and_logs(self):
+        phase=self.out/'export-raw-edges'
+        for leaf,value in (('owner.json','{}'),('stdout.log','changed raw output')):
+            with self.subTest(leaf=leaf):
+                path=phase/leaf;original=path.read_bytes();path.write_text(value)
+                try:
+                    with self.assertRaises((ValueError,KeyError)):raw_export.audit(self.out)
+                finally:path.write_bytes(original)
+        (phase/'owner.json').unlink()
+        with self.assertRaises(FileNotFoundError):raw_export.audit(self.out)
+
+    def test_actual_phase_audit_rejects_rebound_failed_receipt(self):
+        path=self.out/'export-raw-edges/record.json';phase=raw_export.common.read(path)
+        phase.update(status='FAIL',exit=1,errors=['owned export failed'])
+        path.write_text(json.dumps(phase)+'\n')
+        self.record['phases'][1]=raw_export.artifacts.ref(path)
+        (self.out/'record.json').write_text(json.dumps(self.record)+'\n')
+        with self.assertRaisesRegex(ValueError,'raw phase failed'):raw_export.audit(self.out)
 
 
 class PendingHandoff(unittest.TestCase):

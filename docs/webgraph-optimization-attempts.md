@@ -18068,3 +18068,41 @@ There is no demonstrated replacement completion advantage:an entire new run
 would repay the82m50s producer/preparation prefix before its downstream work.
 The current branches can still supply missing failure and performance evidence;
 no new expensive acceptance run is started for this local attempt.
+
+### Attempt231 — exercise the real JVM raw-export audit entry (2026-10-12)
+
+Parent:33335270. Hosted91 candidate JVM correctness job114525566758 failed at
+17:19:40Z before raw response derivation or JVM35 queries. export_jvm_raw_edges
+passed a serialized string path into check_phase, whose owner lookup needs Path.
+The deterministic AttributeError was missed because the earlier handoff fixture
+mocked this audit. Preserve the original196,020-byte job log:
+`/tmp/graphite-run38151918852-jvm-B-job114525566758.log`.
+
+Convert the phase receipt path at the call site. Add a real exporter run-to-audit
+contract over64 tiny persisted graph byte streams with concrete edge assertions.
+Only the upstream producer binder and Java child execution are substituted;
+export rows, phase/owner/log/cleanup checks and complete raw-edge reads run
+unmocked. Negative cases reject changed/missing owners, changed logs and a
+rebound failed phase. Neighboring exporter/derivation/source-rule calls already
+pass Path. Preserve jvm-raw-edges in the existing diagnostic upload alongside
+raw derivation and query outputs so failures before derivation retain evidence.
+
+The new positive test reproduced the hosted AttributeError in0.107s before the
+fix (`/tmp/graphite-jvm-export-audit-regression-before.log`). Initial seven-test
+validation then caught two setup issues:exclusive common.save cannot overwrite
+an existing failure fixture, and the changed exporter was not yet rebound in the
+control manifest. The original log remains
+`/tmp/graphite-jvm-export-audit-fixed-tests.log`. Correct the fixture's mutation
+write and refresh the exact hashes without bypassing pin verification. Root ran
+all7 handoff/export tests successfully in6.009s after binding the final tree:
+`/tmp/graphite-attempt231-handoff-tests.log`. Workflow syntax,202 control pins,
+both manifest bindings and diff checks pass. The existing early
+candidate-gate-tests job already discovers this module; no new long job is added.
+
+**Retain the harness correction and regression test.** This is correctness and
+feedback coverage, not performance evidence. It does not retrospectively turn
+hosted91 JVM35 into a pass or supply missing query samples. Query p50/p95,
+construction/loading, CPU, RSS and full real-corpus correctness/stability remain
+unproven. Current Native, construction and core branches continue; their remaining
+evidence can still inform the next candidate. No expensive replacement is launched
+solely to verify this locally reproduced Python path error.

@@ -130,7 +130,7 @@ def audit(output):
     require(len(record['phases'])==2,'exact two owned phases')
     for ref,(name,argv,timeout) in zip(record['phases'],commands(plan)):
         require(ref==artifacts.ref(out/name/'record.json'),'owned phase reference')
-        phase=artifacts.check_phase(ref['path'],argv,out)
+        phase=artifacts.check_phase(Path(ref['path']),argv,out)
         require(phase['name']==name and phase['timeoutSeconds']==timeout,'owned phase contract')
     graphs=rows(plan);require(common.typed(record['graphs'])==common.typed(graphs),'raw output records')
     pins=dict(plan['pins']); inventory=producer.inventory(out); inventory.pop(str(out/'audit.json'),None)
