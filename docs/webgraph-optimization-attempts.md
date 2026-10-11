@@ -19220,3 +19220,39 @@ serialization and remaining finalizer work first.
 Evidence: `/tmp/graphite-attempt250-owned-jvm-startup/verification.json`,
 `root-review.json`, original failure/pass logs and `candidate.patch`;
 `/tmp/graphite-next-ci-budget-after249.json` records the conditional timing model.
+
+### Attempt251 — join construction assembly and transport in one finalizer (2026-10-12)
+
+Parent:ab6b9467. The construction final job separately assembles corrected core
+proof to restore shared graph outputs, then replays corrected/pending producer
+assembly inside finalization. Move the existing assemble_finalization_pair and
+unchanged transport.restore into one explicit construction finalizer invocation.
+Keep the original --producers standalone path fully independent; no serialized
+verified token, schema change or validator bypass is added.
+
+The combined path requires exact workspace, artifacts, transport directory,
+base/head revisions and run/attempt identity. Save the freshly assembled pair,
+restore all original bytes/links, replay every original six-cell construction
+audit, match original pending authority exactly, then run the original receipt
+and resource comparator. Fresh complete pins and producer source/configuration/
+closed inventories are checked after raw audits and after comparison. Generated
+corrected output must be fresh and outside immutable inputs. The same artifact
+wildcard retains it; original measurement metadata remains unchanged.
+
+The affected two Python modules pass37 tests in3.907s process (3.763s unittest)
+under120s. Added tests exercise actual tiny seal/transport restore, all six
+restored output bytes and shared links, receipt metadata hashes, missing core,
+wrong run, same-size/mtime-restored mutation, added directory, output symlink and
+CLI exclusivity. Expensive semantic assembly and raw audit interfaces are
+modeled in these fixtures; their original full implementations are unchanged.
+All138 Node gate tests pass in17.055s. Structural actionlint with shellcheck
+disabled,193 preparation pins, workflow binding and diff check pass. Root
+independently reviews the diff, evidence, job environment and actual pin bytes.
+
+Retain the scoped workflow change. The historical separate assembly took9m55,
+but this is not a promised saving: fresh byte and inventory checks remain and
+the new hosted path has not been timed. No build, benchmark or CI is launched;
+query p50/p95, CPU, RSS, construction performance and total CI duration remain
+unverified by these correctness tests. Evidence:
+`/tmp/graphite-attempt251-construction-owned-finalization/summary.json`,
+`root-review.json`, original Python/Node logs and `candidate.patch`.

@@ -26,6 +26,10 @@ def join_inputs(plan, producers):
     bundle.corrected_fixture_bindings(corrected)
     current = bundle.assemble(corrected['artifactsRoot'], corrected['baseRevision'],
                               corrected['candidateRevision'], measurement_only=True)
+    return _match_inputs(plan, pending, corrected, current)
+
+
+def _match_inputs(plan, pending, corrected, current):
     require(common.typed(current) == common.typed(pending) and
             common.typed(corrected['arms']) == common.typed(pending['arms']) and
             corrected['sourceInputs'] == pending['sourceInputs'] == plan['sourceInputs'] and
@@ -34,8 +38,29 @@ def join_inputs(plan, producers):
     return pending, corrected
 
 
-def finalize(output, prefix, producers, operation):
-    output, prefix, producers = (Path(p).resolve() for p in (output, prefix, producers))
+def finalize(output, prefix, producers, operation, *, artifacts_root=None, workspace=None,
+             transport_directory=None, base_sha=None, candidate_sha=None, run_id=None, run_attempt=None):
+    require((producers is None) != (artifacts_root is None), 'exactly one lifecycle producer input')
+    output, prefix = (Path(p).resolve() for p in (output, prefix))
+    combined = artifacts_root is not None
+    if combined:
+        import real64_lifecycle_transport as transport
+        require(operation == 'construction', 'owned transport finalization is construction-only')
+        require(all(v is not None for v in (workspace, transport_directory, base_sha, candidate_sha, run_id, run_attempt)),
+                'complete same-run lifecycle transport identity')
+        workspace = transport.canonical(Path(workspace).absolute())
+        artifacts_root = transport.canonical(Path(artifacts_root).absolute())
+        transport_directory = transport.canonical(Path(transport_directory).absolute())
+        selected = transport.roots(workspace, operation)
+        require(output == selected[0] and not any(prefix.is_relative_to(p) for p in
+                [artifacts_root, transport_directory, *selected]), 'final outputs outside immutable lifecycle inputs')
+        producers = Path(str(prefix)+'-corrected-producer.json')
+        require(not producers.exists() and not producers.is_symlink(), 'fresh corrected producer output required')
+        ident = transport.identity(workspace, operation, candidate_sha, base_sha, run_id, run_attempt)
+    else:
+        require(all(v is None for v in (workspace, transport_directory, base_sha, candidate_sha, run_id, run_attempt)),
+                'transport requires owned artifact finalization')
+        producers = Path(producers).resolve()
     require(operation in ('loading', 'construction'), 'explicit lifecycle operation')
     require(not prefix.is_relative_to(output), 'preserve original measurement directory')
     require(not any(prefix.parent.glob(prefix.name+'*')), 'fresh finalization outputs')
@@ -44,6 +69,18 @@ def finalize(output, prefix, producers, operation):
     result = {'schema': 'graphite.real64-lifecycle.finalization.v1', 'engine': 'jvm', 'operation': operation,
               'status': 'RUNNING', 'errors': [], **construction.FALSE}
     try:
+        pair = None; closures = {}
+        if combined:
+            corrected, current = bundle.assemble_finalization_pair(artifacts_root, base_sha, candidate_sha)
+            bundle.corrected_fixture_bindings(corrected)
+            for arm in current['arms'].values():
+                ref = arm['artifactAudit']
+                if ref['path'] not in closures:
+                    report = common.pinned_authority_metadata(current, ref)
+                    closures[ref['path']] = (report, artifacts._ProducerReplayContext._inventories(report))
+            common.save(producers, corrected)
+            pair = (corrected, current)
+            transport.restore(workspace, operation, producers, transport_directory, ident)
         if operation == 'construction':
             from audit_real64_construction import audit
             validate = construction.validate
@@ -60,7 +97,18 @@ def finalize(output, prefix, producers, operation):
         actual = audit(plan_file, output/'cells')
         require(common.typed(actual) == common.typed(common.read(output/'audit.json')),
                 'original lifecycle audit differs from complete raw replay')
-        pending, corrected = join_inputs(plan, producers)
+        if pair is None:
+            pending, corrected = join_inputs(plan, producers)
+        else:
+            pending = common.pinned_authority_metadata(plan, plan['producers'])
+            require(plan['comparabilityPending'] is True and plan['pendingComparabilityAuthority'] == plan['producers'] and
+                    pending['artifactsRoot'] == str(artifacts_root), 'exact original pending lifecycle authority')
+            pending, corrected = _match_inputs(plan, pending, *pair)
+            require(common.typed(common.read(producers)) == common.typed(corrected), 'generated corrected producer drift')
+            # The old post-restore assembly supplied a late byte/source/closed-
+            # inventory boundary. Preserve it without another semantic replay.
+            artifacts.verify_pins(corrected['pins'])
+            for report, closure in closures.values(): artifacts._ProducerReplayContext._check(report, closure)
         pins = dict(plan['pins']); bundle.merge_pins(pins, corrected['pins'])
         bundle.merge_pins(pins, {r['path']: r['sha256'] for r in refs.values()})
         metadata_refs = [plan['producers'], refs['correctedProducer']]
@@ -88,6 +136,7 @@ def finalize(output, prefix, producers, operation):
         Path(str(prefix)+'-comparison.stdout.log').write_text(completed.stdout)
         Path(str(prefix)+'-comparison.stderr.log').write_text(completed.stderr)
         artifacts.verify_pins(pins)
+        for report, closure in closures.values(): artifacts._ProducerReplayContext._check(report, closure)
         require(artifacts.ref(output/'audit.json') == refs['measurementAudit'] and
                 artifacts.ref(output/'cells/execution.json') == refs['measurementExecution'], 'original measurement changed')
         verdict = common.read(str(prefix)+'-status.json')
@@ -113,7 +162,13 @@ def finalize(output, prefix, producers, operation):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
-    for name in ('output', 'prefix', 'producers'): parser.add_argument('--'+name, required=True)
+    for name in ('output', 'prefix'): parser.add_argument('--'+name, required=True)
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument('--producers'); inputs.add_argument('--artifacts', dest='artifacts_root')
+    for name in ('workspace', 'transport-directory', 'base-sha', 'candidate-sha', 'run-id', 'run-attempt'):
+        parser.add_argument('--'+name)
     parser.add_argument('--operation', choices=('loading', 'construction'), required=True)
     args = parser.parse_args()
-    sys.exit(0 if finalize(args.output, args.prefix, args.producers, args.operation)['performanceAcceptance'] else 1)
+    sys.exit(0 if finalize(args.output, args.prefix, args.producers, args.operation,
+        **{name: getattr(args, name) for name in ('artifacts_root', 'workspace', 'transport_directory',
+           'base_sha', 'candidate_sha', 'run_id', 'run_attempt')})['performanceAcceptance'] else 1)
