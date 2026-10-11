@@ -4411,7 +4411,7 @@ test("required Rust stage join rejects every failed, cancelled, skipped or missi
     const job = rustWorkflowJob(workflow, "rust-latency");
     const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm-measurement", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
     assert.match(job, /^    name: rust-latency-gate$/m);
-    assert.match(job, /^    if: always\(\)$/m);
+    assert.match(job, /^    if: \$\{\{ !github\.event\.pull_request\.draft && \(always\(\)\) \}\}$/m);
     assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
     const step = rustWorkflowStep(job, "Require every proof and complete operation cohort");
     assert.match(step, /STAGE_RESULTS: \$\{\{ toJSON\(needs\) \}\}/);

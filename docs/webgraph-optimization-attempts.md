@@ -19738,3 +19738,45 @@ stages under /tmp/graphite-attempt260-real4-replay-result-1, and
 /tmp/graphite-attempt260-independent-review.json and
 /tmp/graphite-attempt260-independent-fixed-probe.json. The new test uses the
 original JSON reader and original typed expression as its comparison contract.
+
+### Attempt261 — separate draft feedback from complete ready-PR acceptance (2026-10-12)
+
+Running every expensive benchmark branch on each draft update makes local fixes
+wait on the entire acceptance chain. Keep the existing candidate control,
+source-rule and checkpoint handoff checks on draft updates, and defer expensive
+benchmark jobs until the PR is ready. Subscribe explicitly to ready_for_review
+and converted_to_draft as well as the existing opened/synchronize/reopened events.
+The existing same-PR concurrency policy supersedes an older run when the PR
+returns to draft; running always() cleanup may still finish normally.
+
+A draft does not pass benchmark-regression-gate: the same required job runs and
+exits1 with a full-acceptance-not-run explanation, even if fast checks succeed.
+Its later always() report steps and PR comment job do not run on drafts, so the
+last complete performance report remains intact. When ready, all existing jobs,
+dependencies, correctness coverage, complete multi-graph pressure and aggregate
+acceptance remain mandatory. Separate JVM/Rust unit workflows are unchanged.
+No resource limit, accepted baseline, workload or regression allowance changes.
+
+Independent structural review retains all41 jobs and confirms every original job
+body is unchanged after removing the additive draft conditions and explanation.
+The new focused test actually executes the draft gate shell for fast-check
+success/failure/cancellation/skipping and requires failure in every case. It
+also checks ready/draft event coverage and every expensive job's draft guard,
+including always()/!cancelled() consumers. Initial integrated tests caught one
+old assertion requiring an unconditional rust-latency always() spelling; update
+it to require always() together with the new non-draft condition. Its existing
+failed/cancelled/skipped/missing-stage rejection tests remain unchanged.
+
+Command: node --test .github/scripts/benchmark-*.test.mjs. All236 tests pass in
+16.417s after that assertion update; initial235/236 result is retained. All194
+preparation control pins, manifest binding, structural actionlint and diff checks
+pass. No expensive graph workload was run for this workflow-only change. Retain
+this feedback scheduling change; hosted draft duration remains unmeasured and
+complete ready-PR runtime is still unknown, not demonstrated below two hours.
+The current PR remains draft and cannot merge without complete acceptance.
+
+Evidence: /tmp/graphite-attempt261-workflow-tests.log,
+/tmp/graphite-attempt261-workflow-tests-final.log and
+/tmp/graphite-attempt261-independent-review.json. CONVENTIONS.md records this
+workflow for later PRs; the fast job retains its existing15-minute work timeout,
+which is not a promised total duration including setup and queues.

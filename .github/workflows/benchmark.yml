@@ -3,6 +3,7 @@ name: Benchmark regression
 on:
   pull_request:
     branches: ['**']
+    types: [opened, synchronize, reopened, ready_for_review, converted_to_draft]
 
 permissions:
   contents: read
@@ -19,7 +20,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: bdb3a7ef07d124a54bc5f5f4078a76b17887a33cbcd781be46aabb78c076a7bc
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 57019f72df4122ca60f913411c027a0444e9dcb21bddbd4a24f17abf43422a81
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 72980eb51bdd233d887f949ba2af22c3f893008a40d45fbfec575f1a74f3f864
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -192,6 +193,7 @@ jobs:
       run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
 
   build-explore-jmh:
+    if: ${{ !github.event.pull_request.draft }}
     name: build-explore-jmh-${{ matrix.revision }}
     needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
@@ -286,6 +288,7 @@ jobs:
         retention-days: 2
 
   build-wrapped-query-jmh:
+    if: ${{ !github.event.pull_request.draft }}
     name: build-wrapped-query-jmh-${{ matrix.revision }}
     needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
@@ -415,6 +418,7 @@ jobs:
         retention-days: 2
 
   method-level:
+    if: ${{ !github.event.pull_request.draft }}
     name: synthetic-query-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -525,6 +529,7 @@ jobs:
         retention-days: 14
 
   explorer:
+    if: ${{ !github.event.pull_request.draft }}
     name: explorer-benchmarks
     needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
@@ -620,6 +625,7 @@ jobs:
         retention-days: 14
 
   method-compatibility-shard:
+    if: ${{ !github.event.pull_request.draft }}
     name: method-compatibility-${{ matrix.graph_count }}-${{ matrix.group }}
     needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
@@ -773,6 +779,7 @@ jobs:
         retention-days: 14
 
   validate-cpu-accounting:
+    if: ${{ !github.event.pull_request.draft }}
     name: validate-cpu-accounting
     needs: [prepare-latency-fixtures]
     runs-on: ubuntu-latest
@@ -849,7 +856,7 @@ jobs:
 
   method-compatibility:
     name: method-compatibility-correctness
-    if: always()
+    if: ${{ !github.event.pull_request.draft && (always()) }}
     needs: [method-compatibility-shard]
     runs-on: ubuntu-latest
 
@@ -913,6 +920,7 @@ jobs:
         retention-days: 14
 
   cypher-capacity:
+    if: ${{ !github.event.pull_request.draft }}
     name: cypher-capacity-gate
     needs: [prepare-latency-fixtures, build-explore-jmh]
     runs-on: ubuntu-latest
@@ -1008,6 +1016,7 @@ jobs:
         retention-days: 14
 
   budgeted-collection:
+    if: ${{ !github.event.pull_request.draft }}
     name: budgeted-collection-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -1119,6 +1128,7 @@ jobs:
         retention-days: 14
 
   budgeted-mapped-string:
+    if: ${{ !github.event.pull_request.draft }}
     name: budgeted-mapped-string-correctness
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -1231,6 +1241,7 @@ jobs:
         retention-days: 14
 
   large-corpus:
+    if: ${{ !github.event.pull_request.draft }}
     name: large-corpus-benchmarks
     needs: [candidate-gate-tests]
     runs-on: ubuntu-latest
@@ -1330,6 +1341,7 @@ jobs:
         retention-days: 14
 
   prepare-latency-fixtures:
+    if: ${{ !github.event.pull_request.draft }}
     name: prepare-latency-fixtures
     needs: [build-wrapped-query-jmh]
     runs-on: ubuntu-latest
@@ -1422,6 +1434,7 @@ jobs:
         done
 
   wrapped-query-latency-shard:
+    if: ${{ !github.event.pull_request.draft }}
     name: wrapped-query-latency-shard-${{ matrix.shard }}
     needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
@@ -1658,7 +1671,7 @@ jobs:
 
   wrapped-query-latency:
     name: wrapped-query-latency
-    if: always()
+    if: ${{ !github.event.pull_request.draft && (always()) }}
     needs: [candidate-gate-tests, wrapped-query-latency-shard]
     runs-on: ubuntu-latest
 
@@ -1770,6 +1783,7 @@ jobs:
         node -e "const s=require('./benchmark-results/latency-status.json'); if(!s.passed) process.exit(1)"
 
   wrapped-query-resources:
+    if: ${{ !github.event.pull_request.draft }}
     name: wrapped-query-resources
     needs: [candidate-gate-tests, prepare-latency-fixtures, build-wrapped-query-jmh]
     runs-on: ubuntu-latest
@@ -1897,6 +1911,7 @@ jobs:
         retention-days: 14
 
   prepare-fixture64:
+    if: ${{ !github.event.pull_request.draft }}
     name: prepare-fixture64
     runs-on: ubuntu-latest
     # A cache miss generates the corpus twice (the second copy proves reproducibility):
@@ -2018,6 +2033,7 @@ jobs:
         retention-days: 1
 
   graph-routing-pressure-evidence:
+    if: ${{ !github.event.pull_request.draft }}
     name: graph-routing-pressure-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
@@ -2097,7 +2113,7 @@ jobs:
 
   graph-routing-pressure-external-evidence-disabled:
     name: legacy-graph-routing-external-evidence-disabled
-    if: ${{ github.repository == 'disabled/legacy-graph-routing-evidence' }}
+    if: ${{ !github.event.pull_request.draft && (github.repository == 'disabled/legacy-graph-routing-evidence') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -2461,6 +2477,7 @@ jobs:
       run: jq -e '.passed == true' benchmark-results/graph-routing-status.json >/dev/null
 
   global-wide-pressure-evidence:
+    if: ${{ !github.event.pull_request.draft }}
     name: global-wide-pressure-evidence
     needs: [prepare-fixture64]
     runs-on: ubuntu-latest
@@ -2540,7 +2557,7 @@ jobs:
 
   global-wide-pressure-external-evidence-disabled:
     name: legacy-global-wide-external-evidence-disabled
-    if: ${{ github.repository == 'disabled/legacy-global-wide-evidence' }}
+    if: ${{ !github.event.pull_request.draft && (github.repository == 'disabled/legacy-global-wide-evidence') }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -2714,6 +2731,7 @@ jobs:
   # Split six-hour budgets at completed proof boundaries, never within a paired pressure cohort.
   # Checkpoints bind the run attempt: retry this chain with "Re-run all jobs" to preserve lineage.
   rust-producer-common:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-producer-common
     needs: [candidate-gate-tests, prepare-fixture64]
     runs-on: ubuntu-latest
@@ -2976,6 +2994,7 @@ jobs:
           native-pressure-producers/**
 
   rust-producer-arm:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-producer-arm (${{ matrix.arm }})
     needs: [rust-producer-common]
     runs-on: ubuntu-latest
@@ -3134,6 +3153,7 @@ jobs:
           native-pressure-producers/**
 
   rust-producer:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-producer
     needs: [rust-producer-common, rust-producer-arm]
     runs-on: ubuntu-latest
@@ -3241,6 +3261,7 @@ jobs:
           native-pressure-producers/**
 
   rust-core-prepare:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-core-prepare (${{ matrix.arm }})
     needs: [rust-producer]
     runs-on: ubuntu-latest
@@ -3393,6 +3414,7 @@ jobs:
         path: native-pressure-artifacts/${{ matrix.arm }}/core-equivalence/**
 
   rust-core-shard:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-core-shard (${{ matrix.arm }}, ${{ matrix.shard }})
     needs: [rust-producer, rust-core-prepare]
     runs-on: ubuntu-latest
@@ -3530,6 +3552,7 @@ jobs:
         path: native-pressure-artifacts/${{ matrix.arm }}/core-equivalence/**
 
   rust-core:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-core (${{ matrix.arm }})
     needs: [rust-producer, rust-core-prepare, rust-core-shard]
     runs-on: ubuntu-latest
@@ -3671,6 +3694,7 @@ jobs:
         path: native-pressure-artifacts/${{ matrix.arm }}/core-equivalence/**
 
   rust-jvm-correctness:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-jvm-correctness (${{ matrix.arm }})
     needs: [rust-producer, rust-core-prepare]
     runs-on: ubuntu-latest
@@ -3815,6 +3839,7 @@ jobs:
           native-pressure-artifacts/${{ matrix.arm }}/jvm-query-correctness/**
 
   rust-query-native-measurement:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-query-native-measurement
     needs: [candidate-gate-tests, rust-producer]
     runs-on: ubuntu-latest
@@ -3933,6 +3958,7 @@ jobs:
         and all(.cells[]; .status == "PASS")' benchmark-results/native-pressure-cells/execution.json >/dev/null
 
   rust-query-native:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-query-native
     needs: [candidate-gate-tests, rust-producer, rust-core, rust-query-native-measurement]
     runs-on: ubuntu-latest
@@ -4039,6 +4065,7 @@ jobs:
         jq -e '.passed == true' benchmark-results/multigraph-native-loading-status.json >/dev/null
 
   rust-query-legacy:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-query-legacy
     needs: [candidate-gate-tests, rust-producer]
     runs-on: ubuntu-latest
@@ -4263,6 +4290,7 @@ jobs:
         retention-days: 14
 
   rust-query-jvm-measurement:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-query-jvm-measurement
     needs: [rust-producer, rust-core-prepare, rust-jvm-correctness]
     runs-on: ubuntu-latest
@@ -4384,6 +4412,7 @@ jobs:
       run: jq -e '.passed == false and .comparabilityPending == true and .status == "MEASURED_CORE_COMPARABILITY_PENDING"' benchmark-results/multigraph-jvm-query-measurement-status.json >/dev/null
 
   rust-query-jvm:
+    if: ${{ !github.event.pull_request.draft }}
     name: rust-query-jvm
     needs: [rust-producer, rust-core-prepare, rust-core, rust-jvm-correctness, rust-query-jvm-measurement]
     runs-on: ubuntu-latest
@@ -4515,7 +4544,7 @@ jobs:
 
   rust-loading-measurement:
     name: rust-loading-measurement
-    if: ${{ !cancelled() && needs.rust-producer.result == 'success' }}
+    if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success') }}
     needs: [rust-producer]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4634,7 +4663,7 @@ jobs:
 
   rust-loading:
     name: rust-loading
-    if: ${{ !cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-loading-measurement.result == 'success' }}
+    if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-loading-measurement.result == 'success') }}
     needs: [rust-producer, rust-core, rust-loading-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4750,7 +4779,7 @@ jobs:
 
   rust-construction-measurement:
     name: rust-construction-measurement
-    if: ${{ !cancelled() && needs.rust-producer.result == 'success' }}
+    if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success') }}
     needs: [rust-producer]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4869,7 +4898,7 @@ jobs:
 
   rust-construction:
     name: rust-construction
-    if: ${{ !cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-construction-measurement.result == 'success' }}
+    if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-construction-measurement.result == 'success') }}
     needs: [rust-producer, rust-core, rust-construction-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4970,7 +4999,7 @@ jobs:
 
   rust-latency:
     name: rust-latency-gate
-    if: always()
+    if: ${{ !github.event.pull_request.draft && (always()) }}
     needs: [rust-producer, rust-core-prepare, rust-core-shard, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm-measurement, rust-query-jvm, rust-query-legacy, rust-loading-measurement, rust-loading, rust-construction-measurement, rust-construction]
     runs-on: ubuntu-latest
     steps:
@@ -4989,6 +5018,7 @@ jobs:
         PYJOIN
 
   slow-query-shapes:
+    if: ${{ !github.event.pull_request.draft }}
     name: slow-query-shapes
     needs: [candidate-gate-tests, prepare-latency-fixtures]
     runs-on: ubuntu-latest
@@ -5099,6 +5129,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Keep draft feedback separate from full acceptance
+      if: ${{ github.event.pull_request.draft }}
+      env:
+        CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
+      run: |
+        echo "Fast correctness checks: ${CANDIDATE_GATE_TEST_JOB}" >> "${GITHUB_STEP_SUMMARY}"
+        echo "Full benchmark acceptance was not run for this draft. Mark ready for review to run all required checks." >> "${GITHUB_STEP_SUMMARY}"
+        echo "::error::Full benchmark acceptance is required before merge; draft feedback cannot pass this gate."
+        exit 1
+
     - name: Checkout base reporting code
       uses: actions/checkout@v7
       with:
@@ -5150,7 +5190,7 @@ jobs:
           --output benchmark-results
 
     - name: Build benchmark report
-      if: always()
+      if: ${{ always() && !github.event.pull_request.draft }}
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -5199,7 +5239,7 @@ jobs:
         fi
 
     - name: Upload aggregate benchmark report
-      if: always()
+      if: ${{ always() && !github.event.pull_request.draft }}
       uses: actions/upload-artifact@v7
       with:
         name: benchmark-report-${{ github.event.pull_request.number }}
@@ -5214,7 +5254,7 @@ jobs:
         retention-days: 14
 
     - name: Enforce benchmark gate
-      if: always()
+      if: ${{ always() && !github.event.pull_request.draft }}
       env:
         CANDIDATE_GATE_TEST_JOB: ${{ needs.candidate-gate-tests.result }}
         RUST_LATENCY_JOB: ${{ needs.rust-latency.result }}
@@ -5246,7 +5286,7 @@ jobs:
 
   benchmark-comment:
     name: benchmark-comment
-    if: always()
+    if: ${{ !github.event.pull_request.draft && (always()) }}
     needs: [benchmark-regression-gate]
     runs-on: ubuntu-latest
     permissions:

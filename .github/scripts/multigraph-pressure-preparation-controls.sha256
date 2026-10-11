@@ -191,3 +191,4 @@ f258deaad53e6067e05d8faa7252b27492713cf9ee7230cdb3fd726651fc0ea7  .github/script
 a557198548eb9b3ea373c99e46d7690b3352809ae1e3d7e0c9c6494373db83ec  .github/scripts/jvm_pressure_join.py
 bdd9e9b2091c2c93b0e37885b722230caf1d5eeae05675fc8c3ca5c37f8f6275  .github/scripts/test_jvm_pending_handoff.py
 ded715148a8070340c13f89894bcc350e529f27ab66912684fd0d6ee7984ef83  .github/scripts/benchmark-jvm-pending.test.mjs
+6104c0a53bf78fdc1f7851a0f928da8c109c95c45493ec73d0448f2495f6d0a7  .github/scripts/benchmark-draft-feedback.test.mjs
