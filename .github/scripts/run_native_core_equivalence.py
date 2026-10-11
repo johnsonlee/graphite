@@ -6,6 +6,7 @@ policies; no new normalization or unsupported bytecode-inference claim is made.
 """
 import argparse
 import copy
+from contextlib import contextmanager
 import csv
 import json
 import os
@@ -14,6 +15,7 @@ import signal
 import struct
 import stat
 import sys
+import time
 sys.dont_write_bytecode=True
 import audit_native_pressure_artifacts as artifacts
 import bind_native_core_formatter as formatter
@@ -46,6 +48,20 @@ def progress(stage,event,**details):
               file=sys.stderr,flush=True)
     except (OSError,ValueError):
         pass  # A closed/broken diagnostic stream must not interrupt proof or cleanup.
+
+
+@contextmanager
+def diagnostic_stage(stage):
+    """Time control work without changing its proof or exception boundary."""
+    started=time.monotonic()
+    progress(stage,'start')
+    try:
+        yield
+    except BaseException:
+        progress(stage,'failed',elapsedSeconds=time.monotonic()-started)
+        raise
+    else:
+        progress(stage,'complete',elapsedSeconds=time.monotonic()-started)
 
 
 def replay(path,function):
@@ -720,24 +736,27 @@ def join_shards(output,count):
     out=Path(output).resolve();plan=common.read(out/'plan.json')
     require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact complete join plan')
     require(not (out/'record.json').exists() and not (out/'audit.json').exists(),'fresh joined core proof required')
-    authority=_VerifiedWorkerInputs.open(plan)
+    with diagnostic_stage('join-binding'):
+        authority=_VerifiedWorkerInputs.open(plan)
     record=None
     try:
-        records=check_shard_receipts(plan)
-        by_id={row['id']:row for record in records for row in record['graphs']}
-        require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
-        rows=[by_id[row['id']] for row in plan['graphs']]
-        record={'schema':'graphite.native-core-equivalence-record.v1','status':PASS,
-                'plan':artifacts.ref(out/'plan.json'),'errors':[],
-                'phases':[artifacts.ref(out/name/'record.json') for name,_,_ in commands(plan)],
-                'graphs':rows,'compiledHelper':compiled(plan),'finalIdentity':'PASS',
-                'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
-                            'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
-                **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
+        with diagnostic_stage('join-receipts'):
+            records=check_shard_receipts(plan)
+            by_id={row['id']:row for record in records for row in record['graphs']}
+            require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
+            rows=[by_id[row['id']] for row in plan['graphs']]
+            record={'schema':'graphite.native-core-equivalence-record.v1','status':PASS,
+                    'plan':artifacts.ref(out/'plan.json'),'errors':[],
+                    'phases':[artifacts.ref(out/name/'record.json') for name,_,_ in commands(plan)],
+                    'graphs':rows,'compiledHelper':compiled(plan),'finalIdentity':'PASS',
+                    'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
+                                'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
+                    **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
         # This record is provisional until the complete output audit and fresh
         # terminal input closure checks finish. The authority cannot escape join.
         common.save(out/'record.json',record)
-        result=_audit(out,audited_shards=True,_input_authority=authority)
+        with diagnostic_stage('join-output-audit'):
+            result=_audit(out,audited_shards=True,_input_authority=authority)
         common.save(out/'audit.json',result)
         return record
     except BaseException as error:
@@ -817,8 +836,9 @@ def _audit(output,audited_shards=False,*,_input_authority=None):
     else:require('sharding' not in record,'undeclared sharding proof')
     for row in rows:merge_pins(pins,row['files'])
     for leaf in ('plan.json','record.json'):merge_pins(pins,{str(out/leaf):common.sha(out/leaf)})
-    artifacts.verify_pins(pins)
-    if _input_authority is not None:_input_authority.check(plan)
+    with diagnostic_stage('core-terminal-union'):
+        artifacts.verify_pins(pins)
+        if _input_authority is not None:_input_authority.check(plan)
     return {'schema':'graphite.native-core-equivalence-audit.v1','status':AUDIT_PASS,'record':artifacts.ref(out/'record.json'),
         'revisions':plan['revisions'],'fixtureManifests':plan['fixtureManifests'],'upstream':plan['upstream'],
         'graphs':rows,'phases':plan['maxOwnedPhases'],'pins':pins,**{k:record[k] for k in COUNTS},**{k:False for k in FALSE_CLAIMS},

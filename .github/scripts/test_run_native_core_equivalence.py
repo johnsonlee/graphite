@@ -1024,6 +1024,30 @@ class FreshJoinTests(unittest.TestCase):
         self.assertEqual(('FAIL','FAIL'),(record['status'],record['finalIdentity']))
         self.assertTrue(record['errors']);self.assertFalse((self.out/'audit.json').exists())
 
+    def test_join_terminal_failure_reports_failed_and_preserves_failed_proof(self):
+        self.prepared();stream=io.StringIO();verify=r.artifacts.verify_pins
+        error=ValueError('terminal bytes changed')
+        def changed(pins):
+            if str(self.out/'record.json') in pins:raise error
+            return verify(pins)
+        with patch.object(r.sys,'stderr',stream),patch.object(r.artifacts,'verify_pins',side_effect=changed):
+            with self.assertRaises(ValueError) as raised:r.join_shards(self.out,8)
+        self.assertIs(error,raised.exception);self.failed()
+        events=[json.loads(line.split(' ',1)[1]) for line in stream.getvalue().splitlines()]
+        for stage in ('core-terminal-union','join-output-audit'):
+            selected=[event for event in events if event['stage']==stage]
+            self.assertEqual(['start','failed'],[event['event'] for event in selected])
+            self.assertGreaterEqual(selected[-1]['elapsedSeconds'],0)
+
+    def test_join_broken_diagnostics_preserve_complete_independently_auditable_proof(self):
+        self.prepared();stream=io.StringIO();stream.close()
+        with patch.object(r.sys,'stderr',stream):
+            result=r.join_shards(self.out,8)
+            audit=r.audit_shards(self.out)
+        self.assertEqual(r.PASS,result['status'])
+        self.assertEqual(audit,r.common.read(self.out/'audit.json'))
+        self.assertEqual(64,len(audit['graphs']))
+
     def test_join_replays_once_and_standalone_audits_replay_independently(self):
         self.prepared();opened=[];open_=r._VerifiedWorkerInputs.open
         def capture(plan):

@@ -5,6 +5,7 @@ Restore into the original workspace and exact tool paths, then run the original
 independent audits. No graph, runtime, proof, or performance result is rebuilt.
 """
 import argparse
+from contextlib import contextmanager
 import hashlib
 import json
 import os
@@ -15,6 +16,7 @@ import stat
 import subprocess
 import sys
 import tarfile
+import time
 
 SCHEMA = 'graphite.pressure-checkpoint.v1'
 ACCEPTED = '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
@@ -455,54 +457,57 @@ def upstreams(args, ident, _authority=None):
 def seal(args):
     ident = identity(args); workspace = Path(ident['workspace']); directory = Path(args.directory).absolute()
     require(not directory.exists(), 'fresh checkpoint directory required')
-    sources = git_sources(workspace, ident['base'], ident['head'])
-    # Share byte reads only inside this entry boundary. Structural checks still
-    # run for every upstream and collection. This authority never survives into
-    # the independent verification after archive creation.
-    entry = _RestoreChainAuthority(sources); entry.preflight = False
-    upstream = upstreams(args, ident, entry)
-    collector = Collector(workspace, [read(path) for path in args.upstream], entry).collect(
-        evidence_paths(workspace, args.stage, args.arm, ident))
-    collector._authority = None
-    del entry
-    if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, collector.files)
-    # No unrelated upstream files are copied into delta payloads, but every pin is
-    # still in the manifest and verified after restore.
-    upstream_files = {}
-    for path in args.upstream:
-        upstream_files.update(read(path)['files'])
-    source_files = {p for source in sources.values() for p in source['files']}
-    payload = [p for p in sorted(collector.files) if p not in source_files and p not in collector.verification_only and
-               collector.files[p] != upstream_files.get(p) and
-               (Path(p).is_relative_to(workspace) or any(Path(p).is_relative_to(Path(r)) for r in collector.jdk_roots))]
+    with _seal_stage('seal-collect'):
+        sources = git_sources(workspace, ident['base'], ident['head'])
+        # Share byte reads only inside this entry boundary. Structural checks still
+        # run for every upstream and collection. This authority never survives into
+        # the independent verification after archive creation.
+        entry = _RestoreChainAuthority(sources); entry.preflight = False
+        upstream = upstreams(args, ident, entry)
+        collector = Collector(workspace, [read(path) for path in args.upstream], entry).collect(
+            evidence_paths(workspace, args.stage, args.arm, ident))
+        collector._authority = None
+        del entry
+        if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, collector.files)
+        # No unrelated upstream files are copied into delta payloads, but every pin is
+        # still in the manifest and verified after restore.
+        upstream_files = {}
+        for path in args.upstream:
+            upstream_files.update(read(path)['files'])
+        source_files = {p for source in sources.values() for p in source['files']}
+        payload = [p for p in sorted(collector.files) if p not in source_files and p not in collector.verification_only and
+                   collector.files[p] != upstream_files.get(p) and
+                   (Path(p).is_relative_to(workspace) or any(Path(p).is_relative_to(Path(r)) for r in collector.jdk_roots))]
     require(not any(directory.is_relative_to(root) for root in selected_roots(workspace, args.stage, args.arm)), 'checkpoint outside evidence roots')
     directory.mkdir(parents=True)
     archive = directory/'payload.tar.gz'
     require(shutil.disk_usage(directory).free >= 64*1024*1024, 'insufficient checkpoint disk headroom')
-    with tarfile.open(archive, 'w:gz', compresslevel=1, dereference=True) as tar:
-        for index, name in enumerate(payload):
-            require(shutil.disk_usage(directory).free >= 64*1024*1024, 'checkpoint disk headroom exhausted')
-            tar.add(name, arcname=f'files/{index:08d}', recursive=False)
-    manifest = {'schema': SCHEMA, 'identity': ident, 'sources': sources, 'upstream': upstream,
-                'python': str(Path(sys.executable).resolve()),
-                'runnerImage': {key: os.environ.get(key) for key in IMAGE_KEYS}, 'files': collector.files,
-                'directories': sorted(collector.directories),
-                'directoryModes': {name: stat.S_IMODE(Path(name).stat().st_mode) for name in sorted(collector.directories)},
-                'closedDirectories': collector.closed,
-                'absent': sorted(collector.absent), 'links': collector.links, 'jdkRoots': sorted(collector.jdk_roots),
-                'systemJdkRoots': sorted(collector.system_jdk_roots), 'systemJdkLinks': collector.system_jdk_links,
-                'systemJdkRootModes': collector.system_jdk_modes,
-                'systemFiles': sorted(collector.system_files), 'verificationOnly': sorted(collector.verification_only), 'payload': payload,
-                'archiveSha256': sha(archive), 'proofAuthority': False, 'performanceAcceptance': False}
+    with _seal_stage('seal-archive'):
+        with tarfile.open(archive, 'w:gz', compresslevel=1, dereference=True) as tar:
+            for index, name in enumerate(payload):
+                require(shutil.disk_usage(directory).free >= 64*1024*1024, 'checkpoint disk headroom exhausted')
+                tar.add(name, arcname=f'files/{index:08d}', recursive=False)
+        manifest = {'schema': SCHEMA, 'identity': ident, 'sources': sources, 'upstream': upstream,
+                    'python': str(Path(sys.executable).resolve()),
+                    'runnerImage': {key: os.environ.get(key) for key in IMAGE_KEYS}, 'files': collector.files,
+                    'directories': sorted(collector.directories),
+                    'directoryModes': {name: stat.S_IMODE(Path(name).stat().st_mode) for name in sorted(collector.directories)},
+                    'closedDirectories': collector.closed,
+                    'absent': sorted(collector.absent), 'links': collector.links, 'jdkRoots': sorted(collector.jdk_roots),
+                    'systemJdkRoots': sorted(collector.system_jdk_roots), 'systemJdkLinks': collector.system_jdk_links,
+                    'systemJdkRootModes': collector.system_jdk_modes,
+                    'systemFiles': sorted(collector.system_files), 'verificationOnly': sorted(collector.verification_only), 'payload': payload,
+                    'archiveSha256': sha(archive), 'proofAuthority': False, 'performanceAcceptance': False}
     # No entry digest is reused here: independently hash each unique final
     # file, then check every declaration's attributes and complete inventories.
-    final = _RestoreChainAuthority(sources); final.preflight = False
-    check_files(manifest, final)
-    require(upstreams(args, ident, final) == upstream, 'upstream changed during seal')
-    require(git_sources(workspace, ident['base'], ident['head']) == sources, 'source changed during seal')
-    if ident['stage'] == 'core-shard':
-        core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)
-        check_shard_transport(workspace, ident, collector.files)
+    with _seal_stage('seal-final-identity'):
+        final = _RestoreChainAuthority(sources); final.preflight = False
+        check_files(manifest, final)
+        require(upstreams(args, ident, final) == upstream, 'upstream changed during seal')
+        require(git_sources(workspace, ident['base'], ident['head']) == sources, 'source changed during seal')
+        if ident['stage'] == 'core-shard':
+            core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)
+            check_shard_transport(workspace, ident, collector.files)
     save(directory/'manifest.json', manifest)
     return manifest
 
@@ -594,6 +599,19 @@ def _chain_progress(phase, event, **details):
                                                 'event': event, **details}), file=sys.stderr, flush=True)
     except (OSError, ValueError):
         pass  # A diagnostic stream is never proof authority.
+
+
+@contextmanager
+def _seal_stage(phase):
+    started = time.monotonic()
+    _chain_progress(phase, 'start')
+    try:
+        yield
+    except BaseException:
+        _chain_progress(phase, 'failed', elapsedSeconds=time.monotonic()-started)
+        raise
+    else:
+        _chain_progress(phase, 'complete', elapsedSeconds=time.monotonic()-started)
 
 
 class _RestoreChainAuthority:

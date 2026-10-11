@@ -267,6 +267,27 @@ class CheckpointTests(unittest.TestCase):
         self.assertEqual(0o755, self.binary.stat().st_mode & 0o777)
         self.assertEqual([], list(self.empty.iterdir())); self.assertFalse(self.absent.exists())
 
+    def test_seal_archive_failure_does_not_publish_or_report_completion(self):
+        stream=io.StringIO();error=OSError('archive write failed')
+        with patch.object(checkpoint.sys,'stderr',stream),patch.object(checkpoint.tarfile,'open',side_effect=error):
+            with self.assertRaises(OSError) as raised:self.seal()
+        self.assertIs(error,raised.exception)
+        self.assertFalse((self.directory/'manifest.json').exists())
+        events=[json.loads(line.split(' ',1)[1]) for line in stream.getvalue().splitlines()]
+        selected=[event for event in events if event['phase']=='seal-archive']
+        self.assertEqual(['start','failed'],[event['event'] for event in selected])
+        self.assertGreaterEqual(selected[-1]['elapsedSeconds'],0)
+        self.assertFalse(any(event['phase']=='seal-final-identity' for event in events))
+
+    def test_seal_broken_diagnostics_preserve_verified_roundtrip(self):
+        stream=io.StringIO();stream.close()
+        with patch.object(checkpoint.sys,'stderr',stream):manifest=self.seal()
+        before={name:Path(name).read_bytes() for name in manifest['payload']}
+        self.remove_payload(manifest)
+        checkpoint.restore(self.args())
+        self.assertEqual(before,{name:Path(name).read_bytes() for name in manifest['payload']})
+        self.assertFalse(manifest['proofAuthority'])
+
     def test_missing_original_artifact_fails_seal(self):
         self.original.unlink()
         with self.assertRaisesRegex(ValueError, 'missing artifact'): self.seal()

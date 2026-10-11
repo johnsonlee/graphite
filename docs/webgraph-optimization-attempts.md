@@ -18384,3 +18384,55 @@ RSS is6255.070–6255.520→6470.969–6471.117MiB and
 loading observations are separate from query-stage RSS. Evidence:
 `/tmp/graphite-ci91ee70-native-measurement-review/loading-review.json`.
 Complete core comparability is still pending; no final acceptance is claimed.
+
+### Attempt235 — expose the complete join and checkpoint feedback path (2026-10-12)
+
+Parent:4bbec115. Before another expensive acceptance iteration, distinguish
+actual stage costs from whole-job durations. The03f core job took42m16, but its
+restore consumed17m42, actual join14m18, sealing7m02, and setup/transfers the
+remainder. Treating42m16 as the join command overestimated its remaining time.
+Conversely, treating core publication as workflow completion underestimated the
+remaining path: the03f Native finalizer spent25m50 from job start through
+restoration, producer assembly and measurement download, then its final join
+was still unfinished after13m15 when cancelled. That cancelled observation is
+not a completed-stage runtime or a finite upper bound. Source evidence:
+`/tmp/graphite-ci03f4dd-core-join.log` and
+`/tmp/graphite-ci03f4dd-native-finalizer-terminal.json`.
+
+Current91's producer42m52 and preparation39m58 remain an82m50 serial prefix.
+The eight workers fan out; use the slowest complete worker45m51, not their sum
+divided by eight. Measurements overlap this chain. Full acceptance also requires
+the downstream Native/JVM/loading/construction finalizers and aggregate gate.
+The JVM measurement branch has not run after its earlier raw-export failure,
+so there is no measured complete-workflow bound for the repaired candidate.
+Keep the active core evidence while repairing locally; do not restart or promise
+a two-hour full run from a partial critical-path estimate. The detailed audit is
+`/tmp/graphite-head4bbec115-core-join-critical-path-audit.md`.
+
+Add flushed diagnostic stage events, with monotonic elapsed seconds, around
+join binding, receipt collection, output audit and terminal union verification;
+and checkpoint collection, archive creation and final identity verification.
+The terminal-union timer is nested inside the output-audit timer and must not
+be added to it. Archive time includes archive hashing. These events explain
+control-work time only. They do not alter product measurement, pin verification,
+semantic replay, proof publication, receipt schemas or acceptance thresholds.
+Preserve the original exception and emit failed rather than complete on a failed
+stage. A closed diagnostic stream cannot interrupt a valid proof or its cleanup.
+
+Validation: the existing core/checkpoint/worker-input/restore-chain modules pass
+144 tests in67.767s. After adding four behavioral cases, the two affected modules
+pass128 tests in47.776s. The new cases exercise terminal-byte failure with no
+usable core audit, archive failure with no checkpoint manifest, successful
+independent64-shard audit despite broken stderr, and actual payload seal/restore
+despite broken stderr. Total local test time115.543s; no performance workload was
+run. Logs:`/tmp/graphite-core-stage-timing-tests.log` and
+`/tmp/graphite-core-stage-timing-final-tests.log`. Root inspected the patch and
+test results, independently recomputed all12 correctness and190 preparation
+pins and workflow bindings, and checked the diff. Actionlint without shellcheck
+passes; the previously recorded shellcheck findings are not changed here.
+
+Preparation control manifest SHA256 is
+63b8bc65e51dc29e983e2b2e7889b71174d42000b6f7da7e18bcf45e3ee6009b.
+Retain this diagnostic improvement; it establishes no net CI speedup and closes
+no remaining correctness or performance acceptance gap. Future reductions must
+use the resulting stage evidence rather than unmeasured counts of avoided reads.
