@@ -319,6 +319,19 @@ class _ProducerReplayContext:
                 for report,closure in self._audits.values():self._check(report,closure)
         finally:
             self._active=False;self._closed=True;self._audits.clear()
+    def _verify_additional_pins(self,pins):
+        """Check helper-only inputs; context exit freshly checks producer inputs."""
+        require(self._active and not self._closed,'inactive producer replay context')
+        try:
+            remaining=dict(pins)
+            for report,closure in self._audits.values():
+                for path,digest in report['pins'].items():
+                    if path in pins:
+                        require(pins[path]==digest,'conflicting helper and producer pin')
+                        remaining.pop(path,None)
+            verify_pins(remaining)
+        except BaseException:
+            self._active=False;self._closed=True;self._audits.clear();raise
     def replay(self,packet_path,checkout,revision,role,inputs_path,tools,require_construction_metrics=False):
         require(self._active and not self._closed,'inactive producer replay context')
         try:

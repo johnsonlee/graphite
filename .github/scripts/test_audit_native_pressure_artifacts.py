@@ -339,6 +339,24 @@ class ProducerReplayContextTests(unittest.TestCase):
             with auditor._ProducerReplayContext() as context:context.replay(*self.args)
             self.assertEqual(3,full.call_count)
 
+    def test_additional_pins_verify_helper_bytes_and_poison_on_swallowed_failure(self):
+        extra=self.f.root/'helper-authority.json';extra.write_bytes(b'original')
+        digest=auditor.common.sha(extra)
+        with auditor._ProducerReplayContext() as context:
+            report=context.replay(*self.args)
+            context._verify_additional_pins({**report['pins'],str(extra):digest})
+        for failure in ('extra-drift','overlap-conflict'):
+            with self.subTest(failure=failure),self.assertRaisesRegex(ValueError,'cannot complete'):
+                with auditor._ProducerReplayContext() as context:
+                    report=context.replay(*self.args)
+                    pins={**report['pins'],str(extra):digest}
+                    if failure=='extra-drift':extra.write_bytes(b'modified')
+                    else:pins[next(iter(report['pins']))]='0'*64
+                    try:context._verify_additional_pins(pins)
+                    except ValueError:pass
+            with self.assertRaisesRegex(ValueError,'inactive'):context._verify_additional_pins({})
+            extra.write_bytes(b'original')
+
 
 if __name__ == '__main__':
     unittest.main()

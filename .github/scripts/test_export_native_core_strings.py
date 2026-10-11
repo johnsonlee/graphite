@@ -73,6 +73,56 @@ class ExportTests(unittest.TestCase):
         with patch.object(export.producer,'phase',side_effect=self.fake_phase):
             return export.execute(self.plan)
 
+    def test_fresh_cli_keeps_raw_audit_and_replays_each_producer_once_before_execution(self):
+        argv=['helper','--output',str(self.output),'--source-inputs',str(self.fixture.inputs_path)]
+        argv+=['--artifact-audit',str(self.artifact_path)]
+        with patch.object(export.sys,'argv',argv), patch.object(export.producer,'phase',side_effect=self.fake_phase), \
+                patch.object(export.artifacts,'audit',wraps=export.artifacts.audit) as full:
+            self.assertEqual(0,export.main())
+            self.assertEqual(2,full.call_count)
+        report=export.common.read(self.output/'audit.json')
+        self.assertEqual(export.AUDIT_PASS,report['status'])
+        self.assertEqual(report,export.audit(self.output))
+
+    def test_fresh_boundary_rejects_same_size_byte_drift_and_added_graph_file_before_output(self):
+        import os
+        original=export.bind
+        graph=Path(self.fixture.fixture['graphs'][0]['path'])
+        target=graph/'graph.strings';before=target.read_bytes();times=target.stat()
+        extra=graph/'unexpected-file'
+        authority=self.artifact_path;authority_before=authority.read_bytes()
+        for mutation in ('bytes','membership','authority'):
+            with self.subTest(mutation=mutation):
+                def changed(*args,**kwargs):
+                    plan=original(*args,**kwargs)
+                    if mutation=='bytes':
+                        target.write_bytes(bytes([before[0]^1])+before[1:])
+                        os.utime(target,ns=(times.st_atime_ns,times.st_mtime_ns))
+                    elif mutation=='membership':extra.write_bytes(b'not declared')
+                    else:authority.write_bytes(b'{}')
+                    return plan
+                try:
+                    with patch.object(export,'bind',side_effect=changed), \
+                            patch.object(export.producer,'phase',side_effect=AssertionError('no child before valid boundary')):
+                        with self.assertRaises(ValueError):export._execute_fresh(self.artifact_path,self.fixture.inputs_path,self.output)
+                    self.assertFalse(self.output.exists())
+                    self.assertEqual([],self.calls)
+                finally:
+                    target.write_bytes(before)
+                    os.utime(target,ns=(times.st_atime_ns,times.st_mtime_ns))
+                    extra.unlink(missing_ok=True)
+                    authority.write_bytes(authority_before)
+
+    def test_fresh_execution_retains_child_failure_and_never_becomes_audit_pass(self):
+        self.fail_name='compile-exporter'
+        with patch.object(export.producer,'phase',side_effect=self.fake_phase):
+            result=export._execute_fresh(self.artifact_path,self.fixture.inputs_path,self.output)
+        self.assertEqual('FAIL',result['status'])
+        self.assertTrue(result['errors'])
+        self.assertTrue((self.output/'record.json').is_file())
+        with self.assertRaises(ValueError):export.audit(self.output)
+        self.assertFalse((self.output/'audit.json').exists())
+
     def test_nested_audit_context_reuses_only_producer_replay(self):
         self.execute()
         expected=export.audit(self.output)

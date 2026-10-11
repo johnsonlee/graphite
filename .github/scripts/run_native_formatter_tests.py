@@ -155,6 +155,18 @@ def classpath(plan,module):
 
 def execute(plan):
     require(common.typed(plan)==common.typed(rebind(plan)),'test execution plan differs from actual writer')
+    return _execute_outputs(plan)
+
+
+def _execute_fresh(artifact_audit,source_inputs,output):
+    # Retain fresh byte/closure checks at context exit before starting tests.
+    with artifacts._ProducerReplayContext() as context:
+        plan=bind(artifact_audit,source_inputs,output,_artifact_context=context)
+        context._verify_additional_pins(plan['pins'])
+    return _execute_outputs(plan)
+
+
+def _execute_outputs(plan):
     out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False);(out/'results').mkdir()
     common.save(out/'plan.json',plan)
     record={'schema':'graphite.production-formatter-test-record.v1','status':'FAIL','plan':artifacts.ref(out/'plan.json'),
@@ -214,7 +226,7 @@ def main():
     args=parser.parse_args()
     if not args.audit_only:
         require(args.artifact_audit and args.source_inputs,'actual writer audit and source inputs required')
-        if execute(bind(args.artifact_audit,args.source_inputs,args.output))['status']!=PASS:return 1
+        if _execute_fresh(args.artifact_audit,args.source_inputs,args.output)['status']!=PASS:return 1
     common.save(args.output/'audit.json',audit(args.output));return 0
 
 

@@ -103,6 +103,18 @@ def raw_marker(plan):
 
 def execute(plan):
     require(common.typed(plan)==common.typed(rebind(plan)),'execution plan differs from actual producer inputs')
+    return _execute_outputs(plan)
+
+
+def _execute_fresh(reference_audit,actual_audit,source_inputs,output):
+    # Close the authority at a fresh input boundary before any output or child.
+    with artifacts._ProducerReplayContext() as context:
+        plan=bind(reference_audit,actual_audit,source_inputs,output,_artifact_context=context)
+        context._verify_additional_pins(plan['pins'])
+    return _execute_outputs(plan)
+
+
+def _execute_outputs(plan):
     out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False);(out/'classes').mkdir()
     common.save(out/'plan.json',plan)
     record={'schema':'graphite.native-core-marker-export-record.v1','status':'FAIL',
@@ -254,7 +266,7 @@ def main():
     parser.add_argument('--audit-only',action='store_true');args=parser.parse_args()
     if not args.audit_only:
         require(all((args.reference_audit,args.actual_audit,args.source_inputs)),'actual producer pair and inputs required')
-        if execute(bind(args.reference_audit,args.actual_audit,args.source_inputs,args.output))['status']!=PASS:return 1
+        if _execute_fresh(args.reference_audit,args.actual_audit,args.source_inputs,args.output)['status']!=PASS:return 1
     common.save(args.output/'audit.json',audit(args.output));return 0
 
 

@@ -68,6 +68,56 @@ class ProductionFormatterTests(unittest.TestCase):
     def execute(self,plan=None):
         with patch.object(r.producer,'phase',side_effect=self.phase):return r.execute(plan or self.plan)
 
+    def test_fresh_cli_keeps_raw_audit_and_replays_each_producer_once_before_execution(self):
+        argv=['helper','--output',str(self.out),'--source-inputs',str(self.f.inputs_path)]
+        argv+=['--artifact-audit',str(self.artifact)]
+        with patch.object(r.sys,'argv',argv), patch.object(r.producer,'phase',side_effect=self.phase), \
+                patch.object(r.artifacts,'audit',wraps=r.artifacts.audit) as full:
+            self.assertEqual(0,r.main())
+            self.assertEqual(3,full.call_count)
+        report=r.common.read(self.out/'audit.json')
+        self.assertEqual(r.AUDIT_PASS,report['status'])
+        self.assertEqual(report,r.audit(self.out))
+
+    def test_fresh_boundary_rejects_same_size_byte_drift_and_added_graph_file_before_output(self):
+        import os
+        original=r.bind
+        graph=Path(self.f.fixture['graphs'][0]['path'])
+        target=graph/'graph.nodes';before=target.read_bytes();times=target.stat()
+        extra=graph/'unexpected-file'
+        authority=self.artifact;authority_before=authority.read_bytes()
+        for mutation in ('bytes','membership','authority'):
+            with self.subTest(mutation=mutation):
+                def changed(*args,**kwargs):
+                    plan=original(*args,**kwargs)
+                    if mutation=='bytes':
+                        target.write_bytes(bytes([before[0]^1])+before[1:])
+                        os.utime(target,ns=(times.st_atime_ns,times.st_mtime_ns))
+                    elif mutation=='membership':extra.write_bytes(b'not declared')
+                    else:authority.write_bytes(b'{}')
+                    return plan
+                try:
+                    with patch.object(r,'bind',side_effect=changed), \
+                            patch.object(r.producer,'phase',side_effect=AssertionError('no child before valid boundary')):
+                        with self.assertRaises(ValueError):r._execute_fresh(self.artifact,self.f.inputs_path,self.out)
+                    self.assertFalse(self.out.exists())
+                    self.assertEqual([],self.calls)
+                finally:
+                    target.write_bytes(before)
+                    os.utime(target,ns=(times.st_atime_ns,times.st_mtime_ns))
+                    extra.unlink(missing_ok=True)
+                    authority.write_bytes(authority_before)
+
+    def test_fresh_execution_retains_child_failure_and_never_becomes_audit_pass(self):
+        self.fail=True
+        with patch.object(r.producer,'phase',side_effect=self.phase):
+            result=r._execute_fresh(self.artifact,self.f.inputs_path,self.out)
+        self.assertEqual('FAIL',result['status'])
+        self.assertTrue(result['errors'])
+        self.assertTrue((self.out/'record.json').is_file())
+        with self.assertRaises(ValueError):r.audit(self.out)
+        self.assertFalse((self.out/'audit.json').exists())
+
     def test_nested_audit_context_reuses_only_producer_replay(self):
         self.execute()
         expected=r.audit(self.out)

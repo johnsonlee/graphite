@@ -118,6 +118,20 @@ def execute(plan):
     out = Path(plan['output'])
     expected = bind(plan['artifactAudit']['path'], plan['sourceInputs']['path'], out)
     require(common.typed(plan) == common.typed(expected), 'execution plan differs from actual artifact inputs')
+    return _execute_outputs(plan)
+
+
+def _execute_fresh(artifact_audit, source_inputs, output):
+    # The context closes before creating outputs: its fresh bytes, source,
+    # configuration and directory checks replace the immediate second replay.
+    with artifacts._ProducerReplayContext() as context:
+        plan = bind(artifact_audit, source_inputs, output, _artifact_context=context)
+        context._verify_additional_pins(plan['pins'])
+    return _execute_outputs(plan)
+
+
+def _execute_outputs(plan):
+    out = Path(plan['output'])
     out.mkdir(parents=True, exist_ok=False)
     (out/'classes').mkdir(); (out/'exports').mkdir()
     common.save(out/'plan.json', plan)
@@ -205,8 +219,7 @@ def main():
     args = parser.parse_args()
     if not args.audit_only:
         require(args.artifact_audit is not None and args.source_inputs is not None, 'actual producer audit and inputs required')
-        plan = bind(args.artifact_audit, args.source_inputs, args.output)
-        result = execute(plan)
+        result = _execute_fresh(args.artifact_audit, args.source_inputs, args.output)
         if result['status'] != PASS: return 1
     common.save(args.output/'audit.json', audit(args.output))
     return 0

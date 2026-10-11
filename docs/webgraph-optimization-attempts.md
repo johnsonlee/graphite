@@ -17888,3 +17888,44 @@ shorter final critical path or a complete run below two hours. Current91 already
 changes the core transport/replay chain and parallel measurement dependencies;
 its complete hosted phase timings are still required. Replacing that live run
 for this noncritical local change has no demonstrated completion-time benefit.
+
+### Attempt226 — bind fresh core helper inputs once (2026-10-12)
+
+Parent:85f249f3; hosted head91ee70ac remains running. The string exporter,
+bootstrap marker exporter and production formatter-test CLI each immediately
+rebuilt the same producer authority after creating their in-memory plan. These
+helpers run on the producer/core-prepare critical path. The current91 producer
+took42m52s; core preparation is not yet complete. There is no isolated hosted
+timing for the removed replay, so this attempt makes no minute-saving claim.
+
+Each CLI now binds within a private producer replay context, checks all extra
+helper/authority/control pins, and exits that context before creating outputs.
+Exit freshly reads producer pins, checks source/configuration and exact directory
+membership. Public execution of a supplied plan still fully rebinds. Before-child
+checks, after-execution checks, raw phase/owner/cleanup validation and independent
+final audits remain. No serialized authority, skip flag, stat cache or acceptance
+threshold change is introduced. Independent review found an initial gap for the
+stored artifact-audit file; checking every additional helper pin closed it before
+verification. Any swallowed extra-pin failure poisons the context.
+
+Correctness verification:79 tests were exercised across the four affected
+modules. The first pass had two test-fixture errors (marker/formatter fixtures
+have graph.nodes, not graph.strings); after correcting only their mutation target,
+both affected modules passed all34 tests in14.088s. The other45 had passed in the
+initial run. Coverage includes complete CLI-to-raw-audit output, distinct marker
+arms, same-size/restored-mtime graph mutation, added graph members, changed audit
+identity, child failure receipts and rejected pin conflicts. The successful CLI
+contracts establish full producer audit counts of2 instead of3 for strings,
+4 instead of6 for a distinct marker pair, and3 instead of4 for formatter tests.
+These counts establish removed control work, not performance acceptance. Logs:
+`/tmp/graphite-attempt226-contracts.log` and
+`/tmp/graphite-attempt226-helper-recheck.log`. Workflow syntax and manifest/diff
+checks pass; the pre-existing full ShellCheck findings are outside this change.
+
+**Decision: retain locally, without replacing active91.** Hosted savings and
+real-workload correctness/stability remain pending. Query p50/p95, end-to-end
+construction/loading/query time, CPU and RSS acceptance are unchanged and still
+require their original real64 matched evidence. No performance run or artifact
+download was added for this attempt. This removes a known duplicate on the
+critical path but does not establish a complete run below two hours. The ongoing
+run has no ready replacement with a demonstrated shorter remaining path.
