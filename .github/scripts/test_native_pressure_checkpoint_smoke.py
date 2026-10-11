@@ -5,6 +5,7 @@ workflow's named-download directories. Only fixture identities/system paths are
 patched, using the existing transport unit-test fixture.
 """
 import contextlib
+import fnmatch
 import io
 import json
 from pathlib import Path
@@ -147,6 +148,64 @@ class CheckpointChainSmoke(unittest.TestCase):
 
     def test_distinct_parent_two_core_named_downloads_to_all_jvm_consumers(self):
         self.chain(True)
+
+    def test_shared_preparation_eight_shard_transfers_and_self_contained_core(self):
+        f = self.f
+        core, out, plan, prep_args, prep = f.sharded_core_fixture()
+        producer_ref = self.transfer(f.directory, self.download_directory('producer', 'producer', 'rust-core-prepare'))
+        # Exercise the public CLI for the newly introduced transport stages too.
+        shutil.rmtree(prep_args.directory)
+        prep = self.cli('seal', prep_args)
+        job = self.workflow.split('\n  rust-core:\n', 1)[1].split('\n  rust-', 1)[0]
+        steps = job.split('    - name: ')
+        prep_step = next(s for s in steps if 'uses: actions/download-artifact@' in s and 'name: native-checkpoint-core-prepare-' in s)
+        shard_step = next(s for s in steps if 'uses: actions/download-artifact@' in s and 'pattern: native-checkpoint-core-shard-' in s)
+        self.assertIn('merge-multiple: false', shard_step)
+
+        def expand(value):
+            for key, replacement in (('matrix.arm', 'B'), ('github.run_id', '1234'), ('github.run_attempt', '2')):
+                value = value.replace('${{ '+key+' }}', replacement)
+            self.assertNotIn('${{', value)
+            return value
+
+        prep_destination = f.workspace/expand(re.search(r'^        path: (.+)$', prep_step, re.M).group(1))
+        prep_ref = self.transfer(Path(prep_args.directory), prep_destination)
+        prep_args.directory = str(prep_destination)
+        f.remove_payload(prep)
+        self.cli('restore', prep_args)
+        pattern = expand(re.search(r'^        pattern: (.+)$', shard_step, re.M).group(1))
+        shard_destination = f.workspace/expand(re.search(r'^        path: (.+)$', shard_step, re.M).group(1))
+        transfers = []
+        for index in range(8):
+            args = f.write_core_shard(core, out, plan, prep_args, index)
+            manifest = self.cli('seal', args)
+            artifact = f'native-checkpoint-core-shard-B-{index}-1234-2'
+            self.assertTrue(fnmatch.fnmatchcase(artifact, pattern))
+            ref = self.transfer(Path(args.directory), shard_destination/artifact)
+            args.directory = str(ref.parent)
+            transfers.append((args, manifest))
+            # Each worker starts with preparation only; sibling outputs are
+            # combined on the join runner after every independent seal.
+            f.remove_payload(manifest)
+        for args, manifest in reversed(transfers):
+            self.cli('restore', args)
+            checkpoint.check_files(manifest)
+        self.assertEqual(64, len(list((out/'graphs').iterdir())))
+        self.assertTrue(all((out/name/'record.json').is_file() for name, _, _ in core.commands(plan)))
+        self.assertEqual(139, len(list(core.commands(plan))))
+        checkpoint.check_files(prep)
+        # A tiny consumer verifies complete transport, without claiming that its
+        # placeholder proof bytes execute any real graph correctness checks.
+        f.json(out/'record.json', {'fixtureResult': 'all64-transferred'})
+        args = f.args('core', 'B', f.workspace/'sealed/final-core', [producer_ref])
+        complete = self.cli('seal', args)
+        final_ref = self.transfer(Path(args.directory), self.download_directory('core', 'B', 'rust-jvm-correctness'))
+        f.remove_payload(complete)
+        self.cli('restore', f.args('core', 'B', final_ref.parent, [producer_ref]))
+        self.assertEqual('all64-transferred', checkpoint.read(out/'record.json')['fixtureResult'])
+        self.assertEqual(64, len(list((out/'graphs').iterdir())))
+        self.assertTrue(all((out/'shards'/str(i)/'record.json').is_file() for i in range(8)))
+        self.assertEqual(self.certificate_before, self.certificate.read_bytes())
 
 
 if __name__ == '__main__':

@@ -4232,7 +4232,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
 
 test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
     const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
     const needs = job => {
         const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
@@ -4245,7 +4245,7 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     }
     assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
     for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
-    for (const id of ids.slice(2).filter(id => !["rust-query-legacy", "rust-query-native-measurement"].includes(id))) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    for (const id of ["rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"]) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
     assert.deepEqual(needs(jobs["rust-query-native-measurement"]), ["candidate-gate-tests", "rust-producer"],
         "audited measurements start alongside the complete core proof");
     assert.ok(needs(jobs["rust-query-native"]).includes("rust-query-native-measurement"),
@@ -4257,6 +4257,8 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     assert.doesNotMatch(jobs["rust-query-legacy"].split("    steps:")[0], /needs\.rust-(?:core|jvm-correctness)/);
     assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-jvm-correctness"));
     for (const [id, aliasArms, distinctArms] of [
+        ["rust-core-prepare", '["B"]', '["A","B"]'],
+        ["rust-core-shard", '["B"]', '["A","B"]'],
         ["rust-core", '["B"]', '["A","B"]'],
         ["rust-jvm-correctness", '["C","B"]', '["C","A","B"]']
     ]) {
@@ -4266,7 +4268,7 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
         assert.equal(matrix, `\${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '${aliasArms}' || '${distinctArms}') }}`);
         assert.match(job, /\$\{\{ matrix\.arm \}\}/);
     }
-    const core = rustWorkflowStep(jobs["rust-core"], "Execute complete native core topology and index migration checks");
+    const core = rustWorkflowStep(jobs["rust-core"], "Join complete native core topology and index migration checks");
     assert.match(core, /run_native_core_equivalence\.py/);
     assert.match(core, /--reference native-pressure-artifacts\/C/);
     assert.match(core, /--raw-local-types --raw-edges/);
@@ -4330,7 +4332,7 @@ test("native measurement stays independent and cannot replace final acceptance",
 test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = rustWorkflowJob(workflow, "rust-latency");
-    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
     assert.match(job, /^    name: rust-latency-gate$/m);
     assert.match(job, /^    if: always\(\)$/m);
     assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
@@ -4634,6 +4636,136 @@ fs.appendFileSync(process.env.RESTORE_CALLS, stage + ":" + arm + "\\n");
             } finally {
                 fs.rmSync(directory, { recursive: true, force: true });
             }
+        }
+    }
+});
+
+test("native core graph shards prepare once and join all eight without weakening required proof", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const prepare = rustWorkflowJob(workflow, "rust-core-prepare");
+    const shard = rustWorkflowJob(workflow, "rust-core-shard");
+    const join = rustWorkflowJob(workflow, "rust-core");
+    assert.match(prepare, /^    needs: \[rust-producer\]$/m);
+    assert.match(shard, /^    needs: \[rust-producer, rust-core-prepare\]$/m);
+    assert.match(join, /^    needs: \[rust-producer, rust-core-prepare, rust-core-shard\]$/m);
+    assert.match(shard, /^        shard: \[0, 1, 2, 3, 4, 5, 6, 7\]$/m);
+    const cases = [
+        [prepare, "Prepare shared native core topology and index evidence", ["--prepare-only", "--shard-count", "8"]],
+        [shard, "Execute assigned native core graph shard", ["--shard-index", "3", "--shard-count", "8"]],
+        [join, "Join complete native core topology and index migration checks", ["--join-shards", "8"]]
+    ];
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "core-shard-commands-"));
+    try {
+        const bin = path.join(directory, "bin"); fs.mkdirSync(bin);
+        fs.writeFileSync(path.join(bin, "python3"), `#!${process.execPath}\n` + `
+const fs = require("node:fs"), assert = require("node:assert/strict"), args = process.argv.slice(2);
+if (args[0] === "-") process.exit(0);
+assert.equal(args[0], "candidate/.github/scripts/run_native_core_equivalence.py");
+assert.deepEqual(args.slice(1), ["--reference", "native-pressure-artifacts/C", "--actual", "native-pressure-artifacts/B",
+    "--raw-local-types", "--raw-edges", ...JSON.parse(process.env.EXPECTED_FLAGS), "--output", "native-pressure-artifacts/B/core-equivalence"]);
+fs.appendFileSync(process.env.COMMAND_CALLS, JSON.stringify(args) + "\\n");
+process.exit(Number(process.env.RUNNER_EXIT));
+`, {mode: 0o755});
+        for (const [job, name, flags] of cases) {
+            const step = rustWorkflowStep(job, name);
+            assert.equal((job.match(/run_native_core_equivalence\.py/g) ?? []).length, 1);
+            const shell = step.split("      run: |\n")[1].split("\n").map(line => line.replace(/^        /, "")).join("\n");
+            const calls = path.join(directory, "calls");
+            const run = (exit, arm = "B", base = "base") => spawnSync("bash", ["-c", shell], {cwd:directory, encoding:"utf8", env:{...process.env,
+                PATH:`${bin}:${process.env.PATH}`, CORE_ARM:arm, BASE_SHA:base, CORE_SHARD:"3", EXPECTED_FLAGS:JSON.stringify(flags),
+                COMMAND_CALLS:calls, RUNNER_EXIT:String(exit)}});
+            const positive = run(0); assert.equal(positive.status, 0, positive.stderr);
+            const negative = run(23); assert.equal(negative.status, 23, negative.stderr);
+            const alias = run(23, "A", "4f2ccf33b969e684972e56b5e810034e6e67c1b3");
+            assert.equal(alias.status, 0, "accepted-baseline alias exits without invoking the runner");
+        }
+        assert.equal(fs.readFileSync(path.join(directory, "calls"), "utf8").trim().split("\n").length, 6);
+    } finally {fs.rmSync(directory, {recursive:true, force:true});}
+    for (const [job, stage, name] of [[prepare,"core-prepare","Seal shared core preparation checkpoint"],
+        [shard,"core-shard","Seal native core shard checkpoint"], [join,"core","Seal complete core checkpoint"]]) {
+        const seal = rustWorkflowStep(job, name);
+        assert.match(seal, new RegExp(`--stage ${stage} `));
+        assert.match(seal, /--upstream pressure-checkpoints\/producer-producer\/manifest\.json/);
+        assert.equal(seal.includes('--upstream "pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}/manifest.json"'), stage === "core-shard");
+        assert.equal((seal.match(/--upstream/g) ?? []).length, stage === "core-shard" ? 2 : 1,
+            "the final complete core checkpoint stays independently transportable with only producer ancestry");
+    }
+});
+
+test("native core shard downloads restore all numbered artifacts and reject missing or wrong shards", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const accepted = "4f2ccf33b969e684972e56b5e810034e6e67c1b3";
+    for (const base of [accepted,"distinct-base"]) for (const arm of base === accepted ? ["B"] : ["A","B"]) {
+        for (const id of ["rust-core-prepare","rust-core-shard","rust-core"]) {
+            const directory = fs.mkdtempSync(path.join(os.tmpdir(), "core-shard-download-"));
+            try {
+                const job = rustWorkflowJob(workflow,id);
+                const expand = value => value.replaceAll("${{ matrix.arm }}",arm).replaceAll("${{ github.run_id }}","1234")
+                    .replaceAll("${{ github.run_attempt }}","2");
+                const downloads = job.split(/(?=^    - name: )/m).filter(step => step.includes("uses: actions/download-artifact@"));
+                const manifests = [];
+                for (const step of downloads) {
+                    const target = expand(step.match(/^        path: (.+)$/m)[1]);
+                    const pattern = step.match(/^        pattern: (.+)$/m)?.[1];
+                    const name = step.match(/^        name: (.+)$/m)?.[1];
+                    if (pattern) {
+                        assert.equal(id,"rust-core");
+                        assert.equal(expand(pattern),`native-checkpoint-core-shard-${arm}-*-1234-2`);
+                        assert.match(step,/^        merge-multiple: false$/m);
+                        assert.equal(name,undefined);
+                    } else {
+                        assert.doesNotMatch(step,/merge-multiple:/);
+                        assert.ok(name);
+                    }
+                    for (const index of pattern ? [0,1,2,3,4,5,6,7] : [null]) {
+                        const artifact = pattern ? expand(pattern).replace("*",String(index)) : expand(name);
+                        const stage = artifact.startsWith("native-checkpoint-core-shard-") ? "core-shard" :
+                            artifact.startsWith("native-checkpoint-core-prepare-") ? "core-prepare" : "producer";
+                        assert.equal(artifact,stage === "producer" ? "native-checkpoint-producer-producer-1234-2" :
+                            `native-checkpoint-${stage}-${arm}${index === null ? "" : `-${index}`}-1234-2`);
+                        const output = path.join(directory,target,...(pattern ? [artifact] : []));
+                        fs.mkdirSync(output,{recursive:true});
+                        const file = path.join(output,"manifest.json");
+                        const manifest = {stage,arm:stage === "producer" ? "producer" : arm,shardCount:stage === "producer" ? null : 8,shardIndex:index};
+                        fs.writeFileSync(file,JSON.stringify(manifest)); manifests.push({file,manifest});
+                    }
+                }
+                const bin=path.join(directory,"bin");fs.mkdirSync(bin);
+                fs.writeFileSync(path.join(bin,"python3"),`#!${process.execPath}\n`+`
+const fs=require("node:fs"), assert=require("node:assert/strict"), args=process.argv.slice(2);
+const values=key=>args.flatMap((v,i)=>v===key?[args[i+1]]:[]), value=key=>values(key)[0];
+assert.ok(args.includes("restore"));
+const stage=value("--stage"), arm=value("--arm"), index=value("--shard-index"), count=value("--shard-count");
+const manifest=JSON.parse(fs.readFileSync(value("--directory")+"/manifest.json","utf8"));
+assert.deepEqual(manifest,{stage,arm,shardCount:count===undefined?null:Number(count),shardIndex:index===undefined?null:Number(index)});
+const upstream=values("--upstream").map(file=>{const m=JSON.parse(fs.readFileSync(file,"utf8"));return m.stage+":"+m.arm;});
+assert.deepEqual(upstream,stage==="producer"?[]:stage==="core-prepare"?["producer:producer"]:["producer:producer","core-prepare:"+arm]);
+assert.equal(value("--run-id"),"1234");assert.equal(value("--run-attempt"),"2");
+fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":":"+index)+"\\n");
+`,{mode:0o755});
+                const step=rustWorkflowStep(job,"Verify and restore exact checkpoint closure");
+                const shell="set -euo pipefail\n"+step.slice(step.indexOf("        PRODUCER=")).split("\n").map(line=>line.replace(/^        /,"")).join("\n");
+                const calls=path.join(directory,"calls"),env={...process.env,PATH:`${bin}:${process.env.PATH}`,BASE_SHA:base,
+                    CANDIDATE_SHA:"candidate",CHECKPOINT_ARM:arm,CORE_SHARD:"3",GITHUB_WORKSPACE:directory,
+                    GITHUB_RUN_ID:"1234",GITHUB_RUN_ATTEMPT:"2",RESTORE_CALLS:calls};
+                const run=()=>spawnSync("bash",["-c",shell],{cwd:directory,env,encoding:"utf8"});
+                const good=run();assert.equal(good.status,0,`${id}/${base}/${arm}: ${good.stderr}`);
+                const expected=["producer:producer",...(id==="rust-core-prepare"?[]:[`core-prepare:${arm}`]),
+                    ...(id==="rust-core"?Array.from({length:8},(_,n)=>`core-shard:${arm}:${n}`):[])];
+                assert.deepEqual(fs.readFileSync(calls,"utf8").trim().split("\n"),expected);
+                // Test every shard, not only the last: a pattern download with seven artifacts must fail.
+                for (const {file,manifest} of id==="rust-core" ? manifests.filter(({manifest})=>manifest.stage==="core-shard") : manifests) {
+                    fs.unlinkSync(file);assert.notEqual(run().status,0,`${id}: missing ${file}`);
+                    fs.writeFileSync(file,JSON.stringify({...manifest,arm:"wrong-arm"}));assert.notEqual(run().status,0,`${id}: wrong arm`);
+                    fs.writeFileSync(file,JSON.stringify(manifest));
+                }
+                if(id==="rust-core") {
+                    const {file,manifest}=manifests.find(({manifest})=>manifest.shardIndex===3);
+                    for(const mutation of [{shardIndex:4},{shardCount:7}]) {
+                        fs.writeFileSync(file,JSON.stringify({...manifest,...mutation}));assert.notEqual(run().status,0,"wrong shard identity fails closed");
+                    }
+                }
+            } finally {fs.rmSync(directory,{recursive:true,force:true});}
         }
     }
 });

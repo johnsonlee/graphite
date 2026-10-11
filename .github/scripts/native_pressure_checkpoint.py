@@ -60,14 +60,21 @@ def system_jdk(root):
 
 
 def identity(args):
-    require(args.stage in ('producer', 'core', 'jvm'), 'stage')
-    require(args.arm in (('producer',) if args.stage == 'producer' else ('A', 'B') if args.stage == 'core' else ('C', 'A', 'B')), 'stage arm')
+    require(args.stage in ('producer', 'core', 'core-prepare', 'core-shard', 'jvm'), 'stage')
+    require(args.arm in (('producer',) if args.stage == 'producer' else ('A', 'B') if args.stage in ('core', 'core-prepare', 'core-shard') else ('C', 'A', 'B')), 'stage arm')
     require(all(re.fullmatch('[0-9a-f]{40}', x) for x in (args.head_sha, args.base_sha)), 'exact revisions')
     require(str(args.run_id).isdigit() and str(args.run_attempt).isdigit(), 'run identity')
     require(args.arm != 'A' or args.base_sha != ACCEPTED, 'aliased arm has no checkpoint')
-    return dict(stage=args.stage, arm=args.arm, head=args.head_sha, base=args.base_sha,
+    count = getattr(args, 'shard_count', None); index = getattr(args, 'shard_index', None)
+    sharded = args.stage in ('core-prepare', 'core-shard')
+    require((type(count) is int and count in (4, 8)) if sharded else count is None, 'checkpoint shard count')
+    require((type(index) is int and 0 <= index < count) if args.stage == 'core-shard' else index is None, 'checkpoint shard index')
+    result = dict(stage=args.stage, arm=args.arm, head=args.head_sha, base=args.base_sha,
                 accepted=ACCEPTED, runId=str(args.run_id), runAttempt=str(args.run_attempt),
                 workspace=str(canonical(Path(args.workspace).absolute())))
+    if sharded: result['shardCount'] = count
+    if args.stage == 'core-shard': result['shardIndex'] = index
+    return result
 
 
 def git_sources(workspace, base, head):
@@ -91,17 +98,19 @@ def git_sources(workspace, base, head):
 
 def selected_roots(workspace, stage, arm):
     root = workspace/'native-pressure-artifacts'
-    if stage == 'core':
+    if stage in ('core', 'core-prepare', 'core-shard'):
         return [root/arm/'core-equivalence']
     if stage == 'jvm':
         return [root/arm/'jvm-raw-derivation', root/arm/'jvm-query-correctness']
     return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
 
 
-def evidence_paths(workspace, stage, arm):
+def evidence_paths(workspace, stage, arm, ident=None):
     roots = selected_roots(workspace, stage, arm)
     for root in roots:
         require(root.is_dir() and not root.is_symlink(), 'missing stage root: '+str(root))
+    if stage in ('core-prepare', 'core-shard'):
+        return core_shard_paths(roots[0], ident)
     if stage != 'producer':
         return roots
     root = roots[0]
@@ -113,6 +122,40 @@ def evidence_paths(workspace, stage, arm):
         paths.extend(p for p in directory.iterdir() if p.is_file())
         paths.extend(directory/n for n in (*PRODUCER_TREES, *PHASES) if (directory/n).exists())
     return paths+roots[1:]
+
+
+def core_shard_paths(root, ident):
+    # Reuse the runner's declared partition; transport cannot invent another
+    # graph assignment or close a shared directory that later workers extend.
+    import run_native_core_equivalence as core
+    plan = read(root/'plan.json')
+    require(plan.get('schema') == 'graphite.native-core-equivalence-plan.v1' and
+            plan.get('output') == str(root) and plan.get('execution') == core.shard_execution(ident['shardCount']),
+            'checkpoint core shard plan identity')
+    index = ident.get('shardIndex', 0)
+    rows = core.shard_rows(plan, index)
+    for row in plan['graphs']:
+        require(isinstance(row['id'], str) and re.fullmatch(r'[A-Za-z0-9_-]+', row['id']), 'safe graph directory name')
+    if ident['stage'] == 'core-prepare':
+        names = [name for name, _, _ in core.preparation_commands(plan)]
+        paths = [root/'plan.json', root/'preparation.json', root/'classes']
+        if 'rawLocalExports' in plan: paths.append(root/'raw-locals')
+    else:
+        members = list((root/'graphs').iterdir())
+        require({p.name for p in members} == {row['id'] for row in rows} and
+                all(p.is_dir() and not p.is_symlink() for p in members),
+                'exact assigned shard graph output inventory')
+        names = [name for name, _, _ in core.shard_commands(plan, index)]
+        record = read(root/'shards'/str(index)/'record.json')
+        require(record.get('shardIndex') == index and record.get('shardCount') == ident['shardCount'] and
+                record.get('plan') == {'path': str(root/'plan.json'), 'sha256': sha(root/'plan.json')} and
+                record.get('preparation') == {'path': str(root/'preparation.json'), 'sha256': sha(root/'preparation.json')},
+                'checkpoint shard receipt identity')
+        paths = [root/'graphs'/row['id'] for row in rows] + [root/'shards'/str(index)]
+    require(len(names) == len(set(names)), 'unique core checkpoint phase directories')
+    for name in names:
+        require(re.fullmatch(r'[A-Za-z0-9_-]+', name) is not None, 'safe phase directory name')
+    return paths + [root/name for name in names]
 
 
 class Collector:
@@ -226,7 +269,7 @@ class Collector:
         # are payload, not documents to deserialize recursively in this transport.
         names = {'audit.json', 'plan.json', 'packet.json', 'source-manifest.json', 'runtime-manifest.json',
                  'inputs-before.json', 'source-inputs.json', 'provenance.json',
-                 'artifact-audit.json', 'query-correctness-audit.json'}
+                 'artifact-audit.json', 'query-correctness-audit.json', 'preparation.json'}
         for path in list(self.files):
             p = Path(path)
             if p.name in names or p.name.startswith('classpath-') and p.suffix == '.json':
@@ -318,8 +361,21 @@ def upstreams(args, ident):
         require(value['python'] == str(Path(sys.executable).resolve()) and
                 value['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS}, 'upstream interpreter/runner identity')
         check_files(value)
-        values.append({'sha256': sha(path), 'stage': value['identity']['stage'], 'arm': value['identity']['arm']})
+        upstream_ident = value['identity']
+        entry = {'sha256': sha(path), 'stage': upstream_ident['stage'], 'arm': upstream_ident['arm']}
+        if upstream_ident['stage'] == 'core-prepare':
+            require(ident['stage'] == 'core-shard' and upstream_ident['arm'] == ident['arm'] and
+                    upstream_ident.get('shardCount') == ident['shardCount'] and 'shardIndex' not in upstream_ident,
+                    'same arm and partition preparation upstream')
+            entry['shardCount'] = upstream_ident['shardCount']
+        values.append(entry)
     expected = [] if ident['stage'] == 'producer' else [('producer', 'producer')]
+    if ident['stage'] == 'core-shard':
+        expected.append(('core-prepare', ident['arm']))
+        preparation = [read(name) for name in args.upstream if read(name)['identity']['stage'] == 'core-prepare']
+        producers = [entry for entry in values if entry['stage'] == 'producer']
+        require(len(preparation) == 1 and len(producers) == 1 and preparation[0]['upstream'] == producers,
+                'preparation bound to exact same producer checkpoint')
     if ident['stage'] == 'jvm':
         expected.extend(('core', arm) for arm in (('B',) if ident['base'] == ACCEPTED else ('A', 'B')))
     require(sorted((v['stage'], v['arm']) for v in values) == sorted(expected), 'exact upstream stages')
@@ -331,7 +387,7 @@ def seal(args):
     require(not directory.exists(), 'fresh checkpoint directory required')
     sources = git_sources(workspace, ident['base'], ident['head'])
     upstream = upstreams(args, ident)
-    collector = Collector(workspace, [read(path) for path in args.upstream]).collect(evidence_paths(workspace, args.stage, args.arm))
+    collector = Collector(workspace, [read(path) for path in args.upstream]).collect(evidence_paths(workspace, args.stage, args.arm, ident))
     # No unrelated upstream files are copied into delta payloads, but every pin is
     # still in the manifest and verified after restore.
     upstream_files = {}
@@ -363,6 +419,8 @@ def seal(args):
     check_files(manifest)
     require(upstreams(args, ident) == upstream, 'upstream changed during seal')
     require(git_sources(workspace, ident['base'], ident['head']) == sources, 'source changed during seal')
+    if ident['stage'] == 'core-shard':
+        core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)
     save(directory/'manifest.json', manifest)
     return manifest
 
@@ -441,6 +499,8 @@ def main():
     for name in ('stage', 'arm', 'directory', 'workspace', 'head-sha', 'base-sha', 'run-id', 'run-attempt'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--upstream', action='append', default=[])
+    parser.add_argument('--shard-count', type=int)
+    parser.add_argument('--shard-index', type=int)
     args = parser.parse_args()
     value = seal(args) if args.action == 'seal' else restore(args)
     print(json.dumps({'checkpointTransport': args.action, 'identity': value['identity'],

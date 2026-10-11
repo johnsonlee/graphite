@@ -98,7 +98,7 @@ def field_authority(graph_id,graphs,roots,fixtures,refs,marker_ref,pins):
             'jar':selected[0],'arms':arms,'platformMarker':marker_ref}
 
 
-def bind(reference,actual,output,raw_locals=False,raw_edges=False):
+def bind(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=None):
     roots={'C':Path(reference).resolve(),'B':Path(actual).resolve()};out=Path(output).resolve()
     exports={};audits={};fixtures={};fixture_refs={};pins={};upstream={};source_inputs=[];toolchains={}
     controls=preparation_control_pins()
@@ -155,10 +155,15 @@ def bind(reference,actual,output,raw_locals=False,raw_edges=False):
         'python':python,'java':marker_plan['java'],'javac':marker_plan['javac'],'writerJar':marker_plan['writerJar'],
         'maxOwnedPhases':129,'stopAtFirstFailure':True,**{k:False for k in FALSE_CLAIMS}}
     if raw_edges:result['rawEdgeExports']=True
-    return raw_local_export.configure(result,fixtures,roots,toolchains) if raw_locals else result
+    if raw_locals:result=raw_local_export.configure(result,fixtures,roots,toolchains)
+    if shard_count is not None:
+        result['execution']=shard_execution(shard_count)
+        result['stopAtFirstFailure']=False
+        shard_rows(result,0)  # Bind the declared complete balanced partition before execution.
+    return result
 
 
-def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'],'rawLocalExports' in plan,plan.get('rawEdgeExports',False))
+def rebind(plan):return bind(plan['referenceRoot'],plan['actualRoot'],plan['output'],'rawLocalExports' in plan,plan.get('rawEdgeExports',False),**({'shard_count':plan['execution']['shardCount']} if 'execution' in plan else {}))
 
 
 def commands(plan):
@@ -257,6 +262,7 @@ def graph_result(plan,row):
 
 def execute(plan):
     progress('execution','start')
+    require('execution' not in plan,'sharded plans require prepare, shard and join execution')
     require(common.typed(plan)==common.typed(rebind(plan)),'execution plan differs from actual pair')
     out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False);(out/'classes').mkdir();(out/'graphs').mkdir()
     common.save(out/'plan.json',plan)
@@ -308,6 +314,202 @@ def execute(plan):
     return record
 
 
+PREPARATION_PASS='PASS_CORE_PREPARATION_ONLY'
+SHARD_PASS='PASS_CORE_SHARD_ONLY'
+
+
+def shard_execution(count):
+    require(type(count) is int and count in (4,8),'core shard count must be 4 or 8')
+    return {'mode':'graph-shards-v1','shardCount':count,'stopShardAtFirstFailure':True,
+            'cancelOtherShardsOnFailure':False}
+
+
+def shard_rows(plan,index):
+    execution=plan.get('execution',{});count=execution.get('shardCount')
+    require(execution==shard_execution(count) and plan.get('stopAtFirstFailure') is False,
+            'explicit independent core shard execution policy')
+    require(type(index) is int and 0<=index<count,'core shard index')
+    rows=plan['graphs'];ids=[r['id'] for r in rows]
+    require(len(ids)==len(set(ids))==64,'complete64 shard partition')
+    corpora={}
+    for row in rows:corpora.setdefault(row['fieldAuthority']['corpus'],[]).append(row['id'])
+    require(len(corpora)==4 and all(len(group)==16 for group in corpora.values()),
+            'four complete16 graph corpora for balanced shards')
+    selected={graph for group in corpora.values() for graph in group[index::count]}
+    return [row for row in rows if row['id'] in selected]
+
+
+def preparation_commands(plan):
+    commands_=list(commands(plan));tail=[name for row in plan['graphs'] for name in (row['id']+'-core',row['id']+'-topology')]
+    require(len(commands_)==plan['maxOwnedPhases'] and [name for name,_,_ in commands_[-128:]]==tail,
+            'unchanged complete graph command closure')
+    return commands_[:-128]
+
+
+def shard_commands(plan,index):
+    names={row['id']+suffix for row in shard_rows(plan,index) for suffix in ('-core','-topology')}
+    return [item for item in commands(plan) if item[0] in names]
+
+
+def checked_phases(plan,refs,expected):
+    require(len(refs)==len(expected),'complete stage phase receipts')
+    out=Path(plan['output'])
+    for ref,(name,argv,timeout) in zip(refs,expected):
+        path=out/name/'record.json'
+        require(ref==artifacts.ref(path),'exact stage phase receipt')
+        phase=artifacts.check_phase(path,argv,PACKAGE.parent)
+        require(phase['name']==name and phase['timeoutSeconds']==timeout,'exact bounded stage phase')
+
+
+def preparation_files(plan):
+    out=Path(plan['output']);files=compiled(plan)
+    if 'rawLocalExports' in plan:merge_pins(files,artifacts.inventory(out/'raw-locals'))
+    return files
+
+
+def check_preparation(plan):
+    out=Path(plan['output']);record=common.read(out/'preparation.json')
+    require(record['schema']=='graphite.native-core-preparation.v1' and record['status']==PREPARATION_PASS and
+            record['errors']==[] and record['finalIdentity']=='PASS' and
+            record['plan']==artifacts.ref(out/'plan.json') and all(record[k] is False for k in FALSE_CLAIMS),
+            'complete unchanged core preparation required')
+    checked_phases(plan,record['phases'],preparation_commands(plan))
+    require(record['files']==preparation_files(plan),'prepared helper/raw Local files changed')
+    return record
+
+
+def check_worker_graphs(plan,rows):
+    root=Path(plan['output'])/'graphs'
+    require(root.is_dir() and not root.is_symlink(),'real worker graph directory required')
+    actual=list(root.iterdir())
+    require(all(path.is_dir() and not path.is_symlink() for path in actual) and
+            {path.name for path in actual}=={row['id'] for row in rows},'closed assigned worker graph inventory')
+
+
+def execute_stage(plan,expected,path,rows=None):
+    """Own one bounded serial stage; distinct workers never write shared receipts."""
+    out=Path(plan['output']);is_preparation=rows is None
+    record={'schema':'graphite.native-core-preparation.v1' if is_preparation else 'graphite.native-core-shard.v1',
+            'status':'FAIL','plan':artifacts.ref(out/'plan.json'),'errors':[],'phases':[],
+            **{k:False for k in FALSE_CLAIMS}}
+    if not is_preparation:
+        record.update(shardIndex=int(path.parent.name),shardCount=plan['execution']['shardCount'],
+                      preparation=artifacts.ref(out/'preparation.json'),graphs=[])
+    previous={}
+    def interrupted(signum,frame):raise InterruptedError('signal '+str(signum))
+    try:
+        for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
+        artifacts.verify_pins(plan['pins'])
+        for ordinal,(name,argv,timeout) in enumerate(expected,1):
+            progress('phase','start',phase=name,ordinal=ordinal,total=len(expected),
+                     completedGraphs=len(record.get('graphs',[])))
+            producer.phase(name,argv,PACKAGE.parent,strings.environment(raw_local_export.phase_java(plan,name)),out,timeout)
+            record['phases'].append(artifacts.ref(out/name/'record.json'))
+            if not is_preparation and name.endswith('-topology'):
+                row=next(row for row in rows if row['id']==name[:-len('-topology')])
+                record['graphs'].append(graph_result(plan,row))
+            path.write_text(json.dumps(record,indent=2)+'\n')
+            progress('phase','complete',phase=name,completedGraphs=len(record.get('graphs',[])))
+        checked_phases(plan,record['phases'],expected)
+        if is_preparation:record['files']=preparation_files(plan)
+        else:
+            require(len(record['graphs'])==len(rows),'complete assigned graph proofs')
+            check_worker_graphs(plan,rows)
+        record['status']=PREPARATION_PASS if is_preparation else SHARD_PASS
+    except BaseException as error:
+        record['errors'].append(repr(error))
+        progress('stage','failed',receipt=str(path),error=repr(error))
+    finally:
+        for sig in previous:signal.signal(sig,signal.SIG_IGN)
+        try:
+            require(common.typed(plan)==common.typed(rebind(plan)),'final stage source/runtime/fixture identity drift')
+            if is_preparation and 'files' in record:
+                require(record['files']==preparation_files(plan),'prepared outputs changed')
+            if not is_preparation:
+                check_preparation(plan)
+                require(record['preparation']==artifacts.ref(out/'preparation.json'),'preparation changed during shard')
+                require(record['graphs']==[graph_result(plan,row) for row in rows[:len(record['graphs'])]],
+                        'completed shard outputs changed')
+                if record['status']==SHARD_PASS:check_worker_graphs(plan,rows)
+            record['finalIdentity']='PASS'
+        except BaseException as error:
+            record['errors'].append('final verification: '+repr(error));record['finalIdentity']='FAIL'
+        if record['errors']:record['status']='FAIL'
+        path.write_text(json.dumps(record,indent=2)+'\n')
+        for sig,handler in previous.items():signal.signal(sig,handler)
+    return record
+
+
+def prepare(plan):
+    shard_rows(plan,0)
+    require(common.typed(plan)==common.typed(rebind(plan)),'preparation plan differs from actual pair')
+    out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False)
+    for name in ('classes','graphs','shards'):(out/name).mkdir()
+    common.save(out/'plan.json',plan)
+    return execute_stage(plan,preparation_commands(plan),out/'preparation.json')
+
+
+def run_shard(output,index,count):
+    out=Path(output).resolve();plan=common.read(out/'plan.json')
+    require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact prepared shard plan')
+    rows=shard_rows(plan,index)
+    require(common.typed(plan)==common.typed(rebind(plan)),'shard plan differs from actual pair')
+    check_preparation(plan)
+    graphs=out/'graphs'
+    require(not graphs.is_symlink() and (not graphs.exists() or graphs.is_dir()),'real worker graph directory required')
+    graphs.mkdir(exist_ok=True)
+    directory=out/'shards'/str(index);directory.mkdir(parents=True,exist_ok=False)
+    return execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows)
+
+
+def check_shards(plan,complete_rows=None):
+    out=Path(plan['output']);count=plan['execution']['shardCount'];check_preparation(plan)
+    require({p.name for p in (out/'shards').iterdir()}=={str(i) for i in range(count)},'closed complete shard receipt inventory')
+    records=[]
+    for index in range(count):
+        path=out/'shards'/str(index)/'record.json';record=common.read(path)
+        require(record['schema']=='graphite.native-core-shard.v1' and record['status']==SHARD_PASS and
+                record['errors']==[] and record['finalIdentity']=='PASS' and record['shardIndex']==index and
+                record['shardCount']==count and record['plan']==artifacts.ref(out/'plan.json') and
+                record['preparation']==artifacts.ref(out/'preparation.json') and all(record[k] is False for k in FALSE_CLAIMS),
+                'complete exact successful shard required')
+        checked_phases(plan,record['phases'],shard_commands(plan,index))
+        expected=[graph_result(plan,row) for row in shard_rows(plan,index)] if complete_rows is None else [
+            row for row in complete_rows if row['id'] in {r['id'] for r in shard_rows(plan,index)}]
+        require(record['graphs']==expected,'exact assigned shard graph proofs')
+        records.append(record)
+    return records
+
+
+def join_shards(output,count):
+    out=Path(output).resolve();plan=common.read(out/'plan.json')
+    require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact complete join plan')
+    require(not (out/'record.json').exists() and not (out/'audit.json').exists(),'fresh joined core proof required')
+    require(common.typed(plan)==common.typed(rebind(plan)),'join plan differs from actual pair')
+    records=check_shards(plan)
+    by_id={row['id']:row for record in records for row in record['graphs']}
+    require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
+    rows=[by_id[row['id']] for row in plan['graphs']]
+    record={'schema':'graphite.native-core-equivalence-record.v1','status':PASS,
+            'plan':artifacts.ref(out/'plan.json'),'errors':[],
+            'phases':[artifacts.ref(out/name/'record.json') for name,_,_ in commands(plan)],
+            'graphs':rows,'compiledHelper':compiled(plan),'finalIdentity':'PASS',
+            'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
+                        'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
+            **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
+    common.save(out/'record.json',record)
+    try:
+        # The original full auditor remains the final authority, including all139
+        # original argv, cleanup, topology, index and raw Local evidence.
+        result=audit(out)
+        common.save(out/'audit.json',result)
+    except BaseException as error:
+        record['status']='FAIL';record['errors'].append('join audit: '+repr(error));record['finalIdentity']='FAIL'
+        (out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
+        raise
+    return record
+
+
 def audit(output):
     progress('audit','start',output=str(output))
     try:
@@ -338,6 +540,15 @@ def _audit(output):
     require({p.name for p in (out/'graphs').iterdir()}=={r['id'] for r in plan['graphs']},'closed all64 proof inventory')
     rows=[graph_result(plan,row) for row in plan['graphs']]
     require(rows==record['graphs'] and all(record[k]==sum(r[k] for r in rows) for k in COUNTS),'all raw completed graph proofs')
+    if 'execution' in plan:
+        shard_rows(plan,0)
+        check_shards(plan,rows)
+        sharding={'preparation':artifacts.ref(out/'preparation.json'),
+                  'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(plan['execution']['shardCount'])]}
+        require(record.get('sharding')==sharding,'complete original shard receipt linkage')
+        for ref in [sharding['preparation'],*sharding['shards']]:merge_pins(pins,{ref['path']:ref['sha256']})
+        merge_pins(pins,check_preparation(plan)['files'])
+    else:require('sharding' not in record,'undeclared sharding proof')
     for row in rows:merge_pins(pins,row['files'])
     for leaf in ('plan.json','record.json'):merge_pins(pins,{str(out/leaf):common.sha(out/leaf)})
     artifacts.verify_pins(pins)
@@ -355,14 +566,28 @@ def main():
     parser.add_argument('--reference',type=Path);parser.add_argument('--actual',type=Path)
     parser.add_argument('--raw-local-types',action='store_true',help='Require both actual-writer raw no-fold Local.type inventories')
     parser.add_argument('--raw-edges',action='store_true',help='Export both original labeled edge streams during the existing topology proof')
-    parser.add_argument('--output',type=Path,required=True);parser.add_argument('--audit-only',action='store_true')
+    parser.add_argument('--output',type=Path,required=True)
+    mode=parser.add_mutually_exclusive_group()
+    mode.add_argument('--audit-only',action='store_true')
+    mode.add_argument('--prepare-only',action='store_true')
+    mode.add_argument('--shard-index',type=int)
+    mode.add_argument('--join-shards',type=int)
+    parser.add_argument('--shard-count',type=int)
     args=parser.parse_args()
     try:
+        if args.shard_index is not None:
+            return 0 if run_shard(args.output,args.shard_index,args.shard_count)['status']==SHARD_PASS else 1
+        if args.join_shards is not None:
+            require(args.shard_count is None,'join count is supplied by --join-shards')
+            join_shards(args.output,args.join_shards);return 0
         if not args.audit_only:
             require(args.reference and args.actual,'actual producer pair required')
             progress('binding','start')
-            plan=bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges)
+            require(args.prepare_only or args.shard_count is None,'shard count requires preparation or worker mode')
+            if args.prepare_only:shard_execution(args.shard_count)
+            plan=bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges,args.shard_count)
             progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
+            if args.prepare_only:return 0 if prepare(plan)['status']==PREPARATION_PASS else 1
             if execute(plan)['status']!=PASS:return 1
         common.save(args.output/'audit.json',audit(args.output));return 0
     except BaseException as error:

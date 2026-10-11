@@ -354,6 +354,190 @@ class LifecycleTests(unittest.TestCase):
 
 
 
+class ShardLifecycleTests(unittest.TestCase):
+    """The same tiny raw receipt checks across independent preparation/workers/join."""
+    def setUp(self):
+        self.f=LifecycleTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+        self.plan=self.f.plan;self.out=self.f.out
+        self.plan.update(execution=r.shard_execution(8),stopAtFirstFailure=False)
+        for i,row in enumerate(self.plan['graphs']):row['fieldAuthority']={'corpus':f'corpus-{i//16}'}
+
+    def worker(self,index,count):
+        # Workers see independent graph directories at the same canonical path;
+        # put earlier workers' outputs back only when simulating the final join.
+        graphs=self.out/'graphs';saved=self.f.root/'other-worker-graphs'
+        graphs.rename(saved);graphs.mkdir()
+        try:return r.run_shard(self.out,index,count)
+        finally:
+            for path in saved.iterdir():path.rename(graphs/path.name)
+            saved.rmdir()
+
+    def complete(self,count=8):
+        self.plan['execution']=r.shard_execution(count)
+        self.assertEqual(r.PREPARATION_PASS,r.prepare(self.plan)['status'])
+        preparation=(self.out/'preparation.json').read_bytes();plan=(self.out/'plan.json').read_bytes()
+        for index in reversed(range(count)):
+            self.assertEqual(r.SHARD_PASS,self.worker(index,count)['status'])
+            self.assertFalse((self.out/'record.json').exists());self.assertFalse((self.out/'audit.json').exists())
+        self.assertEqual(preparation,(self.out/'preparation.json').read_bytes())
+        self.assertEqual(plan,(self.out/'plan.json').read_bytes())
+        return r.join_shards(self.out,count)
+
+    def test_eight_balanced_workers_preserve_original_complete_audit(self):
+        result=self.complete()
+        self.assertEqual(r.PASS,result['status']);self.assertEqual(129,len(self.f.calls))
+        self.assertEqual([r.artifacts.ref(self.out/name/'record.json') for name,_,_ in r.commands(self.plan)],result['phases'])
+        self.assertEqual([row['id'] for row in self.plan['graphs']],[row['id'] for row in result['graphs']])
+        audit=r.audit(self.out);self.assertEqual(r.AUDIT_PASS,audit['status']);self.assertEqual(129,audit['phases'])
+        for i in range(8):
+            rows=r.shard_rows(self.plan,i)
+            self.assertEqual(8,len(rows))
+            self.assertEqual({f'corpus-{j}':2 for j in range(4)},
+                             {corpus:sum(row['fieldAuthority']['corpus']==corpus for row in rows)
+                              for corpus in {row['fieldAuthority']['corpus'] for row in rows}})
+        self.assertEqual(1,sum(name=='compile-topology' for name,_,_ in self.f.calls))
+
+    def test_four_workers_cover_same64_graphs_exactly_once(self):
+        result=self.complete(4)
+        self.assertEqual(64,len(result['graphs']));self.assertEqual(129,len(result['phases']))
+        self.assertTrue(all(len(r.shard_rows(self.plan,i))==16 for i in range(4)))
+
+    def test_full139_command_chain_prepares_eleven_once(self):
+        self.plan['maxOwnedPhases']=139
+        self.plan['rawLocalExports']=[{'arm':arm,'corpus':f'corpus-{i}',
+            'java':self.plan['java'],'javac':self.plan['javac'],'writerJar':self.plan['writerJar'],
+            'sourceJar':f'/source/corpus-{i}.jar','provenance':f'/source/{arm}.tsv'}
+            for arm in ('C','B') for i in range(4)]
+        original=self.f.phase
+        def phase(name,argv,cwd,env,out,timeout):
+            original(name,argv,cwd,env,out,timeout)
+            if name.startswith('compile-raw-'):
+                root=out/'classes'/('raw-'+name[-1]);root.mkdir();(root/'ExportRawLocals.class').write_bytes(b'tiny raw helper')
+            elif name.startswith('raw-'):
+                root=out/'raw-locals'/name;root.mkdir(parents=True);(root/'tiny.jsonl').write_text('{}\n')
+        # Raw Local semantics have dedicated tests; this exercises the real139
+        # commands, sealed phase receipts and fan-in without executing a JVM.
+        graph_result=r.graph_result
+        with patch.object(r.producer,'phase',side_effect=phase),patch.object(r,'graph_result',
+                side_effect=lambda plan,row:graph_result({k:v for k,v in plan.items() if k!='rawLocalExports'},row)):
+            result=self.complete()
+            self.assertEqual(139,len(self.f.calls));self.assertEqual(139,len(result['phases']))
+            self.assertEqual(11,len(r.common.read(self.out/'preparation.json')['phases']))
+            self.assertEqual(139,r.audit(self.out)['phases'])
+
+    def test_partial_shards_never_write_final_acceptance(self):
+        r.prepare(self.plan);r.run_shard(self.out,0,8)
+        with self.assertRaisesRegex(ValueError,'complete shard receipt inventory'):r.join_shards(self.out,8)
+        self.assertFalse((self.out/'record.json').exists());self.assertFalse((self.out/'audit.json').exists())
+
+    def test_duplicate_worker_rejected_without_overwriting_original_receipt(self):
+        r.prepare(self.plan);r.run_shard(self.out,0,8)
+        path=self.out/'shards/0/record.json';before=path.read_bytes()
+        with self.assertRaises(FileExistsError):r.run_shard(self.out,0,8)
+        self.assertEqual(before,path.read_bytes())
+
+    def test_failed_worker_keeps_failure_and_blocks_join(self):
+        r.prepare(self.plan);self.f.failed_phase='fixture-00-core'
+        failed=r.run_shard(self.out,0,8)
+        self.assertEqual('FAIL',failed['status']);self.assertEqual([],failed['graphs'])
+        self.assertEqual(2,len(self.f.calls))
+        self.f.failed_phase=None
+        for index in range(1,8):self.worker(index,8)
+        with self.assertRaisesRegex(ValueError,'successful shard'):r.join_shards(self.out,8)
+        self.assertFalse((self.out/'audit.json').exists())
+
+    def test_changed_preparation_blocks_worker_before_start(self):
+        r.prepare(self.plan);(self.out/'classes/VerifyTopology.class').write_bytes(b'foreign')
+        with self.assertRaisesRegex(ValueError,'prepared helper'):r.run_shard(self.out,0,8)
+        self.assertEqual(1,len(self.f.calls));self.assertFalse((self.out/'shards/0').exists())
+
+    def test_fresh_worker_creates_graph_parent_omitted_from_preparation_checkpoint(self):
+        r.prepare(self.plan);(self.out/'graphs').rmdir();original=self.f.phase
+        def phase(*args):
+            if args[0].endswith('-core'):
+                self.assertTrue((self.out/'graphs').is_dir())
+                # Match check_graph.execute's mkdir without parents=True.
+                probe=self.out/'graphs'/'parent-required';probe.mkdir();probe.rmdir()
+            return original(*args)
+        with patch.object(r.producer,'phase',side_effect=phase):result=r.run_shard(self.out,0,8)
+        self.assertEqual(r.SHARD_PASS,result['status']);self.assertEqual(8,len(result['graphs']))
+
+    def test_worker_rejects_file_or_symlink_as_graph_parent(self):
+        r.prepare(self.plan);graphs=self.out/'graphs';graphs.rmdir()
+        graphs.write_text('wrong type')
+        with self.assertRaisesRegex(ValueError,'real worker graph directory'):r.run_shard(self.out,0,8)
+        graphs.unlink();target=self.f.root/'external-graphs';target.mkdir();graphs.symlink_to(target,target_is_directory=True)
+        with self.assertRaisesRegex(ValueError,'real worker graph directory'):r.run_shard(self.out,0,8)
+        self.assertEqual(1,len(self.f.calls));self.assertFalse((self.out/'shards/0').exists())
+
+    def test_extra_graph_cannot_be_hidden_by_selective_shard_checkpoint(self):
+        r.prepare(self.plan);original=self.f.phase
+        def phase(*args):
+            result=original(*args)
+            if args[0]=='fixture-00-core':(self.out/'graphs'/'foreign-graph').mkdir()
+            return result
+        with patch.object(r.producer,'phase',side_effect=phase):result=r.run_shard(self.out,0,8)
+        self.assertEqual('FAIL',result['status']);self.assertEqual(8,len(result['graphs']))
+        self.assertIn('closed assigned worker graph inventory',result['errors'][0])
+        self.assertFalse((self.out/'audit.json').exists())
+
+    def test_changed_plan_count_and_bad_partition_fail_before_execution(self):
+        r.prepare(self.plan)
+        for count,index in ((4,0),(8,-1),(8,8)):
+            with self.assertRaises(ValueError):self.worker(index,count)
+        self.assertEqual(1,len(self.f.calls))
+        self.plan['graphs'][0]['fieldAuthority']['corpus']='foreign'
+        with self.assertRaisesRegex(ValueError,'four complete16'):r.shard_rows(self.plan,0)
+
+    def test_swapped_shard_receipt_is_rejected_even_when_files_exist(self):
+        r.prepare(self.plan)
+        for index in range(8):self.worker(index,8)
+        a=self.out/'shards/0/record.json';b=self.out/'shards/1/record.json'
+        a.write_bytes(b.read_bytes())
+        with self.assertRaisesRegex(ValueError,'successful shard'):r.join_shards(self.out,8)
+
+    def test_after_join_raw_phase_or_shard_drift_is_not_accepted(self):
+        self.complete();path=self.out/'shards/0/record.json';value=r.common.read(path)
+        value['graphs'].pop();path.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError,'assigned shard graph'):r.audit(self.out)
+
+    def test_sequential_runner_cannot_claim_sharded_first_failure_policy(self):
+        with self.assertRaisesRegex(ValueError,'sharded plans require'):r.execute(self.plan)
+        self.assertFalse(self.out.exists())
+
+    def test_changed_input_during_worker_preserves_failure_without_final_acceptance(self):
+        r.prepare(self.plan);original=self.f.phase
+        def phase(*args):
+            result=original(*args)
+            if args[0]=='fixture-00-core':self.f.input.write_bytes(b'changed during worker')
+            return result
+        def rebind(plan):r.artifacts.verify_pins(plan['pins']);return copy.deepcopy(self.plan)
+        with patch.object(r.producer,'phase',side_effect=phase),patch.object(r,'rebind',side_effect=rebind):
+            result=r.run_shard(self.out,0,8)
+        self.assertEqual('FAIL',result['status']);self.assertEqual('FAIL',result['finalIdentity'])
+        self.assertTrue(result['errors']);self.assertFalse((self.out/'audit.json').exists())
+
+    def test_join_final_audit_failure_cannot_leave_pass_record(self):
+        r.prepare(self.plan)
+        for index in range(8):self.worker(index,8)
+        with patch.object(r,'audit',side_effect=ValueError('final independent audit rejected')):
+            with self.assertRaisesRegex(ValueError,'independent audit'):r.join_shards(self.out,8)
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertIn('independent audit',record['errors'][0]);self.assertFalse((self.out/'audit.json').exists())
+
+    def test_cli_routes_prepare_worker_join_without_reexecuting_sequential_proof(self):
+        with (patch.object(r,'bind',return_value=self.plan),patch.object(r,'prepare',return_value={'status':r.PREPARATION_PASS}) as prepare,
+                patch.object(r.sys,'argv',['core','--reference','C','--actual','B','--output',str(self.out),'--prepare-only','--shard-count','8'])):
+            self.assertEqual(0,r.main());prepare.assert_called_once_with(self.plan)
+        with (patch.object(r,'run_shard',return_value={'status':r.SHARD_PASS}) as worker,
+                patch.object(r.sys,'argv',['core','--output',str(self.out),'--shard-index','3','--shard-count','8'])):
+            self.assertEqual(0,r.main());worker.assert_called_once_with(self.out,3,8)
+        with (patch.object(r,'join_shards') as join,
+                patch.object(r.sys,'argv',['core','--output',str(self.out),'--join-shards','8'])):
+            self.assertEqual(0,r.main());join.assert_called_once_with(self.out,8)
+
+
 class PairBindingTests(unittest.TestCase):
     """Join boundaries only; each upstream raw auditor has its own byte tests."""
     def setUp(self):

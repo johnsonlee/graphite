@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 39c7983cb6390d39bfb8ad148a828ac0d7baa1f5c32055118b31aef198a81e81
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 102d8a01a0519210fc824f6ce83f2c3b5d59b9f80ca448f91f6b06557ea05431
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 127b5f85d418ab4d001b73d5a132fdd476f2c64fcae64da605fddc593d6d2eba
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -3010,8 +3010,8 @@ jobs:
           native-pressure-artifacts/*/graphs/**
           native-pressure-producers/**
 
-  rust-core:
-    name: rust-core (${{ matrix.arm }})
+  rust-core-prepare:
+    name: rust-core-prepare (${{ matrix.arm }})
     needs: [rust-producer]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -3064,28 +3064,28 @@ jobs:
         (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
         PRODUCER=pressure-checkpoints/producer-producer/manifest.json
         python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
-          --stage producer --arm producer --directory pressure-checkpoints/producer-producer --workspace "${GITHUB_WORKSPACE}" \
+          --stage producer --arm producer --directory "${PRODUCER%/manifest.json}" --workspace "${GITHUB_WORKSPACE}" \
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
-    - name: Execute complete native core topology and index migration checks
+    - name: Prepare shared native core topology and index evidence
       env:
         CORE_ARM: ${{ matrix.arm }}
         BASE_SHA: ${{ github.event.pull_request.base.sha }}
       run: |
         set -euo pipefail
-        for ARM in "${CORE_ARM}"; do
-          if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
-            continue
-          fi
-          code=0
-          python3 candidate/.github/scripts/run_native_core_equivalence.py \
-            --reference native-pressure-artifacts/C \
-            --actual "native-pressure-artifacts/${ARM}" \
-            --raw-local-types --raw-edges \
-            --output "native-pressure-artifacts/${ARM}/core-equivalence" || code=$?
-          if [[ "${code}" != 0 ]]; then
-            python3 - "native-pressure-artifacts/${ARM}/core-equivalence" <<'PYERRORS'
+        ARM="${CORE_ARM}"
+        if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+          exit 0
+        fi
+        code=0
+        python3 candidate/.github/scripts/run_native_core_equivalence.py \
+          --reference native-pressure-artifacts/C \
+          --actual "native-pressure-artifacts/${ARM}" \
+          --raw-local-types --raw-edges --prepare-only --shard-count 8 \
+          --output "native-pressure-artifacts/${ARM}/core-equivalence" || code=$?
+        if [[ "${code}" != 0 ]]; then
+          python3 - "native-pressure-artifacts/${ARM}/core-equivalence" <<'PYERRORS'
         import json, pathlib, sys
         root = pathlib.Path(sys.argv[1])
         for record in sorted(root.glob('*/record.json')):
@@ -3100,9 +3100,306 @@ jobs:
                         print(stream.read().decode('utf-8', errors='replace'))
                 print('::endgroup::')
         PYERRORS
-            exit "${code}"
-          fi
+          exit "${code}"
+        fi
+
+    - name: Seal shared core preparation checkpoint
+      env:
+        CHECKPOINT_ARM: ${{ matrix.arm }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        UPSTREAM=()
+        UPSTREAM+=(--upstream pressure-checkpoints/producer-producer/manifest.json)
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py seal \
+          --stage core-prepare --shard-count 8 --arm "${CHECKPOINT_ARM}" --directory "pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}" \
+          "${UPSTREAM[@]}" --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+    - name: Publish shared core preparation checkpoint
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-checkpoint-core-prepare-${{ matrix.arm }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/core-prepare-${{ matrix.arm }}/
+        if-no-files-found: error
+        compression-level: 0
+        retention-days: 14
+
+    - name: Retain core-prepare-${{ matrix.arm }} diagnostic evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-pressure-core-prepare-${{ matrix.arm }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+        path: native-pressure-artifacts/${{ matrix.arm }}/core-equivalence/**
+
+  rust-core-shard:
+    name: rust-core-shard (${{ matrix.arm }}, ${{ matrix.shard }})
+    needs: [rust-producer, rust-core-prepare]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["B"]' || '["A","B"]') }}
+        shard: [0, 1, 2, 3, 4, 5, 6, 7]
+    env:
+      CHECKPOINT_ARM: ${{ matrix.arm }}
+      CORE_SHARD: ${{ matrix.shard }}
+      PYTHONDONTWRITEBYTECODE: '1'
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Checkout accepted baseline when distinct from PR base
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/checkout@v7
+      with:
+        ref: 4f2ccf33b969e684972e56b5e810034e6e67c1b3
+        path: accepted
+        persist-credentials: false
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Download producer checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/producer-producer
+
+    - name: Download shared core preparation checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-prepare-${{ matrix.arm }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/core-prepare-${{ matrix.arm }}
+
+    - name: Verify and restore exact checkpoint closure
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        PRODUCER=pressure-checkpoints/producer-producer/manifest.json
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+          --stage producer --arm producer --directory pressure-checkpoints/producer-producer --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+        PREPARATION="pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}/manifest.json"
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+          --stage core-prepare --arm "${CHECKPOINT_ARM}" --shard-count 8 \
+          --directory "${PREPARATION%/manifest.json}" --upstream "${PRODUCER}" --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+    - name: Execute assigned native core graph shard
+      env:
+        CORE_ARM: ${{ matrix.arm }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        ARM="${CORE_ARM}"
+        if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+          exit 0
+        fi
+        code=0
+        python3 candidate/.github/scripts/run_native_core_equivalence.py \
+          --reference native-pressure-artifacts/C \
+          --actual "native-pressure-artifacts/${ARM}" \
+          --raw-local-types --raw-edges --shard-index "${CORE_SHARD}" --shard-count 8 \
+          --output "native-pressure-artifacts/${ARM}/core-equivalence" || code=$?
+        if [[ "${code}" != 0 ]]; then
+          python3 - "native-pressure-artifacts/${ARM}/core-equivalence" <<'PYERRORS'
+        import json, pathlib, sys
+        root = pathlib.Path(sys.argv[1])
+        for record in sorted(root.glob('*/record.json')):
+            value = json.loads(record.read_text())
+            if value.get('status') == 'FAIL':
+                print(f"::group::Core proof failure: {record.parent.name}")
+                print(json.dumps(value.get('errors', [])))
+                stderr = record.parent / 'stderr.log'
+                if stderr.is_file():
+                    with stderr.open('rb') as stream:
+                        stream.seek(max(0, stderr.stat().st_size - 8192))
+                        print(stream.read().decode('utf-8', errors='replace'))
+                print('::endgroup::')
+        PYERRORS
+          exit "${code}"
+        fi
+
+    - name: Seal native core shard checkpoint
+      env:
+        CHECKPOINT_ARM: ${{ matrix.arm }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        UPSTREAM=()
+        UPSTREAM+=(--upstream pressure-checkpoints/producer-producer/manifest.json)
+        UPSTREAM+=(--upstream "pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}/manifest.json")
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py seal \
+          --stage core-shard --shard-count 8 --shard-index "${CORE_SHARD}" --arm "${CHECKPOINT_ARM}" --directory "pressure-checkpoints/core-shard-${CHECKPOINT_ARM}-${CORE_SHARD}" \
+          "${UPSTREAM[@]}" --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+    - name: Publish native core shard checkpoint
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-checkpoint-core-shard-${{ matrix.arm }}-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/core-shard-${{ matrix.arm }}-${{ matrix.shard }}/
+        if-no-files-found: error
+        compression-level: 0
+        retention-days: 14
+
+    - name: Retain core-shard-${{ matrix.arm }}-${{ matrix.shard }} diagnostic evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-pressure-core-shard-${{ matrix.arm }}-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
+        if-no-files-found: warn
+        retention-days: 14
+        include-hidden-files: true
+        path: native-pressure-artifacts/${{ matrix.arm }}/core-equivalence/**
+
+  rust-core:
+    name: rust-core (${{ matrix.arm }})
+    needs: [rust-producer, rust-core-prepare, rust-core-shard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    strategy:
+      fail-fast: false
+      matrix:
+        arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["B"]' || '["A","B"]') }}
+    env:
+      CHECKPOINT_ARM: ${{ matrix.arm }}
+      PYTHONDONTWRITEBYTECODE: '1'
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Checkout accepted baseline when distinct from PR base
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/checkout@v7
+      with:
+        ref: 4f2ccf33b969e684972e56b5e810034e6e67c1b3
+        path: accepted
+        persist-credentials: false
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Download producer checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/producer-producer
+
+    - name: Download shared core preparation checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-prepare-${{ matrix.arm }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/core-prepare-${{ matrix.arm }}
+
+    - name: Download every native core shard checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        pattern: native-checkpoint-core-shard-${{ matrix.arm }}-*-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints
+        merge-multiple: false
+
+    - name: Verify and restore exact checkpoint closure
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        PRODUCER=pressure-checkpoints/producer-producer/manifest.json
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+          --stage producer --arm producer --directory pressure-checkpoints/producer-producer --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+        PREPARATION="pressure-checkpoints/core-prepare-${CHECKPOINT_ARM}/manifest.json"
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+          --stage core-prepare --arm "${CHECKPOINT_ARM}" --shard-count 8 \
+          --directory "${PREPARATION%/manifest.json}" --upstream "${PRODUCER}" --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+        for SHARD in 0 1 2 3 4 5 6 7; do
+          DIRECTORY="pressure-checkpoints/native-checkpoint-core-shard-${CHECKPOINT_ARM}-${SHARD}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+            --stage core-shard --arm "${CHECKPOINT_ARM}" --shard-count 8 --shard-index "${SHARD}" \
+            --directory "${DIRECTORY}" --upstream "${PRODUCER}" --upstream "${PREPARATION}" --workspace "${GITHUB_WORKSPACE}" \
+            --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+            --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
         done
+
+    - name: Join complete native core topology and index migration checks
+      env:
+        CORE_ARM: ${{ matrix.arm }}
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      run: |
+        set -euo pipefail
+        ARM="${CORE_ARM}"
+        if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
+          exit 0
+        fi
+        code=0
+        python3 candidate/.github/scripts/run_native_core_equivalence.py \
+          --reference native-pressure-artifacts/C \
+          --actual "native-pressure-artifacts/${ARM}" \
+          --raw-local-types --raw-edges --join-shards 8 \
+          --output "native-pressure-artifacts/${ARM}/core-equivalence" || code=$?
+        if [[ "${code}" != 0 ]]; then
+          python3 - "native-pressure-artifacts/${ARM}/core-equivalence" <<'PYERRORS'
+        import json, pathlib, sys
+        root = pathlib.Path(sys.argv[1])
+        for record in sorted(root.glob('*/record.json')):
+            value = json.loads(record.read_text())
+            if value.get('status') == 'FAIL':
+                print(f"::group::Core proof failure: {record.parent.name}")
+                print(json.dumps(value.get('errors', [])))
+                stderr = record.parent / 'stderr.log'
+                if stderr.is_file():
+                    with stderr.open('rb') as stream:
+                        stream.seek(max(0, stderr.stat().st_size - 8192))
+                        print(stream.read().decode('utf-8', errors='replace'))
+                print('::endgroup::')
+        PYERRORS
+          exit "${code}"
+        fi
 
     - name: Seal complete core checkpoint
       env:
@@ -4152,7 +4449,7 @@ jobs:
   rust-latency:
     name: rust-latency-gate
     if: always()
-    needs: [rust-producer, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm, rust-query-legacy, rust-loading, rust-construction]
+    needs: [rust-producer, rust-core-prepare, rust-core-shard, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm, rust-query-legacy, rust-loading, rust-construction]
     runs-on: ubuntu-latest
     steps:
     - name: Require every proof and complete operation cohort
@@ -4162,7 +4459,7 @@ jobs:
         python3 - <<'PYJOIN'
         import json, os
         results = json.loads(os.environ['STAGE_RESULTS'])
-        required = {'rust-producer', 'rust-core', 'rust-jvm-correctness', 'rust-query-native-measurement', 'rust-query-native',
+        required = {'rust-producer', 'rust-core-prepare', 'rust-core-shard', 'rust-core', 'rust-jvm-correctness', 'rust-query-native-measurement', 'rust-query-native',
                     'rust-query-jvm', 'rust-query-legacy', 'rust-loading', 'rust-construction'}
         assert set(results) == required, 'missing required stage'
         failures = {name: value['result'] for name, value in results.items() if value['result'] != 'success'}

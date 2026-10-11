@@ -464,6 +464,121 @@ class CheckpointTests(unittest.TestCase):
         self.assertEqual('lib/server/libjvm.so', (jdk/'lib/server/libjvm.so').read_text())
         self.assertTrue((jdk/'legal/module').is_symlink())
 
+    def sharded_core_fixture(self):
+        import run_native_core_equivalence as core
+        self.seal()
+        out = self.root/'B/core-equivalence'
+        plan = {'schema': 'graphite.native-core-equivalence-plan.v1', 'output': str(out),
+                'execution': core.shard_execution(8), 'stopAtFirstFailure': False,
+                'python': '/python', 'java': '/java', 'javac': '/javac', 'writerJar': str(self.writer),
+                'maxOwnedPhases': 139, 'graphs': [
+                    {'id': f'{corpus}-{n:02}', 'C': '/reference', 'B': '/candidate',
+                     'fieldAuthority': {'corpus': corpus}}
+                    for corpus in ('alpha', 'beta', 'gamma', 'delta') for n in range(16)],
+                'rawLocalExports': [{'arm': arm, 'corpus': corpus, 'java': '/java', 'javac': '/javac',
+                    'writerJar': str(self.writer), 'sourceJar': '/source', 'provenance': '/provenance'}
+                    for arm in ('C', 'B') for corpus in ('alpha', 'beta', 'gamma', 'delta')]}
+        self.json(out/'plan.json', plan)
+        self.write(out/'classes/VerifyTopology.class', 'tiny compiled helper')
+        self.write(out/'raw-locals/input', 'tiny local export')
+        for name, _, _ in core.preparation_commands(plan): self.json(out/name/'record.json', {'phase': name})
+        ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
+        self.json(out/'preparation.json', {'plan': ref(out/'plan.json')})
+        prep_args = self.args('core-prepare', 'B', self.workspace/'pressure-checkpoints/core-prepare-B', [self.directory/'manifest.json'])
+        prep_args.shard_count = 8
+        prep = checkpoint.seal(prep_args)
+        return core, out, plan, prep_args, prep
+
+    def write_core_shard(self, core, out, plan, prep_args, index):
+        for row in core.shard_rows(plan, index): self.write(out/'graphs'/row['id']/'proof', row['id'])
+        for name, _, _ in core.shard_commands(plan, index): self.json(out/name/'record.json', {'phase': name})
+        ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
+        self.json(out/'shards'/str(index)/'record.json', {'shardCount': 8, 'shardIndex': index,
+            'plan': ref(out/'plan.json'), 'preparation': ref(out/'preparation.json')})
+        args = self.args('core-shard', 'B', self.workspace/f'pressure-checkpoints/core-shard-B-{index}',
+                         [self.directory/'manifest.json', Path(prep_args.directory)/'manifest.json'])
+        args.shard_count = 8; args.shard_index = index
+        return args
+
+    def test_sharded_core_roundtrip_preserves_disjoint_leaves_and_shared_preparation(self):
+        core, out, plan, prep_args, prep = self.sharded_core_fixture()
+        args, manifests = [], []
+        for index in range(8):
+            arg = self.write_core_shard(core, out, plan, prep_args, index)
+            manifest = checkpoint.seal(arg)
+            args.append(arg); manifests.append(manifest)
+            self.remove_payload(manifest)  # Each worker owns a fresh restored preparation.
+
+        for manifest in [prep, *manifests]:
+            for shared in (out, out/'graphs', out/'shards'):
+                self.assertNotIn(str(shared), manifest['closedDirectories'])
+        for index, manifest in enumerate(manifests):
+            expected = {str(out/'graphs'/row['id']) for row in core.shard_rows(plan, index)}
+            actual = {path for path in manifest['closedDirectories'] if Path(path).parent == out/'graphs'}
+            self.assertEqual(expected, actual)
+            self.assertEqual(8, len(actual))
+            self.assertEqual(index, manifest['identity']['shardIndex'])
+            self.assertFalse(any(path.startswith(str(out/'raw-locals')) for path in manifest['payload']))
+        self.remove_payload(prep)
+        checkpoint.restore(prep_args)
+        for arg in reversed(args): checkpoint.restore(arg)
+        for manifest in [prep, *manifests]: checkpoint.check_files(manifest)
+        self.assertEqual(64, len(list((out/'graphs').iterdir())))
+
+    def test_shard_checkpoint_rejects_wrong_index_count_and_missing_preparation_before_writes(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0); manifest = checkpoint.seal(args)
+        self.remove_payload(manifest)
+        for field, bad in (('shard_index', 1), ('shard_count', 4)):
+            wrong = copy.copy(args); setattr(wrong, field, bad)
+            with self.assertRaisesRegex(ValueError, 'checkpoint identity'): checkpoint.restore(wrong)
+            self.assertFalse((out/'shards/0/record.json').exists())
+        wrong = copy.copy(args); wrong.upstream = wrong.upstream[:1]
+        with self.assertRaisesRegex(ValueError, 'exact same producer'): checkpoint.restore(wrong)
+        self.assertFalse((out/'shards/0/record.json').exists())
+        checkpoint.restore(args)
+
+    def test_shard_seal_rejects_extra_graph_output_instead_of_discarding_it(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        extra = out/'graphs/unassigned-graph'
+        self.write(extra/'proof', 'must not disappear during transport')
+        with self.assertRaisesRegex(ValueError, 'exact assigned shard graph output inventory'):
+            checkpoint.seal(args)
+        self.assertFalse(Path(args.directory).exists())
+        shutil.rmtree(extra)
+        checkpoint.seal(args)
+
+    def test_prepare_and_shard_reject_invalid_cli_partition(self):
+        for stage, count, index in (('core-prepare', None, None), ('core-prepare', 8, 0),
+                                    ('core-shard', 8, None), ('core-shard', 8, 8),
+                                    ('core-shard', 8, -1), ('core-shard', 2, 0), ('core', 8, None)):
+            args = self.args(stage, 'B'); args.shard_count = count; args.shard_index = index
+            with self.assertRaisesRegex(ValueError, 'checkpoint shard'): checkpoint.identity(args)
+
+    def test_shard_seal_rejects_different_preparation_and_receipt_identity(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        record = out/'shards/0/record.json'; original = checkpoint.read(record)
+        changed = {**original, 'shardIndex': 1}; self.json(record, changed)
+        with self.assertRaisesRegex(ValueError, 'shard receipt identity'): checkpoint.seal(args)
+        self.json(record, original)
+        manifest = Path(prep_args.directory)/'manifest.json'; original_prep = checkpoint.read(manifest)
+        for change in ({'arm': 'A'}, {'shardCount': 4}):
+            altered = copy.deepcopy(original_prep); altered['identity'].update(change); self.json(manifest, altered)
+            with self.assertRaisesRegex(ValueError, 'same arm and partition'): checkpoint.seal(args)
+        altered = copy.deepcopy(original_prep); altered['upstream'][0]['sha256'] = '0'*64; self.json(manifest, altered)
+        with self.assertRaisesRegex(ValueError, 'exact same producer'): checkpoint.seal(args)
+        self.json(manifest, original_prep)
+        checkpoint.seal(args)
+
+    def test_preparation_growth_is_allowed_but_pinned_helper_drift_fails(self):
+        core, out, plan, prep_args, prep = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        checkpoint.check_files(prep)
+        self.write(out/'classes/VerifyTopology.class', 'changed helper')
+        with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.seal(args)
+
 
 if __name__ == '__main__':
     unittest.main()
