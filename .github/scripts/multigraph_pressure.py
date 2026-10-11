@@ -547,6 +547,19 @@ def validate_proof_claims(plan, jvm_packet=None):
     require(matches[0].get('upstream') and all(plan['pins'].get(path) == digest for path, digest in matches[0]['upstream'].items()), 'full fixture proof producer pins')
 
 
+def _expected_graph_inputs(plan):
+    # Path/is_relative_to are lexical: retain '..', include the path itself,
+    # and preserve original pin strings even when Path normalizes '.' or '//'.
+    expected = {Path(graph['path']): set()
+                for arm in plan['arms'].values() for graph in arm['graphs']}
+    for pin in plan['pins']:
+        path = Path(pin)
+        for ancestor in (path, *path.parents):
+            if ancestor in expected:
+                expected[ancestor].add(pin)
+    return expected
+
+
 def verify_inputs(plan):
     hashes = {}
     for path, expected in plan['pins'].items():
@@ -559,6 +572,7 @@ def verify_inputs(plan):
         require(typed(value.get('upstream')) == typed(proof['upstream']), 'proof upstream audit links')
         for key, expected in proof.get('bindings', {}).items():
             require(typed(value.get(key)) == typed(expected), 'proof binding: ' + key)
+    graph_inputs = _expected_graph_inputs(plan)
     for arm in plan['arms'].values():
         for directory in arm['runtimeRoots']:
             root = Path(directory)
@@ -577,8 +591,7 @@ def verify_inputs(plan):
                 require(not path.is_symlink(), 'graph symlink')
                 if path.is_file():
                     files.add(str(path))
-            expected = {p for p in plan['pins'] if Path(p).is_relative_to(root)}
-            require(files == expected, 'closed graph inventory')
+            require(files == graph_inputs[root], 'closed graph inventory')
     return {'status': 'PASS', 'pins': hashes}
 
 

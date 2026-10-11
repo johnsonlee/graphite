@@ -691,6 +691,63 @@ class PressureTests(unittest.TestCase):
         self.assertEqual(env, {'SAFE_INPUT': 'keep', 'LC_ALL': 'C', 'LANG': 'C'})
 
 
+class GraphInputInventoryTests(unittest.TestCase):
+    def plan(self, roots, pins):
+        arm = {'graphs': [{'path': root} for root in roots], 'runtimeRoots': [], 'runtimeFiles': {}}
+        return {'pins': pins, 'proofs': [], 'arms': {'C': arm, 'A': copy.deepcopy(arm)}}
+
+    def test_expected_sets_match_lexical_reference_including_self_and_nested_roots(self):
+        roots = ['/', '/graphs/g', '/graphs/g/nested', '/graphs/g2', '/graphs/g/../g2',
+                 '/graphs//g/.', '.', 'graphs', 'graphs/g', 'graphs/g/..', '../graphs']
+        pins = ['/graphs/g', '/graphs/g/node', '/graphs/g/nested/node', '/graphs/g2/node',
+                '/graphs/g20/node', '/graphs//g/./node', '/graphs/g/../g2/node',
+                'graphs/g/node', 'graphs/g/../node', '../graphs/g/node', '.', 'unrelated', '/elsewhere']
+        plan = self.plan(roots, dict.fromkeys(pins, 'unused'))
+        actual = p._expected_graph_inputs(plan)
+        expected = {Path(root): {pin for pin in pins if Path(pin).is_relative_to(Path(root))} for root in roots}
+        self.assertEqual(actual, expected)
+        self.assertIn('/graphs/g', actual[Path('/graphs/g')])
+        self.assertIn('/graphs/g/nested/node', actual[Path('/graphs/g/nested')])
+        self.assertIn('/graphs/g/nested/node', actual[Path('/graphs/g')])
+        self.assertNotIn('/graphs/g2/node', actual[Path('/graphs/g')])
+        self.assertIn('/graphs//g/./node', actual[Path('/graphs/g')])
+        self.assertNotIn('/graphs/g/../g2/node', actual[Path('/graphs/g2')])
+
+    def test_fresh_hashes_and_directory_walks_preserved_with_aliased_nested_graphs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            graph = Path(tmp)/'graph'; nested = graph/'nested'; sibling = Path(tmp)/'graph2'
+            nested.mkdir(parents=True); sibling.mkdir()
+            files = [graph/'nodes', nested/'nodes', sibling/'nodes']
+            for file in files: file.write_text(str(file))
+            pins = {str(file): p.sha(file) for file in files}
+            plan = self.plan([str(graph), str(nested), str(sibling)], pins)
+            walked = []; original = Path.rglob
+            def walk(root, pattern):
+                walked.append(root); return original(root, pattern)
+            with patch.object(p, 'sha', wraps=p.sha) as hashed, patch.object(Path, 'rglob', walk):
+                self.assertEqual(p.verify_inputs(plan), {'status': 'PASS', 'pins': pins})
+                self.assertEqual(p.verify_inputs(plan), {'status': 'PASS', 'pins': pins})
+            self.assertEqual([call.args[0] for call in hashed.call_args_list], list(pins) * 2)
+            self.assertEqual(walked, [graph, nested, sibling] * 4)
+            files[0].write_text('changed')
+            with self.assertRaisesRegex(ValueError, 'input changed'): p.verify_inputs(plan)
+
+    def test_missing_extra_symlink_and_noncanonical_pin_remain_rejected(self):
+        for mode in ('missing', 'extra', 'symlink', 'graph-root-symlink', 'noncanonical-pin'):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                graph = Path(tmp)/'graph'; graph.mkdir(); node = graph/'nodes'; node.write_text('nodes')
+                pin = str(node) if mode != 'noncanonical-pin' else str(graph) + '/./nodes'
+                plan = self.plan([str(graph)], {pin: p.sha(node)})
+                if mode == 'missing': node.unlink()
+                elif mode == 'extra': (graph/'extra').write_text('untracked')
+                elif mode == 'symlink': (graph/'link').symlink_to(node)
+                elif mode == 'graph-root-symlink':
+                    actual = graph.with_name('actual'); graph.rename(actual); graph.symlink_to(actual, target_is_directory=True)
+                # Noncanonical pin keys still fail the original string inventory
+                # equality even though hashing reaches the same physical file.
+                with self.assertRaises((ValueError, OSError)): p.verify_inputs(plan)
+
+
 class ResolvedGraphArgumentTests(unittest.TestCase):
     def test_launch_paths_are_the_same_canonical_paths_required_by_readiness(self):
         with tempfile.TemporaryDirectory() as folder:

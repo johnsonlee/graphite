@@ -16657,3 +16657,47 @@ alone does not establish that the two-hour feedback problem is solved.
 Local evidence: `/tmp/graphite-pressure-boundary-prototype-report.json` and
 `/tmp/graphite-pressure-boundary-parent-review.json`; raw test logs are linked by
 the first report. Controls manifest and workflow digest are refreshed in this commit.
+
+
+### Attempt205 — index expected graph inventories per verification (2026-10-11)
+
+**Hypothesis.** Building the expected filename set separately for each graph
+repeats lexical ancestry checks over every pin. Build these sets once per verifier
+invocation by matching each pin's lexical ancestors against graph roots. Preserve
+original pin strings, nested roots, aliases and lexical dot/dotdot behavior. Actual
+fresh file SHA checks, runtime/graph directory walks and symlink rejection remain.
+
+Base: `b5858702` (Attempt204); candidate: this commit on
+`codex/ci-feedback-reuse`. The source prototype was checked independently against
+7d before composition. The exact hosted producer C/B query-plan metadata contains
+4,143 union pins and192 C/A/B graph visits (128 unique roots); C=A. Both plans are
+from run38120724071, accepted4f and candidate7d real64 JAR fixtures. This is metadata
+bookkeeping evidence; no graph query or server benchmark was run for this change.
+
+The parent comparison used three prespecified paired orders: old/new,new/old,old/new.
+All computed sets match exactly. All valid samples are retained below.
+
+| Pair | Old expected-set time s | Indexed expected-set time s |
+|---|---:|---:|
+| 1 | 12.933978125 | 0.083709250 |
+| 2 | 12.894101208 | 0.085260709 |
+| 3 | 12.933130875 | 0.083779792 |
+
+These local pathname-only samples are not hosted pipeline timings, final pressure
+plan timings or performance-regression acceptance. A prior diagnostic incorrectly
+constructed the root inside the old comprehension; its samples remain recorded as
+invalid and are excluded from this comparison. No graphs were loaded or queried.
+
+Correctness:83 prototype tests passed in5.339s. After composing with Attempt204,
+all111 pressure/driver tests passed in5.961s. Tests retain fresh hashing on successive
+invocations, duplicate-arm actual inventory walks, and rejection of extra/missing
+files, symlinks and noncanonical string pins. Independent real-metadata set equality
+also passed. Controls digests are refreshed.
+
+**Decision: retain the measured bookkeeping improvement locally.** Hosted time,
+CPU,RSS,server p50/p95,construction and loading acceptance are unmeasured/unchanged;
+no query performance recovery is claimed. No push or CI restart in this attempt.
+Reports: `/tmp/graphite-input-inventory-prototype-report.json`,
+`/tmp/graphite-input-inventory-parent-review.json` and excluded diagnostic
+`/tmp/graphite-input-inventory-rejected-timing.json`. Combined correctness log:
+`/tmp/graphite-feedback-combined-tests.log`.
