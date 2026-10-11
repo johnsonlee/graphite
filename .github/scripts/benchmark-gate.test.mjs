@@ -4350,6 +4350,13 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
         assert.doesNotMatch(header, /needs\.rust-query-(?:native|jvm|legacy)\.result == 'success'/,
             "terminal query failures retain their verdict without suppressing independent lifecycle evidence");
     }
+    const jvmFinal = rustWorkflowStep(jobs["rust-query-jvm"], "Join complete core to original JVM measurement");
+    assert.equal((jvmFinal.match(/run_prepared_native_pressure\.py/g) ?? []).length, 1);
+    assert.match(jvmFinal, /--engine jvm/);
+    assert.match(jvmFinal, /--finalize-artifacts native-pressure-artifacts/);
+    assert.doesNotMatch(jvmFinal, /jvm_pressure_join\.py|--finalize-producers/);
+    assert.match(jobs["rust-query-jvm"], /benchmark-results\/multigraph-jvm-query\*/,
+        "generated corrected packet and portable receipt remain published");
     const aggregate = rustWorkflowJob(workflow, "benchmark-regression-gate");
     assert.ok(needs(aggregate).includes("rust-latency"), "existing required aggregate cannot bypass the join");
 });

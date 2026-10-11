@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: bdb3a7ef07d124a54bc5f5f4078a76b17887a33cbcd781be46aabb78c076a7bc
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 17417a74bace79a62731f3b443b7fe4dda3aa56e1dedd00a8b7bc07b5194817d
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 012e9eb77d572f27ece4adbba1862e85308128d6bcfb9f4c89420d24d51d1d09
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -4500,14 +4500,11 @@ jobs:
       continue-on-error: true
       run: |
         set -euo pipefail
-        python3 -B candidate/.github/scripts/jvm_pressure_join.py \
-          --pending benchmark-results/jvm-pressure-preparation/packet.json \
-          --output native-pressure-producers-jvm-corrected.json
         python3 -B candidate/.github/scripts/run_prepared_native_pressure.py --engine jvm \
           --preparation benchmark-results/jvm-pressure-preparation \
           --output benchmark-results/jvm-pressure-cells \
           --prefix benchmark-results/multigraph-jvm-query \
-          --finalize-producers native-pressure-producers-jvm-corrected.json
+          --finalize-artifacts native-pressure-artifacts
 
     - name: Upload JVM pressure results
       if: always()

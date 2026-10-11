@@ -804,6 +804,26 @@ class _VerifiedPressureExecution:
             self._valid = False
             raise
 
+    def _complete_jvm_core(self, artifacts_root):
+        """Join core once using this invocation's independently audited pending packet."""
+        try:
+            self._check_unchanged()
+            require(not getattr(self, '_jvm_core_consumed', False), 'JVM core join already consumed')
+            self._jvm_core_consumed = True
+            require(self._plan.get('engine') == 'jvm' and self._plan.get('comparabilityPending') is True and
+                    'pendingJvmComparabilityAuthority' in self._plan, 'verified pending JVM authority required')
+            pending = pinned_authority_metadata(self._plan, self._plan['pendingJvmComparabilityAuthority'])
+            root = Path(artifacts_root).resolve()
+            require(all(Path(arm['artifactAudit']['path']).parent.parent == root
+                        for arm in pending['arms'].values()), 'exact original JVM artifact root')
+            import jvm_pressure_join
+            corrected = jvm_pressure_join._complete_verified(pending)
+            self._check_unchanged()
+            return corrected, pending
+        except BaseException:
+            self._valid = False
+            raise
+
     def run_and_audit_cell(self, cell_id, output):
         return self._call('run-and-audit', output, cell_id)
 

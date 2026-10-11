@@ -210,7 +210,6 @@ def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *
     import assemble_native_pressure_producers as bundle
     pressure.require(engine in ('native','jvm') and (loading_prefix is None or engine=='native'),'exact finalization operation')
     pressure.require((producers is None)!=(artifacts_root is None),'exactly one finalization producer input')
-    pressure.require(artifacts_root is None or engine=='native','artifact finalization requires Native')
     authority_key='pendingJvmComparabilityAuthority' if engine=='jvm' else 'pendingComparabilityAuthority'
     preparation, output, prefix = (p.resolve() for p in (preparation, output, prefix))
     if artifacts_root is not None:
@@ -244,6 +243,7 @@ def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *
         path = Path(path)
         pressure.require(not path.is_symlink(), 'finalization input symlink')
         return {'path': str(path), 'sha256': pressure.sha(path)}
+    context = None
     try:
         ready_file = preparation/'preparation-status.json'
         ready = pressure.read(ready_file)
@@ -279,13 +279,16 @@ def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *
         pending_ref = plan[authority_key]
         pending = pressure.pinned_authority_metadata(plan, pending_ref)
         corrected_ref = ref(producers) if artifacts_root is None else None
-        if artifacts_root is not None:
+        if engine == 'jvm':
+            import jvm_pressure_join as jvm_join
+        if artifacts_root is not None and engine == 'jvm':
+            corrected,current = context._complete_jvm_core(artifacts_root)
+        elif artifacts_root is not None:
             pressure.require(str(artifacts_root)==pending['artifactsRoot'],'exact original measurement artifact root')
             corrected,current=bundle.assemble_finalization_pair(artifacts_root,
                 plan['arms']['A']['revision'],plan['arms']['B']['revision'])
             bundle.corrected_fixture_bindings(corrected)
         elif engine=='jvm':
-            import jvm_pressure_join as jvm_join
             corrected,current=jvm_join.verify(pressure.read(producers))
         else:
             corrected,current = bundle.verify_finalization_pair(pressure.read(producers),
@@ -381,6 +384,8 @@ def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *
             'errors': result['errors'], 'queryEvidenceComplete': False, 'otherOperationsEligible': False})
         Path(str(prefix)+'-report.md').write_text(engine+' core/measurement join failed\n'+repr(error)+'\n')
     finally:
+        if context is not None and engine == 'jvm' and artifacts_root is not None:
+            context._valid = False
         pressure.save(Path(str(prefix)+'-finalization.json'), result)
     return result
 
@@ -392,7 +397,6 @@ if __name__=='__main__':
     source=p.add_mutually_exclusive_group()
     source.add_argument('--finalize-producers',type=Path);source.add_argument('--finalize-artifacts',type=Path)
     p.add_argument('--loading-prefix',type=Path);args=p.parse_args()
-    if args.finalize_artifacts is not None and args.engine!='native':p.error('--finalize-artifacts requires --engine native')
     finalizing=args.finalize_producers is not None or args.finalize_artifacts is not None
     if finalizing:
         result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers,args.loading_prefix,

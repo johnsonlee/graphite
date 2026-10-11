@@ -19078,3 +19078,45 @@ is unmeasured by this query change. Accepted-main and hosted gates remain open.
 Evidence: `/tmp/graphite-attempt247-pair-prep-1/comparison.json`,
 `all-case-quantiles.md`, `root-query-review.json`, `build-root-review.json`;
 module checks:`/tmp/graphite-attempt247-correctness-2/result.json`.
+
+### Attempt248 — join JVM core within the verified finalization invocation (2026-10-12)
+
+Parent:2a2e5166; changed CI sources equal29860dca before this attempt. Read-only
+call-graph analysis finds measurement preparation replays each writer3 times
+and finalization4 more times after246. With accepted A=C, two distinct writers
+therefore trigger14 additional full JVM35 derivations; each replay reads the64
+raw graphs twice. This is static invocation counting, not measured CI duration.
+
+Use the existing _VerifiedPressureExecution lifetime for JVM final core join.
+Its open already independently validates the original pending packet; the new
+private single-use operation completes core comparison from that exact packet
+and brackets it with unchanged source/configuration/input/directory checks.
+The original139 core-phase validation,64 raw-edge joins, every measured HTTP
+response/resource audit, metadata receipts, final pins and Node verdict remain.
+Invalidate the combined context on both success and failure. Public standalone
+complete/verify keep full independent replay. No saved verified token, changed
+public schema or relaxed comparison gate is introduced.
+
+The workflow invokes one --engine jvm --finalize-artifacts operation; its
+corrected packet is created exclusively under the existing report prefix and
+published by the existing wildcard. Per-writer finalization derivations fall
+4→1; measurement startup remains3. For the current two writers, downstream
+replays fall14→8, removing six full derivations and twelve64-graph reader
+passes. Full workflow wall/CPU/RSS savings remain unmeasured.
+
+Root independently reviews production/test changes,193 pins and workflow
+binding. Select27 affected context/finalization/handoff tests based on scope
+and historical durations instead of rerunning the earlier183s broad group.
+They pass in2.302s (2.567s process) under a60s cap. They cover modeled six-cell
+pass/failure/regression handoffs, single-use/expired authority, wrong roots,
+input/source/configuration/directory drift, independent entry points and shared
+Native finalization. The changed Node workflow contract passes; structural
+actionlint with shellcheck disabled and diff check pass. Source stays frozen
+throughout validation. Exact commands and logs:
+`/tmp/graphite-attempt248-owned-jvm-finalization/verification.json`,
+`first-feedback-plan.json`, `focused-1.log`, `root-source-review.json`.
+
+Retain this scoped same-invocation reuse. No current full64 JVM oracle, hosted
+CI duration reduction, query p50/p95 or resource acceptance follows from these
+contract tests; remaining measurement startup repetition and product regressions
+still require work. Call graph: `/tmp/graphite-attempt247-jvm-replay-callgraph.json`.

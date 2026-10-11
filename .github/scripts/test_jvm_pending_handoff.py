@@ -209,8 +209,9 @@ class ExecutionJoinHandoff(unittest.TestCase):
         from types import SimpleNamespace
         import run_prepared_native_pressure as runner
         import jvm_pressure_join as join
-        for mode in ('pass','missing-core','regression'):
+        for mode in ('pass','missing-core','regression','artifacts-pass','artifacts-missing-core','artifacts-regression'):
             with self.subTest(mode=mode),tempfile.TemporaryDirectory() as folder:
+                artifacts_mode=mode.startswith('artifacts-'); outcome=mode.removeprefix('artifacts-')
                 root=Path(folder).resolve();prep=root/'prep';prep.mkdir();out=root/'cells'
                 def put(path,value):
                     runner.pressure.save(path,value)
@@ -235,21 +236,30 @@ class ExecutionJoinHandoff(unittest.TestCase):
                 context=SimpleNamespace(plan=plan,run_and_audit_cell=execute_cell,audit_cell=audit_cell,_check_unchanged=lambda:None)
                 def compare(command,**kwargs):
                     if '--progress' in command:raise RuntimeError('diagnostic deliberately unavailable; all six cells must still run')
-                    final='--comparability-receipt' in command;prefix=Path(command[4]);passed=final and mode!='regression'
+                    final='--comparability-receipt' in command;prefix=Path(command[4]);passed=final and outcome!='regression'
                     put(Path(str(prefix)+'-status.json'),{'schema':'graphite.multigraph-pressure.comparison.v1','engine':'jvm','operation':'query',
                         'planSha256':plan_ref['sha256'],'passed':passed,'status':('PASS' if passed else 'FAIL') if final else runner.PENDING,
                         'comparabilityPending':not final,'coreComparabilityVerified':final})
                     Path(str(prefix)+'-report.md').write_text('retained comparison')
                     return SimpleNamespace(returncode=0 if passed else 1,stdout='',stderr='')
                 def verify(packet):
-                    if mode=='missing-core':raise ValueError('missing full core')
+                    if outcome=='missing-core':raise ValueError('missing full core')
                     return corrected,pending
-                with patch.object(runner.pressure._VerifiedPressureExecution,'open',return_value=context),patch.object(runner.subprocess,'run',side_effect=compare),patch.object(join,'verify',side_effect=verify),patch.object(join,'metadata',return_value=[]):
+                def complete(root_path):
+                    self.assertEqual(root/'artifacts', root_path)
+                    return verify(pending)
+                context._complete_jvm_core=complete
+                with patch.object(runner.pressure._VerifiedPressureExecution,'open',return_value=context),patch.object(runner.subprocess,'run',side_effect=compare),patch.object(join,'verify',side_effect=AssertionError('combined path cannot re-audit pending packet') if artifacts_mode else verify),patch.object(join,'metadata',return_value=[]):
                     measured=runner.execute(prep,out,root/'measurement',engine='jvm')
                     self.assertEqual('graphite.jvm-pressure.execution.v1',measured['schema']);self.assertEqual(runner.PENDING,measured['status']);self.assertFalse(measured['performanceAcceptance'])
                     original={str(p):p.read_bytes() for p in out.rglob('*') if p.is_file()}
-                    result=runner.finalize(prep,out,root/'final',Path(corrected_ref['path']),engine='jvm')
-                self.assertEqual(mode=='pass',result['performanceAcceptance'],result['errors'])
+                    result=runner.finalize(prep,out,root/'final',None if artifacts_mode else Path(corrected_ref['path']),
+                                           engine='jvm',artifacts_root=root/'artifacts' if artifacts_mode else None)
+                self.assertEqual(outcome=='pass',result['performanceAcceptance'],result['errors'])
+                if artifacts_mode:
+                    self.assertFalse(context._valid)
+                    if outcome != 'missing-core':
+                        self.assertEqual(corrected, runner.pressure.read(root/'final-corrected-producer.json'))
                 self.assertEqual('graphite.jvm-pressure.finalization.v1',result['schema'])
                 self.assertEqual([('execute',str(i)) for i in range(6)]+[('audit',str(i)) for i in range(6)],events)
                 self.assertEqual(original,{str(p):p.read_bytes() for p in out.rglob('*') if p.is_file()})

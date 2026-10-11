@@ -413,15 +413,29 @@ class Finalization(unittest.TestCase):
                     r.finalize(prep,cells,directory/'unexpected/query',artifacts_root=artifacts)
                 self.assertEqual([],list(directory.iterdir()))
 
-    def test_cli_rejects_ambiguous_producers_and_jvm_artifact_mode(self):
+    def test_cli_rejects_ambiguous_producer_inputs(self):
         import subprocess,sys
         script=Path(r.__file__).resolve()
         base=[sys.executable,'-B',str(script),'--preparation','absent-prep','--output','absent-cells','--prefix','absent-final']
-        for flags,expected in [(['--finalize-producers','packet','--finalize-artifacts','artifacts'],'not allowed with argument'),
-                               (['--engine','jvm','--finalize-artifacts','artifacts'],'requires --engine native')]:
+        for flags,expected in [(['--finalize-producers','packet','--finalize-artifacts','artifacts'],'not allowed with argument')]:
             with self.subTest(flags=flags):
                 result=subprocess.run(base+flags,capture_output=True,text=True,timeout=15)
                 self.assertEqual(2,result.returncode);self.assertIn(expected,result.stderr)
+
+    def test_jvm_artifact_cli_reaches_owned_finalizer_and_missing_inputs_fail_closed(self):
+        import subprocess, sys
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve(); prefix = root/'final'
+            result = subprocess.run([sys.executable, '-B', str(Path(r.__file__).resolve()), '--engine', 'jvm',
+                '--preparation', str(root/'absent-prep'), '--output', str(root/'absent-cells'),
+                '--prefix', str(prefix), '--finalize-artifacts', str(root/'artifacts')],
+                capture_output=True, text=True, timeout=15)
+            self.assertEqual(1, result.returncode, result.stderr)
+            final = r.pressure.read(str(prefix)+'-finalization.json')
+            self.assertEqual('graphite.jvm-pressure.finalization.v1', final['schema'])
+            self.assertEqual('FAIL', final['status']); self.assertTrue(final['errors'])
+            self.assertFalse(final['performanceAcceptance'])
+            self.assertFalse((root/'final-corrected-producer.json').exists())
 
     def test_native_workflow_uses_one_finalizer_and_retains_generated_packet_artifact(self):
         workflow=(Path(__file__).parents[1]/'workflows/benchmark.yml').read_text()

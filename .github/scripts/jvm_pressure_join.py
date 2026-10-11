@@ -14,6 +14,11 @@ require=common.require
 
 def complete(pending):
     pending=prepare.verify_bundle(pending,pending['baseRevision'],pending['candidateRevision'])
+    return _complete_verified(pending)
+
+
+def _complete_verified(pending):
+    """Only complete a pending packet verified in the caller's active lifetime."""
     require(pending.get('measurementMode')==prepare.MODE and pending['status']==prepare.PENDING_STATUS,'original pending JVM35 authority')
     result=copy.deepcopy(pending)
     result.update(status=assembled.CORRECTED_STATUS,comparisonModel=assembled.CORRECTED_MODEL,missingAuthority=[],correctedComparisons={})

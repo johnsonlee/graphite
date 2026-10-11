@@ -1099,6 +1099,78 @@ class ExecutionAuthorityReuse(unittest.TestCase):
     def context(self):
         return p._VerifiedPressureExecution.open(self.plan_file)
 
+    def pending_jvm_context(self):
+        authority = p.read(self.plan['jvmProducerAuthority']['path'])
+        authority['arms'] = {name: dict(authority['arms']['B']) for name in 'CAB'}
+        self.metadata(self.raw/'plan.json', {'rawExportRoot': str(self.raw/'edges')})
+        (self.raw/'edges').mkdir(exist_ok=True)
+        (self.producer/'core-string-exports').mkdir(exist_ok=True)
+        ref = self.metadata(self.root/'authority.json', authority)
+        self.plan.pop('jvmProducerAuthority', None)
+        self.plan.update(engine='jvm', comparabilityPending=True, pendingJvmComparabilityAuthority=ref,
+                         arms=authority['arms'], pins=dict(self.pins))
+        self.plan_file.write_text(json.dumps(self.plan))
+        return self.context(), authority
+
+    def test_jvm_final_core_reuses_one_replay_but_is_single_use(self):
+        import jvm_pressure_join as join
+        context, pending = self.pending_jvm_context()
+        corrected = {'tiny': 'modeled complete139 core only; pending authority actually bracketed'}
+        with patch.object(join, '_complete_verified', return_value=corrected) as complete, \
+             patch.object(join, 'complete', side_effect=AssertionError('no second pending replay')), \
+             patch.object(join, 'verify', side_effect=AssertionError('no second pending replay')):
+            self.assertEqual((corrected, pending), context._complete_jvm_core(self.root))
+            self.assertEqual(1, self.replay.call_count); complete.assert_called_once_with(pending)
+            with self.assertRaisesRegex(ValueError, 'already consumed'): context._complete_jvm_core(self.root)
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_jvm_core_join_rejects_wrong_root_and_failed_core(self):
+        import jvm_pressure_join as join
+        context, pending = self.pending_jvm_context()
+        with patch.object(join, '_complete_verified') as complete:
+            with self.assertRaisesRegex(ValueError, 'exact original JVM artifact root'):
+                context._complete_jvm_core(self.root/'unrelated')
+            complete.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+        context = self.context()
+        with patch.object(join, '_complete_verified', side_effect=ValueError('139th core phase failed')):
+            with self.assertRaisesRegex(ValueError, '139th'): context._complete_jvm_core(self.root)
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_jvm_core_saved_pending_mutation_rejected_before_completion(self):
+        import jvm_pressure_join as join
+        context, pending = self.pending_jvm_context()
+        pending['newClaim'] = 'saved PASS cannot replace the bound packet'
+        (self.root/'authority.json').write_text(json.dumps(pending))
+        with patch.object(join, '_complete_verified') as complete:
+            with self.assertRaises(ValueError): context._complete_jvm_core(self.root)
+            complete.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_jvm_core_join_mutation_during_completion_invalidates_real_closure(self):
+        import jvm_pressure_join as join
+        self.pending_jvm_context()
+        for kind in ('universe', 'source', 'directory', 'plan', 'config'):
+            with self.subTest(kind=kind):
+                context = self.context()
+                path = {'universe': self.raw/'universes/case.json', 'source': self.checkout/'source.kt',
+                        'plan': self.plan_file, 'directory': self.query/'extra-empty',
+                        'config': self.checkout/'gradle.properties'}[kind]
+                original = path.read_bytes() if path.is_file() else None
+                def changed(packet):
+                    if kind == 'directory': path.mkdir()
+                    else: path.write_bytes(b'changed')
+                    return dict(packet)
+                try:
+                    with patch.object(join, '_complete_verified', side_effect=changed):
+                        with self.assertRaises((ValueError, OSError)):
+                            context._complete_jvm_core(self.root)
+                    with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+                finally:
+                    if original is not None: path.write_bytes(original)
+                    elif path.is_dir(): path.rmdir()
+                    elif path.exists(): path.unlink()
+
     def test_six_cells_one_full_replay_and_six_real_raw_audit_calls(self):
         context = self.context(); calls = []
         def run(plan_path, cell, output, plan):
