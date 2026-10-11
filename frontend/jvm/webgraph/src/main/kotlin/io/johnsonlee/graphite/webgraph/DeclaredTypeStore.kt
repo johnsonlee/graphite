@@ -465,8 +465,10 @@ internal object DeclaredTypeStore {
 
         private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) }, strings, structural)
         fun projectionRoots(consume: (Int) -> Unit) {
+            val input = bytes.duplicate()
             valuesAt.forEach { offset ->
-                DeclaredTypeProjectionRows.visit(bytes.duplicate().apply { position(offset) }, kind, consume)
+                input.position(offset)
+                DeclaredTypeProjectionRows.visit(input, kind, consume)
             }
         }
 

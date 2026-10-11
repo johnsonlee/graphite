@@ -18314,3 +18314,73 @@ Evidence:`/tmp/graphite-ci91ee70-construction-review`. Measurement took73m43s,
 of which six prepare phases total41m28s; sealing took about5m52s. Complete core
 comparability and final acceptance remain pending. These hosted results precede
 233 and are not measurements of its effect on construction or queries.
+
+### Attempt234 — reuse one local projection-reference cursor (2026-10-12)
+
+Parent product:fa80308d (233); root parent9b325a5b adds only evidence documentation.
+The232 real64 JFR attributed131.9MB of sampled allocation to projectionRoots,
+which creates a ByteBuffer duplicate for every member row. The same corpus has
+2,156,295 member rows. Reuse one duplicate within each projectionRoots invocation
+and set its position before each synchronous visitor call. Do not share the
+cursor across invocations or threads. consume receives only an Int and updates
+that invocation's projection reachability; it cannot obtain or retain the cursor.
+The visitor changes position only, not limit/order, and stores no cursor. All
+validation, references and wire formats remain unchanged. No persistent memory
+or cache is added. Static avoided allocations motivate the experiment, not a
+measured net-memory claim.
+
+Build the isolated exactfa source plus this single+3/−1 change, keeping233. Full
+webgraph correctness passes37 suites/381 cases without failures/errors/skips;
+detekt and:query:shadowJar pass. Build/test duration186.977s, JDK17.0.20.1,
+4g heaps, two workers. Existing GTY01–05, field/method/class projection roots and
+descriptor-only exclusion tests remain selected; no implementation-only test is
+added for a private callback that cannot expose its buffer. Root independently
+read381 XML totals, reviewed the three-line change and verified the runtime hash.
+Evidence:`/tmp/graphite-jvm64-projection-buffer-build-1`.
+Patch SHA256:a99ca71eb437101237cac10ee9b41725372f3219eb358be70ff693f12e9e1b28.
+Runtime SHA256:9eac65b19855c9cf1e6190eddc3523e5afc349d72abb8447d7e2193ceeb36ba2.
+
+Compare233 and234 on the same64 real GTY05 graphs with the already reviewed
+A,B,B,A local Mac loading protocol. JDK, -Xmx4g, four active processors, MAPPED,
+complete64 readiness, zero queries, per-cell whole-input identity checks,
+filesystem-warm policy and owned cleanup are unchanged. No profiling is enabled.
+All four cells, original resource reconstruction and final identities pass;
+no failures or samples are discarded. Fixed-pair results:
+
+| Pair,233→234 | Readiness ms | Post-ready CPU observation s | Inside-loading sampled peak RSS bytes | Lifecycle maximum RSS bytes |
+|---|---:|---:|---:|---:|
+| 0-A→1-B | 10039.894→9503.904 (−535.991) | 13.61→12.39 (−1.22) | 3979165696→3823747072 | 3980722176→3824599040 |
+| 3-A→2-B | 9868.446→9854.319 (−14.127) | 13.67→13.37 (−0.30) | 3927244800→4026335232 | 3929341952→4027744256 |
+
+The complete runner took79.232s; build/full tests plus four-cell execution total
+266.209s, excluding preparation/review. Evidence:
+`/tmp/graphite-jvm64-projection-buffer-abba-1/{plan,execution,audit}.json`.
+Driver:`/tmp/graphite-jvm64-allocation-diagnostic-1/compare_projection.py`.
+
+**Retain the positive incremental CPU observation, with mixed RSS.** Both CPU
+observations decrease; wall improves materially in one direction but only14ms in
+the other, which does not justify repeated stabilization runs. Sampled RSS drops
+155,418,624 bytes forward and rises99,090,432 bytes reverse; lifecycle RSS shows
+the same directions. The reverse increase is about2.52% relative to its parent,
+but this is not accepted-baseline or Linux resource acceptance. No stable RSS
+gain is demonstrated. Raw ps observations lag readiness5.2–6.1ms, so their0.02s
+display uncertainty is not a bound on post-ready CPU. Preserve those limitations.
+
+This comparison does not supply query p50/p95, construction, accepted4f loading
+or complete semantic equivalence. The233 accepted-baseline loading gap and all
+hosted regression failures remain open until the cumulative candidate is tested
+against their respective original baselines. No CI restart is used to select this
+candidate; the current core join remains live and can still supply comparability.
+
+Current91 Native loading has now also been independently reconstructed from the
+already downloaded six-cell pressure artifact, including prospective pre-spawn
+boundary, same PID/startTicks,64 readiness, CPU/raw VmHWM and cleanup identities.
+All pressure requests occur after the loading boundary. Accepted-baseline wall
+is49069.262→50948.083ms and47722.385→51001.676ms. CPU intervals are
+46.49–46.53→51.67–51.71s and47.03–47.07→51.59–51.63s, outside both the5%
+allowance and the historical approximately2s Native loading exception. Loading
+RSS is6255.070–6255.520→6470.969–6471.117MiB and
+6237.430–6238.332→6484.160–6484.578MiB, passing5% in both directions. These
+loading observations are separate from query-stage RSS. Evidence:
+`/tmp/graphite-ci91ee70-native-measurement-review/loading-review.json`.
+Complete core comparability is still pending; no final acceptance is claimed.
