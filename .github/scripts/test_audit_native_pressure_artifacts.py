@@ -387,6 +387,52 @@ class ProducerReplayContextTests(unittest.TestCase):
                         with self.assertRaisesRegex(ValueError,'inactive'):auditor._audit_with_context(context,*case.args)
                     finally:case.doCleanups()
 
+    def test_post_hash_mutation_fails_reuse_and_exit_and_invalidates_context(self):
+        for boundary in ('reuse','exit'):
+            for kind in ('graph','runtime','source','packet','replacement','symlink','new-directory','hash-error'):
+                with self.subTest(boundary=boundary,kind=kind):
+                    case=ProducerReplayContextTests(methodName='runTest');case.setUp();context=None
+                    try:
+                        f=case.f;graph=next(f.out.glob('graphs/*/graph.nodes'))
+                        verify=auditor.verify_pins;armed=False;changed=False
+                        def mutate(pins):
+                            nonlocal changed
+                            verify(pins)
+                            if not armed or changed:return
+                            self.assertIn(str(graph),pins);changed=True
+                            if kind=='hash-error':raise ValueError('intentional terminal verification error')
+                            if kind in ('graph','runtime','source','packet'):
+                                path={'graph':graph,'runtime':f.out/'runtime/graphite',
+                                      'source':Path(next(iter(f.source))),'packet':f.out/'packet.json'}[kind]
+                                before=path.stat();raw=path.read_bytes()
+                                path.write_bytes(bytes([raw[0]^1])+raw[1:])
+                                os.utime(path,ns=(before.st_atime_ns,before.st_mtime_ns))
+                                self.assertEqual(before.st_size,path.stat().st_size)
+                                self.assertEqual(before.st_mtime_ns,path.stat().st_mtime_ns)
+                            elif kind=='replacement':
+                                replacement=f.root/'replacement';replacement.write_bytes(graph.read_bytes())
+                                replacement.replace(graph)
+                            elif kind=='symlink':
+                                target=f.root/'same-bytes';target.write_bytes(graph.read_bytes())
+                                graph.unlink();graph.symlink_to(target)
+                            else:(f.out/'graphs/new-empty').mkdir()
+                        context=auditor._ProducerReplayContext()
+                        with patch.object(auditor,'verify_pins',side_effect=mutate):
+                            context.__enter__();context.replay(*case.args);armed=True
+                            # Assert the selected boundary itself fails; a later exit
+                            # must not hide a reuse call that incorrectly returned.
+                            with self.assertRaises((ValueError,OSError)):
+                                if boundary=='reuse':context.replay(*case.args)
+                                else:context.__exit__(None,None,None)
+                        self.assertTrue(changed);self.assertTrue(context._closed);self.assertFalse(context._active)
+                        self.assertEqual({},context._audits)
+                        with self.assertRaisesRegex(ValueError,'inactive'):context.replay(*case.args)
+                        with self.assertRaisesRegex(ValueError,'fresh'):context.__enter__()
+                    finally:
+                        if context is not None and context._active:
+                            context.__exit__(RuntimeError,RuntimeError('test cleanup'),None)
+                        case.doCleanups()
+
     def test_changed_parameters_cannot_reuse_a_prior_result(self):
         changes={2:'d'*40,3:'parent',4:self.f.root/'other-input.json',5:{**self.f.tools,'java':'/wrong/java'}}
         for index,value in changes.items():

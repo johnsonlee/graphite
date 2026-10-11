@@ -417,15 +417,17 @@ class _ProducerReplayContext:
         def metadata(ref):return common.pinned_authority_metadata(report,ref)
         source=metadata(report['sourceManifest']);runtime=metadata(report['runtimeManifest'])
         packet=metadata(report['producerPacket']);checkout=Path(source['root'])
+        fixture=metadata(report['fixtureManifest']);root=Path(report['producerPacket']['path']).parent
         require(cls._inventories(report)==closure,'replay directory closure changed')
-        verify_pins(report['pins'])
-        require(source_inventory(checkout,report['revision'])==source['files']==report['sourceBefore'],
-                'replay source inventory changed')
-        require(configs(checkout,packet['buildEnvironment'])==packet['configurationBefore']==packet['configurationAfter'],
-                'replay build configuration changed')
-        writers=list((checkout/'frontend/jvm/webgraph/build/libs').glob('*-jmh.jar'))
-        require(len(writers)==1 and str(writers[0]) in runtime['originalArtifacts'],'replay single source-built writer')
-        require(cls._inventories(report)==closure,'replay directory closure changed')
+        with _final_evidence_boundary(report['pins'],((root/'runtime',runtime['files']),
+                                                     (root/'graphs',fixture['files']))):
+            require(source_inventory(checkout,report['revision'])==source['files']==report['sourceBefore'],
+                    'replay source inventory changed')
+            require(configs(checkout,packet['buildEnvironment'])==packet['configurationBefore']==packet['configurationAfter'],
+                    'replay build configuration changed')
+            writers=list((checkout/'frontend/jvm/webgraph/build/libs').glob('*-jmh.jar'))
+            require(len(writers)==1 and str(writers[0]) in runtime['originalArtifacts'],'replay single source-built writer')
+            require(cls._inventories(report)==closure,'replay directory closure changed')
 
 
 def _audit_with_context(context,*args):

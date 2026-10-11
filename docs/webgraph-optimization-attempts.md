@@ -19397,3 +19397,35 @@ in attempt255. Evidence: /tmp/graphite-producer-final-boundary.patch,
 /tmp/graphite-producer-final-boundary-result.json,
 /tmp/graphite-producer-final-boundary-core-worker-result.json and
 /tmp/graphite-producer-final-boundary-root-review.json.
+
+### Attempt255 — reject post-hash changes before producer replay returns (2026-10-12)
+
+Parent:attempt254. A tiny real-file probe demonstrates that the existing private
+producer replay context can return from reuse or successful exit after a graph
+file changes following verify_pins. The mutation preserves size and restores
+mtime; actual bytes and ctime differ. This proves a gap in those boundaries,
+not that every later independent CI audit can be bypassed.
+
+Use attempt254's fresh-byte plus before/after identity boundary in _check. Keep
+the original stored directory-closure comparisons, source/configuration checks,
+single-writer checks and context lifetime/failure cleanup. Every reuse still
+freshly reads all pinned bytes; no cross-call hash cache is introduced.
+
+The first combined artifact/core/worker run passes124 tests in46.438s
+(46.678s process under120s). Root finds that the new reuse test also encloses
+context exit, letting a later exit error mask a missed reuse failure. Preserve
+that receipt with this limitation. Tighten the test to assert only the selected
+reuse or exit action, then immediately verify context invalidation and cleared
+state. All32 final artifact tests pass in7.153s (7.333s process). Production and
+core/worker test hashes remain unchanged, so reuse the92 related passing tests.
+The new test covers16 boundary/mutation combinations, including graph/runtime/
+source/metadata byte changes, replacement, symlink, directory addition and hash
+failure. Root independently reruns the original reproducer against the fixed
+source: both selected boundaries now reject the mutation before returning.
+
+Retain this correctness fix independently of timing. No real graph benchmark,
+product performance or hosted CI acceptance is claimed. Evidence:
+/tmp/graphite-producer-replay-posthash-probe.json,
+/tmp/graphite-producer-replay-posthash-fixed-probe.json,
+/tmp/graphite-producer-replay-boundary-result.json and
+/tmp/graphite-producer-replay-boundary-root-review.json.
