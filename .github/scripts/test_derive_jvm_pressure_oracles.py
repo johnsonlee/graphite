@@ -172,7 +172,7 @@ class DeriveProtocolTests(unittest.TestCase):
         with patch.object(p, 'bind_raw', return_value=plan), \
              patch.object(p, '_fresh_input_closure', return_value=lambda: checks.append(True)), \
              patch.object(p.producer, 'phase', side_effect=self.fake_phase), \
-             patch.object(p, 'derive', wraps=p.derive) as actual, \
+             patch.object(p, '_derive_and_consume', wraps=p._derive_and_consume) as actual, \
              patch.object(p, 'replay', side_effect=AssertionError('fresh path cannot replay')):
             self.assertEqual('consumed', p._run_and_consume_raw(self.producer, self.proof, 'B', self.out, consume))
             self.assertEqual(1, actual.call_count)
@@ -213,20 +213,41 @@ class DeriveProtocolTests(unittest.TestCase):
         self.assertTrue(audit['actualPrimitiveExecutionVerified']); self.assertTrue(audit['completeRawDerivationReplayed'])
         self.assertTrue(all(result[k] is audit[k] is False for k in p.FALSE_CLAIMS))
 
-    def test_owned_derive_consumes_once_without_public_snapshot(self):
-        actual=p.derivation.Collector._consume_finish;seen=[]
-        def consume(collector):
-            self.assertEqual(64,len(collector.seen))
-            result=actual(collector);seen.append(len(result['universes']))
+    def test_owned_and_independent_replay_stream_every_case_without_snapshot(self):
+        actual=p.derivation.Collector._consume_cases;seen=[];collectors=[]
+        def consume(collector,emit):
+            self.assertEqual(64,len(collector.seen));names=[];collectors.append(collector)
+            def sink(name,universe):names.append(name);return emit(name,universe)
+            result=actual(collector,sink);seen.append(names)
             self.assertTrue(collector.failed);self.assertEqual({},collector.distinct)
             self.assertFalse(hasattr(collector,'rows'));self.assertIsNone(collector.primitive_facts)
             return result
-        with patch.object(p.derivation.Collector,'_consume_finish',new=consume), \
+        with patch.object(p.derivation.Collector,'_consume_cases',new=consume), \
+             patch.object(p.derivation.Collector,'_consume_finish',side_effect=AssertionError('owned derive must stream')), \
              patch.object(p.derivation.Collector,'finish',side_effect=AssertionError('owned derive must not copy snapshot')):
             result,_=self.execute()
-        self.assertEqual(p.PASS,result['status'],result['errors'])
-        self.assertEqual([35],seen)
-        self.assertEqual(64,len(result['derivation']['graphs']))
+            self.assertEqual(p.PASS,result['status'],result['errors'])
+            audit=p.replay(self.out)
+        names=[case['id'] for case in p.model.cases()]
+        self.assertEqual([names,names],seen);self.assertEqual(p.PASS,audit['status'])
+        plan=p.common.read(self.out/'plan.json');public=p.derive(plan,p.consume_facts(plan))
+        self.assertEqual(p.common.typed(public.pop('universes')),p.common.typed({name:p.common.read(ref['path']) for name,ref in result['universes'].items()}))
+        self.assertEqual(p.common.typed(public),p.common.typed(result['derivation']))
+
+    def test_stream_save_failure_retains_partial_outputs_fail_receipt_and_cleanup(self):
+        real=p.common.save;collectors=[];actual=p.derivation.Collector._consume_cases
+        def consume(collector,emit):collectors.append(collector);return actual(collector,emit)
+        def save(path,value):
+            if Path(path).parent.name=='universes' and len(list(Path(path).parent.iterdir()))==2:
+                raise OSError('injected universe write failure')
+            return real(path,value)
+        with patch.object(p.common,'save',new=save),patch.object(p.derivation.Collector,'_consume_cases',new=consume):
+            result,_=self.execute()
+        self.assertEqual('FAIL',result['status']);self.assertEqual('PASS',result['finalIdentity'])
+        self.assertIn('injected universe write failure',result['errors'][0]);self.assertEqual(2,len(result['universes']))
+        self.assertEqual('FAIL',p.common.read(self.out/'record.json')['status']);self.assertNotIn('derivation',result)
+        self.assertTrue(collectors[0].failed);self.assertEqual({},collectors[0].counts);self.assertEqual({},collectors[0].distinct)
+        with self.assertRaisesRegex(ValueError,'complete scoped'):p.replay(self.out)
 
     def test_candidate_requires_declared_projection_bindings_in_each_target_graph(self):
         read_graph = p.inputs.read_graph

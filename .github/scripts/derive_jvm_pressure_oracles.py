@@ -166,19 +166,32 @@ def consume_facts(plan):
 
 
 def derive(plan, facts):
+    """Reusable public result; independent callers still receive every universe."""
+    return _derive(plan, facts)
+
+
+def _derive_and_consume(plan, facts, emit):
+    """Owned synchronous sink for one complete checked universe at a time."""
+    return _derive(plan, facts, emit)
+
+
+def _derive(plan, facts, emit=None):
     """Pure source-model derivation; consumes every original node and raw edge."""
     collector = derivation.Collector([row['id'] for row in plan['graphs']], primitive_facts=facts)
-    for row in plan['graphs']:
-        graph = inputs.read_graph(row['spec'])
-        raw = inputs.edge_export_input(row['edges'], row['spec']['root'], plan['pins'], plan['pins'])
-        require(row['edges']['nodeSlots'] == graph['nodeSlots'], 'raw edge/node slot identity')
-        collector.add_graph(graph, raw, row['edges']['labeledEdges'])
-        del graph, raw
-    result = collector._consume_finish()
-    if plan['arm'] == 'B':
-        require(all(count > 0 for counts in result['fullProjectionBindings'].values() for count in counts.values()),
-                'candidate full projections must exercise actual declared bindings in both target graphs for every case')
-    return result
+    try:
+        for row in plan['graphs']:
+            graph = inputs.read_graph(row['spec'])
+            raw = inputs.edge_export_input(row['edges'], row['spec']['root'], plan['pins'], plan['pins'])
+            require(row['edges']['nodeSlots'] == graph['nodeSlots'], 'raw edge/node slot identity')
+            collector.add_graph(graph, raw, row['edges']['labeledEdges'])
+            del graph, raw
+        if plan['arm'] == 'B':
+            bindings = collector._result_metadata(consume=False)['fullProjectionBindings']
+            require(all(count > 0 for counts in bindings.values() for count in counts.values()),
+                    'candidate full projections must exercise actual declared bindings in both target graphs for every case')
+        return collector._consume_finish() if emit is None else collector._consume_cases(emit)
+    finally:
+        collector._discard()
 
 
 def verify_phases(plan):
@@ -212,13 +225,13 @@ def _run_plan(plan):
             producer.phase(name, argv, out, environment(plan), out, timeout)
             record['phases'].append(artifacts.ref(out/name/'record.json'))
         require(verify_phases(plan) == record['phases'], 'actual two-phase primitive execution')
-        result = derive(plan, consume_facts(plan))
-        (out/'universes').mkdir()
-        record['universes'] = {}
-        for name, universe in result.pop('universes').items():
+        def save_universe(name, universe):
+            if 'universes' not in record:
+                (out/'universes').mkdir()
+                record['universes'] = {}
             path = out/'universes'/(name+'.json'); common.save(path, universe)
             record['universes'][name] = artifacts.ref(path)
-        record['derivation'] = result
+        record['derivation'] = _derive_and_consume(plan, consume_facts(plan), save_universe)
         record['request'] = artifacts.ref(out/'requests.json'); record['primitiveFacts'] = artifacts.ref(out/'primitive-facts.json')
         record['status'] = PASS
     except BaseException as error: record['errors'].append(repr(error))
@@ -312,14 +325,18 @@ def replay(output):
     # accepting only an arbitrary subset would not establish its source closure.
     require(common.typed(collect_requests(plan)) == common.typed(common.read(out/'requests.json')),
             'complete raw-input primitive requests differ')
-    result = derive(plan, consume_facts(plan)); universes = result.pop('universes')
-    require(common.typed(result) == common.typed(record['derivation']), 'complete per-graph derivation counts')
-    require(set(record['universes']) == set(universes) and
-            {p.name for p in (out/'universes').iterdir()} == {name+'.json' for name in universes}, 'closed exact35 outputs')
-    for name, expected in universes.items():
+    names = [case['id'] for case in model.cases()]
+    require(set(record['universes']) == set(names) and
+            {p.name for p in (out/'universes').iterdir()} == {name+'.json' for name in names}, 'closed exact35 outputs')
+    checked = []
+    def compare_universe(name, expected):
         path = out/'universes'/(name+'.json')
         require(record['universes'][name] == artifacts.ref(path) and
                 common.typed(common.read(path)) == common.typed(expected), 'actual independently derived universe: '+name)
+        checked.append(name)
+    result = _derive_and_consume(plan, consume_facts(plan), compare_universe)
+    require(checked == names, 'complete ordered exact35 independent replay')
+    require(common.typed(result) == common.typed(record['derivation']), 'complete per-graph derivation counts')
     inventory = producer.inventory(out); inventory.pop(str(out/'record.json'), None)
     require(inventory == record['outputFiles'], 'closed raw derivation output inventory')
     artifacts.verify_pins(plan['pins'])

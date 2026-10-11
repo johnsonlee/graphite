@@ -360,48 +360,66 @@ class Collector:
         need(not self.failed and len(self.seen) == 64 and set(self.seen) == set(self.graph_ids), 'complete successful all64 derivation')
         return self._finish_result(consume=False)
 
+    def _discard(self):
+        self.failed = True
+        for group in self.distinct.values(): group._discard()
+        for counts in self.counts.values(): counts.clear()
+        self.distinct = {}; self.counts = {}
+        self.projection_bindings = {}; self.seen = []; self.graph_counts = []
+        self.primitive_facts = None
+
     def _consume_finish(self):
-        """Final owned derivation only; no reusable state survives success or failure."""
+        """Compatibility snapshot of the final owned derivation."""
+        results = {}
+        metadata = self._consume_cases(lambda name, universe: results.__setitem__(name, universe))
+        return {'universes': results, **metadata}
+
+    def _consume_cases(self, emit):
+        """Synchronously consume each fully checked case; never retain earlier trees."""
         try:
             need(not self.failed and len(self.seen) == 64 and set(self.seen) == set(self.graph_ids), 'complete successful all64 derivation')
             self.failed = True
-            return self._finish_result(consume=True)
+            metadata = self._result_metadata(consume=True)
+            for case in self.cases:
+                universe = self._case_universe(case, consume=True)
+                emit(case['id'], universe)
+                del universe
+            return metadata
         finally:
-            self.failed = True
-            for group in self.distinct.values(): group._discard()
-            for counts in self.counts.values(): counts.clear()
-            self.distinct = {}; self.counts = {}
-            self.projection_bindings = {}; self.seen = []; self.graph_counts = []
-            self.primitive_facts = None
+            self._discard()
 
     def _finish_result(self, consume):
-        results = {}
-        for case in self.cases:
-            case_id = case['id']
-            universe = {'policy': model.POLICY, 'caseId': case_id,
-                        **{k: list(case[k]) if type(case[k]) is list else case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
-                                              'targetGraphIds', 'columns', 'effectiveLimit')},
-                        'allGraphScansComplete': True, 'exactEncounterOrderClaim': False}
-            if case_id in self.distinct:
-                groups = self.distinct[case_id]._consume_finish() if consume else self.distinct[case_id].finish()
-                universe.update(schema=distinct.SCHEMA, equalityPolicy=distinct.EQUALITY,
-                                totalMatches=len(groups), groups=groups)
+        results = {case['id']: self._case_universe(case, consume) for case in self.cases}
+        return {'universes': results, **self._result_metadata(consume)}
+
+    def _case_universe(self, case, consume):
+        case_id = case['id']
+        universe = {'policy': model.POLICY, 'caseId': case_id,
+                    **{k: list(case[k]) if type(case[k]) is list else case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
+                                          'targetGraphIds', 'columns', 'effectiveLimit')},
+                    'allGraphScansComplete': True, 'exactEncounterOrderClaim': False}
+        if case_id in self.distinct:
+            groups = self.distinct[case_id]._consume_finish() if consume else self.distinct[case_id].finish()
+            universe.update(schema=distinct.SCHEMA, equalityPolicy=distinct.EQUALITY,
+                            totalMatches=len(groups), groups=groups)
+        else:
+            counts=self.counts[case_id]
+            if consume:
+                entries=[]
+                while counts:
+                    key,count=counts.popitem()
+                    entries.append({'value':model.decode_key(key),'multiplicity':count})
+                entries.reverse()
+                del self.counts[case_id]
             else:
-                counts=self.counts[case_id]
-                if consume:
-                    entries=[]
-                    while counts:
-                        key,count=counts.popitem()
-                        entries.append({'value':model.decode_key(key),'multiplicity':count})
-                    entries.reverse()
-                    del self.counts[case_id]
-                else:
-                    entries=[{'value':model.decode_key(key),'multiplicity':count} for key,count in counts.items()]
-                universe.update(schema='graphite.jvm-legal-row-universe.v1',
-                                totalMatches=sum(e['multiplicity'] for e in entries), rows=entries)
-            model.CompiledLegalLimitOracle(universe, case)
-            results[case_id] = universe
-        return {'universes': results, 'graphs': self.graph_counts if consume else [dict(row) for row in self.graph_counts],
+                entries=[{'value':model.decode_key(key),'multiplicity':count} for key,count in counts.items()]
+            universe.update(schema='graphite.jvm-legal-row-universe.v1',
+                            totalMatches=sum(e['multiplicity'] for e in entries), rows=entries)
+        model.CompiledLegalLimitOracle(universe, case)
+        return universe
+
+    def _result_metadata(self, consume):
+        return {'graphs': self.graph_counts if consume else [dict(row) for row in self.graph_counts],
                 'fullProjectionBindings': {c['id']: {gid: self.projection_bindings[c['id']][gid] for gid in c['targetGraphIds']}
                                            for c in self.cases if c['family'] == 'full-projection'},
                 'scope': 'JVM_SOURCE_MODEL_DERIVATION_FROM_SUPPLIED_RAW_INPUTS_NOT_AUDIT_AUTHORITY',

@@ -19619,3 +19619,63 @@ the four phase summaries, all35 paired outputs and the original isolated
 /tmp/graphite-attempt258-result.json. Review and integration evidence is retained
 in /tmp/graphite-attempt258-root-source-review.json and
 /tmp/graphite-attempt258-integration-review.json.
+
+### Attempt259 — release completed JVM oracle cases in producer and replay (2026-10-12)
+
+After258, decoding all35 universes still retained every completed tree until the
+last case finished. Add a private synchronous consume/emit path: build one case,
+run its original compiler once, write or compare it, then release it before
+building the next. Both production serialization and independent replay use this
+path. Public derive/finish still return complete reusable results. The complete
+64-graph guard and B's positive declared bindings in both projection targets run
+before the first output. All original raw-input/fact derivation, per-file SHA,
+closed output inventory, metadata and final pin checks remain. Failed writes or
+callbacks retain a FAIL receipt and partial evidence; collector state is discarded.
+
+Independent review finds no correctness blocker. Integrated112 Python tests pass
+in6.296s, including tiny64 public/producer/replay typed equivalence, exact35
+compiler order, weak-reference lifetime checks, partial-write failure and
+interruption cleanup. These tiny fixtures are correctness checks only. All234
+Node workflow tests pass in17.254s;193 control pins, structural actionlint and
+diff checks pass. No Graphite product source or resource allowance changes.
+
+Use258's already converted actual-four-graph encoded snapshot for one bounded
+lifetime diagnostic, without reconversion or real graph scans. A four-graph
+snapshot cannot enter the full64 private helper: the driver explicitly mirrors
+its build/compile/save/release lifetime and marks every payload incomplete. Both
+arms use the original8 DISTINCT compilers and27 ordinary partial results. A
+separate fresh replay process uses the actual original SHA check and
+common.typed(common.read(path)) == common.typed(expected) expression, including
+its temporary trees. Final independent comparison checks all35 exact typed values,
+float bits, sequence/provenance/multiplicity and raw output bytes.
+
+Command: python3 -B /tmp/graphite-attempt259-real4-prep/run.py
+/tmp/graphite-attempt259-real4-result-1. Four phase caps85/85/90/60s fit within330s
+work plus30s cleanup. All phases exit0 in140.647s total, every owned group is empty,
+all35 replay comparisons pass, and all35 paired outputs are byte-identical.
+
+| Local four-graph lifetime observation | Hold all258 | Emit/release259 | Per-case independent replay259 |
+|---|---:|---:|---:|
+| Worker wall, seconds |36.021|34.032|62.072|
+| Worker CPU, seconds |35.951|33.972|61.977|
+| Worker peak RSS, bytes |1377861632|843120640|1978744832|
+| RSS after loading state, bytes |609206272|609075200|609206272|
+| Finish/decode, seconds |14.566|12.563|11.852|
+| Eight original DISTINCT compilers, seconds |12.796|12.704|12.821|
+| Serialization, seconds |7.652|7.757|not applicable|
+| Original typed replay comparison, seconds |not applicable|not applicable|36.551|
+
+Retain the measured534740992-byte reduction in the producer's partial-lifetime
+peak and its small time reduction. The replay's1978744832-byte peak remains a
+concrete concern: it holds parsed expected/actual values plus two complete typed
+representations. Test a separate comparator-allocation hypothesis before a full64
+repeat. This real4 mirror is not complete production-path verification, a Linux
+memory result, a matched main comparison or multi-graph server load acceptance.
+Do not infer full64 scaling or16GB runner fit.
+
+Evidence: /tmp/graphite-attempt259-real4-prep/{plan.json,root-launch-review.json,
+root-result-review.json}, /tmp/graphite-attempt259-real4-result-1/execution.json,
+all four phase summaries and35 paired outputs. Source/test review:
+/tmp/graphite-attempt259-result.json and
+/tmp/graphite-attempt259-integration-review.json. Original isolated test setup/spy
+failures remain recorded separately; the final corrected suites pass.

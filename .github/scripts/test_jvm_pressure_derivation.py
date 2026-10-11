@@ -548,6 +548,38 @@ class FullProjectionTests(unittest.TestCase):
                        lambda:collector.add_graph(graph(model.FIXTURE_GRAPH_IDS[0]),b'',0)):
             with self.assertRaises(ValueError):action()
 
+    def test_stream35_exact_order_types_once_and_release_before_next_case(self):
+        import weakref
+        collector=self.owned_collector();before=collector.finish();groups=list(collector.distinct.values())
+        expected={name:model.key(value) for name,value in before.pop('universes').items()}
+        emitted={};compiled=[];refs=[];real_case=collector._case_universe;real_compile=model.CompiledLegalLimitOracle
+        class WeakUniverse(dict): pass
+        def case_universe(case,consume):
+            self.assertTrue(all(ref() is None for ref in refs),'previous case retained during next construction')
+            value=WeakUniverse(real_case(case,consume));refs.append(weakref.ref(value));return value
+        def compile_oracle(universe,case):
+            compiled.append(case['id']);return real_compile(universe,case)
+        def emit(name,value):
+            self.assertEqual(name,compiled[-1]);emitted[name]=model.key(dict(value))
+        with patch.object(collector,'_case_universe',new=case_universe),patch.object(model,'CompiledLegalLimitOracle',new=compile_oracle):
+            metadata=collector._consume_cases(emit)
+        self.assertEqual(expected,emitted);self.assertEqual(list(expected),list(emitted));self.assertEqual(list(expected),compiled)
+        self.assertEqual(model.key(before),model.key(metadata));self.assertTrue(all(ref() is None for ref in refs))
+        self.assert_consumed(collector,groups)
+
+    def test_stream_callback_error_interrupt_and_incomplete_scope_clear_state(self):
+        for failure in (ValueError('sink failed'),KeyboardInterrupt('sink interrupted')):
+            collector=self.owned_collector();groups=list(collector.distinct.values());seen=[]
+            def emit(name,value):
+                seen.append(name)
+                if len(seen)==3:raise failure
+            with self.assertRaises(type(failure)):collector._consume_cases(emit)
+            self.assertEqual(3,len(seen));self.assert_consumed(collector,groups)
+        collector=d.Collector();groups=list(collector.distinct.values())
+        with self.assertRaisesRegex(ValueError,'complete successful'):
+            collector._consume_cases(lambda *args:self.fail('incomplete case emitted'))
+        self.assert_consumed(collector,groups)
+
     def test_encoded_ordinary_rows_keep_counts_and_public_finish_is_deeply_isolated(self):
         collector=self.owned_collector();self.assertFalse(hasattr(collector,'rows'))
         before=collector.finish();identity=model.key(before)
