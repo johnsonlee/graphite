@@ -331,10 +331,15 @@ def preparation_control_pins():
     return pins
 
 
-def corrected_plan(bundle, producer_ref, output, catalog):
+def corrected_plan(bundle, producer_ref, output, catalog, *, measurement_only=False):
     """Adapt completed actual audits; preserve the original strict producer path."""
-    from assemble_native_pressure_producers import CORRECTED_STATUS, merge_pins, corrected_fixture_bindings, pressure_arms
-    require(bundle['status'] == CORRECTED_STATUS and not bundle['missingAuthority'], 'completed corrected comparability')
+    from assemble_native_pressure_producers import (CORRECTED_STATUS, merge_pins,
+        corrected_fixture_bindings, measurement_fixture_bindings, pressure_arms)
+    if measurement_only:
+        fixture_bindings = measurement_fixture_bindings(bundle)
+    else:
+        require(bundle['status'] == CORRECTED_STATUS and not bundle['missingAuthority'], 'completed corrected comparability')
+        fixture_bindings = corrected_fixture_bindings(bundle)
     pins = dict(bundle['pins'])
     merge_pins(pins, preparation_control_pins())
     merge_pins(pins, {producer_ref['path']: producer_ref['sha256']})
@@ -374,12 +379,13 @@ def corrected_plan(bundle, producer_ref, output, catalog):
             bindings[name] = {'revision': arm['revision'], 'graphs': arm['graphs'],
                 'sourceManifestSha256': arm['sourceManifest']['sha256'], 'runtimeManifestSha256': arm['runtimeManifest']['sha256'],
                 'cases': {c['id']: {k: c['oracleByArm'][name][k] for k in ('digest', 'rows')} for c in cases}}
-    proof('fixture-equivalence', corrected_fixture_bindings(bundle),
+    proof('fixture-inventory' if measurement_only else 'fixture-equivalence', fixture_bindings,
           {producer_ref['path']: producer_ref['sha256'],
-           **{v['audit']['path']: v['audit']['sha256'] for v in bundle['correctedComparisons'].values()},
+           **{v['audit']['path']: v['audit']['sha256'] for v in bundle.get('correctedComparisons', {}).values()},
            **{a['artifactAudit']['path']: a['artifactAudit']['sha256'] for a in bundle['arms'].values()}})
     return pressure_plan(packet, cases, bindings, proofs, catalog,
-                         correctedProducerAuthority=producer_ref)
+                         **({'pendingComparabilityAuthority': producer_ref, 'comparabilityPending': True}
+                            if measurement_only else {'correctedProducerAuthority': producer_ref}))
 
 
 def pressure_plan(packet, cases, bindings, proofs, catalog, **extra):
@@ -421,24 +427,30 @@ def prepare(args):
             if packet.get('schema') == 'graphite.native-pressure.producer-bundle.v1':
                 # Fresh builds and all39 audited responses are concrete evidence,
                 # but they cannot manufacture the separate cross-arm core proof.
-                from assemble_native_pressure_producers import verify_bundle, CORRECTED_STATUS
-                bundle = verify_bundle(packet, args.base_sha, args.candidate_sha)
+                from assemble_native_pressure_producers import verify_bundle, verify_measurement_bundle, CORRECTED_STATUS
+                measurement_only = getattr(args, 'measurement_only', False)
+                verifier = verify_measurement_bundle if measurement_only else verify_bundle
+                bundle = verifier(packet, args.base_sha, args.candidate_sha)
                 status['producerPacket'] = {'path': str(args.producers.resolve()),
                                             'sha256': pressure.sha(args.producers)}
                 status['availableInputs']['matchedNativeBundle'] = {
                     'status': bundle['status'],
                     'revisions': {arm: value['revision'] for arm, value in bundle['arms'].items()},
                     'auditedCasesByArm': {arm: len(value['cases']) for arm, value in bundle['arms'].items()}}
-                if bundle['status'] != CORRECTED_STATUS:
+                if not measurement_only and bundle['status'] != CORRECTED_STATUS:
                     raise MissingAuthority('; '.join(bundle['missingAuthority']))
-                plan = corrected_plan(bundle, status['producerPacket'], output, catalog)
+                plan = corrected_plan(bundle, status['producerPacket'], output, catalog,
+                                      measurement_only=measurement_only)
                 pressure.validate_plan(plan, catalog)
                 pressure.verify_inputs(plan)
                 pressure.save(output / 'plan.json', plan)
                 status.update(status='PLAN_READY_NOT_MEASURED', planSha256=pressure.sha(output / 'plan.json'))
+                if measurement_only:
+                    status.update(comparabilityPending=True, missingComparability=bundle['missingAuthority'])
                 packet = None
             # Retain the consumed packet and preparation controls as actual plan inputs.
             if packet is not None:
+                require(not getattr(args, 'measurement_only', False), 'measurement-only requires audited39 producer bundle')
                 return prepare_strict(packet, args, output, status, catalog)
     except MissingAuthority as error:
         status.update(status='UNAVAILABLE', missingProducers=[str(error)])
@@ -485,6 +497,7 @@ if __name__ == '__main__':
     parser.add_argument('--fixture', type=Path, required=True)
     parser.add_argument('--producers', type=Path)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--measurement-only', action='store_true')
     options = parser.parse_args()
     result = prepare(options)
     print(result['status'])

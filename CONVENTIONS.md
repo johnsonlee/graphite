@@ -28,6 +28,15 @@
 - The PR body must explicitly state whether the multi-graph load-test comparison indicates a performance regression, with separate conclusions for each affected operation. Existing single-graph CI timing requirements must be reconciled with this rule rather than treated as performance acceptance evidence.
 - If benchmark results cannot be produced, state the blocker in the PR description rather than leaving performance unaddressed.
 
+### Verification feedback and reuse
+
+- Before starting an expensive acceptance run, exercise the producer-to-consumer handoff with a fast correctness smoke check, including checkpoint sealing, the workflow's download layout, restoration, and consumption. Small or synthetic fixtures are permitted for this correctness check only; they provide no performance evidence.
+- Declare the required acceptance checks, baseline, workload, and approved tradeoffs before measurement. Add checks only when a concrete defect, changed dependency, or new evidence justifies them; do not expand the acceptance scope merely because a run is still in progress.
+- Run independent measurement and complete correctness verification concurrently when their actual data dependencies permit it. A measurement may finish while comparability is pending, but neither its job nor its report may claim final acceptance until the matching complete correctness proof succeeds. Preserve all failures and original samples.
+- Reuse reviewed evidence for unchanged revisions, inputs, controls, environments, and measurement boundaries. Revalidate the affected dependency closure when one changes; do not repeatedly download, hash, or rerun the same evidence without a new reason. Required integrity checks when transporting or consuming artifacts still apply.
+- If a long-running stage produces no new diagnostic or completed-stage result for 30 minutes, inspect the live process and critical path. Record whether it is advancing, waiting on a real dependency, or failed, and choose the next action from that evidence. This is a feedback deadline, not a timeout or permission to cancel a healthy run. Do not restart work because an observation timed out.
+- Preserve an active run while preparing workflow repairs locally. Report separately what has been implemented, locally verified, and exercised by hosted CI; a proposed workflow change is not a completed improvement.
+
 ### Performance experiment history
 
 - Append every performance optimization attempt to the relevant chronological

@@ -3195,7 +3195,10 @@ export function aggregateReports(directory, metadata) {
             };
             const compare = operation.operation === "construction" ? compareConstruction :
                 operation.operation === "loading" ? compareLoading : comparePressure;
-            const recomputed = compare(contained(evidence.evidence?.plan), contained(evidence.evidence?.directory));
+            const receipt = evidence.evidence?.comparabilityReceipt;
+            if (lifecycle && receipt !== undefined) throw new Error("Query comparability receipt on lifecycle evidence");
+            const recomputed = compare(contained(evidence.evidence?.plan), contained(evidence.evidence?.directory),
+                receipt === undefined ? undefined : contained(receipt));
             if (evidence.schema !== recomputed.schema || recomputed.engine !== operation.engine ||
                 recomputed.operation !== operation.operation || evidence.planSha256 !== recomputed.planSha256 ||
                 JSON.stringify(evidence.comparisons) !== JSON.stringify(recomputed.comparisons) ||

@@ -126,6 +126,16 @@ class BundleAssemblyTests(unittest.TestCase):
             value = bundle.assemble(self.root, self.base, self.candidate)
         return value, audit
 
+    def test_explicit_measurement_packet_replay_does_not_upgrade_when_core_arrives(self):
+        with patch.object(bundle,'audited_arm',side_effect=self.arm), patch.object(bundle,'corrected_comparison',side_effect=AssertionError('must not consume later core')):
+            packet=bundle.assemble(self.root,self.base,self.candidate,measurement_only=True)
+            core=self.root/'B/core-equivalence';core.mkdir(parents=True)
+            (core/'audit.json').write_text('{"status":"untrusted later core"}')
+            self.assertEqual(packet,bundle.verify_measurement_bundle(packet,self.base,self.candidate))
+            self.assertEqual(bundle.STATUS,packet['status']);self.assertFalse(packet['performanceAcceptance'])
+            changed=copy.deepcopy(packet);changed['arms']['B']['revision']='a'*40
+            with self.assertRaisesRegex(ValueError,'differs'):bundle.verify_measurement_bundle(changed,self.base,self.candidate)
+
     def test_exact_accepted_parent_reuses_audited_artifacts_without_relabelling_origin(self):
         value, audit = self.assemble()
         self.assertEqual([call.args[0].name for call in audit.call_args_list], ['C', 'B'])
@@ -404,6 +414,58 @@ class CorrectedPlanTests(unittest.TestCase):
     def test_distinct_parent_cannot_use_accepted_alias_without_own_pair(self):
         self.packet['arms']['A']=dict(self.packet['arms']['A'],revision='a'*40)
         with self.assertRaisesRegex(ValueError,'nonaccepted arms'):bundle.corrected_fixture_bindings(self.packet)
+
+
+class PendingPlanTests(unittest.TestCase):
+    def setUp(self):
+        CorrectedPlanTests.setUp(self)
+        self.packet.update(status=bundle.STATUS,measurementMode=bundle.MEASUREMENT_MODE,
+                           missingAuthority=['complete core pending'])
+        for key in ('correctedComparisons','comparisonModel','strictEquivalence','sourceToDeclarationCompletenessClaim'):
+            self.packet.pop(key)
+        self.packet_path.write_text(json.dumps(self.packet));self.ref=bundle.artifacts.ref(self.packet_path)
+
+    def make(self):
+        return preparation.corrected_plan(self.packet,self.ref,self.output,self.catalog,measurement_only=True)
+
+    def validate(self,plan):
+        with patch.object(bundle,'verify_measurement_bundle',return_value=self.packet):
+            return bundle.common.validate_plan(plan,self.catalog)
+
+    def test_complete39_same_protocol_inventory_without_comparability_or_eligibility(self):
+        plan=self.make();self.validate(plan);bundle.common.verify_inputs(plan)
+        self.assertEqual(39,len(plan['cases']));self.assertEqual(list('CABBAC'),[c['arm'] for c in plan['cells']])
+        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20},plan['schedule'])
+        self.assertTrue(plan['comparabilityPending']);self.assertNotIn('correctedProducerAuthority',plan)
+        self.assertEqual('fixture-inventory',plan['proofs'][-1]['role'])
+        self.assertFalse(plan['proofs'][-1]['bindings']['completeSemanticEquivalence'])
+        for name,arm in self.packet['arms'].items():
+            self.assertEqual([c['oracle'] for c in arm['cases']],[c['oracleByArm'][name] for c in plan['cases']])
+        result={'coverage':plan['coverage'],'engine':'native','operation':'query','otherOperationsEligible':False,
+                'status':'PASS','errors':[],'stages':{key:{'status':'PASS'} for key in ('oracle','warmup','pressure')}}
+        self.assertFalse(bundle.common.evidence_eligible(result,plan))
+
+    def test_pending_cannot_mix_proof_modes_promote_inventory_or_change_oracle(self):
+        plan=self.make()
+        for mutate in (lambda p:p.update(correctedProducerAuthority=self.ref),
+                       lambda p:p.update(comparabilityPending=False),
+                       lambda p:p['proofs'][-1].update(role='fixture-equivalence'),
+                       lambda p:p['proofs'][-1]['bindings'].update(completeSemanticEquivalence=True),
+                       lambda p:p['proofs'][-1]['upstream'].clear(),
+                       lambda p:p['cases'][0]['oracleByArm']['B'].update(proof=self.ref),
+                       lambda p:p['cases'].pop()):
+            value=copy.deepcopy(plan);mutate(value)
+            with self.subTest(mutate=mutate),self.assertRaises(ValueError):self.validate(value)
+
+    def test_pending_preparation_explicit_and_strict_default_still_unavailable(self):
+        args=SimpleNamespace(output=self.root/'prepared',provenance=self.root/'absent',fixture=self.root/'absent',
+            base_sha=self.packet['baseRevision'],candidate_sha=self.packet['candidateRevision'],producers=self.packet_path,
+            measurement_only=True)
+        with patch.object(bundle,'verify_measurement_bundle',return_value=self.packet):result=preparation.prepare(args)
+        self.assertEqual('PLAN_READY_NOT_MEASURED',result['status'],result);self.assertTrue(result['comparabilityPending'])
+        args.output=self.root/'strict';args.measurement_only=False
+        with patch.object(bundle,'verify_bundle',return_value=self.packet):result=preparation.prepare(args)
+        self.assertEqual('UNAVAILABLE',result['status']);self.assertFalse(result['performanceAcceptance'])
 
 
 if __name__ == '__main__':

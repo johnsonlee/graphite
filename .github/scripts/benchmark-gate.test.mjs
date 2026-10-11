@@ -3152,6 +3152,24 @@ test("query operation evidence must bind the current PR parent revision", t => {
         const stale = aggregateReports(directory, {...metadata, baseSha:"d".repeat(40)});
         assert.equal(stale.operationEvidence.find(row=>row.name===`${engine}-query`).status, "UNAVAILABLE");
         assert.ok(stale.errors.some(error=>error.startsWith(`${engine}-query:`) && error.includes("source or resource constraints")));
+        if (engine === "native") {
+            plan.comparabilityPending = true;
+            plan.pendingComparabilityAuthority = {path:"/unjoined/producer.json", sha256:"e".repeat(64)};
+            put(file, plan);
+            for (const cell of plan.cells) {
+                const resultFile = path.join(root, cell.id, "result.json");
+                const result = JSON.parse(fs.readFileSync(resultFile)); result.planSha256 = digest(file); put(resultFile,result);
+                const auditFile = path.join(root, cell.id, "audit.json"), audit = JSON.parse(fs.readFileSync(auditFile));
+                audit.planSha256 = digest(file); audit.resultSha256 = digest(resultFile); put(auditFile,audit);
+            }
+            const pending = comparePressure(file,root);
+            assert.equal(pending.passed,false);
+            // A caller cannot promote unjoined measurements by editing only the summary.
+            put(path.join(directory,"multigraph-native-query-status.json"), {...pending,passed:true,status:"PASS",
+                evidence:{plan:path.relative(directory,file),directory:path.relative(directory,root)}});
+            const rejected = aggregateReports(directory,metadata);
+            assert.equal(rejected.operationEvidence.find(row=>row.name==="native-query").status,"UNAVAILABLE");
+        }
     }
 });
 
@@ -4167,7 +4185,7 @@ function rustWorkflowStep(job, name) {
 
 test("Rust split stages preserve query gates before independent lifecycle measurements", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const native = rustWorkflowJob(workflow, "rust-query-native");
+    const native = rustWorkflowJob(workflow, "rust-query-native-measurement");
     const jvm = rustWorkflowJob(workflow, "rust-query-jvm");
     const legacy = rustWorkflowJob(workflow, "rust-query-legacy");
     const names = ["Measure base then PR",
@@ -4191,7 +4209,10 @@ test("Rust split stages preserve query gates before independent lifecycle measur
     assert.match(nativeUpload, /name: benchmark-rust-latency-/);
     assert.match(nativeUpload, /path: benchmark-results\//);
     assert.match(jvm, /name: benchmark-rust-jvm-pressure-/);
-    assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: benchmark-rust-native-pressure-/);
+    assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: native-query-measurement-/);
+    const nativeFinal = rustWorkflowJob(workflow, "rust-query-native");
+    assert.match(rustWorkflowStep(nativeFinal, "Join complete core proof with original native measurement"), /--finalize-producers native-pressure-producers\/packet\.json/);
+    assert.doesNotMatch(nativeFinal, /--measurement-only|Prepare matched native continuous-pressure plan/);
     for (const [id, operation, measurement] of [
         ["rust-loading", "loading", "Measure and audit six JVM real64 zero-query loads"],
         ["rust-construction", "construction", "Measure and audit six real64 usable-save constructions"]
@@ -4211,7 +4232,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
 
 test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
     const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
     const needs = job => {
         const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
@@ -4224,7 +4245,13 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     }
     assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
     for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
-    for (const id of ids.slice(2).filter(id => id !== "rust-query-legacy")) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    for (const id of ids.slice(2).filter(id => !["rust-query-legacy", "rust-query-native-measurement"].includes(id))) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    assert.deepEqual(needs(jobs["rust-query-native-measurement"]), ["candidate-gate-tests", "rust-producer"],
+        "audited measurements start alongside the complete core proof");
+    assert.ok(needs(jobs["rust-query-native"]).includes("rust-query-native-measurement"),
+        "final acceptance joins the exact completed measurement");
+    assert.match(jobs["rust-query-native-measurement"], /assemble_native_pressure_producers\.py --measurement-only/);
+    assert.match(jobs["rust-query-native-measurement"], /prepare_native_pressure_plan\.py --measurement-only/);
     assert.deepEqual(needs(jobs["rust-query-legacy"]), ["candidate-gate-tests", "rust-producer"],
         "a core proof failure must not suppress the existing independently validated Rust snapshot gate");
     assert.doesNotMatch(jobs["rust-query-legacy"].split("    steps:")[0], /needs\.rust-(?:core|jvm-correctness)/);
@@ -4262,10 +4289,48 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     assert.ok(needs(aggregate).includes("rust-latency"), "existing required aggregate cannot bypass the join");
 });
 
+test("native measurement stays independent and cannot replace final acceptance", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const measurement = rustWorkflowJob(workflow,"rust-query-native-measurement");
+    const final = rustWorkflowJob(workflow,"rust-query-native");
+    const controls = rustWorkflowJob(workflow,"candidate-gate-tests");
+    assert.match(controls,/test_native_pressure_checkpoint_smoke\.py/);
+    assert.ok(controls.indexOf("Smoke checkpoint producer-to-consumer handoff") < controls.indexOf("Test candidate benchmark gate logic"));
+    assert.doesNotMatch(measurement,/Download core|--stage core|Enforce native-query acceptance/);
+    const upload = rustWorkflowStep(measurement,"Upload native pressure results");
+    assert.match(upload,/native-pressure-producers-measurement\/\*\*/);
+    assert.match(upload,/benchmark-results\/native-pressure-cells\/\*\*/);
+    assert.match(upload,/name: native-query-measurement-/);
+    const download = rustWorkflowStep(final,"Download original native measurement");
+    assert.match(download,/name: native-query-measurement-/);
+    assert.match(download,/path: \./);
+    assert.doesNotMatch(download,/pattern:|merge-multiple:/);
+    const enforce = rustWorkflowStep(measurement,"Require complete native measurement without claiming acceptance");
+    assert.match(enforce,/if: always\(\)/);
+    assert.doesNotMatch(enforce,/continue-on-error:/);
+    const shell = enforce.split("run: >-\n")[1].trim().split("\n").map(line=>line.trim()).join(" ");
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(),"measurement-gate-"));
+    try {
+        const file = path.join(directory,"benchmark-results/native-pressure-cells/execution.json");
+        fs.mkdirSync(path.dirname(file),{recursive:true});
+        const good = {status:"MEASURED_CORE_COMPARABILITY_PENDING",performanceAcceptance:false,unissued:[],errors:[],
+            cells:Array.from({length:6},()=>({status:"PASS"}))};
+        const run = value => {
+            fs.writeFileSync(file,JSON.stringify(value));
+            return spawnSync("bash",["-c",shell],{cwd:directory,encoding:"utf8"});
+        };
+        const result=run(good);assert.equal(result.status,0,result.stderr);
+        for (const change of [x=>x.status="PASS",x=>x.performanceAcceptance=true,x=>x.cells.pop(),
+            x=>x.cells[0].status="FAIL",x=>x.unissued.push("missing"),x=>x.errors.push("failed")]) {
+            const invalid=structuredClone(good);change(invalid);assert.notEqual(run(invalid).status,0);
+        }
+    } finally {fs.rmSync(directory,{recursive:true,force:true});}
+});
+
 test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = rustWorkflowJob(workflow, "rust-latency");
-    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
     assert.match(job, /^    name: rust-latency-gate$/m);
     assert.match(job, /^    if: always\(\)$/m);
     assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
@@ -4503,7 +4568,7 @@ test("untimed routing preserves full result/access/index assertions and cannot s
 test("checkpoint downloads preserve restore directories for one and multiple baseline arms", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const accepted = "4f2ccf33b969e684972e56b5e810034e6e67c1b3";
-    const consumers = ["rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"];
+    const consumers = ["rust-query-native-measurement", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"];
     for (const base of [accepted, "distinct-base"]) {
         for (const id of consumers) {
             const directory = fs.mkdtempSync(path.join(os.tmpdir(), "checkpoint-download-"));
@@ -4511,7 +4576,7 @@ test("checkpoint downloads preserve restore directories for one and multiple bas
                 const job = rustWorkflowJob(workflow, id);
                 const downloads = job.split(/(?=^    - name: )/m).filter(step =>
                     step.includes("uses: actions/download-artifact@") && step.includes("native-checkpoint-"));
-                const coreArms = base === accepted ? ["B"] : ["A", "B"];
+                const coreArms = id === "rust-query-native-measurement" ? [] : base === accepted ? ["B"] : ["A", "B"];
                 const jvmArms = base === accepted ? ["C", "B"] : ["C", "A", "B"];
                 const expected = ["producer:producer", ...coreArms.map(arm => `core:${arm}`),
                     ...(id === "rust-query-jvm" ? jvmArms.map(arm => `jvm:${arm}`) : [])];
@@ -4563,7 +4628,8 @@ fs.appendFileSync(process.env.RESTORE_CALLS, stage + ":" + arm + "\\n");
                 const result = run();
                 assert.equal(result.status, 0, `${id}/${base}: ${result.stderr}`);
                 assert.deepEqual(fs.readFileSync(calls, "utf8").trim().split("\n"), expected);
-                fs.unlinkSync(path.join(directory, "pressure-checkpoints/native-checkpoint-core-B-1234-2/manifest.json"));
+                fs.unlinkSync(path.join(directory, id === "rust-query-native-measurement" ?
+                    "pressure-checkpoints/producer-producer/manifest.json" : "pressure-checkpoints/native-checkpoint-core-B-1234-2/manifest.json"));
                 assert.notEqual(run().status, 0, `${id}/${base}: missing required checkpoint cannot pass`);
             } finally {
                 fs.rmSync(directory, { recursive: true, force: true });

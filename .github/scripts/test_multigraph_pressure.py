@@ -998,6 +998,22 @@ class ExecutionAuthorityReuse(unittest.TestCase):
             context.run_cell('0', self.root/'out'); context.audit_cell(self.root/'out')
         self.assertEqual(self.replay.call_count, 1)
 
+    def test_pending_native_keeps_producer_closure_while_later_core_is_separate(self):
+        self.plan['pendingComparabilityAuthority'] = self.plan.pop('jvmProducerAuthority')
+        self.plan['comparabilityPending'] = True
+        self.plan_file.write_text(json.dumps(self.plan)); context = self.context()
+        (self.core/'new-core-phase.json').write_text('{"status":"future core is not measurement authority"}')
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}) as run, \
+                patch.object(p, '_audit', return_value={'status': 'PASS'}) as audit:
+            for i in range(6):
+                output = self.root/'execution'/str(i)
+                context.run_cell(str(i), output); context.audit_cell(output)
+            self.assertEqual((self.replay.call_count, run.call_count, audit.call_count), (1, 6, 6))
+            (self.query/'readiness-attempts/new.body').write_text('changed measured producer scope')
+            with self.assertRaisesRegex(ValueError, 'closure changed'):context.audit_cell(output)
+            self.assertEqual(audit.call_count,6)
+        with self.assertRaisesRegex(ValueError, 'invalidated'):context._check_unchanged()
+
     def test_public_run_and_audit_each_replay_upstream(self):
         with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), patch.object(p, '_audit', return_value={'status': 'PASS'}):
             p.run_cell(self.plan_file, '0', self.root/'out'); p.audit(self.plan_file, self.root/'out')

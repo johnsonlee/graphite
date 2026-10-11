@@ -20,6 +20,7 @@ SCHEMA = 'graphite.native-pressure.producer-bundle.v1'
 STATUS = 'ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING'
 CORRECTED_STATUS = 'ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED'
 CORRECTED_MODEL = 'complete-core-topology-index-with-source-corrections-and-additive-declarations-v1'
+MEASUREMENT_MODE = 'native39-before-core-v1'
 require = common.require
 
 
@@ -90,7 +91,7 @@ def audited_arm(root, revision, role, source_inputs):
     return arm, pins, native_build_identity(runtime)
 
 
-def assemble(artifacts_root, base_sha, candidate_sha):
+def assemble(artifacts_root, base_sha, candidate_sha, *, measurement_only=False):
     root = Path(artifacts_root).resolve()
     require(all(re.fullmatch('[0-9a-f]{40}', value) for value in (base_sha, candidate_sha)),
             'full actual revisions')
@@ -123,6 +124,11 @@ def assemble(artifacts_root, base_sha, candidate_sha):
             'completeSemanticEquivalence': False, 'performanceAcceptance': False, 'acceptanceEligible': False,
             'missingAuthority': ['Complete C/A/B core, topology and index semantic equivalence or independently '
                                  'proven source corrections; fresh39 response correctness does not establish this.']}
+    if measurement_only:
+        # Replaying this packet after core outputs arrive must still verify the
+        # original per-arm evidence, never silently upgrade its authority.
+        packet['measurementMode'] = MEASUREMENT_MODE
+        return packet
     required = [name for name in ('A', 'B') if expected[name] != 'C']
     paths = {name: root / expected[name] / 'core-equivalence/audit.json' for name in required}
     if all(path.is_file() for path in paths.values()):
@@ -194,6 +200,28 @@ def verify_bundle(packet, base_sha, candidate_sha):
     return actual
 
 
+def verify_measurement_bundle(packet, base_sha, candidate_sha):
+    require(packet.get('measurementMode') == MEASUREMENT_MODE and packet['status'] == STATUS,
+            'explicit Native39 measurement-only producer bundle')
+    actual = assemble(packet['artifactsRoot'], base_sha, candidate_sha, measurement_only=True)
+    require(common.typed(packet) == common.typed(actual), 'measurement producer differs from current raw evidence')
+    return actual
+
+
+def measurement_fixture_bindings(packet):
+    require(packet.get('measurementMode') == MEASUREMENT_MODE and packet['status'] == STATUS and
+            packet['missingAuthority'] and 'correctedComparisons' not in packet and
+            all(packet[k] is False for k in
+                ('completeSemanticEquivalence', 'performanceAcceptance', 'acceptanceEligible')),
+            'pending fixture inventory cannot assert comparability')
+    roots = {Path(g['path']) for arm in packet['arms'].values() for g in arm['graphs']}
+    return {'graphsByArm': {key: arm['graphs'] for key, arm in packet['arms'].items()},
+            'fixtureFiles': {path: digest for path, digest in packet['pins'].items()
+                             if any(Path(path).is_relative_to(root) for root in roots)},
+            'realPersistedGraphs': True, 'completeSemanticEquivalence': False,
+            'coreComparabilityPending': True}
+
+
 def corrected_fixture_bindings(packet):
     require(packet['status'] == CORRECTED_STATUS and packet['comparisonModel'] == CORRECTED_MODEL and
             packet['missingAuthority'] == [] and packet['completeSemanticEquivalence'] is
@@ -224,10 +252,13 @@ def main():
     parser.add_argument('--base-sha', required=True)
     parser.add_argument('--candidate-sha', required=True)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--measurement-only', action='store_true',
+                        help='Audit per-arm inputs and39 responses; leave complete core comparison pending')
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
     try:
-        result = assemble(args.artifacts, args.base_sha, args.candidate_sha)
+        result = assemble(args.artifacts, args.base_sha, args.candidate_sha,
+                          **({'measurement_only': True} if args.measurement_only else {}))
     except (OSError, ValueError, KeyError, TypeError) as error:
         common.save(args.output / 'assembly-status.json',
                     {'status': 'FAIL', 'error': repr(error), 'performanceAcceptance': False})

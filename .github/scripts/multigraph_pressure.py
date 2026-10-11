@@ -304,6 +304,12 @@ def validate_plan(plan, catalog=None):
     require(__debug__, 'Python optimization forbidden')
     require(plan.get('schema') == PLAN_SCHEMA and plan.get('operation') == 'query', 'plan schema/operation')
     require(plan.get('engine') in ('native', 'jvm'), 'engine')
+    if 'pendingComparabilityAuthority' in plan:
+        require(plan['engine'] == 'native' and plan.get('comparabilityPending') is True and
+                not any(k in plan for k in ('producerAuthority', 'correctedProducerAuthority', 'jvmProducerAuthority')),
+                'explicit separate pending native comparability mode')
+    else:
+        require('comparabilityPending' not in plan, 'pending scope requires explicit producer authority')
     require(type(plan.get('pins')) is dict and plan['pins'], 'closed input pins required')
     for path, digest in plan['pins'].items():
         require(Path(path).is_absolute() and valid_digest(digest), 'absolute input pin')
@@ -464,12 +470,36 @@ def validate_proof_claims(plan, jvm_packet=None):
                 for case in plan['cases']:
                     ref = case['oracleByArm'][arm_id]['proof']
                     require(proof['upstream'].get(ref['path']) == ref['sha256'], 'independent full-body oracle upstream')
-    matches = [proof for proof in plan['proofs'] if proof['role'] == 'fixture-equivalence']
-    require(len(matches) == 1, 'one complete fixture-equivalence proof')
+    pending = 'pendingComparabilityAuthority' in plan
+    fixture_role = 'fixture-inventory' if pending else 'fixture-equivalence'
+    matches = [proof for proof in plan['proofs'] if proof['role'] == fixture_role]
+    require(len(matches) == 1 and not any(p['role'] ==
+            ('fixture-equivalence' if pending else 'fixture-inventory') for p in plan['proofs']),
+            'one complete ' + fixture_role + ' proof')
     roots = {Path(g['path']) for arm in plan['arms'].values() for g in arm['graphs']}
     expected = {'graphsByArm': {key: arm['graphs'] for key, arm in plan['arms'].items()},
                 'fixtureFiles': {path: digest for path, digest in plan['pins'].items() if any(Path(path).is_relative_to(root) for root in roots)},
                 'realPersistedGraphs': True, 'completeSemanticEquivalence': True}
+    if pending:
+        from assemble_native_pressure_producers import (verify_measurement_bundle,
+            measurement_fixture_bindings, pressure_arms)
+        ref = plan['pendingComparabilityAuthority']
+        packet = verify_measurement_bundle(pinned_authority_metadata(plan, ref),
+                                          plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+        require(pressure_arms(packet) == plan['arms'] and
+                all(plan['pins'].get(p) == h for p, h in packet['pins'].items()),
+                'pending actual source runtime fixture and39 response closure')
+        inventory = measurement_fixture_bindings(packet)
+        require(inventory['fixtureFiles'] == expected['fixtureFiles'], 'complete pending graph inventory')
+        for arm_id, arm in packet['arms'].items():
+            require(len(arm['cases']) == len(plan['cases']) == 39, 'complete pending39 query inventory')
+            for source, case in zip(arm['cases'], plan['cases']):
+                require(source['id'] == case['id'] and source['request'] == case['request'] and
+                        source['targetGraphIds'] == case['targetGraphIds'] and
+                        typed(source['oracle']) == typed(case['oracleByArm'][arm_id]),
+                        'pending measurement retains independent complete response authority')
+        expected = inventory
+        require(matches[0]['upstream'].get(ref['path']) == ref['sha256'], 'pending producer upstream')
     if 'correctedProducerAuthority' in plan:
         require(plan['engine'] == 'native' and 'producerAuthority' not in plan,
                 'corrected comparison is an explicit native proof mode')
@@ -560,7 +590,8 @@ def _execution_closure(plan):
     Unknown/legacy proof modes do not use this optimization.
     """
     import audit_native_pressure_artifacts as artifacts
-    key = 'jvmProducerAuthority' if 'jvmProducerAuthority' in plan else 'correctedProducerAuthority'
+    key = ('jvmProducerAuthority' if 'jvmProducerAuthority' in plan else
+           'pendingComparabilityAuthority' if 'pendingComparabilityAuthority' in plan else 'correctedProducerAuthority')
     packet = pinned_authority_metadata(plan, plan[key])
     roots, sources, configurations = set(), {}, {}
 
@@ -599,7 +630,7 @@ def _execution_closure(plan):
             raw = Path(query_plan['rawDerivationRoot'])
             metadata(raw/'plan.json'); add(raw)
 
-    for comparison in packet['correctedComparisons'].values():
+    for comparison in ({} if key == 'pendingComparabilityAuthority' else packet['correctedComparisons']).values():
         core_root = Path(comparison['audit']['path']).parent
         core_plan = metadata(core_root/'plan.json'); add(core_root)
         require(set(core_plan['upstream']) == {'CStrings', 'BStrings', 'marker', 'formatterTests', 'formatterSource'},
@@ -655,7 +686,8 @@ class _VerifiedPressureExecution:
         value._path = str(path)
         value._sha = sha(value._path)
         candidate = read(value._path)
-        value._reuse = ('jvmProducerAuthority' in candidate or 'correctedProducerAuthority' in candidate)
+        value._reuse = any(k in candidate for k in
+                           ('jvmProducerAuthority', 'correctedProducerAuthority', 'pendingComparabilityAuthority'))
         value._valid = False
         # Capture before replay as well: a mutation during the full audit must
         # not become the new trusted inventory merely by being captured later.
@@ -1251,7 +1283,8 @@ def evidence_eligible(result, plan):
     require(result['coverage'] == plan['coverage'], 'result coverage drift')
     require(result['engine'] == plan['engine'] and result['operation'] == 'query', 'result operation/engine')
     require(result['otherOperationsEligible'] is False, 'query cannot authorize other operations')
-    return (result['status'] == 'PASS' and not result['errors'] and
+    return ('pendingComparabilityAuthority' not in plan and
+            result['status'] == 'PASS' and not result['errors'] and
             set(result['stages']) == {'oracle', 'warmup', 'pressure'} and
             all(stage['status'] == 'PASS' and stage.get('resources', {}).get('status') != 'UNAVAILABLE'
                 for stage in result['stages'].values()) and not plan['coverage']['unavailableFamilies'])

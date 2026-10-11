@@ -113,3 +113,161 @@ test('JVM35 retains full projections and raw zero-hit coverage with complete bod
   assert.throws(()=>comparePressure(f.file,f.root),/raw audit/);
  }
 });
+
+// Tiny synthetic report protocol fixtures: never performance observations or
+// substitutes for the Python finalizer's full raw-core replay.
+function joinedFixture(t, options={}) {
+ const f=fixture(t), joinRoot=path.join(f.root,'join'), metadata=[], pins={};
+ const hosted='/original-run';
+ const ref=(file,original)=>{const r={path:original,sha256:digest(file)};pins[r.path]=r.sha256;return r;};
+ const meta=(name,value)=>{
+  const file=path.join(joinRoot,'metadata',name+'.json');put(file,value);
+  const r=ref(file,`${hosted}/proof/${name}.json`);metadata.push({...r,relativePath:`metadata/${name}.json`});return r;
+ };
+ for(const arm of ['C','A','B']) {
+  const identity=arm==='A'&&options.alias!==false?'C':arm;
+  f.plan.arms[arm]={revision:identity,sourceManifest:{path:`/${identity}/source`,sha256:identity},
+   runtimeManifest:{path:`/${identity}/runtime`,sha256:identity},fixtureManifest:{path:`/${identity}/fixture`,sha256:identity},
+   graphs:Array.from({length:64},(_,i)=>({id:`g${i}`,path:`/${identity}/g${i}`})),
+   serverArgv:[`/${identity}/graphite`,'serve'],runtimeFiles:{[`/${identity}/graphite`]:identity}};
+ }
+ const original={measurementMode:'native39-before-core-v1',status:'ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING',
+  arms:structuredClone(f.plan.arms),sourceInputs:{path:'/source-inputs.json',sha256:'source'},armDirectories:{C:'/C',A:'/C',B:'/B'}};
+ const originalRef=meta('original',original);
+ f.plan.pendingComparabilityAuthority=originalRef;f.plan.comparabilityPending=true;put(f.file,f.plan);
+ for(const [i,cell] of f.plan.cells.entries()) {
+  f.rewrite(i,r=>{r.arm=f.plan.arms[cell.arm];r.planSha256=digest(f.file);options.changeCell?.(r,i);});
+  const p=path.join(f.root,cell.id,'audit.json'),a=JSON.parse(fs.readFileSync(p));a.planSha256=digest(f.file);put(p,a);
+ }
+ const planRef=ref(f.file,hosted+'/measurement/plan.json'), comparisons={};
+ for(const arm of options.alias===false?['A','B']:['B']) {
+  const revisions={C:f.plan.arms.C.revision,B:f.plan.arms[arm].revision};
+  const fixtures={C:f.plan.arms.C.fixtureManifest,B:f.plan.arms[arm].fixtureManifest};
+  const corePlan={revisions,fixtureManifests:fixtures,maxOwnedPhases:139,graphs:Array.from({length:64},(_,i)=>({id:`g${i}`}))};
+  options.changeCorePlan?.(corePlan,arm);
+  const corePlanRef=meta(`core-${arm}-plan`,corePlan);
+  const phaseRefs=Array.from({length:139},(_,i)=>{
+   const phase={status:'PASS',exit:0,errors:[]};options.changePhase?.(phase,i,arm);return meta(`core-${arm}-phase-${i}`,phase);
+  });
+  const record={plan:corePlanRef,phases:phaseRefs,graphs:corePlan.graphs,errors:[],finalIdentity:'PASS',
+   status:'PASS_ALL64_CORE_WITH_EXPLICIT_TYPE_OVERLOAD_SYNTHETIC_INHERITED_FIELD_CORRECTIONS_TOPOLOGY_INDICES_ADDITIVE_DECLARATION_VALIDITY'};
+  options.changeCoreRecord?.(record,arm);
+  const recordRef=meta(`core-${arm}-record`,record);
+  const audit={status:'PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT',completeCoreTopologyIndexComparison:true,
+   productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
+   pins:{[recordRef.path]:recordRef.sha256,[corePlanRef.path]:corePlanRef.sha256,...Object.fromEntries(phaseRefs.map(r=>[r.path,r.sha256]))}};
+  options.changeCoreAudit?.(audit,arm);
+  comparisons[arm]={audit:meta(`core-${arm}-audit`,audit),revisions,fixtureManifests:fixtures};
+ }
+ const corrected={...structuredClone(original),status:'ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED',
+  missingAuthority:[],correctedComparisons:comparisons};
+ options.changeCorrected?.(corrected);
+ const correctedRef=meta('corrected',corrected);
+ const execution={status:'MEASURED_CORE_COMPARABILITY_PENDING',performanceAcceptance:false,plan:planRef,
+  errors:[],unissued:[],cells:f.plan.cells.map(c=>({id:c.id,status:'PASS'}))};
+ options.changeExecution?.(execution);put(path.join(f.root,'execution.json'),execution);
+ const executionRef=ref(path.join(f.root,'execution.json'),hosted+'/measurement/execution.json');
+ const cells=f.plan.cells.map(cell=>({id:cell.id,...Object.fromEntries(['result','audit'].map(kind=>
+  [kind,ref(path.join(f.root,cell.id,kind+'.json'),`${hosted}/measurement/${cell.id}/${kind}.json`)]))}));
+ const receipt={schema:'graphite.native-pressure.core-comparability-join.v1',status:'PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN',
+  coreComparabilityVerified:true,completeSemanticEquivalence:false,strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,
+  performanceAcceptance:false,otherOperationsEligible:false,plan:planRef,measurementProducer:originalRef,correctedProducer:correctedRef,
+  measurementExecution:executionRef,measurementInputsSha256:originalRef.sha256,coreComparisons:comparisons,cells,metadata,pins};
+ options.changeReceipt?.(receipt);
+ const receiptFile=path.join(joinRoot,'comparability.json');put(receiptFile,receipt);
+ return {...f,receipt,receiptFile,joinRoot,metadata};
+}
+
+test('pending fast measurement remains non-PASS until exact complete core join is supplied',t=>{
+ const f=joinedFixture(t),pending=comparePressure(f.file,f.root);
+ assert.equal(pending.measuredConstraintsPassed,true);assert.equal(pending.queryEvidenceComplete,true);
+ assert.equal(pending.passed,false);assert.equal(pending.status,'MEASURED_CORE_COMPARABILITY_PENDING');
+ const joined=comparePressure(f.file,f.root,f.receiptFile);
+ assert.equal(joined.passed,true);assert.equal(joined.status,'PASS');
+ assert.deepEqual(joined.comparisons,pending.comparisons);assert.equal(joined.otherOperationsEligible,false);
+ assert.equal(joined.inputs[f.receiptFile],digest(f.receiptFile));
+});
+
+test('distinct parent needs both A and B complete core comparisons',t=>{
+ const valid=joinedFixture(t,{alias:false});assert.equal(comparePressure(valid.file,valid.root,valid.receiptFile).passed,true);
+ const missing=joinedFixture(t,{alias:false,changeCorrected:c=>{delete c.correctedComparisons.A;}});
+ assert.throws(()=>comparePressure(missing.file,missing.root,missing.receiptFile),/Every nonaccepted arm/);
+});
+
+test('missing or failed core authority cannot upgrade a completed fast measurement',t=>{
+ for(const options of [
+  {changeCorrected:c=>{c.missingAuthority=['core B unavailable'];}},
+  {changeCoreAudit:a=>{a.status='FAIL';}},
+  {changeCoreAudit:a=>{a.productionFormatterTestsVerified=false;}},
+  {changeCoreRecord:r=>{r.finalIdentity='FAIL';}},
+  {changeCoreRecord:r=>{r.graphs=r.graphs.slice(0,63);}},
+  {changePhase:(p,i)=>{if(i===138){p.status='FAIL';p.exit=1;p.errors=['wrong result'];}}},
+  {changeCorePlan:p=>{p.graphs.pop();}},
+ ]) {
+  const f=joinedFixture(t,options);
+  assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),/complete corrected core|complete core execution|core phase succeeded|core graph inventory/);
+ }
+ const f=joinedFixture(t);fs.unlinkSync(path.join(f.joinRoot,f.metadata.find(x=>x.path.endsWith('core-B-audit.json')).relativePath));
+ assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),/ENOENT/);
+});
+
+test('join cannot substitute producer inputs, measured arm, plan, execution or cells',t=>{
+ for(const [options,message] of [
+  [{changeReceipt:r=>{r.measurementProducer={...r.measurementProducer,sha256:'other'};}},/original measured plan and producer/],
+  [{changeCorrected:c=>{c.sourceInputs.sha256='different source';}},/Same producer inputs/],
+  [{changeCorrected:c=>{c.arms.B.runtimeManifest.sha256='different binary';}},/Same producer inputs/],
+  [{changeReceipt:r=>{r.plan.sha256='other plan';}},/original measured plan/],
+  [{changeReceipt:r=>{r.measurementInputsSha256='other inputs';}},/original measured plan/],
+  [{changeReceipt:r=>{r.completeSemanticEquivalence=true;}},/Complete scoped core join/],
+  [{changeExecution:e=>{e.cells[3].status='FAIL';}},/original pending measurement/],
+  [{changeReceipt:r=>{r.cells.pop();}},/all six/],
+  [{changeReceipt:r=>{[r.cells[2],r.cells[3]]=[r.cells[3],r.cells[2]];}},/cell order/],
+  [{changeReceipt:r=>{r.cells[2].result.path='/another-cell/result.json';}},/cell evidence path/],
+ ]) {
+  const f=joinedFixture(t,options);assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),message);
+ }
+});
+
+test('changed metadata or measured raw result bytes invalidate an otherwise valid join',t=>{
+ const f=joinedFixture(t);assert.equal(comparePressure(f.file,f.root,f.receiptFile).passed,true);
+ const metadataFile=path.join(f.joinRoot,f.metadata[0].relativePath),old=fs.readFileSync(metadataFile);
+ fs.appendFileSync(metadataFile,'\n');assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),/hash or pin changed/);
+ fs.writeFileSync(metadataFile,old);
+ f.rewrite(2,r=>{r.stages.pressure.requests[0].completeBody=false;});
+ assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),/hash or pin changed/);
+});
+
+test('receipt placement and metadata paths cannot escape their portable artifact',t=>{
+ const f=joinedFixture(t),moved=path.join(f.root,'misplaced','comparability.json');put(moved,f.receipt);
+ assert.throws(()=>comparePressure(f.file,f.root,moved),/ENOENT/);
+ for(const relativePath of ['../outside.json',path.join(f.root,'outside.json')]) {
+  const bad=structuredClone(f.receipt);bad.metadata[0].relativePath=relativePath;put(f.receiptFile,bad);
+  assert.throws(()=>comparePressure(f.file,f.root,f.receiptFile),/escaped artifact root|Missing portable join metadata/);
+ }
+});
+
+test('valid complete join cannot mask latency, CPU or RSS regression',t=>{
+ for(const metric of ['latency','cpu','rss']) {
+  const f=joinedFixture(t,{changeCell:(r,i)=>{
+   if(i!==2)return;const s=r.stages.pressure;
+   if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});s.caseStatistics.slow.p50Ns=150;s.caseStatistics.slow.p95Ns=150;}
+   if(metric==='cpu') {s.resources.cpuLowerBoundSeconds=2;s.resources.cpuUpperBoundSeconds=2;}
+   if(metric==='rss') {s.resources.rss.lowerBoundBytes=2000;s.resources.rss.upperBoundBytes=2000;}
+  }});
+  const r=comparePressure(f.file,f.root,f.receiptFile);assert.equal(r.passed,false);assert.equal(r.status,'FAIL');
+  const pair=r.comparisons.find(x=>x.kind==='acceptedBaseline'&&x.candidate==='c2');
+  if(metric==='latency')assert.equal(pair.cases[0].p95Passed,false);else assert.equal(pair[metric].status,'FAIL');
+ }
+});
+
+test('CLI pending and joined verdicts preserve portable relative receipt evidence',t=>{
+ const f=joinedFixture(t),script=fileURLToPath(new URL('./benchmark-multigraph-pressure.mjs',import.meta.url));
+ const prefix=path.join(f.root,'summary','pressure');
+ const invoke=(receipt)=>spawnSync(process.execPath,[script,f.file,f.root,prefix,...(receipt?['--comparability-receipt',receipt]:[])],{encoding:'utf8'});
+ assert.equal(invoke().status,1);assert.equal(JSON.parse(fs.readFileSync(prefix+'-status.json')).status,'MEASURED_CORE_COMPARABILITY_PENDING');
+ assert.equal(invoke(f.receiptFile).status,0);const value=JSON.parse(fs.readFileSync(prefix+'-status.json'));
+ assert.equal(value.passed,true);assert.deepEqual(value.evidence,{plan:'../plan.json',directory:'..',comparabilityReceipt:'../join/comparability.json'});
+ const moved=path.join(f.root,'copied-artifact');fs.mkdirSync(moved);
+ for(const name of ['plan.json','execution.json','join','c0','c1','c2','c3','c4','c5'])fs.cpSync(path.join(f.root,name),path.join(moved,name),{recursive:true});
+ assert.equal(comparePressure(path.join(moved,'plan.json'),moved,path.join(moved,'join','comparability.json')).passed,true);
+});

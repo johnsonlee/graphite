@@ -18,8 +18,8 @@ env:
   JAVA_TOOL_OPTIONS: -Xmx2g
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
-  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: df66c9ef10b8cf45b968dd85479008ee73dd5e7306acafe730a6e790bc7ab0b9
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 8d18f554e7da14d3af2170e4765f9c23c3eac14d24e844aa57d9b60e827f9b21
+  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 39c7983cb6390d39bfb8ad148a828ac0d7baa1f5c32055118b31aef198a81e81
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 102d8a01a0519210fc824f6ce83f2c3b5d59b9f80ca448f91f6b06557ea05431
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -31,16 +31,16 @@ env:
   WRAPPED_QUERY_SHAPE_CANDIDATE_CORPUS_SHA256: def30380a6a2393797037859b3c3d2cc375af80e7614dc583d6ce12a4021ccf2
   WRAPPED_QUERY_SHAPE_BASE_LATENCY_HARNESS_SHA256: 78ca6a23e8f5e86674296d9f878a828ad8892ed6e18fc616a9ecbcdf2d21c492
   WRAPPED_QUERY_SHAPE_CANDIDATE_LATENCY_HARNESS_SHA256: fbb2259cef6c84bb27e09debf7a2ca7d5dcb836215a3eb737bf56b4eb4f26b1c
-  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
-  BENCHMARK_REPORT_TRANSITION_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
-  RUST_DECLARED_TYPES_COMPARATOR_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
+  LARGE_CORPUS_SHAPE_COMPARATOR_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
+  BENCHMARK_REPORT_TRANSITION_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
+  RUST_DECLARED_TYPES_COMPARATOR_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
   RUST_LATENCY_TRANSITION_HARNESS_SHA256: 13149caa8207215dc3d7661d520beb8b13491a82693d356aeab64d0961095de4
   RUST_LATENCY_DIAGNOSTIC_METRICS_SHA256: 4575b0e5c67770585aeab17a05d3e3cb53e0ac92a79cdb6156787ce2ca221b88
   RUST_LATENCY_TRANSITION_SHAPES_SHA256: 8f343e92dc543c37d3827adf6fc402f90843127a0ffcc5b3a7dfbcebe13876cd
   RUST_LATENCY_TRANSITION_FIXTURE_SHA256: b3f0d2efb15e709c040869d19b12a60668b34b584d5b6ebcac34e52d771ef5e8
-  REAL_ONLY_LATENCY_COMPARATOR_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
-  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
-  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: b86ece2b9e3b4945771c7b78829af4314936547317b375016c857dec277788f7
+  REAL_ONLY_LATENCY_COMPARATOR_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
+  WRAPPED_QUERY_RESOURCE_COMPARATOR_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
+  LATENCY_POINT_ESTIMATE_COMPARATOR_SHA256: 566049c74222521a857b7dbfbff09b05c0c48c2abd7e1273a7715c2ec1a410ca
   REAL_ONLY_RESOURCE_HARNESS_SHA256: 67a9df7bc1b9615d16886e1e091b10bbf567bdbcb9cf499934f07a5ddcf3617f
   EXPLORER_LEGACY_HARNESS_SHA256: 91546b5cc6c1ad32739e0920ddbe7523e2081e28a20f704bd967818c7bab5e7e
   EXPLORER_TRANSITION_HARNESS_SHA256: 613771b6ccda3f9bdaffcf955ff209563dceb3d0a00977aa055d783460d7d220
@@ -64,6 +64,9 @@ jobs:
         ref: ${{ github.event.pull_request.head.sha }}
         path: candidate
         persist-credentials: false
+
+    - name: Smoke checkpoint producer-to-consumer handoff
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_checkpoint_smoke.py' -v
 
     - name: Test candidate benchmark gate logic
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
@@ -3289,9 +3292,125 @@ jobs:
           native-pressure-artifacts/${{ matrix.arm }}/jvm-raw-derivation/**
           native-pressure-artifacts/${{ matrix.arm }}/jvm-query-correctness/**
 
+  rust-query-native-measurement:
+    name: rust-query-native-measurement
+    needs: [candidate-gate-tests, rust-producer]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Checkout accepted baseline when distinct from PR base
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/checkout@v7
+      with:
+        ref: 4f2ccf33b969e684972e56b5e810034e6e67c1b3
+        path: accepted
+        persist-credentials: false
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Download producer checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/producer-producer
+
+    - name: Verify and restore exact checkpoint closure
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        PRODUCER=pressure-checkpoints/producer-producer/manifest.json
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore \
+          --stage producer --arm producer --directory "${PRODUCER%/manifest.json}" --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+    - name: Assemble audited native producer evidence
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        python3 candidate/.github/scripts/assemble_native_pressure_producers.py --measurement-only \
+          --artifacts native-pressure-artifacts \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output native-pressure-producers-measurement
+
+    - name: Prepare matched native continuous-pressure plan
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        code=0
+        python3 candidate/.github/scripts/prepare_native_pressure_plan.py --measurement-only \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --provenance benchmark-results/rust-provenance/provenance.json \
+          --fixture shared-fixture64/fixture64.complete.json \
+          --producers native-pressure-producers-measurement/packet.json \
+          --output benchmark-results/native-pressure-preparation || code=$?
+        cp benchmark-results/native-pressure-preparation/multigraph-native-query-status.json \
+          benchmark-results/multigraph-native-query-measurement-status.json
+        exit "${code}"
+
+    - name: Execute and audit matched native continuous pressure
+      continue-on-error: true
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 candidate/.github/scripts/run_prepared_native_pressure.py \
+          --preparation benchmark-results/native-pressure-preparation \
+          --output benchmark-results/native-pressure-cells \
+          --prefix benchmark-results/multigraph-native-query-measurement
+
+    - name: Upload native pressure results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: native-query-measurement-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          native-pressure-producers-measurement/**
+          benchmark-results/native-pressure-preparation/**
+          benchmark-results/native-pressure-cells/**
+          benchmark-results/multigraph-native-query-measurement*
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Require complete native measurement without claiming acceptance
+      if: always()
+      run: >-
+        jq -e '.status == "MEASURED_CORE_COMPARABILITY_PENDING" and .performanceAcceptance == false
+        and (.unissued | length == 0) and (.errors | length == 0) and (.cells | length == 6)
+        and all(.cells[]; .status == "PASS")' benchmark-results/native-pressure-cells/execution.json >/dev/null
+
   rust-query-native:
     name: rust-query-native
-    needs: [candidate-gate-tests, rust-producer, rust-core]
+    needs: [candidate-gate-tests, rust-producer, rust-core, rust-query-native-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
@@ -3378,27 +3497,13 @@ jobs:
           --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
           --output native-pressure-producers
 
-    - name: Prepare matched native continuous-pressure plan
-      continue-on-error: true
-      env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        set -euo pipefail
-        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
-        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
-        code=0
-        python3 candidate/.github/scripts/prepare_native_pressure_plan.py \
-          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
-          --provenance benchmark-results/rust-provenance/provenance.json \
-          --fixture shared-fixture64/fixture64.complete.json \
-          --producers native-pressure-producers/packet.json \
-          --output benchmark-results/native-pressure-preparation || code=$?
-        cp benchmark-results/native-pressure-preparation/multigraph-native-query-status.json \
-          benchmark-results/multigraph-native-query-status.json
-        exit "${code}"
+    - name: Download original native measurement
+      uses: actions/download-artifact@v8
+      with:
+        name: native-query-measurement-${{ github.run_id }}-${{ github.run_attempt }}
+        path: .
 
-    - name: Execute and audit matched native continuous pressure
+    - name: Join complete core proof with original native measurement
       continue-on-error: true
       run: |
         set -euo pipefail
@@ -3407,7 +3512,8 @@ jobs:
         python3 candidate/.github/scripts/run_prepared_native_pressure.py \
           --preparation benchmark-results/native-pressure-preparation \
           --output benchmark-results/native-pressure-cells \
-          --prefix benchmark-results/multigraph-native-query
+          --prefix benchmark-results/multigraph-native-query \
+          --finalize-producers native-pressure-producers/packet.json
 
     - name: Upload native pressure results
       if: always()
@@ -3418,6 +3524,7 @@ jobs:
           benchmark-results/native-pressure-preparation/**
           benchmark-results/native-pressure-cells/**
           benchmark-results/multigraph-native-query*
+          benchmark-results/multigraph-native-query-comparability-evidence/**
         if-no-files-found: warn
         retention-days: 14
 
@@ -4045,7 +4152,7 @@ jobs:
   rust-latency:
     name: rust-latency-gate
     if: always()
-    needs: [rust-producer, rust-core, rust-jvm-correctness, rust-query-native, rust-query-jvm, rust-query-legacy, rust-loading, rust-construction]
+    needs: [rust-producer, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm, rust-query-legacy, rust-loading, rust-construction]
     runs-on: ubuntu-latest
     steps:
     - name: Require every proof and complete operation cohort
@@ -4055,7 +4162,7 @@ jobs:
         python3 - <<'PYJOIN'
         import json, os
         results = json.loads(os.environ['STAGE_RESULTS'])
-        required = {'rust-producer', 'rust-core', 'rust-jvm-correctness', 'rust-query-native',
+        required = {'rust-producer', 'rust-core', 'rust-jvm-correctness', 'rust-query-native-measurement', 'rust-query-native',
                     'rust-query-jvm', 'rust-query-legacy', 'rust-loading', 'rust-construction'}
         assert set(results) == required, 'missing required stage'
         failures = {name: value['result'] for name, value in results.items() if value['result'] != 'success'}

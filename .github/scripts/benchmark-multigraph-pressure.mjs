@@ -8,6 +8,98 @@ const sha = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('
 const read = p => JSON.parse(fs.readFileSync(p,'utf8'));
 const same = (a,b) => JSON.stringify(a) === JSON.stringify(b);
 const finite = n => typeof n === 'number' && Number.isFinite(n) && n >= 0;
+const sorted = value => Array.isArray(value) ? value.map(sorted) : value && typeof value === 'object' ?
+    Object.fromEntries(Object.keys(value).sort().map(key => [key, sorted(value[key])])) : value;
+const equal = (a,b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
+
+// The Python finalizer replays the full raw proof. The portable report retains
+// its original metadata bytes so the aggregate can check the exact join again
+// without downloading graph/runtime payloads or changing the measured plan.
+function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inputs) {
+    const pending='pendingComparabilityAuthority' in plan || plan.comparabilityPending===true;
+    if (!pending) {require(!receiptFile,'Unexpected comparability receipt');return true;}
+    require(plan.engine==='native' && plan.comparabilityPending===true && plan.pendingComparabilityAuthority &&
+        !plan.correctedProducerAuthority && !plan.jvmProducerAuthority,'Explicit pending native comparability');
+    if (!receiptFile) return false;
+    const receipt=read(receiptFile), base=path.dirname(path.resolve(receiptFile));
+    inputs[path.resolve(receiptFile)]=sha(receiptFile);
+    require(receipt.schema==='graphite.native-pressure.core-comparability-join.v1' &&
+        receipt.status==='PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN' && receipt.coreComparabilityVerified===true &&
+        ['completeSemanticEquivalence','strictEquivalence','sourceToDeclarationCompletenessClaim',
+            'performanceAcceptance','otherOperationsEligible'].every(k=>receipt[k]===false),'Complete scoped core join');
+    require(receipt.plan?.sha256===sha(planFile) && equal(receipt.measurementProducer,plan.pendingComparabilityAuthority) &&
+        receipt.measurementInputsSha256===receipt.measurementProducer.sha256,
+        'Join must bind the original measured plan and producer');
+    const pinned=(ref,actual)=>{
+        require(ref && typeof ref.path==='string' && receipt.pins?.[ref.path]===ref.sha256 &&
+            sha(actual)===ref.sha256,'Join evidence hash or pin changed');
+        inputs[path.resolve(actual)]=ref.sha256;return read(actual);
+    };
+    pinned(receipt.plan,planFile);
+    require(Array.isArray(receipt.metadata) && new Set(receipt.metadata.map(r=>r.path)).size===receipt.metadata.length,
+        'Unique portable join metadata');
+    const metadata=ref=>{
+        const row=receipt.metadata.find(r=>r.path===ref?.path && r.sha256===ref.sha256);
+        require(row && typeof row.relativePath==='string' && !path.isAbsolute(row.relativePath),'Missing portable join metadata');
+        const target=path.resolve(base,row.relativePath);
+        require(target.startsWith(base+path.sep),'Join metadata escaped artifact root');
+        return pinned(ref,target);
+    };
+    const original=metadata(receipt.measurementProducer), corrected=metadata(receipt.correctedProducer);
+    require(original.measurementMode==='native39-before-core-v1' &&
+        original.status==='ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING' &&
+        corrected.status==='ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED' &&
+        equal(original.arms,corrected.arms) && equal(original.sourceInputs,corrected.sourceInputs) &&
+        equal(original.armDirectories,corrected.armDirectories) && equal(corrected.missingAuthority,[]) &&
+        equal(receipt.coreComparisons,corrected.correctedComparisons),'Same producer inputs and complete corrected core');
+    for (const arm of ['C','A','B']) {
+        require(['revision','sourceManifest','runtimeManifest','fixtureManifest','graphs','serverArgv','runtimeFiles'].every(
+            key=>equal(original.arms[arm][key],plan.arms[arm][key])),'Measured arm differs from joined producer');
+    }
+    const execution=pinned(receipt.measurementExecution,path.join(directory,'execution.json'));
+    require(execution.status==='MEASURED_CORE_COMPARABILITY_PENDING' && execution.performanceAcceptance===false &&
+        equal(execution.plan,receipt.plan) && equal(execution.errors,[]) && equal(execution.unissued,[]) &&
+        execution.cells.length===6 && execution.cells.every((c,i)=>c.id===plan.cells[i].id && c.status==='PASS'),
+        'Complete original pending measurement execution');
+    require(receipt.cells?.length===6,'Join requires all six original cells');
+    for (const [i,cell] of plan.cells.entries()) {
+        const row=receipt.cells[i];require(row.id===cell.id,'Join cell order');
+        for (const kind of ['result','audit']) {
+            require(row[kind].path===path.join(path.dirname(receipt.measurementExecution.path),cell.id,kind+'.json'),
+                'Original cell evidence path');
+            pinned(row[kind],path.join(directory,cell.id,kind+'.json'));
+        }
+    }
+    const alias=['revision','sourceManifest','runtimeManifest','fixtureManifest','graphs'].every(
+        key=>equal(original.arms.A[key],original.arms.C[key]));
+    require(equal(Object.keys(receipt.coreComparisons).sort(),alias?['B']:['A','B']),'Every nonaccepted arm needs core proof');
+    for (const [arm,comparison] of Object.entries(receipt.coreComparisons)) {
+        const audit=metadata(comparison.audit), record=metadata(audit.record), corePlan=metadata(record.plan);
+        const revisions={C:plan.arms.C.revision,B:plan.arms[arm].revision};
+        const fixtures={C:plan.arms.C.fixtureManifest,B:plan.arms[arm].fixtureManifest};
+        require(audit.status==='PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT' &&
+            audit.completeCoreTopologyIndexComparison===true && audit.productionFormatterTestsVerified===true &&
+            audit.phases===139 && audit.graphs?.length===64 &&
+            equal(audit.revisions,revisions) && equal(audit.fixtureManifests,fixtures) &&
+            equal(comparison.revisions,revisions) && equal(comparison.fixtureManifests,fixtures) &&
+            equal(corePlan.revisions,revisions) && equal(corePlan.fixtureManifests,fixtures) &&
+            corePlan.maxOwnedPhases===139 && corePlan.graphs?.length===64 && record.phases?.length===139,
+            'Matching successful complete core execution');
+        require(record.status==='PASS_ALL64_CORE_WITH_EXPLICIT_TYPE_OVERLOAD_SYNTHETIC_INHERITED_FIELD_CORRECTIONS_TOPOLOGY_INDICES_ADDITIVE_DECLARATION_VALIDITY' &&
+            equal(record.errors,[]) && record.finalIdentity==='PASS' &&
+            new Set(record.phases.map(p=>p.path)).size===139 &&
+            [audit.graphs,record.graphs,corePlan.graphs].every(rows=>equal(rows?.map(g=>g.id),plan.arms.C.graphs.map(g=>g.id))),
+            'Complete core graph inventory and clean final identity');
+        require(audit.pins?.[audit.record.path]===audit.record.sha256 &&
+            audit.pins?.[record.plan.path]===record.plan.sha256,'Core metadata closure');
+        for (const phaseRef of record.phases) {
+            const phase=metadata(phaseRef);
+            require(audit.pins?.[phaseRef.path]===phaseRef.sha256 && phase.status==='PASS' && phase.exit===0 &&
+                equal(phase.errors,[]),'Every recorded core phase succeeded');
+        }
+    }
+    return true;
+}
 export function resourceBound(baseLower,baseUpper,candidateLower,candidateUpper) {
     require([baseLower,baseUpper,candidateLower,candidateUpper].every(finite) &&
         baseLower <= baseUpper && candidateLower <= candidateUpper,'Invalid resource interval');
@@ -30,7 +122,7 @@ export function requestStatistics(stage,cases) {
         return [c.id,{n:20,sampleIds:rows.map(r=>r.sequence),p50Ns:sorted[9],p95Ns:sorted[18]}];
     }));
 }
-export function comparePressure(planFile,directory) {
+export function comparePressure(planFile,directory,comparabilityReceipt=null) {
     const plan=read(planFile), planSha256=sha(planFile);
     require(plan.schema==='graphite.multigraph-pressure.plan.v1' && plan.operation==='query' && ['native','jvm'].includes(plan.engine),'Plan schema');
     require(same(plan.cells.map(c=>c.arm),['C','A','B','B','A','C']) && new Set(plan.cells.map(c=>c.id)).size===6,'Fixed CABBAC');
@@ -38,6 +130,7 @@ export function comparePressure(planFile,directory) {
     require(plan.schedule.concurrency===4 && plan.schedule.warmupPerCase===2 && plan.schedule.measuredPerCase===20,'Fixed sampling');
     require(plan.cases.length>0 && plan.cases.every(c=>new Set(c.targetGraphIds).size>1),'Actual multi-graph request scopes');
     const inputs={[path.resolve(planFile)]:planSha256};
+    const comparabilityVerified=verifyComparabilityJoin(planFile,directory,plan,comparabilityReceipt,inputs);
     const cells=plan.cells.map(cell=>{
         const root=path.join(directory,cell.id), resultFile=path.join(root,'result.json'), auditFile=path.join(root,'audit.json');
         const result=read(resultFile),audit=read(auditFile);
@@ -78,16 +171,20 @@ export function comparePressure(planFile,directory) {
     const accepted= comparisons.filter(c=>c.kind==='acceptedBaseline');
     const measuredConstraintsPassed=accepted.every(c=>c.cases.every(k=>k.p50Passed&&k.p95Passed)&&c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0);
     return {schema:'graphite.multigraph-pressure.comparison.v1',scope:'multi-graph-pressure',engine:plan.engine,operation:'query',
-        planSha256,passed:coverageComplete&&measuredConstraintsPassed,status:!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
+        planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
+        status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
+        ...('pendingComparabilityAuthority' in plan?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         otherOperationsEligible:false,limitation:'Two fixed directions; no pooling, quiet-host or saturation claim. Lifecycle RSS bounds may leave query RSS indeterminate.'};
 }
 function main(argv) {
-    const [plan,dir,prefix]=argv;
+    const [plan,dir,prefix,flag,receipt]=argv;
     require(plan&&dir&&prefix,'plan.json cell-directory output-prefix');
+    require(argv.length===3 || (argv.length===5 && flag==='--comparability-receipt' && receipt),'Optional --comparability-receipt file');
     let result;
-    try {result=comparePressure(plan,dir);result.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir)};} catch(e) {result={schema:'graphite.multigraph-pressure.comparison.v1',passed:false,status:'FAIL',errors:[e.message]};}
+    try {result=comparePressure(plan,dir,receipt);result.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir),
+        ...(receipt?{comparabilityReceipt:path.relative(path.dirname(prefix),receipt)}:{})};} catch(e) {result={schema:'graphite.multigraph-pressure.comparison.v1',passed:false,status:'FAIL',errors:[e.message]};}
     fs.mkdirSync(path.dirname(prefix),{recursive:true});
     fs.writeFileSync(prefix+'-status.json',JSON.stringify(result,null,2)+'\n');
     const lines=['### Multi-graph continuous c4 pressure','',result.status,''];
