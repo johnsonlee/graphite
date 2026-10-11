@@ -271,8 +271,10 @@ class CorrectedComparisonTests(unittest.TestCase):
             'phases':139,'graphs':receipts,'pins':dict(self.pins),**{k:0 for k in core.COUNTS}}
         self.path = self.root/'proof/audit.json';self.path.write_text(json.dumps(self.audit))
         self.packet = {'arms':arms,'pins':{}}
-        self.audit_mock = patch.object(core,'audit',side_effect=lambda _:copy.deepcopy(self.audit))
+        self.audit_mock = patch.object(core,'audit_consumable',side_effect=lambda _:copy.deepcopy(self.audit))
         self.replayed = self.audit_mock.start();self.addCleanup(self.audit_mock.stop)
+        full = patch.object(core, 'audit', side_effect=AssertionError('consumer must use bound shard audit API'))
+        full.start(); self.addCleanup(full.stop)
         no_child = patch('subprocess.Popen',side_effect=AssertionError('no child'))
         no_child.start();self.addCleanup(no_child.stop)
 
@@ -291,6 +293,12 @@ class CorrectedComparisonTests(unittest.TestCase):
         self.assertEqual({k:0 for k in self.core.COUNTS},result['correctionCounts'])
         self.assertEqual(bundle.common.sha(self.path),self.packet['pins'][str(self.path)])
         self.assertTrue(all(self.audit[k] is False for k in self.core.FALSE_CLAIMS))
+
+    def test_failed_bound_shard_audit_cannot_be_promoted_by_saved_pass(self):
+        self.replayed.side_effect = ValueError('sealed shard output changed')
+        with self.assertRaisesRegex(ValueError, 'sealed shard output changed'):
+            self.check()
+        self.assertEqual({}, self.packet['pins'])
 
     def test_forged_audit_status_cannot_bypass_actual_replay(self):
         self.path.write_text(json.dumps(dict(self.audit,phases=129)))
@@ -327,19 +335,25 @@ class CorrectedComparisonTests(unittest.TestCase):
         self.repin(Path(ref['path']),record);self.audit['record']=bundle.artifacts.ref(ref['path']);self.audit['phases']=129
         with self.assertRaisesRegex(ValueError,'actual raw Local phases'):self.check()
 
-    def test_raw_conflict_incomplete_inventory_or_rebound_export_never_qualifies(self):
-        path=self.root/'proof/graphs/g00/core/raw-local-type-proof.json';original=bundle.common.read(path)
-        original_audit=copy.deepcopy(self.audit)
-        changes=[lambda r:r.update(unprovedCount=1),lambda r:r.update(completeNodeInventory=False),
-                 lambda r:r.update(typedAllocationCount=1),
-                 lambda r:r['occurrences'][0].update(status='PASS_TYPED_ALLOCATION'),
-                 lambda r:r['occurrences'][0].update(issues=['typed allocation requires creation-order proof']),
-                 lambda r:r['inputs'].clear(),lambda r:r['occurrences'][0].update(graphId='other')]
-        for change in changes:
-            self.audit=copy.deepcopy(original_audit);value=copy.deepcopy(original);change(value)
-            self.repin(path,value)
-            self.audit['graphs'][0]['files'][str(path)]=bundle.common.sha(path)
-            with self.subTest(change=change),self.assertRaises(ValueError):self.check()
+    def test_changed_or_unbound_raw_proof_never_qualifies(self):
+        path = self.root/'proof/graphs/g00/core/raw-local-type-proof.json'
+        original = path.read_bytes(); original_audit = copy.deepcopy(self.audit)
+        for change in ('bytes', 'missing-pin', 'receipt-digest'):
+            self.audit = copy.deepcopy(original_audit); path.write_bytes(original)
+            if change == 'bytes': path.write_bytes(b'changed after independent audit')
+            elif change == 'missing-pin': self.audit['pins'].pop(str(path))
+            else: self.audit['graphs'][0]['files'][str(path)] = '0'*64
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'audited raw Local proof'):
+                self.check()
+
+    def test_consumption_does_not_parse_already_audited_local_occurrences(self):
+        read = bundle.common.read
+        def metadata_only(path):
+            if Path(path).name == 'raw-local-type-proof.json':
+                raise AssertionError('independent worker already parsed these occurrences')
+            return read(path)
+        with patch.object(bundle.common, 'read', side_effect=metadata_only):
+            self.assertEqual(64, len(self.check()['rawArrayProofs']))
 
 
 class CorrectedPlanTests(unittest.TestCase):

@@ -256,6 +256,26 @@ class LifecycleTests(unittest.TestCase):
                 'inputPins':self.plan['pins'],'actual':row['B'],'reference':row['C'],**counts,
                 'fieldCorrectionCount':1 if self.bad_count else 0})
 
+    def test_raw_local_scope_and_claims_are_part_of_independent_graph_audit(self):
+        second=self.root/'second-input';second.write_text('second exact raw export')
+        self.plan['pins'][str(second)]=r.common.sha(second);r.execute(self.plan)
+        plan={**self.plan,'rawLocalExports':[]};row=plan['graphs'][0]
+        path=self.out/'graphs'/row['id']/'core/raw-local-type-proof.json'
+        report={'status':'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE','completeNodeInventory':True,'unprovedCount':0,
+                'strictEquivalence':False,'completeSemanticEquivalence':False,'performanceAcceptance':False,
+                'localCount':1,'arrayCount':0,'occurrences':[{'graphId':row['id'],'status':'NON_ARRAY','issues':[],
+                'savedType':'java.lang.Object','arms':{arm:{'occurrences':[],'typedAllocations':[]} for arm in ('C','B')}}],
+                'inputs':dict(self.plan['pins'])}
+        exports={arm:{'path':name,'sha256':digest} for arm,(name,digest) in zip(('C','B'),report['inputs'].items())}
+        with patch.object(r.raw_local_export,'binding',return_value={'exports':exports}):
+            path.write_text(json.dumps(report));self.assertEqual(row['id'],r.graph_result(plan,row)['id'])
+            changes=[lambda v:v.update(strictEquivalence=True),lambda v:v.update(completeSemanticEquivalence=True),
+                     lambda v:v.update(performanceAcceptance=True),lambda v:v['occurrences'][0].update(graphId='foreign'),
+                     lambda v:v['inputs'].pop(str(second))]
+            for change in changes:
+                value=copy.deepcopy(report);change(value);path.write_text(json.dumps(value))
+                with self.assertRaisesRegex(ValueError,'graph-scoped raw Local proof'):r.graph_result(plan,row)
+
     def test_complete_sequential129_phases_and_independent_raw_audit(self):
         record=r.execute(self.plan);self.assertEqual(r.PASS,record['status']);self.assertEqual(129,len(self.calls))
         audit=r.audit(self.out);self.assertEqual(r.AUDIT_PASS,audit['status']);self.assertEqual(64,len(audit['graphs']))
@@ -520,7 +540,7 @@ class ShardLifecycleTests(unittest.TestCase):
     def test_join_final_audit_failure_cannot_leave_pass_record(self):
         r.prepare(self.plan)
         for index in range(8):self.worker(index,8)
-        with patch.object(r,'audit',side_effect=ValueError('final independent audit rejected')):
+        with patch.object(r,'audit_shards',side_effect=ValueError('final independent audit rejected')):
             with self.assertRaisesRegex(ValueError,'independent audit'):r.join_shards(self.out,8)
         record=r.common.read(self.out/'record.json')
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
@@ -530,16 +550,18 @@ class ShardLifecycleTests(unittest.TestCase):
         r.prepare(self.plan)
         for index in range(8):self.worker(index,8)
 
-    def test_join_validates_each_raw_graph_once_and_audit_only_revalidates_all(self):
+    def test_join_consumes_worker_audits_and_audit_only_revalidates_all(self):
         self.prepared_workers()
         original=r.graph_result
         with patch.object(r,'graph_result',wraps=original) as checked:
             result=r.join_shards(self.out,8)
             self.assertEqual(r.PASS,result['status'])
-            self.assertEqual([row['id'] for row in self.plan['graphs']],
-                             [call.args[1]['id'] for call in checked.call_args_list])
-            checked.reset_mock()
+            checked.assert_not_called()
+            completed=r.common.read(self.out/'audit.json')
+            self.assertEqual(completed,r.audit_consumable(self.out))
+            checked.assert_not_called()
             audited=r.audit(self.out)
+            self.assertEqual(completed,audited)
             self.assertEqual(r.AUDIT_PASS,audited['status'])
             self.assertEqual([row['id'] for row in self.plan['graphs']],
                              [call.args[1]['id'] for call in checked.call_args_list])
@@ -564,7 +586,7 @@ class ShardLifecycleTests(unittest.TestCase):
         shard_path=self.out/'shards/0/record.json';shard=r.common.read(shard_path)
         row=shard['graphs'][0];row['topology']=r.artifacts.ref(path);row['files'][str(path)]=r.common.sha(path)
         shard_path.write_text(json.dumps(shard))
-        with self.assertRaisesRegex(ValueError,'proof identity'):r.join_shards(self.out,8)
+        with self.assertRaisesRegex(ValueError,'independent shard audit'):r.join_shards(self.out,8)
         record=r.common.read(self.out/'record.json')
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
         self.assertIn('join audit',record['errors'][0]);self.assertFalse((self.out/'audit.json').exists())
@@ -590,9 +612,38 @@ class ShardLifecycleTests(unittest.TestCase):
     def test_join_rejects_graph_claim_count_drift_in_final_raw_audit(self):
         self.prepared_workers();path=self.out/'shards/0/record.json';value=r.common.read(path)
         value['graphs'][0][r.COUNTS[0]]+=1;path.write_text(json.dumps(value))
-        with self.assertRaisesRegex(ValueError,'all raw completed graph proofs'):r.join_shards(self.out,8)
+        with self.assertRaisesRegex(ValueError,'independent shard audit'):r.join_shards(self.out,8)
         record=r.common.read(self.out/'record.json')
         self.assertEqual('FAIL',record['status']);self.assertFalse((self.out/'audit.json').exists())
+
+    def test_independent_worker_audit_failure_cannot_publish_success(self):
+        r.prepare(self.plan)
+        with patch.object(r,'audit_shard',side_effect=ValueError('independent semantics rejected')):
+            with self.assertRaisesRegex(ValueError,'independent semantics'):self.worker(0,8)
+        record=r.common.read(self.out/'shards/0/record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertFalse((self.out/'shards/0/audit.json').exists())
+
+    def test_missing_or_changed_independent_audit_cannot_be_consumed(self):
+        self.prepared_workers();path=self.out/'shards/0/audit.json';original=r.common.read(path)
+        changes=[lambda v:v.update(status='FAIL'),lambda v:v.update(shardIndex=1),
+                 lambda v:v['checker'].update(sha256='a'*64),lambda v:v['graphs'].pop(),
+                 lambda v:v['pins'].pop(str(self.f.input))]
+        for change in [None,*changes]:
+            with self.subTest(change=change):
+                if change is None:path.unlink()
+                else:
+                    value=copy.deepcopy(original);change(value);path.write_text(json.dumps(value))
+                with self.assertRaises((FileNotFoundError,ValueError)):r.join_shards(self.out,8)
+                self.assertEqual('FAIL',r.common.read(self.out/'record.json')['status'])
+                self.assertFalse((self.out/'audit.json').exists())
+                (self.out/'record.json').unlink();path.write_text(json.dumps(original))
+
+    def test_extra_file_after_worker_audit_cannot_escape_closed_output_inventory(self):
+        self.prepared_workers();(self.out/'graphs/fixture-00/extra.txt').write_text('unexpected output')
+        with self.assertRaisesRegex(ValueError,'closed audited shard graph files'):r.join_shards(self.out,8)
+        self.assertEqual('FAIL',r.common.read(self.out/'record.json')['status'])
+        self.assertFalse((self.out/'audit.json').exists())
 
     def test_cli_routes_prepare_worker_join_without_reexecuting_sequential_proof(self):
         with (patch.object(r,'bind',return_value=self.plan),patch.object(r,'prepare',return_value={'status':r.PREPARATION_PASS}) as prepare,

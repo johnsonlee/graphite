@@ -143,7 +143,7 @@ def corrected_comparison(packet, arm_id, path):
     """Rebind the actual complete pair; no partial upstream claim is promoted."""
     import run_native_core_equivalence as core
     ref = artifacts.ref(path)
-    actual = core.audit(path.parent)
+    actual = core.audit_consumable(path.parent)
     require(common.typed(common.read(path)) == common.typed(actual), 'raw complete comparison audit changed')
     require(actual['schema'] == 'graphite.native-core-equivalence-audit.v1' and
             actual['status'] == core.AUDIT_PASS and actual['completeCoreTopologyIndexComparison'] is True and
@@ -165,20 +165,11 @@ def corrected_comparison(packet, arm_id, path):
     for c, b, row, receipt in zip(arms['C']['graphs'], arms[arm_id]['graphs'], plan['graphs'], actual['graphs']):
         require(row['C'] == c['path'] and row['B'] == b['path'], 'comparison actual graph roots')
         raw = artifacts.ref(path.parent / 'graphs' / row['id'] / 'core/raw-local-type-proof.json')
-        report = common.pinned_authority_metadata(actual, raw)
-        require(report['status'] == 'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and
-                report['completeNodeInventory'] is True and report['unprovedCount'] == 0 and
-                report['strictEquivalence'] is report['completeSemanticEquivalence'] is
-                report['performanceAcceptance'] is False, 'complete scoped raw array authority')
-        require(report['localCount'] == len(report['occurrences']) and
-                report['arrayCount'] == sum(r['status'] == 'PASS_ARRAY' for r in report['occurrences']) and
-                report.get('typedAllocationCount',0) == sum(r['status'] == 'PASS_TYPED_ALLOCATION' for r in report['occurrences']) and
-                all(r['graphId'] == row['id'] and r['status'] in ('PASS_ARRAY', 'PASS_TYPED_ALLOCATION', 'NON_ARRAY') and
-                    r['issues'] == [] for r in report['occurrences']), 'no missing conflicting or unproved raw locals')
-        require(len(report['inputs']) == 2 and all(actual['pins'].get(p) == h for p, h in report['inputs'].items()),
-                'both actual raw export input closure')
-        require(all(actual['pins'].get(p) == h for p,h in report.get('sourceCreationInputs',{}).items()),
-                'actual raw Local creation source closure')
+        # The independent graph/shard auditor checks every occurrence and its
+        # source linkage. Consume only that exact byte closure here; rereading
+        # the complete Local transcript at every downstream handoff repeats it.
+        require(actual['pins'].get(raw['path']) == raw['sha256'] and
+                receipt['files'].get(raw['path']) == raw['sha256'], 'exact audited raw Local proof')
         require(all(actual['pins'].get(p) == h for p, h in receipt['files'].items()), 'complete raw graph proof closure')
         raw_refs.append(raw)
     for name in ('C', arm_id):

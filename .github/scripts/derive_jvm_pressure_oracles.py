@@ -32,11 +32,11 @@ require = common.require
 
 
 def bind(producer_root, core_root, arm, output):
-    """Replay upstream once, before either per-graph traversal, never per graph."""
+    """Verify exact upstream closure once; consume completed shard audits when available."""
     require(arm in ('C', 'B'), 'actual core reference/actual arm required')
     root, proof, out = (Path(p).resolve() for p in (producer_root, core_root, output))
     stored = common.read(proof/'audit.json')
-    audited = core.audit(proof)
+    audited = core.audit_consumable(proof)
     require(common.typed(stored) == common.typed(audited), 'core audit differs from actual owned evidence')
     require(audited['status'] == core.AUDIT_PASS and audited['completeCoreTopologyIndexComparison'] is True,
             'complete original core/topology execution evidence')

@@ -88,8 +88,10 @@ class DeriveProtocolTests(unittest.TestCase):
         self.pins[str(writer)] = p.common.sha(writer)
         self.writer = str(writer)
         self.make_upstream()
-        self.audit = patch.object(p.core, 'audit', side_effect=lambda root: copy.deepcopy(self.audited))
+        self.audit = patch.object(p.core, 'audit_consumable', side_effect=lambda root: copy.deepcopy(self.audited))
         self.audit_mock = self.audit.start(); self.addCleanup(self.audit.stop)
+        full = patch.object(p.core, 'audit', side_effect=AssertionError('consumer must use bound shard audit API'))
+        full.start(); self.addCleanup(full.stop)
 
     def save(self, path, value):
         path.parent.mkdir(parents=True, exist_ok=True); write_json(path, value)

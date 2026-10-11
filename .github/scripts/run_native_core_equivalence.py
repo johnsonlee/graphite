@@ -244,6 +244,9 @@ def graph_result(plan,row):
         expected=raw_local_export.binding(plan,row)
         report=common.read(root/'core/raw-local-type-proof.json')
         require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
+        require(all(report[k] is False for k in ('strictEquivalence','completeSemanticEquivalence','performanceAcceptance')) and
+                all(item['graphId']==row['id'] for item in report['occurrences']) and len(report['inputs'])==2,
+                'graph-scoped raw Local proof and claim limits')
         require(report['localCount']==len(report['occurrences']) and
                 report['arrayCount']==sum(r['status']=='PASS_ARRAY' for r in report['occurrences']) and
                 report.get('typedAllocationCount',0)==sum(r['status']=='PASS_TYPED_ALLOCATION' for r in report['occurrences']) and
@@ -316,6 +319,7 @@ def execute(plan):
 
 PREPARATION_PASS='PASS_CORE_PREPARATION_ONLY'
 SHARD_PASS='PASS_CORE_SHARD_ONLY'
+SHARD_AUDIT_PASS='PASS_COMPLETE_ASSIGNED_CORE_AUDIT'
 
 
 def shard_execution(count):
@@ -459,30 +463,84 @@ def run_shard(output,index,count):
     require(not graphs.is_symlink() and (not graphs.exists() or graphs.is_dir()),'real worker graph directory required')
     graphs.mkdir(exist_ok=True)
     directory=out/'shards'/str(index);directory.mkdir(parents=True,exist_ok=False)
-    return execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows)
+    record=execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows)
+    if record['status']==SHARD_PASS:
+        try:common.save(directory/'audit.json',audit_shard(plan,index))
+        except BaseException as error:
+            record['status']='FAIL';record['finalIdentity']='FAIL';record['errors'].append('independent shard audit: '+repr(error))
+            (directory/'record.json').write_text(json.dumps(record,indent=2)+'\n')
+            raise
+    return record
 
 
-def check_shard_receipts(plan):
+def check_shard_record(plan,index):
+    out=Path(plan['output']);count=plan['execution']['shardCount']
+    path=out/'shards'/str(index)/'record.json';record=common.read(path)
+    require(record['schema']=='graphite.native-core-shard.v1' and record['status']==SHARD_PASS and
+            record['errors']==[] and record['finalIdentity']=='PASS' and record['shardIndex']==index and
+            record['shardCount']==count and record['plan']==artifacts.ref(out/'plan.json') and
+            record['preparation']==artifacts.ref(out/'preparation.json') and all(record[k] is False for k in FALSE_CLAIMS),
+            'complete exact successful shard required')
+    checked_phases(plan,record['phases'],shard_commands(plan,index))
+    require([row['id'] for row in record['graphs']]==[row['id'] for row in shard_rows(plan,index)],
+            'exact assigned shard graph receipt inventory')
+    return record
+
+
+def check_shard_receipts(plan,preparation=None):
     """Validate the complete receipt partition without treating its graph claims as proof."""
-    out=Path(plan['output']);count=plan['execution']['shardCount'];check_preparation(plan)
+    out=Path(plan['output']);count=plan['execution']['shardCount']
+    if preparation is None:check_preparation(plan)
     require({p.name for p in (out/'shards').iterdir()}=={str(i) for i in range(count)},'closed complete shard receipt inventory')
-    records=[]
-    for index in range(count):
-        path=out/'shards'/str(index)/'record.json';record=common.read(path)
-        require(record['schema']=='graphite.native-core-shard.v1' and record['status']==SHARD_PASS and
-                record['errors']==[] and record['finalIdentity']=='PASS' and record['shardIndex']==index and
-                record['shardCount']==count and record['plan']==artifacts.ref(out/'plan.json') and
-                record['preparation']==artifacts.ref(out/'preparation.json') and all(record[k] is False for k in FALSE_CLAIMS),
-                'complete exact successful shard required')
-        checked_phases(plan,record['phases'],shard_commands(plan,index))
-        require([row['id'] for row in record['graphs']]==[row['id'] for row in shard_rows(plan,index)],
-                'exact assigned shard graph receipt inventory')
-        records.append(record)
-    return records
+    return [check_shard_record(plan,index) for index in range(count)]
 
 
-def check_shards(plan,complete_rows=None):
-    records=check_shard_receipts(plan)
+def shard_audit_document(plan,index,record,rows,preparation=None):
+    """Bind semantic results to every input, checker, phase and closed graph output."""
+    out=Path(plan['output']);pins=dict(plan['pins'])
+    merge_pins(pins,compiled(plan));merge_pins(pins,(check_preparation(plan) if preparation is None else preparation)['files'])
+    refs={'plan':artifacts.ref(out/'plan.json'),'preparation':artifacts.ref(out/'preparation.json'),
+          'record':artifacts.ref(out/'shards'/str(index)/'record.json'),'checker':artifacts.ref(Path(__file__).resolve())}
+    for ref in refs.values():merge_pins(pins,{ref['path']:ref['sha256']})
+    for name,_,_ in shard_commands(plan,index):
+        for leaf in ('record.json','owner.json','stdout.log','stderr.log'):
+            file=out/name/leaf;merge_pins(pins,{str(file):common.sha(file)})
+    for row in rows:
+        root=out/'graphs'/row['id']
+        require(root.is_dir() and not root.is_symlink(),'real audited graph output directory')
+        require(row['core']==artifacts.ref(root/'record.json') and row['topology']==artifacts.ref(root/'topology.json') and
+                row['files']==artifacts.inventory(root),'closed audited shard graph files')
+        merge_pins(pins,row['files'])
+    return {'schema':'graphite.native-core-shard-audit.v1','status':SHARD_AUDIT_PASS,'errors':[],
+            'finalIdentity':'PASS','shardIndex':index,'shardCount':plan['execution']['shardCount'],**refs,
+            'graphs':rows,'phases':record['phases'],'pins':pins,
+            'completeAssignedCoreTopologyIndexComparison':True,**{k:False for k in FALSE_CLAIMS}}
+
+
+def audit_shard(plan,index):
+    """Independently replay every assigned graph's semantics on its worker."""
+    require(common.typed(plan)==common.typed(rebind(plan)),'shard audit source/runtime/fixture identity')
+    check_preparation(plan);assigned=shard_rows(plan,index);check_worker_graphs(plan,assigned)
+    record=check_shard_record(plan,index)
+    rows=[graph_result(plan,row) for row in assigned]
+    require(rows==record['graphs'],'independent assigned shard graph proofs')
+    result=shard_audit_document(plan,index,record,rows)
+    artifacts.verify_pins(result['pins'])
+    return result
+
+
+def check_shard_audit(plan,index,record=None,verify_pins=True,preparation=None):
+    """Consume a worker's completed semantic audit only while its entire closure is unchanged."""
+    record=check_shard_record(plan,index) if record is None else record
+    out=Path(plan['output']);path=out/'shards'/str(index)/'audit.json';value=common.read(path)
+    expected=shard_audit_document(plan,index,record,record['graphs'],preparation)
+    require(common.typed(value)==common.typed(expected),'exact completed independent shard audit')
+    if verify_pins:artifacts.verify_pins(value['pins'])
+    return value
+
+
+def check_shards(plan,complete_rows=None,preparation=None):
+    records=check_shard_receipts(plan,preparation)
     for index,record in enumerate(records):
         expected=[graph_result(plan,row) for row in shard_rows(plan,index)] if complete_rows is None else [
             row for row in complete_rows if row['id'] in {r['id'] for r in shard_rows(plan,index)}]
@@ -509,10 +567,9 @@ def join_shards(output,count):
     try:
         # This record is a provisional summary; only the completed audit authorizes it.
         common.save(out/'record.json',record)
-        # Receipt graph claims above are provisional. Only the original full auditor
-        # validates all64 raw graph outputs, then compares them with every shard claim.
-        # All139 original argv, cleanup, topology, index and raw Local checks remain.
-        result=audit(out)
+        # Each worker independently audited its assigned raw graphs. Consume those
+        # exact sealed results; audit-only remains available for full semantic replay.
+        result=audit_shards(out)
         common.save(out/'audit.json',result)
     except BaseException as error:
         record['status']='FAIL';record['errors'].append('join audit: '+repr(error));record['finalIdentity']='FAIL'
@@ -532,7 +589,18 @@ def audit(output):
     return result
 
 
-def _audit(output):
+def audit_shards(output):
+    """Verify and compose all independent worker audits without repeating their semantics."""
+    return _audit(output,audited_shards=True)
+
+
+def audit_consumable(output):
+    """Use transported worker audits when present; preserve legacy full replay otherwise."""
+    plan=common.read(Path(output)/'plan.json')
+    return audit_shards(output) if 'execution' in plan else audit(output)
+
+
+def _audit(output,audited_shards=False):
     out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
     require(plan['output']==str(out) and record['schema']=='graphite.native-core-equivalence-record.v1' and
             record['status']==PASS and record['errors']==[] and record['finalIdentity']=='PASS' and
@@ -549,16 +617,29 @@ def _audit(output):
         for leaf in ('record.json','owner.json','stdout.log','stderr.log'):
             file=path.parent/leaf;merge_pins(pins,{str(file):common.sha(file)})
     require({p.name for p in (out/'graphs').iterdir()}=={r['id'] for r in plan['graphs']},'closed all64 proof inventory')
-    rows=[graph_result(plan,row) for row in plan['graphs']]
+    require(not audited_shards or 'execution' in plan,'independent shard audits require a sharded plan')
+    shard_audits=[]
+    if 'execution' in plan:
+        preparation=check_preparation(plan)
+        records=check_shard_receipts(plan,preparation)
+        shard_audits=[check_shard_audit(plan,index,value,verify_pins=False,preparation=preparation) for index,value in enumerate(records)]
+    if audited_shards:
+        by_id={row['id']:row for value in shard_audits for row in value['graphs']}
+        require(len(by_id)==64 and sum(len(value['graphs']) for value in shard_audits)==64,'all64 independently audited graphs exactly once')
+        rows=[by_id[row['id']] for row in plan['graphs']]
+    else:rows=[graph_result(plan,row) for row in plan['graphs']]
     require(rows==record['graphs'] and all(record[k]==sum(r[k] for r in rows) for k in COUNTS),'all raw completed graph proofs')
     if 'execution' in plan:
         shard_rows(plan,0)
-        check_shards(plan,rows)
+        check_shards(plan,rows,preparation)
         sharding={'preparation':artifacts.ref(out/'preparation.json'),
                   'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(plan['execution']['shardCount'])]}
         require(record.get('sharding')==sharding,'complete original shard receipt linkage')
         for ref in [sharding['preparation'],*sharding['shards']]:merge_pins(pins,{ref['path']:ref['sha256']})
-        merge_pins(pins,check_preparation(plan)['files'])
+        merge_pins(pins,preparation['files'])
+        for index,value in enumerate(shard_audits):
+            ref=artifacts.ref(out/'shards'/str(index)/'audit.json')
+            merge_pins(pins,{ref['path']:ref['sha256']});merge_pins(pins,value['pins'])
     else:require('sharding' not in record,'undeclared sharding proof')
     for row in rows:merge_pins(pins,row['files'])
     for leaf in ('plan.json','record.json'):merge_pins(pins,{str(out/leaf):common.sha(out/leaf)})
