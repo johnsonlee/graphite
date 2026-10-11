@@ -18570,3 +18570,35 @@ run for this transport change, no hosted net saving is established, and all
 previously recorded product correctness/performance gaps remain open. Extra
 archive, transfer, restore and final-consumer costs must be included in the
 replacement's full critical-path estimate before launching it.
+
+### Attempt238 — run independent producer arms concurrently (2026-10-12)
+
+Parent:804c8011. Wire the verified237 transport into the actual workflow:
+common inputs, then concurrent C/B (plus A only for a distinct parent), then
+fixed merge under the existing rust-producer job and artifact name. Preserve
+the original common base/candidate cargo builds and provenance. The complete
+produce-arm function is byte-identical, including independent writer builds,
+saved64 graphs, artifact audit, Native query correctness/audit and C string
+export. All jobs from rust-core-prepare onward remain byte-identical. Keep
+fail-fast false so one arm failure does not erase another arm's diagnostics.
+
+Four tests pass in2.033s. They exercise the actual shell dispatch for all five
+valid revision/arm combinations and pass the workflow's actual named-download
+paths into real tiny ZIP common/arm/merge/old-consumer roundtrips for both
+two-arm alias and three-arm distinct-parent cases. These fixtures establish
+handoff correctness only. Actionlint structure and whitespace pass; full
+actionlint has the same five existing shellcheck findings as the parent, with
+no new findings. Root reviewed the patch and preserved237's smoke registration.
+Evidence:`/tmp/graphite-producer-dag-split-review-1/summary.json` and
+`/tmp/graphite-producer-dag-split-review-1/workflow-tests.log`.
+
+This changes the hosted DAG but has not run on GitHub. Original common work
+remains5m16; the old sequential own-writer stage is33m05. Its ideal two-arm
+overlap can save at most16m32.5 before extra common/arm sealing, downloads,
+restoration and merge. Complete producer sealing previously took4m07. Do not
+equate concurrent jobs with a measured net saving or claim a two-hour complete
+run. After producer, measured core preparation39m58, slowest shard45m51 and
+join28m50 still total114m39, before final consumers and aggregation. Complete
+JVM pressure/final-consumer duration remains unknown because earlier failures
+prevented execution. Retain the verified DAG change for a future budgeted run;
+do not supersede current finalizers for this unmeasured change alone.
