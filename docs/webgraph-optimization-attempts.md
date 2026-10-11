@@ -19120,3 +19120,45 @@ Retain this scoped same-invocation reuse. No current full64 JVM oracle, hosted
 CI duration reduction, query p50/p95 or resource acceptance follows from these
 contract tests; remaining measurement startup repetition and product regressions
 still require work. Call graph: `/tmp/graphite-attempt247-jvm-replay-callgraph.json`.
+
+
+### Attempt249 — bounded Native loading attribution (2026-10-12)
+
+No product change. Reuse the exact attempt245 Native runtime/source (66180a8a,
+144 source files, binary SHA256
+335a802a4d1217e54ecabec866d84a2136257e3c09cbd025c841cda825a1a06d),
+and the original acd11 GTY05 real64 graphs on macOS arm64. This is a zero-query
+loading diagnostic, not a baseline comparison or performance acceptance. The
+attempt247 query-only optimization is absent from this frozen runtime.
+
+Run `python3 -B /tmp/graphite-native64-loading-stack-prep-1/execute.py execute`
+with a declared 180s total execution budget, including 30s cleanup reserve;
+preparation is separate. Only sampler hooks change the original loading runner;
+the independent loading auditor is byte-identical. Capture three 2s stack
+windows at +2/+8/+14s, verifying process identity. All three are wholly before
+readiness; no query is issued. Cross-readiness windows would be retained but
+excluded from loading attribution. Execution and independent audit complete in
+60.604s. All five owned process groups are empty, with no forced cleanup.
+
+The instrumented loading observation is 21268.637ms, CPU bounds 21.30–21.34s,
+and RSS bounds 6620921856–6621708288 bytes. Sampling, uncontrolled host/cache,
+single candidate and macOS prevent interpreting these as Linux regression
+recovery. Root separately verifies 1,305 raw evidence pins (3,250,531 bytes),
+all sample digests, process identities and readiness boundaries; no unchanged
+full graph hashing is repeated.
+
+Full callers, rather than SHA leaf names alone, identify 946 of 979 SHA stack
+residency counts under the existing GraphRegistry::load → fingerprint_of →
+digest_file path. Type metadata/file bindings account for 15/5 counts, verified
+shared-string binding 9, and existing callsite integrity 4. These are sampled
+residency counts, not CPU percentages or whole-load seconds. The existing
+fingerprint also reads added graph.types bytes, so its old code does not imply
+zero feature overhead. BVGraph decoding, CSR construction and type validation
+also appear. This evidence does not attribute the hosted loading CPU regression
+to SHA or authorize removing any integrity check.
+
+Retain the diagnostic evidence; make no product or acceptance claim. Loading
+CPU regression remains open, and query/build/save performance is unmeasured by
+this run. Evidence: `/tmp/graphite-native64-loading-stack-prep-1/` containing
+`execution.json`, `audit.json`, `root-result-review.json`,
+`root-loading-attribution.json` and the original three stack reports.
