@@ -16738,3 +16738,48 @@ No push or active-run cancellation is performed. Reports and raw logs:
 `/tmp/graphite-jar-directory-prototype-report.json`,
 `/tmp/graphite-jar-directory-final-tests.log`, and
 `/tmp/graphite-feedback-core-tests.log`.
+
+
+### Attempt207 — validate raw Local exports once at their CLI consumer (2026-10-11)
+
+**Hypothesis.** check_graph first used binding() to fully load both raw Local
+exports and discard the parsed maps, then Authority loaded them again. Its fixed
+CLI path can bind provenance and actual byte fingerprints first and let the existing
+Authority perform the only complete load before node comparison. Independent public
+binding() callers retain their complete validation and serializable output.
+
+Base: `0eda65bc1d7fc989672f8949af12ab2991df54fd` (Attempt206); candidate: this
+commit on `codex/ci-feedback-reuse`. Target: current7d hosted accepted4f/candidate
+corrected-core proof,64 real JAR graph pairs across four corpora. Per graph pair,
+raw parsing falls from four loads to two (one per actual writer), with no change
+to the required full graph/node/topology coverage. Worker-wide independent audits
+and terminal verification remain unchanged. No hosted timing has been measured.
+
+The first local design carried parsed maps through an opaque, single-use object;
+121 relevant tests passed in13.814s. Parent review rejected that unnecessary
+ownership/API complexity and earlier map retention. The final implementation only
+extracts the private identity-binding helper and changes one CLI call. Original
+raw_local_types, core_semantics and worker code are byte-identical to the base.
+The rejected carrier patch/report are preserved at
+`/tmp/graphite-raw-local-reuse-prototype-carrier-rejected.patch` and
+`/tmp/graphite-raw-local-reuse-prototype-carrier-rejected-report.json`.
+
+Correctness:119 relevant CLI/raw-local/core/runner tests passed in13.630s. Tests
+exercise real main, execute, prove and Authority while stubbing unrelated source
+helpers and final node traversal; they are not a complete real-graph proof. They
+confirm one load per arm, identical raw Local reports, unchanged public binding,
+and rejection of malformed raw JSON or file drift before node comparison and
+before a completed graph record can be written. After integration, the complete
+native core test package passed291 tests. Initial provenance/ref fingerprints,
+consumer SHA and all raw parsing checks, per-node Local checks and final actual
+input fingerprints remain intact. Earlier declaration/property files on failure
+remain partial evidence, never a successful graph result.
+
+**Decision: retain the smaller local CI repair.** Hosted end-to-end time,CPU,RSS
+and query p50/p95 are not measured; construction/loading acceptance is unaffected.
+No server performance improvement, full acceptance or two-hour workflow recovery
+is claimed. No push or restart supersedes the live7d run. Controls and workflow
+pins include the new CLI test. Evidence:
+`/tmp/graphite-raw-local-reuse-prototype-report.json`,
+`/tmp/graphite-raw-local-reuse-simplified-tests.log`, and
+`/tmp/graphite-feedback-raw-core-tests.log`.

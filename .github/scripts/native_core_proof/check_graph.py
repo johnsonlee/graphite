@@ -84,6 +84,6 @@ def main():
     row=rows[0]
     execute(Path(row['B']),Path(row['C']),Path(row['BExport']['stringsExport']['path']).parent,
             Path(row['CExport']['stringsExport']['path']).parent,Path(plan['output'])/'graphs'/row['id'],
-            row['BExport'],row['fieldAuthority'],plan['sourceRule'],raw_local_export.binding(plan,row) if 'rawLocalExports' in plan else None)
+            row['BExport'],row['fieldAuthority'],plan['sourceRule'],raw_local_export._binding_identity(plan,row) if 'rawLocalExports' in plan else None)
 
 if __name__=='__main__':main()

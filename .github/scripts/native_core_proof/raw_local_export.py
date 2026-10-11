@@ -46,7 +46,8 @@ def commands(plan):
               row['corpus'], row['sourceJar'], row['provenance'], str(out/'raw-locals'/name)], 3600
 
 
-def binding(plan, row):
+def _binding_identity(plan, row):
+    """Bind provenance and bytes; the CLI consumer must still fully load both exports."""
     exports = {}
     identity = None
     for arm in ('C', 'B'):
@@ -63,9 +64,15 @@ def binding(plan, row):
         identity = current
         path = Path(plan['output'])/'raw-locals'/('raw-'+arm+'-'+corpus)/(row['id']+'.jsonl')
         ref = {'path': str(path.resolve()), 'sha256': sha(path)}
-        load(ref, row['id'], *identity)
         exports[arm] = ref
     return {'graphId': row['id'], 'shardBytecodeSha256': identity[0], 'classCount': identity[1], 'exports': exports}
+
+
+def binding(plan, row):
+    spec = _binding_identity(plan, row)
+    for ref in spec['exports'].values():
+        load(ref, spec['graphId'], spec['shardBytecodeSha256'], spec['classCount'])
+    return spec
 
 
 def phase_java(plan, name):
