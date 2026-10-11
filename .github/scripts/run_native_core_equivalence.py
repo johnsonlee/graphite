@@ -542,10 +542,44 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
 def prepare(plan):
     shard_rows(plan,0)
     require(common.typed(plan)==common.typed(rebind(plan)),'preparation plan differs from actual pair')
+    return _prepare_outputs(plan)
+
+
+def _prepare_outputs(plan):
     out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False)
     for name in ('classes','graphs','shards'):(out/name).mkdir()
     common.save(out/'plan.json',plan)
     return execute_stage(plan,preparation_commands(plan),out/'preparation.json')
+
+
+def _prepare_fresh(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=None):
+    """Bind CLI inputs once; the terminal stage still performs a full rebind."""
+    plan=bind(reference,actual,output,raw_locals,raw_edges,shard_count)
+    progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
+    shard_rows(plan,0)
+    progress('preparation-inputs','start',boundary='before-execution')
+    identity=common.typed(plan);before=_worker_input_closure(plan)
+    artifacts.verify_pins(plan['pins'])
+    require(common.typed(plan)==identity and _worker_input_closure(plan)==before,
+            'fresh preparation inputs changed before execution')
+    progress('preparation-inputs','complete',boundary='before-execution')
+    # No skip flag or worker authority reaches execute_stage: its final full
+    # semantic replay remains independent of this newly bound CLI invocation.
+    record=_prepare_outputs(plan)
+    try:
+        progress('preparation-inputs','start',boundary='after-execution')
+        path=Path(plan['output'])/'plan.json'
+        require(not path.is_symlink() and common.typed(plan)==identity and
+                common.typed(common.read(path))==identity and record['plan']==artifacts.ref(path),
+                'fresh preparation plan changed')
+        artifacts.verify_pins(plan['pins'])
+        require(_worker_input_closure(plan)==before,'fresh preparation input closure changed')
+        progress('preparation-inputs','complete',boundary='after-execution')
+    except BaseException as error:
+        record['status']='FAIL';record['finalIdentity']='FAIL'
+        record['errors'].append('fresh preparation final verification: '+repr(error))
+        (Path(output)/'preparation.json').write_text(json.dumps(record,indent=2)+'\n')
+    return record
 
 
 def run_shard(output,index,count):
@@ -779,10 +813,12 @@ def main():
             require(args.reference and args.actual,'actual producer pair required')
             progress('binding','start')
             require(args.prepare_only or args.shard_count is None,'shard count requires preparation or worker mode')
-            if args.prepare_only:shard_execution(args.shard_count)
+            if args.prepare_only:
+                shard_execution(args.shard_count)
+                return 0 if _prepare_fresh(args.reference,args.actual,args.output,args.raw_local_types,
+                    args.raw_edges,args.shard_count)['status']==PREPARATION_PASS else 1
             plan=bind(args.reference,args.actual,args.output,args.raw_local_types,args.raw_edges,args.shard_count)
             progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
-            if args.prepare_only:return 0 if prepare(plan)['status']==PREPARATION_PASS else 1
             if execute(plan)['status']!=PASS:return 1
         common.save(args.output/'audit.json',audit(args.output));return 0
     except BaseException as error:

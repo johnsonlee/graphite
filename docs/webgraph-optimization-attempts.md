@@ -17345,3 +17345,74 @@ in this boundary only. Evidence: `/tmp/graphite-worker-chain-read-counts.json`,
 
 **Decision: retain locally.** Hosted CI has not exercised this change; no
 end-to-end speedup or cumulative product regression recovery is claimed.
+
+### Attempt218 — avoid rebinding a just-bound preparation plan (2026-10-11)
+
+Current03f core preparation completed successfully in35m44s, including24m48s
+for the preparation command and4m42s to seal its checkpoint. Its completed log
+shows initial binding from12:15:54.656 to12:21:09.056UTC, followed by another
+386.045s before the first phase starts. Code inspection identifies the immediate
+`main.bind -> prepare.rebind` repetition within that latter window. The window
+also includes other boundary work, so it is not a promised saving. All11
+preparation phases completed; their observed log window is435.344s, not a CPU
+measurement, and GitHub timestamp batching prevents treating each logged delta
+as an exact per-phase runtime.
+
+Hypothesis: the CLI can execute the plan it has just constructed through the
+real binder without rebuilding the same complete semantic authority immediately
+again. A private preparation entry must create its own plan, accept no caller
+plan or skip flag, freshly verify pinned contents and the source/configuration,
+runtime, graph and upstream directory inventories before execution, and retain
+the existing terminal complete rebind. Standalone `prepare(plan)`, audit and
+worker paths retain their original independent replay behavior. Additional final
+plan and input-closure checks must fail the owned receipt if anything changes.
+The pre-execution snapshot alone cannot authorize the terminal result.
+
+Parent:bbdb6f9c; accepted baseline:4f2ccf3. Product code, all64 graph proofs,
+the11 preparation phases, Native39/JVM35 six-cell pressure, independent audit,
+query p50/p95, CPU/RSS and construction/loading acceptance constraints remain
+unchanged. The extra fresh boundary checks have their own cost; only hosted
+timing can establish a net improvement. No single-graph or synthetic performance
+measurement is introduced.
+
+Current preparation evidence: `/tmp/graphite-ci03f4dd-core-prepare.log` and
+`/tmp/graphite-ci03f4dd-core-prepare-summary.json`. Published checkpoint11703425125
+is845977420 bytes with SHA256
+`f70aa65c6e6d041cf00dd38465725958d184f73ed1549b613d814fc3383493da`;
+the upload log and exact-head artifact metadata agree. The archive was not
+downloaded again. This establishes preparation/transport completion, not full
+core equivalence or performance acceptance. All eight current core workers
+started after this checkpoint was published.
+
+The implementation changes only the core runner and its tests, plus control
+pins/workflow binding. The fresh CLI entry constructs its own plan, validates
+the live input closure twice around fresh pin verification, and shares output
+initialization with standalone preparation. The existing `execute_stage`
+terminal full rebind is unchanged; no cached worker authority is passed to it.
+An additional terminal check protects the plan object, saved plan and closed
+inputs. Its failure overwrites the owned preparation receipt with FAIL. Review
+caught and corrected an initial exclusive-save call that could otherwise have
+failed to overwrite an existing receipt; the final tests verify the failed
+receipt on disk. Diagnostic-only before/after input-check events make their
+additional hosted cost visible.
+
+Verification:70 runner tests and6 worker-input tests passed. Four new test
+groups use real tiny files and Git source inventories with the existing owned
+phase fixture. They verify one initial bind plus one terminal replay, unchanged
+standalone two-replay behavior and identical successful public plan/receipts;
+source/input changes, added directories, changed in-memory/on-disk plans,
+prepared helper mutation, phase failure and terminal replay failure are rejected.
+The independent reviewer also ran the four new groups successfully; those
+overlap the70-test suite and are not counted again. All217 Node gate tests,
+actionlint with shellcheck disabled,185 file pins, both workflow bindings and
+diff checks passed.
+
+Evidence: `/tmp/graphite-fresh-preparation-{runner,worker}-tests.log`,
+`/tmp/graphite-fresh-preparation-independent-review-tests.log`,
+`/tmp/graphite-fresh-preparation-node-tests.log` and
+`/tmp/graphite-fresh-preparation-control-verification.json`.
+
+**Decision: retain locally.** The active03f run continues because replacement
+still requires fresh fixture/producer/preparation work before the same downstream
+core/JVM path. No fixed hash-read reduction, hosted speedup, two-hour bound or
+product performance recovery is inferred from this control-flow change.
