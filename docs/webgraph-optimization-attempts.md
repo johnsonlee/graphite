@@ -19429,3 +19429,34 @@ product performance or hosted CI acceptance is claimed. Evidence:
 /tmp/graphite-producer-replay-posthash-fixed-probe.json,
 /tmp/graphite-producer-replay-boundary-result.json and
 /tmp/graphite-producer-replay-boundary-root-review.json.
+
+### Attempt256 — recognize reviewed current JVM source before expensive work (2026-10-12)
+
+Parent:2b1bd926. A real source inventory check finds three retained JVM loading
+optimizations absent from the oracle applicability profile: DeclaredTypeStrings
+(232), DeclaredTypeStore (234/241) and ErasedDeclaredTypes (241). The old hashes
+exactly match the original patch preimages. Review the actual patches and retained
+381/384-test receipts: per-load text caching, local ByteBuffer reuse and immutable
+erased-shape caching preserve validation, rendering, void placement, depth/cycle
+checks and release before publication. No request or oracle rule changes.
+
+Preserve the complete accepted4f and declared5a profiles. Add a separate complete
+optimized-declared24af profile with only these three reviewed overrides and
+reviewedAt=24af8a59c27ddadc76c4759bfd0d5a1688b7e988. Unknown additions/removals,
+build changes, source/runtime drift and accepted-baseline identity still fail.
+A new test hashes actual git-tracked relevant source/build files rather than
+constructing its positive inventory from the expected profile. All166 actual
+files match; changed, removed, added and dependency-changed inventories fail.
+The source-rule step is now the first candidate check after checkout, before
+smoke and the remaining suites. Missing checkout/source evidence cannot skip it.
+
+All13 source-rule tests pass in0.435s process under120s in the isolated checkout;
+193 preparation pins and workflow binding pass. Root and independent review
+confirm historical profiles unchanged and the exact three optimized byte hashes.
+The cached241 JAR has the same166 relevant input bytes and closed inventory as
+current JVM production source, but retains its actual630e62da plus241patch build
+provenance. No new build, current-writer authority, HTTP correctness or performance
+acceptance is inferred from source equivalence. Retain the fast applicability fix.
+Evidence: /tmp/graphite-attempt256-source-profile-checks.json,
+/tmp/graphite-current-jvm-source-profile-review-after253.json and
+/tmp/graphite-current-jvm-reader-reuse-after253.json.

@@ -188,6 +188,18 @@ SOURCE_BYTES = {
     'settings.gradle.kts': ('77177fcc30a91e87a3dda17102347b05da95b0ea9a9f998f7f39b197c2de6052', '77177fcc30a91e87a3dda17102347b05da95b0ea9a9f998f7f39b197c2de6052'),
 }
 REVIEWED_AT = {'accepted4f': '4f2ccf33b969e684972e56b5e810034e6e67c1b3', 'declared5a': '5a2b7efafccd20a61b8eadd640176e912922fb3f'}
+# Complete immutable-reader profile reviewed after attempts 232, 234 and 241.
+# These loading-only caches/buffer reuse preserve validation and declared-property
+# rendering; both caches are released before publication. Historical profiles stay exact.
+REVIEWED_AT['optimized-declared24af'] = '24af8a59c27ddadc76c4759bfd0d5a1688b7e988'
+OPTIMIZED_DECLARED_OVERRIDES = {
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStore.kt':
+        '13abbe13fb7c74183f0a7beba9d76c29003b484cf84cd92f7ab012aaddab4777',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStrings.kt':
+        '19114b782bd2d0f8cfa53e19b43eaaa3666b3e9291555012737468bb5bf4bdba',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ErasedDeclaredTypes.kt':
+        'a3e716ad1f7a1d07134f8ff393ae5ab77f7de2f5e2e93ec4d7b248d19477938e',
+}
 REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '26e928d64c45d68bacf2add2d9d5aca2bee07570ad905de3c1d4a7ba05cc3136', 'jvm_pressure_derivation.py': 'a4b0e19d63789df4238fd64a8becb942b00a34edf4ef91d8cbbe948a4879d038', 'jvm_pressure_distinct.py': 'a1ba8f530183f7c3be706333257ae4c58ebc02e57b7c174e261435a665dbbc63', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
 REQUEST_CONTRACT_SHA = '5da64e89009f4702d5f55b23e75def8561636841a605fb940dab24d93ba023d4'
 
@@ -253,8 +265,10 @@ def relevant_source(path):
 
 
 def profiles():
-    return {name: {path: hashes[index] for path, hashes in SOURCE_BYTES.items() if hashes[index] is not None}
-            for index, name in enumerate(REVIEWED_AT)}
+    result = {name: {path: hashes[index] for path, hashes in SOURCE_BYTES.items() if hashes[index] is not None}
+              for index, name in enumerate(('accepted4f', 'declared5a'))}
+    result['optimized-declared24af'] = {**result['declared5a'], **OPTIMIZED_DECLARED_OVERRIDES}
+    return result
 
 
 def recognized(source, pins):

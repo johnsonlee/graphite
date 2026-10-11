@@ -1,6 +1,7 @@
 """Small applicability metadata/phase tests; not upstream execution authority."""
 import copy
 import json
+import subprocess
 from pathlib import Path
 import tempfile
 import unittest
@@ -73,6 +74,26 @@ class SourceRuleTests(unittest.TestCase):
             self.assertEqual(64, len(case['requestedGraphIds']))
             self.assertEqual(2 if case['id'].startswith('routing-') or case['id'].endswith(('-full', '-properties')) else 64, len(case['targetGraphIds']))
 
+    def test_optimized_profile_keeps_review_identity_and_all35_rules(self):
+        plan = self.fixture('optimized-declared24af', revision='b'*40)
+        result = p.audit(plan)
+        self.assertEqual('optimized-declared24af', result['profile'])
+        self.assertEqual('24af8a59c27ddadc76c4759bfd0d5a1688b7e988', result['reviewedAt'])
+        self.assertEqual('b'*40, result['revision'])
+        self.assertEqual(35, len(result['requestContracts']))
+        self.assertEqual(set(p.RULES)|{'closed-runtime-source-and-build-dependencies'},
+                         {rule['id'] for rule in result['rules']})
+        self.assertFalse(result['oracleAuthorityVerified'])
+        self.assertFalse(result['fresh64Acceptance'])
+        self.assertFalse(result['performanceAcceptance'])
+        old = p.profiles()['declared5a']; optimized = p.profiles()['optimized-declared24af']
+        self.assertEqual(set(old), set(optimized))
+        self.assertEqual(set(p.OPTIMIZED_DECLARED_OVERRIDES),
+                         {name for name in old if old[name] != optimized[name]})
+        optimized.clear()
+        self.assertEqual(old, p.profiles()['declared5a'])
+        self.assertTrue(p.profiles()['optimized-declared24af'])
+
     def test_accepted4f_requires_explicit_absent_declared_files(self):
         plan = self.fixture('accepted4f', 'accepted-baseline'); result = p.audit(plan)
         self.assertEqual('accepted4f', result['profile'])
@@ -132,9 +153,40 @@ class SourceRuleTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'oracle rule implementation'): p.audit(plan)
 
     def test_baseline_role_cannot_claim_new_revision_or_candidate_source(self):
-        for profile, revision in (('accepted4f', 'b'*40), ('declared5a', p.REVIEWED_AT['accepted4f'])):
+        for profile, revision in (('accepted4f', 'b'*40), ('declared5a', p.REVIEWED_AT['accepted4f']),
+                                  ('optimized-declared24af', p.REVIEWED_AT['accepted4f'])):
             plan = self.fixture(profile, 'accepted-baseline', revision)
             with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, 'accepted baseline'): p.audit(plan)
+
+
+class CurrentTrackedSourceTests(unittest.TestCase):
+    """Fail early on actual checkout/profile drift, without building or reading graphs."""
+
+    @classmethod
+    def setUpClass(cls):
+        cls.checkout = Path(__file__).resolve().parents[2]
+        tracked = subprocess.check_output(['git', '-C', str(cls.checkout), 'ls-files', '-z']).decode().split('\0')
+        cls.sources = {str(cls.checkout/name): p.common.sha(cls.checkout/name)
+                       for name in tracked if name and p.relevant_source(name)}
+        if not cls.sources:
+            raise AssertionError('actual tracked JVM source inventory is empty')
+
+    def test_current_tracked_source_matches_reviewed_complete_profile(self):
+        profile, sources = p.recognized({'root': str(self.checkout), 'files': self.sources}, self.sources)
+        self.assertEqual('optimized-declared24af', profile)
+        self.assertEqual(166, len(sources))
+
+    def test_actual_inventory_changes_removal_addition_and_dependency_change_fail(self):
+        for change in ('changed', 'removed', 'added', 'dependency'):
+            pins = dict(self.sources)
+            existing = str(self.checkout/p.kt('webgraph', 'webgraph', 'DeclaredTypeStore'))
+            if change == 'removed': pins.pop(existing)
+            elif change == 'changed': pins[existing] = 'f'*64
+            elif change == 'added':
+                pins[str(self.checkout/'frontend/jvm/query/src/main/kotlin/UnreviewedRuntime.kt')] = 'f'*64
+            else: pins[str(self.checkout/'gradle/libs.versions.toml')] = 'f'*64
+            with self.subTest(change=change), self.assertRaisesRegex(ValueError, 'unrecognized closed'):
+                p.recognized({'root': str(self.checkout), 'files': pins}, pins)
 
 
 if __name__ == '__main__': unittest.main()
