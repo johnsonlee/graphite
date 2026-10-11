@@ -18632,3 +18632,40 @@ performance measurement. All30 module tests pass in0.342s:
 `/tmp/graphite-native-loading-prefix-contracts.log`. Root reviewed the exact
 write destinations, patch and preserved-input assertions. Retain the fix;
 the failed hosted91 result is unchanged and complete final replay remains due.
+
+### Attempt240 — share the finalizer's producer replay within one call (2026-10-12)
+
+Parent:40beaf8b. Native finalization previously verified the corrected producer
+bundle, then immediately assembled the original measurement-only bundle by
+replaying the same producers and39-case raw audits again. Assemble the common
+producer evidence once, retain its original pending packet, deep-copy it before
+adding the complete corrected core comparisons, and strictly match the supplied
+corrected packet. The returned packets share no mutable state. Preserve the old
+late producer byte/source/configuration/closed-directory boundary: check every
+overlapping producer pin against immutable pending pins, freshly verify remaining
+pending bytes and each producer closure. Do not add a redundant full core-byte
+scan. The original core audit and finalizer's terminal merged union remain.
+
+Standalone assembly and verification keep their original formats and complete
+replay. The separate workflow assembly CLI, artifact-download boundary, six
+original cell audits and all acceptance constraints remain unchanged. There is
+no caller-supplied skip flag or reusable authority. The optimization affects only
+two adjacent operations in the same finalizer call; do not subtract the entire
+observed9m54 external assembly stage from the CI budget.
+
+The two complete affected modules pass71 tests in180.161s, including seven new
+tests for both standalone packet equivalences, one replay per distinct C/A/B,
+alias handling, mutable isolation, same-size/restored-mtime raw/source/control
+drift, directory/source membership, conflicting pins, missing core and altered
+corrected input. Tiny fixtures retain real disk/hash/closure checks; external
+semantic proof composition uses existing tested boundaries. Evidence:
+`/tmp/graphite-attempt240-tests-final.log`. The initial run's23 stale-control-pin
+rejections remain in`/tmp/graphite-attempt240-tests.log`. Its2.180s early failure
+was not a valid duration estimate for the full PASS path; future module budgets
+must use the actual roughly three minutes. Root reviewed the replay boundaries,
+tests and fresh checks. Python parsing and whitespace checks pass.
+
+Preparation control193-file manifest SHA256:
+d6b4aacaf7507072675668a9c6d7d25e1d3125b8f46741718c632421e520e93f.
+Retain the reduced same-process semantic replay; no real-data timing was run
+for this change and no hosted net saving or product recovery is claimed.

@@ -274,10 +274,9 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
             import jvm_pressure_join as jvm_join
             corrected,current=jvm_join.verify(pressure.read(producers))
         else:
-            corrected = bundle.verify_bundle(pressure.read(producers), plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+            corrected,current = bundle.verify_finalization_pair(pressure.read(producers),
+                                                                plan['arms']['A']['revision'], plan['arms']['B']['revision'])
             bundle.corrected_fixture_bindings(corrected)
-            current = bundle.assemble(corrected['artifactsRoot'], corrected['baseRevision'],
-                                      corrected['candidateRevision'], measurement_only=True)
         pressure.require(pressure.typed(current) == pressure.typed(pending) and
                          pressure.typed(corrected['arms']) == pressure.typed(pending['arms']) and
                          all(corrected['pins'].get(p) == h for p, h in pending['pins'].items()),

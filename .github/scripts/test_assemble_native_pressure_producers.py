@@ -232,6 +232,101 @@ class BundleAssemblyTests(unittest.TestCase):
         self.assertFalse((args.output / 'plan.json').exists())
 
 
+class FinalizationPairTests(unittest.TestCase):
+    """Real byte/closure checks around the independently tested proof producers."""
+    def setUp(self):
+        fixture=AuditedArmTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        self.fixture=fixture;self.f=fixture.fixture.fixture
+        self.arm,self.pins,self.identity=fixture.read_arm()
+        composition=BundleAssemblyTests();composition.setUp();self.addCleanup(composition.doCleanups)
+        self.composition=composition;self.root=composition.root
+        self.base=composition.base;self.candidate=composition.candidate
+        self.control=self.root/'helper-control.py';self.control.write_text('original control')
+        self.pins[str(self.control)]=bundle.common.sha(self.control)
+        self.core=self.root/'B/core-equivalence/audit.json';self.core.parent.mkdir(parents=True)
+        self.core.write_text('{"proof":"independently audited"}')
+        self.mutate=lambda:None
+        def arm(root,revision,role,inputs):
+            return dict(copy.deepcopy(self.arm),revision=revision,artifactRole=role),dict(self.pins),self.identity
+        def comparison(packet,name,path):
+            ref=bundle.artifacts.ref(path)
+            bundle.merge_pins(packet['pins'],{ref['path']:ref['sha256']})
+            self.mutate()
+            return {'audit':ref,'arm':name}
+        def start(patcher):
+            value=patcher.start();self.addCleanup(patcher.stop);return value
+        self.arm_mock=start(patch.object(bundle,'audited_arm',side_effect=arm))
+        start(patch.object(bundle,'corrected_comparison',side_effect=comparison))
+        start(patch.object(bundle.artifacts,'source_inventory',return_value=self.f.source))
+        self.corrected=bundle.assemble(self.root,self.base,self.candidate)
+        self.pending=bundle.assemble(self.root,self.base,self.candidate,measurement_only=True)
+        self.arm_mock.reset_mock()
+
+    def pair(self):
+        return bundle.verify_finalization_pair(self.corrected,self.base,self.candidate)
+
+    def test_pair_equals_both_standalone_packets_and_replays_each_distinct_arm_once(self):
+        corrected,pending=self.pair()
+        self.assertEqual(self.corrected,corrected);self.assertEqual(self.pending,pending)
+        self.assertEqual(['C','B'],[c.args[0].name for c in self.arm_mock.call_args_list])
+        self.assertEqual(pending['arms']['A']['revision'],pending['arms']['C']['revision'])
+        self.assertNotIn(str(self.core),pending['pins'])
+        corrected['pins'].clear();corrected['arms']['C']['cases'].clear()
+        self.assertEqual(self.pending,pending)
+
+    def test_distinct_parent_has_own_replay_and_corrected_proof(self):
+        self.base='a'*40;self.composition.base=self.base
+        self.composition.directories({'C':'C','A':'A','B':'B'})
+        path=self.root/'A/core-equivalence/audit.json';path.parent.mkdir(parents=True)
+        path.write_bytes(self.core.read_bytes())
+        self.corrected=bundle.assemble(self.root,self.base,self.candidate)
+        self.pending=bundle.assemble(self.root,self.base,self.candidate,measurement_only=True)
+        self.arm_mock.reset_mock()
+        corrected,pending=self.pair()
+        self.assertEqual(self.corrected,corrected);self.assertEqual(self.pending,pending)
+        self.assertEqual(['C','A','B'],[c.args[0].name for c in self.arm_mock.call_args_list])
+
+    def test_final_boundary_rejects_same_size_raw_source_and_control_drift(self):
+        import os
+        paths=[Path(self.arm['cases'][0]['observed']['body']['path']),
+               Path(next(iter(self.f.source))),self.control]
+        for path in paths:
+            with self.subTest(path=path):
+                before=path.read_bytes();stat=path.stat()
+                def mutate():
+                    path.write_bytes(bytes([before[0]^1])+before[1:])
+                    os.utime(path,ns=(stat.st_atime_ns,stat.st_mtime_ns))
+                self.mutate=mutate
+                try:
+                    with self.assertRaises(ValueError):self.pair()
+                finally:path.write_bytes(before);self.mutate=lambda:None
+
+    def test_final_boundary_rejects_directory_membership_change(self):
+        extra=self.fixture.root/'runtime/unexpected'
+        self.mutate=lambda:extra.write_text('unlisted')
+        with self.assertRaisesRegex(ValueError,'inventory membership'):self.pair()
+
+    def test_final_boundary_rejects_source_inventory_change(self):
+        def mutate():
+            bundle.artifacts.source_inventory.return_value=dict(self.f.source,untracked='a'*64)
+        self.mutate=mutate
+        with self.assertRaisesRegex(ValueError,'source inventory changed'):self.pair()
+
+    def test_conflicting_core_pin_and_missing_core_cannot_authorize_pair(self):
+        def conflicting(packet,name,path):
+            bundle.merge_pins(packet['pins'],{str(self.control):'f'*64})
+        with patch.object(bundle,'corrected_comparison',side_effect=conflicting):
+            with self.assertRaisesRegex(ValueError,'conflicting evidence pin'):self.pair()
+        self.core.unlink()
+        with self.assertRaisesRegex(ValueError,'differs from current raw evidence'):self.pair()
+
+    def test_wrong_corrected_packet_is_rejected_without_mutating_caller(self):
+        self.corrected['arms']['B']['revision']='e'*40
+        frozen=copy.deepcopy(self.corrected)
+        with self.assertRaisesRegex(ValueError,'differs from current raw evidence'):self.pair()
+        self.assertEqual(frozen,self.corrected)
+
+
 class CorrectedComparisonTests(unittest.TestCase):
     """Only the existing upstream execution auditor is stubbed; all new joins are real."""
     def setUp(self):

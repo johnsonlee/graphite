@@ -6,6 +6,7 @@ plan or performance pass. Missing cross-arm semantic authority remains explicit.
 No compiler, writer, server or query is launched here.
 """
 import argparse
+import copy
 from pathlib import Path
 import re
 import sys
@@ -129,6 +130,12 @@ def assemble(artifacts_root, base_sha, candidate_sha, *, measurement_only=False)
         # original per-arm evidence, never silently upgrade its authority.
         packet['measurementMode'] = MEASUREMENT_MODE
         return packet
+    return _with_corrected_comparisons(packet)
+
+
+def _with_corrected_comparisons(packet):
+    root=Path(packet['artifactsRoot'])
+    expected=common.pinned_authority_metadata(packet,packet['armDirectories'])['directories']
     required = [name for name in ('A', 'B') if expected[name] != 'C']
     paths = {name: root / expected[name] / 'core-equivalence/audit.json' for name in required}
     if all(path.is_file() for path in paths.values()):
@@ -189,6 +196,40 @@ def verify_bundle(packet, base_sha, candidate_sha):
     actual = assemble(packet['artifactsRoot'], base_sha, candidate_sha)
     require(common.typed(packet) == common.typed(actual), 'producer bundle differs from current raw evidence')
     return actual
+
+
+def verify_finalization_pair(packet, base_sha, candidate_sha):
+    """Replay shared raw producers once, then close a fresh corrected/pending pair.
+
+    No caller supplies an authority or bypass. Both returned values have isolated
+    mutable state and preserve the standalone packet formats exactly.
+    """
+    require(packet['schema']==SCHEMA and packet['baseRevision']==base_sha and
+            packet['candidateRevision']==candidate_sha and packet['status']==CORRECTED_STATUS,
+            'actual corrected producer bundle identity')
+    expected=common.typed(packet)
+    pending=assemble(packet['artifactsRoot'],base_sha,candidate_sha,measurement_only=True)
+    snapshots={}
+    for arm in pending['arms'].values():
+        ref=arm['artifactAudit']
+        if ref['path'] not in snapshots:
+            report=common.pinned_authority_metadata(pending,ref)
+            snapshots[ref['path']]=(report,artifacts._ProducerReplayContext._inventories(report))
+    corrected=copy.deepcopy(pending)
+    del corrected['measurementMode']
+    _with_corrected_comparisons(corrected)
+    require(common.typed(corrected)==expected,'producer bundle differs from current raw evidence')
+    # The eliminated second Native39 replay also supplied a late byte/inventory
+    # boundary. Preserve that boundary without decoding those same responses again.
+    remaining=dict(pending['pins'])
+    for report,closure in snapshots.values():
+        for path,digest in report['pins'].items():
+            if path in pending['pins']:
+                require(pending['pins'][path]==digest,'conflicting finalization producer pin')
+                remaining.pop(path,None)
+    artifacts.verify_pins(remaining)
+    for report,closure in snapshots.values():artifacts._ProducerReplayContext._check(report,closure)
+    return corrected,pending
 
 
 def verify_measurement_bundle(packet, base_sha, candidate_sha):

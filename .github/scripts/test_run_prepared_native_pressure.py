@@ -305,6 +305,10 @@ class Finalization(unittest.TestCase):
                 self.assertEqual({'measurement_only':True},kwargs)
                 return dict(pending,arms={}) if mode=='different-producer' else pending
             stack.enter_context(patch.object(bundle,'assemble',side_effect=reassemble))
+            def verify_pair(*args):
+                actual=verify(*args)
+                return actual,reassemble(measurement_only=True)
+            stack.enter_context(patch.object(bundle,'verify_finalization_pair',side_effect=verify_pair))
             def compare(command,**kwargs):
                 is_loading=Path(command[1]).name=='benchmark-native-loading.mjs'
                 events.append(('loading-compare' if is_loading else 'compare',None));self.assertEqual('--comparability-receipt',command[-2])
