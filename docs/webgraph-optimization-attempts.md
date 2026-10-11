@@ -18483,3 +18483,46 @@ were skipped after their earlier failures. Retain those failures. Evidence:
 `/tmp/graphite-ci91ee70-core-completed-timings.json`. The PR body now distinguishes
 successful core verification from still-pending measurement-to-core finalization
 and the still-failing operation constraints. No final acceptance is claimed.
+
+### Attempt236 — prepare independent producer-arm transport (2026-10-12)
+
+Parent:630e62da. Current91's serial own-writer generation/audit step takes33m05;
+the original accepted C production alone takes12m36. Independent C/B jobs are
+a plausible way to remove a whole arm's serial wait. They cannot simply reuse
+or relabel the complete producer checkpoint: it binds both arms, source roots,
+the exact run/head/base, environment and tools. Its approximately2.94GB payload
+also means extra sealing/transfer/restore may consume parallel savings. Preserve
+same-run original producer provenance and the final same-runner six-cell
+performance cohort. Do not introduce cross-run cache acceptance or claim a net
+saving from dividing33m05 by two. Design review:
+`/tmp/graphite-producer-prefix-parallel-cache-review.md`.
+
+Add only the first transport building block: producer-arm seal/restore selects
+one original C/B/distinct-A evidence root and its transitive pinned dependencies.
+Keep exact run/source/environment identity, existing entry collection, archive
+checks and independent final byte/closure checks. Require the packet's original
+revision/role, reject foreign-arm payload/dependencies, and reject an aliased A
+when A equals accepted C. A producer-arm checkpoint cannot be restored as the
+complete producer stage. All authority/acceptance flags remain false. The current
+producer DAG is not switched; common-input distribution and complete-arm merge
+still need implementation and end-to-end handoff validation before enabling it.
+
+Six new correctness tests pass in0.997s, including actual CLI seal→ZIP→restore
+for B and seal/restore for C and distinct A. Verify original bytes, dependencies,
+executable mode and absent paths, and reject wrong role/run, changed original
+source/runtime bytes, injected foreign-arm destinations and a partial checkpoint
+presented as complete. Existing checkpoint47 tests pass in13.249s; handoff and
+restore-chain17 tests pass in26.062s. The new test module is actually invoked by
+candidate-gate-tests, as well as pinned in the preparation control manifest.
+Root reviewed the implementation/tests and independently checked all12+191
+control pins, workflow bindings and diff whitespace. Actionlint without
+shellcheck passes. No performance measurement or hosted speedup is claimed.
+Logs:`/tmp/graphite-producer-arm-focused-final.log`,
+`/tmp/graphite-producer-arm-checkpoint-tests.log`,
+`/tmp/graphite-producer-arm-handoff-tests.log`.
+
+Preparation control SHA256:
+118fda6097100ba85d661bbdacd130b76bcdb3a32022a9b364c31cc09be1b88f.
+Retain the independently verified transport component for the subsequent
+complete split. It does not make the existing serial workflow faster yet and
+does not close any product performance or correctness acceptance gap.

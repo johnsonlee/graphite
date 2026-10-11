@@ -63,7 +63,7 @@ def system_jdk(root):
 
 
 def identity(args):
-    require(args.stage in ('producer', 'core', 'core-prepare', 'core-shard', 'jvm','jvm-pending'), 'stage')
+    require(args.stage in ('producer', 'producer-arm', 'core', 'core-prepare', 'core-shard', 'jvm','jvm-pending'), 'stage')
     require(args.arm in (('producer',) if args.stage == 'producer' else ('A', 'B') if args.stage in ('core', 'core-prepare', 'core-shard') else ('C', 'A', 'B')), 'stage arm')
     require(all(re.fullmatch('[0-9a-f]{40}', x) for x in (args.head_sha, args.base_sha)), 'exact revisions')
     require(str(args.run_id).isdigit() and str(args.run_attempt).isdigit(), 'run identity')
@@ -101,6 +101,8 @@ def git_sources(workspace, base, head):
 
 def selected_roots(workspace, stage, arm):
     root = workspace/'native-pressure-artifacts'
+    if stage == 'producer-arm':
+        return [root/arm]
     if stage in ('core', 'core-prepare', 'core-shard'):
         paths = [root/arm/'core-equivalence']
         if stage != 'core-shard':
@@ -119,6 +121,10 @@ def evidence_paths(workspace, stage, arm, ident=None):
         require(root.is_dir() and not root.is_symlink(), 'missing stage root: '+str(root))
     if stage in ('core-prepare', 'core-shard'):
         return core_shard_paths(roots[0], ident) + roots[1:]
+    if stage == 'producer-arm':
+        root=roots[0]
+        return [p for p in root.iterdir() if p.is_file()] + [
+            root/name for name in (*PRODUCER_TREES,*PHASES) if (root/name).exists()]
     if stage != 'producer':
         return roots
     root = roots[0]
@@ -130,6 +136,26 @@ def evidence_paths(workspace, stage, arm, ident=None):
         paths.extend(p for p in directory.iterdir() if p.is_file())
         paths.extend(directory/n for n in (*PRODUCER_TREES, *PHASES) if (directory/n).exists())
     return paths+roots[1:]
+
+
+def check_producer_arm_paths(workspace, ident, paths):
+    """An arm transport has no authority to write or depend on another arm."""
+    root=workspace/'native-pressure-artifacts'
+    require(str(root/ident['arm']/'packet.json') in paths,'producer arm packet required')
+    for name in paths:
+        p=canonical(Path(name))
+        if p.is_relative_to(root):
+            parts=p.relative_to(root).parts
+            require(not parts or parts[0] not in ('C','A','B') or parts[0]==ident['arm'],
+                    'producer arm contains another arm')
+
+
+def check_producer_arm_packet(workspace, ident):
+    packet=read(workspace/'native-pressure-artifacts'/ident['arm']/'packet.json')
+    revision,role={'C':(ACCEPTED,'accepted-baseline'), 'A':(ident['base'],'parent'),
+                   'B':(ident['head'],'candidate')}[ident['arm']]
+    require(packet.get('revision')==revision and packet.get('role')==role,
+            'producer arm exact revision and role')
 
 
 def core_shard_paths(root, ident):
@@ -436,7 +462,7 @@ def upstreams(args, ident, _authority=None):
                     'same arm and partition preparation upstream')
             entry['shardCount'] = upstream_ident['shardCount']
         values.append(entry)
-    expected = [] if ident['stage'] == 'producer' else [('producer', 'producer')]
+    expected = [] if ident['stage'] in ('producer','producer-arm') else [('producer', 'producer')]
     if ident['stage'] == 'core-shard':
         expected.append(('core-prepare', ident['arm']))
         preparation = [read(name) for name in args.upstream if read(name)['identity']['stage'] == 'core-prepare']
@@ -466,6 +492,9 @@ def seal(args):
         upstream = upstreams(args, ident, entry)
         collector = Collector(workspace, [read(path) for path in args.upstream], entry).collect(
             evidence_paths(workspace, args.stage, args.arm, ident))
+        if ident['stage']=='producer-arm':
+            check_producer_arm_paths(workspace,ident,set(collector.files)|collector.directories|set(collector.links)|collector.absent)
+            check_producer_arm_packet(workspace,ident)
         collector._authority = None
         del entry
         if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, collector.files)
@@ -508,6 +537,7 @@ def seal(args):
         if ident['stage'] == 'core-shard':
             core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)
             check_shard_transport(workspace, ident, collector.files)
+    if ident['stage']=='producer-arm':check_producer_arm_packet(workspace,ident)
     save(directory/'manifest.json', manifest)
     return manifest
 
@@ -524,6 +554,8 @@ def restore(args, _authority=None):
     else:
         _authority.check_manifest(directory, manifest)
     require(upstreams(args, ident, _authority) == manifest['upstream'], 'upstream checkpoint binding')
+    if ident['stage']=='producer-arm':
+        check_producer_arm_paths(workspace,ident,set(manifest['files'])|set(manifest['directories'])|set(manifest['links'])|set(manifest['absent'])|set(manifest['payload'])|set(manifest['closedDirectories']))
     require(sha(directory/'payload.tar.gz') == manifest['archiveSha256'], 'archive digest')
     require(len(manifest['payload']) == len(set(manifest['payload'])), 'duplicate payload destination')
     check_system_jdks(manifest)
@@ -585,6 +617,7 @@ def restore(args, _authority=None):
         else:
             require(not p.exists(), 'existing tool link destination'); p.parent.mkdir(parents=True, exist_ok=True); p.symlink_to(target)
     check_files(manifest, _authority)
+    if ident['stage']=='producer-arm':check_producer_arm_packet(workspace,ident)
     if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
     if _authority is None:
         require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'restored source changed')
