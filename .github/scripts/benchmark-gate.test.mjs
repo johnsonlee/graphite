@@ -4652,8 +4652,8 @@ test("native core graph shards prepare once and join all eight without weakening
     assert.match(shard, /^        shard: \[0, 1, 2, 3, 4, 5, 6, 7\]$/m);
     for (const job of [prepare, shard, join]) {
         const diagnostic = job.slice(job.indexOf("    - name: Retain core-"));
-        assert.match(diagnostic, /if: failure\(\) \|\| cancelled\(\)/,
-            "successful checkpoint already retains complete evidence without a duplicate upload");
+        assert.match(diagnostic, /if: failure\(\) && !cancelled\(\)/,
+            "successful checkpoints retain evidence; cancellation must not start a duplicate upload");
         assert.match(job, /Publish .*checkpoint[\s\S]*?if-no-files-found: error/,
             "the complete checkpoint remains mandatory on success");
     }

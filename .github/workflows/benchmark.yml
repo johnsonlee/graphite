@@ -3128,7 +3128,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-prepare-${{ matrix.arm }} diagnostic evidence
-      if: failure() || cancelled()
+      if: failure() && !cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-prepare-${{ matrix.arm }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
@@ -3271,7 +3271,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-shard-${{ matrix.arm }}-${{ matrix.shard }} diagnostic evidence
-      if: failure() || cancelled()
+      if: failure() && !cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-shard-${{ matrix.arm }}-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
@@ -3426,7 +3426,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-${{ matrix.arm }} diagnostic evidence
-      if: failure() || cancelled()
+      if: failure() && !cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-${{ matrix.arm }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
