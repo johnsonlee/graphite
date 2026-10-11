@@ -200,7 +200,7 @@ def execute(preparation,output,prefix,*,engine='native',loading_prefix=None):
     return record
 
 
-def finalize(preparation, output, prefix, producers, loading_prefix=None, *, engine="native"):
+def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *, engine="native", artifacts_root=None):
     """Join complete core evidence to immutable measured cells; never rerun a server.
 
     The original plan and raw cell evidence stay bound to their measurement-time
@@ -209,9 +209,17 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
     """
     import assemble_native_pressure_producers as bundle
     pressure.require(engine in ('native','jvm') and (loading_prefix is None or engine=='native'),'exact finalization operation')
+    pressure.require((producers is None)!=(artifacts_root is None),'exactly one finalization producer input')
+    pressure.require(artifacts_root is None or engine=='native','artifact finalization requires Native')
     authority_key='pendingJvmComparabilityAuthority' if engine=='jvm' else 'pendingComparabilityAuthority'
-    preparation, output, prefix, producers = (p.resolve() for p in (preparation, output, prefix, producers))
-    prefix.parent.mkdir(parents=True, exist_ok=True)
+    preparation, output, prefix = (p.resolve() for p in (preparation, output, prefix))
+    if artifacts_root is not None:
+        artifacts_root=Path(artifacts_root).resolve()
+        pressure.require(not prefix.is_relative_to(artifacts_root),'finalization outside immutable artifact root')
+        producers=Path(str(prefix)+'-corrected-producer.json')
+        pressure.require(not producers.exists() and not producers.is_symlink(),'fresh corrected producer output required')
+    else:
+        producers=Path(producers).resolve()
     if loading_prefix is not None:
         loading_prefix=Path(loading_prefix).resolve()
         # Measurement reports legitimately share this lexical prefix. Reserve only
@@ -229,6 +237,7 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
     pressure.require(not any(p.exists() for p in paths), 'fresh finalization outputs required')
     pressure.require(not prefix.is_relative_to(output) and not prefix.is_relative_to(preparation),
                      'finalization must preserve original measurement directories')
+    prefix.parent.mkdir(parents=True, exist_ok=True)
     result = {'schema': f'graphite.{engine}-pressure.finalization.v1', 'status': 'RUNNING',
               'errors': [], 'performanceAcceptance': False, 'otherOperationsEligible': False}
     def ref(path):
@@ -269,8 +278,13 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
             cells.append({'id': expected['id'], 'result': result_ref, 'audit': audit_ref})
         pending_ref = plan[authority_key]
         pending = pressure.pinned_authority_metadata(plan, pending_ref)
-        corrected_ref = ref(producers)
-        if engine=='jvm':
+        corrected_ref = ref(producers) if artifacts_root is None else None
+        if artifacts_root is not None:
+            pressure.require(str(artifacts_root)==pending['artifactsRoot'],'exact original measurement artifact root')
+            corrected,current=bundle.assemble_finalization_pair(artifacts_root,
+                plan['arms']['A']['revision'],plan['arms']['B']['revision'])
+            bundle.corrected_fixture_bindings(corrected)
+        elif engine=='jvm':
             import jvm_pressure_join as jvm_join
             corrected,current=jvm_join.verify(pressure.read(producers))
         else:
@@ -282,6 +296,11 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
                          all(corrected['pins'].get(p) == h for p, h in pending['pins'].items()),
                          'complete core must join exactly the originally measured producer inputs')
         context._check_unchanged()
+        if artifacts_root is not None:
+            # Exclusive create preserves measurement bytes and binds the actual
+            # newly audited packet into the same portable receipt as before.
+            pressure.save(producers,corrected)
+            corrected_ref=ref(producers)
         pins = dict(plan['pins'])
         bundle.merge_pins(pins, corrected['pins'])
         refs = [ref(plan_file), measured_ref, ref(ready_file), pending_ref, corrected_ref,
@@ -370,13 +389,18 @@ if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--preparation',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);p.add_argument('--prefix',type=Path,required=True)
     p.add_argument('--engine',choices=('native','jvm'),default='native')
-    p.add_argument('--finalize-producers',type=Path);p.add_argument('--loading-prefix',type=Path);args=p.parse_args()
-    if args.finalize_producers:
-        result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers,args.loading_prefix,engine=args.engine)
+    source=p.add_mutually_exclusive_group()
+    source.add_argument('--finalize-producers',type=Path);source.add_argument('--finalize-artifacts',type=Path)
+    p.add_argument('--loading-prefix',type=Path);args=p.parse_args()
+    if args.finalize_artifacts is not None and args.engine!='native':p.error('--finalize-artifacts requires --engine native')
+    finalizing=args.finalize_producers is not None or args.finalize_artifacts is not None
+    if finalizing:
+        result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers,args.loading_prefix,
+                        engine=args.engine,artifacts_root=args.finalize_artifacts)
     else:
         result=execute(args.preparation,args.output,args.prefix,engine=args.engine,loading_prefix=args.loading_prefix)
     print(json.dumps({'status':result['status'],'issuedCells':len(result.get('cells',[])),
                       'unissuedCells':result.get('unissued',[])}))
     sys.exit(0 if result['performanceAcceptance'] or
-             (not args.finalize_producers and result['status'] == PENDING and
+             (not finalizing and result['status'] == PENDING and
               result.get('comparabilityPending') is True and not result['errors']) else 1)

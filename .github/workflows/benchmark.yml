@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: bdb3a7ef07d124a54bc5f5f4078a76b17887a33cbcd781be46aabb78c076a7bc
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: d6b4aacaf7507072675668a9c6d7d25e1d3125b8f46741718c632421e520e93f
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 114219112c22410bde47d42205171a82bee4db1b38484e8075d24746071ab6fc
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -4000,17 +4000,6 @@ jobs:
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
-    - name: Assemble audited native producer evidence
-      env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        set -euo pipefail
-        python3 candidate/.github/scripts/assemble_native_pressure_producers.py \
-          --artifacts native-pressure-artifacts \
-          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
-          --output native-pressure-producers
-
     - name: Download original native measurement
       uses: actions/download-artifact@v8
       with:
@@ -4027,7 +4016,7 @@ jobs:
           --preparation benchmark-results/native-pressure-preparation \
           --output benchmark-results/native-pressure-cells \
           --prefix benchmark-results/multigraph-native-query \
-          --finalize-producers native-pressure-producers/packet.json \
+          --finalize-artifacts native-pressure-artifacts \
           --loading-prefix benchmark-results/multigraph-native-loading
 
     - name: Upload native pressure results

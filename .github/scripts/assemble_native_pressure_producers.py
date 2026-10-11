@@ -199,16 +199,23 @@ def verify_bundle(packet, base_sha, candidate_sha):
 
 
 def verify_finalization_pair(packet, base_sha, candidate_sha):
-    """Replay shared raw producers once, then close a fresh corrected/pending pair.
-
-    No caller supplies an authority or bypass. Both returned values have isolated
-    mutable state and preserve the standalone packet formats exactly.
-    """
+    """Verify an existing corrected packet against a fresh complete pair."""
     require(packet['schema']==SCHEMA and packet['baseRevision']==base_sha and
             packet['candidateRevision']==candidate_sha and packet['status']==CORRECTED_STATUS,
             'actual corrected producer bundle identity')
     expected=common.typed(packet)
-    pending=assemble(packet['artifactsRoot'],base_sha,candidate_sha,measurement_only=True)
+    corrected,pending=assemble_finalization_pair(packet['artifactsRoot'],base_sha,candidate_sha)
+    require(common.typed(corrected)==expected,'producer bundle differs from current raw evidence')
+    return corrected,pending
+
+
+def assemble_finalization_pair(artifacts_root, base_sha, candidate_sha):
+    """Fully audit one fresh corrected/pending pair; no supplied proof or bypass.
+
+    Both returned values have isolated mutable state and preserve the standalone
+    packet formats exactly. Complete core proof is mandatory before return.
+    """
+    pending=assemble(artifacts_root,base_sha,candidate_sha,measurement_only=True)
     snapshots={}
     for arm in pending['arms'].values():
         ref=arm['artifactAudit']
@@ -218,7 +225,7 @@ def verify_finalization_pair(packet, base_sha, candidate_sha):
     corrected=copy.deepcopy(pending)
     del corrected['measurementMode']
     _with_corrected_comparisons(corrected)
-    require(common.typed(corrected)==expected,'producer bundle differs from current raw evidence')
+    require(corrected['status']==CORRECTED_STATUS,'complete corrected producer required')
     # The eliminated second Native39 replay also supplied a late byte/inventory
     # boundary. Preserve that boundary without decoding those same responses again.
     remaining=dict(pending['pins'])

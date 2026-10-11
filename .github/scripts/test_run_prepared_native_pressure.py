@@ -245,7 +245,8 @@ class Finalization(unittest.TestCase):
     Existing bundle/raw audit suites exercise those authorities independently;
     these tests exercise the join and immutable original measurement binding.
     """
-    def exercise(self,mode='pass',loading_mode=None,measurement_reports=False,stale_loading=None):
+    def exercise(self,mode='pass',loading_mode=None,measurement_reports=False,stale_loading=None,
+                 artifacts_mode=False,stale_generated=None):
         import assemble_native_pressure_producers as bundle
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder).resolve();prep=root/'prep';prep.mkdir();out=root/'cells';out.mkdir();prefix=root/'final/query'
@@ -258,7 +259,8 @@ class Finalization(unittest.TestCase):
             core_record=put('core/record.json',{'plan':coreplan,'phases':[phase]})
             core_audit=put('core/audit.json',{'record':core_record})
             pins={item['path']:item['sha256'] for item in (control,)}
-            pending={'arms':{'A':{'revision':'a'*40},'B':{'revision':'b'*40}},'pins':pins}
+            pending={'arms':{'A':{'revision':'a'*40},'B':{'revision':'b'*40}},'pins':pins,
+                     'artifactsRoot':str(root/'artifacts')}
             pending_ref=put('pending.json',pending)
             corrected=dict(pending,artifactsRoot=str(root/'artifacts'),baseRevision='a'*40,candidateRevision='b'*40,
                            correctedComparisons={'B':{'audit':core_audit}},
@@ -308,11 +310,19 @@ class Finalization(unittest.TestCase):
             def verify_pair(*args):
                 actual=verify(*args)
                 return actual,reassemble(measurement_only=True)
-            stack.enter_context(patch.object(bundle,'verify_finalization_pair',side_effect=verify_pair))
+            stack.enter_context(patch.object(bundle,'verify_finalization_pair',
+                side_effect=AssertionError('new path must not verify a preassembled packet') if artifacts_mode else verify_pair))
+            def assemble_pair(artifacts,base,candidate):
+                self.assertEqual((root/'artifacts','a'*40,'b'*40),(artifacts,base,candidate))
+                return verify_pair()
+            stack.enter_context(patch.object(bundle,'assemble_finalization_pair',side_effect=assemble_pair))
             def compare(command,**kwargs):
                 is_loading=Path(command[1]).name=='benchmark-native-loading.mjs'
                 events.append(('loading-compare' if is_loading else 'compare',None));self.assertEqual('--comparability-receipt',command[-2])
                 receipt=r.pressure.read(command[-1]);self.assertEqual(pending_ref['sha256'],receipt['measurementInputsSha256'])
+                bound=receipt['correctedProducer'];self.assertEqual(bound,bundle.artifacts.ref(bound['path']))
+                self.assertEqual(corrected,r.pressure.read(bound['path']))
+                if artifacts_mode:self.assertEqual(str(prefix)+'-corrected-producer.json',bound['path'])
                 self.assertEqual(6,len(receipt['cells']));self.assertFalse(receipt['completeSemanticEquivalence'])
                 self.assertFalse(receipt['performanceAcceptance']);self.assertTrue(receipt['coreComparabilityVerified'])
                 self.assertIn(phase['path'],[row['path'] for row in receipt['metadata']])
@@ -353,7 +363,21 @@ class Finalization(unittest.TestCase):
                 self.assertEqual([],events)
                 self.assertFalse(Path(str(prefix)+'-status.json').exists())
                 return
-            result=r.finalize(prep,out,prefix,Path(corrected_ref['path']),loading_prefix)
+            if stale_generated is not None:
+                path=Path(str(prefix)+'-corrected-producer.json');path.parent.mkdir(parents=True,exist_ok=True)
+                if stale_generated=='symlink':path.symlink_to(root/'missing-packet')
+                else:path.write_text('original packet')
+                with self.assertRaisesRegex(ValueError,'fresh corrected producer output required'):
+                    r.finalize(prep,out,prefix,loading_prefix=loading_prefix,artifacts_root=root/'artifacts')
+                self.assertEqual([],events)
+                self.assertTrue(path.is_symlink() if stale_generated=='symlink' else path.read_text()=='original packet')
+                return
+            result=r.finalize(prep,out,prefix,None if artifacts_mode else Path(corrected_ref['path']),loading_prefix,
+                              artifacts_root=(root/'wrong-artifacts' if mode=='wrong-artifact-root' else root/'artifacts') if artifacts_mode else None)
+            if artifacts_mode:
+                generated=Path(str(prefix)+'-corrected-producer.json')
+                if mode not in ('pass','regression','post-join-drift'):self.assertFalse(generated.exists())
+                else:self.assertEqual(corrected,r.pressure.read(generated))
             self.assertEqual(original_reports,{path:path.read_bytes() for path in original_reports})
             self.assertEqual(original,{str(p):p.read_bytes() for parent in (prep,out) for p in parent.rglob('*') if p.is_file()})
             self.assertEqual(result,r.pressure.read(Path(str(prefix)+'-finalization.json')))
@@ -363,6 +387,50 @@ class Finalization(unittest.TestCase):
                 self.assertTrue(raw['passed']);self.assertFalse(verdict['passed'])
             if loading_prefix is not None:self.loading_verdict=r.pressure.read(str(loading_prefix)+'-status.json')
             return result,events,verdict
+
+    def test_fresh_artifacts_join_keeps_original_bytes_and_complete_portable_receipt(self):
+        result,events,verdict=self.exercise(loading_mode='pass',measurement_reports=True,artifacts_mode=True)
+        self.assertTrue(result['performanceAcceptance']);self.assertTrue(verdict['passed'])
+        self.assertEqual([('audit',str(i)) for i in range(6)]+[('core',None),('compare',None),('loading-compare',None)],events)
+
+    def test_fresh_artifacts_join_preserves_core_input_and_terminal_failure_guards(self):
+        for mode in ('missing-core','failed-core','different-producer','wrong-artifact-root','post-join-drift','regression'):
+            with self.subTest(mode=mode):
+                result,events,verdict=self.exercise(mode,artifacts_mode=True)
+                self.assertFalse(result['performanceAcceptance']);self.assertFalse(verdict['passed'])
+                if mode not in ('post-join-drift','regression'):self.assertNotIn(('compare',None),events)
+
+    def test_generated_packet_collisions_are_rejected_before_any_audit(self):
+        for kind in ('file','symlink'):
+            with self.subTest(kind=kind):self.exercise(artifacts_mode=True,stale_generated=kind)
+
+    def test_new_packet_cannot_pollute_original_measurement_or_artifact_roots(self):
+        with tempfile.TemporaryDirectory() as folder:
+            root=Path(folder);prep=root/'prep';cells=root/'cells';artifacts=root/'artifacts'
+            for path in (prep,cells,artifacts):path.mkdir()
+            for directory in (prep,cells,artifacts):
+                with self.subTest(directory=directory),self.assertRaisesRegex(ValueError,'immutable artifact root|preserve original measurement'):
+                    r.finalize(prep,cells,directory/'unexpected/query',artifacts_root=artifacts)
+                self.assertEqual([],list(directory.iterdir()))
+
+    def test_cli_rejects_ambiguous_producers_and_jvm_artifact_mode(self):
+        import subprocess,sys
+        script=Path(r.__file__).resolve()
+        base=[sys.executable,'-B',str(script),'--preparation','absent-prep','--output','absent-cells','--prefix','absent-final']
+        for flags,expected in [(['--finalize-producers','packet','--finalize-artifacts','artifacts'],'not allowed with argument'),
+                               (['--engine','jvm','--finalize-artifacts','artifacts'],'requires --engine native')]:
+            with self.subTest(flags=flags):
+                result=subprocess.run(base+flags,capture_output=True,text=True,timeout=15)
+                self.assertEqual(2,result.returncode);self.assertIn(expected,result.stderr)
+
+    def test_native_workflow_uses_one_finalizer_and_retains_generated_packet_artifact(self):
+        workflow=(Path(__file__).parents[1]/'workflows/benchmark.yml').read_text()
+        job=workflow.split('\n  rust-query-native:\n',1)[1].split('\n  rust-query-legacy:\n',1)[0]
+        self.assertNotIn('assemble_native_pressure_producers.py',job)
+        self.assertEqual(1,job.count('run_prepared_native_pressure.py'))
+        self.assertIn('--finalize-artifacts native-pressure-artifacts',job)
+        self.assertIn('benchmark-results/multigraph-native-query*',job)
+        self.assertIn('name: Download original native measurement',job)
 
     def test_downloaded_loading_measurement_reports_survive_pending_to_final_join(self):
         result,events,verdict=self.exercise(loading_mode='pass',measurement_reports=True)

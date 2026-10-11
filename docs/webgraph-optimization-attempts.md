@@ -18726,3 +18726,45 @@ Command:`python3 -B /tmp/graphite-jvm64-allocation-diagnostic-1/compare_erased_s
 Raw evidence and independent review:
 `/tmp/graphite-jvm64-erased-shape-cache-abba-1/root-review.json`; source integration:
 `/tmp/graphite-jvm64-erased-shape-cache-abba-1/integrated-source-review.json`.
+
+### Attempt242 — assemble Native finalization evidence in the consuming call (2026-10-12)
+
+Parent:b8850e8a. The Native final-consumer job separately assembled a corrected
+producer packet, then the finalizer reconstructed that same producer/core proof.
+The external assembly stage took9m54 on hosted91. Attempt240 removed a second
+pending replay inside the finalizer but left this workflow-level duplication.
+Remove the external Native assembly step and generate the complete corrected and
+pending pair inside the finalizer's existing call. This is one orchestration
+hypothesis; construction and JVM finalization remain unchanged.
+
+The fresh factory fully audits original producers, Native39 evidence and complete
+core comparisons, then closes the original byte/source/inventory boundaries.
+Match its pending packet exactly against the measured plan before exclusively
+writing a separate corrected packet. The same six original cell audits, portable
+metadata, merged pins and fresh terminal checks remain mandatory. Existing packet
+verification remains available and fully audited; there is no caller-supplied
+skip or reusable verified token. New artifact mode is Native-only and mutually
+exclusive with an input packet. Reject output collisions, dangling symlinks and
+writes inside original measurement/artifact roots. The generated packet is
+included in the existing query artifact glob; its metadata copy remains intact.
+
+Both complete affected modules pass78 tests in183.165s within the declared240s
+budget, in one run. Coverage includes factory equivalence, mutable isolation,
+complete six-cell receipt and original-byte preservation, missing/failed core,
+changed producer/root, terminal drift, collisions and actual CLI rejection of
+ambiguous/JVM artifact modes. Existing240 raw/source/control drift contracts
+remain. Tiny finalizer tests mock established external proof and Node boundaries;
+assembler contracts exercise the fresh factory independently. They do not replace
+real-data correctness or performance acceptance. Evidence:
+`/tmp/graphite-attempt242-modules.log`. Actionlint with shellcheck disabled,
+Python parsing and whitespace checks pass. Root reviewed source, downstream
+receipt consumption, original test output and all193 preparation-control pins:
+`/tmp/graphite-attempt242-root-review.json`.
+
+Preparation manifest SHA256:
+114219112c22410bde47d42205171a82bee4db1b38484e8075d24746071ab6fc.
+Retain this removal of repeated complete assembly. No hosted rerun or product
+performance measurement was performed. The old9m54 stage is not a guaranteed net
+saving: retained audits, fresh checks and publishing the generated packet still
+cost time. Complete CI remains unbounded below two hours; product query latency,
+loading CPU/RSS, construction CPU and fresh JVM35 acceptance gaps remain open.

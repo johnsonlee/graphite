@@ -274,6 +274,14 @@ class FinalizationPairTests(unittest.TestCase):
         corrected['pins'].clear();corrected['arms']['C']['cases'].clear()
         self.assertEqual(self.pending,pending)
 
+    def test_fresh_factory_matches_standalone_without_supplied_corrected_authority(self):
+        corrected,pending=bundle.assemble_finalization_pair(self.root,self.base,self.candidate)
+        self.assertEqual(self.corrected,corrected);self.assertEqual(self.pending,pending)
+        self.assertEqual(['C','B'],[c.args[0].name for c in self.arm_mock.call_args_list])
+        self.assertNotIn(str(self.core),pending['pins'])
+        corrected['pins'].clear();corrected['arms']['C']['cases'].clear()
+        self.assertEqual(self.pending,pending)
+
     def test_distinct_parent_has_own_replay_and_corrected_proof(self):
         self.base='a'*40;self.composition.base=self.base
         self.composition.directories({'C':'C','A':'A','B':'B'})
@@ -318,7 +326,9 @@ class FinalizationPairTests(unittest.TestCase):
         with patch.object(bundle,'corrected_comparison',side_effect=conflicting):
             with self.assertRaisesRegex(ValueError,'conflicting evidence pin'):self.pair()
         self.core.unlink()
-        with self.assertRaisesRegex(ValueError,'differs from current raw evidence'):self.pair()
+        with self.assertRaisesRegex(ValueError,'complete corrected producer'):self.pair()
+        with self.assertRaisesRegex(ValueError,'complete corrected producer'):
+            bundle.assemble_finalization_pair(self.root,self.base,self.candidate)
 
     def test_wrong_corrected_packet_is_rejected_without_mutating_caller(self):
         self.corrected['arms']['B']['revision']='e'*40
