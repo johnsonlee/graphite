@@ -793,10 +793,10 @@ class PairBindingTests(unittest.TestCase):
                     'sourceManifests':self.sources,'rule':{'path':'/actual/rule','sha256':'a'*64},'pins':{}}
         put(self.roots['B']/'core-formatter-source/source-binding.json',self.bound)
         for module in (r.strings,r.marker,r.tests):
-            p=patch.object(module,'audit',side_effect=lambda root:copy.deepcopy(self.values[str(root)]));p.start();self.addCleanup(p.stop)
-        def source_evidence(path,expected):
+            p=patch.object(module,'audit',side_effect=lambda root,**kwargs:copy.deepcopy(self.values[str(root)]));p.start();self.addCleanup(p.stop)
+        def source_evidence(path,expected,**kwargs):
             r.require(self.bound['upstream']['markerAudit']==expected,'same actual formatter marker pair')
-            _,marked=r.formatter._bind_with_marker(expected['path'],Path(path).parent)
+            _,marked=r.formatter._bind_with_marker(expected['path'],Path(path).parent,**kwargs)
             return copy.deepcopy(self.bound),marked
         p=patch.object(r,'_source_evidence_with_marker',side_effect=source_evidence);p.start();self.addCleanup(p.stop)
         p=patch.object(r.formatter,'preparation_control_pins',return_value={str(Path(r.formatter.__file__).resolve()):r.common.sha(r.formatter.__file__)});p.start();self.addCleanup(p.stop)
@@ -811,10 +811,10 @@ class PairBindingTests(unittest.TestCase):
         self.assertEqual(self.fixture_refs['B'],plan['graphs'][-1]['fieldAuthority']['arms']['B']['fixtureManifest'])
     def test_complete_bind_replays_marker_once_and_keeps_exact_public_plan(self):
         composed=r._source_evidence_with_marker
-        def legacy_double_replay(path,expected_ref):
+        def legacy_double_replay(path,expected_ref,**kwargs):
             r.replay(expected_ref['path'],r.marker.audit)
-            return composed(path,expected_ref)
-        with patch.object(r.marker,'audit',side_effect=lambda root:copy.deepcopy(self.values[str(root)])) as replay:
+            return composed(path,expected_ref,**kwargs)
+        with patch.object(r.marker,'audit',side_effect=lambda root,**kwargs:copy.deepcopy(self.values[str(root)])) as replay:
             with patch.object(r,'_source_evidence_with_marker',side_effect=legacy_double_replay):
                 expected=self.bind()
             self.assertEqual(2,replay.call_count);replay.reset_mock()
@@ -822,6 +822,22 @@ class PairBindingTests(unittest.TestCase):
             self.assertEqual(1,replay.call_count)
         self.assertEqual(r.common.typed(expected),r.common.typed(actual))
         self.assertEqual(self.bound['upstream']['markerAudit'],actual['upstream']['marker'])
+
+    def test_complete_bind_shares_one_private_context_and_discards_it(self):
+        seen=[]
+        def replay(root,*,_artifact_context):
+            self.assertIs(type(_artifact_context),r.artifacts._ProducerReplayContext)
+            seen.append(_artifact_context)
+            return copy.deepcopy(self.values[str(root)])
+        with patch.object(r.strings,'audit',side_effect=replay),patch.object(r.tests,'audit',side_effect=replay), \
+                patch.object(r.marker,'audit',side_effect=replay):
+            first=self.bind();second=self.bind()
+        self.assertEqual(8,len(seen))
+        self.assertTrue(all(value is seen[0] for value in seen[:4]))
+        self.assertTrue(all(value is seen[4] for value in seen[4:]))
+        self.assertIsNot(seen[0],seen[4]);self.assertEqual(first,second)
+        for context in (seen[0],seen[4]):
+            with self.assertRaisesRegex(ValueError,'inactive'):context.replay(None,None,None,None,None,None)
 
     def test_marker_failure_cannot_be_replaced_by_source_report(self):
         with patch.object(r.marker,'audit',side_effect=ValueError('actual marker failed')):

@@ -37,7 +37,7 @@ def environment(java):
     return env
 
 
-def bind(audit_path, inputs_path, output):
+def bind(audit_path, inputs_path, output, *, _artifact_context=None):
     audit_path, inputs_path, output = (Path(p).resolve() for p in (audit_path, inputs_path, output))
     artifact = common.read(audit_path)
     require(artifact['schema'] == 'graphite.native-independent-artifact-audit.v1' and
@@ -46,7 +46,7 @@ def bind(audit_path, inputs_path, output):
     runtime = common.pinned_authority_metadata(artifact, artifact['runtimeManifest'])
     fixture = common.pinned_authority_metadata(artifact, artifact['fixtureManifest'])
     tools = {key: runtime['toolchainIdentity'][key] for key in ('java', 'cargo', 'rustc')}
-    actual = artifacts.audit(artifact['producerPacket']['path'], source['root'], artifact['revision'],
+    actual = artifacts._audit_with_context(_artifact_context, artifact['producerPacket']['path'], source['root'], artifact['revision'],
                             artifact['role'], inputs_path, tools)
     require(common.typed(actual) == common.typed(artifact), 'stored artifact audit differs from raw evidence')
     root = Path(artifact['producerPacket']['path']).parent
@@ -161,13 +161,13 @@ def execute(plan):
     return record
 
 
-def audit(output):
+def audit(output, *, _artifact_context=None):
     out = Path(output).resolve(); plan = common.read(out/'plan.json'); record = common.read(out/'record.json')
     require(plan['output'] == str(out) and record['status'] == PASS and record['errors'] == [] and
             record['finalIdentity'] == 'PASS' and record['plan'] == artifacts.ref(out/'plan.json') and
             all(record[k] is False for k in ('performanceAcceptance','completeSemanticEquivalence')),
             'completed actual export execution')
-    expected = bind(plan['artifactAudit']['path'], plan['sourceInputs']['path'], out)
+    expected = bind(plan['artifactAudit']['path'], plan['sourceInputs']['path'], out, _artifact_context=_artifact_context)
     require(common.typed(plan) == common.typed(expected), 'export plan differs from actual artifact inputs')
     compiled = classes(plan)
     require(record['compiledHelper'] == compiled, 'compiled helper receipt')

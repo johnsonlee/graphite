@@ -17416,3 +17416,68 @@ Evidence: `/tmp/graphite-fresh-preparation-{runner,worker}-tests.log`,
 still requires fresh fixture/producer/preparation work before the same downstream
 core/JVM path. No fixed hash-read reduction, hosted speedup, two-hour bound or
 product performance recovery is inferred from this control-flow change.
+
+
+### Attempt219 — share producer replay within one core binding (2026-10-11)
+
+The completed03f preparation log places initial binding at314.400s, before
+preparation phases. Source inspection shows that one core bind reconstructs the
+same complete producer audit five times: C and B through dictionary exports,
+B through production formatter tests, then C and B through the marker chain.
+This is an attribution hypothesis, not a claim that the whole binding duration
+is redundant. Parent:10f5916f62cf0ef2ec9ff2dfdd045f3f1b66fe53; accepted
+performance baseline:4f2ccf3. The hosted workload remains the matched own-writer
+64 real graphs, all core/topology/index checks and Native39/JVM35 pressure.
+
+A private context now lives for exactly one core bind. It accepts original
+producer arguments, never a caller's verdict or skip flag. The first invocation
+for each complete packet/checkout/revision/role/source-input/toolchain/required-
+construction identity still executes the original full artifact auditor. A
+repeated invocation independently reads every pinned byte, verifies source and
+build configuration, checks the unique original writer, and compares runtime
+and graph file/directory membership before and after that read. It returns a
+deep copy of the original semantic report. Context exit independently repeats
+those checks for both producers, then discards the context. Failed invocations
+invalidate it, including a failure caught by a caller; it cannot be serialized,
+reentered or reused after exit. There is no global or path/mtime cache.
+
+The dictionary, marker and formatter-test auditors still reconstruct and verify
+their own raw outputs, receipts, source rules and pins. Standalone audit calls
+use their original full producer replay. Each later core bind, terminal rebind,
+worker or independent audit creates a new context; no authority crosses those
+boundaries. The original final core-bind pin check remains. Public plans,
+reports, receipt identities, artifact formats and all product code are unchanged.
+
+Tiny real-file correctness fixtures establish a source-access benefit, not a
+performance result. For the exact C,B,B,C,B nested-producer access sequence,
+complete producer audits fall from5 to2. Actual SHA reads of a selected persisted
+graph file fall from6 to5 for C and9 to6 for B:15 to11 total, including the new
+context-exit reads. The unchanged surrounding core/child pin checks are excluded
+from both counts. Original artifact audits read graph bytes in fixture inventory,
+final evidence pins and final graph inventory; context reuse instead reads pins
+once and enumerates membership without rehashing the same bytes. Fresh source,
+configuration and membership checks still cost work, so this count does not
+establish a hosted speedup or a complete feedback-loop bound.
+
+Verification:25 artifact tests,32 dictionary/marker tests,12 production formatter
+tests,71 core-runner tests,8 formatter-binding tests and6 worker-input tests
+passed. New cases verify exact public-result equality, the actual SHA-read
+counts, scoped context propagation, complete standalone replay, parameter
+identity changes, live nested-output mutation, graph/runtime/source/metadata/
+phase corruption with unchanged size and mtime, deletion, new files/directories,
+symlinks, extra writer artifacts, configuration changes, lifecycle failures and
+final independent reads. Source-byte mutation uses real files; the dedicated
+Git-state failure case injects the existing source auditor's rejection to prove
+propagation and does not claim a new full Git integration test. All217 Node
+tests passed in14.389s; actionlint with shellcheck disabled,185 control file pins,
+both workflow bindings and diff checks passed. Evidence is in
+`/tmp/graphite-producer-context-{audit,export,formatter,core,binder,worker}-tests.log`,
+`/tmp/graphite-producer-context-all-node-tests.log` and
+`/tmp/graphite-producer-context-control-verification.json`.
+
+**Decision: retain locally for independent review and hosted validation.** No
+single-graph performance measurement was run. Query p50/p95, end-to-end wall,
+CPU, RSS, stability and construction/loading recovery remain unverified for the
+cumulative candidate. Correctness coverage, 8GiB heap ceiling, resource gates
+and the scoped accepted Native-loading overhead are unchanged. The active03f
+run is preserved; no push, restart or cancellation is part of this attempt.

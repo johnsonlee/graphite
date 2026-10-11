@@ -5,6 +5,7 @@ This checks build and file identity only. HTTP readiness, query correctness,
 cross-arm semantic equivalence and performance acceptance are separate work.
 """
 import argparse
+import copy
 import math
 import re
 import os
@@ -301,6 +302,74 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools, require_con
     if construction:
         result['constructionResources'] = phases[5]['constructionResources']
     return result
+
+
+class _ProducerReplayContext:
+    """One binding's private replay context; every reuse freshly reads input bytes."""
+    def __init__(self):
+        self._active=False;self._closed=False;self._audits={}
+    def __reduce_ex__(self,protocol):raise TypeError('producer replay context cannot be serialized')
+    def __enter__(self):
+        require(not self._active and not self._closed,'fresh producer replay context required')
+        self._active=True;return self
+    def __exit__(self,kind,error,traceback):
+        try:
+            if kind is None:
+                require(self._active and not self._closed,'failed producer replay context cannot complete')
+                for report,closure in self._audits.values():self._check(report,closure)
+        finally:
+            self._active=False;self._closed=True;self._audits.clear()
+    def replay(self,packet_path,checkout,revision,role,inputs_path,tools,require_construction_metrics=False):
+        require(self._active and not self._closed,'inactive producer replay context')
+        try:
+            args=(Path(packet_path).resolve(),Path(checkout).resolve(),revision,role,
+                  Path(inputs_path).resolve(),copy.deepcopy(tools),require_construction_metrics)
+            key=repr(common.typed([str(args[0]),str(args[1]),revision,role,str(args[4]),tools,require_construction_metrics]))
+            if key not in self._audits:
+                report=audit(*args)
+                self._audits[key]=(report,self._inventories(report))
+            else:self._check(*self._audits[key])
+            return copy.deepcopy(self._audits[key][0])
+        except BaseException:
+            self._active=False;self._closed=True;self._audits.clear();raise
+    @staticmethod
+    def _inventories(report):
+        root=Path(report['producerPacket']['path']).parent
+        result={}
+        for directory,ref in ((root/'runtime',report['runtimeManifest']),(root/'graphs',report['fixtureManifest'])):
+            expected=common.pinned_authority_metadata(report,ref)['files']
+            require(directory.is_dir() and not directory.is_symlink(),'replay closed inventory root')
+            entries={};files=set()
+            for path in directory.rglob('*'):
+                require(not path.is_symlink(),'replay closed inventory symlink')
+                if path.is_file():files.add(str(path.resolve()));entries[str(path)]='file'
+                else:
+                    require(path.is_dir(),'replay closed inventory special file');entries[str(path)]='directory'
+            require(files==set(expected),'replay closed inventory membership')
+            result[str(directory)]=entries
+        return result
+    @classmethod
+    def _check(cls,report,closure):
+        # Hash every pinned byte freshly. Directory enumerations check absence
+        # and additions without hashing those same graph/runtime bytes again.
+        def metadata(ref):return common.pinned_authority_metadata(report,ref)
+        source=metadata(report['sourceManifest']);runtime=metadata(report['runtimeManifest'])
+        packet=metadata(report['producerPacket']);checkout=Path(source['root'])
+        require(cls._inventories(report)==closure,'replay directory closure changed')
+        verify_pins(report['pins'])
+        require(source_inventory(checkout,report['revision'])==source['files']==report['sourceBefore'],
+                'replay source inventory changed')
+        require(configs(checkout,packet['buildEnvironment'])==packet['configurationBefore']==packet['configurationAfter'],
+                'replay build configuration changed')
+        writers=list((checkout/'frontend/jvm/webgraph/build/libs').glob('*-jmh.jar'))
+        require(len(writers)==1 and str(writers[0]) in runtime['originalArtifacts'],'replay single source-built writer')
+        require(cls._inventories(report)==closure,'replay directory closure changed')
+
+
+def _audit_with_context(context,*args):
+    if context is None:return audit(*args)
+    require(type(context) is _ProducerReplayContext,'private producer replay context required')
+    return context.replay(*args)
 
 
 def main():

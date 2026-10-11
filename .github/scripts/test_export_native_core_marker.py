@@ -82,6 +82,20 @@ class MarkerExportTests(unittest.TestCase):
         self.assertEqual(marker(),Path(row['rawClassFile']).read_bytes())
         self.assertEqual('EXACT_BOOTSTRAP_MARKER_NOT_CORPUS_JAR',row['sourceKind'])
 
+    def test_nested_audit_context_reuses_only_producer_replay(self):
+        self.execute()
+        expected=m.audit(self.output)
+        with patch.object(m.artifacts,'audit',wraps=m.artifacts.audit) as full:
+            with m.artifacts._ProducerReplayContext() as context:
+                self.assertEqual(expected,m.audit(self.output,_artifact_context=context))
+                self.assertEqual(expected,m.audit(self.output,_artifact_context=context))
+            self.assertEqual(1,full.call_count)
+        with self.assertRaises((KeyError,ValueError)):
+            with m.artifacts._ProducerReplayContext() as context:
+                m.audit(self.output,_artifact_context=context)
+                (self.output/'record.json').write_text('{}')
+                m.audit(self.output,_artifact_context=context)
+
     def test_accepted_alias_pair_with_existing_authority(self):self.check_success()
     def test_candidate_pair_with_distinct_producer_sources(self):self.make_actual('candidate');self.check_success()
     def test_parent_pair_with_distinct_producer_sources(self):self.make_actual('parent');self.check_success()

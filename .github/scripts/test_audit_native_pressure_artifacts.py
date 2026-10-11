@@ -235,5 +235,110 @@ class ConstructionAuditTests(unittest.TestCase):
                 with self.assertRaises((ValueError,OSError)):auditor.check_phase(root/'prepare-real64/record.json',argv,root,True)
 
 
+class ProducerReplayContextTests(unittest.TestCase):
+    """Real tiny artifact bytes; access counts are not performance measurements."""
+    def setUp(self):
+        self.f=ArtifactAuditTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+        self.args=(self.f.out/'packet.json',self.f.checkout,self.f.revision,self.f.role,
+                   self.f.inputs_path,self.f.tools)
+        patcher=patch.object(auditor,'source_inventory',return_value=self.f.source)
+        self.source=patcher.start();self.addCleanup(patcher.stop)
+
+    def test_five_pair_replays_keep_identical_results_with_fewer_graph_reads(self):
+        from test_export_native_core_marker import MarkerExportTests
+        f=MarkerExportTests();f.setUp();self.addCleanup(f.doCleanups);f.make_actual('candidate')
+        args=[]
+        for ref in (f.reference,f.actual):
+            report=auditor.common.read(ref);source=auditor.common.read(report['sourceManifest']['path'])
+            args.append((Path(report['producerPacket']['path']),Path(source['root']),report['revision'],
+                         report['role'],f.fixture.inputs_path,f.fixture.tools))
+        graph_files=[next(Path(a[0]).parent.glob('graphs/*/graph.nodes')) for a in args]
+        original=auditor.common.sha;counts={str(p):0 for p in graph_files}
+        def sha(path):
+            key=str(path)
+            if key in counts:counts[key]+=1
+            return original(path)
+        with patch.object(auditor.common,'sha',side_effect=sha),patch.object(auditor,'audit',wraps=auditor.audit) as full:
+            expected=[auditor._audit_with_context(None,*args[index]) for index in (0,1,1,0,1)]
+            old=dict(counts);self.assertEqual(5,full.call_count);full.reset_mock()
+            counts.update({key:0 for key in counts})
+            with auditor._ProducerReplayContext() as context:
+                actual=[auditor._audit_with_context(context,*args[index]) for index in (0,1,1,0,1)]
+            self.assertEqual(2,full.call_count)
+            self.assertEqual(expected,actual)
+            self.assertEqual([6,9],[old[str(p)] for p in graph_files])
+            self.assertEqual([5,6],[counts[str(p)] for p in graph_files])
+
+    def test_same_size_same_mtime_and_new_files_fail_on_reuse_or_exit(self):
+        import os
+        for boundary in ('reuse','exit'):
+            for kind in ('graph','runtime','source','packet','phase','new-file','new-directory','deleted-graph','symlink','writer','config','git-state'):
+                with self.subTest(boundary=boundary,kind=kind):
+                    case=ProducerReplayContextTests(methodName='runTest');case.setUp()
+                    try:
+                        with self.assertRaises((ValueError,OSError)):
+                            with auditor._ProducerReplayContext() as context:
+                                auditor._audit_with_context(context,*case.args)
+                                f=case.f
+                                paths={'graph':next(f.out.glob('graphs/*/graph.nodes')),
+                                       'runtime':f.out/'runtime/graphite','source':next(iter(f.source)),
+                                       'packet':f.out/'packet.json','phase':f.out/'build-jvm/owner.json'}
+                                if kind in paths:
+                                    path=Path(paths[kind]);before=path.stat();raw=path.read_bytes()
+                                    path.write_bytes(bytes([raw[0]^1])+raw[1:])
+                                    os.utime(path,ns=(before.st_atime_ns,before.st_mtime_ns))
+                                elif kind=='new-file':(f.out/'graphs/unrecorded').write_text('extra')
+                                elif kind=='new-directory':(f.out/'runtime/extra-empty').mkdir()
+                                elif kind=='deleted-graph':next(f.out.glob('graphs/*/graph.nodes')).unlink()
+                                elif kind=='git-state':case.source.side_effect=ValueError('actual clean source revision')
+                                elif kind=='symlink':(f.out/'graphs/link').symlink_to(f.out/'runtime/graphite')
+                                elif kind=='writer':(f.checkout/'frontend/jvm/webgraph/build/libs/extra-jmh.jar').write_text('extra')
+                                else:(Path(f.packet['buildEnvironment']['GRADLE_USER_HOME'])/'init.d').mkdir(parents=True)
+                                if boundary=='reuse':auditor._audit_with_context(context,*case.args)
+                        with self.assertRaisesRegex(ValueError,'inactive'):auditor._audit_with_context(context,*case.args)
+                    finally:case.doCleanups()
+
+    def test_changed_parameters_cannot_reuse_a_prior_result(self):
+        changes={2:'d'*40,3:'parent',4:self.f.root/'other-input.json',5:{**self.f.tools,'java':'/wrong/java'}}
+        for index,value in changes.items():
+            with self.subTest(index=index),patch.object(auditor,'audit',wraps=auditor.audit) as full:
+                with self.assertRaises((ValueError,OSError)):
+                    with auditor._ProducerReplayContext() as context:
+                        auditor._audit_with_context(context,*self.args)
+                        changed=list(self.args);changed[index]=value
+                        auditor._audit_with_context(context,*changed)
+                self.assertEqual(2,full.call_count)
+        with self.assertRaisesRegex(ValueError,'required real64 construction'):
+            with auditor._ProducerReplayContext() as context:
+                auditor._audit_with_context(context,*self.args)
+                auditor._audit_with_context(context,*self.args,True)
+
+    def test_lifetime_deep_copy_and_swallowed_failure_are_fail_closed(self):
+        import pickle
+        context=auditor._ProducerReplayContext()
+        with self.assertRaisesRegex(ValueError,'inactive'):context.replay(*self.args)
+        with context:
+            original=context.replay(*self.args);original['pins'].clear();original['status']='forged'
+            self.assertEqual(auditor.STATUS,context.replay(*self.args)['status'])
+            self.assertTrue(context.replay(*self.args)['pins'])
+            with self.assertRaises(TypeError):pickle.dumps(context)
+            with self.assertRaisesRegex(ValueError,'fresh'):context.__enter__()
+        with self.assertRaisesRegex(ValueError,'fresh'):context.__enter__()
+        with self.assertRaisesRegex(ValueError,'inactive'):context.replay(*self.args)
+        with self.assertRaisesRegex(ValueError,'cannot complete'):
+            with auditor._ProducerReplayContext() as failed:
+                try:failed.replay(*self.args,True)
+                except ValueError:pass
+        with self.assertRaisesRegex(ValueError,'fresh'):failed.__enter__()
+        with self.assertRaisesRegex(ValueError,'private producer'):auditor._audit_with_context(object(),*self.args)
+
+    def test_fresh_standalone_and_new_context_never_reuse_previous_authority(self):
+        with patch.object(auditor,'audit',wraps=auditor.audit) as full:
+            with auditor._ProducerReplayContext() as context:context.replay(*self.args)
+            auditor._audit_with_context(None,*self.args)
+            with auditor._ProducerReplayContext() as context:context.replay(*self.args)
+            self.assertEqual(3,full.call_count)
+
+
 if __name__ == '__main__':
     unittest.main()

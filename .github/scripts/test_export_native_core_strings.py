@@ -73,6 +73,20 @@ class ExportTests(unittest.TestCase):
         with patch.object(export.producer,'phase',side_effect=self.fake_phase):
             return export.execute(self.plan)
 
+    def test_nested_audit_context_reuses_only_producer_replay(self):
+        self.execute()
+        expected=export.audit(self.output)
+        with patch.object(export.artifacts,'audit',wraps=export.artifacts.audit) as full:
+            with export.artifacts._ProducerReplayContext() as context:
+                self.assertEqual(expected,export.audit(self.output,_artifact_context=context))
+                self.assertEqual(expected,export.audit(self.output,_artifact_context=context))
+            self.assertEqual(1,full.call_count)
+        with self.assertRaises((KeyError,ValueError)):
+            with export.artifacts._ProducerReplayContext() as context:
+                export.audit(self.output,_artifact_context=context)
+                (self.output/'record.json').write_text('{}')
+                export.audit(self.output,_artifact_context=context)
+
     def test_all64_bind_actual_writer_inputs_and_full_raw_outputs(self):
         record=self.execute();self.assertEqual(export.PASS,record['status'])
         audit=export.audit(self.output);self.assertEqual(export.AUDIT_PASS,audit['status'])

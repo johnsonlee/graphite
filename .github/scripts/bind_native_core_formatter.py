@@ -16,11 +16,11 @@ from prepare_native_pressure_plan import preparation_control_pins
 from native_core_proof import formatter_binding
 
 
-def _bind_with_marker(marker_audit,output):
-    """Return the actual full replay alongside bindings; never accept cached authority."""
+def _bind_with_marker(marker_audit,output, *, _artifact_context=None):
+    """Return the actual marker replay with freshly verified producer inputs."""
     path=Path(marker_audit).resolve();out=Path(output).resolve()
     marker_ref=marker.artifacts.ref(path)
-    audit=common.read(path);checked=marker.audit(path.parent)
+    audit=common.read(path);checked=marker.audit(path.parent,**({} if _artifact_context is None else {'_artifact_context':_artifact_context}))
     common.require(common.typed(audit)==common.typed(checked),'actual marker audit differs from independent raw replay')
     sources={};fixtures={};artifact_refs={}
     for arm in ('C','B'):

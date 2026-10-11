@@ -54,12 +54,12 @@ def replay(path,function):
     return value
 
 
-def _source_evidence_with_marker(path,expected_marker_ref=None):
+def _source_evidence_with_marker(path,expected_marker_ref=None, *, _artifact_context=None):
     """Reconstruct the saved source report through its exact original producer chain."""
     path=Path(path).resolve();stored=common.read(path)
     if expected_marker_ref is not None:
         require(stored['upstream']['markerAudit']==expected_marker_ref,'same actual formatter marker pair')
-    bindings,marked=formatter._bind_with_marker(stored['upstream']['markerAudit']['path'],path.parent)
+    bindings,marked=formatter._bind_with_marker(stored['upstream']['markerAudit']['path'],path.parent,**({} if _artifact_context is None else {'_artifact_context':_artifact_context}))
     sources,fixtures,controls,upstream=bindings
     rule,report=formatter_binding.source_rule(sources,fixtures,controls)
     ref=artifacts.ref(path.parent/'local-array-source-rule.json')
@@ -100,6 +100,11 @@ def field_authority(graph_id,graphs,roots,fixtures,refs,marker_ref,pins):
 
 
 def bind(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=None):
+    with artifacts._ProducerReplayContext() as context:
+        return _bind(reference,actual,output,raw_locals,raw_edges,shard_count,context)
+
+
+def _bind(reference,actual,output,raw_locals,raw_edges,shard_count,_artifact_context):
     roots={'C':Path(reference).resolve(),'B':Path(actual).resolve()};out=Path(output).resolve()
     exports={};audits={};fixtures={};fixture_refs={};pins={};upstream={};source_inputs=[];toolchains={}
     controls=preparation_control_pins()
@@ -107,7 +112,7 @@ def bind(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=No
             'reviewed complete proof helper controls')
     merge_pins(pins,controls)
     for arm,root in roots.items():
-        ref=artifacts.ref(root/'core-string-exports/audit.json');export=replay(ref['path'],strings.audit)
+        ref=artifacts.ref(root/'core-string-exports/audit.json');export=replay(ref['path'],lambda path:strings.audit(path,_artifact_context=_artifact_context))
         require(export['artifactAudit']==artifacts.ref(root/'artifact-audit.json'),'export actual producer root')
         artifact=common.pinned_authority_metadata(export,export['artifactAudit'])
         require((arm=='C' and artifact['role']=='accepted-baseline' and artifact['revision']==artifacts.ACCEPTED) or
@@ -125,9 +130,9 @@ def bind(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=No
     require(source_inputs[0]==source_inputs[1] and fixtures['C']['inputJars']==fixtures['B']['inputJars'],
             'same exact input corpus and manifest')
     marker_ref=artifacts.ref(roots['B']/'core-marker/audit.json')
-    test_ref=artifacts.ref(roots['B']/'formatter-tests/audit.json');tested=replay(test_ref['path'],tests.audit)
+    test_ref=artifacts.ref(roots['B']/'formatter-tests/audit.json');tested=replay(test_ref['path'],lambda path:tests.audit(path,_artifact_context=_artifact_context))
     source_ref=artifacts.ref(roots['B']/'core-formatter-source/source-binding.json')
-    bound,marked=_source_evidence_with_marker(source_ref['path'],marker_ref)
+    bound,marked=_source_evidence_with_marker(source_ref['path'],marker_ref,_artifact_context=_artifact_context)
     require(tested['artifactAudit']==artifacts.ref(roots['B']/'artifact-audit.json') and tested['productionFormatterTestsVerified'] is True,
             'actual candidate compiled formatter test authority')
     require(bound['upstream']['markerAudit']==marker_ref and bound['fixtureManifests']==fixture_refs,

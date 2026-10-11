@@ -68,6 +68,20 @@ class ProductionFormatterTests(unittest.TestCase):
     def execute(self,plan=None):
         with patch.object(r.producer,'phase',side_effect=self.phase):return r.execute(plan or self.plan)
 
+    def test_nested_audit_context_reuses_only_producer_replay(self):
+        self.execute()
+        expected=r.audit(self.out)
+        with patch.object(r.artifacts,'audit',wraps=r.artifacts.audit) as full:
+            with r.artifacts._ProducerReplayContext() as context:
+                self.assertEqual(expected,r.audit(self.out,_artifact_context=context))
+                self.assertEqual(expected,r.audit(self.out,_artifact_context=context))
+            self.assertEqual(1,full.call_count)
+        with self.assertRaises((KeyError,ValueError)):
+            with r.artifacts._ProducerReplayContext() as context:
+                r.audit(self.out,_artifact_context=context)
+                (self.out/'record.json').write_text('{}')
+                r.audit(self.out,_artifact_context=context)
+
     def test_all21_tests_bind_actual_writer_classes_and_reuse_original_cache(self):
         self.assertEqual(r.PASS,self.execute()['status']);audit=r.audit(self.out)
         self.assertEqual(r.AUDIT_PASS,audit['status']);self.assertEqual(21,sum(x['tests'] for x in audit['tests']))

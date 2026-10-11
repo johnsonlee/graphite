@@ -25,7 +25,7 @@ AUDIT_PASS = 'PASS_EXACT_PRODUCER_BOOTSTRAP_MARKER_INDEPENDENT_AUDIT'
 require = common.require
 
 
-def bind(reference_audit, actual_audit, source_inputs, output):
+def bind(reference_audit, actual_audit, source_inputs, output, *, _artifact_context=None):
     inputs, out = Path(source_inputs).resolve(), Path(output).resolve()
     pins = dict(preparation_control_pins()); arms = {}; java = None; jar = None; scope = None
     require(str(Path(__file__).resolve()) in pins and pins.get(str(SOURCE)) == SOURCE_SHA,
@@ -37,7 +37,7 @@ def bind(reference_audit, actual_audit, source_inputs, output):
         source = common.pinned_authority_metadata(value,value['sourceManifest'])
         runtime = common.pinned_authority_metadata(value,value['runtimeManifest'])
         tools = {key: runtime['toolchainIdentity'][key] for key in ('java','cargo','rustc')}
-        check = artifacts.audit(value['producerPacket']['path'],source['root'],value['revision'],
+        check = artifacts._audit_with_context(_artifact_context, value['producerPacket']['path'],source['root'],value['revision'],
                                 value['role'],inputs,tools)
         require(common.typed(check) == common.typed(value), 'stored artifact audit differs from actual producer')
         require(value['role'] == 'accepted-baseline' if arm == 'C' else
@@ -67,9 +67,9 @@ def bind(reference_audit, actual_audit, source_inputs, output):
             'syntheticLocalInferenceOracleClaim':False}
 
 
-def rebind(plan):
+def rebind(plan, *, _artifact_context=None):
     return bind(plan['arms']['C']['artifactAudit']['path'],plan['arms']['B']['artifactAudit']['path'],
-                plan['sourceInputs']['path'],plan['output'])
+                plan['sourceInputs']['path'],plan['output'],_artifact_context=_artifact_context)
 
 
 def commands(plan):
@@ -136,14 +136,14 @@ def execute(plan):
     return record
 
 
-def audit(output):
+def audit(output, *, _artifact_context=None):
     out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
     require(plan['output']==str(out) and record['schema']=='graphite.native-core-marker-export-record.v1' and
             record['status']==PASS and record['errors']==[] and record['finalIdentity']=='PASS' and
             record['plan']==artifacts.ref(out/'plan.json') and all(record[k] is False for k in
             ('performanceAcceptance','completeSemanticEquivalence','syntheticLocalInferenceOracleClaim')),
             'completed actual bootstrap export')
-    require(common.typed(plan)==common.typed(rebind(plan)),'marker plan differs from actual producer inputs')
+    require(common.typed(plan)==common.typed(rebind(plan,_artifact_context=_artifact_context)),'marker plan differs from actual producer inputs')
     helper=compiled(plan);payload=raw_marker(plan)
     require(record['compiledHelper']==helper and all(record[k]==v for k,v in payload.items()),'actual marker output binding')
     require(len(record['phases'])==2,'exact two owned marker phases')

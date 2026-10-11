@@ -36,14 +36,14 @@ PERSISTENCE_CLASSES=('io/johnsonlee/graphite/webgraph/GraphStore.class',
 require=common.require
 
 
-def bind(artifact_audit,source_inputs,output):
+def bind(artifact_audit,source_inputs,output, *, _artifact_context=None):
     path,inputs,out=(Path(p).resolve() for p in (artifact_audit,source_inputs,output))
     value=common.read(path);require(value['schema']=='graphite.native-independent-artifact-audit.v1' and
         value['status']==artifacts.STATUS and value['role'] in ('parent','candidate'),'actual non-baseline writer audit')
     source=common.pinned_authority_metadata(value,value['sourceManifest'])
     runtime=common.pinned_authority_metadata(value,value['runtimeManifest'])
     tools={key:runtime['toolchainIdentity'][key] for key in ('java','cargo','rustc')}
-    actual=artifacts.audit(value['producerPacket']['path'],source['root'],value['revision'],value['role'],inputs,tools)
+    actual=artifacts._audit_with_context(_artifact_context,value['producerPacket']['path'],source['root'],value['revision'],value['role'],inputs,tools)
     require(common.typed(actual)==common.typed(value),'actual test writer artifact audit replay')
     root=Path(value['producerPacket']['path']).parent;checkout=Path(source['root'])
     require(not any(out.is_relative_to(p) for p in (checkout,root/'runtime',root/'graphs')),
@@ -69,7 +69,7 @@ def bind(artifact_audit,source_inputs,output):
             'syntheticLocalInferenceOracleClaim':False,'completeSemanticEquivalence':False}
 
 
-def rebind(plan):return bind(plan['artifactAudit']['path'],plan['sourceInputs']['path'],plan['output'])
+def rebind(plan, *, _artifact_context=None):return bind(plan['artifactAudit']['path'],plan['sourceInputs']['path'],plan['output'],_artifact_context=_artifact_context)
 
 
 def environment(plan):
@@ -182,14 +182,14 @@ def execute(plan):
     return record
 
 
-def audit(output):
+def audit(output, *, _artifact_context=None):
     out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
     require(plan['output']==str(out) and record['schema']=='graphite.production-formatter-test-record.v1' and
         record['status']==PASS and record['errors']==[] and record['finalIdentity']=='PASS' and
         record['plan']==artifacts.ref(out/'plan.json') and all(record[k] is False for k in
         ('performanceAcceptance','syntheticLocalInferenceOracleClaim','completeSemanticEquivalence')),
         'completed actual production formatter tests')
-    require(common.typed(plan)==common.typed(rebind(plan)),'production test plan differs from actual writer')
+    require(common.typed(plan)==common.typed(rebind(plan,_artifact_context=_artifact_context)),'production test plan differs from actual writer')
     phase=out/'production-formatter-tests/record.json';require(record['phase']==artifacts.ref(phase),'actual production test phase')
     checked=artifacts.check_phase(phase,command(plan),Path(plan['checkout']))
     require(checked['name']=='production-formatter-tests' and checked['timeoutSeconds']==3600,'exact bounded correctness phase')
