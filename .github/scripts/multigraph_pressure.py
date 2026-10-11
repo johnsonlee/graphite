@@ -734,7 +734,7 @@ class _VerifiedPressureExecution:
 
     def _check_unchanged(self):
         try:
-            self._verify_unchanged()
+            return self._verify_unchanged()
         except BaseException:
             self._valid = False
             raise
@@ -745,9 +745,10 @@ class _VerifiedPressureExecution:
                 'execution plan path changed')
         require(sha(self._path) == self._sha and canonical(read(self._path)) == self._canonical and
                 canonical(self._plan) == self._canonical, 'execution plan changed')
-        verify_inputs(self._plan)
+        identities = verify_inputs(self._plan)
         if self._reuse:
             require(_execution_closure(self._plan) == self._closure, 'execution upstream closure changed')
+        return identities
 
     def _call(self, operation, output, cell_id=None):
         combined = operation == 'run-and-audit'
@@ -757,7 +758,9 @@ class _VerifiedPressureExecution:
                 print(f'pressure cell {cell_id}: {phase} elapsed={time.monotonic() - started:.3f}s', flush=True)
         try:
             progress('verifying execution boundary')
-            self._check_unchanged()
+            merge_before = combined and self._reuse and self._plan.get('engine') == 'native'
+            if not merge_before:
+                self._check_unchanged()
             target = Path(output).resolve()
             if self._reuse:
                 require(not any(target.is_relative_to(Path(root)) or Path(root).is_relative_to(target)
@@ -768,8 +771,18 @@ class _VerifiedPressureExecution:
                 # No successful combined result is returned until the terminal
                 # closure check passes; persisted failure evidence remains.
                 progress('running cell including launch and cleanup verification')
-                result = (_run_cell(self._path, cell_id, output, self._plan) if self._reuse
-                          else run_cell(self._path, cell_id, output))
+                consumed = False
+                def before_inputs():
+                    nonlocal consumed
+                    require(not consumed, 'combined before-launch boundary already consumed')
+                    identities = self._check_unchanged()
+                    consumed = True
+                    return identities
+                result = (_run_cell(self._path, cell_id, output, self._plan,
+                                    _before_inputs=before_inputs) if merge_before else
+                          _run_cell(self._path, cell_id, output, self._plan) if self._reuse else
+                          run_cell(self._path, cell_id, output))
+                require(not merge_before or consumed, 'combined before-launch boundary not consumed')
                 require(result['status'] == 'PASS', 'cell execution/audit failed')
                 progress('auditing completed raw evidence')
                 audited = (_audit(self._path, output, self._plan) if self._reuse
@@ -1380,7 +1393,7 @@ def run_cell(plan_path, cell_id, output):
     return _run_cell(plan_path, cell_id, output, validate_plan(read(plan_path)))
 
 
-def _run_cell(plan_path, cell_id, output, plan):
+def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
     require(sys.platform in ('linux', 'darwin'), 'unsupported actual CPU/RSS resource backend')
     loading = 'loadingMeasurement' in plan
     if loading:
@@ -1392,6 +1405,11 @@ def _run_cell(plan_path, cell_id, output, plan):
     cell = cells[0]
     arm = plan['arms'][cell['arm']]
     out = Path(output).resolve()
+    # Only the private combined Native operation supplies this callback. Its
+    # full input+closure check is also the before-launch byte verification.
+    # Complete it before creating output, so a failed boundary leaves frozen
+    # evidence untouched. There is no cached identity or public bypass.
+    before_identities = _before_inputs() if _before_inputs is not None else None
     out.mkdir(parents=True, exist_ok=False)
     save(out / 'plan.json', plan)
     record = {'schema': RESULT_SCHEMA, 'status': 'RUNNING', 'planSha256': sha(plan_path),
@@ -1406,7 +1424,8 @@ def _run_cell(plan_path, cell_id, output, plan):
     try:
         for sig in (signal.SIGINT, signal.SIGTERM):
             previous[sig] = signal.signal(sig, interrupted)
-        save(out / 'identities-before.json', verify_inputs(plan))
+        save(out / 'identities-before.json',
+             before_identities if _before_inputs is not None else verify_inputs(plan))
         validator = compile_response_validator(plan['cases'], cell['arm'])
         save(out / 'host-before.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform})
         data = out / 'data'

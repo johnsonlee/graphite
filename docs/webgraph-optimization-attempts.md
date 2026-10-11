@@ -17840,3 +17840,51 @@ This is a feedback-path change, not evidence of query p50/p95, end-to-end, CPU,
 RSS, correctness/stability or construction/loading recovery on the real corpus.
 No single-graph performance measurement, new pressure run, CI launch, push or
 cancellation was performed by this attempt.
+
+### Attempt225 — share the Native before-launch input verification (2026-10-12)
+
+Parent:91ee70ac. Existing03f hosted evidence separates the Native execution step's
+46m06.293 into initial authority/closure4m51.656, six outer prechecks4m47.127,
+six execution blocks29m57.186, raw audits16.632s, terminal closures4m41.451,
+final comparison/closures1m31.728 and miscellaneous0.513s. The execution blocks
+contain14m46.367 pressure,50.431s oracle,1m32.231 warmup,3m41.382 other server
+lifetime and9m06.776 outside server lifetime. The last category includes input
+verification but has no per-verifier timing; it must not all be called hashing.
+The original log and six raw result records were already retained locally;
+no artifact was downloaded again.
+
+The combined Native operation previously verified all pinned bytes at its outer
+entry and again before launching the same cell. It now invokes the complete
+outer check at the runner's before-launch boundary, before creating output, and
+uses that fresh result for the original identity receipt. The private callback
+must be consumed exactly once. No persisted authority, stat-based byte cache or
+CLI bypass is added. Full initial replay, before-launch closure, after-cleanup
+byte verification, raw audit and terminal byte/closure verification remain.
+Standalone and JVM paths are unchanged, as are the real64 workload, six CABBAC
+cells, query catalog, c4/2/20 sampling and measurement/acceptance boundaries.
+
+Verification:132 tests across both affected modules and Native loading passed
+in7.213s. Root reviewed the implementation and independently exercised four
+boundary contracts in0.554s. Checks cover same-size content changes with restored
+mtime, plan/closure drift, output overlap, no launch or output on a failed
+boundary, before/after receipts on execution failure, missing/repeated callback,
+raw-audit mutation and poisoning. The source-access contract establishes three
+fresh pin passes per combined cell instead of four,18 instead of24 over six
+cells. This is a correctness/control-cost assertion, not synthetic performance
+evidence. Logs: `/tmp/graphite-attempt225-contracts.log` and
+`/tmp/graphite-attempt225-root-boundaries.log`. All206 control pins and both
+manifest bindings passed. Workflow syntax and diff checks passed; full
+actionlint retains exactly the same five ShellCheck diagnostics as parent91
+(comparison: `/tmp/graphite-attempt225-actionlint-comparison.json`).
+
+**Decision: retain locally; preserve the active91 hosted run.** There is no
+isolated real-corpus timing for the eliminated passes, so no minute saving or
+product latency/CPU/RSS recovery is claimed. Correctness and stability on the
+real workload remain pending; construction/loading acceptance is unchanged.
+The historical producer/prepare/slowest-shard/join chain alone took3h09m52s,
+excluding upfront checks, queues and finalizers. Native finished82m15s before
+core. This change can advance Native diagnostics but does not establish a
+shorter final critical path or a complete run below two hours. Current91 already
+changes the core transport/replay chain and parallel measurement dependencies;
+its complete hosted phase timings are still required. Replacing that live run
+for this noncritical local change has no demonstrated completion-time benefit.

@@ -60,7 +60,10 @@ class Execution(unittest.TestCase):
                 return SimpleNamespace(returncode=0 if mode=='bad-verdict' or passed else 1,stdout='done',stderr='')
             if mode.startswith('pending'):
                 stack.enter_context(patch.object(r.pressure,'_execution_closure',return_value={'trees':{}}))
-                stack.enter_context(patch.object(r.pressure,'_run_cell',side_effect=lambda p,c,o,v:run(p,c,o)))
+                def combined_run(p,c,o,v,*,_before_inputs=None):
+                    if _before_inputs is not None:_before_inputs()
+                    return run(p,c,o)
+                stack.enter_context(patch.object(r.pressure,'_run_cell',side_effect=combined_run))
                 stack.enter_context(patch.object(r.pressure,'_audit',side_effect=lambda p,o,v:audit(p,o)))
             stack.enter_context(patch.object(r.pressure,'validate_plan',side_effect=lambda p:p))
             stack.enter_context(patch.object(r.pressure,'verify_inputs'))

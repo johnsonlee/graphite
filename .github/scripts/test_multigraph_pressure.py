@@ -3,6 +3,7 @@ import copy
 import contextlib
 import importlib.util
 import json
+import os
 from pathlib import Path
 import signal
 import tempfile
@@ -1134,6 +1135,119 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         self.assertEqual(verified.call_count, 12)
         self.assertEqual(self.replay.call_count, 1)
         self.assertEqual(events, [(op, str(i)) for i in range(6) for op in ('run', 'audit')])
+
+    @contextlib.contextmanager
+    def no_native_server(self):
+        original = p.subprocess.Popen
+        launches = []
+        def guarded(command, *args, **kwargs):
+            if '--pid-file' in command:
+                launches.append(command)
+                raise AssertionError('No actual pressure server in correctness test')
+            return original(command, *args, **kwargs)
+        with patch.object(p.subprocess, 'Popen', side_effect=guarded):
+            yield launches
+
+    def native_context(self):
+        self.plan['engine'] = 'native'
+        self.plan['correctedProducerAuthority'] = self.plan.pop('jvmProducerAuthority')
+        self.plan.update(operation='query', coverage={}, cases=[])
+        for cell in self.plan['cells']: cell['arm'] = 'B'
+        self.plan_file.write_text(json.dumps(self.plan))
+        return self.context()
+
+    def test_native_combined_shares_before_receipt_keeps_after_and_terminal_reads(self):
+        context = self.native_context()
+        def run(plan_path, cell, output, plan, *, _before_inputs):
+            self.assertFalse(Path(output).exists())
+            before = _before_inputs()
+            self.assertEqual({'status': 'PASS', 'pins': self.plan['pins']}, before)
+            # Simulate the unchanged after-cleanup byte boundary. The real
+            # runner callback/receipt integration is exercised separately.
+            self.assertEqual(before, p.verify_inputs(plan))
+            return {'status': 'PASS'}
+        with patch.object(p, 'verify_inputs', wraps=p.verify_inputs) as verified, \
+                patch.object(p, '_run_cell', side_effect=run), \
+                patch.object(p, '_audit', return_value={'status': 'PASS'}) as audit:
+            for i in range(6): context.run_and_audit_cell(str(i), self.root/'execution'/str(i))
+        self.assertEqual(18, verified.call_count)  # Three fresh reads/cell, formerly four.
+        self.assertEqual(6, audit.call_count)
+        self.assertEqual(1, self.replay.call_count)
+
+    def test_native_combined_real_runner_checks_before_output_and_never_launches_changed_inputs(self):
+        self.native_context()
+        pinned = self.raw/'universes/case.json'; original_pin = pinned.read_bytes()
+        original_plan = self.plan_file.read_bytes(); closure = self.query/'readiness-attempts/extra'
+        for kind in ('pins', 'closure', 'plan'):
+            with self.subTest(kind=kind):
+                context = self.context(); output = self.root/'execution'
+                if kind == 'pins':
+                    old = pinned.stat(); pinned.write_bytes(b'[]')
+                    self.assertEqual(len(original_pin), pinned.stat().st_size)
+                    os.utime(pinned, ns=(old.st_atime_ns, old.st_mtime_ns))
+                elif kind == 'closure': closure.mkdir()
+                else: self.plan_file.write_text('{}')
+                try:
+                    with self.no_native_server() as launch, patch.object(p, '_audit') as audit:
+                        with self.assertRaises((ValueError, OSError)):
+                            context.run_and_audit_cell('0', output)
+                    self.assertFalse(output.exists()); self.assertEqual([], launch); audit.assert_not_called()
+                    with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+                finally:
+                    pinned.write_bytes(original_pin); self.plan_file.write_bytes(original_plan)
+                    if closure.exists(): closure.rmdir()
+
+    def test_native_combined_rejects_output_overlap_without_creating_entries(self):
+        context = self.native_context(); output = self.query/'new-output'
+        with self.no_native_server() as launch, patch.object(p, '_audit') as audit:
+            with self.assertRaisesRegex(ValueError, 'overlaps'):
+                context.run_and_audit_cell('0', output)
+        self.assertFalse(output.exists()); self.assertEqual([], launch); audit.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_native_combined_real_runner_retains_both_identity_receipts_on_failure(self):
+        context = self.native_context(); output = self.root/'execution'
+        # Stop before any server is constructed, but exercise real _run_cell,
+        # its before receipt and its mandatory finally/after-input boundary.
+        with patch.object(p, 'verify_inputs', wraps=p.verify_inputs) as verified, \
+                patch.object(p, 'compile_response_validator', side_effect=ValueError('deliberate pre-launch failure')), \
+                patch.object(p, 'stop_owned', return_value={'errors': [], 'after': []}), \
+                patch.object(p, 'lifecycle_time', return_value={}), \
+                self.no_native_server() as launch, patch.object(p, '_audit') as audit:
+            with self.assertRaisesRegex(ValueError, 'cell execution/audit failed'):
+                context.run_and_audit_cell('0', output)
+        self.assertEqual(2, verified.call_count)
+        for name in ('identities-before.json', 'identities-after.json'):
+            self.assertEqual({'status': 'PASS', 'pins': self.plan['pins']}, p.read(output/name))
+        self.assertEqual([], launch); audit.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_native_combined_missing_or_repeated_callback_cannot_succeed(self):
+        context = self.native_context()
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), patch.object(p, '_audit') as audit:
+            with self.assertRaisesRegex(ValueError, 'boundary not consumed'):
+                context.run_and_audit_cell('0', self.root/'out')
+        audit.assert_not_called()
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+        context = self.context()
+        def repeated(*args, _before_inputs):
+            _before_inputs(); _before_inputs()
+        with patch.object(p, '_run_cell', side_effect=repeated):
+            with self.assertRaisesRegex(ValueError, 'already consumed'):
+                context.run_and_audit_cell('0', self.root/'out')
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_native_combined_audit_mutation_still_fails_terminal_bytes(self):
+        context = self.native_context()
+        def run(*args, _before_inputs):
+            _before_inputs(); return {'status': 'PASS'}
+        def audit(*args):
+            (self.raw/'universes/case.json').write_text('changed during raw audit')
+            return {'status': 'PASS'}
+        with patch.object(p, '_run_cell', side_effect=run), patch.object(p, '_audit', side_effect=audit):
+            with self.assertRaisesRegex(ValueError, 'input changed'):
+                context.run_and_audit_cell('0', self.root/'out')
+        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
 
     def test_combined_mutations_during_run_or_audit_fail_terminal_boundary(self):
         pinned = self.raw/'universes/case.json'
