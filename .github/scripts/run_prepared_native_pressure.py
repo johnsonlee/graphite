@@ -73,6 +73,8 @@ def execute(preparation,output,prefix,*,engine='native'):
         if 'pendingComparabilityAuthority' in plan:
             record['comparabilityPending'] = True
         record['unissued']=[c['id'] for c in plan['cells']];save()
+        node=shutil.which('node');pressure.require(node is not None,'Node executable missing')
+        comparator=SCRIPTS/'benchmark-multigraph-pressure.mjs'
         for cell in plan['cells']:
             record['unissued'].remove(cell['id'])
             attempt={'id':cell['id'],'status':'RUNNING'};record['cells'].append(attempt);save()
@@ -86,9 +88,38 @@ def execute(preparation,output,prefix,*,engine='native'):
             except BaseException as error:
                 attempt.update(status='FAIL',error=repr(error));raise
             finally:save()
+            # Report existing fixed pairs as soon as both fully audited cells
+            # exist. This never shortens the schedule or produces acceptance.
+            if len(record['cells']) in (3,5):
+                try:
+                    count=len(record['cells']);progress_prefix=output/f'progress-{count}'
+                    command=[str(Path(node).resolve()),str(comparator),str(plan_file),str(output),
+                             str(progress_prefix),'--progress',str(count)]
+                    completed=subprocess.run(command,capture_output=True,text=True,timeout=60,check=False)
+                    Path(str(progress_prefix)+'.stdout.log').write_text(completed.stdout)
+                    Path(str(progress_prefix)+'.stderr.log').write_text(completed.stderr)
+                    progress_file=Path(str(progress_prefix)+'-status.json')
+                    progress=pressure.read(progress_file)
+                    pressure.require(completed.returncode==0 and
+                                     progress.get('schema')=='graphite.multigraph-pressure.progress.v1' and
+                                     progress.get('status')=='PROVISIONAL' and progress.get('planSha256')==ready['planSha256'] and
+                                     progress.get('completedCells')==[c['id'] for c in record['cells']] and
+                                     progress.get('engine')==engine and progress.get('operation')=='query' and
+                                     all(progress.get(k) is False for k in
+                                         ('passed','performanceAcceptance','queryEvidenceComplete','otherOperationsEligible')),
+                                     'provisional comparison must preserve incomplete scope and exact completed cells')
+                    record.setdefault('progress',[]).append({'completedCells':count,
+                        'path':str(progress_file),'sha256':pressure.sha(progress_file)})
+                    save()
+                    print(Path(str(progress_prefix)+'-report.md').read_text(),flush=True)
+                except Exception as error:
+                    # Diagnostics are not a new dependency of the measurement.
+                    # Keep the failure visible and preserve the complete schedule.
+                    record.setdefault('progressErrors',[]).append({
+                        'completedCells':len(record['cells']),'error':repr(error)})
+                    save()
+                    print(f'pressure provisional report failed: {error!r}; continuing full measurement',flush=True)
         context._check_unchanged()
-        node=shutil.which('node');pressure.require(node is not None,'Node executable missing')
-        comparator=SCRIPTS/'benchmark-multigraph-pressure.mjs'
         command=[str(Path(node).resolve()),str(comparator),str(plan_file),str(output),str(prefix)]
         completed=subprocess.run(command,capture_output=True,text=True,timeout=60,check=False)
         (output/'comparison.stdout.log').write_text(completed.stdout);(output/'comparison.stderr.log').write_text(completed.stderr)

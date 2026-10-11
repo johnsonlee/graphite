@@ -132,6 +132,13 @@ export function requestStatistics(stage,cases) {
     }));
 }
 export function comparePressure(planFile,directory,comparabilityReceipt=null) {
+    return compareCompletedCells(planFile,directory,comparabilityReceipt,null);
+}
+export function pressureProgress(planFile,directory,completedCells) {
+    require(completedCells===3 || completedCells===5,'Progress requires a completed fixed comparison pair');
+    return compareCompletedCells(planFile,directory,null,completedCells);
+}
+function compareCompletedCells(planFile,directory,comparabilityReceipt,completedCells) {
     const plan=read(planFile), planSha256=sha(planFile);
     require(plan.schema==='graphite.multigraph-pressure.plan.v1' && plan.operation==='query' && ['native','jvm'].includes(plan.engine),'Plan schema');
     require(same(plan.cells.map(c=>c.arm),['C','A','B','B','A','C']) && new Set(plan.cells.map(c=>c.id)).size===6,'Fixed CABBAC');
@@ -139,8 +146,9 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
     require(plan.schedule.concurrency===4 && plan.schedule.warmupPerCase===2 && plan.schedule.measuredPerCase===20,'Fixed sampling');
     require(plan.cases.length>0 && plan.cases.every(c=>new Set(c.targetGraphIds).size>1),'Actual multi-graph request scopes');
     const inputs={[path.resolve(planFile)]:planSha256};
-    const comparabilityVerified=verifyComparabilityJoin(planFile,directory,plan,comparabilityReceipt,inputs);
-    const cells=plan.cells.map(cell=>{
+    const provisional=completedCells!==null;
+    const comparabilityVerified=provisional?false:verifyComparabilityJoin(planFile,directory,plan,comparabilityReceipt,inputs);
+    const cells=plan.cells.slice(0,completedCells??6).map(cell=>{
         const root=path.join(directory,cell.id), resultFile=path.join(root,'result.json'), auditFile=path.join(root,'audit.json');
         const result=read(resultFile),audit=read(auditFile);
         inputs[path.resolve(resultFile)]=sha(resultFile);inputs[path.resolve(auditFile)]=sha(auditFile);
@@ -160,6 +168,7 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
     });
     require(new Set(cells.map(c=>c.rssSemantics)).size===1,'Mixed RSS measurement semantics');
     const comparisons=Object.entries(plan.comparisonPairs).flatMap(([kind,pairs])=>pairs.map(([b,c],direction)=>{
+        if (b>=cells.length || c>=cells.length) return null;
         const base=cells[b],candidate=cells[c],br=base.stage.resources,cr=candidate.stage.resources;
         const cases=plan.cases.map(k=>{
             const a=base.stats[k.id],z=candidate.stats[k.id];
@@ -174,7 +183,14 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
                 status:resourceBound(br.cpuLowerBoundSeconds,br.cpuUpperBoundSeconds,cr.cpuLowerBoundSeconds,cr.cpuUpperBoundSeconds)},
             rss:{measurementSemantics:base.rssSemantics,baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
                 status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes)}};
-    }));
+    }).filter(Boolean));
+    if (provisional) return {
+        schema:'graphite.multigraph-pressure.progress.v1',status:'PROVISIONAL',
+        scope:'multi-graph-pressure',engine:plan.engine,operation:'query',planSha256,
+        completedCells:cells.map(c=>c.cell.id),comparisons,inputs,
+        passed:false,performanceAcceptance:false,queryEvidenceComplete:false,otherOperationsEligible:false,
+        limitation:'Completed fixed pairs only. All six cells and complete correctness evidence remain required; this report cannot establish acceptance.'
+    };
     const coverage=plan.coverage;
     require(Array.isArray(coverage.unavailableFamilies),'Query coverage');
     const coverageComplete=coverage.unavailableFamilies.length===0 && coverage.requiredFamilies.length>0 &&
@@ -192,10 +208,14 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;
     require(plan&&dir&&prefix,'plan.json cell-directory output-prefix');
-    require(argv.length===3 || (argv.length===5 && flag==='--comparability-receipt' && receipt),'Optional --comparability-receipt file');
+    require(argv.length===3 || (argv.length===5 && ['--comparability-receipt','--progress'].includes(flag) && receipt),
+        'Optional --comparability-receipt file or --progress completed-cell-count');
+    const provisional=flag==='--progress';
     let result;
-    try {result=comparePressure(plan,dir,receipt);result.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir),
-        ...(receipt?{comparabilityReceipt:path.relative(path.dirname(prefix),receipt)}:{})};} catch(e) {result={schema:'graphite.multigraph-pressure.comparison.v1',passed:false,status:'FAIL',errors:[e.message]};}
+    try {result=provisional?pressureProgress(plan,dir,Number(receipt)):comparePressure(plan,dir,receipt);
+        result.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir),
+        ...(!provisional&&receipt?{comparabilityReceipt:path.relative(path.dirname(prefix),receipt)}:{})};
+    } catch(e) {result={schema:'graphite.multigraph-pressure.comparison.v1',passed:false,status:'FAIL',errors:[e.message]};}
     fs.mkdirSync(path.dirname(prefix),{recursive:true});
     fs.writeFileSync(prefix+'-status.json',JSON.stringify(result,null,2)+'\n');
     const lines=['### Multi-graph continuous c4 pressure','',result.status,''];
@@ -208,6 +228,6 @@ function main(argv) {
     }
     lines.push(...(result.errors??[]),result.limitation??'');
     fs.writeFileSync(prefix+'-report.md',lines.join('\n')+'\n');
-    if(!result.passed)process.exitCode=1;
+    if(!result.passed && !(provisional&&result.status==='PROVISIONAL'))process.exitCode=1;
 }
 if(process.argv[1]&&fs.realpathSync(process.argv[1])===fs.realpathSync(fileURLToPath(import.meta.url)))main(process.argv.slice(2));

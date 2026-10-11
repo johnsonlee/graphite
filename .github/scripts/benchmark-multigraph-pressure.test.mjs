@@ -6,7 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {comparePressure,resourceBound} from './benchmark-multigraph-pressure.mjs';
+import {comparePressure,pressureProgress,resourceBound} from './benchmark-multigraph-pressure.mjs';
 const digest=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const put=(p,v)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,JSON.stringify(v));};
 function fixture(t) {
@@ -37,6 +37,38 @@ test('fixed per-case repeated latency and independent CPU/RSS intervals',t=>{
  const f=fixture(t),r=comparePressure(f.file,f.root);assert.equal(r.passed,true);assert.equal(r.comparisons.length,4);assert.equal(r.comparisons[2].cases[0].deltaP95Ms,-.00002);
  assert.equal(resourceBound(100,120,110,115),'INDETERMINATE');assert.equal(resourceBound(100,100,106,106),'FAIL');
  f.rewrite(2,r=>{r.stages.pressure.resources.rss.upperBoundBytes=1200;});assert.equal(comparePressure(f.file,f.root).passed,false);
+});
+test('early feedback reports only completed original pairs and cannot satisfy final acceptance',t=>{
+ const f=fixture(t),final=comparePressure(f.file,f.root);
+ const five=pressureProgress(f.file,f.root,5);
+ assert.deepEqual(five.comparisons,final.comparisons.slice(0,3));
+ fs.rmSync(path.join(f.root,'c5'),{recursive:true});
+ fs.rmSync(path.join(f.root,'c4'),{recursive:true});
+ fs.rmSync(path.join(f.root,'c3'),{recursive:true});
+ const three=pressureProgress(f.file,f.root,3);
+ assert.deepEqual(three.completedCells,['c0','c1','c2']);
+ assert.deepEqual(three.comparisons,[final.comparisons[0],final.comparisons[2]]);
+ assert.equal(three.schema,'graphite.multigraph-pressure.progress.v1');
+ for(const key of ['passed','performanceAcceptance','queryEvidenceComplete','otherOperationsEligible']) assert.equal(three[key],false);
+ assert.throws(()=>comparePressure(f.file,f.root),/ENOENT/);
+ for(const count of [0,1,2,4,6,NaN]) assert.throws(()=>pressureProgress(f.file,f.root,count),/completed fixed/);
+});
+test('early feedback retains regressions and rejects failed or changed audited samples',t=>{
+ const f=fixture(t);
+ f.rewrite(2,r=>{r.stages.pressure.resources.cpuLowerBoundSeconds=2;r.stages.pressure.resources.cpuUpperBoundSeconds=2;});
+ assert.ok(pressureProgress(f.file,f.root,3).comparisons.every(c=>c.cpu.status==='FAIL'));
+ f.rewrite(2,r=>{r.stages.pressure.requests[0].completeBody=false;});
+ assert.throws(()=>pressureProgress(f.file,f.root,3),/boundary/);
+});
+test('progress CLI publishes an explicitly incomplete report without requiring future cells',t=>{
+ const f=fixture(t),prefix=path.join(f.root,'early');
+ for(const id of ['c3','c4','c5']) fs.rmSync(path.join(f.root,id),{recursive:true});
+ const command=[fileURLToPath(new URL('./benchmark-multigraph-pressure.mjs',import.meta.url)),f.file,f.root,prefix];
+ assert.equal(spawnSync(process.execPath,[...command,'--progress','3']).status,0);
+ const result=JSON.parse(fs.readFileSync(prefix+'-status.json'));
+ assert.equal(result.status,'PROVISIONAL');assert.equal(result.passed,false);
+ assert.match(fs.readFileSync(prefix+'-report.md','utf8'),/cannot establish acceptance/);
+ assert.equal(spawnSync(process.execPath,command).status,1);
 });
 test('each fixed direction is required; a slower reverse cannot be pooled away',t=>{
  const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});r.stages.pressure.caseStatistics.slow.p50Ns=150;r.stages.pressure.caseStatistics.slow.p95Ns=150;});

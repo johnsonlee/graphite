@@ -17025,3 +17025,51 @@ the complete `node --test .github/scripts/benchmark-*.test.mjs` batch and action
 with shellcheck disabled passed. Logs are
 `/tmp/graphite-ci6bbfe3-integration-followup-node-tests.log` and
 `/tmp/graphite-ci6bbfe3-integration-followup-actionlint.log`.
+
+### Attempt213 — report audited fixed pairs before the full pressure cohort finishes (2026-10-11)
+
+**Hypothesis.** Waiting for all six CABBAC cells before showing any latency or
+resource comparison delays actionable feedback. Report the existing complete
+forward pairs after cell3 and the additional reverse parent pair after cell5.
+This improves result availability; it does not reduce the full measurement's
+runtime or establish faster production queries.
+
+Base: `03f4ddaffce859ba06a273de29244b7db74af8e0`; candidate: this commit.
+The original real64 workload, case catalogs, concurrency4, two warmups and20
+measured requests per case, six fresh lifecycles and fixed pair directions remain
+unchanged. Reporting happens after the completed cell's cleanup and independent
+audit, between lifecycles. It reads only plan/result/audit JSON and reuses the
+final comparator's raw-request quantile calculation and resource comparison.
+No graph payload is reread for this diagnostic.
+
+Progress uses a separate schema and always sets `passed`, `performanceAcceptance`,
+`queryEvidenceComplete` and `otherOperationsEligible` false. All six cells and
+complete comparability remain required by the original final comparison. A
+diagnostic timeout, missing report or forged acceptance flag is recorded in
+`progressErrors` and printed, but does not discard remaining samples or replace
+the final decision. Progress files and command output remain in the existing
+measurement artifact; the report is also flushed to the job log.
+
+Correctness:25 Python execution/finalization tests and the complete216-test Node
+batch passed; actionlint with shellcheck disabled passed. Tests compare provisional
+pairs to the final comparator, reject missing future cells in final mode, preserve
+regressions, reject malformed complete-body boundaries, and check that diagnostic
+failures cannot suppress remaining cells or substitute for final acceptance. All187
+existing control-manifest file entries were independently verified, including both
+manifests referencing the shared comparator.
+
+Existing saved real64 evidence from run38120724071 was replayed offline without
+rerunning a server or modifying the original archive. Forward accepted-baseline
+`slow-qualifiedIdHit` p95 remains2359.171077→2580.301035ms; parent forward and reverse
+remain2415.487125→2580.301035ms and2331.338802→2545.872770ms. This checks report
+fidelity only: the original cohort's sixth-cell resource failure remains a failure.
+No new query p50/p95, CPU, RSS, loading or construction acceptance is claimed.
+
+**Decision: retain the earlier diagnostic feedback.** Hosted result availability
+and total elapsed-time effects remain unmeasured. Preserve the active03f CI run
+while evaluating separate changes to its preparation critical path; this reporting
+change alone does not justify cancelling and restarting it. Validation logs:
+`/tmp/graphite-progress-python-tests.log`, `/tmp/graphite-progress-all-node-tests.log`,
+`/tmp/graphite-progress-actionlint.log`; offline reports:
+`/tmp/graphite-progress-replay/first-status.json` and
+`/tmp/graphite-progress-replay/reverse-parent-status.json`.

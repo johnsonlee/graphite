@@ -26,6 +26,19 @@ class Execution(unittest.TestCase):
                 if mode=='audit-failure' and cell=='1':raise ValueError('invalid complete body')
                 return {'status':'PASS'}
             def compare(command,**kwargs):
+                if '--progress' in command:
+                    count=int(command[-1]);events.append(('progress',str(count)))
+                    if mode=='progress-timeout':raise r.subprocess.TimeoutExpired(command,60)
+                    if mode=='progress-missing':return SimpleNamespace(returncode=1,stdout='',stderr='no report')
+                    progress_prefix=command[-3]
+                    report={'schema':'graphite.multigraph-pressure.progress.v1','status':'PROVISIONAL',
+                        'engine':engine,'operation':'query','planSha256':digest,
+                        'completedCells':[str(i) for i in range(count)],'passed':False,
+                        'performanceAcceptance':mode=='progress-forged-pass','queryEvidenceComplete':False,
+                        'otherOperationsEligible':False}
+                    Path(progress_prefix+'-status.json').write_text(json.dumps(report))
+                    Path(progress_prefix+'-report.md').write_text('PROVISIONAL fixed-pair feedback')
+                    return SimpleNamespace(returncode=0,stdout='',stderr='')
                 events.append(('compare',None));self.assertEqual(kwargs['timeout'],60);self.assertFalse(kwargs['check'])
                 passed=mode not in ('regression','bad-verdict','pending')
                 prefix.parent.mkdir(parents=True,exist_ok=True)
@@ -59,7 +72,9 @@ class Execution(unittest.TestCase):
         with patch('builtins.print') as progress:
             result, _, _ = self.exercise('pending')
         self.assertEqual(r.PENDING, result['status'])
-        messages = [call.args[0] for call in progress.call_args_list]
+        all_messages = [call.args[0] for call in progress.call_args_list]
+        self.assertEqual(all_messages.count('PROVISIONAL fixed-pair feedback'),2)
+        messages = [m for m in all_messages if not m.startswith('PROVISIONAL')]
         self.assertEqual(messages[0], 'pressure context: verifying authority and input closure')
         self.assertTrue(messages[1].startswith('pressure context: verified elapsed='))
         phases = ('verifying execution boundary', 'running cell including launch and cleanup verification',
@@ -74,7 +89,7 @@ class Execution(unittest.TestCase):
         result,verdict,events=self.exercise('pending')
         self.assertEqual(r.PENDING,result['status']);self.assertFalse(result['performanceAcceptance'])
         self.assertTrue(result['comparabilityPending']);self.assertEqual([],result['unissued'])
-        self.assertEqual([(kind,str(i)) for i in range(6) for kind in ('run','audit')]+[('compare',None)],events)
+        self.assertEqual(self.expected_events(),events)
         self.assertFalse(verdict['passed'])
 
     def test_pending_comparator_cannot_silently_claim_acceptance(self):
@@ -84,9 +99,35 @@ class Execution(unittest.TestCase):
 
     def test_all_six_cells_run_then_audit_sequentially_before_comparison(self):
         result,verdict,events=self.exercise()
-        self.assertEqual(events,[(kind,str(i)) for i in range(6) for kind in ('run','audit')]+[('compare',None)])
+        self.assertEqual(events,self.expected_events())
         self.assertTrue(result['performanceAcceptance']);self.assertTrue(verdict['passed']);self.assertEqual(result['unissued'],[])
         self.assertTrue(all(c['status']=='PASS' and c['auditSha256'] for c in result['cells']))
+
+    @staticmethod
+    def expected_events():
+        events=[]
+        for i in range(6):
+            events.extend([('run',str(i)),('audit',str(i))])
+            if i+1 in (3,5):events.append(('progress',str(i+1)))
+        return events+[('compare',None)]
+
+    def test_progress_is_after_complete_pair_audits_and_never_replaces_final_comparison(self):
+        result,verdict,events=self.exercise('regression')
+        self.assertEqual(events,self.expected_events())
+        self.assertEqual([3,5],[p['completedCells'] for p in result['progress']])
+        self.assertTrue(all(p['sha256'] for p in result['progress']))
+        self.assertFalse(verdict['passed']);self.assertFalse(result['performanceAcceptance'])
+
+    def test_failed_or_forged_diagnostic_is_retained_without_losing_remaining_samples(self):
+        for mode in ('progress-forged-pass','progress-timeout','progress-missing'):
+            with self.subTest(mode=mode):
+                result,verdict,events=self.exercise(mode)
+                self.assertEqual(self.expected_events(),events)
+                self.assertEqual([3,5],[r['completedCells'] for r in result['progressErrors']])
+                self.assertNotIn('progress',result)
+                self.assertEqual([],result['unissued'])
+                self.assertEqual('PASS',result['status']);self.assertTrue(verdict['passed'])
+                self.assertEqual([],result['errors'])
 
     def test_missing_authority_cannot_launch_or_compare(self):
         result,verdict,events=self.exercise('unavailable')
@@ -149,7 +190,7 @@ class Execution(unittest.TestCase):
         result,verdict,events=self.exercise(engine='jvm')
         self.assertEqual('graphite.jvm-pressure.execution.v1',result['schema'])
         self.assertEqual('jvm',result['engine']);self.assertEqual('jvm',verdict['engine'])
-        self.assertEqual([(kind,str(i)) for i in range(6) for kind in ('run','audit')]+[('compare',None)],events)
+        self.assertEqual(self.expected_events(),events)
         self.assertTrue(result['performanceAcceptance'])
         self.assertTrue(all(str(r.SCRIPTS/name) in result['controls'] for name in
                             ('jvm_pressure_oracles.py','jvm_pressure_distinct.py','jvm_pressure_inputs.py')))
