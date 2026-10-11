@@ -454,6 +454,41 @@ class _VerifiedWorkerInputs:
     def __init__(self):raise TypeError('use complete worker replay factory')
     def __reduce_ex__(self,protocol):raise TypeError('worker authority cannot be serialized')
     @classmethod
+    def _unwritten_preparation(cls,plan):
+        value=object.__new__(cls);value._valid=False
+        value._identity=common.typed(plan)
+        value._path=Path(plan['output'])/'plan.json';value._sha=None
+        require(value._path==value._path.resolve() and not value._path.exists(),
+                'fresh canonical preparation plan required')
+        value._closure=_worker_input_closure(plan)
+        artifacts.verify_pins(plan['pins'])
+        return value
+    @classmethod
+    def for_preparation(cls,plan):
+        """Independent supplied-plan entry always performs a full semantic replay."""
+        value=cls._unwritten_preparation(plan)
+        require(value._identity==common.typed(rebind(plan)), 'preparation plan differs from actual pair')
+        value._finish_preparation_binding(plan)
+        return value
+    @classmethod
+    def bind_preparation(cls,reference,actual,output,raw_locals,raw_edges,shard_count):
+        """Own the fresh full bind; callers cannot supply a preverified plan."""
+        plan=bind(reference,actual,output,raw_locals,raw_edges,shard_count)
+        progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
+        value=cls._unwritten_preparation(plan)
+        value._finish_preparation_binding(plan)
+        return plan,value
+    def _finish_preparation_binding(self,plan):
+        artifacts.verify_pins(plan['pins'])
+        require(common.typed(plan)==self._identity and _worker_input_closure(plan)==self._closure,
+                'preparation inputs changed during complete binding')
+        self._valid=True
+    def _attach_preparation_plan(self,plan):
+        require(self._valid and self._sha is None and not self._path.is_symlink() and
+                self._path==self._path.resolve() and common.typed(plan)==self._identity and
+                common.typed(common.read(self._path))==self._identity,'preparation plan publication changed')
+        self._sha=common.sha(self._path)
+    @classmethod
     def open(cls,plan):
         value=object.__new__(cls);value._valid=False
         value._identity=common.typed(plan)
@@ -526,9 +561,13 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     finally:
         for sig in previous:signal.signal(sig,signal.SIG_IGN)
         try:
-            _check_worker_inputs(plan,_input_authority)
+            if is_preparation:progress('preparation-inputs','start',boundary='after-execution')
+            if not is_preparation or _input_authority is None:_check_worker_inputs(plan,_input_authority)
             if is_preparation and 'files' in record:
                 require(record['files']==preparation_files(plan),'prepared outputs changed')
+            if is_preparation:
+                if _input_authority is not None:_check_worker_inputs(plan,_input_authority)
+                progress('preparation-inputs','complete',boundary='after-execution')
             if not is_preparation:
                 check_preparation(plan)
                 require(record['preparation']==artifacts.ref(out/'preparation.json'),'preparation changed during shard')
@@ -546,45 +585,32 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
 
 def prepare(plan):
     shard_rows(plan,0)
-    require(common.typed(plan)==common.typed(rebind(plan)),'preparation plan differs from actual pair')
-    return _prepare_outputs(plan)
+    authority=_VerifiedWorkerInputs.for_preparation(plan)
+    return _prepare_outputs(plan,authority)
 
 
-def _prepare_outputs(plan):
-    out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False)
-    for name in ('classes','graphs','shards'):(out/name).mkdir()
-    common.save(out/'plan.json',plan)
-    return execute_stage(plan,preparation_commands(plan),out/'preparation.json')
+def _prepare_outputs(plan,authority):
+    require(type(authority) is _VerifiedWorkerInputs,'private preparation input authority required')
+    try:
+        out=Path(plan['output']);out.mkdir(parents=True,exist_ok=False)
+        for name in ('classes','graphs','shards'):(out/name).mkdir()
+        common.save(out/'plan.json',plan)
+        authority._attach_preparation_plan(plan)
+        return execute_stage(plan,preparation_commands(plan),out/'preparation.json',_input_authority=authority)
+    finally:
+        authority._valid=False
 
 
 def _prepare_fresh(reference,actual,output,raw_locals=False,raw_edges=False,shard_count=None):
-    """Bind CLI inputs once; the terminal stage still performs a full rebind."""
-    plan=bind(reference,actual,output,raw_locals,raw_edges,shard_count)
-    progress('binding','complete',totalGraphs=len(plan['graphs']),phases=plan['maxOwnedPhases'])
-    shard_rows(plan,0)
+    """One full CLI bind, then fresh byte/closure checks in this invocation only."""
     progress('preparation-inputs','start',boundary='before-execution')
-    identity=common.typed(plan);before=_worker_input_closure(plan)
-    artifacts.verify_pins(plan['pins'])
-    require(common.typed(plan)==identity and _worker_input_closure(plan)==before,
-            'fresh preparation inputs changed before execution')
-    progress('preparation-inputs','complete',boundary='before-execution')
-    # No skip flag or worker authority reaches execute_stage: its final full
-    # semantic replay remains independent of this newly bound CLI invocation.
-    record=_prepare_outputs(plan)
+    plan,authority=_VerifiedWorkerInputs.bind_preparation(reference,actual,output,raw_locals,raw_edges,shard_count)
     try:
-        progress('preparation-inputs','start',boundary='after-execution')
-        path=Path(plan['output'])/'plan.json'
-        require(not path.is_symlink() and common.typed(plan)==identity and
-                common.typed(common.read(path))==identity and record['plan']==artifacts.ref(path),
-                'fresh preparation plan changed')
-        artifacts.verify_pins(plan['pins'])
-        require(_worker_input_closure(plan)==before,'fresh preparation input closure changed')
-        progress('preparation-inputs','complete',boundary='after-execution')
-    except BaseException as error:
-        record['status']='FAIL';record['finalIdentity']='FAIL'
-        record['errors'].append('fresh preparation final verification: '+repr(error))
-        (Path(output)/'preparation.json').write_text(json.dumps(record,indent=2)+'\n')
-    return record
+        shard_rows(plan,0)
+        progress('preparation-inputs','complete',boundary='before-execution')
+        return _prepare_outputs(plan,authority)
+    finally:
+        authority._valid=False
 
 
 def run_shard(output,index,count):

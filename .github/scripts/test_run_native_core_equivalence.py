@@ -692,17 +692,25 @@ class FreshPreparationTests(unittest.TestCase):
         self.assertEqual(result,r.common.read(self.out/'preparation.json'))
         self.assertTrue(result['errors'])
 
-    def test_one_initial_bind_terminal_replay_and_unchanged_public_receipt(self):
+    def test_one_initial_bind_fresh_boundaries_and_unchanged_public_receipt(self):
         import shutil
-        fresh=self.fresh()
+        with patch.object(r.artifacts,'verify_pins',wraps=r.artifacts.verify_pins) as verify, \
+                patch.object(r,'_worker_input_closure',wraps=r._worker_input_closure) as closure:
+            fresh=self.fresh()
         self.assertEqual(r.PREPARATION_PASS,fresh['status'])
-        self.assertEqual((1,1),(self.bind.call_count,self.rebind.call_count))
+        self.assertEqual((1,0),(self.bind.call_count,self.rebind.call_count))
+        self.assertEqual(4,sum(call.args[0]==self.plan['pins'] for call in verify.call_args_list))
+        self.assertEqual(3,closure.call_count)
         self.assertEqual(self.plan,r.common.read(self.out/'plan.json'))
         self.assertEqual(['before-execution','after-execution'],
                          [row['boundary'] for row in self.f.events('preparation-inputs','complete')])
         shutil.rmtree(self.out);self.rebind.reset_mock()
-        standalone=r.prepare(self.plan)
-        self.assertEqual(2,self.rebind.call_count)
+        with patch.object(r.artifacts,'verify_pins',wraps=r.artifacts.verify_pins) as verify, \
+                patch.object(r,'_worker_input_closure',wraps=r._worker_input_closure) as closure:
+            standalone=r.prepare(self.plan)
+        self.assertEqual(1,self.rebind.call_count)
+        self.assertEqual(4,sum(call.args[0]==self.plan['pins'] for call in verify.call_args_list))
+        self.assertEqual(3,closure.call_count)
         self.assertEqual(fresh,standalone)
 
     def test_before_initialization_rejects_real_input_source_inventory_and_plan_changes(self):
@@ -726,29 +734,90 @@ class FreshPreparationTests(unittest.TestCase):
                 finally:case.doCleanups()
 
     def test_phase_and_terminal_mutations_leave_failed_owned_receipt(self):
-        for kind in ('input','source','directory','plan-file','plan-object','prepared-files','phase','terminal'):
+        import os
+        for kind in ('input','same-size-restored-mtime','source','directory','config','unpinned','plan-file','plan-object','prepared-files','phase','terminal'):
             with self.subTest(kind=kind):
                 case=FreshPreparationTests(methodName='runTest');case.setUp()
                 try:
+                    unpinned=case.inputs.root/'marker/unpinned.txt';unpinned.write_text('original')
                     def phase(*args):
                         case.f.phase(*args)
                         if kind=='input':case.f.input.write_bytes(b'changed pinned input')
+                        elif kind=='same-size-restored-mtime':
+                            p=case.f.input;before=p.stat();data=p.read_bytes()
+                            p.write_bytes(bytes([data[0]^1])+data[1:]);os.utime(p,ns=(before.st_atime_ns,before.st_mtime_ns))
                         elif kind=='source':(case.inputs.checkout/'source.kt').write_text('changed source')
                         elif kind=='directory':(case.inputs.root/'marker/new-empty').mkdir()
+                        elif kind=='config':(Path(case.inputs.env['GRADLE_USER_HOME'])/'init.d').mkdir(parents=True)
+                        elif kind=='unpinned':unpinned.write_text('modified')
                         elif kind=='plan-file':(case.out/'plan.json').write_text('{}')
                         elif kind=='plan-object':case.bound['maxOwnedPhases']+=1
                         elif kind=='phase':raise ValueError('owned phase failure')
-                    if kind=='terminal':case.rebind.side_effect=ValueError('independent terminal replay failure')
-                    if kind=='prepared-files':
-                        def changed_outputs(plan):
+                    original_check=r._VerifiedWorkerInputs.check
+                    def terminal(authority,plan):
+                        if kind=='terminal':raise ValueError('terminal byte boundary failure')
+                        original_check(authority,plan)
+                    files=r.preparation_files;file_checks=0
+                    def prepared_files(plan):
+                        nonlocal file_checks
+                        file_checks+=1
+                        if kind=='prepared-files' and file_checks==2:
                             (case.out/'classes/VerifyTopology.class').write_bytes(b'changed prepared helper')
-                            return copy.deepcopy(case.plan)
-                        case.rebind.side_effect=changed_outputs
-                    with patch.object(r.producer,'phase',side_effect=phase):result=case.fresh()
+                        return files(plan)
+                    with patch.object(r.producer,'phase',side_effect=phase),patch.object(r._VerifiedWorkerInputs,'check',new=terminal), \
+                            patch.object(r,'preparation_files',side_effect=prepared_files):result=case.fresh()
                     case.assert_failed_receipt(result)
-                    self.assertEqual(1,case.rebind.call_count)
+                    self.assertEqual(0,case.rebind.call_count)
                     if kind!='phase':self.assertEqual('FAIL',result['finalIdentity'])
                 finally:case.doCleanups()
+
+    def test_preparation_authority_expires_on_success_failure_and_publication_exception(self):
+        for mode in ('pass','phase-failure','interrupt','publication'):
+            with self.subTest(mode=mode):
+                case=FreshPreparationTests(methodName='runTest');case.setUp()
+                try:
+                    opened=[];factory=r._VerifiedWorkerInputs._unwritten_preparation;save=r.common.save
+                    def capture(plan):
+                        value=factory(plan);opened.append(value);return value
+                    def phase(*args):
+                        case.f.phase(*args)
+                        if mode=='phase-failure':raise ValueError('owned phase failed')
+                        if mode=='interrupt':raise KeyboardInterrupt('owned phase interrupted')
+                    def publish(path,value):
+                        save(path,value)
+                        if mode=='publication' and path==case.out/'plan.json':raise KeyboardInterrupt('publication interrupted')
+                    before={sig:r.signal.getsignal(sig) for sig in (r.signal.SIGINT,r.signal.SIGTERM)}
+                    with patch.object(r._VerifiedWorkerInputs,'_unwritten_preparation',side_effect=capture), \
+                            patch.object(r.producer,'phase',side_effect=phase),patch.object(r.common,'save',side_effect=publish):
+                        if mode=='publication':
+                            with self.assertRaisesRegex(KeyboardInterrupt,'publication interrupted'):case.fresh()
+                        else:
+                            record=case.fresh()
+                            self.assertEqual(r.PREPARATION_PASS if mode=='pass' else 'FAIL',record['status'])
+                            self.assertEqual(record,r.common.read(case.out/'preparation.json'))
+                    self.assertEqual(before,{sig:r.signal.getsignal(sig) for sig in before})
+                    self.assertEqual(1,len(opened))
+                    with self.assertRaisesRegex(ValueError,'invalidated'):opened[0].check(case.plan)
+                finally:case.doCleanups()
+
+    def test_terminal_byte_boundary_follows_final_output_consumption(self):
+        files=r.preparation_files;calls=0
+        def consume(plan):
+            nonlocal calls
+            value=files(plan);calls+=1
+            if calls==2:(self.inputs.root/'marker/late-empty').mkdir()
+            return value
+        with patch.object(r,'preparation_files',side_effect=consume):result=self.fresh()
+        self.assert_failed_receipt(result);self.assertEqual('FAIL',result['finalIdentity'])
+        self.assertIn('closure changed',result['errors'][0])
+
+    def test_independent_preparation_replay_detects_mid_replay_inventory_change(self):
+        def changed(plan):
+            (self.inputs.root/'marker/changed-in-replay').mkdir()
+            return copy.deepcopy(plan)
+        self.rebind.side_effect=changed
+        with self.assertRaisesRegex(ValueError,'during complete binding'):r.prepare(self.plan)
+        self.assertEqual(1,self.rebind.call_count);self.assertFalse(self.out.exists())
 
     def test_binding_failure_never_initializes_output(self):
         self.bind.side_effect=ValueError('complete semantic binding failure')

@@ -18025,3 +18025,46 @@ to[4,050,329,600,4,050,882,560]bytes. CPU increases9.07–9.19s and RSS376,922,1
 not Native results, not a complete reverse comparison or final comparability.
 No query/construction/load performance recovery or resource waiver is claimed.
 A new complete prospective cohort is required after the verifier fix.
+
+### Attempt230 — reuse verified inputs during core preparation (2026-10-12)
+
+Parent:ebac6a28. Hosted91 core preparation took39m58s. Its topology/index step
+lasted15m18s:about4m35s initial binding,1m05s before the first owned phase,4m37s
+between first/last phase messages and5m01s afterward. Those windows do not isolate
+hashing or removable work. Source inspection identifies one complete upstream
+rebind repeated within the same preparation invocation.
+
+Extend the existing private same-process input authority to preparation. The CLI
+factory owns its complete bind; an independent supplied-plan entry always fully
+rebinds. Neither accepts a serialized authority or public skip flag. Freeze and
+freshly verify input bytes, source/configuration and directory membership, attach
+the exact newly written plan, then expire authority on success/failure. Preparation
+still audits all owned outputs twice. Its single terminal input check follows the
+last output consumption. Standalone execute_stage without authority and external
+audits retain complete replay. All64 graphs and139 owned phases remain required.
+
+CLI full bind+rebind changes1+1 to1+0; independent prepare rebinds change2 to1.
+Outside those full bind implementations, CLI direct pin passes increase3 to4,
+while closure scans stay3. Independent prepare direct pins increase1 to4 and
+closure scans0 to3. These additional costs must count in a hosted comparison;
+the15m18s stage and10m41s outside phases are not claimed as savings.
+
+Verification:the two complete runner/worker-input test modules passed85 tests in
+32.026s with source frozen. Command from.github/scripts:
+`python3 -B -m unittest test_run_native_core_equivalence test_native_core_worker_inputs`.
+The original tool output is chunk f00bbb, exit0; no separate log file was captured.
+An earlier run had84 passes and one rejection because the agent edited a pinned
+source while tests were executing; freezing source removed that failure. Tests
+cover unchanged receipts; same-size/restored-mtime, external-pin, source/config,
+unpinned-file/directory, plan and output mutation; phase failure/interruption;
+publication errors and authority expiry. Root independently reviewed the diff,
+202 pins and both workflow bindings. Syntax and diff checks pass.
+
+**Retain locally, without a hosted speedup claim.** Product correctness/stability,
+query p50/p95, construction/loading time, CPU and RSS acceptance are unchanged.
+Current91 remains live:Native has a first three-cell provisional report, core
+shards continue, and JVM(B) correctness has newly failed and is being diagnosed.
+There is no demonstrated replacement completion advantage:an entire new run
+would repay the82m50s producer/preparation prefix before its downstream work.
+The current branches can still supply missing failure and performance evidence;
+no new expensive acceptance run is started for this local attempt.
