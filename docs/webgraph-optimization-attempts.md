@@ -17547,3 +17547,69 @@ construction/loading recovery are not established by these transport checks.
 No single-graph performance run was made; all correctness coverage, resource
 limits and the scoped Native-loading exception remain unchanged. The active03f
 run remains in place; this attempt does not push, restart or cancel it.
+
+### Attempt221 — index closed-directory constraints during restore preflight (2026-10-11)
+
+The03f core join's live log remained in preflight after seven minutes and later
+showed preflight complete for10 checkpoints and producer restore starting at
+step elapsed8m36s. Those UI observations establish progress and nontrivial
+preflight work, not precise phase timing or attribution. Source inspection
+found that each path scans every preceding closed root, repeatedly constructs
+its Path and performs linear membership in the root's JSON list. The prior
+restore and seal fixes do not change this loop. Parent:c6f0f346bce89a607388a455b1c2451ea7d2b1c6;
+accepted performance baseline:4f2ccf3. The hosted acceptance scope remains the
+own-writer64 real graphs with complete core/topology/index correctness and
+Native39/JVM35 concurrent multi-graph pressure.
+
+A private lexical index now maps each closed-root Path to its member set and
+visits every strict ancestor of each proposed path. It preserves nested-root
+constraints and the original self exclusion. Distinct manifest strings can
+normalize to the same Path; their member sets are intersected so every original
+constraint still holds, independent of insertion order. The original lists are
+retained separately and compared exactly, including ordering, across manifests.
+Canonical filesystem resolution, file/directory/link and absence checks, source
+checkout and system JDK checks, upstream/manifest identity, archive validation
+and the independently fresh final byte/inventory verification are unchanged.
+The index stores metadata only and cannot serve as a file-identity authority.
+
+Read-only inspection extracted only manifest.json from the already-downloaded
+7d producer ZIP, never its payload. Its14282 files,664 directories and210 links
+produce15156 unique names, with36 closed roots. Comparing that inventory
+against its own closed constraints yields545616 root checks in the old
+predicate versus162002 ancestor lookups in the actual index. Both predicates
+accept all15156 declared entries and reject an invented missing child for each
+of the36 roots. The previous static inspection counted14409772 linear-list
+string comparisons for that same inventory. This is a metadata operation-count
+comparison, not the live downstream checkpoint call sequence or any latency,
+CPU/RSS or speedup measurement. Filesystem/source/JDK work remains; no claim
+attributes the observed preflight duration to this loop. Reproduction and result:
+`/tmp/graphite-preflight-index-metadata-check.py` and
+`/tmp/graphite-preflight-index-metadata-check.json`.
+
+Verification:14 restore/index tests passed in20.211s and48 checkpoint/smoke tests
+passed in19.396s;32 worker/consumer-chain tests passed in11.451s. New cases
+compare the original predicate with the index across78 combinations covering absolute/relative roots, nested roots, lexical aliases,
+root/self exclusions, valid descendants and missing members. Alias constraints
+are tested across separate extensions and reversed insertion order. A separate
+source-access assertion verifies three ancestor lookups despite102 indexed
+roots. The actual restore transaction still rejects reordered original member
+lists before writing any payload. Existing complete eight-shard restoration,
+conflicting inputs, directory extension, corrupt archive and final mutation
+checks remain covered. All217 Node tests passed in15.026s; actionlint with
+shellcheck disabled,185 control file pins, both workflow bindings and diff
+checks passed. Logs are `/tmp/graphite-preflight-{restore,checkpoint,node}-tests.log`,
+`/tmp/graphite-preflight-worker-consumer-tests.log`,
+`/tmp/graphite-preflight-actionlint.log` and
+`/tmp/graphite-preflight-control-verification.json`.
+
+Independent review checked another24300 old/new predicate combinations,
+including double-slash roots, aliases and parent/self relationships, with equal
+results, and reran three focused tests (overlapping the14 above). Root verified
+the control pins and workflow bindings independently.
+
+**Decision: retain locally after independent review; hosted validation pending.**
+Hosted speedup and the complete feedback-loop bound remain unknown. Query
+p50/p95, end-to-end wall, CPU, RSS, stability and construction/loading recovery
+are not proven by this metadata optimization. No single-graph performance run
+was made. Coverage, resource limits and the scoped Native-loading exception
+remain unchanged; the active03f run is preserved without push or cancellation.

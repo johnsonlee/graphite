@@ -706,6 +706,30 @@ def restore_consumer_chain(args):
             'proofAuthority': False, 'performanceAcceptance': False}
 
 
+class _ClosedDirectoryIndex:
+    """Lexical membership only; complete original inventories remain authoritative."""
+    def __init__(self):
+        self.members = {}
+
+    def extend(self, inventories):
+        for name, members in inventories.items():
+            root = Path(name)
+            allowed = frozenset(members)
+            # Distinct manifest strings may normalize to the same lexical Path.
+            # Every declaration must still hold, so combine by intersection.
+            if root in self.members:
+                allowed = self.members[root] & allowed
+            self.members[root] = allowed
+
+    def check(self, path):
+        # parents excludes path itself, matching the original strict-descendant
+        # predicate. Visit every ancestor so nested inventories all constrain it.
+        for root in path.parents:
+            members = self.members.get(root)
+            if members is not None:
+                require(str(path.relative_to(root)) in members, 'chain extends frozen closed directory')
+
+
 def _restore_chain(args, entries):
     """Private transaction shared by fixed profiles; no caller-supplied manifest list.
 
@@ -719,6 +743,7 @@ def _restore_chain(args, entries):
     sources = git_sources(workspace, args.base_sha, args.head_sha)
     authority = _RestoreChainAuthority(sources)
     prior_files = {}; prior_links = {}; prior_directories = {}; prior_closed = {}; prior_absent = set()
+    closed_index = _ClosedDirectoryIndex()
     source_files = {name for source in sources.values() for name in source['files']}
     jdk_identity = None
     for entry in entries:
@@ -751,9 +776,7 @@ def _restore_chain(args, entries):
                         'chain destination below frozen file or link')
                 require(not (kind != 'file' and name in prior_files or kind != 'link' and name in prior_links or
                              kind != 'directory' and name in prior_directories), 'chain changes frozen entry type')
-                for closed, members in prior_closed.items():
-                    if path != Path(closed) and path.is_relative_to(Path(closed)):
-                        require(str(path.relative_to(closed)) in members, 'chain extends frozen closed directory')
+                closed_index.check(path)
         for name, facts in manifest['files'].items():
             require(name not in prior_files or prior_files[name] == facts, 'chain conflicting file attributes')
         for name, target in manifest['links'].items():
@@ -766,6 +789,7 @@ def _restore_chain(args, entries):
                 'chain absent dependency conflicts with earlier output')
         prior_files.update(manifest['files']); prior_links.update(manifest['links'])
         prior_directories.update(manifest['directoryModes']); prior_closed.update(manifest['closedDirectories'])
+        closed_index.extend(manifest['closedDirectories'])
         prior_absent.update(manifest['absent'])
         authority.manifests[str(directory)] = manifest
     authority.preflight = False

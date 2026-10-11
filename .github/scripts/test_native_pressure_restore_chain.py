@@ -13,6 +13,60 @@ import native_pressure_checkpoint as checkpoint
 import test_native_pressure_checkpoint as fixtures
 
 
+class ClosedDirectoryIndexTests(unittest.TestCase):
+    @staticmethod
+    def old_accepts(path, inventories):
+        return all(str(path.relative_to(closed)) in members
+                   for closed, members in inventories.items()
+                   if path != Path(closed) and path.is_relative_to(Path(closed)))
+
+    def test_index_matches_original_predicate_for_aliases_nested_and_relative_roots(self):
+        cases = [
+            {'/proof': ['nested', 'nested/a', 'nested/b', 'top'],
+             '/proof/nested': ['a', 'b'], '/proof/./nested/': ['a']},
+            {'/proof': ['nested/a'], '/proof/nested': ['a']},
+            {'/proof/nested': [], '/proof/./nested/': ['a']},
+            {'proof': ['nested', 'nested/a'], 'proof/./nested': ['a']},
+            {'/': ['proof', 'proof/nested', 'proof/nested/a']},
+            {'/proof/../other': ['a'], '.': ['proof', 'proof/nested']},
+        ]
+        paths = [Path(p) for p in ('/', '/proof', '/proof/nested', '/proof/nested/a',
+            '/proof/nested/b', '/proof/top', '/proof/other', '/other/a',
+            'proof', 'proof/nested', 'proof/nested/a', 'proof/nested/b', '.')]
+        for inventories in cases:
+            original = copy.deepcopy(inventories)
+            index = checkpoint._ClosedDirectoryIndex()
+            # Separate extensions mirror distinct preceding checkpoints. Alias
+            # constraints must survive even when inserted in separate calls.
+            for root, members in inventories.items(): index.extend({root: members})
+            self.assertEqual(original, inventories)
+            for path in paths:
+                with self.subTest(inventories=inventories, path=path):
+                    if self.old_accepts(path, inventories): index.check(path)
+                    else:
+                        with self.assertRaisesRegex(ValueError, 'chain extends frozen closed directory'):
+                            index.check(path)
+        index = checkpoint._ClosedDirectoryIndex()
+        index.extend(cases[0]); index.check(Path('/proof/nested/a'))
+        index.check(Path('/proof/nested'))  # Self excluded, outer root still checked.
+        with self.assertRaises(ValueError): index.check(Path('/proof/nested/b'))
+        reversed_index = checkpoint._ClosedDirectoryIndex()
+        reversed_index.extend(dict(reversed(list(cases[0].items()))))
+        with self.assertRaises(ValueError): reversed_index.check(Path('/proof/nested/b'))
+
+    def test_lookup_count_depends_on_path_depth_not_unrelated_root_count(self):
+        class Counted(dict):
+            def __init__(self, values): super().__init__(values); self.lookups = 0
+            def get(self, key): self.lookups += 1; return super().get(key)
+        index = checkpoint._ClosedDirectoryIndex()
+        index.extend({f'/other-{n}': ['member'] for n in range(100)})
+        index.extend({'/proof': ['nested', 'nested/a'], '/proof/nested': ['a']})
+        index.members = Counted(index.members)
+        path = Path('/proof/nested/a'); index.check(path)
+        self.assertEqual(len(path.parents), index.members.lookups)
+        self.assertEqual(3, index.members.lookups)
+
+
 class RestoreChainTests(unittest.TestCase):
     def setUp(self):
         self.f = fixtures.CheckpointTests(methodName='runTest'); self.f.setUp(); self.addCleanup(self.f.doCleanups)
@@ -78,6 +132,14 @@ class RestoreChainTests(unittest.TestCase):
             value['files'][name] = {'sha256': '0'*64, 'mode': 0o644, 'size': 0}; value['payload'].append(name)
         self.mutate(1, add)
         with self.assertRaisesRegex(ValueError, 'closed directory'): checkpoint.restore_core_chain(self.args)
+        self.assertFalse(self.f.binary.exists())
+
+    def test_original_closed_inventory_order_is_still_compared_exactly(self):
+        root, members = next((root, members) for root, members in self.producer['closedDirectories'].items()
+                             if len(members) > 1)
+        self.mutate(1, lambda value: value['closedDirectories'].update({root: list(reversed(members))}))
+        with self.assertRaisesRegex(ValueError, 'chain conflicting closed inventory'):
+            checkpoint.restore_core_chain(self.args)
         self.assertFalse(self.f.binary.exists())
 
     def test_missing_manifest_and_wrong_identity_rejected_before_writes(self):
