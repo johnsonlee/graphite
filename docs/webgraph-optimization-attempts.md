@@ -19460,3 +19460,69 @@ acceptance is inferred from source equivalence. Retain the fast applicability fi
 Evidence: /tmp/graphite-attempt256-source-profile-checks.json,
 /tmp/graphite-current-jvm-source-profile-review-after253.json and
 /tmp/graphite-current-jvm-reader-reuse-after253.json.
+
+### Attempt257 — complete original64 JVM35 derivation cost diagnostic (2026-10-12)
+
+No production change. Freeze the actual reader at24af8a59 and use the64 original
+GTY05 graphs written by acd11a6989c9d501ffac3803c41e629466c8883e, the independently
+reviewed GSE01 exports and25917 actual-JDK primitive facts. A small-metadata
+preflight binds every graph, edge receipt, source/runtime input and all35 original
+cases. The driver calls original read_graph, edge_export_input, Collector.add_graph,
+owned _consume_finish, all35 original CompiledLegalLimitOracle constructors,
+and production common.save. Both full-projection target bindings remain required.
+No missing graphs are synthesized and no source-profile/producer authority is
+claimed from the diagnostic wrapper.
+
+Before launch, independently review source/import closure and verify dummy
+SIGTERM/SIGINT cleanup. Use one owned process group,1800s work plus60s cleanup,
+and a sampled24GiB Python RSS stop guard. The local host has64GiB physical RAM;
+this guard is not a product resource allowance or JVM heap change. No JVM runs.
+All stages retain progress, failures and original input/output identities, without
+automatic extension or retry.
+
+Command: python3 -B /tmp/graphite-jvm35-full64-owned-prep-1/execute.py execute.
+The original execution completes once, exit0, no cleanup signal and no remaining
+group members. It consumes19438199 nodes and21081154 labeled edges, finishes
+all64 graphs and all35 complete compiled/serialized universes, then passes the
+full consumed-input identity recheck. Root independently verifies the17 frozen
+controls and all6481217386 new output bytes in2.541s, exact case/graph order,
+complete bindings and clean process termination.
+
+| Local full64 source-model stage | Observation |
+|---|---:|
+| Read64 saved graphs |387.358s|
+| Accumulate all35 cases across64 graphs |707.116s|
+| Owned finish, including all35 compilers |242.945s|
+| Of finish: complete original compilers |214.251s|
+| Serialize/hash all35 universes |127.745s|
+| Supervisor end-to-end |1478.214s (24m38s)|
+| Worker peak process RSS |23314890752 bytes|
+| Sampled peak process RSS |23308828672 bytes|
+| Serialized JSON output |6481217386 bytes|
+
+This resolves the original64 derivation cost/completeness unknown. It is neither
+a query load test nor a matched baseline/candidate comparison. HTTP correctness,
+current own-writer authority, canonical independent35 acceptance and full CI
+recovery remain false or unverified. Preserve the historical writer identity;
+source-equivalent current JVM readers require their own response validation.
+
+The observed23.3GB local Python peak identifies another CI feasibility concern.
+The public repository currently selects ubuntu-latest; GitHub documents16GB RAM
+for standard public Linux runners (https://docs.github.com/en/actions/reference/runners/github-hosted-runners).
+Mac and Linux RSS are not interchangeable measurements, so this is not a measured
+Linux failure or permission to increase resources. Do not assume this accumulation
+fits hosted CI; reduce duplicate retained source-model state and verify before
+another complete workflow. This is validator memory, not Graphite server RSS.
+
+Evidence: /tmp/graphite-jvm35-full64-owned-prep-1/plan.json,
+root-launch-review.json, supervisor.json, root-completion-review.json and
+rss-observed.jsonl; /private/tmp/graphite-jvm35-full64-owned-1/execution.json,
+stages.jsonl, derivation.json and all35 universes. Retain this bounded diagnostic
+without claiming any of the remaining acceptance gaps is closed.
+
+Integration follow-up for254–256: exact reviewed source bytes match the applied
+checkout. The real-checkout source gate passes13 tests in0.472s; all234 tests
+selected by node --test .github/scripts/benchmark-*.test.mjs pass in16.932s.
+All193 preparation pins, workflow binding, structural actionlint with shellcheck
+disabled and diff checks pass. Reuse the unchanged isolated artifact/core-worker
+evidence rather than rerun it. Record: /tmp/graphite-attempt254-257-integration-review.json.
