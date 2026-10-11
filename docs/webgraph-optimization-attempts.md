@@ -16701,3 +16701,40 @@ Reports: `/tmp/graphite-input-inventory-prototype-report.json`,
 `/tmp/graphite-input-inventory-parent-review.json` and excluded diagnostic
 `/tmp/graphite-input-inventory-rejected-timing.json`. Combined correctness log:
 `/tmp/graphite-feedback-combined-tests.log`.
+
+
+### Attempt206 — index classfile archive names once per open (2026-10-11)
+
+**Hypothesis.** Every uncached class owner previously called
+`ZipFile.namelist().count(entry)`, rebuilding and scanning the full directory.
+Create one filename Counter per opened ZIP and discard it on close. Both field and
+method authorities use it. Counting preserves duplicate detection, unlike a set or
+ZipFile's name-to-info map. No cross-graph or cross-process authority is introduced.
+
+Base: `ef2f112f` (Attempt205); candidate: this commit on
+`codex/ci-feedback-reuse`. Original isolated prototype base was7d380566. The target
+workload is current CI's full64 corrected-core JAR graph proof across four corpora;
+eight workers each receive eight graphs. There is no measured hosted wall, CPU or
+RSS improvement for this candidate. This is correctness-runner work and provides
+no server query p50/p95,construction or loading performance-acceptance evidence.
+
+Missing-field rejection, missing-method lookup result, duplicate-owner rejection,
+platform-marker fallback policy, class size/owner checks, archived raw bytes and
+initial/terminal actual JAR SHA checks remain intact. Independent parent source
+review confirmed the unchanged parse/evidence and integrity boundaries.
+
+Correctness:58 focused field/method/inherited/marker tests passed in0.042s in the
+prototype. Initial marker fixtures manually constructing a pre-opened authority
+needed the matching index initialized; all six initial fixture errors are recorded
+in the prototype report. After composition, the complete native core proof package
+passed287 tests in0.855s. New tests exercise real duplicate ZIP entries for both
+authorities, missing lookups, original archived bytes, one index per open and rebuild
+after reopening, and actual JAR mutation rejected at finish. Existing CI discovery
+includes the new test; its digest is included in the refreshed controls manifest.
+
+**Decision: retain the bounded local repair; hosted benefit remains unmeasured.**
+Do not equate removal of repeated scans with a quantified end-to-end CI improvement.
+No push or active-run cancellation is performed. Reports and raw logs:
+`/tmp/graphite-jar-directory-prototype-report.json`,
+`/tmp/graphite-jar-directory-final-tests.log`, and
+`/tmp/graphite-feedback-core-tests.log`.

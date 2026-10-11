@@ -28,6 +28,7 @@ class Markers(unittest.TestCase):
                 warnings.simplefilter('ignore')
                 for name,raw in rows:z.writestr(name,raw)
         stream.seek(0);a=f.Authority.__new__(f.Authority);a.cache={};a.zip=zipfile.ZipFile(stream);self.addCleanup(a.zip.close)
+        a._entry_counts=f.Counter(info.filename for info in a.zip.infolist())
         tmp=tempfile.TemporaryDirectory();self.addCleanup(tmp.cleanup);a.out=Path(tmp.name);a.jar_digest='corpus';a.allow_inherited_fields=True;a.marker=FixtureMarker() if enabled else None
         return a
     def test_method_initialization_strips_only_field_marker_without_mutating_spec(self):

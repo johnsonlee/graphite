@@ -1,6 +1,7 @@
 """Narrow classfile-backed expected Field corrections; never broad normalization."""
 import csv,hashlib,json,struct,zipfile
 from pathlib import Path
+from collections import Counter
 from .legacy_wire import need
 
 def sha(path):
@@ -144,7 +145,7 @@ def match_fields(actual,reference,authority):
 class Authority:
     def __init__(self,spec,actual,reference,out,allow_inherited_fields=False):
         self.allow_inherited_fields=allow_inherited_fields
-        self.spec=spec;self.out=Path(out);self.pins={};self.cache={};self.zip=None
+        self.spec=spec;self.out=Path(out);self.pins={};self.cache={};self.zip=None;self._entry_counts=None
         need(spec['schema']=='graphite.classfile-field-authority.v1','authority schema')
         self.jar=Path(spec['jar']['path']);self.jar_digest=spec['jar']['sha256']
         for label,root in [('B',actual),('C',reference)]:
@@ -164,11 +165,17 @@ class Authority:
             from . import marker_authority
             self.marker=marker_authority.Marker(spec['platformMarker'])
             self.pins.update(self.marker.pins)
+    def _entry_count(self,entry):
+        if self.zip is None:
+            self.zip=zipfile.ZipFile(self.jar)
+            # Keep duplicates visible; ZipFile's name-to-info map drops them.
+            # Rebuild for each opened ZIP, never across archive lifetimes.
+            self._entry_counts=Counter(info.filename for info in self.zip.infolist())
+        return self._entry_counts.get(entry,0)
     def _field_class(self,owner):
         need(owner and not any(c in owner for c in ('/','\\','\x00')) and all(p not in ('','.','..') for p in owner.split('.')),'class owner path')
         if owner not in self.cache:
-            if self.zip is None:self.zip=zipfile.ZipFile(self.jar)
-            entry=owner.replace('.','/')+'.class';count=self.zip.namelist().count(entry)
+            entry=owner.replace('.','/')+'.class';count=self._entry_count(entry)
             if count==0 and owner=='java.io.Serializable' and getattr(self,'marker',None) is not None:
                 self.cache[owner]=self.marker.archive(self.out)
                 return self.cache[owner]
@@ -214,4 +221,5 @@ class Authority:
         return result
     def finish(self):
         if self.zip is not None:self.zip.close();self.zip=None
+        self._entry_counts=None
         for p,h in self.pins.items():need(sha(p)==h,'classfile authority input changed')

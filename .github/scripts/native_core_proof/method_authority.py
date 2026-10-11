@@ -1,5 +1,5 @@
 """Explicit paired method-array corrections; never global string normalization."""
-import hashlib,json,zipfile
+import hashlib,json
 from pathlib import Path
 from . import method_classfile as classfile
 from . import field_authority
@@ -52,9 +52,8 @@ class Authority(field_authority.Authority):
     def klass(self,owner):
         need(owner and not any(c in owner for c in ('/','\\','\x00')) and all(owner.split('.')),'method owner path')
         if owner not in self.cache:
-            if self.zip is None:self.zip=zipfile.ZipFile(self.jar)
             entry=owner.replace('.','/')+'.class'
-            count=self.zip.namelist().count(entry)
+            count=self._entry_count(entry)
             need(count<=1,'duplicate method owner class')
             if not count:return None
             info=self.zip.getinfo(entry);need(info.file_size<=64*1024*1024,'bounded method class size')

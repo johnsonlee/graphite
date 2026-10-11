@@ -83,7 +83,12 @@ class FieldAuthorityTests(unittest.TestCase):
 
     def authority(self,root,duplicate=False):
         jar=root/'a.jar'
-        with zipfile.ZipFile(jar,'w') as z:z.writestr('A.class',class_bytes())
+        with zipfile.ZipFile(jar,'w') as z:
+            z.writestr('A.class',class_bytes())
+            if duplicate:
+                import warnings
+                with warnings.catch_warnings():
+                    warnings.simplefilter('ignore',UserWarning);z.writestr('A.class',class_bytes())
         spec={'schema':'graphite.classfile-field-authority.v1','graphId':'g','corpus':'android','jar':{'corpus':'android','path':str(jar),'sha256':f.sha(jar)},'arms':{}}
         graphs={}
         for label in ('C','B'):
