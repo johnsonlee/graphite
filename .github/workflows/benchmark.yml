@@ -3128,7 +3128,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-prepare-${{ matrix.arm }} diagnostic evidence
-      if: always()
+      if: failure() || cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-prepare-${{ matrix.arm }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
@@ -3271,7 +3271,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-shard-${{ matrix.arm }}-${{ matrix.shard }} diagnostic evidence
-      if: always()
+      if: failure() || cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-shard-${{ matrix.arm }}-${{ matrix.shard }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
@@ -3426,7 +3426,7 @@ jobs:
         retention-days: 14
 
     - name: Retain core-${{ matrix.arm }} diagnostic evidence
-      if: always()
+      if: failure() || cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-core-${{ matrix.arm }}-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
@@ -4207,7 +4207,7 @@ jobs:
   rust-loading:
     name: rust-loading
     if: ${{ !cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' }}
-    needs: [rust-producer, rust-core, rust-query-native, rust-query-jvm, rust-query-legacy]
+    needs: [rust-producer, rust-core]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
@@ -4328,7 +4328,7 @@ jobs:
   rust-construction:
     name: rust-construction
     if: ${{ !cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' }}
-    needs: [rust-producer, rust-core, rust-query-native, rust-query-jvm, rust-query-legacy]
+    needs: [rust-producer, rust-core]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:

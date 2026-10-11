@@ -4281,7 +4281,8 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     for (const id of ["rust-loading", "rust-construction"]) {
         const job = jobs[id], header = job.split("    steps:")[0];
         const deps = needs(job);
-        for (const query of ["rust-query-native", "rust-query-jvm", "rust-query-legacy"]) assert.ok(deps.includes(query));
+        assert.deepEqual(deps, ["rust-producer", "rust-core"],
+            "independent lifecycle measurements do not wait for unrelated query jobs");
         assert.match(header, /!cancelled\(\)/);
         for (const dep of ["rust-producer", "rust-core"]) assert.ok(header.includes(`needs.${dep}.result == 'success'`));
         assert.doesNotMatch(header, /needs\.rust-query-(?:native|jvm|legacy)\.result == 'success'/,
@@ -4649,6 +4650,13 @@ test("native core graph shards prepare once and join all eight without weakening
     assert.match(shard, /^    needs: \[rust-producer, rust-core-prepare\]$/m);
     assert.match(join, /^    needs: \[rust-producer, rust-core-prepare, rust-core-shard\]$/m);
     assert.match(shard, /^        shard: \[0, 1, 2, 3, 4, 5, 6, 7\]$/m);
+    for (const job of [prepare, shard, join]) {
+        const diagnostic = job.slice(job.indexOf("    - name: Retain core-"));
+        assert.match(diagnostic, /if: failure\(\) \|\| cancelled\(\)/,
+            "successful checkpoint already retains complete evidence without a duplicate upload");
+        assert.match(job, /Publish .*checkpoint[\s\S]*?if-no-files-found: error/,
+            "the complete checkpoint remains mandatory on success");
+    }
     const cases = [
         [prepare, "Prepare shared native core topology and index evidence", ["--prepare-only", "--shard-count", "8"]],
         [shard, "Execute assigned native core graph shard", ["--shard-index", "3", "--shard-count", "8"]],
