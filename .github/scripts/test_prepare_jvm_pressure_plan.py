@@ -106,6 +106,47 @@ class JvmPreparationTests(unittest.TestCase):
             plan = p.bind_plan(packet, ref, output, p.CATALOG)
         return packet, plan
 
+    def test_legacy_typed_reference_packet_keeps_original_identity_after_replay(self):
+        packet = self.packet()
+        for arm in packet['arms'].values():
+            for row in arm['cases']:
+                oracle = row['oracle']; oracle.pop('digestKind')
+                oracle['digest'] = p.model.digest(p.common.read(oracle['valueRef']['path']))
+        before = copy.deepcopy(packet)
+        self.assertEqual(before, p.verify_bundle(packet, 'a'*40, 'b'*40))
+        self.assertEqual(before, packet)
+        for mutation in ('typed-digest', 'foreign-ref', 'wrong-kind', 'raw-digest', 'raw-inline'):
+            bad = copy.deepcopy(packet); oracle = bad['arms']['B']['cases'][0]['oracle']
+            if mutation == 'typed-digest': oracle['digest'] = 'f'*64
+            elif mutation == 'foreign-ref': oracle['valueRef'] = bad['arms']['B']['cases'][1]['oracle']['valueRef']
+            elif mutation == 'wrong-kind': oracle['digestKind'] = 'unknown'
+            elif mutation == 'raw-digest': oracle['digestKind'] = p.common.JVM_RAW_UNIVERSE_DIGEST
+            else:
+                oracle['value'] = p.common.read(oracle.pop('valueRef')['path'])
+                oracle['digestKind'] = p.common.JVM_RAW_UNIVERSE_DIGEST
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                p.verify_bundle(bad, 'a'*40, 'b'*40)
+
+    def test_legacy_inline_signed_zero_digest_cannot_override_raw_payload(self):
+        # common.typed considers signed zero equal; the historical model digest
+        # did not. Compatibility must verify both against the bound payload.
+        value = {'finite': 0.0}; ref = self.write(self.root/'signed-zero.json', value)
+        expected = {'kind': 'jvm-complete-legal-limit-multiset-v1', 'valueRef': ref,
+                    'digestKind': p.common.JVM_RAW_UNIVERSE_DIGEST, 'digest': ref['sha256']}
+        inline = {'kind': expected['kind'], 'value': {'finite': -0.0},
+                  'digest': p.model.digest({'finite': -0.0})}
+        self.assertEqual(p.common.typed(value), p.common.typed(inline['value']))
+        with self.assertRaisesRegex(ValueError, 'actual independent payload'):
+            p._normalized_legacy_oracle(inline, expected, {ref['path']: ref['sha256']})
+
+    def test_correctness_unknown_or_raw_inline_identity_is_rejected(self):
+        root = Path(self.roots['B']); plan = p.common.read(root/'plan.json')
+        case = plan['cases'][0]; ref = plan['rawDerivationEvidence']['universes'][case['id']]
+        for identity in ('unknown', p.common.JVM_RAW_UNIVERSE_DIGEST):
+            case['oracleByArm']['B']['digestKind'] = identity
+            with self.subTest(identity=identity), self.assertRaises(ValueError):
+                p._pressure_oracle(case, 'B', ref, p.artifacts.ref(root/'audit.json'), self.observed[str(root)]['pins'])
+
     def test_actual_three_audits_and_each_comparison_once_with_all35_oracles(self):
         packet = self.packet()
         self.assertEqual(3, self.audit_mock.call_count); self.assertEqual(['A', 'B'], self.comparison_calls)
@@ -129,6 +170,8 @@ class JvmPreparationTests(unittest.TestCase):
                 oracle = row['oracle']
                 self.assertNotIn('value', oracle)
                 self.assertEqual(oracle['valueRef'], oracle['valueProof'])
+                self.assertEqual(p.common.JVM_RAW_UNIVERSE_DIGEST, oracle['digestKind'])
+                self.assertEqual(oracle['valueRef']['sha256'], oracle['digest'])
                 self.assertEqual(packet['pins'][oracle['valueRef']['path']], oracle['valueRef']['sha256'])
         for case in plan['cases']:
             for oracle in case['oracleByArm'].values():
@@ -151,11 +194,19 @@ class JvmPreparationTests(unittest.TestCase):
         root = Path(self.roots['B']); plan = p.common.read(root/'plan.json')
         case = plan['cases'][0]; ref = plan['rawDerivationEvidence']['universes'][case['id']]
         oracle = case['oracleByArm']['B']; oracle.pop('value'); oracle['valueRef'] = ref
+        oracle.update(digestKind=p.common.JVM_RAW_UNIVERSE_DIGEST, digest=ref['sha256'])
         reads = []; read = Path.read_bytes
         def observed(path):
             if str(path) == ref['path']: reads.append(str(path))
             return read(path)
+        digest = p.model.digest
+        def request_digest_only(value):
+            self.assertFalse(type(value) is dict and value.get('schema') in
+                             ('graphite.jvm-legal-row-universe.v1', 'graphite.jvm-distinct-row-universe.v2'),
+                             'raw identity does not build a typed universe digest')
+            return digest(value)
         with patch.object(Path, 'read_bytes', new=observed), \
+                patch.object(p.model, 'digest', side_effect=request_digest_only), \
                 patch.object(p.model, 'CompiledLegalLimitOracle', wraps=p.model.CompiledLegalLimitOracle) as compiler:
             result = p._pressure_oracle(case, 'B', ref, p.artifacts.ref(root/'audit.json'),
                                         self.observed[str(root)]['pins'])
@@ -197,6 +248,7 @@ class JvmPreparationTests(unittest.TestCase):
             for row in arm['cases']:
                 oracle = row['oracle']; ref = oracle.pop('valueRef')
                 oracle['value'] = p.common.read(ref['path'])
+                oracle.pop('digestKind'); oracle['digest'] = p.model.digest(oracle['value'])
         original = copy.deepcopy(packet)
         self.assertEqual(original, p.verify_bundle(packet, 'a'*40, 'b'*40))
         self.assertEqual(original, packet)
@@ -244,6 +296,7 @@ class JvmPreparationTests(unittest.TestCase):
         claims = next(r for r in plan['proofs'] if r['role'] == 'independent-correctness' and r['arm'] == 'B')['bindings']
         self.assertEqual(p.common.digest_bytes(p.common.canonical(plan['cases'][0]['request'])), claims['requestDigests']['dynamic-miss'])
         self.assertNotEqual(plan['cases'][0]['requestSha256'], claims['requestDigests']['dynamic-miss'])
+        self.assertEqual({case['id']: p.common.JVM_RAW_UNIVERSE_DIGEST for case in plan['cases']}, claims['oracleDigestKinds'])
         for case in plan['cases']:
             self.assertEqual(64, len(case['requestedGraphIds']))
             self.assertEqual(2 if case['family'] in ('graph-routing', 'full-projection') else 64, len(case['targetGraphIds']))
@@ -279,6 +332,29 @@ class JvmPreparationTests(unittest.TestCase):
             else: bad['arms']['B']['cases'][0]['oracle']['digest'] = 'f'*64
             with self.subTest(mutation=mutation), self.assertRaisesRegex(ValueError, 'differs from actual'):
                 p.verify_bundle(bad, 'a'*40, 'b'*40)
+
+    def test_digest_kind_proofs_are_required_only_for_explicit_identities(self):
+        packet, plan = self.bound_plan()
+        for mutation in ('missing', 'changed'):
+            bad = copy.deepcopy(plan)
+            claim = next(proof['bindings'] for proof in bad['proofs']
+                         if proof['role'] == 'independent-correctness' and proof['arm'] == 'B')
+            if mutation == 'missing': claim.pop('oracleDigestKinds')
+            else: claim['oracleDigestKinds'][bad['cases'][0]['id']] = 'unknown'
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                p.common.validate_plan(bad)
+        # Rebind an actual legacy packet; omission is part of its old proof shape.
+        for arm in packet['arms'].values():
+            for row in arm['cases']:
+                oracle = row['oracle']; oracle.pop('digestKind')
+                oracle['digest'] = p.model.digest(p.common.read(oracle['valueRef']['path']))
+        out = self.root/'legacy'; out.mkdir(); ref = self.write(out/'packet.json', packet)
+        with patch('prepare_native_pressure_plan.preparation_control_pins', return_value={}):
+            legacy = p.bind_plan(packet, ref, out, p.CATALOG)
+        for proof in legacy['proofs']:
+            if proof['role'] == 'independent-correctness':
+                self.assertNotIn('oracleDigestKinds', proof['bindings'])
+        self.assertEqual(legacy, p.common.validate_plan(legacy))
 
     def test_shared_rejects_unbound_jvm35_foreign_oracle_and_promoted_fixture(self):
         packet, plan = self.bound_plan()

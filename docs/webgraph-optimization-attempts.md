@@ -20073,3 +20073,90 @@ Follow-up command: python3 -B
 Evidence: /tmp/graphite-jvm-largest-ref-compile-prep-1/{plan.json,
 preparation-review.json,root-prelaunch-review.json,root-result-review.json,
 supervisor.json} and /private/tmp/graphite-jvm-largest-ref-compile-1.
+
+### Attempt266 — bind referenced JVM universes by exact file-byte identity (2026-10-12)
+
+Attempt265's largest64-graph-universe compiler takes119.519s, including roughly
+71s of reading/typed hashing and48.151s of semantic construction. Referenced
+universes already bind the exact parsed bytes by SHA and independent source
+proof. Introduce explicit digestKind=raw-universe-bytes-sha256-v1 for new
+references, with digest=valueRef.sha256=valueProof.sha256=pins[path] in pressure
+plans. Retain the same complete legal-multiset policy and original semantic
+compiler. This removes redundant canonical typed hashing, not source authority
+or response validation. Do not count the entire71s as a saving: reading,
+parsing, scalar validation and semantic compilation remain required.
+
+Raw identity is reference-only, with same-read SHA verification and strict JSON
+parsing. Preserve the former whole-tree rejection of nonfinite floats, including
+JSON exponent overflow, and strict UTF-8 for every string and key, including
+escaped lone surrogates. Unknown identity modes, inline/raw mixtures and
+reference/proof/pin mismatches fail. Request and response hashes are unchanged.
+Independent-correctness receipts explicitly bind oracleDigestKinds for exactly
+the marked cases; all-legacy receipts omit the field as before.
+
+Absent digestKind preserves original typed identity for both inline and
+reference archives. Compatibility normalization validates independently bound
+payloads and every old typed digest before comparison, then returns the original
+verified packet shape for existing joins; it does not relabel archives. Review
+caught the older comparator's +0/-0 equality: authoritative and inline typed
+digests are now both checked, with a dedicated negative test. The schema now
+expresses value/valueRef exclusivity and raw identity restrictions and corrects
+its stale34-case explanatory text to35. Runtime still enforces cross-field SHA
+equality and independent authority that JSON Schema cannot express.
+
+Integrated241 Python tests pass in164.619s,236 Node workflow tests pass
+in17.368s,194 preparation pins and structural actionlint pass. A jsonschema4.23.0
+Draft202012 metacheck and6 valid/10 invalid oracle variants pass using an isolated
+temporary environment; no repository dependency is added. Independent review
+of correctness/prepare/join/schema finds no new issue. Original test failures
+from an overly broad universe-digest mock are retained; its corrected scope
+allows request digests. Tiny tests provide correctness evidence only.
+
+Base d5d15769; candidate patch SHA
+c8a3dde5a109c7d58bb3cd3ac054a909433c2a846623992a1a9feba44562e52d.
+The real diagnostic reuses all35 original raw-derived universes totaling
+6,481,217,386 bytes and all35 historical complete HTTP bodies totaling
+15,321,127 bytes. Actual target scope is64 graphs for25 cases and2 graphs for10
+cases; every request definition and scope is retained. Construct only reference
+metadata, using original observed row counts as claims that the original
+compiler independently checks against each complete universe and limit.
+No observed digest or PASS receipt supplies canonical oracle authority.
+
+Command: python3 -B /tmp/graphite-jvm-all35-raw-ref-prep-1/execute.py execute.
+Local macOS/Python3.14.7, historical acd11a69 writer inputs,300s work plus30s
+cleanup and12GiB sampled RSS stop. The actual compile_response_validator runs
+once and retains all35 indices through all35 full body checks and final input
+identity verification. Preparation binds229 copied source files,234 controls
+and76 original inputs; tiny actual35 raw API and stop-signal checks pass before
+launch. The original HTTP run's closure failure remains unchanged.
+
+The diagnostic failed its declared300s deadline and terminated in300.786s
+including cleanup. All35 reference records were prepared (298,154 bytes),
+21 semantic constructors completed, and execution stopped in the22nd,
+wrapped-skewed_mixed_operator_query. The largest first/last constructor
+completed in47.935s. No response body validation or final input-identity check
+was reached. Worker CPU was299.736s and peak RSS9,918,758,912 bytes; this is a
+partial-process observation, not complete35 memory fit. Both the original
+execution failure receipt and supervisor receipt are intact; the leader was
+reaped and no process-group members remain. The original deadline was not
+extended and no identical rerun was launched.
+
+Retain the explicit identity protocol: tests verify removal of redundant typed
+universe hashing while preserving original semantic checks and legacy identity
+validation. This is a structural positive increment, not a measured end-to-end
+speedup or a passed real diagnostic. Full35 retained-index readiness remains
+open. The next bottleneck is semantic group-index construction; raising the
+timeout does not resolve it.
+
+This validates the supplied historical oracle/client lifecycle only. It is not
+a fresh-writer derivation, hosted Linux memory-capacity result, product loading
+or query performance comparison, or complete regression acceptance. Full CI
+time remains unmeasured; no complete run is launched on an assumed two-hour
+bound.
+
+Evidence: /tmp/graphite-jvm-all35-raw-ref-prep-1/{plan.json,
+preparation-review.json,root-prelaunch-review.json,supervisor.json},
+/private/tmp/graphite-jvm-all35-raw-ref-1/{execution.json,stages.jsonl,ref-cases.json},
+/tmp/graphite-attempt266-integration-review.json,
+/tmp/graphite-attempt266-schema-review.json and original focused/integration
+test logs under /tmp/graphite-attempt266-*.

@@ -94,22 +94,25 @@ def _pressure_oracle(case, variant, value_ref, audit_ref, pins):
     require(('value' in oracle) != ('valueRef' in oracle), 'one JVM oracle representation')
     if 'valueRef' in oracle:
         require(oracle['valueRef'] == value_ref, 'same independent raw universe reference')
+    require('digestKind' not in oracle or ('valueRef' in oracle and
+            oracle['digestKind'] == common.JVM_RAW_UNIVERSE_DIGEST), 'known referenced JVM universe identity')
     referenced = {key: value for key, value in oracle.items() if key != 'value'}
     referenced.update(valueRef=value_ref, proof=audit_ref, valueProof=value_ref)
     if 'value' in oracle:
         value = common.jvm_oracle_value(referenced, pins=pins)
         require(common.typed(oracle['value']) == common.typed(value) and
-                oracle['digest'] == model.digest(value),
+                oracle['digest'] == model.digest(value) == model.digest(oracle['value']),
                 'oracle is independent raw universe, not observed response')
         del value
-    # The original compiler performs the reference's same-read SHA, full typed
-    # digest and semantic checks once before releasing this case's raw tree.
+    # Validate the original identity before emitting the explicit new identity.
+    # Legacy references still require their original typed digest; new ones use
+    # exact raw bytes. Both retain the complete original semantic compiler.
     common.compile_response_validator([{**case, 'oracleByArm': {variant: referenced}}], variant, pins=pins)
-    return referenced
+    return dict(referenced, digestKind=common.JVM_RAW_UNIVERSE_DIGEST, digest=value_ref['sha256'])
 
 
 def _normalized_packet_oracles(packet, actual):
-    """Compare legacy inline packets without changing their archived bytes or claims."""
+    """Compare legacy payload identities without changing archived bytes or claims."""
     normalized = dict(packet)
     normalized['arms'] = {}
     for name, arm in packet['arms'].items():
@@ -120,21 +123,28 @@ def _normalized_packet_oracles(packet, actual):
         for row, reference in zip(arm['cases'], expected):
             oracle = row['oracle']
             require(('value' in oracle) != ('valueRef' in oracle), 'one JVM oracle representation')
-            if 'value' in oracle:
-                oracle = _normalized_inline_oracle(oracle, reference['oracle'], actual['pins'])
+            require('digestKind' not in oracle or ('valueRef' in oracle and
+                    oracle['digestKind'] == common.JVM_RAW_UNIVERSE_DIGEST), 'known referenced JVM universe identity')
+            if 'digestKind' not in oracle:
+                oracle = _normalized_legacy_oracle(oracle, reference['oracle'], actual['pins'])
             rows.append(dict(row, oracle=oracle))
         normalized['arms'][name] = dict(arm, cases=rows)
     return normalized
 
 
-def _normalized_inline_oracle(oracle, expected, pins):
-    # No caller-supplied digest or foreign ref can establish semantic equality.
+def _normalized_legacy_oracle(oracle, expected, pins):
+    # Exact independently replayed payload bytes precede legacy identity checks.
+    if 'valueRef' in oracle:
+        require(oracle['valueRef'] == expected['valueRef'],
+                'JVM producer packet differs from actual independent payload reference')
     value = common.jvm_oracle_value(expected, pins=pins)
-    require(common.typed(oracle['value']) == common.typed(value) and
-            model.digest(oracle['value']) == expected['digest'],
+    require(model.digest(value) == oracle['digest'] and
+            ('value' not in oracle or (common.typed(oracle['value']) == common.typed(value) and
+                                      model.digest(oracle['value']) == oracle['digest'])),
             'JVM producer packet differs from actual independent payload')
     return {**{key: value for key, value in oracle.items() if key != 'value'},
-            'valueRef': expected['valueRef']}
+            'valueRef': expected['valueRef'], 'digestKind': common.JVM_RAW_UNIVERSE_DIGEST,
+            'digest': expected['valueRef']['sha256']}
 
 
 def assemble(correctness_roots, base_sha, candidate_sha, *, measurement_only=False):
@@ -235,7 +245,10 @@ def bind_plan(packet, producer_ref, output, catalog_path):
             'runtimeFiles': arm['runtimeFiles']}, upstream, name)
         proof('independent-correctness', {'graphIds': [g['id'] for g in arm['graphs']],
             'requestDigests': {c['id']: common.digest_bytes(common.canonical(c['request'])) for c in cases},
-            'oracleDigests': {c['id']: c['oracleByArm'][name]['digest'] for c in cases}}, upstream, name)
+            'oracleDigests': {c['id']: c['oracleByArm'][name]['digest'] for c in cases},
+            **({'oracleDigestKinds': {c['id']: c['oracleByArm'][name]['digestKind'] for c in cases
+                                      if 'digestKind' in c['oracleByArm'][name]}}
+               if any('digestKind' in c['oracleByArm'][name] for c in cases) else {})}, upstream, name)
     pending=packet.get('measurementMode')==MODE
     proof('fixture-inventory' if pending else 'fixture-equivalence', fixture_bindings(packet), {producer_ref['path']: producer_ref['sha256'],
         **{v['audit']['path']: v['audit']['sha256'] for v in packet.get('correctedComparisons',{}).values()},

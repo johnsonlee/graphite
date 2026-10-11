@@ -682,6 +682,29 @@ class PressureTests(unittest.TestCase):
             with self.assertRaises(ValueError, msg=mutation):
                 p.validate_plan(plan, CATALOG)
 
+    def test_explicit_oracle_digest_kind_is_exactly_bound_without_changing_legacy_claims(self):
+        legacy = make_plan()
+        p.validate_proof_claims(legacy)
+        original = copy.deepcopy(legacy)
+        case = original['cases'][0]; oracle = case['oracleByArm']['B']
+        oracle.update(kind='jvm-complete-legal-limit-multiset-v1', digestKind=p.JVM_RAW_UNIVERSE_DIGEST)
+        proof = next(v for v in original['proofs'] if v['role'] == 'independent-correctness' and v['arm'] == 'B')
+        proof['bindings']['oracleDigestKinds'] = {case['id']: p.JVM_RAW_UNIVERSE_DIGEST}
+        p.validate_proof_claims(original)
+        for mutation in ('missing', 'changed', 'extra', 'null', 'wrong-kind', 'wrong-engine', 'legacy-extra'):
+            plan = copy.deepcopy(original)
+            oracle = plan['cases'][0]['oracleByArm']['B']
+            proof = next(v for v in plan['proofs'] if v['role'] == 'independent-correctness' and v['arm'] == 'B')
+            if mutation == 'missing': del proof['bindings']['oracleDigestKinds']
+            elif mutation == 'changed': proof['bindings']['oracleDigestKinds'][case['id']] = 'unknown'
+            elif mutation == 'extra': proof['bindings']['oracleDigestKinds']['foreign-case'] = p.JVM_RAW_UNIVERSE_DIGEST
+            elif mutation == 'null': oracle['digestKind'] = None
+            elif mutation == 'wrong-kind': oracle['kind'] = 'jvm-full-typed-envelope-v1'
+            elif mutation == 'wrong-engine': plan['engine'] = 'native'
+            else: del oracle['digestKind']
+            with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                p.validate_proof_claims(plan)
+
     def test_resources_reject_valid_but_unrelated_process_or_units(self):
         base = {'readStartNs': 0, 'readEndNs': 1, 'pid': 42, 'startTicks': 100,
                 'backend': 'linux-proc', 'ticksPerSecond': 100, 'pageSize': 4096, 'cpuSeconds': 1, 'rssBytes': 100}
@@ -970,6 +993,109 @@ class JvmLegalDispatchTests(unittest.TestCase):
         ref = {'path': str(path), 'sha256': p.sha(path)}
         oracle['valueRef'] = ref
         return {ref['path']: ref['sha256']}
+
+    def raw_reference(self, root, case):
+        pins = self.reference(root, case)
+        oracle = case['oracleByArm']['B']
+        oracle.update(digestKind=p.JVM_RAW_UNIVERSE_DIGEST, digest=oracle['valueRef']['sha256'])
+        return pins
+
+    def test_all35_raw_refs_keep_full_compiler_without_universe_typed_digest_or_request_io(self):
+        import jvm_pressure_oracles as jvm
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); cases = []; bodies = {}; pins = {}
+            for source in jvm.cases():
+                case, body = self.fixture(source['id'], grouped=source['family'] == 'wrapped-discovery')
+                pins.update(self.raw_reference(root, case)); cases.append(case); bodies[case['id']] = body
+            original = p.canonical(cases); original_digest = jvm.digest
+            def request_digest(value):
+                self.assertFalse(type(value) is dict and 'schema' in value, 'raw universe typed digest')
+                return original_digest(value)
+            with patch.object(jvm, 'digest', side_effect=request_digest) as digests, \
+                    patch.object(jvm, 'CompiledLegalLimitOracle', wraps=jvm.CompiledLegalLimitOracle) as compiler:
+                validate = p.compile_response_validator(cases, 'B', pins=pins)
+            self.assertEqual(35, compiler.call_count); self.assertGreater(digests.call_count, 0)
+            self.assertEqual(original, p.canonical(cases))
+            for path in root.iterdir(): path.unlink()
+            with patch.object(Path, 'read_bytes', side_effect=AssertionError('request-time oracle IO')):
+                for case in cases:
+                    body = bodies[case['id']]
+                    self.assertEqual(body['rowCount'], validate(p.canonical(body), case)['rows'])
+                bad = copy.deepcopy(bodies['slow-dynamicHit']); bad['rows'][0]['id'] = '7'
+                with self.assertRaises(ValueError):
+                    validate(p.canonical(bad), next(c for c in cases if c['id'] == 'slow-dynamicHit'))
+
+    def test_raw_identity_rejects_unknown_inline_conflicting_and_missing_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); original, _ = self.fixture()
+            pins = self.raw_reference(root, original)
+            for mutation in ('unknown', 'null', 'inline', 'both', 'digest', 'no-digest', 'proof',
+                             'unbound', 'pin', 'bytes', 'legacy-marker-removed'):
+                case = copy.deepcopy(original); oracle = case['oracleByArm']['B']; bound = dict(pins)
+                if mutation == 'unknown': oracle['digestKind'] = 'unknown'
+                elif mutation == 'null': oracle['digestKind'] = None
+                elif mutation == 'inline': oracle['value'] = {}; del oracle['valueRef']
+                elif mutation == 'both': oracle['value'] = {}
+                elif mutation == 'digest': oracle['digest'] = 'f'*64
+                elif mutation == 'no-digest': del oracle['digest']
+                elif mutation == 'proof': oracle['valueProof'] = dict(oracle['valueRef'], sha256='f'*64)
+                elif mutation == 'unbound': bound = {}
+                elif mutation == 'pin': bound[oracle['valueRef']['path']] = 'f'*64
+                elif mutation == 'bytes':
+                    oracle['digest'] = oracle['valueRef']['sha256'] = 'f'*64
+                    bound[oracle['valueRef']['path']] = 'f'*64
+                else: del oracle['digestKind']
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    p.compile_response_validator([case], 'B', pins=bound)
+
+    def test_raw_same_read_strict_parse_and_whole_tree_scalar_rejection(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); case, _ = self.fixture(); pins = self.raw_reference(root, case)
+            oracle = case['oracleByArm']['B']; path = Path(oracle['valueRef']['path'])
+            with patch.object(Path, 'read_bytes', return_value=b'{}'):
+                with self.assertRaisesRegex(ValueError, 'bytes changed'): p.jvm_oracle_value(oracle, pins=pins)
+            for raw in (b'{"x":0,"x":1}', b'{"x":NaN}', b'{"x":Infinity}', b'{"late":[0,1e999]}',
+                        b'{"late":[0,"\\ud800"]}', b'{"late":{"\\udfff":0}}', b'{"x":"\\ud83d"}'):
+                path.write_bytes(raw); digest = p.sha(path)
+                oracle['digest'] = oracle['valueRef']['sha256'] = digest
+                with self.subTest(raw=raw), self.assertRaises((ValueError, UnicodeEncodeError)):
+                    p.jvm_oracle_value(oracle, pins={str(path): digest})
+            raw = b'{"x":"\\ud83d\\ude00","float":-0.0,"large":9007199254740993}'
+            path.write_bytes(raw); digest = p.sha(path)
+            oracle['digest'] = oracle['valueRef']['sha256'] = digest
+            self.assertEqual({'x': '😀', 'float': -0.0, 'large': 9007199254740993},
+                             p.jvm_oracle_value(oracle, pins={str(path): digest}))
+
+    def test_raw_identity_does_not_replace_complete_semantic_or_definition_checks(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); original, _ = self.fixture()
+            for mutation in ('universe-scope', 'multiplicity', 'total', 'row-count', 'request'):
+                case = copy.deepcopy(original); universe = case['oracleByArm']['B']['value']
+                if mutation == 'universe-scope': universe['targetGraphIds'] = []
+                elif mutation == 'multiplicity': universe['rows'][0]['multiplicity'] = True
+                elif mutation == 'total': universe['totalMatches'] += 1
+                elif mutation == 'row-count': case['oracleByArm']['B']['rows'] = True
+                else: case['request']['body']['query'] += ' LIMIT 1'
+                pins = self.raw_reference(root, case)
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    p.compile_response_validator([case], 'B', pins=pins)
+
+    def test_raw_scalar_validation_keeps_exact_types_and_rejects_cycles(self):
+        class Integer(int): pass
+        class Text(str): pass
+        valid = {'x': [None, True, 1, -0.0, 'é😀', 9007199254740993]}
+        original = copy.deepcopy(valid)
+        p._validate_jvm_raw_json(valid)
+        self.assertEqual(original, valid)
+        for value in ((), b'bytes', Integer(1), Text('x'), {1: 'x'}, {Text('x'): 1},
+                      [0, float('inf')], {'late': '\ud800'}, {'\udfff': 1}):
+            with self.subTest(kind=type(value).__name__), self.assertRaises((ValueError, UnicodeEncodeError)):
+                p._validate_jvm_raw_json(value)
+        cycle = []; cycle.append(cycle)
+        deep = None
+        for _ in range(2000): deep = [deep]
+        for value in (cycle, deep):
+            with self.assertRaises(RecursionError): p._validate_jvm_raw_json(value)
 
     def test_all35_referenced_universes_compile_before_requests_and_preserve_typed_results(self):
         import jvm_pressure_oracles as jvm

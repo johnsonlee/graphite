@@ -229,10 +229,19 @@ class CorrectedJoinRepresentation(unittest.TestCase):
             for row in arm['cases']:
                 oracle = row['oracle']; ref = oracle.pop('valueRef')
                 oracle['value'] = prepare.common.read(ref['path'])
+                oracle.pop('digestKind'); oracle['digest'] = prepare.model.digest(oracle['value'])
+        return packet
+
+    def typed_reference(self):
+        packet = copy.deepcopy(self.corrected)
+        for arm in packet['arms'].values():
+            for row in arm['cases']:
+                oracle = row['oracle']; oracle.pop('digestKind')
+                oracle['digest'] = prepare.model.digest(prepare.common.read(oracle['valueRef']['path']))
         return packet
 
     def test_fresh_references_and_legacy_inline_preserve_exact_measured_shapes(self):
-        for packet in (copy.deepcopy(self.corrected), self.inline()):
+        for packet in (copy.deepcopy(self.corrected), self.inline(), self.typed_reference()):
             before = copy.deepcopy(packet)
             corrected, pending = self.join.verify(packet)
             self.assertEqual(before, packet)
@@ -247,6 +256,15 @@ class CorrectedJoinRepresentation(unittest.TestCase):
         packet['arms']['B']['cases'][0]['oracle']['value']['totalMatches'] += 1
         with self.assertRaisesRegex(ValueError, 'actual independent payload'):
             self.join.verify(packet)
+
+    def test_legacy_typed_reference_cannot_relabel_digest_or_reference(self):
+        for mode in ('digest', 'reference', 'unknown-kind', 'raw-relabel'):
+            packet = self.typed_reference(); oracle = packet['arms']['B']['cases'][0]['oracle']
+            if mode == 'digest': oracle['digest'] = 'f'*64
+            elif mode == 'reference': oracle['valueRef'] = packet['arms']['B']['cases'][1]['oracle']['valueRef']
+            elif mode == 'unknown-kind': oracle['digestKind'] = 'unknown'
+            else: oracle['digestKind'] = prepare.common.JVM_RAW_UNIVERSE_DIGEST
+            with self.subTest(mode=mode), self.assertRaises(ValueError): self.join.verify(packet)
 
     def test_reference_source_and_complete_core_claims_still_match_exactly(self):
         for mode in ('foreign-ref', 'source', 'core', 'mixed'):

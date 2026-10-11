@@ -101,10 +101,11 @@ def _prepare_evidence(root, output, port, evidence):
     require(variant in ('C', 'B'), 'actual reference/candidate derivation arm')
     for case in cases:
         ref = evidence['universes'][case['id']]
-        oracle = {'kind': 'jvm-complete-legal-limit-multiset-v1', 'valueRef': dict(ref)}
+        oracle = {'kind': 'jvm-complete-legal-limit-multiset-v1', 'valueRef': dict(ref),
+                  'digestKind': common.JVM_RAW_UNIVERSE_DIGEST, 'digest': ref['sha256']}
         universe = common.jvm_oracle_value(oracle, pins=pins)
         validator = model.CompiledLegalLimitOracle(universe, case)
-        oracle.update(digest=model.digest(universe), rows=min(validator.total, validator.limit))
+        oracle['rows'] = min(validator.total, validator.limit)
         case['oracleByArm'] = {variant: oracle}
         del universe, validator
     jar = jars['graphiteJar']['path']
@@ -156,7 +157,7 @@ def derive_and_execute(producer_root, raw_export_root, arm, raw_derivation_dir, 
 
 
 def _same_oracle_plan(plan, expected):
-    """Legacy inline payloads must equal their independently replayed file values."""
+    """Retain every legacy typed claim while comparing against fresh raw identities."""
     if set(plan) != set(expected): return False
     if common.typed({k: v for k, v in plan.items() if k != 'cases'}) != common.typed(
             {k: v for k, v in expected.items() if k != 'cases'}): return False
@@ -168,18 +169,27 @@ def _same_oracle_plan(plan, expected):
         if set(actual_case['oracleByArm']) != set(expected_case['oracleByArm']): return False
         for arm, wanted in expected_case['oracleByArm'].items():
             actual = actual_case['oracleByArm'][arm]
-            if 'valueRef' in actual:
+            if 'digestKind' in actual:
+                # Modern raw identity is an exact representation, not a marker
+                # that can relabel an old typed digest or authorize inline data.
+                if actual['digestKind'] != common.JVM_RAW_UNIVERSE_DIGEST: return False
                 if common.typed(actual) != common.typed(wanted): return False
-            else:
-                # Accept exactly the old representation, not extra fields, mixed
-                # inline/ref claims or a digest supplied by the stored plan alone.
-                if set(actual) != (set(wanted) - {'valueRef'}) | {'value'}: return False
-                if common.typed({k: v for k, v in actual.items() if k != 'value'}) != common.typed(
-                        {k: v for k, v in wanted.items() if k != 'valueRef'}): return False
-                universe = common.jvm_oracle_value(wanted, pins=expected['pins'])
-                equal = derive._same_typed_json(actual['value'], universe)
-                del universe
-                if not equal: return False
+                continue
+            # Archived plans did not declare digestKind. Both old representations
+            # retain their full typed-digest claim and independently checked bytes.
+            payload = 'valueRef' if 'valueRef' in actual else 'value'
+            if set(actual) != {'kind', payload, 'digest', 'rows'}: return False
+            if common.typed({k: actual[k] for k in ('kind', 'rows')}) != common.typed(
+                    {k: wanted[k] for k in ('kind', 'rows')}): return False
+            if payload == 'valueRef' and common.typed(actual['valueRef']) != common.typed(wanted['valueRef']):
+                return False
+            universe = common.jvm_oracle_value(wanted, pins=expected['pins'])
+            legacy = universe if payload == 'valueRef' else common.jvm_oracle_value(actual, pins=plan['pins'])
+            authoritative_digest = model.digest(universe)
+            equal = (derive._same_typed_json(legacy, universe) and authoritative_digest == actual['digest'] and
+                     (payload == 'valueRef' or model.digest(legacy) == actual['digest']))
+            del universe, legacy
+            if not equal: return False
     return True
 
 

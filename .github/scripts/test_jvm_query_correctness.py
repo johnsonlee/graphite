@@ -180,15 +180,22 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         import weakref
         original = p.model.CompiledLegalLimitOracle
         previous = []
+        original_digest = p.model.digest
+        def no_universe_digest(value):
+            self.assertFalse(type(value) is dict and 'totalMatches' in value, 'fresh prepare must use exact raw identity')
+            return original_digest(value)
         def compiled(universe, case):
             self.assertTrue(all(ref() is None for ref in previous))
             value = original(universe, case); previous.append(weakref.ref(value)); return value
-        with patch.object(p.model, 'CompiledLegalLimitOracle', side_effect=compiled):
+        with patch.object(p.model, 'CompiledLegalLimitOracle', side_effect=compiled), \
+             patch.object(p.model, 'digest', side_effect=no_universe_digest):
             plan = p.prepare(self.raw, self.out, 22840)
         self.assertEqual(35, len(previous)); self.assertTrue(all(ref() is None for ref in previous))
         for case in plan['cases']:
             oracle = case['oracleByArm']['B']
             self.assertNotIn('value', oracle)
+            self.assertEqual(p.common.JVM_RAW_UNIVERSE_DIGEST, oracle['digestKind'])
+            self.assertEqual(oracle['valueRef']['sha256'], oracle['digest'])
             self.assertEqual(self.replayed['universes'][case['id']], oracle['valueRef'])
             self.assertEqual(oracle['valueRef']['sha256'], plan['pins'][oracle['valueRef']['path']])
         self.assertNotIn('totalMatches', p.common.canonical(plan).decode())
@@ -204,7 +211,8 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         for case in plan['cases']:
             oracle = case['oracleByArm']['B']
             value = p.common.jvm_oracle_value(oracle, pins=plan['pins'])
-            del oracle['valueRef']; oracle['value'] = value
+            del oracle['valueRef']; del oracle['digestKind']
+            oracle['value'] = value; oracle['digest'] = p.model.digest(value)
         self.rewrite_saved_plan(plan)
         self.assertEqual(p.AUDIT, p.audit(self.out)['status'])
         # Re-pinning the plan and retaining the original digest cannot authorize
@@ -214,14 +222,49 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'independent JVM plan differs'):
             p.audit(self.out)
 
+    def test_legacy_inline_signed_zero_cannot_change_authoritative_typed_digest(self):
+        universe = {'scalar': 0.0}
+        ref = write(self.root/'signed-zero.json', universe)
+        wanted = {'kind': 'jvm-complete-legal-limit-multiset-v1', 'valueRef': ref,
+                  'digestKind': p.common.JVM_RAW_UNIVERSE_DIGEST, 'digest': ref['sha256'], 'rows': 1}
+        expected = {'pins': {ref['path']: ref['sha256']}, 'cases': [{'oracleByArm': {'B': wanted}}]}
+        actual = copy.deepcopy(expected)
+        legacy = {'kind': wanted['kind'], 'value': universe, 'digest': p.model.digest(universe), 'rows': 1}
+        actual['cases'][0]['oracleByArm']['B'] = legacy
+        self.assertTrue(p._same_oracle_plan(actual, expected))
+        legacy['value'] = {'scalar': -0.0}
+        legacy['digest'] = p.model.digest(legacy['value'])
+        self.assertTrue(p.derive._same_typed_json(legacy['value'], universe))
+        self.assertNotEqual(p.model.digest(universe), legacy['digest'])
+        self.assertFalse(p._same_oracle_plan(actual, expected))
+
+    def test_legacy_typed_refs_preserve_original_digest_claim(self):
+        self.execute()
+        plan = p.common.read(self.out/'plan.json')
+        for case in plan['cases']:
+            oracle = case['oracleByArm']['B']
+            value = p.common.jvm_oracle_value(oracle, pins=plan['pins'])
+            del oracle['digestKind']; oracle['digest'] = p.model.digest(value)
+        self.rewrite_saved_plan(plan)
+        self.assertEqual(p.AUDIT, p.audit(self.out)['status'])
+        oracle = plan['cases'][0]['oracleByArm']['B']
+        oracle['digest'] = oracle['valueRef']['sha256']
+        self.rewrite_saved_plan(plan)
+        with self.assertRaisesRegex(ValueError, 'independent JVM plan differs'):
+            p.audit(self.out)
+
     def test_referenced_plan_rejects_substituted_refs_digest_and_mixed_payload(self):
         self.execute(); original = p.common.read(self.out/'plan.json')
-        for mode in ['path', 'sha256', 'digest', 'mixed', 'missing']:
+        for mode in ['path', 'sha256', 'digest', 'mixed', 'missing', 'unknown-kind', 'unknown-oracle-kind', 'relabel-typed', 'raw-inline']:
             plan = copy.deepcopy(original); oracle = plan['cases'][0]['oracleByArm']['B']
             if mode == 'path': oracle['valueRef']['path'] += '.foreign'
             elif mode == 'sha256': oracle['valueRef']['sha256'] = '0'*64
             elif mode == 'digest': oracle['digest'] = '0'*64
             elif mode == 'mixed': oracle['value'] = {}
+            elif mode == 'unknown-kind': oracle['digestKind'] = 'unknown'
+            elif mode == 'unknown-oracle-kind': oracle['kind'] = 'unknown'
+            elif mode == 'relabel-typed': oracle['digest'] = p.model.digest(p.common.jvm_oracle_value(oracle, pins=plan['pins']))
+            elif mode == 'raw-inline': oracle['value'] = p.common.jvm_oracle_value(oracle, pins=plan['pins']); del oracle['valueRef']
             else: del oracle['valueRef']
             self.rewrite_saved_plan(plan)
             with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, 'independent JVM plan differs'):

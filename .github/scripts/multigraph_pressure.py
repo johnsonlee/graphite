@@ -31,6 +31,7 @@ from native_legal_response import CompiledDataflowOracle
 
 PLAN_SCHEMA = 'graphite.multigraph-pressure.plan.v1'
 RESULT_SCHEMA = 'graphite.multigraph-pressure.result.v1'
+JVM_RAW_UNIVERSE_DIGEST = 'raw-universe-bytes-sha256-v1'
 HEX = re.compile(r'[0-9a-f]{64}\Z')
 CLEARED = {'_JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'JDK_JAVA_OPTIONS', 'JDK_JAVAC_OPTIONS',
            'JAVA_OPTS', 'GRADLE_OPTS', 'CLASSPATH', 'JAVA', 'RUSTFLAGS',
@@ -150,15 +151,41 @@ def validate_response(raw, case, arm, compiled_legal=None):
     return {'canonicalSha256': actual, 'rows': len(value['rows'])}
 
 
+def _validate_jvm_raw_json(value):
+    """Keep typed-digest scalar rejection without constructing a tagged tree."""
+    if value is None or type(value) in (bool, int):
+        return
+    if type(value) is str:
+        for offset in range(0, len(value), 65536):
+            value[offset:offset + 65536].encode('utf-8', errors='strict')
+        return
+    if type(value) is float:
+        require(math.isfinite(value), 'nonfinite JVM JSON scalar needs separate serializer authority')
+        return
+    if type(value) is list:
+        for item in value: _validate_jvm_raw_json(item)
+        return
+    require(type(value) is dict and all(type(k) is str for k in value), 'JSON object with string keys')
+    for name, item in value.items():
+        _validate_jvm_raw_json(name)
+        _validate_jvm_raw_json(item)
+
+
 def jvm_oracle_value(oracle, *, pins=None):
     """Read one bound JVM universe; never retain its JSON in the pressure plan."""
     require(oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1', 'JVM legal oracle kind')
     require(('value' in oracle) != ('valueRef' in oracle), 'exactly one JVM universe representation')
+    raw_identity = 'digestKind' in oracle
+    if raw_identity:
+        require(oracle['digestKind'] == JVM_RAW_UNIVERSE_DIGEST, 'known JVM universe digest kind')
+        require('valueRef' in oracle, 'raw JVM universe identity requires a reference')
     if 'value' in oracle:
         return oracle['value']
     ref = oracle['valueRef']
     require(type(ref) is dict and set(ref) == {'path', 'sha256'} and
             type(ref['path']) is str and valid_digest(ref['sha256']), 'exact JVM universe reference')
+    if raw_identity:
+        require(oracle.get('digest') == ref['sha256'], 'raw JVM universe digest matches exact reference')
     path = Path(ref['path'])
     require(path.is_absolute() and str(path.resolve()) == ref['path'] and
             path.is_file() and not path.is_symlink(), 'canonical regular JVM universe reference')
@@ -167,7 +194,9 @@ def jvm_oracle_value(oracle, *, pins=None):
         require(oracle['valueProof'] == ref, 'JVM universe reference differs from raw proof')
     raw = path.read_bytes()
     require(digest_bytes(raw) == ref['sha256'], 'JVM universe bytes changed')
-    return parse(raw)
+    value = parse(raw)
+    if raw_identity: _validate_jvm_raw_json(value)
+    return value
 
 
 def _compile_jvm_response_oracle(case, oracle, pins):
@@ -184,7 +213,8 @@ def _compile_jvm_response_oracle(case, oracle, pins):
         if field in case:
             require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact supplied JVM definition field: ' + field)
     value = jvm_oracle_value(oracle, pins=pins)
-    require(jvm.digest(value) == oracle['digest'], 'complete typed JVM universe digest')
+    if 'digestKind' not in oracle:
+        require(jvm.digest(value) == oracle['digest'], 'complete typed JVM universe digest')
     validator = jvm.CompiledLegalLimitOracle(value, definition)
     require(type(oracle['rows']) is int and oracle['rows'] == min(validator.total, validator.limit),
             'JVM legal oracle row count')
@@ -495,6 +525,15 @@ def validate_proof_claims(plan, jvm_packet=None):
             'graphIds': [g['id'] for g in arm['graphs']],
             'requestDigests': {c['id']: digest_bytes(canonical(c['request'])) for c in plan['cases']},
             'oracleDigests': {c['id']: c['oracleByArm'][arm_id]['digest'] for c in plan['cases']}}
+        digest_kinds = {}
+        for case in plan['cases']:
+            oracle = case['oracleByArm'][arm_id]
+            if 'digestKind' in oracle:
+                require(plan['engine'] == 'jvm' and
+                        oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1' and
+                        oracle['digestKind'] == JVM_RAW_UNIVERSE_DIGEST, 'known JVM oracle digest claim')
+                digest_kinds[case['id']] = oracle['digestKind']
+        if digest_kinds: oracle_claims['oracleDigestKinds'] = digest_kinds
         for role, claims in [('source-runtime', runtime_claims), ('independent-correctness', oracle_claims)]:
             matches = [proof for proof in plan['proofs'] if proof['role'] == role and proof.get('arm') == arm_id]
             require(len(matches) == 1, 'one actual ' + role + ' proof per arm')

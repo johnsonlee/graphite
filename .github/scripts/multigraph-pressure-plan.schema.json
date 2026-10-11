@@ -572,6 +572,27 @@
               "pattern": "^[0-9a-f]{64}$"
             }
           }
+        },
+        "valueRef": {
+          "type": "object",
+          "required": [
+            "path",
+            "sha256"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            }
+          },
+          "additionalProperties": false
+        },
+        "digestKind": {
+          "const": "raw-universe-bytes-sha256-v1"
         }
       },
       "allOf": [
@@ -602,9 +623,66 @@
           "then": {
             "required": [
               "rows",
-              "value",
               "valueProof"
+            ],
+            "oneOf": [
+              {
+                "required": [
+                  "value"
+                ],
+                "not": {
+                  "required": [
+                    "valueRef"
+                  ]
+                }
+              },
+              {
+                "required": [
+                  "valueRef"
+                ],
+                "not": {
+                  "required": [
+                    "value"
+                  ]
+                }
+              }
             ]
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "valueRef"
+            ]
+          },
+          "then": {
+            "properties": {
+              "kind": {
+                "const": "jvm-complete-legal-limit-multiset-v1"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "required": [
+              "digestKind"
+            ]
+          },
+          "then": {
+            "required": [
+              "valueRef"
+            ],
+            "properties": {
+              "kind": {
+                "const": "jvm-complete-legal-limit-multiset-v1"
+              }
+            },
+            "not": {
+              "required": [
+                "value"
+              ]
+            }
           }
         }
       ]
@@ -713,12 +791,13 @@
   "x-proof-contract": {
     "allProofs": "Pinned actual successful receipt; status and every top-level bindings field must equal receipt. Receipt upstream map also equals plan map; every producer pin remains in full before/after input closure.",
     "source-runtime": "Exactly one per arm. Required bindings: revision, patchSha256 (null for clean source), sourceManifestSha256, runtimeManifestSha256, runtimeFiles. Upstream includes exact source/runtime manifests and actual producer audit.",
-    "independent-correctness": "Exactly one per arm. Required bindings: graphIds, requestDigests (canonical full endpoint/body by case ID), oracleDigests (full typed/canonical expected body or independently derived complete legal row universe by case ID). Upstream includes each independently established oracle proof; observed-body hashes stay in response receipts.",
+    "independent-correctness": "Exactly one per arm. Required bindings: graphIds, requestDigests (canonical full endpoint/body by case ID), oracleDigests (the declared expected-oracle identity by case ID). When any case declares digestKind, oracleDigestKinds is required and maps exactly those case IDs to their explicit kind; omit the field for legacy plans. Upstream includes each independently established oracle proof; observed-body hashes stay in response receipts.",
     "fixture-equivalence": "Exactly one across all arms. Required bindings: graphsByArm (ordered id/path maps), fixtureFiles (complete measured fixture SHA union), realPersistedGraphs:true, completeSemanticEquivalence:true. Upstream binds complete semantic migration/equivalence audits.",
     "bindingLimitation": "Trusted workflow/local binder must derive these claims from actual evidence, never fill a standalone PASS placeholder. Existing artifacts remain immutable; a normalized receipt must preserve their exact producer hashes and evidence linkage.",
     "fixture-equivalence-corrected-mode": "Native plans may instead bind correctedProducerAuthority to a freshly replayed actual producer bundle. Required bindings retain completeSemanticEquivalence:false, strictEquivalence:false and sourceToDeclarationCompletenessClaim:false, and add the explicit corrected comparison model and exact per-arm audit/raw-array references. Every nonaccepted arm must have complete64 core/topology/index proofs with individually authorized source corrections and all persisted array Local raw-type authority; graph/source/runtime/query identities and pins cannot be substituted. The original strict fixture-equivalence contract remains unchanged.",
-    "fixture-equivalence-jvm-corrected-mode": "JVM legal-universe plans bind jvmProducerAuthority to a freshly replayed JVM producer packet. All34 actual responses for each distinct arm must match independently raw-derived expectations and reviewed source rules. Core comparability reuses the existing complete64 corrected model with completeSemanticEquivalence, strictEquivalence and sourceToDeclarationCompletenessClaim all false. Actual source/runtime/graph/query identities and raw-array evidence remain required. Legacy JVM and Native proof modes are unchanged.",
-    "fixture-inventory-pending-mode": "Native measurement-only plans bind pendingComparabilityAuthority and comparabilityPending:true. Exactly one fixture-inventory proof replaces fixture-equivalence and retains completeSemanticEquivalence:false. All39 actual per-arm responses and complete source/runtime/graph identities remain audited. Cells remain ineligible for final acceptance until a separate same-input complete corrected core join is verified; original measured plans and samples are immutable."
+    "fixture-equivalence-jvm-corrected-mode": "JVM legal-universe plans bind jvmProducerAuthority to a freshly replayed JVM producer packet. All35 actual responses for each distinct arm must match independently raw-derived expectations and reviewed source rules. Core comparability reuses the existing complete64 corrected model with completeSemanticEquivalence, strictEquivalence and sourceToDeclarationCompletenessClaim all false. Actual source/runtime/graph/query identities and raw-array evidence remain required. Legacy JVM and Native proof modes are unchanged.",
+    "fixture-inventory-pending-mode": "Native measurement-only plans bind pendingComparabilityAuthority and comparabilityPending:true. Exactly one fixture-inventory proof replaces fixture-equivalence and retains completeSemanticEquivalence:false. All39 actual per-arm responses and complete source/runtime/graph identities remain audited. Cells remain ineligible for final acceptance until a separate same-input complete corrected core join is verified; original measured plans and samples are immutable.",
+    "jvm-universe-identity": "A JVM legal oracle contains exactly one of value or valueRef. Absent digestKind retains the legacy complete typed-universe digest for either representation. Explicit raw-universe-bytes-sha256-v1 requires valueRef only, with digest == valueRef.sha256 == valueProof.sha256 == pins[path]. Runtime checks the canonical regular file path and hashes the same bytes it strictly parses; every JSON scalar/key retains strict finite-number and UTF-8 checks. Complete independent raw derivation, source/request/scope binding, original semantic compilation and row checks remain mandatory. Raw identity binds exact file bytes, including whitespace/key order; it does not authorize relabeling legacy claims or provide oracle authority by itself."
   },
   "allOf": [
     {
