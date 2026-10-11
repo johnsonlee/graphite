@@ -4209,7 +4209,41 @@ test("Rust split stages preserve query gates before independent lifecycle measur
     assert.match(rustWorkflowJob(workflow,"rust-query-jvm"), /--finalize-producers native-pressure-producers-jvm-corrected\.json/);
     assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: native-query-measurement-/);
     const nativeFinal = rustWorkflowJob(workflow, "rust-query-native");
-    assert.match(rustWorkflowStep(nativeFinal, "Join complete core proof with original native measurement"), /--finalize-producers native-pressure-producers\/packet\.json/);
+    const finalJoin = rustWorkflowStep(nativeFinal, "Join complete core proof with original native measurement");
+    assert.match(finalJoin, /--finalize-artifacts native-pressure-artifacts/);
+    assert.doesNotMatch(nativeFinal, /assemble_native_pressure_producers\.py|--finalize-producers/,
+        "one owned finalizer creates and verifies its corrected packet");
+    const original = rustWorkflowStep(nativeFinal, "Download original native measurement");
+    assert.match(original, /name: native-query-measurement-\$\{\{ github\.run_id \}\}-\$\{\{ github\.run_attempt \}\}/);
+    assert.match(original, /path: \./);
+    assert.ok(nativeFinal.indexOf("Verify and restore exact checkpoint closure") < nativeFinal.indexOf(original));
+    assert.ok(nativeFinal.indexOf(original) < nativeFinal.indexOf(finalJoin));
+    assert.match(rustWorkflowStep(nativeFinal, "Upload native pressure results"), /benchmark-results\/multigraph-native-query\*/,
+        "the generated corrected packet and portable receipt remain downloadable");
+    const enforce = rustWorkflowStep(nativeFinal, "Enforce native-query acceptance");
+    assert.match(enforce, /if: always\(\)/);
+    assert.doesNotMatch(enforce, /continue-on-error:/);
+    for (const operation of ["query", "loading"]) assert.ok(enforce.includes(`multigraph-native-${operation}-status.json`));
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "native-finalizer-dispatch-"));
+    try {
+        const bin = path.join(directory, "bin"); fs.mkdirSync(bin);
+        const calls = path.join(directory, "calls.json");
+        fs.writeFileSync(path.join(bin, "python3"), `#!${process.execPath}\n` +
+            `require("node:fs").writeFileSync(process.env.CALLS,JSON.stringify(process.argv.slice(2)));process.exit(Number(process.env.RESULT));\n`, {mode:0o755});
+        const start = finalJoin.indexOf("        python3 candidate/.github/scripts/run_prepared_native_pressure.py");
+        assert.ok(start >= 0, "run the actual finalizer handoff command");
+        const shell = "set -euo pipefail\n" + finalJoin.slice(start).split("\n").map(line => line.replace(/^        /, "")).join("\n");
+        const expected = ["candidate/.github/scripts/run_prepared_native_pressure.py",
+            "--preparation", "benchmark-results/native-pressure-preparation", "--output", "benchmark-results/native-pressure-cells",
+            "--prefix", "benchmark-results/multigraph-native-query", "--finalize-artifacts", "native-pressure-artifacts",
+            "--loading-prefix", "benchmark-results/multigraph-native-loading"];
+        for (const code of [0, 29]) {
+            const run = spawnSync("bash", ["-c", shell], {cwd:directory,encoding:"utf8",
+                env:{...process.env,PATH:`${bin}:${process.env.PATH}`,CALLS:calls,RESULT:String(code)}});
+            assert.equal(run.status, code, run.stderr);
+            assert.deepEqual(JSON.parse(fs.readFileSync(calls, "utf8")), expected);
+        }
+    } finally { fs.rmSync(directory, {recursive:true,force:true}); }
     assert.doesNotMatch(nativeFinal, /--measurement-only|Prepare matched native continuous-pressure plan/);
     for (const [id, operation, measurement] of [
         ["rust-loading", "loading", "Measure and audit six JVM real64 zero-query loads"],
@@ -4231,7 +4265,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
 test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm-measurement", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
-    const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
+    const jobs = Object.fromEntries(["rust-producer-common", "rust-producer-arm", ...ids].map(id => [id, rustWorkflowJob(workflow, id)]));
     const needs = job => {
         const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
         assert.ok(list, "stage has explicit dependencies");
@@ -4241,7 +4275,25 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
         assert.match(job, /^    timeout-minutes: 360$/m);
         assert.doesNotMatch(job.split("    steps:")[0], /continue-on-error:/, "failed stages remain required failures");
     }
-    assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
+    assert.deepEqual(needs(jobs["rust-producer-common"]), ["candidate-gate-tests", "prepare-fixture64"]);
+    assert.deepEqual(needs(jobs["rust-producer-arm"]), ["rust-producer-common"]);
+    assert.deepEqual(needs(jobs["rust-producer"]), ["rust-producer-common", "rust-producer-arm"]);
+    for (const id of ["rust-producer-arm", "rust-producer"]) {
+        const common = rustWorkflowStep(jobs[id], "Download common producer inputs");
+        assert.match(common, /name: native-checkpoint-producer-common-common-/);
+        assert.match(common, /path: pressure-checkpoints\/producer-common-common/);
+    }
+    const merge = jobs["rust-producer"];
+    for (const arm of ["C", "A", "B"]) {
+        const download = rustWorkflowStep(merge, `Download producer arm ${arm}`);
+        assert.ok(download.includes(`name: native-checkpoint-producer-arm-${arm}-`));
+        assert.ok(download.includes(`path: pressure-checkpoints/producer-arm-${arm}`));
+        if (arm === "A") assert.match(download, /if: github\.event\.pull_request\.base\.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'/);
+        else assert.doesNotMatch(download, /if:/, "C and B are always mandatory");
+    }
+    assert.match(rustWorkflowStep(merge, "Merge exact original producer checkpoints"), /native_pressure_checkpoint\.py merge-producer/);
+    assert.match(rustWorkflowStep(merge, "Publish complete producer checkpoint"), /name: native-checkpoint-producer-producer-/);
+    assert.doesNotMatch(merge, /produce_native_pressure_artifacts\.py/);
     for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
     for (const id of ["rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"]) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
     assert.deepEqual(needs(jobs["rust-query-native-measurement"]), ["candidate-gate-tests", "rust-producer"],
@@ -4260,6 +4312,7 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     assert.match(jobs["rust-jvm-correctness"],/export_jvm_raw_edges\.py/);
     assert.match(jobs["rust-query-jvm-measurement"],/prepare_jvm_pressure_plan\.py --measurement-only/);
     for (const [id, aliasArms, distinctArms] of [
+        ["rust-producer-arm", '["C","B"]', '["C","A","B"]'],
         ["rust-core-prepare", '["B"]', '["A","B"]'],
         ["rust-core-shard", '["B"]', '["A","B"]'],
         ["rust-core", '["B"]', '["A","B"]'],
@@ -4847,8 +4900,14 @@ fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":
 
 test("core-only inputs move to their owning prepare arm without regenerating shared C evidence", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const producer = rustWorkflowJob(workflow, "rust-producer");
+    const producer = rustWorkflowJob(workflow, "rust-producer-arm");
     const prepare = rustWorkflowJob(workflow, "rust-core-prepare");
+    for (const id of ["rust-producer-common", "rust-producer"]) {
+        assert.doesNotMatch(rustWorkflowJob(workflow, id), /export_native_core_strings\.py|export_native_core_marker\.py|bind_native_core_formatter\.py|run_native_formatter_tests\.py/,
+            "common inputs and merge cannot regenerate arm-owned proof outputs");
+    }
+    assert.match(producer, /A\) test "\$\{BASE_SHA\}" != "\$\{ACCEPTED_SHA\}"; produce_arm base "\$\{BASE_SHA\}" parent A/);
+    assert.match(producer, /--upstream pressure-checkpoints\/producer-common-common\/manifest\.json/);
     assert.match(producer, /if \[\[ "\$4" == C \]\]; then\s+python3 candidate\/\.github\/scripts\/export_native_core_strings\.py/);
     for (const name of ["export_native_core_marker", "bind_native_core_formatter", "run_native_formatter_tests"]) {
         assert.doesNotMatch(producer, new RegExp(name + "\\.py"));

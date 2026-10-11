@@ -18768,3 +18768,18 @@ performance measurement was performed. The old9m54 stage is not a guaranteed net
 saving: retained audits, fresh checks and publishing the generated packet still
 cost time. Complete CI remains unbounded below two hours; product query latency,
 loading CPU/RSS, construction CPU and fresh JVM35 acceptance gaps remain open.
+
+#### Workflow contract follow-up for attempts238 and242
+
+The broader Node gate still asserted the former unsplit producer dependencies,
+C string-export placement and preassembled Native finalizer input. Its first
+review run reported135/138 passing; these were stale expectations after the
+workflow changes, not permission to remove coverage. Update the contracts to
+check common→arms→merge dependencies, alias-safe matrices and distinct-A download,
+arm-owned C strings, and the actual Native finalizer shell dispatch. Preserve
+measurement-download ordering, generated-packet publication and both final query
+and loading gates. The real shell command is checked for complete arguments and
+both successful and failed exit propagation. All138 Node gate tests pass in
+16.510s, with no skips. Root reviewed the diff and original log:
+`/tmp/graphite-stale-workflow-contracts-node.log`. No production, Python verifier
+or measurement code changes are included in this follow-up.
