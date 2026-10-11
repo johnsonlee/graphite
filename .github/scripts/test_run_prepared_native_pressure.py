@@ -245,7 +245,7 @@ class Finalization(unittest.TestCase):
     Existing bundle/raw audit suites exercise those authorities independently;
     these tests exercise the join and immutable original measurement binding.
     """
-    def exercise(self,mode='pass',loading_mode=None):
+    def exercise(self,mode='pass',loading_mode=None,measurement_reports=False,stale_loading=None):
         import assemble_native_pressure_producers as bundle
         with tempfile.TemporaryDirectory() as folder,contextlib.ExitStack() as stack:
             root=Path(folder).resolve();prep=root/'prep';prep.mkdir();out=root/'cells';out.mkdir();prefix=root/'final/query'
@@ -270,7 +270,7 @@ class Finalization(unittest.TestCase):
             if loading_mode is not None:
                 from native_loading import DECLARATION
                 plan['loadingMeasurement']=dict(DECLARATION)
-            loading_prefix=root/'final/loading' if loading_mode is not None else None
+            loading_prefix=root/'final/multigraph-native-loading' if loading_mode is not None else None
             plan_ref=put('prep/plan.json',plan)
             ready=put('prep/preparation-status.json',{'status':'PLAN_READY_NOT_MEASURED',
                       'comparabilityPending':True,'planSha256':plan_ref['sha256']})
@@ -332,7 +332,25 @@ class Finalization(unittest.TestCase):
             stack.enter_context(patch.object(r.subprocess,'run',side_effect=compare))
             stack.enter_context(patch.object(r.shutil,'which',return_value='/usr/bin/node'))
             stack.enter_context(patch('subprocess.Popen',side_effect=AssertionError('no server permitted')))
+            original_reports={}
+            if measurement_reports:
+                loading_prefix.parent.mkdir(parents=True,exist_ok=True)
+                for suffix in ('-status.json','-report.md','-comparison.stdout.log','-comparison.stderr.log'):
+                    path=Path(str(loading_prefix)+'-measurement'+suffix)
+                    path.write_text(json.dumps({'status':r.PENDING,'passed':False,'planSha256':plan_ref['sha256']})
+                                    if suffix=='-status.json' else 'original measured '+suffix)
+                    original_reports[path]=path.read_bytes()
+            if stale_loading is not None:
+                path=Path(str(loading_prefix)+stale_loading);path.parent.mkdir(parents=True,exist_ok=True)
+                if stale_loading=='-status.json':path.symlink_to(root/'missing-original-status')
+                else:path.write_text('original final output')
+                with self.assertRaisesRegex(ValueError,'fresh separate Native loading report prefix'):
+                    r.finalize(prep,out,prefix,Path(corrected_ref['path']),loading_prefix)
+                self.assertEqual([],events)
+                self.assertFalse(Path(str(prefix)+'-status.json').exists())
+                return
             result=r.finalize(prep,out,prefix,Path(corrected_ref['path']),loading_prefix)
+            self.assertEqual(original_reports,{path:path.read_bytes() for path in original_reports})
             self.assertEqual(original,{str(p):p.read_bytes() for parent in (prep,out) for p in parent.rglob('*') if p.is_file()})
             self.assertEqual(result,r.pressure.read(Path(str(prefix)+'-finalization.json')))
             verdict=r.pressure.read(Path(str(prefix)+'-status.json'))
@@ -341,6 +359,17 @@ class Finalization(unittest.TestCase):
                 self.assertTrue(raw['passed']);self.assertFalse(verdict['passed'])
             if loading_prefix is not None:self.loading_verdict=r.pressure.read(str(loading_prefix)+'-status.json')
             return result,events,verdict
+
+    def test_downloaded_loading_measurement_reports_survive_pending_to_final_join(self):
+        result,events,verdict=self.exercise(loading_mode='pass',measurement_reports=True)
+        self.assertTrue(result['performanceAcceptance']);self.assertTrue(verdict['passed'])
+        self.assertTrue(self.loading_verdict['passed'])
+        self.assertEqual(6,sum(kind=='audit' for kind,_ in events))
+
+    def test_actual_loading_outputs_including_dangling_link_are_never_overwritten(self):
+        for suffix in ('','-status.json','-report.md','-comparison.stdout.log','-comparison.stderr.log',
+                       '-original-status.json','-original-report.md'):
+            with self.subTest(suffix=suffix):self.exercise(loading_mode='pass',stale_loading=suffix)
 
     def test_join_reaudits_six_original_cells_and_preserves_every_measurement_byte(self):
         result,events,verdict=self.exercise()

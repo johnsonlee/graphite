@@ -214,8 +214,13 @@ def finalize(preparation, output, prefix, producers, loading_prefix=None, *, eng
     prefix.parent.mkdir(parents=True, exist_ok=True)
     if loading_prefix is not None:
         loading_prefix=Path(loading_prefix).resolve()
+        # Measurement reports legitimately share this lexical prefix. Reserve only
+        # paths this finalization can write, including preserved failure reports.
+        loading_paths=[loading_prefix,*[Path(str(loading_prefix)+suffix) for suffix in
+                       ('-status.json','-report.md','-comparison.stdout.log','-comparison.stderr.log',
+                        '-original-status.json','-original-report.md')]]
         pressure.require(not loading_prefix.is_relative_to(output) and not loading_prefix.is_relative_to(preparation) and
-                         loading_prefix != prefix and not any(loading_prefix.parent.glob(loading_prefix.name+'*')),
+                         loading_prefix != prefix and not any(p.exists() or p.is_symlink() for p in loading_paths),
                          'fresh separate Native loading report prefix')
     paths = [Path(str(prefix)+suffix) for suffix in
              ('-status.json', '-report.md', '-comparability.json', '-comparability-evidence',

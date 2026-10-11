@@ -18602,3 +18602,33 @@ join28m50 still total114m39, before final consumers and aggregation. Complete
 JVM pressure/final-consumer duration remains unknown because earlier failures
 prevented execution. Retain the verified DAG change for a future budgeted run;
 do not supersede current finalizers for this unmeasured change alone.
+
+### Attempt239 — catch finalizer output collisions before hosted replay (2026-10-12)
+
+Parent:4e7e5408. Current91 Native finalizer114540984148 completed at18:42:58Z
+after21m44, but did not complete final validation. Restore took9m33 and producer
+assembly9m54. Its join immediately failed with `ValueError: fresh separate
+Native loading report prefix`; continue-on-error makes the step look successful
+in job metadata, while the original log records exit1 and final enforcement
+fails on the absent query status. Do not treat this as a measured complete
+finalizer, a joined correctness proof, or only a performance-threshold failure.
+Evidence:`/tmp/graphite-ci91ee70-native-finalizer-terminal.json` and original
+`/tmp/graphite-ci91ee70-native-finalizer.log`.
+
+The downloaded original measurement contains four legitimate
+multigraph-native-loading-measurement reports/logs. A broad loading-prefix glob
+mistook these immutable inputs for final outputs. Check exactly the six paths
+finalization can write, plus the prefix itself, rejecting existing destinations
+and dangling links. Preserve every original measurement byte and all six raw
+cell audits, complete core binding and final resource/latency gates.
+
+The existing finalization fixture now exercises this real same-directory naming
+layout through pending-to-finalized execution and checks that the original four
+files remain byte-identical. Seven collision subcases reject actual final
+destinations before core auditing or output publication. The fixture keeps its
+existing mocked external core/Node authorities; it is a persisted-file handoff
+correctness test, not a replacement for independent raw correctness or actual
+performance measurement. All30 module tests pass in0.342s:
+`/tmp/graphite-native-loading-prefix-contracts.log`. Root reviewed the exact
+write destinations, patch and preserved-input assertions. Retain the fix;
+the failed hosted91 result is unchanged and complete final replay remains due.
