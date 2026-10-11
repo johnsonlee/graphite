@@ -19162,3 +19162,61 @@ CPU regression remains open, and query/build/save performance is unmeasured by
 this run. Evidence: `/tmp/graphite-native64-loading-stack-prep-1/` containing
 `execution.json`, `audit.json`, `root-result-review.json`,
 `root-loading-attribution.json` and the original three stack reports.
+
+
+### Attempt250 — verify JVM measurement startup once per writer (2026-10-12)
+
+Parent:f1785694. The same measurement preparation and execution path currently
+replays all JVM35 derivations three times per distinct writer: assembly,
+preparation validation and execution-context opening. Stage the saved inputs as
+an explicitly unverified candidate, then call the unchanged strict
+_VerifiedPressureExecution.open once and consume that context in the same owned
+invocation. Only successful full validation publishes PLAN_READY_NOT_MEASURED.
+Staging returns small metadata; its packet, plan and temporary compiled oracles
+are released before full replay. No persistent verified token or universe cache
+is introduced.
+
+Public standalone preparation and execution retain their original complete
+replays. The full plan validator, independent query audit, source rules and
+before/after input/source/configuration/tree checks are unchanged. All six
+CABBAC cells, per-cell complete response audits, failed/unissued results, final
+checks and pending core-comparability status remain. The combined invocation
+invalidates its context on success, failed cells, failed READY writes or failed
+execution entry. The workflow replaces separate prepare/execute processes with
+one call and preserves the original diagnostic/artifact paths.
+
+With U distinct writers, measurement startup falls 3U→U; finalization stays U
+from248. For the current A=C alias (U=2), downstream derivations fall8→4, or14→4
+cumulatively across248/250. Four additional full derivations and eight64-graph
+reader passes are removed. These are static invocation counts, not measured
+hosted time savings. Initial correctness derivation/audit work is separate.
+
+Bounded verification: the first60-test run takes38.845s (39.029s process under
+120s) with52 unchanged tests passing and five new-test failures. The lifetime
+probe incorrectly wraps a strict replay result in a dict subclass. Restrict
+that probe to staging; preserve the failure log and leave production unchanged.
+All eight new tests then pass in26.176s (26.383s process under60s), including
+accepted-parent aliasing, one full replay per writer, released staging objects,
+forged audits/source-rule failure, input drift, six-cell sequencing and context
+invalidation. CLI ambiguity and standalone execution checks also pass.
+
+Two changed Node workflow contracts pass in0.502s process after correcting a
+stale248 assertion that still expected the separate finalizer command. Preserve
+that failed first check. Structural actionlint with shellcheck disabled,193
+control pins, workflow binding and diff check pass. Root reviews production and
+test changes, frozen source hashes, exact patch and pins. New small handoff
+fixtures model upstream audits/HTTP and source inventory; they do not replace
+existing real-source closure tests or full64 correctness evidence.
+
+Retain the scoped reuse. No real64, build or hosted CI run is started. Query
+p50/p95, CPU, RSS, build/save and complete CI duration are not measured here.
+A separate critical-path review cannot establish a <2h complete run: carrying
+forward old91 stage costs conditionally gives2h44m37 to core publication and
+3h40m12 through construction finalization, before the unmeasured full JVM35
+branch. This is neither a new-run ETA nor a hard lower bound. Do not launch a
+whole iteration on an unsupported two-hour estimate; bound JVM35 completion,
+serialization and remaining finalizer work first.
+
+Evidence: `/tmp/graphite-attempt250-owned-jvm-startup/verification.json`,
+`root-review.json`, original failure/pass logs and `candidate.patch`;
+`/tmp/graphite-next-ci-budget-after249.json` records the conditional timing model.

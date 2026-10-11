@@ -85,6 +85,11 @@ class Execution(unittest.TestCase):
             if loading_prefix is not None:self.loading_verdict=json.loads(Path(str(loading_prefix)+'-status.json').read_text())
             return result,verdict,events
 
+    def test_standalone_execute_still_opens_complete_authority(self):
+        with patch.object(r.pressure._VerifiedPressureExecution, 'open', wraps=r.pressure._VerifiedPressureExecution.open) as opened:
+            result, _, _ = self.exercise('pending')
+        opened.assert_called_once(); self.assertEqual(r.PENDING, result['status'])
+
     def test_progress_distinguishes_context_verification_run_audit_and_terminal_check(self):
         with patch('builtins.print') as progress:
             result, _, _ = self.exercise('pending')
@@ -421,6 +426,20 @@ class Finalization(unittest.TestCase):
             with self.subTest(flags=flags):
                 result=subprocess.run(base+flags,capture_output=True,text=True,timeout=15)
                 self.assertEqual(2,result.returncode);self.assertIn(expected,result.stderr)
+
+    def test_combined_jvm_cli_rejects_partial_or_mixed_modes_before_writing(self):
+        import subprocess, sys
+        with tempfile.TemporaryDirectory() as folder:
+            root = Path(folder).resolve()
+            argv = [sys.executable, '-B', str(Path(r.__file__).resolve()), '--preparation', str(root/'prep'),
+                    '--output', str(root/'cells'), '--prefix', str(root/'report')]
+            for flags in (['--engine', 'jvm', '--c', 'C'],
+                          ['--c', 'C', '--a', 'A', '--b', 'B', '--base-sha', 'a'*40, '--candidate-sha', 'b'*40],
+                          ['--engine', 'jvm', '--c', 'C', '--finalize-artifacts', 'artifacts']):
+                with self.subTest(flags=flags):
+                    result = subprocess.run(argv+flags, capture_output=True, text=True, timeout=15)
+                    self.assertEqual(2, result.returncode); self.assertIn('combined preparation requires', result.stderr)
+                    self.assertEqual([], list(root.iterdir()))
 
     def test_jvm_artifact_cli_reaches_owned_finalizer_and_missing_inputs_fail_closed(self):
         import subprocess, sys

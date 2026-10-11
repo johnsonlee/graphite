@@ -27,6 +27,10 @@ merge_pins = assembled.merge_pins
 def audited_arm(directory, revision, role):
     root = Path(directory).resolve()
     observed = queries.audit(root)
+    return _arm_from_audit(root, revision, role, observed)
+
+
+def _arm_from_audit(root, revision, role, observed):
     require(observed['schema'] == 'graphite.jvm-query-correctness-audit.v1' and
             observed['status'] == queries.AUDIT and observed['revision'] == revision and observed['role'] == role and
             all(observed[k] is True for k in ('independentRawExpectationsVerified', 'sourceRuleApplicabilityVerified',
@@ -90,6 +94,10 @@ def audited_arm(directory, revision, role):
 
 
 def assemble(correctness_roots, base_sha, candidate_sha, *, measurement_only=False):
+    return _assemble(correctness_roots, base_sha, candidate_sha, measurement_only, audited_arm)
+
+
+def _assemble(correctness_roots, base_sha, candidate_sha, measurement_only, arm_reader):
     require(set(correctness_roots) == {'C', 'A', 'B'} and
             all(re.fullmatch('[0-9a-f]{40}', value) for value in (base_sha, candidate_sha)), 'exact C/A/B roots and revisions')
     roots = {key: str(Path(value).resolve()) for key, value in correctness_roots.items()}
@@ -98,7 +106,7 @@ def assemble(correctness_roots, base_sha, candidate_sha, *, measurement_only=Fal
     arms, pins, comparisons, audited = {}, {}, {}, {}
     for name, revision, role in [('C', artifacts.ACCEPTED, 'accepted-baseline'), ('A', base_sha, 'parent'), ('B', candidate_sha, 'candidate')]:
         if roots[name] not in audited:
-            audited[roots[name]] = audited_arm(roots[name], revision, role)
+            audited[roots[name]] = arm_reader(roots[name], revision, role)
         arm, evidence, core_path = audited[roots[name]]
         require(arm['revision'] == revision, 'aliased actual revision')
         arms[name] = dict(arm, role=role)
@@ -198,7 +206,7 @@ def bind_plan(packet, producer_ref, output, catalog_path):
                    'bodyBytes': 67108864, 'rssIntervalSeconds': .01}}
 
 
-def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CATALOG, *, measurement_only=False):
+def _reserve_preparation(correctness_roots, output):
     output = Path(output).resolve()
     require(not output.exists(), 'fresh preparation directory')
     # Inspect paths only before reserving output, so failed/missing audit evidence
@@ -219,6 +227,16 @@ def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CAT
         preflight_error = error
     require(not any(output.is_relative_to(root) for root in protected), 'preparation output outside immutable upstream inputs')
     output.mkdir(parents=True)
+    return output, preflight_error
+
+
+def _status():
+    return {'schema': 'graphite.jvm-pressure.preparation.v1', 'engine': 'jvm', 'operation': 'query',
+            'status': 'FAIL', 'errors': [], 'missingProducers': [], 'performanceAcceptance': False}
+
+
+def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CATALOG, *, measurement_only=False):
+    output, preflight_error = _reserve_preparation(correctness_roots, output)
     status = {'schema': 'graphite.jvm-pressure.preparation.v1', 'engine': 'jvm', 'operation': 'query',
               'status': 'FAIL', 'errors': [], 'missingProducers': [], 'performanceAcceptance': False}
     try:
@@ -237,6 +255,35 @@ def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CAT
     except (OSError, ValueError, KeyError, TypeError) as error:
         status['errors'].append(repr(error))
     common.save(output/'preparation-status.json', status)
+    return status
+
+
+def _stage_candidate(correctness_roots, base_sha, candidate_sha, output, catalog_path=CATALOG):
+    """Materialize untrusted saved evidence; only the strict execution factory can approve it.
+
+    Return only small diagnostic metadata so candidate universes/validators are
+    released before the independent context factory loads and validates a plan.
+    """
+    output, preflight_error = _reserve_preparation(correctness_roots, output)
+    status = _status()
+    status['errors'] = ['Complete independent preparation verification has not finished']
+    common.save(output/'preparation-status.json', status)
+    try:
+        if preflight_error is not None: raise preflight_error
+        def stored_arm(directory, revision, role):
+            root = Path(directory).resolve()
+            return _arm_from_audit(root, revision, role, common.read(root/'audit.json'))
+        packet = _assemble(correctness_roots, base_sha, candidate_sha, True, stored_arm)
+        require(not any(output.is_relative_to(Path(p).parent) for p in packet['pins']),
+                'preparation output outside immutable upstream inputs')
+        common.save(output/'packet.json', packet)
+        plan = bind_plan(packet, artifacts.ref(output/'packet.json'), output, catalog_path)
+        common.save(output/'plan.json', plan)
+        status.update(candidatePlanSha256=common.sha(output/'plan.json'))
+    except FileNotFoundError as error:
+        status.update(status='UNAVAILABLE', missingProducers=[str(error)])
+    except (OSError, ValueError, KeyError, TypeError) as error:
+        status['errors'].append(repr(error))
     return status
 
 

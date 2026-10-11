@@ -4194,7 +4194,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
     assert.match(nativePressure, /run_prepared_native_pressure\.py/);
     assert.match(nativePressure, /--preparation benchmark-results\/native-pressure-preparation/);
     assert.match(nativePressure, /--output benchmark-results\/native-pressure-cells/);
-    const jvmPressure = rustWorkflowStep(jvm, "Execute and audit matched JVM continuous pressure");
+    const jvmPressure = rustWorkflowStep(jvm, "Prepare, execute and audit matched JVM continuous pressure");
     assert.match(jvmPressure, /run_prepared_native_pressure\.py --engine jvm/);
     assert.match(jvmPressure, /--preparation benchmark-results\/jvm-pressure-preparation/);
     assert.match(jvmPressure, /--output benchmark-results\/jvm-pressure-cells/);
@@ -4206,7 +4206,9 @@ test("Rust split stages preserve query gates before independent lifecycle measur
     assert.match(nativeUpload, /name: benchmark-rust-latency-/);
     assert.match(nativeUpload, /path: benchmark-results\//);
     assert.match(jvm, /name: jvm-pressure-measurement-/);
-    assert.match(rustWorkflowJob(workflow,"rust-query-jvm"), /--finalize-producers native-pressure-producers-jvm-corrected\.json/);
+    const jvmFinal = rustWorkflowJob(workflow, "rust-query-jvm");
+    assert.match(jvmFinal, /--finalize-artifacts native-pressure-artifacts/);
+    assert.doesNotMatch(jvmFinal, /jvm_pressure_join\.py|--finalize-producers/);
     assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: native-query-measurement-/);
     const nativeFinal = rustWorkflowJob(workflow, "rust-query-native");
     const finalJoin = rustWorkflowStep(nativeFinal, "Join complete core proof with original native measurement");
@@ -4310,7 +4312,12 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     assert.deepEqual(needs(jobs["rust-query-jvm-measurement"]),["rust-producer","rust-core-prepare","rust-jvm-correctness"]);
     assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-query-jvm-measurement"));
     assert.match(jobs["rust-jvm-correctness"],/export_jvm_raw_edges\.py/);
-    assert.match(jobs["rust-query-jvm-measurement"],/prepare_jvm_pressure_plan\.py --measurement-only/);
+    assert.doesNotMatch(jobs["rust-query-jvm-measurement"], /prepare_jvm_pressure_plan\.py/);
+    const combinedJvm = rustWorkflowStep(jobs["rust-query-jvm-measurement"], "Prepare, execute and audit matched JVM continuous pressure");
+    assert.equal((combinedJvm.match(/run_prepared_native_pressure\.py/g) ?? []).length, 1);
+    for (const flag of ["--c ", "--a ", "--b ", "--base-sha", "--candidate-sha", "--preparation", "--output", "--prefix"]) {
+        assert.ok(combinedJvm.includes(flag), `combined JVM startup retains ${flag}`);
+    }
     for (const [id, aliasArms, distinctArms] of [
         ["rust-producer-arm", '["C","B"]', '["C","A","B"]'],
         ["rust-core-prepare", '["B"]', '["A","B"]'],

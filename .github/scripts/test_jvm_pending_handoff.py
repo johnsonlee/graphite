@@ -265,4 +265,102 @@ class ExecutionJoinHandoff(unittest.TestCase):
                 self.assertEqual(original,{str(p):p.read_bytes() for p in out.rglob('*') if p.is_file()})
 
 
+class CombinedJvmStartup(unittest.TestCase):
+    """Real stage, strict plan validator and pins; upstream audits/HTTP are modeled."""
+    def setUp(self):
+        self.f=preparation_fixtures.JvmPreparationTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
+        f=self.f
+        for directory,audit in f.observed.items():
+            query=prepare.common.read(audit['plan']['path']);raw_path=Path(query['rawDerivationRoot'])/'plan.json'
+            raw=prepare.common.read(raw_path);raw.pop('coreRoot')
+            raw.update(coreComparabilityPending=True,rawExportRoot=str(raw_path.parent/'exports'))
+            ref=f.write(raw_path.parent/'exports/audit.json',{'status':'modeled owned raw authority'})
+            raw['upstreamRawExportAudit']=ref;raw_ref=f.write(raw_path,raw)
+            audit['pins'][raw_ref['path']]=raw_ref['sha256'];audit['pins'][ref['path']]=ref['sha256']
+            f.write(Path(directory)/'audit.json',audit)
+
+    def exercise(self, mode='pass', alias=False):
+        import run_prepared_native_pressure as runner
+        import weakref
+        from types import SimpleNamespace
+        f=self.f;prep=f.root/'prep';out=f.root/'cells';prefix=f.root/'report';roots=dict(f.roots)
+        if alias:roots['A']=roots['C']
+        base=prepare.artifacts.ACCEPTED if alias else 'a'*40
+        actual_open=runner.pressure._VerifiedPressureExecution.open
+        stage_plan_refs=[];stage_packet_refs=[];compiler_refs=[];events=[];contexts=[]
+        class WeakPlan(dict):pass
+        actual_bind=prepare.bind_plan;actual_assemble=prepare._assemble;actual_compiler=prepare.model.CompiledLegalLimitOracle
+        def assemble(*args,**kwargs):
+            value=actual_assemble(*args,**kwargs)
+            if not stage_packet_refs:
+                value=WeakPlan(value);stage_packet_refs.append(weakref.ref(value))
+            return value
+        def bind(*args,**kwargs):
+            value=WeakPlan(actual_bind(*args,**kwargs));stage_plan_refs.append(weakref.ref(value));return value
+        def compiler(*args,**kwargs):
+            value=actual_compiler(*args,**kwargs);compiler_refs.append(weakref.ref(value));return value
+        def opened(path):
+            self.assertEqual('FAIL',prepare.common.read(prep/'preparation-status.json')['status'])
+            self.assertEqual(0,f.audit_mock.call_count)
+            self.assertTrue(stage_plan_refs);self.assertTrue(all(ref() is None for ref in stage_plan_refs))
+            self.assertTrue(stage_packet_refs);self.assertTrue(all(ref() is None for ref in stage_packet_refs))
+            self.assertTrue(compiler_refs);self.assertTrue(all(ref() is None for ref in compiler_refs))
+            if mode=='pinned-drift':
+                packet=prepare.common.read(prep/'packet.json');Path(packet['arms']['B']['serverArgv'][4]).write_bytes(b'changed')
+            if mode=='source-rule-failed':f.audit_mock.side_effect=ValueError('independent source rules failed')
+            if mode=='forged-audit':
+                f.observed[f.roots['B']]['all35ActualResponsesVerified']=False
+            context=actual_open(path);contexts.append(context);return context
+        def run(plan_path,cell,directory,plan):
+            self.assertEqual('PLAN_READY_NOT_MEASURED',prepare.common.read(prep/'preparation-status.json')['status'])
+            self.assertEqual(35,len(plan['cases']));self.assertEqual(64,len(plan['arms']['B']['graphs']))
+            events.append(('run',cell));Path(directory).mkdir()
+            result={'status':'FAIL' if mode=='cell-failed' else 'PASS'}
+            prepare.common.save(Path(directory)/'result.json',result);return result
+        def audit(plan_path,directory,plan):events.append(('audit',Path(directory).name));return {'status':'PASS'}
+        def compare(command,**kwargs):
+            if '--progress' in command:raise ValueError('provisional report deliberately unavailable')
+            value={'schema':'graphite.multigraph-pressure.comparison.v1','engine':'jvm','operation':'query',
+                   'planSha256':prepare.common.sha(prep/'plan.json'),'status':runner.PENDING,'passed':False,'comparabilityPending':True}
+            prepare.common.save(str(prefix)+'-status.json',value);Path(str(prefix)+'-report.md').write_text('pending')
+            return SimpleNamespace(returncode=1,stdout='',stderr='')
+        # Full filesystem source/config semantics have dedicated real-Git context
+        # tests. This fixture models those inventories, not the strict plan audit.
+        with patch.object(prepare,'bind_plan',new=bind),patch.object(prepare,'_assemble',new=assemble),patch.object(prepare.model,'CompiledLegalLimitOracle',new=compiler), \
+             patch.object(runner.pressure,'_execution_closure',return_value={'trees':{}}), \
+             patch.object(runner.pressure._VerifiedPressureExecution,'open',side_effect=opened) as factory, \
+             patch.object(runner.pressure,'_run_cell',side_effect=run),patch.object(runner.pressure,'_audit',side_effect=audit), \
+             patch.object(runner.subprocess,'run',side_effect=compare),patch.object(runner.shutil,'which',return_value='/usr/bin/node'):
+            if mode in ('ready-write-failed','execute-raises'):
+                target=patch.object(Path,'replace',side_effect=OSError('READY write failed')) if mode=='ready-write-failed' else patch.object(runner,'_execute',side_effect=ValueError('execute entry failed'))
+                with target,self.assertRaisesRegex((OSError,ValueError),'failed'):
+                    runner.prepare_and_execute_jvm(roots,base,'b'*40,prep,out,prefix)
+                self.assertEqual(1,len(contexts));self.assertFalse(contexts[0]._valid);self.assertEqual([],events)
+                return
+            result=runner.prepare_and_execute_jvm(roots,base,'b'*40,prep,out,prefix)
+        self.assertEqual(1,factory.call_count)
+        self.assertTrue(all(not context._valid for context in contexts))
+        self.assertEqual(result,prepare.common.read(out/'execution.json'))
+        self.assertFalse(result['performanceAcceptance'])
+        if mode=='pass':
+            self.assertEqual(2 if alias else 3,f.audit_mock.call_count)
+            self.assertEqual(runner.PENDING,result['status'],result['errors'])
+            self.assertEqual([(op,f'{i}-{arm}') for i,arm in enumerate('CABBAC') for op in ('run','audit')],events)
+        else:
+            self.assertEqual('FAIL',result['status']);self.assertTrue(result['errors'])
+            if mode!='cell-failed':self.assertEqual([],events)
+            else:self.assertEqual(['1-A','2-B','3-B','4-A','5-C'],result['unissued'])
+        return result
+
+    def test_one_strict_replay_per_distinct_writer_and_staging_lifetime_released(self):self.exercise()
+    def test_accepted_parent_alias_audited_once(self):self.exercise(alias=True)
+    def test_saved_pass_cannot_hide_source_rule_or_audit_failures(self):
+        self.exercise('forged-audit')
+    def test_actual_source_rule_failure_never_marks_ready_or_launches(self):self.exercise('source-rule-failed')
+    def test_input_mutation_between_stage_and_open_never_launches(self):self.exercise('pinned-drift')
+    def test_failed_owned_cell_keeps_suffix_and_invalidates_context(self):self.exercise('cell-failed')
+    def test_ready_write_failure_invalidates_acquired_context(self):self.exercise('ready-write-failed')
+    def test_execute_entry_failure_invalidates_acquired_context(self):self.exercise('execute-raises')
+
+
 if __name__=='__main__':unittest.main()

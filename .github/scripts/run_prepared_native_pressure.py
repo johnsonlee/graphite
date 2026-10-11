@@ -49,6 +49,10 @@ def unavailable_loading(prefix, errors):
 
 
 def execute(preparation,output,prefix,*,engine='native',loading_prefix=None):
+    return _execute(preparation, output, prefix, engine=engine, loading_prefix=loading_prefix)
+
+
+def _execute(preparation,output,prefix,*,engine='native',loading_prefix=None,_context=None):
     pressure.require(engine in ('native','jvm'),'known query engine required')
     preparation=preparation.resolve();output=output.resolve();prefix=prefix.resolve()
     output.mkdir(parents=True,exist_ok=False)
@@ -97,7 +101,14 @@ def execute(preparation,output,prefix,*,engine='native',loading_prefix=None):
         pressure.require(pressure.sha(plan_file)==ready['planSha256'],'prepared plan digest changed')
         context_started=time.monotonic()
         print('pressure context: verifying authority and input closure',flush=True)
-        context=pressure._VerifiedPressureExecution.open(plan_file);plan=context.plan
+        if _context is None:
+            context=pressure._VerifiedPressureExecution.open(plan_file)
+        else:
+            pressure.require(type(_context) is pressure._VerifiedPressureExecution and _context._valid and
+                             _context._path == str(plan_file) and _context._sha == ready['planSha256'],
+                             'same owned verified preparation context')
+            context=_context
+        plan=context.plan
         print(f'pressure context: verified elapsed={time.monotonic()-context_started:.3f}s',flush=True)
         pressure.require(plan['engine']==engine and plan['operation']=='query','matching query engine required')
         pressure.require([c['arm'] for c in plan['cells']]==list('CABBAC'),'fixed six-cell comparison order')
@@ -198,6 +209,39 @@ def execute(preparation,output,prefix,*,engine='native',loading_prefix=None):
                 unavailable_loading(loading_prefix,record['errors'])
         save()
     return record
+
+
+def prepare_and_execute_jvm(correctness_roots, base_sha, candidate_sha, preparation, output, prefix):
+    """Stage once, independently verify once, then consume that same owned context."""
+    import prepare_jvm_pressure_plan as jvm
+    preparation, output, prefix = (Path(p).resolve() for p in (preparation, output, prefix))
+    pressure.require(not output.exists() and not prefix.is_relative_to(preparation) and
+                     not prefix.is_relative_to(output) and not output.is_relative_to(preparation) and
+                     not preparation.is_relative_to(output), 'separate fresh preparation/execution/report paths')
+    status = jvm._stage_candidate(correctness_roots, base_sha, candidate_sha, preparation)
+    context = None
+    try:
+        if 'candidatePlanSha256' in status:
+            plan_file = preparation/'plan.json'
+            pressure.require(pressure.sha(plan_file) == status['candidatePlanSha256'], 'staged candidate plan changed')
+            # The staging frame has returned; no candidate universe or compiled
+            # index is retained while the original strict factory replays authority.
+            context = pressure._VerifiedPressureExecution.open(plan_file)
+            pressure.require(context._plan['engine'] == 'jvm' and
+                             'pendingJvmComparabilityAuthority' in context._plan and
+                             context._plan.get('comparabilityPending') is True, 'owned pending JVM preparation')
+            status = jvm._status()
+            status.update(status='PLAN_READY_NOT_MEASURED', planSha256=context._sha, comparabilityPending=True)
+    except BaseException as error:
+        status = jvm._status()
+        status['errors'].append(repr(error))
+    try:
+        path = preparation/'preparation-status.json'
+        temporary = path.with_name(path.name+'.tmp')
+        temporary.write_text(json.dumps(status, indent=2, allow_nan=False)+'\n'); temporary.replace(path)
+        return _execute(preparation, output, prefix, engine='jvm', _context=context if status['status']=='PLAN_READY_NOT_MEASURED' else None)
+    finally:
+        if context is not None: context._valid = False
 
 
 def finalize(preparation, output, prefix, producers=None, loading_prefix=None, *, engine="native", artifacts_root=None):
@@ -396,9 +440,18 @@ if __name__=='__main__':
     p.add_argument('--engine',choices=('native','jvm'),default='native')
     source=p.add_mutually_exclusive_group()
     source.add_argument('--finalize-producers',type=Path);source.add_argument('--finalize-artifacts',type=Path)
-    p.add_argument('--loading-prefix',type=Path);args=p.parse_args()
+    p.add_argument('--loading-prefix',type=Path)
+    for arm in 'cab':p.add_argument('--'+arm,type=Path)
+    p.add_argument('--base-sha');p.add_argument('--candidate-sha');args=p.parse_args()
     finalizing=args.finalize_producers is not None or args.finalize_artifacts is not None
-    if finalizing:
+    staging=any(value is not None for value in (args.c,args.a,args.b,args.base_sha,args.candidate_sha))
+    if staging and (finalizing or args.engine!='jvm' or args.loading_prefix is not None or
+                    any(value is None for value in (args.c,args.a,args.b,args.base_sha,args.candidate_sha))):
+        p.error('combined preparation requires JVM, complete C/A/B revisions and no finalization/loading flags')
+    if staging:
+        result=prepare_and_execute_jvm({name:getattr(args,name.lower()) for name in 'CAB'},
+                                      args.base_sha,args.candidate_sha,args.preparation,args.output,args.prefix)
+    elif finalizing:
         result=finalize(args.preparation,args.output,args.prefix,args.finalize_producers,args.loading_prefix,
                         engine=args.engine,artifacts_root=args.finalize_artifacts)
     else:
