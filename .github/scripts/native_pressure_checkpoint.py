@@ -384,11 +384,11 @@ def check_system_jdks(manifest):
             require(sorted(str(p.relative_to(name)) for p in Path(name).rglob('*')) == expected, 'system JDK closed directory membership')
 
 
-def check_files(manifest):
+def check_files(manifest, _authority=None):
     check_system_jdks(manifest)
     for name, value in manifest['files'].items():
         p = canonical(Path(name))
-        require(p.is_file() and not p.is_symlink() and sha(p) == value['sha256'] and
+        require(p.is_file() and not p.is_symlink() and (_authority.digest(p, value) if _authority is not None else sha(p)) == value['sha256'] and
                 stat.S_IMODE(p.stat().st_mode) == value['mode'] and p.stat().st_size == value['size'], 'restored file identity/mode: '+name)
     for name in manifest['directories']:
         require(canonical(Path(name)).is_dir() and stat.S_IMODE(Path(name).stat().st_mode) == manifest['directoryModes'][name], 'restored directory mode')
@@ -401,7 +401,7 @@ def check_files(manifest):
         require(actual == expected, 'closed directory membership: '+name)
 
 
-def upstreams(args, ident):
+def upstreams(args, ident, _authority=None):
     values = []
     for name in args.upstream:
         path = canonical(Path(name).absolute()); value = read(path)
@@ -409,7 +409,8 @@ def upstreams(args, ident):
             ('head', 'base', 'accepted', 'runId', 'runAttempt', 'workspace')), 'upstream identity')
         require(value['python'] == str(Path(sys.executable).resolve()) and
                 value['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS}, 'upstream interpreter/runner identity')
-        check_files(value)
+        if _authority is None or not _authority.preflight:
+            check_files(value, _authority)
         upstream_ident = value['identity']
         entry = {'sha256': sha(path), 'stage': upstream_ident['stage'], 'arm': upstream_ident['arm']}
         if upstream_ident['stage'] == 'core-prepare':
@@ -476,15 +477,18 @@ def seal(args):
     return manifest
 
 
-def restore(args):
+def restore(args, _authority=None):
     ident = identity(args); workspace = Path(ident['workspace']); directory = Path(args.directory).absolute()
     manifest = read(directory/'manifest.json')
     require(manifest['schema'] == SCHEMA and manifest['identity'] == ident and
             manifest['proofAuthority'] is False and manifest['performanceAcceptance'] is False, 'checkpoint identity')
     require(manifest['python'] == str(Path(sys.executable).resolve()), 'Python interpreter path changed')
     require(manifest['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS}, 'runner image changed')
-    require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'source inventory changed')
-    require(upstreams(args, ident) == manifest['upstream'], 'upstream checkpoint binding')
+    if _authority is None:
+        require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'source inventory changed')
+    else:
+        _authority.check_manifest(directory, manifest)
+    require(upstreams(args, ident, _authority) == manifest['upstream'], 'upstream checkpoint binding')
     require(sha(directory/'payload.tar.gz') == manifest['archiveSha256'], 'archive digest')
     require(len(manifest['payload']) == len(set(manifest['payload'])), 'duplicate payload destination')
     check_system_jdks(manifest)
@@ -504,7 +508,7 @@ def restore(args):
     for name, facts in manifest['files'].items():
         if name not in manifest['payload']:
             p = canonical(Path(name))
-            require(p.is_file() and sha(p) == facts['sha256'] and stat.S_IMODE(p.stat().st_mode) == facts['mode'], 'preexisting dependency identity: '+name)
+            require(p.is_file() and (_authority.digest(p, facts) if _authority is not None else sha(p)) == facts['sha256'] and stat.S_IMODE(p.stat().st_mode) == facts['mode'], 'preexisting dependency identity: '+name)
     for name in manifest['absent']:
         require(not Path(name).exists() and not Path(name).is_symlink(), 'absent path appeared: '+name)
     with tarfile.open(directory/'payload.tar.gz', 'r:gz') as tar:
@@ -529,10 +533,13 @@ def restore(args):
     for name in manifest['directories']:
         if any(Path(name).is_relative_to(root) for root in readonly_jdks):
             continue
-        p = writable(name); p.mkdir(parents=True, exist_ok=True)
+        p = writable(name)
         mode = manifest['directoryModes'][name]
         require(type(mode) is int and 0 <= mode <= 0o777, 'safe directory mode')
-        p.chmod(mode)
+        if _authority is not None and name in _authority.frozen_directories:
+            require(p.is_dir() and not p.is_symlink() and stat.S_IMODE(p.stat().st_mode) == mode, 'frozen directory changed')
+        else:
+            p.mkdir(parents=True, exist_ok=True); p.chmod(mode)
     for name, target in manifest['links'].items():
         if name in manifest.get('systemJdkLinks', {}):
             continue
@@ -542,22 +549,159 @@ def restore(args):
             require(os.readlink(p) == target, 'existing tool symlink mismatch')
         else:
             require(not p.exists(), 'existing tool link destination'); p.parent.mkdir(parents=True, exist_ok=True); p.symlink_to(target)
-    check_files(manifest)
+    check_files(manifest, _authority)
     if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
-    require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'restored source changed')
+    if _authority is None:
+        require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'restored source changed')
+    else:
+        _authority.frozen_directories.update(manifest['directories'])
     return manifest
+
+
+def _chain_progress(phase, event, **details):
+    try:
+        print('CHECKPOINT_PROGRESS '+json.dumps({'diagnosticOnly': True, 'phase': phase,
+                                                'event': event, **details}), file=sys.stderr, flush=True)
+    except (OSError, ValueError):
+        pass  # A diagnostic stream is never proof authority.
+
+
+class _RestoreChainAuthority:
+    def __init__(self, sources):
+        self.sources = sources
+        self.manifests = {}
+        self.verified = {}
+        self.frozen_directories = set()
+        self.preflight = True
+
+    def check_manifest(self, directory, manifest):
+        require(manifest == self.manifests[str(directory)] and manifest['sources'] == self.sources,
+                'preflight checkpoint manifest changed')
+
+    def digest(self, path, facts):
+        name = str(path)
+        require(path.is_file() and not path.is_symlink() and
+                stat.S_IMODE(path.stat().st_mode) == facts['mode'] and path.stat().st_size == facts['size'],
+                'chain file type/mode/size changed: '+name)
+        if name in self.verified:
+            require(self.verified[name] == facts, 'conflicting previously verified file')
+            return facts['sha256']
+        actual = sha(path)
+        require(actual == facts['sha256'], 'chain file digest changed: '+name)
+        self.verified[name] = dict(facts)
+        return actual
+
+
+def restore_core_chain(args):
+    """Restore exactly producer, preparation and eight shards under one private authority.
+
+    No consumer runs inside this transaction. Every final byte is independently
+    rehashed before success; only earlier validated dependency bytes are reused.
+    """
+    require(args.stage == 'core-shard' and args.shard_count == 8 and
+            getattr(args, 'shard_index', None) is None and not args.upstream,
+            'fixed eight-shard core chain arguments')
+    workspace = canonical(Path(args.workspace).absolute())
+    root = canonical(Path(args.directory).absolute())
+    entries = []
+    producer = root/'producer-producer'; preparation = root/('core-prepare-'+args.arm)
+    for stage, arm, directory, index, upstream in [
+        ('producer', 'producer', producer, None, []),
+        ('core-prepare', args.arm, preparation, None, [producer/'manifest.json']),
+        *[('core-shard', args.arm,
+           root/f'native-checkpoint-core-shard-{args.arm}-{index}-{args.run_id}-{args.run_attempt}', index,
+           [producer/'manifest.json', preparation/'manifest.json']) for index in range(8)]]:
+        values = vars(args).copy()
+        values.update(stage=stage, arm=arm, directory=str(directory), shard_index=index,
+                      shard_count=None if stage == 'producer' else 8, upstream=[str(p) for p in upstream])
+        entries.append(argparse.Namespace(**values))
+    _chain_progress('preflight', 'start')
+    sources = git_sources(workspace, args.base_sha, args.head_sha)
+    authority = _RestoreChainAuthority(sources)
+    prior_files = {}; prior_links = {}; prior_directories = {}; prior_closed = {}; prior_absent = set()
+    source_files = {name for source in sources.values() for name in source['files']}
+    jdk_identity = None
+    for entry in entries:
+        ident = identity(entry); directory = canonical(Path(entry.directory)); manifest = read(directory/'manifest.json')
+        require(manifest['schema'] == SCHEMA and manifest['identity'] == ident and
+                manifest['proofAuthority'] is False and manifest['performanceAcceptance'] is False,
+                'chain checkpoint identity')
+        require(manifest['sources'] == sources and manifest['python'] == str(Path(sys.executable).resolve()) and
+                manifest['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS},
+                'chain exact source/interpreter/runner')
+        require(upstreams(entry, ident, authority) == manifest['upstream'], 'chain exact upstream binding')
+        check_system_jdks(manifest)
+        current_jdk = {key: manifest[key] for key in ('jdkRoots', 'systemJdkRoots', 'systemJdkLinks', 'systemJdkRootModes')}
+        require(jdk_identity is None or current_jdk == jdk_identity, 'chain exact JDK identity')
+        jdk_identity = current_jdk
+        require(len(manifest['payload']) == len(set(manifest['payload'])) and
+                set(manifest['payload']) <= set(manifest['files']), 'chain unique known payload files')
+        require(not (set(manifest['payload']) & (set(prior_files) | source_files)), 'chain payload overwrites frozen input')
+        kinds = {'file': set(manifest['files']), 'directory': set(manifest['directories']), 'link': set(manifest['links'])}
+        require(not (kinds['file'] & kinds['directory'] or kinds['file'] & kinds['link'] or kinds['directory'] & kinds['link']),
+                'chain conflicting entry types')
+        for kind, names in kinds.items():
+            for name in names:
+                path = canonical(Path(name)) if kind != 'link' else Path(name)
+                require(path.is_absolute() and '..' not in path.parts, 'chain canonical entry path')
+                require(not path.is_relative_to(root), 'chain evidence overlaps checkpoint transport directory')
+                require(name not in prior_absent and not any(str(parent) in prior_absent for parent in path.parents),
+                        'chain writes previously absent dependency')
+                require(not any(str(parent) in prior_files or str(parent) in prior_links for parent in path.parents),
+                        'chain destination below frozen file or link')
+                require(not (kind != 'file' and name in prior_files or kind != 'link' and name in prior_links or
+                             kind != 'directory' and name in prior_directories), 'chain changes frozen entry type')
+                for closed, members in prior_closed.items():
+                    if path != Path(closed) and path.is_relative_to(Path(closed)):
+                        require(str(path.relative_to(closed)) in members, 'chain extends frozen closed directory')
+        for name, facts in manifest['files'].items():
+            require(name not in prior_files or prior_files[name] == facts, 'chain conflicting file attributes')
+        for name, target in manifest['links'].items():
+            require(name not in prior_links or prior_links[name] == target, 'chain conflicting frozen link')
+        for name, mode in manifest['directoryModes'].items():
+            require(name not in prior_directories or prior_directories[name] == mode, 'chain conflicting directory mode')
+        for name, members in manifest['closedDirectories'].items():
+            require(name not in prior_closed or prior_closed[name] == members, 'chain conflicting closed inventory')
+        require(not (set(manifest['absent']) & (set(prior_files) | set(prior_links) | set(prior_directories))),
+                'chain absent dependency conflicts with earlier output')
+        prior_files.update(manifest['files']); prior_links.update(manifest['links'])
+        prior_directories.update(manifest['directoryModes']); prior_closed.update(manifest['closedDirectories'])
+        prior_absent.update(manifest['absent'])
+        authority.manifests[str(directory)] = manifest
+    authority.preflight = False
+    _chain_progress('preflight', 'complete', checkpoints=len(entries))
+    for entry in entries:
+        _chain_progress('restore', 'start', stage=entry.stage, shardIndex=entry.shard_index)
+        restore(entry, authority)
+        _chain_progress('restore', 'complete', stage=entry.stage, shardIndex=entry.shard_index)
+    # Validate each inventory while reading each unique file exactly once at the
+    # final boundary. A fresh authority cannot reuse an intermediate digest.
+    _chain_progress('final-verification', 'start', uniqueFiles=len(prior_files))
+    final = _RestoreChainAuthority(sources); final.preflight = False
+    for entry in entries:
+        directory = Path(entry.directory); manifest = read(directory/'manifest.json')
+        authority.check_manifest(directory, manifest)
+        check_files(manifest, final)
+        ident = identity(entry)
+        if entry.stage == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
+    require(git_sources(workspace, args.base_sha, args.head_sha) == sources, 'chain final source changed')
+    _chain_progress('final-verification', 'complete', uniqueFiles=len(final.verified))
+    return {'identity': {'stage': 'core-chain', 'arm': args.arm, 'head': args.head_sha, 'base': args.base_sha,
+                        'runId': str(args.run_id), 'runAttempt': str(args.run_attempt), 'workspace': str(workspace),
+                        'shardCount': 8}, 'proofAuthority': False, 'performanceAcceptance': False}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('seal', 'restore'))
+    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain'))
     for name in ('stage', 'arm', 'directory', 'workspace', 'head-sha', 'base-sha', 'run-id', 'run-attempt'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--upstream', action='append', default=[])
     parser.add_argument('--shard-count', type=int)
     parser.add_argument('--shard-index', type=int)
     args = parser.parse_args()
-    value = seal(args) if args.action == 'seal' else restore(args)
+    value = (seal(args) if args.action == 'seal' else
+             restore_core_chain(args) if args.action == 'restore-core-chain' else restore(args))
     print(json.dumps({'checkpointTransport': args.action, 'identity': value['identity'],
                       'proofAuthority': False, 'performanceAcceptance': False}))
 

@@ -16867,3 +16867,47 @@ this candidate. This is not a claim of full feedback-loop recovery. Current7d CI
 continues unchanged. Evidence:
 `/tmp/graphite-ci7d3805-core-shard4-review/local-json-whitespace-review.json` and
 `/tmp/graphite-compact-local-proof-tests.log`.
+
+
+### Attempt210 — restore the complete core checkpoint chain in one process (2026-10-11)
+
+**Hypothesis.** The core join restores a producer, preparation and eight shard
+checkpoints in ten separate processes. Each shard rereads shared upstream files
+multiple times. Reuse verified file identities only within this fixed restoration
+transaction, then independently hash every unique file again before returning.
+No proof consumer runs inside the transaction and no authority is serialized.
+
+Base: `c9ada8c2ce18f694e342e624a1de1a6336efc4cd`; candidate: this commit.
+The target is the existing accepted4f/candidate7d real64 JAR correctness workflow.
+In run38120724071 the current core join spent26m31s in restoration and had completed
+producer, preparation and shards0–2 at observation. Downloading all ten checkpoints
+took49s. This separates transfer from restoration but does not establish the new
+implementation's elapsed-time saving. The producer and shard4 share6047 pinned
+files totaling about22.25GB; shard4 also references about10.75GB of raw Local inputs.
+
+All ten manifests are preflighted for exact source, run, runner, interpreter, JDK,
+upstream dependencies and conflicting file/path/closed-directory declarations.
+Archive SHA, exact ordered tar membership, stream SHA, modes, writable destinations,
+directory inventories and shard transport checks remain. Later payloads cannot
+overwrite previously verified files or sources. Each newly restored file receives
+an independent disk hash; a fresh final authority reads all unique files again and
+rechecks every inventory and Git source. Standalone restore retains fresh checks.
+Flushed stderr progress identifies preflight, each restore and final verification;
+stdout reports completion only after the entire chain succeeds.
+
+Correctness: the43 existing checkpoint/CLI-smoke tests and11 new real filesystem,
+Git and tar tests passed in the isolated prototype. New tests cover complete
+roundtrip, shared-file read counts, conflicting identity/payload/mode, archive/member
+failure, closed-directory additions, late same-size mutation/deletion and standalone
+fresh validation. Independent source review found no blocker and checked the real
+producer/shard4 manifests for conflicts. Full actual ten-manifest restoration remains
+pending hosted execution. All11 integrated tests passed in40.444s; actionlint with
+shellcheck disabled passed. The suite and workflow syntax checks are recorded
+in `/tmp/graphite-feedback-restore-chain-tests.log` and
+`/tmp/graphite-feedback-restore-chain-actionlint.log`.
+
+**Decision: retain locally, pending hosted timing and complete acceptance.** This
+changes CI byte transport, not graph semantics or measurement boundaries. Server
+p50/p95, CPU/RSS and construction/loading acceptance remain unproven for the cumulative
+candidate. No real graph was replaced with a synthetic performance workload.
+Evidence: `/tmp/graphite-restore-chain-prototype-report.json` and the test logs above.
