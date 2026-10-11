@@ -12,6 +12,7 @@ import os
 from pathlib import Path
 import signal
 import struct
+import stat
 import sys
 sys.dont_write_bytecode=True
 import audit_native_pressure_artifacts as artifacts
@@ -390,7 +391,101 @@ def check_worker_graphs(plan,rows):
             {path.name for path in actual}=={row['id'] for row in rows},'closed assigned worker graph inventory')
 
 
-def execute_stage(plan,expected,path,rows=None):
+def _worker_input_closure(plan):
+    """Closed read-only producer evidence; never include evolving worker output."""
+    require(set(plan['upstream'])=={'CStrings','BStrings','marker','formatterTests','formatterSource'},
+            'known core worker upstream closure')
+    roots=set();sources={};configurations={}
+    def metadata(ref):return common.pinned_authority_metadata(plan,ref)
+    def add(path):
+        path=Path(path)
+        require(path.is_absolute() and path==path.resolve(),'canonical worker input root')
+        output=Path(plan['output'])
+        require(not(path.is_relative_to(output) or output.is_relative_to(path)),
+                'worker output overlaps read-only authority')
+        roots.add(path)
+    for ref in plan['upstream'].values():metadata(ref);add(Path(ref['path']).parent)
+    for arm in ('C','B'):
+        exported=metadata(plan['upstream'][arm+'Strings'])
+        artifact=metadata(exported['artifactAudit'])
+        source=metadata(artifact['sourceManifest']);producer=metadata(artifact['producerPacket'])
+        checkout=Path(source['root']);root=Path(artifact['producerPacket']['path']).parent
+        require(root==Path(plan['referenceRoot' if arm=='C' else 'actualRoot']), 'worker producer root')
+        if str(checkout) not in sources:
+            sources[str(checkout)]=artifacts.source_inventory(checkout,plan['revisions'][arm])
+            configurations[str(checkout)]=artifacts.configs(checkout,producer['buildEnvironment'])
+        require(sources[str(checkout)]==source['files'],'worker tracked source inventory')
+        require(configurations[str(checkout)]==producer['configurationBefore']==producer['configurationAfter'],
+                'worker original build configuration')
+        add(checkout/'frontend/jvm/webgraph/build/libs');add(root/'runtime');add(root/'graphs')
+        for path,digest in producer['phaseReceipts'].items():
+            metadata({'path':path,'sha256':digest});add(Path(path).parent)
+    testroot=Path(plan['upstream']['formatterTests']['path']).parent
+    for module in ('sootup','webgraph'):
+        path=str(testroot/f'results/classpath-{module}-before.json')
+        require(path in plan['pins'],'worker classpath metadata pinned')
+        for item in metadata({'path':path,'sha256':plan['pins'][path]})['classpath']:
+            require(item['kind'] in ('directory','file','absent'),'worker classpath kind');add(item['path'])
+    trees={}
+    for root in sorted(roots):
+        if any(root!=other and root.is_relative_to(other) for other in roots):continue
+        entries={}
+        def visit(path):
+            require(not path.is_symlink(),'worker closure symlink: '+str(path))
+            if not path.exists():entries[str(path)]='absent';return
+            mode=path.stat().st_mode
+            if stat.S_ISDIR(mode):
+                entries[str(path)]='directory'
+                for child in sorted(path.iterdir()):visit(child)
+            else:
+                require(stat.S_ISREG(mode),'worker closure special file')
+                entries[str(path)]=('file',None if str(path) in plan['pins'] else common.sha(path))
+        visit(root);trees[str(root)]=entries
+    return {'sources':sources,'configurations':configurations,'trees':trees}
+
+
+class _VerifiedWorkerInputs:
+    """Private same-process source authority, established by one full rebind."""
+    def __init__(self):raise TypeError('use complete worker replay factory')
+    def __reduce_ex__(self,protocol):raise TypeError('worker authority cannot be serialized')
+    @classmethod
+    def open(cls,plan):
+        value=object.__new__(cls);value._valid=False
+        value._identity=common.typed(plan)
+        value._path=Path(plan['output'])/'plan.json'
+        require(not value._path.is_symlink() and value._path==value._path.resolve(),'canonical worker plan')
+        value._sha=common.sha(value._path)
+        require(common.typed(common.read(value._path))==value._identity,'worker plan file identity')
+        artifacts.verify_pins(plan['pins']);before=_worker_input_closure(plan)
+        require(value._identity==common.typed(rebind(plan)),'worker plan differs from actual pair')
+        artifacts.verify_pins(plan['pins']);value._closure=_worker_input_closure(plan)
+        require(before==value._closure,'worker inputs changed during full replay')
+        require(not value._path.is_symlink() and common.sha(value._path)==value._sha and
+                common.typed(plan)==value._identity and common.typed(common.read(value._path))==value._identity,
+                'worker plan changed during full replay')
+        value._valid=True
+        return value
+    def check(self,plan):
+        try:
+            require(self._valid,'worker input authority invalidated')
+            require(not self._path.is_symlink() and self._path==self._path.resolve() and
+                    common.sha(self._path)==self._sha and common.typed(plan)==self._identity and
+                    common.typed(common.read(self._path))==self._identity,'worker plan changed')
+            artifacts.verify_pins(plan['pins'])
+            require(_worker_input_closure(plan)==self._closure,'worker input closure changed')
+        except BaseException:
+            self._valid=False;raise
+
+
+def _check_worker_inputs(plan,authority):
+    if authority is None:
+        require(common.typed(plan)==common.typed(rebind(plan)),'stage source/runtime/fixture identity drift')
+    else:
+        require(type(authority) is _VerifiedWorkerInputs,'private worker input authority required')
+        authority.check(plan)
+
+
+def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     """Own one bounded serial stage; distinct workers never write shared receipts."""
     out=Path(plan['output']);is_preparation=rows is None
     record={'schema':'graphite.native-core-preparation.v1' if is_preparation else 'graphite.native-core-shard.v1',
@@ -426,7 +521,7 @@ def execute_stage(plan,expected,path,rows=None):
     finally:
         for sig in previous:signal.signal(sig,signal.SIG_IGN)
         try:
-            require(common.typed(plan)==common.typed(rebind(plan)),'final stage source/runtime/fixture identity drift')
+            _check_worker_inputs(plan,_input_authority)
             if is_preparation and 'files' in record:
                 require(record['files']==preparation_files(plan),'prepared outputs changed')
             if not is_preparation:
@@ -457,19 +552,21 @@ def run_shard(output,index,count):
     out=Path(output).resolve();plan=common.read(out/'plan.json')
     require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact prepared shard plan')
     rows=shard_rows(plan,index)
-    require(common.typed(plan)==common.typed(rebind(plan)),'shard plan differs from actual pair')
+    authority=_VerifiedWorkerInputs.open(plan)
     check_preparation(plan)
     graphs=out/'graphs'
     require(not graphs.is_symlink() and (not graphs.exists() or graphs.is_dir()),'real worker graph directory required')
     graphs.mkdir(exist_ok=True)
     directory=out/'shards'/str(index);directory.mkdir(parents=True,exist_ok=False)
-    record=execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows)
+    record=execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows,authority)
     if record['status']==SHARD_PASS:
-        try:common.save(directory/'audit.json',audit_shard(plan,index))
+        try:common.save(directory/'audit.json',_audit_shard(plan,index,authority))
         except BaseException as error:
+            authority._valid=False
             record['status']='FAIL';record['finalIdentity']='FAIL';record['errors'].append('independent shard audit: '+repr(error))
             (directory/'record.json').write_text(json.dumps(record,indent=2)+'\n')
             raise
+    if record['status']!=SHARD_PASS:authority._valid=False
     return record
 
 
@@ -518,14 +615,20 @@ def shard_audit_document(plan,index,record,rows,preparation=None):
 
 
 def audit_shard(plan,index):
+    """Standalone audit always replays the complete upstream authority."""
+    return _audit_shard(plan,index)
+
+
+def _audit_shard(plan,index,_input_authority=None):
     """Independently replay every assigned graph's semantics on its worker."""
-    require(common.typed(plan)==common.typed(rebind(plan)),'shard audit source/runtime/fixture identity')
+    _check_worker_inputs(plan,_input_authority)
     check_preparation(plan);assigned=shard_rows(plan,index);check_worker_graphs(plan,assigned)
     record=check_shard_record(plan,index)
     rows=[graph_result(plan,row) for row in assigned]
     require(rows==record['graphs'],'independent assigned shard graph proofs')
     result=shard_audit_document(plan,index,record,rows)
     artifacts.verify_pins(result['pins'])
+    if _input_authority is not None:_input_authority.check(plan)
     return result
 
 

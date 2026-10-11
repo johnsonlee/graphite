@@ -19,7 +19,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 39c7983cb6390d39bfb8ad148a828ac0d7baa1f5c32055118b31aef198a81e81
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: e343d0a6b899c983b147d62d792f77166c3a3fd8767634b237c5d5d7742c5e49
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 302e6fd07a1c240fc8446889752ee2aa4cc7825f83058e4e6ad41eed421c6c2d
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -136,6 +136,9 @@ jobs:
 
     - name: Test native complete core proof protocol
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_native_core_equivalence.py'
+
+    - name: Test native core worker input reuse and mutation rejection
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_core_worker_inputs.py'
     - name: Test portable oracle and fresh response normalization without child processes
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_normalize_native_pressure_oracles.py'
 

@@ -16783,3 +16783,51 @@ pins include the new CLI test. Evidence:
 `/tmp/graphite-raw-local-reuse-prototype-report.json`,
 `/tmp/graphite-raw-local-reuse-simplified-tests.log`, and
 `/tmp/graphite-feedback-raw-core-tests.log`.
+
+
+### Attempt208 — reuse complete worker input verification within one run (2026-10-11)
+
+**Hypothesis.** A successful core shard previously reconstructed its entire
+unchanged upstream source/artifact authority at entry, stage completion and the
+internal shard audit. Establish that authority once in the owning process, then
+check fresh plan/input hashes and closed source/configuration/directory inventories
+at each boundary. Standalone shard auditing still reconstructs the full authority.
+No serialized successful report or unchecked skip option can substitute for it.
+
+Base: `37c8d906c8a805ecc6ccbbbaef6aca4b593a1934` (Attempt207); candidate: this
+commit on `codex/ci-feedback-reuse`. Target: the current accepted4f/candidate7d
+hosted full64 corrected-core JAR proof, eight graphs per worker across four corpora.
+Completed current-head workers4/6 spent2530/2564s in their execution step; the16
+phase windows were818.856/845.970s, with aggregate pre/post intervals1711.144/
+1718.030s. Those intervals include other work and cannot all be attributed to
+upstream reconstruction. In particular, repeated large raw Local report parsing
+remains unchanged. These are correctness-workflow timings, not query benchmarks.
+
+The private authority is bound to the exact in-memory and on-disk plan and rejects
+serialization. Its before/after initial replay and three later boundary checks
+verify current input hashes, tracked and untracked source state, build configuration,
+ignored writer outputs, runtime/graph trees, producer phase directories, all five
+upstream evidence directories and formatter classpaths, including absent paths.
+Worker outputs remain mutable and are independently checked by the original graph,
+preparation, cleanup and shard audit routines. Failure invalidates reuse. Success
+reduces full rebind calls from3 to1 per worker; five explicit authority boundary
+checks plus original stage-entry and result-pin checks remain. Nested checks are
+excluded from this operation count. No elapsed-time saving is inferred from it.
+
+Correctness: the prototype's72 runner and real filesystem/Git mutation tests passed
+in17.462s. They cover input additions/changes, plan drift, mutation during initial
+replay and internal audit, authority invalidation, standalone replay and failed
+worker audit publication. Initial upstream semantic replay is stubbed in the small
+closure tests; these do not replace complete real-graph validation. Parent review
+confirmed graph_result, preparation, join and standalone complete audit functions
+retain their bodies. The integrated72-test suite passed in15.879s. The new suite is explicitly wired
+into candidate-gate-tests; all172 control hashes and the workflow manifest digest
+were independently checked.
+
+**Decision: retain as a bounded local CI repair, pending hosted timing.** The
+active7d run is not superseded. CPU/RSS, server p50/p95, construction/loading
+acceptance and the complete feedback duration remain unproven for this candidate.
+Evidence: `/tmp/graphite-core-boundary-prototype-report.json`,
+`/tmp/graphite-core-boundary-final-tests.log`,
+`/tmp/graphite-feedback-worker-input-tests.log`, and
+`/tmp/graphite-ci7d3805-core-worker-timings.json`.

@@ -379,6 +379,9 @@ class ShardLifecycleTests(unittest.TestCase):
     def setUp(self):
         self.f=LifecycleTests();self.f.setUp();self.addCleanup(self.f.doCleanups)
         self.plan=self.f.plan;self.out=self.f.out
+        # This lifecycle fixture stubs upstream semantics; real input closure
+        # mutation behavior is covered in test_native_core_worker_inputs.py.
+        closure=patch.object(r,'_worker_input_closure',return_value={});closure.start();self.addCleanup(closure.stop)
         self.plan.update(execution=r.shard_execution(8),stopAtFirstFailure=False)
         for i,row in enumerate(self.plan['graphs']):row['fieldAuthority']={'corpus':f'corpus-{i//16}'}
 
@@ -618,7 +621,7 @@ class ShardLifecycleTests(unittest.TestCase):
 
     def test_independent_worker_audit_failure_cannot_publish_success(self):
         r.prepare(self.plan)
-        with patch.object(r,'audit_shard',side_effect=ValueError('independent semantics rejected')):
+        with patch.object(r,'_audit_shard',side_effect=ValueError('independent semantics rejected')):
             with self.assertRaisesRegex(ValueError,'independent semantics'):self.worker(0,8)
         record=r.common.read(self.out/'shards/0/record.json')
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
