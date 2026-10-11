@@ -4215,9 +4215,9 @@ test("Rust split stages preserve query gates before independent lifecycle measur
         ["rust-construction", "construction", "Measure and audit six real64 usable-save constructions"]
     ]) {
         const job = rustWorkflowJob(workflow, id);
-        const step = rustWorkflowStep(job, measurement);
+        const step = rustWorkflowStep(rustWorkflowJob(workflow, id+"-measurement"), measurement);
         assert.match(step, new RegExp(`run_real64_${operation}\\.py`));
-        assert.match(step, /--producers native-pressure-producers\/packet\.json/);
+        assert.match(step, new RegExp(`--producers native-pressure-producers-${operation}-measurement/packet\\.json`));
         assert.match(step, new RegExp(`--output benchmark-results/real64-${operation}`));
         const upload = rustWorkflowStep(job, `Upload Rust ${operation} results`);
         assert.match(upload, /if: always\(\)/);
@@ -4229,7 +4229,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
 
 test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
     const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
     const needs = job => {
         const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
@@ -4278,7 +4278,7 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     for (const id of ["rust-loading", "rust-construction"]) {
         const job = jobs[id], header = job.split("    steps:")[0];
         const deps = needs(job);
-        assert.deepEqual(deps, ["rust-producer", "rust-core"],
+        assert.deepEqual(deps, ["rust-producer", "rust-core", id+"-measurement"],
             "independent lifecycle measurements do not wait for unrelated query jobs");
         assert.match(header, /!cancelled\(\)/);
         for (const dep of ["rust-producer", "rust-core"]) assert.ok(header.includes(`needs.${dep}.result == 'success'`));
@@ -4330,7 +4330,7 @@ test("native measurement stays independent and cannot replace final acceptance",
 test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = rustWorkflowJob(workflow, "rust-latency");
-    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
     assert.match(job, /^    name: rust-latency-gate$/m);
     assert.match(job, /^    if: always\(\)$/m);
     assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);

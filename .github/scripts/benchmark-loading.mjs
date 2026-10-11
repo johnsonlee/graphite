@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // The ready VmHWM bound, never the later lifetime peak, determines loading RSS.
 import fs from 'node:fs';
+import {verifyLifecycleJoin} from './benchmark-lifecycle-join.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -54,7 +55,7 @@ function contained(root,name) {
     require(typeof name==='string'&&!path.isAbsolute(name),'artifact-relative loading evidence');
     const p=path.resolve(root,name);require(p.startsWith(path.resolve(root)+path.sep),'loading evidence outside artifact root');return p;
 }
-export function compareLoading(planFile,directory) {
+export function compareLoading(planFile,directory,comparabilityReceipt=null) {
     const plan=read(planFile),digest=sha(planFile),root=path.join(directory,'cells');
     require(plan.schema==='graphite.jvm64-loading.plan.v1'&&plan.engine==='jvm'&&plan.operation==='loading'&&plan.graphCount===64&&
         plan.queriesIssued===0&&plan.comparisonModel===model&&same(plan.scope,scope)&&flags.every(k=>plan[k]===false),'JVM zero-query loading plan');
@@ -116,15 +117,20 @@ export function compareLoading(planFile,directory) {
             status:resourceBound(...base[key],...candidate[key])});
         return {kind,direction,base:plan.cells[b].id,candidate:plan.cells[c].id,baseWallMs:base.wallMs,candidateWallMs:candidate.wallMs,
             deltaWallMs:candidate.wallMs-base.wallMs,cpu:resource('cpuBoundsSeconds'),rss:resource('rssBoundsBytes')};}));
-    const passed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.deltaWallMs<=0&&c.cpu.status==='PASS'&&c.rss.status==='PASS');
-    return {schema:'graphite.jvm64-loading.comparison.v1',engine:'jvm',operation:'loading',passed,status:passed?'PASS':'FAIL',planSha256:digest,comparisons,
+    const measuredConstraintsPassed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.deltaWallMs<=0&&c.cpu.status==='PASS'&&c.rss.status==='PASS');
+    const coreComparabilityVerified=verifyLifecycleJoin(planFile,directory,plan,comparabilityReceipt);
+    const passed=coreComparabilityVerified&&measuredConstraintsPassed;
+    return {schema:'graphite.jvm64-loading.comparison.v1',engine:'jvm',operation:'loading',passed,status:!coreComparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':passed?'PASS':'FAIL',
+        measuredConstraintsPassed,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         completeSemanticEquivalence:false,strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
         limitation:'Registry-ready, zero queries; ready VmHWM is a conservative post-ready bound. No Native loading exception, first-query, cold-cache or saturation claim.'};
 }
 function main(argv) {
-    const [plan,dir,prefix]=argv;require(plan&&dir&&prefix,'plan directory prefix');const value=compareLoading(plan,dir);
-    value.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir)};
+    const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||
+        (argv.length===5 && flag==='--comparability-receipt' && receipt)),'plan directory prefix and optional lifecycle receipt');const value=compareLoading(plan,dir,receipt);
+    value.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir),
+        ...(receipt?{comparabilityReceipt:path.relative(path.dirname(prefix),receipt)}:{})};
     fs.mkdirSync(path.dirname(prefix),{recursive:true});fs.writeFileSync(prefix+'-status.json',JSON.stringify(value,null,2)+'\n');
     const lines=['### JVM zero-query64 loading','',value.status,'','| Pair | Base wall ms | Candidate wall ms | Δ ms | CPU bounds s | RSS bounds bytes |','|---|---:|---:|---:|---|---|'];
     for(const c of value.comparisons)lines.push(`| ${c.kind} ${c.base} → ${c.candidate} | ${c.baseWallMs} | ${c.candidateWallMs} | ${c.deltaWallMs} | ${c.cpu.base.join('–')} → ${c.cpu.candidate.join('–')} (${c.cpu.status}) | ${c.rss.base.join('–')} → ${c.rss.candidate.join('–')} (${c.rss.status}) |`);

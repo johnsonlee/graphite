@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Recompute the six usable-save observations. Never accepts a producer's single CAB run.
 import fs from 'node:fs';
+import {verifyLifecycleJoin} from './benchmark-lifecycle-join.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -34,7 +35,7 @@ export function constructionResources(file) {
     return {realSeconds:wall,userSeconds:user,systemSeconds:system,totalCpuSeconds:user+system,
         peakRssBytes:Number(rss)*1024,rawSha256:sha(file)};
 }
-export function compareConstruction(planFile, directory) {
+export function compareConstruction(planFile, directory,comparabilityReceipt=null) {
     const plan=read(planFile),digest=sha(planFile),root=path.join(directory,'cells');
     require(plan.schema==='graphite.real64-construction.plan.v1'&&plan.engine==='jvm'&&plan.operation==='construction'&&
         plan.graphCount===64&&plan.scope===scope&&plan.comparisonModel===model,'construction plan scope');
@@ -89,17 +90,22 @@ export function compareConstruction(planFile, directory) {
             baseRssBytes:base.peakRssBytes,candidateRssBytes:candidate.peakRssBytes,deltaRssBytes:candidate.peakRssBytes-base.peakRssBytes,
             wallPassed:candidate.realSeconds<=base.realSeconds,cpuPassed:candidate.totalCpuSeconds<=base.totalCpuSeconds*1.05,
             rssPassed:candidate.peakRssBytes<=base.peakRssBytes*1.05};}));
-    const passed=comparisons.filter(x=>x.kind==='acceptedBaseline').every(x=>x.wallPassed&&x.cpuPassed&&x.rssPassed);
+    const measuredConstraintsPassed=comparisons.filter(x=>x.kind==='acceptedBaseline').every(x=>x.wallPassed&&x.cpuPassed&&x.rssPassed);
+    const coreComparabilityVerified=verifyLifecycleJoin(planFile,directory,plan,comparabilityReceipt);
+    const passed=coreComparabilityVerified&&measuredConstraintsPassed;
     return {schema:'graphite.real64-construction.comparison.v1',engine:'jvm',operation:'construction',scope:'multi-graph-usable-save',
-        passed,status:passed?'PASS':'FAIL',planSha256:digest,comparisons,acceptedBaselineRevision:plan.arms.C.revision,
+        passed,status:!coreComparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':passed?'PASS':'FAIL',
+        measuredConstraintsPassed,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,acceptedBaselineRevision:plan.arms.C.revision,
         parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,completeSemanticEquivalence:false,
         strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
         limitation:'Two fixed directions; source-corrected comparability and fresh-output validity, not complete semantic equality. No query/loading acceptance.'};
 }
 function main(argv) {
-    const [plan,dir,prefix]=argv;require(plan&&dir&&prefix,'plan directory prefix');
-    const value=compareConstruction(plan,dir);
-    value.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir)};
+    const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||
+        (argv.length===5 && flag==='--comparability-receipt' && receipt)),'plan directory prefix and optional lifecycle receipt');
+    const value=compareConstruction(plan,dir,receipt);
+    value.evidence={plan:path.relative(path.dirname(prefix),plan),directory:path.relative(path.dirname(prefix),dir),
+        ...(receipt?{comparabilityReceipt:path.relative(path.dirname(prefix),receipt)}:{})};
     fs.mkdirSync(path.dirname(prefix),{recursive:true});
     fs.writeFileSync(prefix+'-status.json',JSON.stringify(value,null,2)+'\n');
     const lines=['### JVM real64 construction','',value.status,'',

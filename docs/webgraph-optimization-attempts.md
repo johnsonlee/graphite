@@ -17613,3 +17613,89 @@ p50/p95, end-to-end wall, CPU, RSS, stability and construction/loading recovery
 are not proven by this metadata optimization. No single-graph performance run
 was made. Coverage, resource limits and the scoped Native-loading exception
 remain unchanged; the active03f run is preserved without push or cancellation.
+
+### Attempt222 — overlap real64 lifecycle measurement with complete core proof (2026-10-11)
+
+Parent:c862cd46. The live03f run38134638126 made the producer available to
+consumers at12:09:52 UTC; the actual core join completed14:25:42 and still had
+to seal/upload its checkpoint. The previous loading/construction DAG therefore
+withheld eligible measurements for at least2h15m50s after producer availability.
+Both operations obtain their source JARs, own-revision writer/server, saved64
+corpus and runtime identities from producer. Complete core is their final
+comparability authority, not an additional measurement input.
+
+Two producer-dependent measurement jobs now retain the original fixed CABBAC
+six-cell workload, heap/APC limits, real64 graph scope, resources, cleanup,
+readback and independent raw audits. Pending plans and direct comparator CLIs
+return every measured comparison but cannot return passed=true. Existing final
+job names require both the measurement and complete core, restore original
+bytes, repeat the complete raw lifecycle audit, and bind the unchanged measured
+producer to the fully reconstructed corrected producer. Operation-specific
+receipts bind sourceInputs, source/runtime/writer/server/graph identities, all
+original raw audit/execution hashes, and every required complete core arm.
+Portable aggregation independently checks the original metadata, all139 phases
+per arm and their source/runtime/fixture/artifact upstream pins before applying
+unchanged metrics. Missing, failing or mismatched core cannot authorize a pass.
+No plan, sample, measurement-time identity or failed metric is rewritten.
+
+Transport is a necessary part of this change. The already-downloaded historical
+7d producer manifest records C graphs10,428,802,869 bytes and B graphs10,503,589,230
+bytes. CABBAC would expand to62,722,389,936 logical bytes if inode sharing were
+lost; C+B's distinct SHA/size/mode tuples total12,321,222,619 bytes. A scoped
+lifecycle archive retains all available files under two fixed operation roots,
+including partial output when measurement fails. It reuses only verified
+identical producer graph bytes or one archived payload file, restoring aliases
+as hardlinks. Numeric regular-only archive members, exact run/attempt/head/base
+identity, fixed destination roots, directory modes, immutable file metadata and
+independent final byte inventories are checked. Cycles, arbitrary source links,
+symlinks, traversal, unreadable-directory omissions and drift fail closed.
+Fresh inode digest authority is private to each verification boundary and is
+never carried across sealing/restoration boundaries. All link sources are
+verified before linking changes inode ctimes; final verification reads each
+resulting unique inode afresh. Raw reports remain separately available on
+failure. Final portable reports omit bulky graph payloads; the lossless
+measurement artifact retains them for full replay.
+
+The transport records actual logicalBytes and uniquePayloadBytes and checks
+unique expansion against available disk. If fresh saved graph bytes match the
+verified producer pool, graph payload transfer is zero; that is conditional,
+not a promise about future outputs. Historical producer construction observations
+C359.8s/B389.21s project36m57.62s for the six measured writer phases only. They
+exclude second readbacks, input hashing, archive work, network transfer and final
+replay, and are not a new construction acceptance sample. The prospective path
+is max(core ready, measurement plus seal/upload) plus restore/full replay/join,
+instead of core ready plus the entire lifecycle job. Whole-workflow duration
+also depends on JVM correctness/query work and remains unknown. The change
+cannot recover time already spent by the current03f run and does not establish
+an under-two-hour workflow bound.
+
+Verification: all223 Node contracts passed in14.803s; all36 Python lifecycle
+contracts passed in3.277s, including19 split/transport tests; the existing three
+producer-to-consumer checkpoint smoke tests passed in5.634s. New cases cover
+pending direct CLI and forged aggregate PASS, complete same-input joining,
+wrong operation/query receipts, substituted runtime/source authority, missing
+arm/core pins, failed phases, incomplete64 coverage, changed producer/output
+bytes, archive traversal/symlinks, link cycles, run identity, lossless six-output
+sharing, readonly empty directories and unreadable output enumeration. A tiny
+SHA-count assertion checks nine reads across four explicit restore boundaries;
+it is not a performance benchmark. Independent source review found and drove
+fixes for unsupported sticky modes, readonly-parent restoration order and
+pathlib's suppressed directory-enumeration errors. Actionlint with shellcheck
+disabled,195 manifest pins, both workflow bindings and diff checks passed.
+Evidence: `/tmp/graphite-attempt222-{node,python,checkpoint-smoke,actionlint}.log`
+and `/tmp/graphite-attempt222-controls.json`.
+
+Independent integration review also reran all18 construction/loading comparison
+contracts, including pending CLI rejection and portable aggregate joins; they
+passed. The root independently verified all195 manifest entries and all three
+workflow bindings. The transport reviewer independently passed15 transport
+tests and reproduced unreadable-directory rejection without publishing a
+manifest. These checks cover local correctness only.
+
+**Decision: retain locally after independent integration review; hosted validation
+pending.** This is a feedback-path repair, not evidence of query p50/p95,
+end-to-end, CPU, RSS or construction/loading recovery. Correctness, stability,
+heap/resource constraints and the scoped Native-loading exception are unchanged.
+No single-graph performance measurement, new benchmark, CI launch, push or
+cancellation was performed. This JVM lifecycle split does not add or claim a
+new Native64 loading acceptance cohort.

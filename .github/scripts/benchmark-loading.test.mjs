@@ -1,3 +1,5 @@
+import {joinedLifecycle} from './lifecycle-join-test-fixture.mjs';
+import {spawnSync} from 'node:child_process';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -118,4 +120,38 @@ test('aggregate recomputes loading while construction and JVM query remain unava
  assert.equal(a.operationEvidence.find(x=>x.name==='construction').status,'UNAVAILABLE');assert.equal(a.operationEvidence.find(x=>x.name==='jvm-query').status,'UNAVAILABLE');
  assert.equal(aggregateReports(f.root,{...metadata,baseSha:'d'.repeat(40)}).operationEvidence.find(x=>x.name==='loading').status,'UNAVAILABLE');
  r.evidence.directory='../escape';write(path.join(f.root,'multigraph-loading-status.json'),r);assert.ok(aggregateReports(f.root,metadata).errors.some(x=>x.includes('escaped artifact root')));
+});
+
+test('pending loading preserves all metrics but cannot pass direct CLI or final aggregate',t=>{
+ const f=joinedLifecycle(fixture(t)),r=compareLoading(f.file,f.directory);
+ assert.equal(r.measuredConstraintsPassed,true);assert.equal(r.passed,false);assert.equal(r.status,'MEASURED_CORE_COMPARABILITY_PENDING');assert.equal(r.comparisons.length,4);
+ const prefix=path.join(f.root,'pending-cli');
+ const cli=spawnSync(process.execPath,[fs.realpathSync(new URL('./benchmark-loading.mjs',import.meta.url)),f.file,f.directory,prefix],{encoding:'utf8'});
+ assert.equal(cli.status,1);assert.equal(JSON.parse(fs.readFileSync(prefix+'-status.json')).passed,false);
+ r.evidence={plan:path.relative(f.root,f.file),directory:path.relative(f.root,f.directory)};
+ write(path.join(f.root,'multigraph-loading-status.json'),{...r,passed:true,status:'PASS'});
+ const a=aggregateReports(f.root,{baseSha:'a'.repeat(40),candidateSha:'b'.repeat(40)});
+ assert.equal(a.operationEvidence.find(x=>x.name==='loading').status,'UNAVAILABLE');
+});
+test('complete same-input core joins original loading evidence and aggregate independently replays it',t=>{
+ const f=joinedLifecycle(fixture(t)),before=fs.readFileSync(f.file),r=compareLoading(f.file,f.directory,f.receiptFile);
+ assert.equal(r.passed,true);assert.equal(r.coreComparabilityVerified,true);assert.equal(r.comparabilityPending,false);
+ assert.deepEqual(fs.readFileSync(f.file),before);
+ r.evidence={plan:path.relative(f.root,f.file),directory:path.relative(f.root,f.directory),comparabilityReceipt:path.relative(f.root,f.receiptFile)};
+ write(path.join(f.root,'multigraph-loading-status.json'),r);
+ const meta={baseSha:'a'.repeat(40),candidateSha:'b'.repeat(40)};
+ assert.equal(aggregateReports(f.root,meta).operationEvidence.find(x=>x.name==='loading').status,'PASS');
+ f.receipt.operation='construction';write(f.receiptFile,f.receipt);
+ assert.equal(aggregateReports(f.root,meta).operationEvidence.find(x=>x.name==='loading').status,'UNAVAILABLE');
+});
+test('wrong source, missing arm, failed phase and query receipts cannot authorize loading',t=>{
+ for(const options of [
+  {changeCorrected:c=>{c.arms.B.runtimeManifest.sha256='0'.repeat(64);}},
+  {changeCorrected:c=>{delete c.correctedComparisons.A;}},
+  {changePhase:(p,i)=>{if(i===138)p.status='FAIL';}},
+  {changeCorePlan:p=>{p.graphs.pop();}},
+  {changeCoreAudit:a=>{delete a.pins['/B/sourceManifest'];}},
+  {changeReceipt:r=>{r.schema='graphite.native-pressure.core-comparability-join.v1';}},
+  {changeReceipt:r=>{r.metadata[0].relativePath='../escape';}},
+ ]) {const f=joinedLifecycle(fixture(t),options);assert.throws(()=>compareLoading(f.file,f.directory,f.receiptFile));}
 });

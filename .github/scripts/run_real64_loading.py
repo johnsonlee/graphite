@@ -57,8 +57,8 @@ def entrypoint(jar):
         return {name: common.digest_bytes(archive.read(name)) for name in names}
 
 
-def prepare(packet, base, candidate):
-    plan = construction.prepare(packet, base, candidate)
+def prepare(packet, base, candidate, *, measurement_only=False):
+    plan = construction.prepare(packet, base, candidate, measurement_only=measurement_only)
     producer = common.read(plan['producers']['path'])
     plan.update(schema=SCHEMA, operation='loading', queriesIssued=0, scope=SCOPE)
     plan.pop('timeouts'); plan.pop('cachePolicy')
@@ -84,7 +84,8 @@ def prepare(packet, base, candidate):
 
 def validate(plan):
     require(plan['schema'] == SCHEMA, 'JVM loading plan schema')
-    expected = prepare(plan['producers']['path'], plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+    expected = prepare(plan['producers']['path'], plan['arms']['A']['revision'], plan['arms']['B']['revision'],
+                       measurement_only=plan.get('comparabilityPending') is True)
     require(common.typed(plan) == common.typed(expected), 'exact JVM zero-query loading plan')
     return plan
 
@@ -244,11 +245,12 @@ def run(plan_file, out):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('producers', 'base-sha', 'candidate-sha', 'output', 'prefix'): parser.add_argument('--'+name, required=True)
+    parser.add_argument('--measurement-only', action='store_true')
     args = parser.parse_args(); out, prefix = Path(args.output).resolve(), Path(args.prefix).resolve()
     require(not out.exists(), 'fresh JVM loading output'); out.mkdir(parents=True)
     measured = False
     try:
-        plan = prepare(args.producers, args.base_sha, args.candidate_sha); common.save(out/'plan.json', plan)
+        plan = prepare(args.producers, args.base_sha, args.candidate_sha, measurement_only=args.measurement_only); common.save(out/'plan.json', plan)
         measured = True; result = run(out/'plan.json', out/'cells')
         require(result['status'] == 'PASS_ALL_SIX_ZERO_QUERY_READY64', 'loading failed; original cells retained')
         from audit_real64_loading import audit
@@ -266,6 +268,11 @@ def main():
                 and verdict['planSha256'] == common.sha(out/'plan.json'), 'actual loading comparison')
         artifacts.verify_pins({argv[1]: plan['pins'][argv[1]]})
         common.save(out/'comparison-exit.json', {'exit': completed.returncode, 'statusSha256': common.sha(str(prefix)+'-status.json')})
+        if args.measurement_only:
+            require(verdict['passed'] is False and verdict.get('comparabilityPending') is True
+                    and verdict['status'] == 'MEASURED_CORE_COMPARABILITY_PENDING',
+                    'pending measurement must never authorize acceptance')
+            return 0
         return completed.returncode
     except BaseException as error:
         value = {'schema': 'graphite.jvm64-loading.comparison.v1', 'engine': 'jvm', 'operation': 'loading',

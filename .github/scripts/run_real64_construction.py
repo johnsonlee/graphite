@@ -40,12 +40,16 @@ def save_progress(path, value):
     temporary.replace(path)
 
 
-def prepare(packet_path, base, candidate):
+def prepare(packet_path, base, candidate, *, measurement_only=False):
     packet_path = Path(packet_path).resolve()
-    packet = bundle.verify_bundle(common.read(packet_path), base, candidate)
-    require(packet['status'] == bundle.CORRECTED_STATUS and not packet['missingAuthority'],
-            'complete corrected writer comparability is required')
-    bundle.corrected_fixture_bindings(packet)
+    if measurement_only:
+        packet = bundle.verify_measurement_bundle(common.read(packet_path), base, candidate)
+        bundle.measurement_fixture_bindings(packet)
+    else:
+        packet = bundle.verify_bundle(common.read(packet_path), base, candidate)
+        require(packet['status'] == bundle.CORRECTED_STATUS and not packet['missingAuthority'],
+                'complete corrected writer comparability is required')
+        bundle.corrected_fixture_bindings(packet)
     inputs, input_pins = producer.verify_inputs(packet['sourceInputs']['path'])
     pins = dict(packet['pins'])
     bundle.merge_pins(pins, preparation_control_pins())
@@ -82,6 +86,8 @@ def prepare(packet_path, base, candidate):
     return {'schema': SCHEMA, 'engine': 'jvm', 'operation': 'construction', 'graphCount': 64,
             'scope': SCOPE, 'comparisonModel': bundle.CORRECTED_MODEL,
             'producers': artifacts.ref(packet_path), 'sourceInputs': packet['sourceInputs'],
+            **({'comparabilityPending': True, 'pendingComparabilityAuthority': artifacts.ref(packet_path)}
+               if measurement_only else {}),
             'arms': arms, 'cells': [{'id': f'{i+1:02}-{arm}', 'arm': arm} for i, arm in enumerate('CABBAC')],
             'comparisonPairs': PAIRS, 'maxHeapBytes': 4 * 1024**3, 'activeProcessorCount': 4,
             'cachePolicy': 'Identical untimed source-JAR and writer reads before every sample; no disk-cold claim',
@@ -131,7 +137,8 @@ def retain_outputs(files, pool):
 
 def validate(plan):
     require(plan['schema'] == SCHEMA, 'construction plan schema')
-    expected = prepare(plan['producers']['path'], plan['arms']['A']['revision'], plan['arms']['B']['revision'])
+    expected = prepare(plan['producers']['path'], plan['arms']['A']['revision'], plan['arms']['B']['revision'],
+                       measurement_only=plan.get('comparabilityPending') is True)
     require(common.typed(plan) == common.typed(expected), 'exact predeclared construction plan')
     return plan
 
@@ -235,13 +242,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ('producers', 'base-sha', 'candidate-sha', 'output', 'prefix'):
         parser.add_argument('--' + name, required=True)
+    parser.add_argument('--measurement-only', action='store_true')
     args = parser.parse_args()
     out, prefix = Path(args.output).resolve(), Path(args.prefix).resolve()
     require(not out.exists(), 'fresh construction output required')
     out.mkdir(parents=True)
     measured = False
     try:
-        plan = prepare(args.producers, args.base_sha, args.candidate_sha)
+        plan = prepare(args.producers, args.base_sha, args.candidate_sha, measurement_only=args.measurement_only)
         common.save(out/'plan.json', plan)
         measured = True
         result = run(out/'plan.json', out/'cells')
@@ -267,6 +275,11 @@ def main():
         artifacts.verify_pins({command[1]: plan['pins'][command[1]]})
         common.save(out/'comparison-exit.json', {'exit': completed.returncode,
                     'statusSha256': common.sha(str(prefix)+'-status.json')})
+        if args.measurement_only:
+            require(verdict['passed'] is False and verdict.get('comparabilityPending') is True
+                    and verdict['status'] == 'MEASURED_CORE_COMPARABILITY_PENDING',
+                    'pending measurement must never authorize acceptance')
+            return 0
         return completed.returncode
     except BaseException as error:
         result = {'schema': 'graphite.real64-construction.comparison.v1', 'engine': 'jvm',
