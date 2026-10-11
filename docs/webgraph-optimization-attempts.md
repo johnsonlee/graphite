@@ -19368,3 +19368,32 @@ build/save performance and total hosted CI duration remain open.
 Evidence: `/tmp/graphite-attempt253-owned-consume-finish/verification.json` and
 `root-source-review.json`; `/tmp/graphite-attempt253-consume-prep/plan.json`,
 `execution.json`, `root-review.json`, both original logs and all partial outputs.
+
+### Attempt254 — single fresh final producer byte boundary (2026-10-12)
+
+Parent:24af8a59. The standalone producer audit hashes every pinned runtime and
+graph file in its final evidence union, then hashes those same files again when
+closing the runtime and graph inventories. Replace only that duplicate terminal
+pass with one original verify_pins call bracketed by complete inventory and file
+identity checks. Capture dev/inode/mode/size/mtime_ns/ctime_ns before and after;
+include directories, empty directories and roots, reject symlinks/special files,
+and require the exact expected file membership. Preserve source/configuration,
+writer, initial audit and output checks. Reject conflicting evidence digests
+instead of silently overwriting them. Tokens never authorize skipping fresh
+bytes across calls.
+
+Prepare in an isolated scripts copy while the original64 JVM35 diagnostic keeps
+its reader revision frozen. Artifact31 tests pass in5.234s, including post-hash
+mutation with restoredmtime, replacement, links, directory changes, conflicts,
+independent repeated calls and exact old/new audit output equality. Related
+core/worker92 tests pass in38.176s (38.388s process under120s), with source hashes
+unchanged throughout. Root reviews code, tests and hashes. Tiny byte-read counts
+prove the duplicate pass is removed; they are not performance measurements.
+
+Retain the scoped change after integration. No hosted runtime saving, product
+query p50/p95, CPU/RSS, or complete CI recovery is established. The separate
+existing replay-context post-hash mutation gap found during review is handled
+in attempt255. Evidence: /tmp/graphite-producer-final-boundary.patch,
+/tmp/graphite-producer-final-boundary-result.json,
+/tmp/graphite-producer-final-boundary-core-worker-result.json and
+/tmp/graphite-producer-final-boundary-root-review.json.

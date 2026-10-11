@@ -1,5 +1,7 @@
 """Small artifact fixtures exercise independent audit failures, never performance."""
 import copy
+from contextlib import contextmanager
+import os
 import json
 from pathlib import Path
 import tempfile
@@ -205,6 +207,93 @@ class ArtifactAuditTests(unittest.TestCase):
                 self.run_audit()
 
 
+class FinalEvidenceBoundaryTests(unittest.TestCase):
+    """Only tiny files; byte-read counts verify boundaries, not performance."""
+    def fixture(self):
+        temp=tempfile.TemporaryDirectory();self.addCleanup(temp.cleanup)
+        root=Path(temp.name).resolve();graphs=root/'graphs';graphs.mkdir()
+        (graphs/'empty').mkdir();file=graphs/'graph.nodes';file.write_bytes(b'original')
+        metadata=root/'metadata';metadata.write_bytes(b'original')
+        files={str(file):auditor.common.sha(file)}
+        return root,graphs,file,metadata,files,{**files,str(metadata):auditor.common.sha(metadata)}
+
+    def test_one_fresh_read_per_file_and_no_reuse_across_boundaries(self):
+        _,root,file,metadata,files,pins=self.fixture();sha=auditor.common.sha
+        with patch.object(auditor.common,'sha',wraps=sha) as reads:
+            for _ in range(2):
+                with auditor._final_evidence_boundary(pins,((root,files),)):pass
+            self.assertEqual([str(file),str(metadata)]*2,[str(call.args[0]) for call in reads.call_args_list])
+        file.write_bytes(b'changed!')
+        with self.assertRaisesRegex(ValueError,'pinned input changed'):
+            with auditor._final_evidence_boundary(pins,((root,files),)):pass
+
+    def test_after_hash_mutations_are_rejected_even_with_restored_mtime(self):
+        for kind in ('content','metadata','same-size-restored-mtime','missing-file','added-file',
+                     'missing-dir','added-dir','symlink','root-symlink','file-to-dir','replacement','mode'):
+            with self.subTest(kind=kind):
+                base,root,file,metadata,files,pins=self.fixture()
+                with self.assertRaises((ValueError,OSError)):
+                    with auditor._final_evidence_boundary(pins,((root,files),)):
+                        if kind in ('content','same-size-restored-mtime','metadata'):
+                            path=metadata if kind=='metadata' else file;before=path.stat()
+                            path.write_bytes(b'changed!')
+                            if kind=='same-size-restored-mtime':os.utime(path,ns=(before.st_atime_ns,before.st_mtime_ns))
+                        elif kind=='missing-file':file.unlink()
+                        elif kind=='added-file':(root/'new').write_bytes(b'new')
+                        elif kind=='missing-dir':(root/'empty').rmdir()
+                        elif kind=='added-dir':(root/'new-empty').mkdir()
+                        elif kind=='symlink':(root/'link').symlink_to(metadata)
+                        elif kind=='root-symlink':
+                            moved=base/'moved';root.rename(moved);root.symlink_to(moved,target_is_directory=True)
+                        elif kind=='file-to-dir':file.unlink();file.mkdir()
+                        elif kind=='replacement':
+                            other=base/'replacement';other.write_bytes(file.read_bytes());other.replace(file)
+                        else:file.chmod(0o400)
+
+    def test_mutation_inside_hash_and_inventory_conflicts_fail(self):
+        _,root,file,_,files,pins=self.fixture();sha=auditor.common.sha;changed=False
+        def mutate(path):
+            nonlocal changed
+            digest=sha(path)
+            if Path(path)==file and not changed:
+                changed=True;before=file.stat();file.write_bytes(b'changed!')
+                os.utime(file,ns=(before.st_atime_ns,before.st_mtime_ns))
+            return digest
+        with patch.object(auditor.common,'sha',side_effect=mutate):
+            with self.assertRaisesRegex(ValueError,'changed during verification'):
+                with auditor._final_evidence_boundary(pins,((root,files),)):pass
+        with self.assertRaisesRegex(ValueError,'conflicting final evidence pin'):
+            auditor._evidence_union(files,{str(file):'0'*64})
+        with self.assertRaisesRegex(ValueError,'conflicting final inventory evidence'):
+            with auditor._final_evidence_boundary(pins,((root,{str(file):'0'*64}),)):pass
+        self.assertEqual(files,auditor._evidence_union(files,files))
+
+    def test_full_standalone_audit_output_matches_prior_boundary(self):
+        fixture=ArtifactAuditTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        @contextmanager
+        def prior(evidence,inventories):
+            auditor.verify_pins(evidence)
+            yield
+            for root,files in inventories:self.assertEqual(files,auditor.inventory(root))
+        with patch.object(auditor,'_final_evidence_boundary',side_effect=prior):expected=fixture.run_audit()
+        self.assertEqual(expected,fixture.run_audit())
+        self.assertEqual(expected,fixture.run_audit())
+
+    def test_full_audit_catches_mutation_after_terminal_hash(self):
+        fixture=ArtifactAuditTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        verify=auditor.verify_pins;file=next((fixture.out/'graphs').glob('*/graph.nodes'));changed=False
+        def mutate(pins):
+            nonlocal changed
+            verify(pins)
+            if str(fixture.out/'packet.json') in pins:
+                changed=True;before=file.stat();raw=file.read_bytes()
+                file.write_bytes(bytes([raw[0]^1])+raw[1:])
+                os.utime(file,ns=(before.st_atime_ns,before.st_mtime_ns))
+        with patch.object(auditor,'verify_pins',side_effect=mutate):
+            with self.assertRaisesRegex(ValueError,'changed during verification'):fixture.run_audit()
+        self.assertTrue(changed)
+
+
 class ConstructionAuditTests(unittest.TestCase):
     def phase(self):
         case=fixtures.ConstructionResourceTests();self.addCleanup(case.doCleanups)
@@ -266,8 +355,8 @@ class ProducerReplayContextTests(unittest.TestCase):
                 actual=[auditor._audit_with_context(context,*args[index]) for index in (0,1,1,0,1)]
             self.assertEqual(2,full.call_count)
             self.assertEqual(expected,actual)
-            self.assertEqual([6,9],[old[str(p)] for p in graph_files])
-            self.assertEqual([5,6],[counts[str(p)] for p in graph_files])
+            self.assertEqual([4,6],[old[str(p)] for p in graph_files])
+            self.assertEqual([4,5],[counts[str(p)] for p in graph_files])
 
     def test_same_size_same_mtime_and_new_files_fail_on_reuse_or_exit(self):
         import os

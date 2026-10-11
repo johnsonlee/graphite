@@ -6,9 +6,11 @@ cross-arm semantic equivalence and performance acceptance are separate work.
 """
 import argparse
 import copy
+from contextlib import contextmanager
 import math
 import re
 import os
+import stat
 from pathlib import Path
 import subprocess
 import sys
@@ -50,6 +52,53 @@ def verify_pins(pins):
         p=Path(name)
         require(p.is_absolute() and p.is_file() and not p.is_symlink() and
                 common.valid_digest(digest) and common.sha(p)==digest,'actual pinned input changed: '+name)
+
+
+def _evidence_union(*groups):
+    result={}
+    for group in groups:
+        for name,digest in group.items():
+            require(name not in result or result[name]==digest,'conflicting final evidence pin: '+name)
+            result[name]=digest
+    return result
+
+
+def _file_token(path):
+    value=Path(path).lstat()
+    require(stat.S_ISREG(value.st_mode),'regular final evidence file: '+str(path))
+    return (value.st_dev,value.st_ino,value.st_mode,value.st_size,value.st_mtime_ns,value.st_ctime_ns)
+
+
+def _closed_inventory_tokens(root,expected):
+    root=Path(root)
+    require(root==root.resolve(),'canonical final inventory root')
+    entries={};files=set()
+    def visit(path):
+        value=path.lstat();mode=value.st_mode
+        require(stat.S_ISDIR(mode) or stat.S_ISREG(mode),'regular final inventory member: '+str(path))
+        entries[str(path)]=(value.st_dev,value.st_ino,mode,value.st_size,value.st_mtime_ns,value.st_ctime_ns)
+        if stat.S_ISDIR(mode):
+            for child in sorted(path.iterdir()):visit(child)
+        else:files.add(str(path))
+    require(stat.S_ISDIR(root.lstat().st_mode),'real final inventory root')
+    visit(root)
+    require(files==set(expected),'closed final inventory membership')
+    return entries
+
+
+@contextmanager
+def _final_evidence_boundary(evidence,inventories):
+    """One fresh byte pass, bracketed by immutable same-call file/closure facts."""
+    for root,files in inventories:
+        require(all(evidence.get(name)==digest for name,digest in files.items()),
+                'conflicting final inventory evidence')
+    before={str(root):_closed_inventory_tokens(root,files) for root,files in inventories}
+    tokens={name:_file_token(name) for name in evidence}
+    verify_pins(evidence)
+    yield
+    require({str(root):_closed_inventory_tokens(root,files) for root,files in inventories}==before,
+            'final closed inventory changed during verification')
+    require({name:_file_token(name) for name in evidence}==tokens,'final evidence changed during verification')
 
 
 def configs(checkout, env):
@@ -276,18 +325,18 @@ def audit(packet_path, checkout, revision, role, inputs_path, tools, require_con
     expected_final = {key: 'PASS' for key in
                       ('source', 'inputs', 'runtime', 'fixtures', 'originalArtifacts', 'configuration')}
     require(packet['finalIdentity'] == expected_final, 'producer final identities')
-    evidence = {**control_pins, **metadata, **pins, **receipts, **source_before,
-                **runtime['files'], **runtime['originalArtifacts'], **fixture['files']}
+    evidence = _evidence_union(control_pins, metadata, pins, receipts, source_before,
+                               runtime['files'], runtime['originalArtifacts'], fixture['files'])
     for name in commands:
         for leaf in ('owner.json', 'stdout.log', 'stderr.log', *(['time-v.log'] if construction and name == 'prepare-real64' else [])):
             path = root / name / leaf
-            evidence[str(path)] = common.sha(path)
-    # A final complete recheck also detects mutation while the auditor is reading.
-    verify_pins(evidence)
-    require(source_inventory(checkout, revision) == source_before and
-            inventory(root / 'runtime') == runtime['files'] and
-            inventory(root / 'graphs') == fixture['files'] and
-            configs(checkout, env) == packet['configurationAfter'], 'audit final closed inventories')
+            evidence = _evidence_union(evidence, {str(path):common.sha(path)})
+    # Retain a fresh complete byte boundary without hashing the same graph and
+    # runtime files again solely to establish their closed membership.
+    with _final_evidence_boundary(evidence, ((root/'runtime',runtime['files']),
+                                            (root/'graphs',fixture['files']))):
+        require(source_inventory(checkout, revision) == source_before and
+                configs(checkout, env) == packet['configurationAfter'], 'audit final closed inventories')
     result = {'schema': 'graphite.native-independent-artifact-audit.v1', 'status': STATUS,
             'revision': revision, 'role': role, 'producerPacket': ref(packet_path), 'auditor': ref(__file__),
             'sourceManifest': ref(root / 'source-manifest.json'),
