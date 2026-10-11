@@ -18106,3 +18106,65 @@ construction/loading, CPU, RSS and full real-corpus correctness/stability remain
 unproven. Current Native, construction and core branches continue; their remaining
 evidence can still inform the next candidate. No expensive replacement is launched
 solely to verify this locally reproduced Python path error.
+
+### Attempt232 — establish a short real64 loading allocation diagnostic (2026-10-12)
+
+Parent:033694b1. Full hosted acceptance is still slow:the current producer plus
+core preparation took82m50s, against82m28s previously. No hosted speedup is
+established by225–231. The proposed local six-cell runner also failed the fast
+feedback requirement before launch:it would scan both real64 inputs14 times,
+about273GiB of graph bytes. Its tiny correctness checks pass, but do not authorize
+a speed claim. Do not launch that comparative runner in its current form.
+
+Instead, build the exact current query runtime and run one explicitly instrumented
+64-graph allocation diagnostic. This diagnoses loading only; it supplies neither
+query timings nor a baseline/candidate performance comparison. Reuse the historical
+GTY05 corpus at `/tmp/graphite-gty05-produced-1`:64 real Android/Tika/Hive/Kotlin
+graphs,1,282 files,10,503,586,034 bytes, writeracd11a69. Its historical identity
+is retained; it is not claimed to be the current CI producer's exact corpus.
+
+The first isolated worktree build failed during publisher plugin configuration in
+7s. A local shared clone with an ordinary.git directory fixed that environment
+problem without source changes. Building:query:shadowJar and five relevant
+existing webgraph correctness classes took51.073s; all40 tests passed with zero
+failures/errors/skips. Root independently read the test XML totals. Exact source
+033694b1 stayed clean and unchanged; JDK17.0.20.1, Gradle/test heap4g, two workers.
+Runtime SHA256:37f4b9ebed793b1a45a258231a39e282452ad3ba4fcbbed7d13b651128860a7a.
+Build argv, source hashes, both attempts, XML and output identity are retained at
+`/tmp/graphite-jvm64-current033-build-1`.
+
+Diagnostic script:`/tmp/graphite-jvm64-allocation-diagnostic-1/profile.py`.
+Independent review caught a fixture-root inventory omission and two cleanup
+exception/signal windows before execution; these were corrected. Run1 uses the
+actual CLI with64 explicitly declared graphs, MAPPED, -Xmx4g,
+-XX:ActiveProcessorCount=4, JFR profile settings, native-memory summary tracking
+and GC logs. Complete readiness body matches all64 graph identities/counts.
+Full graph/runtime hashes are verified before and after; owned process cleanup
+succeeds. No query is issued and performanceAcceptance remains false.
+
+Measured diagnostic execution took21.418s:input verification5.053s, instrumented
+readiness10.146s, post-run input verification4.662s, plus snapshots and cleanup.
+Build/test plus diagnostic execution totals72.491s; this excludes preparing and
+reviewing the diagnostic script and is not an estimate for full CI. JFR stops
+after readiness through jcmd; the attach/stop tail and timing boundaries are
+recorded. GC histograms occur after recording stops and cannot contaminate the
+loading recording. Mac observations are not Linux VmHWM acceptance evidence.
+
+Run1 evidence:`/tmp/graphite-jvm64-allocation-diagnostic-1/run-1`.
+JFR SHA256:58984b7332fd5b93632b12bb0b6133e02380c46a4913fb2651499a4731213ddf.
+The raw recording contains1,742 allocation samples before readiness, with total
+sampled weight4,481,446,152 bytes. Stacks involving declared types account for
+1,163,259,520 weighted bytes; StringTable.get on those stacks accounts for
+405,801,816. These are sampled allocation weights, not exact allocation totals,
+retained memory or the explanation for the hosted RSS delta. After an explicit
+post-recording GC, the heap histogram retains only700,896 bytes of String
+objects; byte/char arrays have other owners too, so this does not measure all
+string storage. Large retained primitive arrays remain dominated by pre-existing
+graph indexes, requiring a matched baseline before attributing their increase.
+
+**Keep the diagnostic evidence and short local path.** The next bounded hypothesis
+is to reuse decoded texts only during loading, keyed by existing shared IDs,
+then discard them before publication. No product candidate was measured in this
+attempt. Full correctness, stability, query p50/p95, construction/loading CPU/RSS
+and the required hosted gate remain unresolved; this attempt does not mark the PR
+ready or replace the full real multi-graph acceptance protocol.
