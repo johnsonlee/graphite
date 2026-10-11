@@ -1579,7 +1579,7 @@ enum RawLeaf {
     /// The node id as text, or against a number.
     NodeId(Option<f64>),
     /// A synthetic key tested per node: the graph's prefix, then the id.
-    Synthetic { prefix: String, with_id: bool },
+    Synthetic(SyntheticMatcher),
 }
 
 /// The CallSite tree with each leaf ready to test one record.
@@ -1697,8 +1697,8 @@ impl RawTree {
         let Some(offset) = offset else {
             return false;
         };
-        if let RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) = self {
-            return synthetic_matches(prefix, *with_id, p, id, &mut st.text);
+        if let RawTree::Leaf(RawLeaf::Synthetic(matcher), p) = self {
+            return matcher.matches(p, id, &mut st.text);
         }
         let record = RawRecord::read(data, offset, id);
         self.eval(graph, data, &record, st)
@@ -1716,10 +1716,9 @@ impl RawTree {
             PredTree::Leaf(p) => {
                 let number = || leaf_number(p);
                 let leaf = match p.prop() {
-                    key if is_synthetic_key(key) => RawLeaf::Synthetic {
-                        prefix: synthetic_prefix(graph_id, p),
-                        with_id: key != "graphId",
-                    },
+                    key if is_synthetic_key(key) => {
+                        RawLeaf::Synthetic(SyntheticMatcher::new(graph_id, p))
+                    }
                     "callee_signature" | "caller_signature" => {
                         let index = *memos;
                         *memos += 1;
@@ -1783,9 +1782,7 @@ impl RawTree {
                 Some(ordinal) => number_or_text_i64(*number, ordinal as i64, p),
             },
             RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
-            RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) => {
-                synthetic_matches(prefix, *with_id, p, r.id, &mut st.text)
-            }
+            RawTree::Leaf(RawLeaf::Synthetic(matcher), p) => matcher.matches(p, r.id, &mut st.text),
             RawTree::Leaf(RawLeaf::Signature { callee, memo }, p) => {
                 let start = if *callee { r.callee } else { r.caller };
                 st.memos[*memo].matches(graph, data, start, p)
@@ -1794,20 +1791,95 @@ impl RawTree {
     }
 }
 
-fn synthetic_matches(
-    prefix: &str,
-    with_id: bool,
-    pred: &StringPredicate,
-    id: u32,
-    text: &mut String,
-) -> bool {
-    text.clear();
-    text.push_str(prefix);
-    if with_id {
-        let mut buf = [0u8; 10];
-        text.push_str(u32_text(id, &mut buf));
+/// A digit-only needle cannot cross the colon before the node id. Resolve the
+/// graph prefix once, then test decimal windows without formatting each id.
+enum DecimalContains {
+    Constant(bool),
+    Digits {
+        value: u64,
+        modulus: u64,
+        minimum: u64,
+    },
+}
+
+impl DecimalContains {
+    fn compile(prefix: &str, with_id: bool, pred: &StringPredicate) -> Option<Self> {
+        let literal = pred.literal.as_str();
+        if !with_id
+            || pred.op != PushOp::Contains
+            || literal.is_empty()
+            || !literal.bytes().all(|b| b.is_ascii_digit())
+        {
+            return None;
+        }
+        if prefix.contains(literal) {
+            return Some(Self::Constant(true));
+        }
+        if literal.len() > 10 {
+            return Some(Self::Constant(false));
+        }
+        let modulus = 10_u64.pow(literal.len() as u32);
+        Some(Self::Digits {
+            value: literal.parse().expect("at most ten ASCII digits"),
+            modulus,
+            minimum: modulus / 10,
+        })
     }
-    pred.matches_raw(text)
+
+    fn matches(&self, id: u32) -> bool {
+        match *self {
+            Self::Constant(value) => value,
+            Self::Digits {
+                value,
+                modulus,
+                minimum,
+            } => {
+                if id == 0 {
+                    return value == 0 && modulus == 10;
+                }
+                let mut remaining = u64::from(id);
+                while remaining >= minimum {
+                    if remaining % modulus == value {
+                        return true;
+                    }
+                    remaining /= 10;
+                }
+                false
+            }
+        }
+    }
+}
+
+struct SyntheticMatcher {
+    prefix: String,
+    with_id: bool,
+    decimal_contains: Option<DecimalContains>,
+}
+
+impl SyntheticMatcher {
+    fn new(graph_id: &str, pred: &StringPredicate) -> Self {
+        let prefix = synthetic_prefix(graph_id, pred);
+        let with_id = pred.prop() != "graphId";
+        let decimal_contains = DecimalContains::compile(&prefix, with_id, pred);
+        Self {
+            prefix,
+            with_id,
+            decimal_contains,
+        }
+    }
+
+    fn matches(&self, pred: &StringPredicate, id: u32, text: &mut String) -> bool {
+        if let Some(compiled) = &self.decimal_contains {
+            return compiled.matches(id);
+        }
+        text.clear();
+        text.push_str(&self.prefix);
+        if self.with_id {
+            let mut buf = [0u8; 10];
+            text.push_str(u32_text(id, &mut buf));
+        }
+        pred.matches_raw(text)
+    }
 }
 
 /// A number read off the record against the leaf: equal to the literal number, or as
@@ -1891,7 +1963,7 @@ fn build_source_plan(
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
-                    }
+                    };
                 }
                 Conjunction::Probe => {}
             }
@@ -3531,8 +3603,7 @@ enum ColumnTree {
     },
     /// A synthetic key, tested per node: the graph's prefix and the node id.
     Synthetic {
-        prefix: String,
-        with_id: bool,
+        matcher: SyntheticMatcher,
         pred: StringPredicate,
     },
     /// A raw field of the record, found from the node id; `memo` indexes the
@@ -3597,16 +3668,15 @@ impl ColumnTree {
                     Exposure::Column(slot) => slot,
                     Exposure::Synthetic => {
                         return Some(ColumnTree::Synthetic {
-                            prefix: synthetic_prefix(graph_id, p),
-                            with_id: p.prop() != "graphId",
+                            matcher: SyntheticMatcher::new(graph_id, p),
                             pred: p.clone(),
-                        })
+                        });
                     }
                     Exposure::NodeId => {
                         return Some(ColumnTree::NodeId {
                             number: leaf_number(p),
                             pred: p.clone(),
-                        })
+                        });
                     }
                     Exposure::Record(field) => {
                         let memo = *memos;
@@ -3686,19 +3756,7 @@ impl ColumnTree {
         match self {
             ColumnTree::Leaf(l) => l.holds(graph.string_column(l.slot).string_ids()[row]),
             ColumnTree::NodeId { number, pred } => number_or_text(*number, id, pred),
-            ColumnTree::Synthetic {
-                prefix,
-                with_id,
-                pred,
-            } => {
-                st.text.clear();
-                st.text.push_str(prefix);
-                if *with_id {
-                    let mut buf = [0u8; 10];
-                    st.text.push_str(u32_text(id, &mut buf));
-                }
-                pred.matches_raw(&st.text)
-            }
+            ColumnTree::Synthetic { matcher, pred } => matcher.matches(pred, id, &mut st.text),
             ColumnTree::Record {
                 field,
                 number,
@@ -4212,7 +4270,9 @@ mod tests {
                 "{query}"
             );
         }
-        let (patterns, condition) = parse_where("MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'first') RETURN id(n)");
+        let (patterns, condition) = parse_where(
+            "MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'first') RETURN id(n)",
+        );
         assert!(ScanPlan::build(&patterns, condition.as_ref()).is_some());
     }
 
@@ -4233,7 +4293,9 @@ mod tests {
             let direct = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
             // CASE is deliberately outside scan predicate extraction. It leaves
             // WHERE truth/error semantics unchanged without global env mutation.
-            let fallback = format!("MATCH (n:FieldNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n)");
+            let fallback = format!(
+                "MATCH (n:FieldNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n)"
+            );
             let (patterns, condition) = parse_where(&fallback);
             assert!(
                 ScanPlan::build(&patterns, condition.as_ref()).is_none(),
@@ -4395,7 +4457,9 @@ mod tests {
             "",
             "类型",
         ] {
-            let query = format!("MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN id(n), n.graphId LIMIT 50");
+            let query = format!(
+                "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN id(n), n.graphId LIMIT 50"
+            );
             assert_eq!(
                 ordered_test_rows(&ex.execute(&query, None).unwrap().rows),
                 ordered_test_rows(&slow.execute(&query, None).unwrap().rows),
@@ -4811,11 +4875,15 @@ mod tests {
         // An exact CallSite stream (`All`/`Column`) would skip the WHERE clause on an
         // unrelaxed plan; relaxed, it must not: IS NULL on a name every call site has.
         assert_eq!(
-            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)"),
+            count(
+                "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)"
+            ),
             0
         );
         assert_eq!(
-            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"),
+            count(
+                "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"
+            ),
             b
         );
     }
@@ -4875,7 +4943,10 @@ mod tests {
             if p[0].rels.is_empty() {
                 assert!(ScanPlan::build(&p, w.as_ref()).is_some(), "{q}");
             } else {
-                assert!(super::super::hop::HopPlan::build(&p, w.as_ref()).is_some(), "{q}");
+                assert!(
+                    super::super::hop::HopPlan::build(&p, w.as_ref()).is_some(),
+                    "{q}"
+                );
             }
         }
         let (p, w) = parse_where("MATCH (n) WHERE n.callee_name IN ['toString'] RETURN n");

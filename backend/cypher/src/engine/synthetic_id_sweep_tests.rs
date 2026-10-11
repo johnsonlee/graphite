@@ -44,6 +44,146 @@ fn state() -> RawSweepState {
     }
 }
 
+fn synthetic_predicate(expression: &str) -> StringPredicate {
+    let clauses = crate::parser::parse(&format!(
+        "MATCH (n:CallSite) WHERE {expression} RETURN id(n)"
+    ))
+    .unwrap();
+    let crate::ast::Clause::Match { patterns, .. } = &clauses[0] else {
+        panic!("MATCH required")
+    };
+    let crate::ast::Clause::Where(where_clause) = &clauses[1] else {
+        panic!("WHERE required")
+    };
+    let PredTree::Leaf(predicate) = ScanPlan::build(patterns, Some(where_clause)).unwrap().tree
+    else {
+        panic!("single synthetic leaf required")
+    };
+    predicate
+}
+
+#[test]
+fn compiled_decimal_contains_matches_formatted_identity() {
+    let mut ids: Vec<u32> = (0..=255).collect();
+    for exponent in 1..=9 {
+        let boundary = 10_u32.pow(exponent);
+        ids.extend([boundary - 1, boundary, boundary + 1]);
+    }
+    ids.extend([1001, 10100, 100_000_001, u32::MAX - 1, u32::MAX]);
+    for property in ["n.qualifiedId", "n.elementId", "toLower(n.qualifiedId)"] {
+        for literal in [
+            "0",
+            "00",
+            "01",
+            "001",
+            "10",
+            "11",
+            "101",
+            "000",
+            "0000000000",
+            "0000000001",
+            "4294967295",
+            "4294967296",
+            "9999999999",
+            "10000000000",
+            "18446744073709551616",
+        ] {
+            let pred = synthetic_predicate(&format!("{property} CONTAINS '{literal}'"));
+            for gid in ["app", "APP类型01", "10000000000", "18446744073709551616"] {
+                let matcher = SyntheticMatcher::new(gid, &pred);
+                assert!(matcher.decimal_contains.is_some());
+                let mut text = String::from("untouched row buffer");
+                for &id in &ids {
+                    let expected = format!("{gid}:{id}").contains(literal);
+                    assert_eq!(
+                        matcher.matches(&pred, id, &mut text),
+                        expected,
+                        "{property}, {gid}:{id}, needle={literal}"
+                    );
+                    assert_eq!(text, "untouched row buffer");
+                }
+            }
+        }
+    }
+}
+
+#[test]
+fn other_synthetic_predicates_keep_the_original_text_path() {
+    for expression in [
+        "n.qualifiedId CONTAINS ''",
+        "n.qualifiedId CONTAINS ':01'",
+        "n.qualifiedId CONTAINS 'app:1'",
+        "n.qualifiedId CONTAINS 'APP'",
+        "n.qualifiedId CONTAINS '类型'",
+        "n.qualifiedId CONTAINS '１２'",
+        "n.qualifiedId STARTS WITH '1'",
+        "n.qualifiedId ENDS WITH '01'",
+        "n.elementId = 'app:101'",
+        "n.qualifiedId =~ '.*01.*'",
+        "n.graphId CONTAINS '01'",
+        "toLower(n.qualifiedId) CONTAINS 'app'",
+    ] {
+        let pred = synthetic_predicate(expression);
+        for gid in ["app", "APP类型01"] {
+            let matcher = SyntheticMatcher::new(gid, &pred);
+            assert!(matcher.decimal_contains.is_none(), "{expression}");
+            for id in [0, 1, 101, u32::MAX] {
+                let mut expected = synthetic_prefix(gid, &pred);
+                if pred.prop() != "graphId" {
+                    expected.push_str(&id.to_string());
+                }
+                let mut text = String::from("old row");
+                assert_eq!(
+                    matcher.matches(&pred, id, &mut text),
+                    pred.matches_raw(&expected),
+                    "{expression} on {gid}:{id}"
+                );
+                assert_eq!(text, expected);
+            }
+        }
+    }
+}
+
+#[test]
+fn column_and_raw_trees_use_compiled_digits_without_record_or_text_reads() {
+    let Some(graph) = fixture() else { return };
+    for property in ["qualifiedId", "elementId"] {
+        for gid in ["app", "app01"] {
+            let expression = format!("n.{property} CONTAINS '01'");
+            let pred = synthetic_predicate(&expression);
+            let column = ColumnTree::resolve(
+                &graph,
+                gid,
+                &PredTree::Leaf(pred),
+                TAG_CALL_SITE_NODE,
+                &mut 0,
+            )
+            .unwrap();
+            let raw = raw(&graph, gid, &expression);
+            for id in [0, 1, 101, 1001, u32::MAX] {
+                let expected = format!("{gid}:{id}").contains("01");
+                let mut row_state = RowState {
+                    text: "column sentinel".into(),
+                    ..Default::default()
+                };
+                let mut raw_state = state();
+                raw_state.text = "raw sentinel".into();
+                assert_eq!(
+                    column.matches(&graph, usize::MAX, id, &mut row_state),
+                    expected
+                );
+                assert_eq!(
+                    raw.matches_at(&graph, &[], Some(usize::MAX), id, &mut raw_state),
+                    expected
+                );
+                assert!(!raw.matches_at(&graph, &[], None, id, &mut raw_state));
+                assert_eq!(row_state.text, "column sentinel");
+                assert_eq!(raw_state.text, "raw sentinel");
+            }
+        }
+    }
+}
+
 #[test]
 fn synthetic_leaf_reads_no_record_bytes_and_skips_missing_offsets() {
     let Some(graph) = fixture() else { return };
@@ -173,7 +313,9 @@ fn complete_multigraph_identity_rows_limit_and_cancellation_are_preserved() {
             .collect();
         for limit in [None, Some(1), Some(expected.len() + 1)] {
             let suffix = limit.map(|n| format!(" LIMIT {n}")).unwrap_or_default();
-            let query = format!("MATCH (n:CallSite) WHERE {predicate} RETURN id(n) AS id, n.graphId AS graphId, n.qualifiedId AS qualifiedId{suffix}");
+            let query = format!(
+                "MATCH (n:CallSite) WHERE {predicate} RETURN id(n) AS id, n.graphId AS graphId, n.qualifiedId AS qualifiedId{suffix}"
+            );
             let rows = ex.execute(&query, None).unwrap().rows;
             let actual: Vec<_> = rows
                 .iter()

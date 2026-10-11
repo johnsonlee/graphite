@@ -19015,3 +19015,66 @@ Retain this scoped repeated-work removal. No real64/hosted run, query p50/p95,
 CPU/RSS or cumulative regression acceptance is established by these tests.
 Evidence: `/tmp/graphite-attempt246-fresh-derive-tests/summary.json`,
 `tests-1.log`, `tests-2.log` and `workflow-contract.log`.
+
+### Attempt247 — compile decimal synthetic-ID CONTAINS per graph (2026-10-12)
+
+Parent:29860dca. Attempt245 identifies decimal formatting and substring search
+in the synthetic-ID path. Compile a nonempty ASCII-digit CONTAINS literal once
+per graph, first resolving a prefix match and otherwise testing decimal windows
+on the u32 node ID. Preserve leading zeros, zero IDs and overlong needles.
+ColumnTree and RawTree share the matcher; other operators, colon/non-ASCII
+needles and graphId retain the original text path. Missing offsets, scan order,
+LIMIT, cancellation and work budgets remain unchanged.
+
+Correctness:187 cypher unit tests and one inherited-field interoperability test
+pass with all required fixtures present; fmt and clippy pass. The complete
+module check takes48.366s within120s. The first formatting-only attempt fails
+in0.356s because local rustfmt used edition2024 instead of the repository's2021;
+retain that failure, correct formatting, then freeze source for the passing run.
+No benchmark uses those correctness fixtures.
+
+Measure original acd11 GTY05 real64 graphs on macOS arm64, MAPPED,39 query cases,
+c4, one oracle/two warmups/20 measured requests per case, full response validation.
+37 cases target64 graphs and two target2 graphs. Run uninstrumented A,B,B,A with
+fixed forward/reverse pairs; nearest-rank per-case p50=sample10,p95=sample19.
+Reuse the actual66180a8a parent binary after matching all144 Native source files
+to29860dca. Candidate is an isolated29860dca source plus patch SHA256
+42038644a367f7f3bc4fa3565b3ad0c98f6819c51ca4caeca60a1e6e41f8adc8,
+binary967a44d58268af5c75b06afccdd473edd3b33d0a3f5f5c7d55223e4319529fa1.
+Original graph/writer identity remains unchanged; this is incremental parent
+attribution, not accepted-main or fresh-writer acceptance.
+
+Command:`python3 -B /tmp/graphite-attempt247-pair-prep-1/execute.py execute`.
+Predeclared900s execution budget includes build, all four cells, complete audits,
+terminal verification and cleanup; preparation is separate. Build takes25.131s;
+complete execution728.217s (12m8s). All3,588 responses pass and seven owned
+process groups are empty. Root independently checks all64,147,368 response bytes,
+raw identities and both directions' quantiles without repeating graph hashing.
+No sampler runs; filesystem/host cache is uncontrolled, with fresh server and
+the same oracle/warmup protocol per cell. Two directions do not provide tight
+p95 uncertainty or a quiet-host/saturation claim.
+
+| Metric | Parent → candidate, forward | Parent → candidate, reverse |
+|---|---:|---:|
+| qualifiedIdHit p50 ms |211.028 → 31.933|269.388 → 33.573|
+| qualifiedIdHit p95 ms |330.944 → 76.374|326.665 → 89.554|
+| qualifiedIdMiss p50 ms |425.118 → 51.687|417.685 → 69.386|
+| qualifiedIdMiss p95 ms |511.815 → 110.261|485.075 → 140.886|
+| Complete pressure wall s |63.880 → 61.859|64.781 → 62.170|
+| CPU bound s |392.92–393.02 → 354.52–354.64|398.26–398.37 → 355.76–355.87|
+| RSS bound MiB |21115.422–21116.469 → 22501.047–22501.703|22813.047–22832.594 → 21367.172–21374.313|
+
+Retain the positive ID-query/CPU increment as an intermediate candidate. It has
+not passed all latency/resource constraints: forward RSS increases6.565%, over
+the5% limit; reverse RSS decreases6.307%. Parent and candidate each vary by
+over1GiB between cells, so memory recovery is unresolved. Across all39 cases,
+forward/reverse p50 increases occur in23/13 cases and p95 increases in28/19;
+preserve every case. The largest non-ID p95 increase is with-filter76.338/
+76.995ms. Do not hide those changes, claim overall query recovery, or run repeated
+stabilization rounds solely to obtain favorable small latency differences.
+Correctness/stability for this protocol pass; loading/build/save performance
+is unmeasured by this query change. Accepted-main and hosted gates remain open.
+
+Evidence: `/tmp/graphite-attempt247-pair-prep-1/comparison.json`,
+`all-case-quantiles.md`, `root-query-review.json`, `build-root-review.json`;
+module checks:`/tmp/graphite-attempt247-correctness-2/result.json`.
