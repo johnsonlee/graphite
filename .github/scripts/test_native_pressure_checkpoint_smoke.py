@@ -48,7 +48,7 @@ class CheckpointChainSmoke(unittest.TestCase):
         self.assertEqual(action, receipt['checkpointTransport'])
         self.assertIs(receipt['proofAuthority'], False)
         self.assertIs(receipt['performanceAcceptance'], False)
-        return checkpoint.read(Path(args.directory)/'manifest.json')
+        return receipt if action == 'restore-consumer-chain' else checkpoint.read(Path(args.directory)/'manifest.json')
 
     def download_directory(self, stage, arm, job):
         """Resolve the actual named-download destination, even for one artifact."""
@@ -63,8 +63,10 @@ class CheckpointChainSmoke(unittest.TestCase):
         self.assertEqual('native-checkpoint-'+stage+'-'+arm+'-'+suffix, name)
         expected = 'pressure-checkpoints/producer-producer' if stage == 'producer' else 'pressure-checkpoints/'+name
         self.assertEqual(expected, directory)
-        if stage != 'producer':
-            self.assertIn('DIRECTORY="pressure-checkpoints/native-checkpoint-'+stage+'-${ARM}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"', job_body)
+        if job in ('rust-jvm-correctness', 'rust-query-jvm'):
+            consumer_stage = 'core' if job == 'rust-jvm-correctness' else 'jvm'
+            self.assertIn('restore-consumer-chain', job_body)
+            self.assertIn('--stage '+consumer_stage+' --arm B', job_body)
         return self.f.workspace/directory.replace('${{ github.run_id }}', '1234').replace('${{ github.run_attempt }}', '2')
 
     def transfer(self, sealed, destination):
@@ -100,6 +102,7 @@ class CheckpointChainSmoke(unittest.TestCase):
         self.assertEqual('tiny binary', f.binary.read_text())
         self.assertEqual('tiny saved graph', (f.root/'B/graphs/graph.nodes').read_text())
         refs = [producer_ref]
+        manifests = [producer]
         core_arms = ('A', 'B') if separate_parent else ('B',)
         pins = {str(f.binary): checkpoint.sha(f.binary), str(self.jdk/'bin/javac'): checkpoint.sha(self.jdk/'bin/javac')}
         for arm in core_arms:
@@ -111,6 +114,12 @@ class CheckpointChainSmoke(unittest.TestCase):
             self.cli('restore', f.args('core', arm, ref.parent, [producer_ref]))
             self.assertEqual('core-'+arm, checkpoint.read(f.root/arm/'core-equivalence/plan.json')['fixtureResult'])
             refs.append(ref)
+            manifests.append(manifest)
+        for value in reversed(manifests): f.remove_payload(value)
+        core_receipt = self.cli('restore-consumer-chain', f.args('core', 'B', f.workspace/'pressure-checkpoints'))
+        self.assertEqual('core-consumer-chain', core_receipt['identity']['stage'])
+        for arm in core_arms:
+            self.assertEqual('core-'+arm, checkpoint.read(f.root/arm/'core-equivalence/plan.json')['fixtureResult'])
         for arm in (('C', 'A', 'B') if separate_parent else ('C', 'B')):
             for stage in ('jvm-raw-derivation', 'jvm-query-correctness'):
                 f.json(f.root/arm/stage/'plan.json', {'pins': pins, 'fixtureResult': stage+'-'+arm})
@@ -138,6 +147,17 @@ class CheckpointChainSmoke(unittest.TestCase):
             self.assertEqual(producer['systemJdkLinks'], manifest['systemJdkLinks'])
             self.assertIn(str(self.certificate), manifest['verificationOnly'])
             self.assertNotIn(str(self.certificate), manifest['payload'])
+            manifests.append(manifest)
+        for value in reversed(manifests): f.remove_payload(value)
+        self.assertFalse(f.binary.exists())
+        jvm_receipt = self.cli('restore-consumer-chain', f.args('jvm', 'B', f.workspace/'pressure-checkpoints'))
+        self.assertEqual('jvm-consumer-chain', jvm_receipt['identity']['stage'])
+        self.assertEqual('tiny binary', f.binary.read_text())
+        self.assertEqual('tiny saved graph', (f.root/'B/graphs/graph.nodes').read_text())
+        for arm in (('C', 'A', 'B') if separate_parent else ('C', 'B')):
+            for stage in ('jvm-raw-derivation', 'jvm-query-correctness'):
+                self.assertEqual(stage+'-'+arm, checkpoint.read(f.root/arm/stage/'plan.json')['fixtureResult'])
+        for manifest in manifests: checkpoint.check_files(manifest)
         self.assertEqual(self.certificate_before, self.certificate.read_bytes())
         self.assertEqual(self.jdk_before, {str(p): (p.lstat().st_mode, p.readlink().as_posix() if p.is_symlink()
                                                  else p.read_bytes() if p.is_file() else None)

@@ -17160,3 +17160,68 @@ provides no reason to restart the active run merely to seek a speedup.
 Evidence: `/tmp/graphite-fixture64-cache-inputs.json` and
 `/tmp/graphite-fixture64-cache-node-tests.log`. The independent producer/core
 acceptance path still constructs and checks each actual writer's own real64 graphs.
+
+### Attempt215 — restore complete downstream checkpoint chains in one transaction (2026-10-11)
+
+The user again challenged the hours-long feedback cycle. The current hosted03f
+producer is still running; neither03f nor local4d6 has established a two-hour
+end-to-end bound. Historical producer58m36s, core preparation about34 minutes and
+one complete slow core worker about58.5 minutes already total roughly151 minutes,
+before core join, JVM correctness and JVM pressure. These older stage observations
+are planning evidence, not measured durations of the latest candidate.
+
+Hypothesis: final consumers still restore producer, core and JVM checkpoints in
+separate processes, repeatedly hashing identical upstream graph/runtime files.
+Extend the existing fixed core-chain private transaction to the complete core and
+JVM consumer closures. This removes duplicate reads inside each transport boundary
+without changing the work performed by any correctness auditor or pressure run.
+The parent is4d6d0948bd599599e7203b2e34349f78b7fb64ea. Product code and the accepted
+baseline4f2ccf33b969e684972e56b5e810034e6e67c1b3 are unchanged. The intended hosted
+workload remains each writer's own64 real JAR graphs, Native39/JVM35 cases and the
+original matched six-cell pressure schedules.
+
+The fixed core profile restores producer and all required A/B core artifacts; the
+JVM profile additionally restores C/A/B JVM artifacts. The accepted-base alias
+omits A exactly as before. Consumers cannot supply an arbitrary shortened list.
+Archive digests, exact revision/run/toolchain identity, complete source inventories,
+upstream bindings, closed directory inventories and conflicting-write checks remain
+required. A separate final authority re-reads every unique final file before any
+consumer executes. Transport success cannot establish performance acceptance.
+The workflow uses this entry for JVM correctness, Native finalization, JVM pressure,
+loading and construction. Native measurement still needs only producer.
+
+Cross-run artifact reuse remains unavailable: existing artifacts bind the full
+source checkout and original run identity. Removing those checks or relabeling an
+old build as the new head would be invalid. This attempt shares validation only
+within one fixed restore transaction and does not claim to solve rebuild reuse.
+Validation results and the retain/revert decision follow below.
+
+Validation:18 new consumer-chain tests,41 checkpoint tests,11 existing eight-shard
+chain tests and3 actual-download/public-CLI smoke tests passed. Both alias and
+distinct-parent closures restore exact expected contents; missing/wrong inputs,
+archive changes, late same-size mutation, extra closed-directory files and source
+changes fail. All217 Node tests passed, including exact workflow shell arguments
+and every required artifact's missing/wrong-name/wrong-identity cases. Actionlint
+passed with shellcheck disabled; both control-manifest file inventories and their
+workflow bindings were independently verified. Independent source review found no
+blocker in the arm-local payload/classpath separation or original chain invariants;
+current full hosted core/JVM manifests are still unavailable for replay.
+
+An untimed tiny-fixture access-count comparison of the original sequential restore
+entry against the transaction observed shared graph SHA reads of4→2 (core with
+aliased parent),7→2 (core with distinct parent),12→2 (JVM with aliased parent) and
+22→2 (JVM with distinct parent). This proves eliminated repeated file access only;
+it is not a single-graph performance measurement or hosted latency result. Evidence:
+`/tmp/graphite-consumer-chain-read-counts.json`,
+`/tmp/graphite-consumer-{chain,checkpoint,old-chain,smoke}-tests.log`,
+`/tmp/graphite-consumer-chain-node-tests.log` and
+`/tmp/graphite-consumer-chain-control-verification.json`.
+
+**Decision: retain the locally verified change.** Query p50/p95, end-to-end time,
+CPU/RSS, loading, construction and cumulative regression acceptance still require
+the representative real multi-graph hosted evidence. No dataset/sample count,
+correctness authority or acceptance threshold changed. No two-hour completion or
+measured CI speedup is claimed. The active03f producer remains ahead of a fresh
+replacement's producer; downstream savings are not yet measured, and the new
+fixture cache identity would add a cold-generation cost. Retain the active run
+until new stage evidence establishes a better replacement decision.

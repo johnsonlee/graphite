@@ -621,6 +621,59 @@ def restore_core_chain(args):
         values.update(stage=stage, arm=arm, directory=str(directory), shard_index=index,
                       shard_count=None if stage == 'producer' else 8, upstream=[str(p) for p in upstream])
         entries.append(argparse.Namespace(**values))
+    _restore_chain(args, entries)
+    return {'identity': {'stage': 'core-chain', 'arm': args.arm, 'head': args.head_sha, 'base': args.base_sha,
+                        'runId': str(args.run_id), 'runAttempt': str(args.run_attempt), 'workspace': str(workspace),
+                        'shardCount': 8}, 'proofAuthority': False, 'performanceAcceptance': False}
+
+
+def restore_consumer_chain(args):
+    """Restore the fixed complete core or JVM consumer input closure.
+
+    The coordinator arm is always B; accepted-base aliasing determines whether
+    distinct A checkpoints exist. This transport never establishes acceptance.
+    """
+    require(args.stage in ('core', 'jvm') and args.arm == 'B' and
+            getattr(args, 'shard_count', None) is None and
+            getattr(args, 'shard_index', None) is None and not args.upstream,
+            'fixed consumer chain arguments')
+    workspace = canonical(Path(args.workspace).absolute())
+    root = canonical(Path(args.directory).absolute())
+    producer = root/'producer-producer'
+    core_arms = ('B',) if args.base_sha == ACCEPTED else ('A', 'B')
+    core_directories = [root/f'native-checkpoint-core-{arm}-{args.run_id}-{args.run_attempt}'
+                        for arm in core_arms]
+    specifications = [('producer', 'producer', producer, [])]
+    specifications.extend(('core', arm, directory, [producer/'manifest.json'])
+                          for arm, directory in zip(core_arms, core_directories))
+    if args.stage == 'jvm':
+        upstream = [producer/'manifest.json', *[directory/'manifest.json' for directory in core_directories]]
+        specifications.extend(('jvm', arm,
+                               root/f'native-checkpoint-jvm-{arm}-{args.run_id}-{args.run_attempt}', upstream)
+                              for arm in ('C', *core_arms))
+    entries = []
+    for stage, arm, directory, upstream in specifications:
+        values = vars(args).copy()
+        values.update(stage=stage, arm=arm, directory=str(directory), shard_index=None,
+                      shard_count=None, upstream=[str(p) for p in upstream])
+        entries.append(argparse.Namespace(**values))
+    _restore_chain(args, entries)
+    return {'identity': {'stage': args.stage+'-consumer-chain', 'arm': args.arm,
+                        'head': args.head_sha, 'base': args.base_sha,
+                        'runId': str(args.run_id), 'runAttempt': str(args.run_attempt),
+                        'workspace': str(workspace)},
+            'proofAuthority': False, 'performanceAcceptance': False}
+
+
+def _restore_chain(args, entries):
+    """Private transaction shared by fixed profiles; no caller-supplied manifest list.
+
+    Preflight freezes all manifests and rejects conflicting writes before any
+    restore. A fresh final authority independently hashes every unique file.
+    No consumer executes until the complete transaction has returned.
+    """
+    workspace = canonical(Path(args.workspace).absolute())
+    root = canonical(Path(args.directory).absolute())
     _chain_progress('preflight', 'start')
     sources = git_sources(workspace, args.base_sha, args.head_sha)
     authority = _RestoreChainAuthority(sources)
@@ -692,14 +745,11 @@ def restore_core_chain(args):
         if entry.stage == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
     require(git_sources(workspace, args.base_sha, args.head_sha) == sources, 'chain final source changed')
     _chain_progress('final-verification', 'complete', uniqueFiles=len(final.verified))
-    return {'identity': {'stage': 'core-chain', 'arm': args.arm, 'head': args.head_sha, 'base': args.base_sha,
-                        'runId': str(args.run_id), 'runAttempt': str(args.run_attempt), 'workspace': str(workspace),
-                        'shardCount': 8}, 'proofAuthority': False, 'performanceAcceptance': False}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain'))
+    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain', 'restore-consumer-chain'))
     for name in ('stage', 'arm', 'directory', 'workspace', 'head-sha', 'base-sha', 'run-id', 'run-attempt'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--upstream', action='append', default=[])
@@ -707,7 +757,8 @@ def main():
     parser.add_argument('--shard-index', type=int)
     args = parser.parse_args()
     value = (seal(args) if args.action == 'seal' else
-             restore_core_chain(args) if args.action == 'restore-core-chain' else restore(args))
+             restore_core_chain(args) if args.action == 'restore-core-chain' else
+             restore_consumer_chain(args) if args.action == 'restore-consumer-chain' else restore(args))
     print(json.dumps({'checkpointTransport': args.action, 'identity': value['identity'],
                       'proofAuthority': False, 'performanceAcceptance': False}))
 
