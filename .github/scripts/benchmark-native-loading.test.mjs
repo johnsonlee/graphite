@@ -121,3 +121,24 @@ test('aggregate dispatch requires Native loading separately from JVM loading and
  const wrong=structuredClone(value);wrong.engine='jvm';put(prefix+'-status.json',wrong);
  assert.equal(aggregateReports(outer,{baseSha:'a'.repeat(40),candidateSha:'b'.repeat(40)}).operationEvidence.find(x=>x.name==='native-loading').status,'UNAVAILABLE');
 });
+
+test('lower exit RSS stays separately bound and leaves Native ready comparisons unchanged',t=>{
+ const before=nativeFixture(t),f=nativeFixture(t,{changeCell(r,i,f) {
+  const file=path.join(f.root,r.cell.id,'time-v.log');
+  fs.writeFileSync(file,'Maximum resident set size (kbytes): 988\n');
+  r.lifecycle={peakRssBytes:988*1024,rawSha256:sha(file)};
+ }});
+ const result=compareNativeLoading(f.file,f.root,f.receiptFile);
+ assert.equal(result.passed,true);
+ assert.deepEqual(result.comparisons,compareNativeLoading(before.file,before.root,before.receiptFile).comparisons);
+ for(const kind of ['zero','forged','hash','duplicate']) {
+  const bad=nativeFixture(t,{changeCell(r,i,f) {
+   const file=path.join(f.root,r.cell.id,'time-v.log');
+   if(kind==='zero') {fs.writeFileSync(file,'Maximum resident set size (kbytes): 0\n');r.lifecycle.peakRssBytes=0;r.lifecycle.rawSha256=sha(file);}
+   if(kind==='forged')r.lifecycle.peakRssBytes+=1024;
+   if(kind==='hash')r.lifecycle.rawSha256='0'.repeat(64);
+   if(kind==='duplicate') {fs.appendFileSync(file,'Maximum resident set size (kbytes): 5000000\n');r.lifecycle.rawSha256=sha(file);}
+  }});
+  assert.throws(()=>compareNativeLoading(bad.file,bad.root,bad.receiptFile),/Positive original lifetime RSS/,kind);
+ }
+});

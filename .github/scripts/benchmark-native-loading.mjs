@@ -84,9 +84,11 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
         for(const g of ready.graphs) delete g.loadedAt;
         require(same(ready,arm.readiness.expected),'Complete Native64 persisted readiness');
         const raw=fs.readFileSync(path.join(root,'time-v.log'),'utf8'),peaks=[...raw.matchAll(/^\s*Maximum resident set size \(kbytes\):\s*(\d+)\s*$/gm)];
-        require(peaks.length===1 && Number(peaks[0][1])*1024===result.lifecycle.peakRssBytes &&
+        // Keep both Linux observations; exit rusage need not exceed /proc VmHWM.
+        require(peaks.length===1 && Number.isSafeInteger(result.lifecycle.peakRssBytes) &&
+            Number(peaks[0][1])*1024===result.lifecycle.peakRssBytes &&
             result.lifecycle.rawSha256===sha(path.join(root,'time-v.log')) &&
-            result.lifecycle.peakRssBytes>=loading.readyWatermark.peakRssBytes,'Lifetime RSS corroboration only');
+            result.lifecycle.peakRssBytes>0,'Positive original lifetime RSS; separate from ready watermark');
         return resources;
     });
     require(new Set(groups).size===6,'Six independent Native processes');

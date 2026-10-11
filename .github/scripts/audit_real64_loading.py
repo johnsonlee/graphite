@@ -80,8 +80,10 @@ def audit(plan_file, root):
         resources = reconstruct(record, samples)
         require(resources == record['resources'], 'independent loading resource reconstruction')
         life = common.lifecycle_time(out/'time-v.log')
-        require(life == record['lifecycle'] and life['peakRssBytes'] >= record['readyWatermark']['peakRssBytes'],
-                'lifetime resources corroborate but do not replace ready watermark')
+        # The raw lifetime observation is independently bound, not an ordering
+        # constraint on Linux's asynchronous ready /proc high-water snapshot.
+        require(life == record['lifecycle'] and type(life['peakRssBytes']) is int and life['peakRssBytes'] > 0,
+                'positive original lifetime resources; separate from ready watermark')
         raw = [out/name for name in ('result.json','command.json','owner.json','process-identity.json','server.pid',
                 'readiness.body','resources.jsonl','time-v.log','stdout.log','stderr.log','identities-before.json','identities-after.json')]
         raw += sorted(out.glob('readiness-attempt-*'))

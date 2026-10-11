@@ -155,3 +155,23 @@ test('wrong source, missing arm, failed phase and query receipts cannot authoriz
   {changeReceipt:r=>{r.metadata[0].relativePath='../escape';}},
  ]) {const f=joinedLifecycle(fixture(t),options);assert.throws(()=>compareLoading(f.file,f.directory,f.receiptFile));}
 });
+
+test('lower exit RSS retains all six ready measurements without substituting either observation',t=>{
+ const f=fixture(t),before=compareLoading(f.file,f.directory);
+ for(const [i,r] of f.records.entries()) {
+  const file=path.join(f.cells,f.plan.cells[i].id,'time-v.log');
+  fs.writeFileSync(file,fs.readFileSync(file,'utf8').replace('kbytes): 4096','kbytes): 988'));
+  r.lifecycle={peakRssBytes:988*1024,rawSha256:hash(file)};f.reseal(i);
+ }
+ const after=compareLoading(f.file,f.directory);
+ assert.equal(after.passed,true);assert.deepEqual(after.comparisons,before.comparisons);
+ assert.equal(f.records[3].readyWatermark.peakRssBytes-f.records[3].lifecycle.peakRssBytes,36*1024);
+ for(const kind of ['zero','forged','hash','duplicate']) {
+  const g=fixture(t),r=g.records[0],file=path.join(g.cells,'01-C/time-v.log');
+  if(kind==='zero') {fs.writeFileSync(file,fs.readFileSync(file,'utf8').replace('kbytes): 4096','kbytes): 0'));r.lifecycle.peakRssBytes=0;r.lifecycle.rawSha256=hash(file);}
+  if(kind==='forged')r.lifecycle.peakRssBytes+=1024;
+  if(kind==='hash')r.lifecycle.rawSha256='0'.repeat(64);
+  if(kind==='duplicate') {fs.appendFileSync(file,'Maximum resident set size (kbytes): 4096\n');r.lifecycle.rawSha256=hash(file);}
+  g.reseal(0);assert.throws(()=>compareLoading(g.file,g.directory),/positive original lifetime RSS/,kind);
+ }
+});

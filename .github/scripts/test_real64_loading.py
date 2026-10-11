@@ -76,13 +76,13 @@ class LoadingTests(unittest.TestCase):
                 'limits':{'rssIntervalSeconds':.01,'readinessSeconds':900},
                 'cells':[{'id':f'0{i+1}-{name}','arm':name,'port':0} for i,name in enumerate('CABBAC')]}
 
-    def execute(self, failure=None):
+    def execute(self, failure=None, lifetime_kib=4096):
         plan=self.make_plan();file=self.root/'plan.json';file.write_text(json.dumps(plan))
         processes=[]
         def launch(argv,**kwargs):
             out=Path(argv[8]).parent;number=len(processes);group=2001+10*number;pid=group+1
             (out/'server.pid').write_text(str(pid))
-            (out/'time-v.log').write_text('User time (seconds): 2.00\nSystem time (seconds): 0.50\nElapsed (wall clock) time (h:mm:ss or m:ss): 0:03.00\nMaximum resident set size (kbytes): 4096\n')
+            (out/'time-v.log').write_text('User time (seconds): 2.00\nSystem time (seconds): 0.50\nElapsed (wall clock) time (h:mm:ss or m:ss): 0:03.00\nMaximum resident set size (kbytes): '+str(lifetime_kib)+'\n')
             proc=SimpleNamespace(pid=group,poll=lambda:None);processes.append(proc);return proc
         def proc_sample(pid,identity=None):
             return sample(1100000000,1100000010,25,pid=pid) if identity is None else sample(2000000010,2000000020,110,pid=pid)
@@ -113,7 +113,8 @@ class LoadingTests(unittest.TestCase):
             stack.enter_context(patch.object(runner.time,'perf_counter_ns',side_effect=[1000000000,2000000000]*6))
             result=runner.run(file,self.root/'cells')
             audit=None
-            if not failure:audit=auditor.audit(file,self.root/'cells')
+            if not failure and result['status']=='PASS_ALL_SIX_ZERO_QUERY_READY64':
+                audit=auditor.audit(file,self.root/'cells')
         return plan,result,audit,cleanups
 
     def test_complete_fixed_six_processes_audit_readiness_and_never_queries(self):
@@ -130,6 +131,27 @@ class LoadingTests(unittest.TestCase):
         (self.root/'cells/execution.json').write_text(json.dumps(execution))
         with patch.object(runner,'validate',side_effect=lambda x:x),self.assertRaisesRegex(ValueError,'original ready VmHWM'):
             auditor.audit(self.root/'plan.json',self.root/'cells')
+
+    def test_lower_lifetime_peak_preserves_all_six_ready_bounds_and_raw_binding(self):
+        _, result, audit, cleanups = self.execute(lifetime_kib=2012)
+        self.assertEqual('PASS_ALL_SIX_ZERO_QUERY_READY64', result['status'])
+        self.assertEqual([], result['unissued']); self.assertEqual(6, len(cleanups))
+        self.assertEqual(6, len(audit['rows']))
+        for row in audit['rows']:
+            self.assertEqual([1048576,2097152], row['resources']['rssBoundsBytes'])
+        path=self.root/'cells/01-C/result.json'; record=p.read(path)
+        self.assertEqual(36*1024, record['readyWatermark']['peakRssBytes']-record['lifecycle']['peakRssBytes'])
+        record['lifecycle']['peakRssBytes']+=1024; path.write_text(json.dumps(record))
+        execution=p.read(self.root/'cells/execution.json');execution['cells'][0]['resultSha256']=p.sha(path)
+        (self.root/'cells/execution.json').write_text(json.dumps(execution))
+        with patch.object(runner,'validate',side_effect=lambda x:x), self.assertRaisesRegex(ValueError,'original lifetime'):
+            auditor.audit(self.root/'plan.json',self.root/'cells')
+
+    def test_nonpositive_lifetime_peak_still_fails_and_retains_unissued_cells(self):
+        _, result, audit, cleanups = self.execute(lifetime_kib=0)
+        self.assertEqual('FAIL', result['status']); self.assertIsNone(audit)
+        self.assertEqual(5, len(result['unissued'])); self.assertEqual([2002], cleanups)
+        self.assertIn('positive lifetime RSS', p.read(self.root/'cells/01-C/result.json')['errors'][0])
 
     def test_readiness_failure_keeps_cleanup_and_five_unissued(self):
         _,result,_,cleanups=self.execute('failure')

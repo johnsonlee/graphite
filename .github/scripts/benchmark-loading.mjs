@@ -106,8 +106,9 @@ export function compareLoading(planFile,directory,comparabilityReceipt=null) {
         const samples=fs.readFileSync(path.join(dir,'resources.jsonl'),'utf8').trim().split('\n').map(JSON.parse),resources=loadingResources(r,samples);
         require(same(resources,r.resources)&&same(resources,a.resources),'independently reconstructed loading resources');
         const life=fs.readFileSync(path.join(dir,'time-v.log'),'utf8'),peaks=[...life.matchAll(/^\s*Maximum resident set size \(kbytes\):\s*(\d+)\s*$/gm)];
+        // Asynchronous /proc and exit rusage snapshots have no strict ordering.
         require(peaks.length===1&&safe(Number(peaks[0][1])*1024)&&Number(peaks[0][1])*1024===r.lifecycle.peakRssBytes&&
-            r.lifecycle.rawSha256===sha(path.join(dir,'time-v.log'))&&r.lifecycle.peakRssBytes>=r.readyWatermark.peakRssBytes,'lifetime peak only corroborates ready watermark');
+            r.lifecycle.rawSha256===sha(path.join(dir,'time-v.log'))&&r.lifecycle.peakRssBytes>0,'positive original lifetime RSS; separate from ready watermark');
         return resources;
     });
     require(new Set(groups).size===6,'six independent JVM processes');

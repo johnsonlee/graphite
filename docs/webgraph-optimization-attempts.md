@@ -17989,3 +17989,39 @@ core-prepare39m58s totals82m50s, versus82m28s previously; the prefix has not imp
 Current91 loading failed on an invalid cross-source RSS ordering assumption and
 its available forward pair also shows resource regressions. Neither that failed
 cohort nor the pending independent branches establishes final acceptance.
+
+### Attempt229 — preserve independent Linux loading RSS observations (2026-10-12)
+
+Parent:2ae025ec. Hosted91 JVM loading failed in04-B, leaving05-A and06-C
+unissued. Its ready /proc VmHWM is4,135,383,040 bytes, while GNUtime exit rusage
+reports4,135,346,176 bytes:36KiB lower. The original1,589 samples agree on PID3265
+and startTicks184150; parsing and units are correct. Independent reconstruction
+matches the saved resources exactly. The runner/auditors incorrectly required
+exit rusage to exceed every earlier /proc high-water observation. Linux proc RSS
+is an asynchronous snapshot; these two observations are not strictly ordered.
+See https://www.kernel.org/doc/html/latest/filesystems/proc.html and the Linux
+v6.11 fs/proc/task_mmu.c task_mem implementation. The query harness already
+retains the two observations without this ordering assumption.
+
+Remove that inequality in the JVM runner/Python auditor/JS comparator and the
+Native loading Python/JS validators. Require positive integer lifetime RSS;
+retain raw GNUtime log hashes/parsing, original lifecycle records, identity,
+units, timing, cleanup and independent ready-resource reconstruction. Do not
+substitute lifetime RSS for ready RSS, introduce a tolerance or change5% gates.
+
+Correctness:15 Python tests passed in0.097s and17 Node tests in1.655s. Tests cover
+all six cells with exit RSS36KiB lower, unchanged ready-resource comparisons,
+nonpositive/noninteger observations, forged summaries/hash and duplicate raw
+fields. Root inspected all five validators and the negative/unchanged-result
+tests. Logs:`/tmp/graphite-loading-rss-correctness-python.log` and
+`/tmp/graphite-loading-rss-correctness-node.log`.
+
+**Retain the verifier correction; retain the original failed cohort unchanged.**
+It cannot reconstruct the two unissued measurements or establish acceptance.
+The available hosted forward C-to-B pair separately shows wall15,362.611 to
+16,470.290ms, CPU[14.86,14.93] to[24.00,24.05]s and RSS[3,672,715,264,3,673,407,488]
+to[4,050,329,600,4,050,882,560]bytes. CPU increases9.07–9.19s and RSS376,922,112–
+378,167,296bytes (10.26–10.30%). These are partial JVM64 loading observations,
+not Native results, not a complete reverse comparison or final comparability.
+No query/construction/load performance recovery or resource waiver is claimed.
+A new complete prospective cohort is required after the verifier fix.

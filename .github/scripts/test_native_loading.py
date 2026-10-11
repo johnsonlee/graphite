@@ -33,6 +33,17 @@ class NativeLoading(unittest.TestCase):
         lifecycle['peakRssBytes'] *= 2
         self.assertEqual(observed,loading.validate_record(record,result,samples,lifecycle,2002))
 
+    def test_lower_lifetime_rss_is_preserved_without_changing_ready_resources(self):
+        record,result,samples,lifecycle=record_fixture()
+        expected=loading.validate_record(record,result,samples,lifecycle,2002)
+        lifecycle['peakRssBytes']=record['readyWatermark']['peakRssBytes']-36*1024
+        self.assertEqual(expected,loading.validate_record(record,result,samples,lifecycle,2002))
+        self.assertEqual(2060288,lifecycle['peakRssBytes'])
+        for invalid in (0,-1,True,1.5,float('inf')):
+            lifecycle['peakRssBytes']=invalid
+            with self.subTest(invalid=invalid),self.assertRaisesRegex(ValueError,'positive lifetime RSS'):
+                loading.validate_record(record,result,samples,lifecycle,2002)
+
     def test_missing_or_forged_identity_watermark_and_early_query_reject(self):
         for kind in ('missing','pid','start','reused','forged','duplicate','queryCount','oracle','warmup','pressure'):
             record,result,samples,lifecycle=record_fixture()
