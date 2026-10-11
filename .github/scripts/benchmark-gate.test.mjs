@@ -4499,3 +4499,75 @@ test("untimed routing preserves full result/access/index assertions and cannot s
     assert.equal(compare([timed],[timed]).passed,false);
     assert.equal(compareGraphIdPressureRaw([timed],[timed],observations,observations,oracle,oracle).passed,false);
 });
+
+test("checkpoint downloads preserve restore directories for one and multiple baseline arms", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const accepted = "4f2ccf33b969e684972e56b5e810034e6e67c1b3";
+    const consumers = ["rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"];
+    for (const base of [accepted, "distinct-base"]) {
+        for (const id of consumers) {
+            const directory = fs.mkdtempSync(path.join(os.tmpdir(), "checkpoint-download-"));
+            try {
+                const job = rustWorkflowJob(workflow, id);
+                const downloads = job.split(/(?=^    - name: )/m).filter(step =>
+                    step.includes("uses: actions/download-artifact@") && step.includes("native-checkpoint-"));
+                const coreArms = base === accepted ? ["B"] : ["A", "B"];
+                const jvmArms = base === accepted ? ["C", "B"] : ["C", "A", "B"];
+                const expected = ["producer:producer", ...coreArms.map(arm => `core:${arm}`),
+                    ...(id === "rust-query-jvm" ? jvmArms.map(arm => `jvm:${arm}`) : [])];
+                const downloaded = [];
+                for (const step of downloads) {
+                    assert.doesNotMatch(step, /\bpattern:|merge-multiple:/,
+                        `${id}: singleton pattern downloads flatten the artifact directory`);
+                    const name = step.match(/^        name: (.+)$/m)?.[1];
+                    const target = step.match(/^        path: (.+)$/m)?.[1];
+                    assert.ok(name && target, `${id}: exact name and destination required`);
+                    const [, stage, arm] = name.match(/^native-checkpoint-(producer|core|jvm)-(producer|[ABC])-\$\{\{ github.run_id \}\}-\$\{\{ github.run_attempt \}\}$/) ?? [];
+                    assert.ok(stage && arm);
+                    const condition = step.match(/^      if: (.+)$/m)?.[1];
+                    assert.equal(condition, arm === "A" ? `github.event.pull_request.base.sha != '${accepted}'` : undefined);
+                    if (arm === "A" && base === accepted) continue;
+                    const destination = target.replaceAll("${{ github.run_id }}", "1234").replaceAll("${{ github.run_attempt }}", "2");
+                    const output = path.join(directory, destination);
+                    fs.mkdirSync(output, { recursive: true });
+                    fs.writeFileSync(path.join(output, "manifest.json"), JSON.stringify({ stage, arm }));
+                    downloaded.push(`${stage}:${arm}`);
+                }
+                assert.deepEqual(downloaded, expected, `${id}/${base}: complete independent checkpoint set`);
+                // Execute the real restore loops with a recording transport: this checks the
+                // paths and upstream arguments consumers use, without graphs or performance.
+                const bin = path.join(directory, "bin");
+                fs.mkdirSync(bin);
+                fs.writeFileSync(path.join(bin, "python3"), `#!${process.execPath}\n` + `
+const fs = require("node:fs"), assert = require("node:assert/strict");
+const args = process.argv.slice(2), values = key => args.flatMap((v, i) => v === key ? [args[i + 1]] : []);
+assert.ok(args.includes("restore"));
+const stage = values("--stage")[0], arm = values("--arm")[0];
+const manifest = JSON.parse(fs.readFileSync(values("--directory")[0] + "/manifest.json", "utf8"));
+assert.deepEqual(manifest, { stage, arm });
+const upstream = values("--upstream").map(p => { const m = JSON.parse(fs.readFileSync(p, "utf8")); return m.stage + ":" + m.arm; });
+const cores = JSON.parse(process.env.EXPECTED_CORES);
+assert.deepEqual(upstream, stage === "producer" ? [] : stage === "core" ? ["producer:producer"] : ["producer:producer", ...cores]);
+assert.equal(values("--run-id")[0], "1234"); assert.equal(values("--run-attempt")[0], "2");
+fs.appendFileSync(process.env.RESTORE_CALLS, stage + ":" + arm + "\\n");
+`, { mode: 0o755 });
+                const step = rustWorkflowStep(job, "Verify and restore exact checkpoint closure");
+                const start = step.indexOf("        PRODUCER=");
+                assert.ok(start >= 0);
+                const shell = "set -euo pipefail\n" + step.slice(start).split("\n").map(line => line.replace(/^        /, "")).join("\n");
+                const calls = path.join(directory, "calls.txt");
+                const env = { ...process.env, PATH: `${bin}:${process.env.PATH}`, BASE_SHA: base, CANDIDATE_SHA: "candidate",
+                    GITHUB_WORKSPACE: directory, GITHUB_RUN_ID: "1234", GITHUB_RUN_ATTEMPT: "2", RESTORE_CALLS: calls,
+                    EXPECTED_CORES: JSON.stringify(coreArms.map(arm => `core:${arm}`)) };
+                const run = () => spawnSync("bash", ["-c", shell], { cwd: directory, env, encoding: "utf8" });
+                const result = run();
+                assert.equal(result.status, 0, `${id}/${base}: ${result.stderr}`);
+                assert.deepEqual(fs.readFileSync(calls, "utf8").trim().split("\n"), expected);
+                fs.unlinkSync(path.join(directory, "pressure-checkpoints/native-checkpoint-core-B-1234-2/manifest.json"));
+                assert.notEqual(run().status, 0, `${id}/${base}: missing required checkpoint cannot pass`);
+            } finally {
+                fs.rmSync(directory, { recursive: true, force: true });
+            }
+        }
+    }
+});

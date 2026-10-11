@@ -3182,11 +3182,18 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core checkpoint
+    - name: Download core A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-core-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download core B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -3325,11 +3332,18 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core checkpoint
+    - name: Download core A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-core-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download core B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -3678,17 +3692,37 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core checkpoint
+    - name: Download core A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-core-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
 
-    - name: Download jvm checkpoint
+    - name: Download core B checkpoint
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-jvm-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm C checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-C-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-C-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -3810,11 +3844,18 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core checkpoint
+    - name: Download core A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-core-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download core B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -3924,11 +3965,18 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core checkpoint
+    - name: Download core A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        pattern: native-checkpoint-core-*-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints
+        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download core B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
