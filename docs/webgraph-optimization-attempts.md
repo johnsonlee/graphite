@@ -18168,3 +18168,72 @@ then discard them before publication. No product candidate was measured in this
 attempt. Full correctness, stability, query p50/p95, construction/loading CPU/RSS
 and the required hosted gate remain unresolved; this attempt does not mark the PR
 ready or replace the full real multi-graph acceptance protocol.
+
+### Attempt233 — reuse shared-ID text only during loading (2026-10-12)
+
+Parent runtime:033694b1; root parent214b7d48 differs only by the232 diagnostic
+record. The232 real64 JFR identified repeated StringTable.get decoding on declared
+type stacks. Add one lazy Int2ObjectOpenHashMap inside the existing per-load text
+statistics object. Only text() requests populate it; IDs, UTF validation, hash and
+length facts, wire bytes and graph.strings remain unchanged. finishLoading drops
+the entire statistics object before mapped views are published, so query-time
+text access and retained string storage keep their previous behavior. This is
+not a process-wide cache or a persistent expanded generic string dictionary.
+
+The tradeoff is temporary storage of unique requested strings during one graph's
+load. Preserve that risk rather than assuming lower allocations guarantee lower
+RSS. The new test checks values, reuse before publication, whole loading-state
+release and independent query decoding afterward. Repeated malformed text()
+requests still reject invalid surrogates and never acquire a successful entry.
+All existing webgraph cases remain selected by the unchanged module test task.
+
+An isolated local clone built the actual candidate and executed:webgraph:test,
+:webgraph:detekt and:query:shadowJar in187.319s with JDK17.0.20.1,4g heap and two
+workers. All381 tests across37 suites pass, with zero failures/errors/skips;
+detekt passes. Root independently checked XML totals and actual runtime digest,
+and reviewed both changed files before integrating their identical bytes.
+Build evidence:`/tmp/graphite-jvm64-load-text-cache-build-1`.
+Candidate patch SHA256:
+8488abed33e6d3d6b735407e344a14de92a0c196f0790ac7388cbc9d28e11882.
+Runtime SHA256:
+1bab394de8fc82b195faafcc56553b66d258222f2e5e2335eca4b5199c09197e.
+
+Run a predeclared A,B,B,A comparison against the current parent, on the same64
+real GTY05 graphs from232. Each cell uses the actual JVM CLI, MAPPED, -Xmx4g and
+four active processors, with zero queries and complete64 readiness consumption.
+There is no JFR or native-memory tracking in these comparison cells. Reuse the
+reviewed macOS meter and owned-process cleanup. Full graph/runtime/control/source
+hashes and directory membership are checked before and after each cell; Git
+revision/status/tracked membership must match each arm's original source record.
+Only one shared graph corpus is hashed, not both unrelated accepted and candidate
+corpora. All input hashes are read before launch, giving a filesystem-warm
+protocol with uncontrolled OS eviction; no quiet-host or saturation claim.
+
+| Fixed pair, baseline→candidate | Loading readiness ms | Post-ready CPU observation s | Inside-loading sampled peak RSS bytes | Lifecycle maximum RSS bytes |
+|---|---:|---:|---:|---:|
+| 0-A→1-B | 10129.245→9730.152 (−399.094) | 13.59→13.07 (−0.52) | 4096049152→4077355008 | 4097376256→4078075904 |
+| 3-A→2-B | 10211.940→9641.269 (−570.671) | 13.82→12.50 (−1.32) | 4068278272→3828695040 | 4069572608→3829022720 |
+
+All four cells and final input checks pass; no failed or unissued cell is omitted.
+The first audit invocation used the /tmp alias while recorded commands contained
+canonical/private/tmp paths and correctly rejected exact command comparison.
+Using the canonical existing output path passed raw-record reconstruction without
+rerunning or changing any measurement. The original failed tool output remains
+chunk269188. Evidence:`/tmp/graphite-jvm64-text-cache-abba-1`;audit.json records
+readiness, commands, cleanup, raw ps/time-l and sampled RSS reconstruction.
+Driver and auditor:`/tmp/graphite-jvm64-allocation-diagnostic-1/{compare,check_compare}.py`.
+
+The full four-cell runner took78.844s including input checks and cleanup; together
+with build/full module tests,266.163s (about4m26s), excluding script preparation
+and review. This is a measured local loading feedback path, not a full CI estimate.
+
+**Retain the positive incremental candidate.** Loading wall time and observed CPU
+improve in both fixed directions. RSS observations also decrease, but the two
+candidate peaks differ substantially, so no stable RSS reduction is established.
+CPU is the first post-ready ps observation, with4.8–7.7ms observation lag and
+0.02s display uncertainty; that uncertainty does not bound post-ready CPU work.
+Sampled Mac RSS and lifecycle maximum are separate observations, not Linux
+VmHWM bounds. No accepted4f comparison, query p50/p95, construction measurement
+or final5% resource acceptance is supplied by this experiment. Complete query,
+correctness/stability and hosted acceptance requirements remain in force. This
+candidate does not close the existing Native latency or JVM resource regressions.

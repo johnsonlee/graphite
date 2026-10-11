@@ -20,6 +20,9 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNotSame
+import kotlin.test.assertNull
+import kotlin.test.assertSame
 import kotlin.test.assertTrue
 
 class SharedDeclaredTypeTextStatsTest {
@@ -43,6 +46,24 @@ class SharedDeclaredTypeTextStatsTest {
     }
 
     @Test
+    fun `loading text cache is released before independent query decoding`() = directory { dir ->
+        val value = "distinct declaration 类型🚀"
+        val strings = StringTable.build(listOf(value), dir)
+        val texts = SharedDeclaredTypeTexts(strings)
+        val first = texts.text(0)
+        assertEquals(value, first)
+        assertSame(first, texts.text(0))
+        texts.finishLoading()
+        val loading = SharedDeclaredTypeTexts::class.java.getDeclaredField("loadingStats")
+        loading.isAccessible = true
+        assertNull(loading.get(texts))
+        val published = texts.text(0)
+        assertEquals(value, published)
+        assertNotSame(first, published)
+        assertNotSame(published, texts.text(0))
+    }
+
+    @Test
     fun `malformed surrogate references never acquire a successful validation entry`() = directory { dir ->
         val values = listOf("\ud800", "\udc00", "x\ud800y", "\ud800\ud800", "\udc00\udfff", "ok\ud800\udc00")
         val strings = StringTable.build(values, dir)
@@ -50,6 +71,7 @@ class SharedDeclaredTypeTextStatsTest {
         repeat(2) {
             for (value in values.dropLast(1)) {
                 val id = strings.findId(value)
+                assertFailsWith<CharacterCodingException> { texts.text(id) }
                 assertFailsWith<CharacterCodingException> { texts.hash(id) }
                 assertFailsWith<CharacterCodingException> { texts.utf8Length(id) }
             }

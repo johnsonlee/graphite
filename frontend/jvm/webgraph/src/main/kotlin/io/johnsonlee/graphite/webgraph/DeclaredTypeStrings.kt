@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.TypeParameter
 import it.unimi.dsi.fastutil.ints.Int2LongOpenHashMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.lang.MutableString
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
@@ -17,7 +18,7 @@ internal interface DeclaredTypeTexts {
     fun validateId(id: Int)
 }
 
-/** Shared IDs retain no decoded declaration strings and validate every referenced UTF-16 value. */
+/** Shared IDs retain no decoded declaration strings after loading and validate every referenced UTF-16 value. */
 internal class SharedDeclaredTypeTexts(private val strings: StringTable) : DeclaredTypeTexts {
     private val checked = java.util.BitSet()
     private var loadingStats: SharedDeclaredTypeTextStats? = SharedDeclaredTypeTextStats(strings)
@@ -36,7 +37,7 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
         }
     }
 
-    override fun text(id: Int): String { validateId(id); return strings.get(id) }
+    override fun text(id: Int): String { validateId(id); return loadingStats?.text(id) ?: strings.get(id) }
     override fun hash(id: Int): Int {
         validateId(id)
         return loadingStats?.hash(id) ?: strings.get(id).hashCode()
@@ -56,9 +57,10 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
     fun finishLoading() { loadingStats = null }
 }
 
-/** Per-load primitive facts only. Both the decode buffer and the map are discarded before publication. */
+/** Per-load facts and requested text. All maps and the decode buffer are discarded before publication. */
 private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
     private val values = Int2LongOpenHashMap()
+    private val texts = Int2ObjectOpenHashMap<String>()
     private val buffer = MutableString()
     private var summary: DeclaredTypeTextSummary.Builder? = DeclaredTypeTextSummary.Builder()
 
@@ -89,6 +91,8 @@ private class SharedDeclaredTypeTextStats(private val strings: StringTable) {
     }
 
     fun finishTypeTextSummary(): DeclaredTypeTextSummary = checkNotNull(summary).build().also { summary = null }
+
+    fun text(id: Int): String = texts.get(id) ?: strings.get(id).also { texts.put(id, it) }
 
     fun hash(id: Int): Int = (values.get(id) ushr Int.SIZE_BITS).toInt()
     fun utf8Length(id: Int): Int = values.get(id).toInt()
