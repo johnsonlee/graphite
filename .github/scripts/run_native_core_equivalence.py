@@ -462,7 +462,8 @@ def run_shard(output,index,count):
     return execute_stage(plan,shard_commands(plan,index),directory/'record.json',rows)
 
 
-def check_shards(plan,complete_rows=None):
+def check_shard_receipts(plan):
+    """Validate the complete receipt partition without treating its graph claims as proof."""
     out=Path(plan['output']);count=plan['execution']['shardCount'];check_preparation(plan)
     require({p.name for p in (out/'shards').iterdir()}=={str(i) for i in range(count)},'closed complete shard receipt inventory')
     records=[]
@@ -474,10 +475,18 @@ def check_shards(plan,complete_rows=None):
                 record['preparation']==artifacts.ref(out/'preparation.json') and all(record[k] is False for k in FALSE_CLAIMS),
                 'complete exact successful shard required')
         checked_phases(plan,record['phases'],shard_commands(plan,index))
+        require([row['id'] for row in record['graphs']]==[row['id'] for row in shard_rows(plan,index)],
+                'exact assigned shard graph receipt inventory')
+        records.append(record)
+    return records
+
+
+def check_shards(plan,complete_rows=None):
+    records=check_shard_receipts(plan)
+    for index,record in enumerate(records):
         expected=[graph_result(plan,row) for row in shard_rows(plan,index)] if complete_rows is None else [
             row for row in complete_rows if row['id'] in {r['id'] for r in shard_rows(plan,index)}]
         require(record['graphs']==expected,'exact assigned shard graph proofs')
-        records.append(record)
     return records
 
 
@@ -486,7 +495,7 @@ def join_shards(output,count):
     require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact complete join plan')
     require(not (out/'record.json').exists() and not (out/'audit.json').exists(),'fresh joined core proof required')
     require(common.typed(plan)==common.typed(rebind(plan)),'join plan differs from actual pair')
-    records=check_shards(plan)
+    records=check_shard_receipts(plan)
     by_id={row['id']:row for record in records for row in record['graphs']}
     require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
     rows=[by_id[row['id']] for row in plan['graphs']]
@@ -497,10 +506,12 @@ def join_shards(output,count):
             'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
                         'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
             **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
-    common.save(out/'record.json',record)
     try:
-        # The original full auditor remains the final authority, including all139
-        # original argv, cleanup, topology, index and raw Local evidence.
+        # This record is a provisional summary; only the completed audit authorizes it.
+        common.save(out/'record.json',record)
+        # Receipt graph claims above are provisional. Only the original full auditor
+        # validates all64 raw graph outputs, then compares them with every shard claim.
+        # All139 original argv, cleanup, topology, index and raw Local checks remain.
         result=audit(out)
         common.save(out/'audit.json',result)
     except BaseException as error:

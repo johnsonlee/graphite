@@ -526,6 +526,74 @@ class ShardLifecycleTests(unittest.TestCase):
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
         self.assertIn('independent audit',record['errors'][0]);self.assertFalse((self.out/'audit.json').exists())
 
+    def prepared_workers(self):
+        r.prepare(self.plan)
+        for index in range(8):self.worker(index,8)
+
+    def test_join_validates_each_raw_graph_once_and_audit_only_revalidates_all(self):
+        self.prepared_workers()
+        original=r.graph_result
+        with patch.object(r,'graph_result',wraps=original) as checked:
+            result=r.join_shards(self.out,8)
+            self.assertEqual(r.PASS,result['status'])
+            self.assertEqual([row['id'] for row in self.plan['graphs']],
+                             [call.args[1]['id'] for call in checked.call_args_list])
+            checked.reset_mock()
+            audited=r.audit(self.out)
+            self.assertEqual(r.AUDIT_PASS,audited['status'])
+            self.assertEqual([row['id'] for row in self.plan['graphs']],
+                             [call.args[1]['id'] for call in checked.call_args_list])
+
+    def test_join_rejects_missing_or_duplicate_graph_claim_before_raw_audit(self):
+        self.prepared_workers();path=self.out/'shards/0/record.json';original=r.common.read(path)
+        for duplicate in (False,True):
+            with self.subTest(duplicate=duplicate):
+                value=copy.deepcopy(original)
+                if duplicate:value['graphs'][-1]=copy.deepcopy(value['graphs'][0])
+                else:value['graphs'].pop()
+                path.write_text(json.dumps(value))
+                with patch.object(r,'graph_result',side_effect=AssertionError('receipt validation must reject first')):
+                    with self.assertRaisesRegex(ValueError,'assigned shard graph receipt inventory'):r.join_shards(self.out,8)
+                self.assertFalse((self.out/'record.json').exists());self.assertFalse((self.out/'audit.json').exists())
+        path.write_text(json.dumps(original))
+
+    def test_join_corrupt_raw_topology_cannot_be_hidden_by_shard_claims(self):
+        self.prepared_workers();path=self.out/'graphs/fixture-00/topology.json';value=r.common.read(path)
+        value['reference']='/foreign';path.write_text(json.dumps(value))
+        # Repinning the claim does not make the changed raw graph semantically valid.
+        shard_path=self.out/'shards/0/record.json';shard=r.common.read(shard_path)
+        row=shard['graphs'][0];row['topology']=r.artifacts.ref(path);row['files'][str(path)]=r.common.sha(path)
+        shard_path.write_text(json.dumps(shard))
+        with self.assertRaisesRegex(ValueError,'proof identity'):r.join_shards(self.out,8)
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertIn('join audit',record['errors'][0]);self.assertFalse((self.out/'audit.json').exists())
+
+    def test_join_missing_raw_graph_output_leaves_failed_record(self):
+        self.prepared_workers();(self.out/'graphs/fixture-00/topology.json').unlink()
+        with self.assertRaises(FileNotFoundError):r.join_shards(self.out,8)
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertFalse((self.out/'audit.json').exists())
+
+    def test_join_interrupted_provisional_record_write_is_marked_failed(self):
+        self.prepared_workers();save=r.common.save
+        def interrupted(path,value):
+            save(path,value)
+            if path==self.out/'record.json':raise KeyboardInterrupt('interrupted provisional write')
+        with patch.object(r.common,'save',side_effect=interrupted):
+            with self.assertRaisesRegex(KeyboardInterrupt,'interrupted provisional write'):r.join_shards(self.out,8)
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
+        self.assertFalse((self.out/'audit.json').exists())
+
+    def test_join_rejects_graph_claim_count_drift_in_final_raw_audit(self):
+        self.prepared_workers();path=self.out/'shards/0/record.json';value=r.common.read(path)
+        value['graphs'][0][r.COUNTS[0]]+=1;path.write_text(json.dumps(value))
+        with self.assertRaisesRegex(ValueError,'all raw completed graph proofs'):r.join_shards(self.out,8)
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual('FAIL',record['status']);self.assertFalse((self.out/'audit.json').exists())
+
     def test_cli_routes_prepare_worker_join_without_reexecuting_sequential_proof(self):
         with (patch.object(r,'bind',return_value=self.plan),patch.object(r,'prepare',return_value={'status':r.PREPARATION_PASS}) as prepare,
                 patch.object(r.sys,'argv',['core','--reference','C','--actual','B','--output',str(self.out),'--prepare-only','--shard-count','8'])):
