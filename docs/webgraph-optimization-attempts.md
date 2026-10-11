@@ -19256,3 +19256,56 @@ query p50/p95, CPU, RSS, construction performance and total CI duration remain
 unverified by these correctness tests. Evidence:
 `/tmp/graphite-attempt251-construction-owned-finalization/summary.json`,
 `root-review.json`, original Python/Node logs and `candidate.patch`.
+
+### Attempt252 — measure partial JVM oracle finalization costs before full64 (2026-10-12)
+
+No production change. Reuse attempt244's already reviewed complete Collector
+snapshot after four original real GTY05 graphs (Kotlin15, Tika10, Android12,
+Hive15), retaining all35 case definitions and the true64 registered scope. The
+362482911-byte snapshot SHA256 is
+9d9853017f1415a497e53f7fa47b6c93cc5f6c8a971d5b0789cb5e56307ec13b.
+Verify those exact bytes before pickle loading and match unchanged derivation,
+DISTINCT, model and input sources to the original control pins. Do not scan
+graphs again, call Collector.finish, invent missing60 graphs, or set complete
+oracle authority. Each partial output explicitly says allGraphScansComplete=false.
+
+One diagnostic process has a180s wrapper budget,170s work alarm and owned process
+group cleanup. For each case in original order, perform actual DISTINCT.finish
+and CompiledGroups for all recorded groups, or construct original non-DISTINCT
+row entries. Retain all output payloads alongside the source snapshot, write
+JSON and hash the actual output. Full non-DISTINCT oracle compilation is outside
+this probe, and finish/save are interleaved rather than the production all-finish
+then-all-save ordering. Therefore RSS is a partial observation, not whole-pipeline
+peak or a full64 bound. Concurrent source work is allowed; no quiet-host or
+performance acceptance claim is made.
+
+The first run completes in20.909s wrapper. Independent review finds its local
+save used json.dumps with default ASCII escaping, whereas production common.save
+streams json.dump with ensure_ascii=false. Preserve that run and do not use its
+serialization timing as production evidence. The corrected isolated run directly
+calls unchanged common.save; it completes in27.269s wrapper (26.897s work), with
+all35 cases and362889 DISTINCT groups. All controls and output hashes pass root
+review. No owned child remains running.
+
+| Corrected partial diagnostic component | Observation |
+|---|---:|
+| DISTINCT deep-copy plus row construction |5.165s|
+| Eight complete DISTINCT group compilations |12.734s|
+| Production JSON writer over partial payloads |7.699s|
+| Output SHA checks |0.172s|
+| JSON bytes, diagnostic envelopes included |419796782|
+| Peak process RSS |2190671872 bytes|
+
+The first run's source-snapshot load alone already reaches1373831168-byte peak
+RSS. Do not multiply these four-graph values by16: family sizes, target scopes,
+DISTINCT overlap, transient compiler storage and serialization order differ.
+The evidence identifies avoidable source/deep-copy coexistence as a concrete
+next candidate while also showing substantial compiler and source-state costs.
+It does not establish all64 memory safety, end-to-end duration, HTTP correctness,
+query performance or accepted-baseline recovery.
+
+Retain diagnostic records and the failed measurement assumption. Commands:
+`python3 -B /tmp/graphite-attempt252-jvm-finish-probe/execute.py` and
+`python3 -B /tmp/graphite-attempt252-jvm-finish-probe-fixed/execute.py`.
+Both roots contain execution, controls, per-case stages and outputs;
+the first has `independent-review.json`, the corrected run has `root-review.json`.
