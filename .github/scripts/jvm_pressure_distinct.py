@@ -139,6 +139,22 @@ class DistinctGroups:
         return copy.deepcopy([{'semanticKey': v['semanticKey'], 'graphIds': sorted(v['graphIds']),
                                'variants': list(v['variants'].values())} for v in self.groups.values()])
 
+    def _discard(self):
+        self.failed = True
+        self.groups = {}; self.facts = {}; self.number_text = None
+
+    def _consume_finish(self):
+        """Transfer owned trees once; public finish remains an isolated snapshot."""
+        groups = self.groups
+        try:
+            need(not self.failed, 'previous DISTINCT derivation failed or consumed')
+            self._discard()
+            return [{'semanticKey': v['semanticKey'], 'graphIds': sorted(v['graphIds']),
+                     'variants': list(v['variants'].values())} for v in groups.values()]
+        finally:
+            self._discard()
+            groups.clear()
+
 
 class CompiledGroups:
     """JSON collisions are a capacity-one group matching problem, not a Counter."""

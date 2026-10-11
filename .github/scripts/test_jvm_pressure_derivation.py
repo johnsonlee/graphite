@@ -529,6 +529,59 @@ class FullProjectionTests(unittest.TestCase):
             collector.add_graph(g, edges(g), 0)
         with self.assertRaisesRegex(ValueError, 'both target'): collector.finish()
 
+    def owned_collector(self):
+        collector=d.Collector()
+        for gid in model.FIXTURE_GRAPH_IDS:
+            g=self.selected_graph(gid) if gid in ('fixture-kotlin-compiler-15','fixture-tika-10') else graph(gid)
+            collector.add_graph(g,edges(g),0)
+        return collector
+
+    def assert_consumed(self, collector, groups):
+        for name in ('distinct','counts','rows','projection_bindings'):
+            self.assertEqual({},getattr(collector,name))
+        self.assertEqual([],collector.seen);self.assertEqual([],collector.graph_counts)
+        self.assertIsNone(collector.primitive_facts)
+        for group in groups:
+            self.assertTrue(group.failed);self.assertEqual({},group.groups)
+            self.assertEqual({},group.facts);self.assertIsNone(group.number_text)
+        for action in (collector.finish,collector._consume_finish,
+                       lambda:collector.add_graph(graph(model.FIXTURE_GRAPH_IDS[0]),b'',0)):
+            with self.assertRaises(ValueError):action()
+
+    def test_owned_complete35_matches_snapshot_and_compiles_every_case_in_order(self):
+        collector=self.owned_collector();before=collector.finish();groups=list(collector.distinct.values())
+        with patch.object(model,'CompiledLegalLimitOracle',wraps=model.CompiledLegalLimitOracle) as compile_oracle:
+            actual=collector._consume_finish()
+        self.assertEqual(model.typed(before),model.typed(actual))
+        self.assertEqual([c['id'] for c in collector.cases],[c.args[1]['id'] for c in compile_oracle.call_args_list])
+        self.assertEqual(35,len(actual['universes']));self.assertEqual(64,len(actual['graphs']))
+        self.assert_consumed(collector,groups)
+        self.assertEqual(64,len(actual['graphs']))
+
+    def test_owned_compile_failure_and_incomplete_scope_are_terminal(self):
+        collector=self.owned_collector();groups=list(collector.distinct.values());real=model.CompiledLegalLimitOracle
+        calls=[]
+        def compile_oracle(universe,case):
+            calls.append(case['id'])
+            if len(calls)==12:raise ValueError('injected complete oracle failure')
+            return real(universe,case)
+        with patch.object(model,'CompiledLegalLimitOracle',side_effect=compile_oracle),self.assertRaisesRegex(ValueError,'injected'):
+            collector._consume_finish()
+        self.assertEqual(12,len(calls));self.assert_consumed(collector,groups)
+        for poisoned in (False,True):
+            collector=d.Collector();groups=list(collector.distinct.values());collector.failed=poisoned
+            with self.assertRaisesRegex(ValueError,'complete successful'):collector._consume_finish()
+            self.assert_consumed(collector,groups)
+
+    def test_owned_finish_keeps_both_target_projection_gate(self):
+        collector=d.Collector()
+        for gid in model.FIXTURE_GRAPH_IDS:
+            g=self.selected_graph(gid) if gid=='fixture-kotlin-compiler-15' else graph(gid)
+            collector.add_graph(g,edges(g),0)
+        groups=list(collector.distinct.values())
+        with self.assertRaisesRegex(ValueError,'both target'):collector._consume_finish()
+        self.assert_consumed(collector,groups)
+
 
 if __name__ == '__main__':
     unittest.main()

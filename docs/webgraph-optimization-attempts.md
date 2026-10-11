@@ -19309,3 +19309,62 @@ Retain diagnostic records and the failed measurement assumption. Commands:
 `python3 -B /tmp/graphite-attempt252-jvm-finish-probe-fixed/execute.py`.
 Both roots contain execution, controls, per-case stages and outputs;
 the first has `independent-review.json`, the corrected run has `root-review.json`.
+
+### Attempt253 — transfer owned JVM oracle trees at terminal derivation (2026-10-12)
+
+Parent:6c5efbdf. Attempt252 identifies source-state/deep-copy coexistence during
+finalization. Preserve public DistinctGroups.finish and Collector.finish reusable
+snapshot behavior. Add private single-use _consume_finish methods and use only
+the local Collector owned by derive_jvm_pressure_oracles.derive. Transfer the
+already-owned DISTINCT semantic/variant trees in encounter order, sort provenance
+as before, discard encoded source keys and callback state, and release each
+non-DISTINCT lookup after constructing its original entries. Preserve the same
+all64 guard, all35 complete compilers, candidate declaration-binding assertions,
+output schemas and finish-all-before-save-all order. Success and every failure
+make the internal Collector unusable and release remaining source containers;
+returned graph counts are detached rather than cleared in place.
+
+All69 tests in the four affected modules pass in4.680s (4.859s process under120s).
+Contracts cover public nested snapshot isolation and later adds, exact typed
+private/public results and order, numeric variants/signed zero/nonfinite groups,
+all35 compilation, missing scope/bindings, compiler failure, cleanup and actual
+owned derive integration. Root reviews code and frozen source;193 control pins,
+12 reviewed helper hashes, workflow binding, structural actionlint with shellcheck
+disabled and diff check pass. Helper hashes now bind the reviewed current
+collector and DISTINCT implementation.
+
+Run one fixed AB scheduling-cost diagnostic on attempt244's four-original-real-
+graph snapshot, not server queries. Freeze228 script files per arm, baseline at
+6c5efbdf and candidate after passing tests. Use original DISTINCT public finish
+versus private consume and original CompiledGroups for all eight DISTINCT cases.
+All35 partial payloads are completed before original common.save serialization.
+Never call or bypass Collector's all64 guard;27 non-DISTINCT full compilations
+remain outside this probe. The comparison verifies exact output bytes for every
+case. Total240s budget includes both processes and cleanup; each work alarm is110s.
+
+Command: `python3 -B /tmp/graphite-attempt253-consume-prep/execute.py`.
+Execution completes in60.974s, both owned process groups empty, all35 outputs
+byte-identical. Root independently checks839593564 bytes across both arms and
+all frozen control identities. Single AB order and uncontrolled host provide no
+statistical server-performance or full64 acceptance claim.
+
+| Partial validation cost | Parent | Candidate |
+|---|---:|---:|
+| Work through terminal diagnostic summary |26.575s|22.531s|
+| Group finish plus original row construction |5.097s|0.422s|
+| Complete eight DISTINCT group compilers |12.577s|13.061s|
+| Original JSON writer |7.591s|7.773s|
+| Observed peak RSS before interpreter teardown |2169651200 bytes|1424080896 bytes|
+
+Retain the verified ownership-transfer increment: exact partial outputs and
+full-scope correctness fixtures agree, finish copying decreases and observed
+validation RSS falls745570304 bytes. Compiler/serialization observations do not
+improve; preserve them. Worker counters end before interpreter teardown, while
+the60.974s wrapper includes process completion. No simple four-to64 scaling is
+valid, and this change cannot fix memory already accumulated before finish.
+Full64 correctness, fresh-writer HTTP validation, query p50/p95, product CPU/RSS,
+build/save performance and total hosted CI duration remain open.
+
+Evidence: `/tmp/graphite-attempt253-owned-consume-finish/verification.json` and
+`root-source-review.json`; `/tmp/graphite-attempt253-consume-prep/plan.json`,
+`execution.json`, `root-review.json`, both original logs and all partial outputs.

@@ -174,7 +174,7 @@ def derive(plan, facts):
         require(row['edges']['nodeSlots'] == graph['nodeSlots'], 'raw edge/node slot identity')
         collector.add_graph(graph, raw, row['edges']['labeledEdges'])
         del graph, raw
-    result = collector.finish()
+    result = collector._consume_finish()
     if plan['arm'] == 'B':
         require(all(count > 0 for counts in result['fullProjectionBindings'].values() for count in counts.values()),
                 'candidate full projections must exercise actual declared bindings in both target graphs for every case')

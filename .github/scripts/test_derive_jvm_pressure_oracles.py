@@ -213,6 +213,21 @@ class DeriveProtocolTests(unittest.TestCase):
         self.assertTrue(audit['actualPrimitiveExecutionVerified']); self.assertTrue(audit['completeRawDerivationReplayed'])
         self.assertTrue(all(result[k] is audit[k] is False for k in p.FALSE_CLAIMS))
 
+    def test_owned_derive_consumes_once_without_public_snapshot(self):
+        actual=p.derivation.Collector._consume_finish;seen=[]
+        def consume(collector):
+            self.assertEqual(64,len(collector.seen))
+            result=actual(collector);seen.append(len(result['universes']))
+            self.assertTrue(collector.failed);self.assertEqual({},collector.distinct)
+            self.assertEqual({},collector.rows);self.assertIsNone(collector.primitive_facts)
+            return result
+        with patch.object(p.derivation.Collector,'_consume_finish',new=consume), \
+             patch.object(p.derivation.Collector,'finish',side_effect=AssertionError('owned derive must not copy snapshot')):
+            result,_=self.execute()
+        self.assertEqual(p.PASS,result['status'],result['errors'])
+        self.assertEqual([35],seen)
+        self.assertEqual(64,len(result['derivation']['graphs']))
+
     def test_candidate_requires_declared_projection_bindings_in_each_target_graph(self):
         read_graph = p.inputs.read_graph
         def one_erased_target(spec):

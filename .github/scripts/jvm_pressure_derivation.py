@@ -358,6 +358,22 @@ class Collector:
 
     def finish(self):
         need(not self.failed and len(self.seen) == 64 and set(self.seen) == set(self.graph_ids), 'complete successful all64 derivation')
+        return self._finish_result(consume=False)
+
+    def _consume_finish(self):
+        """Final owned derivation only; no reusable state survives success or failure."""
+        try:
+            need(not self.failed and len(self.seen) == 64 and set(self.seen) == set(self.graph_ids), 'complete successful all64 derivation')
+            self.failed = True
+            return self._finish_result(consume=True)
+        finally:
+            self.failed = True
+            for group in self.distinct.values(): group._discard()
+            self.distinct = {}; self.counts = {}; self.rows = {}
+            self.projection_bindings = {}; self.seen = []; self.graph_counts = []
+            self.primitive_facts = None
+
+    def _finish_result(self, consume):
         results = {}
         for case in self.cases:
             case_id = case['id']
@@ -366,7 +382,7 @@ class Collector:
                                               'targetGraphIds', 'columns', 'effectiveLimit')},
                         'allGraphScansComplete': True, 'exactEncounterOrderClaim': False}
             if case_id in self.distinct:
-                groups = self.distinct[case_id].finish()
+                groups = self.distinct[case_id]._consume_finish() if consume else self.distinct[case_id].finish()
                 universe.update(schema=distinct.SCHEMA, equalityPolicy=distinct.EQUALITY,
                                 totalMatches=len(groups), groups=groups)
             else:
@@ -374,6 +390,8 @@ class Collector:
                            for key, count in self.counts[case_id].items()]
                 universe.update(schema='graphite.jvm-legal-row-universe.v1',
                                 totalMatches=sum(e['multiplicity'] for e in entries), rows=entries)
+                if consume:
+                    del self.counts[case_id], self.rows[case_id]
             model.CompiledLegalLimitOracle(universe, case)
             results[case_id] = universe
         return {'universes': results, 'graphs': self.graph_counts,

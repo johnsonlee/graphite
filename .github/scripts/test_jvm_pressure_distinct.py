@@ -2,6 +2,7 @@
 import copy
 import struct
 import unittest
+from unittest.mock import patch
 
 import jvm_pressure_distinct as d
 import jvm_pressure_inputs as raw
@@ -81,6 +82,43 @@ class DistinctTests(unittest.TestCase):
         self.assertEqual(1,len(calls));row['caller']='changed'
         result=collector.finish();result[0]['variants'][0]['caller']='changed'
         self.assertEqual('android.Test',collector.finish()[0]['variants'][0]['caller'])
+
+    def test_public_snapshot_stays_isolated_when_more_sources_are_added(self):
+        collector=d.DistinctGroups(facts);collector.add(visible(callerMethod=f(-0.)), 'g2')
+        before=collector.finish()
+        collector.add(visible(callerMethod=f(0.)), 'g1')
+        after=collector.finish()
+        self.assertEqual(['g2'],before[0]['graphIds'])
+        self.assertEqual(1,len(before[0]['variants']))
+        self.assertEqual(['g1','g2'],after[0]['graphIds'])
+        after[0]['semanticKey'][1].clear()
+        self.assertTrue(collector.finish()[0]['semanticKey'][1])
+
+    def test_owned_consume_preserves_typed_groups_and_releases_source_state(self):
+        collector=d.DistinctGroups(facts)
+        for value in (1,f(1),f(-0.),f(0.),f(float('nan')),f(float('inf'))):
+            for gid in ('g2','g1'):collector.add(visible(callerMethod=value),gid)
+        before=collector.finish();source=collector.groups
+        with patch.object(d.copy,'deepcopy',side_effect=AssertionError('owned trees must transfer')):
+            actual=collector._consume_finish()
+        self.assertEqual(model.typed(before),model.typed(actual))
+        self.assertEqual({},source);self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+        self.assertIsNone(collector.number_text)
+        actual[0]['semanticKey'][1].clear()
+        self.assertTrue(before[0]['semanticKey'][1])
+        for action in (collector.finish,collector._consume_finish,lambda:collector.add(visible(),'g3')):
+            with self.assertRaisesRegex(ValueError,'previous'):action()
+
+    def test_owned_consume_failure_is_terminal_and_discards_remaining_groups(self):
+        for malformed in (False,True):
+            with self.subTest(malformed=malformed):
+                collector=d.DistinctGroups(facts);collector.add(visible(),'g')
+                if malformed:next(iter(collector.groups.values()))['graphIds']={None,'g'}
+                else:collector.failed=True
+                with self.assertRaises((ValueError,TypeError)):collector._consume_finish()
+                self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+                self.assertIsNone(collector.number_text)
+                with self.assertRaises(ValueError):collector.finish()
 
     def test_projection_uses_float_decimal_and_preserves_large_integer(self):
         self.assertEqual(.1,d.projected_value(f(.1,32),facts))
