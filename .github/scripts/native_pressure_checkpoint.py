@@ -27,6 +27,7 @@ SYSTEM_JDK_NAME = re.compile(r'temurin-[1-9][0-9]*-jdk-(?:amd64|arm64)\Z')
 IMAGE_KEYS = ('ImageOS', 'ImageVersion', 'RUNNER_OS', 'RUNNER_ARCH')
 PRODUCER_TREES = ('runtime', 'graphs', 'query-correctness', 'core-string-exports',
                   'core-marker', 'core-formatter-source', 'formatter-tests')
+CORE_INPUT_TREES = ('core-string-exports', 'core-marker', 'core-formatter-source', 'formatter-tests')
 PHASES = ('java-version', 'rustc-version', 'cargo-version', 'build-jvm', 'build-native',
           'prepare-real64', 'verify-real64')
 
@@ -99,7 +100,12 @@ def git_sources(workspace, base, head):
 def selected_roots(workspace, stage, arm):
     root = workspace/'native-pressure-artifacts'
     if stage in ('core', 'core-prepare', 'core-shard'):
-        return [root/arm/'core-equivalence']
+        paths = [root/arm/'core-equivalence']
+        if stage != 'core-shard':
+            # Preparation transports new arm-local correctness inputs. The final
+            # core checkpoint must carry them again: its only ancestor is producer.
+            paths.extend(root/arm/name for name in CORE_INPUT_TREES if (root/arm/name).exists())
+        return paths
     if stage == 'jvm':
         return [root/arm/'jvm-raw-derivation', root/arm/'jvm-query-correctness']
     return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
@@ -110,7 +116,7 @@ def evidence_paths(workspace, stage, arm, ident=None):
     for root in roots:
         require(root.is_dir() and not root.is_symlink(), 'missing stage root: '+str(root))
     if stage in ('core-prepare', 'core-shard'):
-        return core_shard_paths(roots[0], ident)
+        return core_shard_paths(roots[0], ident) + roots[1:]
     if stage != 'producer':
         return roots
     root = roots[0]

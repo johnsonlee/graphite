@@ -508,6 +508,57 @@ class CheckpointTests(unittest.TestCase):
         prep = checkpoint.seal(prep_args)
         return core, out, plan, prep_args, prep
 
+    def test_arm_local_core_inputs_survive_preparation_and_standalone_final_transport(self):
+        shared = self.root/'C/core-string-exports/shared.bin'
+        self.write(shared, 'shared baseline export produced exactly once')
+        # This topology seals producer before arm-local formatter inputs exist.
+        shutil.rmtree(self.root/'B/formatter-tests')
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        local_files = []
+        for name in checkpoint.CORE_INPUT_TREES:
+            path = self.root/'B'/name/'evidence.bin'
+            self.write(path, 'complete arm-local '+name); local_files.append(path)
+        # Formatter audits bind complete actual test classpath directories, even
+        # when no individually pinned member otherwise mentions their extra file.
+        classes = self.workspace/'candidate/build/test-classes'
+        self.write(classes/'Main.class', 'actual tested production class')
+        self.write(classes/'Resource.txt', 'required classpath resource')
+        self.json(self.root/'B/formatter-tests/classpath-before.json', {
+            'schema': 'graphite.formatter-test-classpath.v1', 'classpath': [{
+                'path': str(classes), 'kind': 'directory',
+                'files': {p.name: checkpoint.sha(p) for p in classes.iterdir()}}]})
+        plan['pins'].update({str(p): checkpoint.sha(p) for p in [shared, *local_files]})
+        self.json(out/'plan.json', plan)
+        preparation = checkpoint.read(out/'preparation.json')
+        preparation['plan']['sha256'] = checkpoint.sha(out/'plan.json')
+        self.json(out/'preparation.json', preparation)
+        prep_args.directory = str(self.workspace/'pressure-checkpoints/core-prepare-local-B')
+        prepared = checkpoint.seal(prep_args)
+        final_args = self.args('core', 'B', self.workspace/'pressure-checkpoints/core-local-B',
+                               [self.directory/'manifest.json'])
+        final = checkpoint.seal(final_args)
+        producer = checkpoint.read(self.directory/'manifest.json')
+        self.assertIn(str(shared), producer['payload'])
+        for manifest in (prepared, final):
+            self.assertNotIn(str(shared), manifest['payload'])
+            for path in local_files:
+                self.assertIn(str(path), manifest['payload'])
+                self.assertIn(str(path.parent), manifest['closedDirectories'])
+            self.assertIn(str(classes/'Resource.txt'), manifest['payload'])
+            self.assertIn(str(classes), manifest['closedDirectories'])
+        # Final core transport has producer ancestry only: it cannot rely on a
+        # preparation checkout surviving on its fresh downstream consumer.
+        self.remove_payload(final)
+        checkpoint.restore(final_args)
+        self.assertEqual('shared baseline export produced exactly once', shared.read_text())
+        self.assertEqual('required classpath resource', (classes/'Resource.txt').read_text())
+        for path in local_files:
+            self.assertEqual('complete arm-local '+path.parent.name, path.read_text())
+        extra = local_files[0].parent/'unaccounted'
+        self.write(extra, 'unexpected dependency')
+        with self.assertRaisesRegex(ValueError, 'closed directory'):
+            checkpoint.check_files(final)
+
     def write_core_shard(self, core, out, plan, prep_args, index):
         ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
         rows = []

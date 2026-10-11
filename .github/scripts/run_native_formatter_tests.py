@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Run selected real production correctness tests on the actual candidate writer.
 
-Uses the producer's existing isolated Gradle cache. No tests are copied into old
-sources and no correctness duration contributes to performance acceptance.
+Uses the producer's isolated Gradle home path; a restored runner may populate it
+again. No tests are copied into old sources and no correctness duration contributes
+to performance acceptance.
 """
 import argparse
 import hashlib
@@ -72,8 +73,8 @@ def rebind(plan):return bind(plan['artifactAudit']['path'],plan['sourceInputs'][
 
 
 def environment(plan):
-    # The original producer homes/cache are already independently audited. No
-    # clean cache is created and no old checkout receives copied test sources.
+    # Preserve the bound producer environment and home paths. Transport need not
+    # contain the full Gradle cache; no old checkout receives copied test sources.
     return {**clean_environment(plan['java']),**plan['buildEnvironment']}
 
 

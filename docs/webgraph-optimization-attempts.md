@@ -17073,3 +17073,60 @@ change alone does not justify cancelling and restarting it. Validation logs:
 `/tmp/graphite-progress-actionlint.log`; offline reports:
 `/tmp/graphite-progress-replay/first-status.json` and
 `/tmp/graphite-progress-replay/reverse-parent-status.json`.
+
+### Attempt214 — move arm-local core preparation off the Native measurement prerequisite (2026-10-11)
+
+**Hypothesis.** Native39 measurement needs the actual runtimes, persisted graphs
+and fresh response audits, but not core string exports, marker/source bindings
+or production formatter tests. Produce each nonaccepted arm's core inputs in
+its existing core-prepare job, concurrently with Native measurement. Keep the
+shared accepted C string export in producer: independently regenerating it in
+both possible A/B preparation jobs would create conflicting evidence at the
+same path.
+
+Base prototype: `03f4ddaffce859ba06a273de29244b7db74af8e0`; integrated parent:
+`1c41e13700c883f073afee7da274122a9de851f7`; candidate: this commit. No production
+graph or query code, workload, baseline, sampling or acceptance rule changes.
+Preparation and final core checkpoints explicitly carry the moved complete input
+trees and formatter classpath closure. Final core transport still has producer
+ancestry only, so a fresh downstream consumer does not depend on a preparation
+checkout remaining available. Original checks on hashes, archive members, closed
+directories, upstream identity and source/toolchain bindings remain required.
+
+Historical producer evidence from run38120724071 places B's first string-export
+owner at08:04:21.111UTC and final formatter audit at08:15:43.054UTC: an observed
+core-only window of681.942s. Archive member timestamps provide diagnostic
+attribution, not a new measurement or an exact bound on the whole tool invocation.
+This work moves out of the Native waiting prefix, but remains on the JVM/core
+acceptance path. The old formatter Gradle command already used `--rerun-tasks`
+and reported2m37s; a fresh preparation runner may additionally download its
+Gradle distribution/plugins/dependencies. Full cache transport was not added.
+Consequently, neither an11-minute final-CI improvement nor a two-hour completion
+bound is established.
+
+Correctness:41 checkpoint tests,11 complete restore-chain tests and3 public CLI
+handoff smoke tests passed in the isolated prototype. New transport coverage
+seals producer before the arm-local inputs exist, carries every moved tree and
+complete test-classpath directory, restores a standalone final core checkpoint,
+and rejects an added unaccounted file. The workflow test executes both A/B command
+sequences with exact argument checks and stops on failure of any of the four tools.
+Parent review verified the integrated code/test and validation-log hashes against
+the prototype; the combined217-test Node batch and actionlint passed. The formatter
+script's comments now acknowledge that the bound Gradle home may need repopulation.
+Control-manifest entries and their workflow digest were refreshed.
+
+**Decision: retain locally, without restarting the active03f run.** At11:31UTC
+that run's producer had started at11:23:05 and was actively building its actual
+runtimes/graphs. The previous producer took58m36s. Using that historical duration
+only as a rough planning proxy gives about51 minutes remaining versus about
+47 minutes for a replacement producer plus roughly11 minutes of prerequisite
+controls (fixtures overlap), before queueing and shared downstream costs. The
+replacement has no established advantage from now, and its final JVM path may
+gain cold-cache work. Reassess using completed current stages; these are conditional
+estimates, not a hosted ETA. Query p50/p95, CPU/RSS, construction/loading and final
+regression acceptance remain pending for the cumulative feature.
+
+Prototype sources, exact commands and evidence hashes:
+`/tmp/graphite-core-input-split-prototype-report.json`; historical attribution:
+`/tmp/graphite-core-input-split-history.json`; combined Node verification:
+`/tmp/graphite-feedback-integrated-node-tests.log`.

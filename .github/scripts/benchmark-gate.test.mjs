@@ -4804,3 +4804,46 @@ fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":
         }
     }
 });
+
+test("core-only inputs move to their owning prepare arm without regenerating shared C evidence", () => {
+    const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
+    const producer = rustWorkflowJob(workflow, "rust-producer");
+    const prepare = rustWorkflowJob(workflow, "rust-core-prepare");
+    assert.match(producer, /if \[\[ "\$4" == C \]\]; then\s+python3 candidate\/\.github\/scripts\/export_native_core_strings\.py/);
+    for (const name of ["export_native_core_marker", "bind_native_core_formatter", "run_native_formatter_tests"]) {
+        assert.doesNotMatch(producer, new RegExp(name + "\\.py"));
+    }
+    const step = rustWorkflowStep(prepare, "Produce arm-local core correctness inputs");
+    assert.ok(prepare.indexOf(step) < prepare.indexOf("    - name: Prepare shared native core topology"));
+    assert.match(step, /sha256sum -c \.github\/scripts\/multigraph-pressure-preparation-controls\.sha256/);
+    const start = step.indexOf('        ARM="${CORE_ARM}"');
+    assert.ok(start >= 0);
+    const shell = "set -euo pipefail\n" + step.slice(start).split("\n").map(line => line.replace(/^        /, "")).join("\n");
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), "core-local-inputs-"));
+    try {
+        const bin = path.join(directory, "bin"); fs.mkdirSync(bin);
+        fs.writeFileSync(path.join(bin, "python3"), `#!${process.execPath}\n` + `
+const fs = require("node:fs"), args = process.argv.slice(2);
+fs.appendFileSync(process.env.COMMAND_CALLS, JSON.stringify(args) + "\\n");
+if (args[0].endsWith(process.env.FAIL_SCRIPT + ".py")) process.exit(29);
+`, {mode:0o755});
+        const calls = path.join(directory, "calls");
+        for (const arm of ["A", "B"]) {
+            const root = `native-pressure-artifacts/${arm}`;
+            const scripts = ["export_native_core_strings", "export_native_core_marker", "bind_native_core_formatter", "run_native_formatter_tests"];
+            const expected = [
+                ["--artifact-audit",`${root}/artifact-audit.json`,"--source-inputs","native-pressure-artifacts/source-inputs.json","--output",`${root}/core-string-exports`],
+                ["--reference-audit","native-pressure-artifacts/C/artifact-audit.json","--actual-audit",`${root}/artifact-audit.json`,"--source-inputs","native-pressure-artifacts/source-inputs.json","--output",`${root}/core-marker`],
+                ["--marker-audit",`${root}/core-marker/audit.json`,"--output",`${root}/core-formatter-source`],
+                ["--artifact-audit",`${root}/artifact-audit.json`,"--source-inputs","native-pressure-artifacts/source-inputs.json","--output",`${root}/formatter-tests`]
+            ].map((args,i)=>[`candidate/.github/scripts/${scripts[i]}.py`,...args]);
+            for (const failed of [-1, 0, 1, 2, 3]) {
+                fs.writeFileSync(calls, "");
+                const run = spawnSync("bash", ["-c",shell], {cwd:directory,encoding:"utf8",env:{...process.env,
+                    PATH:`${bin}:${process.env.PATH}`,CORE_ARM:arm,COMMAND_CALLS:calls,FAIL_SCRIPT:scripts[failed] ?? "never"}});
+                assert.equal(run.status,failed < 0 ? 0 : 29,run.stderr);
+                assert.deepEqual(fs.readFileSync(calls,"utf8").trim().split("\n").map(JSON.parse),expected.slice(0,failed < 0 ? 4 : failed+1));
+            }
+        }
+    } finally { fs.rmSync(directory,{recursive:true,force:true}); }
+});
