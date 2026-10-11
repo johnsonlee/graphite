@@ -18237,3 +18237,80 @@ VmHWM bounds. No accepted4f comparison, query p50/p95, construction measurement
 or final5% resource acceptance is supplied by this experiment. Complete query,
 correctness/stability and hosted acceptance requirements remain in force. This
 candidate does not close the existing Native latency or JVM resource regressions.
+
+#### Attempt233 follow-up — accepted-baseline real64 loading diagnosis
+
+Keep the positive parent-relative result above, but do not confuse it with
+recovery against accepted4f. A separate fixed C,B,B,C diagnostic reuses the exact
+accepted4f original query JAR and its own persisted64 graphs, against the same
+233 JAR/GTY05 corpus. The original C runtime digest and complete source-file
+identity are verified against its historical runtime manifest; no historical
+Native correctness proof is substituted for JVM loading. Both arms'64 graph IDs,
+per-graph workload identities,19,438,199 logical nodes and5,051,914 call sites
+match. Complete fresh JVM readiness is checked for every process. Their forward
+physical graph totals also match:679,587,444 nodes and21,081,154 arcs; both
+label-prefix inventories total2,718,350,032 bytes.
+
+Use the same Mac/JDK17/-Xmx4g/ActiveProcessorCount4/MAPPED/zero-query measurement
+boundary as the parent-relative diagnostic. Each cell hashes its own graph
+corpus, both runtime/source/control identities, and its graph directory closure
+before and after. Final whole-plan validation runs on success and failure.
+All original samples, failures and unissued cells remain visible. The first
+preflight looked for workloadIdentitySha256 at manifest root rather than per
+graph and failed before launching any process; retain
+`/tmp/graphite-jvm64-text-cache-cbbc-1.log`. Correct the assertion to compare the
+complete graph-ID→workload-identity maps, then execute a new cohort.
+
+| Fixed pair, accepted baseline→233 | Readiness ms | Post-ready CPU observation s | Inside-loading sampled peak RSS bytes | Lifecycle maximum RSS bytes |
+|---|---:|---:|---:|---:|
+| 0-C→1-B | 7315.224→10087.736 (+2772.511) | 8.48→13.42 (+4.94) | 3581919232→4011851776 | 3582967808→4012752896 |
+| 3-C→2-B | 8067.557→10199.484 (+2131.927) | 9.28→13.84 (+4.56) | 3577102336→3999252480 | 3578265600→4000202752 |
+
+All four cells and final identities pass; raw readiness/command/ps/time-l/sampled
+RSS reconstruction passes. Total execution85.318s, with no runtime rebuild.
+Evidence:`/tmp/graphite-jvm64-text-cache-cbbc-2/{plan,execution,audit}.json`.
+CPU observations lag readiness6.0–7.7ms; Mac sampled and lifecycle RSS remain
+separate observations. These are diagnostic results, not Linux interval gates,
+full source semantic comparability or query acceptance. They confirm substantial
+remaining loading overhead:about422–430MB observed RSS and4.56–4.94s CPU.
+Retain233 as a useful intermediate; do not mark the cumulative regression fixed.
+The next candidate build started18:02:09Z, after this cohort's final C identity
+check at18:00:57Z, so that build did not overlap these measured cells. No general
+quiet-host assertion is made.
+
+#### Current91 hosted results retained alongside local diagnosis
+
+Native measurement job114517417567 completed successfully at17:45:43Z. Download
+artifact11710077194 once (38,957,963 bytes), verify GitHub SHA256
+545f226c089b0157fe7851e3a435b3df17af112a4d78104317f7477cead1238b,
+and independently reconstruct5,382 complete response bodies,4,680 pressure
+requests, six cells, per-case20-sample p50/p95 and resource accounting. CPU/RSS
+pass both accepted-baseline comparisons; query p50 increases in16/21 cases and
+p95 in14/19. slow-qualifiedIdHit p95 is2437.832→2588.326ms and
+2455.892→2699.780ms. Evidence:
+`/tmp/graphite-ci91ee70-native-measurement-review`. Core comparability is still
+pending and measuredConstraintsPassed=false. The PR body retains these failures.
+
+All80 qualifiedIdHit samples were matched to their existing concurrent-request
+journals, without filtering. The query scans64 graphs and returns39 rows through
+synthetic-ID and node-tag paths, not generic rendering. Wire latency already
+contains the regression; response validation does not explain it. The fixed
+catalog/c4 scheduler takes the next request as each worker finishes, without a
+cycle barrier. Candidate requests start earlier within a cycle and overlap more
+qualifiedIdMiss/dynamicMiss work. This establishes different neighbor timing,
+not causality or permission to waive p95; slower target requests can themselves
+increase overlap. Evidence:
+`/tmp/graphite-qualifiedId-overlap-audit/{evidence.json,report.txt}`.
+
+Construction job114517417546 also completed six usable-save cells. Download only
+the2,268,903-byte diagnostic artifact11710491388; its SHA256 is
+ffb177c5d760d76785f96c3eaf2c48f0edb3b384132cf079aaa68800cc442389.
+Do not download the1,236,848,520-byte graph artifact for an unchanged audit.
+The six original GNUtime records reconstruct exactly; complete output graph
+bytes were not independently replayed locally. Accepted-baseline construction
+wall is403.690→429.590s and407.030→435.340s; CPU522.66→592.31s and
+528.47→623.83s exceeds the5% allowance in both directions. RSS decreases in both.
+Evidence:`/tmp/graphite-ci91ee70-construction-review`. Measurement took73m43s,
+of which six prepare phases total41m28s; sealing took about5m52s. Complete core
+comparability and final acceptance remain pending. These hosted results precede
+233 and are not measurements of its effect on construction or queries.
