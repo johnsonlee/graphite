@@ -19679,3 +19679,62 @@ all four phase summaries and35 paired outputs. Source/test review:
 /tmp/graphite-attempt259-result.json and
 /tmp/graphite-attempt259-integration-review.json. Original isolated test setup/spy
 failures remain recorded separately; the final corrected suites pass.
+
+### Attempt260 — compare JVM replay values without duplicate tagged trees (2026-10-12)
+
+Attempt259's independent replay still builds two full common.typed trees in
+addition to both decoded values. Replace only that replay comparison with a
+private structural comparator. It first validates the entire left value, then
+the entire right value, and only then compares. Exact scalar types, native finite
+float equality (including signed-zero equality), sorted raw dictionary keys,
+list order, and invalid-tail errors remain unchanged. The original parser,
+per-file SHA, all35/64 guards, source rules and terminal integrity checks remain.
+Public common.typed and Graphite product code are unchanged.
+
+Independent review found that the initial recursive generator comparison failed
+on finite500/600-level JSON accepted by the original expression. Replace those
+generators with explicit loops before real-data execution. Independent replay of
+the original reproducer and new parsed list/object/mixed deep-value tests pass.
+Integrated117 Python tests pass in6.554s;234 Node workflow tests pass in17.102s.
+All193 control pins, workflow manifest binding, structural actionlint and diff
+checks pass. The initial review failure remains recorded in the evidence.
+
+Use the same258 encoded state from four original real graphs (Kotlin15,Tika10,
+Android12,Hive15) and259's same35 verified saved outputs in two fresh processes.
+Baseline source is frozen259/f1fc4ad6; candidate is that source plus260 patch
+1133f4fdff660cde7e273d5e642d2723c368228ad2db96d8d09931e24eb05f7a.
+Both processes use the same partial reconstruction, eight original DISTINCT
+compilers, reader, file references, and final source/state/all35 output checks.
+No producer, conversion, graph scan, serialization, build or server is repeated.
+
+Command: python3 -B /tmp/graphite-attempt260-real4-replay-prep/run.py
+/tmp/graphite-attempt260-real4-replay-result-1. Local macOS/Python3.14.7, fixedAB,
+100s per arm,220s total work plus20s cleanup reserve. Both arms exit0, all35
+comparisons and final identities pass, and both process groups are empty. Total
+execution is98.608s. Historical259 timing was used only to budget this check;
+the baseline was measured again with matching driver and verification boundaries.
+
+| Four-real-graph partial replay | Baseline259 | Candidate260 |
+|---|---:|---:|
+| Worker wall, seconds |63.165|35.112|
+| Worker CPU, seconds |63.111|35.111|
+| Worker peak RSS, bytes |1997209600|1128235008|
+| Comparison including saved-file reference, seconds |37.651|8.889|
+| Finish/decode, seconds |11.674|12.354|
+| Eight original DISTINCT compilers, seconds |12.826|12.850|
+
+Retain the observed28.053s wall and868974592-byte peak-RSS reduction. Both decoded
+values still exist; only their duplicate tagged representations are removed.
+This single fixedAB is a partial lifecycle diagnostic, not a repeated server
+latency distribution or a matched-main acceptance comparison. The27 ordinary
+full compilers and complete64 source scan are excluded; no full64 guard is
+bypassed. Full64 scaling, Linux16GB fit and complete hosted runtime remain
+unverified. No product performance regression is declared recovered.
+
+Evidence: /tmp/graphite-attempt260-real4-replay-prep/{plan.json,
+root-launch-review.json,root-result-review.json}, both raw phase summaries and
+stages under /tmp/graphite-attempt260-real4-replay-result-1, and
+/tmp/graphite-attempt260-integration-review.json. Independent correctness review:
+/tmp/graphite-attempt260-independent-review.json and
+/tmp/graphite-attempt260-independent-fixed-probe.json. The new test uses the
+original JSON reader and original typed expression as its comparison contract.

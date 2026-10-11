@@ -209,7 +209,9 @@ class DeriveProtocolTests(unittest.TestCase):
         universe = p.common.read(result['universes']['slow-dataflowSourceHit']['path'])
         self.assertEqual(64, universe['totalMatches'])
         self.assertEqual((3, 25), (universe['rows'][0]['value']['source'], universe['rows'][0]['value']['target']))
-        audit = p.replay(self.out); self.assertEqual(2, self.audit_mock.call_count)
+        with patch.object(p, '_same_typed_json', wraps=p._same_typed_json) as compare:
+            audit = p.replay(self.out)
+        self.assertEqual(35, compare.call_count); self.assertEqual(2, self.audit_mock.call_count)
         self.assertTrue(audit['actualPrimitiveExecutionVerified']); self.assertTrue(audit['completeRawDerivationReplayed'])
         self.assertTrue(all(result[k] is audit[k] is False for k in p.FALSE_CLAIMS))
 
@@ -348,6 +350,83 @@ class DeriveProtocolTests(unittest.TestCase):
         self.assertIn('-XX:ActiveProcessorCount=4', commands[1][1]); self.assertIn('JvmPrimitiveFacts', commands[1][1])
         self.assertEqual(str(self.home), p.environment(plan)['JAVA_HOME'])
         self.assertNotIn('JAVA_TOOL_OPTIONS', p.environment(plan))
+
+
+class TypedJsonEqualityTests(unittest.TestCase):
+    @staticmethod
+    def outcome(compare, left, right):
+        try: return ('value', compare(left, right))
+        except Exception as error: return ('error', type(error), str(error))
+
+    def assert_original(self, left, right):
+        original=lambda a,b:p.common.typed(a)==p.common.typed(b)
+        self.assertEqual(self.outcome(original,left,right), self.outcome(p._same_typed_json,left,right))
+
+    def test_scalar_types_signed_zero_maps_lists_and_nested_mismatches(self):
+        values=[None,False,True,0,1,-1,0.0,-0.0,1.0,-1.0,1e300,'','0','雪',[],{},
+                [False,0,0.0], [0,False,0.0], {'b':[True,{'z':-0.0}],'a':None},
+                {'a':None,'b':[True,{'z':0.0}]}, {'a':[1]}, {'a':[1.0]}, {'a':[True]},
+                {'a':[],'b':{}}, {'a':{}}, [1,2], [2,1], [[1]], [1]]
+        for left in values:
+            for right in values:
+                with self.subTest(left=left,right=right):self.assert_original(left,right)
+        self.assertTrue(p._same_typed_json(+0.0,-0.0))
+        self.assertFalse(p._same_typed_json(False,0));self.assertFalse(p._same_typed_json(1,1.0))
+
+    def test_generated_json_matches_original_without_allocated_typed_representation(self):
+        import random
+        rng=random.Random(260)
+        scalars=[None,True,False,0,1,-1,0.0,-0.0,3.25,'雪','']
+        def value(depth):
+            if depth==0 or rng.randrange(3)==0:return rng.choice(scalars)
+            if rng.randrange(2):return [value(depth-1) for _ in range(rng.randrange(4))]
+            return {key:value(depth-1) for key in rng.sample(['a','b','雪','0'],rng.randrange(5))}
+        for _ in range(100):
+            left=value(4);right=value(4);self.assert_original(left,right);self.assert_original(left,copy.deepcopy(left))
+        with patch.object(p.common,'typed',side_effect=AssertionError('must not build tagged tree')):
+            self.assertTrue(p._same_typed_json({'a':[[1,True,-0.0]]},{'a':[[1,True,+0.0]]}))
+
+    def test_deep_valid_json_accepted_by_original_comparison_still_passes(self):
+        for depth in (500,600):
+            for shape in ('list','object','mixed'):
+                a,b='1','2'
+                for level in range(depth):
+                    if shape=='list' or (shape=='mixed' and level%2):a,b='['+a+']','['+b+']'
+                    else:a,b='{"a":'+a+'}','{"a":'+b+'}'
+                left=p.common.parse(a);same=p.common.parse(a);different=p.common.parse(b)
+                with self.subTest(depth=depth,shape=shape):
+                    self.assertTrue(p.common.typed(left)==p.common.typed(same))
+                    self.assertFalse(p.common.typed(left)==p.common.typed(different))
+                    self.assertTrue(p._same_typed_json(left,same))
+                    self.assertFalse(p._same_typed_json(left,different))
+
+    def test_invalid_tails_validate_in_original_left_then_right_order(self):
+        invalid=[float('nan'),float('inf'),-float('inf'),(),object(),[1,{'z':float('inf')}]]
+        for bad in invalid:
+            for left,right in (([0,bad],[1,None]),([0,None],[1,bad]),(bad,{}),({},bad)):
+                with self.subTest(left=left,right=right):self.assert_original(left,right)
+        self.assert_original([float('inf')], [object()])
+        self.assert_original([object()], [float('inf')])
+        self.assert_original({'z':float('inf'),'a':object()}, {})
+        # Raw dict keys follow the original sorted-key operation, not new rules.
+        self.assert_original({1:'x'}, {True:'x'})
+        self.assert_original({1:'x','a':'y'}, {})
+        self.assert_original({}, {1:'x','a':'y'})
+        class ListSubclass(list): pass
+        self.assert_original(ListSubclass([1]),[1])
+
+    def test_original_json_reader_still_rejects_duplicate_keys_and_nonfinite(self):
+        import tempfile
+        with tempfile.TemporaryDirectory() as temp:
+            path=Path(temp)/'invalid.json'
+            for raw in ('{"a":1,"a":2}', '{"a":NaN}', '{"a":Infinity}', '{"a":1e9999}'):
+                path.write_text(raw)
+                def old():return p.common.typed(p.common.read(path))==p.common.typed({})
+                def new():return p._same_typed_json(p.common.read(path),{})
+                def result(call):
+                    try:return ('value',call())
+                    except Exception as error:return ('error',type(error),str(error))
+                self.assertEqual(result(old),result(new));self.assertEqual('error',result(new)[0])
 
 
 class FreshInputClosureTests(unittest.TestCase):

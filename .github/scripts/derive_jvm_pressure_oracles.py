@@ -8,6 +8,7 @@ core migration scope is not promoted to complete semantic equivalence.
 """
 import argparse
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -308,6 +309,45 @@ def _run_and_consume_raw(producer_root, raw_export_root, arm, output, consume):
         active = False
 
 
+def _same_typed_json(left, right):
+    """Compare common.typed JSON semantics without materializing tagged trees.
+
+    Validate the whole left input, then the whole right input, before comparing:
+    an earlier mismatch must not hide an invalid later value. Object keys retain
+    common.typed's sorted/raw-key semantics; finite floats use native equality,
+    including +0.0 == -0.0. Only traversal frames and sorted key lists are owned.
+    """
+    def validate(value):
+        if value is None or type(value) in (bool, int, str): return
+        if type(value) is float:
+            require(math.isfinite(value), 'nonfinite scalar')
+            return
+        if type(value) is list:
+            for item in value: validate(item)
+            return
+        require(type(value) is dict, 'unexpected JSON value')
+        for key in sorted(value): validate(value[key])
+
+    def equal(a, b):
+        if type(a) is not type(b): return False
+        if type(a) is list:
+            if len(a) != len(b): return False
+            for x, y in zip(a, b):
+                if not equal(x, y): return False
+            return True
+        if type(a) is dict:
+            akeys, bkeys = sorted(a), sorted(b)
+            if akeys != bkeys: return False
+            for x, y in zip(akeys, bkeys):
+                if not equal(a[x], b[y]): return False
+            return True
+        return a == b
+
+    validate(left)
+    validate(right)
+    return equal(left, right)
+
+
 def replay(output):
     """Independently replay actual upstream, owned phases and all raw derivation."""
     out = Path(output).resolve(); record = common.read(out/'record.json'); plan = common.read(out/'plan.json')
@@ -332,7 +372,7 @@ def replay(output):
     def compare_universe(name, expected):
         path = out/'universes'/(name+'.json')
         require(record['universes'][name] == artifacts.ref(path) and
-                common.typed(common.read(path)) == common.typed(expected), 'actual independently derived universe: '+name)
+                _same_typed_json(common.read(path), expected), 'actual independently derived universe: '+name)
         checked.append(name)
     result = _derive_and_consume(plan, consume_facts(plan), compare_universe)
     require(checked == names, 'complete ordered exact35 independent replay')
