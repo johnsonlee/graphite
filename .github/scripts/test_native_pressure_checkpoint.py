@@ -22,6 +22,8 @@ class CheckpointTests(unittest.TestCase):
         for name in ('base', 'candidate'):
             root = self.workspace/name; root.mkdir()
             self.write(root/'tracked', 'original source')
+            self.write(root/'.github/scripts/run_native_core_equivalence.py',
+                       Path(__file__).with_name('run_native_core_equivalence.py').read_text())
             self.write(root/'.gitignore', 'build/\n')
             subprocess.run(['git', 'init', '-q', str(root)], check=True)
             subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
@@ -336,6 +338,19 @@ class CheckpointTests(unittest.TestCase):
         self.seal(); archive = self.directory/'payload.tar.gz'; archive.write_bytes(archive.read_bytes()[:10])
         with self.assertRaisesRegex(ValueError, 'archive digest'): checkpoint.restore(self.args())
 
+    def test_restore_rejects_corrupt_member_with_valid_archive_hash(self):
+        manifest = self.seal(); archive = self.directory/'payload.tar.gz'
+        with tarfile.open(archive, 'r:gz') as stream:
+            members = [(member, stream.extractfile(member).read()) for member in stream.getmembers()]
+        selected = manifest['payload'].index(str(self.binary))
+        with tarfile.open(archive, 'w:gz') as stream:
+            for index, (member, content) in enumerate(members):
+                if index == selected: content = b'x' * len(content)
+                stream.addfile(member, io.BytesIO(content))
+        self.mutate_manifest(lambda value: value.update(archiveSha256=checkpoint.sha(archive)))
+        self.remove_payload(manifest)
+        with self.assertRaisesRegex(ValueError, 'restored payload digest'): checkpoint.restore(self.args())
+
     def test_fresh_output_required(self):
         self.seal()
         with self.assertRaisesRegex(ValueError, 'fresh checkpoint'): self.seal()
@@ -471,6 +486,8 @@ class CheckpointTests(unittest.TestCase):
         plan = {'schema': 'graphite.native-core-equivalence-plan.v1', 'output': str(out),
                 'execution': core.shard_execution(8), 'stopAtFirstFailure': False,
                 'python': '/python', 'java': '/java', 'javac': '/javac', 'writerJar': str(self.writer),
+                'pins': {str(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py'):
+                         checkpoint.sha(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py')},
                 'maxOwnedPhases': 139, 'graphs': [
                     {'id': f'{corpus}-{n:02}', 'C': '/reference', 'B': '/candidate',
                      'fieldAuthority': {'corpus': corpus}}
@@ -483,18 +500,45 @@ class CheckpointTests(unittest.TestCase):
         self.write(out/'raw-locals/input', 'tiny local export')
         for name, _, _ in core.preparation_commands(plan): self.json(out/name/'record.json', {'phase': name})
         ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
-        self.json(out/'preparation.json', {'plan': ref(out/'plan.json')})
+        self.json(out/'preparation.json', {'plan': ref(out/'plan.json'),
+            'files': {str(p): checkpoint.sha(p) for directory in (out/'classes', out/'raw-locals')
+                      for p in directory.rglob('*') if p.is_file()}})
         prep_args = self.args('core-prepare', 'B', self.workspace/'pressure-checkpoints/core-prepare-B', [self.directory/'manifest.json'])
         prep_args.shard_count = 8
         prep = checkpoint.seal(prep_args)
         return core, out, plan, prep_args, prep
 
     def write_core_shard(self, core, out, plan, prep_args, index):
-        for row in core.shard_rows(plan, index): self.write(out/'graphs'/row['id']/'proof', row['id'])
-        for name, _, _ in core.shard_commands(plan, index): self.json(out/name/'record.json', {'phase': name})
         ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
-        self.json(out/'shards'/str(index)/'record.json', {'shardCount': 8, 'shardIndex': index,
+        rows = []
+        for row in core.shard_rows(plan, index):
+            directory = out/'graphs'/row['id']
+            self.json(directory/'record.json', {'tinyProofFixture': row['id']})
+            self.json(directory/'topology.json', {'tinyTopologyFixture': row['id']})
+            rows.append({'id': row['id'], 'core': ref(directory/'record.json'),
+                         'topology': ref(directory/'topology.json'),
+                         'files': {str(p): checkpoint.sha(p) for p in directory.rglob('*') if p.is_file()}})
+        phases = []
+        for name, _, _ in core.shard_commands(plan, index):
+            self.json(out/name/'record.json', {'phase': name}); phases.append(ref(out/name/'record.json'))
+            self.json(out/name/'owner.json', {'tinyOwnerFixture': name})
+            for leaf in ('stdout.log', 'stderr.log'): self.write(out/name/leaf, 'tiny phase output')
+        record_path = out/'shards'/str(index)/'record.json'
+        self.json(record_path, {'shardCount': 8, 'shardIndex': index, 'graphs': rows, 'phases': phases,
             'plan': ref(out/'plan.json'), 'preparation': ref(out/'preparation.json')})
+        refs = {'plan': ref(out/'plan.json'), 'preparation': ref(out/'preparation.json'), 'record': ref(record_path),
+                'checker': ref(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py')}
+        pins = {**plan['pins'], **checkpoint.read(out/'preparation.json')['files'],
+                **{value['path']: value['sha256'] for value in refs.values()}}
+        for row in rows: pins.update(row['files'])
+        for name, _, _ in core.shard_commands(plan, index):
+            for leaf in ('record.json', 'owner.json', 'stdout.log', 'stderr.log'):
+                value = ref(out/name/leaf); pins[value['path']] = value['sha256']
+        # These are byte-transport fixtures for audited claims, not real graph proofs.
+        self.json(record_path.with_name('audit.json'), {'schema': 'graphite.native-core-shard-audit.v1',
+            'status': core.SHARD_AUDIT_PASS, 'errors': [], 'finalIdentity': 'PASS', 'shardIndex': index, 'shardCount': 8,
+            **refs, 'graphs': rows, 'phases': phases, 'pins': pins,
+            'completeAssignedCoreTopologyIndexComparison': True, **{key: False for key in core.FALSE_CLAIMS}})
         args = self.args('core-shard', 'B', self.workspace/f'pressure-checkpoints/core-shard-B-{index}',
                          [self.directory/'manifest.json', Path(prep_args.directory)/'manifest.json'])
         args.shard_count = 8; args.shard_index = index
@@ -547,6 +591,28 @@ class CheckpointTests(unittest.TestCase):
             checkpoint.seal(args)
         self.assertFalse(Path(args.directory).exists())
         shutil.rmtree(extra)
+        checkpoint.seal(args)
+
+    def test_shard_seal_requires_complete_successful_audit_and_byte_closure(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        path = out/'shards/0/audit.json'; original = checkpoint.read(path)
+        mutations = [lambda value: value.update(status='FAIL'),
+                     lambda value: value.update(shardIndex=1),
+                     lambda value: value.update(checker=value['record']),
+                     lambda value: value.update(performanceAcceptance=True),
+                     lambda value: value['graphs'].pop(),
+                     lambda value: value['pins'].pop(str(out/'classes/VerifyTopology.class')),
+                     lambda value: value['pins'].pop(value['phases'][0]['path'])]
+        for mutate in mutations:
+            changed = copy.deepcopy(original); mutate(changed); self.json(path, changed)
+            with self.assertRaises(ValueError): checkpoint.seal(args)
+            self.assertFalse(Path(args.directory).exists())
+        self.json(path, original)
+        extra = out/'graphs'/core.shard_rows(plan, 0)[0]['id']/'unreported'
+        self.write(extra, 'must be bound by original worker audit')
+        with self.assertRaisesRegex(ValueError, 'audited complete graph byte closure'): checkpoint.seal(args)
+        extra.unlink()
         checkpoint.seal(args)
 
     def test_prepare_and_shard_reject_invalid_cli_partition(self):

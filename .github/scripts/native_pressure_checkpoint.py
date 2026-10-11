@@ -158,6 +158,55 @@ def core_shard_paths(root, ident):
     return paths + [root/name for name in names]
 
 
+def check_shard_transport(workspace, ident, files):
+    """Check the audited claim's exact byte closure; semantic authority stays with the runner."""
+    import run_native_core_equivalence as core
+    root = workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence'
+    index = ident['shardIndex']; plan = read(root/'plan.json')
+    record_path = root/'shards'/str(index)/'record.json'
+    record = read(record_path); audit = read(record_path.with_name('audit.json'))
+    def ref(path):
+        name = str(path)
+        require(name in files, 'audited reference omitted from checkpoint: '+name)
+        return {'path': name, 'sha256': files[name]['sha256']}
+    expected_refs = {'plan': ref(root/'plan.json'), 'preparation': ref(root/'preparation.json'),
+                     'record': ref(record_path),
+                     'checker': ref(workspace/'candidate/.github/scripts/run_native_core_equivalence.py')}
+    require(audit.get('schema') == 'graphite.native-core-shard-audit.v1' and
+            audit.get('status') == core.SHARD_AUDIT_PASS and audit.get('errors') == [] and
+            audit.get('finalIdentity') == 'PASS' and audit.get('shardIndex') == index and
+            audit.get('shardCount') == ident['shardCount'] and
+            audit.get('completeAssignedCoreTopologyIndexComparison') is True and
+            all(audit.get(key) is False for key in core.FALSE_CLAIMS) and
+            all(audit.get(key) == value for key, value in expected_refs.items()),
+            'complete exact shard audit transport identity')
+    pins = audit.get('pins')
+    require(isinstance(pins, dict) and all(name in files and files[name]['sha256'] == digest
+                                         for name, digest in pins.items()), 'audited pins match transported bytes')
+    required = dict(plan['pins'])
+    required.update(read(root/'preparation.json')['files'])
+    required.update({value['path']: value['sha256'] for value in expected_refs.values()})
+    required.update({name: facts['sha256'] for name, facts in files.items()
+                     if Path(name).is_relative_to(root/'classes')})
+    rows = audit.get('graphs', [])
+    require(rows == record.get('graphs') and
+            [row['id'] for row in rows] == [row['id'] for row in core.shard_rows(plan, index)],
+            'audited complete assigned graph claims')
+    for row in rows:
+        directory = root/'graphs'/row['id']
+        actual = {name: facts['sha256'] for name, facts in files.items() if Path(name).is_relative_to(directory)}
+        require(row.get('files') == actual and row.get('core') == ref(directory/'record.json') and
+                row.get('topology') == ref(directory/'topology.json'), 'audited complete graph byte closure')
+        required.update(actual)
+    phases = []
+    for name, _, _ in core.shard_commands(plan, index):
+        phases.append(ref(root/name/'record.json'))
+        for leaf in ('record.json', 'owner.json', 'stdout.log', 'stderr.log'):
+            value = ref(root/name/leaf); required[value['path']] = value['sha256']
+    require(audit.get('phases') == record.get('phases') == phases, 'audited complete phase closure')
+    require(pins == required, 'exact complete shard audit pin closure')
+
+
 class Collector:
     def __init__(self, workspace, inherited=()):
         self.workspace = workspace
@@ -388,6 +437,7 @@ def seal(args):
     sources = git_sources(workspace, ident['base'], ident['head'])
     upstream = upstreams(args, ident)
     collector = Collector(workspace, [read(path) for path in args.upstream]).collect(evidence_paths(workspace, args.stage, args.arm, ident))
+    if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, collector.files)
     # No unrelated upstream files are copied into delta payloads, but every pin is
     # still in the manifest and verified after restore.
     upstream_files = {}
@@ -421,6 +471,7 @@ def seal(args):
     require(git_sources(workspace, ident['base'], ident['head']) == sources, 'source changed during seal')
     if ident['stage'] == 'core-shard':
         core_shard_paths(workspace/'native-pressure-artifacts'/ident['arm']/'core-equivalence', ident)
+        check_shard_transport(workspace, ident, collector.files)
     save(directory/'manifest.json', manifest)
     return manifest
 
@@ -467,11 +518,14 @@ def restore(args):
                 require(p.is_file() and sha(p) == facts['sha256'] and stat.S_IMODE(p.stat().st_mode) == facts['mode'], 'refuse overwriting different file: '+name)
                 continue
             p.parent.mkdir(parents=True, exist_ok=True)
+            digest = hashlib.sha256()
             with tar.extractfile(member) as src, p.open('xb') as dst:
                 while chunk := src.read(1024*1024):
-                    dst.write(chunk)
+                    dst.write(chunk); digest.update(chunk)
             p.chmod(facts['mode'])
-            require(sha(p) == facts['sha256'], 'restored payload digest')
+            require(digest.hexdigest() == facts['sha256'], 'restored payload digest')
+            # check_files below independently reads the final on-disk bytes; the
+            # transport stream check does not need an additional full-file read.
     for name in manifest['directories']:
         if any(Path(name).is_relative_to(root) for root in readonly_jdks):
             continue
@@ -489,6 +543,7 @@ def restore(args):
         else:
             require(not p.exists(), 'existing tool link destination'); p.parent.mkdir(parents=True, exist_ok=True); p.symlink_to(target)
     check_files(manifest)
+    if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
     require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'restored source changed')
     return manifest
 

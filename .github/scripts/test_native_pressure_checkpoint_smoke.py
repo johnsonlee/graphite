@@ -204,7 +204,12 @@ class CheckpointChainSmoke(unittest.TestCase):
         self.cli('restore', f.args('core', 'B', final_ref.parent, [producer_ref]))
         self.assertEqual('all64-transferred', checkpoint.read(out/'record.json')['fixtureResult'])
         self.assertEqual(64, len(list((out/'graphs').iterdir())))
-        self.assertTrue(all((out/'shards'/str(i)/'record.json').is_file() for i in range(8)))
+        self.assertTrue(all((out/'shards'/str(i)/leaf).is_file()
+                            for i in range(8) for leaf in ('record.json', 'audit.json')))
+        for index in range(8):
+            audit = checkpoint.read(out/'shards'/str(index)/'audit.json')
+            self.assertEqual(index, audit['shardIndex'])
+            for name, digest in audit['pins'].items(): self.assertEqual(digest, checkpoint.sha(name))
         self.assertEqual(self.certificate_before, self.certificate.read_bytes())
 
 
