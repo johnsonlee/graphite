@@ -17130,3 +17130,33 @@ Prototype sources, exact commands and evidence hashes:
 `/tmp/graphite-core-input-split-prototype-report.json`; historical attribution:
 `/tmp/graphite-core-input-split-history.json`; combined Node verification:
 `/tmp/graphite-feedback-integrated-node-tests.log`.
+
+### Fixture64 cache identity follow-up (2026-10-11)
+
+The proposed fast feedback path exposed an existing cache-identity gap: the
+shared real64 corpus key enumerated only nine webgraph production files, omitting
+`DeclaredTypeStore`, `DeclaredTypeSavePlan`, `StructuralDeclaredTypes` and other
+type-storage dependencies. A change confined to one of those files could reuse a
+corpus generated before that change while the completion record carried the new
+candidate SHA. Existing corpus verification does not establish the complete writer
+source identity; no stale historical corpus has been proven from this gap alone.
+
+The cache key now covers the complete webgraph production and benchmark source
+trees alongside the existing core/sootup trees, build scripts and actual fixture
+JARs; it also includes Gradle properties, wrapper executable and wrapper JAR. The
+cache namespace advances tov3, consistently in the PR, main cache-warmup and Pages
+workflows. Independent pattern inspection covered104 current source/resource files
+with zero omissions and41 newly covered paths. The first local Node run caught
+the old namespace expectations and unsynchronized companion workflow keys; those
+were corrected before any push or CI restart. The final217-test Node batch and
+diff checks passed. Actionlint passed with shellcheck disabled; the Pages check
+also excluded the existing `concurrency.queue` property unsupported by the local
+actionlint version. This fixes cache invalidation; it does
+not promote shared candidate-written graphs to accepted-baseline own-writer proof.
+The first new-key run will miss the old cache and pay the existing two-generation
+reproducibility cost (historically about16 minutes before build/transfers), so it
+provides no reason to restart the active run merely to seek a speedup.
+
+Evidence: `/tmp/graphite-fixture64-cache-inputs.json` and
+`/tmp/graphite-fixture64-cache-node-tests.log`. The independent producer/core
+acceptance path still constructs and checks each actual writer's own real64 graphs.

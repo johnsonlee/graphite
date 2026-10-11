@@ -3603,7 +3603,7 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /test-fixture64-reproducibility\.sh/);
     assert.match(fixture64Job, /actions\/cache\/restore@v5/);
     assert.match(fixture64Job, /actions\/cache\/save@v5/);
-    assert.match(fixture64Job, /fixture64-real-v2-temurin17/);
+    assert.match(fixture64Job, /fixture64-real-v3-temurin17/);
     // The warm-up workflow on main must compute the same key, or pull requests never hit.
     const warmWorkflow = fs.readFileSync(new URL("../workflows/fixture64-cache.yml", import.meta.url), "utf8");
     const keyOf = text => text.match(/        key: >-\n[\s\S]*?\) \}\}\n/)?.[0];
@@ -3616,13 +3616,10 @@ test("pull-request workflow uses shared JMH artifacts, method shards, and the kn
     assert.match(fixture64Job, /frontend\/jvm\/webgraph\/build\/benchmark-fixtures\/\*\.jar/);
     assert.match(fixture64Job, /frontend\/jvm\/core\/src\/main\/\*\*/);
     assert.match(fixture64Job, /frontend\/jvm\/sootup\/src\/main\/\*\*/);
-    assert.match(fixture64Job, /frontend\/jvm\/webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/GraphStore\.kt/);
-    assert.match(
-        fixture64Job,
-        /frontend\/jvm\/webgraph\/src\/main\/kotlin\/io\/johnsonlee\/graphite\/webgraph\/CallSiteIndexPersistenceInput\.kt/
-    );
-    assert.doesNotMatch(fixture64Job, /frontend\/jvm\/webgraph\/src\/main\/\*\*/);
-    assert.doesNotMatch(fixture64Job, /MappedCallSiteStringIndexView\.kt/);
+    // Include newly introduced writer/type-storage helpers without requiring a
+    // hand-maintained per-file list; all workflows share this exact cache key.
+    assert.match(fixture64Job, /'candidate\/frontend\/jvm\/webgraph\/src\/main\/\*\*'/);
+    assert.match(fixture64Job, /'candidate\/frontend\/jvm\/webgraph\/src\/jmh\/\*\*'/);
     assert.match(fixture64Job, /FIXTURE64_CACHE_HIT/);
     assert.match(fixture64Job, /if: steps\.fixture64-cache\.outputs\.cache-hit != 'true'/);
     // The cache holds the corpus and the receipt it earned; the repeat copy is never cached.
