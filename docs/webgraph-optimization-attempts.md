@@ -19835,3 +19835,61 @@ cell requests/responses/resources, and
 /tmp/graphite-native-hosted91-cabbac-independent-summary.{json,md,log}.
 Static sorting-path review:
 /tmp/graphite-native-order-topk-static-feasibility.json.
+
+### Attempt263 — select JVM oracle graph scopes once per graph (2026-10-12)
+
+The complete JVM Collector calls node_matches for every node/case and checks the
+same up-to64-element targetGraphIds list each time. Select the ordered node cases
+for the actual graph once before its scan, then call the unchanged in-scope
+predicate. The public node_matches retains its scope guard and malformed-case
+failure order. node_properties always restores the actual graphId after reading
+annotation values, so user payload keys cannot alter this dispatch. Feature,
+full-projection, DATAFLOW, node scanning, original35 definitions, original64
+completeness and failure-poisoning checks are unchanged.
+
+Root AST comparison verifies the entire in-scope predicate body is unchanged.
+Three new tests exercise all64 graph scopes and complete35 catalog, annotation
+identity, actual invocation results, once-per-graph scope access, excluded-scope
+Unicode errors and included-scope failures. Integrated115 JVM helper tests pass
+in1.542s and22 raw-derivation tests pass in4.634s. All236 Node workflow tests pass
+in16.797s;194 source pins, exact helper profile, workflow binding, actionlint
+with shellcheck disabled and diff checks pass.
+
+Before a full64 rerun, compare eb8016f8 against only the derivation patch
+(candidate module SHA7a0f34205b036194718779cc010ffa951d904235fee96aeb940a8f0559962ecc)
+on original Android12,Tika10,Hive15,Kotlin15 graph bytes and their original raw
+edges/JDK facts. Both fresh Python processes read every selected node and edge
+and use all35 original case scopes. Compare complete partial counters, DISTINCT
+groups/variants, provenance, encounter order, graph counts and projection
+bindings, including exact scalar types and float bits. Do not invoke finish or
+forge complete64 authority. No producer, JDK conversion, server or build runs.
+
+Command: python3 -B /tmp/graphite-jvm-scope-prefilter-real4-prep-1/run.py
+/tmp/graphite-jvm-scope-prefilter-real4-result-1. Local macOS/Python3.14.7, fixedAB,
+135s per arm,30s comparison,300s aggregate work plus30s cleanup. The complete
+diagnostic ends in141.977s with all35 states and the header exactly equal, fresh
+terminal input identities, no unissued work and three empty owned process groups.
+
+| Four-real-graph validator traversal | Baseline eb8016f8 | Candidate263 |
+|---|---:|---:|
+| Worker wall including inputs/snapshot, seconds |71.772|64.240|
+| Worker CPU, seconds |71.552|64.070|
+| Raw graph read, seconds |24.580|24.690|
+| Collector node/edge accumulation, seconds |45.558|38.025|
+| Partial-state snapshot, seconds |0.387|0.392|
+| Worker peak RSS, bytes |1744011264|1773895680|
+
+Retain the7.532s wall reduction with7.533s less Collector time; CPU also falls,
+while peak RSS increases29884416 bytes (about1.7%). This fixedAB provides a
+bounded real-input validator diagnostic, not a repeated server latency
+distribution, formal operation acceptance, Linux capacity test or full64 runtime
+extrapolation. OS cache/order effects are not independently estimated. The
+complete CI critical path remains unmeasured; do not promise a two-hour bound.
+The previously prepared30-minute full64 diagnostic was not launched before this
+shorter candidate-selection step and remains immutable historical preparation.
+
+Evidence: /tmp/graphite-jvm-scope-prefilter-real4-prep-1/{plan.json,
+root-launch-review.json,root-result-review.json}, all raw worker stage journals
+and35 paired snapshots under /tmp/graphite-jvm-scope-prefilter-real4-result-1,
+/tmp/graphite-attempt263-root-predicate-review.json and
+/tmp/graphite-attempt263-integration-review.json.

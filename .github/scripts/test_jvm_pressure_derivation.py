@@ -133,6 +133,79 @@ class DerivationTests(unittest.TestCase):
         # The literal on the RHS is not lowercased by the request.
         self.assertFalse(d.node_matches(self.cases['routing-pair-miss'], row, values, keys))
 
+    def test_collector_scopes_match_public_predicates_for_all64_and_preserve_annotation_identity(self):
+        collector = d.Collector()
+        node_cases = [c for c in collector.cases if c['id'] not in d.DATAFLOW_IDS and
+                      c['family'] not in ('feature-presence', 'full-projection')]
+        real_match = d._node_matches_in_scope
+        for gid in model.FIXTURE_GRAPH_IDS:
+            annotation = dict(id=3, tag=13, name='A', owner='Owner', member='m', values={
+                'graphId': model.FIXTURE_GRAPH_IDS[0], 'qualifiedId': 'wrong:938826',
+                'caller_class': 'ANDROID.Test', 'callee_name': 'GETThing', 'value': d.HIT})
+            g = graph(gid, [call(1), dict(id=2, tag=1, value=d.MISS), annotation])
+            expected = []
+            for row in g['nodes'].values():
+                values, keys = d.node_properties(row, gid, g['declarations'])
+                self.assertEqual(gid, values['graphId'])
+                self.assertEqual(f"{gid}:{row['id']}", values['qualifiedId'])
+                for case in node_cases:
+                    match = d.node_matches(case, row, values, keys)
+                    if gid in case['targetGraphIds']:
+                        expected.append((case['id'], row['id'], match))
+                    else:
+                        self.assertFalse(match)
+            actual = []
+            def match(case, row, values, keys, facts=None, cache=None):
+                result = real_match(case, row, values, keys, facts, cache)
+                actual.append((case['id'], row['id'], result))
+                return result
+            with patch.object(d, '_node_matches_in_scope', side_effect=match):
+                collector.add_graph(g, edges(g), 0)
+            self.assertEqual(expected, actual, gid)
+        # The complete catalog is retained; graph selection never drops a case.
+        self.assertEqual(35, len(collector.cases))
+        self.assertEqual(list(model.FIXTURE_GRAPH_IDS), collector.seen)
+        first, last = model.FIXTURE_GRAPH_IDS[0], model.FIXTURE_GRAPH_IDS[-1]
+        for name in ('routing-pair-dense', 'routing-pair-miss'):
+            universe = collector._case_universe(next(c for c in collector.cases if c['id'] == name), False)
+            provenance = {gid for entry in universe['rows'] for gid in entry['value']['$metadata']['graphIds']}
+            self.assertEqual({first, last} if name.endswith('dense') else set(), provenance)
+
+    def test_scope_is_checked_once_per_graph_not_once_per_node(self):
+        class Scope(list):
+            def __init__(self, values): super().__init__(values); self.lookups = []
+            def __contains__(self, value): self.lookups.append(value); return super().__contains__(value)
+        collector = d.Collector()
+        node_cases = [c for c in collector.cases if c['id'] not in d.DATAFLOW_IDS and
+                      c['family'] not in ('feature-presence', 'full-projection')]
+        for case in node_cases: case['targetGraphIds'] = Scope(case['targetGraphIds'])
+        gid = model.FIXTURE_GRAPH_IDS[1]; g = graph(gid, [call(n) for n in range(4)])
+        collector.add_graph(g, edges(g), 0)
+        for case in node_cases:
+            self.assertEqual([gid], case['targetGraphIds'].lookups, case['id'])
+
+    def test_out_of_scope_predicate_errors_stay_skipped_but_in_scope_poison_collector(self):
+        # Isolate the routing case: global discovery legitimately needs these facts.
+        excluded, included = model.FIXTURE_GRAPH_IDS[1], model.FIXTURE_GRAPH_IDS[0]
+        def selected():
+            collector = d.Collector()
+            collector.cases = [c for c in collector.cases if c['family'] == 'feature-presence' or
+                               c['id'] == 'routing-pair-dense']
+            return collector
+        collector = selected(); g = graph(excluded, [call(1, '\u212aotlin')])
+        with patch.object(d, '_node_matches_in_scope', side_effect=AssertionError('excluded predicate evaluated')):
+            collector.add_graph(g, edges(g), 0)
+        self.assertFalse(collector.failed); self.assertEqual([excluded], collector.seen)
+        case = next(c for c in collector.cases if c['id'] == 'routing-pair-dense')
+        values, keys = d.node_properties(g['nodes'][1], excluded, g['declarations'])
+        self.assertFalse(d.node_matches(case, g['nodes'][1], values, keys))
+        with self.assertRaises(KeyError):
+            d.node_matches({'targetGraphIds': []}, g['nodes'][1], values, keys)
+        collector = selected(); g = graph(included, [call(1, '\u212aotlin')])
+        with self.assertRaisesRegex(d.MissingJvmSemantics, 'Locale.ROOT'):
+            collector.add_graph(g, edges(g), 0)
+        self.assertTrue(collector.failed); self.assertEqual([], collector.seen)
+
     def test_discovery_cache_preserves_scope_and_failed_unicode_evaluation(self):
         gid = model.FIXTURE_GRAPH_IDS[1]; row = call(1)
         values, keys = d.node_properties(row, gid, wire.Types())

@@ -235,8 +235,14 @@ def _discovery(case_id, properties, primitive_facts=None, discovery_cache=None):
 
 
 def node_matches(case, row, properties, keys, primitive_facts=None, discovery_cache=None):
-    case_id = case['id']
+    _ = case['id']  # Preserve public malformed-case failure before the scope check.
     if properties['graphId'] not in case['targetGraphIds']: return False
+    return _node_matches_in_scope(case, row, properties, keys, primitive_facts, discovery_cache)
+
+
+def _node_matches_in_scope(case, row, properties, keys, primitive_facts=None, discovery_cache=None):
+    """Collector already selected this case for the actual graph ID."""
+    case_id = case['id']
     if case['family'] in ('wrapped-discovery', 'graph-routing'):
         return _discovery(case_id, properties, primitive_facts, discovery_cache)
     if case_id == 'global-wide-four-properties-zero':
@@ -304,14 +310,16 @@ class Collector:
         need(graph['fullNodeScanConsumed'] is True, 'complete raw node scan required')
         if self.primitive_facts is not None: self.primitive_facts.bind_graph(graph)
         nodes = graph['nodes']; table = graph['declarations']; cache = {}; properties = {}; groups = Counter()
-        node_cases = [c for c in self.cases if c['id'] not in DATAFLOW_IDS and c['family'] not in ('feature-presence', 'full-projection')]
+        # node_properties always restores graphId to gid, including annotations.
+        node_cases = [c for c in self.cases if c['id'] not in DATAFLOW_IDS and
+                      c['family'] not in ('feature-presence', 'full-projection') and gid in c['targetGraphIds']]
         projection_cases = [c for c in self.cases if c['family'] == 'full-projection']
         for node_id, row in nodes.items():
             need(node_id == row['id'], 'actual node ID binding')
             values, keys = node_properties(row, gid, table, cache); properties[node_id] = values
             discovery_cache = {}
             for case in node_cases:
-                if node_matches(case, row, values, keys, self.primitive_facts, discovery_cache):
+                if _node_matches_in_scope(case, row, values, keys, self.primitive_facts, discovery_cache):
                     if case['id'] in self.distinct:
                         self.distinct[case['id']].add(raw_node_projection(case, row, values), gid)
                     else:
