@@ -19526,3 +19526,33 @@ selected by node --test .github/scripts/benchmark-*.test.mjs pass in16.932s.
 All193 preparation pins, workflow binding, structural actionlint with shellcheck
 disabled and diff checks pass. Reuse the unchanged isolated artifact/core-worker
 evidence rather than rerun it. Record: /tmp/graphite-attempt254-257-integration-review.json.
+
+Attempt257 follow-up: reuse the completed original64 universes and the existing
+241 JVM reader whose166 relevant production/build inputs match6aaba204. Launch
+one owned server with -Xmx8g and the original35 request contracts,600s work plus
+60s cleanup; no build, graph decoding, JDK-fact collection or derivation replay.
+Command: python3 -B /tmp/graphite-jvm35-http-owned-prep-1/execute.py execute.
+
+The diagnostic exits1 after344.098s (5m44s), with35/35 complete HTTP200 responses
+passing the original semantic validators. Root independently verifies all35
+request identities, graph scopes and15321127 response bytes. Completed stages:
+input checks4.496s, readiness10.007s, JSON parsing25.593s, oracle compilation
+258.470s, HTTP/body validation34.725s. These single responses are correctness
+observations, not server latency distributions or performance acceptance.
+
+The final dependency inventory fails: eight lazily imported helper modules were
+missing from the wrapper's direct control pins. Their expected hashes already
+exist in its frozen source_rules.REVIEWED_HELPERS; independent current-byte
+checks match all eight. This does not retroactively pass the original execution:
+FAILED_OR_STOPPED and incomplete finalIdentity remain unchanged. Preserve the
+35 observed semantic results and the failure; correct future preparation to
+include the lazy dependency closure before launch. Do not repeat expensive
+queries merely to regenerate these observations. No worker or JVM remains.
+
+Worker peak RSS is7621984256 bytes; this measures the local Python validator,
+not a paired Graphite-server resource result. Current own-writer authority,
+complete canonical correctness, full multi-graph performance acceptance and
+hosted full-workflow duration remain unresolved. Evidence:
+/tmp/graphite-jvm35-http-owned-prep-1/{plan.json,supervisor.json,
+root-response-review.json,root-lazy-dependency-review.json}, and
+/private/tmp/graphite-jvm35-http-owned-1/{execution.json,responses.jsonl}.
