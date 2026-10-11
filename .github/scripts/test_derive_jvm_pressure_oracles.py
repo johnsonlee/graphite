@@ -219,7 +219,7 @@ class DeriveProtocolTests(unittest.TestCase):
             self.assertEqual(64,len(collector.seen))
             result=actual(collector);seen.append(len(result['universes']))
             self.assertTrue(collector.failed);self.assertEqual({},collector.distinct)
-            self.assertEqual({},collector.rows);self.assertIsNone(collector.primitive_facts)
+            self.assertFalse(hasattr(collector,'rows'));self.assertIsNone(collector.primitive_facts)
             return result
         with patch.object(p.derivation.Collector,'_consume_finish',new=consume), \
              patch.object(p.derivation.Collector,'finish',side_effect=AssertionError('owned derive must not copy snapshot')):

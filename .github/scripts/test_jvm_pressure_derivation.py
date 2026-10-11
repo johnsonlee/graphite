@@ -537,7 +537,7 @@ class FullProjectionTests(unittest.TestCase):
         return collector
 
     def assert_consumed(self, collector, groups):
-        for name in ('distinct','counts','rows','projection_bindings'):
+        for name in ('distinct','counts','projection_bindings'):
             self.assertEqual({},getattr(collector,name))
         self.assertEqual([],collector.seen);self.assertEqual([],collector.graph_counts)
         self.assertIsNone(collector.primitive_facts)
@@ -547,6 +547,29 @@ class FullProjectionTests(unittest.TestCase):
         for action in (collector.finish,collector._consume_finish,
                        lambda:collector.add_graph(graph(model.FIXTURE_GRAPH_IDS[0]),b'',0)):
             with self.assertRaises(ValueError):action()
+
+    def test_encoded_ordinary_rows_keep_counts_and_public_finish_is_deeply_isolated(self):
+        collector=self.owned_collector();self.assertFalse(hasattr(collector,'rows'))
+        before=collector.finish();identity=model.key(before)
+        for case_id,counts in collector.counts.items():
+            if case_id in collector.distinct:continue
+            universe=before['universes'][case_id]
+            self.assertEqual([(model.key(row['value']),row['multiplicity']) for row in universe['rows']],list(counts.items()))
+        before['graphs'][0]['nodes']=-1
+        for universe in before['universes'].values():
+            universe['columns'].clear();universe['requestedGraphIds'].clear()
+            if universe.get('rows'):universe['rows'][0]['value'].clear()
+            if universe.get('groups'):universe['groups'][0]['semanticKey'].clear()
+        self.assertEqual(identity,model.key(collector.finish()))
+        self.assertEqual(identity,model.key(collector._consume_finish()))
+
+    def test_owned_ordinary_decode_failure_clears_complete_collector(self):
+        collector=self.owned_collector();groups=list(collector.distinct.values())
+        counts=list(collector.counts.values())
+        with patch.object(model,'decode_key',side_effect=ValueError('invalid encoded row')):
+            with self.assertRaisesRegex(ValueError,'invalid encoded row'):collector._consume_finish()
+        self.assert_consumed(collector,groups)
+        self.assertTrue(all(not counter for counter in counts))
 
     def test_owned_complete35_matches_snapshot_and_compiles_every_case_in_order(self):
         collector=self.owned_collector();before=collector.finish();groups=list(collector.distinct.values())

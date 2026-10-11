@@ -19556,3 +19556,66 @@ hosted full-workflow duration remain unresolved. Evidence:
 /tmp/graphite-jvm35-http-owned-prep-1/{plan.json,supervisor.json,
 root-response-review.json,root-lazy-dependency-review.json}, and
 /private/tmp/graphite-jvm35-http-owned-1/{execution.json,responses.jsonl}.
+
+### Attempt258 — keep one reversible encoding per accumulated JVM oracle value (2026-10-12)
+
+The collector previously retained both the complete typed identity string and
+its decoded object tree, plus a second ordinary-row dictionary. Retain only the
+complete reversible identity and multiplicity/provenance while accumulating.
+Decode values when producing results; full string equality, canonical typed
+identity and all original request/compiler/completeness checks remain. Preserve
+null/bool/int/float distinctions, signed zero, variant and group encounter order,
+and graph provenance. Public finish produces isolated reusable snapshots;
+private consumption drains state and invalidates it on every exit. JSON object
+key insertion order becomes canonical; raw serialized bytes may differ.
+
+Independent source review and109 integrated tests pass (5.228s), including strict
+round trips, malformed identities, snapshot isolation and failure cleanup.
+Preserve256's complete optimized JVM source profile and actual-checkout test;
+only the three changed helper hashes are replaced in its reviewed helper map.
+All193 control pins, structural actionlint and234 Node workflow tests pass
+(16.949s). Graphite product code and JVM heap settings are unchanged.
+
+Run a bounded diagnostic on244's frozen state for four actual graphs: Kotlin
+compiler15, Tika10, Android12 and Hive15. The original snapshot is362482911 bytes,
+SHA256 9d9853017f1415a497e53f7fa47b6c93cc5f6c8a971d5b0789cb5e56307ec13b.
+The baseline collector matches253's owned-consumption implementation. A separate
+process checks every original encoded key and creates the encoded snapshot;
+conversion cost is reported separately. Fresh baseline and candidate processes
+load only their own representation, consume all35 partial cases, run the original
+8 DISTINCT compilers, hold all35 outputs and use the original serializer. A final
+separate process compares every typed value, float bit, sequence order,
+multiplicity and provenance; only map insertion order is ignored.
+
+Command: python3 -B /tmp/graphite-attempt258-real4-prep/run.py
+/tmp/graphite-attempt258-real4-result-1. Budget330s work plus30s cleanup. The whole
+run completes in85.632s; all four process groups exit0 and are fully reaped.
+All35 partial results compare equal;14 also have identical serialized bytes.
+Conversion takes6.882s and comparison7.909s. The candidate pickle is294622477 bytes.
+
+| Local four-graph partial-state observation | Baseline253 | Candidate258 |
+|---|---:|---:|
+| RSS after loading state and GC, bytes |1357758464|608616448|
+| Worker lifetime peak RSS, bytes |1403863040|1376157696|
+| Worker wall, seconds |22.414|35.222|
+| Worker CPU, seconds |22.377|35.161|
+| Finish/decode, seconds |0.303|14.137|
+| Eight DISTINCT compilers, seconds |12.669|12.592|
+| Serialization, seconds |7.780|7.697|
+
+Retain the verified reduction of749142016 bytes in loaded state as an intermediate
+benefit, with the measured extra decoding cost. Peak RSS falls only27705344 bytes:
+retaining all decoded universes still dominates the final boundary. This is a
+mixed validator result, not a claim that full64 or hosted memory is fixed.
+Investigate releasing each completed case after writing it before repeating the
+complete64 diagnostic. No actual graph accumulation,27 ordinary full compilers,
+server load test, matched main comparison or Linux16GB feasibility is measured
+here. Every output explicitly retains allGraphScansComplete=false; the production
+64-graph guard is not bypassed. No product performance acceptance follows.
+
+Evidence: /tmp/graphite-attempt258-real4-prep/{plan.json,root-launch-review.json,
+root-result-review.json}, /tmp/graphite-attempt258-real4-result-1/execution.json,
+the four phase summaries, all35 paired outputs and the original isolated
+/tmp/graphite-attempt258-result.json. Review and integration evidence is retained
+in /tmp/graphite-attempt258-root-source-review.json and
+/tmp/graphite-attempt258-integration-review.json.

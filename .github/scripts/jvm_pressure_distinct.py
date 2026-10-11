@@ -3,7 +3,6 @@
 Numeric text is injected by the caller's separately bound JDK facts. These pure
 helpers neither acquire those facts nor establish source/runtime authority.
 """
-import copy
 import math
 import re
 import struct
@@ -125,32 +124,40 @@ class DistinctGroups:
             need(type(raw_values) is dict and '$metadata' not in raw_values and type(graph_id) is str and graph_id,
                  'raw projected columns and explicit graph identity')
             semantic = semantic_key(raw_values, self._text); key = model.key(semantic)
-            entry = self.groups.setdefault(key, {'semanticKey': semantic, 'graphIds': set(), 'variants': {}})
+            entry = self.groups.setdefault(key, {'graphIds': set(), 'variants': {}})
             entry['graphIds'].add(graph_id)
             try: visible = model.gson_value(projected_value(raw_values, self._text))
             except NonfiniteProjection: return  # Keep its semantic group in the complete count.
-            entry['variants'][model.key(visible)] = visible
+            entry['variants'][model.key(visible)] = None
         except BaseException:
             self.failed = True
             raise
 
     def finish(self):
         need(not self.failed, 'previous DISTINCT derivation failed')
-        return copy.deepcopy([{'semanticKey': v['semanticKey'], 'graphIds': sorted(v['graphIds']),
-                               'variants': list(v['variants'].values())} for v in self.groups.values()])
+        return [self._decode_group(key,value) for key,value in self.groups.items()]
+
+    @staticmethod
+    def _decode_group(key,entry):
+        return {'semanticKey':model.decode_key(key),'graphIds':sorted(entry['graphIds']),
+                'variants':[model.decode_key(variant) for variant in entry['variants']]}
 
     def _discard(self):
         self.failed = True
         self.groups = {}; self.facts = {}; self.number_text = None
 
     def _consume_finish(self):
-        """Transfer owned trees once; public finish remains an isolated snapshot."""
+        """Drain encoded state as fresh trees are built; public finish remains reusable."""
         groups = self.groups
         try:
             need(not self.failed, 'previous DISTINCT derivation failed or consumed')
             self._discard()
-            return [{'semanticKey': v['semanticKey'], 'graphIds': sorted(v['graphIds']),
-                     'variants': list(v['variants'].values())} for v in groups.values()]
+            result=[]
+            while groups:
+                key,entry=groups.popitem()
+                result.append(self._decode_group(key,entry))
+            result.reverse()  # Preserve original group encounter order.
+            return result
         finally:
             self._discard()
             groups.clear()

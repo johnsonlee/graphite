@@ -276,7 +276,7 @@ class Collector:
         self.cases = model.cases(graph_ids); self.graph_ids = tuple(graph_ids)
         need(primitive_facts is None or isinstance(primitive_facts, primitive.PrimitiveFacts), 'primitive facts consumer type')
         self.primitive_facts = primitive_facts
-        self.counts = {c['id']: Counter() for c in self.cases}; self.rows = {c['id']: {} for c in self.cases}
+        self.counts = {c['id']: Counter() for c in self.cases}
         self.distinct = {c['id']: distinct.DistinctGroups(self._number_text)
                          for c in self.cases if c['family'] == 'wrapped-discovery'}
         self.projection_bindings = {c['id']: Counter() for c in self.cases if c['family'] == 'full-projection'}
@@ -290,7 +290,7 @@ class Collector:
     def _add(self, case, values, graph_id, multiplicity=1):
         need(case['family'] != 'wrapped-discovery', 'DISTINCT requires raw pre-Gson values')
         row = model.projected_row(values, [graph_id]); key = model.key(row)
-        self.counts[case['id']][key] += multiplicity; self.rows[case['id']][key] = row
+        self.counts[case['id']][key] += multiplicity
 
     def add_graph(self, graph, raw_edges, edge_count):
         need(not self.failed, 'previous graph derivation failed')
@@ -369,7 +369,8 @@ class Collector:
         finally:
             self.failed = True
             for group in self.distinct.values(): group._discard()
-            self.distinct = {}; self.counts = {}; self.rows = {}
+            for counts in self.counts.values(): counts.clear()
+            self.distinct = {}; self.counts = {}
             self.projection_bindings = {}; self.seen = []; self.graph_counts = []
             self.primitive_facts = None
 
@@ -378,7 +379,7 @@ class Collector:
         for case in self.cases:
             case_id = case['id']
             universe = {'policy': model.POLICY, 'caseId': case_id,
-                        **{k: case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
+                        **{k: list(case[k]) if type(case[k]) is list else case[k] for k in ('requestSha256', 'querySha256', 'registeredGraphIds', 'requestedGraphIds',
                                               'targetGraphIds', 'columns', 'effectiveLimit')},
                         'allGraphScansComplete': True, 'exactEncounterOrderClaim': False}
             if case_id in self.distinct:
@@ -386,15 +387,21 @@ class Collector:
                 universe.update(schema=distinct.SCHEMA, equalityPolicy=distinct.EQUALITY,
                                 totalMatches=len(groups), groups=groups)
             else:
-                entries = [{'value': self.rows[case_id][key], 'multiplicity': count}
-                           for key, count in self.counts[case_id].items()]
+                counts=self.counts[case_id]
+                if consume:
+                    entries=[]
+                    while counts:
+                        key,count=counts.popitem()
+                        entries.append({'value':model.decode_key(key),'multiplicity':count})
+                    entries.reverse()
+                    del self.counts[case_id]
+                else:
+                    entries=[{'value':model.decode_key(key),'multiplicity':count} for key,count in counts.items()]
                 universe.update(schema='graphite.jvm-legal-row-universe.v1',
                                 totalMatches=sum(e['multiplicity'] for e in entries), rows=entries)
-                if consume:
-                    del self.counts[case_id], self.rows[case_id]
             model.CompiledLegalLimitOracle(universe, case)
             results[case_id] = universe
-        return {'universes': results, 'graphs': self.graph_counts,
+        return {'universes': results, 'graphs': self.graph_counts if consume else [dict(row) for row in self.graph_counts],
                 'fullProjectionBindings': {c['id']: {gid: self.projection_bindings[c['id']][gid] for gid in c['targetGraphIds']}
                                            for c in self.cases if c['family'] == 'full-projection'},
                 'scope': 'JVM_SOURCE_MODEL_DERIVATION_FROM_SUPPLIED_RAW_INPUTS_NOT_AUDIT_AUTHORITY',

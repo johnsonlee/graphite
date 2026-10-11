@@ -33,6 +33,30 @@ def groups(*values):
 
 
 class DistinctTests(unittest.TestCase):
+    def test_accumulation_retains_only_exact_keys_provenance_and_variant_membership(self):
+        collector=d.DistinctGroups(facts)
+        first=visible(callerMethod=[{'z':1,'a':None}],calleeMethod=raw.EnumReference('E','N'))
+        # Keep a second semantic group whose JSON projection collides exactly.
+        other=visible(callerMethod=[{'z':1}],calleeMethod=raw.EnumReference('E','N'))
+        collector.add(first,'g2');collector.add(first,'g1');collector.add(other,'g1')
+        self.assertEqual(2,len(collector.groups))
+        self.assertEqual([model.key(d.semantic_key(row,facts)) for row in (first,other)],list(collector.groups))
+        for entry in collector.groups.values():
+            self.assertEqual({'graphIds','variants'},set(entry))
+            self.assertTrue(all(type(key) is str and value is None for key,value in entry['variants'].items()))
+        result=collector.finish()
+        self.assertEqual([['g1','g2'],['g1']],[group['graphIds'] for group in result])
+        self.assertEqual(result[0]['variants'],result[1]['variants'])
+        self.assertNotEqual(result[0]['semanticKey'],result[1]['semanticKey'])
+
+    def test_owned_decode_failure_discards_all_remaining_encoded_state(self):
+        collector=d.DistinctGroups(facts);collector.add(visible(),'g');collector.add(visible(caller='other'),'g')
+        original=collector.groups
+        with patch.object(model,'decode_key',side_effect=ValueError('bad typed encoding')):
+            with self.assertRaisesRegex(ValueError,'bad typed encoding'):collector._consume_finish()
+        self.assertEqual({},original);self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+        self.assertTrue(collector.failed);self.assertIsNone(collector.number_text)
+
     def test_numeric_keys_use_exact_decimal_facts_not_binary_widening(self):
         self.assertEqual(d.semantic_key(1), d.semantic_key(f(1,32), facts))
         self.assertEqual(d.semantic_key(1), d.semantic_key(f(1), facts))
@@ -99,7 +123,7 @@ class DistinctTests(unittest.TestCase):
         for value in (1,f(1),f(-0.),f(0.),f(float('nan')),f(float('inf'))):
             for gid in ('g2','g1'):collector.add(visible(callerMethod=value),gid)
         before=collector.finish();source=collector.groups
-        with patch.object(d.copy,'deepcopy',side_effect=AssertionError('owned trees must transfer')):
+        with patch.object(copy,'deepcopy',side_effect=AssertionError('owned finish must not copy trees')):
             actual=collector._consume_finish()
         self.assertEqual(model.typed(before),model.typed(actual))
         self.assertEqual({},source);self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)

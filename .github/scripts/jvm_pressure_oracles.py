@@ -459,6 +459,39 @@ def key(value):
     return json.dumps(typed(value), ensure_ascii=False, separators=(',', ':'), allow_nan=False)
 
 
+def decode_key(encoded):
+    """Strict inverse of key(); object insertion order becomes canonical key order."""
+    need(type(encoded) is str, 'encoded typed JSON identity')
+    def decode(value):
+        need(type(value) is list and value and type(value[0]) is str, 'typed identity node')
+        tag=value[0]
+        if tag=='null':
+            need(len(value)==1, 'typed null identity');return None
+        need(len(value)==2, 'typed identity arity')
+        item=value[1]
+        if tag in ('bool','int','str'):
+            need(type(item) is {'bool':bool,'int':int,'str':str}[tag], 'typed scalar identity')
+            return item
+        if tag=='float':
+            need(type(item) is str, 'typed float hex identity')
+            number=float.fromhex(item)
+            need(math.isfinite(number) and number.hex()==item, 'canonical finite float identity')
+            return number
+        if tag=='array':
+            need(type(item) is list, 'typed array identity');return [decode(v) for v in item]
+        need(tag=='object' and type(item) is list, 'typed object identity')
+        result={};names=[]
+        for pair in item:
+            need(type(pair) is list and len(pair)==2 and type(pair[0]) is str, 'typed object entry')
+            name,child=pair;need(name not in result, 'unique typed object key')
+            names.append(name);result[name]=decode(child)
+        need(names==sorted(names), 'canonical typed object key order')
+        return result
+    value=decode(json.loads(encoded,parse_constant=lambda _:need(False,'finite encoded JSON')))
+    need(key(value)==encoded, 'canonical encoded typed identity')
+    return value
+
+
 def digest(value):
     return hashlib.sha256(key(value).encode('utf-8')).hexdigest()
 

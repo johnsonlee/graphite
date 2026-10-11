@@ -8,6 +8,38 @@ from unittest.mock import patch
 import jvm_pressure_oracles as oracle
 
 
+class TypedKeyInverseTests(unittest.TestCase):
+    def test_exact_roundtrip_types_nested_order_large_int_and_signed_zero(self):
+        values=[None,True,False,1,9007199254740993,1.0,0.0,-0.0,
+                float.fromhex('0x0.0000000000001p-1022'),float.fromhex('0x1.fffffffffffffp+1023'),
+                {'z':None,'a':[True,1,1.0,-0.0,{'z':'é','a':['x',None]}]}]
+        for value in values:
+            with self.subTest(value=value):
+                encoded=oracle.key(value);decoded=oracle.decode_key(encoded)
+                self.assertEqual(encoded,oracle.key(decoded));self.assertIs(type(value),type(decoded))
+        self.assertEqual('-0x0.0p+0',oracle.decode_key(oracle.key(-0.0)).hex())
+        self.assertEqual(3,len({oracle.key(v) for v in (True,1,1.0)}))
+
+    def test_invalid_or_noncanonical_encoded_keys_fail_closed(self):
+        invalid=['["int",true]','["bool",1]','["str",2]','["null",0]','["array",{}]',
+                 '["float","nan"]','["float","inf"]','["float","-0.0"]','["float",1.0]',
+                 '["object",[["b",["null"]],["a",["null"]]]]',
+                 '["object",[["a",["null"]],["a",["null"]]]]',
+                 '["other",0]','["array",[NaN]]','[ "int",1 ]','["int",1.0]','[']
+        for encoded in invalid:
+            with self.subTest(encoded=encoded),self.assertRaises(ValueError):oracle.decode_key(encoded)
+        with self.assertRaises(ValueError):oracle.decode_key(b'["int",1]')
+
+    def test_object_insertion_order_changes_explicitly_but_arrays_and_types_do_not(self):
+        original={'z':[2,1], 'a':{'z':1,'a':True}}
+        decoded=oracle.decode_key(oracle.key(original))
+        self.assertEqual(['a','z'],list(decoded));self.assertEqual([2,1],decoded['z'])
+        self.assertNotEqual(json.dumps(original),json.dumps(decoded))
+        self.assertEqual(oracle.key(original),oracle.key(decoded))
+        decoded['a']['z']=99
+        self.assertEqual(1,original['a']['z'])
+
+
 class JvmPressureOracleTests(unittest.TestCase):
     def setUp(self):
         self.cases = {c['id']: c for c in oracle.cases()}
