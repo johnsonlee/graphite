@@ -4330,7 +4330,13 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     assert.match(core, /--raw-local-types --raw-edges/);
     assert.doesNotMatch(core, /continue-on-error:/);
     const correctness = rustWorkflowStep(jobs["rust-jvm-correctness"], "Derive and independently check JVM responses on each real64 writer corpus");
-    assert.match(correctness, /derive_jvm_pressure_oracles\.py/);
+    assert.doesNotMatch(correctness, /derive_jvm_pressure_oracles\.py/);
+    const fresh = correctness.slice(correctness.indexOf("jvm_query_correctness.py"));
+    for (const flag of ["--producer-root", "--raw-export-root", "--arm", "--raw-derivation", "--output", "--port"]) {
+        assert.ok(fresh.split("python3 -B")[0].includes(flag), `fresh same-invocation derivation requires ${flag}`);
+    }
+    assert.equal((correctness.match(/jvm_query_correctness\.py/g) ?? []).length, 2,
+        "one fresh execution followed by one independent audit");
     assert.match(correctness, /jvm_query_correctness\.py/);
     assert.match(correctness, /--audit-only/);
     assert.doesNotMatch(correctness, /continue-on-error:/);

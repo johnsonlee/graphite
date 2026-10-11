@@ -68,7 +68,7 @@ class JvmPreparationTests(unittest.TestCase):
                                             'digest': p.model.digest(value), 'rows': value['totalMatches']}}
         jar = p.artifacts.ref(producer/'runtime/graphite.jar')
         plan = {'rawDerivationRoot': str(raw_dir), 'serverJar': jar, 'graphs': graphs, 'cases': cases,
-                'rawDerivationReplay': {'universes': universes}, 'expectationVariant': variant,
+                'rawDerivationEvidence': {'record': {'tiny': 'raw record'}, 'universes': universes}, 'expectationVariant': variant,
                 'data': str(http/'data'), 'port': 23800+ord(name),
                 'readiness': {'expected': {'count': 64, 'graphs': graphs}}}
         plan['argv'] = [str(self.java), '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', jar['path'],
@@ -78,6 +78,7 @@ class JvmPreparationTests(unittest.TestCase):
         plan_ref = self.write(http/'plan.json', plan); pins[plan_ref['path']] = plan_ref['sha256']
         result = {'schema': 'graphite.jvm-query-correctness-audit.v1', 'status': p.queries.AUDIT,
             'revision': revision, 'role': role, **refs, 'plan': plan_ref, 'pins': pins,
+            'rawDerivationReplay': dict(plan['rawDerivationEvidence'], completeRawDerivationReplayed=True),
             'cases': [{'case': c['id'], 'targetGraphIds': c['targetGraphIds']} for c in cases],
             'independentRawExpectationsVerified': True, 'sourceRuleApplicabilityVerified': True,
             'all35ActualResponsesVerified': True, 'oracleAuthorityVerified': True,

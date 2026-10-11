@@ -50,6 +50,8 @@ def audited_arm(directory, revision, role):
             [g['id'] for g in plan['graphs']] == list(model.FIXTURE_GRAPH_IDS), 'complete same ordered64 graph roots')
     variant = plan['expectationVariant']
     require(variant == ('C' if role == 'accepted-baseline' else 'B'), 'actual JVM expectation arm')
+    require(plan['rawDerivationEvidence'] == queries._evidence(observed['rawDerivationReplay']),
+            'same neutral derivation refs and independent replay')
     cases = []
     require(len(plan['cases']) == len(observed['cases']) == 35, 'complete JVM35 case inventory')
     for definition, case, receipt in zip(model.cases(), plan['cases'], observed['cases']):
@@ -57,7 +59,7 @@ def audited_arm(directory, revision, role):
                 receipt['case'] == case['id'] and receipt['targetGraphIds'] == case['targetGraphIds'],
                 'actual complete JVM request and graph scope')
         oracle = dict(case['oracleByArm'][variant])
-        value_ref = plan['rawDerivationReplay']['universes'][case['id']]
+        value_ref = plan['rawDerivationEvidence']['universes'][case['id']]
         value = common.pinned_authority_metadata({'pins': pins}, value_ref)
         require(common.typed(oracle['value']) == common.typed(value) and oracle['digest'] == model.digest(value),
                 'oracle is independent raw universe, not observed response')

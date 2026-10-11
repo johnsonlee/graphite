@@ -103,7 +103,7 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         self.order.append('source-rules'); self.assertEqual(self.raw_plan, plan)
         return copy.deepcopy(self.rules)
 
-    def execute(self, bad_body=False, cleanup_failure=False):
+    def execute(self, bad_body=False, cleanup_failure=False, fresh=False, check=None):
         fetched = []; bodies = self.base.bodies
         class Process:
             pid = 12345
@@ -124,9 +124,40 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
              patch.object(p.common, 'HTTPTransport', Transport), patch.object(p.common, 'readiness', side_effect=ready), \
              patch.object(p.common, 'stop_owned', return_value={'group': 12345, 'after': [12345] if cleanup_failure else [],
                                                               'errors': [], 'exit': -15}) as stop:
-            result = p.execute(self.raw, self.out, 22840)
+            if fresh:
+                def consume(producer, raw_export, arm, raw, callback):
+                    return callback(p._evidence(self.replayed), check or (lambda: None))
+                with patch.object(p.derive, '_run_and_consume_raw', side_effect=consume):
+                    result = p.derive_and_execute('producer', 'exports', 'B', self.raw, self.out, 22840)
+            else:
+                result = p.execute(self.raw, self.out, 22840)
         self.assertEqual(1, launch.call_count); self.assertEqual(1, stop.call_count)
         return result, fetched
+
+    def test_fresh_all35_execution_has_neutral_refs_and_audit_replays(self):
+        record, fetched = self.execute(fresh=True)
+        self.assertEqual(p.lifecycle.JVM_PASS, record['status'], record['errors'])
+        self.assertEqual(['source-rules'], self.order)
+        self.assertEqual([case['id'] for case in p.model.cases()], fetched)
+        plan = p.common.read(self.out/'plan.json')
+        self.assertEqual(p._evidence(self.replayed), plan['rawDerivationEvidence'])
+        self.assertNotIn('rawDerivationReplay', plan)
+        self.assertNotIn('completeRawDerivationReplayed', plan['rawDerivationEvidence'])
+        audited = p.audit(self.out)
+        self.assertEqual(['source-rules', 'raw-replay', 'source-rules'], self.order)
+        self.assertTrue(audited['rawDerivationReplay']['completeRawDerivationReplayed'])
+        self.assertEqual(35, len(audited['cases']))
+
+    def test_fresh_terminal_closure_failure_keeps_all35_and_owned_cleanup(self):
+        checks = []
+        def check():
+            checks.append(True)
+            if len(checks) == 2: raise ValueError('source configuration changed')
+        record, fetched = self.execute(fresh=True, check=check)
+        self.assertEqual('FAIL', record['status'])
+        self.assertEqual(35, len(fetched))
+        self.assertEqual([], record['cleanup']['after'])
+        self.assertTrue(any('source configuration changed' in error for error in record['errors']))
 
     def test_all35_raw_expectations_then_actual_response_audit(self):
         record, fetched = self.execute(); self.assertEqual(p.lifecycle.JVM_PASS, record['status'], record['errors'])

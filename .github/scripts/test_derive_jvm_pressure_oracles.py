@@ -160,6 +160,46 @@ class DeriveProtocolTests(unittest.TestCase):
             result = p.run(self.producer, self.proof, arm, self.out)
         return result, phases
 
+    def test_fresh_owned_derivation_once_and_private_lifetime_ends(self):
+        plan = p.bind(self.producer, self.proof, 'B', self.out)
+        checks = []; saved = []
+        def consume(evidence, check):
+            self.assertEqual(35, len(evidence['universes']))
+            self.assertEqual({'record', 'universes'}, set(evidence))
+            self.assertEqual(p.artifacts.ref(self.out/'record.json'), evidence['record'])
+            saved.append(check); check()
+            return 'consumed'
+        with patch.object(p, 'bind_raw', return_value=plan), \
+             patch.object(p, '_fresh_input_closure', return_value=lambda: checks.append(True)), \
+             patch.object(p.producer, 'phase', side_effect=self.fake_phase), \
+             patch.object(p, 'derive', wraps=p.derive) as actual, \
+             patch.object(p, 'replay', side_effect=AssertionError('fresh path cannot replay')):
+            self.assertEqual('consumed', p._run_and_consume_raw(self.producer, self.proof, 'B', self.out, consume))
+            self.assertEqual(1, actual.call_count)
+        self.assertEqual(2, len(checks))
+        with self.assertRaisesRegex(ValueError, 'expired'): saved[0]()
+
+    def test_fresh_failure_never_consumes_and_consumer_failure_expires(self):
+        plan = p.bind(self.producer, self.proof, 'B', self.out)
+        with patch.object(p, 'bind_raw', return_value=plan), \
+             patch.object(p, '_fresh_input_closure', return_value=lambda: None), \
+             patch.object(p.producer, 'phase', side_effect=ValueError('owned primitive failed')):
+            with self.assertRaisesRegex(ValueError, 'successful fresh'):
+                p._run_and_consume_raw(self.producer, self.proof, 'B', self.out,
+                                      lambda *args: self.fail('failed derivation consumed'))
+        self.assertEqual('FAIL', p.common.read(self.out/'record.json')['status'])
+
+    def test_fresh_new_output_and_consumer_failure_invalidate(self):
+        plan = p.bind(self.producer, self.proof, 'B', self.out); saved = []
+        def consume(evidence, check):
+            saved.append(check); (self.out/'new-empty-directory').mkdir(); check()
+        with patch.object(p, 'bind_raw', return_value=plan), \
+             patch.object(p, '_fresh_input_closure', return_value=lambda: None), \
+             patch.object(p.producer, 'phase', side_effect=self.fake_phase):
+            with self.assertRaisesRegex(ValueError, 'output closure changed'):
+                p._run_and_consume_raw(self.producer, self.proof, 'B', self.out, consume)
+        with self.assertRaisesRegex(ValueError, 'expired'): saved[0]()
+
     def test_real_raw_decoders_full34_two_phases_and_independent_replay(self):
         result, phases = self.execute()
         self.assertEqual(p.PASS, result['status'], result['errors']); self.assertEqual(1, self.audit_mock.call_count)
@@ -272,6 +312,39 @@ class DeriveProtocolTests(unittest.TestCase):
         self.assertIn('-XX:ActiveProcessorCount=4', commands[1][1]); self.assertIn('JvmPrimitiveFacts', commands[1][1])
         self.assertEqual(str(self.home), p.environment(plan)['JAVA_HOME'])
         self.assertNotIn('JAVA_TOOL_OPTIONS', p.environment(plan))
+
+
+class FreshInputClosureTests(unittest.TestCase):
+    def test_actual_producer_closure_rejects_new_inputs_configs_and_exports(self):
+        from test_audit_native_pressure_artifacts import ProducerReplayContextTests
+        for mutation in ('source', 'config', 'graph-directory', 'runtime-file', 'raw-directory', 'string-symlink', 'writer'):
+            with self.subTest(mutation=mutation):
+                fixture = ProducerReplayContextTests(); fixture.setUp()
+                try:
+                    f = fixture.f
+                    report = p.artifacts.audit(*fixture.args)
+                    path = f.out/'artifact-audit.json'; write_json(path, report)
+                    raw = f.out/'jvm-raw-edges'; raw.mkdir()
+                    strings = f.out/'core-string-exports'; strings.mkdir()
+                    plan = {'producerRoot': str(f.out), 'rawExportRoot': str(raw),
+                            'pins': {**report['pins'], str(path): p.common.sha(path)}}
+                    check = p._fresh_input_closure(plan); check()
+                    if mutation == 'source': fixture.source.return_value = {'unexpected': 'source'}
+                    elif mutation == 'config':
+                        packet = p.common.read(report['producerPacket']['path'])
+                        packet['configurationBefore']['unexpected'] = 'config'
+                        # Captured expected configs stay immutable; change the actual environment view.
+                        with patch.object(p.artifacts, 'configs', return_value=packet['configurationBefore']):
+                            with self.assertRaisesRegex(ValueError, 'configuration'): check()
+                        continue
+                    elif mutation == 'graph-directory': (f.out/'graphs/extra').mkdir()
+                    elif mutation == 'runtime-file': (f.out/'runtime/extra').write_bytes(b'new')
+                    elif mutation == 'raw-directory': (raw/'extra').mkdir()
+                    elif mutation == 'string-symlink': (strings/'link').symlink_to(raw)
+                    elif mutation == 'writer':
+                        (f.checkout/'frontend/jvm/webgraph/build/libs/extra-jmh.jar').write_bytes(b'extra')
+                    with self.assertRaises((ValueError, OSError)): check()
+                finally: fixture.doCleanups()
 
 
 if __name__ == '__main__': unittest.main()

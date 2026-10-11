@@ -193,6 +193,10 @@ def verify_phases(plan):
 def run(producer_root, core_root, arm, output, *, raw_export_root=None):
     require((core_root is None) != (raw_export_root is None), 'exactly one upstream raw authority')
     plan = bind_raw(producer_root,raw_export_root,arm,output) if raw_export_root is not None else bind(producer_root, core_root, arm, output)
+    return _run_plan(plan)
+
+
+def _run_plan(plan):
     out = Path(plan['output']); out.mkdir(parents=True, exist_ok=False); (out/'classes').mkdir()
     common.save(out/'plan.json', plan)
     record = {'schema': 'graphite.jvm-raw-oracle-record.v1', 'status': 'FAIL', 'errors': [], 'phases': [],
@@ -230,6 +234,65 @@ def run(producer_root, core_root, arm, output, *, raw_export_root=None):
         common.save(out/'record.json', record)
         for sig, handler in handlers.items(): signal.signal(sig, handler)
     return record
+
+
+def _directory_entries(root):
+    root = Path(root)
+    require(root.is_dir() and not root.is_symlink(), 'fresh derivation closed root')
+    result = {}
+    for path in [root, *root.rglob('*')]:
+        require(not path.is_symlink() and (path.is_file() or path.is_dir()), 'fresh derivation regular closure')
+        result[str(path)] = ('file' if path.is_file() else 'directory', path.stat().st_mode)
+    return result
+
+
+def _fresh_input_closure(plan):
+    """Small structural/source closure; callers separately verify all pinned bytes."""
+    root = Path(plan['producerRoot'])
+    report = common.pinned_authority_metadata(plan, artifacts.ref(root/'artifact-audit.json'))
+    source = common.pinned_authority_metadata(plan, report['sourceManifest'])
+    runtime = common.pinned_authority_metadata(plan, report['runtimeManifest'])
+    packet = common.pinned_authority_metadata(plan, report['producerPacket'])
+    checkout = Path(source['root'])
+    directories = artifacts._ProducerReplayContext._inventories(report)
+    trees = {str(path): _directory_entries(path) for path in
+             (root/'core-string-exports', Path(plan['rawExportRoot']))}
+    def check():
+        require(artifacts._ProducerReplayContext._inventories(report) == directories,
+                'fresh producer directory closure changed')
+        require(artifacts.source_inventory(checkout, report['revision']) == source['files'] == report['sourceBefore'],
+                'fresh source inventory changed')
+        require(artifacts.configs(checkout, packet['buildEnvironment']) ==
+                packet['configurationBefore'] == packet['configurationAfter'], 'fresh configuration changed')
+        writers = list((checkout/'frontend/jvm/webgraph/build/libs').glob('*-jmh.jar'))
+        require(len(writers) == 1 and str(writers[0]) in runtime['originalArtifacts'], 'fresh single source-built writer')
+        require(all(_directory_entries(path) == entries for path, entries in trees.items()),
+                'fresh raw/string export closure changed')
+    return check
+
+
+def _run_and_consume_raw(producer_root, raw_export_root, arm, output, consume):
+    """Keep fresh authority only inside this invocation, never in a saved token."""
+    plan = bind_raw(producer_root, raw_export_root, arm, output)
+    closure = _fresh_input_closure(plan)
+    active = True
+    def check():
+        require(active, 'expired fresh derivation invocation')
+        closure()
+        require(_directory_entries(output) == entries, 'fresh derivation output closure changed')
+    try:
+        record = _run_plan(plan)
+        require(record['status'] == PASS and record['errors'] == [] and record['finalIdentity'] == 'PASS',
+                'successful fresh raw derivation required')
+        # _run_plan has returned: Collector, universes and compiled indexes are released.
+        require(common.read(Path(output)/'record.json') == record and
+                record['plan'] == artifacts.ref(Path(output)/'plan.json'), 'fresh derivation record bytes changed')
+        entries = _directory_entries(output)
+        evidence = {'record': artifacts.ref(Path(output)/'record.json'), 'universes': record['universes']}
+        check()
+        return consume(evidence, check)
+    finally:
+        active = False
 
 
 def replay(output):

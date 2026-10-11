@@ -18974,3 +18974,44 @@ Evidence: `/tmp/graphite-current-native-stack-prep-1/build-root-review.json`,
 `query-root-review.json` and `stack-analysis.json` in that directory.
 The full hosted CI remains unproven below two hours; this bounded local
 feedback does not establish end-to-end workflow recovery.
+
+### Attempt246 — consume fresh JVM raw derivation within its owned invocation (2026-10-12)
+
+Parent:9513b44c (product/control source unchanged from6c505f41). The initial
+JVM35 correctness chain runs raw derivation, repeats it in execute.prepare,
+then independently repeats it in audit.prepare. Combine the first derivation
+and HTTP execution in one owned CLI invocation, consuming its completed record
+and universe references without the execute.prepare replay. Release the
+Collector and compiled indexes before handing off; retain no large cache.
+
+Keep source/configuration and closed-directory checks plus all existing pinned
+bytes, source-rule applicability,35 request/result contracts, process cleanup
+and final identity verification. The private fresh callback expires on return
+or failure. Saved plans carry neutral rawDerivationEvidence; only the actual
+independent audit may claim completeRawDerivationReplayed. Standalone execute
+and audit retain full replay, and downstream preparation cross-checks neutral
+references against that actual audit. The workflow uses the combined CLI and
+still invokes the independent audit. No shared lifecycle or Collector change.
+
+For this initial correctness subchain, static call analysis reduces complete
+derivations3→2, full64 raw-reader passes6→4 and full35 oracle compilation passes
+7→6. Downstream audited_arm/assemble/verify_bundle still repeat full correctness.
+These are access-count reductions, not measured elapsed-time savings or a claim
+that full CI now finishes within two hours. Full64 finish/serialization/memory
+and downstream costs remain unmeasured; do not launch an unbudgeted full run.
+
+Validation on macOS/Python3.14: `python3 -B -m unittest
+test_derive_jvm_pressure_oracles test_jvm_query_correctness
+test_prepare_jvm_pressure_plan test_jvm_pending_handoff
+test_native_query_correctness` from.github/scripts passes66 tests in49.874s.
+The changed Node workflow contract passes in90.433ms (137 unrelated tests
+filtered). Root reviews code and rechecks all193 preparation pins and workflow
+binding. Structural actionlint with shellcheck disabled and diff check pass;
+default actionlint reports five shellcheck findings, retained in its log.
+The first focused run fails after files were edited while tests were running;
+retain that log. The passing second run uses frozen source.
+
+Retain this scoped repeated-work removal. No real64/hosted run, query p50/p95,
+CPU/RSS or cumulative regression acceptance is established by these tests.
+Evidence: `/tmp/graphite-attempt246-fresh-derive-tests/summary.json`,
+`tests-1.log`, `tests-2.log` and `workflow-contract.log`.

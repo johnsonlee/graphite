@@ -31,15 +31,29 @@ def source_rules(plan):
     return jvm_pressure_source_rules.audit(plan)
 
 
-def prepare(raw_derivation_dir, output, port):
+def _prepare_replayed(raw_derivation_dir, output, port):
     root, output = Path(raw_derivation_dir).resolve(), Path(output).resolve()
     require(type(port) is int and 1024 <= port <= 65535, 'owned JVM port')
     replayed = derive.replay(root)
     require(replayed['status'] == derive.PASS and replayed['actualPrimitiveExecutionVerified'] is True and
             replayed['completeRawDerivationReplayed'] is True and
             all(replayed[key] is False for key in derive.FALSE_CLAIMS), 'independent raw derivation replay required')
+    return _prepare_evidence(root, output, port, _evidence(replayed)), replayed
+
+
+def _evidence(replayed):
+    return {key: replayed[key] for key in ('record', 'universes')}
+
+
+def prepare(raw_derivation_dir, output, port):
+    return _prepare_replayed(raw_derivation_dir, output, port)[0]
+
+
+def _prepare_evidence(root, output, port, evidence):
+    root, output = Path(root).resolve(), Path(output).resolve()
+    require(type(port) is int and 1024 <= port <= 65535, 'owned JVM port')
     raw_plan, raw_record = common.read(root/'plan.json'), common.read(root/'record.json')
-    require(replayed['record'] == artifacts.ref(root/'record.json') and
+    require(evidence['record'] == artifacts.ref(root/'record.json') and
             raw_record['plan'] == artifacts.ref(root/'plan.json'), 'same actual derivation plan/record')
     rules = source_rules(raw_plan)
     require(rules['schema'] == 'graphite.jvm-source-rule-applicability.v1' and
@@ -82,18 +96,18 @@ def prepare(raw_derivation_dir, output, port):
     contracts = [{key: case[key] for key in ('id', 'requestSha256', 'querySha256',
                                             'requestedGraphIds', 'targetGraphIds')} for case in cases]
     require(common.typed(rules['requestContracts']) == common.typed(contracts), 'same complete35 source-bound requests')
-    require(set(replayed['universes']) == {case['id'] for case in cases}, 'complete35 independent raw universes')
+    require(set(evidence['universes']) == {case['id'] for case in cases}, 'complete35 independent raw universes')
     variant = raw_plan['arm']
     require(variant in ('C', 'B'), 'actual reference/candidate derivation arm')
     for case in cases:
-        ref = replayed['universes'][case['id']]
+        ref = evidence['universes'][case['id']]
         universe = common.pinned_authority_metadata(packet, ref)
         validator = model.CompiledLegalLimitOracle(universe, case)
         case['oracleByArm'] = {variant: {'kind': 'jvm-complete-legal-limit-multiset-v1', 'value': universe,
                                        'digest': model.digest(universe), 'rows': min(validator.total, validator.limit)}}
     jar = jars['graphiteJar']['path']
     plan = {'schema': PLAN, 'revision': raw_plan['revision'], 'role': raw_plan['role'],
-            'rawDerivationRoot': str(root), 'rawDerivationReplay': replayed, 'sourceRuleAudit': rules,
+            'rawDerivationRoot': str(root), 'rawDerivationEvidence': evidence, 'sourceRuleAudit': rules,
             'sourceManifest': raw_plan['sourceManifest'], 'runtimeManifest': raw_plan['runtimeManifest'],
             'fixtureManifest': raw_plan['fixtureManifest'], 'expectationVariant': variant,
             'serverJar': jars['graphiteJar'], 'packagedEntry': entrypoint(jar),
@@ -114,9 +128,28 @@ def execute(raw_derivation_dir, output, port):
     require(output.is_dir() and not list(output.iterdir()), 'fresh empty correctness output')
     # Prepare once here; callers cannot supply an unaudited serialized plan.
     plan = prepare(raw_derivation_dir, output, port)
+    return _execute_plan(plan, output, lifecycle.verify_closure)
+
+
+def _execute_plan(plan, output, verify_closure):
     contract = lifecycle._ExecutionContract('jvm', PLAN, lifecycle.JVM_SCHEMA, lifecycle.JVM_PASS,
-        tuple(case['id'] for case in model.cases([g['id'] for g in plan['graphs']])), lifecycle.verify_closure)
+        tuple(case['id'] for case in model.cases([g['id'] for g in plan['graphs']])), verify_closure)
     return lifecycle._execute_validated(plan, output, contract)
+
+
+def derive_and_execute(producer_root, raw_export_root, arm, raw_derivation_dir, output, port):
+    output, raw = Path(output).resolve(), Path(raw_derivation_dir).resolve()
+    require(output.is_dir() and not list(output.iterdir()), 'fresh empty correctness output')
+    require(not output.is_relative_to(raw) and not raw.is_relative_to(output), 'separate derivation and HTTP output')
+    controls = {str(module.resolve()): common.sha(module) for module in (Path(__file__), Path(lifecycle.__file__))}
+    def consume(evidence, check):
+        artifacts.verify_pins(controls)
+        plan = _prepare_evidence(raw, output, port, evidence)
+        def verify(actual):
+            lifecycle.verify_closure(actual)
+            check()
+        return _execute_plan(plan, output, verify)
+    return derive._run_and_consume_raw(producer_root, raw_export_root, arm, raw, consume)
 
 
 def audit(directory):
@@ -125,7 +158,7 @@ def audit(directory):
     require(plan['schema'] == PLAN and record['schema'] == lifecycle.JVM_SCHEMA and
             record['status'] == lifecycle.JVM_PASS and record['errors'] == [] and record['finalIdentity'] == 'PASS',
             'complete successful JVM35 execution')
-    expected = prepare(plan['rawDerivationRoot'], root, plan['port'])
+    expected, replayed = _prepare_replayed(plan['rawDerivationRoot'], root, plan['port'])
     require(common.typed(plan) == common.typed(expected), 'independent JVM plan differs from actual raw/source evidence')
     require(record['plan'] == artifacts.ref(root/'plan.json') and record['revision'] == plan['revision'] and
             record['role'] == plan['role'], 'same actual JVM execution plan')
@@ -147,7 +180,7 @@ def audit(directory):
             'revision': plan['revision'], 'role': plan['role'], 'plan': artifacts.ref(root/'plan.json'),
             'record': artifacts.ref(root/'record.json'), 'sourceManifest': plan['sourceManifest'],
             'runtimeManifest': plan['runtimeManifest'], 'fixtureManifest': plan['fixtureManifest'],
-            'rawDerivationReplay': plan['rawDerivationReplay'], 'sourceRuleAudit': plan['sourceRuleAudit'],
+            'rawDerivationReplay': replayed, 'sourceRuleAudit': plan['sourceRuleAudit'],
             'readiness': record['readiness'], 'cases': receipts, 'pins': pins,
             'independentRawExpectationsVerified': True, 'sourceRuleApplicabilityVerified': True,
             'all35ActualResponsesVerified': True, 'oracleAuthorityVerified': True,
@@ -160,13 +193,21 @@ def main():
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--port', type=int)
     parser.add_argument('--audit-only', action='store_true')
+    parser.add_argument('--producer-root', type=Path)
+    parser.add_argument('--raw-export-root', type=Path)
+    parser.add_argument('--arm', choices=('C', 'B'))
     args = parser.parse_args()
+    fresh = any(value is not None for value in (args.producer_root, args.raw_export_root, args.arm))
+    require(not fresh or (not args.audit_only and all(value is not None for value in
+            (args.producer_root, args.raw_export_root, args.arm))), 'complete fresh derivation arguments')
     if args.audit_only:
         result = audit(args.output); print(json.dumps(result)); return 0
     require(args.raw_derivation is not None and args.port is not None, 'actual raw derivation and server port required')
     args.output.mkdir(parents=True, exist_ok=False)
     try:
-        result = execute(args.raw_derivation, args.output, args.port)
+        result = (derive_and_execute(args.producer_root, args.raw_export_root, args.arm,
+                                    args.raw_derivation, args.output, args.port) if fresh else
+                  execute(args.raw_derivation, args.output, args.port))
     except (OSError, ValueError, KeyError, TypeError) as error:
         common.save(args.output/'preparation-failure.json', {'status': 'FAIL', 'error': repr(error)})
         return 1
