@@ -2973,7 +2973,7 @@ jobs:
         retention-days: 14
 
     - name: Retain producer diagnostic evidence
-      if: always()
+      if: failure() && !cancelled()
       uses: actions/upload-artifact@v7
       with:
         name: native-pressure-producer-${{ github.event.pull_request.number }}-${{ github.run_attempt }}

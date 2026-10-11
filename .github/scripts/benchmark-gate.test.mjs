@@ -4674,8 +4674,8 @@ test("native core graph shards prepare once and join all eight without weakening
     assert.match(shard, /^    needs: \[rust-producer, rust-core-prepare\]$/m);
     assert.match(join, /^    needs: \[rust-producer, rust-core-prepare, rust-core-shard\]$/m);
     assert.match(shard, /^        shard: \[0, 1, 2, 3, 4, 5, 6, 7\]$/m);
-    for (const job of [prepare, shard, join]) {
-        const diagnostic = job.slice(job.indexOf("    - name: Retain core-"));
+    for (const job of [rustWorkflowJob(workflow, "rust-producer"), prepare, shard, join]) {
+        const diagnostic = job.slice(job.indexOf("    - name: Retain "));
         assert.match(diagnostic, /if: failure\(\) && !cancelled\(\)/,
             "successful checkpoints retain evidence; cancellation must not start a duplicate upload");
         assert.match(job, /Publish .*checkpoint[\s\S]*?if-no-files-found: error/,

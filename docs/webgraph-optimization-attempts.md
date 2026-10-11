@@ -17225,3 +17225,57 @@ measured CI speedup is claimed. The active03f producer remains ahead of a fresh
 replacement's producer; downstream savings are not yet measured, and the new
 fixture cache identity would add a cold-generation cost. Retain the active run
 until new stage evidence establishes a better replacement decision.
+
+### Attempt216 — avoid a second successful producer upload before releasing consumers (2026-10-11)
+
+Current03f completed its build/prerequisite-audit step at12:02:52UTC, sealed the
+complete checkpoint at12:06:32 and published it at12:06:58. Consumers still wait
+for the producer job while an `always()` diagnostic upload copies its outputs a
+second time. The previous7d producer spent217s (08:20:18–08:23:55UTC) in that
+optional upload. This is observed CI waiting overhead, not query timing or an
+estimate that the new condition has already saved217s in hosted CI.
+
+Change only the producer diagnostic condition to `failure() && !cancelled()`,
+matching the existing core preparation/worker/join diagnostic policy. The required
+complete checkpoint publication, `if-no-files-found: error`, download paths,
+identity/integrity checks and every measurement/audit remain unchanged. A failed
+build, audit, seal or publish still attempts the diagnostic fallback. Successful
+runs retain the complete verified transport archive instead of a second upload.
+
+Independent read-only review confirmed that no consumer references the
+`native-pressure-producer-*` diagnostic artifact; the final regression gate reads
+`benchmark-*`, and stage consumers use the required `native-checkpoint-*` artifacts.
+The producer collector retains root/arm direct files, all runtime/graph/query/core
+input trees, all command phase logs/records and the transitive pinned dependencies.
+The existing real7d manifest independently confirms14282 recorded files and12486
+payload files including those successful C/B outputs. The diagnostic glob's JVM
+and final-core trees are produced only in later jobs; `native-pressure-producers`
+is likewise not created by this stage. No success evidence required for downstream
+acceptance is removed.
+
+Parent:57bdf328 (product code unchanged); accepted baseline remains4f2ccf3. The
+real64 Native39/JVM35 six-cell workloads and all query p50/p95, construction,
+loading, CPU/RSS and correctness/stability acceptance constraints are unchanged.
+The existing workflow test now checks the producer as well as all three core job
+kinds: success uses mandatory checkpoint publication, diagnostics run only for
+failure without cancellation. The focused test passed (1 selected,137 skipped)
+and actionlint passed with shellcheck disabled; `git diff --check` passed.
+
+**Decision: retain locally.** No new graph benchmark was run for this workflow-only
+condition. Cumulative performance acceptance remains pending. This saves an
+unnecessary successful upload structurally but does not establish a complete CI
+time bound or justify restarting the current run, which has already published its
+checkpoint. Evidence: `/tmp/graphite-producer-diagnostic-workflow-test.log`,
+`/tmp/graphite-producer-diagnostic-actionlint.log`, the prior producer job114416450501
+and current producer job114457975741 in run38134638126.
+
+Current-run confirmation:03f producer subsequently completed successfully at
+12:09:49UTC,46m44s after its11:23:05 start. Its duplicate diagnostic upload actually
+took167s (12:06:58–12:09:45), in addition to the already-completed mandatory
+checkpoint. Native measurement, core-B preparation and legacy query consumers
+then started. The downloaded completed job log independently confirms the sealed
+head/run identity and published archive digest
+`3aae79ca642e3188a6d4e932978762e723fc6395962d9b30ee9f9d7a9cafa1e9`.
+This is03f CI stage evidence; the local Attempt213–216 changes have not run in
+hosted CI, and no total-CI speedup is attributed to them. Log:
+`/tmp/graphite-ci03f4dd-producer.log`.
