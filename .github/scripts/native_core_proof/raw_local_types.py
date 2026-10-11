@@ -276,7 +276,8 @@ class Authority:
                   'unprovedCount': len(failures), 'occurrences': self.rows, 'inputs': self.export_pins,
                   'sourceCreationInputs': self.creation_pins or {},
                   'strictEquivalence': False, 'completeSemanticEquivalence': False, 'performanceAcceptance': False}
-        (self.out/'raw-local-type-proof.json').write_text(json.dumps(result, indent=2)+'\n')
+        # This complete per-node report can be hundreds of MB; omit formatting whitespace.
+        (self.out/'raw-local-type-proof.json').write_text(json.dumps(result, separators=(',', ':'))+'\n')
         return result
 
     def finish(self):

@@ -16831,3 +16831,39 @@ Evidence: `/tmp/graphite-core-boundary-prototype-report.json`,
 `/tmp/graphite-core-boundary-final-tests.log`,
 `/tmp/graphite-feedback-worker-input-tests.log`, and
 `/tmp/graphite-ci7d3805-core-worker-timings.json`.
+
+
+### Attempt209 — omit formatting whitespace from full Local proof reports (2026-10-11)
+
+**Hypothesis.** The complete per-node raw Local proof is machine-consumed JSON;
+pretty-print whitespace adds bytes to every write, read, hash and archive pass.
+Use compact JSON separators at its original creation point while retaining every
+field and occurrence, insertion order, default escaping and the final newline.
+Do not transform or relabel existing sealed evidence.
+
+Base: `e6c8f00580fd8b6cdcd4f29db8751c4f3979bf00` (Attempt208); candidate: this
+commit. The current7d hosted worker4 manifest records eight full Local proof JSON
+files totaling3,828,683,550 bytes, individually314,788,299–667,993,599 bytes. No
+same-schema file met the declared20MB sample limit, so no giant report was read,
+reencoded or timed for this experiment. The number of removable bytes on the real
+corpus is not measured. Existing gzip compression already handles repetitive
+whitespace; fewer raw bytes do not establish smaller archives or lower CI time.
+
+This changes only Authority.save serialization. Source review found no consumer
+that depends on whitespace or line structure: graph_result parses JSON and checks
+its complete contents; later ref/inventory, audit and checkpoint steps fingerprint
+the actual newly written bytes. Failure reports still retain all unproved entries.
+No parsing, source binding, graph coverage, semantic audit or acceptance rule is
+removed. The real64 workload and all existing measurement boundaries remain intact.
+
+Correctness:109 existing raw Local, real CLI-consumer and worker-runner tests
+passed in13.779s, including parsed-result equality and persisted failure-report
+checks. Controls and the workflow manifest digest are refreshed. No additional
+benchmark or oversized sample processing was needed for this formatting change.
+
+**Decision: retain the bounded output-size simplification locally.** Hosted time,
+CPU/RSS, server p50/p95 and construction/loading acceptance remain unmeasured for
+this candidate. This is not a claim of full feedback-loop recovery. Current7d CI
+continues unchanged. Evidence:
+`/tmp/graphite-ci7d3805-core-shard4-review/local-json-whitespace-review.json` and
+`/tmp/graphite-compact-local-proof-tests.log`.
