@@ -991,6 +991,82 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         self.assertEqual(self.replay.call_count, 1)
         self.assertEqual(calls, [(op, str(i)) for i in range(6) for op in ('run', 'audit')])
 
+    def test_combined_six_cells_keep_raw_audit_with_two_outer_input_checks_each(self):
+        context = self.context(); events = []
+        def run(plan_path, cell, output, plan):
+            events.append(('run', cell)); Path(output).mkdir(parents=True)
+            p.save(Path(output)/'raw.json', {'body': cell, 'cpu': 3, 'cleanup': []})
+            return {'status': 'PASS', 'cell': cell}
+        def audit(plan_path, output, plan):
+            raw = p.read(Path(output)/'raw.json')
+            self.assertEqual(raw, {'body': Path(output).name, 'cpu': 3, 'cleanup': []})
+            events.append(('audit', raw['body']))
+            return {'status': 'PASS', 'body': raw['body']}
+        # The mocked run omits its two existing inner checks; count only outer
+        # boundary hashes, each of which still executes the real verifier.
+        with patch.object(p, 'verify_inputs', wraps=p.verify_inputs) as verified, \
+                patch.object(p, '_run_cell', side_effect=run), patch.object(p, '_audit', side_effect=audit):
+            for i in range(6):
+                result, audited = context.run_and_audit_cell(str(i), self.root/'execution'/str(i))
+                self.assertEqual(result, {'status': 'PASS', 'cell': str(i)})
+                self.assertEqual(audited, {'status': 'PASS', 'body': str(i)})
+        self.assertEqual(verified.call_count, 12)
+        self.assertEqual(self.replay.call_count, 1)
+        self.assertEqual(events, [(op, str(i)) for i in range(6) for op in ('run', 'audit')])
+
+    def test_combined_mutations_during_run_or_audit_fail_terminal_boundary(self):
+        pinned = self.raw/'universes/case.json'
+        closure = self.query/'readiness-attempts/extra'
+        for phase in ('run', 'audit'):
+            for kind in ('plan', 'pinned', 'closure'):
+                with self.subTest(phase=phase, kind=kind):
+                    context = self.context()
+                    original_plan = self.plan_file.read_bytes(); original_pin = pinned.read_bytes()
+                    def changed(*args):
+                        if kind == 'plan': self.plan_file.write_text('{}')
+                        elif kind == 'pinned': pinned.write_text('{"changed":true}')
+                        else: closure.mkdir()
+                        return {'status': 'PASS'}
+                    try:
+                        with patch.object(p, '_run_cell', side_effect=changed if phase == 'run' else None,
+                                          return_value={'status': 'PASS'}), \
+                                patch.object(p, '_audit', side_effect=changed if phase == 'audit' else None,
+                                             return_value={'status': 'PASS'}):
+                            with self.assertRaises((ValueError, OSError)):
+                                context.run_and_audit_cell('0', self.root/'out')
+                        with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+                    finally:
+                        self.plan_file.write_bytes(original_plan); pinned.write_bytes(original_pin)
+                        if closure.exists(): closure.rmdir()
+
+    def test_combined_failures_invalidate_and_failed_run_never_audits(self):
+        for phase in ('run', 'audit'):
+            for raises in (False, True):
+                with self.subTest(phase=phase, raises=raises):
+                    context = self.context()
+                    with patch.object(p, '_run_cell', return_value={'status': 'FAIL' if phase == 'run' else 'PASS'},
+                                      side_effect=ValueError('run failed') if phase == 'run' and raises else None), \
+                            patch.object(p, '_audit', return_value={'status': 'FAIL'},
+                                         side_effect=ValueError('audit failed') if phase == 'audit' and raises else None) as audit:
+                        with self.assertRaises(ValueError): context.run_and_audit_cell('0', self.root/'out')
+                        self.assertEqual(audit.call_count, 0 if phase == 'run' else 1)
+                    with self.assertRaisesRegex(ValueError, 'invalidated'): context._check_unchanged()
+
+    def test_combined_legacy_keeps_both_public_full_replays(self):
+        del self.plan['jvmProducerAuthority']; self.plan_file.write_text(json.dumps(self.plan))
+        context = self.context()
+        with patch.object(p, '_run_cell', return_value={'status': 'PASS'}), \
+                patch.object(p, '_audit', return_value={'status': 'PASS'}):
+            context.run_and_audit_cell('0', self.root/'out')
+        self.assertEqual(self.replay.call_count, 3)
+
+    def test_combined_rejects_output_overlap_before_run(self):
+        context = self.context()
+        with patch.object(p, '_run_cell') as run, patch.object(p, '_audit') as audit:
+            with self.assertRaisesRegex(ValueError, 'overlaps'):
+                context.run_and_audit_cell('0', self.raw/'new-output')
+            run.assert_not_called(); audit.assert_not_called()
+
     def test_native_corrected_mode_reuses_one_full_replay(self):
         self.plan['correctedProducerAuthority'] = self.plan.pop('jvmProducerAuthority')
         self.plan_file.write_text(json.dumps(self.plan)); context = self.context()

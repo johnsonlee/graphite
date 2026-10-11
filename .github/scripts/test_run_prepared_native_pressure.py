@@ -55,6 +55,21 @@ class Execution(unittest.TestCase):
             self.assertFalse(result['otherOperationsEligible'])
             return result,verdict,events
 
+    def test_progress_distinguishes_context_verification_run_audit_and_terminal_check(self):
+        with patch('builtins.print') as progress:
+            result, _, _ = self.exercise('pending')
+        self.assertEqual(r.PENDING, result['status'])
+        messages = [call.args[0] for call in progress.call_args_list]
+        self.assertEqual(messages[0], 'pressure context: verifying authority and input closure')
+        self.assertTrue(messages[1].startswith('pressure context: verified elapsed='))
+        phases = ('verifying execution boundary', 'running cell including launch and cleanup verification',
+                  'auditing completed raw evidence', 'verifying terminal execution boundary',
+                  'run and independent audit complete')
+        self.assertEqual(len(messages), 2 + 6 * len(phases))
+        for message, (cell, phase) in zip(messages[2:], ((i, phase) for i in range(6) for phase in phases)):
+            self.assertTrue(message.startswith(f'pressure cell {cell}: {phase} elapsed='), message)
+        self.assertTrue(all(call.kwargs == {'flush': True} for call in progress.call_args_list))
+
     def test_pending_runs_every_original_cell_and_audit_without_acceptance(self):
         result,verdict,events=self.exercise('pending')
         self.assertEqual(r.PENDING,result['status']);self.assertFalse(result['performanceAcceptance'])

@@ -11,6 +11,7 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 import multigraph_pressure as pressure
 
 SCRIPTS=Path(__file__).resolve().parent
@@ -62,7 +63,10 @@ def execute(preparation,output,prefix,*,engine='native'):
             failed_report(record['status'],record['errors']);return record
         plan_file=preparation/'plan.json'
         pressure.require(pressure.sha(plan_file)==ready['planSha256'],'prepared plan digest changed')
+        context_started=time.monotonic()
+        print('pressure context: verifying authority and input closure',flush=True)
         context=pressure._VerifiedPressureExecution.open(plan_file);plan=context.plan
+        print(f'pressure context: verified elapsed={time.monotonic()-context_started:.3f}s',flush=True)
         pressure.require(plan['engine']==engine and plan['operation']=='query','matching query engine required')
         pressure.require([c['arm'] for c in plan['cells']]==list('CABBAC'),'fixed six-cell comparison order')
         record['plan']={'path':str(plan_file),'sha256':ready['planSha256']}
@@ -74,9 +78,8 @@ def execute(preparation,output,prefix,*,engine='native'):
             attempt={'id':cell['id'],'status':'RUNNING'};record['cells'].append(attempt);save()
             directory=output/cell['id']
             try:
-                result=context.run_cell(cell['id'],str(directory))
+                result,audit=context.run_and_audit_cell(cell['id'],str(directory))
                 pressure.require(result['status']=='PASS','pressure cell failed '+cell['id'])
-                audit=context.audit_cell(str(directory))
                 pressure.require(audit['status']=='PASS','pressure audit failed '+cell['id'])
                 pressure.save(directory/'audit.json',audit)
                 attempt.update(status='PASS',resultSha256=pressure.sha(directory/'result.json'),auditSha256=pressure.sha(directory/'audit.json'))

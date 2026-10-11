@@ -16612,3 +16612,48 @@ Root independent raw review:
 Source integration review:
 `/tmp/graphite-attempt203-integration-review-2e8507-1/review.json`, SHA256
 `ddbdbb46610a7cbba84ce2ed874a051130cfb942683a373437c49dc1c64e8b06`.
+
+
+### Attempt204 — one owned pressure execution and raw audit boundary (2026-10-11)
+
+**Hypothesis.** The CI driver redundantly checks the complete input closure after
+running a cell and immediately before auditing that same cell. Combine these
+operations within the already verified process authority. Keep full checks at the
+combined entry and exit, the existing fresh checks immediately before server launch
+and after cleanup, and the complete independent raw-response/resource audit. No
+successful combined result escapes before its terminal check. Failures invalidate
+the authority and retain the original failure evidence. Public standalone and legacy
+validation paths remain complete.
+
+Base: `7d3805668cabf80bae0bc4802742f87c7cd08fb8`; candidate: this commit on
+`codex/ci-feedback-reuse`, prepared locally while the exact-base CI continues.
+The change also emits flushed context/cell/run/audit/boundary progress outside the
+measured query stages so future long runs expose where time is spent.
+
+Current hosted producer workload: accepted4f C (=A) and candidate7d B, each64 real
+JAR graphs across four corpora,20,932,392,099 graph bytes across the two physical
+arms. Six CABBAC cells retain their original39 cases, actual multi-graph scopes,
+c4 concurrency,2 warmups and20 measured repeats per case. Twelve outer complete
+input passes are removed (24 to12); all12 inner passes remain. This corresponds
+to251,188,705,188 fewer logical graph bytes read by outer SHA verification, not
+physical I/O or measured time saved.
+
+| Evidence | Result |
+|---|---|
+| Focused pressure correctness suite | 85 tests passed,6.332s |
+| Prepared driver correctness suite | 23 tests passed,0.170s |
+| Mutation/failure coverage | Plan,pin and closure drift during run/audit rejected; run/audit failure invalidates; failed run never audits; legacy replay and overlap rejection retained |
+| Independent source review | Measured `_run_cell`, `_audit`, transport, stage scheduler and resource accounting unchanged |
+| Hosted end-to-end time / CPU / RSS | Not measured for this candidate |
+| Server query p50/p95 | Not measured; no performance acceptance claim |
+| Construction / loading | Unchanged; no new acceptance evidence |
+
+**Decision: retain as a prepared local CI repair.** No push or restart supersedes
+the active7d run. Full correctness coverage and real multi-graph acceptance remain
+required. Choose any replacement by remaining versus replacement critical path,
+including build, transfer, validation and downstream consumers; this source change
+alone does not establish that the two-hour feedback problem is solved.
+
+Local evidence: `/tmp/graphite-pressure-boundary-prototype-report.json` and
+`/tmp/graphite-pressure-boundary-parent-review.json`; raw test logs are linked by
+the first report. Controls manifest and workflow digest are refreshed in this commit.

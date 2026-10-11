@@ -726,24 +726,49 @@ class _VerifiedPressureExecution:
             require(_execution_closure(self._plan) == self._closure, 'execution upstream closure changed')
 
     def _call(self, operation, output, cell_id=None):
+        combined = operation == 'run-and-audit'
+        started = time.monotonic()
+        def progress(phase):
+            if combined:
+                print(f'pressure cell {cell_id}: {phase} elapsed={time.monotonic() - started:.3f}s', flush=True)
         try:
+            progress('verifying execution boundary')
             self._check_unchanged()
             target = Path(output).resolve()
             if self._reuse:
                 require(not any(target.is_relative_to(Path(root)) or Path(root).is_relative_to(target)
                                 for root in self._closure['trees']), 'pressure output overlaps frozen evidence')
+            if combined:
+                # One owned operation retains the inner before-launch and
+                # after-cleanup identities, then independently audits raw data.
+                # No successful combined result is returned until the terminal
+                # closure check passes; persisted failure evidence remains.
+                progress('running cell including launch and cleanup verification')
+                result = (_run_cell(self._path, cell_id, output, self._plan) if self._reuse
+                          else run_cell(self._path, cell_id, output))
+                require(result['status'] == 'PASS', 'cell execution/audit failed')
+                progress('auditing completed raw evidence')
+                audited = (_audit(self._path, output, self._plan) if self._reuse
+                           else audit(self._path, output))
+                require(audited['status'] == 'PASS', 'cell execution/audit failed')
+            elif self._reuse:
                 result = (_run_cell(self._path, cell_id, output, self._plan) if operation == 'run'
                           else _audit(self._path, output, self._plan))
             else:
                 # Legacy modes retain their original complete public audit path.
                 result = (run_cell(self._path, cell_id, output) if operation == 'run'
                           else audit(self._path, output))
+            progress('verifying terminal execution boundary')
             self._check_unchanged()
             require(result['status'] == 'PASS', 'cell execution/audit failed')
-            return result
+            progress('run and independent audit complete')
+            return (result, audited) if combined else result
         except BaseException:
             self._valid = False
             raise
+
+    def run_and_audit_cell(self, cell_id, output):
+        return self._call('run-and-audit', output, cell_id)
 
     def run_cell(self, cell_id, output):
         return self._call('run', output, cell_id)
