@@ -4183,7 +4183,7 @@ function rustWorkflowStep(job, name) {
 test("Rust split stages preserve query gates before independent lifecycle measurements", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const native = rustWorkflowJob(workflow, "rust-query-native-measurement");
-    const jvm = rustWorkflowJob(workflow, "rust-query-jvm");
+    const jvm = rustWorkflowJob(workflow, "rust-query-jvm-measurement");
     const legacy = rustWorkflowJob(workflow, "rust-query-legacy");
     const names = ["Measure base then PR",
         "Compare Rust engine latency", "Diagnose confirmed Rust shape regression", "Upload Rust engine latency results"];
@@ -4205,7 +4205,8 @@ test("Rust split stages preserve query gates before independent lifecycle measur
     assert.match(nativeUpload, /if: always\(\)/);
     assert.match(nativeUpload, /name: benchmark-rust-latency-/);
     assert.match(nativeUpload, /path: benchmark-results\//);
-    assert.match(jvm, /name: benchmark-rust-jvm-pressure-/);
+    assert.match(jvm, /name: jvm-pressure-measurement-/);
+    assert.match(rustWorkflowJob(workflow,"rust-query-jvm"), /--finalize-producers native-pressure-producers-jvm-corrected\.json/);
     assert.match(rustWorkflowStep(native, "Upload native pressure results"), /name: native-query-measurement-/);
     const nativeFinal = rustWorkflowJob(workflow, "rust-query-native");
     assert.match(rustWorkflowStep(nativeFinal, "Join complete core proof with original native measurement"), /--finalize-producers native-pressure-producers\/packet\.json/);
@@ -4229,7 +4230,7 @@ test("Rust split stages preserve query gates before independent lifecycle measur
 
 test("Rust correctness, query and lifecycle jobs retain explicit dependencies and alias-safe matrices", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
-    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm-measurement", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
     const jobs = Object.fromEntries(ids.map(id => [id, rustWorkflowJob(workflow, id)]));
     const needs = job => {
         const list = job.match(/^    needs: \[([^\]]+)\]/m)?.[1];
@@ -4242,7 +4243,7 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
     }
     assert.deepEqual(needs(jobs["rust-producer"]), ["candidate-gate-tests", "prepare-fixture64"]);
     for (const id of ids.slice(1)) assert.ok(needs(jobs[id]).includes("rust-producer"), `${id} requires real writers`);
-    for (const id of ["rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"]) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
+    for (const id of ["rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"]) assert.ok(needs(jobs[id]).includes("rust-core"), `${id} requires original core proof`);
     assert.deepEqual(needs(jobs["rust-query-native-measurement"]), ["candidate-gate-tests", "rust-producer"],
         "audited measurements start alongside the complete core proof");
     assert.ok(needs(jobs["rust-query-native"]).includes("rust-query-native-measurement"),
@@ -4253,6 +4254,11 @@ test("Rust correctness, query and lifecycle jobs retain explicit dependencies an
         "a core proof failure must not suppress the existing independently validated Rust snapshot gate");
     assert.doesNotMatch(jobs["rust-query-legacy"].split("    steps:")[0], /needs\.rust-(?:core|jvm-correctness)/);
     assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-jvm-correctness"));
+    assert.deepEqual(needs(jobs["rust-jvm-correctness"]),["rust-producer","rust-core-prepare"]);
+    assert.deepEqual(needs(jobs["rust-query-jvm-measurement"]),["rust-producer","rust-core-prepare","rust-jvm-correctness"]);
+    assert.ok(needs(jobs["rust-query-jvm"]).includes("rust-query-jvm-measurement"));
+    assert.match(jobs["rust-jvm-correctness"],/export_jvm_raw_edges\.py/);
+    assert.match(jobs["rust-query-jvm-measurement"],/prepare_jvm_pressure_plan\.py --measurement-only/);
     for (const [id, aliasArms, distinctArms] of [
         ["rust-core-prepare", '["B"]', '["A","B"]'],
         ["rust-core-shard", '["B"]', '["A","B"]'],
@@ -4330,7 +4336,7 @@ test("native measurement stays independent and cannot replace final acceptance",
 test("required Rust stage join rejects every failed, cancelled, skipped or missing stage", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const job = rustWorkflowJob(workflow, "rust-latency");
-    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
+    const ids = ["rust-producer", "rust-core-prepare", "rust-core-shard", "rust-core", "rust-jvm-correctness", "rust-query-native-measurement", "rust-query-native", "rust-query-jvm-measurement", "rust-query-jvm", "rust-query-legacy", "rust-loading-measurement", "rust-loading", "rust-construction-measurement", "rust-construction"];
     assert.match(job, /^    name: rust-latency-gate$/m);
     assert.match(job, /^    if: always\(\)$/m);
     assert.deepEqual(job.match(/^    needs: \[([^\]]+)\]/m)[1].split(", "), ids);
@@ -4573,7 +4579,7 @@ test("untimed routing preserves full result/access/index assertions and cannot s
 test("checkpoint downloads preserve restore directories for one and multiple baseline arms", () => {
     const workflow = fs.readFileSync(new URL("../workflows/benchmark.yml", import.meta.url), "utf8");
     const accepted = "4f2ccf33b969e684972e56b5e810034e6e67c1b3";
-    const consumers = ["rust-query-native-measurement", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm", "rust-loading", "rust-construction"];
+    const consumers = ["rust-query-native-measurement", "rust-jvm-correctness", "rust-query-native", "rust-query-jvm-measurement", "rust-query-jvm", "rust-loading", "rust-construction"];
     for (const base of [accepted, "distinct-base"]) {
         for (const id of consumers) {
             const directory = fs.mkdtempSync(path.join(os.tmpdir(), "checkpoint-download-"));
@@ -4583,8 +4589,10 @@ test("checkpoint downloads preserve restore directories for one and multiple bas
                     step.includes("uses: actions/download-artifact@") && step.includes("native-checkpoint-"));
                 const coreArms = id === "rust-query-native-measurement" ? [] : base === accepted ? ["B"] : ["A", "B"];
                 const jvmArms = base === accepted ? ["C", "B"] : ["C", "A", "B"];
-                const expected = ["producer:producer", ...coreArms.map(arm => `core:${arm}`),
-                    ...(id === "rust-query-jvm" ? jvmArms.map(arm => `jvm:${arm}`) : [])];
+                const early=["rust-jvm-correctness","rust-query-jvm-measurement"].includes(id);
+                const expected = ["producer:producer", ...coreArms.map(arm => `${early?"core-prepare":"core"}:${arm}`),
+                    ...(id==="rust-query-jvm"?coreArms.map(arm=>`core-prepare:${arm}`):[]),
+                    ...(["rust-query-jvm","rust-query-jvm-measurement"].includes(id) ? jvmArms.map(arm => `jvm-pending:${arm}`) : [])];
                 const downloaded = [], manifests = [];
                 for (const step of downloads) {
                     assert.doesNotMatch(step, /\bpattern:|merge-multiple:/,
@@ -4592,7 +4600,7 @@ test("checkpoint downloads preserve restore directories for one and multiple bas
                     const name = step.match(/^        name: (.+)$/m)?.[1];
                     const target = step.match(/^        path: (.+)$/m)?.[1];
                     assert.ok(name && target, `${id}: exact name and destination required`);
-                    const [, stage, arm] = name.match(/^native-checkpoint-(producer|core|jvm)-(producer|[ABC])-\$\{\{ github.run_id \}\}-\$\{\{ github.run_attempt \}\}$/) ?? [];
+                    const [, stage, arm] = name.match(/^native-checkpoint-(producer|core-prepare|core|jvm-pending|jvm)-(producer|[ABC])-\$\{\{ github.run_id \}\}-\$\{\{ github.run_attempt \}\}$/) ?? [];
                     assert.ok(stage && arm);
                     const condition = step.match(/^      if: (.+)$/m)?.[1];
                     assert.equal(condition, arm === "A" ? `github.event.pull_request.base.sha != '${accepted}'` : undefined);
@@ -4616,7 +4624,7 @@ test("checkpoint downloads preserve restore directories for one and multiple bas
 const fs = require("node:fs"), assert = require("node:assert/strict");
 const args = process.argv.slice(2), value = key => args[args.indexOf(key)+1];
 const consumer = process.env.RESTORE_JOB !== "rust-query-native-measurement";
-const stage = process.env.RESTORE_JOB === "rust-query-jvm" ? "jvm" : "core";
+const stage = process.env.RESTORE_JOB === "rust-query-jvm" ? "jvm-final" : process.env.RESTORE_JOB === "rust-query-jvm-measurement" ? "jvm-pending" : process.env.RESTORE_JOB === "rust-jvm-correctness" ? "jvm-inputs" : "core";
 assert.deepEqual(args,["-B","candidate/.github/scripts/native_pressure_checkpoint.py",consumer?"restore-consumer-chain":"restore",
     "--stage",consumer?stage:"producer","--arm",consumer?"B":"producer",
     "--directory",consumer?"pressure-checkpoints":"pressure-checkpoints/producer-producer",
@@ -4625,8 +4633,9 @@ assert.deepEqual(args,["-B","candidate/.github/scripts/native_pressure_checkpoin
 const required=[["producer","producer"]];
 if(consumer) {
     const distinct=value("--base-sha")!=="4f2ccf33b969e684972e56b5e810034e6e67c1b3";
-    for(const arm of distinct?["A","B"]:["B"]) required.push(["core",arm]);
-    if(stage==="jvm") for(const arm of distinct?["C","A","B"]:["C","B"]) required.push(["jvm",arm]);
+    for(const arm of distinct?["A","B"]:["B"]) required.push([stage==="jvm-inputs"||stage==="jvm-pending"?"core-prepare":"core",arm]);
+    if(stage==="jvm-final") for(const arm of distinct?["A","B"]:["B"]) required.push(["core-prepare",arm]);
+    if(stage==="jvm-final"||stage==="jvm-pending") for(const arm of distinct?["C","A","B"]:["C","B"]) required.push(["jvm-pending",arm]);
 }
 for(const [stage,arm] of required) {
     const directory=stage==="producer"?"producer-producer":"native-checkpoint-"+stage+"-"+arm+"-1234-2";
@@ -4648,7 +4657,7 @@ fs.appendFileSync(process.env.RESTORE_CALLS,consumer?"restore-consumer-chain:"+s
                 const result = run();
                 assert.equal(result.status, 0, `${id}/${base}: ${result.stderr}`);
                 const expectedCalls = id === "rust-query-native-measurement" ? ["producer:producer"] :
-                    [`restore-consumer-chain:${id === "rust-query-jvm" ? "jvm" : "core"}:B`];
+                    [`restore-consumer-chain:${id === "rust-query-jvm" ? "jvm-final" : id==="rust-query-jvm-measurement"?"jvm-pending":id==="rust-jvm-correctness"?"jvm-inputs":"core"}:B`];
                 assert.deepEqual(fs.readFileSync(calls, "utf8").trim().split("\n"), expectedCalls);
                 for(const {file,manifest} of manifests) {
                     fs.unlinkSync(file);

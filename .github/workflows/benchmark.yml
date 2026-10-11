@@ -18,8 +18,8 @@ env:
   JAVA_TOOL_OPTIONS: -Xmx2g
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
-  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: 96cf91f4a263ec2095e9e0925ffd1c6f6a8b62cdf40e6c8db18035181e468502
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 28d2ec7d4aed3e36f416f5dac6cb9a468aaceda670b00715ee2dd6ecd923ab87
+  MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: d0e45e86807adf8cb74fcf47ecbae6d3ea4c0457304789de9bf00cc6b11eefb5
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: b837118be4d180fcfa59d0a089d024bf487bcf1d61325efe1846171aeadfba75
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -94,6 +94,9 @@ jobs:
 
     - name: Test independently audited JVM pressure plan preparation without child processes
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_prepare_jvm_pressure_plan.py'
+
+    - name: Test pending JVM oracle checkpoint and full-core join handoff
+      run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pending_handoff.py'
 
     - name: Test Native loading boundaries in existing query processes
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_loading.py'
@@ -3439,7 +3442,7 @@ jobs:
 
   rust-jvm-correctness:
     name: rust-jvm-correctness (${{ matrix.arm }})
-    needs: [rust-producer, rust-core]
+    needs: [rust-producer, rust-core-prepare]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     strategy:
@@ -3484,18 +3487,18 @@ jobs:
         name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/producer-producer
 
-    - name: Download core A checkpoint
+    - name: Download core-prepare A checkpoint
       if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        name: native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints/native-checkpoint-core-A-${{ github.run_id }}-${{ github.run_attempt }}
+        name: native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
 
-    - name: Download core B checkpoint
+    - name: Download core-prepare B checkpoint
       uses: actions/download-artifact@v8
       with:
-        name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
+        name: native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -3503,7 +3506,7 @@ jobs:
         test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
         (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
         python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-consumer-chain \
-          --stage core --arm B --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
+          --stage jvm-inputs --arm B --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
@@ -3524,9 +3527,12 @@ jobs:
             A) CORE_ARM=A; EXPECTATION_ARM=B; JVM_PORT=22841 ;;
             B) CORE_ARM=B; EXPECTATION_ARM=B; JVM_PORT=22842 ;;
           esac
+          python3 -B candidate/.github/scripts/export_jvm_raw_edges.py \
+            --producer-root "native-pressure-artifacts/${ARM}" \
+            --output "native-pressure-artifacts/${ARM}/jvm-raw-edges"
           python3 -B candidate/.github/scripts/derive_jvm_pressure_oracles.py \
             --producer-root "native-pressure-artifacts/${ARM}" \
-            --core-root "native-pressure-artifacts/${CORE_ARM}/core-equivalence" \
+            --raw-export-root "native-pressure-artifacts/${ARM}/jvm-raw-edges" \
             --arm "${EXPECTATION_ARM}" \
             --output "native-pressure-artifacts/${ARM}/jvm-raw-derivation"
           python3 -B candidate/.github/scripts/jvm_query_correctness.py \
@@ -3550,10 +3556,10 @@ jobs:
         UPSTREAM+=(--upstream pressure-checkpoints/producer-producer/manifest.json)
         for ARM in A B; do
           if [[ "${ARM}" == A && "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then continue; fi
-          UPSTREAM+=(--upstream "pressure-checkpoints/native-checkpoint-core-${ARM}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/manifest.json")
+          UPSTREAM+=(--upstream "pressure-checkpoints/native-checkpoint-core-prepare-${ARM}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}/manifest.json")
         done
         python3 -B candidate/.github/scripts/native_pressure_checkpoint.py seal \
-          --stage jvm --arm "${CHECKPOINT_ARM}" --directory "pressure-checkpoints/jvm-${CHECKPOINT_ARM}" \
+          --stage jvm-pending --arm "${CHECKPOINT_ARM}" --directory "pressure-checkpoints/jvm-${CHECKPOINT_ARM}" \
           "${UPSTREAM[@]}" --workspace "${GITHUB_WORKSPACE}" \
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
@@ -3561,7 +3567,7 @@ jobs:
     - name: Publish complete jvm checkpoint
       uses: actions/upload-artifact@v7
       with:
-        name: native-checkpoint-jvm-${{ matrix.arm }}-${{ github.run_id }}-${{ github.run_attempt }}
+        name: native-checkpoint-jvm-pending-${{ matrix.arm }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/jvm-${{ matrix.arm }}/
         if-no-files-found: error
         compression-level: 0
@@ -4038,9 +4044,139 @@ jobs:
         if-no-files-found: warn
         retention-days: 14
 
+  rust-query-jvm-measurement:
+    name: rust-query-jvm-measurement
+    needs: [rust-producer, rust-core-prepare, rust-jvm-correctness]
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+    permissions:
+      contents: read
+    steps:
+    - name: Checkout base
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.base.sha }}
+        path: base
+        persist-credentials: false
+
+    - name: Checkout PR
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+        path: candidate
+        persist-credentials: false
+
+    - name: Checkout accepted baseline when distinct from PR base
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/checkout@v7
+      with:
+        ref: 4f2ccf33b969e684972e56b5e810034e6e67c1b3
+        path: accepted
+        persist-credentials: false
+
+    - name: Set up Rust
+      uses: dtolnay/rust-toolchain@stable
+
+    - name: Download producer checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-producer-producer-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/producer-producer
+
+    - name: Download core-prepare A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download core-prepare B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending C checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-C-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-C-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-B-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Verify and restore exact checkpoint closure
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-consumer-chain \
+          --stage jvm-pending --arm B --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
+          --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
+          --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
+
+    - name: Prepare matched JVM continuous-pressure plan
+      continue-on-error: true
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        PARENT_ARM=A
+        if [[ "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then PARENT_ARM=C; fi
+        python3 -B candidate/.github/scripts/prepare_jvm_pressure_plan.py --measurement-only \
+          --c native-pressure-artifacts/C/jvm-query-correctness \
+          --a "native-pressure-artifacts/${PARENT_ARM}/jvm-query-correctness" \
+          --b native-pressure-artifacts/B/jvm-query-correctness \
+          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
+          --output benchmark-results/jvm-pressure-preparation
+
+    - name: Execute and audit matched JVM continuous pressure
+      continue-on-error: true
+      run: |
+        set -euo pipefail
+        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
+        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 -B candidate/.github/scripts/run_prepared_native_pressure.py --engine jvm \
+          --preparation benchmark-results/jvm-pressure-preparation \
+          --output benchmark-results/jvm-pressure-cells \
+          --prefix benchmark-results/multigraph-jvm-query-measurement
+
+    - name: Upload JVM pressure results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: jvm-pressure-measurement-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          benchmark-results/jvm-pressure-preparation/**
+          benchmark-results/jvm-pressure-cells/**
+          benchmark-results/multigraph-jvm-query-measurement*
+        if-no-files-found: warn
+        retention-days: 14
+
+    - name: Require complete pending JVM query measurement
+      if: always()
+      run: jq -e '.passed == false and .comparabilityPending == true and .status == "MEASURED_CORE_COMPARABILITY_PENDING"' benchmark-results/multigraph-jvm-query-measurement-status.json >/dev/null
+
   rust-query-jvm:
     name: rust-query-jvm
-    needs: [rust-producer, rust-core, rust-jvm-correctness]
+    needs: [rust-producer, rust-core-prepare, rust-core, rust-jvm-correctness, rust-query-jvm-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
@@ -4094,24 +4230,37 @@ jobs:
         name: native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
         path: pressure-checkpoints/native-checkpoint-core-B-${{ github.run_id }}-${{ github.run_attempt }}
 
-    - name: Download jvm C checkpoint
-      uses: actions/download-artifact@v8
-      with:
-        name: native-checkpoint-jvm-C-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints/native-checkpoint-jvm-C-${{ github.run_id }}-${{ github.run_attempt }}
-
-    - name: Download jvm A checkpoint
+    - name: Download core-prepare A checkpoint
       if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
       uses: actions/download-artifact@v8
       with:
-        name: native-checkpoint-jvm-A-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints/native-checkpoint-jvm-A-${{ github.run_id }}-${{ github.run_attempt }}
+        name: native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-A-${{ github.run_id }}-${{ github.run_attempt }}
 
-    - name: Download jvm B checkpoint
+    - name: Download core-prepare B checkpoint
       uses: actions/download-artifact@v8
       with:
-        name: native-checkpoint-jvm-B-${{ github.run_id }}-${{ github.run_attempt }}
-        path: pressure-checkpoints/native-checkpoint-jvm-B-${{ github.run_id }}-${{ github.run_attempt }}
+        name: native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-core-prepare-B-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending C checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-C-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-C-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending A checkpoint
+      if: github.event.pull_request.base.sha != '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-A-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-A-${{ github.run_id }}-${{ github.run_attempt }}
+
+    - name: Download jvm-pending B checkpoint
+      uses: actions/download-artifact@v8
+      with:
+        name: native-checkpoint-jvm-pending-B-${{ github.run_id }}-${{ github.run_attempt }}
+        path: pressure-checkpoints/native-checkpoint-jvm-pending-B-${{ github.run_id }}-${{ github.run_attempt }}
 
     - name: Verify and restore exact checkpoint closure
       run: |
@@ -4119,38 +4268,28 @@ jobs:
         test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
         (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
         python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-consumer-chain \
-          --stage jvm --arm B --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
+          --stage jvm-final --arm B --directory pressure-checkpoints --workspace "${GITHUB_WORKSPACE}" \
           --head-sha "${CANDIDATE_SHA}" --base-sha "${BASE_SHA}" \
           --run-id "${GITHUB_RUN_ID}" --run-attempt "${GITHUB_RUN_ATTEMPT}"
 
-    - name: Prepare matched JVM continuous-pressure plan
-      continue-on-error: true
-      env:
-        BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        set -euo pipefail
-        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
-        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
-        PARENT_ARM=A
-        if [[ "${BASE_SHA}" == 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then PARENT_ARM=C; fi
-        python3 -B candidate/.github/scripts/prepare_jvm_pressure_plan.py \
-          --c native-pressure-artifacts/C/jvm-query-correctness \
-          --a "native-pressure-artifacts/${PARENT_ARM}/jvm-query-correctness" \
-          --b native-pressure-artifacts/B/jvm-query-correctness \
-          --base-sha "${BASE_SHA}" --candidate-sha "${CANDIDATE_SHA}" \
-          --output benchmark-results/jvm-pressure-preparation
+    - name: Download original JVM pressure measurement
+      uses: actions/download-artifact@v8
+      with:
+        name: jvm-pressure-measurement-${{ github.run_id }}-${{ github.run_attempt }}
+        path: benchmark-results
 
-    - name: Execute and audit matched JVM continuous pressure
+    - name: Join complete core to original JVM measurement
       continue-on-error: true
       run: |
         set -euo pipefail
-        test "$(sha256sum candidate/.github/scripts/multigraph-pressure-preparation-controls.sha256 | cut -d' ' -f1)" = "${MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256}"
-        (cd candidate && sha256sum -c .github/scripts/multigraph-pressure-preparation-controls.sha256)
+        python3 -B candidate/.github/scripts/jvm_pressure_join.py \
+          --pending benchmark-results/jvm-pressure-preparation/packet.json \
+          --output native-pressure-producers-jvm-corrected.json
         python3 -B candidate/.github/scripts/run_prepared_native_pressure.py --engine jvm \
           --preparation benchmark-results/jvm-pressure-preparation \
           --output benchmark-results/jvm-pressure-cells \
-          --prefix benchmark-results/multigraph-jvm-query
+          --prefix benchmark-results/multigraph-jvm-query \
+          --finalize-producers native-pressure-producers-jvm-corrected.json
 
     - name: Upload JVM pressure results
       if: always()
@@ -4642,7 +4781,7 @@ jobs:
   rust-latency:
     name: rust-latency-gate
     if: always()
-    needs: [rust-producer, rust-core-prepare, rust-core-shard, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm, rust-query-legacy, rust-loading-measurement, rust-loading, rust-construction-measurement, rust-construction]
+    needs: [rust-producer, rust-core-prepare, rust-core-shard, rust-core, rust-jvm-correctness, rust-query-native-measurement, rust-query-native, rust-query-jvm-measurement, rust-query-jvm, rust-query-legacy, rust-loading-measurement, rust-loading, rust-construction-measurement, rust-construction]
     runs-on: ubuntu-latest
     steps:
     - name: Require every proof and complete operation cohort
@@ -4653,7 +4792,7 @@ jobs:
         import json, os
         results = json.loads(os.environ['STAGE_RESULTS'])
         required = {'rust-producer', 'rust-core-prepare', 'rust-core-shard', 'rust-core', 'rust-jvm-correctness', 'rust-query-native-measurement', 'rust-query-native',
-                    'rust-query-jvm', 'rust-query-legacy', 'rust-loading-measurement', 'rust-loading', 'rust-construction-measurement', 'rust-construction'}
+                    'rust-query-jvm-measurement', 'rust-query-jvm', 'rust-query-legacy', 'rust-loading-measurement', 'rust-loading', 'rust-construction-measurement', 'rust-construction'}
         assert set(results) == required, 'missing required stage'
         failures = {name: value['result'] for name, value in results.items() if value['result'] != 'success'}
         assert not failures, failures

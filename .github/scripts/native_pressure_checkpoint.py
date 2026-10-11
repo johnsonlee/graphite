@@ -61,7 +61,7 @@ def system_jdk(root):
 
 
 def identity(args):
-    require(args.stage in ('producer', 'core', 'core-prepare', 'core-shard', 'jvm'), 'stage')
+    require(args.stage in ('producer', 'core', 'core-prepare', 'core-shard', 'jvm','jvm-pending'), 'stage')
     require(args.arm in (('producer',) if args.stage == 'producer' else ('A', 'B') if args.stage in ('core', 'core-prepare', 'core-shard') else ('C', 'A', 'B')), 'stage arm')
     require(all(re.fullmatch('[0-9a-f]{40}', x) for x in (args.head_sha, args.base_sha)), 'exact revisions')
     require(str(args.run_id).isdigit() and str(args.run_attempt).isdigit(), 'run identity')
@@ -106,8 +106,8 @@ def selected_roots(workspace, stage, arm):
             # core checkpoint must carry them again: its only ancestor is producer.
             paths.extend(root/arm/name for name in CORE_INPUT_TREES if (root/arm/name).exists())
         return paths
-    if stage == 'jvm':
-        return [root/arm/'jvm-raw-derivation', root/arm/'jvm-query-correctness']
+    if stage in ('jvm','jvm-pending'):
+        return [root/arm/'jvm-raw-derivation', root/arm/'jvm-query-correctness',*([root/arm/'jvm-raw-edges'] if stage=='jvm-pending' else [])]
     return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
 
 
@@ -428,8 +428,9 @@ def upstreams(args, ident, _authority=None):
         upstream_ident = value['identity']
         entry = {'sha256': sha(path), 'stage': upstream_ident['stage'], 'arm': upstream_ident['arm']}
         if upstream_ident['stage'] == 'core-prepare':
-            require(ident['stage'] == 'core-shard' and upstream_ident['arm'] == ident['arm'] and
-                    upstream_ident.get('shardCount') == ident['shardCount'] and 'shardIndex' not in upstream_ident,
+            require(((ident['stage'] == 'core-shard' and upstream_ident['arm'] == ident['arm'] and
+                    upstream_ident.get('shardCount') == ident['shardCount']) or
+                    (ident['stage']=='jvm-pending' and upstream_ident['arm'] in ('A','B') and upstream_ident.get('shardCount')==8)) and 'shardIndex' not in upstream_ident,
                     'same arm and partition preparation upstream')
             entry['shardCount'] = upstream_ident['shardCount']
         values.append(entry)
@@ -440,6 +441,11 @@ def upstreams(args, ident, _authority=None):
         producers = [entry for entry in values if entry['stage'] == 'producer']
         require(len(preparation) == 1 and len(producers) == 1 and preparation[0]['upstream'] == producers,
                 'preparation bound to exact same producer checkpoint')
+    if ident['stage']=='jvm-pending':
+        expected.extend(('core-prepare',arm) for arm in (('B',) if ident['base']==ACCEPTED else ('A','B')))
+        producer_entries=[entry for entry in values if entry['stage']=='producer']
+        require(len(producer_entries)==1 and all(read(name)['upstream']==producer_entries for name in args.upstream if read(name)['identity']['stage']=='core-prepare'),
+                'pending JVM preparations bind same producer')
     if ident['stage'] == 'jvm':
         expected.extend(('core', arm) for arm in (('B',) if ident['base'] == ACCEPTED else ('A', 'B')))
     require(sorted((v['stage'], v['arm']) for v in values) == sorted(expected), 'exact upstream stages')
@@ -674,7 +680,7 @@ def restore_consumer_chain(args):
     The coordinator arm is always B; accepted-base aliasing determines whether
     distinct A checkpoints exist. This transport never establishes acceptance.
     """
-    require(args.stage in ('core', 'jvm') and args.arm == 'B' and
+    require(args.stage in ('core', 'jvm','jvm-inputs','jvm-pending','jvm-final') and args.arm == 'B' and
             getattr(args, 'shard_count', None) is None and
             getattr(args, 'shard_index', None) is None and not args.upstream,
             'fixed consumer chain arguments')
@@ -685,18 +691,23 @@ def restore_consumer_chain(args):
     core_directories = [root/f'native-checkpoint-core-{arm}-{args.run_id}-{args.run_attempt}'
                         for arm in core_arms]
     specifications = [('producer', 'producer', producer, [])]
-    specifications.extend(('core', arm, directory, [producer/'manifest.json'])
-                          for arm, directory in zip(core_arms, core_directories))
-    if args.stage == 'jvm':
-        upstream = [producer/'manifest.json', *[directory/'manifest.json' for directory in core_directories]]
-        specifications.extend(('jvm', arm,
-                               root/f'native-checkpoint-jvm-{arm}-{args.run_id}-{args.run_attempt}', upstream)
-                              for arm in ('C', *core_arms))
+    early=args.stage in ('jvm-inputs','jvm-pending','jvm-final')
+    preparation_directories=[root/f'native-checkpoint-core-prepare-{arm}-{args.run_id}-{args.run_attempt}' for arm in core_arms]
+    if early:
+        specifications.extend(('core-prepare',arm,directory,[producer/'manifest.json']) for arm,directory in zip(core_arms,preparation_directories))
+    else:
+        specifications.extend(('core',arm,directory,[producer/'manifest.json']) for arm,directory in zip(core_arms,core_directories))
+    if args.stage in ('jvm','jvm-pending','jvm-final'):
+        upstream=[producer/'manifest.json',*[directory/'manifest.json' for directory in (preparation_directories if early else core_directories)]]
+        jvm_stage='jvm-pending' if early else 'jvm'
+        specifications.extend((jvm_stage,arm,root/f'native-checkpoint-{jvm_stage}-{arm}-{args.run_id}-{args.run_attempt}',upstream) for arm in ('C',*core_arms))
+    if args.stage=='jvm-final':
+        specifications.extend(('core',arm,directory,[producer/'manifest.json']) for arm,directory in zip(core_arms,core_directories))
     entries = []
     for stage, arm, directory, upstream in specifications:
         values = vars(args).copy()
         values.update(stage=stage, arm=arm, directory=str(directory), shard_index=None,
-                      shard_count=None, upstream=[str(p) for p in upstream])
+                      shard_count=8 if stage=='core-prepare' else None, upstream=[str(p) for p in upstream])
         entries.append(argparse.Namespace(**values))
     _restore_chain(args, entries)
     return {'identity': {'stage': args.stage+'-consumer-chain', 'arm': args.arm,
@@ -761,7 +772,12 @@ def _restore_chain(args, entries):
         jdk_identity = current_jdk
         require(len(manifest['payload']) == len(set(manifest['payload'])) and
                 set(manifest['payload']) <= set(manifest['files']), 'chain unique known payload files')
-        require(not (set(manifest['payload']) & (set(prior_files) | source_files)), 'chain payload overwrites frozen input')
+        require(not (set(manifest['payload']) & source_files), 'chain payload overwrites source input')
+        # The explicit JVM final profile joins self-contained complete core to
+        # its already restored preparation. Shared payload is never rewritten;
+        # exact facts below and restore's byte check must match both inventories.
+        duplicate_core = args.stage == 'jvm-final' and entry.stage == 'core'
+        require(duplicate_core or not (set(manifest['payload']) & set(prior_files)), 'chain payload overwrites frozen input')
         kinds = {'file': set(manifest['files']), 'directory': set(manifest['directories']), 'link': set(manifest['links'])}
         require(not (kinds['file'] & kinds['directory'] or kinds['file'] & kinds['link'] or kinds['directory'] & kinds['link']),
                 'chain conflicting entry types')

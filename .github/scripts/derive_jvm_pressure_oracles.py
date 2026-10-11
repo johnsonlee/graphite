@@ -86,6 +86,45 @@ def bind(producer_root, core_root, arm, output):
             'helperSource': artifacts.ref(SOURCE), 'pins': pins, **{key: False for key in FALSE_CLAIMS}}
 
 
+def bind_raw(producer_root, raw_export_root, arm, output):
+    """Bind independently owned single-arm bytes; complete core stays pending."""
+    import export_jvm_raw_edges as edges
+    require(arm in ('C','B'), 'actual reference/candidate oracle arm')
+    root,proof,out=(Path(p).resolve() for p in (producer_root,raw_export_root,output))
+    observed=edges.audit(proof)
+    require(common.typed(common.read(proof/'audit.json'))==common.typed(observed), 'stored raw edge audit differs from replay')
+    require(observed['status']==edges.AUDIT and observed['completeCoreTopologyIndexComparison'] is False,
+            'owned raw edge evidence never core authority')
+    pins=dict(observed['pins']); merge_pins(pins,{str(proof/'audit.json'):common.sha(proof/'audit.json')})
+    export_plan=common.pinned_authority_metadata({'pins':pins},observed['plan'])
+    require(export_plan['producerRoot']==str(root), 'raw export belongs to own producer')
+    artifact=common.pinned_authority_metadata({'pins':pins},observed['artifactAudit'])
+    fixture=common.pinned_authority_metadata({'pins':pins},artifact['fixtureManifest'])
+    source=common.pinned_authority_metadata({'pins':pins},artifact['sourceManifest'])
+    exports=common.pinned_authority_metadata({'pins':pins},observed['stringAudit'])
+    require(not any(out.is_relative_to(Path(p)) for p in (source['root'],root/'graphs',root/'runtime',proof)),
+            'derivation outside immutable raw authority')
+    require([g['id'] for g in fixture['graphs']]==[g['id'] for g in observed['graphs']]==list(model.FIXTURE_GRAPH_IDS),
+            'same complete ordered64 raw derivation')
+    java,javac,writer=(export_plan[k] for k in ('java','javac','writerJar'))
+    home=Path(java).resolve().parent.parent
+    jdk={'home':str(home),'files':{name:artifacts.ref(home/name) for name in primitive.JDK_FILES}}
+    require(all(pins.get(ref['path'])==ref['sha256'] for ref in jdk['files'].values()),'actual raw-export JDK image')
+    graphs=[]
+    for row in observed['graphs']:
+        spec=inputs.graph_inputs(fixture,exports,row['id'])
+        require(row['edges']['graphRoot']==spec['root'], 'same original graph edge root')
+        graphs.append({'id':row['id'],'spec':spec,'edges':row['edges'],'rawExportReceipt':row['receipt']})
+    modules=(Path(__file__),SOURCE,Path(derivation.__file__),Path(distinct.__file__),Path(inputs.__file__),Path(model.__file__),Path(primitive.__file__))
+    merge_pins(pins,{str(p.resolve()):common.sha(p) for p in modules})
+    return {'schema':'graphite.jvm-raw-oracle-plan.v1','producerRoot':str(root),'rawExportRoot':str(proof),
+            'coreComparabilityPending':True,'upstreamRawExportAudit':artifacts.ref(proof/'audit.json'),
+            'arm':arm,'output':str(out),'revision':artifact['revision'],'role':artifact['role'],
+            **{k:artifact[k] for k in ('sourceManifest','runtimeManifest','fixtureManifest')},
+            'graphs':graphs,'java':java,'javac':javac,'writerJar':writer,'jdkImage':jdk,
+            'helperSource':artifacts.ref(SOURCE),'pins':pins,**{key:False for key in FALSE_CLAIMS}}
+
+
 def environment(plan):
     env = common.clean_env()
     for key in ('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'JDK_JAVAC_OPTIONS', 'CLASSPATH'):
@@ -151,8 +190,9 @@ def verify_phases(plan):
     return refs
 
 
-def run(producer_root, core_root, arm, output):
-    plan = bind(producer_root, core_root, arm, output)
+def run(producer_root, core_root, arm, output, *, raw_export_root=None):
+    require((core_root is None) != (raw_export_root is None), 'exactly one upstream raw authority')
+    plan = bind_raw(producer_root,raw_export_root,arm,output) if raw_export_root is not None else bind(producer_root, core_root, arm, output)
     out = Path(plan['output']); out.mkdir(parents=True, exist_ok=False); (out/'classes').mkdir()
     common.save(out/'plan.json', plan)
     record = {'schema': 'graphite.jvm-raw-oracle-record.v1', 'status': 'FAIL', 'errors': [], 'phases': [],
@@ -199,7 +239,8 @@ def replay(output):
             record['errors'] == [] and record['unissued'] == [] and record['finalIdentity'] == 'PASS' and
             all(record[key] is False for key in FALSE_CLAIMS), 'complete scoped raw derivation record')
     require(plan['output'] == str(out) and record['plan'] == artifacts.ref(out/'plan.json'), 'actual derivation plan bytes')
-    actual = bind(plan['producerRoot'], plan['coreRoot'], plan['arm'], out)
+    actual = (bind_raw(plan['producerRoot'],plan['rawExportRoot'],plan['arm'],out) if plan.get('coreComparabilityPending') is True
+              else bind(plan['producerRoot'], plan['coreRoot'], plan['arm'], out))
     require(common.typed(actual) == common.typed(plan), 'raw derivation plan differs from upstream evidence')
     require(verify_phases(plan) == record['phases'], 'actual owned phase linkage')
     require(record['request'] == artifacts.ref(out/'requests.json') and
@@ -228,13 +269,14 @@ def replay(output):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--producer-root', type=Path); parser.add_argument('--core-root', type=Path)
+    parser.add_argument('--raw-export-root', type=Path)
     parser.add_argument('--arm', choices=('C', 'B')); parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--replay-only', action='store_true')
     args = parser.parse_args()
     if args.replay_only:
         print(json.dumps(replay(args.output))); return 0
-    require(all((args.producer_root, args.core_root, args.arm)), 'actual producer/core arm required')
-    record = run(args.producer_root, args.core_root, args.arm, args.output)
+    require(all((args.producer_root, args.arm)), 'actual producer/arm required')
+    record = run(args.producer_root, args.core_root, args.arm, args.output,raw_export_root=args.raw_export_root)
     print(json.dumps({'status': record['status'], 'errors': record['errors'], 'output': str(args.output.resolve())}))
     return 0 if record['status'] == PASS else 1
 

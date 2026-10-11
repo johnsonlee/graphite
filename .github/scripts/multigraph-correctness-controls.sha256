@@ -3,7 +3,7 @@
 8b52a8b2d1c67adfa930e4aa85bf6294314ca109a65795e26a3f094f2cddbce7  frontend/jvm/explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/CypherCapacityBenchmark.kt
 204cc36197f5b7369adef8daf8f20ddd08ef3e8b3b522030dd2eecb9db74e056  frontend/jvm/explore/src/jmh/kotlin/io/johnsonlee/graphite/cli/SingleGraphCorrectness.kt
 2f91faf7dad6c8c73f905e1688f4342772f89105b9a87343d2abc090183e22a1  .github/scripts/benchmark-gate.mjs
-84341cf72f0fac452d6015b2503ce479638b732758d83fef40bb19a7066e193a  .github/scripts/benchmark-multigraph-pressure.mjs
+ce16cb1e16c2512675160f7cf7565867c956028ad4eea3169b08797a2eef7f33  .github/scripts/benchmark-multigraph-pressure.mjs
 aa6757f2caea21d1f7b6bedb4a040e7f859b77d05889f360b33bf99882ba3349  frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/BudgetedQueryCorrectness.kt
 522d2a5b3241bae8a8f0f3f48b410ef98de07eedd2b15885f8edc389a00e787f  frontend/jvm/cypher/src/jmh/kotlin/io/johnsonlee/graphite/cypher/SyntheticQueryCorrectness.kt
 937a2d1318cfd634bfb8ed482353a9a4c779c4f89320e0a5e9d97cba615c7713  .github/scripts/benchmark-construction.mjs

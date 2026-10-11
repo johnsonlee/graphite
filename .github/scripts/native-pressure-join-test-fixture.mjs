@@ -46,8 +46,9 @@ export function joinedFixture(t, options={}) {
  options.prepare?.(f);
  const original={measurementMode:'native39-before-core-v1',status:'ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING',
   arms:structuredClone(f.plan.arms),sourceInputs:{path:'/source-inputs.json',sha256:'source'},armDirectories:{C:'/C',A:'/C',B:'/B'}};
+ options.changeOriginal?.(original,f,meta);
  const originalRef=meta('original',original);
- f.plan.pendingComparabilityAuthority=originalRef;f.plan.comparabilityPending=true;put(f.file,f.plan);
+ f.plan[options.jvm?'pendingJvmComparabilityAuthority':'pendingComparabilityAuthority']=originalRef;f.plan.comparabilityPending=true;put(f.file,f.plan);
  for(const [i,cell] of f.plan.cells.entries()) {
   f.rewrite(i,r=>{r.arm=f.plan.arms[cell.arm];r.planSha256=digest(f.file);options.changeCell?.(r,i,f);});
   const p=path.join(f.root,cell.id,'audit.json'),a=JSON.parse(fs.readFileSync(p));a.planSha256=digest(f.file);options.changeAudit?.(a,i,f);put(p,a);
@@ -69,7 +70,7 @@ export function joinedFixture(t, options={}) {
   const audit={status:'PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT',completeCoreTopologyIndexComparison:true,
    productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
    pins:{[recordRef.path]:recordRef.sha256,[corePlanRef.path]:corePlanRef.sha256,...Object.fromEntries(phaseRefs.map(r=>[r.path,r.sha256]))}};
-  options.changeCoreAudit?.(audit,arm);
+  options.changeCoreAudit?.(audit,arm,meta);
   comparisons[arm]={audit:meta(`core-${arm}-audit`,audit),revisions,fixtureManifests:fixtures};
  }
  const corrected={...structuredClone(original),status:'ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED',
@@ -82,7 +83,7 @@ export function joinedFixture(t, options={}) {
  const executionRef=ref(path.join(f.root,'execution.json'),hosted+'/measurement/execution.json');
  const cells=f.plan.cells.map(cell=>({id:cell.id,...Object.fromEntries(['result','audit'].map(kind=>
   [kind,ref(path.join(f.root,cell.id,kind+'.json'),`${hosted}/measurement/${cell.id}/${kind}.json`)]))}));
- const receipt={schema:'graphite.native-pressure.core-comparability-join.v1',status:'PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN',
+ const receipt={schema:options.jvm?'graphite.jvm-pressure.core-comparability-join.v1':'graphite.native-pressure.core-comparability-join.v1',status:'PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN',
   coreComparabilityVerified:true,completeSemanticEquivalence:false,strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,
   performanceAcceptance:false,otherOperationsEligible:false,plan:planRef,measurementProducer:originalRef,correctedProducer:correctedRef,
   measurementExecution:executionRef,measurementInputsSha256:originalRef.sha256,coreComparisons:comparisons,cells,metadata,pins};

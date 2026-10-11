@@ -16,18 +16,21 @@ const equal = (a,b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
 // its original metadata bytes so the aggregate can check the exact join again
 // without downloading graph/runtime payloads or changing the measured plan.
 export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inputs) {
-    const pending='pendingComparabilityAuthority' in plan || plan.comparabilityPending===true;
+    const jvm='pendingJvmComparabilityAuthority' in plan;
+    const pending=jvm || 'pendingComparabilityAuthority' in plan || plan.comparabilityPending===true;
+    const producerRef=jvm?plan.pendingJvmComparabilityAuthority:plan.pendingComparabilityAuthority;
     if (!pending) {require(!receiptFile,'Unexpected comparability receipt');return true;}
-    require(plan.engine==='native' && plan.comparabilityPending===true && plan.pendingComparabilityAuthority &&
-        !plan.correctedProducerAuthority && !plan.jvmProducerAuthority,'Explicit pending native comparability');
+    require(plan.engine===(jvm?'jvm':'native') && plan.comparabilityPending===true && producerRef &&
+        !plan.correctedProducerAuthority && !plan.jvmProducerAuthority &&
+        (!jvm || !plan.pendingComparabilityAuthority),'Explicit pending engine comparability');
     if (!receiptFile) return false;
     const receipt=read(receiptFile), base=path.dirname(path.resolve(receiptFile));
     inputs[path.resolve(receiptFile)]=sha(receiptFile);
-    require(receipt.schema==='graphite.native-pressure.core-comparability-join.v1' &&
+    require(receipt.schema===(jvm?'graphite.jvm-pressure.core-comparability-join.v1':'graphite.native-pressure.core-comparability-join.v1') &&
         receipt.status==='PASS_SAME_INPUT_COMPLETE_CORRECTED_CORE_JOIN' && receipt.coreComparabilityVerified===true &&
         ['completeSemanticEquivalence','strictEquivalence','sourceToDeclarationCompletenessClaim',
             'performanceAcceptance','otherOperationsEligible'].every(k=>receipt[k]===false),'Complete scoped core join');
-    require(receipt.plan?.sha256===sha(planFile) && equal(receipt.measurementProducer,plan.pendingComparabilityAuthority) &&
+    require(receipt.plan?.sha256===sha(planFile) && equal(receipt.measurementProducer,producerRef) &&
         receipt.measurementInputsSha256===receipt.measurementProducer.sha256,
         'Join must bind the original measured plan and producer');
     const pinned=(ref,actual)=>{
@@ -46,11 +49,13 @@ export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inpu
         return pinned(ref,target);
     };
     const original=metadata(receipt.measurementProducer), corrected=metadata(receipt.correctedProducer);
-    require(original.measurementMode==='native39-before-core-v1' &&
-        original.status==='ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING' &&
+    require(original.measurementMode===(jvm?'jvm35-before-core-v1':'native39-before-core-v1') &&
+        original.status===(jvm?'JVM35_RESPONSES_AUDITED_CORE_COMPARABILITY_PENDING':'ARTIFACTS_AND39_QUERIES_AUDITED_EQUIVALENCE_PENDING') &&
         corrected.status==='ARTIFACTS_QUERIES_AND_CORRECTED_CORE_COMPARABILITY_AUDITED' &&
         equal(original.arms,corrected.arms) && equal(original.sourceInputs,corrected.sourceInputs) &&
-        equal(original.armDirectories,corrected.armDirectories) && equal(corrected.missingAuthority,[]) &&
+        equal(original.armDirectories,corrected.armDirectories) &&
+        (!jvm || (original.schema==='graphite.jvm-pressure.producers.v1' && corrected.schema===original.schema &&
+          equal(original.correctnessRoots,corrected.correctnessRoots) && plan.cases.length===35)) && equal(corrected.missingAuthority,[]) &&
         equal(receipt.coreComparisons,corrected.correctedComparisons),'Same producer inputs and complete corrected core');
     for (const arm of ['C','A','B']) {
         require(['revision','sourceManifest','runtimeManifest','fixtureManifest','graphs','serverArgv','runtimeFiles'].every(
@@ -96,6 +101,36 @@ export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inpu
             const phase=metadata(phaseRef);
             require(audit.pins?.[phaseRef.path]===phaseRef.sha256 && phase.status==='PASS' && phase.exit===0 &&
                 equal(phase.errors,[]),'Every recorded core phase succeeded');
+        }
+    }
+    if(jvm) {
+        require(equal(Object.keys(corrected.rawEdgeJoins??{}).sort(),['A','B','C']),'Complete JVM raw edge joins');
+        for(const arm of ['C','A','B']) {
+            const join=corrected.rawEdgeJoins[arm],producer=original.arms[arm],raw=metadata(join.rawAudit);
+            require(equal(join.rawAudit,producer.rawExportAudit) && raw.schema==='graphite.jvm-raw-edge-export-audit.v1' &&
+                raw.status==='PASS_ALL64_RAW_EDGE_OWNED_EXECUTION_AUDIT' && raw.completeCoreTopologyIndexComparison===false &&
+                raw.performanceAcceptance===false && raw.graphs?.length===64 && join.graphs?.length===64,
+                'Complete independently owned JVM raw export');
+            for(const key of ['sourceManifest','runtimeManifest','fixtureManifest','artifactAudit'])
+                require(equal(raw[key],producer[key]),'Raw export actual producer binding');
+            const coreArm=arm==='C'||(arm==='A'&&alias)?'B':arm,side=arm==='C'||(arm==='A'&&alias)?'reference':'actual';
+            const coreAudit=metadata(corrected.correctedComparisons[coreArm].audit);
+            for(const name of ['C',coreArm])for(const key of ['sourceManifest','runtimeManifest','fixtureManifest','artifactAudit']) {
+                const ref=original.arms[name][key];require(coreAudit.pins?.[ref.path]===ref.sha256,'JVM core producer identity pin');
+            }
+            for(let i=0;i<64;i++) {
+                const row=join.graphs[i],exported=raw.graphs[i],coreGraph=coreAudit.graphs[i];
+                require(row.id===plan.arms[arm].graphs[i].id && row.id===exported.id && row.id===coreGraph.id &&
+                    row.coreArm===coreArm && row.coreSide===side && equal(row.rawReceipt,exported.receipt) &&
+                    equal(row.topology,coreGraph.topology),'Same ordered64 raw/core edge receipts');
+                const rawEdge=metadata(row.rawReceipt),topology=metadata(row.topology),edge=topology.rawEdgeExports?.[side];
+                require(equal(rawEdge,exported.edges) && raw.pins?.[row.rawReceipt.path]===row.rawReceipt.sha256 &&
+                    coreAudit.pins?.[row.topology.path]===row.topology.sha256 && edge &&
+                    ['graphRoot','sourceInputs','nodeSlots','labeledEdges','mappingApplied'].every(k=>equal(edge[k],rawEdge[k])) &&
+                    rawEdge.mappingApplied===false && edge.output.sha256===rawEdge.output.sha256 &&
+                    row.outputSha256===rawEdge.output.sha256 && raw.pins?.[rawEdge.output.path]===rawEdge.output.sha256 &&
+                    coreAudit.pins?.[edge.output.path]===edge.output.sha256,'Full original-ID raw edges bound to complete core');
+            }
         }
     }
     return true;
@@ -201,7 +236,7 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
         planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
         status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
-        ...('pendingComparabilityAuthority' in plan?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
+        ...(('pendingComparabilityAuthority' in plan || 'pendingJvmComparabilityAuthority' in plan)?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         otherOperationsEligible:false,limitation:'Two fixed directions; no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
 }

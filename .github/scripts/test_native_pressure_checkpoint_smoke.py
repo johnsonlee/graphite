@@ -63,8 +63,8 @@ class CheckpointChainSmoke(unittest.TestCase):
         self.assertEqual('native-checkpoint-'+stage+'-'+arm+'-'+suffix, name)
         expected = 'pressure-checkpoints/producer-producer' if stage == 'producer' else 'pressure-checkpoints/'+name
         self.assertEqual(expected, directory)
-        if job in ('rust-jvm-correctness', 'rust-query-jvm'):
-            consumer_stage = 'core' if job == 'rust-jvm-correctness' else 'jvm'
+        if job == 'rust-query-native':
+            consumer_stage = 'core'
             self.assertIn('restore-consumer-chain', job_body)
             self.assertIn('--stage '+consumer_stage+' --arm B', job_body)
         return self.f.workspace/directory.replace('${{ github.run_id }}', '1234').replace('${{ github.run_attempt }}', '2')
@@ -109,7 +109,7 @@ class CheckpointChainSmoke(unittest.TestCase):
             f.json(f.root/arm/'core-equivalence/plan.json', {'pins': pins, 'fixtureResult': 'core-'+arm})
             args = f.args('core', arm, f.workspace/('sealed/core-'+arm), [producer_ref])
             manifest = self.cli('seal', args)
-            ref = self.transfer(Path(args.directory), self.download_directory('core', arm, 'rust-jvm-correctness'))
+            ref = self.transfer(Path(args.directory), self.download_directory('core', arm, 'rust-query-native'))
             f.remove_payload(manifest)
             self.cli('restore', f.args('core', arm, ref.parent, [producer_ref]))
             self.assertEqual('core-'+arm, checkpoint.read(f.root/arm/'core-equivalence/plan.json')['fixtureResult'])
@@ -125,7 +125,9 @@ class CheckpointChainSmoke(unittest.TestCase):
                 f.json(f.root/arm/stage/'plan.json', {'pins': pins, 'fixtureResult': stage+'-'+arm})
             args = f.args('jvm', arm, f.workspace/('sealed/jvm-'+arm), refs)
             manifest = self.cli('seal', args)
-            destination = self.download_directory('jvm', arm, 'rust-query-jvm')
+            # Retain the legacy complete-JVM transport contract; current pending
+            # workflow wiring is covered by test_jvm_pending_handoff and Node DAG tests.
+            destination = self.f.workspace/f'pressure-checkpoints/native-checkpoint-jvm-{arm}-1234-2'
             ref = self.transfer(Path(args.directory), destination)
             f.remove_payload(manifest)
             target = f.root/arm/'jvm-query-correctness/plan.json'
@@ -219,7 +221,7 @@ class CheckpointChainSmoke(unittest.TestCase):
         f.json(out/'record.json', {'fixtureResult': 'all64-transferred'})
         args = f.args('core', 'B', f.workspace/'sealed/final-core', [producer_ref])
         complete = self.cli('seal', args)
-        final_ref = self.transfer(Path(args.directory), self.download_directory('core', 'B', 'rust-jvm-correctness'))
+        final_ref = self.transfer(Path(args.directory), self.download_directory('core', 'B', 'rust-query-native'))
         f.remove_payload(complete)
         self.cli('restore', f.args('core', 'B', final_ref.parent, [producer_ref]))
         self.assertEqual('all64-transferred', checkpoint.read(out/'record.json')['fixtureResult'])

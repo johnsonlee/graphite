@@ -311,6 +311,10 @@ def validate_plan(plan, catalog=None):
         require(plan['engine'] == 'native' and plan.get('comparabilityPending') is True and
                 not any(k in plan for k in ('producerAuthority', 'correctedProducerAuthority', 'jvmProducerAuthority')),
                 'explicit separate pending native comparability mode')
+    elif 'pendingJvmComparabilityAuthority' in plan:
+        require(plan['engine']=='jvm' and plan.get('comparabilityPending') is True and
+                not any(k in plan for k in ('producerAuthority','correctedProducerAuthority','jvmProducerAuthority')),
+                'explicit separate pending JVM comparability mode')
     else:
         require('comparabilityPending' not in plan, 'pending scope requires explicit producer authority')
     require(type(plan.get('pins')) is dict and plan['pins'], 'closed input pins required')
@@ -379,11 +383,11 @@ def validate_plan(plan, catalog=None):
     require([c['id'] for c in plan['cases']] == [c['id'] for c in declared['cases']], 'complete declared case inventory')
     candidate = None
     jvm_packet = None
-    if 'jvmProducerAuthority' in plan:
+    if 'jvmProducerAuthority' in plan or 'pendingJvmComparabilityAuthority' in plan:
         require(plan['engine'] == 'jvm' and 'correctedProducerAuthority' not in plan and
                 'producerAuthority' not in plan, 'explicit separate JVM producer proof mode')
         from prepare_jvm_pressure_plan import verify_bundle, pressure_arms
-        packet = pinned_authority_metadata(plan, plan['jvmProducerAuthority'])
+        packet = pinned_authority_metadata(plan, plan['pendingJvmComparabilityAuthority' if 'pendingJvmComparabilityAuthority' in plan else 'jvmProducerAuthority'])
         jvm_packet = verify_bundle(packet, plan['arms']['A']['revision'], plan['arms']['B']['revision'])
         require(pressure_arms(jvm_packet) == plan['arms'] and
                 all(plan['pins'].get(p) == h for p, h in jvm_packet['pins'].items()),
@@ -473,7 +477,7 @@ def validate_proof_claims(plan, jvm_packet=None):
                 for case in plan['cases']:
                     ref = case['oracleByArm'][arm_id]['proof']
                     require(proof['upstream'].get(ref['path']) == ref['sha256'], 'independent full-body oracle upstream')
-    pending = 'pendingComparabilityAuthority' in plan
+    pending = 'pendingComparabilityAuthority' in plan or 'pendingJvmComparabilityAuthority' in plan
     fixture_role = 'fixture-inventory' if pending else 'fixture-equivalence'
     matches = [proof for proof in plan['proofs'] if proof['role'] == fixture_role]
     require(len(matches) == 1 and not any(p['role'] ==
@@ -483,7 +487,7 @@ def validate_proof_claims(plan, jvm_packet=None):
     expected = {'graphsByArm': {key: arm['graphs'] for key, arm in plan['arms'].items()},
                 'fixtureFiles': {path: digest for path, digest in plan['pins'].items() if any(Path(path).is_relative_to(root) for root in roots)},
                 'realPersistedGraphs': True, 'completeSemanticEquivalence': True}
-    if pending:
+    if 'pendingComparabilityAuthority' in plan:
         from assemble_native_pressure_producers import (verify_measurement_bundle,
             measurement_fixture_bindings, pressure_arms)
         ref = plan['pendingComparabilityAuthority']
@@ -524,11 +528,11 @@ def validate_proof_claims(plan, jvm_packet=None):
                         'corrected oracles retain actual complete response authority')
         expected = corrected
         require(matches[0]['upstream'].get(ref['path']) == ref['sha256'], 'corrected producer upstream')
-    if 'jvmProducerAuthority' in plan:
+    if 'jvmProducerAuthority' in plan or 'pendingJvmComparabilityAuthority' in plan:
         require(plan['engine'] == 'jvm' and 'correctedProducerAuthority' not in plan and
                 'producerAuthority' not in plan, 'explicit separate JVM fixture proof mode')
         from prepare_jvm_pressure_plan import verify_bundle, fixture_bindings, pressure_arms
-        ref = plan['jvmProducerAuthority']
+        ref = plan['pendingJvmComparabilityAuthority' if 'pendingJvmComparabilityAuthority' in plan else 'jvmProducerAuthority']
         if jvm_packet is None:
             packet = pinned_authority_metadata(plan, ref)
             jvm_packet = verify_bundle(packet, plan['arms']['A']['revision'], plan['arms']['B']['revision'])
@@ -606,7 +610,8 @@ def _execution_closure(plan):
     Unknown/legacy proof modes do not use this optimization.
     """
     import audit_native_pressure_artifacts as artifacts
-    key = ('jvmProducerAuthority' if 'jvmProducerAuthority' in plan else
+    key = ('pendingJvmComparabilityAuthority' if 'pendingJvmComparabilityAuthority' in plan else
+           'jvmProducerAuthority' if 'jvmProducerAuthority' in plan else
            'pendingComparabilityAuthority' if 'pendingComparabilityAuthority' in plan else 'correctedProducerAuthority')
     packet = pinned_authority_metadata(plan, plan[key])
     roots, sources, configurations = set(), {}, {}
@@ -642,11 +647,14 @@ def _execution_closure(plan):
         query = metadata(arm['queryAudit']['path'])
         query_path = Path(query['plan']['path'])
         query_plan = metadata(query_path); add(query_path.parent)
-        if key == 'jvmProducerAuthority':
+        if key in ('jvmProducerAuthority','pendingJvmComparabilityAuthority'):
             raw = Path(query_plan['rawDerivationRoot'])
-            metadata(raw/'plan.json'); add(raw)
+            raw_plan=metadata(raw/'plan.json'); add(raw)
+            if key=='pendingJvmComparabilityAuthority':
+                add(raw_plan['rawExportRoot'])
+                add(producer_root/'core-string-exports')
 
-    for comparison in ({} if key == 'pendingComparabilityAuthority' else packet['correctedComparisons']).values():
+    for comparison in ({} if key in ('pendingComparabilityAuthority','pendingJvmComparabilityAuthority') else packet['correctedComparisons']).values():
         core_root = Path(comparison['audit']['path']).parent
         core_plan = metadata(core_root/'plan.json'); add(core_root)
         require(set(core_plan['upstream']) == {'CStrings', 'BStrings', 'marker', 'formatterTests', 'formatterSource'},
@@ -703,7 +711,7 @@ class _VerifiedPressureExecution:
         value._sha = sha(value._path)
         candidate = read(value._path)
         value._reuse = any(k in candidate for k in
-                           ('jvmProducerAuthority', 'correctedProducerAuthority', 'pendingComparabilityAuthority'))
+                           ('jvmProducerAuthority', 'correctedProducerAuthority', 'pendingComparabilityAuthority','pendingJvmComparabilityAuthority'))
         value._valid = False
         # Capture before replay as well: a mutation during the full audit must
         # not become the new trusted inventory merely by being captured later.
@@ -1355,7 +1363,7 @@ def evidence_eligible(result, plan):
     require(result['coverage'] == plan['coverage'], 'result coverage drift')
     require(result['engine'] == plan['engine'] and result['operation'] == 'query', 'result operation/engine')
     require(result['otherOperationsEligible'] is False, 'query cannot authorize other operations')
-    return ('pendingComparabilityAuthority' not in plan and
+    return ('pendingComparabilityAuthority' not in plan and 'pendingJvmComparabilityAuthority' not in plan and
             result['status'] == 'PASS' and not result['errors'] and
             set(result['stages']) == {'oracle', 'warmup', 'pressure'} and
             all(stage['status'] == 'PASS' and stage.get('resources', {}).get('status') != 'UNAVAILABLE'

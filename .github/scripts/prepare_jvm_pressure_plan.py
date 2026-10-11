@@ -17,6 +17,8 @@ import multigraph_pressure as common
 
 SCHEMA = 'graphite.jvm-pressure.producers.v1'
 STATUS = assembled.CORRECTED_STATUS
+PENDING_STATUS = 'JVM35_RESPONSES_AUDITED_CORE_COMPARABILITY_PENDING'
+MODE = 'jvm35-before-core-v1'
 CATALOG = Path(__file__).resolve().parent/'fixtures/jvm-multigraph-pressure-cases.json'
 require = common.require
 merge_pins = assembled.merge_pins
@@ -79,10 +81,13 @@ def audited_arm(directory, revision, role):
         'runtimeFiles': runtime['files'], 'runtimeRoots': [str(producer/'runtime')], 'serverArgv': argv,
         'maxHeapBytes': 4*1024**3, 'graphs': plan['graphs'],
         'readiness': {**plan['readiness'], 'path': '/api/graphs'}, 'cases': cases}
+    if raw.get('coreComparabilityPending') is True:
+        arm['rawExportAudit'] = raw['upstreamRawExportAudit']
+        return arm,pins,None
     return arm, pins, Path(raw['coreRoot'])/'audit.json'
 
 
-def assemble(correctness_roots, base_sha, candidate_sha):
+def assemble(correctness_roots, base_sha, candidate_sha, *, measurement_only=False):
     require(set(correctness_roots) == {'C', 'A', 'B'} and
             all(re.fullmatch('[0-9a-f]{40}', value) for value in (base_sha, candidate_sha)), 'exact C/A/B roots and revisions')
     roots = {key: str(Path(value).resolve()) for key, value in correctness_roots.items()}
@@ -96,12 +101,17 @@ def assemble(correctness_roots, base_sha, candidate_sha):
         require(arm['revision'] == revision, 'aliased actual revision')
         arms[name] = dict(arm, role=role)
         merge_pins(pins, evidence)
+        require((core_path is None) == measurement_only, 'explicit JVM raw authority mode')
         if name != 'C' and roots[name] != roots['C']: comparisons[name] = core_path
     packet = {'schema': SCHEMA, 'status': STATUS, 'correctnessRoots': roots,
         'acceptedRevision': artifacts.ACCEPTED, 'baseRevision': base_sha, 'candidateRevision': candidate_sha,
         'arms': arms, 'pins': pins, 'comparisonModel': assembled.CORRECTED_MODEL, 'missingAuthority': [],
         'completeSemanticEquivalence': False, 'strictEquivalence': False, 'sourceToDeclarationCompletenessClaim': False,
         'performanceAcceptance': False, 'acceptanceEligible': False}
+    if measurement_only:
+        packet.update(status=PENDING_STATUS,measurementMode=MODE,missingAuthority=['complete-matching-core-comparability'])
+        packet.pop('comparisonModel')
+        return packet
     packet['correctedComparisons'] = {name: assembled.corrected_comparison(packet, name, path)
                                       for name, path in comparisons.items()}
     assembled.corrected_fixture_bindings(packet)
@@ -111,7 +121,7 @@ def assemble(correctness_roots, base_sha, candidate_sha):
 def verify_bundle(packet, base_sha, candidate_sha):
     require(packet['schema'] == SCHEMA and packet['baseRevision'] == base_sha and packet['candidateRevision'] == candidate_sha,
             'actual JVM producer packet identity')
-    actual = assemble(packet['correctnessRoots'], base_sha, candidate_sha)
+    actual = assemble(packet['correctnessRoots'], base_sha, candidate_sha,measurement_only=packet.get('measurementMode')==MODE)
     require(common.typed(actual) == common.typed(packet), 'JVM producer packet differs from actual evidence')
     return actual
 
@@ -122,6 +132,12 @@ def pressure_arms(packet):
 
 def fixture_bindings(packet):
     require(packet['schema'] == SCHEMA, 'explicit JVM producer authority')
+    if packet.get('measurementMode') == MODE and packet['status'] == PENDING_STATUS:
+        require(packet['missingAuthority']==['complete-matching-core-comparability'] and 'correctedComparisons' not in packet,'explicit pending JVM inventory')
+        roots={Path(g['path']) for arm in packet['arms'].values() for g in arm['graphs']}
+        return {'graphsByArm':{key:arm['graphs'] for key,arm in packet['arms'].items()},
+                'fixtureFiles':{path:digest for path,digest in packet['pins'].items() if any(Path(path).is_relative_to(root) for root in roots)},
+                'realPersistedGraphs':True,'completeSemanticEquivalence':False,'coreComparabilityPending':True}
     return assembled.corrected_fixture_bindings(packet)
 
 
@@ -163,11 +179,13 @@ def bind_plan(packet, producer_ref, output, catalog_path):
         proof('independent-correctness', {'graphIds': [g['id'] for g in arm['graphs']],
             'requestDigests': {c['id']: common.digest_bytes(common.canonical(c['request'])) for c in cases},
             'oracleDigests': {c['id']: c['oracleByArm'][name]['digest'] for c in cases}}, upstream, name)
-    proof('fixture-equivalence', fixture_bindings(packet), {producer_ref['path']: producer_ref['sha256'],
-        **{v['audit']['path']: v['audit']['sha256'] for v in packet['correctedComparisons'].values()},
+    pending=packet.get('measurementMode')==MODE
+    proof('fixture-inventory' if pending else 'fixture-equivalence', fixture_bindings(packet), {producer_ref['path']: producer_ref['sha256'],
+        **{v['audit']['path']: v['audit']['sha256'] for v in packet.get('correctedComparisons',{}).values()},
         **{a['artifactAudit']['path']: a['artifactAudit']['sha256'] for a in packet['arms'].values()}})
     return {'schema': common.PLAN_SCHEMA, 'engine': 'jvm', 'operation': 'query', 'pins': pins,
-        'catalog': artifacts.ref(catalog_path), 'jvmProducerAuthority': producer_ref,
+        'catalog': artifacts.ref(catalog_path),
+        **({'pendingJvmComparabilityAuthority':producer_ref,'comparabilityPending':True} if pending else {'jvmProducerAuthority':producer_ref}),
         'arms': pressure_arms(packet), 'cases': cases, 'proofs': proofs,
         'coverage': {'coveredFamilies': declared['coveredFamilies'], 'requiredFamilies': declared['requiredFamilies'],
                      'unavailableFamilies': [], 'unavailableOperations': ['construction', 'loading']},
@@ -178,7 +196,7 @@ def bind_plan(packet, producer_ref, output, catalog_path):
                    'bodyBytes': 67108864, 'rssIntervalSeconds': .01}}
 
 
-def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CATALOG):
+def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CATALOG, *, measurement_only=False):
     output = Path(output).resolve()
     require(not output.exists(), 'fresh preparation directory')
     # Inspect paths only before reserving output, so failed/missing audit evidence
@@ -192,7 +210,7 @@ def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CAT
                 raw_root = Path(query['rawDerivationRoot']).resolve(); protected.append(raw_root)
                 if (raw_root/'plan.json').is_file():
                     raw = common.read(raw_root/'plan.json')
-                    protected.extend(Path(raw[key]).resolve() for key in ('producerRoot', 'coreRoot'))
+                    protected.extend(Path(raw[key]).resolve() for key in ('producerRoot', 'coreRoot','rawExportRoot') if key in raw)
                     source_path = Path(raw['sourceManifest']['path'])
                     if source_path.is_file(): protected.append(Path(common.read(source_path)['root']).resolve())
     except (OSError, ValueError, KeyError, TypeError) as error:
@@ -203,7 +221,7 @@ def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CAT
               'status': 'FAIL', 'errors': [], 'missingProducers': [], 'performanceAcceptance': False}
     try:
         if preflight_error is not None: raise preflight_error
-        packet = assemble(correctness_roots, base_sha, candidate_sha)
+        packet = assemble(correctness_roots, base_sha, candidate_sha,measurement_only=measurement_only)
         require(not any(output.is_relative_to(Path(p).parent) for p in packet['pins']),
                 'preparation output outside immutable upstream inputs')
         common.save(output/'packet.json', packet)
@@ -211,6 +229,7 @@ def prepare(correctness_roots, base_sha, candidate_sha, output, catalog_path=CAT
         common.validate_plan(plan); common.verify_inputs(plan)
         common.save(output/'plan.json', plan)
         status.update(status='PLAN_READY_NOT_MEASURED', planSha256=common.sha(output/'plan.json'))
+        if measurement_only:status['comparabilityPending']=True
     except FileNotFoundError as error:
         status.update(status='UNAVAILABLE', missingProducers=[str(error)])
     except (OSError, ValueError, KeyError, TypeError) as error:
@@ -224,6 +243,7 @@ if __name__ == '__main__':
     for arm in 'CAB': parser.add_argument('--'+arm.lower(), type=Path, required=True)
     parser.add_argument('--base-sha', required=True); parser.add_argument('--candidate-sha', required=True)
     parser.add_argument('--output', type=Path, required=True); parser.add_argument('--catalog', type=Path, default=CATALOG)
+    parser.add_argument('--measurement-only',action='store_true')
     args = parser.parse_args()
-    result = prepare({k: getattr(args, k.lower()) for k in 'CAB'}, args.base_sha, args.candidate_sha, args.output, args.catalog)
+    result = prepare({k: getattr(args, k.lower()) for k in 'CAB'}, args.base_sha, args.candidate_sha, args.output, args.catalog,measurement_only=args.measurement_only)
     print(result); sys.exit(0 if result['status'] == 'PLAN_READY_NOT_MEASURED' else 1)

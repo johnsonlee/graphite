@@ -17756,3 +17756,87 @@ another expensive cohort. It does not establish measured Native loading,
 query p50/p95, CPU, RSS, stability or end-to-end recovery, nor a whole-workflow
 runtime bound. No new benchmark, single-graph performance measurement, CI launch,
 push or cancellation was performed.
+
+### Attempt224 — start JVM35 measurement after raw inputs, join complete core later (2026-10-12)
+
+Parent:f5c8f30c. JVM pressure still waited for core preparation, all core shards,
+the complete core join, and then JVM correctness. Inspection established that
+its35-case source-model derivation consumes own-writer raw nodes/types/metadata,
+string exports, original-ID labeled edges and JDK primitive facts; it does not
+consume the cross-arm field mapping or correction calculations. The previous
+raw-edge exporter nevertheless required the completed mapped topology proof.
+
+JVM correctness now starts after producer plus core-prepare, reusing the existing
+string exports. A separate dependency-only Java helper exports original GSE01
+edges from each own-writer64 corpus in one bounded helper process per distinct
+arm. It checks sequential/random offsets, label-prefix offsets, original IDs,
+edge ordering and complete consumption, binding all five topology inputs and
+actual helper/source/runtime bytes. The owned compile/export phases are replayed
+independently. Per-graph completion and elapsed time are retained in original
+stdout and forwarded to the live CI log. No field-bijection, source correction
+or complete core calculation is repeated on the early branch.
+
+The existing primitive-fact execution, raw derivation replay, source-rule audit
+and all35 actual JVM correctness responses still precede measurement. The
+original full projections, request catalog, six CABBAC cells, both directions,
+c4/2/20 sampling, complete body consumption, resource/latency limits and raw
+failures remain unchanged. An explicit pending-JVM authority binds the complete
+oracle and fixture inventory without asserting cross-arm comparability. Direct
+comparators and measurement reports cannot return passed=true while it is
+pending. Original plans, input pins, samples and audits are never rewritten.
+
+The final JVM job joins those original measurements to matching complete core
+proofs, replays the original six raw cell audits, and independently matches all
+64 GSE01 output hashes/counts/input pins for every arm to the original-ID exports
+inside the complete mapped topology proof. The portable receipt uses a distinct
+JVM schema; aggregation checks the complete139 owned phases, actual producer
+source/runtime/fixture pins, both directions and all raw-edge bindings before
+applying the unchanged query gates. Missing/failing core, substituted producers,
+changed edges, missing graphs or a Native receipt cannot authorize JVM acceptance.
+
+Transport has an explicit pending-JVM stage and original preparation upstreams.
+The final JVM profile restores preparation, original pending evidence and the
+self-contained complete core checkpoint. Only that fixed profile may encounter
+identical repeated core payload: source writes remain forbidden, overlapping
+files must have identical hash/size/mode, existing bytes are verified and never
+rewritten, and all type/link/closed-directory checks and the fresh final byte
+audit remain mandatory. Other Native/loading/construction restore profiles and
+their downloads are unchanged. The old complete-JVM transport API remains tested.
+
+The new dependency path after producer is core-prepare followed by the maximum
+of (core shards plus join/transfer) and (raw export plus existing JVM correctness
+plus pressure/transfer), followed by final restoration/replay/join. It removes
+the shards/join wait from early JVM measurement; it does not remove core-prepare.
+The new64-graph raw traversal and additional JVM-final preparation checkpoint
+transfer have no isolated real-corpus duration yet. These costs, the final raw
+replay, queues and runner contention prevent a justified total-time promise.
+The earlier03f producer-to-core interval included preparation and cannot be
+claimed in full as this attempt's savings. No under-two-hour bound is asserted.
+
+Verification: the real new Java entry point compiled against already available
+dependencies, exported64 tiny graph identities, survived compressed byte transfer
+and restoration, and was consumed by the existing original-ID edge parser. Root
+independently compared its output byte-for-byte with both outputs of the existing
+VerifyTopology helper. These are correctness fixtures, not performance samples.
+Four formal handoff contracts passed, including actual sealed
+producer/preparation/pending/full-core restoration, hash/mode conflict rejection,
+all35 raw universes/full projections without calling core, and the actual
+execute(engine=jvm) record consumed by finalization with missing-core and metric
+failure cases. Root independently repeated all four and three pending Node tests.
+All232 Node contracts passed in18.263s; existing checkpoint45, pressure92 and
+legacy checkpoint-smoke3 tests passed, as did preparation13, derivation11 and
+runner28 contracts during implementation. All206 manifest entries, two manifest
+bindings, six comparator bindings, actionlint and diff checks passed. Independent
+review reported no remaining blocker and confirmed seven original JVM query
+contract files retained identical SHA hashes.
+
+Evidence: `/tmp/graphite-attempt224-{helper,handoff,node-final,checkpoint,pressure,legacy-smoke-final,actionlint,progress}.log`,
+`/tmp/graphite-attempt224-controls.json`, root's
+`/tmp/graphite-attempt224-root-{handoff,node-pending}.log` and
+`/tmp/graphite-attempt224-root-equivalence/result.log`.
+
+**Decision: retain locally after independent review; hosted validation pending.**
+This is a feedback-path change, not evidence of query p50/p95, end-to-end, CPU,
+RSS, correctness/stability or construction/loading recovery on the real corpus.
+No single-graph performance measurement, new pressure run, CI launch, push or
+cancellation was performed by this attempt.
