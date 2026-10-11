@@ -55,8 +55,12 @@ def _complete_verified(pending):
 def verify(packet):
     original=prepare.assemble(packet['correctnessRoots'],packet['baseRevision'],packet['candidateRevision'],measurement_only=True)
     actual=complete(original)
-    require(common.typed(packet)==common.typed(actual),'JVM corrected packet differs from full independent replay')
-    return actual,original
+    normalized=prepare._normalized_packet_oracles(packet,actual)
+    require(common.typed(normalized)==common.typed(actual),'JVM corrected packet differs from full independent replay')
+    # The original measured packet may carry inline universes. Preserve those
+    # verified bytes/shape for the finalizer's exact pending-input join.
+    original['arms']=copy.deepcopy(packet['arms'])
+    return packet,original
 
 
 def metadata(packet):

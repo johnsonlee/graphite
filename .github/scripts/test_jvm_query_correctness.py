@@ -170,11 +170,62 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         self.assertFalse(result['completeSemanticEquivalence']); self.assertFalse(result['performanceAcceptance'])
         self.assertEqual(64*16, result['readiness']['totals']['nodes'])
         plan = p.common.read(self.out/'plan.json')
-        self.assertEqual(8, sum(c['oracleByArm']['B']['value']['schema'] == p.derive.distinct.SCHEMA for c in plan['cases']))
+        self.assertEqual(8, sum(p.common.jvm_oracle_value(c['oracleByArm']['B'], pins=plan['pins'])['schema'] == p.derive.distinct.SCHEMA for c in plan['cases']))
         self.assertEqual([str(self.java), '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', str(self.jar),
                           'io.johnsonlee.graphite.cli.MainKt', 'serve'], plan['argv'][:7])
         for case in result['cases']:
             self.assertEqual(self.base.bodies[case['case']], Path(case['body']['path']).read_bytes())
+
+    def test_prepared_all35_oracles_are_exact_refs_and_release_compilers(self):
+        import weakref
+        original = p.model.CompiledLegalLimitOracle
+        previous = []
+        def compiled(universe, case):
+            self.assertTrue(all(ref() is None for ref in previous))
+            value = original(universe, case); previous.append(weakref.ref(value)); return value
+        with patch.object(p.model, 'CompiledLegalLimitOracle', side_effect=compiled):
+            plan = p.prepare(self.raw, self.out, 22840)
+        self.assertEqual(35, len(previous)); self.assertTrue(all(ref() is None for ref in previous))
+        for case in plan['cases']:
+            oracle = case['oracleByArm']['B']
+            self.assertNotIn('value', oracle)
+            self.assertEqual(self.replayed['universes'][case['id']], oracle['valueRef'])
+            self.assertEqual(oracle['valueRef']['sha256'], plan['pins'][oracle['valueRef']['path']])
+        self.assertNotIn('totalMatches', p.common.canonical(plan).decode())
+
+    def rewrite_saved_plan(self, plan):
+        ref = write(self.out/'plan.json', plan)
+        record = p.common.read(self.out/'record.json'); record['plan'] = ref
+        write(self.out/'record.json', record)
+
+    def test_legacy_inline_plan_is_audited_only_against_complete_authoritative_values(self):
+        self.execute()
+        plan = p.common.read(self.out/'plan.json')
+        for case in plan['cases']:
+            oracle = case['oracleByArm']['B']
+            value = p.common.jvm_oracle_value(oracle, pins=plan['pins'])
+            del oracle['valueRef']; oracle['value'] = value
+        self.rewrite_saved_plan(plan)
+        self.assertEqual(p.AUDIT, p.audit(self.out)['status'])
+        # Re-pinning the plan and retaining the original digest cannot authorize
+        # an altered inline payload, even before response-journal validation.
+        oracle = plan['cases'][0]['oracleByArm']['B']; oracle['value']['totalMatches'] += 1
+        self.rewrite_saved_plan(plan)
+        with self.assertRaisesRegex(ValueError, 'independent JVM plan differs'):
+            p.audit(self.out)
+
+    def test_referenced_plan_rejects_substituted_refs_digest_and_mixed_payload(self):
+        self.execute(); original = p.common.read(self.out/'plan.json')
+        for mode in ['path', 'sha256', 'digest', 'mixed', 'missing']:
+            plan = copy.deepcopy(original); oracle = plan['cases'][0]['oracleByArm']['B']
+            if mode == 'path': oracle['valueRef']['path'] += '.foreign'
+            elif mode == 'sha256': oracle['valueRef']['sha256'] = '0'*64
+            elif mode == 'digest': oracle['digest'] = '0'*64
+            elif mode == 'mixed': oracle['value'] = {}
+            else: del oracle['valueRef']
+            self.rewrite_saved_plan(plan)
+            with self.subTest(mode=mode), self.assertRaisesRegex(ValueError, 'independent JVM plan differs'):
+                p.audit(self.out)
 
     def test_execute_rejects_missing_or_nonempty_output_before_upstream_replay(self):
         for output in (self.root/'absent', self.raw):
@@ -206,7 +257,10 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'complete35'): p.prepare(self.raw, self.out, 22840)
         self.replayed['universes'][self.base.cases[0]['id']] = missing
         Path(missing['path']).write_text('{}')
-        with self.assertRaisesRegex(ValueError, 'authority metadata changed'): p.prepare(self.raw, self.out, 22840)
+        with self.assertRaisesRegex(ValueError, 'JVM universe bytes changed'): p.prepare(self.raw, self.out, 22840)
+        Path(missing['path']).unlink()
+        with self.assertRaisesRegex(ValueError, 'canonical regular JVM universe reference'):
+            p.prepare(self.raw, self.out, 22840)
 
     def test_changed_sealed_package_is_rejected(self):
         self.jar.write_bytes(b'changed')

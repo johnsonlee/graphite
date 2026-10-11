@@ -107,11 +107,11 @@ def audit(directory):
             'performanceAcceptance': False, 'completeSemanticEquivalence': False}
 
 
-def audit_response_journal(root, record, cases, variant):
+def audit_response_journal(root, record, cases, variant, *, pins=None):
     """Replay every stored full body against independently supplied case oracles."""
     journal = [common.parse(line) for line in (root / 'responses.jsonl').read_text().splitlines()]
     require(journal == record['responses'] and len(journal) == len(cases), 'complete response journal')
-    validate = common.compile_response_validator(cases, variant)
+    validate = common.compile_response_validator(cases, variant, pins=pins)
     receipts = []
     evidence = {str(root / name): common.sha(root / name) for name in
                 ('plan.json', 'record.json', 'owner.json', 'readiness.body', 'responses.jsonl', 'stdout.log', 'stderr.log')}

@@ -190,7 +190,7 @@ def _execute_validated(plan, output, contract):
         for sig in (signal.SIGINT, signal.SIGTERM):
             handlers[sig] = signal.signal(sig, interrupted)
         contract.verify_closure(plan)
-        validator = common.compile_response_validator(plan['cases'], plan['expectationVariant'])
+        validator = common.compile_response_validator(plan['cases'], plan['expectationVariant'], pins=plan.get('pins'))
         with socket.socket() as probe:
             probe.bind(('127.0.0.1', plan['port']))
         with common.deferred_signals():

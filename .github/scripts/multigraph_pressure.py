@@ -150,28 +150,55 @@ def validate_response(raw, case, arm, compiled_legal=None):
     return {'canonicalSha256': actual, 'rows': len(value['rows'])}
 
 
-def compile_response_validator(cases, arm):
+def jvm_oracle_value(oracle, *, pins=None):
+    """Read one bound JVM universe; never retain its JSON in the pressure plan."""
+    require(oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1', 'JVM legal oracle kind')
+    require(('value' in oracle) != ('valueRef' in oracle), 'exactly one JVM universe representation')
+    if 'value' in oracle:
+        return oracle['value']
+    ref = oracle['valueRef']
+    require(type(ref) is dict and set(ref) == {'path', 'sha256'} and
+            type(ref['path']) is str and valid_digest(ref['sha256']), 'exact JVM universe reference')
+    path = Path(ref['path'])
+    require(path.is_absolute() and str(path.resolve()) == ref['path'] and
+            path.is_file() and not path.is_symlink(), 'canonical regular JVM universe reference')
+    require(pins is not None and pins.get(ref['path']) == ref['sha256'], 'bound JVM universe reference')
+    if 'valueProof' in oracle:
+        require(oracle['valueProof'] == ref, 'JVM universe reference differs from raw proof')
+    raw = path.read_bytes()
+    require(digest_bytes(raw) == ref['sha256'], 'JVM universe bytes changed')
+    return parse(raw)
+
+
+def _compile_jvm_response_oracle(case, oracle, pins):
+    # This frame releases the raw tree before the next case is loaded. Only the
+    # immutable compiled index survives; no file IO occurs during requests.
+    import jvm_pressure_oracles as jvm
+    definitions = {item['id']: item for item in jvm.cases(case['request']['body']['graphs'])}
+    require(case['id'] in definitions, 'known complete35 JVM request definition')
+    definition = definitions[case['id']]
+    for field in ('request', 'targetGraphIds'):
+        require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact JVM request/scope binding')
+    for field in ('family', 'registeredGraphIds', 'requestedGraphIds', 'columns', 'effectiveLimit',
+                  'requestSha256', 'querySha256'):
+        if field in case:
+            require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact supplied JVM definition field: ' + field)
+    value = jvm_oracle_value(oracle, pins=pins)
+    require(jvm.digest(value) == oracle['digest'], 'complete typed JVM universe digest')
+    validator = jvm.CompiledLegalLimitOracle(value, definition)
+    require(type(oracle['rows']) is int and oracle['rows'] == min(validator.total, validator.limit),
+            'JVM legal oracle row count')
+    return validator
+
+
+def compile_response_validator(cases, arm, *, pins=None):
     """Prepare immutable legal row counters once, outside every request boundary."""
     compiled = {}
     require(len({case['id'] for case in cases}) == len(cases), 'unique compiled cases')
     for case in cases:
         oracle = case['oracleByArm'][arm]
         if oracle['kind'] == 'jvm-complete-legal-limit-multiset-v1':
-            import jvm_pressure_oracles as jvm
-            definitions = {item['id']: item for item in jvm.cases(case['request']['body']['graphs'])}
-            require(case['id'] in definitions, 'known complete35 JVM request definition')
-            definition = definitions[case['id']]
-            for field in ('request', 'targetGraphIds'):
-                require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact JVM request/scope binding')
-            for field in ('family', 'registeredGraphIds', 'requestedGraphIds', 'columns', 'effectiveLimit',
-                          'requestSha256', 'querySha256'):
-                if field in case:
-                    require(jvm.typed(case[field]) == jvm.typed(definition[field]), 'exact supplied JVM definition field: ' + field)
-            require(jvm.digest(oracle['value']) == oracle['digest'], 'complete typed JVM universe digest')
-            validator = jvm.CompiledLegalLimitOracle(oracle['value'], definition)
-            require(type(oracle['rows']) is int and oracle['rows'] == min(validator.total, validator.limit),
-                    'JVM legal oracle row count')
-            compiled[case['id']] = validator
+            compiled[case['id']] = _compile_jvm_response_oracle(case, oracle, pins)
             continue
         if oracle['kind'] != 'native-complete-legal-limit-multiset-v1':
             continue
@@ -425,9 +452,13 @@ def validate_plan(plan, catalog=None):
                         observed['targetGraphIds'] == case['targetGraphIds'] and
                         typed(observed['oracle']) == typed(oracle), 'actual independently audited JVM oracle')
                 value_ref = oracle['valueProof']
-                require(plan['pins'].get(value_ref['path']) == value_ref['sha256'] == sha(value_ref['path']) and
-                        typed(read(value_ref['path'])) == typed(oracle['value']), 'complete JVM universe payload pin')
-                compile_response_validator([case], name)
+                require(plan['pins'].get(value_ref['path']) == value_ref['sha256'], 'complete JVM universe payload pin')
+                if 'valueRef' in oracle:
+                    require(oracle['valueRef'] == value_ref, 'complete JVM universe reference matches raw proof')
+                else:
+                    require(value_ref['sha256'] == sha(value_ref['path']) and
+                            typed(read(value_ref['path'])) == typed(oracle['value']), 'complete JVM universe payload pin')
+                compile_response_validator([case], name, pins=plan['pins'])
             else:
                 require(oracle['rowOrder'] == source['rowOrder'], 'fixed row ordering')
                 require(oracle['value'] == source['expected'], 'independent JVM expected envelope')
@@ -1446,7 +1477,7 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
             previous[sig] = signal.signal(sig, interrupted)
         save(out / 'identities-before.json',
              before_identities if _before_inputs is not None else verify_inputs(plan))
-        validator = compile_response_validator(plan['cases'], cell['arm'])
+        validator = compile_response_validator(plan['cases'], cell['arm'], pins=plan['pins'])
         save(out / 'host-before.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform})
         data = out / 'data'
         args = [*arm['serverArgv'], '--data', str(data), '--port', str(cell['port']), '--load-mode', 'MAPPED',
@@ -1588,7 +1619,7 @@ def _audit(plan_path, output, plan):
     lifecycle = lifecycle_time(root / 'time-v.log')
     require(lifecycle == result['lifecycle'], 'lifecycle raw proof')
     total = 0
-    validator = compile_response_validator(plan['cases'], cell['arm'])
+    validator = compile_response_validator(plan['cases'], cell['arm'], pins=plan['pins'])
     for name, repeats in [('oracle', 1), ('warmup', 2), ('pressure', 20)]:
         stage = result['stages'][name]
         require(stage['cpuStart']['pid'] == stage['cpuEnd']['pid'] == server_pid, 'stage CPU PID')

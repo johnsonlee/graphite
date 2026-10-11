@@ -116,6 +116,95 @@ class JvmPreparationTests(unittest.TestCase):
                     'performanceAcceptance', 'acceptanceEligible'): self.assertIs(False, packet[key])
         self.assertEqual(p.assembled.CORRECTED_MODEL, p.fixture_bindings(packet)['comparisonModel'])
 
+    def rewrite_query_plan(self, root, plan):
+        audit = self.observed[str(root)]
+        ref = self.write(root/'plan.json', plan)
+        audit['plan'] = ref; audit['pins'][ref['path']] = ref['sha256']
+        self.write(root/'audit.json', audit)
+
+    def test_legacy_inline_correctness_emits_reference_only_packet_and_plan(self):
+        packet, plan = self.bound_plan()
+        for name, arm in packet['arms'].items():
+            for row in arm['cases']:
+                oracle = row['oracle']
+                self.assertNotIn('value', oracle)
+                self.assertEqual(oracle['valueRef'], oracle['valueProof'])
+                self.assertEqual(packet['pins'][oracle['valueRef']['path']], oracle['valueRef']['sha256'])
+        for case in plan['cases']:
+            for oracle in case['oracleByArm'].values():
+                self.assertNotIn('value', oracle)
+                self.assertIn('valueRef', oracle)
+        self.assertEqual(packet, p.verify_bundle(packet, 'a'*40, 'b'*40))
+
+    def test_reference_correctness_preserves_exact_independent_payload_binding(self):
+        root = Path(self.roots['B']); plan = p.common.read(root/'plan.json')
+        for case in plan['cases']:
+            oracle = case['oracleByArm']['B']; oracle.pop('value')
+            oracle['valueRef'] = plan['rawDerivationEvidence']['universes'][case['id']]
+        self.rewrite_query_plan(root, plan)
+        arm, _, _ = p.audited_arm(root, 'b'*40, 'candidate')
+        self.assertTrue(all('value' not in row['oracle'] for row in arm['cases']))
+        self.assertEqual([case['oracleByArm']['B']['valueRef'] for case in plan['cases']],
+                         [row['oracle']['valueRef'] for row in arm['cases']])
+
+    def test_reference_payload_read_once_by_original_compiler(self):
+        root = Path(self.roots['B']); plan = p.common.read(root/'plan.json')
+        case = plan['cases'][0]; ref = plan['rawDerivationEvidence']['universes'][case['id']]
+        oracle = case['oracleByArm']['B']; oracle.pop('value'); oracle['valueRef'] = ref
+        reads = []; read = Path.read_bytes
+        def observed(path):
+            if str(path) == ref['path']: reads.append(str(path))
+            return read(path)
+        with patch.object(Path, 'read_bytes', new=observed), \
+                patch.object(p.model, 'CompiledLegalLimitOracle', wraps=p.model.CompiledLegalLimitOracle) as compiler:
+            result = p._pressure_oracle(case, 'B', ref, p.artifacts.ref(root/'audit.json'),
+                                        self.observed[str(root)]['pins'])
+        self.assertEqual([ref['path']], reads)
+        self.assertEqual(1, compiler.call_count)
+        self.assertEqual(ref, result['valueRef']); self.assertNotIn('value', result)
+
+    def test_reference_substitution_ambiguous_shape_and_byte_drift_fail(self):
+        root = Path(self.roots['B']); original = p.common.read(root/'plan.json')
+        for mutation in ('foreign-ref', 'both', 'neither', 'bytes'):
+            plan = copy.deepcopy(original); oracle = plan['cases'][0]['oracleByArm']['B']
+            ref = plan['rawDerivationEvidence']['universes'][plan['cases'][0]['id']]
+            value = oracle.pop('value'); oracle['valueRef'] = ref
+            changed = Path(ref['path']); raw = changed.read_bytes()
+            if mutation == 'foreign-ref': oracle['valueRef'] = plan['rawDerivationEvidence']['universes'][plan['cases'][1]['id']]
+            elif mutation == 'both': oracle['value'] = value
+            elif mutation == 'neither': oracle.pop('valueRef')
+            else: changed.write_bytes(raw+b' ')
+            self.rewrite_query_plan(root, plan)
+            try:
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    p.audited_arm(root, 'b'*40, 'candidate')
+            finally: changed.write_bytes(raw)
+
+    def test_pressure_reference_requires_exact_raw_payload_pin(self):
+        root = Path(self.roots['B']); plan = p.common.read(root/'plan.json')
+        case = plan['cases'][0]; ref = plan['rawDerivationEvidence']['universes'][case['id']]
+        audit = self.observed[str(root)]
+        for replacement in (None, 'f'*64):
+            pins = dict(audit['pins'])
+            if replacement is None: pins.pop(ref['path'])
+            else: pins[ref['path']] = replacement
+            with self.subTest(replacement=replacement), self.assertRaises(ValueError):
+                p._pressure_oracle(case, 'B', ref, p.artifacts.ref(root/'audit.json'), pins)
+
+    def test_legacy_packet_replay_keeps_archived_shape_without_ignoring_payload(self):
+        packet = self.packet()
+        for arm in packet['arms'].values():
+            for row in arm['cases']:
+                oracle = row['oracle']; ref = oracle.pop('valueRef')
+                oracle['value'] = p.common.read(ref['path'])
+        original = copy.deepcopy(packet)
+        self.assertEqual(original, p.verify_bundle(packet, 'a'*40, 'b'*40))
+        self.assertEqual(original, packet)
+        bad = copy.deepcopy(packet)
+        bad['arms']['B']['cases'][0]['oracle']['value']['totalMatches'] = 1
+        with self.assertRaisesRegex(ValueError, 'differs from actual independent payload'):
+            p.verify_bundle(bad, 'a'*40, 'b'*40)
+
     def test_previous26_and34_audits_cannot_authorize_new35_pressure(self):
         root = Path(self.roots['B']); original = copy.deepcopy(self.observed[str(root)])
         for count in (26, 34):

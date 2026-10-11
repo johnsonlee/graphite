@@ -19893,3 +19893,81 @@ root-launch-review.json,root-result-review.json}, all raw worker stage journals
 and35 paired snapshots under /tmp/graphite-jvm-scope-prefilter-real4-result-1,
 /tmp/graphite-attempt263-root-predicate-review.json and
 /tmp/graphite-attempt263-integration-review.json.
+
+### Attempt264 — reference JVM oracle payloads without duplicating plan trees (2026-10-12)
+
+Fresh JVM correctness and pressure plans previously embedded every complete
+universe as JSON. The existing35 universes total6,481,217,386 bytes; correctness
+cases, producer arms, pressure cases, serialized execution plans and records
+could each retain another copy. Replace those inline values with sealed
+absolute path/SHA references, retaining full independent raw derivation,
+original35 definitions, exact graph scopes, typed digests, full legal-limit
+compilation and complete HTTP-body replay. The compiler checks the SHA of the
+actual parsed bytes and releases each raw tree before loading the next. It
+retains all compiled indices before requests; no per-request file IO is added.
+
+Legacy inline archives remain supported only after exact typed comparison
+against independently replayed, pinned universe files. Preserve their original
+verified shape for existing plan/finalizer joins. Mixed inline/ref claims,
+missing pins, path or digest drift, malformed JSON and changed semantics fail.
+No source authority, resource acceptance or scope limit changes.
+
+Local correctness:215 integrated Python tests pass in94.297s,236 Node workflow
+tests pass in17.023s, all194 preparation pins and their workflow binding pass,
+and structural actionlint plus diff checks pass. Initial Native fixture/pin
+failures and the reproduced legacy final-join mismatch remain in the original
+logs; fixes precede the passing integrated run. Independent review is recorded
+separately. Base is f642b9f4; candidate code patch SHA is
+c81ef07bdb506a0d71391164cde39ee4bf0dc5bd1b0582b82f12df90716fe942.
+
+The narrow diagnostic reuses all35 historical64-graph universes and35 complete
+HTTP bodies (15,321,127 bytes), without deriving graphs, launching a server or
+building code. Unlike previous per-case probes it invokes the actual production
+compile_response_validator once and keeps all35 returned indices alive through
+every body check and final identity verification. The first preparation
+incorrectly treated its return as a dict; root caught this before launch. The
+correct callable adapter passed an actual35-case tiny correctness/lifetime smoke
+in0.100s; the incorrect preparation is preserved.
+
+Command: python3 -B
+/tmp/graphite-jvm-ref-validator-lifetime-prep-1/execute.py execute. Local macOS,
+Python3.14.7, fixed historical acd11a69 writer inputs,600s total work plus60s
+cleanup,12GiB sampled diagnostic stop. The budget includes two parsed/digested
+passes because the historical inputs do not supply trusted typed-digest
+metadata; neither pass is excluded from elapsed cost. It is an absolute
+validator-lifetime diagnostic, not a baseline/candidate server benchmark,
+current-writer proof, Linux capacity result or final performance acceptance.
+The historical HTTP run remains failed at its final import closure; reuse of
+its reviewed bodies does not change that outcome or establish canonical
+oracle authority.
+
+The diagnostic stops at the declared RSS guard after228.656s (worker228.236s,
+CPU227.310s), with peak RSS14,153,940,992 bytes. Sampling overshoots the12GiB
+threshold. Twenty preparations complete; the21st, first/last bimodal universe
+(1,517,383,837 bytes), is interrupted. No retained compiler or response stage
+runs, and finalIdentity remains NOT_COMPLETED. Both supervisor and worker
+retain failure; the owned group is empty and its leader is reaped. Do not
+claim all35 lifetime acceptance, a memory reduction, or a successful complete
+run from this evidence. No retry or increased limit is used.
+
+Keep the reference-only transport: passing correctness checks verify that fresh
+plans no longer contain duplicated universe trees, and independent final review
+finds no missing consumer or authority check. This positive structural change
+is not resource recovery. The failed bounded diagnostic identifies a remaining
+availability blocker before another full CI: model.digest currently builds the
+entire typed tree, complete JSON string and complete UTF-8 buffer. Investigate
+an exact-byte-compatible streaming digest as a separate experiment; do not mix
+it into this commit or weaken independent oracle validation.
+
+Current hosted draft checks on f642b9f4 pass in12m08s; unit and Rust checks pass.
+The required benchmark gate explicitly fails because full acceptance is skipped
+for drafts. The earlier9m12s fast-check observation is not a fixed duration.
+Complete hosted duration remains unknown; do not launch another complete
+workflow based on an unsupported two-hour estimate.
+
+Evidence: /tmp/graphite-jvm-ref-validator-lifetime-prep-1/{plan.json,
+preparation-review.json,root-prelaunch-review.json,root-result-review.json,supervisor.json},
+/private/tmp/graphite-jvm-ref-validator-lifetime-1/{execution.json,stages.jsonl,
+plan.json}, /tmp/graphite-attempt264-integration-tests.log,
+/tmp/graphite-attempt264-workflow-tests.log and
+/tmp/graphite-attempt264-integration-review.json.

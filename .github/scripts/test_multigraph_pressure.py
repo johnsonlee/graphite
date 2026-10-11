@@ -963,6 +963,71 @@ class JvmLegalDispatchTests(unittest.TestCase):
               'rows':rows,'rowCount':len(rows),'limit':case['effectiveLimit']}
         return case,body
 
+    def reference(self, root, case):
+        oracle = case['oracleByArm']['B']
+        path = root/(case['id']+'.json')
+        path.write_bytes(p.canonical(oracle.pop('value')))
+        ref = {'path': str(path), 'sha256': p.sha(path)}
+        oracle['valueRef'] = ref
+        return {ref['path']: ref['sha256']}
+
+    def test_all35_referenced_universes_compile_before_requests_and_preserve_typed_results(self):
+        import jvm_pressure_oracles as jvm
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); cases = []; bodies = {}; pins = {}
+            for source in jvm.cases():
+                case, body = self.fixture(source['id'], grouped=source['family'] == 'wrapped-discovery')
+                pins.update(self.reference(root, case)); cases.append(case); bodies[case['id']] = body
+            original = p.canonical(cases)
+            validate = p.compile_response_validator(cases, 'B', pins=pins)
+            self.assertEqual(original, p.canonical(cases))
+            self.assertTrue(all('value' not in c['oracleByArm']['B'] for c in cases))
+            # The immutable compiled indexes, not later file contents, supply
+            # request validation. Execution's terminal pin check remains separate.
+            for path in root.iterdir(): path.unlink()
+            with patch.object(Path, 'read_bytes', side_effect=AssertionError('request-time oracle IO')):
+                for case in cases:
+                    body = bodies[case['id']]
+                    self.assertEqual(body['rowCount'], validate(p.canonical(body), case)['rows'])
+                bad = copy.deepcopy(bodies['slow-dynamicHit']); bad['rows'][0]['id'] = '7'
+                with self.assertRaises(ValueError): validate(p.canonical(bad), next(c for c in cases if c['id'] == 'slow-dynamicHit'))
+
+    def test_reference_requires_exact_bound_regular_file_and_unambiguous_representation(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); original, _ = self.fixture(); pins = self.reference(root, original)
+            for mutation in ('no-pins', 'unbound', 'pin', 'extra-ref-field', 'relative', 'symlink',
+                             'both', 'neither', 'value-proof', 'bytes', 'digest', 'rows'):
+                case = copy.deepcopy(original); oracle = case['oracleByArm']['B']; bound = dict(pins)
+                if mutation == 'no-pins': bound = None
+                elif mutation == 'unbound': bound = {}
+                elif mutation == 'pin': bound[oracle['valueRef']['path']] = 'f'*64
+                elif mutation == 'extra-ref-field': oracle['valueRef']['extra'] = True
+                elif mutation == 'relative': oracle['valueRef']['path'] = 'relative.json'
+                elif mutation == 'symlink':
+                    link = root/'link.json'; link.symlink_to(oracle['valueRef']['path']); oracle['valueRef']['path'] = str(link)
+                    bound[str(link)] = oracle['valueRef']['sha256']
+                elif mutation == 'both': oracle['value'] = {}
+                elif mutation == 'neither': oracle.pop('valueRef')
+                elif mutation == 'value-proof': oracle['valueProof'] = dict(oracle['valueRef'], sha256='f'*64)
+                elif mutation == 'bytes':
+                    oracle['valueRef']['sha256'] = 'f'*64; bound[oracle['valueRef']['path']] = 'f'*64
+                elif mutation == 'digest': oracle['digest'] = 'f'*64
+                elif mutation == 'rows': oracle['rows'] = True
+                with self.subTest(mutation=mutation), self.assertRaises(ValueError):
+                    p.compile_response_validator([case], 'B', pins=bound)
+
+    def test_referenced_json_uses_same_read_hash_and_original_strict_parser(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve(); case, _ = self.fixture(); pins = self.reference(root, case)
+            with patch.object(Path, 'read_bytes', return_value=b'{}'):
+                with self.assertRaisesRegex(ValueError, 'bytes changed'):
+                    p.compile_response_validator([case], 'B', pins=pins)
+            oracle = case['oracleByArm']['B']; path = Path(oracle['valueRef']['path'])
+            for raw in (b'{"rows":[],"rows":[]}', b'{"value":NaN}', b'{"value":Infinity}'):
+                path.write_bytes(raw); oracle['valueRef']['sha256'] = p.sha(path)
+                with self.subTest(raw=raw), self.assertRaisesRegex(ValueError, 'duplicate|nonfinite'):
+                    p.compile_response_validator([case], 'B', pins={str(path): p.sha(path)})
+
     def test_actual_body_digest_is_separate_from_universe_and_no_request_recompile(self):
         import jvm_pressure_oracles as jvm
         case,body=self.fixture();validator=p.compile_response_validator([case],'B')

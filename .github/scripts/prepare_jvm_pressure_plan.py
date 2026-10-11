@@ -62,13 +62,8 @@ def _arm_from_audit(root, revision, role, observed):
         require(all(common.typed(case[k]) == common.typed(definition[k]) for k in definition) and
                 receipt['case'] == case['id'] and receipt['targetGraphIds'] == case['targetGraphIds'],
                 'actual complete JVM request and graph scope')
-        oracle = dict(case['oracleByArm'][variant])
         value_ref = plan['rawDerivationEvidence']['universes'][case['id']]
-        value = common.pinned_authority_metadata({'pins': pins}, value_ref)
-        require(common.typed(oracle['value']) == common.typed(value) and oracle['digest'] == model.digest(value),
-                'oracle is independent raw universe, not observed response')
-        oracle.update(proof=audit_ref, valueProof=value_ref)
-        common.compile_response_validator([{**case, 'oracleByArm': {variant: oracle}}], variant)
+        oracle = _pressure_oracle(case, variant, value_ref, audit_ref, pins)
         cases.append({'id': case['id'], 'request': case['request'], 'targetGraphIds': case['targetGraphIds'],
                       'oracle': oracle, 'observed': receipt})
     jar = plan['serverJar']
@@ -91,6 +86,55 @@ def _arm_from_audit(root, revision, role, observed):
         arm['rawExportAudit'] = raw['upstreamRawExportAudit']
         return arm,pins,None
     return arm, pins, Path(raw['coreRoot'])/'audit.json'
+
+
+def _pressure_oracle(case, variant, value_ref, audit_ref, pins):
+    """Verify one independent payload; retain only its sealed reference."""
+    oracle = dict(case['oracleByArm'][variant])
+    require(('value' in oracle) != ('valueRef' in oracle), 'one JVM oracle representation')
+    if 'valueRef' in oracle:
+        require(oracle['valueRef'] == value_ref, 'same independent raw universe reference')
+    referenced = {key: value for key, value in oracle.items() if key != 'value'}
+    referenced.update(valueRef=value_ref, proof=audit_ref, valueProof=value_ref)
+    if 'value' in oracle:
+        value = common.jvm_oracle_value(referenced, pins=pins)
+        require(common.typed(oracle['value']) == common.typed(value) and
+                oracle['digest'] == model.digest(value),
+                'oracle is independent raw universe, not observed response')
+        del value
+    # The original compiler performs the reference's same-read SHA, full typed
+    # digest and semantic checks once before releasing this case's raw tree.
+    common.compile_response_validator([{**case, 'oracleByArm': {variant: referenced}}], variant, pins=pins)
+    return referenced
+
+
+def _normalized_packet_oracles(packet, actual):
+    """Compare legacy inline packets without changing their archived bytes or claims."""
+    normalized = dict(packet)
+    normalized['arms'] = {}
+    for name, arm in packet['arms'].items():
+        require(name in actual['arms'], 'JVM producer packet differs from actual evidence')
+        expected = actual['arms'][name]['cases']
+        require(len(arm['cases']) == len(expected), 'JVM producer packet differs from actual evidence')
+        rows = []
+        for row, reference in zip(arm['cases'], expected):
+            oracle = row['oracle']
+            require(('value' in oracle) != ('valueRef' in oracle), 'one JVM oracle representation')
+            if 'value' in oracle:
+                oracle = _normalized_inline_oracle(oracle, reference['oracle'], actual['pins'])
+            rows.append(dict(row, oracle=oracle))
+        normalized['arms'][name] = dict(arm, cases=rows)
+    return normalized
+
+
+def _normalized_inline_oracle(oracle, expected, pins):
+    # No caller-supplied digest or foreign ref can establish semantic equality.
+    value = common.jvm_oracle_value(expected, pins=pins)
+    require(common.typed(oracle['value']) == common.typed(value) and
+            model.digest(oracle['value']) == expected['digest'],
+            'JVM producer packet differs from actual independent payload')
+    return {**{key: value for key, value in oracle.items() if key != 'value'},
+            'valueRef': expected['valueRef']}
 
 
 def assemble(correctness_roots, base_sha, candidate_sha, *, measurement_only=False):
@@ -132,8 +176,11 @@ def verify_bundle(packet, base_sha, candidate_sha):
     require(packet['schema'] == SCHEMA and packet['baseRevision'] == base_sha and packet['candidateRevision'] == candidate_sha,
             'actual JVM producer packet identity')
     actual = assemble(packet['correctnessRoots'], base_sha, candidate_sha,measurement_only=packet.get('measurementMode')==MODE)
-    require(common.typed(actual) == common.typed(packet), 'JVM producer packet differs from actual evidence')
-    return actual
+    require(common.typed(actual) == common.typed(_normalized_packet_oracles(packet, actual)),
+            'JVM producer packet differs from actual evidence')
+    # Legacy callers compare the exact archived arm shape against their plan.
+    # Return that already verified shape; fresh packets contain references only.
+    return packet
 
 
 def pressure_arms(packet):

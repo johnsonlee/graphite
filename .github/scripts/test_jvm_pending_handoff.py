@@ -203,6 +203,61 @@ class RawDerivationHandoff(unittest.TestCase):
         self.assertTrue(all(value>0 for counts in result['derivation']['fullProjectionBindings'].values() for value in counts.values()))
 
 
+class CorrectedJoinRepresentation(unittest.TestCase):
+    """Real tiny35 universe files; upstream core replay is an explicit boundary."""
+    def setUp(self):
+        import jvm_pressure_join as join
+        self.join = join
+        fixture = preparation_fixtures.JvmPreparationTests(); fixture.setUp()
+        self.addCleanup(fixture.doCleanups)
+        self.corrected = fixture.packet()
+        self.pending = copy.deepcopy(self.corrected)
+        self.pending.pop('correctedComparisons'); self.pending.pop('comparisonModel')
+        self.pending.update(status=prepare.PENDING_STATUS, measurementMode=prepare.MODE,
+                            missingAuthority=['complete-matching-core-comparability'])
+        self.corrected['measurementMode'] = prepare.MODE
+        self.corrected['rawEdgeJoins'] = {'tiny': 'modeled complete original-ID core join'}
+        # Producer/source/runtime/case pins above come from the real preparation
+        # contract; only the expensive original-ID core join boundary is modeled.
+        assemble = patch.object(prepare, 'assemble', side_effect=lambda *a, **k: copy.deepcopy(self.pending))
+        complete = patch.object(join, 'complete', side_effect=lambda p: copy.deepcopy(self.corrected))
+        assemble.start(); complete.start(); self.addCleanup(assemble.stop); self.addCleanup(complete.stop)
+
+    def inline(self):
+        packet = copy.deepcopy(self.corrected)
+        for arm in packet['arms'].values():
+            for row in arm['cases']:
+                oracle = row['oracle']; ref = oracle.pop('valueRef')
+                oracle['value'] = prepare.common.read(ref['path'])
+        return packet
+
+    def test_fresh_references_and_legacy_inline_preserve_exact_measured_shapes(self):
+        for packet in (copy.deepcopy(self.corrected), self.inline()):
+            before = copy.deepcopy(packet)
+            corrected, pending = self.join.verify(packet)
+            self.assertEqual(before, packet)
+            self.assertEqual(before, corrected)
+            expected = copy.deepcopy(self.pending); expected['arms'] = copy.deepcopy(packet['arms'])
+            self.assertEqual(expected, pending)
+            self.assertEqual(self.pending['pins'], pending['pins'])
+            self.assertEqual(35, len(corrected['arms']['B']['cases']))
+
+    def test_inline_payload_cannot_hide_drift_behind_original_digest(self):
+        packet = self.inline()
+        packet['arms']['B']['cases'][0]['oracle']['value']['totalMatches'] += 1
+        with self.assertRaisesRegex(ValueError, 'actual independent payload'):
+            self.join.verify(packet)
+
+    def test_reference_source_and_complete_core_claims_still_match_exactly(self):
+        for mode in ('foreign-ref', 'source', 'core', 'mixed'):
+            packet = copy.deepcopy(self.corrected)
+            if mode == 'foreign-ref': packet['arms']['B']['cases'][0]['oracle']['valueRef']['path'] += '.foreign'
+            elif mode == 'source': packet['arms']['B']['sourceManifest']['sha256'] = 'f'*64
+            elif mode == 'core': packet['rawEdgeJoins']['tiny'] = 'changed original-ID join'
+            else: packet['arms']['B']['cases'][0]['oracle']['value'] = {}
+            with self.subTest(mode=mode), self.assertRaises(ValueError): self.join.verify(packet)
+
+
 class ExecutionJoinHandoff(unittest.TestCase):
     def test_actual_jvm_execution_record_can_join_and_missing_core_stays_failed(self):
         import tempfile

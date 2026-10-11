@@ -101,10 +101,12 @@ def _prepare_evidence(root, output, port, evidence):
     require(variant in ('C', 'B'), 'actual reference/candidate derivation arm')
     for case in cases:
         ref = evidence['universes'][case['id']]
-        universe = common.pinned_authority_metadata(packet, ref)
+        oracle = {'kind': 'jvm-complete-legal-limit-multiset-v1', 'valueRef': dict(ref)}
+        universe = common.jvm_oracle_value(oracle, pins=pins)
         validator = model.CompiledLegalLimitOracle(universe, case)
-        case['oracleByArm'] = {variant: {'kind': 'jvm-complete-legal-limit-multiset-v1', 'value': universe,
-                                       'digest': model.digest(universe), 'rows': min(validator.total, validator.limit)}}
+        oracle.update(digest=model.digest(universe), rows=min(validator.total, validator.limit))
+        case['oracleByArm'] = {variant: oracle}
+        del universe, validator
     jar = jars['graphiteJar']['path']
     plan = {'schema': PLAN, 'revision': raw_plan['revision'], 'role': raw_plan['role'],
             'rawDerivationRoot': str(root), 'rawDerivationEvidence': evidence, 'sourceRuleAudit': rules,
@@ -152,6 +154,35 @@ def derive_and_execute(producer_root, raw_export_root, arm, raw_derivation_dir, 
     return derive._run_and_consume_raw(producer_root, raw_export_root, arm, raw, consume)
 
 
+
+def _same_oracle_plan(plan, expected):
+    """Legacy inline payloads must equal their independently replayed file values."""
+    if set(plan) != set(expected): return False
+    if common.typed({k: v for k, v in plan.items() if k != 'cases'}) != common.typed(
+            {k: v for k, v in expected.items() if k != 'cases'}): return False
+    if len(plan['cases']) != len(expected['cases']): return False
+    for actual_case, expected_case in zip(plan['cases'], expected['cases']):
+        if set(actual_case) != set(expected_case): return False
+        if common.typed({k: v for k, v in actual_case.items() if k != 'oracleByArm'}) != common.typed(
+                {k: v for k, v in expected_case.items() if k != 'oracleByArm'}): return False
+        if set(actual_case['oracleByArm']) != set(expected_case['oracleByArm']): return False
+        for arm, wanted in expected_case['oracleByArm'].items():
+            actual = actual_case['oracleByArm'][arm]
+            if 'valueRef' in actual:
+                if common.typed(actual) != common.typed(wanted): return False
+            else:
+                # Accept exactly the old representation, not extra fields, mixed
+                # inline/ref claims or a digest supplied by the stored plan alone.
+                if set(actual) != (set(wanted) - {'valueRef'}) | {'value'}: return False
+                if common.typed({k: v for k, v in actual.items() if k != 'value'}) != common.typed(
+                        {k: v for k, v in wanted.items() if k != 'valueRef'}): return False
+                universe = common.jvm_oracle_value(wanted, pins=expected['pins'])
+                equal = derive._same_typed_json(actual['value'], universe)
+                del universe
+                if not equal: return False
+    return True
+
+
 def audit(directory):
     root = Path(directory).resolve()
     plan, record = common.read(root/'plan.json'), common.read(root/'record.json')
@@ -159,7 +190,7 @@ def audit(directory):
             record['status'] == lifecycle.JVM_PASS and record['errors'] == [] and record['finalIdentity'] == 'PASS',
             'complete successful JVM35 execution')
     expected, replayed = _prepare_replayed(plan['rawDerivationRoot'], root, plan['port'])
-    require(common.typed(plan) == common.typed(expected), 'independent JVM plan differs from actual raw/source evidence')
+    require(_same_oracle_plan(plan, expected), 'independent JVM plan differs from actual raw/source evidence')
     require(record['plan'] == artifacts.ref(root/'plan.json') and record['revision'] == plan['revision'] and
             record['role'] == plan['role'], 'same actual JVM execution plan')
     require(record['performanceAcceptance'] is False and record['completeSemanticEquivalence'] is False,
@@ -173,7 +204,7 @@ def audit(directory):
     require(record['readinessBody'] == artifacts.ref(root/'readiness.body') and
             common.parse(raw) == record['readiness'], 'complete actual JVM readiness body')
     common.validate_readiness_body(raw, {'graphs': plan['graphs'], 'readiness': plan['readiness']}, root/'data')
-    receipts, evidence = audit_response_journal(root, record, plan['cases'], plan['expectationVariant'])
+    receipts, evidence = audit_response_journal(root, record, plan['cases'], plan['expectationVariant'], pins=plan['pins'])
     lifecycle.verify_closure(plan); artifacts.verify_pins(evidence)
     pins = dict(plan['pins']); merge_pins(pins, evidence)
     return {'schema': 'graphite.jvm-query-correctness-audit.v1', 'status': AUDIT,
