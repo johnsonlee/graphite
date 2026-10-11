@@ -17009,3 +17009,19 @@ performance selection or acceptance. Exact validation commands, fixture paths,
 source/log hashes and scope are in
 `/tmp/graphite-synthetic-id-sweep-prototype-report.json`; prior diagnostic evidence is
 `/tmp/graphite-ci7d3805-native-measurement-review/request-diagnostic-summary.json`.
+
+The first hosted integration, head6bbfe37c/run38134265296, failed its early
+controls within about80s, before the producer or pressure measurements could run.
+Two integration omissions were identified: the shared correctness-control manifest
+still pinned the old RSS comparator, and the download-layout test extracted the
+removed ten-process restore loop instead of invoking the new chain entry. This
+follow-up refreshes that second manifest/workflow digest and adapts the existing
+test to the real chain command. It asserts exact arguments, one chain invocation,
+all ten named directories, and rejection of every missing/misnamed/wrong-identity
+shard, while retaining preparation and worker standalone-restore coverage. No
+production or acceptance semantics changed. All187 existing file entries across
+the control manifests and both workflow bindings were independently checked;
+the complete `node --test .github/scripts/benchmark-*.test.mjs` batch and actionlint
+with shellcheck disabled passed. Logs are
+`/tmp/graphite-ci6bbfe3-integration-followup-node-tests.log` and
+`/tmp/graphite-ci6bbfe3-integration-followup-actionlint.log`.

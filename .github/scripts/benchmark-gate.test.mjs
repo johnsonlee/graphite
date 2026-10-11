@@ -4718,6 +4718,7 @@ test("native core shard downloads restore all numbered artifacts and reject miss
                     const name = step.match(/^        name: (.+)$/m)?.[1];
                     if (pattern) {
                         assert.equal(id,"rust-core");
+                        assert.equal(target,"pressure-checkpoints");
                         assert.equal(expand(pattern),`native-checkpoint-core-shard-${arm}-*-1234-2`);
                         assert.match(step,/^        merge-multiple: false$/m);
                         assert.equal(name,undefined);
@@ -4731,6 +4732,8 @@ test("native core shard downloads restore all numbered artifacts and reject miss
                             artifact.startsWith("native-checkpoint-core-prepare-") ? "core-prepare" : "producer";
                         assert.equal(artifact,stage === "producer" ? "native-checkpoint-producer-producer-1234-2" :
                             `native-checkpoint-${stage}-${arm}${index === null ? "" : `-${index}`}-1234-2`);
+                        assert.equal(target,stage === "producer" ? "pressure-checkpoints/producer-producer" :
+                            stage === "core-prepare" ? `pressure-checkpoints/core-prepare-${arm}` : "pressure-checkpoints");
                         const output = path.join(directory,target,...(pattern ? [artifact] : []));
                         fs.mkdirSync(output,{recursive:true});
                         const file = path.join(output,"manifest.json");
@@ -4742,6 +4745,22 @@ test("native core shard downloads restore all numbered artifacts and reject miss
                 fs.writeFileSync(path.join(bin,"python3"),`#!${process.execPath}\n`+`
 const fs=require("node:fs"), assert=require("node:assert/strict"), args=process.argv.slice(2);
 const values=key=>args.flatMap((v,i)=>v===key?[args[i+1]]:[]), value=key=>values(key)[0];
+if (process.env.RESTORE_JOB === "rust-core") {
+    const arm=process.env.CHECKPOINT_ARM;
+    assert.deepEqual(args,["-B","candidate/.github/scripts/native_pressure_checkpoint.py","restore-core-chain",
+        "--stage","core-shard","--arm",arm,"--shard-count","8","--directory","pressure-checkpoints",
+        "--workspace",process.env.GITHUB_WORKSPACE,"--head-sha",process.env.CANDIDATE_SHA,
+        "--base-sha",process.env.BASE_SHA,"--run-id","1234","--run-attempt","2"]);
+    const check=(directory,stage,checkpointArm,shardIndex=null)=>{
+        const manifest=JSON.parse(fs.readFileSync("pressure-checkpoints/"+directory+"/manifest.json","utf8"));
+        assert.deepEqual(manifest,{stage,arm:checkpointArm,shardCount:stage==="producer"?null:8,shardIndex});
+    };
+    check("producer-producer","producer","producer");
+    check("core-prepare-"+arm,"core-prepare",arm);
+    for(let index=0;index<8;index++) check("native-checkpoint-core-shard-"+arm+"-"+index+"-1234-2","core-shard",arm,index);
+    fs.appendFileSync(process.env.RESTORE_CALLS,"restore-core-chain:"+arm+"\\n");
+    process.exit(0);
+}
 assert.ok(args.includes("restore"));
 const stage=value("--stage"), arm=value("--arm"), index=value("--shard-index"), count=value("--shard-count");
 const manifest=JSON.parse(fs.readFileSync(value("--directory")+"/manifest.json","utf8"));
@@ -4752,25 +4771,33 @@ assert.equal(value("--run-id"),"1234");assert.equal(value("--run-attempt"),"2");
 fs.appendFileSync(process.env.RESTORE_CALLS,stage+":"+arm+(index===undefined?"":":"+index)+"\\n");
 `,{mode:0o755});
                 const step=rustWorkflowStep(job,"Verify and restore exact checkpoint closure");
-                const shell="set -euo pipefail\n"+step.slice(step.indexOf("        PRODUCER=")).split("\n").map(line=>line.replace(/^        /,"")).join("\n");
+                const start=step.indexOf(id==="rust-core" ?
+                    "        python3 -B candidate/.github/scripts/native_pressure_checkpoint.py restore-core-chain" : "        PRODUCER=");
+                assert.ok(start>=0,`${id}: checkpoint restore entry must exist`);
+                const shell="set -euo pipefail\n"+step.slice(start).split("\n").map(line=>line.replace(/^        /,"")).join("\n");
                 const calls=path.join(directory,"calls"),env={...process.env,PATH:`${bin}:${process.env.PATH}`,BASE_SHA:base,
                     CANDIDATE_SHA:"candidate",CHECKPOINT_ARM:arm,CORE_SHARD:"3",GITHUB_WORKSPACE:directory,
-                    GITHUB_RUN_ID:"1234",GITHUB_RUN_ATTEMPT:"2",RESTORE_CALLS:calls};
+                    GITHUB_RUN_ID:"1234",GITHUB_RUN_ATTEMPT:"2",RESTORE_CALLS:calls,RESTORE_JOB:id};
                 const run=()=>spawnSync("bash",["-c",shell],{cwd:directory,env,encoding:"utf8"});
                 const good=run();assert.equal(good.status,0,`${id}/${base}/${arm}: ${good.stderr}`);
-                const expected=["producer:producer",...(id==="rust-core-prepare"?[]:[`core-prepare:${arm}`]),
-                    ...(id==="rust-core"?Array.from({length:8},(_,n)=>`core-shard:${arm}:${n}`):[])];
+                const expected=id==="rust-core" ? [`restore-core-chain:${arm}`] :
+                    ["producer:producer",...(id==="rust-core-prepare"?[]:[`core-prepare:${arm}`])];
                 assert.deepEqual(fs.readFileSync(calls,"utf8").trim().split("\n"),expected);
                 // Test every shard, not only the last: a pattern download with seven artifacts must fail.
-                for (const {file,manifest} of id==="rust-core" ? manifests.filter(({manifest})=>manifest.stage==="core-shard") : manifests) {
+                for (const {file,manifest} of manifests) {
                     fs.unlinkSync(file);assert.notEqual(run().status,0,`${id}: missing ${file}`);
                     fs.writeFileSync(file,JSON.stringify({...manifest,arm:"wrong-arm"}));assert.notEqual(run().status,0,`${id}: wrong arm`);
                     fs.writeFileSync(file,JSON.stringify(manifest));
-                }
-                if(id==="rust-core") {
-                    const {file,manifest}=manifests.find(({manifest})=>manifest.shardIndex===3);
-                    for(const mutation of [{shardIndex:4},{shardCount:7}]) {
-                        fs.writeFileSync(file,JSON.stringify({...manifest,...mutation}));assert.notEqual(run().status,0,"wrong shard identity fails closed");
+                    if(manifest.stage==="core-shard") {
+                        for(const mutation of [{shardIndex:(manifest.shardIndex+1)%8},{shardCount:7}]) {
+                            fs.writeFileSync(file,JSON.stringify({...manifest,...mutation}));
+                            assert.notEqual(run().status,0,`${id}: wrong shard ${manifest.shardIndex} identity fails closed`);
+                        }
+                        fs.writeFileSync(file,JSON.stringify(manifest));
+                        const misplaced=path.dirname(file)+"-wrong-name";
+                        fs.renameSync(path.dirname(file),misplaced);
+                        assert.notEqual(run().status,0,`${id}: incorrectly named shard ${manifest.shardIndex} artifact fails closed`);
+                        fs.renameSync(misplaced,path.dirname(file));
                     }
                 }
             } finally {fs.rmSync(directory,{recursive:true,force:true});}
