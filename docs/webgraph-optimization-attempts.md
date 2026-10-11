@@ -18436,3 +18436,50 @@ Preparation control manifest SHA256 is
 Retain this diagnostic improvement; it establishes no net CI speedup and closes
 no remaining correctness or performance acceptance gap. Future reductions must
 use the resulting stage evidence rather than unmeasured counts of avoided reads.
+
+#### Follow-up — short full-projection correctness and completed91 core
+
+Run the existing eight JVM full-projection cases against the exact033 runtime
+and234 runtime on the same historical GTY05 corpus used by232–234. Both servers
+load64 real graphs and receive the catalog's64-ID request list; the actual
+predicates select only fixture-kotlin-compiler-15 and fixture-tika-10. This is a
+correctness differential, not a64-graph query performance result. Keep all
+original requests and full HTTP bodies. Compare typed top-level row multisets,
+preserving duplicate counts and nested list order. A5000-row cap or missing
+target coverage is inconclusive, never silently accepted. Budget180s for work
+plus60s for mandatory owned-process cleanup; do not run the full35 without a
+credible duration estimate and a matching independent raw oracle.
+
+Execution took43.558s. Both complete64 readiness checks, all16 query responses,
+before/after3160-file identity checks and empty-group cleanup pass. Each arm
+returns15764 total rows: field full/properties1959 each, parameter1921 each,
+return2028 each and method1974 each. Every case covers both target graphs and
+is below the cap. All eight parent/candidate pairs have equal complete typed
+row multisets and identical body SHA256s. Field projections contain generic_type
+and type_info in1619 rows; the other340 rows lack both in both runtimes, without
+an inferred explanation. All parameter/return rows contain both properties;
+all method rows contain generic_return_type, generic_parameter_types,
+return_type_info, parameter_type_info and type_parameters. Startup connection
+refusals remain in readiness journals; no query error or timeout occurred.
+
+An independent review reconstructs all16 body/request/HTTP hash records,
+readiness, provenance, row counts and cleanup without trusting comparison.json.
+It checks original before/after input receipts rather than rehashing10GB again.
+Evidence:`/tmp/graphite-jvm8-parent033-234-correctness-1/root-review.json`.
+Command:`python3 -B /tmp/graphite-jvm35-local-diagnostic-prep-1/run.py --output
+/tmp/graphite-jvm8-parent033-234-correctness-1`. macOS/JDK17, -Xmx4g,
+ActiveProcessorCount4, MAPPED, original request concurrency configuration and
+sequential correctness requests. Runner SHA256:
+fd1af40928d924b02fb8e743b53ec65fe45b30cabd460dd004c60ad0b514c8bc.
+This verifies parent-relative behavior after233/234; it supplies no fresh-writer
+equivalence, independent raw35 oracle, accepted-baseline query latency or final
+acceptance.
+
+Current91 core job114535016213 subsequently completed successfully:28m50 total,
+including10m14 restore,11m31 join,5m31 seal and14s publication. These are hosted91
+observations, not measurements of unpushed225–235. Native finalizer114540984148
+and construction finalizer114540984222 then started; JVM/loading finalizers
+were skipped after their earlier failures. Retain those failures. Evidence:
+`/tmp/graphite-ci91ee70-core-completed-timings.json`. The PR body now distinguishes
+successful core verification from still-pending measurement-to-core finalization
+and the still-failing operation constraints. No final acceptance is claimed.
