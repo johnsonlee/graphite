@@ -17967,3 +17967,25 @@ loading, end-to-end, CPU, RSS or real-workload correctness/stability acceptance 
 claimed. Active91 continues; replacing it would repeat already completed producer
 and transfer work, and the new candidate's full-path timing advantage is not yet
 established. Neither this change nor226 proves a complete run below two hours.
+
+### Attempt228 — report construction stage progress (2026-10-12)
+
+Parent:a0a520fd. Current91 construction spent30 minutes inside its measurement
+step without publishing a cell or phase identity. The live log contained only
+control hashes, preventing a useful remaining-path diagnosis. Add flushed stderr
+JSON at existing binding, per-cell prepare/verify/retention, terminal-input and
+final-audit/report boundaries. Include arm/cell and elapsed stage seconds. All
+logging stays outside the timed producer child; no extra input reads, polling,
+measurement/schema changes or timeout changes are introduced.
+
+Correctness:all11 existing real64 construction tests passed in3.034s, including
+six-cell completion and retained failures. Root inspected the diff and test log;
+Python parse and diff checks pass. These are correctness checks, not performance
+evidence. Log:`/tmp/graphite-construction-progress-correctness.log`.
+
+**Retain for observability only.** This does not shorten computation or claim
+query, loading, construction, CPU or RSS recovery. Current91 producer42m52s plus
+core-prepare39m58s totals82m50s, versus82m28s previously; the prefix has not improved.
+Current91 loading failed on an invalid cross-source RSS ordering assumption and
+its available forward pair also shows resource regressions. Neither that failed
+cohort nor the pending independent branches establishes final acceptance.

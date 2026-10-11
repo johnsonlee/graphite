@@ -14,6 +14,7 @@ import signal
 import stat
 import subprocess
 import sys
+import time
 
 sys.dont_write_bytecode = True
 import assemble_native_pressure_producers as bundle
@@ -31,6 +32,18 @@ FALSE = {'completeSemanticEquivalence': False, 'strictEquivalence': False,
          'sourceToDeclarationCompletenessClaim': False, 'performanceAcceptance': False,
          'otherOperationsEligible': False}
 require = common.require
+
+
+def diagnostic(stage, state, *, cell=None, started=None):
+    """Untimed CLI diagnostics only; never part of measurement evidence."""
+    now = time.monotonic()
+    event = {'event': 'construction-progress', 'stage': stage, 'state': state}
+    if cell is not None:
+        event.update(cell=cell['id'], arm=cell['arm'])
+    if started is not None:
+        event['elapsedSeconds'] = round(now - started, 3)
+    print(json.dumps(event, sort_keys=True), file=sys.stderr, flush=True)
+    return now
 
 
 def save_progress(path, value):
@@ -168,7 +181,9 @@ def verify_writer(plan, arm):
 
 def run(plan_file, output):
     plan_file, output = Path(plan_file).resolve(), Path(output).resolve()
+    binding_started = diagnostic('binding-replay', 'started')
     plan = validate(common.read(plan_file))
+    diagnostic('binding-replay', 'completed', started=binding_started)
     require(sys.platform == 'linux', 'reviewed GNU/Linux construction resource backend')
     output.mkdir(exist_ok=False)
     record = {'schema': RESULT, 'status': 'RUNNING', 'planSha256': common.sha(plan_file),
@@ -180,9 +195,11 @@ def run(plan_file, output):
     try:
         for sig in (signal.SIGINT, signal.SIGTERM):
             original_handlers[sig] = signal.signal(sig, interrupted)
+        inputs_started = diagnostic('initial-inputs', 'started')
         artifacts.verify_pins(plan['pins'])
         retained = retention_pool(plan['retentionSources'])
         common.save(output / 'identities-before.json', {'pins': plan['pins']})
+        diagnostic('initial-inputs', 'completed', started=inputs_started)
         for cell in plan['cells']:
             arm, directory = plan['arms'][cell['arm']], output / cell['id']
             directory.mkdir()
@@ -191,16 +208,22 @@ def run(plan_file, output):
             record['cells'].append(row)
             record['unissued'].remove(cell['id'])
             save_progress(output / 'execution.json', record)
+            cell_started = diagnostic('cell', 'started', cell=cell)
             try:
                 inputs, input_pins = verify_writer(plan, arm)
                 # Equal untimed reads precede each launch; required writer reads stay timed.
                 require(common.sha(arm['writer']['path']) == arm['writer']['sha256'], 'prewarm sealed writer')
                 graphs = directory / 'graphs'
+                phase_started = diagnostic('prepare-real64', 'started', cell=cell)
                 row['construction'] = producer.phase('prepare-real64', [*arm['argv'], str(graphs)],
                     directory, environment(), directory, plan['timeouts']['prepare-real64'], construction_time='/usr/bin/time')
+                diagnostic('prepare-real64', 'completed', cell=cell, started=phase_started)
+                phase_started = diagnostic('verify-real64', 'started', cell=cell)
                 row['verify'] = producer.phase('verify-real64', [*arm['argv'], '--verify',
                     str(graphs/'graphs.tsv'), str(graphs/'fixture-provenance.tsv')],
                     directory, environment(), directory, plan['timeouts']['verify-real64'])
+                diagnostic('verify-real64', 'completed', cell=cell, started=phase_started)
+                phase_started = diagnostic('retain-and-verify', 'started', cell=cell)
                 fixture = {'writerRevision': arm['revision'], 'writerJarSha256': arm['writer']['sha256'],
                            'sourceManifestSha256': arm['sourceManifest']['sha256'],
                            'graphs': producer.fixture_records(graphs, inputs), 'files': producer.inventory(graphs),
@@ -211,12 +234,15 @@ def run(plan_file, output):
                 artifacts.verify_pins(input_pins)
                 verify_writer(plan, arm)
                 row['status'] = 'PASS_USABLE_SAVED64'
+                diagnostic('retain-and-verify', 'completed', cell=cell, started=phase_started)
             except BaseException as error:
                 row.update(status='FAIL', errors=[repr(error)])
                 raise
             finally:
                 common.save(directory/'cell.json', row)
                 save_progress(output/'execution.json', record)
+                diagnostic('cell', 'completed' if row['status'] == 'PASS_USABLE_SAVED64' else 'failed',
+                           cell=cell, started=cell_started)
         record['status'] = 'PASS_ALL_SIX_USABLE_SAVED64'
     except BaseException as error:
         record.update(status='FAIL', errors=[repr(error)])
@@ -225,9 +251,11 @@ def run(plan_file, output):
             signal.signal(sig, signal.SIG_IGN)
         try:
             try:
+                final_started = diagnostic('terminal-inputs', 'started')
                 artifacts.verify_pins(plan['pins'])
                 require(common.sha(plan_file) == record['planSha256'], 'construction plan changed')
                 common.save(output/'identities-after.json', {'pins': plan['pins']})
+                diagnostic('terminal-inputs', 'completed', started=final_started)
             except BaseException as error:
                 record['status'] = 'FAIL'
                 record['errors'].append('final identity: ' + repr(error))
@@ -249,18 +277,23 @@ def main():
     out.mkdir(parents=True)
     measured = False
     try:
+        binding_started = diagnostic('binding', 'started')
         plan = prepare(args.producers, args.base_sha, args.candidate_sha, measurement_only=args.measurement_only)
         common.save(out/'plan.json', plan)
+        diagnostic('binding', 'completed', started=binding_started)
         measured = True
         result = run(out/'plan.json', out/'cells')
         require(result['status'] == 'PASS_ALL_SIX_USABLE_SAVED64', 'construction run failed; raw failures retained')
         from audit_real64_construction import audit
+        audit_started = diagnostic('final-audit', 'started')
         try:
             common.save(out/'audit.json', audit(out/'plan.json', out/'cells'))
         except BaseException as error:
             common.save(out/'audit.json', {'schema': 'graphite.real64-construction.audit.v1',
                         'status': 'FAIL', 'errors': [repr(error)], **FALSE})
             raise
+        diagnostic('final-audit', 'completed', started=audit_started)
+        report_started = diagnostic('report', 'started')
         node = shutil.which('node')
         require(node is not None, 'Node executable missing')
         command = [node, str(Path(__file__).with_name('benchmark-construction.mjs')),
@@ -275,6 +308,7 @@ def main():
         artifacts.verify_pins({command[1]: plan['pins'][command[1]]})
         common.save(out/'comparison-exit.json', {'exit': completed.returncode,
                     'statusSha256': common.sha(str(prefix)+'-status.json')})
+        diagnostic('report', 'completed', started=report_started)
         if args.measurement_only:
             require(verdict['passed'] is False and verdict.get('comparabilityPending') is True
                     and verdict['status'] == 'MEASURED_CORE_COMPARABILITY_PENDING',
@@ -282,6 +316,7 @@ def main():
             return 0
         return completed.returncode
     except BaseException as error:
+        diagnostic('execution', 'failed')
         result = {'schema': 'graphite.real64-construction.comparison.v1', 'engine': 'jvm',
                   'operation': 'construction', 'status': 'FAIL' if measured else 'UNAVAILABLE',
                   'passed': False, 'errors': [repr(error)], **FALSE}
