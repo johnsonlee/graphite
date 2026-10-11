@@ -13,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ErasedDeclaredTypeStoreTest {
@@ -48,7 +49,13 @@ class ErasedDeclaredTypeStoreTest {
         val input = bytes(dir).apply { position(typeEnd(bytes(dir))) }
         assertEquals(2, input.int)
         assertEquals(listOf(0, 0, 0, 1), List(4) { input.int })
-        verify(table, DeclaredTypeStore.load(dir))
+        val loaded = DeclaredTypeStore.load(dir)
+        val structural = loaded.types.javaClass.getDeclaredField("structural").apply { isAccessible = true }
+            .get(loaded.types) as StructuralDeclaredTypeContext
+        val context = checkNotNull(structural.erased)
+        val raw = context.javaClass.getDeclaredField("raw").apply { isAccessible = true }.get(context)
+        assertNull(raw.javaClass.getDeclaredField("loadingShapes").apply { isAccessible = true }.get(raw))
+        verify(table, loaded)
     }
 
     @Test

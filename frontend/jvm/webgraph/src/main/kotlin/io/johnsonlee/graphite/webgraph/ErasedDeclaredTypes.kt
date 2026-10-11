@@ -3,13 +3,20 @@ package io.johnsonlee.graphite.webgraph
 import io.johnsonlee.graphite.graph.DeclaredType
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import java.io.DataOutputStream
 import java.nio.ByteBuffer
 
+private const val INVALID_ERASED_REFERENCE = "Invalid erased type reference"
 private const val ERASED_DESCRIPTOR_LIMIT = "Erased descriptor exceeds string representation"
 
 /** A descriptor is rendered from raw expressions only, never by erasing a generic variable or bound. */
-internal class ErasedDeclaredTypes(private val count: Int, private val type: (Int) -> DeclaredType) {
+internal class ErasedDeclaredTypes(
+    private val count: Int, cacheLoadingShapes: Boolean = false, private val type: (Int) -> DeclaredType
+) {
+    // Only immutable loading readers opt in; release before publishing the mapped table.
+    private var loadingShapes: Int2ObjectOpenHashMap<Shape>? =
+        if (cacheLoadingShapes) Int2ObjectOpenHashMap() else null
     private val utf8Lengths = IntArray(count) { -1 }
     private val utf16Lengths = IntArray(count) { -1 }
     private val validatedLeaves = BooleanArray(count)
@@ -17,11 +24,26 @@ internal class ErasedDeclaredTypes(private val count: Int, private val type: (In
 
     data class Shape(val dimensions: Int, val primitive: Boolean, val name: String)
 
+    fun finishLoading() {
+        loadingShapes = null
+    }
+
     fun shape(id: Int, allowVoid: Boolean = false): Shape {
+        require(id in 0 until count) { INVALID_ERASED_REFERENCE }
+        loadingShapes?.get(id)?.let { shape ->
+            require(!shape.primitive || shape.name != "void" || allowVoid && shape.dimensions == 0) {
+                "Void erased field, parameter or array"
+            }
+            return shape
+        }
+        return readShape(id, allowVoid).also { loadingShapes?.put(id, it) }
+    }
+
+    private fun readShape(id: Int, allowVoid: Boolean): Shape {
         var current = id
         var dimensions = 0
         while (true) {
-            require(current in 0 until count) { "Invalid erased type reference" }
+            require(current in 0 until count) { INVALID_ERASED_REFERENCE }
             val row = type(current)
             require(row.scope.isEmpty() && row.owner == null && row.arguments.isEmpty() && row.variance.isEmpty()) {
                 "Noncanonical erased type"
@@ -51,7 +73,7 @@ internal class ErasedDeclaredTypes(private val count: Int, private val type: (In
     }
 
     fun length(id: Int, utf8: Boolean, allowVoid: Boolean = false): Int {
-        require(id in 0 until count) { "Invalid erased type reference" }
+        require(id in 0 until count) { INVALID_ERASED_REFERENCE }
         if (utf8Lengths[id] < 0) {
             val shape = shape(id, allowVoid)
             var bytes = shape.dimensions.toLong()
@@ -127,7 +149,7 @@ internal class ErasedDeclaredTypePlan private constructor(
 
     companion object {
         fun forTable(table: DeclaredTypeTable): ErasedDeclaredTypePlan? {
-            val raw = ErasedDeclaredTypes(table.types.size, table.types::get)
+            val raw = ErasedDeclaredTypes(table.types.size, type = table.types::get)
             val ids = HashMap<String, Int>()
             table.types.indices.forEach { id ->
                 val descriptor = try { raw.descriptor(id, allowVoid = true) } catch (_: IllegalArgumentException) { null }

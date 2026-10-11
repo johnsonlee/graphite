@@ -212,39 +212,45 @@ internal object DeclaredTypeStore {
             }
             // Member index text is not part of generic_type/type_info and must not dilute their negative summary.
             val textSummary = (reader.strings as? SharedDeclaredTypeTexts)?.finishTypeTextSummary()
-            if (header == ERASED_HEADER) {
-                val raw = ErasedDeclaredTypes(typeCount) { id ->
-                    Reader(reader.bytes.duplicate().apply { position(typeOffsets[id]) }, reader.strings, reader.structural)
-                        .type(resolveScope = false)
+            var loadingRaw: ErasedDeclaredTypes? = null
+            try {
+                if (header == ERASED_HEADER) {
+                    val raw = ErasedDeclaredTypes(typeCount, cacheLoadingShapes = true) { id ->
+                        Reader(reader.bytes.duplicate().apply { position(typeOffsets[id]) }, reader.strings, reader.structural)
+                            .type(resolveScope = false)
+                    }
+                    loadingRaw = raw
+                    checkNotNull(reader.structural).erased = ErasedDeclaredTypeContext.read(reader.bytes, raw)
                 }
-                checkNotNull(reader.structural).erased = ErasedDeclaredTypeContext.read(reader.bytes, raw)
-            }
-            val fields = reader.rows(FIELD_MIN_BYTES, FIELD_SECTION, typeCount, { it.key() },
-                { keyHash(it, method = false) }, Reader::reference, Reader::int)
-            val methods = reader.rows(
-                METHOD_MIN_BYTES, METHOD_SECTION, typeCount, { it.key(method = true) },
-                { keyHash(it, method = true) }, Reader::skipMethod, Reader::method
-            )
-            val classes = reader.rows(
-                CLASS_MIN_BYTES, CLASS_SECTION, typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
-            )
-            require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
-            reader.structural?.erased?.finishIndexing()
-            reader.structural?.let { context ->
-                context.classCount = classes.size
-                context.methodCount = methods.size
-                context.classKey = { index -> (classes as MappedRows<String, ClassTypes>).keyAt(index) }
-                context.methodKey = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyAt(index) }
-                context.classKeyLength = { index -> (classes as MappedRows<String, ClassTypes>).keyLength(index) }
-                context.methodKeyLength = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyLength(index) }
-            }
-            val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes, textSummary,
-                reader.structural)
-            DeclaredTypeTable(types, fields, methods, classes).also {
-                it.validate()
-                types.finishProjectionRows()
-                types.finishStructuralSummary(textSummary)
-                (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
+                val fields = reader.rows(FIELD_MIN_BYTES, FIELD_SECTION, typeCount, { it.key() },
+                    { keyHash(it, method = false) }, Reader::reference, Reader::int)
+                val methods = reader.rows(
+                    METHOD_MIN_BYTES, METHOD_SECTION, typeCount, { it.key(method = true) },
+                    { keyHash(it, method = true) }, Reader::skipMethod, Reader::method
+                )
+                val classes = reader.rows(
+                    CLASS_MIN_BYTES, CLASS_SECTION, typeCount, Reader::text, ::textHash, Reader::skipClass, Reader::classTypes
+                )
+                require(!reader.bytes.hasRemaining()) { "Trailing bytes in graph.types" }
+                reader.structural?.erased?.finishIndexing()
+                reader.structural?.let { context ->
+                    context.classCount = classes.size
+                    context.methodCount = methods.size
+                    context.classKey = { index -> (classes as MappedRows<String, ClassTypes>).keyAt(index) }
+                    context.methodKey = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyAt(index) }
+                    context.classKeyLength = { index -> (classes as MappedRows<String, ClassTypes>).keyLength(index) }
+                    context.methodKeyLength = { index -> (methods as MappedRows<MemberTypeKey, MethodTypes>).keyLength(index) }
+                }
+                val types = MappedTypes(reader.bytes, typeOffsets, reader.strings, fields, methods, classes, textSummary,
+                    reader.structural)
+                DeclaredTypeTable(types, fields, methods, classes).also {
+                    it.validate()
+                    types.finishProjectionRows()
+                    types.finishStructuralSummary(textSummary)
+                    (reader.strings as? SharedDeclaredTypeTexts)?.finishLoading()
+                }
+            } finally {
+                loadingRaw?.finishLoading()
             }
         }
     }

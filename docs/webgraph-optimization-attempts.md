@@ -18669,3 +18669,60 @@ Preparation control193-file manifest SHA256:
 d6b4aacaf7507072675668a9c6d7d25e1d3125b8f46741718c632421e520e93f.
 Retain the reduced same-process semantic replay; no real-data timing was run
 for this change and no hosted net saving or product recovery is claimed.
+
+### Attempt241 — release repeated erased-type decoding after loading (2026-10-12)
+
+Integration parent:f3713b0e. The tested product parent is234; intervening commits
+change CI/docs only. The real64 retained-heap diagnosis separates persistent object growth from RSS.
+Accepted4f and234 both commit4GiB of Java heap. Post-GC live objects increase
+61,849,912 bytes (57,826,016 in int arrays), whereas readiness RSS increases
+402,472,960 bytes. The post-GC RSS gap remains410,009,600 bytes; this is not all
+retained generic strings or extra committed heap. Evidence:
+`/tmp/graphite-jvm64-retained-review.json`. This NMT/histogram/forced-GC run is
+diagnostic only, never a performance acceptance sample.
+
+GTY05 loading repeatedly decodes the same erased root while validating members
+and building structural summaries. Cache successful immutable root Shapes only
+during loading, preserving caller-specific void rejection and complete array
+depth/cycle validation. Child traversal does not borrow a cached child's depth
+validation. Clear the cache in finally before publication and on failure.
+Writer planning and query access do not retain or enable it. Storage bytes and
+graph.strings references are unchanged. Root independently reviewed the patch
+and verified exact equality to the tested isolated candidate's four files.
+
+Full module tests pass384 tests in38 suites with zero failures/errors/skips;
+detekt and shadowJar pass in187.513s. The first lint failure and its log remain
+retained. Original XML counts and JAR hash were independently checked. Runtime
+SHA256:72c92754d63d53aad12b99d0e9c8fe3a3b5c2d42fd4486ea84811c16697ba694.
+Build evidence:`/tmp/graphite-jvm64-erased-shape-cache-build-1/summary.json`.
+
+Run the predeclared ABBA234/candidate comparison on the original real64 GTY05
+corpus (writer acd11a6989c9d501ffac3803c41e629466c8883e), macOS/JDK17, MAPPED,
+-Xmx4g and ActiveProcessorCount4, through complete64 readiness with zero queries.
+The complete four-cell diagnostic takes76.827s; build plus comparison is
+264.340s. No other agent tests/builds run during the cohort; this does not claim
+a quiet host. Original input/source/runtime pins are checked before/after every
+cell, and owned processes exit with empty groups. All samples and failures are
+retained. Independent review reconstructs full readiness, original clocks,
+RSS samples, time-l records, CPU observations, identities and cleanup.
+
+| Metric |234 → candidate forward|234 → candidate reverse|
+|---|---:|---:|
+| Loading wall ms |9725.250 →9782.717 (+57.467)|9793.643 →9871.760 (+78.117)|
+| First post-ready CPU observation seconds |13.19 →13.47 (+0.28)|13.30 →13.50 (+0.20)|
+| Sampled loading peak RSS bytes |4029251584 →3953639424 (-75612160)|3966615552 →3935453184 (-31162368)|
+| Lifecycle peak RSS bytes |4029530112 →3954065408 (-75464704)|3968794624 →3936845824 (-31948800)|
+
+Retain this measured incremental memory benefit with its small time/CPU cost.
+The limited cohort and varying RSS cannot establish a stable saving or accepted-
+baseline recovery; no query latency, Linux resource acceptance or current-head
+full CI pass is supplied. CPU is a macOS post-readiness observation, not a strict
+CPU interval. The separate accepted-baseline loading CPU/RSS gaps remain open.
+
+Command:`python3 -B /tmp/graphite-jvm64-allocation-diagnostic-1/compare_erased_shape.py
+--candidate /tmp/graphite-jvm64-erased-shape-cache-source/frontend/jvm/query/build/libs/graphite.jar
+--output /tmp/graphite-jvm64-erased-shape-cache-abba-1`. Driver SHA256:
+07da2308da18eb210f8fa8dee79c4f9655e02e2a58c74d44ddfe9ff285a14040.
+Raw evidence and independent review:
+`/tmp/graphite-jvm64-erased-shape-cache-abba-1/root-review.json`; source integration:
+`/tmp/graphite-jvm64-erased-shape-cache-abba-1/integrated-source-review.json`.
