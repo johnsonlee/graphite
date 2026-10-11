@@ -18936,3 +18936,41 @@ product correctness acceptance, query p50/p95, CPU/RSS or hosted CI recovery.
 Do not run further stabilization rounds for this small timing difference.
 Evidence: `/tmp/graphite-attempt244-state-compare-2/summary.json` and
 `/tmp/graphite-attempt244-state-compare-2/root-review.json`.
+
+### Attempt245 — bound current Native attribution before choosing a query change (2026-10-12)
+
+Parent:6c505f41; no product change. Build an isolated Native runtime from
+66180a8a and verify all144 relevant source/configuration/assets files equal the
+parent. Reuse compiler cache, preserving the previous runtime. Offline locked
+release build (`graphite-cli`, jobs2) completes in28.716s within its120s budget.
+Binary SHA256:335a802a4d1217e54ecabec866d84a2136257e3c09cbd025c841cda825a1a06d.
+
+Run the historical acd11 GTY05 real64 B graphs on macOS14.3 arm64,16 logical
+CPUs, MAPPED mode, concurrent requests4, complete response consumption and the
+original mixed39 schedule. Each case has one oracle, two warmup and20 measured
+requests:37 cases target64 graphs and two target2. Capture three owned-PID
+2-second sample windows at pressure offsets2/20/40s. Commands:
+`python3 -B /tmp/graphite-current-native-stack-prep-1/execute.py build` and
+`python3 -B /tmp/graphite-current-native-stack-prep-1/execute.py query`.
+
+The complete query diagnostic finishes in163.508s within300s, including input
+verification, startup, requests, unchanged independent raw auditor and terminal
+checks. All897 response bodies pass (39 oracle,78 warmup,780 pressure), totaling
+16,036,842 bytes. Oracle/warmup/pressure phases take3.625/6.681/65.929s. All three
+samples finish and all five owned process groups are empty without forced kills.
+Root independently verifies response bytes/digests, counts/order, sample and
+process identities and cleanup; no duplicate raw-graph hash sweep is performed.
+
+The first window contains ColumnTree::matches → u32_text and substring search
+construction; later windows mainly contain hashing, allocation, projection and
+evaluation. Top-of-stack residency observations are not CPU percentages, and
+concurrent mixed requests prevent attributing each stack to one query. This
+supports a scoped synthetic-ID matching experiment, not a claim that it explains
+all query regressions. Sampling perturbs timings: there is no paired baseline,
+query p50/p95 recovery, CPU/RSS acceptance or fresh-writer acceptance here.
+Retain the diagnostic evidence; do not repeat the instrumented run for timing.
+
+Evidence: `/tmp/graphite-current-native-stack-prep-1/build-root-review.json`,
+`query-root-review.json` and `stack-analysis.json` in that directory.
+The full hosted CI remains unproven below two hours; this bounded local
+feedback does not establish end-to-end workflow recovery.
