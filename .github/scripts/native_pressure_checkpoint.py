@@ -63,8 +63,8 @@ def system_jdk(root):
 
 
 def identity(args):
-    require(args.stage in ('producer', 'producer-arm', 'core', 'core-prepare', 'core-shard', 'jvm','jvm-pending'), 'stage')
-    require(args.arm in (('producer',) if args.stage == 'producer' else ('A', 'B') if args.stage in ('core', 'core-prepare', 'core-shard') else ('C', 'A', 'B')), 'stage arm')
+    require(args.stage in ('producer', 'producer-common', 'producer-arm', 'core', 'core-prepare', 'core-shard', 'jvm','jvm-pending'), 'stage')
+    require(args.arm in (('producer',) if args.stage == 'producer' else ('common',) if args.stage == 'producer-common' else ('A', 'B') if args.stage in ('core', 'core-prepare', 'core-shard') else ('C', 'A', 'B')), 'stage arm')
     require(all(re.fullmatch('[0-9a-f]{40}', x) for x in (args.head_sha, args.base_sha)), 'exact revisions')
     require(str(args.run_id).isdigit() and str(args.run_attempt).isdigit(), 'run identity')
     require(args.arm != 'A' or args.base_sha != ACCEPTED, 'aliased arm has no checkpoint')
@@ -101,6 +101,8 @@ def git_sources(workspace, base, head):
 
 def selected_roots(workspace, stage, arm):
     root = workspace/'native-pressure-artifacts'
+    if stage == 'producer-common':
+        return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
     if stage == 'producer-arm':
         return [root/arm]
     if stage in ('core', 'core-prepare', 'core-shard'):
@@ -121,6 +123,8 @@ def evidence_paths(workspace, stage, arm, ident=None):
         require(root.is_dir() and not root.is_symlink(), 'missing stage root: '+str(root))
     if stage in ('core-prepare', 'core-shard'):
         return core_shard_paths(roots[0], ident) + roots[1:]
+    if stage == 'producer-common':
+        return [roots[0]/name for name in ('source-inputs.json','portable-expectations.json','producer-common.json')]+roots[1:]
     if stage == 'producer-arm':
         root=roots[0]
         return [p for p in root.iterdir() if p.is_file()] + [
@@ -138,12 +142,32 @@ def evidence_paths(workspace, stage, arm, ident=None):
     return paths+roots[1:]
 
 
+def check_producer_common_paths(workspace, paths):
+    root=workspace/'native-pressure-artifacts'
+    for leaf in ('source-inputs.json','portable-expectations.json','producer-common.json'):
+        require(str(root/leaf) in paths,'common producer input required')
+    for name in paths:
+        p=Path(name)
+        require(p.is_absolute() and '..' not in p.parts,'canonical producer partition path')
+        if p.is_relative_to(root):
+            parts=p.relative_to(root).parts
+            require(not parts or parts[0] not in ('C','A','B'),'common producer contains arm output')
+
+
+def producer_common_descriptor(workspace):
+    descriptor=read(workspace/'native-pressure-artifacts/producer-common.json')
+    require(descriptor.get('schema')=='graphite.producer-common-inputs.v1' and
+            set(descriptor.get('toolchainIdentity',{}))=={'java','cargo','rustc'},'declared common producer toolchain')
+    return descriptor
+
+
 def check_producer_arm_paths(workspace, ident, paths):
     """An arm transport has no authority to write or depend on another arm."""
     root=workspace/'native-pressure-artifacts'
     require(str(root/ident['arm']/'packet.json') in paths,'producer arm packet required')
     for name in paths:
-        p=canonical(Path(name))
+        p=Path(name)
+        require(p.is_absolute() and '..' not in p.parts,'canonical producer partition path')
         if p.is_relative_to(root):
             parts=p.relative_to(root).parts
             require(not parts or parts[0] not in ('C','A','B') or parts[0]==ident['arm'],
@@ -359,7 +383,7 @@ class Collector:
         # Only orchestration/authority metadata. Large raw per-local/per-node reports
         # are payload, not documents to deserialize recursively in this transport.
         names = {'audit.json', 'plan.json', 'packet.json', 'source-manifest.json', 'runtime-manifest.json',
-                 'inputs-before.json', 'source-inputs.json', 'provenance.json',
+                 'inputs-before.json', 'source-inputs.json', 'producer-common.json', 'provenance.json',
                  'artifact-audit.json', 'query-correctness-audit.json', 'preparation.json'}
         for path in list(self.files):
             p = Path(path)
@@ -462,7 +486,8 @@ def upstreams(args, ident, _authority=None):
                     'same arm and partition preparation upstream')
             entry['shardCount'] = upstream_ident['shardCount']
         values.append(entry)
-    expected = [] if ident['stage'] in ('producer','producer-arm') else [('producer', 'producer')]
+    expected = [] if ident['stage'] in ('producer','producer-common','producer-arm') else [('producer', 'producer')]
+    if ident['stage']=='producer-arm' and args.upstream:expected=[('producer-common','common')]
     if ident['stage'] == 'core-shard':
         expected.append(('core-prepare', ident['arm']))
         preparation = [read(name) for name in args.upstream if read(name)['identity']['stage'] == 'core-prepare']
@@ -492,6 +517,9 @@ def seal(args):
         upstream = upstreams(args, ident, entry)
         collector = Collector(workspace, [read(path) for path in args.upstream], entry).collect(
             evidence_paths(workspace, args.stage, args.arm, ident))
+        if ident['stage']=='producer-common':
+            check_producer_common_paths(workspace,set(collector.files)|collector.directories|set(collector.links)|collector.absent)
+            producer_common_descriptor(workspace)
         if ident['stage']=='producer-arm':
             check_producer_arm_paths(workspace,ident,set(collector.files)|collector.directories|set(collector.links)|collector.absent)
             check_producer_arm_packet(workspace,ident)
@@ -554,6 +582,8 @@ def restore(args, _authority=None):
     else:
         _authority.check_manifest(directory, manifest)
     require(upstreams(args, ident, _authority) == manifest['upstream'], 'upstream checkpoint binding')
+    if ident['stage']=='producer-common':
+        check_producer_common_paths(workspace,set(manifest['files'])|set(manifest['directories'])|set(manifest['links'])|set(manifest['absent'])|set(manifest['payload'])|set(manifest['closedDirectories']))
     if ident['stage']=='producer-arm':
         check_producer_arm_paths(workspace,ident,set(manifest['files'])|set(manifest['directories'])|set(manifest['links'])|set(manifest['absent'])|set(manifest['payload'])|set(manifest['closedDirectories']))
     require(sha(directory/'payload.tar.gz') == manifest['archiveSha256'], 'archive digest')
@@ -618,6 +648,7 @@ def restore(args, _authority=None):
             require(not p.exists(), 'existing tool link destination'); p.parent.mkdir(parents=True, exist_ok=True); p.symlink_to(target)
     check_files(manifest, _authority)
     if ident['stage']=='producer-arm':check_producer_arm_packet(workspace,ident)
+    if ident['stage']=='producer-common':producer_common_descriptor(workspace)
     if ident['stage'] == 'core-shard': check_shard_transport(workspace, ident, manifest['files'])
     if _authority is None:
         require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'restored source changed')
@@ -671,6 +702,46 @@ class _RestoreChainAuthority:
         require(actual == facts['sha256'], 'chain file digest changed: '+name)
         self.verified[name] = dict(facts)
         return actual
+
+
+def merge_producer(args):
+    """Join one same-run common closure and its exact arms into legacy transport.
+
+    The result carries original producer bytes; it grants no semantic acceptance.
+    """
+    require(args.stage=='producer' and args.arm=='producer' and not args.upstream and
+            getattr(args,'shard_count',None) is None and getattr(args,'shard_index',None) is None,
+            'fixed producer merge arguments')
+    root=canonical(Path(args.directory).absolute());workspace=canonical(Path(args.workspace).absolute())
+    arms=('C','B') if args.base_sha==ACCEPTED else ('C','A','B')
+    require({p.name for p in root.glob('producer-arm-*')}=={'producer-arm-'+arm for arm in arms},
+            'exact complete producer arm checkpoints')
+    output=root/'producer-producer'
+    require(not output.exists(),'fresh complete producer checkpoint required')
+    common=root/'producer-common-common';common_ref=common/'manifest.json'
+    entries=[]
+    for stage,arm,directory,upstream in [('producer-common','common',common,[])]+[
+            ('producer-arm',arm,root/('producer-arm-'+arm),[str(common_ref)]) for arm in arms]:
+        values=vars(args).copy();values.update(stage=stage,arm=arm,directory=str(directory),upstream=upstream)
+        entries.append(argparse.Namespace(**values))
+    _restore_chain(args,entries)
+    descriptor=producer_common_descriptor(workspace)
+    for arm in arms:
+        runtime=read(workspace/'native-pressure-artifacts'/arm/'runtime-manifest.json')
+        require(all(runtime['toolchainIdentity'].get(k)==v for k,v in descriptor['toolchainIdentity'].items()),
+                'same common producer toolchain')
+    aliases=workspace/'native-pressure-artifacts/arm-directories.json'
+    require(not aliases.exists(),'fresh producer arm aliases required')
+    save(aliases,{'schema':'graphite.native-artifact-arm-directories.v1',
+                  'directories':{'C':'C','A':'C' if args.base_sha==ACCEPTED else 'A','B':'B'},
+                  'acceptedRevision':ACCEPTED,'baseRevision':args.base_sha,'candidateRevision':args.head_sha,
+                  'status':'ARTIFACTS_ONLY_INDEPENDENT_PROOFS_REQUIRED','performanceAcceptance':False})
+    values=vars(args).copy();values.update(directory=str(output))
+    try:
+        return seal(argparse.Namespace(**values))
+    except BaseException:
+        aliases.unlink(missing_ok=True)
+        raise
 
 
 def restore_core_chain(args):
@@ -881,7 +952,7 @@ def _restore_chain(args, entries):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('seal', 'restore', 'restore-core-chain', 'restore-worker-chain', 'restore-consumer-chain'))
+    parser.add_argument('action', choices=('seal', 'restore', 'merge-producer', 'restore-core-chain', 'restore-worker-chain', 'restore-consumer-chain'))
     for name in ('stage', 'arm', 'directory', 'workspace', 'head-sha', 'base-sha', 'run-id', 'run-attempt'):
         parser.add_argument('--'+name, required=True)
     parser.add_argument('--upstream', action='append', default=[])
@@ -889,6 +960,7 @@ def main():
     parser.add_argument('--shard-index', type=int)
     args = parser.parse_args()
     value = (seal(args) if args.action == 'seal' else
+             merge_producer(args) if args.action == 'merge-producer' else
              restore_core_chain(args) if args.action == 'restore-core-chain' else
              restore_worker_chain(args) if args.action == 'restore-worker-chain' else
              restore_consumer_chain(args) if args.action == 'restore-consumer-chain' else restore(args))

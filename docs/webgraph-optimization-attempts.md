@@ -18526,3 +18526,47 @@ Preparation control SHA256:
 Retain the independently verified transport component for the subsequent
 complete split. It does not make the existing serial workflow faster yet and
 does not close any product performance or correctness acceptance gap.
+
+### Attempt237 — validate shared producer inputs and complete-arm merge (2026-10-12)
+
+Parent:2326461d. Finish the transport prerequisite for concurrent own-writer
+jobs before starting another expensive acceptance run. At18:38:59Z the current91
+run has elapsed3h03m23s and Native/construction finalizers are still assembling
+producer evidence. Its producer42m52 and core preparation39m58 already total
+82m50; complete core publication took another slowest-shard45m51 and join28m50,
+excluding queueing. A two-hour whole-workflow promise is unsupported. Existing
+product optimization candidates remain isolated while this feedback path is
+repaired; do not use the roughly three-minute local module build as evidence
+that hosted acceptance is fast.
+
+Add a same-run producer-common checkpoint for the original source inputs,
+portable oracle, shared fixture, provenance and declared toolchain. Each arm
+binds that exact common checkpoint and transports its own delta. A fixed merge
+requires C/B and distinct A when applicable, preflights and restores the entire
+chain with fresh final byte verification, checks the common toolchain, restores
+the original arm aliases and seals the original self-contained complete
+producer checkpoint. Downstream consumers keep their existing interface and
+independent semantic audits. Reject missing/extra arms, different head/run,
+common bindings, conflicting bytes and runner image. No checkpoint grants
+correctness or performance acceptance. Preserve legitimate pinned system-JDK
+links in partition checks; existing canonical target and read-only byte checks
+remain authoritative.
+
+The actual CLI tiny-fixture handoff exercises common seal/ZIP, separate C/B or
+C/A/B seals/ZIPs, merge, complete producer seal/ZIP and the original restore
+consumer. It verifies original bytes and aliases. These are correctness-only
+fixtures. The five affected test modules pass73 tests in44.619s, including the
+new three-case smoke and its negative subcases. Evidence:
+`/tmp/graphite-producer-merge-contracts.log`. Root independently reviewed the
+protocol and tests, checked all12 correctness and192 preparation pins and their
+workflow bindings, and checked whitespace. Pin review:
+`/tmp/graphite-producer-merge-root-pin-review.json`.
+
+Preparation control SHA256:
+a2a7b436a9be7e8e785420fea0691a1d5c8ffb3bd5f236e32fd5296be0346c99.
+The new smoke is registered in candidate-gate-tests. Retain this prerequisite;
+the producer DAG still needs a separate wiring change. No real-data timing was
+run for this transport change, no hosted net saving is established, and all
+previously recorded product correctness/performance gaps remain open. Extra
+archive, transfer, restore and final-consumer costs must be included in the
+replacement's full critical-path estimate before launching it.
