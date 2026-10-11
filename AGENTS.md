@@ -10,6 +10,8 @@ The channel between intent and execution must remain open. Default to delegating
 
 ## Execute faithfully
 
+**Make the feedback loop fast before starting validation and optimization.** This is a prerequisite, not cleanup after a slow run. Estimate the complete critical path first, establish a short actionable feedback cycle, and fix excessive serial work, repeated verification and unnecessary transfers before launching expensive iterations. Preserve correctness coverage and representative multi-graph performance acceptance while making that feedback faster. Apply this order to every PR.
+
 Speed without quality is waste. Intent understood and channel open, the last mile is execution that is:
 
 - **Consistent** — tells one coherent story with the rest of the codebase

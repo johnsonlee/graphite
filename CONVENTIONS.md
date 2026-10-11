@@ -30,6 +30,7 @@
 
 ### Verification feedback and reuse
 
+- **First make the feedback loop fast; then begin validation and optimization.** Before the first expensive iteration, estimate the end-to-end critical path, including preparation, transfers, verification and final consumers. Establish fast actionable checks and remove avoidable serial dependencies or repeated work first. Do not treat hours per iteration as an acceptable default or postpone workflow repair until after repeated long runs; retain complete correctness coverage and real multi-graph performance acceptance.
 - Before starting an expensive acceptance run, exercise the producer-to-consumer handoff with a fast correctness smoke check, including checkpoint sealing, the workflow's download layout, restoration, and consumption. Small or synthetic fixtures are permitted for this correctness check only; they provide no performance evidence.
 - Declare the required acceptance checks, baseline, workload, and approved tradeoffs before measurement. Add checks only when a concrete defect, changed dependency, or new evidence justifies them; do not expand the acceptance scope merely because a run is still in progress.
 - Run independent measurement and complete correctness verification concurrently when their actual data dependencies permit it. A measurement may finish while comparability is pending, but neither its job nor its report may claim final acceptance until the matching complete correctness proof succeeds. Preserve all failures and original samples.
