@@ -390,6 +390,70 @@ class PressureTests(unittest.TestCase):
         self.assertEqual(value['cpuEndLagNs'], 12)
         self.assertEqual(value['rss']['upperBoundBytes'], 100)
 
+    @staticmethod
+    def linux_rss_sample(start, end, pages, cpu=100):
+        fields = ['0'] * 22
+        fields[11], fields[12], fields[19], fields[21] = str(cpu), '0', '100', str(pages)
+        return {'readStartNs': start, 'readEndNs': end, 'pid': 42, 'startTicks': 100,
+                'backend': 'linux-proc', 'ticksPerSecond': 100, 'pageSize': 4096,
+                'userTicks': cpu, 'systemTicks': 0, 'cpuSeconds': cpu / 100,
+                'rssBytes': pages * 4096, 'raw': '42 (graphite) ' + ' '.join(fields)}
+
+    def test_linux_rss_exact_hosted_counter_discrepancy_retains_high_sample(self):
+        sample = self.linux_rss_sample
+        stage = {'startNs': 10, 'endNs': 100, 'cpuStart': sample(0, 2, 1),
+                 'cpuEnd': sample(110, 112, 1, 200)}
+        rows = [sample(20, 21, 2994056, 120), sample(80, 81, 2994000, 170)]
+        result = p.resource_summary(stage, rows, {'peakRssBytes': 11975712 * 1024})
+        rss = result['rss']
+        self.assertEqual(rss['lowerBoundBytes'], 12263653376)
+        self.assertEqual(rss['upperBoundBytes'], 12263653376)
+        self.assertEqual(rss['lifecyclePeakBytes'], 12263129088)
+        self.assertEqual(rss['lifecycleSampledPeakBytes'], 12263653376)
+        self.assertEqual(rss['sampledMinusLifecycleBytes'], 524288)
+        self.assertEqual(rss['measurementSemantics'], 'linux-rss-observed-envelope-v1')
+        self.assertIn('not mathematical', rss['scope'])
+        self.assertAlmostEqual(result['cpuLowerBoundSeconds'], .48)
+        self.assertAlmostEqual(result['cpuUpperBoundSeconds'], 1.02)
+
+    def test_linux_rss_lifecycle_peak_and_outside_stage_boundary_are_preserved(self):
+        sample = self.linux_rss_sample
+        stage = {'startNs': 10, 'endNs': 100, 'cpuStart': sample(0, 2, 1),
+                 'cpuEnd': sample(110, 112, 1, 200)}
+        rows = [sample(20, 21, 20, 120), sample(80, 81, 25, 170)]
+        boundary = sample(200, 201, 50, 220)
+        baseline = p.resource_summary(stage, rows, {'peakRssBytes': 100 * 4096})
+        result = p.resource_summary(stage, rows, {'peakRssBytes': 40 * 4096}, [boundary])
+        self.assertEqual(baseline['rss']['upperBoundBytes'], 100 * 4096)
+        self.assertEqual(baseline['rss']['sampledMinusLifecycleBytes'], -75 * 4096)
+        self.assertEqual(result['rss']['upperBoundBytes'], 50 * 4096)
+        self.assertEqual(result['rss']['lowerBoundBytes'], 25 * 4096)
+        self.assertEqual(result['rss']['eligible'], 2)
+        self.assertEqual(result['rss']['excluded'], 0)
+        self.assertEqual({k:v for k,v in result.items() if k!='rss'},
+                         {k:v for k,v in baseline.items() if k!='rss'})
+        stages = {'oracle': stage, 'pressure': {**stage, 'cpuEnd': boundary}}
+        self.assertEqual(p.rss_boundary_samples(stages),
+                         [stage['cpuStart'], stage['cpuEnd'], stage['cpuStart'], boundary])
+
+    def test_linux_optional_rss_samples_reject_identity_units_and_invalid_values(self):
+        sample = self.linux_rss_sample
+        stage = {'startNs': 10, 'endNs': 100, 'cpuStart': sample(0, 2, 1),
+                 'cpuEnd': sample(110, 112, 1, 200)}
+        inside = sample(20, 21, 20, 120)
+        for key, value in [('pid', 43), ('startTicks', 101), ('pageSize', 1024),
+                           ('ticksPerSecond', 1000), ('rssBytes', -1), ('rssBytes', float('inf')),
+                           ('readStartNs', 99), ('backend', 'unknown')]:
+            with self.subTest(key=key, value=value), self.assertRaises(ValueError):
+                p.resource_summary(stage, [inside], {'peakRssBytes': 100 * 4096}, [{**inside, key:value}])
+        for peak in [0, -1, float('inf'), float('nan')]:
+            with self.subTest(peak=peak), self.assertRaises(ValueError):
+                p.resource_summary(stage, [inside], {'peakRssBytes': peak})
+        with self.assertRaisesRegex(ValueError, 'lifecycle RSS below'):
+            mac = lambda r: {**r, 'backend':'macOS-ps'}
+            p.resource_summary({**stage, 'cpuStart':mac(stage['cpuStart']), 'cpuEnd':mac(stage['cpuEnd'])},
+                               [mac(inside)], {'peakRssBytes': 1})
+
     def test_mac_ps_and_bsd_time_use_original_units_and_precision(self):
         raw = 'Fri Oct  9 12:03:04 2026 1-02:03:04.25 1024'
         value = p.parse_macos_sample(raw, 22, 100, 200)
@@ -1291,7 +1355,7 @@ class ExecutionAuthorityReuse(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'raw evidence changed'): context.audit_cell(output)
         self.assertEqual(checked.call_count, 2)
 
-    def actual_audit_fixture(self):
+    def actual_audit_fixture(self, linux=False):
         """Arbitrary protocol timestamps, never measurements or performance evidence."""
         output = self.root/'actual-audit'; output.mkdir()
         body = p.canonical({'columns': ['v'], 'rows': [{'v': 7}]})
@@ -1305,15 +1369,22 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         for name in ('identities-before.json', 'identities-after.json'): p.save(output/name, {'status': 'PASS', 'pins': self.plan['pins']})
         readiness = copy.deepcopy(arm['readiness']['expected']); readiness['data'] = str(output/'data')
         readiness['graphs'][0]['loadedAt'] = '2026-10-10T00:00:00Z'; (output/'readiness.body').write_bytes(p.canonical(readiness))
-        command = ['/usr/bin/time', '-l', '--', *arm['serverArgv'], '--data', str(output/'data'), '--port', '23333',
+        command = ['/usr/bin/time', '-v' if linux else '-l', '--', *arm['serverArgv'], '--data', str(output/'data'), '--port', '23333',
                    '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '60000', '--metrics', *p.graph_arguments(arm['graphs'])]
         p.save(output/'command.json', command)
         cleanup = {'group': 22, 'after': [], 'errors': [], 'exit': 0, 'signals': []}
         p.save(output/'cleanup.json', cleanup); p.save(output/'launch-owner.json', {'group': 22, 'runnerPid': 23})
         (output/'server.pid').write_text('22')
         (output/'time-v.log').write_text('1.0 real 0.1 user 0.1 sys\n1048576 maximum resident set size\n')
+        if linux:
+            (output/'time-v.log').write_text('User time (seconds): 1.2\nSystem time (seconds): 0.3\n'
+                'Elapsed (wall clock) time (h:mm:ss or m:ss): 0:02.10\nMaximum resident set size (kbytes): 11975712\n')
         lifecycle = p.lifecycle_time(output/'time-v.log'); stages = {}; samples = []
-        def sample(start, end): return p.parse_macos_sample('Fri Oct  9 12:03:04 2026 00:04.25 1024', 22, start, end)
+        def sample(start, end):
+            if not linux: return p.parse_macos_sample('Fri Oct  9 12:03:04 2026 00:04.25 1024', 22, start, end)
+            row = PressureTests.linux_rss_sample(start, end, 2994056)
+            return {**row, 'pid':22, 'raw':row['raw'].replace('42 (graphite)', '22 (graphite)')}
+
         for index, (name, count) in enumerate((('oracle', 1), ('warmup', 2), ('pressure', 20))):
             directory = output/name; (directory/'bodies').mkdir(parents=True); records = []; begin = 1000*index+100
             for i in range(count):
@@ -1331,13 +1402,25 @@ class ExecutionAuthorityReuse(unittest.TestCase):
                 (directory/f'worker-{worker}.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in records if row['worker'] == worker))
             p.save(directory/'stage.json', stage)
             stages[name] = {**stage, 'resources': p.resource_summary(stage, [inner], lifecycle)}
-        for stage in stages.values(): stage['resources'] = p.resource_summary(stage, samples, lifecycle)
+        for stage in stages.values():
+            stage['resources'] = p.resource_summary(stage, samples, lifecycle, p.rss_boundary_samples(stages))
         (output/'resources.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in samples))
         result = {'schema': p.RESULT_SCHEMA, 'planSha256': p.sha(self.plan_file), 'status': 'PASS', 'errors': [],
             'acceptanceEligible': False, 'cell': self.plan['cells'][0], 'arm': arm, 'engine': 'native', 'operation': 'query',
             'coverage': self.plan['coverage'], 'otherOperationsEligible': False, 'cleanup': cleanup, 'lifecycle': lifecycle, 'stages': stages}
         p.save(output/'result.json', result)
         return output
+
+    def test_linux_observed_envelope_independent_raw_audit_recomputes_components(self):
+        output = self.actual_audit_fixture(linux=True)
+        context = self.context()
+        audit = context.audit_cell(output)
+        self.assertEqual(audit['completeBodies'], 23)
+        result = p.read(output/'result.json')
+        self.assertEqual(result['stages']['pressure']['resources']['rss']['sampledMinusLifecycleBytes'], 524288)
+        result['stages']['pressure']['resources']['rss']['upperBoundBytes'] -= 1
+        (output/'result.json').write_text(json.dumps(result))
+        with self.assertRaisesRegex(ValueError, 'raw resource parity'): context.audit_cell(output)
 
     def test_actual_raw_audit_pass_then_body_resource_and_cleanup_tampering_rejected(self):
         output = self.actual_audit_fixture()

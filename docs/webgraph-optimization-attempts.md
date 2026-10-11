@@ -16911,3 +16911,54 @@ changes CI byte transport, not graph semantics or measurement boundaries. Server
 p50/p95, CPU/RSS and construction/loading acceptance remain unproven for the cumulative
 candidate. No real graph was replaced with a synthetic performance workload.
 Evidence: `/tmp/graphite-restore-chain-prototype-report.json` and the test logs above.
+
+
+### Attempt211 — preserve Linux RSS observations without assuming counter ordering (2026-10-11)
+
+**Problem.** Run38120724071's native64 measurement completed all six CABBAC cells'
+requests but failed the last accepted-baseline cell during resource aggregation.
+Its GNU time peak was12,263,129,088 bytes; one of34,493 same-process monitor samples
+was12,263,653,376 bytes, higher by524,288 bytes. All39 oracle,78 warmup and780
+measured requests in that cell completed. The original failure remains retained.
+Its two RSS sources agree on units and process identity, but the harness incorrectly
+required every sampled RSS value to be below the separately maintained lifecycle
+high-water mark.
+
+Base: `0116a0eb718408365a568c015324a0232c070b2c`; candidate: this commit.
+[Linux documents asynchronous RSS accounting](https://www.kernel.org/doc/html/v6.8/filesystems/proc.html).
+The v6.8 `get_mm_rss` and high-water update implementations read approximate counters
+at different times; they do not establish the strict ordering assumed here. The
+hosted kernel version is unavailable in the retained metadata, so this evidence
+does not identify a particular kernel race. It establishes that the required
+ordering is unsupported, not that the original cohort passed acceptance.
+
+Linux reports now retain GNU time's peak, the highest valid same-process sample
+over the monitor lifecycle and all stage CPU boundaries, and their signed difference.
+The upper endpoint is the larger observation; the lower endpoint remains the highest
+whole-read sample inside the measured stage. These are explicitly observation
+envelopes, not mathematical bounds on physical memory. No high sample is discarded
+and no discrepancy tolerance is introduced. CPU intervals, sample counts, raw
+identity/unit validation, cleanup, request validation and macOS behavior are unchanged.
+The independent audit recomputes the same fields from raw evidence. The comparator
+checks component arithmetic, rejects mixed RSS definitions within a cohort, and
+retains the original conservative PASS/FAIL/INDETERMINATE comparison with the5%
+allowance. An indeterminate envelope still cannot pass acceptance.
+
+Correctness:92 integrated Python tests passed in6.701s and17 Node tests passed.
+They include the exact512KiB counter discrepancy, a larger lifecycle peak,
+out-of-stage boundary peaks, invalid process/units/numbers, independent raw audit,
+tampered summaries, mixed definitions and unchanged5% rejection. Parent review also
+recomputed all six existing cells' resource observations under the explicit new
+definition in a separate diagnostic file; CPU summaries were unchanged and the
+first five upper endpoints did not change. No original artifact/status was modified.
+
+**Decision: retain the measurement correction.** This changes neither production
+graph code nor the workload, threshold or request timing. It cannot retroactively
+authorize the failed run. Fresh hosted acceptance is still required, and older
+Linux descriptions of strict physical RSS bounds must be read with the asynchronous
+counter limitation above. Query p50/p95, CPU/RSS and construction/loading recovery
+remain separate, incomplete conclusions. Evidence:
+`/tmp/graphite-ci7d3805-native-measurement-review/rss-diagnosis.json`,
+`/tmp/graphite-ci7d3805-native-measurement-review/rss-envelope-parent-recomputation.json`,
+`/tmp/graphite-feedback-rss-python-tests.log` and
+`/tmp/graphite-feedback-rss-node-tests.log`.

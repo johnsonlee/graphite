@@ -271,3 +271,28 @@ test('CLI pending and joined verdicts preserve portable relative receipt evidenc
  for(const name of ['plan.json','execution.json','join','c0','c1','c2','c3','c4','c5'])fs.cpSync(path.join(f.root,name),path.join(moved,name),{recursive:true});
  assert.equal(comparePressure(path.join(moved,'plan.json'),moved,path.join(moved,'join','comparability.json')).passed,true);
 });
+
+function linuxEnvelope(r, time=1010, sampled=1000) {
+ const rss=r.stages.pressure.resources.rss;
+ Object.assign(rss,{measurementSemantics:'linux-rss-observed-envelope-v1',lifecyclePeakBytes:time,
+   lifecycleSampledPeakBytes:sampled,sampledMinusLifecycleBytes:sampled-time,upperBoundBytes:Math.max(time,sampled)});
+}
+test('Linux observed RSS envelopes retain the conservative five percent gate',t=>{
+ const f=fixture(t);for(let i=0;i<6;i++)f.rewrite(i,r=>linuxEnvelope(r));
+ let result=comparePressure(f.file,f.root);assert.equal(result.passed,true);
+ assert.equal(result.comparisons[0].rss.measurementSemantics,'linux-rss-observed-envelope-v1');
+ f.rewrite(2,r=>linuxEnvelope(r,1010,1100));
+ result=comparePressure(f.file,f.root);assert.equal(result.passed,false);
+ assert.equal(result.comparisons[0].rss.status,'INDETERMINATE');
+ f.rewrite(2,r=>{r.stages.pressure.resources.rss.lowerBoundBytes=1100;});
+ assert.equal(comparePressure(f.file,f.root).comparisons[0].rss.status,'FAIL');
+});
+test('Linux RSS envelopes reject mixed policies and altered component arithmetic',t=>{
+ const f=fixture(t);f.rewrite(0,r=>linuxEnvelope(r));
+ assert.throws(()=>comparePressure(f.file,f.root),/Mixed RSS/);
+ for(let i=1;i<6;i++)f.rewrite(i,r=>linuxEnvelope(r));
+ f.rewrite(0,r=>{r.stages.pressure.resources.rss.sampledMinusLifecycleBytes++;});
+ assert.throws(()=>comparePressure(f.file,f.root),/Invalid Linux RSS/);
+ f.rewrite(0,r=>{linuxEnvelope(r);r.stages.pressure.resources.rss.upperBoundBytes--;});
+ assert.throws(()=>comparePressure(f.file,f.root),/Invalid Linux RSS/);
+});

@@ -1293,7 +1293,11 @@ def readiness(port, arm, data, seconds, proc, evidence=None):
         require(not watchdog.is_alive(), 'readiness watchdog remains alive')
 
 
-def resource_summary(stage, samples, lifecycle):
+def rss_boundary_samples(stages):
+    return [stage[key] for stage in stages.values() for key in ('cpuStart', 'cpuEnd') if key in stage]
+
+
+def resource_summary(stage, samples, lifecycle, rss_samples=None):
     begin, end = stage['cpuStart'], stage['cpuEnd']
     require(begin['readEndNs'] <= stage['startNs'] <= stage['endNs'] <= end['readStartNs'], 'CPU enclosing interval')
     identity_fields = ['pid', 'startTicks', 'backend', 'ticksPerSecond', 'pageSize', 'cpuBoundaryUncertaintySeconds']
@@ -1308,13 +1312,40 @@ def resource_summary(stage, samples, lifecycle):
     inner.sort(key=lambda r: r['readStartNs'])
     cpu_lower = max(0, inner[-1]['cpuSeconds'] - inner[0]['cpuSeconds'] - uncertainty)
     rss = summarize_interval(samples, stage['startNs'], stage['endNs'])
-    require(lifecycle['peakRssBytes'] >= rss['lowerBoundBytes'], 'lifecycle RSS below sampled RSS')
+    peak = lifecycle['peakRssBytes']
+    if begin.get('backend') == 'linux-proc':
+        # /proc RSS uses asynchronous counters; a sampled value can exceed
+        # wait4/getrusage's separately maintained high-water mark. Keep both.
+        # https://www.kernel.org/doc/html/v6.8/filesystems/proc.html
+        require(all(type(begin[k]) is int and begin[k] > 0 for k in ('pid', 'ticksPerSecond', 'pageSize')) and
+                type(begin['startTicks']) is int and begin['startTicks'] >= 0, 'valid Linux process units')
+        extra = [] if rss_samples is None else rss_samples
+        for row in extra:
+            validate_resource_sample(row)
+            require(math.isfinite(row['cpuSeconds']) and row['cpuSeconds'] >= 0 and
+                    row['userTicks'] >= 0 and row['systemTicks'] >= 0, 'valid RSS boundary CPU')
+        observed = [*samples, *extra]
+        require(all(all(row.get(key) == begin.get(key) for key in identity_fields) for row in observed),
+                'RSS sample process/units identity')
+        require(type(peak) is int and peak > 0 and
+                all(type(row['rssBytes']) is int and row['rssBytes'] >= 0 and
+                    row['readStartNs'] <= row['readEndNs'] for row in observed), 'valid Linux RSS observations')
+        sampled_peak = max(row['rssBytes'] for row in observed)
+        require(sampled_peak > 0, 'positive Linux sampled RSS peak')
+        rss.update(measurementSemantics='linux-rss-observed-envelope-v1',
+                   lifecyclePeakBytes=peak, lifecycleSampledPeakBytes=sampled_peak,
+                   sampledMinusLifecycleBytes=sampled_peak - peak,
+                   scope='stage whole-read sampled RSS to lifecycle observed peak envelope; '
+                         'asynchronous kernel counters, not mathematical physical-memory bounds')
+        peak = max(peak, sampled_peak)
+    else:
+        require(peak >= rss['lowerBoundBytes'], 'lifecycle RSS below sampled RSS')
     return {'cpuSeconds': delta, 'cpuQuantizationSeconds': uncertainty,
             'cpuLowerBoundSeconds': cpu_lower, 'cpuUpperBoundSeconds': delta + uncertainty,
             'cpuStartLeadNs': stage['startNs'] - begin['readStartNs'],
             'cpuEndLagNs': end['readEndNs'] - stage['endNs'],
             'cpuScope': 'enclosing server CPU interval, client validation included in wall boundary',
-            'rss': {**rss, 'upperBoundBytes': lifecycle['peakRssBytes']}}
+            'rss': {**rss, 'upperBoundBytes': peak}}
 
 
 def evidence_eligible(result, plan):
@@ -1422,7 +1453,8 @@ def _run_cell(plan_path, cell_id, output, plan):
                     if stage['status'] == 'PASS':
                         # Oracle/warmups remain visible but are not repeated-request acceptance.
                         try:
-                            stage['resources'] = resource_summary(stage, monitor.samples, record['lifecycle'])
+                            stage['resources'] = resource_summary(stage, monitor.samples, record['lifecycle'],
+                                                                   rss_boundary_samples(record['stages']))
                         except ValueError as error:
                             if stage is record['stages'].get('pressure'):
                                 raise
@@ -1522,7 +1554,7 @@ def _audit(plan_path, output, plan):
             owned = [r for r in records if r['worker'] == worker]
             require(all(a['validationCompleteNs'] <= b['startNs'] for a, b in zip(owned, owned[1:])), 'worker sequential validation')
         try:
-            resources = resource_summary(stage, samples, lifecycle)
+            resources = resource_summary(stage, samples, lifecycle, rss_boundary_samples(result['stages']))
         except ValueError as error:
             require(name != 'pressure', 'pressure resources unavailable')
             resources = {'status': 'UNAVAILABLE', 'reason': str(error)}

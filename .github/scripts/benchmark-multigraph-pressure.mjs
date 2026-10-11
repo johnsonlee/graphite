@@ -105,6 +105,15 @@ export function resourceBound(baseLower,baseUpper,candidateLower,candidateUpper)
         baseLower <= baseUpper && candidateLower <= candidateUpper,'Invalid resource interval');
     return candidateUpper <= baseLower*1.05 ? 'PASS' : candidateLower > baseUpper*1.05 ? 'FAIL' : 'INDETERMINATE';
 }
+function rssSemantics(rss) {
+    if (!('measurementSemantics' in rss)) return 'legacy-rss-interval';
+    require(rss.measurementSemantics==='linux-rss-observed-envelope-v1','Unknown RSS measurement semantics');
+    const {lifecyclePeakBytes:time,lifecycleSampledPeakBytes:sampled,sampledMinusLifecycleBytes:delta}=rss;
+    require([time,sampled,rss.lowerBoundBytes,rss.upperBoundBytes].every(n=>Number.isSafeInteger(n)&&n>=0) &&
+        time>0 && sampled>0 && Number.isSafeInteger(delta) && delta===sampled-time &&
+        rss.lowerBoundBytes<=sampled && rss.upperBoundBytes===Math.max(time,sampled),'Invalid Linux RSS observed envelope');
+    return rss.measurementSemantics;
+}
 export function requestStatistics(stage,cases) {
     require(stage.status === 'PASS' && stage.allWorkersStopped && stage.unissued.length === 0 &&
         stage.journalErrors.length === 0 && stage.requests.length === cases.length*20,'Incomplete pressure stage');
@@ -146,8 +155,10 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
         require(same(stats,result.stages.pressure.caseStatistics),'Recomputed nearest-rank per-case statistics');
         require(same(result.cleanup.after,[]) && same(result.cleanup.errors,[]) &&
             result.cleanup.signals.every(s=>!s.signal.includes('KILL')),'Owned cleanup');
-        return {cell,stats,stage:result.stages.pressure,queryEvidenceComplete:true};
+        return {cell,stats,stage:result.stages.pressure,queryEvidenceComplete:true,
+            rssSemantics:rssSemantics(result.stages.pressure.resources.rss)};
     });
+    require(new Set(cells.map(c=>c.rssSemantics)).size===1,'Mixed RSS measurement semantics');
     const comparisons=Object.entries(plan.comparisonPairs).flatMap(([kind,pairs])=>pairs.map(([b,c],direction)=>{
         const base=cells[b],candidate=cells[c],br=base.stage.resources,cr=candidate.stage.resources;
         const cases=plan.cases.map(k=>{
@@ -161,7 +172,7 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
             deltaWallMs:(candidate.stage.wallNs-base.stage.wallNs)/1e6,
             cpu:{baseLower:br.cpuLowerBoundSeconds,baseUpper:br.cpuUpperBoundSeconds,candidateLower:cr.cpuLowerBoundSeconds,candidateUpper:cr.cpuUpperBoundSeconds,
                 status:resourceBound(br.cpuLowerBoundSeconds,br.cpuUpperBoundSeconds,cr.cpuLowerBoundSeconds,cr.cpuUpperBoundSeconds)},
-            rss:{baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
+            rss:{measurementSemantics:base.rssSemantics,baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
                 status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes)}};
     }));
     const coverage=plan.coverage;
@@ -176,7 +187,7 @@ export function comparePressure(planFile,directory,comparabilityReceipt=null) {
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
         ...('pendingComparabilityAuthority' in plan?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
-        otherOperationsEligible:false,limitation:'Two fixed directions; no pooling, quiet-host or saturation claim. Lifecycle RSS bounds may leave query RSS indeterminate.'};
+        otherOperationsEligible:false,limitation:'Two fixed directions; no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;
