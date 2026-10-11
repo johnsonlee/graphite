@@ -207,8 +207,13 @@ def full_method_projection(method, graph_id, table):
 def _string_contains(value, needle): return type(value) is str and needle in value
 
 
-def _discovery(case_id, properties, primitive_facts=None):
-    lower = {key: lowered(properties.get(key), primitive_facts) for key in CALL_PROPERTIES}
+def _discovery(case_id, properties, primitive_facts=None, discovery_cache=None):
+    # Cache belongs to one node. Populate only after its graph scope matched,
+    # retaining the original complete four-value evaluation and failure order.
+    lower = discovery_cache
+    if not lower:
+        lower = {key: lowered(properties.get(key), primitive_facts) for key in CALL_PROPERTIES}
+        if discovery_cache is not None: discovery_cache.update(lower)
     def matches(keys, op, word):
         return any(v is not None and (word in v if op == 'contains' else v.startswith(word) if op == 'starts' else v.endswith(word))
                    for v in (lower[k] for k in keys))
@@ -229,10 +234,11 @@ def _discovery(case_id, properties, primitive_facts=None):
     raise ValueError('unknown discovery request')
 
 
-def node_matches(case, row, properties, keys, primitive_facts=None):
+def node_matches(case, row, properties, keys, primitive_facts=None, discovery_cache=None):
     case_id = case['id']
     if properties['graphId'] not in case['targetGraphIds']: return False
-    if case['family'] in ('wrapped-discovery', 'graph-routing'): return _discovery(case_id, properties, primitive_facts)
+    if case['family'] in ('wrapped-discovery', 'graph-routing'):
+        return _discovery(case_id, properties, primitive_facts, discovery_cache)
     if case_id == 'global-wide-four-properties-zero':
         return any(_string_contains(properties.get(k), GLOBAL_WIDE_MISS) for k in CALL_PROPERTIES)
     if case_id == 'callsite-dynamic-miss' and row['tag'] != 12: return False
@@ -303,8 +309,9 @@ class Collector:
         for node_id, row in nodes.items():
             need(node_id == row['id'], 'actual node ID binding')
             values, keys = node_properties(row, gid, table, cache); properties[node_id] = values
+            discovery_cache = {}
             for case in node_cases:
-                if node_matches(case, row, values, keys, self.primitive_facts):
+                if node_matches(case, row, values, keys, self.primitive_facts, discovery_cache):
                     if case['id'] in self.distinct:
                         self.distinct[case['id']].add(raw_node_projection(case, row, values), gid)
                     else:

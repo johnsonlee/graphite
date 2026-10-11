@@ -18858,3 +18858,81 @@ These are historical-writer correctness inputs and scheduling diagnostics, not
 current fresh-writer acceptance, all35 query derivation or performance samples.
 Actual query comparison and remaining product regressions stay open. Complete CI
 has not been shown to finish within two hours; no new hosted run was launched.
+
+### Attempt244 — reuse discovery lowercase values within one node (2026-10-12)
+
+Parent:66180a8a. The independent JVM35 Collector recalculates the same four
+discovery strings for multiple cases on each node. Lazily populate one node-local
+dictionary after the first matching graph scope, retaining complete four-value
+evaluation order, None/non-string rules, actual JDK Unicode facts and failure
+poisoning. Do not cache across nodes or change graph-scope membership checks.
+Candidate module SHA256:
+5e4677794f7cbd812e512a86803bbe82baedd4d1085fec0c4116c5f84be89a07.
+All50 derivation/primitive/DISTINCT tests pass in0.623s (0.732s wrapper).
+Root independently reviewed the code, original baseline bytes,193 control pins,
+workflow binding, actionlint and whitespace checks. The candidate initially
+awaited a completed real-data comparison; the first failure is retained below.
+
+Run the original acd11 GTY05 Kotlin15/Tika10/Android12/Hive15 input comparison
+with actual original64 JDK primitive facts and all35 cases in their original64
+scope. Read each graph once, execute independent baseline/candidate Collectors,
+check shared inputs for mutation and compare complete typed cumulative state,
+including DISTINCT variants/provenance, multiplicity and projection bindings.
+Never finish the partial Collector or produce an acceptance oracle.
+Command: `python3 -B /tmp/graphite-attempt244-state-compare-prep-1/run.py`.
+Environment: macOS, Python3.14; same historical persisted graphs and bound facts.
+
+The diagnostic stops at its180s budget (180.295s including failure recording),
+without extending the budget or rerunning. Kotlin and Tika cumulative state
+comparisons pass. Both Android calculations finish, but its state comparison
+does not; Hive never starts. Final input checks are NOT_COMPLETED. Fixed
+baseline-then-candidate calculation observations are10.300→11.662s,
+8.685→7.757s and17.481→15.326s respectively. They do not establish stable
+speedup, complete four-graph correctness, query p50/p95 or CPU/RSS acceptance.
+
+Repeated cumulative typed JSON snapshots write2,119,996,328 bytes. The completed
+snapshot/comparison intervals alone take13.920s and22.642s; Android's baseline
+snapshot takes24.554s, with its candidate interval still incomplete at the
+deadline. Before another comparison, remove this repeated expansion in the
+diagnostic itself using exact incremental comparison and compact complete state
+preservation. Keep the code and all failed-run evidence pending; no full64 or
+hosted run is launched. Records:
+`/tmp/graphite-attempt244-node-discovery-cache/summary.json`,
+`/tmp/graphite-attempt244-state-compare-1/execution.json`,
+`/tmp/graphite-attempt244-state-compare-1/timing-review.json`.
+
+#### Complete bounded comparison after repairing the diagnostic
+
+Replace only the temporary comparison driver's repeated typed JSON expansion
+with recursive exact type/value comparison, keeping float bits, mapping keys,
+sequence order, unordered set contents and Counter multiplicity. Compare every
+case's complete cumulative state after each graph, and save both complete final
+states once as compact local snapshots. Three tiny correctness tests cover
+bool/int, signed zero, NaN payload bits, collection order and ten state-drift
+cases. No query logic, real input, case scope or result coverage changes.
+
+Command: `python3 -B /tmp/graphite-attempt244-state-compare-prep-2/run.py`.
+The new predeclared180s run completes in144.687s. All four complete cumulative
+comparisons pass for all35 cases, all eight shared-input checks pass, and all80
+actual input/control/facts pins pass at completion. Root reviews the source and
+original journal and independently compares both full362,482,911-byte snapshots:
+they are byte-identical, SHA256
+9d9853017f1415a497e53f7fa47b6c93cc5f6c8a971d5b0789cb5e56307ec13b.
+
+| Collector calculation | Parent seconds | Candidate seconds |
+|---|---:|---:|
+| Kotlin15 |10.251|10.134|
+| Tika10 |8.750|7.815|
+| Android12 |17.626|16.541|
+| Hive15 |12.942|13.490|
+| Total |49.569|47.980|
+
+Raw reading takes25.666s, complete state comparisons12.846s, and saving/hashing
+both final states3.123s. The total1.589s calculation reduction is a limited
+fixed-order observation; retain Hive's increase and the previous timeout.
+Keep the node-local reuse as a small cumulative candidate with complete four-
+graph agreement. This does not establish a stable speedup, full64 oracle,
+product correctness acceptance, query p50/p95, CPU/RSS or hosted CI recovery.
+Do not run further stabilization rounds for this small timing difference.
+Evidence: `/tmp/graphite-attempt244-state-compare-2/summary.json` and
+`/tmp/graphite-attempt244-state-compare-2/root-review.json`.

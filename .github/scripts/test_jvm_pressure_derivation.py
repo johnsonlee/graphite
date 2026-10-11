@@ -4,6 +4,7 @@ import hashlib
 import json
 import struct
 import unittest
+from unittest.mock import patch
 
 import jvm_pressure_derivation as d
 import jvm_pressure_inputs as inputs
@@ -131,6 +132,61 @@ class DerivationTests(unittest.TestCase):
         values, keys = d.node_properties(row, gid, wire.Types())
         # The literal on the RHS is not lowercased by the request.
         self.assertFalse(d.node_matches(self.cases['routing-pair-miss'], row, values, keys))
+
+    def test_discovery_cache_preserves_scope_and_failed_unicode_evaluation(self):
+        gid = model.FIXTURE_GRAPH_IDS[1]; row = call(1)
+        values, keys = d.node_properties(row, gid, wire.Types())
+        values.update(caller_class='\u212aotlin', caller_name='GET', callee_class=None, callee_name=12)
+        cache = {}
+        # This node is outside the routing pair: even missing Unicode facts must not be consulted.
+        self.assertFalse(d.node_matches(self.cases['routing-pair-dense'], row, values, keys,
+                                        discovery_cache=cache))
+        self.assertEqual({}, cache)
+        with self.assertRaisesRegex(d.MissingJvmSemantics, 'Locale.ROOT'):
+            d.node_matches(self.cases['wrapped-dense_distributed_method_query'], row, values, keys,
+                           discovery_cache=cache)
+        self.assertEqual({}, cache)
+        values['caller_class'] = 'ANDROID.Test'
+        with patch.object(d, 'lowered', wraps=d.lowered) as lower:
+            self.assertTrue(d.node_matches(self.cases['wrapped-dense_distributed_method_query'], row, values, keys,
+                                           discovery_cache=cache))
+            self.assertTrue(d.node_matches(self.cases['wrapped-early_graph_prefix_query'], row, values, keys,
+                                           discovery_cache=cache))
+        self.assertEqual({'caller_class': 'android.test', 'caller_name': 'get',
+                          'callee_class': '', 'callee_name': None}, cache)
+        self.assertEqual(4, lower.call_count)
+
+    def test_collector_discovery_cache_does_not_leak_between_nodes(self):
+        gid = model.FIXTURE_GRAPH_IDS[0]
+        nodes = [call(1, 'android.First', 'GETProvider'), call(2, 'java.Second', 'setValue')]
+        with patch.object(d, 'lowered', wraps=d.lowered) as lower:
+            result = complete({gid: (graph(gid, nodes), [])})
+        self.assertEqual(8, lower.call_count)
+        first = {'caller': 'android.First', 'callerMethod': 'GETProvider',
+                 'callee': 'java.lang.String', 'calleeMethod': 'valueOf'}
+        second = {'caller': 'java.Second', 'callerMethod': 'setValue',
+                  'callee': 'java.lang.String', 'calleeMethod': 'valueOf'}
+        dense = result['universes']['wrapped-dense_distributed_method_query']['groups']
+        self.assertEqual([first], dense[0]['variants']); self.assertEqual([gid], dense[0]['graphIds'])
+        self.assertEqual(1, len(dense))
+        broad = result['universes']['wrapped-broadly_distributed_prefix_query']['groups']
+        self.assertEqual([first, second], [group['variants'][0] for group in broad])
+        self.assertEqual([[gid], [gid]], [group['graphIds'] for group in broad])
+
+    def test_collector_cached_discovery_uses_bound_unicode_facts_and_poisons_missing_facts(self):
+        gid = model.FIXTURE_GRAPH_IDS[0]
+        row = call(1, 'android.Test', '\u212aGETProvider')
+        result = self.complete_with_facts({gid: graph(gid, [row])},
+                                         {('lowercaseRoot', '\u212aGETProvider'): 'kgetprovider'})
+        entry = result['universes']['wrapped-dense_distributed_method_query']['groups'][0]
+        self.assertEqual([{'caller': 'android.Test', 'callerMethod': '\u212aGETProvider',
+                           'callee': 'java.lang.String', 'calleeMethod': 'valueOf'}], entry['variants'])
+        collector = d.Collector(); raw_graph = graph(gid, [row])
+        with self.assertRaisesRegex(d.MissingJvmSemantics, 'Locale.ROOT'):
+            collector.add_graph(raw_graph, edges(raw_graph), 0)
+        self.assertTrue(collector.failed); self.assertEqual([], collector.seen)
+        with self.assertRaisesRegex(ValueError, 'previous graph derivation failed'):
+            collector.add_graph(graph(gid), edges(graph(gid)), 0)
 
     def test_full_method_descriptors_line_ordinal_and_virtual_type_keys(self):
         row = call(1, callee=method('Owner', 'overload', 'java.lang.Object', ['int[][]']))
