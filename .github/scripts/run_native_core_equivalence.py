@@ -694,30 +694,35 @@ def join_shards(output,count):
     out=Path(output).resolve();plan=common.read(out/'plan.json')
     require(plan['output']==str(out) and plan['execution']==shard_execution(count),'exact complete join plan')
     require(not (out/'record.json').exists() and not (out/'audit.json').exists(),'fresh joined core proof required')
-    require(common.typed(plan)==common.typed(rebind(plan)),'join plan differs from actual pair')
-    records=check_shard_receipts(plan)
-    by_id={row['id']:row for record in records for row in record['graphs']}
-    require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
-    rows=[by_id[row['id']] for row in plan['graphs']]
-    record={'schema':'graphite.native-core-equivalence-record.v1','status':PASS,
-            'plan':artifacts.ref(out/'plan.json'),'errors':[],
-            'phases':[artifacts.ref(out/name/'record.json') for name,_,_ in commands(plan)],
-            'graphs':rows,'compiledHelper':compiled(plan),'finalIdentity':'PASS',
-            'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
-                        'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
-            **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
+    authority=_VerifiedWorkerInputs.open(plan)
+    record=None
     try:
-        # This record is a provisional summary; only the completed audit authorizes it.
+        records=check_shard_receipts(plan)
+        by_id={row['id']:row for record in records for row in record['graphs']}
+        require(len(by_id)==64 and sum(len(record['graphs']) for record in records)==64,'all64 graph proofs exactly once')
+        rows=[by_id[row['id']] for row in plan['graphs']]
+        record={'schema':'graphite.native-core-equivalence-record.v1','status':PASS,
+                'plan':artifacts.ref(out/'plan.json'),'errors':[],
+                'phases':[artifacts.ref(out/name/'record.json') for name,_,_ in commands(plan)],
+                'graphs':rows,'compiledHelper':compiled(plan),'finalIdentity':'PASS',
+                'sharding':{'preparation':artifacts.ref(out/'preparation.json'),
+                            'shards':[artifacts.ref(out/'shards'/str(i)/'record.json') for i in range(count)]},
+                **{k:sum(row[k] for row in rows) for k in COUNTS},**{k:False for k in FALSE_CLAIMS}}
+        # This record is provisional until the complete output audit and fresh
+        # terminal input closure checks finish. The authority cannot escape join.
         common.save(out/'record.json',record)
-        # Each worker independently audited its assigned raw graphs. Consume those
-        # exact sealed results; audit-only remains available for full semantic replay.
-        result=audit_shards(out)
+        result=_audit(out,audited_shards=True,_input_authority=authority)
         common.save(out/'audit.json',result)
+        return record
     except BaseException as error:
-        record['status']='FAIL';record['errors'].append('join audit: '+repr(error));record['finalIdentity']='FAIL'
-        (out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
+        # A failed or interrupted publication must never leave a usable audit.
+        (out/'audit.json').unlink(missing_ok=True)
+        if record is not None:
+            record['status']='FAIL';record['errors'].append('join audit: '+repr(error));record['finalIdentity']='FAIL'
+            (out/'record.json').write_text(json.dumps(record,indent=2)+'\n')
         raise
-    return record
+    finally:
+        authority._valid=False
 
 
 def audit(output):
@@ -742,13 +747,14 @@ def audit_consumable(output):
     return audit_shards(output) if 'execution' in plan else audit(output)
 
 
-def _audit(output,audited_shards=False):
+def _audit(output,audited_shards=False,*,_input_authority=None):
     out=Path(output).resolve();plan=common.read(out/'plan.json');record=common.read(out/'record.json')
     require(plan['output']==str(out) and record['schema']=='graphite.native-core-equivalence-record.v1' and
             record['status']==PASS and record['errors']==[] and record['finalIdentity']=='PASS' and
             record['plan']==artifacts.ref(out/'plan.json') and all(record[k] is False for k in FALSE_CLAIMS),
             'completed owned all64 comparison')
-    require(common.typed(plan)==common.typed(rebind(plan)),'audited plan differs from actual pair')
+    require(_input_authority is None or audited_shards,'private join authority requires shard audits')
+    _check_worker_inputs(plan,_input_authority)
     expected=list(commands(plan));require(len(record['phases'])==len(expected)==plan['maxOwnedPhases'],'all declared owned phases')
     helper=compiled(plan);require(helper==record['compiledHelper'],'actual topology helper')
     pins=dict(plan['pins']);merge_pins(pins,helper)
@@ -786,6 +792,7 @@ def _audit(output,audited_shards=False):
     for row in rows:merge_pins(pins,row['files'])
     for leaf in ('plan.json','record.json'):merge_pins(pins,{str(out/leaf):common.sha(out/leaf)})
     artifacts.verify_pins(pins)
+    if _input_authority is not None:_input_authority.check(plan)
     return {'schema':'graphite.native-core-equivalence-audit.v1','status':AUDIT_PASS,'record':artifacts.ref(out/'record.json'),
         'revisions':plan['revisions'],'fixtureManifests':plan['fixtureManifests'],'upstream':plan['upstream'],
         'graphs':rows,'phases':plan['maxOwnedPhases'],'pins':pins,**{k:record[k] for k in COUNTS},**{k:False for k in FALSE_CLAIMS},

@@ -543,7 +543,7 @@ class ShardLifecycleTests(unittest.TestCase):
     def test_join_final_audit_failure_cannot_leave_pass_record(self):
         r.prepare(self.plan)
         for index in range(8):self.worker(index,8)
-        with patch.object(r,'audit_shards',side_effect=ValueError('final independent audit rejected')):
+        with patch.object(r,'_audit',side_effect=ValueError('final independent audit rejected')):
             with self.assertRaisesRegex(ValueError,'independent audit'):r.join_shards(self.out,8)
         record=r.common.read(self.out/'record.json')
         self.assertEqual('FAIL',record['status']);self.assertEqual('FAIL',record['finalIdentity'])
@@ -935,6 +935,100 @@ class RawEdgeExportTests(unittest.TestCase):
         self.plan.update(referenceRoot=self.row['C'],actualRoot=self.row['B'])
         with patch.object(r,'bind',return_value={}) as binder:r.rebind(self.plan)
         self.assertEqual((self.row['C'],self.row['B'],str(self.root),False,True),binder.call_args.args)
+
+
+
+
+class FreshJoinTests(unittest.TestCase):
+    """Actual tiny Git/input closures and persisted64 shard evidence at join."""
+    def setUp(self):
+        FreshPreparationTests.setUp(self)
+
+    def prepared(self):
+        self.assertEqual(r.PREPARATION_PASS,r.prepare(self.plan)['status'])
+        for index in range(8):
+            self.assertEqual(r.SHARD_PASS,ShardLifecycleTests.worker(self,index,8)['status'])
+        self.rebind.reset_mock()
+
+    def failed(self):
+        record=r.common.read(self.out/'record.json')
+        self.assertEqual(('FAIL','FAIL'),(record['status'],record['finalIdentity']))
+        self.assertTrue(record['errors']);self.assertFalse((self.out/'audit.json').exists())
+
+    def test_join_replays_once_and_standalone_audits_replay_independently(self):
+        self.prepared();opened=[];open_=r._VerifiedWorkerInputs.open
+        def capture(plan):
+            value=open_(plan);opened.append(value);return value
+        with patch.object(r._VerifiedWorkerInputs,'open',side_effect=capture), \
+                patch.object(r.artifacts,'verify_pins',wraps=r.artifacts.verify_pins) as verify:
+            result=r.join_shards(self.out,8)
+        # Direct byte boundaries, excluding the mocked semantic rebind's own work:
+        # open before/after + audit entry/exit, and one full merged result audit.
+        self.assertEqual(4,sum(call.args[0]==self.plan['pins'] for call in verify.call_args_list))
+        self.assertEqual(1,sum(str(self.out/'record.json') in call.args[0] for call in verify.call_args_list))
+        self.assertEqual(r.PASS,result['status']);self.assertEqual(1,self.rebind.call_count)
+        completed=r.common.read(self.out/'audit.json')
+        self.assertEqual(completed,r.audit_shards(self.out));self.assertEqual(2,self.rebind.call_count)
+        self.assertEqual(completed,r.audit(self.out));self.assertEqual(3,self.rebind.call_count)
+        with self.assertRaisesRegex(ValueError,'invalidated'):opened[0].check(self.plan)
+        with self.assertRaisesRegex(ValueError,'private worker'):
+            r._audit(self.out,audited_shards=True,_input_authority=object())
+        with self.assertRaisesRegex(ValueError,'requires shard audits'):
+            r._audit(self.out,_input_authority=opened[0])
+
+    def test_real_input_plan_and_raw_output_mutation_fail_after_summary(self):
+        import os
+        for kind in ('same-size-restored-mtime','directory','source','plan-file','raw-output'):
+            with self.subTest(kind=kind):
+                case=FreshJoinTests(methodName='runTest');case.setUp()
+                try:
+                    case.prepared();save=r.common.save;opened=[];open_=r._VerifiedWorkerInputs.open
+                    def capture(plan):
+                        value=open_(plan);opened.append(value);return value
+                    def changed(path,value):
+                        save(path,value)
+                        if path!=case.out/'record.json':return
+                        if kind=='same-size-restored-mtime':
+                            p=case.f.input;before=p.stat();data=p.read_bytes()
+                            p.write_bytes(bytes([data[0]^1])+data[1:]);os.utime(p,ns=(before.st_atime_ns,before.st_mtime_ns))
+                        elif kind=='directory':(case.inputs.producer/'graphs/new-empty').mkdir()
+                        elif kind=='source':(case.inputs.checkout/'source.kt').write_text('changed')
+                        elif kind=='plan-file':(case.out/'plan.json').write_text('{}')
+                        else:
+                            p=case.out/'graphs/fixture-00/topology.json';v=r.common.read(p)
+                            v['reference']='/changed';p.write_text(json.dumps(v))
+                    with patch.object(r.common,'save',side_effect=changed),patch.object(r._VerifiedWorkerInputs,'open',side_effect=capture):
+                        with self.assertRaises((ValueError,KeyError)):r.join_shards(case.out,8)
+                    case.failed();self.assertEqual(1,case.rebind.call_count)
+                    with self.assertRaisesRegex(ValueError,'invalidated'):opened[0].check(case.plan)
+                finally:case.doCleanups()
+
+    def test_terminal_closure_catches_drift_after_final_pin_verification(self):
+        self.prepared();verify=r.artifacts.verify_pins;mutated=[]
+        def changed(pins):
+            verify(pins)
+            if str(self.out/'record.json') in pins:
+                (self.inputs.root/'marker/late-empty').mkdir();mutated.append(True)
+        with patch.object(r.artifacts,'verify_pins',side_effect=changed):
+            with self.assertRaisesRegex(ValueError,'closure changed'):r.join_shards(self.out,8)
+        self.assertEqual([True],mutated);self.failed()
+
+    def test_audit_publication_interruption_removes_partial_success(self):
+        self.prepared();save=r.common.save;opened=[];open_=r._VerifiedWorkerInputs.open
+        def capture(plan):
+            value=open_(plan);opened.append(value);return value
+        def interrupted(path,value):
+            save(path,value)
+            if path==self.out/'audit.json':raise KeyboardInterrupt('interrupted audit publication')
+        with patch.object(r.common,'save',side_effect=interrupted),patch.object(r._VerifiedWorkerInputs,'open',side_effect=capture):
+            with self.assertRaisesRegex(KeyboardInterrupt,'publication'):r.join_shards(self.out,8)
+        self.failed()
+        with self.assertRaisesRegex(ValueError,'invalidated'):opened[0].check(self.plan)
+
+    def test_initial_replay_failure_creates_no_join_receipt(self):
+        self.prepared();self.rebind.side_effect=ValueError('independent initial replay failure')
+        with self.assertRaisesRegex(ValueError,'initial replay failure'):r.join_shards(self.out,8)
+        self.assertFalse((self.out/'record.json').exists());self.assertFalse((self.out/'audit.json').exists())
 
 
 if __name__=='__main__':unittest.main()

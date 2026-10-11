@@ -17929,3 +17929,41 @@ require their original real64 matched evidence. No performance run or artifact
 download was added for this attempt. This removes a known duplicate on the
 critical path but does not establish a complete run below two hours. The ongoing
 run has no ready replacement with a demonstrated shorter remaining path.
+
+### Attempt227 — reuse private input authority within one core join (2026-10-12)
+
+Parent:92c4158e. The final core join first fully rebound all producer/helper
+inputs, then immediately repeated that complete bind inside its independent
+output audit. Hosted03f's join command took14m18s; its restore17m42s and seal7m02s
+are separate costs. Those logs do not isolate either bind. Current91 already
+changes each bind's nested replay cost, so14m18s is not an estimate of savings.
+
+Join now establishes the existing private, nonserializable worker authority once.
+Only its internal sharded audit can consume that exact authority. Both standalone
+audit entry points still completely rebind. Fresh plan/input pins, Git/source,
+build configuration and closed-directory checks bracket the operation; the full
+merged result pins check remains. Authority expires on success and failure.
+Interrupted publication removes a partial audit and marks the summary FAIL.
+There is no cross-process/cache authority, CLI bypass, proof-scope reduction or
+new performance workload. All64 assigned graph receipts and outputs are checked.
+
+Verification:82 related runner/worker tests passed in29.888s, including five new
+join groups using persisted64 shard receipts and actual tiny Git/input closures.
+They check equivalent successful reports through both standalone audits,
+same-size/restored-mtime input changes, source/directory/plan/raw output mutation,
+terminal closure mutation, rejected foreign/expired authority, failed initial
+replay, and interrupted audit publication. The semantic binder uses the existing
+fixture stub; this is correctness/control-cost evidence, not real workload
+performance. Log:`/tmp/graphite-attempt227-runner-worker-tests.log`. Independent
+root inspection,202 correctness/preparation pins, both manifest bindings,
+workflow syntax and diff checks passed. Existing full ShellCheck findings are
+unchanged in scope.
+
+The access contract changes full binds2→1 while adding four direct input-pin
+passes and four input-closure checks; the complete merged-result pin pass remains
+one. These added costs must be included in any hosted comparison. **Retain as a
+local candidate, not a demonstrated net speedup.** No query p50/p95, construction,
+loading, end-to-end, CPU, RSS or real-workload correctness/stability acceptance is
+claimed. Active91 continues; replacing it would repeat already completed producer
+and transfer work, and the new candidate's full-path timing advantage is not yet
+established. Neither this change nor226 proves a complete run below two hours.
