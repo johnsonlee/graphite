@@ -20872,8 +20872,10 @@ and `resourceBound(..., ratio)`; every caller names its ratio. Construction: wal
 loading: `wallPassed` (≤ ×1.05, was `deltaWallMs<=0`), CPU interval at 5%, RSS interval at 10%.
 Native and JVM query pressure: latency rule unchanged, CPU interval 5%, RSS interval 10%, the
 stage's own wall still strict. Each report carries `resourceTolerance`. The four gate jobs are
-named `rust-construction (wall +5%, CPU +5%, RSS +10%)`, `rust-loading (…)`,
-`rust-query-native (p50/p95 +100ms or +5%, CPU +5%, RSS +10%)`, `rust-query-jvm (…)`; job ids
+named `rust-construction (wall ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)`, `rust-loading (…)`,
+`rust-query-native (p50/p95 ≤ 100ms or ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)`, `rust-query-jvm (…)`
+(first `+x%`, then `≤ x%` at the user's request: the gates are one-sided, a faster or
+leaner candidate has no lower limit); job ids
 and `needs` are unchanged, so the workflow tests still address them. Both controls manifests
 re-pin the four comparators and the workflow pins the manifests. 238 gate tests pass; the RSS
 envelope test now pins 10% (1100 on a 1000–1010 base passes, 1120 is INDETERMINATE, FAIL once
@@ -20889,7 +20891,7 @@ CPU limit was left at 5% pending the user's word.
 
 **Follow-up (same day): "CPU 也放到 10%".** `CPU_TOLERANCE_RATIO=0.10` in every fixture64 gate
 (construction, JVM and native loading, native and JVM query pressure), the job names say
-`CPU +10%`, CLAUDE.md records the approval, and both manifests and the workflow digests are
+`CPU ≤ 10%`, CLAUDE.md records the approval, and both manifests and the workflow digests are
 re-pinned. Under these rules run 38235245328's construction (+7.4% CPU) and JVM loading
 (8.71–8.76→9.15–9.19s) pairs pass; the native query RSS pairs (+10.7%, +10.0%) remain the
 open question for run 894.

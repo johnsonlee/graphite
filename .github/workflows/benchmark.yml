@@ -4004,7 +4004,7 @@ jobs:
 
   rust-query-native:
     if: ${{ !github.event.pull_request.draft }}
-    name: rust-query-native (p50/p95 +100ms or +5%, CPU +10%, RSS +10%)
+    name: rust-query-native (p50/p95 ≤ 100ms or ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)
     needs: [candidate-gate-tests, rust-producer, rust-core, rust-query-native-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4458,7 +4458,7 @@ jobs:
 
   rust-query-jvm:
     if: ${{ !github.event.pull_request.draft }}
-    name: rust-query-jvm (p50/p95 +100ms or +5%, CPU +10%, RSS +10%)
+    name: rust-query-jvm (p50/p95 ≤ 100ms or ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)
     needs: [rust-producer, rust-core-prepare, rust-core, rust-jvm-correctness, rust-query-jvm-measurement]
     runs-on: ubuntu-latest
     timeout-minutes: 360
@@ -4707,7 +4707,7 @@ jobs:
         benchmark-results/multigraph-loading-measurement-status.json >/dev/null
 
   rust-loading:
-    name: rust-loading (wall +5%, CPU +10%, RSS +10%)
+    name: rust-loading (wall ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)
     if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-loading-measurement.result == 'success') }}
     needs: [rust-producer, rust-core, rust-loading-measurement]
     runs-on: ubuntu-latest
@@ -4926,7 +4926,7 @@ jobs:
         benchmark-results/multigraph-construction-measurement-status.json >/dev/null
 
   rust-construction:
-    name: rust-construction (wall +5%, CPU +10%, RSS +10%)
+    name: rust-construction (wall ≤ 5%, CPU ≤ 10%, RSS ≤ 10%)
     if: ${{ !github.event.pull_request.draft && (!cancelled() && needs.rust-producer.result == 'success' && needs.rust-core.result == 'success' && needs.rust-construction-measurement.result == 'success') }}
     needs: [rust-producer, rust-core, rust-construction-measurement]
     runs-on: ubuntu-latest
