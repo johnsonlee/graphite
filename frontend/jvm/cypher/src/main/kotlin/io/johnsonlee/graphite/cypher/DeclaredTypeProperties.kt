@@ -26,8 +26,10 @@ object DeclaredTypeProperties {
         PARAMETER_TYPE_INFO_PROPERTY, TYPE_PARAMETERS_PROPERTY
     )
 
+    // Asked for every property read of every node: the instance check first, then two
+    // comparisons, not a list search.
     fun isNodeProperty(node: Node, property: String): Boolean =
-        property in nodePropertyNames && supportsNode(node)
+        supportsNode(node) && (property == GENERIC_TYPE_PROPERTY || property == TYPE_INFO_PROPERTY)
 
     fun hasNodeProperties(node: Node, graph: Graph?): Boolean =
         supportsNode(node) && graph?.declaredTypes()?.let { nodeTypeId(node, it) != null } == true
@@ -111,8 +113,8 @@ object DeclaredTypeProperties {
     private fun supportsNode(node: Node): Boolean = node is FieldNode || node is ParameterNode || node is ReturnNode
 
     private fun nodeBinding(node: Node, graph: Graph?): Pair<DeclaredTypeTable, Int>? {
-        if (!supportsNode(node)) return null
-        return graph?.declaredTypes()?.let { table -> nodeTypeId(node, table)?.let { table to it } }
+        val table = if (supportsNode(node)) graph?.declaredTypes() else null
+        return table?.let { bind(node, it, lastNodeBinding) { nodeTypeId(node, it)?.let { id -> it to id } } }
     }
 
     private fun nodeTypeId(node: Node, table: DeclaredTypeTable): Int? = when (node) {
@@ -125,7 +127,42 @@ object DeclaredTypeProperties {
     }
 
     private fun methodBinding(method: MethodDescriptor, graph: Graph?): Pair<DeclaredTypeTable, MethodTypes>? =
-        graph?.declaredTypes()?.let { table -> table.methods[methodKey(method)]?.let { table to it } }
+        graph?.declaredTypes()?.let { table ->
+            bind(method, table, lastMethodBinding) { table.methods[methodKey(method)]?.let { table to it } }
+        }
+
+    private inline fun <R : Any, B : Any> bind(
+        receiver: R, table: DeclaredTypeTable, memo: ThreadLocal<LastBinding<R, B>>, lookup: () -> B?
+    ): B? {
+        val last = if (isImmutable(table)) memo.get() else null
+        if (last != null && last.receiver === receiver && last.table === table) return last.binding
+        return lookup().also { last?.remember(receiver, table, it) }
+    }
+
+    private fun isImmutable(table: DeclaredTypeTable): Boolean =
+        (table.types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(table) == true
+
+    /**
+     * The receiver bound last on this thread. A row projects several declaration properties of
+     * one node or method, and each looked the member up again: a key rebuilt from its type
+     * names, hashed, and matched against decoded text. Only an immutable table is remembered;
+     * a mutable one may have changed between two properties of the same row.
+     */
+    private class LastBinding<R : Any, B : Any> {
+        var receiver: R? = null
+        var table: DeclaredTypeTable? = null
+        var binding: B? = null
+
+        fun remember(receiver: R, table: DeclaredTypeTable, binding: B?) {
+            this.receiver = receiver
+            this.table = table
+            this.binding = binding
+        }
+    }
+
+    private val lastNodeBinding = ThreadLocal.withInitial { LastBinding<Node, Pair<DeclaredTypeTable, Int>>() }
+    private val lastMethodBinding =
+        ThreadLocal.withInitial { LastBinding<MethodDescriptor, Pair<DeclaredTypeTable, MethodTypes>>() }
 
     private fun methodKey(method: MethodDescriptor) = MemberTypeKey(
         method.declaringClass.className, method.name, method.descriptor

@@ -20486,3 +20486,34 @@ checks the lazily read partitions against a fresh load), Kotlin `:webgraph:check
 :core:check :query:check`. A `StringTable` whose file is missing still fails with
 `NoSuchFileException` (`Files.newInputStream`). Evidence: scratchpad
 `fx/loading-ab-{native,jvm}-kc-15-x16.json`, `chain_lazy.log`, `chain_construct.log`.
+
+### Attempt272 — remember the last member binding on the JVM query thread (2026-10-12)
+
+The Kotlin engine's `feature-methods` case (`m.generic_return_type IS NOT NULL`, four more
+declaration properties, grouped) took 2,367ms p50 over 16 shard graphs against 283ms on the
+base, and `feature-nodes` 4,347ms against 2,427ms: each of a row's five declaration properties
+rebuilt the member key (a JVM descriptor from the type names), hashed it and matched it against
+decoded text in the mapped member map. `DeclaredTypeProperties` now keeps, per thread, the
+receiver bound last with its table and binding, for an immutable table only (a mutable table
+may change between two properties of the same row). Same harness, JVM server `-Xmx4g`, 5
+samples per case per server:
+
+| Case | base p50 | cand before | cand after | Δ vs base |
+|---|---|---|---|---|
+| feature-methods |283.2|2,367.5|863.0|+579.8|
+| feature-nodes |2,427.4|4,346.9|3,440.1|+1,012.7|
+| slow-dynamicMiss |573.0|609.8|605.9|+32.9|
+| slow-dynamicHit |593.1|589.3|620.5|+27.4|
+
+Retained for its verified benefit; neither feature case is recovered. The two `dynamic-*`
+rows (the shape of the hosted JVM gate's two cases) read +5% in two 5-sample runs; a JFR of 40
+`slow-dynamicMiss` requests per server (p50 620.4ms base, 634.2ms candidate under the
+profiler) finds no declaration binding on the steady-state path: the trigram summary answers
+"absent" for the needle (`declaredTextMayMatch` 3 samples), the per-node candidate scan is
+cheaper than the base's (9,096 against 9,458 inclusive samples), and the only declaration
+frame on the hot path is `DeclaredTypeProperties.isNodeProperty` (107 samples, 0.6%), a list
+membership test run for every property read, now an instance check followed by two string
+comparisons. The rest of the difference is the lazy table load in the warm request and the
+run-to-run variance of a 600ms query. These cases are not in the hosted JVM gate's case list, and the base
+answers them without binding anything, so the remaining cost is one mapped-map lookup per
+declaration-bearing row. Evidence: scratchpad `fx/query-ab-jvm-kc-15-x16.json`, `chain3.log`.
