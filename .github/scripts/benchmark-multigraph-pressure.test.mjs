@@ -14,16 +14,17 @@ const digest=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('h
 const put=(p,v)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,JSON.stringify(v));};
 test('fixed per-case repeated latency and independent CPU/RSS intervals',t=>{
  const f=fixture(t),r=comparePressure(f.file,f.root);assert.equal(r.passed,true);assert.equal(r.comparisons.length,4);assert.equal(r.comparisons[2].cases[0].deltaP95Ms,-.00002);
- assert.deepEqual(r.latencyTolerance,{absoluteMs:100,ratio:0.05});assert.deepEqual(r.resourceTolerance,{cpuRatio:0.05,rssRatio:0.10});
+ assert.deepEqual(r.latencyTolerance,{absoluteMs:100,ratio:0.05});assert.deepEqual(r.resourceTolerance,{cpuRatio:0.10,rssRatio:0.10});
  // Within 100ms or 5% of the base passes; past both fails, whichever is the larger allowance.
  for(const [candidate,base,expected] of [[150,100,true],[200e6,100e6,true],[200e6+1,100e6,false],[4.2e9+1,4e9,false],[4.2e9,4e9+1,true],[4.15e9,4e9,true],[100,100,true]])
   assert.equal(withinLatencyTolerance(candidate,base),expected,`${candidate} vs ${base}`);
  // A regression inside the tolerance keeps the verdict.
  f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});r.stages.pressure.caseStatistics.slow.p50Ns=150;r.stages.pressure.caseStatistics.slow.p95Ns=150;});
  assert.equal(comparePressure(f.file,f.root).passed,true);
- // CPU keeps 5%, RSS has 10% (user-approved 2026-10-12); each ratio is explicit at the call.
- assert.equal(resourceBound(100,120,110,115),'INDETERMINATE');assert.equal(resourceBound(100,100,106,106),'FAIL');
- assert.equal(resourceBound(100,100,105,105,CPU_TOLERANCE_RATIO),'PASS');assert.equal(resourceBound(100,100,106,106,CPU_TOLERANCE_RATIO),'FAIL');
+ // CPU and RSS both have 10% (user-approved 2026-10-12); each ratio is explicit at the call.
+ assert.equal(resourceBound(100,120,112,115),'INDETERMINATE');assert.equal(resourceBound(100,100,111,111),'FAIL');
+ assert.equal(resourceBound(100,100,106,106,0.05),'FAIL');assert.equal(resourceBound(100,100,106,106),'PASS');
+ assert.equal(resourceBound(100,100,110,110,CPU_TOLERANCE_RATIO),'PASS');assert.equal(resourceBound(100,100,111,111,CPU_TOLERANCE_RATIO),'FAIL');
  assert.equal(resourceBound(100,100,110,110,RSS_TOLERANCE_RATIO),'PASS');assert.equal(resourceBound(100,100,111,111,RSS_TOLERANCE_RATIO),'FAIL');
  assert.equal(resourceBound(100,120,125,130,RSS_TOLERANCE_RATIO),'INDETERMINATE');
  assert.throws(()=>resourceBound(100,100,100,100,-0.1),/Invalid resource interval/);

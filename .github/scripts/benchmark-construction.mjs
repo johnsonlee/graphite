@@ -99,7 +99,7 @@ export function compareConstruction(planFile, directory,comparabilityReceipt=nul
         measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,acceptedBaselineRevision:plan.arms.C.revision,
         parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,completeSemanticEquivalence:false,
         strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
-        limitation:'Two fixed directions; wall within 5%, CPU within 5%, RSS within 10% of the base (user-approved 2026-10-12); source-corrected comparability and fresh-output validity, not complete semantic equality. No query/loading acceptance.'};
+        limitation:'Two fixed directions; wall within 5%, CPU within 10%, RSS within 10% of the base (user-approved 2026-10-12); source-corrected comparability and fresh-output validity, not complete semantic equality. No query/loading acceptance.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||

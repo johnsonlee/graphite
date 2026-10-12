@@ -144,10 +144,10 @@ export function withinLatencyTolerance(candidateNs,baseNs){
     return candidateNs<=baseNs+Math.max(LATENCY_TOLERANCE_NS,baseNs*LATENCY_TOLERANCE_RATIO);
 }
 // User-approved resource tolerances (2026-10-12): construction and loading wall time may exceed
-// the base by 5%, peak RSS by 10%; CPU keeps the 5% allowance of the performance rules. The
-// pressure stage's own wall time stays strict. Each limit is independent of the others.
+// the base by 5%, total CPU time and peak RSS by 10%, in every fixture64 gate. The pressure
+// stage's own wall time stays strict. Each limit is independent of the others.
 export const WALL_TOLERANCE_RATIO=0.05;
-export const CPU_TOLERANCE_RATIO=0.05;
+export const CPU_TOLERANCE_RATIO=0.10;
 export const RSS_TOLERANCE_RATIO=0.10;
 export const RESOURCE_TOLERANCE={wallRatio:WALL_TOLERANCE_RATIO,cpuRatio:CPU_TOLERANCE_RATIO,rssRatio:RSS_TOLERANCE_RATIO};
 export function withinWallTolerance(candidateMs,baseMs){

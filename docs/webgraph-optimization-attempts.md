@@ -20885,5 +20885,11 @@ CPU limit (the other accepted pair, +3.0%, passes); JVM loading wall and RSS PAS
 8.71–8.76→9.15–9.19s still INDETERMINATE at 5%; native query RSS 11.75→13.01GB (+10.7%) and
 12.67→13.94GB (+10.0%) are outside a 10% PASS too (13.94/12.67=1.1002), so the native query
 gate's RSS depends on where the next run's cells land (same-arm cells differ by 0.9GB). The
-CPU limit for construction and loading is left at 5% pending the user's word; raising it is a
-one-constant change.
+CPU limit was left at 5% pending the user's word.
+
+**Follow-up (same day): "CPU 也放到 10%".** `CPU_TOLERANCE_RATIO=0.10` in every fixture64 gate
+(construction, JVM and native loading, native and JVM query pressure), the job names say
+`CPU +10%`, CLAUDE.md records the approval, and both manifests and the workflow digests are
+re-pinned. Under these rules run 38235245328's construction (+7.4% CPU) and JVM loading
+(8.71–8.76→9.15–9.19s) pairs pass; the native query RSS pairs (+10.7%, +10.0%) remain the
+open question for run 894.

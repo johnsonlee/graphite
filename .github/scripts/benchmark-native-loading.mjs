@@ -107,7 +107,7 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
         comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified,measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,comparisons,
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         performanceAcceptance:passed,otherOperationsEligible:false,
-        limitation:'Prospective zero-query registry-ready interval within six fresh Native39 processes. Later query RSS excluded. Wall within 5%, CPU within 5%, RSS within 10% of the base (user-approved 2026-10-12); the historical loading allowance is not automatically applied. No query acceptance.'};
+        limitation:'Prospective zero-query registry-ready interval within six fresh Native39 processes. Later query RSS excluded. Wall within 5%, CPU within 10%, RSS within 10% of the base (user-approved 2026-10-12); the historical loading allowance is not automatically applied. No query acceptance.'};
 }
 export function writeNativeLoading(plan,directory,prefix,receipt=null) {
     let value;

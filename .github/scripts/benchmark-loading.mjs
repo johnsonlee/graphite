@@ -126,7 +126,7 @@ export function compareLoading(planFile,directory,comparabilityReceipt=null) {
         measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         completeSemanticEquivalence:false,strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
-        limitation:'Registry-ready, zero queries; ready VmHWM is a conservative post-ready bound. Wall within 5%, CPU within 5%, RSS within 10% of the base (user-approved 2026-10-12). No Native loading exception, first-query, cold-cache or saturation claim.'};
+        limitation:'Registry-ready, zero queries; ready VmHWM is a conservative post-ready bound. Wall within 5%, CPU within 10%, RSS within 10% of the base (user-approved 2026-10-12). No Native loading exception, first-query, cold-cache or saturation claim.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||
