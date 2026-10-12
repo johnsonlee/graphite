@@ -710,7 +710,7 @@ private fun checkElementIndex(index: Int, size: Int) {
     if (index !in 0 until size) throw IndexOutOfBoundsException("index=$index, size=$size")
 }
 
-private object WireIo {
+internal object WireIo {
     private const val HASH_SPREAD_SHIFT = 16
 
     fun digest(path: Path): ByteArray {

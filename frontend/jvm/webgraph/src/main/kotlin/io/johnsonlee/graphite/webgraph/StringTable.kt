@@ -129,11 +129,10 @@ internal class StringTable private constructor(
             // from. It is taken when that table is first read, not here: the table is
             // query-only state, and hashing the file (through the deserializer's small reads,
             // or in bulk, which held a second copy of it) charged every graph's load for it.
-            val serializedDigest = if (verifySerializedDigest) {
-                lazy { MessageDigest.getInstance(DIGEST_ALGORITHM).digest(Files.readAllBytes(path)) }
-            } else {
-                null
-            }
+            // It streams the file through a small buffer: the first read happens inside a
+            // query, on a heap that may hold that query's rows, and a 15 MB array for a large
+            // dictionary is a humongous allocation there.
+            val serializedDigest = if (verifySerializedDigest) lazy { WireIo.digest(path) } else null
             val contentIdentity = dir.resolve(CONTENT_IDENTITY_FILE_NAME).takeIf(Files::isRegularFile)
                 ?.let(Files::readAllBytes)
                 ?.takeIf { identity -> identity.size == CONTENT_IDENTITY_BYTES }
