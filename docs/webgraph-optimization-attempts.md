@@ -20895,3 +20895,41 @@ CPU limit was left at 5% pending the user's word.
 re-pinned. Under these rules run 38235245328's construction (+7.4% CPU) and JVM loading
 (8.71–8.76→9.15–9.19s) pairs pass; the native query RSS pairs (+10.7%, +10.0%) remain the
 open question for run 894.
+
+### Attempt285 — run 38265880845 (b7e0e5b): native query p95 rows under the final tolerances (2026-10-12)
+
+Analysis, no code change. First run under wall ≤5% / CPU ≤10% / RSS ≤10%.
+
+**Construction, JVM loading, native loading: PASS. JVM correctness C: PASS (B running).**
+**Native query (`rust-query-native`): FAIL on p95 of two cases; every resource row passes.**
+CPU 1049–1056→765–767s (−27%), RSS 11.52–11.62→11.96–12.14GB (+5.4%, worst pair) and
+12.66→11.96–12.08GB (−4.5%), stage wall 267–269→195s. Accepted-baseline rows beyond the
+100ms/5% tolerance: `shape-with-aggregate-broad` p95 2429→2608 (+179ms) and 2397→2558
+(+161ms) with p50 2314→2278 and 2304→2315; `slow-valueMiss` p95 100→224 and 25→201 with
+p50 8→8 and 8→11. Parent pairs add `slow-dataflowSourceHit` 75→185 and
+`wrapped-skewed_mixed_operator_query` 18→119, both p95 only.
+
+**Why this is the protocol, not the code.**
+- The Rust code is byte-for-byte run 893's (1b598b3): every commit since changed CI scripts,
+  job names and docs. In 893 the same case was faster on the candidate, p95 2003/2038 against
+  2172/2038, and all 40 cases passed in all four pairs; in 889 the then-candidate had 2206/2278
+  against 2430/2344.
+- The runner was slower and noisier this time: the base arm's own p50 moved from 1985 (893)
+  to 2314ms (896), +17%, and its two cells disagree on `slow-valueMiss` p95 by 4× (100 vs 25).
+- Isolated A/B on the real 64 shards here (`tools/native64_ab.py 20`, `tools/tail64.py 30`,
+  logs `n64-tail.log`, `tail-agg.log`): `slow-valueMiss` is 0.6–1.1ms p50 and ≤2ms p95 on both
+  arms, so its 100–250ms CI tail is entirely the closed-loop collision with
+  `shape-order-by-desc-broad` + `shape-with-filter` + `slow-dynamicHit` that every cell shows
+  (base 100–171ms, candidate 213–245ms; the candidate's heavier overlap is the faster loop,
+  stage 195s against 267s). `shape-with-aggregate-broad` is faster on the candidate in all
+  four isolated runs at p50 (2085/2047 → 1984/1860ms) and p95 in three of four (2253/2292 →
+  2241/1971), and both arms show tail samples 25–50% above their p50 whose CPU time grows
+  with the latency (base 2595/2646ms, candidate 3148ms once; majflt 0, minflt unchanged):
+  host CPU variance, not paging and not the engine.
+- A 20-sample p95 is the second-slowest sample; with bimodal collision tails it flips between
+  runs on both arms (889: base 22 vs candidate 109 would have failed the other way).
+
+**Options** (user's call, the gate design is theirs): re-run the native measurement once;
+or harden the protocol, e.g. 40 samples per case and a tail rule that also accepts a p95
+within tolerance of the slower of the run's two base cells; or move the cheap cases out of
+the heavy cases' closed loop. The tolerances themselves stay as approved.
