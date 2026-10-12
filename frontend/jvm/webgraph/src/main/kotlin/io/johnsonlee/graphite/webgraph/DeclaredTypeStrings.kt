@@ -28,8 +28,7 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
         if (!checked[id]) {
             val stats = loadingStats
             if (stats == null) {
-                Charsets.UTF_8.newEncoder().onMalformedInput(CodingErrorAction.REPORT)
-                    .encode(CharBuffer.wrap(strings.get(id)))
+                requireWellFormedUtf16(strings.get(id))
             } else {
                 stats.add(id)
                 checked.set(id)
@@ -55,6 +54,24 @@ internal class SharedDeclaredTypeTexts(private val strings: StringTable) : Decla
 
     /** Called after complete validation and before any mapped view is published to query threads. */
     fun finishLoading() { loadingStats = null }
+}
+
+/**
+ * Rejects an unpaired surrogate as a reporting UTF-8 encoder does, without allocating an
+ * encoder and an output buffer per value: the save validates every text it references.
+ */
+internal fun requireWellFormedUtf16(value: CharSequence) {
+    var position = 0
+    while (position < value.length) {
+        val character = value[position++]
+        when {
+            character.isHighSurrogate() -> {
+                if (position == value.length || !value[position].isLowSurrogate()) throw MalformedInputException(1)
+                position++
+            }
+            character.isLowSurrogate() -> throw MalformedInputException(1)
+        }
+    }
 }
 
 /** Per-load facts and requested text. All maps and the decode buffer are discarded before publication. */
@@ -109,25 +126,32 @@ internal class DeclaredTypeStringIds(table: DeclaredTypeTable, structural: Boole
     private val ids = LinkedHashMap<String, Int>()
 
     init {
-        fun add(value: String) { ids.getOrPut(value) { ids.size } }
-        fun parameters(values: List<TypeParameter>) { values.forEach { add(it.name); if (!structural) add(it.scope) } }
-        table.types.forEach {
-            if (!structural) { add(it.kind); add(it.scope); add(it.variance) }
-            if (!structural || it.name.isNotEmpty()) add(it.name)
+        visit(table, structural, erased) { value -> ids.getOrPut(value) { ids.size } }
+    }
+
+    companion object {
+        /** Adds every text the save will reference to [target]; a shared dictionary needs no local IDs. */
+        fun collect(table: DeclaredTypeTable, structural: Boolean, erased: Boolean, target: MutableSet<String>) =
+            visit(table, structural, erased) { value -> target.add(value) }
+
+        private fun visit(table: DeclaredTypeTable, structural: Boolean, erased: Boolean, add: (String) -> Unit) {
+            fun parameters(values: List<TypeParameter>) { values.forEach { add(it.name); if (!structural) add(it.scope) } }
+            table.types.forEach {
+                if (!structural) { add(it.kind); add(it.scope); add(it.variance) }
+                if (!structural || it.name.isNotEmpty()) add(it.name)
+            }
+            table.fields.keys.forEach { add(it.owner); add(it.name); if (!erased) add(it.descriptor) }
+            table.methods.forEach { (key, method) ->
+                add(key.owner)
+                add(key.name)
+                if (!erased) add(key.descriptor)
+                parameters(method.typeParameters)
+            }
+            table.classes.forEach { (name, type) -> add(name); parameters(type.typeParameters) }
         }
-        table.fields.keys.forEach { add(it.owner); add(it.name); if (!erased) add(it.descriptor) }
-        table.methods.forEach { (key, method) ->
-            add(key.owner)
-            add(key.name)
-            if (!erased) add(key.descriptor)
-            parameters(method.typeParameters)
-        }
-        table.classes.forEach { (name, type) -> add(name); parameters(type.typeParameters) }
     }
 
     operator fun get(value: String): Int = ids.getValue(value)
-
-    fun collect(target: MutableSet<String>) { target.addAll(ids.keys) }
 
     fun write(output: DataOutputStream) {
         output.writeInt(ids.size)

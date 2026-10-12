@@ -20517,3 +20517,34 @@ comparisons. The rest of the difference is the lazy table load in the warm reque
 run-to-run variance of a 600ms query. These cases are not in the hosted JVM gate's case list, and the base
 answers them without binding anything, so the remaining cost is one mapped-map lookup per
 declaration-bearing row. Evidence: scratchpad `fx/query-ab-jvm-kc-15-x16.json`, `chain3.log`.
+
+### Attempt273 — construction: validate texts without an encoder per reference (2026-10-12)
+
+Construction of the shard regressed +4.5% wall and CPU. JFR (1ms samples, main thread) on the
+candidate build attributes about 200 samples to declared types: the adapter's
+`buildDeclaredTypes` 68 (`DeclaredTypesReader` 44, `InheritedFieldTypes` 18), the save's
+`collectStrings` 68 (`DeclaredTypeSavePlan.prepare` 46: erased plan 37, structural scopes 19;
+`DeclaredTypeStringIds` 22), `writeTable` 45 and `validate` 23. Three costs were not the
+feature's: `writeTable` allocated a `CharsetEncoder` and an output buffer for every text it
+referenced only to reject an unpaired surrogate (now `requireWellFormedUtf16`, a scan that
+throws the same `MalformedInputException`, also used by `SharedDeclaredTypeTexts` after
+loading), read the finished `graph.types` back to hash it for the binding (now hashed while it
+is written through a `DigestOutputStream`), and built a `LinkedHashMap` of every declared text
+to add its keys to the dictionary set (now added directly). The hosted construction gate also
+loads the saved graph, which no longer reads the table (Attempt271).
+
+ABBA, 5 rounds, `graphite.jar build` of the shard with `-Xmx4g -XX:ActiveProcessorCount=4`,
+medians (the jar measured carries the first two changes):
+
+| metric | base | cand | Δ |
+|---|---|---|---|
+| wall |6.710s|6.984s|+0.274s (+4.1%)|
+| CPU (user+sys) |20.51s|21.42s|+0.91s (+4.5%)|
+| peak RSS |760.7MB|780.9MB|+20.2MB (+2.7%)|
+
+CPU and RSS are within the 5% limits; wall is not at the base, and the remaining
+~200ms is the writer's own work (parsing generic signatures, the structural and erased plans,
+writing and validating a 900KB table), which the construction gate's `wall ≤ base` rule does
+not allow for. Build/save is the lowest priority in the user's order; this is reported, not
+recovered. Evidence: scratchpad `fx/prof-{base,cand}.txt`, `fx/construct-ab-kc-15.json`,
+`chain3.log`.

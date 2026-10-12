@@ -19,6 +19,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.DigestOutputStream
 import java.security.MessageDigest
 import java.util.AbstractMap.SimpleImmutableEntry
 import java.util.HexFormat
@@ -51,7 +52,7 @@ internal object DeclaredTypeStore {
     fun collectStrings(
         table: DeclaredTypeTable, target: MutableSet<String>, maximumVersion: Int = CURRENT_VERSION
     ): DeclaredTypeSavePlan = DeclaredTypeSavePlan.prepare(table, maximumVersion).also { plan ->
-        DeclaredTypeStringIds(table, plan.structural != null, plan.erased != null).collect(target)
+        DeclaredTypeStringIds.collect(table, plan.structural != null, plan.erased != null, target)
     }
 
     /** Advisory optimization only: load still independently requires the verified digest for GTY03–GTY05. */
@@ -96,30 +97,35 @@ internal object DeclaredTypeStore {
         try {
             // Do not retain descriptor/scope indexes through the remaining graph index writes.
             val plan = prepared ?: DeclaredTypeSavePlan.prepare(table, if (strings == null) SHARED_VERSION else maximumVersion)
-            plan.use { writeTable(table, dir, temporary, strings, it) }
+            val digest = plan.use { writeTable(table, dir, temporary, strings, it) }
             try {
                 Files.move(temporary, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING)
             } catch (_: AtomicMoveNotSupportedException) {
                 Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
             }
-            writeBinding(dir, HexFormat.of().formatHex(WireIo.digest(path)))
+            writeBinding(dir, HexFormat.of().formatHex(digest))
         } finally {
             Files.deleteIfExists(temporary)
         }
     }
 
-    private fun writeTable(table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, plan: DeclaredTypeSavePlan) {
+    /** Writes the table to [path] and returns the SHA-256 of the bytes written, which the binding records. */
+    private fun writeTable(
+        table: DeclaredTypeTable, dir: Path, path: Path, shared: StringTable?, plan: DeclaredTypeSavePlan
+    ): ByteArray {
         val structural = plan.structural
         val erased = plan.erased
         val local = if (shared == null) DeclaredTypeStringIds(table) else null
         val strings: (String) -> Int = { value ->
-            Charsets.UTF_8.newEncoder().onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
-                .encode(java.nio.CharBuffer.wrap(value))
+            requireWellFormedUtf16(value)
             if (shared == null) checkNotNull(local)[value] else shared.findId(value).also {
                 require(it >= 0) { "Missing declared text in graph.strings" }
             }
         }
-        DataOutputStream(BufferedOutputStream(Files.newOutputStream(path))).use { out ->
+        // Hashed as it is written: reading the file back for the binding's digest was the
+        // one read of a file this build had just produced.
+        val digest = MessageDigest.getInstance("SHA-256")
+        DataOutputStream(BufferedOutputStream(DigestOutputStream(Files.newOutputStream(path), digest))).use { out ->
             out.writeInt(when {
                 shared == null -> HEADER
                 structural == null -> SHARED_HEADER
@@ -155,6 +161,7 @@ internal object DeclaredTypeStore {
                 out.ids(type.interfaces)
             }
         }
+        return digest.digest()
     }
 
     private fun DataOutputStream.type(
