@@ -20,7 +20,7 @@ env:
   MULTIGRAPH_LARGE_CORPUS_CORRECTNESS_SHA256: c056fe730ca0f84b5d1d02c0f46fe1783edb77f39997aa75d4181adba36ddf4c
   MULTIGRAPH_LARGE_CORPUS_4F_CORRECTNESS_SHA256: 69d71cb6b8f72f5cccd3f3273d0ee699a82ac0bfdcee2aaa72df0dc48110f4e2
   MULTIGRAPH_CORRECTNESS_CONTROLS_SHA256: bdb3a7ef07d124a54bc5f5f4078a76b17887a33cbcd781be46aabb78c076a7bc
-  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: 9325bb12e826714dbb5fc7274548b854334b6e49b3c17478356202621645b499
+  MULTIGRAPH_PRESSURE_PREPARATION_CONTROLS_SHA256: bb1d8948a6b9187d96f93e1230632eee765174d945c9036fca1f78d40e70dfbb
   WRAPPED_QUERY_REFERENCE_SHA: 0b421f8a25800193fd86a7e4aebf72aa9e9d6cc6
   ANCHOR_BOOTSTRAP_COMPARATOR_SHA256: 958523660e5a875505d591534745e7b4cc3e0b7e1cb45145fe069086f716e7bd
   LARGE_CORPUS_LEGACY_HARNESS_SHA256: 66feedea8a6d8087e80c571fa74204a237bc46c5b508735c7150ad82cf74dd93
@@ -53,10 +53,14 @@ env:
 
 jobs:
   candidate-gate-tests:
-    name: candidate-gate-tests
+    name: candidate-gate-tests (${{ matrix.group }})
     runs-on: ubuntu-latest
-    # Full oracle and audit protocol coverage exceeds the former five-minute budget.
+    # Keep every control command while avoiding the measured serial 15-minute timeout.
     timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        group: [controls, jvm-handoff, core-protocol, assembly, normalization]
 
     steps:
     - name: Checkout PR gate tests
@@ -67,110 +71,146 @@ jobs:
         persist-credentials: false
 
     - name: Test exact JVM source rules against current tracked sources
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_source_rules.py'
 
     - name: Smoke checkpoint producer-to-consumer handoff
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_checkpoint_smoke.py' -v
 
     - name: Test candidate benchmark gate logic
+      if: ${{ matrix.group == 'controls' }}
       run: node --test candidate/.github/scripts/benchmark-*.test.mjs
 
     - name: Test continuous multi-graph pressure controls
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_multigraph_pressure.py'
 
     - name: Test legal multiset response validation without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_native_legal_response.py'
 
     - name: Test exact checkpoint transport and rejection controls
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_checkpoint.py'
 
     - name: Test producer DAG dispatch and exact writer roles
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_producer_workflow.py'
 
     - name: Test independent producer arm transport
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_producer_arm_checkpoint.py'
 
     - name: Test common producer arm merge and consumer handoff
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_producer_merge.py'
 
     - name: Test complete core checkpoint chain restoration
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_restore_chain.py'
 
     - name: Test complete consumer checkpoint chain restoration
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_consumer_chain.py'
 
     - name: Test complete worker checkpoint chain restoration
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_pressure_worker_chain.py'
 
     - name: Test native pressure plan preparation without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_prepare_native_pressure_plan.py'
 
     - name: Test independently audited JVM pressure plan preparation without child processes
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_prepare_jvm_pressure_plan.py'
 
     - name: Test pending JVM oracle checkpoint and full-core join handoff
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pending_handoff.py'
 
     - name: Test Native loading boundaries in existing query processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_loading.py'
 
     - name: Test prepared pressure orchestration without starting servers
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_prepared_native_pressure.py'
 
     - name: Test six-cell construction and independent audit without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_real64_construction.py'
 
     - name: Test zero-query loading bounds and owned cleanup without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_real64_loading.py'
 
     - name: Test pending lifecycle joins and lossless transport without benchmarks
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_real64_lifecycle_split.py'
 
     - name: Test JVM pressure oracles from saved node and type tables
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_oracles.py'
 
     - name: Test original JVM pressure node and edge decoding
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_inputs.py'
 
     - name: Test independent JVM pressure predicates and projections
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_derivation.py'
 
     - name: Test JVM DISTINCT groups and whole-row representatives
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_pressure_distinct.py'
 
     - name: Test bound JVM primitive conversion receipts
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_primitive_facts.py'
 
     - name: Test JVM raw-oracle orchestration without child processes
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_derive_jvm_pressure_oracles.py'
 
     - name: Test JVM full-response correctness execution and audit without child processes
+      if: ${{ matrix.group == 'jvm-handoff' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_jvm_query_correctness.py'
 
     - name: Test exact-revision native artifact production without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_produce_native_pressure_artifacts.py'
 
     - name: Test independent native artifact audit without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_audit_native_pressure_artifacts.py'
 
     - name: Test portable native query expectations without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_native_portable_oracles.py'
 
     - name: Test native correctness execution and independent audit without child processes
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_native_query_correctness.py'
 
     - name: Test native producer evidence assembly without child processes
+      if: ${{ matrix.group == 'assembly' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_assemble_native_pressure_producers.py'
 
     - name: Test native complete core proof protocol
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_native_core_equivalence.py'
 
     - name: Test native core worker input reuse and mutation rejection
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -B -m unittest discover -s candidate/.github/scripts -p 'test_native_core_worker_inputs.py'
     - name: Test portable oracle and fresh response normalization without child processes
+      if: ${{ matrix.group == 'normalization' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_normalize_native_pressure_oracles.py'
 
     - name: Test independent native core proof package without child processes
+      if: ${{ matrix.group == 'core-protocol' }}
       run: >-
         python3 -m unittest discover
         -s candidate/.github/scripts/native_core_proof
@@ -178,18 +218,23 @@ jobs:
         -p '*_test.py'
 
     - name: Test fresh native dictionary export and audit without child processes
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_export_native_core_strings.py'
 
     - name: Test native bootstrap marker export protocol
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_export_native_core_marker.py'
 
     - name: Test native formatter source binding protocol
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_bind_native_core_formatter.py'
 
     - name: Test production formatter execution protocol
+      if: ${{ matrix.group == 'core-protocol' }}
       run: python3 -m unittest discover -s candidate/.github/scripts -p 'test_run_native_formatter_tests.py'
 
     - name: Test native multi-graph snapshot harness
+      if: ${{ matrix.group == 'controls' }}
       run: python3 -m unittest discover -s candidate/backend/bench -p 'test_snapshot*.py'
 
   build-explore-jmh:

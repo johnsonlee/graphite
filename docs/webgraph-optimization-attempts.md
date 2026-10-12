@@ -20274,3 +20274,58 @@ historical257; the compare-only264 preparation omits actual saving and cannot
 close that producer boundary. Full acceptance remains open, and no unbudgeted
 complete CI is launched. Keep the optimization based on its matched real64
 compiler benefit and complete all35 lifecycle evidence.
+
+### Attempt268 — parallelize the complete fast control gate (2026-10-12)
+
+The current266 draft workflow38185684247 did not complete its fast gate:
+candidate-gate-tests ran23:49:00→00:04:15UTC and was cancelled at the15-minute
+job budget. This was already terminal before267 was pushed; do not attribute
+this cancellation to superseding pushes or count it as passed. The assembly
+module took369s, JVM plan preparation142s and pending handoff108s. Normalization
+was interrupted after25s; six following test steps were skipped. Historical
+successful9–12-minute fast runs therefore do not establish current completion.
+
+Split the same candidate-gate-tests job into five independent matrix groups,
+with fail-fast:false and the original15-minute per-group cap. Checkout remains
+unconditional and exact-head pinned. All41 original run commands are preserved
+byte-for-byte and assigned exactly once; no test, source check, failure guard
+or expensive non-draft workflow requirement is removed. Existing needs and
+CANDIDATE_GATE_TEST_JOB consume the complete matrix aggregate. Any non-success
+aggregate still fails acceptance; draft still explicitly fails the required
+benchmark gate because complete acceptance has not run.
+
+| Parallel control group | Observed step-time planning sum |
+|---|---:|
+| controls |102s|
+| jvm-handoff |295s|
+| core-protocol |154s|
+| assembly |369s|
+| normalization |84s|
+
+These are sums of the actual assigned steps, not serial elapsed time divided
+by five. Use current successful266 step durations where available; use the
+last complete f642 run38182122678 for interrupted/unreached steps. That run's
+normalization took84s and six tail steps35s. Direct tests/helpers in those
+seven scopes are unchanged, but six transitive closures include changed
+helpers, so the fallback is approximate. The planning critical group is369s
+before setup, queueing, runner contention and uncertainty; this is not a
+measured parallel duration or a complete-CI estimate.
+
+The focused contract suite passes4 tests in69ms; the integrated Node benchmark
+suite passes238 tests in16.951s. Contracts preserve the full command inventory
+and unique routing, exact checkout, independent group execution, existing
+required dependency and actual acceptance-shell rejection for failure,
+cancelled, skipped and missing matrix results. Root separately compared all41
+original command blocks and verified every other workflow job byte-for-byte
+unchanged. All194 preparation pins, structural actionlint and diff checks pass.
+No unchanged Python suite or product benchmark is rerun for this scheduling
+change. Keep the repair; first hosted execution is still required to establish
+parallel completion and elapsed time. Full multi-graph acceptance remains open.
+
+Base a680cb7d; only workflow grouping, its contract test and the corresponding
+control manifest binding change. Evidence:
+/tmp/graphite-draft266-gate-job-raw.json,
+/tmp/graphite-draft266-gate-step-timings.json,
+/tmp/graphite-attempt268-fastgate-timings/report.json,
+/tmp/graphite-attempt268-group-budget.json,
+/tmp/graphite-attempt268-{focused.log,workflow-tests.log,integration-review.json}.
