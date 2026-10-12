@@ -20592,3 +20592,32 @@ allocation on a heap that may hold the query's rows; the digest now streams thro
 `WireIo.digest`. The source profile moves to `streamed-digest-...` and the controls are
 re-pinned. The job itself needs a decision outside this PR's code: an 8g correctness server
 (within the heap ceiling, both arms alike) or streaming aggregation in the Kotlin engine.
+
+### Attempt277 — an 8g JVM correctness server on the 64 real shards (2026-10-12)
+
+Not an optimization: the `rust-jvm-correctness` failure of Attempt276 reproduced on the
+hosted corpus itself. The `shared-fixture64` artifact of run 38206777955 (64 distinct real
+shards, 9.8GB) served by `graphite.jar` with the harness's exact arguments (`-Xmx4g`,
+`-XX:ActiveProcessorCount=4`, MAPPED, 4 concurrent) answers `feature-nodes` with
+`{"error":"Java heap space","code":"cypher_query_failed"}` after 12.2s, and again after
+9.0s on a second request; `feature-methods` (4.5s) and `slow-valueMiss` pass between them.
+The 63-copy check of Attempt276 passed because three shards copied 21 times hold fewer
+distinct `FieldNode`/`ParameterNode`/`ReturnNode` bindings than 64 distinct shards do; the
+query's `UNION ALL` of three label scans with `count(*)` materializes every binding before
+grouping, on the base engine as on the candidate. At `-Xmx8g`, the heap ceiling of
+`CLAUDE.md`, every request passes on both arms:
+
+| server | heap | ready | ready RSS | feature-nodes | feature-methods | feature-nodes (2nd) | peak RSS |
+|---|---|---|---|---|---|---|---|
+| candidate 6b581ca | 4g | 21.8s | 3.41GB | heap space (12.2s) | 4.5s | heap space (9.0s) | 5.39GB |
+| candidate 6b581ca | 8g | 19.6s | 3.45GB | 25.1s | 4.7s | 17.0s | 9.72GB |
+| base 4f2ccf3 | 8g | 16.1s | 3.46GB | 19.9s | 2.6s | 9.5s | 9.65GB |
+
+The correctness server's heap moves to `-Xmx8g` in `jvm_query_correctness.py` for both arms
+(the job runs the candidate's script against the base server too, so the arms stay matched);
+the job measures nothing, so no acceptance rule changes. Peak RSS 9.7GB fits the 16GB hosted
+runner. The two scripts are pinned by the preparation controls manifest, which the workflow
+pins in turn, so both are re-pinned. 17 correctness tests and 23 plan tests pass. The
+candidate's `feature-nodes` is slower than the base's here (25.1s against 19.9s cold, 17.0s
+against 9.5s warm, one sample each on a loaded 4-core box); that is the JVM feature query
+cost Attempt272 reduced and not yet recovered, measured separately from this job.

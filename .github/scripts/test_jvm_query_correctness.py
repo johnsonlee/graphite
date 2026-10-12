@@ -171,7 +171,7 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         self.assertEqual(64*16, result['readiness']['totals']['nodes'])
         plan = p.common.read(self.out/'plan.json')
         self.assertEqual(8, sum(p.common.jvm_oracle_value(c['oracleByArm']['B'], pins=plan['pins'])['schema'] == p.derive.distinct.SCHEMA for c in plan['cases']))
-        self.assertEqual([str(self.java), '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', str(self.jar),
+        self.assertEqual([str(self.java), '-Xmx8g', '-XX:ActiveProcessorCount=4', '-cp', str(self.jar),
                           'io.johnsonlee.graphite.cli.MainKt', 'serve'], plan['argv'][:7])
         for case in result['cases']:
             self.assertEqual(self.base.bodies[case['case']], Path(case['body']['path']).read_bytes())

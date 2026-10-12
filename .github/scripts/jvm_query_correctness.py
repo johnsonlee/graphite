@@ -118,7 +118,7 @@ def _prepare_evidence(root, output, port, evidence):
             'readiness': {'expected': lifecycle.persisted_readiness(fixture)},
             'limits': {'requestSeconds': 240, 'bodyBytes': 64*1024*1024, 'readinessSeconds': 900},
             'performanceAcceptance': False, 'completeSemanticEquivalence': False}
-    plan['argv'] = [raw_plan['java'], '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', jar,
+    plan['argv'] = [raw_plan['java'], '-Xmx8g', '-XX:ActiveProcessorCount=4', '-cp', jar,
                     'io.johnsonlee.graphite.cli.MainKt', 'serve', '--data', plan['data'], '--port', str(port),
                     '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '240000',
                     *common.graph_arguments(graphs)]
