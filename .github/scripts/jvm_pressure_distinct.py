@@ -176,7 +176,7 @@ class CompiledGroups:
             identity = model.key(semantic)
             need(identity not in identities, 'unique DISTINCT semantic group'); identities.add(identity)
             ids = group['graphIds']
-            need(type(ids) is list and ids and all(type(g) is str for g in ids) and
+            need(type(ids) is list and ids and all(type(g) is str and g for g in ids) and
                  ids == sorted(set(ids)) and set(ids) <= set(case['targetGraphIds']), 'complete group provenance')
             variants = group['variants']; need(type(variants) is list, 'observed whole-row variants')
             # An actual nonfinite group remains counted, even though Gson cannot emit it.
@@ -186,8 +186,9 @@ class CompiledGroups:
             seen = set()
             for visible in variants:
                 need(type(visible) is dict and '$metadata' not in visible, 'visible whole-row variant')
-                row = model.projected_row(visible, ids)
-                need(model.typed(model.gson_value(visible)) == model.typed(visible), 'canonical Gson variant')
+                # These are already projected variants. Validate their canonical
+                # form below; never omit nulls or copy nested values to repair it.
+                row = {**visible, '$metadata': {'graphIds': ids}}
                 model.validate_row(row, case['columns'], case['targetGraphIds'], case['family'])
                 key = model.key(row)
                 need(key not in seen, 'unique whole-row variants'); seen.add(key)

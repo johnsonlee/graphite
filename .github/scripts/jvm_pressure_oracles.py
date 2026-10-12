@@ -595,9 +595,30 @@ def gson_value(value):
     return value
 
 
+def _validate_canonical_gson(value):
+    """Validate an already projected tree without copying or tagging it."""
+    if value is None or type(value) in (bool, int):
+        return
+    if type(value) is str:
+        for offset in range(0, len(value), 65536):
+            value[offset:offset + 65536].encode('utf-8', errors='strict')
+        return
+    if type(value) is float:
+        need(math.isfinite(value), 'nonfinite JVM JSON scalar needs separate serializer authority')
+        return
+    if type(value) is list:
+        for item in value: _validate_canonical_gson(item)
+        return
+    need(type(value) is dict and all(type(k) is str for k in value), 'JSON object with string keys')
+    for name, item in value.items():
+        need(item is not None, 'JVM map nulls must be omitted, not substituted')
+        _validate_canonical_gson(name)
+        _validate_canonical_gson(item)
+
+
 def validate_row(row, columns, targets, family):
     need(type(row) is dict and set(row) <= set(columns) | {'$metadata'}, 'complete projected column keys')
-    need(typed(gson_value(row)) == typed(row), 'JVM map nulls must be omitted, not substituted')
+    _validate_canonical_gson(row)
     metadata = row.get('$metadata')
     need(type(metadata) is dict and set(metadata) == {'graphIds'}, 'exact JVM row provenance object')
     ids = metadata['graphIds']
@@ -607,7 +628,6 @@ def validate_row(row, columns, targets, family):
         need(type(row.get('graphId')) is str and ids == [row['graphId']], 'projected graph ID and provenance agree')
     if family == 'graph-routing':
         need(len(ids) == 1, 'non-distinct routed row has one source graph')
-    typed(row)
 
 
 def projected_row(values, graph_ids):

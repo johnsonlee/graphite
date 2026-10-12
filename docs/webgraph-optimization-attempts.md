@@ -20160,3 +20160,117 @@ preparation-review.json,root-prelaunch-review.json,supervisor.json},
 /tmp/graphite-attempt266-integration-review.json,
 /tmp/graphite-attempt266-schema-review.json and original focused/integration
 test logs under /tmp/graphite-attempt266-*.
+
+### Attempt267 — validate canonical JVM projections without repeated copies (2026-10-12)
+
+The previous all35 retained-validator diagnostic stopped at its300s deadline:
+21 completed semantic constructors consumed180.628s, while reading, SHA,
+parsing, scalar checks, bindings and object release also remained on the path.
+Do not attribute every between-constructor interval to disk I/O or extrapolate
+a complete-time claim from the partial run. Preserve that failure.
+
+Hypothesis: already projected DISTINCT variants should be checked in place,
+without repeated Gson projection copies and tagged comparison trees.
+CompiledGroups now forms only a temporary shallow row with the already checked
+provenance, validates canonical values and computes the original exact encoded
+key. validate_row checks exact JSON types, finite floats, map-null omission and
+list-null preservation recursively without constructing a second tree. Original
+column/provenance/routing/full-projection checks, semantic group validation,
+encoded index keys and collision-capacity matching remain intact. The compiled
+index owns strings and tuples, not source-tree aliases. Public projection and
+key helpers are unchanged.
+
+Strict UTF-8 is now rejected earlier by the standalone row checker; the old
+whole compiler/raw identity and final canonical response paths already reject
+invalid surrogate text. Do not claim standalone acceptance is identical for
+that invalid input. Signed zero remains distinct through the unchanged key;
+cycles and excessive nesting still fail closed, without promising an identical
+recursion cutoff or error order.
+
+Two focused modules pass54 tests in0.901s. Tests compare the former index
+construction for all eight wrapped cases, collisions, capacity, exact types,
+null behavior and provenance; assert absence of projection/tagged-tree calls;
+and verify source mutation cannot alter the compiled index. The original test
+syntax error and subsequent correction are preserved in local logs. An
+independent read-only review found no new issue. Tiny fixtures establish
+correctness only, never performance.
+
+Integrated259 Python tests pass in156.491s,236 Node workflow tests pass in17.142s;194 preparation pins, current helper source bindings, structural actionlint and git diff checks pass. Baseline3b7ed7b0; candidate patch SHA0be7cc6e583a607268488995da1265174255c2bd3565c331c5d70e271b69ed9f.
+
+Before another all35 run, use a fixed AB comparison of the largest actual64-graph
+case under a240s complete work budget plus30s cleanup, with a12GiB sampled RSS
+stop. This isolates the changed path and measures full index construction,
+complete original response validation and terminal input checks. It preserves
+the historical writer/source limitations and is not current-writer, hosted,
+server query p50/p95 or complete regression acceptance.
+
+The fixed AB pair completes in144.781s including both workers and cleanup.
+Both full encoded indices are identical:1,376,800 entries/capacity links,
+519,239,727 streamed bytes, SHA
+1695c1ed9d2164a55ca8c53ce2671ef6de185dcabc3ae964d50796a68d4da694.
+Both complete250-row bodies, source/input final identities and empty process
+groups pass. Baseline3b7ed7b0 versus candidate267 on local macOS/Python3.14.7,
+same historical complete1,517,383,837-byte universe and73,593-byte HTTP body;
+actual requested and target scope are64 graphs. No build, server, transfer or
+new derivation occurs. Source authority remains separate from index equality;
+the original HTTP run's closure failure remains failed.
+
+| Validator metric | Parent | Candidate | Absolute change |
+|---|---:|---:|---:|
+| Worker wall, including identity/streamed-index checks |78.048s|64.896s|−13.152s|
+| Worker CPU, user plus system |77.827s|64.715s|−13.112s|
+| Semantic group constructor |47.958s|34.778s|−13.181s|
+| Peak process RSS |7,279,706,112B|7,281,688,576B|+1,982,464B|
+
+Retain this verified incremental compiler benefit. One fixed-order pair has no
+repeatability or accepted-main product-performance claim; memory is essentially
+unchanged and the raw read/parse/scalar boundary still takes about25.65s.
+
+Command: python3 -B
+/tmp/graphite-jvm-group-compiler-pair-prep-1/execute.py execute.
+Evidence: that preparation's plan, source snapshots, smoke logs,
+root-prelaunch-review.json, supervisor.json and root-result-review.json;
+/private/tmp/graphite-jvm-group-compiler-pair-1/{baseline,candidate} execution and
+stage receipts. Plan SHA
+8fc5246748e9a99e0c5f5a15d8178170baed2cca087e6005e9dad3f9bcf12c48.
+
+The measured constructor reduction now justifies one all35 retained-validator
+follow-up with the original300s work/30s cleanup/12GiB sampled-stop budget.
+The earlier21 completed constructors consumed180.628s; applying the measured
+ratio suggests about50s saved, but this does not guarantee remaining reads,
+body checks and final identities fit. The bounded complete run resolves that
+uncertainty without extending the timeout. Original266 failure remains intact.
+
+The actual all35 follow-up passes in267.099s including cleanup (worker265.694s,
+CPU264.878s, peak RSS9,950,347,264 bytes). All35 original definitions compile;
+all35 indices remain retained together through all35 complete historical body
+checks and final source/input identity verification. Body references and row
+counts match the original observations; the current common wrapper returns
+canonicalSha256/rows, while the original semantic validator returned additional
+policy/total fields. Root caught and corrected a post-review assertion that
+compared these different API shapes; the original diagnostic is unchanged.
+The leader exits0, is reaped and leaves no group members. Original target scope
+remains64 graphs for25 cases and2 for10 cases. This closes the current
+historical-input retained-validator lifecycle diagnostic within its300s budget.
+The failed266 run is not turned into a passed baseline, and no complete-time
+improvement against that partial run is claimed.
+
+Command: python3 -B
+/tmp/graphite-jvm-all35-raw-ref-267-prep-1/execute.py execute.
+Plan SHA ce8ded0ab4ec9cc2ad13228675bcab5381df215c8d597434cf5937fffc76d2ef.
+Its original266 worker and supervisor bytes are unchanged; current229 source
+files and236 controls are pinned, with actual35 API and stop smokes passing.
+Evidence: that preparation's plan, root-static-review.json,
+root-prelaunch-review.json, supervisor.json and root-result-review.json;
+/private/tmp/graphite-jvm-all35-raw-ref-267-1/{execution.json,stages.jsonl};
+/tmp/graphite-attempt267-{integration-review.json,integration-tests.log,
+workflow-tests.log,focused-final.log}.
+
+Remaining boundaries: this does not prove full source-model collector plus
+serialization memory, combined Python/server capacity, Linux16GiB fit, fresh
+current-writer correctness, server query p50/p95, accepted-main resource gates
+or complete hosted workflow duration. Existing raw producer evidence is still
+historical257; the compare-only264 preparation omits actual saving and cannot
+close that producer boundary. Full acceptance remains open, and no unbudgeted
+complete CI is launched. Keep the optimization based on its matched real64
+compiler benefit and complete all35 lifecycle evidence.

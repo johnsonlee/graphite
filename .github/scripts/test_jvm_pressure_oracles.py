@@ -425,6 +425,90 @@ class JvmDistinctV2Tests(unittest.TestCase):
 
     def row(self, value, ids=None): return oracle.projected_row(value,ids or [self.g])
 
+    def old_variant_index(self, groups, case):
+        """Original projection/check/key path, retained only as a correctness reference."""
+        index = {}
+        for group_id, group in enumerate(groups):
+            for visible in group['variants']:
+                row = oracle.projected_row(visible, group['graphIds'])
+                oracle.need(oracle.typed(oracle.gson_value(visible)) == oracle.typed(visible), 'canonical Gson variant')
+                oracle.need(type(row) is dict and set(row) <= set(case['columns']) | {'$metadata'}, 'columns')
+                oracle.need(oracle.typed(oracle.gson_value(row)) == oracle.typed(row), 'canonical row')
+                ids = row['$metadata']['graphIds']
+                oracle.need(ids and ids == sorted(set(ids)) and set(ids) <= set(case['targetGraphIds']), 'provenance')
+                oracle.typed(row)
+                index.setdefault(oracle.key(row), []).append(group_id)
+        return {key: tuple(ids) for key, ids in index.items()}
+
+    def test_compiled_variants_keep_original_index_without_projection_copies(self):
+        groups = self.f.groups((self.f.visible(callerMethod=1, calleeMethod={}), self.g),
+                               (self.f.visible(callerMethod=self.f.f(1), calleeMethod={}), self.h),
+                               (self.f.visible(callerMethod=1, calleeMethod={'x': None}), self.g),
+                               (self.f.visible(callerMethod=self.f.f(-0.0)), self.g),
+                               (self.f.visible(callerMethod=self.f.f(0.0)), self.g))
+        frozen = oracle.key(groups)
+        for case in oracle.cases():
+            if case['family'] != 'wrapped-discovery': continue
+            expected = self.old_variant_index(groups, case)
+            with self.subTest(case=case['id']), \
+                    patch.object(oracle, 'projected_row', side_effect=AssertionError('redundant projection')), \
+                    patch.object(oracle, 'gson_value', side_effect=AssertionError('redundant Gson tree')):
+                compiled = self.d.CompiledGroups(groups, case)
+            self.assertEqual(expected, dict(compiled.index))
+            self.assertEqual(len(groups), compiled.total)
+            self.assertEqual(frozen, oracle.key(groups))
+            for group in groups:
+                for variant in group['variants']:
+                    compiled.validate([self.row(variant, group['graphIds'])])
+        # The index owns encoded strings, not aliases into the source tree.
+        groups[0]['variants'][0]['callerMethod'] = 'changed'
+        self.assertEqual(expected, dict(compiled.index))
+
+    def test_canonical_variant_rejects_nested_map_null_but_keeps_list_null_and_types(self):
+        base = self.f.groups((self.f.visible(), self.g))[0]['variants'][0]
+        variants = [dict(base, callerMethod=[None, True, 1, 1.0, -0.0, {'unicode': 'é😀'}]),
+                    dict(base, callerMethod={'nested': {'bad': None}}),
+                    dict(base, callerMethod={'nested': [float('inf')]}),
+                    dict(base, callerMethod=(1,)), dict(base, callerMethod={1: 'bad'})]
+        for number, visible in enumerate(variants):
+            group = self.f.groups((self.f.visible(), self.g))[0]
+            group['variants'] = [visible]
+            try: expected = self.old_variant_index([group], self.case)
+            except ValueError:
+                self.assertNotEqual(0, number)
+                with self.subTest(visible=visible), self.assertRaises(ValueError):
+                    self.d.CompiledGroups([group], self.case)
+            else:
+                self.assertEqual(0, number)
+                self.assertEqual(expected, dict(self.d.CompiledGroups([group], self.case).index))
+        for ids in ([], ['', self.g], [self.g, self.g], [self.h, self.g], ['foreign'], [1], (self.g,)):
+            group = self.f.groups((self.f.visible(), self.g))[0]; group['graphIds'] = ids
+            with self.subTest(ids=ids), self.assertRaises(ValueError): self.d.CompiledGroups([group], self.case)
+
+    def test_canonical_row_validation_has_no_projection_or_tagged_tree_and_stays_strict(self):
+        row = self.row(self.f.visible(callerMethod=[None, True, 1, 1.0, -0.0, {'x': 'é😀'}]))
+        before = oracle.key(row)
+        with patch.object(oracle, 'gson_value', side_effect=AssertionError('Gson copy')), \
+                patch.object(oracle, 'typed', side_effect=AssertionError('tagged copy')):
+            oracle.validate_row(row, self.case['columns'], self.case['targetGraphIds'], self.case['family'])
+        self.assertEqual(before, oracle.key(row))
+        for mutation in ('null', 'surrogate', 'surrogate-key', 'metadata', 'metadata-extra', 'foreign', 'extra-column'):
+            bad = copy.deepcopy(row)
+            if mutation == 'null': bad['callerMethod'] = {'x': None}
+            elif mutation == 'surrogate': bad['callerMethod'] = '\ud800'
+            elif mutation == 'surrogate-key': bad['callerMethod'] = {'\udfff': 1}
+            elif mutation == 'metadata': bad['$metadata'] = []
+            elif mutation == 'metadata-extra': bad['$metadata']['extra'] = 1
+            elif mutation == 'foreign': bad['$metadata']['graphIds'] = ['foreign']
+            else: bad['extra'] = 1
+            with self.subTest(mutation=mutation), self.assertRaises((ValueError, UnicodeEncodeError)):
+                oracle.validate_row(bad, self.case['columns'], self.case['targetGraphIds'], self.case['family'])
+        cycle = []; cycle.append(cycle)
+        deep = None
+        for _ in range(2000): deep = [deep]
+        for value in (cycle, deep):
+            with self.assertRaises(RecursionError): oracle._validate_canonical_gson(value)
+
     def test_mixed_numeric_representatives_each_allowed_but_group_capacity_is_one(self):
         groups=self.f.groups((self.f.visible(),self.g),(self.f.visible(callerMethod=self.f.f(1)),self.h))
         checker=oracle.CompiledLegalLimitOracle(self.universe(groups),self.case)
