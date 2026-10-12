@@ -263,7 +263,8 @@ impl StringTable {
     /// exactly when their texts are, and [`Self::index_of`] finds every text it holds.
     pub fn canonical_dictionary(&self) -> bool {
         *self.backing.canonical.get_or_init(|| {
-            (1..self.len()).all(|i| java_cmp(self.get(i - 1), self.get(i)) == std::cmp::Ordering::Less)
+            (1..self.len())
+                .all(|i| java_cmp(self.get(i - 1), self.get(i)) == std::cmp::Ordering::Less)
         })
     }
 

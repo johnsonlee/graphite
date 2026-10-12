@@ -449,7 +449,12 @@ impl Graph {
 
     pub fn declared_key_partitions(&self, tag: u8) -> Option<&[DeclaredKeyPartition; 2]> {
         let index = usize::from(tag.checked_sub(crate::node::TAG_FIELD_NODE)?);
-        self.declared().as_ref().ok()?.partitions.get(index)?.as_ref()
+        self.declared()
+            .as_ref()
+            .ok()?
+            .partitions
+            .get(index)?
+            .as_ref()
     }
 
     #[cfg(test)]
@@ -1055,7 +1060,10 @@ mod declared_key_tests {
         let Some(graph) = fixture() else {
             return;
         };
-        assert!(graph.declared.get().is_none(), "load reads no declared types");
+        assert!(
+            graph.declared.get().is_none(),
+            "load reads no declared types"
+        );
         assert!(graph.declared_types().is_some());
         assert!(graph.declared_types_error().is_none());
         let fresh = fixture().unwrap();

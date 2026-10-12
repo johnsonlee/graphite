@@ -368,7 +368,9 @@ impl IdKeys<'_> {
         hash.finish()
     }
     fn equal<const N: usize>(&self, a: [usize; N], b: [usize; N]) -> bool {
-        (0..N).all(|position| self.canonical_id(position, a[position]) == self.canonical_id(position, b[position]))
+        (0..N).all(|position| {
+            self.canonical_id(position, a[position]) == self.canonical_id(position, b[position])
+        })
     }
 }
 
@@ -777,7 +779,9 @@ impl CompactTable {
         let fingerprint = self.id_fingerprint([id], false);
         self.classes
             .positions
-            .find(fingerprint, |&index| self.classes.entries[index].0.ids == [id])
+            .find(fingerprint, |&index| {
+                self.classes.entries[index].0.ids == [id]
+            })
             .map(|&index| &self.classes.entries[index].1)
     }
     fn lookup<'a, const N: usize>(&'a self, values: [&'a str; N], method: bool) -> Lookup<'a, N> {
@@ -1252,7 +1256,12 @@ impl DeclaredTypes {
     }
     /// The declared type of a field the graph spells by string IDs: its class, name and
     /// Java type name (`int[]`, `java.util.List`), as a `FieldNode` carries them.
-    pub fn field_type_by_ids(&self, owner: usize, name: usize, type_name: usize) -> Option<Option<usize>> {
+    pub fn field_type_by_ids(
+        &self,
+        owner: usize,
+        name: usize,
+        type_name: usize,
+    ) -> Option<Option<usize>> {
         match &self.storage {
             Storage::Compact(t) if t.shared_ids && t.descriptorless => {
                 let Some(raw) = t.raw_row_of_type_name(type_name) else {
@@ -1320,7 +1329,8 @@ impl DeclaredTypes {
         match &self.storage {
             Storage::Compact(t) => {
                 let m = if t.shared_ids {
-                    let [owner, name, signature] = t.ids_of_texts([owner, name, descriptor], true)?;
+                    let [owner, name, signature] =
+                        t.ids_of_texts([owner, name, descriptor], true)?;
                     t.method_by_ids(owner, name, signature)?
                 } else {
                     t.methods.get(&t.lookup([owner, name, descriptor], true))?
