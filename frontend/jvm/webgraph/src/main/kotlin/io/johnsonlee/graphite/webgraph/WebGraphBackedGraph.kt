@@ -37,7 +37,7 @@ internal class WebGraphBackedGraph(
     private val classOverviewProvider: (Int) -> ClassOverview?,
     override val resources: ResourceAccessor,
     private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
-    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY)
 ) : Graph {
 
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
@@ -54,7 +54,7 @@ internal class WebGraphBackedGraph(
         BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
     }
 
-    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable.value
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 

@@ -1,6 +1,5 @@
 //! Assembled persisted graph: nodes, edges, metadata, strings.
 
-use crate::buffered::{FileRange, ReadRange, ReadWindow};
 use crate::bvgraph::{BvError, BvGraph};
 use crate::container::Bytes;
 use crate::io::{
@@ -235,11 +234,11 @@ pub struct Graph {
     pub metadata: Metadata,
     pub class_overview: Option<ClassOverview>,
     pub resources: Option<Resources>,
-    /// Optional, deduplicated declaration types; never changes erased identities.
-    declared_types: Option<crate::types::DeclaredTypes>,
-    // Field/Parameter/Return, each [unbound, bound]. Only ascending ID lists have
-    // summaries: replacing an unsorted walk by first representatives changes order.
-    declared_key_partitions: [Option<[DeclaredKeyPartition; 2]>; 3],
+    /// The declaration types and the key-set summaries over them, read on first use: the
+    /// table is query-only state, and reading, binding and validating it before readiness
+    /// charged every graph's load for declarations no request had asked for yet. The load
+    /// still refuses a `graph.types` that is not the file `forward.properties` binds.
+    declared: std::sync::OnceLock<Result<DeclaredState, crate::types::TypeError>>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
     /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
@@ -259,22 +258,15 @@ impl Graph {
         let dir = path.to_path_buf();
         let src = GraphSource::open(path)?;
         let io = |(path, e)| GraphError::Io(path, e);
-        let shared_strings = crate::types::DeclaredTypes::needs_shared_strings(&src)?;
         // Parallel-ish: strings and bvgraph are the heavy ones.
         let (strings, bv) = rayon::join(
-            || {
-                if shared_strings {
-                    StringTable::load_for_declared_types(&src)
-                } else {
-                    StringTable::load(&src)
-                }
-            },
+            || StringTable::load(&src),
             || BvGraph::load(&src, "forward"),
         );
         let strings = strings?;
         let bv = bv?;
 
-        let (nodedata, summary_data) = src.require_buffered("graph.nodedata").map_err(io)?;
+        let nodedata = src.require("graph.nodedata").map_err(io)?;
         if nodedata.len() < 8 {
             return Err(GraphError::BadHeader("graph.nodedata"));
         }
@@ -285,8 +277,7 @@ impl Graph {
         }
         let node_count = read_i32_at(&nodedata, 4).max(0) as usize;
 
-        let (node_offsets, summary_offsets) =
-            src.require_buffered("graph.nodeoffsets").map_err(io)?;
+        let node_offsets = src.require("graph.nodeoffsets").map_err(io)?;
         check_header(read_i32_at(&node_offsets, 0), MAGIC_NODEOFFSETS)
             .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
@@ -344,7 +335,7 @@ impl Graph {
             })
             .unwrap_or_default();
 
-        let declared_types = crate::types::DeclaredTypes::load_with_strings(&src, &strings)?;
+        crate::types::DeclaredTypes::verify_binding(&src)?;
         let mut graph = Graph {
             dir,
             node_version,
@@ -360,8 +351,7 @@ impl Graph {
             metadata,
             class_overview,
             resources,
-            declared_types,
-            declared_key_partitions: [None; 3],
+            declared: std::sync::OnceLock::new(),
             call_site_index,
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
@@ -369,9 +359,6 @@ impl Graph {
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
         };
-        // New load work, completed before readiness: bind declaration-bearing
-        // records once. The fixed-size summaries retain no per-node membership.
-        graph.load_declared_key_partitions(summary_data, summary_offsets)?;
         if graph.call_site_index.is_none() && graph.count_by_tag(TAG_CALL_SITE_NODE) > 0 {
             // No persisted index: build the same structure in memory, as the Kotlin
             // server does for a graph written before the index existed.
@@ -407,8 +394,28 @@ impl Graph {
         self.node_version
     }
 
+    /// The declaration state, read on first use. A table that fails to read is reported
+    /// once and absent from then on; [`Self::declared_types_error`] keeps the reason.
+    fn declared(&self) -> &Result<DeclaredState, crate::types::TypeError> {
+        self.declared.get_or_init(|| {
+            let state = DeclaredState::read(self);
+            if let Err(error) = &state {
+                eprintln!(
+                    "{}: declared types unavailable: {error}",
+                    self.dir.display()
+                );
+            }
+            state
+        })
+    }
+
     pub fn declared_types(&self) -> Option<&crate::types::DeclaredTypes> {
-        self.declared_types.as_ref()
+        self.declared().as_ref().ok()?.table.as_ref()
+    }
+
+    /// Why [`Self::declared_types`] is absent although the graph binds a table.
+    pub fn declared_types_error(&self) -> Option<&crate::types::TypeError> {
+        self.declared().as_ref().err()
     }
 
     /// Mutations cannot leave derived key partitions stale, including unwinding
@@ -417,63 +424,47 @@ impl Graph {
         &mut self,
         update: impl FnOnce(&mut Option<crate::types::MutableDeclaredTypes>),
     ) {
-        self.declared_key_partitions = [None; 3];
-        crate::types::DeclaredTypes::update_slot(&mut self.declared_types, update);
-        self.rebuild_declared_key_partitions();
+        self.declared();
+        if matches!(self.declared.get(), Some(Err(_))) {
+            self.declared = std::sync::OnceLock::from(Ok(DeclaredState {
+                table: None,
+                partitions: [None; 3],
+            }));
+        }
+        let state = self
+            .declared
+            .get_mut()
+            .and_then(|state| state.as_mut().ok())
+            .expect("declared state read above");
+        state.partitions = [None; 3];
+        crate::types::DeclaredTypes::update_slot(&mut state.table, update);
+        let partitions = match self.declared.get() {
+            Some(Ok(state)) => self.compute_declared_key_partitions(state.table.as_ref()),
+            _ => [None; 3],
+        };
+        if let Some(Ok(state)) = self.declared.get_mut() {
+            state.partitions = partitions;
+        }
     }
 
     pub fn declared_key_partitions(&self, tag: u8) -> Option<&[DeclaredKeyPartition; 2]> {
         let index = usize::from(tag.checked_sub(crate::node::TAG_FIELD_NODE)?);
-        self.declared_key_partitions.get(index)?.as_ref()
+        self.declared().as_ref().ok()?.partitions.get(index)?.as_ref()
     }
 
+    #[cfg(test)]
     fn rebuild_declared_key_partitions(&mut self) {
-        // In-memory mutation keeps its original mapped/owned inputs. File handles
-        // and load buffers are deliberately not retained on Graph.
-        let result = self.compute_declared_key_partitions(|id, tag| {
-            Ok::<_, std::convert::Infallible>(self.declared_summary_node(id, tag))
-        });
-        self.declared_key_partitions = match result {
-            Ok(partitions) => partitions,
-            Err(never) => match never {},
-        };
+        self.update_declared_types(|_| {});
     }
 
-    fn load_declared_key_partitions(
-        &mut self,
-        data: FileRange,
-        offsets: FileRange,
-    ) -> Result<(), GraphError> {
-        // No buffers or reads are needed for a legacy graph or a table with no
-        // member bindings. Required declared-table validation has already run.
-        if self
-            .declared_types
-            .as_ref()
-            .is_none_or(|table| table.field_count() == 0 && table.method_count() == 0)
-        {
-            return Ok(());
-        }
-        let mut reader = BufferedSummaryNodes {
-            data: ReadWindow::new(data),
-            offsets: ReadWindow::new(offsets),
-            capacity: self.node_capacity,
-        };
-        self.declared_key_partitions = self.compute_declared_key_partitions(|id, tag| {
-            reader
-                .node(id, tag)
-                .map_err(|(path, error)| GraphError::Io(path, error))
-        })?;
-        Ok(())
-    }
-
-    fn compute_declared_key_partitions<E>(
+    fn compute_declared_key_partitions(
         &self,
-        mut read_node: impl FnMut(NodeId, u8) -> Result<Option<Node>, E>,
-    ) -> Result<[Option<[DeclaredKeyPartition; 2]>; 3], E> {
+        table: Option<&crate::types::DeclaredTypes>,
+    ) -> [Option<[DeclaredKeyPartition; 2]>; 3] {
         use crate::node::{NodeKind, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
         let mut result = [None; 3];
-        let Some(table) = self.declared_types.as_ref() else {
-            return Ok(result);
+        let Some(table) = table else {
+            return result;
         };
         for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
             if (tag == TAG_FIELD_NODE && table.field_count() == 0)
@@ -491,7 +482,7 @@ impl Graph {
             let mut previous_method: Option<(MethodDesc, Option<usize>)> = None;
             let mut complete = true;
             for &id in ids {
-                let Some(node) = read_node(id, tag)? else {
+                let Some(node) = self.declared_summary_node(id, tag) else {
                     complete = false;
                     break;
                 };
@@ -559,7 +550,7 @@ impl Graph {
                 result[usize::from(tag - TAG_FIELD_NODE)] = Some(partitions);
             }
         }
-        Ok(result)
+        result
     }
 
     fn declared_summary_node(&self, id: NodeId, tag: u8) -> Option<Node> {
@@ -859,51 +850,22 @@ impl Graph {
     }
 }
 
-/// The largest supported flat binding record: Parameter with 256 type IDs.
-/// This scratch and two fixed windows belong only to the synchronous load pass.
-const SUMMARY_RECORD_BYTES: usize = 29 + 4 * 256;
-
-struct BufferedSummaryNodes {
-    data: ReadWindow<FileRange>,
-    offsets: ReadWindow<FileRange>,
-    capacity: usize,
+/// Query-only declaration state: the table bound to the dictionary bytes and the
+/// metadata, and the Field/Parameter/Return key-set summaries over it, each
+/// [unbound, bound]. Only ascending ID lists have summaries: replacing an unsorted
+/// walk by first representatives changes order.
+struct DeclaredState {
+    table: Option<crate::types::DeclaredTypes>,
+    partitions: [Option<[DeclaredKeyPartition; 2]>; 3],
 }
 
-impl BufferedSummaryNodes {
-    fn node(&mut self, id: NodeId, tag: u8) -> Result<Option<Node>, crate::source::IoAt> {
-        if id as usize >= self.capacity {
-            return Ok(None);
-        }
-        let slot = u64::from(id) * 8 + 8;
-        if slot
-            .checked_add(8)
-            .is_none_or(|end| end > self.offsets.source.len())
-        {
-            return Ok(None);
-        }
-        let mut offset = [0; 8];
-        self.offsets
-            .copy_prefix(slot, &mut offset)
-            .map_err(|e| (self.offsets.source.name.clone(), e))?;
-        let Some(offset) = i64::from_be_bytes(offset)
-            .checked_sub(1)
-            .and_then(|offset| u64::try_from(offset).ok())
-            .filter(|&offset| offset <= self.data.source.len())
-        else {
-            return Ok(None);
-        };
-        let limit = match tag {
-            crate::node::TAG_FIELD_NODE => 18,
-            crate::node::TAG_PARAMETER_NODE => SUMMARY_RECORD_BYTES,
-            crate::node::TAG_RETURN_NODE => 26 + 4 * 256,
-            _ => return Ok(None),
-        };
-        let mut bytes = [0; SUMMARY_RECORD_BYTES];
-        let len = self
-            .data
-            .copy_prefix(offset, &mut bytes[..limit])
-            .map_err(|e| (self.data.source.name.clone(), e))?;
-        Ok(decode_declared_summary_node(&bytes[..len], id, tag))
+impl DeclaredState {
+    fn read(graph: &Graph) -> Result<Self, crate::types::TypeError> {
+        let src = GraphSource::open(&graph.dir)
+            .map_err(|error| crate::types::TypeError(error.to_string()))?;
+        let table = crate::types::DeclaredTypes::load_bound(&src, &graph.strings)?;
+        let partitions = graph.compute_declared_key_partitions(table.as_ref());
+        Ok(Self { table, partitions })
     }
 }
 
@@ -1083,220 +1045,22 @@ mod declared_key_tests {
         Some(Graph::load(Path::new(&path)).unwrap())
     }
 
-    fn buffered_records(
-        root: &Path,
-        data: &[u8],
-        offsets: &[u8],
-        capacity: usize,
-    ) -> BufferedSummaryNodes {
-        use std::fs::File;
-        use std::sync::Arc;
-        std::fs::create_dir_all(root).unwrap();
-        let make = |name: &str, bytes: &[u8]| {
-            let path = root.join(name);
-            std::fs::write(&path, bytes).unwrap();
-            FileRange::new(
-                Arc::new(File::open(&path).unwrap()),
-                0,
-                bytes.len() as u64,
-                path.display().to_string(),
-            )
-        };
-        BufferedSummaryNodes {
-            data: ReadWindow::new(make("graph.nodedata", data)),
-            offsets: ReadWindow::new(make("graph.nodeoffsets", offsets)),
-            capacity,
-        }
+    fn partitions(graph: &Graph) -> [Option<[DeclaredKeyPartition; 2]>; 3] {
+        [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE]
+            .map(|tag| graph.declared_key_partitions(tag).copied())
     }
 
     #[test]
-    fn buffered_summary_reads_largest_record_across_windows_and_declines_bad_offsets() {
-        let root =
-            std::env::temp_dir().join(format!("graphite-summary-window-{}", std::process::id()));
-        let id = 8190u32; // This offset slot ends at the first window boundary.
-        let mut record = id.to_be_bytes().to_vec();
-        record.push(TAG_PARAMETER_NODE);
-        for value in [0i32, 3, 1, 2, 256] {
-            record.extend(value.to_be_bytes());
-        }
-        for _ in 0..256 {
-            record.extend(3u32.to_be_bytes());
-        }
-        record.extend(4u32.to_be_bytes());
-        assert_eq!(record.len(), SUMMARY_RECORD_BYTES);
-        let start = 65536 - 7;
-        let mut data = vec![0; start];
-        data.extend(&record);
-        let mut offsets = vec![0; 8 + (id as usize + 1) * 8];
-        let slot = 8 + id as usize * 8;
-        offsets[slot..slot + 8].copy_from_slice(&(start as i64 + 1).to_be_bytes());
-        let expected = decode_declared_summary_node(&record, id, TAG_PARAMETER_NODE).unwrap();
-        let mut reader = buffered_records(&root, &data, &offsets, id as usize + 1);
-        assert_eq!(reader.node(id, TAG_PARAMETER_NODE).unwrap(), Some(expected));
-        assert!(reader.node(id + 1, TAG_PARAMETER_NODE).unwrap().is_none());
-        assert!(reader.node(0, TAG_FIELD_NODE).unwrap().is_none());
-        drop(reader);
-        for bad in [0, -1, i64::MIN, i64::MAX, data.len() as i64 + 1] {
-            offsets[slot..slot + 8].copy_from_slice(&bad.to_be_bytes());
-            let mut reader = buffered_records(&root, &data, &offsets, id as usize + 1);
-            assert!(
-                reader.node(id, TAG_PARAMETER_NODE).unwrap().is_none(),
-                "offset {bad}"
-            );
-        }
-        let mut reader = buffered_records(&root, &data, &offsets[..slot + 7], id as usize + 1);
-        assert!(reader.node(id, TAG_PARAMETER_NODE).unwrap().is_none());
-        drop(reader);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn buffered_and_mapped_decoders_agree_for_every_flat_record_prefix() {
-        use std::fs::File;
-        use std::sync::Arc;
-        let root =
-            std::env::temp_dir().join(format!("graphite-summary-prefixes-{}", std::process::id()));
-        std::fs::create_dir_all(&root).unwrap();
-        let id = 3u32;
-        let mut cases = Vec::new();
-        let mut field = id.to_be_bytes().to_vec();
-        field.push(TAG_FIELD_NODE);
-        for value in [1u32, 2, 3] {
-            field.extend(value.to_be_bytes());
-        }
-        field.push(1);
-        cases.push((TAG_FIELD_NODE, field, true));
-        for count in [0i32, 2, 256, 257] {
-            for (tag, actual) in [
-                (TAG_PARAMETER_NODE, false),
-                (TAG_RETURN_NODE, false),
-                (TAG_RETURN_NODE, true),
-            ] {
-                let mut bytes = id.to_be_bytes().to_vec();
-                bytes.push(tag);
-                if tag == TAG_PARAMETER_NODE {
-                    bytes.extend(0i32.to_be_bytes());
-                    bytes.extend(3u32.to_be_bytes());
-                }
-                bytes.extend(1u32.to_be_bytes());
-                bytes.extend(2u32.to_be_bytes());
-                bytes.extend(count.to_be_bytes());
-                for _ in 0..count {
-                    bytes.extend(3u32.to_be_bytes());
-                }
-                bytes.extend(4u32.to_be_bytes());
-                if tag == TAG_RETURN_NODE {
-                    bytes.push(u8::from(actual));
-                    if actual {
-                        bytes.extend(5u32.to_be_bytes());
-                    }
-                }
-                cases.push((tag, bytes, count <= 256));
-            }
-        }
-        // Slots for both the correct and wrong ID point to this same record.
-        let offsets_path = root.join("offsets");
-        let mut offsets = vec![0; 8 + (id as usize + 2) * 8];
-        for entry in [id, id + 1] {
-            let slot = 8 + entry as usize * 8;
-            offsets[slot..slot + 8].copy_from_slice(&1i64.to_be_bytes());
-        }
-        std::fs::write(&offsets_path, &offsets).unwrap();
-        let offsets_file = Arc::new(File::open(&offsets_path).unwrap());
-        for (case, (tag, bytes, valid)) in cases.into_iter().enumerate() {
-            assert_eq!(
-                decode_declared_summary_node(&bytes, id, tag).is_some(),
-                valid
-            );
-            let data_path = root.join(format!("record-{case}"));
-            let mut stored = vec![255; 19]; // Exercise entry-relative, nonzero starts too.
-            stored.extend(&bytes);
-            stored.extend([255; 11]); // Must not become part of a truncated record.
-            std::fs::write(&data_path, stored).unwrap();
-            let data_file = Arc::new(File::open(&data_path).unwrap());
-            for end in 0..=bytes.len() {
-                let mut reader = BufferedSummaryNodes {
-                    data: ReadWindow::new(FileRange::new(
-                        data_file.clone(),
-                        19,
-                        end as u64,
-                        "record".into(),
-                    )),
-                    offsets: ReadWindow::new(FileRange::new(
-                        offsets_file.clone(),
-                        0,
-                        offsets.len() as u64,
-                        "offsets".into(),
-                    )),
-                    capacity: id as usize + 2,
-                };
-                for (requested_id, requested_tag) in [
-                    (id, tag),
-                    (id + 1, tag),
-                    (
-                        id,
-                        if tag == TAG_FIELD_NODE {
-                            TAG_RETURN_NODE
-                        } else {
-                            TAG_FIELD_NODE
-                        },
-                    ),
-                    (id, crate::node::TAG_ANNOTATION_NODE),
-                ] {
-                    assert_eq!(
-                        reader.node(requested_id, requested_tag).unwrap(),
-                        decode_declared_summary_node(&bytes[..end], requested_id, requested_tag),
-                        "case {case}, prefix {end}, id {requested_id}, tag {requested_tag}"
-                    );
-                }
-            }
-        }
-        drop(offsets_file);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn buffered_summary_reports_read_failure_with_its_source_name() {
-        let root = std::env::temp_dir().join(format!(
-            "graphite-summary-short-read-{}",
-            std::process::id()
-        ));
-        let mut offsets = vec![0; 16];
-        offsets[8..].copy_from_slice(&1i64.to_be_bytes());
-        let mut reader = buffered_records(&root, &[0; 18], &offsets, 1);
-        // No memory mapping in this fixture: shorten the already-open input so
-        // the buffered reader observes a genuine read failure, not malformed bytes.
-        std::fs::OpenOptions::new()
-            .write(true)
-            .open(root.join("graph.nodedata"))
-            .unwrap()
-            .set_len(0)
-            .unwrap();
-        let (path, error) = reader.node(0, TAG_FIELD_NODE).unwrap_err();
-        assert!(path.ends_with("graph.nodedata"));
-        assert_eq!(error.kind(), std::io::ErrorKind::UnexpectedEof);
-        drop(reader);
-        std::fs::remove_dir_all(root).unwrap();
-    }
-
-    #[test]
-    fn load_summary_uses_temporary_readers_and_matches_mapped_mutation_path() {
-        let Some(mut graph) = fixture() else {
+    fn declared_state_is_read_on_first_use_and_matches_a_fresh_load() {
+        let Some(graph) = fixture() else {
             return;
         };
-        let expected = graph.declared_key_partitions;
-        let source = GraphSource::open(&graph.dir).unwrap();
-        let (_, data) = source.require_buffered("graph.nodedata").unwrap();
-        let (_, offsets) = source.require_buffered("graph.nodeoffsets").unwrap();
-        let mapped_data = std::mem::replace(&mut graph.nodedata, Bytes::owned(Vec::new()));
-        let mapped_offsets = std::mem::replace(&mut graph.node_offsets, Bytes::owned(Vec::new()));
-        graph.declared_key_partitions = [None; 3];
-        graph.load_declared_key_partitions(data, offsets).unwrap();
-        assert_eq!(graph.declared_key_partitions, expected);
-        graph.nodedata = mapped_data;
-        graph.node_offsets = mapped_offsets;
-        graph.update_declared_types(|_| {});
-        assert_eq!(graph.declared_key_partitions, expected);
+        assert!(graph.declared.get().is_none(), "load reads no declared types");
+        assert!(graph.declared_types().is_some());
+        assert!(graph.declared_types_error().is_none());
+        let fresh = fixture().unwrap();
+        assert_eq!(partitions(&fresh), partitions(&graph));
+        assert!(partitions(&graph).iter().all(Option::is_some));
     }
 
     #[test]
@@ -1344,7 +1108,7 @@ mod declared_key_tests {
                     }),
                     _ => graph.update_declared_types(|table| *table = None),
                 }
-                let expected = graph.declared_key_partitions;
+                let expected = partitions(graph);
                 // Validate every representative/count against independent query
                 // node decoding and binding, including partial external members.
                 for tag in 0..TAG_COUNT as u8 {
@@ -1373,19 +1137,10 @@ mod declared_key_tests {
                 }
                 // All four forms also use exactly the same mutation supplier.
                 graph.update_declared_types(|_| {});
-                assert_eq!(graph.declared_key_partitions, expected);
-                let source = GraphSource::open(&graph.dir).unwrap();
-                let (_, data) = source.require_buffered("graph.nodedata").unwrap();
-                let (_, offsets) = source.require_buffered("graph.nodeoffsets").unwrap();
-                graph.declared_key_partitions = [None; 3];
-                graph.load_declared_key_partitions(data, offsets).unwrap();
-                assert_eq!(graph.declared_key_partitions, expected);
+                assert_eq!(partitions(graph), expected);
             }
             for graph in &graphs[1..] {
-                assert_eq!(
-                    graph.declared_key_partitions, graphs[0].declared_key_partitions,
-                    "phase {phase}"
-                );
+                assert_eq!(partitions(graph), partitions(&graphs[0]), "phase {phase}");
             }
         }
         drop(graphs);

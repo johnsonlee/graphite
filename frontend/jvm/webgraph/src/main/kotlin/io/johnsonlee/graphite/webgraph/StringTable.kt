@@ -4,11 +4,8 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
-import java.io.BufferedInputStream
 import java.io.BufferedOutputStream
-import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
-import java.security.DigestInputStream
 import java.security.DigestOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
@@ -30,11 +27,12 @@ internal class StringTable private constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>?,
     contentIdentity: ByteArray?,
-    serializedDigest: ByteArray? = null
+    serializedDigest: Lazy<ByteArray>? = null
 ) {
 
-    private val serializedIdentity = serializedDigest?.copyOf()
-    internal fun serializedDigest(): ByteArray? = serializedIdentity?.copyOf()
+    /** SHA-256 of the serialized file, available when the table was built or loaded for a shared-string type table. */
+    private val serializedIdentity = serializedDigest
+    internal fun serializedDigest(): ByteArray? = serializedIdentity?.value?.copyOf()
 
     @Volatile
     private var persistedContentIdentity: ByteArray? = contentIdentity?.copyOf()
@@ -118,29 +116,28 @@ internal class StringTable private constructor(
             for (i in sorted.indices) {
                 indexMap[sorted[i]] = i
             }
-            return StringTable(fcl, indexMap, contentIdentity, serializedHash?.digest())
+            return StringTable(fcl, indexMap, contentIdentity, serializedHash?.let { lazyOf(it.digest()) })
         }
 
         /**
          * Load a previously persisted [StringTable] from disk.
          */
         fun load(dir: Path, verifySerializedDigest: Boolean = false): StringTable {
-            val serializedHash = if (verifySerializedDigest) MessageDigest.getInstance(DIGEST_ALGORITHM) else null
-            val fcl = if (serializedHash == null) {
-                BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
+            val path = dir.resolve(FILE_NAME)
+            val fcl = Files.newInputStream(path).use { BinIO.loadObject(it) as FrontCodedStringList }
+            // The digest binds a shared-string type table to the file this list was decoded
+            // from. It is taken when that table is first read, not here: the table is
+            // query-only state, and hashing the file (through the deserializer's small reads,
+            // or in bulk, which held a second copy of it) charged every graph's load for it.
+            val serializedDigest = if (verifySerializedDigest) {
+                lazy { MessageDigest.getInstance(DIGEST_ALGORITHM).digest(Files.readAllBytes(path)) }
             } else {
-                SerializedDigestInputStream(BufferedInputStream(Files.newInputStream(dir.resolve(FILE_NAME))), serializedHash).use { raw ->
-                    val objects = ObjectInputStream(raw)
-                    val decoded = objects.readObject() as FrontCodedStringList
-                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                    while (raw.read(buffer) >= 0) { /* Bind every serialized byte, including trailing data. */ }
-                    decoded
-                }
+                null
             }
             val contentIdentity = dir.resolve(CONTENT_IDENTITY_FILE_NAME).takeIf(Files::isRegularFile)
                 ?.let(Files::readAllBytes)
                 ?.takeIf { identity -> identity.size == CONTENT_IDENTITY_BYTES }
-            return StringTable(fcl, null, contentIdentity, serializedHash?.digest())
+            return StringTable(fcl, null, contentIdentity, serializedDigest)
         }
 
         private fun semanticContentIdentity(strings: List<String>): ByteArray {
@@ -181,22 +178,5 @@ internal class StringTable private constructor(
 private fun MessageDigest.updateInt(value: Int) {
     for (byteIndex in Int.SIZE_BYTES - 1 downTo 0) {
         update((value ushr (byteIndex * Byte.SIZE_BITS)).toByte())
-    }
-}
-
-/** ObjectInputStream may skip optional data; skipped bytes belong to the serialized identity too. */
-internal class SerializedDigestInputStream(input: java.io.InputStream, digest: MessageDigest) :
-    DigestInputStream(input, digest) {
-    override fun skip(n: Long): Long {
-        if (n <= 0) return 0
-        val buffer = ByteArray(minOf(n, DEFAULT_BUFFER_SIZE.toLong()).toInt())
-        var remaining = n
-        while (remaining > 0) {
-            val readCount = read(buffer, 0, minOf(remaining, buffer.size.toLong()).toInt())
-            val count = if (readCount == 0) { if (read() < 0) -1 else 1 } else readCount
-            if (count < 0) break
-            remaining -= count
-        }
-        return n - remaining
     }
 }

@@ -166,7 +166,8 @@ internal class MappedWebGraphBackedGraph(
     private val resourceAccessor: Lazy<ResourceAccessor>,
     private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
     private val callSiteOrdinals: Lazy<CallSiteOrdinals> = lazy { CallSiteOrdinals.EMPTY },
-    private val declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+    /** Read and validated on first use, like the other sidecars: readiness owes queries nothing of it. */
+    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY)
 ) : Graph,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
@@ -198,7 +199,7 @@ internal class MappedWebGraphBackedGraph(
         BranchScope.unpackDefinitionTable(branchDefinitions.value.locals)
     }
 
-    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable.value
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
@@ -319,7 +320,7 @@ internal class MappedWebGraphBackedGraph(
         if (fragments.isEmpty() || fragments.size > 2 || fragments.distinct().size != fragments.size ||
             fragments.any { propertyTextFragment(it) != it }
         ) return null
-        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable, declaredTypeTable)
+        return MappedPropertyTextCandidates(mappedNodeData, nodeOffsets, nodeTypeIndex, stringTable, declaredTypeTable.value)
             .ids(type, fragments, workConsumer).mapNotNull { nodeId ->
                 node(NodeId(nodeId))?.takeIf(type::isInstance)?.let(type::cast)
             }

@@ -20,7 +20,9 @@ pub enum StringTableError {
 pub struct StringTable {
     backing: Arc<StringBacking>,
     identity: Option<[u8; 32]>,
-    serialized_digest: Option<[u8; 32]>,
+    /// SHA-256 of the serialized bytes this table was decoded from, bound at decode or by
+    /// [`Self::bind_serialized`] when a GTY03–GTY05 table is first read.
+    serialized_digest: std::sync::OnceLock<[u8; 32]>,
 }
 
 #[derive(Debug)]
@@ -186,7 +188,13 @@ impl StringTable {
                 canonical: std::sync::OnceLock::new(),
             }),
             identity: None,
-            serialized_digest: verified.then(|| Sha256::digest(data).into()),
+            serialized_digest: {
+                let digest = std::sync::OnceLock::new();
+                if verified {
+                    let _ = digest.set(Sha256::digest(data).into());
+                }
+                digest
+            },
         })
     }
 
@@ -210,11 +218,17 @@ impl StringTable {
 
     /// Available only when the same serialized input was fully hashed and decoded.
     pub fn serialized_digest(&self) -> Option<&[u8; 32]> {
-        self.serialized_digest.as_ref()
+        self.serialized_digest.get()
+    }
+
+    /// Binds this table to `data`, the serialized bytes it was decoded from, for a table
+    /// whose declared types are read after the load; a digest already bound stays.
+    pub fn bind_serialized(&self, data: &[u8]) {
+        let _ = self.serialized_digest.set(Sha256::digest(data).into());
     }
 
     pub fn strict_get(&self, i: usize) -> Result<&str, StringTableError> {
-        if self.serialized_digest.is_none() {
+        if self.serialized_digest.get().is_none() {
             return Err(StringTableError::Layout(
                 "unverified shared string table".into(),
             ));

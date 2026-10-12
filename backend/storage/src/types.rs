@@ -403,17 +403,46 @@ impl DeclaredTypes {
         let bytes = source
             .require("graph.types")
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
-        let actual = Sha256::digest(&bytes)
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect::<String>();
-        if !actual.eq_ignore_ascii_case(&binding) {
-            return Err(TypeError("forward.properties type digest mismatch".into()));
-        }
+        Self::check_binding(&bytes, &binding)?;
         let metadata = source
             .require("graph.metadata")
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
         Self::parse_context(&bytes, &metadata, strings).map(Some)
+    }
+    fn check_binding(bytes: &[u8], binding: &str) -> Result<(), TypeError> {
+        let actual = Sha256::digest(bytes)
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
+        if !actual.eq_ignore_ascii_case(binding) {
+            return Err(TypeError("forward.properties type digest mismatch".into()));
+        }
+        Ok(())
+    }
+    /// Refuses a graph whose `graph.types` is not the file `forward.properties` binds, without
+    /// reading its content: the table is query-only state, read and validated on first use.
+    pub fn verify_binding(source: &GraphSource) -> Result<(), TypeError> {
+        let Some(binding) = Self::binding(source)? else {
+            return Ok(());
+        };
+        let bytes = source
+            .require("graph.types")
+            .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
+        Self::check_binding(&bytes, &binding)
+    }
+    /// Reads the table against `strings`, binding the dictionary to its serialized bytes
+    /// first when the table shares them and the load did not hash them.
+    pub fn load_bound(
+        source: &GraphSource,
+        strings: &StringTable,
+    ) -> Result<Option<Self>, TypeError> {
+        if Self::needs_shared_strings(source)? && strings.serialized_digest().is_none() {
+            let bytes = source
+                .require("graph.strings")
+                .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
+            strings.bind_serialized(&bytes);
+        }
+        Self::load_with_strings(source, strings)
     }
     pub fn parse(bytes: &[u8], metadata: &[u8]) -> Result<Self, TypeError> {
         Self::parse_context(bytes, metadata, None)

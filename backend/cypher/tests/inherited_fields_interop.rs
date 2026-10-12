@@ -81,6 +81,9 @@ fn load_checked(path: &Path) -> Graph {
     let raw = source.require("graph.types").unwrap();
     assert_eq!(i32::from_be_bytes(raw[..4].try_into().unwrap()), 0x47545905);
     let graph = Graph::load(path).unwrap();
+    // The dictionary is bound to its serialized bytes when the table is first read, not at load.
+    assert!(graph.strings().serialized_digest().is_none());
+    assert!(graph.declared_types().is_some());
     assert!(graph.strings().serialized_digest().is_some());
     graph
 }

@@ -9,7 +9,6 @@ import io.johnsonlee.graphite.graph.MethodTypes
 import io.johnsonlee.graphite.graph.TypeParameter
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.util.FrontCodedStringList
-import java.io.ByteArrayInputStream
 import java.nio.ByteBuffer
 import java.nio.charset.CharacterCodingException
 import java.nio.file.Files
@@ -183,21 +182,6 @@ class SharedDeclaredTypeStringsTest {
                 assertEquals(table, DeclaredTypeStore.load(dir))
             } finally { (restored as? AutoCloseable)?.close() }
         }
-    }
-
-    @Test
-    fun `digest stream accounts for skipped bytes and the complete unread tail`() {
-        val bytes = ByteArray(20000) { (it * 17).toByte() }
-        val digest = MessageDigest.getInstance("SHA-256")
-        SerializedDigestInputStream(ByteArrayInputStream(bytes), digest).use { input ->
-            assertEquals(0, input.read())
-            assertEquals(0L, input.skip(-1))
-            assertEquals(9000L, input.skip(9000))
-            assertEquals(bytes[9001].toInt() and 255, input.read())
-            assertEquals(10998L, input.skip(Long.MAX_VALUE))
-            assertEquals(-1, input.read())
-        }
-        assertContentEquals(MessageDigest.getInstance("SHA-256").digest(bytes), digest.digest())
     }
 
     private fun save(dir: Path): StringTable {

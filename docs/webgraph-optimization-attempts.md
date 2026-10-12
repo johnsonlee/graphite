@@ -20437,3 +20437,52 @@ p95 with no tolerance, so these rows decide it on noise. Correctness: 127 storag
 and the fixture-backed interoperability tests pass; the Kotlin fixture dictionaries are
 canonical, so the ID path is the one the hosted graphs take. Evidence:
 scratchpad `fx/query-ab-native-kc-15-x16.json`, `chain_lazy.log`, `chain3.log`.
+
+### Attempt271 — read declared types on first use, in both engines (2026-10-12)
+
+Loading regressed in both servers: native x16 wall +51.7%, CPU +48.2%, HWM +15.1%; JVM CPU
++171% and HWM +60% with the digest taken through the deserializer's reads, +5.7%/+17.7% after a bulk read of
+`graph.strings` for its digest. `GRAPHITE_LOAD_TIMING` laps on one native load of the shard
+(95ms graph total) attributed it: strings decode+digest 28.5ms (the SHA-256 of the 4.1MB
+serialized dictionary), canonical check 2.7ms, `graph.types` digest 0.7ms, parse 14.2ms
+(rows 2.0, signatures 4.3, members 4.5, ID index 0.7), validate 0.4ms, text summary 2.5ms,
+declared key partitions 15.4ms — about 36ms per graph of declaration work no request had
+asked for, on top of the 28ms of hashing. The table is query-only state. Both engines now read
+it when a query first needs it: the native `Graph` holds
+`OnceLock<Result<DeclaredState, TypeError>>` with the table and the Field/Parameter/Return key
+partitions, computed from the mapped node data on first use (`declared_summary_node`), and the
+dictionary digest is bound then (`StringTable::bind_serialized`), so `BufferedSummaryNodes`,
+`FileRange`/`ReadWindow` and the container's second file handle, which existed only to compute
+the summaries before readiness, are gone; the load keeps a 0.7ms check that `graph.types` is
+the file `forward.properties` binds, so a graph whose table does not bind is still refused at
+load, and a table that fails to read later is reported once and absent, with
+`Graph::declared_types_error` keeping the reason. The Kotlin store passes
+`lazy { DeclaredTypeStore.load(dir, stringTable) }` to the mapped and eager graphs, and
+`StringTable.load(dir, verifySerializedDigest = true)` decodes through `BinIO` as before and
+hashes the file when `serializedDigest()` is first asked for; mutation through
+`update_declared_types` forces the read, invalidates the partitions first and rebuilds them
+after a normal return, as before. The deferred work is paid once per
+graph by the first declaration-reading query (native: ~36ms + 28ms of hashing per shard graph;
+JVM: 417 of 18,090 1ms samples of a 40-request `slow-dynamicMiss` profile sat under
+`DeclaredTypeStore.load`, about 26ms per shard graph, all in the warm request), never per
+query.
+
+Same environment and workload as Attempt270; readiness measured by `/api/graphs` listing all
+16 graphs, CPU and HWM of the server process at readiness, medians of ABBA rounds:
+
+| Operation | metric | base | cand | Δ |
+|---|---|---|---|---|
+| Native loading x16 (3 rounds) | ready wall |1.3625s|1.323s|−0.040s (−2.9%)|
+| | CPU at ready |1.415s|1.39s|−0.025s (−1.8%)|
+| | HWM at ready |277.5MB|269.4MB|−8.1MB (−2.9%)|
+| JVM loading x16 (5 rounds) | ready wall |1.034s|1.028s|−0.006s (−0.6%)|
+| | CPU at ready |2.255s|2.17s|−0.085s (−3.8%)|
+| | HWM at ready |211.6MB|212.8MB|+1.2MB (+0.6%)|
+
+Both loading operations are at the base. Correctness: Rust 127/187/41/118 unit tests, the
+`GRAPHITE_TYPES_*`/`GRAPHITE_INHERITED_TYPES_FIXTURE` interoperability list of `rust.yml`
+against fixtures written by the Kotlin writer (`declared_state_is_read_on_first_use_and_matches_a_fresh_load`
+checks the lazily read partitions against a fresh load), Kotlin `:webgraph:check :cypher:check
+:core:check :query:check`. A `StringTable` whose file is missing still fails with
+`NoSuchFileException` (`Files.newInputStream`). Evidence: scratchpad
+`fx/loading-ab-{native,jvm}-kc-15-x16.json`, `chain_lazy.log`, `chain_construct.log`.

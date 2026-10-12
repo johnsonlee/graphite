@@ -934,7 +934,7 @@ object GraphStore {
             classOverview,
             PersistedResourceStore.load(dir),
             lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
-            DeclaredTypeStore.load(dir, stringTable)
+            lazy { DeclaredTypeStore.load(dir, stringTable) }
         )
     }
 
@@ -1017,7 +1017,9 @@ object GraphStore {
             resourceAccessor = lazy { PersistedResourceStore.load(dir) },
             branchDefinitions = branchDefinitions,
             callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
-            declaredTypeTable = DeclaredTypeStore.load(dir, stringTable)
+            // The table is query-only state. Reading, binding and validating it before readiness
+            // charged every graph's load for declarations no request had asked for yet.
+            declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) }
         )
         if (prepareCallSiteStringIndex) {
             try {
