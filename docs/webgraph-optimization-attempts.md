@@ -20548,3 +20548,15 @@ writing and validating a 900KB table), which the construction gate's `wall ≤ b
 not allow for. Build/save is the lowest priority in the user's order; this is reported, not
 recovered. Evidence: scratchpad `fx/prof-{base,cand}.txt`, `fx/construct-ab-kc-15.json`,
 `chain3.log`.
+
+### Attempt274 — accept query cases within 100ms or 5% of the base (2026-10-12)
+
+Not an optimization: a gate rule the user set on 2026-10-12 after the per-case comparison of
+Attempt270 showed 45–60ms cases moving by ±15ms p50 and ±40ms p95 between runs of the same
+binaries. The multi-graph pressure comparison accepted a case only when its candidate p50 and
+p95 were at or below the base's, so a verdict on a fast case was a coin toss on the hosted
+runner. `withinLatencyTolerance` now accepts a candidate quantile within 100ms of the base or
+within 5% of it, whichever allows more, and the report records `latencyTolerance`. A case
+slower by both bounds still fails; CPU, RSS and wall rules are unchanged, and so are the
+construction and loading gates. The two script manifests that pin
+`benchmark-multigraph-pressure.mjs` are re-pinned; 238 gate tests pass.

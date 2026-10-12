@@ -7,11 +7,20 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {comparePressure,pressureProgress,resourceBound} from './benchmark-multigraph-pressure.mjs';
+import {comparePressure,pressureProgress,resourceBound,withinLatencyTolerance} from './benchmark-multigraph-pressure.mjs';
+// Past both tolerances of the fixture's 100ns base: more than 100ms and more than 5%.
+const SLOW=150e6;
 const digest=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const put=(p,v)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,JSON.stringify(v));};
 test('fixed per-case repeated latency and independent CPU/RSS intervals',t=>{
  const f=fixture(t),r=comparePressure(f.file,f.root);assert.equal(r.passed,true);assert.equal(r.comparisons.length,4);assert.equal(r.comparisons[2].cases[0].deltaP95Ms,-.00002);
+ assert.deepEqual(r.latencyTolerance,{absoluteMs:100,ratio:0.05});
+ // Within 100ms or 5% of the base passes; past both fails, whichever is the larger allowance.
+ for(const [candidate,base,expected] of [[150,100,true],[200e6,100e6,true],[200e6+1,100e6,false],[4.2e9+1,4e9,false],[4.2e9,4e9+1,true],[4.15e9,4e9,true],[100,100,true]])
+  assert.equal(withinLatencyTolerance(candidate,base),expected,`${candidate} vs ${base}`);
+ // A regression inside the tolerance keeps the verdict.
+ f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});r.stages.pressure.caseStatistics.slow.p50Ns=150;r.stages.pressure.caseStatistics.slow.p95Ns=150;});
+ assert.equal(comparePressure(f.file,f.root).passed,true);
  assert.equal(resourceBound(100,120,110,115),'INDETERMINATE');assert.equal(resourceBound(100,100,106,106),'FAIL');
  f.rewrite(2,r=>{r.stages.pressure.resources.rss.upperBoundBytes=1200;});assert.equal(comparePressure(f.file,f.root).passed,false);
 });
@@ -48,7 +57,7 @@ test('progress CLI publishes an explicitly incomplete report without requiring f
  assert.equal(spawnSync(process.execPath,command).status,1);
 });
 test('each fixed direction is required; a slower reverse cannot be pooled away',t=>{
- const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});r.stages.pressure.caseStatistics.slow.p50Ns=150;r.stages.pressure.caseStatistics.slow.p95Ns=150;});
+ const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});r.stages.pressure.caseStatistics.slow.p50Ns=SLOW;r.stages.pressure.caseStatistics.slow.p95Ns=SLOW;});
  const r=comparePressure(f.file,f.root);assert.equal(r.passed,false);assert.equal(r.comparisons[3].cases[0].p95Passed,false);
 });
 test('altered evidence, wrong typed boundary, stale quantiles, failures and singleton scope reject',t=>{
@@ -197,7 +206,7 @@ test('valid complete join cannot mask latency, CPU or RSS regression',t=>{
  for(const metric of ['latency','cpu','rss']) {
   const f=joinedFixture(t,{changeCell:(r,i)=>{
    if(i!==2)return;const s=r.stages.pressure;
-   if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});s.caseStatistics.slow.p50Ns=150;s.caseStatistics.slow.p95Ns=150;}
+   if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});s.caseStatistics.slow.p50Ns=SLOW;s.caseStatistics.slow.p95Ns=SLOW;}
    if(metric==='cpu') {s.resources.cpuLowerBoundSeconds=2;s.resources.cpuUpperBoundSeconds=2;}
    if(metric==='rss') {s.resources.rss.lowerBoundBytes=2000;s.resources.rss.upperBoundBytes=2000;}
   }});

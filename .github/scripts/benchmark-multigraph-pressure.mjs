@@ -135,6 +135,14 @@ export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inpu
     }
     return true;
 }
+// User-approved query latency tolerance (2026-10-12): a case's P50 or P95 is accepted when the
+// candidate is within 100ms or within 5% of the base, whichever is larger. Repeated-request
+// quantiles of a 50ms case move by that much between runs; a slower case must regress by both.
+export const LATENCY_TOLERANCE_NS=100e6;
+export const LATENCY_TOLERANCE_RATIO=0.05;
+export function withinLatencyTolerance(candidateNs,baseNs){
+    return candidateNs<=baseNs+Math.max(LATENCY_TOLERANCE_NS,baseNs*LATENCY_TOLERANCE_RATIO);
+}
 export function resourceBound(baseLower,baseUpper,candidateLower,candidateUpper) {
     require([baseLower,baseUpper,candidateLower,candidateUpper].every(finite) &&
         baseLower <= baseUpper && candidateLower <= candidateUpper,'Invalid resource interval');
@@ -209,7 +217,7 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
             const a=base.stats[k.id],z=candidate.stats[k.id];
             return {caseId:k.id,baseP50Ms:a.p50Ns/1e6,candidateP50Ms:z.p50Ns/1e6,deltaP50Ms:(z.p50Ns-a.p50Ns)/1e6,
                 baseP95Ms:a.p95Ns/1e6,candidateP95Ms:z.p95Ns/1e6,deltaP95Ms:(z.p95Ns-a.p95Ns)/1e6,
-                p50Passed:z.p50Ns<=a.p50Ns,p95Passed:z.p95Ns<=a.p95Ns};
+                p50Passed:withinLatencyTolerance(z.p50Ns,a.p50Ns),p95Passed:withinLatencyTolerance(z.p95Ns,a.p95Ns)};
         });
         return {kind,direction,base:base.cell.id,candidate:candidate.cell.id,cases,
             baseWallMs:base.stage.wallNs/1e6,candidateWallMs:candidate.stage.wallNs/1e6,
@@ -233,6 +241,7 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
     const accepted= comparisons.filter(c=>c.kind==='acceptedBaseline');
     const measuredConstraintsPassed=accepted.every(c=>c.cases.every(k=>k.p50Passed&&k.p95Passed)&&c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0);
     return {schema:'graphite.multigraph-pressure.comparison.v1',scope:'multi-graph-pressure',engine:plan.engine,operation:'query',
+        latencyTolerance:{absoluteMs:LATENCY_TOLERANCE_NS/1e6,ratio:LATENCY_TOLERANCE_RATIO},
         planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
         status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
