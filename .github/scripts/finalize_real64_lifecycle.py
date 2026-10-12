@@ -45,7 +45,7 @@ def finalize(output, prefix, producers, operation, *, artifacts_root=None, works
     combined = artifacts_root is not None
     if combined:
         import real64_lifecycle_transport as transport
-        require(operation == 'construction', 'owned transport finalization is construction-only')
+        require(operation in ('loading', 'construction'), 'explicit owned lifecycle operation')
         require(all(v is not None for v in (workspace, transport_directory, base_sha, candidate_sha, run_id, run_attempt)),
                 'complete same-run lifecycle transport identity')
         workspace = transport.canonical(Path(workspace).absolute())

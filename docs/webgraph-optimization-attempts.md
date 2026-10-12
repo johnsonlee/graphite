@@ -20329,3 +20329,60 @@ control manifest binding change. Evidence:
 /tmp/graphite-attempt268-fastgate-timings/report.json,
 /tmp/graphite-attempt268-group-budget.json,
 /tmp/graphite-attempt268-{focused.log,workflow-tests.log,integration-review.json}.
+
+Hosted follow-up on04102bce: run38187081200 completed all41 original commands
+exactly once across five groups. The slowest group took372s (6m12); the whole
+draft workflow took384s. Its only failure was the intentional full-acceptance-
+not-run gate, with39 expensive jobs skipped. Rust run38187081180 and unit run
+38187081128 both passed; the unit job took884s (14m44), separate from the372s
+benchmark control path. These observations establish fast control execution,
+not full multi-graph acceptance or a whole-CI duration. Evidence:
+/tmp/graphite-attempt268-hosted-fast-review.json.
+
+### Attempt269 — reuse owned finalization for JVM loading (2026-10-12)
+
+The JVM loading finalizer still assembled a corrected producer packet in a
+separate workflow step, restored the measurement, then rebuilt the corrected
+packet and a pending packet inside finalization. Construction already used one
+owned invocation. Extend that existing path to loading: assemble one fresh
+corrected/pending pair, save the corrected packet outside original measurement
+roots, restore the same-run loading transport, replay all six original loading
+audits, and join the original pending authority to the complete core proof.
+The standalone packet-consuming entry point retains its full verification.
+
+The operation-specific transport identity, fixed roots, original source/input
+and arm bindings, loading schema/comparator, original audit equality, fresh
+byte and closed-inventory checks before and after comparison remain mandatory.
+No original plan or raw sample is rewritten. The final result still requires
+full core and loading acceptance; errors remain visible through the existing
+always-run upload and acceptance step. The generated corrected packet is
+included in the existing multigraph-loading artifact wildcard.
+
+Correctness-only verification passes36 lifecycle transport/join tests in0.585s,
+including an actual sealed loading archive restored to its fixed roots and all
+six raw records consumed without creating construction graph outputs. The tiny
+handoff substitutes semantic core/audit/comparator implementations; it proves
+transport, dispatch, original identity and closure behavior, not real graph or
+performance acceptance. It checks wrong transport operation, wrong original
+plan operation, corrupted archive, missing core, wrong run, same-size/restored-
+mtime drift, added closed members, symlink output and conflicting CLI modes.
+Existing loading correctness passes8 tests in0.075s; real tracked-source rules
+pass13 in0.362s. The relevant Node gate/loading modules pass148 tests in17.024s.
+Actionlint with shellcheck disabled, all194 preparation pins and diff checks
+pass. No product build, pressure test or hosted workflow is launched.
+
+This removes two redundant producer semantic assemblies and one repeated core
+assembly from this particular workflow path while preserving fresh terminal
+integrity checks. Historical91 standalone assembly took595s in construction
+and594s in Native finalization; neither is a measured loading saving. The old
+loading cohort failed before a complete finalizer observation, so the hosted
+loading reduction and its effect on the full critical path remain unknown.
+Fast control feedback and full benchmark acceptance remain separate; this
+repair does not establish a complete workflow below two hours. Keep the bounded
+reuse change based on correctness evidence, with hosted timing still pending.
+
+Base04102bce. Evidence:
+/tmp/graphite-attempt269-lifecycle-tests.log,
+/tmp/graphite-attempt269-fast-results.json,
+/tmp/graphite-attempt269-node-{result.json,tests.log},
+/tmp/graphite-attempt269-integration-review.json.
