@@ -568,6 +568,9 @@ mod structural_tests;
 #[path = "types_descriptor_tests.rs"]
 mod descriptor_tests;
 
+#[path = "types_id_binding_tests.rs"]
+mod id_binding_tests;
+
 #[test]
 fn shared_legacy_type_summary_preserves_scope_and_rendered_substrings() {
     let expected = full_table();

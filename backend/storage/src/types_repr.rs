@@ -124,6 +124,28 @@ impl Texts for TextStore {
         }
     }
 }
+impl TextStore {
+    fn shared(&self) -> Option<&StringTable> {
+        match self {
+            Self::Shared(s) => Some(s),
+            Self::Owned(_) => None,
+        }
+    }
+}
+
+/// The byte length of the erased descriptor `text` starts with, `None` when it starts with none.
+fn raw_descriptor_length(text: &str) -> Option<usize> {
+    let bytes = text.as_bytes();
+    let mut position = 0;
+    while bytes.get(position) == Some(&b'[') {
+        position += 1;
+    }
+    match bytes.get(position)? {
+        b'L' => Some(position + text[position..].find(';')? + 1),
+        b'Z' | b'B' | b'C' | b'S' | b'I' | b'J' | b'F' | b'D' | b'V' => Some(position + 1),
+        _ => None,
+    }
+}
 
 #[derive(Debug, PartialEq, Eq)]
 struct StoredKey<const N: usize> {
@@ -320,6 +342,36 @@ impl<const N: usize, V> MemberIndex<N, V> {
     }
 }
 
+/// Hashing and equality of shared-dictionary member keys, borrowing only what they need so
+/// an index can be grown while the table's other fields are read.
+#[derive(Clone, Copy)]
+struct IdKeys<'a> {
+    fingerprints: &'a RandomState,
+    canonical: &'a [u32],
+    descriptorless: bool,
+    method: bool,
+}
+impl IdKeys<'_> {
+    fn canonical_id(&self, position: usize, id: usize) -> usize {
+        if position == 2 && self.descriptorless && !self.method {
+            self.canonical[id] as usize
+        } else {
+            id
+        }
+    }
+    fn fingerprint<const N: usize>(&self, ids: [usize; N]) -> u64 {
+        let mut hash = self.fingerprints.build_hasher();
+        N.hash(&mut hash);
+        for (position, id) in ids.into_iter().enumerate() {
+            self.canonical_id(position, id).hash(&mut hash);
+        }
+        hash.finish()
+    }
+    fn equal<const N: usize>(&self, a: [usize; N], b: [usize; N]) -> bool {
+        (0..N).all(|position| self.canonical_id(position, a[position]) == self.canonical_id(position, b[position]))
+    }
+}
+
 /// Used only by the owning mutation model, never by the compact load path.
 pub(super) struct BorrowedMemberKey<'a>(pub &'a str, pub &'a str, pub &'a str);
 impl Hash for BorrowedMemberKey<'_> {
@@ -340,9 +392,16 @@ pub(super) struct CompactTable {
     // (declaration row << 3) | scope tag. Legacy tables retain string IDs.
     pub(super) structural: bool,
     pub(super) descriptorless: bool,
+    /// A shared-dictionary table (GTY03+) keys its members by string ID: `graph.strings`
+    /// is a sorted set, so two IDs are equal exactly when their texts are, and the nodes
+    /// of the graph carry the same IDs. Binding a node then costs three integer probes
+    /// instead of a descriptor string, three text hashes and a text comparison per row,
+    /// which is what every `keys(n)`, `RETURN n` and load-time summary paid before.
+    pub(super) shared_ids: bool,
     pub(super) signatures: Vec<RawSignature>,
     pub(super) types: Vec<StoredType>,
-    // Private keys: all inserts and lookups compare full actual text values.
+    // Private keys: inserts and lookups compare full actual text values, through the
+    // IDs that stand for them in a shared-dictionary table.
     fields: MemberIndex<3, usize>,
     methods: MemberIndex<3, StoredMethod>,
     method_parameters: Vec<usize>,
@@ -350,9 +409,20 @@ pub(super) struct CompactTable {
     classes: MemberIndex<1, ClassTypes<usize, u64>>,
     fingerprints: RandomState,
     text_summary: Option<super::text_summary::TextSummary>,
+    /// Per type row, the first row spelling the same erased descriptor (`u32::MAX` for
+    /// a row no member or signature uses as an erased type). A writer may store one
+    /// erased type at several IDs; keys compare the canonical row, as text would.
+    raw_canonical: Vec<u32>,
+    raw_text_index: HashTable<usize>,
+    /// Signature rows by their canonical parameter and return rows, for binding a
+    /// method descriptor without rendering it.
+    signature_rows: HashTable<usize>,
+    /// Canonical erased row by the string ID of its Java type name (`java.util.List`,
+    /// `int[]`), the spelling the graph's nodes use.
+    raw_by_name: HashMap<usize, usize>,
 }
 #[derive(Debug)]
-struct StoredMethod {
+pub(super) struct StoredMethod {
     parameters: Range<usize>,
     returns: usize,
     type_parameters: Range<usize>,
@@ -581,6 +651,24 @@ impl CompactTable {
         ids: [usize; 3],
         value: usize,
     ) -> bool {
+        if self.shared_ids {
+            if self.descriptorless {
+                self.canonical_raw(texts, ids[2]);
+            }
+            let fingerprint = self.id_fingerprint(ids, false);
+            if self.field_by_ids(ids[0], ids[1], ids[2]).is_some() {
+                return false;
+            }
+            let keys = IdKeys {
+                fingerprints: &self.fingerprints,
+                canonical: &self.raw_canonical,
+                descriptorless: self.descriptorless,
+                method: false,
+            };
+            self.fields
+                .insert_unique(ids, value, fingerprint, |key| keys.fingerprint(key.ids));
+            return true;
+        }
         let context = KeyContext {
             texts,
             descriptors: if self.descriptorless {
@@ -604,6 +692,22 @@ impl CompactTable {
         ids: [usize; 3],
         value: MethodTypes<usize, u64>,
     ) -> bool {
+        if self.shared_ids {
+            let fingerprint = self.id_fingerprint(ids, true);
+            if self.method_by_ids(ids[0], ids[1], ids[2]).is_some() {
+                return false;
+            }
+            let stored = self.store_method(value);
+            let keys = IdKeys {
+                fingerprints: &self.fingerprints,
+                canonical: &self.raw_canonical,
+                descriptorless: self.descriptorless,
+                method: true,
+            };
+            self.methods
+                .insert_unique(ids, stored, fingerprint, |key| keys.fingerprint(key.ids));
+            return true;
+        }
         let context = KeyContext {
             texts,
             descriptors: if self.descriptorless {
@@ -616,21 +720,31 @@ impl CompactTable {
         if self.methods.contains_ids(ids, fingerprint, context) {
             return false;
         }
+        let stored = self.store_method(value);
+        let context = KeyContext {
+            texts,
+            descriptors: if self.descriptorless {
+                Descriptors::Methods(&self.types, &self.signatures)
+            } else {
+                Descriptors::Legacy
+            },
+        };
+        let fingerprints = &self.fingerprints;
+        self.methods.insert_unique(ids, stored, fingerprint, |key| {
+            context.hash(key.ids, fingerprints)
+        });
+        true
+    }
+    fn store_method(&mut self, value: MethodTypes<usize, u64>) -> StoredMethod {
         let parameter_start = self.method_parameters.len();
         self.method_parameters.extend(value.parameters);
         let formal_start = self.method_formals.len();
         self.method_formals.extend(value.type_parameters);
-        self.methods.insert_unique(
-            ids,
-            StoredMethod {
-                parameters: parameter_start..self.method_parameters.len(),
-                returns: value.returns,
-                type_parameters: formal_start..self.method_formals.len(),
-            },
-            fingerprint,
-            |key| context.hash(key.ids, &self.fingerprints),
-        );
-        true
+        StoredMethod {
+            parameters: parameter_start..self.method_parameters.len(),
+            returns: value.returns,
+            type_parameters: formal_start..self.method_formals.len(),
+        }
     }
     pub(super) fn finish_method_buffers(&mut self) {
         self.method_parameters.shrink_to_fit();
@@ -642,7 +756,29 @@ impl CompactTable {
         id: usize,
         value: ClassTypes<usize, u64>,
     ) -> bool {
+        if self.shared_ids {
+            let fingerprint = self.id_fingerprint([id], false);
+            if self.class_by_id(id).is_some() {
+                return false;
+            }
+            let keys = IdKeys {
+                fingerprints: &self.fingerprints,
+                canonical: &self.raw_canonical,
+                descriptorless: self.descriptorless,
+                method: false,
+            };
+            self.classes
+                .insert_unique([id], value, fingerprint, |key| keys.fingerprint(key.ids));
+            return true;
+        }
         Self::insert(&mut self.classes, &self.fingerprints, texts, [id], value)
+    }
+    pub(super) fn class_by_id(&self, id: usize) -> Option<&ClassTypes<usize, u64>> {
+        let fingerprint = self.id_fingerprint([id], false);
+        self.classes
+            .positions
+            .find(fingerprint, |&index| self.classes.entries[index].0.ids == [id])
+            .map(|&index| &self.classes.entries[index].1)
     }
     fn lookup<'a, const N: usize>(&'a self, values: [&'a str; N], method: bool) -> Lookup<'a, N> {
         Lookup {
@@ -657,6 +793,235 @@ impl CompactTable {
             values,
             context: self.key_context(method),
         }
+    }
+
+    // ---- Shared-dictionary member keys -----------------------------------------------
+    //
+    // The erased position of a key is a raw type row (fields) or a signature row
+    // (methods). Signature rows are unique by text, which the parser enforces; raw rows
+    // are not, so a key hashes and compares its field's canonical raw row.
+
+    const NOT_RAW: u32 = u32::MAX;
+
+    fn id_keys(&self, method: bool) -> IdKeys<'_> {
+        IdKeys {
+            fingerprints: &self.fingerprints,
+            canonical: &self.raw_canonical,
+            descriptorless: self.descriptorless,
+            method,
+        }
+    }
+    fn id_fingerprint<const N: usize>(&self, ids: [usize; N], method: bool) -> u64 {
+        self.id_keys(method).fingerprint(ids)
+    }
+    fn ids_equal<const N: usize>(&self, a: [usize; N], b: [usize; N], method: bool) -> bool {
+        self.id_keys(method).equal(a, b)
+    }
+    /// The first row rendering the same erased descriptor as `row`, assigning it on first sight.
+    pub(super) fn canonical_raw(&mut self, texts: &dyn Texts, row: usize) -> usize {
+        if self.raw_canonical.len() < self.types.len() {
+            self.raw_canonical.resize(self.types.len(), Self::NOT_RAW);
+        }
+        if self.raw_canonical[row] != Self::NOT_RAW {
+            return self.raw_canonical[row] as usize;
+        }
+        let types = &self.types;
+        let mut hash = self.fingerprints.build_hasher();
+        raw::hash_bytes(&mut hash, raw::type_bytes(types, texts, row));
+        let fingerprint = hash.finish();
+        let canonical = match self.raw_text_index.find(fingerprint, |&other| {
+            raw::type_bytes(types, texts, other).eq(raw::type_bytes(types, texts, row))
+        }) {
+            Some(&other) => other,
+            None => {
+                let fingerprints = &self.fingerprints;
+                self.raw_text_index
+                    .insert_unique(fingerprint, row, |&other| {
+                        let mut hash = fingerprints.build_hasher();
+                        raw::hash_bytes(&mut hash, raw::type_bytes(types, texts, other));
+                        hash.finish()
+                    });
+                row
+            }
+        };
+        self.raw_canonical[row] = canonical as u32;
+        canonical
+    }
+    fn signature_fingerprint(&self, rows: impl Iterator<Item = usize>, returns: usize) -> u64 {
+        let mut hash = self.fingerprints.build_hasher();
+        for row in rows {
+            row.hash(&mut hash);
+        }
+        usize::MAX.hash(&mut hash);
+        returns.hash(&mut hash);
+        hash.finish()
+    }
+    /// Index the parsed signatures by canonical rows; must run before members are inserted.
+    pub(super) fn index_signature_rows(&mut self, texts: &dyn Texts) {
+        for index in 0..self.signatures.len() {
+            let rows: Vec<usize> = self.signatures[index].parameters.clone();
+            let returns = self.signatures[index].returns;
+            for row in rows.into_iter().chain(std::iter::once(returns)) {
+                self.canonical_raw(texts, row);
+            }
+        }
+        let signatures = &self.signatures;
+        let canonical = &self.raw_canonical;
+        let canon = |row: usize| canonical[row] as usize;
+        let fingerprints = &self.fingerprints;
+        let fingerprint = |signature: &RawSignature| {
+            let mut hash = fingerprints.build_hasher();
+            for &row in &signature.parameters {
+                canon(row).hash(&mut hash);
+            }
+            usize::MAX.hash(&mut hash);
+            canon(signature.returns).hash(&mut hash);
+            hash.finish()
+        };
+        self.signature_rows = HashTable::with_capacity(signatures.len());
+        for (index, signature) in signatures.iter().enumerate() {
+            // Text uniqueness was enforced by the parser; equal canonical rows would be
+            // equal text, so the entry is unique.
+            self.signature_rows
+                .insert_unique(fingerprint(signature), index, |&other| {
+                    fingerprint(&signatures[other])
+                });
+        }
+    }
+    /// Map the graph's spelling of each erased type (its Java type name) to the canonical
+    /// raw row. Runs once the members are known, over the rows they reference.
+    pub(super) fn finish_id_index(&mut self) {
+        let Some(strings) = self.texts.shared() else {
+            return;
+        };
+        let mut by_name = HashMap::new();
+        for row in 0..self.raw_canonical.len() {
+            if self.raw_canonical[row] != row as u32 {
+                continue;
+            }
+            let mut dimensions = 0usize;
+            let mut base = row;
+            while self.types[base].kind == 2 {
+                dimensions += 1;
+                base = self.types[base].component().expect("validated array");
+            }
+            let t = &self.types[base];
+            let name = self.texts.text(t.name);
+            // A class spelled like a primitive can never be the type a node names:
+            // `push_type_descriptor` reads that word as the primitive.
+            if t.kind == 0 && raw::primitive_descriptor(name).is_some() {
+                continue;
+            }
+            let sid = if dimensions == 0 {
+                Some(t.name)
+            } else {
+                let mut spelled = String::with_capacity(name.len() + 2 * dimensions);
+                spelled.push_str(name);
+                for _ in 0..dimensions {
+                    spelled.push_str("[]");
+                }
+                strings.index_of(&spelled)
+            };
+            if let Some(sid) = sid {
+                by_name.entry(sid).or_insert(row);
+            }
+        }
+        self.raw_by_name = by_name;
+    }
+    /// The canonical erased row of the type a node spells by the string `name_sid`.
+    pub(super) fn raw_row_of_type_name(&self, name_sid: usize) -> Option<usize> {
+        self.raw_by_name.get(&name_sid).copied()
+    }
+    pub(super) fn field_by_ids(&self, owner: usize, name: usize, raw: usize) -> Option<usize> {
+        let ids = [owner, name, raw];
+        let fingerprint = self.id_fingerprint(ids, false);
+        self.fields
+            .positions
+            .find(fingerprint, |&index| {
+                self.ids_equal(ids, self.fields.entries[index].0.ids, false)
+            })
+            .map(|&index| self.fields.entries[index].1)
+    }
+    /// The signature row of a method whose erased parameter and return types are the rows given.
+    pub(super) fn signature_row_of(
+        &self,
+        parameters: impl Iterator<Item = usize> + Clone,
+        returns: usize,
+    ) -> Option<usize> {
+        let fingerprint = self.signature_fingerprint(parameters.clone(), returns);
+        let canonical = &self.raw_canonical;
+        self.signature_rows
+            .find(fingerprint, |&index| {
+                let signature = &self.signatures[index];
+                canonical[signature.returns] as usize == returns
+                    && signature.parameters.len() == parameters.clone().count()
+                    && signature
+                        .parameters
+                        .iter()
+                        .zip(parameters.clone())
+                        .all(|(&row, expected)| canonical[row] as usize == expected)
+            })
+            .copied()
+    }
+    pub(super) fn method_by_ids(
+        &self,
+        owner: usize,
+        name: usize,
+        signature: usize,
+    ) -> Option<&StoredMethod> {
+        let ids = [owner, name, signature];
+        let fingerprint = self.id_fingerprint(ids, true);
+        self.methods
+            .positions
+            .find(fingerprint, |&index| {
+                self.ids_equal(ids, self.methods.entries[index].0.ids, true)
+            })
+            .map(|&index| &self.methods.entries[index].1)
+    }
+    /// Text lookups on a shared-dictionary table go through the IDs the texts stand for.
+    fn ids_of_texts<const N: usize>(&self, values: [&str; N], method: bool) -> Option<[usize; N]> {
+        let strings = self.texts.shared()?;
+        let mut ids = [0usize; N];
+        for (position, value) in values.into_iter().enumerate() {
+            ids[position] = if position == 2 && self.descriptorless {
+                if method {
+                    self.signature_row_of_text(value)?
+                } else {
+                    self.raw_row_of_text(value)?
+                }
+            } else {
+                strings.index_of(value)?
+            };
+        }
+        Some(ids)
+    }
+    fn raw_row_of_text(&self, descriptor: &str) -> Option<usize> {
+        let mut hash = self.fingerprints.build_hasher();
+        raw::hash_text(&mut hash, descriptor);
+        let fingerprint = hash.finish();
+        self.raw_text_index
+            .find(fingerprint, |&row| {
+                raw::type_bytes(&self.types, &self.texts, row).eq(descriptor.bytes())
+            })
+            .copied()
+    }
+    fn signature_row_of_text(&self, descriptor: &str) -> Option<usize> {
+        // Parse the descriptor into its erased types and bind each to its canonical row.
+        let rest = descriptor.strip_prefix('(')?;
+        let close = rest.find(')')?;
+        let (parameters, returns) = (&rest[..close], &rest[close + 1..]);
+        let mut rows = Vec::new();
+        let mut cursor = parameters;
+        while !cursor.is_empty() {
+            let length = raw_descriptor_length(cursor)?;
+            rows.push(self.raw_row_of_text(&cursor[..length])?);
+            cursor = &cursor[length..];
+        }
+        if raw_descriptor_length(returns)? != returns.len() {
+            return None;
+        }
+        let returns = self.raw_row_of_text(returns)?;
+        self.signature_row_of(rows.iter().copied(), returns)
     }
     fn key_context(&self, method: bool) -> KeyContext<'_> {
         KeyContext {
@@ -871,6 +1236,10 @@ impl DeclaredTypes {
     }
     pub fn field_type(&self, owner: &str, name: &str, descriptor: &str) -> Option<usize> {
         match &self.storage {
+            Storage::Compact(t) if t.shared_ids => {
+                let [owner, name, raw] = t.ids_of_texts([owner, name, descriptor], false)?;
+                t.field_by_ids(owner, name, raw)
+            }
             Storage::Compact(t) => t
                 .fields
                 .get(&t.lookup([owner, name, descriptor], false))
@@ -881,6 +1250,67 @@ impl DeclaredTypes {
                 .copied(),
         }
     }
+    /// The declared type of a field the graph spells by string IDs: its class, name and
+    /// Java type name (`int[]`, `java.util.List`), as a `FieldNode` carries them.
+    pub fn field_type_by_ids(&self, owner: usize, name: usize, type_name: usize) -> Option<Option<usize>> {
+        match &self.storage {
+            Storage::Compact(t) if t.shared_ids && t.descriptorless => {
+                let Some(raw) = t.raw_row_of_type_name(type_name) else {
+                    return Some(None);
+                };
+                Some(t.field_by_ids(owner, name, raw))
+            }
+            _ => None,
+        }
+    }
+    /// The declared types of a method the graph spells by string IDs. `None` means the table
+    /// cannot answer by ID and the caller must spell the descriptor; `Some(None)` is an unbound method.
+    pub fn method_types_by_ids(
+        &self,
+        owner: usize,
+        name: usize,
+        parameter_types: &[u32],
+        return_type: usize,
+    ) -> Option<Option<MethodView<'_>>> {
+        let Storage::Compact(t) = &self.storage else {
+            return None;
+        };
+        if !(t.shared_ids && t.descriptorless) {
+            return None;
+        }
+        let mut rows = [0usize; 16];
+        let mut spilled = Vec::new();
+        let count = parameter_types.len();
+        for (index, &sid) in parameter_types.iter().enumerate() {
+            let Some(row) = t.raw_row_of_type_name(sid as usize) else {
+                return Some(None);
+            };
+            if count <= rows.len() {
+                rows[index] = row;
+            } else {
+                spilled.push(row);
+            }
+        }
+        let Some(returns) = t.raw_row_of_type_name(return_type) else {
+            return Some(None);
+        };
+        let rows: &[usize] = if count <= rows.len() {
+            &rows[..count]
+        } else {
+            &spilled
+        };
+        let Some(signature) = t.signature_row_of(rows.iter().copied(), returns) else {
+            return Some(None);
+        };
+        let Some(m) = t.method_by_ids(owner, name, signature) else {
+            return Some(None);
+        };
+        Some(Some(MethodView {
+            parameters: &t.method_parameters[m.parameters.clone()],
+            returns: m.returns,
+            type_parameters: Formals::Compact(&t.method_formals[m.type_parameters.clone()], self),
+        }))
+    }
     pub fn method_types(
         &self,
         owner: &str,
@@ -889,7 +1319,12 @@ impl DeclaredTypes {
     ) -> Option<MethodView<'_>> {
         match &self.storage {
             Storage::Compact(t) => {
-                let m = t.methods.get(&t.lookup([owner, name, descriptor], true))?;
+                let m = if t.shared_ids {
+                    let [owner, name, signature] = t.ids_of_texts([owner, name, descriptor], true)?;
+                    t.method_by_ids(owner, name, signature)?
+                } else {
+                    t.methods.get(&t.lookup([owner, name, descriptor], true))?
+                };
                 Some(MethodView {
                     parameters: &t.method_parameters[m.parameters.clone()],
                     returns: m.returns,
@@ -912,7 +1347,12 @@ impl DeclaredTypes {
     fn class_types(&self, name: &str) -> Option<ClassView<'_>> {
         match &self.storage {
             Storage::Compact(t) => {
-                let c = t.classes.get(&t.lookup([name], false))?;
+                let c = if t.shared_ids {
+                    let [id] = t.ids_of_texts([name], false)?;
+                    t.class_by_id(id)?
+                } else {
+                    t.classes.get(&t.lookup([name], false))?
+                };
                 Some(ClassView {
                     type_parameters: Formals::Compact(&c.type_parameters, self),
                     superclass: c.superclass,

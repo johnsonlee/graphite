@@ -276,6 +276,16 @@ impl DeclaredTypes {
         method: &crate::node::MethodDesc,
         strings: &crate::strings::StringTable,
     ) -> Option<MethodView<'a>> {
+        // A shared-dictionary table binds by the IDs the method already carries; only a
+        // legacy table needs the descriptor spelled out and hashed as text.
+        if let Some(bound) = self.method_types_by_ids(
+            method.declaring_class as usize,
+            method.name as usize,
+            &method.parameter_types,
+            method.return_type as usize,
+        ) {
+            return bound;
+        }
         self.method_types(
             strings.get(method.declaring_class as usize),
             strings.get(method.name as usize),
@@ -296,6 +306,13 @@ impl DeclaredTypes {
                 field_type,
                 ..
             } => {
+                if let Some(bound) = self.field_type_by_ids(
+                    *declaring_class as usize,
+                    *name as usize,
+                    *field_type as usize,
+                ) {
+                    return bound;
+                }
                 let mut descriptor = String::new();
                 crate::node::push_type_descriptor(
                     strings.get(*field_type as usize),
@@ -442,6 +459,8 @@ impl DeclaredTypes {
         let mut table = CompactTable::default();
         table.structural = r.structural;
         table.descriptorless = version == 0x47545905;
+        // A canonical dictionary lets members key by ID; any other shape keeps text keys.
+        table.shared_ids = r.shared.is_some_and(StringTable::canonical_dictionary);
         table
             .types
             .try_reserve_exact(count)
@@ -466,6 +485,9 @@ impl DeclaredTypes {
             raw::RawValidation::new(if table.descriptorless { count } else { 0 });
         if table.descriptorless {
             table.signatures = r.signatures(&table.types, &mut raw_validation)?;
+            if table.shared_ids {
+                table.index_signature_rows(&r);
+            }
         }
         let field_count = r.section_count(16)?;
         table
@@ -536,6 +558,7 @@ impl DeclaredTypes {
             Some(strings) => repr::TextStore::Shared(strings.clone()),
             None => repr::TextStore::Owned(r.strings.into_iter().collect()),
         };
+        table.finish_id_index();
         let mut table = Self {
             storage: Storage::Compact(table),
         };

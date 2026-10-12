@@ -29,6 +29,10 @@ struct StringBacking {
     /// `offsets[i]..offsets[i+1]` is string i (UTF-8).
     offsets: Vec<u32>,
     invalid_utf16: Vec<usize>,
+    /// Whether the dictionary is strictly ascending in Java order, decided once on first
+    /// use: the writer always sorts and deduplicates, and a reader may then equate IDs
+    /// with texts and binary-search by text.
+    canonical: std::sync::OnceLock<bool>,
 }
 
 impl StringTable {
@@ -179,6 +183,7 @@ impl StringTable {
                 arena,
                 offsets,
                 invalid_utf16,
+                canonical: std::sync::OnceLock::new(),
             }),
             identity: None,
             serialized_digest: verified.then(|| Sha256::digest(data).into()),
@@ -238,6 +243,14 @@ impl StringTable {
             d.update(s);
         }
         d.finalize().into()
+    }
+
+    /// A strictly ascending dictionary (the writer's `toSortedSet()`): two IDs are equal
+    /// exactly when their texts are, and [`Self::index_of`] finds every text it holds.
+    pub fn canonical_dictionary(&self) -> bool {
+        *self.backing.canonical.get_or_init(|| {
+            (1..self.len()).all(|i| java_cmp(self.get(i - 1), self.get(i)) == std::cmp::Ordering::Less)
+        })
     }
 
     /// Binary search (strings are sorted by Java `String.compareTo`, i.e. UTF-16 order).

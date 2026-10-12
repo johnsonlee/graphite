@@ -8,7 +8,7 @@ pub(super) struct RawSignature {
     pub(super) returns: usize,
 }
 
-fn primitive_descriptor(name: &str) -> Option<&'static str> {
+pub(super) fn primitive_descriptor(name: &str) -> Option<&'static str> {
     Some(match name {
         "boolean" => "Z",
         "byte" => "B",

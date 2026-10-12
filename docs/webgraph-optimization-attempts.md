@@ -20386,3 +20386,54 @@ Base04102bce. Evidence:
 /tmp/graphite-attempt269-fast-results.json,
 /tmp/graphite-attempt269-node-{result.json,tests.log},
 /tmp/graphite-attempt269-integration-review.json.
+
+### Attempt270 — bind native members by string ID on a canonical dictionary (2026-10-12)
+
+A GTY05 table shares `graph.strings`, so a node's declaring class, member name and type
+names are already dictionary IDs. The native reader still spelled each binding out as text
+(a descriptor built from the type names, hashed, and compared against decoded rows) once per
+row for every `generic_type`, `type_info`, keys and declaration-presence evaluation. When the
+dictionary is canonical (strictly ascending in Java order, which the writer guarantees and the
+reader checks once per table, `StringTable::canonical_dictionary`), the compact table now keys
+fields, methods and classes by ID: erased rows are canonicalised by text once at parse, every
+erased signature is indexed by its canonical rows, and a Java type-name ID maps to its
+canonical raw row (`finish_id_index`; arrays through the `name[]…` spelling the dictionary
+holds; a class named like a primitive is never bound by ID, because `push_type_descriptor`
+reads that word as the primitive). `DeclaredTypes::method` and `node_type_id` try
+`method_types_by_ids` / `field_type_by_ids` first and fall back to the text path for an
+unsorted or duplicated dictionary, which the readers must keep tolerating
+(`types_id_binding_tests.rs` covers both shapes, the lost-dimension spelling, a primitive-named
+class and a duplicate raw row behind a signature).
+
+Environment: 4 vCPU/15GiB cloud container, Linux 6.18. Workload: 16 copies of the
+kotlin-compiler-embeddable shard 15 (one of the fixture64 shards, `stableShard`), built by the
+base writer for the base server and by the candidate writer for the candidate server;
+`graphite serve --load-mode MAPPED --max-concurrent-cypher 4`; every case of
+`multigraph-pressure-cases.json` sent sequentially to `/api/cypher` over the 16 graphs, one
+warm request then 7 samples per case per server, base/cand/cand/base server order, p50/p95 over
+the pooled 14 samples. Base 4f2ccf3 server, candidate = PR head 40c76231 plus this attempt and
+Attempt271. Milliseconds:
+
+| Case | base p50 | cand p50 | Δp50 | base p95 | cand p95 | Δp95 |
+|---|---|---|---|---|---|---|
+| feature-methods |307.0|48.0|−259.0|362.7|56.2|−306.5|
+| slow-qualifiedIdHit |61.7|15.3|−46.4|68.1|17.4|−50.7|
+| slow-qualifiedIdMiss |54.8|14.6|−40.2|58.2|18.6|−39.6|
+| shape-with-filter |1357.6|1154.3|−203.3|2782.9|2296.6|−486.4|
+| shape-order-by-desc-broad |950.6|763.7|−187.0|1107.4|1101.7|−5.6|
+| shape-order-by |962.2|794.6|−167.6|1066.4|904.5|−162.0|
+| shape-collect |744.9|621.4|−123.5|900.6|708.5|−192.1|
+| slow-dynamicMiss |833.5|771.5|−62.0|904.5|869.2|−35.3|
+| slow-dynamicHit |832.8|790.0|−42.8|923.7|846.4|−77.4|
+| shape-with-aggregate-broad |207.2|181.6|−25.6|243.4|190.6|−52.7|
+| slow-valueMiss |56.6|58.2|+1.7|66.8|78.1|+11.3|
+| slow-dataflowSourceHit |44.2|46.5|+2.3|46.8|55.2|+8.4|
+
+Every case over 60ms is faster; the p95 increases are on 45–60ms cases with 14 samples, where
+a 15-sample re-run of the same cases gave slow-valueMiss +16.4/+36.9, slow-dataflowSourceHit
++6.9/+5.3 and slow-dataflowSourceMiss −0.5/+5.7, so the variance of these rows exceeds the
+differences; neither query reads a declaration. The hosted gate compares each case's p50 and
+p95 with no tolerance, so these rows decide it on noise. Correctness: 127 storage, 187 cypher
+and the fixture-backed interoperability tests pass; the Kotlin fixture dictionaries are
+canonical, so the ID path is the one the hosted graphs take. Evidence:
+scratchpad `fx/query-ab-native-kc-15-x16.json`, `chain_lazy.log`, `chain3.log`.
