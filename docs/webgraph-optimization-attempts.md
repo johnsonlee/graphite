@@ -20817,3 +20817,45 @@ the declaration binding is the fallback for a null: `generic_type` and `type_inf
 no node type, so no value changes, and a read of a stored property costs what it cost on the
 base. 1,381 cypher tests and detekt pass. The effect on this shard is at most the few percent
 the adjacent shots showed; the cold-shot spread is the gate's, not the engine's.
+
+### Attempt283 — run 38235245328 (1b598b3): what the pressure gates say now (2026-10-12)
+
+Analysis, no code change. The first hosted run carrying Attempts 277–282 end to end.
+
+**Native queries (`rust-query-native`): every latency row passes, RSS fails in three pairs.**
+All 40 cases are within the 100ms/5% tolerance in all four pairs, the dynamic rows included:
+slow-dynamicHit 2132→1962ms, slow-dynamicMiss 2018→1685ms, slow-qualifiedIdHit 1606→214ms,
+feature-methods 2118→312ms (p50, pair 1-A → 2-B); the stage's wall 209s→154s and its CPU
+819s→606s (−26%, PASS). RSS: candidate cells 13.01GB (2-B) and 13.94GB (3-B) against base
+cells 11.75 (0-C), 12.93 (1-A), 12.57 (4-A), 12.67GB (5-C); pairs +0.6% (PASS), +10.9%, +10.7%,
++10.0% (FAIL). From each cell's `resources.jsonl` and `pressure/stage.json`: every cell's peak
+is reached with the same four requests in flight, `shape-order-by`, `shape-order-by-desc-broad`,
+`shape-with-aggregate-broad` and `shape-with-filter` (or two of them with dynamicHit and
+qualifiedIdHit in 1-A and 4-A), all CallSite-only projections that read no declared type; the
+response bodies of every shape case are byte-identical between arms; no cell's RSS grows across
+the twenty rounds (per-decile peaks 12.6–13.0 in 2-B, 12.8–13.9 in 3-B, 11.1–11.8 in 0-C), and
+the two candidate cells differ from each other by 0.9GB at the same in-flight set, the two
+accepted-baseline cells by 0.9GB too. The candidate's floor is higher (9.4–9.7GB between bursts
+against 8.2–9.4GB), which is the lazily loaded tables and the pages they touch, and its bursts
+reach higher; the whole-stage peak of four concurrent full-corpus projections is a quantity the
+host's allocator decides as much as the engine.
+
+**JVM queries (`rust-jvm-correctness`): running at 8g; result pending at this entry.**
+
+**Native loading: PASS** (wall −12.7 to −20.0s on 50–58s, CPU and RSS within bounds).
+**JVM loading (`rust-loading`): FAIL on one CPU interval.** Wall 10.5–10.8s → 7.7–7.8s
+(−27%), RSS −3.1 to −6.5% in all pairs, CPU 8.90–8.96→9.15–9.19 (PASS), 9.12–9.17→9.05–9.11
+(PASS), 9.55–9.60→9.05–9.11 (PASS), and 8.71–8.76→9.15–9.19s, +4.5% to +5.5%, INDETERMINATE: the
+four base cells span 8.71–9.60s (10%), the candidate's 9.05–9.19s sit inside that span, and the
+pair against the fastest base cell straddles the 5% line.
+
+**Construction: FAIL on wall in both directions, CPU above 5% in two pairs.** 397.0→415.2s
+(+18.1s, +4.6%), 419.1→423.3s (+4.2s, +1.0%), 397.6→415.2s (+17.6s, +4.4%), 420.8→423.3s (+2.4s,
++0.6%); CPU 512.5→542.5 (+5.9%), 528.4→541.2 (+2.4%), 505.3→542.5 (+7.4%), 525.5→541.2 (+3.0%);
+RSS −0.5 to −3.1%. Attempt281's local account stands: about half the cost is the table the
+feature writes on the main thread, half the compressor's handoff signalling; the base cells
+themselves span 505–528s of CPU (4.5%).
+
+**Everything else green**: all correctness gates, the five `wrapped-query-latency` shards
+(real-a at the noise Attempt282 described), `wrapped-query-resources`, `global-wide-pressure`,
+coverage 98.1–98.5% per module.
