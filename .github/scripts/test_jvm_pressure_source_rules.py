@@ -155,7 +155,8 @@ class SourceRuleTests(unittest.TestCase):
     def test_baseline_role_cannot_claim_new_revision_or_candidate_source(self):
         for profile, revision in (('accepted4f', 'b'*40), ('declared5a', p.REVIEWED_AT['accepted4f']),
                                   ('optimized-declared24af', p.REVIEWED_AT['accepted4f']),
-                                  ('lazy-declared-a9d4', p.REVIEWED_AT['accepted4f'])):
+                                  ('lazy-declared-a9d4', p.REVIEWED_AT['accepted4f']),
+                                  ('streamed-digest-16c1', p.REVIEWED_AT['accepted4f'])):
             plan = self.fixture(profile, 'accepted-baseline', revision)
             with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, 'accepted baseline'): p.audit(plan)
 
@@ -174,7 +175,7 @@ class CurrentTrackedSourceTests(unittest.TestCase):
 
     def test_current_tracked_source_matches_reviewed_complete_profile(self):
         profile, sources = p.recognized({'root': str(self.checkout), 'files': self.sources}, self.sources)
-        self.assertEqual('lazy-declared-a9d4', profile)
+        self.assertEqual('streamed-digest-16c1', profile)
         self.assertEqual(166, len(sources))
 
     def test_actual_inventory_changes_removal_addition_and_dependency_change_fail(self):

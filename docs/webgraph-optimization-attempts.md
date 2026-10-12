@@ -20577,3 +20577,18 @@ and dependency changes still fail. The controls manifests pin the rules, their t
 pressure comparison script, and the workflow pins the manifests, so both manifests and both
 `MULTIGRAPH_*_CONTROLS_SHA256` values are re-pinned. 13 source-rule tests and 238 gate tests
 pass.
+
+### Attempt276 — stream the lazily computed dictionary digest (2026-10-12)
+
+The hosted `rust-jvm-correctness` job failed on both the candidate (B) and the accepted
+baseline 4f server (C) at the same request, `feature-nodes` over the 64 real shards, with
+`Java heap space` at the harness's `-Xmx4g`: the Kotlin general pipeline materializes every
+MATCH binding before aggregating, and this job has never passed on this PR (run 38151918852
+failed both arms too). A local 63-shard check at `-Xmx4g` found the lazy table no worse than
+the eager one: peak RSS after the feature queries 5.46GB (lazy) against 5.52GB (eager
+40c7623), readiness RSS 446MB against 726MB, both answering. One thing the lazy path did do
+worse was read `graph.strings` into a single array for its digest inside a query, a humongous
+allocation on a heap that may hold the query's rows; the digest now streams through
+`WireIo.digest`. The source profile moves to `streamed-digest-...` and the controls are
+re-pinned. The job itself needs a decision outside this PR's code: an 8g correctness server
+(within the heap ceiling, both arms alike) or streaming aggregation in the Kotlin engine.

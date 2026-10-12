@@ -222,6 +222,15 @@ LAZY_DECLARED_OVERRIDES = {
     'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt':
         'bab7fb929e1f48ee5b086486602fd5792f8428ad9f1a096b954a94847708d915',
 }
+# The same profile with the dictionary digest streamed (Attempt276, 16c1208): the lazily
+# computed SHA-256 of graph.strings no longer reads the file into one heap array.
+REVIEWED_AT['streamed-digest-16c1'] = '16c1208504c559dcb51a3c136386dfdd85c77799'
+STREAMED_DIGEST_OVERRIDES = {
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStore.kt':
+        '492b77e3330ae124901011498c207c574c9a683a00113c609d6834c5c854daa2',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt':
+        '9b55d484a4546e1e3c780e37a2ad016da98bfdda617e9547c0e33dcceb56c100',
+}
 REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '07e6d3927021c674a49689314e4e5e810d5b7fd1d8061bebb782839a1cc05906', 'jvm_pressure_derivation.py': '7a0f34205b036194718779cc010ffa951d904235fee96aeb940a8f0559962ecc', 'jvm_pressure_distinct.py': 'b43ec1ef82170c22229f0a62bc8b0dc33601c6b74f70257096685b6790bc5a3d', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
 REQUEST_CONTRACT_SHA = '5da64e89009f4702d5f55b23e75def8561636841a605fb940dab24d93ba023d4'
 
@@ -291,6 +300,7 @@ def profiles():
               for index, name in enumerate(('accepted4f', 'declared5a'))}
     result['optimized-declared24af'] = {**result['declared5a'], **OPTIMIZED_DECLARED_OVERRIDES}
     result['lazy-declared-a9d4'] = {**result['optimized-declared24af'], **LAZY_DECLARED_OVERRIDES}
+    result['streamed-digest-16c1'] = {**result['lazy-declared-a9d4'], **STREAMED_DIGEST_OVERRIDES}
     return result
 
 
