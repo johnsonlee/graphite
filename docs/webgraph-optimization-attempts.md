@@ -20755,3 +20755,44 @@ search has never pushed `callee_descriptor`/`caller_descriptor`, so a word hidde
 descriptor's package (`int` in `Lit/unimi/dsi/fastutil/ints/IntOpenHashSet;`) is found by the
 generic evaluation and not by the pushed one, on the base revision as here (3214 against
 3216 call sites of the indexed fixture).
+
+### Attempt281 — where construction's remaining 4% goes (2026-10-12)
+
+Analysis, no code change. Run 38206777955's `rust-construction` failed its `wall ≤ base` rule
+in one direction (02-A → 03-B +15,040ms on 410,450ms, +3.7%; 01-C → 03-B +12,220ms, +3.0%) and
+passed it in the other (05-A → 04-B −22,540ms; 06-C → 04-B −20,900ms); CPU +4.4–4.5% and RSS
+−0.6–−3.2% passed. Locally, the jar at bbab141 against the base jar, ABBA, three rounds:
+
+| shard | wall base → cand | CPU | max RSS |
+|---|---|---|---|
+| android-00 (42MB graph) | 9.651s → 10.043s (+392ms, +4.1%) | 28.61s → 29.76s (+4.0%) | 1,147MB → 1,131MB (−1.5%) |
+| kc-15 (28MB graph) | 7.932s → 8.342s (+409ms, +5.2%) | 24.04s → 25.42s (+5.8%) | 741MB → 814MB (+9.9%; the JVM's max RSS moves by that much between rounds) |
+
+Two JFR runs per arm on android-00 (1ms execution samples, 6,251 base against 6,544 candidate
+samples) put the difference in two places:
+
+- **The declared-type work itself, ~0.23s per build (~2.3%), all on the main thread**: 468
+  samples (two runs) under `DeclaredType*`: `DeclaredTypesReader.build` and its parser (the
+  generic signatures read from the class files), `DeclaredTypeTable.validateExpressions` /
+  `validateMemberReferences`, `StructuralDeclaredTypeScopes.forTable`,
+  `DeclaredTypeStringIds.visit` (the shared-dictionary atoms), `requireWellFormedUtf16` and
+  `DeclaredTypeStore.writeTable`; `GraphStore.saveGraph` itself carries +41 self samples of
+  inlined table work. Each piece is 10–30ms a build; together they are the feature's write cost
+  after Attempts 273 and 276.
+- **Lock signalling inside `BVGraph.store`, ~0.18s per build (~1.8%)**: the main thread's
+  `ReentrantLock.unlock → signalNext → getAndUnsetStatus` rose from 53 to 416 samples, and the
+  two compression threads from 670 to 926 (`diffComp`, `intervalize`). The graph handed to
+  `BVGraph.store` is byte-identical (`forward.graph` and the compression settings match; only
+  the `graphite.declaredTypes.sha256` property is new), GC is identical (14 young pauses,
+  398ms against 400ms, no concurrent cycle), and nothing else runs on the main thread during
+  the store. The compression threads park and are signalled more often in the candidate; the
+  most likely cause is scheduling on four cores, where the candidate's extra code keeps the JIT
+  threads busier while the store runs. It is not a change in the work the store does.
+
+So construction carries a real ~+4% wall and CPU cost per graph: roughly half is the table the
+feature writes, roughly half an interaction with the compressor's handoff that this frontend
+does not control. The hosted gate's two directions differ by ±5% between runs of the same
+pair, so with this cost the `wall ≤ base` rule fails about half the time in one direction and
+passes in the other; the +5% CPU rule holds with little margin. Shaving the table work further
+(a third of 0.23s would be ~0.8% of a build) cannot move that outcome; a construction wall
+tolerance comparable to the queries' is the user's call, not this log's.
