@@ -95,12 +95,19 @@ object NodePropertyAccessor {
         "node" to Node::class.java
     )
 
+    /**
+     * The erased property first: every read of a stored property, which is nearly every
+     * read, costs nothing beyond what it cost before declared types existed. Only a name no
+     * node type stores (`generic_type`, `type_info`, or an absent one) reaches the
+     * declaration binding, and those two are never stored, so the order changes no value.
+     */
     fun getProperty(node: Node, property: String, graph: Graph?): Any? =
-        if (DeclaredTypeProperties.isNodeProperty(node, property)) {
-            DeclaredTypeProperties.nodeProperty(node, property, graph)
-        } else {
-            getProperty(node, property)
-        }
+        getProperty(node, property)
+            ?: if (DeclaredTypeProperties.isNodeProperty(node, property)) {
+                DeclaredTypeProperties.nodeProperty(node, property, graph)
+            } else {
+                null
+            }
 
     fun getProperty(node: Node, property: String): Any? {
         // Check global properties first (except PROPERTY_TYPE which is ambiguous)

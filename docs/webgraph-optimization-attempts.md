@@ -20796,3 +20796,24 @@ pair, so with this cost the `wall ≤ base` rule fails about half the time in on
 passes in the other; the +5% CPU rule holds with little margin. Shaving the table work further
 (a third of 0.23s would be ~0.8% of a build) cannot move that outcome; a construction wall
 tolerance comparable to the queries' is the user's call, not this log's.
+
+### Attempt282 — a stored property read skips the declared-type check (2026-10-12)
+
+Run 38232513138's `wrapped-query-latency-shard-real-a` (the Kotlin engine's single-shard JMH
+anchor, three single shots per arm) failed its 15% point-estimate rule on
+`zeroHitBroadContainsCaseInsensitiveDiscovery`: base 0.234/0.198/0.178s (mean 0.203),
+candidate 0.328/0.210/0.183s (0.240, +18.1%); the reverse-order confirmation 0.269/0.179/0.192
+against 0.208/0.351/0.216 (+21.2%). Each candidate mean carries one shot 1.5–1.7× its
+neighbours; the shots next to each other sit 3–5% apart, and run 38206777955 passed the same
+shard with the same Kotlin engine at +1.7% (base 0.497/0.177/0.175 against 0.422/0.255/0.186),
+its base holding the 2.8× outlier that time. Single-shot means of three on a 0.2s query are
+noise at this threshold, whichever arm draws the cold shot; the gate blocks on it all the same.
+
+The one systematic cost the candidate added to this path: `NodePropertyAccessor.getProperty(node,
+property, graph)` asked `DeclaredTypeProperties.isNodeProperty` first, three instance checks (and
+two string compares on a Field, Parameter or Return node) on every property read of every node,
+before the erased lookup that answers nearly all of them. The erased lookup now goes first and
+the declaration binding is the fallback for a null: `generic_type` and `type_info` are stored by
+no node type, so no value changes, and a read of a stored property costs what it cost on the
+base. 1,381 cypher tests and detekt pass. The effect on this shard is at most the few percent
+the adjacent shots showed; the cold-shot spread is the gate's, not the engine's.
