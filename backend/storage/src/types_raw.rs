@@ -2,10 +2,76 @@
 use super::repr::{StoredType, Texts};
 use super::TypeError;
 
-#[derive(Debug)]
-pub(super) struct RawSignature {
-    pub(super) parameters: Vec<usize>,
+/// One erased method signature as type rows, borrowed from [`Signatures`].
+#[derive(Clone, Copy, Debug)]
+pub(super) struct RawSignature<'a> {
+    pub(super) parameters: &'a [u32],
     pub(super) returns: usize,
+}
+
+/// Every erased signature of a table in three flat buffers: the parameter rows of all
+/// signatures end to end, where each one starts (one more entry closes the last), and the
+/// return row of each. A signature costs 8 bytes plus 4 per parameter; a `Vec` per
+/// signature cost its header and an allocation each.
+#[derive(Debug)]
+pub(super) struct Signatures {
+    starts: Vec<u32>,
+    returns: Vec<u32>,
+    parameters: Vec<u32>,
+}
+impl Default for Signatures {
+    fn default() -> Self {
+        Self {
+            starts: vec![0],
+            returns: Vec::new(),
+            parameters: Vec::new(),
+        }
+    }
+}
+impl Signatures {
+    pub(super) fn with_capacity(count: usize) -> Result<Self, TypeError> {
+        let mut signatures = Self::default();
+        let allocation = |error: std::collections::TryReserveError| {
+            TypeError(format!("signature allocation: {error}"))
+        };
+        signatures
+            .starts
+            .try_reserve_exact(count)
+            .map_err(allocation)?;
+        signatures
+            .returns
+            .try_reserve_exact(count)
+            .map_err(allocation)?;
+        Ok(signatures)
+    }
+    pub(super) fn len(&self) -> usize {
+        self.returns.len()
+    }
+    pub(super) fn get(&self, index: usize) -> RawSignature<'_> {
+        let start = self.starts[index] as usize;
+        let end = self.starts[index + 1] as usize;
+        RawSignature {
+            parameters: &self.parameters[start..end],
+            returns: self.returns[index] as usize,
+        }
+    }
+    /// Rows are type references the reader has bounded by the type count, so they fit.
+    pub(super) fn push(&mut self, parameters: &[u32], returns: usize) -> Result<(), TypeError> {
+        let allocation = |error: std::collections::TryReserveError| {
+            TypeError(format!("signature allocation: {error}"))
+        };
+        self.parameters
+            .try_reserve(parameters.len())
+            .map_err(allocation)?;
+        self.parameters.extend_from_slice(parameters);
+        let end = u32::try_from(self.parameters.len())
+            .map_err(|_| TypeError("signature rows exceed 32 bits".into()))?;
+        let returns = u32::try_from(returns)
+            .map_err(|_| TypeError("signature return row exceeds 32 bits".into()))?;
+        self.starts.push(end);
+        self.returns.push(returns);
+        Ok(())
+    }
 }
 
 pub(super) fn primitive_descriptor(name: &str) -> Option<&'static str> {
@@ -140,14 +206,14 @@ pub(super) fn type_bytes<'a>(
 pub(super) fn signature_bytes<'a>(
     types: &'a [StoredType],
     texts: &'a dyn Texts,
-    signature: &'a RawSignature,
+    signature: RawSignature<'a>,
 ) -> impl Iterator<Item = u8> + 'a {
     std::iter::once(b'(')
         .chain(
             signature
                 .parameters
                 .iter()
-                .flat_map(move |&id| type_bytes(types, texts, id)),
+                .flat_map(move |&id| type_bytes(types, texts, id as usize)),
         )
         .chain(std::iter::once(b')'))
         .chain(type_bytes(types, texts, signature.returns))
@@ -158,7 +224,7 @@ pub(super) fn type_descriptor(types: &[StoredType], texts: &dyn Texts, id: usize
 pub(super) fn signature_descriptor(
     types: &[StoredType],
     texts: &dyn Texts,
-    signature: &RawSignature,
+    signature: RawSignature<'_>,
 ) -> String {
     String::from_utf8(signature_bytes(types, texts, signature).collect())
         .expect("validated descriptor UTF-8")
@@ -189,13 +255,14 @@ pub(super) fn type_descriptor_length(
 pub(super) fn signature_descriptor_length(
     types: &[StoredType],
     texts: &dyn Texts,
-    signature: &RawSignature,
+    signature: RawSignature<'_>,
 ) -> usize {
     signature
         .parameters
         .iter()
-        .chain(std::iter::once(&signature.returns))
-        .fold(2usize, |length, &id| {
+        .map(|&id| id as usize)
+        .chain(std::iter::once(signature.returns))
+        .fold(2usize, |length, id| {
             length.saturating_add(type_descriptor_length(types, texts, id))
         })
 }

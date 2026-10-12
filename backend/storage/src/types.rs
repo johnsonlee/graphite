@@ -209,41 +209,43 @@ impl<'a> Reader<'a> {
         &mut self,
         types: &[StoredType],
         validation: &mut raw::RawValidation,
-    ) -> Result<Vec<raw::RawSignature>, TypeError> {
+    ) -> Result<raw::Signatures, TypeError> {
         let count = self.section_count(8)?;
-        let mut signatures: Vec<raw::RawSignature> = Vec::new();
-        signatures
-            .try_reserve_exact(count)
-            .map_err(|error| TypeError(format!("signature allocation: {error}")))?;
+        let mut signatures = raw::Signatures::with_capacity(count)?;
         let mut index = hashbrown::HashTable::<usize>::new();
         index
             .try_reserve(count, |_| unreachable!("empty signature index"))
             .map_err(|error| TypeError(format!("signature index allocation: {error}")))?;
         let state = std::collections::hash_map::RandomState::new();
         for _ in 0..count {
+            // A reference is bounded by the type count, which the wire carries as an i32.
+            let parameters: Vec<u32> = self
+                .references(types.len())?
+                .into_iter()
+                .map(|row| row as u32)
+                .collect();
+            let returns = self.reference(types.len())?;
             let signature = raw::RawSignature {
-                parameters: self.references(types.len())?,
-                returns: self.reference(types.len())?,
+                parameters: &parameters,
+                returns,
             };
-            for &parameter in &signature.parameters {
-                validation.validate(types, self, parameter, false)?;
+            for &parameter in signature.parameters {
+                validation.validate(types, self, parameter as usize, false)?;
             }
-            validation.validate(types, self, signature.returns, true)?;
-            raw::check_descriptor_length(raw::signature_descriptor_length(
-                types, self, &signature,
-            ))?;
-            let hash = |signature: &raw::RawSignature| {
+            validation.validate(types, self, returns, true)?;
+            raw::check_descriptor_length(raw::signature_descriptor_length(types, self, signature))?;
+            let hash = |signature: raw::RawSignature<'_>| {
                 let mut hash = state.build_hasher();
                 raw::hash_bytes(&mut hash, raw::signature_bytes(types, self, signature));
                 hash.finish()
             };
-            let fingerprint = hash(&signature);
+            let fingerprint = hash(signature);
             if index
                 .find(fingerprint, |&other| {
-                    raw::signature_bytes(types, self, &signature).eq(raw::signature_bytes(
+                    raw::signature_bytes(types, self, signature).eq(raw::signature_bytes(
                         types,
                         self,
-                        &signatures[other],
+                        signatures.get(other),
                     ))
                 })
                 .is_some()
@@ -251,9 +253,9 @@ impl<'a> Reader<'a> {
                 return Err(TypeError("duplicate erased signature".into()));
             }
             index.insert_unique(fingerprint, signatures.len(), |&other| {
-                hash(&signatures[other])
+                hash(signatures.get(other))
             });
-            signatures.push(signature);
+            signatures.push(&parameters, returns)?;
         }
         Ok(signatures)
     }
@@ -328,7 +330,7 @@ impl DeclaredTypes {
                 self.method(method, strings).and_then(|m| {
                     usize::try_from(*index)
                         .ok()
-                        .and_then(|i| m.parameters.get(i).copied())
+                        .and_then(|i| m.parameters.get(i))
                 })
             }
             NodeKind::Return { method, .. } => self.method(method, strings).map(|m| m.returns),

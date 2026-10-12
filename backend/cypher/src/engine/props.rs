@@ -192,7 +192,7 @@ fn project_generic_method_property(
             types
                 .parameters
                 .iter()
-                .map(|id| Value::str(table.render(*id)))
+                .map(|id| Value::str(table.render(id)))
                 .collect(),
         ),
         "return_type_info" => type_info(table, types.returns),
@@ -200,7 +200,7 @@ fn project_generic_method_property(
             types
                 .parameters
                 .iter()
-                .map(|id| type_info(table, *id))
+                .map(|id| type_info(table, id))
                 .collect(),
         ),
         "type_parameters" => Value::list(

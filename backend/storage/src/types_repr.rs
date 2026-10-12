@@ -1,5 +1,5 @@
 //! Loaded declarations use graph-local text IDs; mutation explicitly owns text.
-use super::raw::{self, RawSignature};
+use super::raw::{self, RawSignature, Signatures};
 use super::TypeError;
 use crate::strings::StringTable;
 use hashbrown::HashTable;
@@ -147,15 +147,30 @@ fn raw_descriptor_length(text: &str) -> Option<usize> {
     }
 }
 
+/// Narrow a dictionary ID, a type row or an entry position for storage: the wire carries
+/// every one of them as 32 bits, so a loaded table never holds a wider value.
+fn narrow(id: usize) -> u32 {
+    u32::try_from(id).expect("wire ID fits 32 bits")
+}
 #[derive(Debug, PartialEq, Eq)]
 struct StoredKey<const N: usize> {
-    ids: [usize; N],
+    ids: [u32; N],
+}
+impl<const N: usize> StoredKey<N> {
+    fn new(ids: [usize; N]) -> Self {
+        Self {
+            ids: ids.map(narrow),
+        }
+    }
+    fn ids(&self) -> [usize; N] {
+        self.ids.map(|id| id as usize)
+    }
 }
 #[derive(Clone, Copy)]
 enum Descriptors<'a> {
     Legacy,
     Fields(&'a [StoredType]),
-    Methods(&'a [StoredType], &'a [RawSignature]),
+    Methods(&'a [StoredType], &'a Signatures),
 }
 #[derive(Clone, Copy)]
 struct KeyContext<'a> {
@@ -179,7 +194,7 @@ impl<'a> KeyContext<'a> {
                     return Cow::Owned(raw::signature_descriptor(
                         types,
                         self.texts,
-                        &signatures[id],
+                        signatures.get(id),
                     ))
                 }
                 Descriptors::Legacy => {}
@@ -194,7 +209,7 @@ impl<'a> KeyContext<'a> {
                     return raw::type_bytes(types, self.texts, id).eq(value.bytes())
                 }
                 Descriptors::Methods(types, signatures) => {
-                    return raw::signature_bytes(types, self.texts, &signatures[id])
+                    return raw::signature_bytes(types, self.texts, signatures.get(id))
                         .eq(value.bytes())
                 }
                 Descriptors::Legacy => {}
@@ -218,8 +233,8 @@ impl<'a> KeyContext<'a> {
                                 .eq(raw::type_bytes(types, self.texts, b))
                         }
                         Descriptors::Methods(types, signatures) => {
-                            return raw::signature_bytes(types, self.texts, &signatures[a])
-                                .eq(raw::signature_bytes(types, self.texts, &signatures[b]))
+                            return raw::signature_bytes(types, self.texts, signatures.get(a))
+                                .eq(raw::signature_bytes(types, self.texts, signatures.get(b)))
                         }
                         Descriptors::Legacy => {}
                     }
@@ -240,7 +255,7 @@ impl<'a> KeyContext<'a> {
                     Descriptors::Methods(types, signatures) => {
                         raw::hash_bytes(
                             &mut hash,
-                            raw::signature_bytes(types, self.texts, &signatures[id]),
+                            raw::signature_bytes(types, self.texts, signatures.get(id)),
                         );
                         continue;
                     }
@@ -264,7 +279,7 @@ impl<const N: usize> Equivalent<StoredKey<N>> for Lookup<'_, N> {
     fn equivalent(&self, key: &StoredKey<N>) -> bool {
         self.values
             .iter()
-            .zip(key.ids)
+            .zip(key.ids())
             .enumerate()
             .all(|(position, (value, id))| self.context.equals(position, id, value))
     }
@@ -275,7 +290,7 @@ impl<const N: usize> Equivalent<StoredKey<N>> for Lookup<'_, N> {
 #[derive(Debug)]
 struct MemberIndex<const N: usize, V> {
     entries: Vec<(StoredKey<N>, V)>,
-    positions: HashTable<usize>,
+    positions: HashTable<u32>,
 }
 impl<const N: usize, V> Default for MemberIndex<N, V> {
     fn default() -> Self {
@@ -309,14 +324,14 @@ impl<const N: usize, V> MemberIndex<N, V> {
     fn get(&self, key: &Lookup<'_, N>) -> Option<&V> {
         self.positions
             .find(key.fingerprint, |index| {
-                key.equivalent(&self.entries[*index].0)
+                key.equivalent(&self.entries[*index as usize].0)
             })
-            .map(|index| &self.entries[*index].1)
+            .map(|index| &self.entries[*index as usize].1)
     }
     fn contains_ids(&self, ids: [usize; N], fingerprint: u64, context: KeyContext<'_>) -> bool {
         self.positions
             .find(fingerprint, |index| {
-                context.equal_keys(ids, self.entries[*index].0.ids)
+                context.equal_keys(ids, self.entries[*index as usize].0.ids())
             })
             .is_some()
     }
@@ -330,11 +345,12 @@ impl<const N: usize, V> MemberIndex<N, V> {
         fingerprint: u64,
         rehash: impl Fn(&StoredKey<N>) -> u64,
     ) {
-        let index = self.entries.len();
-        self.entries.push((StoredKey { ids }, value));
+        let index = narrow(self.entries.len());
+        self.entries.push((StoredKey::new(ids), value));
         let entries = &self.entries;
-        self.positions
-            .insert_unique(fingerprint, index, |index| rehash(&entries[*index].0));
+        self.positions.insert_unique(fingerprint, index, |index| {
+            rehash(&entries[*index as usize].0)
+        });
     }
     #[cfg(test)]
     fn values(&self) -> impl ExactSizeIterator<Item = &V> {
@@ -400,13 +416,13 @@ pub(super) struct CompactTable {
     /// instead of a descriptor string, three text hashes and a text comparison per row,
     /// which is what every `keys(n)`, `RETURN n` and load-time summary paid before.
     pub(super) shared_ids: bool,
-    pub(super) signatures: Vec<RawSignature>,
+    pub(super) signatures: Signatures,
     pub(super) types: Vec<StoredType>,
     // Private keys: inserts and lookups compare full actual text values, through the
     // IDs that stand for them in a shared-dictionary table.
-    fields: MemberIndex<3, usize>,
+    fields: MemberIndex<3, u32>,
     methods: MemberIndex<3, StoredMethod>,
-    method_parameters: Vec<usize>,
+    method_parameters: Vec<u32>,
     method_formals: Vec<TypeParameter<usize, u64>>,
     classes: MemberIndex<1, ClassTypes<usize, u64>>,
     fingerprints: RandomState,
@@ -415,19 +431,30 @@ pub(super) struct CompactTable {
     /// a row no member or signature uses as an erased type). A writer may store one
     /// erased type at several IDs; keys compare the canonical row, as text would.
     raw_canonical: Vec<u32>,
-    raw_text_index: HashTable<usize>,
+    raw_text_index: HashTable<u32>,
     /// Signature rows by their canonical parameter and return rows, for binding a
     /// method descriptor without rendering it.
-    signature_rows: HashTable<usize>,
+    signature_rows: HashTable<u32>,
     /// Canonical erased row by the string ID of its Java type name (`java.util.List`,
     /// `int[]`), the spelling the graph's nodes use.
-    raw_by_name: HashMap<usize, usize>,
+    raw_by_name: HashMap<u32, u32>,
 }
 #[derive(Debug)]
 pub(super) struct StoredMethod {
-    parameters: Range<usize>,
-    returns: usize,
-    type_parameters: Range<usize>,
+    parameters: Range<u32>,
+    returns: u32,
+    type_parameters: Range<u32>,
+}
+impl StoredMethod {
+    fn parameters(&self) -> Range<usize> {
+        self.parameters.start as usize..self.parameters.end as usize
+    }
+    fn returns(&self) -> usize {
+        self.returns as usize
+    }
+    fn formals(&self) -> Range<usize> {
+        self.type_parameters.start as usize..self.type_parameters.end as usize
+    }
 }
 impl CompactTable {
     /// Only validated immutable tables publish a negative summary. Each atom is
@@ -469,13 +496,13 @@ impl CompactTable {
         if tag == 1 || tag == 3 {
             let (key, _) = self.classes.get_index(row).expect("validated class scope");
             builder.add_bytes(b"class:".iter().copied())
-                && builder.add_bytes(self.texts.text(key.ids[0]).bytes())
+                && builder.add_bytes(self.texts.text(key.ids()[0]).bytes())
         } else {
             let (key, _) = self.methods.get_index(row).expect("validated method scope");
             if !(builder.add_bytes(b"method:".iter().copied())
-                && builder.add_bytes(self.texts.text(key.ids[0]).bytes())
+                && builder.add_bytes(self.texts.text(key.ids()[0]).bytes())
                 && builder.add_bytes(b"#".iter().copied())
-                && builder.add_bytes(self.texts.text(key.ids[1]).bytes()))
+                && builder.add_bytes(self.texts.text(key.ids()[1]).bytes()))
             {
                 return false;
             }
@@ -483,10 +510,10 @@ impl CompactTable {
                 builder.add_bytes(raw::signature_bytes(
                     &self.types,
                     &self.texts,
-                    &self.signatures[key.ids[2]],
+                    self.signatures.get(key.ids()[2]),
                 ))
             } else {
-                builder.add_bytes(self.texts.text(key.ids[2]).bytes())
+                builder.add_bytes(self.texts.text(key.ids()[2]).bytes())
             }
         }
     }
@@ -526,7 +553,7 @@ impl CompactTable {
                 .classes
                 .get_index(row)
                 .expect("validated class scope row");
-            prefix + "class:".len() + self.texts.text(key.ids[0]).len()
+            prefix + "class:".len() + self.texts.text(key.ids()[0]).len()
         } else {
             let (key, _) = self
                 .methods
@@ -536,14 +563,14 @@ impl CompactTable {
                 raw::signature_descriptor_length(
                     &self.types,
                     &self.texts,
-                    &self.signatures[key.ids[2]],
+                    self.signatures.get(key.ids()[2]),
                 )
             } else {
-                self.texts.text(key.ids[2]).len()
+                self.texts.text(key.ids()[2]).len()
             };
             (prefix + "method:#".len())
-                .saturating_add(self.texts.text(key.ids[0]).len())
-                .saturating_add(self.texts.text(key.ids[1]).len())
+                .saturating_add(self.texts.text(key.ids()[0]).len())
+                .saturating_add(self.texts.text(key.ids()[1]).len())
                 .saturating_add(descriptor_length)
         }
     }
@@ -562,7 +589,7 @@ impl CompactTable {
                 .classes
                 .get_index(row)
                 .expect("validated class scope row");
-            Cow::Owned(format!("{prefix}class:{}", self.texts.text(key.ids[0])))
+            Cow::Owned(format!("{prefix}class:{}", self.texts.text(key.ids()[0])))
         } else {
             let (key, _) = self
                 .methods
@@ -570,9 +597,9 @@ impl CompactTable {
                 .expect("validated method scope row");
             Cow::Owned(format!(
                 "{prefix}method:{}#{}{}",
-                self.texts.text(key.ids[0]),
-                self.texts.text(key.ids[1]),
-                self.key_context(true).text(2, key.ids[2])
+                self.texts.text(key.ids()[0]),
+                self.texts.text(key.ids()[1]),
+                self.key_context(true).text(2, key.ids()[2])
             ))
         }
     }
@@ -625,7 +652,7 @@ impl CompactTable {
     ) -> bool {
         let fingerprint = KeyContext::legacy(texts).hash(ids, state);
         Self::insert_fingerprinted(map, texts, ids, value, fingerprint, |key| {
-            KeyContext::legacy(texts).hash(key.ids, state)
+            KeyContext::legacy(texts).hash(key.ids(), state)
         })
     }
     fn insert_fingerprinted<const N: usize, V>(
@@ -668,7 +695,9 @@ impl CompactTable {
                 method: false,
             };
             self.fields
-                .insert_unique(ids, value, fingerprint, |key| keys.fingerprint(key.ids));
+                .insert_unique(ids, narrow(value), fingerprint, |key| {
+                    keys.fingerprint(key.ids())
+                });
             return true;
         }
         let context = KeyContext {
@@ -683,9 +712,10 @@ impl CompactTable {
         if self.fields.contains_ids(ids, fingerprint, context) {
             return false;
         }
-        self.fields.insert_unique(ids, value, fingerprint, |key| {
-            context.hash(key.ids, &self.fingerprints)
-        });
+        self.fields
+            .insert_unique(ids, narrow(value), fingerprint, |key| {
+                context.hash(key.ids(), &self.fingerprints)
+            });
         true
     }
     pub(super) fn insert_method(
@@ -707,7 +737,7 @@ impl CompactTable {
                 method: true,
             };
             self.methods
-                .insert_unique(ids, stored, fingerprint, |key| keys.fingerprint(key.ids));
+                .insert_unique(ids, stored, fingerprint, |key| keys.fingerprint(key.ids()));
             return true;
         }
         let context = KeyContext {
@@ -733,19 +763,20 @@ impl CompactTable {
         };
         let fingerprints = &self.fingerprints;
         self.methods.insert_unique(ids, stored, fingerprint, |key| {
-            context.hash(key.ids, fingerprints)
+            context.hash(key.ids(), fingerprints)
         });
         true
     }
     fn store_method(&mut self, value: MethodTypes<usize, u64>) -> StoredMethod {
         let parameter_start = self.method_parameters.len();
-        self.method_parameters.extend(value.parameters);
+        self.method_parameters
+            .extend(value.parameters.into_iter().map(narrow));
         let formal_start = self.method_formals.len();
         self.method_formals.extend(value.type_parameters);
         StoredMethod {
-            parameters: parameter_start..self.method_parameters.len(),
-            returns: value.returns,
-            type_parameters: formal_start..self.method_formals.len(),
+            parameters: narrow(parameter_start)..narrow(self.method_parameters.len()),
+            returns: narrow(value.returns),
+            type_parameters: narrow(formal_start)..narrow(self.method_formals.len()),
         }
     }
     pub(super) fn finish_method_buffers(&mut self) {
@@ -770,7 +801,7 @@ impl CompactTable {
                 method: false,
             };
             self.classes
-                .insert_unique([id], value, fingerprint, |key| keys.fingerprint(key.ids));
+                .insert_unique([id], value, fingerprint, |key| keys.fingerprint(key.ids()));
             return true;
         }
         Self::insert(&mut self.classes, &self.fingerprints, texts, [id], value)
@@ -780,9 +811,9 @@ impl CompactTable {
         self.classes
             .positions
             .find(fingerprint, |&index| {
-                self.classes.entries[index].0.ids == [id]
+                self.classes.entries[index as usize].0.ids() == [id]
             })
-            .map(|&index| &self.classes.entries[index].1)
+            .map(|&index| &self.classes.entries[index as usize].1)
     }
     fn lookup<'a, const N: usize>(&'a self, values: [&'a str; N], method: bool) -> Lookup<'a, N> {
         Lookup {
@@ -834,15 +865,15 @@ impl CompactTable {
         raw::hash_bytes(&mut hash, raw::type_bytes(types, texts, row));
         let fingerprint = hash.finish();
         let canonical = match self.raw_text_index.find(fingerprint, |&other| {
-            raw::type_bytes(types, texts, other).eq(raw::type_bytes(types, texts, row))
+            raw::type_bytes(types, texts, other as usize).eq(raw::type_bytes(types, texts, row))
         }) {
-            Some(&other) => other,
+            Some(&other) => other as usize,
             None => {
                 let fingerprints = &self.fingerprints;
                 self.raw_text_index
-                    .insert_unique(fingerprint, row, |&other| {
+                    .insert_unique(fingerprint, narrow(row), |&other| {
                         let mut hash = fingerprints.build_hasher();
-                        raw::hash_bytes(&mut hash, raw::type_bytes(types, texts, other));
+                        raw::hash_bytes(&mut hash, raw::type_bytes(types, texts, other as usize));
                         hash.finish()
                     });
                 row
@@ -863,9 +894,14 @@ impl CompactTable {
     /// Index the parsed signatures by canonical rows; must run before members are inserted.
     pub(super) fn index_signature_rows(&mut self, texts: &dyn Texts) {
         for index in 0..self.signatures.len() {
-            let rows: Vec<usize> = self.signatures[index].parameters.clone();
-            let returns = self.signatures[index].returns;
-            for row in rows.into_iter().chain(std::iter::once(returns)) {
+            let signature = self.signatures.get(index);
+            let rows: Vec<usize> = signature
+                .parameters
+                .iter()
+                .map(|&row| row as usize)
+                .chain(std::iter::once(signature.returns))
+                .collect();
+            for row in rows {
                 self.canonical_raw(texts, row);
             }
         }
@@ -873,23 +909,24 @@ impl CompactTable {
         let canonical = &self.raw_canonical;
         let canon = |row: usize| canonical[row] as usize;
         let fingerprints = &self.fingerprints;
-        let fingerprint = |signature: &RawSignature| {
+        let fingerprint = |signature: RawSignature<'_>| {
             let mut hash = fingerprints.build_hasher();
-            for &row in &signature.parameters {
-                canon(row).hash(&mut hash);
+            for &row in signature.parameters {
+                canon(row as usize).hash(&mut hash);
             }
             usize::MAX.hash(&mut hash);
             canon(signature.returns).hash(&mut hash);
             hash.finish()
         };
         self.signature_rows = HashTable::with_capacity(signatures.len());
-        for (index, signature) in signatures.iter().enumerate() {
+        for index in 0..signatures.len() {
             // Text uniqueness was enforced by the parser; equal canonical rows would be
             // equal text, so the entry is unique.
-            self.signature_rows
-                .insert_unique(fingerprint(signature), index, |&other| {
-                    fingerprint(&signatures[other])
-                });
+            self.signature_rows.insert_unique(
+                fingerprint(signatures.get(index)),
+                narrow(index),
+                |&other| fingerprint(signatures.get(other as usize)),
+            );
         }
     }
     /// Map the graph's spelling of each erased type (its Java type name) to the canonical
@@ -927,14 +964,17 @@ impl CompactTable {
                 strings.index_of(&spelled)
             };
             if let Some(sid) = sid {
-                by_name.entry(sid).or_insert(row);
+                by_name.entry(narrow(sid)).or_insert(narrow(row));
             }
         }
         self.raw_by_name = by_name;
     }
     /// The canonical erased row of the type a node spells by the string `name_sid`.
     pub(super) fn raw_row_of_type_name(&self, name_sid: usize) -> Option<usize> {
-        self.raw_by_name.get(&name_sid).copied()
+        u32::try_from(name_sid)
+            .ok()
+            .and_then(|sid| self.raw_by_name.get(&sid))
+            .map(|&row| row as usize)
     }
     pub(super) fn field_by_ids(&self, owner: usize, name: usize, raw: usize) -> Option<usize> {
         let ids = [owner, name, raw];
@@ -942,9 +982,9 @@ impl CompactTable {
         self.fields
             .positions
             .find(fingerprint, |&index| {
-                self.ids_equal(ids, self.fields.entries[index].0.ids, false)
+                self.ids_equal(ids, self.fields.entries[index as usize].0.ids(), false)
             })
-            .map(|&index| self.fields.entries[index].1)
+            .map(|&index| self.fields.entries[index as usize].1 as usize)
     }
     /// The signature row of a method whose erased parameter and return types are the rows given.
     pub(super) fn signature_row_of(
@@ -956,16 +996,16 @@ impl CompactTable {
         let canonical = &self.raw_canonical;
         self.signature_rows
             .find(fingerprint, |&index| {
-                let signature = &self.signatures[index];
+                let signature = self.signatures.get(index as usize);
                 canonical[signature.returns] as usize == returns
                     && signature.parameters.len() == parameters.clone().count()
                     && signature
                         .parameters
                         .iter()
                         .zip(parameters.clone())
-                        .all(|(&row, expected)| canonical[row] as usize == expected)
+                        .all(|(&row, expected)| canonical[row as usize] as usize == expected)
             })
-            .copied()
+            .map(|&index| index as usize)
     }
     pub(super) fn method_by_ids(
         &self,
@@ -978,9 +1018,9 @@ impl CompactTable {
         self.methods
             .positions
             .find(fingerprint, |&index| {
-                self.ids_equal(ids, self.methods.entries[index].0.ids, true)
+                self.ids_equal(ids, self.methods.entries[index as usize].0.ids(), true)
             })
-            .map(|&index| &self.methods.entries[index].1)
+            .map(|&index| &self.methods.entries[index as usize].1)
     }
     /// Text lookups on a shared-dictionary table go through the IDs the texts stand for.
     fn ids_of_texts<const N: usize>(&self, values: [&str; N], method: bool) -> Option<[usize; N]> {
@@ -1005,9 +1045,9 @@ impl CompactTable {
         let fingerprint = hash.finish();
         self.raw_text_index
             .find(fingerprint, |&row| {
-                raw::type_bytes(&self.types, &self.texts, row).eq(descriptor.bytes())
+                raw::type_bytes(&self.types, &self.texts, row as usize).eq(descriptor.bytes())
             })
-            .copied()
+            .map(|&row| row as usize)
     }
     fn signature_row_of_text(&self, descriptor: &str) -> Option<usize> {
         // Parse the descriptor into its erased types and bind each to its canonical row.
@@ -1108,9 +1148,68 @@ impl<'a> Formals<'a> {
 }
 #[derive(Debug, PartialEq, Eq)]
 pub struct MethodView<'a> {
-    pub parameters: &'a [usize],
+    pub parameters: Params<'a>,
     pub returns: usize,
     pub type_parameters: Formals<'a>,
+}
+
+/// The parameter type rows of a method: 32-bit rows borrowed from a compact table, or
+/// the rows of an owning model.
+#[derive(Clone, Copy)]
+pub enum Params<'a> {
+    #[doc(hidden)]
+    Narrow(&'a [u32]),
+    #[doc(hidden)]
+    Wide(&'a [usize]),
+}
+impl<'a> Params<'a> {
+    pub fn len(self) -> usize {
+        match self {
+            Self::Narrow(rows) => rows.len(),
+            Self::Wide(rows) => rows.len(),
+        }
+    }
+    pub fn is_empty(self) -> bool {
+        self.len() == 0
+    }
+    pub fn get(self, index: usize) -> Option<usize> {
+        match self {
+            Self::Narrow(rows) => rows.get(index).map(|&row| row as usize),
+            Self::Wide(rows) => rows.get(index).copied(),
+        }
+    }
+    pub fn iter(self) -> impl ExactSizeIterator<Item = usize> + 'a {
+        (0..self.len()).map(move |index| self.get(index).expect("index below len"))
+    }
+    pub fn to_vec(self) -> Vec<usize> {
+        self.iter().collect()
+    }
+}
+impl std::fmt::Debug for Params<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+impl PartialEq for Params<'_> {
+    fn eq(&self, other: &Self) -> bool {
+        self.iter().eq(other.iter())
+    }
+}
+impl Eq for Params<'_> {}
+impl<const N: usize> PartialEq<[usize; N]> for Params<'_> {
+    fn eq(&self, other: &[usize; N]) -> bool {
+        self.iter().eq(other.iter().copied())
+    }
+}
+impl PartialEq<Vec<usize>> for Params<'_> {
+    fn eq(&self, other: &Vec<usize>) -> bool {
+        self.iter().eq(other.iter().copied())
+    }
+}
+impl PartialEq<&[usize]> for Params<'_> {
+    fn eq(&self, other: &&[usize]) -> bool {
+        self.iter().eq(other.iter().copied())
+    }
 }
 
 impl std::fmt::Debug for Formals<'_> {
@@ -1247,7 +1346,7 @@ impl DeclaredTypes {
             Storage::Compact(t) => t
                 .fields
                 .get(&t.lookup([owner, name, descriptor], false))
-                .copied(),
+                .map(|&row| row as usize),
             Storage::Owned(t) => t
                 .fields
                 .get(&BorrowedMemberKey(owner, name, descriptor))
@@ -1315,9 +1414,9 @@ impl DeclaredTypes {
             return Some(None);
         };
         Some(Some(MethodView {
-            parameters: &t.method_parameters[m.parameters.clone()],
-            returns: m.returns,
-            type_parameters: Formals::Compact(&t.method_formals[m.type_parameters.clone()], self),
+            parameters: Params::Narrow(&t.method_parameters[m.parameters()]),
+            returns: m.returns(),
+            type_parameters: Formals::Compact(&t.method_formals[m.formals()], self),
         }))
     }
     pub fn method_types(
@@ -1336,18 +1435,15 @@ impl DeclaredTypes {
                     t.methods.get(&t.lookup([owner, name, descriptor], true))?
                 };
                 Some(MethodView {
-                    parameters: &t.method_parameters[m.parameters.clone()],
-                    returns: m.returns,
-                    type_parameters: Formals::Compact(
-                        &t.method_formals[m.type_parameters.clone()],
-                        self,
-                    ),
+                    parameters: Params::Narrow(&t.method_parameters[m.parameters()]),
+                    returns: m.returns(),
+                    type_parameters: Formals::Compact(&t.method_formals[m.formals()], self),
                 })
             }
             Storage::Owned(t) => {
                 let m = t.methods.get(&BorrowedMemberKey(owner, name, descriptor))?;
                 Some(MethodView {
-                    parameters: &m.parameters,
+                    parameters: Params::Wide(&m.parameters),
                     returns: m.returns,
                     type_parameters: Formals::Owned(&m.type_parameters),
                 })
@@ -1383,7 +1479,7 @@ impl DeclaredTypes {
         (0..self.field_count()).map(move |i| match &self.storage {
             Storage::Compact(t) => {
                 let (key, value) = t.fields.get_index(i).unwrap();
-                (t.key_context(false).values(key.ids), *value)
+                (t.key_context(false).values(key.ids()), *value as usize)
             }
             Storage::Owned(t) => {
                 let (key, value) = t.fields.get_index(i).unwrap();
@@ -1405,14 +1501,11 @@ impl DeclaredTypes {
             Storage::Compact(t) => {
                 let (key, v) = t.methods.get_index(i).unwrap();
                 (
-                    t.key_context(true).values(key.ids),
+                    t.key_context(true).values(key.ids()),
                     MethodView {
-                        parameters: &t.method_parameters[v.parameters.clone()],
-                        returns: v.returns,
-                        type_parameters: Formals::Compact(
-                            &t.method_formals[v.type_parameters.clone()],
-                            self,
-                        ),
+                        parameters: Params::Narrow(&t.method_parameters[v.parameters()]),
+                        returns: v.returns(),
+                        type_parameters: Formals::Compact(&t.method_formals[v.formals()], self),
                     },
                 )
             }
@@ -1425,7 +1518,7 @@ impl DeclaredTypes {
                         Cow::Borrowed(key.2.as_ref()),
                     ],
                     MethodView {
-                        parameters: &v.parameters,
+                        parameters: Params::Wide(&v.parameters),
                         returns: v.returns,
                         type_parameters: Formals::Owned(&v.type_parameters),
                     },
@@ -1438,7 +1531,7 @@ impl DeclaredTypes {
             Storage::Compact(t) => {
                 let (key, v) = t.classes.get_index(i).unwrap();
                 (
-                    t.texts.text(key.ids[0]),
+                    t.texts.text(key.ids()[0]),
                     ClassView {
                         type_parameters: Formals::Compact(&v.type_parameters, self),
                         superclass: v.superclass,

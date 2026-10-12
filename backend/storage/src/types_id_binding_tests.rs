@@ -235,7 +235,10 @@ fn canonical_dictionary_binds_fields_parameters_and_returns_by_id_like_text() {
     // Methods: the duplicate raw row behind signature 0 still binds `Cls` as a parameter.
     let echo = method(&wire, "echo", &["Cls[][]", "int", "Cls"], "Cls");
     let view = table.method(&echo, &strings).unwrap();
-    assert_eq!((view.parameters, view.returns), (&[4usize, 1, 0][..], 0));
+    assert_eq!(
+        (view.parameters.to_vec(), view.returns),
+        (vec![4usize, 1, 0], 0)
+    );
     assert_eq!(
         table.node_type_id(&parameter(echo.clone(), 1, "int", &wire), &strings),
         Some(1)

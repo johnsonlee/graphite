@@ -20668,3 +20668,47 @@ the lazily loaded declared tables, 250MB for 64 graphs in the local server (8.60
 8.35GB after the dynamic cases, +3.0%), on top of a base-to-base spread of 12.09–12.90GB
 between cells. That one is this PR's to shrink; the dynamic rows are not a per-request cost
 this PR can remove, and the harness has no rule for a case whose neighbours got faster.
+
+### Attempt279 — store the compact declared table's IDs as 32 bits (2026-10-12)
+
+Query-phase RSS. The `rss` row of `rust-query-native` failed in one of four pairs
+(acceptedBaseline 0-C → 2-B, +5.9%; the others −0.7%, +3.9%, +3.8%) and the candidate's
+only inherent addition to query RSS is the lazily loaded declared table of every graph.
+Measured with a counting allocator around `declared_types()` on the run's own 64 shards:
+243.3MB of heap for the 64 tables, 3.8MB per graph, 5.7MB at most (`fixture-android-12`:
+13,363 types, 20,875 fields, 28,977 methods), about 90–100 bytes per type, field, method and
+class row. The members' keys were three `usize`, a method record two `Range<usize>` and a
+`usize`, every position table a `HashTable<usize>`, and every erased signature its own
+`Vec<usize>` with its own allocation, for values the wire carries as 32-bit integers.
+
+Two steps, each measured on the same 64 tables:
+
+| state | heap, 64 tables | per graph | largest |
+|---|---|---|---|
+| before | 243.3MB | 3.80MB | 5.70MB |
+| keys, positions, method records, field values, raw indexes as `u32` | 169.3MB | 2.65MB | 3.95MB |
+| + signatures in three flat `u32` buffers, parameter rows as `u32` | 142.7MB | 2.23MB | 3.44MB |
+
+`StoredKey<N>` holds `[u32; N]` and hands out `[usize; N]`; `MemberIndex::positions`,
+`raw_text_index` and `signature_rows` hold `u32` entry positions and rows, `raw_by_name`
+maps `u32` to `u32`; `StoredMethod` keeps `Range<u32>`s and a `u32` return row behind
+accessor methods; the field value is a `u32` row. `raw::Signatures` replaces
+`Vec<RawSignature>`: the parameter rows of every signature end to end, a start per
+signature (one more closing the last) and a return row per signature, 8 bytes plus 4 per
+parameter instead of a `Vec` header and an allocation each; `RawSignature<'_>` is now the
+borrowed view the descriptor functions take by value. `method_parameters` is a `Vec<u32>`
+and `MethodView::parameters` a `Params<'_>` view (`Narrow(&[u32])` from a compact table,
+`Wide(&[usize])` from an owning model) with `iter`, `get`, `len`, `is_empty` and `to_vec`,
+compared against arrays, vectors and slices in the tests. Every narrowing goes through one
+`narrow()` that refuses a value above 32 bits; the reader already bounds type references by
+the type count, which the wire stores as an `i32`.
+
+Lookups are unchanged (a hash probe and an integer compare per key, now on 12-byte keys).
+On the 64 real shards, native CLI, five sequential requests per case (one clean base pass;
+the second base pass was disturbed by a concurrent build and is discarded): feature-methods
+1884ms (base) against 266/240ms, feature-nodes 2.0ms against 3.1/2.5ms, slow-dynamicMiss
+1114ms against 1155/1127ms, slow-qualifiedIdHit 354ms against 82/100ms; process RSS after
+the queries 8.40GB (base) against 8.53/8.52GB with the first step (+1.5%, was +3.0% in
+Attempt278's measurement). 117 storage and 188 cypher tests pass; clippy and rustfmt
+clean. The RSS row remains at the mercy of the base cells' own spread (12.09–12.90GB
+between two base cells of run 38206777955); this halves what the candidate adds to it.
