@@ -20859,3 +20859,31 @@ themselves span 505–528s of CPU (4.5%).
 **Everything else green**: all correctness gates, the five `wrapped-query-latency` shards
 (real-a at the noise Attempt282 described), `wrapped-query-resources`, `global-wide-pressure`,
 coverage 98.1–98.5% per module.
+
+### Attempt284 — user-approved tolerances: wall 5% for construction and loading, RSS 10% (2026-10-12)
+
+User decision after Attempt283: "construction 和 loading 都加 5% 容差，RSS 放宽到 10%", and the
+limits go into the CI job names. Gate change, no engine change.
+
+**Rules.** `benchmark-multigraph-pressure.mjs` now exports `WALL_TOLERANCE_RATIO=0.05`,
+`CPU_TOLERANCE_RATIO=0.05`, `RSS_TOLERANCE_RATIO=0.10`, `withinWallTolerance(candidateMs,baseMs)`
+and `resourceBound(..., ratio)`; every caller names its ratio. Construction: wall
+≤ base×1.05 (was ≤ base), CPU ≤ ×1.05 (unchanged), RSS ≤ ×1.10 (was 1.05). JVM and native
+loading: `wallPassed` (≤ ×1.05, was `deltaWallMs<=0`), CPU interval at 5%, RSS interval at 10%.
+Native and JVM query pressure: latency rule unchanged, CPU interval 5%, RSS interval 10%, the
+stage's own wall still strict. Each report carries `resourceTolerance`. The four gate jobs are
+named `rust-construction (wall +5%, CPU +5%, RSS +10%)`, `rust-loading (…)`,
+`rust-query-native (p50/p95 +100ms or +5%, CPU +5%, RSS +10%)`, `rust-query-jvm (…)`; job ids
+and `needs` are unchanged, so the workflow tests still address them. Both controls manifests
+re-pin the four comparators and the workflow pins the manifests. 238 gate tests pass; the RSS
+envelope test now pins 10% (1100 on a 1000–1010 base passes, 1120 is INDETERMINATE, FAIL once
+the candidate's lower bound is past 1111).
+
+**What run 38235245328 would say under these rules** (accepted-baseline pairs decide):
+construction wall +4.4%/+0.6% PASS, RSS PASS, CPU 505.3→542.5s (+7.4%) still FAIL under the 5%
+CPU limit (the other accepted pair, +3.0%, passes); JVM loading wall and RSS PASS, the CPU pair
+8.71–8.76→9.15–9.19s still INDETERMINATE at 5%; native query RSS 11.75→13.01GB (+10.7%) and
+12.67→13.94GB (+10.0%) are outside a 10% PASS too (13.94/12.67=1.1002), so the native query
+gate's RSS depends on where the next run's cells land (same-arm cells differ by 0.9GB). The
+CPU limit for construction and loading is left at 5% pending the user's word; raising it is a
+one-constant change.

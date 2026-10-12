@@ -4065,7 +4065,7 @@ test("retired mixed Method measurements cannot replace independent multi-graph C
     const shard=workflow.slice(workflow.indexOf('  method-compatibility-shard:'),workflow.indexOf('  validate-cpu-accounting:'));
     assert.doesNotMatch(shard,/gate_metric|confirmation|processCpuNanos|residentSetAfterBytes/);
     const comparator=fs.readFileSync(new URL('./benchmark-multigraph-pressure.mjs',import.meta.url),'utf8');
-    assert.match(comparator,/candidateUpper <= baseLower\*1.05/);assert.match(comparator,/INDETERMINATE/);
+    assert.match(comparator,/candidateUpper <= baseLower\*limit/);assert.match(comparator,/CPU_TOLERANCE_RATIO=0.05/);assert.match(comparator,/RSS_TOLERANCE_RATIO=0.10/);assert.match(comparator,/INDETERMINATE/);
     assert.match(comparator,/cpuLowerBoundSeconds/);assert.match(comparator,/rss.lowerBoundBytes/);
 });
 

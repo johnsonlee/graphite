@@ -5,7 +5,7 @@ import {verifyLifecycleJoin} from './benchmark-lifecycle-join.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {resourceBound} from './benchmark-multigraph-pressure.mjs';
+import {resourceBound,withinWallTolerance,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
 const require=(ok,message)=>{if(!ok)throw new Error(message);};
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
 const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -114,18 +114,19 @@ export function compareLoading(planFile,directory,comparabilityReceipt=null) {
     require(new Set(groups).size===6,'six independent JVM processes');
     const comparisons=Object.entries(pairs).flatMap(([kind,ps])=>ps.map(([b,c],direction)=>{
         const base=rows[b],candidate=rows[c];
-        const resource=key=>({base:base[key],candidate:candidate[key],absoluteDeltaBounds:[candidate[key][0]-base[key][1],candidate[key][1]-base[key][0]],
-            status:resourceBound(...base[key],...candidate[key])});
+        const resource=(key,ratio)=>({base:base[key],candidate:candidate[key],absoluteDeltaBounds:[candidate[key][0]-base[key][1],candidate[key][1]-base[key][0]],
+            status:resourceBound(...base[key],...candidate[key],ratio)});
         return {kind,direction,base:plan.cells[b].id,candidate:plan.cells[c].id,baseWallMs:base.wallMs,candidateWallMs:candidate.wallMs,
-            deltaWallMs:candidate.wallMs-base.wallMs,cpu:resource('cpuBoundsSeconds'),rss:resource('rssBoundsBytes')};}));
-    const measuredConstraintsPassed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.deltaWallMs<=0&&c.cpu.status==='PASS'&&c.rss.status==='PASS');
+            deltaWallMs:candidate.wallMs-base.wallMs,wallPassed:withinWallTolerance(candidate.wallMs,base.wallMs),
+            cpu:resource('cpuBoundsSeconds',CPU_TOLERANCE_RATIO),rss:resource('rssBoundsBytes',RSS_TOLERANCE_RATIO)};}));
+    const measuredConstraintsPassed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.wallPassed&&c.cpu.status==='PASS'&&c.rss.status==='PASS');
     const coreComparabilityVerified=verifyLifecycleJoin(planFile,directory,plan,comparabilityReceipt);
     const passed=coreComparabilityVerified&&measuredConstraintsPassed;
     return {schema:'graphite.jvm64-loading.comparison.v1',engine:'jvm',operation:'loading',passed,status:!coreComparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':passed?'PASS':'FAIL',
-        measuredConstraintsPassed,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,
+        measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         completeSemanticEquivalence:false,strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
-        limitation:'Registry-ready, zero queries; ready VmHWM is a conservative post-ready bound. No Native loading exception, first-query, cold-cache or saturation claim.'};
+        limitation:'Registry-ready, zero queries; ready VmHWM is a conservative post-ready bound. Wall within 5%, CPU within 5%, RSS within 10% of the base (user-approved 2026-10-12). No Native loading exception, first-query, cold-cache or saturation claim.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||

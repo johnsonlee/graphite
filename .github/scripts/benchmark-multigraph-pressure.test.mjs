@@ -7,21 +7,27 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {comparePressure,pressureProgress,resourceBound,withinLatencyTolerance} from './benchmark-multigraph-pressure.mjs';
+import {comparePressure,pressureProgress,resourceBound,withinLatencyTolerance,withinWallTolerance,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
 // Past both tolerances of the fixture's 100ns base: more than 100ms and more than 5%.
 const SLOW=150e6;
 const digest=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const put=(p,v)=>{fs.mkdirSync(path.dirname(p),{recursive:true});fs.writeFileSync(p,JSON.stringify(v));};
 test('fixed per-case repeated latency and independent CPU/RSS intervals',t=>{
  const f=fixture(t),r=comparePressure(f.file,f.root);assert.equal(r.passed,true);assert.equal(r.comparisons.length,4);assert.equal(r.comparisons[2].cases[0].deltaP95Ms,-.00002);
- assert.deepEqual(r.latencyTolerance,{absoluteMs:100,ratio:0.05});
+ assert.deepEqual(r.latencyTolerance,{absoluteMs:100,ratio:0.05});assert.deepEqual(r.resourceTolerance,{cpuRatio:0.05,rssRatio:0.10});
  // Within 100ms or 5% of the base passes; past both fails, whichever is the larger allowance.
  for(const [candidate,base,expected] of [[150,100,true],[200e6,100e6,true],[200e6+1,100e6,false],[4.2e9+1,4e9,false],[4.2e9,4e9+1,true],[4.15e9,4e9,true],[100,100,true]])
   assert.equal(withinLatencyTolerance(candidate,base),expected,`${candidate} vs ${base}`);
  // A regression inside the tolerance keeps the verdict.
  f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=150;x.validationCompleteNs=x.startNs+150;});r.stages.pressure.caseStatistics.slow.p50Ns=150;r.stages.pressure.caseStatistics.slow.p95Ns=150;});
  assert.equal(comparePressure(f.file,f.root).passed,true);
+ // CPU keeps 5%, RSS has 10% (user-approved 2026-10-12); each ratio is explicit at the call.
  assert.equal(resourceBound(100,120,110,115),'INDETERMINATE');assert.equal(resourceBound(100,100,106,106),'FAIL');
+ assert.equal(resourceBound(100,100,105,105,CPU_TOLERANCE_RATIO),'PASS');assert.equal(resourceBound(100,100,106,106,CPU_TOLERANCE_RATIO),'FAIL');
+ assert.equal(resourceBound(100,100,110,110,RSS_TOLERANCE_RATIO),'PASS');assert.equal(resourceBound(100,100,111,111,RSS_TOLERANCE_RATIO),'FAIL');
+ assert.equal(resourceBound(100,120,125,130,RSS_TOLERANCE_RATIO),'INDETERMINATE');
+ assert.throws(()=>resourceBound(100,100,100,100,-0.1),/Invalid resource interval/);
+ for(const [candidate,base,expected] of [[105,100,true],[105.1,100,false],[1000,1000,true],[0,1000,true]])assert.equal(withinWallTolerance(candidate,base),expected,`wall ${candidate} vs ${base}`);
  f.rewrite(2,r=>{r.stages.pressure.resources.rss.upperBoundBytes=1200;});assert.equal(comparePressure(f.file,f.root).passed,false);
 });
 test('early feedback reports only completed original pairs and cannot satisfy final acceptance',t=>{
@@ -233,14 +239,17 @@ function linuxEnvelope(r, time=1010, sampled=1000) {
  Object.assign(rss,{measurementSemantics:'linux-rss-observed-envelope-v1',lifecyclePeakBytes:time,
    lifecycleSampledPeakBytes:sampled,sampledMinusLifecycleBytes:sampled-time,upperBoundBytes:Math.max(time,sampled)});
 }
-test('Linux observed RSS envelopes retain the conservative five percent gate',t=>{
+test('Linux observed RSS envelopes keep the ten percent RSS gate',t=>{
  const f=fixture(t);for(let i=0;i<6;i++)f.rewrite(i,r=>linuxEnvelope(r));
  let result=comparePressure(f.file,f.root);assert.equal(result.passed,true);
  assert.equal(result.comparisons[0].rss.measurementSemantics,'linux-rss-observed-envelope-v1');
+ // Exactly 10% above the base's lower bound passes; past it the envelope is INDETERMINATE, then FAIL.
  f.rewrite(2,r=>linuxEnvelope(r,1010,1100));
+ result=comparePressure(f.file,f.root);assert.equal(result.passed,true);assert.equal(result.comparisons[0].rss.status,'PASS');
+ f.rewrite(2,r=>linuxEnvelope(r,1010,1120));
  result=comparePressure(f.file,f.root);assert.equal(result.passed,false);
  assert.equal(result.comparisons[0].rss.status,'INDETERMINATE');
- f.rewrite(2,r=>{r.stages.pressure.resources.rss.lowerBoundBytes=1100;});
+ f.rewrite(2,r=>{r.stages.pressure.resources.rss.lowerBoundBytes=1112;});
  assert.equal(comparePressure(f.file,f.root).comparisons[0].rss.status,'FAIL');
 });
 test('Linux RSS envelopes reject mixed policies and altered component arithmetic',t=>{

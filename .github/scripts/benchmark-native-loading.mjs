@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {verifyComparabilityJoin,resourceBound} from './benchmark-multigraph-pressure.mjs';
+import {verifyComparabilityJoin,resourceBound,withinWallTolerance,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
 import {loadingResources} from './benchmark-loading.mjs';
 const require=(ok,message)=>{if(!ok)throw new Error(message);};
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
@@ -94,19 +94,20 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
     require(new Set(groups).size===6,'Six independent Native processes');
     const comparisons=Object.entries(pairs).flatMap(([kind,ps])=>ps.map(([b,c],direction)=>{
         const base=rows[b],candidate=rows[c];
-        const resource=key=>({base:base[key],candidate:candidate[key],absoluteDeltaBounds:[candidate[key][0]-base[key][1],candidate[key][1]-base[key][0]],status:resourceBound(...base[key],...candidate[key])});
+        const resource=(key,ratio)=>({base:base[key],candidate:candidate[key],absoluteDeltaBounds:[candidate[key][0]-base[key][1],candidate[key][1]-base[key][0]],status:resourceBound(...base[key],...candidate[key],ratio)});
         return {kind,direction,base:plan.cells[b].id,candidate:plan.cells[c].id,baseWallMs:base.wallMs,candidateWallMs:candidate.wallMs,
-            deltaWallMs:candidate.wallMs-base.wallMs,cpu:resource('cpuBoundsSeconds'),rss:resource('rssBoundsBytes')};
+            deltaWallMs:candidate.wallMs-base.wallMs,wallPassed:withinWallTolerance(candidate.wallMs,base.wallMs),
+            cpu:resource('cpuBoundsSeconds',CPU_TOLERANCE_RATIO),rss:resource('rssBoundsBytes',RSS_TOLERANCE_RATIO)};
     }));
-    const measuredConstraintsPassed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.deltaWallMs<=0 && c.cpu.status==='PASS' && c.rss.status==='PASS');
+    const measuredConstraintsPassed=comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.wallPassed && c.cpu.status==='PASS' && c.rss.status==='PASS');
     for(const [file,digest] of Object.entries(inputs))require(sha(file)===digest,'Native loading evidence drift');
     const passed=comparabilityVerified&&measuredConstraintsPassed;
     return {schema:'graphite.native64-loading.comparison.v1',engine:'native',operation:'loading',scope:'multi-graph-native64-registry-ready',
         planSha256:digest,passed,status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':passed?'PASS':'FAIL',
-        comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified,measuredConstraintsPassed,comparisons,
+        comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified,measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,comparisons,
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
         performanceAcceptance:passed,otherOperationsEligible:false,
-        limitation:'Prospective zero-query registry-ready interval within six fresh Native39 processes. Later query RSS excluded. Strict wall/CPU/RSS gates; historical loading allowance is not automatically applied. No query acceptance.'};
+        limitation:'Prospective zero-query registry-ready interval within six fresh Native39 processes. Later query RSS excluded. Wall within 5%, CPU within 5%, RSS within 10% of the base (user-approved 2026-10-12); the historical loading allowance is not automatically applied. No query acceptance.'};
 }
 export function writeNativeLoading(plan,directory,prefix,receipt=null) {
     let value;

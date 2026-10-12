@@ -143,10 +143,21 @@ export const LATENCY_TOLERANCE_RATIO=0.05;
 export function withinLatencyTolerance(candidateNs,baseNs){
     return candidateNs<=baseNs+Math.max(LATENCY_TOLERANCE_NS,baseNs*LATENCY_TOLERANCE_RATIO);
 }
-export function resourceBound(baseLower,baseUpper,candidateLower,candidateUpper) {
-    require([baseLower,baseUpper,candidateLower,candidateUpper].every(finite) &&
+// User-approved resource tolerances (2026-10-12): construction and loading wall time may exceed
+// the base by 5%, peak RSS by 10%; CPU keeps the 5% allowance of the performance rules. The
+// pressure stage's own wall time stays strict. Each limit is independent of the others.
+export const WALL_TOLERANCE_RATIO=0.05;
+export const CPU_TOLERANCE_RATIO=0.05;
+export const RSS_TOLERANCE_RATIO=0.10;
+export const RESOURCE_TOLERANCE={wallRatio:WALL_TOLERANCE_RATIO,cpuRatio:CPU_TOLERANCE_RATIO,rssRatio:RSS_TOLERANCE_RATIO};
+export function withinWallTolerance(candidateMs,baseMs){
+    return candidateMs<=baseMs*(1+WALL_TOLERANCE_RATIO);
+}
+export function resourceBound(baseLower,baseUpper,candidateLower,candidateUpper,ratio=CPU_TOLERANCE_RATIO) {
+    require([baseLower,baseUpper,candidateLower,candidateUpper,ratio].every(finite) && ratio>=0 &&
         baseLower <= baseUpper && candidateLower <= candidateUpper,'Invalid resource interval');
-    return candidateUpper <= baseLower*1.05 ? 'PASS' : candidateLower > baseUpper*1.05 ? 'FAIL' : 'INDETERMINATE';
+    const limit=1+ratio;
+    return candidateUpper <= baseLower*limit ? 'PASS' : candidateLower > baseUpper*limit ? 'FAIL' : 'INDETERMINATE';
 }
 function rssSemantics(rss) {
     if (!('measurementSemantics' in rss)) return 'legacy-rss-interval';
@@ -223,9 +234,9 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
             baseWallMs:base.stage.wallNs/1e6,candidateWallMs:candidate.stage.wallNs/1e6,
             deltaWallMs:(candidate.stage.wallNs-base.stage.wallNs)/1e6,
             cpu:{baseLower:br.cpuLowerBoundSeconds,baseUpper:br.cpuUpperBoundSeconds,candidateLower:cr.cpuLowerBoundSeconds,candidateUpper:cr.cpuUpperBoundSeconds,
-                status:resourceBound(br.cpuLowerBoundSeconds,br.cpuUpperBoundSeconds,cr.cpuLowerBoundSeconds,cr.cpuUpperBoundSeconds)},
+                status:resourceBound(br.cpuLowerBoundSeconds,br.cpuUpperBoundSeconds,cr.cpuLowerBoundSeconds,cr.cpuUpperBoundSeconds,CPU_TOLERANCE_RATIO)},
             rss:{measurementSemantics:base.rssSemantics,baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
-                status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes)}};
+                status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes,RSS_TOLERANCE_RATIO)}};
     }).filter(Boolean));
     if (provisional) return {
         schema:'graphite.multigraph-pressure.progress.v1',status:'PROVISIONAL',
@@ -241,7 +252,7 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
     const accepted= comparisons.filter(c=>c.kind==='acceptedBaseline');
     const measuredConstraintsPassed=accepted.every(c=>c.cases.every(k=>k.p50Passed&&k.p95Passed)&&c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0);
     return {schema:'graphite.multigraph-pressure.comparison.v1',scope:'multi-graph-pressure',engine:plan.engine,operation:'query',
-        latencyTolerance:{absoluteMs:LATENCY_TOLERANCE_NS/1e6,ratio:LATENCY_TOLERANCE_RATIO},
+        latencyTolerance:{absoluteMs:LATENCY_TOLERANCE_NS/1e6,ratio:LATENCY_TOLERANCE_RATIO},resourceTolerance:{cpuRatio:CPU_TOLERANCE_RATIO,rssRatio:RSS_TOLERANCE_RATIO},
         planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
         status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
