@@ -200,6 +200,28 @@ OPTIMIZED_DECLARED_OVERRIDES = {
     'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/ErasedDeclaredTypes.kt':
         'a3e716ad1f7a1d07134f8ff393ae5ab77f7de2f5e2e93ec4d7b248d19477938e',
 }
+# Complete profile reviewed after attempts 271, 272 and 273 (PR #174, a9d4749): the type
+# table and the serialized dictionary digest are read on first use, the cypher thread
+# remembers its last member binding, and the writer validates texts without an encoder
+# per reference. Loading reads no declaration before readiness; every declared property,
+# validation and rendering rule is unchanged. Historical profiles stay exact.
+REVIEWED_AT['lazy-declared-a9d4'] = 'a9d4749987b9e5c06ad8a0eb6478771c0ca727d8'
+LAZY_DECLARED_OVERRIDES = {
+    'frontend/jvm/cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/DeclaredTypeProperties.kt':
+        '8c6ea040c7eeb87a4b8e12228823f261856e3492dcaa5f1d6cee3e85b3caf87c',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStore.kt':
+        'a32f7bd9e9be17a8bddf7c82f9597ac4b99f5d93682e52bc8bce05288f514af9',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStrings.kt':
+        '93adf3680245d65a2812ee9c79cdd4f83d3394f6ecde80b942563c274bfd3855',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt':
+        '17869cdfef3e86dc2bff6e4362a60d988ed21c6ca0e91cf1d644da9155caf194',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt':
+        'e7df66046ed1629c02eff80ad6abbc13429497b7fe1895d0a028fce6788223e9',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/StringTable.kt':
+        'cd653744f4dc75c34290b3ee330239d7ff50f1b9a8a876854c7ef7d5c17e0540',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt':
+        'bab7fb929e1f48ee5b086486602fd5792f8428ad9f1a096b954a94847708d915',
+}
 REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '07e6d3927021c674a49689314e4e5e810d5b7fd1d8061bebb782839a1cc05906', 'jvm_pressure_derivation.py': '7a0f34205b036194718779cc010ffa951d904235fee96aeb940a8f0559962ecc', 'jvm_pressure_distinct.py': 'b43ec1ef82170c22229f0a62bc8b0dc33601c6b74f70257096685b6790bc5a3d', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
 REQUEST_CONTRACT_SHA = '5da64e89009f4702d5f55b23e75def8561636841a605fb940dab24d93ba023d4'
 
@@ -268,6 +290,7 @@ def profiles():
     result = {name: {path: hashes[index] for path, hashes in SOURCE_BYTES.items() if hashes[index] is not None}
               for index, name in enumerate(('accepted4f', 'declared5a'))}
     result['optimized-declared24af'] = {**result['declared5a'], **OPTIMIZED_DECLARED_OVERRIDES}
+    result['lazy-declared-a9d4'] = {**result['optimized-declared24af'], **LAZY_DECLARED_OVERRIDES}
     return result
 
 

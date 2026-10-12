@@ -20560,3 +20560,20 @@ within 5% of it, whichever allows more, and the report records `latencyTolerance
 slower by both bounds still fails; CPU, RSS and wall rules are unchanged, and so are the
 construction and loading gates. The two script manifests that pin
 `benchmark-multigraph-pressure.mjs` are re-pinned; 238 gate tests pass.
+
+### Attempt275 — recognize the current JVM source profile and re-pin the controls (2026-10-12)
+
+Not an optimization: the first push of Attempts 270–274 (22d9fd6) failed two fast checks.
+`rust-build-test` ran `cargo fmt --check` on code that had never been formatted
+(`types_repr.rs`, `graph.rs`, `strings.rs`, `types_id_binding_tests.rs`; formatting only), and
+`candidate-gate-tests (controls)` refused the tracked JVM source: the closed source/build
+profile the JVM pressure oracle accepts named `optimized-declared24af`, and seven Kotlin
+files (`DeclaredTypeProperties`, `DeclaredTypeStore`, `DeclaredTypeStrings`, `GraphStore`,
+`MappedWebGraphBackedGraph`, `StringTable`, `WebGraphBackedGraph`) no longer hash to it. A
+new complete profile `lazy-declared-a9d4` (reviewed at a9d4749, the last commit touching
+those sources) layers the seven reviewed hashes over `optimized-declared24af`; the historical
+profiles stay exact, the inventory stays at 166 files, and unknown additions, removals, build
+and dependency changes still fail. The controls manifests pin the rules, their test and the
+pressure comparison script, and the workflow pins the manifests, so both manifests and both
+`MULTIGRAPH_*_CONTROLS_SHA256` values are re-pinned. 13 source-rule tests and 238 gate tests
+pass.
