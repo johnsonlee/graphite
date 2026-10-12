@@ -71,7 +71,7 @@ class JvmPreparationTests(unittest.TestCase):
                 'rawDerivationEvidence': {'record': {'tiny': 'raw record'}, 'universes': universes}, 'expectationVariant': variant,
                 'data': str(http/'data'), 'port': 23800+ord(name),
                 'readiness': {'expected': {'count': 64, 'graphs': graphs}}}
-        plan['argv'] = [str(self.java), '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', jar['path'],
+        plan['argv'] = [str(self.java), p.queries.CORRECTNESS_HEAP, '-XX:ActiveProcessorCount=4', '-cp', jar['path'],
             'io.johnsonlee.graphite.cli.MainKt', 'serve', '--data', plan['data'], '--port', str(plan['port']),
             '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '240000',
             *p.common.graph_arguments(graphs)]
@@ -151,7 +151,7 @@ class JvmPreparationTests(unittest.TestCase):
         packet = self.packet()
         self.assertEqual(3, self.audit_mock.call_count); self.assertEqual(['A', 'B'], self.comparison_calls)
         for arm in packet['arms'].values():
-            self.assertEqual(35, len(arm['cases'])); self.assertEqual(4*1024**3, arm['maxHeapBytes'])
+            self.assertEqual(35, len(arm['cases'])); self.assertEqual(4*1024**3, arm['maxHeapBytes']); self.assertEqual('-Xmx4g', arm['serverArgv'][1])
             self.assertEqual('io.johnsonlee.graphite.cli.MainKt', arm['serverArgv'][5])
         for key in ('strictEquivalence', 'completeSemanticEquivalence', 'sourceToDeclarationCompletenessClaim',
                     'performanceAcceptance', 'acceptanceEligible'): self.assertIs(False, packet[key])
@@ -315,7 +315,7 @@ class JvmPreparationTests(unittest.TestCase):
     def test_raw_universe_scope_wrong_runtime_launch_and_unknown_role_reject(self):
         root = Path(self.roots['B'])
         with self.assertRaises(ValueError): p.audited_arm(root, 'b'*40, 'parent')
-        audit = self.observed[str(root)]; plan = p.common.read(root/'plan.json'); plan['argv'][1] = '-Xmx8g'
+        audit = self.observed[str(root)]; plan = p.common.read(root/'plan.json'); plan['argv'][1] = p.PRESSURE_HEAP  # the correctness server's heap, not the pressure server's
         ref = self.write(root/'plan.json', plan); audit['plan'] = ref; audit['pins'][ref['path']] = ref['sha256']; self.write(root/'audit.json', audit)
         with self.assertRaisesRegex(ValueError, 'server entry'): p.audited_arm(root, 'b'*40, 'candidate')
 

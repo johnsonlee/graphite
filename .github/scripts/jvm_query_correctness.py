@@ -19,6 +19,10 @@ import multigraph_pressure as common
 import run_native_query_correctness as lifecycle
 from run_real64_loading import entrypoint
 
+# Deriving and checking complete JVM responses on every real64 writer corpus ran a 4g heap out
+# of memory (Attempt277); 8g is the ceiling the performance rules allow.
+CORRECTNESS_HEAP = '-Xmx8g'
+
 require = common.require
 PLAN = 'graphite.jvm-query-correctness-plan.v1'
 AUDIT = 'PASS_ALL35_JVM_RESPONSES_INDEPENDENT_RAW_AUDIT'
@@ -118,7 +122,7 @@ def _prepare_evidence(root, output, port, evidence):
             'readiness': {'expected': lifecycle.persisted_readiness(fixture)},
             'limits': {'requestSeconds': 240, 'bodyBytes': 64*1024*1024, 'readinessSeconds': 900},
             'performanceAcceptance': False, 'completeSemanticEquivalence': False}
-    plan['argv'] = [raw_plan['java'], '-Xmx8g', '-XX:ActiveProcessorCount=4', '-cp', jar,
+    plan['argv'] = [raw_plan['java'], CORRECTNESS_HEAP, '-XX:ActiveProcessorCount=4', '-cp', jar,
                     'io.johnsonlee.graphite.cli.MainKt', 'serve', '--data', plan['data'], '--port', str(port),
                     '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '240000',
                     *common.graph_arguments(graphs)]

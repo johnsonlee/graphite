@@ -20933,3 +20933,23 @@ p50 8→8 and 8→11. Parent pairs add `slow-dataflowSourceHit` 75→185 and
 or harden the protocol, e.g. 40 samples per case and a tail rule that also accepts a p95
 within tolerance of the slower of the run's two base cells; or move the cheap cases out of
 the heavy cases' closed loop. The tolerances themselves stay as approved.
+
+### Attempt286 — the JVM pressure plan refused the 8g correctness server (2026-10-12)
+
+Run 38265880845's `rust-query-jvm-measurement` failed before issuing a cell:
+`ValueError('exact sealed source-built JVM server entry and options')` from
+`prepare_jvm_pressure_plan._arm_from_audit`. The pressure plan rebuilds the server argv it
+expects the correctness run to have sealed, with the pressure server's own `-Xmx4g`, and
+Attempt277 moved the correctness server to `-Xmx8g` (deriving and checking complete responses
+on every real64 corpus ran 4g out of memory). The check had never run since: 893's JVM
+measurement was cancelled behind the C arm, and 894/895 behind the next pushes. Both arms
+failed the same way, so no cell ran and no number is lost.
+
+Fix: `jvm_query_correctness.CORRECTNESS_HEAP = '-Xmx8g'` is the one place the correctness
+heap is spelled, and `prepare_jvm_pressure_plan` accepts exactly that heap in the sealed
+argv while keeping `PRESSURE_HEAP = '-Xmx4g'` (`maxHeapBytes` 4g, matched across arms, within
+the ceiling) for the pressure server, as before Attempt277, so the JVM query measurements stay
+comparable with the accepted history and the pressure RSS envelope does not move. The test
+that rejected a correctness plan at 8g now rejects one at the pressure heap. 23 + 17 + 19
+tests in the three modules, the 111 `multigraph_pressure` tests and 141 workflow tests pass;
+the preparation manifest and workflow digest are re-pinned.

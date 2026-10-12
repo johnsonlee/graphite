@@ -20,6 +20,10 @@ STATUS = assembled.CORRECTED_STATUS
 PENDING_STATUS = 'JVM35_RESPONSES_AUDITED_CORE_COMPARABILITY_PENDING'
 MODE = 'jvm35-before-core-v1'
 CATALOG = Path(__file__).resolve().parent/'fixtures/jvm-multigraph-pressure-cases.json'
+# The pressure server's own heap, matched across arms and within the 8g ceiling; the
+# correctness server that produced the audited plan runs under queries.CORRECTNESS_HEAP.
+PRESSURE_HEAP = '-Xmx4g'
+PRESSURE_HEAP_BYTES = 4*1024**3
 require = common.require
 merge_pins = assembled.merge_pins
 
@@ -67,11 +71,12 @@ def _arm_from_audit(root, revision, role, observed):
         cases.append({'id': case['id'], 'request': case['request'], 'targetGraphIds': case['targetGraphIds'],
                       'oracle': oracle, 'observed': receipt})
     jar = plan['serverJar']
-    argv = [raw['java'], '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp', jar['path'],
+    argv = [raw['java'], PRESSURE_HEAP, '-XX:ActiveProcessorCount=4', '-cp', jar['path'],
             'io.johnsonlee.graphite.cli.MainKt', 'serve']
     # The shared runner owns data/port/concurrency/graph flags; retain all other
-    # actual correctness-server options rather than inventing a different path.
-    expected_actual = argv[:7] + ['--data', plan['data'], '--port', str(plan['port']),
+    # actual correctness-server options rather than inventing a different path. The
+    # correctness server alone runs under its own heap (queries.CORRECTNESS_HEAP).
+    expected_actual = [argv[0], queries.CORRECTNESS_HEAP, *argv[2:7], '--data', plan['data'], '--port', str(plan['port']),
         '--load-mode', 'MAPPED', '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', '240000',
         *common.graph_arguments(plan['graphs'])]
     require(plan['argv'] == expected_actual and runtime['files'].get(jar['path']) == jar['sha256'] == pins.get(jar['path']),
@@ -80,7 +85,7 @@ def _arm_from_audit(root, revision, role, observed):
         'sourceManifest': observed['sourceManifest'], 'runtimeManifest': observed['runtimeManifest'],
         'fixtureManifest': observed['fixtureManifest'], 'artifactAudit': artifact_ref, 'queryAudit': audit_ref,
         'runtimeFiles': runtime['files'], 'runtimeRoots': [str(producer/'runtime')], 'serverArgv': argv,
-        'maxHeapBytes': 4*1024**3, 'graphs': plan['graphs'],
+        'maxHeapBytes': PRESSURE_HEAP_BYTES, 'graphs': plan['graphs'],
         'readiness': {**plan['readiness'], 'path': '/api/graphs'}, 'cases': cases}
     if raw.get('coreComparabilityPending') is True:
         arm['rawExportAudit'] = raw['upstreamRawExportAudit']
