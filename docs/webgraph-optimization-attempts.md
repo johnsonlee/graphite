@@ -20621,3 +20621,50 @@ pins in turn, so both are re-pinned. 17 correctness tests and 23 plan tests pass
 candidate's `feature-nodes` is slower than the base's here (25.1s against 19.9s cold, 17.0s
 against 9.5s warm, one sample each on a loaded 4-core box); that is the JVM feature query
 cost Attempt272 reduced and not yet recovered, measured separately from this job.
+
+### Attempt278 — the native dynamic-key cases slow down only when they overlap each other (2026-10-12)
+
+Analysis, no code change. Run 38206777955's `rust-query-native` failed on `slow-dynamicHit`
+and `slow-dynamicMiss` in all four pairs (p50 +173 to +493ms, +7–19%, p95 +208 to +538ms)
+while every other case passed and the candidate's whole pressure stage took 206s against the
+base's 269s (CPU 809s against 1056s). Three measurements on the run's own `shared-fixture64`
+corpus (64 distinct real shards, candidate and base `graphite` CLIs, the harness's arguments):
+
+1. **Alone, there is no regression.** Sequential requests, five per case, two passes per
+   arm, interleaved base/cand/cand/base: dynamicHit 1050/1083ms (cand) against 1105/1136ms
+   (base); dynamicMiss 1078/1020ms against 1069/1040ms. CPU per request matched except the
+   candidate's first dynamicHit pass, which carried the lazy declared-table load of all 64
+   graphs (2.88s in total, 81ms at most for one graph); the CI harness's oracle and warmup
+   stages absorb that before any measured sample.
+2. **The plan is the base's plan.** Every one of the 64 tables' text summaries rules both
+   literals out (`generic_text_may_contain` false for `android.permission.INTERNET` and for
+   `GraphiteSlowShapeAbsent293746X`), so the Field/Parameter/Return tags are re-planned with
+   the declared keys absent and scanned as columns, exactly as on the base; no node is
+   decoded for the two keys.
+3. **The pairing is what changed.** The harness is a closed loop: four workers take the
+   35 cases in fixture order, twenty rounds, each worker taking the next task the moment it
+   validates one. From the cells' `pressure/stage.json`, a base dynamicHit request spent
+   56–63% of its time overlapping `slow-qualifiedIdHit`, 52–61% `slow-qualifiedIdMiss`
+   and 34–40% `slow-dynamicMiss`; the candidate's `slow-qualifiedIdHit` answers in 305ms
+   instead of 2.1s (Attempt270), so its worker moves on and dynamicHit overlapped
+   dynamicMiss 65–73% of its time, qualifiedIdHit not at all. Two clients on the local
+   corpus reproduce it on both arms alike:
+
+   | pairing (two concurrent clients) | base dynamic p50 | candidate dynamic p50 |
+   |---|---|---|
+   | dynamicHit alone | 1059ms | 1170ms |
+   | dynamicHit ‖ qualifiedIdHit | 1290ms (qualifiedIdHit 1128ms) | 1061ms (qualifiedIdHit 470ms) |
+   | dynamicHit ‖ dynamicMiss | 1923ms | 1893ms |
+   | dynamicMiss alone | 1192ms | 1033ms |
+   | dynamicMiss ‖ qualifiedIdMiss | 1275ms (qualifiedIdMiss 1156ms) | 1113ms (qualifiedIdMiss 438ms) |
+
+   Under the same partner the two arms cost the same; two full scans sharing four cores
+   each take 1.9s whichever binary runs them. The gate's dynamic rows measure how often
+   the candidate's faster neighbours leave the two scans alone with each other.
+
+The `rss` FAIL of the same job (acceptedBaseline 0-C → 2-B: 12.09GB → 12.80GB, +5.9%; the
+other three pairs −0.7%, +3.9%, +3.8%) is separate: the candidate's query-phase RSS carries
+the lazily loaded declared tables, 250MB for 64 graphs in the local server (8.60GB against
+8.35GB after the dynamic cases, +3.0%), on top of a base-to-base spread of 12.09–12.90GB
+between cells. That one is this PR's to shrink; the dynamic rows are not a per-request cost
+this PR can remove, and the harness has no rule for a case whose neighbours got faster.
