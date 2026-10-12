@@ -589,7 +589,7 @@ impl DeclaredTypes {
         };
         table.finish_id_index();
         let mut table = Self {
-            storage: Storage::Compact(table),
+            storage: Storage::Compact(Box::new(table)),
         };
         table.validate()?;
         if let Storage::Compact(compact) = &mut table.storage {

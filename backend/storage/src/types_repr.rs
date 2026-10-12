@@ -1043,8 +1043,8 @@ impl CompactTable {
 
 #[derive(Debug)]
 pub(super) enum Storage {
-    Compact(CompactTable),
-    Owned(MutableDeclaredTypes),
+    Compact(Box<CompactTable>),
+    Owned(Box<MutableDeclaredTypes>),
 }
 pub struct DeclaredTypes {
     pub(super) storage: Storage,
@@ -1057,7 +1057,7 @@ impl Default for DeclaredTypes {
 impl From<MutableDeclaredTypes> for DeclaredTypes {
     fn from(value: MutableDeclaredTypes) -> Self {
         Self {
-            storage: Storage::Owned(value),
+            storage: Storage::Owned(Box::new(value)),
         }
     }
 }
@@ -1482,19 +1482,19 @@ impl DeclaredTypes {
     pub(crate) fn ensure_owned(&mut self) {
         if matches!(self.storage, Storage::Compact(_)) {
             let owned = self.to_mutable();
-            self.storage = Storage::Owned(owned);
+            self.storage = Storage::Owned(Box::new(owned));
         }
     }
     /// Explicit mutation boundary; text is materialized only when requested.
     pub fn into_mutable(self) -> MutableDeclaredTypes {
         match self.storage {
-            Storage::Owned(t) => t,
+            Storage::Owned(t) => *t,
             storage => Self { storage }.to_mutable(),
         }
     }
     pub fn to_mutable(&self) -> MutableDeclaredTypes {
         if let Storage::Owned(t) = &self.storage {
-            return t.clone();
+            return (**t).clone();
         }
         let mut strings: HashMap<Arc<str>, ()> = HashMap::new();
         let mut text = |value: &str| {
@@ -1701,7 +1701,7 @@ mod compact_tests {
             );
         }
         let declarations = DeclaredTypes {
-            storage: Storage::Compact(table),
+            storage: Storage::Compact(Box::new(table)),
         };
         declarations.validate().unwrap();
         let view = declarations.type_expr(1);
@@ -1777,7 +1777,7 @@ mod compact_tests {
         table.finish_method_buffers();
         table.texts = texts;
         let declarations = DeclaredTypes {
-            storage: Storage::Compact(table),
+            storage: Storage::Compact(Box::new(table)),
         };
         let empty = declarations.method_types("Owner", "empty", "()V").unwrap();
         assert!(empty.parameters.is_empty());
@@ -1869,7 +1869,7 @@ mod compact_tests {
         table.finish_method_buffers();
         table.texts = texts;
         let declarations = DeclaredTypes {
-            storage: Storage::Compact(table),
+            storage: Storage::Compact(Box::new(table)),
         };
         assert_eq!(declarations.method_count(), 256);
         for i in 0..256 {
