@@ -20712,3 +20712,46 @@ the queries 8.40GB (base) against 8.53/8.52GB with the first step (+1.5%, was +3
 Attempt278's measurement). 117 storage and 188 cypher tests pass; clippy and rustfmt
 clean. The RSS row remains at the mercy of the base cells' own spread (12.09–12.90GB
 between two base cells of run 38206777955); this halves what the candidate adds to it.
+
+### Attempt280 — a word search reads no number and skips descriptors it cannot hold (2026-10-12)
+
+The slowest hit/miss pair of the native pressure gate, `slow-dynamicHit` / `slow-dynamicMiss`
+(`MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'word') ... LIMIT 50`,
+2.5–3.1s on the hosted 64 shards, 1.0–1.2s locally), and the pair that Attempt278 found
+regressing only through its neighbours. Where the time went, on the candidate binary over the
+run's 64 shards: not in the dictionary (the trigram index settles a missing word per graph in
+one bitmap probe), not in the Field/Parameter/Return columns, but in the CallSite raw sweep.
+`keys(n)` expands to every pushable key, and for a CallSite that includes `id`, `line` and
+`ordinal`, tested as decimal text per record, and `caller_signature`/`callee_signature`,
+composed and memoised per method and looked up per record; the `may_match` prefilter kept
+every `toString` leaf as "may match", so every CallSite of every graph was swept for a word no
+number can spell. Pruning the non-CallSite id and integer leaves alone changed nothing
+(1073/1058ms); the sweep was the cost.
+
+Three changes in `scan.rs`, all plan-time:
+
+- `decimal_text_may_match`: a text test whose literal holds any byte but a digit or a minus
+  can never match an integer's decimal text. The column tree resolves the node id and the
+  `I32`/`I64` record leaves to "never" for such a literal (a boolean leaf to "never" when
+  neither `true` nor `false` satisfies it), the CallSite raw tree builds `RawLeaf::Never` for
+  `id`, `line` and `ordinal`, and `may_match` answers false for those leaves.
+- `may_match` no longer treats a `toString` leaf as unanswerable: `toString` of a string
+  property is that string, so its trigrams decide as for a plain leaf.
+- `composed_text_may_match`: a descriptor is `class.name(param,param)`. Its class and name
+  are CallSite strings the trigram index covers; its parameter types are erased type names,
+  which the declared table's text summary covers. The literal's runs between the joining
+  punctuation each lie inside one part, so a run that neither can hold rules the graph out
+  (a graph without a declared table, a regex or a non-ASCII literal keep every run). Both the
+  signature leaves and `may_match` use it.
+
+On the 64 shards (candidate CLI, three sequential requests each): slow-dynamicMiss 1058ms →
+622ms (−41%); slow-dynamicHit 1073 → 1116ms (unchanged: the 16 android shards do hold
+`android`, `permission` and `INTERNET`, and the hits are in their string constants, so their
+sweeps still run); the two concurrently 1893 → 1416ms each. 189 cypher tests pass, including a
+new fixture-gated one on the indexed fixture: the word leaves resolve to nothing, a digit and a
+present callee name keep the sweep, and the pushed answers equal the generic evaluation for
+an absent word, a digit and a callee name. Found on the way, and not this PR's: the keys
+search has never pushed `callee_descriptor`/`caller_descriptor`, so a word hidden in a JVM
+descriptor's package (`int` in `Lit/unimi/dsi/fastutil/ints/IntOpenHashSet;`) is found by the
+generic evaluation and not by the pushed one, on the base revision as here (3214 against
+3216 call sites of the indexed fixture).

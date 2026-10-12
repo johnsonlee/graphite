@@ -1580,6 +1580,9 @@ enum RawLeaf {
     NodeId(Option<f64>),
     /// A synthetic key tested per node: the graph's prefix, then the id.
     Synthetic(SyntheticMatcher),
+    /// A test no record of this graph can pass: a word against a number's text, or a
+    /// descriptor whose component words the graph's dictionary does not hold.
+    Never,
 }
 
 /// The CallSite tree with each leaf ready to test one record.
@@ -1719,6 +1722,11 @@ impl RawTree {
                     key if is_synthetic_key(key) => {
                         RawLeaf::Synthetic(SyntheticMatcher::new(graph_id, p))
                     }
+                    "callee_signature" | "caller_signature"
+                        if !idx.is_none_or(|idx| composed_text_may_match(graph, idx, p)) =>
+                    {
+                        RawLeaf::Never
+                    }
                     "callee_signature" | "caller_signature" => {
                         let index = *memos;
                         *memos += 1;
@@ -1726,6 +1734,11 @@ impl RawTree {
                             callee: p.prop() == "callee_signature",
                             memo: index,
                         }
+                    }
+                    "line" | "ordinal" | "id"
+                        if number().is_none() && !decimal_text_may_match(p) =>
+                    {
+                        RawLeaf::Never
                     }
                     "line" => RawLeaf::Line(number()),
                     "ordinal" => RawLeaf::Ordinal(number()),
@@ -1782,6 +1795,7 @@ impl RawTree {
                 Some(ordinal) => number_or_text_i64(*number, ordinal as i64, p),
             },
             RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
+            RawTree::Leaf(RawLeaf::Never, _) => false,
             RawTree::Leaf(RawLeaf::Synthetic(matcher), p) => matcher.matches(p, r.id, &mut st.text),
             RawTree::Leaf(RawLeaf::Signature { callee, memo }, p) => {
                 let start = if *callee { r.callee } else { r.caller };
@@ -3630,6 +3644,48 @@ struct RowState {
 }
 
 /// The literal as a number, for a numeric leaf.
+/// Whether the decimal text of an integer (digits, at most a leading minus) can satisfy
+/// the text test at all. A literal holding any other byte is never a substring, prefix,
+/// suffix or equal of one, so a `keys(n)` search for a word need not read a single row
+/// for the node id or an integer field: before this, `MATCH (n) WHERE any(k IN keys(n)
+/// WHERE toString(n[k]) CONTAINS 'word')` rendered every node id of every graph as text.
+/// A regex is left to its matcher.
+fn decimal_text_may_match(p: &StringPredicate) -> bool {
+    match p.op {
+        PushOp::Regex => true,
+        _ => p.literal.bytes().all(|b| b.is_ascii_digit() || b == b'-'),
+    }
+}
+
+/// Whether a composed method descriptor (`class.name(param,param)`) can hold the
+/// literal. Its class and name are CallSite strings the trigram index covers; its
+/// parameter types are erased type names, which the declared type table's text summary
+/// covers. The literal's maximal runs between the joining punctuation each lie inside
+/// one part, so a run that neither the index nor the summary can hold rules the graph
+/// out; a graph without a declared table keeps every run possible. Only an ASCII
+/// literal is split, as `push_predicate` reasons about case; a regex is left to its
+/// matcher.
+fn composed_text_may_match(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    p: &StringPredicate,
+) -> bool {
+    if p.op == PushOp::Regex || !p.literal.is_ascii() {
+        return true;
+    }
+    let Some(table) = graph.declared_types() else {
+        return true;
+    };
+    p.literal.split(['.', '(', ',', ')']).all(|run| {
+        match graphite_storage::callsite_index::literal_trigrams(run) {
+            Some(trigrams) if !trigrams.is_empty() => {
+                idx.may_contain_all(&trigrams) || table.generic_text_may_contain(run)
+            }
+            _ => true,
+        }
+    })
+}
+
 fn leaf_number(p: &StringPredicate) -> Option<f64> {
     match p.shape {
         LeafShape::Numeric => p.literal.parse::<f64>().ok(),
@@ -3673,17 +3729,32 @@ impl ColumnTree {
                         });
                     }
                     Exposure::NodeId => {
+                        let number = leaf_number(p);
+                        if number.is_none() && !decimal_text_may_match(p) {
+                            return None;
+                        }
                         return Some(ColumnTree::NodeId {
-                            number: leaf_number(p),
+                            number,
                             pred: p.clone(),
                         });
                     }
                     Exposure::Record(field) => {
+                        let number = leaf_number(p);
+                        let possible = match field {
+                            RecordField::I32(_) | RecordField::I64(_) => {
+                                number.is_some() || decimal_text_may_match(p)
+                            }
+                            RecordField::Bool(_) => p.matches_raw("true") || p.matches_raw("false"),
+                            RecordField::Method(_) | RecordField::ActualTypeAfterMethod => true,
+                        };
+                        if !possible {
+                            return None;
+                        }
                         let memo = *memos;
                         *memos += 1;
                         return Some(ColumnTree::Record {
                             field,
-                            number: leaf_number(p),
+                            number,
                             pred: p.clone(),
                             memo,
                         });
@@ -4187,18 +4258,26 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         return true;
     };
     match tree {
-        // A synthetic key is not in any dictionary, and a number's text is not either:
-        // their trigrams say nothing about whether the graph can match.
-        // Nor does a number, a list test, a node id, or a type name.
+        // A synthetic key is not in any dictionary, and a type or method name is composed:
+        // their trigrams say nothing about whether the graph can match. Nor does a number
+        // or a list test.
         PredTree::Leaf(p)
             if p.shape != LeafShape::Text
                 || is_synthetic_key(p.prop())
-                || p.via_to_string
-                || matches!(p.prop(), "id" | "type" | "method")
-                || is_raw_call_site_prop(p.prop()) =>
+                || matches!(p.prop(), "type" | "method") =>
         {
             true
         }
+        // A number's text holds digits: a word never matches it, whatever the graph.
+        PredTree::Leaf(p) if matches!(p.prop(), "id" | "line" | "ordinal") => {
+            decimal_text_may_match(p)
+        }
+        // A descriptor is CallSite strings and type names joined by punctuation: each
+        // word of the literal must be in one of them.
+        PredTree::Leaf(p) if is_raw_call_site_prop(p.prop()) => {
+            composed_text_may_match(graph, idx, p)
+        }
+        // `toString` of a string property is that string: the trigrams stand.
         PredTree::Leaf(p) => match p.trigrams.as_ref() {
             Some(trigrams) if !trigrams.is_empty() => idx.may_contain_all(trigrams),
             _ => true,
@@ -5453,6 +5532,152 @@ mod tests {
         assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
         let (p, w) = parse_where(r#"MATCH (n {value: n.name}) RETURN n"#);
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+    }
+
+    fn to_string_leaf(property: &'static str, op: PushOp, literal: &str) -> PredTree {
+        let PredTree::Leaf(mut p) = leaf(property, op, literal) else {
+            unreachable!()
+        };
+        p.via_to_string = true;
+        p.from_keys = true;
+        PredTree::Leaf(p)
+    }
+
+    #[test]
+    fn words_never_match_decimal_text() {
+        let text = |literal: &str| match leaf("id", PushOp::Contains, literal) {
+            PredTree::Leaf(p) => p,
+            _ => unreachable!(),
+        };
+        assert!(decimal_text_may_match(&text("12")));
+        assert!(decimal_text_may_match(&text("-3")));
+        assert!(decimal_text_may_match(&text("")));
+        assert!(!decimal_text_may_match(&text("ab")));
+        assert!(!decimal_text_may_match(&text("1a")));
+        assert!(!decimal_text_may_match(&text("1.5")));
+        let mut regex = text("ab");
+        regex.op = PushOp::Regex;
+        assert!(decimal_text_may_match(&regex));
+        // The planner drops the leaf for the id and the integer fields alike, keeps it
+        // for a digit literal, and keeps a method or a boolean word it can hold.
+        let p = plans(r#"MATCH (n) WHERE toString(n.id) CONTAINS "ab" RETURN n"#);
+        assert!(p.iter().all(|k| *k == "skip" || *k == "generic"), "{p:?}");
+        let p = plans(r#"MATCH (n) WHERE toString(n.index) CONTAINS "ab" RETURN n"#);
+        assert_eq!(p[TAG_PARAMETER_NODE as usize], "skip");
+        let p = plans(r#"MATCH (n) WHERE toString(n.value) CONTAINS "ab" RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_LONG_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.value) CONTAINS "12" RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.static) CONTAINS "ru" RETURN n"#);
+        assert_eq!(p[TAG_FIELD_NODE as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.static) CONTAINS "yes" RETURN n"#);
+        assert_eq!(p[TAG_FIELD_NODE as usize], "skip");
+    }
+
+    #[test]
+    fn word_searches_skip_numbers_and_absent_descriptor_words() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_INDEX_FIXTURE required for the word search prefilter"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        assert!(
+            usable_index(&graph).is_some(),
+            "the indexed fixture carries a CallSite index"
+        );
+        assert!(graph.declared_types().is_some());
+        let absent = |property| to_string_leaf(property, PushOp::Contains, "ZZZAbsentWord");
+        // A word against a number's text: the node id, the line, the ordinal.
+        for property in ["id", "line", "ordinal"] {
+            assert!(!may_match(&graph, &absent(property)), "{property}");
+            assert!(may_match(
+                &graph,
+                &to_string_leaf(property, PushOp::Contains, "1")
+            ));
+        }
+        // `toString` of a CallSite string is the string: the index answers.
+        assert!(!may_match(&graph, &absent("callee_name")));
+        // A descriptor word neither a CallSite string nor a type name holds.
+        assert!(!may_match(&graph, &absent("callee_signature")));
+        assert!(!may_match(&graph, &absent("caller_signature")));
+        // Words the fixture does hold: a callee's name, and a parameter type's name,
+        // which only the declared table knows.
+        let first = graph.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+        let node = graph.node(first).unwrap();
+        let callee = crate::semantics::kotlin_to_string_plain(&super::super::props::node_property(
+            &graph,
+            &node,
+            "callee_name",
+        ));
+        assert!(callee.len() >= 3, "{callee}");
+        assert!(may_match(
+            &graph,
+            &to_string_leaf("callee_signature", PushOp::Contains, &callee)
+        ));
+        let table = graph.declared_types().unwrap();
+        let type_name = (0..table.type_count())
+            .map(|id| table.type_expr(id).name.to_owned())
+            .find(|name| name.len() >= 3 && name.bytes().all(|b| b.is_ascii_alphanumeric()))
+            .expect("a type name");
+        assert!(may_match(
+            &graph,
+            &to_string_leaf("caller_signature", PushOp::Contains, &type_name)
+        ));
+        // The whole word search over every key, as the CallSite type plans it once the
+        // synthetic keys are folded for a graph: nothing to sweep for the absent word,
+        // a sweep for a digit.
+        let call_site_tree = |literal: &str| {
+            let (pt, w) = parse_where(&format!(
+                "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN n"
+            ));
+            let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+            let never = |_: &str| false;
+            let no = |_: &StringPredicate| Fold::Known(false);
+            match tag_plan(&plan.tree, TAG_CALL_SITE_NODE, &never, &no) {
+                TagPlan::CallSite(tree) => tree,
+                other => panic!("{}", kind_of(&other)),
+            }
+        };
+        assert!(!may_match(&graph, &call_site_tree("ZZZAbsentWord")));
+        assert!(may_match(&graph, &call_site_tree("1")));
+        // And the answers match the unpushed evaluation, hit or miss. (A type name is
+        // left out: the keys search has never pushed `callee_descriptor`, where a word
+        // like `int` can hide in a package name, on this revision or the base.)
+        let ex = Executor::single("generic", std::sync::Arc::new(graph));
+        for literal in ["ZZZAbsentWord", "1", callee.as_str()] {
+            let predicate = format!("any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}')");
+            let direct =
+                format!("MATCH (n:CallSiteNode) WHERE {predicate} RETURN id(n) ORDER BY id(n)");
+            let fallback = format!(
+                "MATCH (n:CallSiteNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n) ORDER BY id(n)"
+            );
+            let actual = ex.execute(&direct, None).unwrap().rows;
+            let expected = ex.execute(&fallback, None).unwrap().rows;
+            let (actual_rows, expected_rows) =
+                (ordered_test_rows(&actual), ordered_test_rows(&expected));
+            let only_direct: Vec<_> = actual_rows
+                .iter()
+                .filter(|r| !expected_rows.contains(r))
+                .take(3)
+                .collect();
+            let only_fallback: Vec<_> = expected_rows
+                .iter()
+                .filter(|r| !actual_rows.contains(r))
+                .take(3)
+                .collect();
+            assert_eq!(
+                actual_rows.len(),
+                expected_rows.len(),
+                "{literal}: only direct {only_direct:?}, only fallback {only_fallback:?}"
+            );
+            assert_eq!(actual_rows, expected_rows, "{literal}");
+            assert_eq!(actual.is_empty(), literal == "ZZZAbsentWord", "{literal}");
+        }
     }
 
     #[test]
