@@ -20953,3 +20953,23 @@ comparable with the accepted history and the pressure RSS envelope does not move
 that rejected a correctness plan at 8g now rejects one at the pressure heap. 23 + 17 + 19
 tests in the three modules, the 111 `multigraph_pressure` tests and 141 workflow tests pass;
 the preparation manifest and workflow digest are re-pinned.
+
+### Attempt287 — rebased onto main (d2e6f7f, PR #177) (2026-10-13)
+
+At the user's request the branch was rebased from 4f2ccf3 onto main d2e6f7f ("Stop running the
+discarded SootUp call graph and release dispatch state"). 304 commits replayed with one
+conflict: both sides appended an attempt entry after line 11612 of this file, and main's
+entry is also numbered Attempt150; both are kept, main's first, so this file now has two
+Attempt150 headings. The rebased tree differs from the pre-rebase head (8641957, kept as
+`backup/pre-rebase-8641957` locally) by exactly main's five-file change; core, sootup and
+query compile with their tests and `LoaderConfigTest` passes.
+
+The closed JVM source profiles had to grow: main changed three tracked sources
+(`ProjectLoader.kt`, `BuildCommand.kt`, `SootUpAdapter.kt`), so neither the parent arm (now
+main, no longer the accepted baseline) nor the rebased candidate matched a profile.
+`callgraph-off-d2e6` is accepted4f with main's three files; `rebased-a12a` is erased-first-f004
+with the same two plus the branch's own `SootUpAdapter.kt`. The accepted baseline stays exact
+4f2ccf3, so the workflow's "accepted baseline distinct from PR base" path runs for the first
+time on this PR: the C arm is checked out separately and the JVM correctness matrix is C, A, B.
+The preparation manifest and the workflow digest are re-pinned; 13 + 19 + 23 + 22 + 17 Python
+tests and 141 workflow tests pass.

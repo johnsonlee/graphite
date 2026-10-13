@@ -238,6 +238,24 @@ ERASED_FIRST_OVERRIDES = {
     'frontend/jvm/cypher/src/main/kotlin/io/johnsonlee/graphite/cypher/NodePropertyAccessor.kt':
         '3ac247c525e2e1caab94a409a9f0ffa00b72f514dc890bcb3815bc2e43afa091',
 }
+# Main after PR #177 (d2e6f7f): LoaderConfig.buildCallGraph defaults to false, BuildCommand no
+# longer forces it, and SootUpAdapter releases the dispatch state after resolution. The parent
+# arm is that main; the branch rebased onto it carries the same two files and its own adapter.
+REVIEWED_AT['callgraph-off-d2e6'] = 'd2e6f7f1db4a4709d4289dc31cf313d940037ee5'
+CALLGRAPH_OFF_OVERRIDES = {
+    'frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/input/ProjectLoader.kt':
+        '14ed626606cbe9146e85c083814ff453816160a9d4376965697d200638c534f6',
+    'frontend/jvm/query/src/main/kotlin/io/johnsonlee/graphite/cli/BuildCommand.kt':
+        'c9c871fc4d50ae465cf08b03aeea64938f39e242987d5f4028689ababde4868d',
+    'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt':
+        '758e244be9daa29518833048a40511ccc4075bc4b4657e6874224032ac77c6c1',
+}
+REVIEWED_AT['rebased-a12a'] = 'a12ae55a80bd4cd39c96911856be738f6513f919'
+REBASED_OVERRIDES = {
+    **{path: digest for path, digest in CALLGRAPH_OFF_OVERRIDES.items() if not path.endswith('SootUpAdapter.kt')},
+    'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt':
+        'ce5e30bcb3320bedcf07e29d238b5f5c2e23b7ac0cfc9ea059f8dfdb8d93ddcb',
+}
 REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '07e6d3927021c674a49689314e4e5e810d5b7fd1d8061bebb782839a1cc05906', 'jvm_pressure_derivation.py': '7a0f34205b036194718779cc010ffa951d904235fee96aeb940a8f0559962ecc', 'jvm_pressure_distinct.py': 'b43ec1ef82170c22229f0a62bc8b0dc33601c6b74f70257096685b6790bc5a3d', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': 'd0e08387a3ca8ba7cfc57b13a5e7ec4712480f5e75c45a14fa1222b3e8a01925', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
 REQUEST_CONTRACT_SHA = '5da64e89009f4702d5f55b23e75def8561636841a605fb940dab24d93ba023d4'
 
@@ -309,6 +327,8 @@ def profiles():
     result['lazy-declared-a9d4'] = {**result['optimized-declared24af'], **LAZY_DECLARED_OVERRIDES}
     result['streamed-digest-16c1'] = {**result['lazy-declared-a9d4'], **STREAMED_DIGEST_OVERRIDES}
     result['erased-first-f004'] = {**result['streamed-digest-16c1'], **ERASED_FIRST_OVERRIDES}
+    result['callgraph-off-d2e6'] = {**result['accepted4f'], **CALLGRAPH_OFF_OVERRIDES}
+    result['rebased-a12a'] = {**result['erased-first-f004'], **REBASED_OVERRIDES}
     return result
 
 

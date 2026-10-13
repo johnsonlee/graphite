@@ -157,7 +157,9 @@ class SourceRuleTests(unittest.TestCase):
                                   ('optimized-declared24af', p.REVIEWED_AT['accepted4f']),
                                   ('lazy-declared-a9d4', p.REVIEWED_AT['accepted4f']),
                                   ('streamed-digest-16c1', p.REVIEWED_AT['accepted4f']),
-                                  ('erased-first-f004', p.REVIEWED_AT['accepted4f'])):
+                                  ('erased-first-f004', p.REVIEWED_AT['accepted4f']),
+                                  ('callgraph-off-d2e6', p.REVIEWED_AT['accepted4f']),
+                                  ('rebased-a12a', p.REVIEWED_AT['accepted4f'])):
             plan = self.fixture(profile, 'accepted-baseline', revision)
             with self.subTest(profile=profile), self.assertRaisesRegex(ValueError, 'accepted baseline'): p.audit(plan)
 
@@ -176,7 +178,7 @@ class CurrentTrackedSourceTests(unittest.TestCase):
 
     def test_current_tracked_source_matches_reviewed_complete_profile(self):
         profile, sources = p.recognized({'root': str(self.checkout), 'files': self.sources}, self.sources)
-        self.assertEqual('erased-first-f004', profile)
+        self.assertEqual('rebased-a12a', profile)
         self.assertEqual(166, len(sources))
 
     def test_actual_inventory_changes_removal_addition_and_dependency_change_fail(self):
