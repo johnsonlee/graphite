@@ -21106,3 +21106,20 @@ proof (1), the shape reader (1), the verdict helper and a flat comparison in ass
 derivation (2), and the Node comparators (a flat pair accepted, inconsistent verdicts refused, in
 the pressure and lifecycle gates). Both manifests and the workflow digest re-pinned. Main's actual
 sources were checked locally against every source snippet the chain pins (Attempt289).
+
+Run 906 (c7f2550) then took the A arm through `rust-core-prepare (A)` (the worker closures had
+required the formatter tests' classpath metadata, which a flat parent never records: 3f73904,
+c7f2550) and failed all eight `rust-core-shard (A, n)` on the raw-local proof: `C:missing raw
+method/local` and `B:missing raw method/local` on 225 locals of 17 methods in fixture-android-04,
+every one with a multi-dimensional array in its descriptor (`InternalNano.equals([[B[[B)Z`,
+`StateSet.containsAttribute([[II)Z`, `Convert.stringMapToNative(Map)[[String`). A flat writer's
+graph renders `byte[][]` as `byte[]` in its method keys as well, so the key the proof rebuilt
+(`([B[B)Z`) matched no row of the raw export, which keeps the JVM descriptor; the candidate pair
+never hit this because its actual arm's keys are exact. `raw_local_types.Authority.raw_method`
+now matches a flat writer's key through the same fold the method authority uses
+(`method_classfile.legacy_descriptor`), records the matched raw method per arm (`rawMethods`),
+and refuses an overload set that shares the folded key unless every overload agrees on the
+local's occurrences, allocations, assignments and statement count
+(`flat method key ambiguous among raw overloads`). Against the extracted fixture-android-04
+export all 17 keys fold to exactly one raw row and no folded key in the graph collides. Two
+raw-local tests cover the fold and the agreement rule.

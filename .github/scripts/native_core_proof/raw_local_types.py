@@ -12,6 +12,7 @@ from pathlib import Path
 from .legacy_wire import need
 from .local_array_corrections import local_slot
 from .formatter_binding import local_creation_rule
+from . import method_classfile as classfile
 
 
 def sha(path):
@@ -53,6 +54,20 @@ def render_saved(raw, flat):
     if flat and raw.get('kind') == 'array':
         return render(raw['base']) + '[]'
     return render(raw)
+
+
+def flat_index(methods):
+    """Raw methods by the key a flat writer's graph renders: the legacy descriptor folds every array
+    to one rank (`[[B` and `[B` alike to `[B`), so overloads that differ only in rank share a key."""
+    index = {}
+    for (owner, name, descriptor), row in methods.items():
+        index.setdefault((owner, name, classfile.legacy_descriptor(descriptor)), []).append(row)
+    return index
+
+
+def local_view(row, name):
+    return (row['locals'].get(name), row['typedAllocations'].get(name, []),
+            row.get('ordinaryAssignments', {}).get(name, []), row['statementCount'])
 
 
 def flat_renderer(source_authority):
@@ -216,7 +231,24 @@ class Authority:
         self.complete = False
         self.source_authority = source_authority
         self.flat = flat_renderer(source_authority)
+        self.by_flat_key = {arm: flat_index(rows) for arm, rows in self.methods.items()} if self.flat else None
         self.creation_pins = None
+
+    def raw_method(self, arm, method, name):
+        """The raw export row for a persisted local's method. A rank-preserving writer's method key
+        is the exact JVM descriptor; a flat writer's key folds every array to one rank, so it is
+        matched through the same fold, and an overload set that shares the folded key must agree on
+        everything about the local before any of it is used."""
+        key = tuple(method)
+        if not self.flat:
+            return self.methods[arm].get(key), None
+        candidates = self.by_flat_key[arm].get((key[0], key[1], classfile.legacy_descriptor(key[2])), [])
+        holders = [row for row in candidates if name in row['locals']]
+        if not holders:
+            return (candidates[0] if len(candidates) == 1 else None), None
+        if all(local_view(row, name) == local_view(holders[0], name) for row in holders):
+            return holders[0], None
+        return None, 'flat method key ambiguous among raw overloads'
 
     def observe(self, canonical, method):
         node, name, actual, _, _ = local_slot(canonical)
@@ -231,7 +263,9 @@ class Authority:
         unique = {}
         relevant = actual.endswith('[]')
         for arm in ('C', 'B'):
-            row = self.methods[arm].get(tuple(method))
+            row, ambiguity = self.raw_method(arm, method, name)
+            if ambiguity: issues.append(arm + ':' + ambiguity)
+            elif row is not None and self.flat: result.setdefault('rawMethods', {})[arm] = list(row['method'])
             values = row['locals'].get(name) if row else None
             allocations = row['typedAllocations'].get(name, []) if row else []
             result['arms'][arm] = {'occurrences': values, 'typedAllocations': allocations,

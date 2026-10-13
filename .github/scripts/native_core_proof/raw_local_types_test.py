@@ -53,6 +53,37 @@ class RawLocalTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'renderer differs'):r.verify_creation_inputs({'occurrences':[],'flatRendering':True},None,{})
         r.verify_creation_inputs({'occurrences':[],'flatRendering':True},flat,{})
 
+    def test_flat_writer_method_key_matches_the_raw_export_through_the_rank_fold(self):
+        # A flat writer's graph renders byte[][] as byte[] in its method keys too; the raw export
+        # keeps the JVM descriptor. The proof matches through the same fold (Attempt290).
+        from types import SimpleNamespace
+        flat=SimpleNamespace(kinds={'C':'legacy-flat','B':'legacy-flat'})
+        folded=M[:2]+['(I)[B']
+        oracle=self.authority(source_authority=flat);oracle.observe(local('byte[]'),folded);report=oracle.finish()
+        self.assertEqual((1,0),(report['arrayCount'],report['unprovedCount']))
+        self.assertEqual({'C':M,'B':M},oracle.rows[0]['rawMethods'])
+        exact=self.authority();exact.observe(local('byte[][]'),folded)
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):exact.finish()
+        self.assertEqual(['C:missing raw method/local','B:missing raw method/local'],exact.rows[0]['issues'])
+
+    def test_flat_overloads_sharing_a_folded_key_must_agree_on_the_local(self):
+        from types import SimpleNamespace
+        flat=SimpleNamespace(kinds={'C':'legacy-flat','B':'legacy-flat'})
+        def twin(arm,rows,raw):
+            other=copy.deepcopy(rows[1]);other['method']=M[:2]+['(I)[[[B'];other['locals']['$stack4'][0]['type']=raw
+            rows.insert(2,other);rows[-1]['methodCount']=2
+        agreeing=self.authority(mutate=lambda arm,rows:twin(arm,rows,copy.deepcopy(A)),source_authority=flat)
+        agreeing.observe(local('byte[]'),M[:2]+['(I)[B']);self.assertEqual(0,agreeing.finish()['unprovedCount'])
+        disagreeing=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,dimension=3)),source_authority=flat)
+        disagreeing.observe(local('byte[]'),M[:2]+['(I)[B'])
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):disagreeing.finish()
+        self.assertIn('C:flat method key ambiguous among raw overloads',disagreeing.rows[0]['issues'])
+        elsewhere=self.authority(mutate=lambda arm,rows:twin(arm,rows,copy.deepcopy(A)),source_authority=flat)
+        for arm in elsewhere.methods.values():
+            for key,row in arm.items():
+                if key[2]=='(I)[[[B':row['locals']={}
+        elsewhere.observe(local('byte[]'),M[:2]+['(I)[B']);self.assertEqual(0,elsewhere.finish()['unprovedCount'])
+
     def test_unchanged_rank_one_is_checked(self):
         for arm in self.rows:self.rows[arm]['locals']['$stack4'][0]['type']['dimension']=1
         self.assertEqual(1,self.check('byte[]').finish()['arrayCount'])
