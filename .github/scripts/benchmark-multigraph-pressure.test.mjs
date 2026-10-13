@@ -164,6 +164,17 @@ test('distinct parent needs both A and B complete core comparisons',t=>{
  assert.throws(()=>comparePressure(missing.file,missing.root,missing.receiptFile),/Every nonaccepted arm/);
 });
 
+test('a flat parent pair needs no production formatter tests and must say so',t=>{
+ const flat=a=>{a.formatterKinds={C:'legacy-flat',B:'legacy-flat'};a.productionFormatterTestsApplicable=false;a.productionFormatterTestsVerified=false;};
+ const f=joinedFixture(t,{alias:false,changeCoreAudit:(a,arm)=>{if(arm==='A')flat(a);}});
+ assert.equal(comparePressure(f.file,f.root,f.receiptFile).passed,true);
+ for(const change of [a=>{a.productionFormatterTestsApplicable=false;},a=>{flat(a);a.productionFormatterTestsVerified=true;},
+                      a=>{flat(a);a.formatterKinds.C='rank-preserving';},a=>{delete a.formatterKinds;}]) {
+  const g=joinedFixture(t,{changeCoreAudit:change});
+  assert.throws(()=>comparePressure(g.file,g.root,g.receiptFile),/complete core execution/);
+ }
+});
+
 test('missing or failed core authority cannot upgrade a completed fast measurement',t=>{
  for(const options of [
   {changeCorrected:c=>{c.missingAuthority=['core B unavailable'];}},

@@ -151,9 +151,17 @@ test('wrong source, missing arm, failed phase and query receipts cannot authoriz
   {changePhase:(p,i)=>{if(i===138)p.status='FAIL';}},
   {changeCorePlan:p=>{p.graphs.pop();}},
   {changeCoreAudit:a=>{delete a.pins['/B/sourceManifest'];}},
+  {changeCoreAudit:a=>{a.productionFormatterTestsApplicable=false;}},
+  {changeCoreAudit:a=>{a.formatterKinds={C:'legacy-flat',B:'legacy-flat'};a.productionFormatterTestsApplicable=false;}},
   {changeReceipt:r=>{r.schema='graphite.native-pressure.core-comparability-join.v1';}},
   {changeReceipt:r=>{r.metadata[0].relativePath='../escape';}},
  ]) {const f=joinedLifecycle(fixture(t),options);assert.throws(()=>compareLoading(f.file,f.directory,f.receiptFile));}
+});
+
+test('a flat parent pair without production formatter tests still authorizes loading',t=>{
+ const flat=a=>{a.formatterKinds={C:'legacy-flat',B:'legacy-flat'};a.productionFormatterTestsApplicable=false;a.productionFormatterTestsVerified=false;};
+ const f=joinedLifecycle(fixture(t),{changeCoreAudit:(a,arm)=>{if(arm==='A')flat(a);}});
+ assert.equal(compareLoading(f.file,f.directory,f.receiptFile).status,'PASS');
 });
 
 test('lower exit RSS retains all six ready measurements without substituting either observation',t=>{

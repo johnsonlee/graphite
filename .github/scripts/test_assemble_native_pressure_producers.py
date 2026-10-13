@@ -337,6 +337,30 @@ class FinalizationPairTests(unittest.TestCase):
         self.assertEqual(frozen,self.corrected)
 
 
+class FormatterVerdictTests(unittest.TestCase):
+    def test_verdict_follows_the_pair_renderers(self):
+        def ok(c,b,applicable,verified):
+            return bundle.formatter_tests_consistent({'formatterKinds':{'C':c,'B':b},
+                'productionFormatterTestsApplicable':applicable,'productionFormatterTestsVerified':verified})
+        self.assertTrue(ok('legacy-flat','rank-preserving',True,True))
+        self.assertTrue(ok('legacy-flat','legacy-flat',False,False))
+        for case in [('legacy-flat','rank-preserving',True,False),('legacy-flat','rank-preserving',False,False),
+                     ('legacy-flat','rank-preserving',False,True),('legacy-flat','legacy-flat',False,True),
+                     ('legacy-flat','legacy-flat',True,True),('rank-preserving','legacy-flat',False,False),
+                     ('rank-preserving','rank-preserving',True,True),('legacy-flat','other',False,False)]:
+            self.assertFalse(ok(*case),case)
+
+    def test_flat_parent_comparison_is_accepted_and_claimed_tests_are_refused(self):
+        fixture=CorrectedComparisonTests();fixture.setUp();self.addCleanup(fixture.doCleanups)
+        fixture.audit.update(formatterKinds={'C':'legacy-flat','B':'legacy-flat'},productionFormatterTestsApplicable=False,
+                             productionFormatterTestsVerified=False)
+        fixture.path.write_text(json.dumps(fixture.audit))
+        self.assertEqual(fixture.audit['revisions'],bundle.corrected_comparison(fixture.packet,'B',fixture.path)['revisions'])
+        fixture.audit['productionFormatterTestsVerified']=True;fixture.path.write_text(json.dumps(fixture.audit))
+        with self.assertRaisesRegex(ValueError,'scoped complete corrected comparison'):
+            bundle.corrected_comparison(fixture.packet,'B',fixture.path)
+
+
 class CorrectedComparisonTests(unittest.TestCase):
     """Only the existing upstream execution auditor is stubbed; all new joins are real."""
     def setUp(self):
@@ -369,7 +393,7 @@ class CorrectedComparisonTests(unittest.TestCase):
         plan = put('proof/plan.json', self.plan)
         record = put('proof/record.json', {'plan':plan})
         self.audit = {'schema':'graphite.native-core-equivalence-audit.v1','status':core.AUDIT_PASS,
-            'completeCoreTopologyIndexComparison':True,'productionFormatterTestsVerified':True,
+            'completeCoreTopologyIndexComparison':True,'formatterKinds':{'C':'legacy-flat','B':'rank-preserving'},'productionFormatterTestsApplicable':True,'productionFormatterTestsVerified':True,
             'proofModel':'EXPLICIT_CLASSFILE_AND_FORMATTER_SOURCE_CORRECTIONS_WITH_ADDITIVE_DECLARATION_VALIDITY',
             **{k:False for k in core.FALSE_CLAIMS},'revisions':{k:a['revision'] for k,a in arms.items()},
             'fixtureManifests':{k:a['fixtureManifest'] for k,a in arms.items()},'record':record,

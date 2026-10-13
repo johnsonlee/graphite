@@ -38,6 +38,21 @@ class RawLocalTests(unittest.TestCase):
     def test_raw_rank_authority_for_changed_array(self):
         report=self.check().finish();self.assertEqual(1,report['arrayCount']);self.assertFalse(report['completeSemanticEquivalence'])
 
+    def test_flat_renderer_persists_the_base_type_and_one_rank(self):
+        # A rebased PR's parent arm keeps the accepted flat renderer: a raw byte[][] is persisted
+        # as byte[], which the proof expects, and a rank-preserving string there is a mismatch.
+        from types import SimpleNamespace
+        flat=SimpleNamespace(kinds={'C':'legacy-flat','B':'legacy-flat'})
+        oracle=self.authority(source_authority=flat);oracle.observe(local('byte[]'),M);report=oracle.finish()
+        self.assertEqual((1,True),(report['arrayCount'],report['flatRendering']))
+        self.assertEqual(('byte[]',2,'PASS_ARRAY'),(oracle.rows[0]['expectedType'],oracle.rows[0]['rawDimension'],oracle.rows[0]['status']))
+        kept=self.authority(source_authority=flat);kept.observe(local('byte[][]'),M)
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):kept.finish()
+        self.assertEqual(['persisted array differs from raw Local.type'],kept.rows[0]['issues'])
+        self.assertFalse(self.check().finish()['flatRendering'])
+        with self.assertRaisesRegex(ValueError,'renderer differs'):r.verify_creation_inputs({'occurrences':[],'flatRendering':True},None,{})
+        r.verify_creation_inputs({'occurrences':[],'flatRendering':True},flat,{})
+
     def test_unchanged_rank_one_is_checked(self):
         for arm in self.rows:self.rows[arm]['locals']['$stack4'][0]['type']['dimension']=1
         self.assertEqual(1,self.check('byte[]').finish()['arrayCount'])
@@ -270,13 +285,13 @@ class RawLocalTests(unittest.TestCase):
         row={'id':graph_id,'B':'/actual/B','C':'/actual/C','fieldAuthority':{
             'schema':'graphite.classfile-field-authority.v1',
             'arms':{a:{'fixtureManifest':fixture.fixtures[a]} for a in ('C','B')}}}
-        plan={'output':str(self.root),'rawLocalExports':[],
+        plan={'output':str(self.root),'rawLocalExports':[],'formatterKinds':{'C':'legacy-flat','B':'rank-preserving'},
               'sourceRule':{'path':str(source_path),'sha256':r.sha(source_path)}}
         (proof/'core/field-bijection.tsv').write_text('tiny mapping')
         counts={k:0 for k in runner.COUNTS}
         receipt={'actual':row['B'],'reference':row['C'],'inputs':dict(oracle.pins),
                  'mappingSha256':r.sha(proof/'core/field-bijection.tsv'),**counts}
-        declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY',
+        declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY','declarationTable':'present',
                      'sourceToDeclarationCompletenessClaim':False,'queryExpectedAuthority':False}
         properties={'status':'PASS_REQUIRES_COMPLETE_TOPOLOGY'}
         def save(path,value):path.write_text(json.dumps(value))

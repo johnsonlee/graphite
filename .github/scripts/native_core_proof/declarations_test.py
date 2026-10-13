@@ -81,6 +81,16 @@ class DeclarationBindingTests(unittest.TestCase):
         props.write_text('graphclass=example.Graph\n')
         with self.assertRaisesRegex(w.Invalid,'orphan type sidecar'):d.load(self.graph,self.row)
 
+    def test_table_shape_reads_presence_and_refuses_orphans(self):
+        self.assertEqual(d.PRESENT,d.table_shape(self.graph))
+        (self.graph/'graph.types').unlink()
+        with self.assertRaisesRegex(w.Invalid,'missing bound declaration table'):d.table_shape(self.graph)
+        (self.graph/'forward.properties').write_text('graphclass=example.Graph\n')
+        self.assertEqual(d.ABSENT,d.table_shape(self.graph))
+        self.assertIsNotNone(d.export_context(self.graph,self.row))
+        (self.graph/'graph.types').write_bytes(b'GTY\x05 orphan')
+        with self.assertRaisesRegex(w.Invalid,'orphan type sidecar'):d.table_shape(self.graph)
+
     def test_uppercase_digest_matches_production_semantics(self):
         props=self.graph/'forward.properties'
         props.write_text('graphite.declaredTypes.sha256=' + d.sha(self.graph/'graph.types').upper() + '\n')

@@ -265,6 +265,25 @@ class DeriveProtocolTests(unittest.TestCase):
         self.assertTrue(any('both target graphs' in error for error in result['errors']))
         self.assertNotIn('universes', result)
 
+    def test_flat_parent_actual_arm_without_table_needs_no_declared_bindings(self):
+        # A rebased PR's parent arm (main) is derived as the actual arm of its core pair, but its
+        # graphs carry no declared-type table: the candidate's binding requirement is not its.
+        self.assertTrue(p.common.read(self.out/'plan.json')['declaredBindings']) if (self.out/'plan.json').exists() else None
+        (self.raw.graph/'graph.types').unlink()
+        self.pins.pop(str(self.raw.graph/'graph.types'), None)
+        (self.raw.graph/'forward.properties').write_bytes(b'graphclass=tiny.CorrectnessFixture\n')
+        self.raw.refresh()
+        self.make_upstream('a'*40, 'parent')
+        self.audited['pins'].update(self.pins)
+        write_json(self.proof/'audit.json', self.audited)
+        result, _ = self.execute(); self.assertEqual(p.PASS, result['status'], result['errors'])
+        plan = p.common.read(self.out/'plan.json')
+        self.assertEqual(('B', False, 'parent'), (plan['arm'], plan['declaredBindings'], plan['role']))
+
+    def test_candidate_plan_records_the_declared_binding_requirement(self):
+        result, _ = self.execute(); self.assertEqual(p.PASS, result['status'], result['errors'])
+        self.assertTrue(p.common.read(self.out/'plan.json')['declaredBindings'])
+
     def test_reference_arm_selects_reference_original_edges(self):
         (self.raw.graph/'graph.types').unlink()
         self.pins.pop(str(self.raw.graph/'graph.types'), None)

@@ -16,11 +16,26 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def active_table(graph):
-    """Require a bound active sidecar; reject unsupported property syntax.
+PRESENT = 'present'
+ABSENT = 'absent'
 
-    This narrow parser accepts the fresh writer's plain ASCII properties only.
-    It fails closed on escaping/continuations and duplicate keys rather than
+
+def table_shape(graph):
+    """'present' when the graph binds a declaration table, 'absent' when it has neither the
+    binding property nor the sidecar (a writer before the feature, or a rebased PR's parent arm);
+    a sidecar without its binding or a binding without its sidecar is refused."""
+    props = read_properties(graph)
+    bound = 'graphite.declaredTypes.sha256' in props
+    sidecar = (graph/'graph.types').exists()
+    wire.need(bound or not sidecar, 'orphan type sidecar is not an active declaration table')
+    wire.need(sidecar or not bound, 'missing bound declaration table')
+    return PRESENT if bound else ABSENT
+
+
+def read_properties(graph):
+    """Read the fresh writer's plain ASCII properties; reject unsupported property syntax.
+
+    This narrow parser fails closed on escaping/continuations and duplicate keys rather than
     interpreting a different authority from java.util.Properties.
     """
     path = graph/'forward.properties'
@@ -39,6 +54,12 @@ def active_table(graph):
         wire.need(re.fullmatch(r'[A-Za-z0-9_.-]+', key) and key not in props,
                   'malformed or duplicate actual declaration property')
         props[key] = value
+    return props
+
+
+def active_table(graph):
+    """Require a bound active sidecar."""
+    props = read_properties(graph)
     binding = props.get('graphite.declaredTypes.sha256')
     wire.need(binding is not None, 'orphan type sidecar is not an active declaration table')
     wire.need(re.fullmatch('[0-9a-fA-F]{64}', binding), 'malformed actual declaration digest')
@@ -49,9 +70,8 @@ def active_table(graph):
     return raw
 
 
-def load(graph_root, export_row):
-    graph = Path(graph_root).resolve()
-    raw = active_table(graph)
+def export_context(graph, export_row):
+    """Bind the graph's dictionary export, which the declaration table and the core proof share."""
     serialized = graph/'graph.strings'
     wire.need(export_row['input']['path'] == str(serialized) and
               export_row['input']['sha256'] == sha(serialized), 'actual graph dictionary export linkage')
@@ -61,8 +81,14 @@ def load(graph_root, export_row):
                   sha(ref['path']) == ref['sha256'], 'actual export evidence pin')
     helper = Path(__file__).with_name('ExportStrings.java')
     wire.need(sha(helper) == SOURCE_SHA, 'retained export helper source')
-    context = wire.verified_strings_export(Path(export_row['stringsExport']['path']).read_bytes(),
+    return wire.verified_strings_export(Path(export_row['stringsExport']['path']).read_bytes(),
         json.loads(Path(export_row['stringsReceipt']['path']).read_text()), sha(serialized),
         export_row['helperClassSha256'], SOURCE_SHA)
+
+
+def load(graph_root, export_row):
+    graph = Path(graph_root).resolve()
+    raw = active_table(graph)
+    context = export_context(graph, export_row)
     wire.need(len(raw) >= 4 and raw[:3] == b'GTY' and 1 <= raw[3] <= 5, 'supported actual GTY header')
     return wire.declared_types(raw, sha(graph/'graph.metadata'), raw[3], context)

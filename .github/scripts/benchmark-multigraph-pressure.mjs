@@ -11,6 +11,14 @@ const finite = n => typeof n === 'number' && Number.isFinite(n) && n >= 0;
 const sorted = value => Array.isArray(value) ? value.map(sorted) : value && typeof value === 'object' ?
     Object.fromEntries(Object.keys(value).sort().map(key => [key, sorted(value[key])])) : value;
 const equal = (a,b) => JSON.stringify(sorted(a)) === JSON.stringify(sorted(b));
+// The production formatter tests prove the rank-preserving renderer this feature introduced: a
+// pair whose actual writer holds the accepted flat renderer (a rebased PR's parent arm) has none
+// to verify, and its audit must say so rather than claim them.
+const formatterTestsConsistent = audit => {
+    const kinds=audit.formatterKinds, applicable=kinds?.B==='rank-preserving';
+    return kinds?.C==='legacy-flat' && ['legacy-flat','rank-preserving'].includes(kinds?.B) &&
+        audit.productionFormatterTestsApplicable===applicable && audit.productionFormatterTestsVerified===applicable;
+};
 
 // The Python finalizer replays the full raw proof. The portable report retains
 // its original metadata bytes so the aggregate can check the exact join again
@@ -83,7 +91,7 @@ export function verifyComparabilityJoin(planFile,directory,plan,receiptFile,inpu
         const revisions={C:plan.arms.C.revision,B:plan.arms[arm].revision};
         const fixtures={C:plan.arms.C.fixtureManifest,B:plan.arms[arm].fixtureManifest};
         require(audit.status==='PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT' &&
-            audit.completeCoreTopologyIndexComparison===true && audit.productionFormatterTestsVerified===true &&
+            audit.completeCoreTopologyIndexComparison===true && formatterTestsConsistent(audit) &&
             audit.phases===139 && audit.graphs?.length===64 &&
             equal(audit.revisions,revisions) && equal(audit.fixtureManifests,fixtures) &&
             equal(comparison.revisions,revisions) && equal(comparison.fixtureManifests,fixtures) &&

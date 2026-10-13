@@ -39,7 +39,7 @@ export function joinedLifecycle(f,options={}) {
    status:'PASS_ALL64_CORE_WITH_EXPLICIT_TYPE_OVERLOAD_SYNTHETIC_INHERITED_FIELD_CORRECTIONS_TOPOLOGY_INDICES_ADDITIVE_DECLARATION_VALIDITY'};
   const recordRef=meta(`core-${arm}-record`,record);
   const audit={status:'PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT',completeCoreTopologyIndexComparison:true,
-   productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
+   formatterKinds:{C:'legacy-flat',B:'rank-preserving'},productionFormatterTestsApplicable:true,productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
    pins:{[recordRef.path]:recordRef.sha256,[corePlanRef.path]:corePlanRef.sha256,...Object.fromEntries(phaseRefs.map(r=>[r.path,r.sha256]))}};
   for(const name of ['C',arm]) for(const field of ['artifactAudit','fixtureManifest','sourceManifest','runtimeManifest']) {const r=original.arms[name][field];audit.pins[r.path]=r.sha256;}
   options.changeCoreAudit?.(audit,arm);

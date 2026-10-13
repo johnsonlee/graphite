@@ -134,6 +134,28 @@ class PropertiesTests(unittest.TestCase):
         self.assertFalse(proof['declarations']['sourceToDeclarationCompletenessClaim'])
         self.assertFalse(proof['strictEquivalence'])
 
+    def test_actual_without_declaration_table_adds_nothing(self):
+        # A rebased PR's parent arm (main) writes no graph.types: the proof compares it with no
+        # declaration addition, and a declaration authority without a table is refused.
+        f=declarations_test.DeclarationBindingTests();f.setUp();self.addCleanup(f.doCleanups)
+        (f.graph/'graph.types').unlink();(f.graph/'forward.properties').write_text('graphclass=example.Graph\n')
+        reference=f.root/'reference';reference.mkdir();(reference/'forward.properties').write_text('graphclass=example.Graph\n')
+        with patch.object(check.core,'prove',return_value={k:0 for k in r.COUNTS}) as prove:
+            check.execute(f.graph,reference,f.output,f.output,f.root/'proof',f.row,{},{})
+        prove.assert_called_once();proof=r.common.read(f.root/'proof/record.json')
+        self.assertEqual('absent',proof['declarations']['declarationTable'])
+        self.assertEqual((0,0,0,0,None),tuple(proof['declarations'][k] for k in ('types','fields','methods','classes','wireVersion')))
+        self.assertEqual('PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY',proof['declarations']['status'])
+        self.assertIsNone(proof['properties']['allowedAddition']);self.assertEqual('PASS_REQUIRES_COMPLETE_TOPOLOGY',proof['properties']['status'])
+        with self.assertRaisesRegex(ValueError,'types authority'):check.properties(b'graphite.declaredTypes.sha256=x\n',b'',None)
+
+    def test_bound_table_without_sidecar_rejected_before_core(self):
+        f=declarations_test.DeclarationBindingTests();f.setUp();self.addCleanup(f.doCleanups)
+        (f.graph/'graph.types').unlink()
+        with patch.object(check.core,'prove') as prove:
+            with self.assertRaisesRegex(ValueError,'missing bound declaration table'):check.execute(f.graph,f.graph,f.output,f.output,f.root/'proof',f.row,{},{})
+        prove.assert_not_called()
+
     def test_orphan_table_rejected_before_core(self):
         f=declarations_test.DeclarationBindingTests();f.setUp();self.addCleanup(f.doCleanups)
         (f.graph/'forward.properties').write_text('graphclass=example.Graph\n')
@@ -210,7 +232,7 @@ class LifecycleTests(unittest.TestCase):
     def setUp(self):
         self.temp=tempfile.TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.root=Path(self.temp.name).resolve()
         self.out=self.root/'proof';self.input=self.root/'input';self.input.write_bytes(b'pinned actual input')
-        self.plan={'maxOwnedPhases':129,'output':str(self.out),'referenceRoot':str(self.root/'C'),'actualRoot':str(self.root/'B'),
+        self.plan={'maxOwnedPhases':129,'output':str(self.out),'referenceRoot':str(self.root/'C'),'actualRoot':str(self.root/'B'),'formatterKinds':{'C':'legacy-flat','B':'rank-preserving'},
             'java':str(self.root/'jdk/bin/java'),'javac':str(self.root/'jdk/bin/javac'),'writerJar':str(self.root/'writer.jar'),
             'python':'/exact/python','graphs':[{'id':f'fixture-{i:02d}','B':f'/actual/{i}','C':f'/reference/{i}'} for i in range(64)],
             'pins':{str(self.input):r.common.sha(self.input)},'revisions':{'C':'c'*40,'B':'b'*40},
@@ -246,7 +268,7 @@ class LifecycleTests(unittest.TestCase):
             receipt={'actual':row['B'],'reference':row['C'],'inputs':self.plan['pins'],
                      'mappingSha256':r.common.sha(proof/'core/field-bijection.tsv'),**counts}
             r.common.save(proof/'core/receipt.json',receipt)
-            declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY','sourceToDeclarationCompletenessClaim':False,'queryExpectedAuthority':False}
+            declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY','declarationTable':'present','sourceToDeclarationCompletenessClaim':False,'queryExpectedAuthority':False}
             props={'status':'PASS_REQUIRES_COMPLETE_TOPOLOGY'}
             for leaf,value in [('declarations.json',declaration),('properties.json',props)]:r.common.save(proof/leaf,value)
             r.common.save(proof/'record.json',{'status':r.CORE_PASS,'strictEquivalence':False,'core':receipt,
@@ -255,6 +277,12 @@ class LifecycleTests(unittest.TestCase):
                 'coreReceiptSha256':r.common.sha(proof/'core/receipt.json'),'mappingSha256':receipt['mappingSha256'],
                 'inputPins':self.plan['pins'],'actual':row['B'],'reference':row['C'],**counts,
                 'fieldCorrectionCount':1 if self.bad_count else 0})
+
+    def test_declaration_table_presence_must_match_the_actual_renderer(self):
+        r.execute(self.plan);row=self.plan['graphs'][0]
+        self.assertEqual(row['id'],r.graph_result(self.plan,row)['id'])
+        flat={**self.plan,'formatterKinds':{'C':'legacy-flat','B':'legacy-flat'}}
+        with self.assertRaisesRegex(ValueError,'declaration table presence'):r.graph_result(flat,row)
 
     def test_raw_local_scope_and_claims_are_part_of_independent_graph_audit(self):
         second=self.root/'second-input';second.write_text('second exact raw export')
@@ -963,9 +991,9 @@ class PairBindingTests(unittest.TestCase):
                 'pins':{ref['path']:ref['sha256'] for ref in self.artifacts.values()}}
         path=self.roots['B']/'core-marker/audit.json';marker_ref=put(path,marked);self.values[str(path.parent)]=marked
         put(path.parent/'plan.json',{'java':'/actual/jdk/bin/java','javac':'/actual/jdk/bin/javac','writerJar':'/actual/writer.jar'})
-        tested={'artifactAudit':self.artifacts['B'],'productionFormatterTestsVerified':True,'pins':{}}
+        tested={'artifactAudit':self.artifacts['B'],'formatterKind':'rank-preserving','productionFormatterTestsApplicable':True,'productionFormatterTestsVerified':True,'pins':{}}
         path=self.roots['B']/'formatter-tests/audit.json';put(path,tested);self.values[str(path.parent)]=tested
-        self.bound={'upstream':{'markerAudit':marker_ref},'fixtureManifests':self.fixture_refs,
+        self.bound={'upstream':{'markerAudit':marker_ref},'fixtureManifests':self.fixture_refs,'boundaries':{'C':{'formatterKind':'legacy-flat'},'B':{'formatterKind':'rank-preserving'}},
                     'sourceManifests':self.sources,'rule':{'path':'/actual/rule','sha256':'a'*64},'pins':{}}
         put(self.roots['B']/'core-formatter-source/source-binding.json',self.bound)
         for module in (r.strings,r.marker,r.tests):
@@ -1037,6 +1065,22 @@ class PairBindingTests(unittest.TestCase):
     def test_foreign_formatter_test_runtime_cannot_be_joined(self):
         path=self.roots['B']/'formatter-tests/audit.json';value=self.values[str(path.parent)]
         value['artifactAudit']=self.artifacts['C'];self.put(path,value)
+        with self.assertRaisesRegex(ValueError,'compiled formatter test'):self.bind()
+    def test_flat_parent_pair_binds_without_formatter_tests(self):
+        self.bound['boundaries']['B']['formatterKind']='legacy-flat'
+        path=self.roots['B']/'formatter-tests/audit.json';value=self.values[str(path.parent)]
+        value.update(formatterKind='legacy-flat',productionFormatterTestsApplicable=False,productionFormatterTestsVerified=False);self.put(path,value)
+        plan=self.bind();self.assertEqual({'C':'legacy-flat','B':'legacy-flat'},plan['formatterKinds'])
+    def test_formatter_test_verdict_must_match_the_pair(self):
+        path=self.roots['B']/'formatter-tests/audit.json';value=self.values[str(path.parent)];original=copy.deepcopy(value)
+        for kind,changes in [('rank-preserving',dict(productionFormatterTestsVerified=False)),
+                             ('rank-preserving',dict(productionFormatterTestsApplicable=False)),
+                             ('legacy-flat',dict(productionFormatterTestsApplicable=False)),
+                             ('legacy-flat',dict(formatterKind='legacy-flat',productionFormatterTestsApplicable=False))]:
+            with self.subTest(kind=kind,changes=changes):
+                self.bound['boundaries']['B']['formatterKind']=kind;value.clear();value.update(original,**changes);self.put(path,value)
+                with self.assertRaisesRegex(ValueError,'compiled formatter test'):self.bind()
+        self.bound['boundaries']['C']['formatterKind']='rank-preserving';value.clear();value.update(original);self.put(path,value)
         with self.assertRaisesRegex(ValueError,'compiled formatter test'):self.bind()
     def test_foreign_source_rule_pair_cannot_be_joined(self):
         self.bound['fixtureManifests']={**self.fixture_refs,'B':self.fixture_refs['C']}

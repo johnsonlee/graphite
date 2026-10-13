@@ -19,11 +19,14 @@ import multigraph_pressure as common
 import produce_native_pressure_artifacts as producer
 from export_native_core_strings import environment as clean_environment
 from prepare_native_pressure_plan import preparation_control_pins
+from native_core_proof import formatter_binding
 
 PACKAGE=Path(__file__).resolve().parent/'native_core_proof'
 CONTRACT=PACKAGE/'formatter_test_contract.json'
 INIT=PACKAGE/'formatter-test.init.gradle'
 PASS='PASS_ACTUAL_WRITER_PRODUCTION_FORMATTER_TESTS'
+NOT_APPLICABLE=('the writer holds the accepted baseline renderer (legacy-flat); the array formatter migration '
+                'tests have nothing to prove about it')
 AUDIT_PASS='PASS_INDEPENDENT_ACTUAL_WRITER_FORMATTER_TEST_AUDIT'
 CORE_CLASSES=('io/johnsonlee/graphite/sootup/SootUpAdapter.class',
               'io/johnsonlee/graphite/sootup/ConstantFoldingKt.class',
@@ -49,10 +52,20 @@ def bind(artifact_audit,source_inputs,output, *, _artifact_context=None):
     require(not any(out.is_relative_to(p) for p in (checkout,root/'runtime',root/'graphs')),
             'correctness output outside measured source/runtime/graph roots')
     controls=preparation_control_pins()
-    require(all(str(p) in controls for p in (Path(__file__).resolve(),CONTRACT,INIT)), 'reviewed production test controls')
+    require(all(str(p) in controls for p in (Path(__file__).resolve(),CONTRACT,INIT,formatter_binding.CONTRACT)), 'reviewed production test controls')
     contract=common.read(CONTRACT);require(contract['schema']=='graphite.production-formatter-test-contract.v1' and
         contract['syntheticLocalInferenceOracleClaim'] is False,'bounded reviewed test contract')
-    for row in contract['classes']:
+    # The tests prove the rank-preserving renderer this feature introduced. A parent arm whose
+    # renderer is the accepted baseline's flat one (main after a rebase) has nothing for them to
+    # prove, and does not carry their sources; the kind is read off the writer's own bytes.
+    folding=checkout/formatter_binding.FOLDING
+    require(folding.is_file() and not folding.is_symlink() and
+            source['files'].get(str(folding),source['files'].get(formatter_binding.FOLDING))==common.sha(folding),
+            'actual writer formatter source in manifest')
+    kind=formatter_binding.formatter_kind(folding.read_text(),common.read(formatter_binding.CONTRACT))
+    applicable=kind==formatter_binding.RANK_PRESERVING
+    require(applicable or value['role']=='parent','a candidate writer must hold the rank-preserving renderer')
+    for row in contract['classes'] if applicable else ():
         member=checkout/row['source']
         require(member.is_file() and not member.is_symlink() and common.sha(member)==row['sourceSha256'] and
                 source['files'].get(str(member),source['files'].get(row['source']))==row['sourceSha256'],
@@ -66,6 +79,7 @@ def bind(artifact_audit,source_inputs,output, *, _artifact_context=None):
             'revision':value['revision'],'role':value['role'],'checkout':str(checkout),'writerJar':str(root/'runtime/writer.jar'),
             'java':tools['java'],'buildEnvironment':env,'output':str(out),'contract':artifacts.ref(CONTRACT),
             'initScript':artifacts.ref(INIT),'pins':pins,'performanceAcceptance':False,
+            'formatterKind':kind,'applicable':applicable,
             'syntheticLocalInferenceOracleClaim':False,'completeSemanticEquivalence':False}
 
 
@@ -176,9 +190,12 @@ def _execute_outputs(plan):
     try:
         for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
         artifacts.verify_pins(plan['pins'])
-        producer.phase('production-formatter-tests',command(plan),Path(plan['checkout']),environment(plan),out,3600)
-        record['phase']=artifacts.ref(out/'production-formatter-tests/record.json')
-        record['tests']=xml_results(plan);record['classpaths']=[classpath(plan,m) for m in ('sootup','webgraph')]
+        if plan['applicable']:
+            producer.phase('production-formatter-tests',command(plan),Path(plan['checkout']),environment(plan),out,3600)
+            record['phase']=artifacts.ref(out/'production-formatter-tests/record.json')
+            record['tests']=xml_results(plan);record['classpaths']=[classpath(plan,m) for m in ('sootup','webgraph')]
+        else:
+            record.update(phase=None,tests=[],classpaths=[],notApplicable=NOT_APPLICABLE)
         record['status']=PASS
     except BaseException as error:record['errors'].append(repr(error))
     finally:
@@ -202,20 +219,28 @@ def audit(output, *, _artifact_context=None):
         ('performanceAcceptance','syntheticLocalInferenceOracleClaim','completeSemanticEquivalence')),
         'completed actual production formatter tests')
     require(common.typed(plan)==common.typed(rebind(plan,_artifact_context=_artifact_context)),'production test plan differs from actual writer')
-    phase=out/'production-formatter-tests/record.json';require(record['phase']==artifacts.ref(phase),'actual production test phase')
-    checked=artifacts.check_phase(phase,command(plan),Path(plan['checkout']))
-    require(checked['name']=='production-formatter-tests' and checked['timeoutSeconds']==3600,'exact bounded correctness phase')
-    tests=xml_results(plan);paths=[classpath(plan,m) for m in ('sootup','webgraph')]
-    require(record['tests']==tests and record['classpaths']==paths,'raw test bodies/classpaths differ from record')
-    pins=dict(plan['pins'])
-    for row in tests:pins[row['xml']['path']]=row['xml']['sha256']
-    for row in paths:pins.update(row['pins'])
-    for path in [out/'plan.json',out/'record.json',*(phase.parent/n for n in ('record.json','owner.json','stdout.log','stderr.log'))]:pins[str(path)]=common.sha(path)
+    pins=dict(plan['pins']);leaves=[out/'plan.json',out/'record.json']
+    if plan['applicable']:
+        phase=out/'production-formatter-tests/record.json';require(record['phase']==artifacts.ref(phase),'actual production test phase')
+        checked=artifacts.check_phase(phase,command(plan),Path(plan['checkout']))
+        require(checked['name']=='production-formatter-tests' and checked['timeoutSeconds']==3600,'exact bounded correctness phase')
+        tests=xml_results(plan);paths=[classpath(plan,m) for m in ('sootup','webgraph')]
+        require(record['tests']==tests and record['classpaths']==paths,'raw test bodies/classpaths differ from record')
+        for row in tests:pins[row['xml']['path']]=row['xml']['sha256']
+        for row in paths:pins.update(row['pins'])
+        leaves.extend(phase.parent/n for n in ('record.json','owner.json','stdout.log','stderr.log'))
+    else:
+        tests=[];paths=[]
+        require(record['phase'] is None and record['tests']==[] and record['classpaths']==[] and
+                record['notApplicable']==NOT_APPLICABLE and not (out/'production-formatter-tests').exists(),
+                'legacy renderer runs no production formatter tests')
+    for path in leaves:pins[str(path)]=common.sha(path)
     artifacts.verify_pins(pins)
     return {'schema':'graphite.production-formatter-test-audit.v1','status':AUDIT_PASS,
             'artifactAudit':plan['artifactAudit'],'sourceManifest':plan['sourceManifest'],'revision':plan['revision'],
             'writerJar':{'path':plan['writerJar'],'sha256':pins[plan['writerJar']]},'record':artifacts.ref(out/'record.json'),
-            'tests':tests,'classpaths':paths,'pins':pins,'productionFormatterTestsVerified':True,
+            'tests':tests,'classpaths':paths,'pins':pins,'formatterKind':plan['formatterKind'],
+            'productionFormatterTestsApplicable':plan['applicable'],'productionFormatterTestsVerified':plan['applicable'],
             'syntheticLocalInferenceOracleClaim':False,'completeSemanticEquivalence':False,'performanceAcceptance':False}
 
 

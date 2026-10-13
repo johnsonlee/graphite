@@ -146,6 +146,16 @@ def _with_corrected_comparisons(packet):
     return packet
 
 
+def formatter_tests_consistent(audit):
+    """The production formatter tests prove the rank-preserving renderer: a pair whose actual
+    writer holds the accepted flat renderer (a rebased PR's parent arm) has none to verify."""
+    kinds = audit['formatterKinds']
+    applicable = kinds['B'] == 'rank-preserving'
+    return (kinds['C'] == 'legacy-flat' and kinds['B'] in ('legacy-flat', 'rank-preserving') and
+            audit['productionFormatterTestsApplicable'] is applicable and
+            audit['productionFormatterTestsVerified'] is applicable)
+
+
 def corrected_comparison(packet, arm_id, path):
     """Rebind the actual complete pair; no partial upstream claim is promoted."""
     import run_native_core_equivalence as core
@@ -154,7 +164,7 @@ def corrected_comparison(packet, arm_id, path):
     require(common.typed(common.read(path)) == common.typed(actual), 'raw complete comparison audit changed')
     require(actual['schema'] == 'graphite.native-core-equivalence-audit.v1' and
             actual['status'] == core.AUDIT_PASS and actual['completeCoreTopologyIndexComparison'] is True and
-            actual['productionFormatterTestsVerified'] is True and
+            formatter_tests_consistent(actual) and
             actual['proofModel'] == 'EXPLICIT_CLASSFILE_AND_FORMATTER_SOURCE_CORRECTIONS_WITH_ADDITIVE_DECLARATION_VALIDITY' and
             all(actual[k] is False for k in core.FALSE_CLAIMS), 'scoped complete corrected comparison')
     arms = packet['arms']

@@ -32,6 +32,13 @@ FALSE_CLAIMS = ('oracleAuthorityVerified', 'completeSemanticEquivalence', 'fresh
 require = common.require
 
 
+def declared_bindings(fixture, arm):
+    """Whether the derivation must see every case's full projections bind declared types: only an
+    actual arm whose graphs carry the declared-type table (the candidate) has them; a rebased PR's
+    parent arm is compared as the actual arm with none, and the reference arm never has them."""
+    return arm == 'B' and common.expectation_variant(fixture) == 'B'
+
+
 def bind(producer_root, core_root, arm, output):
     """Verify exact upstream closure once; consume completed shard audits when available."""
     require(arm in ('C', 'B'), 'actual core reference/actual arm required')
@@ -80,7 +87,8 @@ def bind(producer_root, core_root, arm, output):
                     (receipt['output'], receipt['helperSource'], receipt['helperClass'])), 'audited raw edge/helper bytes')
         graphs.append({'id': gid, 'spec': spec, 'edges': receipt, 'topology': checked['topology']})
     return {'schema': 'graphite.jvm-raw-oracle-plan.v1', 'producerRoot': str(root), 'coreRoot': str(proof),
-            'arm': arm, 'output': str(out), 'revision': artifact['revision'], 'role': artifact['role'],
+            'arm': arm, 'declaredBindings': declared_bindings(fixture, arm),
+            'output': str(out), 'revision': artifact['revision'], 'role': artifact['role'],
             'sourceManifest': artifact['sourceManifest'], 'runtimeManifest': artifact['runtimeManifest'],
             'fixtureManifest': artifact['fixtureManifest'], 'upstreamCoreAudit': artifacts.ref(proof/'audit.json'),
             'graphs': graphs, 'java': java, 'javac': javac, 'writerJar': writer, 'jdkImage': jdk,
@@ -120,7 +128,8 @@ def bind_raw(producer_root, raw_export_root, arm, output):
     merge_pins(pins,{str(p.resolve()):common.sha(p) for p in modules})
     return {'schema':'graphite.jvm-raw-oracle-plan.v1','producerRoot':str(root),'rawExportRoot':str(proof),
             'coreComparabilityPending':True,'upstreamRawExportAudit':artifacts.ref(proof/'audit.json'),
-            'arm':arm,'output':str(out),'revision':artifact['revision'],'role':artifact['role'],
+            'arm':arm,'declaredBindings':declared_bindings(fixture,arm),
+            'output':str(out),'revision':artifact['revision'],'role':artifact['role'],
             **{k:artifact[k] for k in ('sourceManifest','runtimeManifest','fixtureManifest')},
             'graphs':graphs,'java':java,'javac':javac,'writerJar':writer,'jdkImage':jdk,
             'helperSource':artifacts.ref(SOURCE),'pins':pins,**{key:False for key in FALSE_CLAIMS}}
@@ -186,7 +195,7 @@ def _derive(plan, facts, emit=None):
             require(row['edges']['nodeSlots'] == graph['nodeSlots'], 'raw edge/node slot identity')
             collector.add_graph(graph, raw, row['edges']['labeledEdges'])
             del graph, raw
-        if plan['arm'] == 'B':
+        if plan['declaredBindings']:
             bindings = collector._result_metadata(consume=False)['fullProjectionBindings']
             require(all(count > 0 for counts in bindings.values() for count in counts.values()),
                     'candidate full projections must exercise actual declared bindings in both target graphs for every case')

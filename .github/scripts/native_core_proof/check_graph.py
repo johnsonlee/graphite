@@ -42,6 +42,8 @@ def statistic(key,value):
         core.need(number.is_finite() and number>=0,'nonfinite/negative statistic '+key)
 
 def properties(actual,reference,type_digest):
+    """type_digest is the actual table's SHA-256, or None for an actual graph without a table,
+    which may then add no declaration authority of its own."""
     a,b=props(actual),props(reference);key='graphite.declaredTypes.sha256'
     core.need(key not in b,'accepted prefeature unexpected declaration authority')
     core.need(a.pop(key,None)==type_digest,'B actual types authority')
@@ -51,24 +53,33 @@ def properties(actual,reference,type_digest):
             statistic(name,a[name]);statistic(name,b[name])
     differences={k:{'actual':a[k],'reference':b[k]}for k in sorted(a)if a[k]!=b[k]}
     semantic={k:v for k,v in differences.items()if k not in ENCODING_KEYS}
-    return {'status':'FAIL'if semantic else'PASS_REQUIRES_COMPLETE_TOPOLOGY','differingProperties':differences,'semanticDifferences':semantic,'allowedAddition':key,
+    return {'status':'FAIL'if semantic else'PASS_REQUIRES_COMPLETE_TOPOLOGY','differingProperties':differences,'semanticDifferences':semantic,'allowedAddition':key if type_digest is not None else None,
             'unchangedProperties':len(a)-len(differences),'compressionExceptions':sorted(set(differences)&ENCODING_KEYS),
             'independentStatisticsRecomputeClaim':False,'requiresCompleteTopology':True}
 
 def execute(a,b,ae,be,out,export_row,authority,source_rule,raw_local_exports=None):
     out.mkdir(exist_ok=False)
-    table=declarations.load(a,export_row)
-    types=(a/'graph.types').read_bytes()
-    version=types[3]
-    usage=table.usage() if isinstance(table,wire.StructuralTypes) else None
+    # The actual graph either binds a declaration table (the candidate) or has none at all (a
+    # rebased PR's parent arm, whose writer predates the feature); the outer runner holds the
+    # presence to the writer's renderer. Either way nothing but the table may be added.
+    shape=declarations.table_shape(a)
     core.need(not(b/'graph.types').exists(),'accepted C unexpectedly contains graph.types')
-    declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY','types':len(table.rows),'fields':len(table.fields),'methods':len(table.methods),'classes':len(table.classes),'sourceToDeclarationCompletenessClaim':False,'queryExpectedAuthority':False,
-        'wireVersion':version,'appendedOriginClaim':False,
-        'readerSha256':core.sha(WIRE/'wire_gty05.py'),'legacyReaderSha256':core.sha(WIRE/'legacy_schema_wire.py')}
-    if usage is not None:
-        declaration.update({name:len(usage[key]) for name,key in (('projectionTypes','projectionTypeIds'),('erasedKeyTypes','erasedKeyTypeIds'),('keyOnlyTypes','keyOnlyTypeIds'),('unusedTypes','unusedTypeIds'))})
+    declaration={'status':'PASS_ADDITIVE_DECLARATION_WIRE_VALIDITY','declarationTable':shape,'sourceToDeclarationCompletenessClaim':False,'queryExpectedAuthority':False,
+        'appendedOriginClaim':False,'readerSha256':core.sha(WIRE/'wire_gty05.py'),'legacyReaderSha256':core.sha(WIRE/'legacy_schema_wire.py')}
+    if shape==declarations.PRESENT:
+        table=declarations.load(a,export_row)
+        types=(a/'graph.types').read_bytes()
+        usage=table.usage() if isinstance(table,wire.StructuralTypes) else None
+        declaration.update(types=len(table.rows),fields=len(table.fields),methods=len(table.methods),classes=len(table.classes),wireVersion=types[3])
+        if usage is not None:
+            declaration.update({name:len(usage[key]) for name,key in (('projectionTypes','projectionTypeIds'),('erasedKeyTypes','erasedKeyTypeIds'),('keyOnlyTypes','keyOnlyTypeIds'),('unusedTypes','unusedTypeIds'))})
+        type_digest=hashlib.sha256(types).hexdigest()
+    else:
+        declarations.export_context(a,export_row)
+        declaration.update(types=0,fields=0,methods=0,classes=0,wireVersion=None)
+        type_digest=None
     (out/'declarations.json').write_text(json.dumps(declaration,indent=2)+'\n')
-    property_check=properties((a/'forward.properties').read_bytes(),(b/'forward.properties').read_bytes(),hashlib.sha256(types).hexdigest())
+    property_check=properties((a/'forward.properties').read_bytes(),(b/'forward.properties').read_bytes(),type_digest)
     (out/'properties.json').write_text(json.dumps(property_check,indent=2)+'\n')
     core.need(property_check['status']=='PASS_REQUIRES_COMPLETE_TOPOLOGY','forward.properties differ; exact all differences retained')
     result=core.prove(a,b,ae,be,out/'core',True,field_authority_spec=authority,method_array_corrections=True,source_local_arrays=True,parameter_arrays=True,legacy_overload_collisions=True,synthetic_method_keys=True,inherited_fields=True,source_rule=source_rule,**({"raw_local_exports":raw_local_exports} if raw_local_exports is not None else {}))

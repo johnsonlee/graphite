@@ -75,7 +75,7 @@ export function joinedFixture(t, options={}) {
   options.changeCoreRecord?.(record,arm);
   const recordRef=meta(`core-${arm}-record`,record);
   const audit={status:'PASS_INDEPENDENT_ALL64_CORE_TOPOLOGY_EXECUTION_AUDIT',completeCoreTopologyIndexComparison:true,
-   productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
+   formatterKinds:{C:'legacy-flat',B:'rank-preserving'},productionFormatterTestsApplicable:true,productionFormatterTestsVerified:true,phases:139,graphs:corePlan.graphs,revisions,fixtureManifests:fixtures,record:recordRef,
    pins:{[recordRef.path]:recordRef.sha256,[corePlanRef.path]:corePlanRef.sha256,...Object.fromEntries(phaseRefs.map(r=>[r.path,r.sha256]))}};
   options.changeCoreAudit?.(audit,arm,meta);
   comparisons[arm]={audit:meta(`core-${arm}-audit`,audit),revisions,fixtureManifests:fixtures};

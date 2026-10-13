@@ -18,6 +18,9 @@ class ProductionFormatterTests(unittest.TestCase):
         for row in contract['classes']:
             path=f.checkout/row['source'];path.parent.mkdir(parents=True,exist_ok=True)
             shutil.copyfile(repo/row['source'],path);source['files'][str(path)]=r.common.sha(path)
+        self.formatters=r.common.read(r.formatter_binding.CONTRACT)['formatters']
+        self.folding=f.checkout/r.formatter_binding.FOLDING;self.folding.parent.mkdir(parents=True,exist_ok=True)
+        self.folding.write_text(self.formatters['B']);source['files'][str(self.folding)]=r.common.sha(self.folding)
         f.write(f.out/'source-manifest.json',source);f.source=source['files']
         f.runtime['sourceFiles']=f.source
         f.runtime['sourceManifestSha256']=f.fixture['sourceManifestSha256']=r.common.sha(f.out/'source-manifest.json')
@@ -216,6 +219,47 @@ class ProductionFormatterTests(unittest.TestCase):
         self.f.packet['role']=self.f.role='parent';self.f.write(self.f.out/'packet.json',self.f.packet)
         self.f.write(self.artifact,self.f.run_audit());self.plan=r.bind(self.artifact,self.f.inputs_path,self.out)
         self.assertEqual(r.PASS,self.execute()['status']);self.assertEqual('parent',r.common.read(self.out/'plan.json')['role'])
+
+    def repin_sources(self,role=None):
+        if role:self.f.packet['role']=self.f.role=role
+        source=r.common.read(self.f.out/'source-manifest.json');source['files'][str(self.folding)]=r.common.sha(self.folding)
+        source['files']={path:digest for path,digest in source['files'].items() if Path(path).exists()}
+        self.f.write(self.f.out/'source-manifest.json',source);self.f.source.clear();self.f.source.update(source['files'])
+        self.f.runtime['sourceFiles']=self.f.source
+        self.f.runtime['sourceManifestSha256']=self.f.fixture['sourceManifestSha256']=r.common.sha(self.f.out/'source-manifest.json')
+        for name,value in [('runtime-manifest.json',self.f.runtime),('fixture-manifest.json',self.f.fixture),('packet.json',self.f.packet)]:self.f.write(self.f.out/name,value)
+        self.f.write(self.artifact,self.f.run_audit())
+
+    def test_candidate_audit_records_the_rank_preserving_renderer_as_tested(self):
+        self.execute();audit=r.audit(self.out)
+        self.assertEqual(('rank-preserving',True,True),(audit['formatterKind'],audit['productionFormatterTestsApplicable'],audit['productionFormatterTestsVerified']))
+        self.assertTrue(r.common.read(self.out/'plan.json')['applicable'])
+
+    def test_flat_parent_runs_no_migration_tests_and_says_so(self):
+        # A rebased PR's parent arm is main, whose renderer is the accepted baseline's flat one and
+        # whose checkout has no migration test sources: nothing runs, and the audit claims nothing.
+        for row in r.common.read(r.CONTRACT)['classes']:(self.f.checkout/row['source']).unlink()
+        self.folding.write_text(self.formatters['C']);self.repin_sources('parent')
+        plan=r.bind(self.artifact,self.f.inputs_path,self.out)
+        self.assertEqual(('legacy-flat',False,'parent'),(plan['formatterKind'],plan['applicable'],plan['role']))
+        with patch.object(r.producer,'phase',side_effect=AssertionError('no gradle for the accepted renderer')):
+            record=r.execute(plan)
+        self.assertEqual(r.PASS,record['status']);self.assertEqual([],record['errors'])
+        self.assertEqual(([],[],None,r.NOT_APPLICABLE),(record['tests'],record['classpaths'],record['phase'],record['notApplicable']))
+        audit=r.audit(self.out)
+        self.assertEqual((r.AUDIT_PASS,'legacy-flat',False,False),(audit['status'],audit['formatterKind'],
+            audit['productionFormatterTestsApplicable'],audit['productionFormatterTestsVerified']))
+        self.assertEqual(([],[]),(audit['tests'],audit['classpaths']))
+        value=r.common.read(self.out/'record.json');value['tests']=[{'className':'forged'}];self.f.write(self.out/'record.json',value)
+        with self.assertRaisesRegex(ValueError,'legacy renderer runs no'):r.audit(self.out)
+
+    def test_candidate_must_hold_the_rank_preserving_renderer(self):
+        self.folding.write_text(self.formatters['C']);self.repin_sources()
+        with self.assertRaisesRegex(ValueError,'rank-preserving renderer'):r.bind(self.artifact,self.f.inputs_path,self.out)
+
+    def test_unreviewed_formatter_source_rejected(self):
+        self.folding.write_text(self.formatters['B'].replace('type.toString()','"$type"'));self.repin_sources()
+        with self.assertRaisesRegex(ValueError,'exact reviewed formatter source'):r.bind(self.artifact,self.f.inputs_path,self.out)
 
     def test_baseline_cannot_be_claimed_tested_using_new_candidate_tests(self):
         value=r.common.read(self.artifact);value['role']='accepted-baseline';self.f.write(self.artifact,value)

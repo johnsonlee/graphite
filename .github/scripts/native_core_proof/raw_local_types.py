@@ -47,6 +47,19 @@ def render(raw):
     return None
 
 
+def render_saved(raw, flat):
+    """The persisted Local.type a writer renders for a raw type: every rank for the
+    rank-preserving renderer, the base type and one "[]" for the accepted flat one."""
+    if flat and raw.get('kind') == 'array':
+        return render(raw['base']) + '[]'
+    return render(raw)
+
+
+def flat_renderer(source_authority):
+    kinds = getattr(source_authority, 'kinds', None)
+    return kinds is not None and kinds.get('B') == 'legacy-flat'
+
+
 def load(ref, graph_id, bytecode_sha, class_count):
     path = Path(ref['path'])
     need(path.is_absolute() and not path.is_symlink() and sha(path) == ref['sha256'], 'raw Local export pin')
@@ -144,7 +157,7 @@ def allocation_first_witnesses(arms):
             'expectedType':render(allocations['B']['type']),'arms':witnesses}
 
 
-def creation_witnesses(arms,saved):
+def creation_witnesses(arms,saved,flat=False):
     allocation=allocation_first_witnesses(arms)
     if allocation is not None and allocation['expectedType']==saved:return allocation
     unique={}
@@ -152,7 +165,7 @@ def creation_witnesses(arms,saved):
         values=arms[arm]['occurrences']
         if not values or any(item['type']!=values[0]['type'] for item in values):return None
         unique[arm]=values[0]['type']
-    if unique['C']!=unique['B'] or unique['B']['kind']!='array' or saved!=render(unique['B']):return None
+    if unique['C']!=unique['B'] or unique['B']['kind']!='array' or saved!=render_saved(unique['B'],flat):return None
     witnesses={}
     for arm in ('C','B'):
         allocations=arms[arm]['typedAllocations']
@@ -167,9 +180,11 @@ def creation_witnesses(arms,saved):
 
 def verify_creation_inputs(report, source_authority, core_inputs):
     required=any(needs_creation_proof(row) for row in report['occurrences'])
+    flat=flat_renderer(source_authority)
+    need(report.get('flatRendering', False) is flat, 'raw Local report renderer differs from the source rule')
     for row in report['occurrences']:
         if needs_creation_proof(row):
-            proof=creation_witnesses(row['arms'],row['savedType'])
+            proof=creation_witnesses(row['arms'],row['savedType'],flat)
             need(proof is not None and row.get('creationOrderProof')==proof,
                  'required exact ordinary-assignment or typed-allocation creation proof')
             if proof['rule']=='typed-allocation-at-first-local-statement':
@@ -200,6 +215,7 @@ class Authority:
         self.duplicates = set()
         self.complete = False
         self.source_authority = source_authority
+        self.flat = flat_renderer(source_authority)
         self.creation_pins = None
 
     def observe(self, canonical, method):
@@ -235,7 +251,7 @@ class Authority:
         if len(unique) == 2:
             if unique['C'] != unique['B']:
                 issues.append('actual writer raw inference differs')
-            expected = render(unique['B'])
+            expected = render_saved(unique['B'], self.flat)
             if unique['B']['kind'] == 'array':
                 result['rawDimension'] = unique['B']['dimension']
                 result['rawType'] = unique['B']
@@ -250,7 +266,7 @@ class Authority:
         if allocated:
             # Every occurrence must agree first. An ordinary assignment, unlike
             # a mere use or body.locals entry, guarantees creation on this path.
-            proof=creation_witnesses(result['arms'],actual)
+            proof=creation_witnesses(result['arms'],actual,self.flat)
             if proof is not None and self.source_authority is not None:
                 if self.creation_pins is None:self.creation_pins = local_creation_rule(self.source_authority)
                 self.pins.update(self.creation_pins)
@@ -271,6 +287,7 @@ class Authority:
         result = {'status': 'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' if self.complete and not failures else
                   'PARTIAL_RAW_LOCAL_TYPE_PROOF', 'completeNodeInventory': self.complete,
                   'scope': 'fixture64-no-fold; raw SootUp type or exact source-bound first typed allocation; not independent inference algorithm',
+                  'flatRendering': self.flat,
                   'localCount': len(self.rows), 'arrayCount': sum(r['status'] == 'PASS_ARRAY' for r in self.rows),
                   'typedAllocationCount': sum(r['status'] == 'PASS_TYPED_ALLOCATION' for r in self.rows),
                   'unprovedCount': len(failures), 'occurrences': self.rows, 'inputs': self.export_pins,

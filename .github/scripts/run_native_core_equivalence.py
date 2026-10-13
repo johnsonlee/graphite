@@ -149,7 +149,12 @@ def _bind(reference,actual,output,raw_locals,raw_edges,shard_count,_artifact_con
     test_ref=artifacts.ref(roots['B']/'formatter-tests/audit.json');tested=replay(test_ref['path'],lambda path:tests.audit(path,_artifact_context=_artifact_context))
     source_ref=artifacts.ref(roots['B']/'core-formatter-source/source-binding.json')
     bound,marked=_source_evidence_with_marker(source_ref['path'],marker_ref,_artifact_context=_artifact_context)
-    require(tested['artifactAudit']==artifacts.ref(roots['B']/'artifact-audit.json') and tested['productionFormatterTestsVerified'] is True,
+    kinds={arm:bound['boundaries'][arm]['formatterKind'] for arm in ('C','B')}
+    applicable=kinds['B']==formatter_binding.RANK_PRESERVING
+    require(kinds['C']==formatter_binding.LEGACY_FLAT and tested['formatterKind']==kinds['B'] and
+            tested['productionFormatterTestsApplicable'] is applicable and tested['productionFormatterTestsVerified'] is applicable,
+            'actual candidate compiled formatter test authority')
+    require(tested['artifactAudit']==artifacts.ref(roots['B']/'artifact-audit.json'),
             'actual candidate compiled formatter test authority')
     require(bound['upstream']['markerAudit']==marker_ref and bound['fixtureManifests']==fixture_refs,
             'same actual formatter source pair')
@@ -173,7 +178,7 @@ def _bind(reference,actual,output,raw_locals,raw_edges,shard_count,_artifact_con
     artifacts.verify_pins(pins)
     result={'schema':'graphite.native-core-equivalence-plan.v1','referenceRoot':str(roots['C']),
         'actualRoot':str(roots['B']),'output':str(out),'revisions':{a:audits[a]['revision'] for a in ('C','B')},
-        'fixtureManifests':fixture_refs,'upstream':upstream,'sourceRule':bound['rule'],'graphs':graphs,'pins':pins,
+        'fixtureManifests':fixture_refs,'upstream':upstream,'sourceRule':bound['rule'],'formatterKinds':kinds,'graphs':graphs,'pins':pins,
         'python':python,'java':marker_plan['java'],'javac':marker_plan['javac'],'writerJar':marker_plan['writerJar'],
         'maxOwnedPhases':129,'stopAtFirstFailure':True,**{k:False for k in FALSE_CLAIMS}}
     if raw_edges:result['rawEdgeExports']=True
@@ -262,6 +267,10 @@ def graph_result(plan,row):
             core['declarations']['sourceToDeclarationCompletenessClaim'] is False and
             core['declarations']['queryExpectedAuthority'] is False and
             core['properties']['status']=='PASS_REQUIRES_COMPLETE_TOPOLOGY','declaration/property scope')
+    # The table and the renderer are one feature: the writer that keeps every array rank is the
+    # one that writes graph.types, so a parent arm with the flat renderer must carry no table.
+    require(core['declarations']['declarationTable']==('present' if plan['formatterKinds']['B']==formatter_binding.RANK_PRESERVING else 'absent'),
+            'declaration table presence must match the actual writer renderer')
     if 'rawLocalExports' in plan:
         expected=raw_local_export.binding(plan,row)
         report=common.read(root/'core/raw-local-type-proof.json')
@@ -872,7 +881,9 @@ def _audit(output,audited_shards=False,*,_input_authority=None):
     return {'schema':'graphite.native-core-equivalence-audit.v1','status':AUDIT_PASS,'record':artifacts.ref(out/'record.json'),
         'revisions':plan['revisions'],'fixtureManifests':plan['fixtureManifests'],'upstream':plan['upstream'],
         'graphs':rows,'phases':plan['maxOwnedPhases'],'pins':pins,**{k:record[k] for k in COUNTS},**{k:False for k in FALSE_CLAIMS},
-        'completeCoreTopologyIndexComparison':True,'productionFormatterTestsVerified':True,
+        'completeCoreTopologyIndexComparison':True,'formatterKinds':plan['formatterKinds'],
+        'productionFormatterTestsApplicable':plan['formatterKinds']['B']==formatter_binding.RANK_PRESERVING,
+        'productionFormatterTestsVerified':plan['formatterKinds']['B']==formatter_binding.RANK_PRESERVING,
         'proofModel':'EXPLICIT_CLASSFILE_AND_FORMATTER_SOURCE_CORRECTIONS_WITH_ADDITIVE_DECLARATION_VALIDITY',
         'missingAuthority':['Independent actual SootUp Type rank and local creation/cache/identity linkage for every persisted local; formatter-model projection is insufficient.'],
         'historicalUnsupportedSyntheticLocalCount':10410,'historicalCountIsFreshMeasurement':False}

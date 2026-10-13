@@ -634,6 +634,32 @@ Lessons from building it:
   `ClassCastException` in `resolveMethods`); one node per class does not.
 
 
+### The Benchmark Proof Chain Compares an Actual Arm by Its Shape, Not Its Slot
+
+The fixture64 gates prove each non-accepted arm's 64 graphs equivalent to the accepted baseline's
+(4f2ccf3) before comparing latency. The chain was written while the only actual arm was the
+candidate, and it assumed the candidate's shape in five places: the renderer kind of the `B`
+comparison slot, the production formatter tests, the declared-type table, the raw local array
+rendering, and the JVM derivation's declared bindings. A PR rebased onto main gets main as its
+parent arm `A`, compared in the same slot with the baseline's flat renderer and no table, and every
+one of those assumptions failed in turn, one CI hour apart. Lessons:
+
+- A fact about a writer (its renderer, whether it writes `graph.types`) is read off its bytes
+  (`formatter_binding.formatter_kind`, `declarations.table_shape`) and recorded in the rule or
+  the receipt, never inferred from which slot the arm is compared in.
+- The facts are tied to each other where they are one feature: the writer that keeps every array
+  rank is the one that writes the table, so the outer runner refuses a rank-preserving writer
+  without a table and a flat one with it; a candidate build that silently lost its table cannot
+  pass as "a parent".
+- A claim that does not apply is recorded as not applicable, not as verified: a flat writer's
+  audit says `productionFormatterTestsApplicable: false`, and every consumer checks the verdict
+  against the pair's renderers rather than for `true`.
+- The 4f writer is not byte-deterministic (two builds of one shard differ in `graph.metadata`
+  and `graph.nodedata`), so "A's graphs equal C's" is never a usable shortcut; the proof's
+  corrections are what absorb that, for any pair.
+- Before pushing a fix for one failing CI step, read the arm's remaining steps against the
+  arm's actual shape; each later step would otherwise cost another full run.
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

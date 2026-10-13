@@ -21063,3 +21063,46 @@ must be flat, a renderer matching neither or both is refused), one Local correct
 a kind that does not name its bytes); the proof package (298), the equivalence runner (86), the
 formatter binder and the formatter test runner pass. Preparation manifest and workflow digest
 re-pinned.
+
+### Attempt290 — the proof chain accepts a parent arm with the flat renderer and no type table (2026-10-13)
+
+Attempt289 fixed the first step of `rust-core-prepare (A)`; reading the rest of the A arm's chain
+against main's actual shape (flat renderer, no `graph.types`, no migration test sources; the 4f
+writer is not even byte-deterministic, so an identity shortcut is not available: two 4f builds of
+one shard differ in `graph.metadata` and `graph.nodedata`) found four more places that assumed the
+actual arm is the candidate:
+
+- `run_native_formatter_tests.py` required the actual checkout to hold the contract's migration
+  test sources at their exact digests and ran them; main has none and its renderer would fail the
+  rank test. The runner now reads the writer's renderer kind off `ConstantFolding.kt`
+  (`formatter_binding.formatter_kind`, the file pinned by the source manifest): a rank-preserving
+  writer runs the tests as before; a legacy-flat writer is accepted only in the parent role, runs
+  nothing, and records `notApplicable` with `productionFormatterTestsVerified: false` and
+  `productionFormatterTestsApplicable: false`; a candidate with the flat renderer is refused.
+- `check_graph.execute` required the actual graph to bind a declaration table
+  (`declarations.load`) and `properties()` required the binding property. The table's presence is
+  now a shape read off the graph (`declarations.table_shape`: present, absent, or an orphan on
+  either side refused); an absent table is compared with no declaration addition (`types: 0`,
+  `wireVersion: null`, `declarationTable: absent`, no property allowed), and the outer runner holds
+  the presence to the writer's renderer (`graph_result`: present iff rank-preserving), so a
+  candidate that silently dropped its table cannot pass as "absent".
+- `raw_local_types` expected every persisted array local to render the raw SootUp type with every
+  rank; a flat writer persists the base type and one `[]` (`render_saved`), chosen by the source
+  rule's kinds (`flatRendering` in the report, cross-checked by `verify_creation_inputs`).
+- the verdict consumers (`run_native_core_equivalence`, `assemble_native_pressure_producers`,
+  `benchmark-multigraph-pressure.mjs`, `benchmark-lifecycle-join.mjs`) required
+  `productionFormatterTestsVerified === true`; they now require the verdict to be consistent with
+  the pair's renderers (`formatterKinds` in the core audit, `formatter_tests_consistent` /
+  `formatterTestsConsistent`): true for a rank-preserving actual writer, false and not applicable
+  for a flat one, the accepted arm always flat.
+- the JVM derivation (`derive_jvm_pressure_oracles._derive`) required the actual arm's full
+  projections to bind declared types in both target graphs; `declaredBindings` now follows the
+  fixture's shape (`expectation_variant`), so a tableless parent arm is derived without it and the
+  candidate still must satisfy it.
+
+Tests: flat parent and refused flat candidate in the formatter runner (4), tableless graph and the
+presence/renderer cross-check in the equivalence runner (4), the flat renderer in the raw-local
+proof (1), the shape reader (1), the verdict helper and a flat comparison in assembly (2), the JVM
+derivation (2), and the Node comparators (a flat pair accepted, inconsistent verdicts refused, in
+the pressure and lifecycle gates). Both manifests and the workflow digest re-pinned. Main's actual
+sources were checked locally against every source snippet the chain pins (Attempt289).
