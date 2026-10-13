@@ -193,9 +193,12 @@ def creation_witnesses(arms,saved,flat=False):
     return {'rule':'ordinary-assignment-before-every-typed-allocation','arms':witnesses} if witnesses else None
 
 
-def verify_creation_inputs(report, source_authority, core_inputs):
+def verify_creation_inputs(report, source_authority, core_inputs, flat=None):
+    """flat is the renderer the outer plan knows for the actual writer; the source authority is
+    only bound when a creation proof is required, so it cannot carry the renderer alone."""
     required=any(needs_creation_proof(row) for row in report['occurrences'])
-    flat=flat_renderer(source_authority)
+    if flat is None: flat=flat_renderer(source_authority)
+    need(source_authority is None or flat_renderer(source_authority) is flat, 'Local source authority renderer differs from the plan')
     need(report.get('flatRendering', False) is flat, 'raw Local report renderer differs from the source rule')
     for row in report['occurrences']:
         if needs_creation_proof(row):

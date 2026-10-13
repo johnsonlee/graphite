@@ -284,6 +284,29 @@ class LifecycleTests(unittest.TestCase):
         flat={**self.plan,'formatterKinds':{'C':'legacy-flat','B':'legacy-flat'}}
         with self.assertRaisesRegex(ValueError,'declaration table presence'):r.graph_result(flat,row)
 
+    def test_flat_parent_raw_local_report_is_judged_by_the_plan_renderer(self):
+        # A flat parent arm's raw-local report says flatRendering; the outer runner knows the renderer
+        # from its plan, since no creation proof binds a source authority for a graph without one.
+        second=self.root/'second-input';second.write_text('second exact raw export')
+        self.plan['pins'][str(second)]=r.common.sha(second);r.execute(self.plan)
+        row=self.plan['graphs'][0];proof=self.out/'graphs'/row['id']
+        def rewrite(name,change):
+            value=r.common.read(proof/name);change(value);(proof/name).unlink();r.common.save(proof/name,value)
+        rewrite('declarations.json',lambda v:v.update(declarationTable='absent'))
+        rewrite('record.json',lambda v:v['declarations'].update(declarationTable='absent'))
+        report={'status':'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE','completeNodeInventory':True,'unprovedCount':0,'flatRendering':True,
+                'strictEquivalence':False,'completeSemanticEquivalence':False,'performanceAcceptance':False,
+                'localCount':1,'arrayCount':0,'occurrences':[{'graphId':row['id'],'status':'NON_ARRAY','issues':[],
+                'savedType':'java.lang.Object','arms':{arm:{'occurrences':[],'typedAllocations':[]} for arm in ('C','B')}}],
+                'inputs':dict(self.plan['pins'])}
+        exports={arm:{'path':name,'sha256':digest} for arm,(name,digest) in zip(('C','B'),report['inputs'].items())}
+        flat={**self.plan,'rawLocalExports':[],'formatterKinds':{'C':'legacy-flat','B':'legacy-flat'}}
+        with patch.object(r.raw_local_export,'binding',return_value={'exports':exports}):
+            (proof/'core/raw-local-type-proof.json').write_text(json.dumps(report))
+            self.assertEqual(row['id'],r.graph_result(flat,row)['id'])
+            report['flatRendering']=False;(proof/'core/raw-local-type-proof.json').write_text(json.dumps(report))
+            with self.assertRaisesRegex(ValueError,'renderer differs'):r.graph_result(flat,row)
+
     def test_raw_local_scope_and_claims_are_part_of_independent_graph_audit(self):
         second=self.root/'second-input';second.write_text('second exact raw export')
         self.plan['pins'][str(second)]=r.common.sha(second);r.execute(self.plan)

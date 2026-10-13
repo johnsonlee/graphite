@@ -52,6 +52,10 @@ class RawLocalTests(unittest.TestCase):
         self.assertFalse(self.check().finish()['flatRendering'])
         with self.assertRaisesRegex(ValueError,'renderer differs'):r.verify_creation_inputs({'occurrences':[],'flatRendering':True},None,{})
         r.verify_creation_inputs({'occurrences':[],'flatRendering':True},flat,{})
+        # The outer runner knows the renderer from its plan even when no creation proof bound a source authority.
+        r.verify_creation_inputs({'occurrences':[],'flatRendering':True},None,{},flat=True)
+        with self.assertRaisesRegex(ValueError,'renderer differs'):r.verify_creation_inputs({'occurrences':[],'flatRendering':True},None,{},flat=False)
+        with self.assertRaisesRegex(ValueError,'authority renderer differs'):r.verify_creation_inputs({'occurrences':[],'flatRendering':True},flat,{},flat=False)
 
     def test_flat_writer_method_key_matches_the_raw_export_through_the_rank_fold(self):
         # A flat writer's graph renders byte[][] as byte[] in its method keys too; the raw export

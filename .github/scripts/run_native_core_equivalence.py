@@ -287,7 +287,8 @@ def graph_result(plan,row):
                 all(receipt['inputs'].get(p)==h for p,h in report['inputs'].items()),'actual raw Local export linkage')
         source = local_array_corrections.Authority(root,plan['sourceRule'],row['fieldAuthority']) if any(
             raw_local_types.needs_creation_proof(item) for item in report['occurrences']) else None
-        raw_local_types.verify_creation_inputs(report,source,receipt['inputs'])
+        raw_local_types.verify_creation_inputs(report,source,receipt['inputs'],
+            flat=plan['formatterKinds']['B']==formatter_binding.LEGACY_FLAT)
     if plan.get('rawEdgeExports'):raw_edge_exports(plan,row,top,root)
     else:require('rawEdgeExports' not in top, 'undeclared raw edge export mode')
     return {'id':row['id'],'core':artifacts.ref(root/'record.json'),'topology':artifacts.ref(root/'topology.json'),
