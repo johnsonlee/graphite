@@ -11612,3 +11612,29 @@ Observed owned PIDs (including supervisor monitoring children) and the recorded 
 | independent-audit.json | `0b5511e0c6b37a506b5fd4a7e332c75285ac6df352b97cc6e49558b41240233c` |
 
 The exactba91 JVM workflow37756679804 also succeeded. Its Benchmark37756680076 remains in progress at this record, so no final-head method/E2E claim is made here. A final test-only review nit changes the three mutex acquisitions to recover their guard after poisoning: the first panicking test still fails, while later tests can run and report their own outcomes. Production source is unchanged. The normal parallel41CLI tests, formatting and strict all-target/all-feature Clippy pass again; logs are under `/tmp/sootup-static-review/cli-spawn-race-fix/poison-followup/`. A new commit's required CI remains authoritative; earlier green checks are not relabeled as its result.
+
+### Attempt150 — stop running the discarded SootUp call graph, release dispatch state after resolution
+
+An Android APK that built in a 16 GiB heap before the lambda dispatch work and the SootUp 3 upgrade now runs out of a 32 GiB heap. The reported stack ends in graph4j `GraphImpl.growAdjList` under `GraphBasedCallGraph.addCall`, that is, in `SootUpAdapter.processCallGraph()`, after the graph pass and `resolveFunctionalDispatch()` have completed.
+
+Hypothesis: the OOM is the CHA call graph, whose result `processCallGraph()` discards (call edges come from the call site nodes), on top of functional-dispatch state that stays reachable after it has been turned into call sites. Under SootUp 3 the algorithm resolves bodies through the view's own `JavaSootMethod`s, which memoize them, so every body CHA reaches stays live, and on an APK CHA reaches nearly every dex body; the call graph itself is now a graph4j `DirectedPseudograph` instead of JGraphT. The dispatch slots, their target sets, the waiting calls and the hierarchy caches were never released, so the heap entering CHA was already higher than 2.8.0's.
+
+Change, two parts in one commit because both address the same OOM and neither changes graph content:
+
+- `LoaderConfig.buildCallGraph` defaults to `false`, and `BuildCommand` no longer forces it on. An explicit `true` still runs the algorithm.
+- `releaseFunctionalDispatchState()` clears the slot numbering, targets, adapters, waiting calls and the `getOrPut` hierarchy caches once dispatch resolution and interprocedural linking are done.
+
+Fixture: Kotlin compiler embeddable 2.0.21 JAR (`kotlin-compiler-embeddable-2.0.21.jar` from Maven Central). Base `4f2ccf3`, candidate = base + this change. `java -Xmx8g -Xlog:gc -jar graphite.jar build <jar> -o <dir> -v`, the JVM CLI directly (not the native launcher and its G1 profile), Linux x86-64, 4 vCPU, OpenJDK 21.0.12, one sample each, base first. Wall time and CPU (user+system) of the process; peak RSS from `getrusage(RUSAGE_CHILDREN)`; live heap as the largest post-GC occupancy in the GC log.
+
+| Metric | Base | Candidate | Absolute Δ |
+|---|---:|---:|---:|
+| Wall s | 117.1 | 96.1 | -21.0 |
+| CPU s | 209.6 | 166.0 | -43.6 |
+| Peak RSS MB | 8552 | 6149 | -2403 |
+| Max live heap after GC MB | 4819 | 4461 | -358 |
+
+Correctness: both graphs have 4,744,132 nodes; node counts per label and the sorted list of all 2,251,811 call sites' `(caller_signature, callee_signature)` are identical. The saved files are not byte-identical between the two builds; the node and edge sets were compared through those queries, not by bytes. `:core:test` (477) and `:query:test` (43) pass; `:sootup:test` passes 587 of 588: `GraphParityRegressionTest` fails identically on the unmodified base on this JDK 21 host (`SwitchExample$1` facts, javac switch-map output) and sets `buildCallGraph = false` itself.
+
+Not measured: the APK itself (not available in this environment), query latency and loading (no persisted-format or query-path change), and repeated or matched-GC samples. One sample per side does not establish variability. With `--include`, a fold report no longer lists methods outside the graph that only CHA resolved.
+
+Decision: retain. The APK result is pending a build of the reporting APK with this change.

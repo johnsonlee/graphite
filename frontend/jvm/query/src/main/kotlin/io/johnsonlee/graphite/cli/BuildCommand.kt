@@ -99,7 +99,6 @@ class BuildCommand : Callable<Int> {
                 excludePackages = excludePackages,
                 includeLibraries = includeLibs,
                 libraryFilters = libFilters,
-                buildCallGraph = true,
                 androidSdk = androidSdk,
                 interproceduralDataflow = interprocedural,
                 folding = folds.takeIf { it.isNotEmpty() }?.let { FoldPlan(it) { report -> foldReport = report } },
