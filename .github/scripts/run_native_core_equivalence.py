@@ -450,8 +450,9 @@ def _worker_input_closure(plan):
         add(checkout/'frontend/jvm/webgraph/build/libs');add(root/'runtime');add(root/'graphs')
         for path,digest in producer['phaseReceipts'].items():
             metadata({'path':path,'sha256':digest});add(Path(path).parent)
-    testroot=Path(plan['upstream']['formatterTests']['path']).parent
-    for module in ('sootup','webgraph'):
+    tested=metadata(plan['upstream']['formatterTests']);testroot=Path(plan['upstream']['formatterTests']['path']).parent
+    # A flat parent arm ran no production formatter tests and recorded no classpath (Attempt290).
+    for module in ('sootup','webgraph') if tested['productionFormatterTestsApplicable'] else ():
         path=str(testroot/f'results/classpath-{module}-before.json')
         require(path in plan['pins'],'worker classpath metadata pinned')
         for item in metadata({'path':path,'sha256':plan['pins'][path]})['classpath']:

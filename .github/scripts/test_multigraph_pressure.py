@@ -1274,7 +1274,8 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         (self.query/'readiness-attempts').mkdir()
         self.core = self.root/'core'; upstream = {}
         for name in ('CStrings', 'BStrings', 'marker', 'formatterTests', 'formatterSource'):
-            upstream[name] = self.metadata(self.root/name/'audit.json', {})
+            upstream[name] = self.metadata(self.root/name/'audit.json',
+                                           {'productionFormatterTestsApplicable': True} if name == 'formatterTests' else {})
             self.file(self.root/name/'classes/Helper.class', 'class')
         self.file(self.root/'CStrings/exports/g0/strings.bin', 'strings')
         self.file(self.root/'formatterTests/results/xml/module/test.xml', '<testsuite/>')

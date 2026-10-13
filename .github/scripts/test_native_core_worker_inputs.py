@@ -56,6 +56,26 @@ class WorkerInputTests(unittest.TestCase):
                 with self.assertRaises((ValueError,OSError)):authority.check(plan)
                 with self.assertRaisesRegex(ValueError,'invalidated'):authority.check(plan)
 
+    def test_flat_parent_without_formatter_tests_needs_no_classpath_metadata(self):
+        # A rebased PR's parent arm ran no production formatter tests (Attempt290): its closure has
+        # no test classpath to pin, and the test classpath is not part of what the workers hold.
+        f,plan,_=self.fixture()
+        ref=f.metadata(f.root/'formatterTests/audit.json',{'productionFormatterTestsApplicable':False})
+        plan['upstream']['formatterTests']=ref;plan['pins'][ref['path']]=ref['sha256']
+        for module in ('sootup','webgraph'):
+            path=f.root/f'formatterTests/results/classpath-{module}-before.json';path.unlink();plan['pins'].pop(str(path))
+        (Path(plan['output'])/'plan.json').unlink();r.common.save(Path(plan['output'])/'plan.json',plan)
+        authority=r._VerifiedWorkerInputs.open(plan)
+        (f.classpath/'Extra.class').write_text('class');authority.check(plan)
+        (f.root/'formatterTests/results/xml/new.xml').write_text('changed')
+        with self.assertRaises(ValueError):authority.check(plan)
+
+    def test_applicable_formatter_tests_require_their_classpath_metadata(self):
+        f,plan,_=self.fixture()
+        path=f.root/'formatterTests/results/classpath-sootup-before.json';path.unlink();plan['pins'].pop(str(path))
+        (Path(plan['output'])/'plan.json').unlink();r.common.save(Path(plan['output'])/'plan.json',plan)
+        with self.assertRaisesRegex(ValueError,'classpath metadata pinned'):r._VerifiedWorkerInputs.open(plan)
+
     def test_initial_replay_brackets_unpinned_inventory_and_plan(self):
         for kind in ('inventory','plan'):
             with self.subTest(kind=kind):
