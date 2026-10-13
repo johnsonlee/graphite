@@ -760,10 +760,12 @@ def _execution_closure(plan):
                 'known complete core upstream closure required for reuse')
         for ref in core_plan['upstream'].values():
             metadata(ref['path']); add(Path(ref['path']).parent)
+        tests = metadata(core_plan['upstream']['formatterTests']['path'])
         tests_root = Path(core_plan['upstream']['formatterTests']['path']).parent
         # Production test classpaths may contain external directories or absent
         # roots. Pins alone cannot detect an added class or an appeared root.
-        for module in ('sootup', 'webgraph'):
+        # A flat parent arm ran no production formatter tests and has none (Attempt290).
+        for module in ('sootup', 'webgraph') if tests['productionFormatterTestsApplicable'] else ():
             classpath = metadata(tests_root/f'results/classpath-{module}-before.json')
             for item in classpath['classpath']:
                 require(item['kind'] in ('directory', 'file', 'absent'), 'known formatter classpath kind')

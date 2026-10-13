@@ -1667,6 +1667,20 @@ class ExecutionAuthorityReuse(unittest.TestCase):
     def test_source_writer_added_ignored_jar_rejected(self):
         self.assert_mutation_rejected(lambda: (self.writer.parent/'added-jmh.jar').write_text('other'))
 
+    def test_flat_parent_core_without_formatter_tests_needs_no_classpath(self):
+        # A rebased PR's parent arm ran no production formatter tests (Attempt290): the reuse
+        # closure has no test classpath to pin, and that classpath is not part of it.
+        ref = self.metadata(self.root/'formatterTests/audit.json', {'productionFormatterTestsApplicable': False})
+        core_plan = p.read(self.core/'plan.json'); core_plan['upstream']['formatterTests'] = ref
+        self.metadata(self.core/'plan.json', core_plan)
+        for module in ('sootup', 'webgraph'):
+            path = self.root/f'formatterTests/results/classpath-{module}-before.json'; path.unlink(); self.pins.pop(str(path))
+        self.plan['pins'] = dict(self.pins); self.plan_file.unlink(); p.save(self.plan_file, self.plan)
+        context = self.context()
+        (self.classpath/'Extra.class').write_text('class'); context._check_unchanged()
+        (self.root/'formatterTests/results/xml/extra.xml').write_text('<testsuite/>')
+        with self.assertRaises(ValueError): context._check_unchanged()
+
     def test_absent_classpath_appearing_rejected(self):
         self.assert_mutation_rejected(lambda: self.absent.mkdir())
 
