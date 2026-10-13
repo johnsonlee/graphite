@@ -60,8 +60,9 @@ class SourceBindingTests(unittest.TestCase):
         self.rule = {'schema': 'graphite.local-array-source-rule.v1', 'arms': {}, 'diagnosis': {}}
         self.spec = {'schema': 'graphite.classfile-field-authority.v1', 'arms': {}}
         self.manifests = {}
-        for arm, revision, expression in [('C', 'c'*40, '"${graphTypeName(type.baseType)}[]"'),
-                                         ('B', 'b'*40, 'graphTypeName(type.baseType) + "[]".repeat(type.dimension)')]:
+        for arm, revision, expression, kind in [
+                ('C', 'c'*40, '"${graphTypeName(type.baseType)}[]"', 'legacy-flat'),
+                ('B', 'b'*40, 'graphTypeName(type.baseType) + "[]".repeat(type.dimension)', 'rank-preserving')]:
             source = self.root / (arm + '-source')
             contents = {
                 FOLDING: ('internal fun graphTypeName(type: Type): String = when (type) {\n'
@@ -89,7 +90,8 @@ class SourceBindingTests(unittest.TestCase):
             self.rule['arms'][arm] = {'revision': revision, 'manifest': str(manifest_path),
                                      'manifestSha256': binding.sha(manifest_path),
                                      'folding': str(source/FOLDING), 'foldingSha256': binding.sha(source/FOLDING),
-                                     'adapter': str(source/ADAPTER), 'adapterSha256': binding.sha(source/ADAPTER)}
+                                     'adapter': str(source/ADAPTER), 'adapterSha256': binding.sha(source/ADAPTER),
+                                     'formatterKind': kind}
             self.spec['arms'][arm] = {'fixtureManifest': self.write(arm+'-fixture.json', {
                 'writerRevision': revision, 'sourceManifestSha256': binding.sha(manifest_path)})}
         diagnosis = self.root/'historical-first-local-evidence'; diagnosis.write_bytes(b'historical witness only')
@@ -175,6 +177,23 @@ class SourceBindingTests(unittest.TestCase):
             authority.save()
         with self.assertRaisesRegex(Invalid, 'pin changed'):
             local.Authority(self.out, self.rule_ref, self.spec)
+
+    def test_legacy_flat_parent_arm_binds_without_a_licensed_collapse(self):
+        folding = Path(self.rule['arms']['C']['folding']).read_text()
+        self.replace_source('B', FOLDING, folding)
+        self.rule['arms']['B']['formatterKind'] = 'legacy-flat'; self.repin_rule()
+        authority = local.Authority(self.out, self.rule_ref, self.spec)
+        self.assertFalse(authority.collapses); self.assertEqual({'C': 'legacy-flat', 'B': 'legacy-flat'}, authority.kinds)
+
+    def test_formatter_kind_must_name_the_bytes_it_binds(self):
+        for arm, kind in [('B', 'legacy-flat'), ('C', 'rank-preserving'), ('B', None), ('B', 'other')]:
+            with self.subTest(arm=arm, kind=kind):
+                rule = json.loads(json.dumps(self.rule))
+                if kind is None: del rule['arms'][arm]['formatterKind']
+                else: rule['arms'][arm]['formatterKind'] = kind
+                ref = self.write('kind-rule.json', rule)
+                with self.assertRaisesRegex(Invalid, 'exact type-name rule'):
+                    local.Authority(self.out, ref, self.spec)
 
     def test_repinning_wrong_formatter_does_not_relax_policy(self):
         path = Path(self.rule['arms']['B']['folding'])

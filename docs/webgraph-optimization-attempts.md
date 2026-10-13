@@ -21031,3 +21031,35 @@ digests are re-pinned. Under these rules run 896's two red rows become: `shape-w
 (base cells 2429/2397, candidate 2608/2558ms) INDETERMINATE, and `slow-valueMiss` judged in
 isolation (about 1ms on both arms locally) with its 224/201ms pressure tails inside the collision
 bound of max(2 × 100, 100 + 250)ms.
+
+### Attempt289 — the parent arm's formatter is read off its bytes, not off its slot (2026-10-13)
+
+Run 902 was the first run with a PR base other than 4f2ccf3 (the branch is rebased onto main
+d2e6f7f), so `rust-core-prepare (A)` ran for the first time and failed in
+`bind_native_core_formatter.py`: `exact reviewed formatter source`. The formatter source rule
+(`formatter_binding.source_rule`) compares the accepted baseline C against the actual arm in the
+`B` slot and required the `B` slot's `ConstantFolding.graphTypeName` to be the rank-preserving
+renderer this PR introduced (`"[]".repeat(type.dimension)`). In the A job the `B` slot is main,
+whose renderer is the baseline's flat one (`"${graphTypeName(type.baseType)}[]"`; main differs
+from 4f only by `releaseFunctionalDispatchState()` in the adapter and three unrelated files), so
+a correct parent arm was refused.
+
+The kind is now a fact about the source: `formatter_kind` reads which of the contract's two
+reviewed renderers the folding holds (exactly one `graphTypeName` definition, exactly one
+renderer, anything else refused), the accepted arm must hold the flat one, and the rule records
+`formatterKind` per arm. `local_array_corrections.Authority` verifies the folding against the
+recorded kind instead of assuming C flat / B rank-preserving, and licenses the Local.type collapse
+only for the flat-against-rank-preserving pair: `compare(..., collapses)` refuses a dimension
+difference between two flat writers as a real difference (`Local difference is not licensed by
+the formatter pair`), and the receipt records `formatterKinds` and `collapseLicensed`. The
+candidate pair is unchanged: B rank-preserving, collapse licensed, same receipts otherwise.
+
+Checked locally against main's actual sources (formatter kind legacy-flat, the adapter boundary
+bodies, the Local node, the collision counter/rendering/adapter snippets and the synthetic
+identity snippets all match). Tests: four formatter-binding tests (parent arm binds as a flat
+pair without a licensed collapse, the candidate pair records rank-preserving, the accepted arm
+must be flat, a renderer matching neither or both is refused), one Local correction test
+(unlicensed collapse refused, identical locals exact), two source-binding tests (flat parent arm,
+a kind that does not name its bytes); the proof package (298), the equivalence runner (86), the
+formatter binder and the formatter test runner pass. Preparation manifest and workflow digest
+re-pinned.

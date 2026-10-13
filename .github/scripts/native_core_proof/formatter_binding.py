@@ -14,6 +14,23 @@ FOLDING='frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/Const
 ADAPTER='frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt'
 
 
+LEGACY_FLAT='legacy-flat'
+RANK_PRESERVING='rank-preserving'
+# The contract's two reviewed renderers: the accepted baseline's flat one (an array is its base
+# type and one "[]") and the rank-preserving one that keeps every dimension.
+FORMATTER_KINDS={'C':LEGACY_FLAT,'B':RANK_PRESERVING}
+
+
+def formatter_kind(folding,contract):
+    """Which reviewed renderer the actual writer's source holds, read off its bytes, not off the
+    arm it is compared as: the parent arm of a rebased PR is main, whose renderer is the legacy
+    one, and it is compared in the same slot as the candidate."""
+    need(len(re.findall(r'(?m)^internal fun graphTypeName\(',folding))==1,'exact reviewed formatter source')
+    kinds=[kind for arm,kind in FORMATTER_KINDS.items() if folding.count(contract['formatters'][arm])==1]
+    need(len(kinds)==1,'exact reviewed formatter source')
+    return kinds[0]
+
+
 def adapter_boundaries(adapter,contract):
     boundaries={}
     for name,fragments in contract['boundaries'].items():
@@ -86,9 +103,8 @@ def source_rule(sources, fixtures, control_pins):
             pins[str(path)]=digest
             return path.read_text()
         adapter=content(ADAPTER);folding=content(FOLDING)
-        expected=contract['formatters'][arm]
-        need(folding.count(expected)==1 and len(re.findall(r'(?m)^internal fun graphTypeName\(',folding))==1,
-             'exact reviewed formatter source')
+        kind=formatter_kind(folding,contract)
+        need(arm!='C' or kind==LEGACY_FLAT,'accepted baseline formatter must be the legacy flat renderer')
         boundaries=adapter_boundaries(adapter,contract)
         local_node=contract['localNode'];node_text=content(local_node['path'])
         need(node_text.count(local_node['body'])==1 and len(re.findall(r'\bclass LocalVariable\b',node_text))==1,
@@ -96,8 +112,8 @@ def source_rule(sources, fixtures, control_pins):
         dependency.append({name:content(name) for name in contract['dependencyFiles']})
         arms[arm]={'revision':source['revision'],'manifest':source_ref['path'],'manifestSha256':source_ref['sha256'],
                    'folding':str(root/FOLDING),'foldingSha256':pins[str(root/FOLDING)],
-                   'adapter':str(root/ADAPTER),'adapterSha256':pins[str(root/ADAPTER)]}
-        boundary_digests[arm]={'exactBodyCounts':boundaries,'formatterKind':'legacy-flat' if arm=='C' else 'rank-preserving'}
+                   'adapter':str(root/ADAPTER),'adapterSha256':pins[str(root/ADAPTER)],'formatterKind':kind}
+        boundary_digests[arm]={'exactBodyCounts':boundaries,'formatterKind':kind}
     need(dependency[0]==dependency[1],'formatter dependency versions/build definitions changed')
     rule={'schema':'graphite.local-array-source-rule.v1','arms':arms,'diagnosis':{str(CONTRACT):pins[str(CONTRACT)]}}
     report={'schema':'graphite.array-formatter-source-binding.v1','status':'PASS_EXACT_SOURCE_MODEL_BINDING_ONLY',

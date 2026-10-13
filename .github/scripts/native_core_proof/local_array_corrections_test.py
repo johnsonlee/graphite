@@ -23,6 +23,15 @@ class LocalArrayTests(unittest.TestCase):
                     'method':['Owner','m','()V'], 'B':base+'[]'*dimensions,
                     'C':base+'[]', 'dimensions':dimensions}])
 
+    def test_unlicensed_pair_refuses_the_collapse_but_keeps_exact_locals(self):
+        # Two legacy-flat writers (main against the accepted baseline) license no Local.type change.
+        rows = []
+        for value in ('int', 'byte[]', 'byte[][]'):
+            self.assertEqual(compare(local(value), local(value), (), rows, collapses=False), local(value))
+        with self.assertRaisesRegex(ValueError, 'not licensed by the formatter pair'):
+            compare(local('byte[][]'), local('byte[]'), ('Owner', 'm', '()V'), rows, collapses=False)
+        self.assertEqual(rows, [])
+
     def test_unchanged_scalar_and_array_preserve_no_exception(self):
         for value in ('int', 'byte[]', 'byte[][]'):
             rows = []

@@ -102,6 +102,42 @@ class FormatterBindingTests(unittest.TestCase):
         self.change('B',f.FOLDING,lambda x:x+'\n'+x)
         with self.assertRaisesRegex(Invalid,'formatter source'):self.bind()
 
+    def test_parent_arm_with_legacy_formatter_binds_as_legacy_flat_pair(self):
+        # A rebased PR's parent arm is main, whose renderer is the accepted baseline's flat one:
+        # the kind is read off the bytes, recorded in the rule, and licenses no Local collapse.
+        self.change('B',f.FOLDING,lambda _:self.contract['formatters']['C'])
+        out=self.root/'proof';report=f.save(out,self.sources,self.fixtures,self.pins)
+        self.assertEqual('legacy-flat',report['boundaries']['B']['formatterKind'])
+        self.assertEqual('legacy-flat',report['boundaries']['C']['formatterKind'])
+        rule=json.loads(Path(report['rule']['path']).read_text())
+        self.assertEqual({'C':'legacy-flat','B':'legacy-flat'},{arm:item['formatterKind'] for arm,item in rule['arms'].items()})
+        authority=local.Authority(out,report['rule'],{'schema':'graphite.classfile-field-authority.v1',
+            'arms':{arm:{'fixtureManifest':self.fixtures[arm]} for arm in ('C','B')}})
+        self.assertFalse(authority.collapses);self.assertEqual({'C':'legacy-flat','B':'legacy-flat'},authority.kinds)
+        self.assertFalse(authority.save()['collapseLicensed'])
+
+    def test_candidate_pair_records_rank_preserving_kind_and_licenses_collapse(self):
+        out=self.root/'proof';report=f.save(out,self.sources,self.fixtures,self.pins)
+        self.assertEqual('rank-preserving',report['boundaries']['B']['formatterKind'])
+        self.assertEqual('rank-preserving',json.loads(Path(report['rule']['path']).read_text())['arms']['B']['formatterKind'])
+        authority=local.Authority(out,report['rule'],{'schema':'graphite.classfile-field-authority.v1',
+            'arms':{arm:{'fixtureManifest':self.fixtures[arm]} for arm in ('C','B')}})
+        self.assertTrue(authority.collapses);self.assertTrue(authority.save()['collapseLicensed'])
+
+    def test_accepted_arm_must_hold_the_legacy_formatter(self):
+        self.change('C',f.FOLDING,lambda _:self.contract['formatters']['B'])
+        with self.assertRaisesRegex(Invalid,'legacy flat renderer'):self.bind()
+
+    def test_formatter_matching_neither_or_both_reviewed_renderers_rejected(self):
+        for arm in ('C','B'):
+            for text in (self.contract['formatters'][arm].replace('type.toString()','"$type"'),
+                         self.contract['formatters']['C']+'\n'+self.contract['formatters']['B'],
+                         self.contract['formatters'][arm]+'\n'+self.contract['formatters'][arm]):
+                with self.subTest(arm=arm,text=text[:40]):
+                    self.change(arm,f.FOLDING,lambda _:text)
+                    with self.assertRaisesRegex(Invalid,'exact reviewed formatter source'):self.bind()
+            self.change(arm,f.FOLDING,lambda _:self.contract['formatters'][arm])
+
     def test_dependency_change_even_when_manifest_rebound_rejected(self):
         self.change('B',self.contract['dependencyFiles'][0],lambda x:x+'changed')
         with self.assertRaisesRegex(Invalid,'dependency versions'):self.bind()

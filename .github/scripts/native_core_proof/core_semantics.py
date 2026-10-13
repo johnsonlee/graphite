@@ -322,7 +322,7 @@ def _prove(actual,reference,actual_export,reference_export,out,allow_field_bijec
                         ac=method_authority.compare_spans(ac,bc,actual_methods,reference_methods,method_corrections,'node:'+str(aid))
                     if local_rules is not None and at==8:
                         need(len(actual_methods)==1,'one Local method identity')
-                        ac=local_array_corrections.compare(ac,bc,actual_methods[0]['method'].key,local_rules.occurrences)
+                        ac=local_array_corrections.compare(ac,bc,actual_methods[0]['method'].key,local_rules.occurrences,local_rules.collapses)
                     if parameter_rows is not None and at==10:
                         need(len(actual_methods)==len(reference_methods)==1,'one Parameter method identity')
                         ac=parameter_array_corrections.compare(ac,bc,actual_methods[0]['method'],reference_methods[0]['method'],method_corrections,parameter_rows)
