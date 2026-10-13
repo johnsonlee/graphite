@@ -32,6 +32,9 @@ class QueryCorrectnessTests(unittest.TestCase):
             (directory / 'forward.properties').write_text('nodes=' + str(graph['nodes']) + '\narcs=7\n')
             (directory / 'graph.nodedata').write_bytes(b'GRN\x03' + struct.pack('>i', graph['nodes']))
             (directory / 'graph.metadata').write_bytes(b'GRM\x03' + struct.pack('>i', 2))
+            # The declared-type table marks the candidate shape; the exact4f shape has none.
+            if self.fixture.revision != portable.ACCEPTED:
+                (directory / 'graph.types').write_bytes(b'GRT\x01')
         self.fixture.fixture['files'] = artifacts.inventory(self.fixture.out / 'graphs')
         self.fixture.write(self.fixture.out / 'fixture-manifest.json', self.fixture.fixture)
         self.artifact_path = self.root / 'artifact-audit.json'

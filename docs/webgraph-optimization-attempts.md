@@ -20980,3 +20980,17 @@ base revision was exactly 4f2ccf3, and the base is now main. Main carries the ex
 bytes (`LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256`), so the step now keys on the harness digest
 rather than the revision; every other base≠4f path in the workflow was already written for the
 distinct-baseline case and runs for the first time on this PR.
+
+**Native correctness on the parent arm (run 38414009693).** `rust-producer-arm (A)` failed in
+`run_native_query_correctness.py` with `ValueError('oracle row count')` on
+`schema-key-histogram`: 26 rows from main's graphs against an oracle of 28. The plan chose the
+oracle set by revision, `C` for exact 4f2ccf3 and `B` for everything else, and the audit
+checked the same rule; a parent that is plain main has the exact4f shape (no `graph.types` in
+its 64 graphs, A's fixture inventory confirms it) and must answer the `C` oracles. Both now read
+the shape off the fixture inventory (`multigraph_pressure.expectation_variant`: `B` when every
+graph carries the declared-type table, `C` when none does, a mixed inventory refused), with the
+accepted baseline still required to be `C`. The JVM path labels its arm the same way but derives
+its oracles from the arm's own raw edges, so it needed no change. The native correctness test
+fixture writes `graph.types` for non-4f revisions, which keeps its `B` expectations; the only
+local failures left are the GNU `time` captures this sandbox cannot run (identical before the
+change). Manifest and workflow digest re-pinned.

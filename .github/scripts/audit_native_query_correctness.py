@@ -45,7 +45,8 @@ def audit(directory):
             'actual executable and writer revision')
     graphs = [{'id': graph['id'], 'path': graph['path']} for graph in fixture['graphs']]
     require(plan['graphs'] == artifact['graphs'] == graphs and len(graphs) == 64, 'exact loaded graph scope')
-    variant = 'C' if plan['revision'] == portable.ACCEPTED else 'B'
+    variant = common.expectation_variant(fixture)
+    require(plan['revision'] != portable.ACCEPTED or variant == 'C', 'accepted baseline keeps the exact4f shape')
     require(plan['expectationVariant'] == variant and
             plan['historicalExpectationRevisions'] == bundle['sourceRevisions'] and
             plan['cases'] == bundle['cases'] and len(bundle['cases']) == 39, 'predetermined full query catalog')

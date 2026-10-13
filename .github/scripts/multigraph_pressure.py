@@ -45,6 +45,20 @@ def require(condition, message):
         raise ValueError(message)
 
 
+DECLARED_TYPE_TABLE = 'graph.types'
+
+
+def expectation_variant(fixture):
+    """The oracle set a fixture's graphs answer, read off their shape rather than their revision:
+    'B' when every graph carries the declared-type table the candidate oracles describe, 'C' when
+    none does (the exact4f shape, which main keeps until the feature merges). A mixed inventory is
+    no shape at all."""
+    files = set(fixture['files'])
+    present = [str(Path(graph['path']) / DECLARED_TYPE_TABLE) in files for graph in fixture['graphs']]
+    require(present and (all(present) or not any(present)), 'uniform declared-type table presence')
+    return 'B' if all(present) else 'C'
+
+
 def pairs(items):
     result = {}
     for key, value in items:

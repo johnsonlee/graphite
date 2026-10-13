@@ -95,7 +95,8 @@ def prepare(audit_path, inputs_path, revision, role, output, port):
     require(graph_scope == audit['graphs'], 'exact audited graph scope')
     require([graph['id'] for graph in graph_scope] == common.read(portable.CATALOG)['engines']['native']['graphIds'],
             'catalog registry order')
-    side = 'C' if revision == portable.ACCEPTED else 'B'
+    side = common.expectation_variant(fixture)
+    require(revision != portable.ACCEPTED or side == 'C', 'accepted baseline keeps the exact4f shape')
     # The expectation variant does not assign its historical source revision to
     # the runtime. A fresh response must pass against these existing expectations.
     plan = {'schema': 'graphite.native-query-correctness-plan.v1', 'revision': revision, 'role': role,

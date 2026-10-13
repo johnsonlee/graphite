@@ -128,6 +128,21 @@ class Clock:
             self.value += amount
 
 
+class ExpectationVariantTests(unittest.TestCase):
+    def test_variant_follows_the_declared_type_table_not_the_revision(self):
+        import multigraph_pressure as common
+        graphs = [{'id': 'g0', 'path': '/w/graphs/g0'}, {'id': 'g1', 'path': '/w/graphs/g1'}]
+        base = {g['path'] + '/graph.nodedata': 'a' * 64 for g in graphs}
+        self.assertEqual('C', common.expectation_variant({'graphs': graphs, 'files': base}))
+        typed = {**base, **{g['path'] + '/graph.types': 'b' * 64 for g in graphs}}
+        self.assertEqual('B', common.expectation_variant({'graphs': graphs, 'files': typed}))
+        mixed = {**base, graphs[0]['path'] + '/graph.types': 'b' * 64}
+        with self.assertRaisesRegex(ValueError, 'uniform declared-type table'):
+            common.expectation_variant({'graphs': graphs, 'files': mixed})
+        with self.assertRaisesRegex(ValueError, 'uniform declared-type table'):
+            common.expectation_variant({'graphs': [], 'files': {}})
+
+
 class PressureTests(unittest.TestCase):
     def setUp(self):
         self.child_guard = patch.object(p.subprocess, 'Popen', side_effect=AssertionError('No child in correctness tests'))
