@@ -20973,3 +20973,10 @@ with the same two plus the branch's own `SootUpAdapter.kt`. The accepted baselin
 time on this PR: the C arm is checked out separately and the JVM correctness matrix is C, A, B.
 The preparation manifest and the workflow digest are re-pinned; 13 + 19 + 23 + 22 + 17 Python
 tests and 141 workflow tests pass.
+
+The first run on the rebased head (38412558731) failed `large-corpus-benchmarks` at once: the
+step that installs the corpus assertions took the structural-types transition only when the
+base revision was exactly 4f2ccf3, and the base is now main. Main carries the exact4f harness
+bytes (`LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256`), so the step now keys on the harness digest
+rather than the revision; every other base≠4f path in the workflow was already written for the
+distinct-baseline case and runs for the first time on this PR.

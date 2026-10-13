@@ -1340,8 +1340,10 @@ jobs:
         ORIGINAL=$(sha256sum "$BASE_HARNESS" | cut -d' ' -f1)
         mkdir -p benchmark-results
         cp "$BASE_HARNESS" benchmark-results/original-base-corpus-harness.kt
-        if [[ "$BASE_SHA" = 4f2ccf33b969e684972e56b5e810034e6e67c1b3 ]]; then
-          test "$ORIGINAL" = "$LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256"
+        # A base carrying the exact4f harness (4f2ccf33b969e684972e56b5e810034e6e67c1b3 and any
+        # main after it that left the harness alone) takes the structural-types transition.
+        if [[ "$ORIGINAL" = "$LARGE_CORPUS_SHAPE_BASE_HARNESS_SHA256" ]]; then
+          echo "base $BASE_SHA carries the exact4f corpus harness"
           # The only baseline difference is the independently audited 64/27 method identities.
           sed -e 's/methodCount = 312_852/methodCount = 312_788/' \
               -e 's/methodCount = 404_043/methodCount = 404_016/' \
