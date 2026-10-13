@@ -166,7 +166,7 @@ class PendingHandoff(unittest.TestCase):
         out=f.root/'pending';out.mkdir();ref=f.write(out/'packet.json',packet)
         plan=prepare.bind_plan(packet,ref,out,prepare.CATALOG)
         self.assertEqual(35,len(plan['cases']));self.assertEqual(list('CABBAC'),[c['arm'] for c in plan['cells']])
-        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20},plan['schedule'])
+        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20,'isolatedConcurrency':1,'isolatedPerCase':40,'isolatedThresholdNs':100_000_000},plan['schedule'])
         self.assertTrue(plan['comparabilityPending']);self.assertEqual(ref,plan['pendingJvmComparabilityAuthority'])
         prepare.common.validate_plan(plan)
         self.assertEqual([],f.comparison_calls)

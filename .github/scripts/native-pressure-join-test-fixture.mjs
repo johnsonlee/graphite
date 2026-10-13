@@ -8,23 +8,30 @@ export function fixture(t) {
  const root=fs.mkdtempSync(path.join(os.tmpdir(),'multigraph-comparison-'));t.after(()=>fs.rmSync(root,{recursive:true,force:true}));
  const plan={schema:'graphite.multigraph-pressure.plan.v1',operation:'query',engine:'native',cells:['C','A','B','B','A','C'].map((arm,i)=>({id:`c${i}`,arm,port:10000+i})),
  arms:Object.fromEntries(['C','A','B'].map(x=>[x,{revision:x}])),cases:[{id:'slow',targetGraphIds:['one','two']}],
- comparisonPairs:{parent:[[1,2],[4,3]],acceptedBaseline:[[0,2],[5,3]]},schedule:{concurrency:4,warmupPerCase:2,measuredPerCase:20},
+ comparisonPairs:{parent:[[1,2],[4,3]],acceptedBaseline:[[0,2],[5,3]]},schedule:{concurrency:4,warmupPerCase:2,measuredPerCase:20,isolatedConcurrency:1,isolatedPerCase:40,isolatedThresholdNs:100e6},
  coverage:{requiredFamilies:['slow'],coveredFamilies:['slow'],unavailableFamilies:[]}};
  const file=path.join(root,'plan.json');put(file,plan);
  const rewrite=(i,change)=>{
    const p=path.join(root,`c${i}`,'result.json');let r=JSON.parse(fs.readFileSync(p));change(r);put(p,r);
-   const a=path.join(root,`c${i}`,'audit.json');let audit=JSON.parse(fs.readFileSync(a));audit.resultSha256=digest(p);put(a,audit);
+   // The audit mirrors the result it binds: three fixed stages plus whatever the isolated stage issued.
+   const a=path.join(root,`c${i}`,'audit.json');let audit=JSON.parse(fs.readFileSync(a));audit.resultSha256=digest(p);
+   audit.completeBodies=plan.cases.length*23+(r.stages.isolated?.requests?.length??0);put(a,audit);
  };
  plan.cells.forEach((cell,i)=>{
    const lat=cell.arm==='B'?80:100;
    const requests=Array.from({length:20},(_,sequence)=>({sequence,caseId:'slow',status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
    startNs:sequence*1000,wireCompleteNs:sequence*1000+lat-1,validationCompleteNs:sequence*1000+lat,latencyNs:lat}));
+   // The one case is cheap (p50 under 100ms), so the isolated tail stage repeats it 40 times on one worker.
+   const isolatedRequests=Array.from({length:40},(_,sequence)=>({sequence,caseId:'slow',status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
+   startNs:100000+sequence*1000,wireCompleteNs:100000+sequence*1000+lat-1,validationCompleteNs:100000+sequence*1000+lat,latencyNs:lat}));
    const result={schema:'graphite.multigraph-pressure.result.v1',status:'PASS',errors:[],cell,arm:plan.arms[cell.arm],engine:plan.engine,operation:'query',planSha256:digest(file),coverage:plan.coverage,
    cleanup:{after:[],errors:[],signals:[]},stages:{pressure:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],requests,wallNs:cell.arm==='B'?19080:19100,
    caseStatistics:{slow:{n:20,sampleIds:Array.from({length:20},(_,x)=>x),p50Ns:lat,p95Ns:lat}},
-   resources:{cpuLowerBoundSeconds:1,cpuUpperBoundSeconds:1.01,rss:{lowerBoundBytes:1000,upperBoundBytes:1010}}}}};
+   resources:{cpuLowerBoundSeconds:1,cpuUpperBoundSeconds:1.01,rss:{lowerBoundBytes:1000,upperBoundBytes:1010}}},
+   isolated:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],concurrency:1,requests:isolatedRequests,wallNs:39000+lat,
+   caseStatistics:{slow:{n:40,sampleIds:Array.from({length:40},(_,x)=>x),p50Ns:lat,p95Ns:lat}}}}};
    const p=path.join(root,cell.id,'result.json');put(p,result);
-   put(path.join(root,cell.id,'audit.json'),{schema:'graphite.multigraph-pressure.audit.v1',status:'PASS',cell:cell.id,resultSha256:digest(p),planSha256:digest(file),queryEvidenceComplete:true,completeBodies:23,otherOperationsEligible:false,coverage:plan.coverage});
+   put(path.join(root,cell.id,'audit.json'),{schema:'graphite.multigraph-pressure.audit.v1',status:'PASS',cell:cell.id,resultSha256:digest(p),planSha256:digest(file),queryEvidenceComplete:true,completeBodies:63,otherOperationsEligible:false,coverage:plan.coverage});
  });
  return {root,file,rewrite,plan};
 }

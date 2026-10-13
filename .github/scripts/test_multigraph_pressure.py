@@ -59,7 +59,7 @@ def make_plan(engine='jvm', source_catalog=None):
             'proofs': [{'path': '/proof.json', 'sha256': pins['/proof.json'], 'status': 'PASS', 'role': role}
                        for role in ['fixture-equivalence', 'independent-correctness', 'source-runtime']],
             'cells': [{'id': str(i) + arm, 'arm': arm, 'port': 23100 + i} for i, arm in enumerate('CABBAC')],
-            'cases': cases, 'schedule': {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20},
+            'cases': cases, 'schedule': dict(p.SCHEDULE),
             'comparisonPairs': {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]},
             'limits': {'requestSeconds': 60, 'stageSeconds': 900, 'readinessSeconds': 180,
                        'bodyBytes': 1024 ** 2, 'rssIntervalSeconds': .005},
@@ -260,7 +260,7 @@ class PressureTests(unittest.TestCase):
                 p.validate_plan(bad, CATALOG)
 
     def test_fixed_per_case_sample_schedule_and_pairs(self):
-        for key, value in [('concurrency', 1), ('measuredPerCase', 19), ('warmupPerCase', 0)]:
+        for key, value in [('concurrency', 1), ('measuredPerCase', 19), ('warmupPerCase', 0), ('isolatedPerCase', 39), ('isolatedConcurrency', 4), ('isolatedThresholdNs', 0)]:
             plan = make_plan()
             plan['schedule'][key] = value
             with self.assertRaises(ValueError):
@@ -660,7 +660,7 @@ class PressureTests(unittest.TestCase):
         plan = make_plan()
         result = {'coverage': copy.deepcopy(plan['coverage']), 'engine': 'jvm', 'operation': 'query',
                   'otherOperationsEligible': False, 'status': 'PASS', 'errors': [],
-                  'stages': {name: {'status': 'PASS', 'resources': {}} for name in ['oracle', 'warmup', 'pressure']}}
+                  'stages': {name: {'status': 'PASS', 'resources': {}} for name in ['oracle', 'warmup', 'pressure', 'isolated']}}
         self.assertFalse(p.evidence_eligible(result, plan))
         for key, value in [('coverage', {**result['coverage'], 'unavailableFamilies': []}),
                            ('engine', 'native'), ('operation', 'loading'), ('otherOperationsEligible', True)]:
@@ -1753,7 +1753,7 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         body = p.canonical({'columns': ['v'], 'rows': [{'v': 7}]})
         case = {'id': 'tiny', 'request': {'endpoint': '/api/cypher', 'body': {'query': 'RETURN 7 AS v'}},
                 'oracleByArm': {'B': {'kind': 'native-full-json-sha256-v1', 'rows': 1, 'digest': p.digest_bytes(body)}}}
-        self.plan.update(engine='native', operation='query', cases=[case], limits={'requestSeconds': 60},
+        self.plan.update(engine='native', operation='query', cases=[case], limits={'requestSeconds': 60}, schedule=dict(p.SCHEDULE),
                          coverage={'unavailableFamilies': ['synthetic-protocol-only']}, cells=[{'id': '0', 'arm': 'B', 'port': 23333}])
         arm = self.plan['arms']['B']; arm['serverArgv'] = ['/never-executed/graphite', 'serve']
         arm['readiness'] = {'expected': {'count': 1, 'graphs': [{'id': 'g0', 'nodes': 1, 'edges': 0}]}}
@@ -1777,7 +1777,9 @@ class ExecutionAuthorityReuse(unittest.TestCase):
             row = PressureTests.linux_rss_sample(start, end, 2994056)
             return {**row, 'pid':22, 'raw':row['raw'].replace('42 (graphite)', '22 (graphite)')}
 
-        for index, (name, count) in enumerate((('oracle', 1), ('warmup', 2), ('pressure', 20))):
+        # The tiny case's pressure p50 sits under the isolated threshold, so the isolated stage repeats it 40 times.
+        for index, (name, count) in enumerate((('oracle', 1), ('warmup', 2), ('pressure', 20), ('isolated', 40))):
+            concurrency = 1 if name == 'isolated' else 4
             directory = output/name; (directory/'bodies').mkdir(parents=True); records = []; begin = 1000*index+100
             for i in range(count):
                 start = begin+10*i; (directory/f'bodies/{i:06}.body').write_bytes(body)
@@ -1788,9 +1790,10 @@ class ExecutionAuthorityReuse(unittest.TestCase):
                     'bodyBytes': len(body), 'bodySha256': p.digest_bytes(body), 'canonicalSha256': p.digest_bytes(body), 'rows': 1})
             end = records[-1]['validationCompleteNs']; inner = sample(begin+1, begin+2); samples.append(inner)
             stage = {'status': 'PASS', 'requests': records, 'unissued': [], 'allWorkersStopped': True, 'journalErrors': [],
+                'concurrency': concurrency, 'expectedRequests': count,
                 'cpuStart': sample(begin-10, begin-9), 'cpuEnd': sample(end+10, end+11), 'startNs': begin, 'endNs': end,
                 'observedMaxWorkerConcurrency': 1, 'observedMaxWireConcurrency': 1, 'caseStatistics': p.statistics(records)}
-            for worker in range(4):
+            for worker in range(concurrency):
                 (directory/f'worker-{worker}.jsonl').write_text(''.join(json.dumps(row)+'\n' for row in records if row['worker'] == worker))
             p.save(directory/'stage.json', stage)
             stages[name] = {**stage, 'resources': p.resource_summary(stage, [inner], lifecycle)}
@@ -1807,7 +1810,7 @@ class ExecutionAuthorityReuse(unittest.TestCase):
         output = self.actual_audit_fixture(linux=True)
         context = self.context()
         audit = context.audit_cell(output)
-        self.assertEqual(audit['completeBodies'], 23)
+        self.assertEqual(audit['completeBodies'], 63)
         result = p.read(output/'result.json')
         self.assertEqual(result['stages']['pressure']['resources']['rss']['sampledMinusLifecycleBytes'], 524288)
         result['stages']['pressure']['resources']['rss']['upperBoundBytes'] -= 1
@@ -1822,7 +1825,7 @@ class ExecutionAuthorityReuse(unittest.TestCase):
                 ('cleanup.json', lambda raw: raw.replace('"after": []', '"after": [22]'), 'cleanup proof')):
             with self.subTest(filename=filename):
                 context = self.context(); result = context.audit_cell(output)
-                self.assertEqual(result['completeBodies'], 23); self.assertFalse(result['acceptanceEligible'])
+                self.assertEqual(result['completeBodies'], 63); self.assertFalse(result['acceptanceEligible'])
                 path = output/filename; original = path.read_text(); changed = mutation(original)
                 self.assertNotEqual(original, changed); path.write_text(changed)
                 with self.assertRaisesRegex(ValueError, message): context.audit_cell(output)

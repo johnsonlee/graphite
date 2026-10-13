@@ -32,6 +32,11 @@ from native_legal_response import CompiledDataflowOracle
 PLAN_SCHEMA = 'graphite.multigraph-pressure.plan.v1'
 RESULT_SCHEMA = 'graphite.multigraph-pressure.result.v1'
 JVM_RAW_UNIVERSE_DIGEST = 'raw-universe-bytes-sha256-v1'
+# User-approved tail protocol (2026-10-13): after the c4 pressure stage, every case whose pressure
+# p50 sits under isolatedThresholdNs is repeated isolatedPerCase times on one worker, so a cheap
+# case's tail is measured by the engine and not by which heavy requests it collided with.
+SCHEDULE = {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20,
+            'isolatedConcurrency': 1, 'isolatedPerCase': 40, 'isolatedThresholdNs': 100_000_000}
 HEX = re.compile(r'[0-9a-f]{64}\Z')
 CLEARED = {'_JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'JDK_JAVA_OPTIONS', 'JDK_JAVAC_OPTIONS',
            'JAVA_OPTS', 'GRADLE_OPTS', 'CLASSPATH', 'JAVA', 'RUSTFLAGS',
@@ -43,6 +48,16 @@ CLEARED = {'_JAVA_OPTIONS', 'JAVA_TOOL_OPTIONS', 'JDK_JAVA_OPTIONS', 'JDK_JAVAC_
 def require(condition, message):
     if not condition:
         raise ValueError(message)
+
+
+def isolated_tasks(plan, pressure):
+    """The isolated tail stage's tasks, derived from the pressure stage the cell has just run: every
+    case whose pressure p50 sits under the threshold, repeated isolatedPerCase times, case-major."""
+    schedule = plan['schedule']
+    quantiles = pressure.get('caseStatistics', {})
+    return [case for case in plan['cases']
+            if case['id'] in quantiles and quantiles[case['id']]['p50Ns'] < schedule['isolatedThresholdNs']
+            for _ in range(schedule['isolatedPerCase'])]
 
 
 DECLARED_TYPE_TABLE = 'graph.types'
@@ -398,7 +413,7 @@ def validate_plan(plan, catalog=None):
         catalog = read(control['path'])
     require(catalog['schema'] == 'graphite.multigraph-pressure.cases.v1', 'catalog schema')
     declared = catalog['engines'][plan['engine']]
-    require(plan['schedule'] == {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20}, 'fixed c4/2/20 schedule')
+    require(plan['schedule'] == SCHEDULE, 'fixed c4/2/20 schedule with the c1/40 isolated tail stage')
     require(set(plan['arms']) == {'C', 'A', 'B'}, 'accepted baseline, parent and candidate required')
     require([c['arm'] for c in plan['cells']] == list('CABBAC'), 'fixed paired order')
     require(len({c['id'] for c in plan['cells']}) == 6 and
@@ -1009,8 +1024,9 @@ class HTTPTransport:
             require(not watchdog.is_alive(), 'request watchdog remains alive')
 
 
-def run_stage(tasks, transport, validator, clock, stop_event, out, *, deadline_seconds=900, resource=None):
+def run_stage(tasks, transport, validator, clock, stop_event, out, *, deadline_seconds=900, resource=None, concurrency=4):
     """No futures coordinator: every worker validates and immediately takes its next task."""
+    require(type(concurrency) is int and concurrency >= 1, 'stage concurrency')
     out = Path(out)
     out.mkdir(exist_ok=False)
     (out / 'bodies').mkdir()
@@ -1019,8 +1035,8 @@ def run_stage(tasks, transport, validator, clock, stop_event, out, *, deadline_s
     next_index = 0
     start_ns = None
     abort_errors = []
-    ready = threading.Barrier(5)
-    report = {'status': 'RUNNING', 'expectedRequests': len(tasks), 'concurrency': 4}
+    ready = threading.Barrier(concurrency + 1)
+    report = {'status': 'RUNNING', 'expectedRequests': len(tasks), 'concurrency': concurrency}
     before = resource() if resource else None
     deadline = time.monotonic() + deadline_seconds
 
@@ -1079,7 +1095,7 @@ def run_stage(tasks, transport, validator, clock, stop_event, out, *, deadline_s
             with lock:
                 abort_errors.append('worker: ' + repr(exc))
 
-    workers = [threading.Thread(target=guarded_worker, args=(i,), name=f'pressure-{i}', daemon=True) for i in range(4)]
+    workers = [threading.Thread(target=guarded_worker, args=(i,), name=f'pressure-{i}', daemon=True) for i in range(concurrency)]
     error = None
     try:
         for thread in workers:
@@ -1482,7 +1498,7 @@ def evidence_eligible(result, plan):
     require(result['otherOperationsEligible'] is False, 'query cannot authorize other operations')
     return ('pendingComparabilityAuthority' not in plan and 'pendingJvmComparabilityAuthority' not in plan and
             result['status'] == 'PASS' and not result['errors'] and
-            set(result['stages']) == {'oracle', 'warmup', 'pressure'} and
+            set(result['stages']) == {'oracle', 'warmup', 'pressure', 'isolated'} and
             all(stage['status'] == 'PASS' and stage.get('resources', {}).get('status') != 'UNAVAILABLE'
                 for stage in result['stages'].values()) and not plan['coverage']['unavailableFamilies'])
 
@@ -1575,6 +1591,12 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
                                deadline_seconds=plan['limits']['stageSeconds'], resource=lambda: proc_sample(pid, pid_start))
             record['stages'][stage] = report
             require(report['status'] == 'PASS', 'stage failed: ' + stage)
+        # The isolated tail stage follows the pressure stage it is derived from, on one worker.
+        report = run_stage(isolated_tasks(plan, record['stages']['pressure']), transport, validator, time.perf_counter_ns,
+                           threading.Event(), out / 'isolated', deadline_seconds=plan['limits']['stageSeconds'],
+                           resource=lambda: proc_sample(pid, pid_start), concurrency=plan['schedule']['isolatedConcurrency'])
+        record['stages']['isolated'] = report
+        require(report['status'] == 'PASS', 'stage failed: isolated')
         require(proc.poll() is None, 'server exited during workload')
         record['status'] = 'PASS'
     except BaseException as error:
@@ -1673,22 +1695,26 @@ def _audit(plan_path, output, plan):
     require(lifecycle == result['lifecycle'], 'lifecycle raw proof')
     total = 0
     validator = compile_response_validator(plan['cases'], cell['arm'], pins=plan['pins'])
-    for name, repeats in [('oracle', 1), ('warmup', 2), ('pressure', 20)]:
+    stages = [(name, [case for _ in range(repeats) for case in plan['cases']], 4)
+              for name, repeats in [('oracle', 1), ('warmup', 2), ('pressure', 20)]]
+    stages.append(('isolated', isolated_tasks(plan, result['stages']['pressure']), plan['schedule']['isolatedConcurrency']))
+    require(set(result['stages']) == {name for name, _, _ in stages}, 'exact stage inventory')
+    for name, tasks, concurrency in stages:
         stage = result['stages'][name]
+        require(stage['concurrency'] == concurrency, 'stage concurrency')
         require(stage['cpuStart']['pid'] == stage['cpuEnd']['pid'] == server_pid, 'stage CPU PID')
         validate_resource_sample(stage['cpuStart'])
         validate_resource_sample(stage['cpuEnd'])
         stored = read(root / name / 'stage.json')
         require({k: v for k, v in stage.items() if k != 'resources'} == stored, 'stage raw receipt')
-        records = sorted([parse(line) for worker in range(4)
+        records = sorted([parse(line) for worker in range(concurrency)
                           for line in (root / name / f'worker-{worker}.jsonl').read_bytes().splitlines()], key=lambda r: r['sequence'])
         require(records == stage['requests'], 'all worker journals')
-        tasks = [case for _ in range(repeats) for case in plan['cases']]
         require(stage['status'] == 'PASS' and len(records) == len(tasks) and not stage['unissued'] and
                 stage['allWorkersStopped'] and not stage['journalErrors'], 'complete stage')
         require({p.name for p in (root / name / 'bodies').iterdir()} == {f'{i:06}.body' for i in range(len(tasks))}, 'body inventory')
         for i, (rec, case) in enumerate(zip(records, tasks)):
-            require(type(rec['worker']) is int and 0 <= rec['worker'] < 4, 'worker identity')
+            require(type(rec['worker']) is int and 0 <= rec['worker'] < concurrency, 'worker identity')
             require(rec['sequence'] == i and rec['caseId'] == case['id'] and rec['status'] == 'PASS', 'schedule/result')
             require(rec['bodyFile'] == f'bodies/{i:06}.body' and rec['endpoint'] == case['request']['endpoint'] and
                     rec['requestBodySha256'] == digest_bytes(canonical(case['request']['body'])), 'request provenance')
@@ -1700,11 +1726,14 @@ def _audit(plan_path, output, plan):
             validation = validator(raw, case)
             require(all(rec[k] == v for k, v in validation.items()), 'canonical receipt')
         require(statistics(records) == stage['caseStatistics'], 'per-case raw quantiles')
-        require(stage['observedMaxWorkerConcurrency'] == peak_concurrency(records) <= 4 and
-                stage['observedMaxWireConcurrency'] == peak_concurrency(records, 'wireCompleteNs') <= 4, 'observed concurrency')
-        require(stage['startNs'] == min(r['startNs'] for r in records) and
-                stage['endNs'] == max(r['validationCompleteNs'] for r in records), 'stage extrema')
-        for worker in range(4):
+        require(stage['observedMaxWorkerConcurrency'] == peak_concurrency(records) <= concurrency and
+                stage['observedMaxWireConcurrency'] == peak_concurrency(records, 'wireCompleteNs') <= concurrency, 'observed concurrency')
+        if records:
+            require(stage['startNs'] == min(r['startNs'] for r in records) and
+                    stage['endNs'] == max(r['validationCompleteNs'] for r in records), 'stage extrema')
+        else:
+            require(stage['startNs'] is None and stage['wallNs'] is None, 'empty stage extrema')
+        for worker in range(concurrency):
             owned = [r for r in records if r['worker'] == worker]
             require(all(a['validationCompleteNs'] <= b['startNs'] for a, b in zip(owned, owned[1:])), 'worker sequential validation')
         try:
@@ -1717,7 +1746,7 @@ def _audit(plan_path, output, plan):
         active = 0
         for _, delta in sorted(events, key=lambda event: (event[0], event[1])):
             active += delta
-            require(0 <= active <= 4, 'actual request concurrency')
+            require(0 <= active <= concurrency, 'actual request concurrency')
         require(active == 0, 'undrained request interval')
         total += len(records)
     loading_audit = {}

@@ -20994,3 +20994,40 @@ its oracles from the arm's own raw edges, so it needed no change. The native cor
 fixture writes `graph.types` for non-4f revisions, which keeps its `B` expectations; the only
 local failures left are the GNU `time` captures this sandbox cannot run (identical before the
 change). Manifest and workflow digest re-pinned.
+
+### Attempt288 — the query tail protocol: p95 intervals and an isolated stage for cheap cases (2026-10-13)
+
+User-approved ("同意") hardening of the native/JVM query gates against the noise Attempt285
+measured, three parts:
+
+1. **p95 as intervals.** `tailVerdicts` in `benchmark-multigraph-pressure.mjs` takes the run's two
+   base cells (0-C, 5-C) and two candidate cells (2-B, 3-B) and judges each case's p95 as
+   `tailBound(baseLo, baseHi, candLo, candHi)`: PASS when the slowest candidate cell is within the
+   100ms/5% tolerance of the fastest base cell, FAIL when the fastest candidate cell is beyond the
+   tolerance of the slowest base cell, INDETERMINATE between. INDETERMINATE is reported (status,
+   `tails`, `tailSummary`, the PR comment's tail table) and does not fail the gate; p50 keeps the
+   per-pair rule, and `p95Passed` per pair stays in the report as information.
+2. **An isolated stage.** `run_cell` runs a fourth stage after `pressure`: every case whose
+   pressure p50 in that cell is under 100ms (`isolated_tasks`), 40 samples each, case-major, on one
+   worker (`run_stage(..., concurrency=1)`; the worker count is now a parameter, journals and the
+   audit's concurrency bounds follow it). The task list is derived from the cell's own pressure
+   statistics, so the audit (`_audit`) and the comparator (`isolatedStatistics`) recompute it and
+   refuse a stage that disagrees; an empty stage is legal. A cheap case, base pressure p50 under
+   50ms, takes its tail from this stage; its pressure p95 stays as a collision bound (at most twice
+   the base's or 250ms more, whichever allows more). Heavy cases carry no isolated samples and use
+   the pressure interval.
+3. **Samples only where they are cheap.** The 40 samples are spent on cases that cost milliseconds;
+   a cell's isolated stage is a few seconds, the pressure stage is unchanged.
+
+The schedule is one constant (`multigraph_pressure.SCHEDULE`, mirrored by `ISOLATED_SCHEDULE`
+in the comparator) that both plan preparers copy and every validator pins. Evidence closure grows
+with it: `evidence_eligible` and the audit require exactly the four stages, `completeBodies` is
+`23 × cases + 40 × isolated cases`, the native loading comparator checks the isolated stage's
+requests against the loading boundary too. Tests: three new tail tests (interval verdicts, the
+collision bound and the heavy-case path, a refused inconsistent stage), the fixtures carry the
+stage, the Python audit fixture runs it on one worker; 112 harness, 23 + 23 plan, 19 + 42
+handoff/assembly tests and the Node suites pass. Both controls manifests and the workflow
+digests are re-pinned. Under these rules run 896's two red rows become: `shape-with-aggregate-broad`
+(base cells 2429/2397, candidate 2608/2558ms) INDETERMINATE, and `slow-valueMiss` judged in
+isolation (about 1ms on both arms locally) with its 224/201ms pressure tails inside the collision
+bound of max(2 × 100, 100 + 250)ms.

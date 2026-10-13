@@ -129,7 +129,7 @@ class NativeLoading(unittest.TestCase):
             stack.enter_context(patch.object(pressure.time,'perf_counter_ns',side_effect=clock))
             result=pressure._run_cell(file,cell['id'],root/'out',plan)
         self.assertEqual('PASS',result['status'],result['errors'])
-        self.assertEqual(1,events.count('launch'));self.assertEqual(3,stages.call_count);self.assertEqual(2,sample_call.call_count)
+        self.assertEqual(1,events.count("launch"));self.assertEqual(4,stages.call_count);self.assertEqual(2,sample_call.call_count)
         self.assertLess(events.index('ready-clock'),events.index('watermark'));self.assertLess(events.index('watermark'),events.index('stage'))
         self.assertEqual(1000000000,result['loading']['startNs']);self.assertEqual(2000000000,result['loading']['readyNs'])
         self.assertEqual(2000000100,result['readyNs']);self.assertEqual(initial,result['loading']['initialSample'])

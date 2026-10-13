@@ -64,7 +64,7 @@ test('progress CLI publishes an explicitly incomplete report without requiring f
  assert.equal(spawnSync(process.execPath,command).status,1);
 });
 test('each fixed direction is required; a slower reverse cannot be pooled away',t=>{
- const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});r.stages.pressure.caseStatistics.slow.p50Ns=SLOW;r.stages.pressure.caseStatistics.slow.p95Ns=SLOW;});
+ const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});r.stages.pressure.caseStatistics.slow.p50Ns=SLOW;r.stages.pressure.caseStatistics.slow.p95Ns=SLOW;r.stages.isolated.requests=[];r.stages.isolated.caseStatistics={};});
  const r=comparePressure(f.file,f.root);assert.equal(r.passed,false);assert.equal(r.comparisons[3].cases[0].p95Passed,false);
 });
 test('altered evidence, wrong typed boundary, stale quantiles, failures and singleton scope reject',t=>{
@@ -122,16 +122,23 @@ test('JVM35 retains full projections and raw zero-hit coverage with complete bod
    stage.wallNs=(35*20-1)*1000+lat;
    stage.caseStatistics=Object.fromEntries(f.plan.cases.map((c,j)=>[c.id,{n:20,
     sampleIds:Array.from({length:20},(_,k)=>k*35+j),p50Ns:lat,p95Ns:lat}]));
+   const isolated=r.stages.isolated;
+   isolated.requests=Array.from({length:35*40},(_,sequence)=>({sequence,caseId:f.plan.cases[Math.floor(sequence/40)].id,
+    status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:1e6+sequence*1000,
+    wireCompleteNs:1e6+sequence*1000+lat-1,validationCompleteNs:1e6+sequence*1000+lat,latencyNs:lat}));
+   isolated.wallNs=(35*40-1)*1000+lat;
+   isolated.caseStatistics=Object.fromEntries(f.plan.cases.map((c,j)=>[c.id,{n:40,
+    sampleIds:Array.from({length:40},(_,k)=>j*40+k),p50Ns:lat,p95Ns:lat}]));
   });
   const file=path.join(f.root,cell.id,'audit.json'),audit=JSON.parse(fs.readFileSync(file));
-  audit.planSha256=digest(f.file);audit.coverage=f.plan.coverage;audit.completeBodies=35*23;put(file,audit);
+  audit.planSha256=digest(f.file);audit.coverage=f.plan.coverage;audit.completeBodies=35*63;put(file,audit);
  }
  const verdict=comparePressure(f.file,f.root);
  assert.equal(verdict.passed,true);
  assert.ok(verdict.comparisons.every(pair=>pair.cases.length===35));
  const complete=f.plan.cells.reduce((sum,cell)=>sum+JSON.parse(fs.readFileSync(path.join(f.root,cell.id,'audit.json'))).completeBodies,0);
  const measured=f.plan.cells.reduce((sum,cell)=>sum+JSON.parse(fs.readFileSync(path.join(f.root,cell.id,'result.json'))).stages.pressure.requests.length,0);
- assert.equal(complete,4830);assert.equal(measured,4200);
+ assert.equal(complete,6*35*63);assert.equal(measured,4200);
  const file=path.join(f.root,'c2','audit.json'),audit=JSON.parse(fs.readFileSync(file));
  for (const oldCount of [26,34]) {
   audit.completeBodies=oldCount*23;put(file,audit);
@@ -213,7 +220,7 @@ test('valid complete join cannot mask latency, CPU or RSS regression',t=>{
  for(const metric of ['latency','cpu','rss']) {
   const f=joinedFixture(t,{changeCell:(r,i)=>{
    if(i!==2)return;const s=r.stages.pressure;
-   if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});s.caseStatistics.slow.p50Ns=SLOW;s.caseStatistics.slow.p95Ns=SLOW;}
+   if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});s.caseStatistics.slow.p50Ns=SLOW;s.caseStatistics.slow.p95Ns=SLOW;r.stages.isolated.requests=[];r.stages.isolated.caseStatistics={};}
    if(metric==='cpu') {s.resources.cpuLowerBoundSeconds=2;s.resources.cpuUpperBoundSeconds=2;}
    if(metric==='rss') {s.resources.rss.lowerBoundBytes=2000;s.resources.rss.upperBoundBytes=2000;}
   }});
@@ -261,4 +268,58 @@ test('Linux RSS envelopes reject mixed policies and altered component arithmetic
  assert.throws(()=>comparePressure(f.file,f.root),/Invalid Linux RSS/);
  f.rewrite(0,r=>{linuxEnvelope(r);r.stages.pressure.resources.rss.upperBoundBytes--;});
  assert.throws(()=>comparePressure(f.file,f.root),/Invalid Linux RSS/);
+});
+
+test('tails: p95 intervals across both base and both candidate cells, cheap cases from the isolated stage',t=>{
+ // Fixture: one cheap case ('slow', pressure p50 100ns on C cells, 80ns on B cells); isolated stage carries 40 samples at the same latency.
+ const f=fixture(t),r=comparePressure(f.file,f.root);
+ assert.equal(r.tails.slow.cheap,true);assert.equal(r.tails.slow.source,'isolated');assert.equal(r.tails.slow.status,'PASS');
+ assert.deepEqual(r.tailSummary,{PASS:1,INDETERMINATE:0,FAIL:0});
+ assert.equal(r.tailRule.cheapP50Ms,50);assert.equal(r.tailRule.isolated.isolatedPerCase,40);
+ const slowIsolated=(i,ns)=>f.rewrite(i,x=>{x.stages.isolated.requests.forEach(q=>{q.latencyNs=ns;q.validationCompleteNs=q.startNs+ns;});x.stages.isolated.caseStatistics.slow.p50Ns=ns;x.stages.isolated.caseStatistics.slow.p95Ns=ns;});
+ // One candidate cell slow in isolation: INDETERMINATE, reported but not red.
+ slowIsolated(2,300e6);
+ let v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.status,'INDETERMINATE');assert.equal(v.passed,true);
+ assert.deepEqual(v.tailSummary,{PASS:0,INDETERMINATE:1,FAIL:0});
+ // Both candidate cells slow in isolation beyond the tolerance: FAIL, and the gate is red although every pressure p50 passes.
+ slowIsolated(3,300e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.status,'FAIL');assert.equal(v.passed,false);assert.equal(v.status,'FAIL');
+ assert.ok(v.comparisons.every(c=>c.cases.every(k=>k.p50Passed)));
+ // The same regression inside the tolerance (100ms absolute) passes.
+ slowIsolated(2,90e6);slowIsolated(3,90e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.status,'PASS');assert.equal(v.passed,true);
+});
+test('tails: the pressure p95 of a cheap case is only a collision bound; a heavy case keeps the pressure interval',t=>{
+ const f=fixture(t);
+ // Nearest-rank p95 of 20 samples is the second-slowest, so two samples move.
+ const pressureP95=(i,ns)=>f.rewrite(i,x=>{for(const q of x.stages.pressure.requests.slice(-2)){q.latencyNs=ns;q.validationCompleteNs=q.startNs+ns;}x.stages.pressure.caseStatistics.slow.p95Ns=ns;});
+ // Candidate pressure p95 at 200ms on a 100ns base: beyond 100ms/5% per pair, but within the collision bound (base + 250ms).
+ pressureP95(2,200e6);pressureP95(3,200e6);
+ let v=comparePressure(f.file,f.root);
+ assert.ok(v.comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.cases[0].p95Passed===false));
+ assert.equal(v.tails.slow.collisionBound.status,'PASS');assert.equal(v.tails.slow.status,'PASS');assert.equal(v.passed,true);
+ // Past the collision bound (twice the base or +250ms, whichever allows more) the cheap case fails even though isolation is clean.
+ pressureP95(2,400e6);pressureP95(3,400e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.collisionBound.status,'FAIL');assert.equal(v.tails.slow.status,'FAIL');assert.equal(v.passed,false);
+ // A heavy case (base pressure p50 at 2s) has no isolated samples and is judged on the pressure interval.
+ const g=fixture(t);
+ const heavy=(i,ns,tail)=>g.rewrite(i,x=>{x.stages.pressure.requests.forEach(q=>{q.latencyNs=ns;q.validationCompleteNs=q.startNs+ns;});for(const last of x.stages.pressure.requests.slice(-2)){last.latencyNs=tail;last.validationCompleteNs=last.startNs+tail;}
+  x.stages.pressure.caseStatistics.slow.p50Ns=ns;x.stages.pressure.caseStatistics.slow.p95Ns=tail;x.stages.isolated.requests=[];x.stages.isolated.caseStatistics={};});
+ for(const i of [0,5])heavy(i,2000e6,2100e6);
+ heavy(2,2000e6,2150e6);heavy(3,2000e6,2300e6);
+ v=comparePressure(g.file,g.root);
+ assert.equal(v.tails.slow.cheap,false);assert.equal(v.tails.slow.source,'pressure');assert.equal(v.tails.slow.status,'INDETERMINATE');assert.equal(v.passed,true);
+ heavy(2,2000e6,2300e6);
+ v=comparePressure(g.file,g.root);assert.equal(v.tails.slow.status,'FAIL');assert.equal(v.passed,false);
+});
+test('tails: an isolated stage that disagrees with the pressure-derived task list is refused',t=>{
+ const f=fixture(t);
+ f.rewrite(2,x=>{x.stages.isolated.requests.pop();});
+ assert.throws(()=>comparePressure(f.file,f.root),/Incomplete isolated stage/);
+ const g=fixture(t);
+ g.rewrite(2,x=>{x.stages.isolated.caseStatistics.slow.p95Ns+=1;});
+ assert.throws(()=>comparePressure(g.file,g.root),/isolated per-case statistics/);
+ const h=fixture(t);
+ h.rewrite(2,x=>{x.stages.isolated.concurrency=4;});
+ assert.throws(()=>comparePressure(h.file,h.root),/Incomplete isolated stage/);
 });

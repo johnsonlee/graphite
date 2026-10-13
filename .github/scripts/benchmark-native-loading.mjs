@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
-import {verifyComparabilityJoin,resourceBound,withinWallTolerance,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
+import {verifyComparabilityJoin,resourceBound,withinWallTolerance,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO,isolatedCases,ISOLATED_SCHEDULE} from './benchmark-multigraph-pressure.mjs';
 import {loadingResources} from './benchmark-loading.mjs';
 const require=(ok,message)=>{if(!ok)throw new Error(message);};
 const read=p=>JSON.parse(fs.readFileSync(p,'utf8'));
@@ -31,7 +31,7 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
         !plan.correctedProducerAuthority && !plan.producerAuthority,'Native loading requires its original pending producer and explicit core join');
     require(same(plan.cells.map(c=>c.arm),[...'CABBAC']) && new Set(plan.cells.map(c=>c.id)).size===6 &&
         same(plan.comparisonPairs,pairs) && plan.cases.length===39 &&
-        same(plan.schedule,{concurrency:4,warmupPerCase:2,measuredPerCase:20}),'Original six Native39 query processes required');
+        same(plan.schedule,{concurrency:4,warmupPerCase:2,measuredPerCase:20,...ISOLATED_SCHEDULE}),'Original six Native39 query processes required');
     require(plan.arms.C.revision==='4f2ccf33b969e684972e56b5e810034e6e67c1b3' && Object.values(plan.arms).every(arm=>
         /^[a-f0-9]{40}$/.test(arm.revision) && arm.graphs.length===64 && new Set(arm.graphs.map(g=>g.id)).size===64 &&
         arm.readiness.expected.count===64),'Own-writer exact Native64 inputs');
@@ -43,7 +43,8 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
         inputs[resultFile]=sha(resultFile);inputs[auditFile]=sha(auditFile);
         require(audit.schema==='graphite.multigraph-pressure.audit.v1' && audit.status==='PASS' && audit.cell===cell.id &&
             audit.planSha256===digest && audit.resultSha256===sha(resultFile) && audit.queryEvidenceComplete===true &&
-            audit.completeBodies===39*23 && result.schema==='graphite.multigraph-pressure.result.v1' &&
+            audit.completeBodies===39*23+isolatedCases(plan,result.stages.pressure.caseStatistics).length*plan.schedule.isolatedPerCase &&
+            result.schema==='graphite.multigraph-pressure.result.v1' &&
             result.engine==='native' && result.operation==='query' && result.planSha256===digest &&
             result.status==='PASS' && same(result.errors,[]) && same(result.cell,cell) && same(result.arm,arm),'Original fully audited Native cell');
         require(audit.loading?.schema==='graphite.native64-loading.audit.v1' && audit.loading.status==='PASS_RAW_NATIVE64_LOADING_AUDIT' &&
@@ -61,11 +62,12 @@ export function compareNativeLoading(planFile,directory,comparabilityReceipt=nul
         loadingResources(loading,[initial,...samples]);
         require(Number.isSafeInteger(pid) && pid>1 && initial.pid===pid && loading.cpuAfterReady.pid===pid &&
             loading.startNs<=initial.readStartNs && initial.readEndNs<=loading.readyNs,'Loading process identity and launch boundary');
-        require(same(Object.keys(result.stages).sort(),['oracle','pressure','warmup']),'All original query stages retained');
+        require(same(Object.keys(result.stages).sort(),['isolated','oracle','pressure','warmup']),'All original query stages retained');
         const loadingEnd=loading.readyWatermark.identityAfter.readEndNs;
-        for(const [name,repeats] of [['oracle',1],['warmup',2],['pressure',20]]) {
+        const isolatedCount=isolatedCases(plan,result.stages.pressure.caseStatistics).length*plan.schedule.isolatedPerCase;
+        for(const [name,expected] of [['oracle',39],['warmup',78],['pressure',780],['isolated',isolatedCount]]) {
             const stage=result.stages[name];
-            require(stage.requests.length===39*repeats && stage.cpuStart.readStartNs>=loadingEnd &&
+            require(stage.requests.length===expected && stage.cpuStart.readStartNs>=loadingEnd &&
                 stage.requests.every(r=>r.startNs>=loadingEnd),'Query cannot precede complete loading resource boundary');
         }
         const owner=read(path.join(root,'launch-owner.json')),cleanup=result.cleanup;

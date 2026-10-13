@@ -495,7 +495,7 @@ class CorrectedPlanTests(unittest.TestCase):
     def test_full39_corrected_plan_preserves_scope_oracles_readiness_and_protocol(self):
         plan=self.make();self.validate(plan);bundle.common.verify_inputs(plan)
         self.assertEqual(39,len(plan['cases']));self.assertEqual(list('CABBAC'),[c['arm'] for c in plan['cells']])
-        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20},plan['schedule'])
+        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20,'isolatedConcurrency':1,'isolatedPerCase':40,'isolatedThresholdNs':100_000_000},plan['schedule'])
         self.assertEqual(bundle.pressure_arms(self.packet),plan['arms'])
         for name,arm in self.packet['arms'].items():
             self.assertEqual(arm['readiness']['expected'],plan['arms'][name]['readiness']['expected'])
@@ -554,7 +554,7 @@ class PendingPlanTests(unittest.TestCase):
     def test_complete39_same_protocol_inventory_without_comparability_or_eligibility(self):
         plan=self.make();self.validate(plan);bundle.common.verify_inputs(plan)
         self.assertEqual(39,len(plan['cases']));self.assertEqual(list('CABBAC'),[c['arm'] for c in plan['cells']])
-        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20},plan['schedule'])
+        self.assertEqual({'concurrency':4,'warmupPerCase':2,'measuredPerCase':20,'isolatedConcurrency':1,'isolatedPerCase':40,'isolatedThresholdNs':100_000_000},plan['schedule'])
         self.assertTrue(plan['comparabilityPending']);self.assertNotIn('correctedProducerAuthority',plan)
         self.assertEqual('fixture-inventory',plan['proofs'][-1]['role'])
         self.assertFalse(plan['proofs'][-1]['bindings']['completeSemanticEquivalence'])

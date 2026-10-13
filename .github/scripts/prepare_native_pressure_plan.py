@@ -402,7 +402,7 @@ def pressure_plan(packet, cases, bindings, proofs, catalog, **extra):
             'unavailableFamilies': sorted(set(declared['requiredFamilies']) - set(declared['coveredFamilies'])),
             'unavailableOperations': ['construction', 'loading']},
         'cells': [{'id': f'{i}-{arm}', 'arm': arm, 'port': 22840+i} for i, arm in enumerate('CABBAC')],
-        'schedule': {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20},
+        'schedule': dict(pressure.SCHEDULE),
         'limits': {'requestSeconds': 240, 'stageSeconds': 3600, 'readinessSeconds': 300,
             'bodyBytes': 67108864, 'rssIntervalSeconds': .01},
         'comparisonPairs': {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]}, **extra}

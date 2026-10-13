@@ -265,7 +265,7 @@ def bind_plan(packet, producer_ref, output, catalog_path):
         'coverage': {'coveredFamilies': declared['coveredFamilies'], 'requiredFamilies': declared['requiredFamilies'],
                      'unavailableFamilies': [], 'unavailableOperations': ['construction', 'loading']},
         'cells': [{'id': f'{i}-{arm}', 'arm': arm, 'port': 23840+i} for i, arm in enumerate('CABBAC')],
-        'schedule': {'concurrency': 4, 'warmupPerCase': 2, 'measuredPerCase': 20},
+        'schedule': dict(common.SCHEDULE),
         'comparisonPairs': {'parent': [[1, 2], [4, 3]], 'acceptedBaseline': [[0, 2], [5, 3]]},
         'limits': {'requestSeconds': 240, 'stageSeconds': 3600, 'readinessSeconds': 600,
                    'bodyBytes': 67108864, 'rssIntervalSeconds': .01}}

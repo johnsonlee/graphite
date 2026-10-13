@@ -3124,7 +3124,7 @@ test("query operation evidence must bind the current PR parent revision", t => {
             arms:{C:{revision:"4f2ccf33b969e684972e56b5e810034e6e67c1b3"}, A:{revision:metadata.baseSha}, B:{revision:metadata.candidateSha}},
             cases:[{id:"slow", targetGraphIds:["one", "two"]}],
             comparisonPairs:{parent:[[1,2],[4,3]], acceptedBaseline:[[0,2],[5,3]]},
-            schedule:{concurrency:4, warmupPerCase:2, measuredPerCase:20},
+            schedule:{concurrency:4, warmupPerCase:2, measuredPerCase:20, isolatedConcurrency:1, isolatedPerCase:40, isolatedThresholdNs:100e6},
             coverage:{requiredFamilies:["slow"], coveredFamilies:["slow"], unavailableFamilies:[]}};
         put(file, plan);
         for (const cell of plan.cells) {
@@ -3137,11 +3137,16 @@ test("query operation evidence must bind the current PR parent revision", t => {
                     unissued:[], journalErrors:[], requests, wallNs:19100,
                     caseStatistics:{slow:{n:20, sampleIds:requests.map(r=>r.sequence), p50Ns:100, p95Ns:100}},
                     resources:{cpuLowerBoundSeconds:1, cpuUpperBoundSeconds:1.01,
-                        rss:{lowerBoundBytes:1000, upperBoundBytes:1010}}}}};
+                        rss:{lowerBoundBytes:1000, upperBoundBytes:1010}}},
+                    isolated:{status:"PASS", allWorkersStopped:true, unissued:[], journalErrors:[], concurrency:1, wallNs:39100,
+                    requests:Array.from({length:40}, (_, sequence) => ({sequence, caseId:"slow", status:"PASS",
+                        httpStatus:200, completeBody:true, deadlineExpired:false, startNs:100000+sequence*1000,
+                        wireCompleteNs:100000+sequence*1000+99, validationCompleteNs:100000+sequence*1000+100, latencyNs:100})),
+                    caseStatistics:{slow:{n:40, sampleIds:Array.from({length:40}, (_, x) => x), p50Ns:100, p95Ns:100}}}}};
             const resultFile = path.join(root, cell.id, "result.json"); put(resultFile, result);
             put(path.join(root, cell.id, "audit.json"), {schema:"graphite.multigraph-pressure.audit.v1", status:"PASS",
                 cell:cell.id, resultSha256:digest(resultFile), planSha256:digest(file), queryEvidenceComplete:true,
-                completeBodies:23, otherOperationsEligible:false, coverage:plan.coverage});
+                completeBodies:63, otherOperationsEligible:false, coverage:plan.coverage});
         }
         const compared = comparePressure(file, root);
         assert.equal(compared.passed, true); assert.equal(compared.parentRevision, metadata.baseSha);

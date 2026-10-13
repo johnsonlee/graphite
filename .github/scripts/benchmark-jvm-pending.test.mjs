@@ -34,8 +34,13 @@ function fixture(t,mutation={}) {
    })).flat();
    r.stages.pressure.caseStatistics=Object.fromEntries(f.plan.cases.map((c,k)=>[c.id,{n:20,sampleIds:Array.from({length:20},(_,n)=>n*35+k),p50Ns:latency,p95Ns:latency}]));
    r.stages.pressure.wallNs=700000;
+   // Every case is cheap here, so the isolated stage repeats all 35 of them 40 times, case-major.
+   r.stages.isolated.requests=Array.from({length:35*40},(_,sequence)=>({sequence,caseId:f.plan.cases[Math.floor(sequence/40)].id,status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
+    startNs:1e6+sequence*1000,wireCompleteNs:1e6+sequence*1000+latency-1,validationCompleteNs:1e6+sequence*1000+latency,latencyNs:latency}));
+   r.stages.isolated.caseStatistics=Object.fromEntries(f.plan.cases.map((c,k)=>[c.id,{n:40,sampleIds:Array.from({length:40},(_,n)=>k*40+n),p50Ns:latency,p95Ns:latency}]));
+   r.stages.isolated.wallNs=(35*40-1)*1000+latency;
   },
-  changeAudit(a){a.completeBodies=35*23;},
+  changeAudit(a){a.completeBodies=35*63;},
   changeCoreAudit(a,arm,meta) {
    for(const side of ['C','B'])for(const key of ['sourceManifest','runtimeManifest','fixtureManifest','artifactAudit']){
     const identity=side==='C'?'C':'B',ref={path:`/${identity}/${key==='sourceManifest'?'source':key==='runtimeManifest'?'runtime':key==='fixtureManifest'?'fixture':'artifact'}`,sha256:identity};a.pins[ref.path]=ref.sha256;

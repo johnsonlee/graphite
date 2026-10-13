@@ -6,7 +6,7 @@ import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {joinedFixture} from './native-pressure-join-test-fixture.mjs';
 import {compareNativeLoading,loadingDeclaration,writeNativeLoading} from './benchmark-native-loading.mjs';
-import {comparePressure,requestStatistics} from './benchmark-multigraph-pressure.mjs';
+import {comparePressure,requestStatistics,isolatedStatistics} from './benchmark-multigraph-pressure.mjs';
 import {loadingResources} from './benchmark-loading.mjs';
 import {aggregateReports} from './benchmark-gate.mjs';
 const sha=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -46,20 +46,21 @@ function nativeFixture(t,options={}) {
   put(path.join(root,'command.json'),['/usr/bin/time','-v','-o',path.join(root,'time-v.log'),'/python','/scripts/multigraph_pressure.py','_exec-server','--pid-file',path.join(root,'server.pid'),'--',
    ...r.arm.serverArgv,'--data',path.join(root,'data'),'--port',String(r.cell.port),'--load-mode','MAPPED','--max-concurrent-cypher','4','--cypher-max-timeout-ms','240000','--metrics',
    ...r.arm.graphs.flatMap(g=>['--graph',`${g.id}:${g.path}`])]);
-  for(const [name,repeats] of [['oracle',1],['warmup',2],['pressure',20]]) {
-   const latency=r.cell.arm==='B'?80:100;
-   const requests=Array.from({length:39*repeats},(_,sequence)=>({sequence,caseId:f.plan.cases[sequence%39].id,status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
+  for(const [name,repeats] of [['oracle',1],['warmup',2],['pressure',20],['isolated',40]]) {
+   const latency=r.cell.arm==='B'?80:100,caseMajor=name==='isolated';
+   const requests=Array.from({length:39*repeats},(_,sequence)=>({sequence,caseId:f.plan.cases[caseMajor?Math.floor(sequence/40):sequence%39].id,status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
     startNs:3e9+sequence*1000,wireCompleteNs:3e9+sequence*1000+latency-1,validationCompleteNs:3e9+sequence*1000+latency,latencyNs:latency}));
-   const stage={status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],requests,wallNs:requests.at(-1).validationCompleteNs-requests[0].startNs,
+   const stage={status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],concurrency:caseMajor?1:4,requests,wallNs:requests.at(-1).validationCompleteNs-requests[0].startNs,
     cpuStart:sample(2900000000,2900000010,110,256,pid),resources:{cpuLowerBoundSeconds:1,cpuUpperBoundSeconds:1.01,rss:{lowerBoundBytes:1000,upperBoundBytes:1010}}};
    if(name==='pressure')stage.caseStatistics=requestStatistics(stage,f.plan.cases);
+   if(name==='isolated')stage.caseStatistics=isolatedStatistics(stage,f.plan,r.stages.pressure.caseStatistics);
    r.stages[name]=stage;
   }
   options.changeCell?.(r,i,f);
  },
  changeAudit(a,i,f) {
   const root=path.join(f.root,f.plan.cells[i].id),r=JSON.parse(fs.readFileSync(path.join(root,'result.json')));
-  a.completeBodies=39*23;a.loading={schema:'graphite.native64-loading.audit.v1',status:'PASS_RAW_NATIVE64_LOADING_AUDIT',engine:'native',operation:'loading',graphCount:64,
+  a.completeBodies=39*63;a.loading={schema:'graphite.native64-loading.audit.v1',status:'PASS_RAW_NATIVE64_LOADING_AUDIT',engine:'native',operation:'loading',graphCount:64,
    queriesIssuedDuringLoading:0,resources:r.loading.resources,performanceAcceptance:false,otherOperationsEligible:false,
    rawPins:Object.fromEntries(['command.json','launch-owner.json','server.pid','readiness.body','resources.jsonl','time-v.log'].map(n=>[n,sha(path.join(root,n))]))};
  },changeReceipt:options.changeReceipt,changePhase:options.changePhase});
