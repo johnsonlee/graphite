@@ -16,7 +16,7 @@ class LoaderConfigTest {
         assertTrue(config.includePackages.isEmpty())
         assertTrue(config.excludePackages.isEmpty())
         assertTrue(config.libraryFilters.isEmpty())
-        assertTrue(config.buildCallGraph)
+        assertFalse(config.buildCallGraph)
         assertTrue(config.extractAnnotations)
         assertTrue(config.trackCrossMethodFunctionalDispatch)
         assertEquals(CallGraphAlgorithm.CHA, config.callGraphAlgorithm)
@@ -47,7 +47,7 @@ class LoaderConfigTest {
             includePackages = listOf("com.example"),
             excludePackages = listOf("com.example.internal"),
             libraryFilters = listOf("modular-*"),
-            buildCallGraph = false,
+            buildCallGraph = true,
             extractAnnotations = false,
             trackCrossMethodFunctionalDispatch = false,
             callGraphAlgorithm = CallGraphAlgorithm.RTA,
@@ -60,7 +60,7 @@ class LoaderConfigTest {
         assertEquals(listOf("com.example"), config.includePackages)
         assertEquals(listOf("com.example.internal"), config.excludePackages)
         assertEquals(listOf("modular-*"), config.libraryFilters)
-        assertFalse(config.buildCallGraph)
+        assertTrue(config.buildCallGraph)
         assertFalse(config.extractAnnotations)
         assertFalse(config.trackCrossMethodFunctionalDispatch)
         assertEquals(CallGraphAlgorithm.RTA, config.callGraphAlgorithm)

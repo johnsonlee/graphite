@@ -48,9 +48,11 @@ data class LoaderConfig(
     val libraryFilters: List<String> = emptyList(),
 
     /**
-     * Whether to build call graph
+     * Whether to run SootUp's call graph algorithm ([callGraphAlgorithm]) after the graph is
+     * built. Its result is not added to the graph, whose call edges come from the call site
+     * nodes, and on a large APK it holds every reachable body at once, so it is off by default.
      */
-    val buildCallGraph: Boolean = true,
+    val buildCallGraph: Boolean = false,
 
     /**
      * Whether to extract annotations into graph metadata/nodes.

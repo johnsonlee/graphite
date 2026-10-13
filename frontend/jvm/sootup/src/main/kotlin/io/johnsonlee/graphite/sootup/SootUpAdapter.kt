@@ -512,6 +512,7 @@ class SootUpAdapter(
             val edges = calls.link(::overridesOf) { graphBuilder.addEdge(it) }
             log { "Linked $edges interprocedural dataflow edge(s)" }
         }
+        releaseFunctionalDispatchState()
 
         // Build call graph if configured
         if (config.buildCallGraph) {
@@ -1869,6 +1870,36 @@ class SootUpAdapter(
         }
 
         return reachable
+    }
+
+    /**
+     * Drop the dispatch slots, their targets and waiting calls, and the hierarchy caches they
+     * were resolved against, once every dispatch has become call sites, so that on a large APK
+     * they do not stay live through the call graph and `graphBuilder.build()`.
+     */
+    private fun releaseFunctionalDispatchState() {
+        slotIds.clear()
+        slotIds.trim()
+        slots.clear()
+        slots.trimToSize()
+        slotTargets.clear()
+        slotTargets.trimToSize()
+        slotAdapters.clear()
+        slotAdapters.trim()
+        slotCalls.clear()
+        slotCalls.trim()
+        nestedDispatches.clear()
+        dynamicTargets.clear()
+        arrayDynamicTargets.clear()
+        functionObjectClasses.clear()
+        mayHoldFunctionByType.clear()
+        transitiveSubtypesByClass.clear()
+        supertypesByClass.clear()
+        declaredMethodIndexByClass.clear()
+        sortedMethodsByClass.clear()
+        supertypeContractsByClass.clear()
+        bridgesInvokingByClass.clear()
+        implementedByFunctionValue.clear()
     }
 
     /**
