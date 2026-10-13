@@ -17,3 +17,6 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 .kotlin/
 target/
+
+# Python bytecode caches written by the CI gate tests
+__pycache__/
