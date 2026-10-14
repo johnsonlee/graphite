@@ -40,7 +40,7 @@ def _prepare_replayed(raw_derivation_dir, output, port):
     require(type(port) is int and 1024 <= port <= 65535, 'owned JVM port')
     replayed = derive.replay(root)
     require(replayed['status'] == derive.PASS and replayed['actualPrimitiveExecutionVerified'] is True and
-            replayed['completeRawDerivationReplayed'] is True and
+            replayed['rawDerivationBoundByDigest'] is True and
             all(replayed[key] is False for key in derive.FALSE_CLAIMS), 'independent raw derivation replay required')
     return _prepare_evidence(root, output, port, _evidence(replayed)), replayed
 

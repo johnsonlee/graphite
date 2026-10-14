@@ -200,7 +200,7 @@ class DeriveProtocolTests(unittest.TestCase):
                 p._run_and_consume_raw(self.producer, self.proof, 'B', self.out, consume)
         with self.assertRaisesRegex(ValueError, 'expired'): saved[0]()
 
-    def test_real_raw_decoders_full34_two_phases_and_independent_replay(self):
+    def test_real_raw_decoders_full34_two_phases_and_digest_bound_replay(self):
         result, phases = self.execute()
         self.assertEqual(p.PASS, result['status'], result['errors']); self.assertEqual(1, self.audit_mock.call_count)
         self.assertEqual(['compile-primitives', 'primitive-facts'], [c.args[0] for c in phases.call_args_list])
@@ -209,13 +209,16 @@ class DeriveProtocolTests(unittest.TestCase):
         universe = p.common.read(result['universes']['slow-dataflowSourceHit']['path'])
         self.assertEqual(64, universe['totalMatches'])
         self.assertEqual((3, 25), (universe['rows'][0]['value']['source'], universe['rows'][0]['value']['target']))
-        with patch.object(p, '_same_typed_json', wraps=p._same_typed_json) as compare:
+        # The replay binds the recorded outputs by digest; it derives nothing a second time.
+        with patch.object(p, '_derive_and_consume', side_effect=AssertionError('replay must not derive again')), \
+             patch.object(p, 'collect_requests', side_effect=AssertionError('replay must not recollect requests')):
             audit = p.replay(self.out)
-        self.assertEqual(35, compare.call_count); self.assertEqual(2, self.audit_mock.call_count)
-        self.assertTrue(audit['actualPrimitiveExecutionVerified']); self.assertTrue(audit['completeRawDerivationReplayed'])
+        # The core-root binding (not the CI path) still re-audits its upstream on rebind.
+        self.assertEqual(2, self.audit_mock.call_count)
+        self.assertTrue(audit['actualPrimitiveExecutionVerified']); self.assertTrue(audit['rawDerivationBoundByDigest'])
         self.assertTrue(all(result[k] is audit[k] is False for k in p.FALSE_CLAIMS))
 
-    def test_owned_and_independent_replay_stream_every_case_without_snapshot(self):
+    def test_owned_derivation_streams_every_case_without_snapshot(self):
         actual=p.derivation.Collector._consume_cases;seen=[];collectors=[]
         def consume(collector,emit):
             self.assertEqual(64,len(collector.seen));names=[];collectors.append(collector)
@@ -231,7 +234,7 @@ class DeriveProtocolTests(unittest.TestCase):
             self.assertEqual(p.PASS,result['status'],result['errors'])
             audit=p.replay(self.out)
         names=[case['id'] for case in p.model.cases()]
-        self.assertEqual([names,names],seen);self.assertEqual(p.PASS,audit['status'])
+        self.assertEqual([names],seen);self.assertEqual(p.PASS,audit['status'])
         plan=p.common.read(self.out/'plan.json');public=p.derive(plan,p.consume_facts(plan))
         self.assertEqual(p.common.typed(public.pop('universes')),p.common.typed({name:p.common.read(ref['path']) for name,ref in result['universes'].items()}))
         self.assertEqual(p.common.typed(public),p.common.typed(result['derivation']))
@@ -348,7 +351,7 @@ class DeriveProtocolTests(unittest.TestCase):
         result, _ = self.execute(); self.assertEqual(p.PASS, result['status'], result['errors'])
         path = Path(result['universes']['slow-valueHit']['path']); raw = path.read_bytes()
         changed = json.loads(raw); changed['totalMatches'] += 1; write_json(path, changed)
-        with self.assertRaisesRegex(ValueError, 'independently derived universe'): p.replay(self.out)
+        with self.assertRaisesRegex(ValueError, 'derived universe bytes'): p.replay(self.out)
         path.write_bytes(raw)
         phase_path = self.out/'primitive-facts/record.json'; phase = p.common.read(phase_path)
         phase['cleanup']['after'] = [5678]; write_json(phase_path, phase)

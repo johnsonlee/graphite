@@ -79,7 +79,7 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
             universes[case['id']] = write(self.raw/'universes'/(case['id']+'.json'), universe)
         record_ref = write(self.raw/'record.json', {'plan': plan_ref, 'outputFiles': p.artifacts.inventory(self.raw)})
         self.replayed = {'status': p.derive.PASS, 'record': record_ref, 'universes': universes,
-                         'actualPrimitiveExecutionVerified': True, 'completeRawDerivationReplayed': True,
+                         'actualPrimitiveExecutionVerified': True, 'rawDerivationBoundByDigest': True,
                          **{key: False for key in p.derive.FALSE_CLAIMS}}
         cases = p.model.cases()
         self.rules = {'schema': 'graphite.jvm-source-rule-applicability.v1', 'status': 'PASS_REVIEWED_JVM_SOURCE_RULE_APPLICABILITY',
@@ -142,10 +142,10 @@ class JvmCorrectnessWrapperTests(unittest.TestCase):
         plan = p.common.read(self.out/'plan.json')
         self.assertEqual(p._evidence(self.replayed), plan['rawDerivationEvidence'])
         self.assertNotIn('rawDerivationReplay', plan)
-        self.assertNotIn('completeRawDerivationReplayed', plan['rawDerivationEvidence'])
+        self.assertNotIn('rawDerivationBoundByDigest', plan['rawDerivationEvidence'])
         audited = p.audit(self.out)
         self.assertEqual(['source-rules', 'raw-replay', 'source-rules'], self.order)
-        self.assertTrue(audited['rawDerivationReplay']['completeRawDerivationReplayed'])
+        self.assertTrue(audited['rawDerivationReplay']['rawDerivationBoundByDigest'])
         self.assertEqual(35, len(audited['cases']))
 
     def test_fresh_terminal_closure_failure_keeps_all35_and_owned_cleanup(self):

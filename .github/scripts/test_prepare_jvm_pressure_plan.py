@@ -78,7 +78,7 @@ class JvmPreparationTests(unittest.TestCase):
         plan_ref = self.write(http/'plan.json', plan); pins[plan_ref['path']] = plan_ref['sha256']
         result = {'schema': 'graphite.jvm-query-correctness-audit.v1', 'status': p.queries.AUDIT,
             'revision': revision, 'role': role, **refs, 'plan': plan_ref, 'pins': pins,
-            'rawDerivationReplay': dict(plan['rawDerivationEvidence'], completeRawDerivationReplayed=True),
+            'rawDerivationReplay': dict(plan['rawDerivationEvidence'], rawDerivationBoundByDigest=True),
             'cases': [{'case': c['id'], 'targetGraphIds': c['targetGraphIds']} for c in cases],
             'independentRawExpectationsVerified': True, 'sourceRuleApplicabilityVerified': True,
             'all35ActualResponsesVerified': True, 'oracleAuthorityVerified': True,

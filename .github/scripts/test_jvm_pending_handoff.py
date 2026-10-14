@@ -196,7 +196,7 @@ class RawDerivationHandoff(unittest.TestCase):
             result=derive.run(f.producer,None,'B',f.out,raw_export_root=root)
             self.assertEqual(derive.PASS,result['status'],result['errors'])
             replay=derive.replay(f.out)
-        self.assertEqual(35,len(replay['universes']));self.assertTrue(replay['completeRawDerivationReplayed'])
+        self.assertEqual(35,len(replay['universes']));self.assertTrue(replay['rawDerivationBoundByDigest'])
         stored=derive.common.read(f.out/'plan.json');self.assertNotIn('coreRoot',stored);self.assertTrue(stored['coreComparabilityPending'])
         self.assertFalse(result['performanceAcceptance']);self.assertFalse(replay['oracleAuthorityVerified'])
         self.assertEqual(64,len(result['derivation']['graphs']))

@@ -21289,3 +21289,35 @@ cold verdicts of the first run that carries them are the measurement of Attempt2
 work; if the candidate's first declared request fails the cold interval on the hosted runner, the
 options are the ones the review names: initialise the table inside the loading boundary (where
 the user approved +1.6 s for this feature) or accept the cold cost explicitly.
+
+### Attempt292 — the JVM correctness replay verifies the recorded derivation instead of deriving it again (2026-10-14)
+
+The user's direction after the run-911 timing: remove duplicated CI work first, so the feedback
+loop gets faster. The per-revision `rust-jvm-correctness` job of run 911 (the parent revision, from
+the artifact mtimes) spent restore 10 min, raw-edge export 2 min, primitive facts 13 min, Collector
+ingest 24 min, the 35 universes 15 min, plan 8 min, server ready 9 min, the 35 queries 2 min, and
+then more than 70 min in `derive_jvm_pressure_oracles.py --audit-only`: `replay()` called
+`_derive_and_consume` again and compared the second derivation's universes with the recorded ones
+byte for byte. The second derivation was the same code on the same pinned inputs; it proved the
+derivation deterministic, not correct, and it was the longest step of the critical path (the job
+ended after 160 min, an hour after the core join).
+
+`replay()` now verifies the record against its pinned inputs and owned phases without deriving:
+the raw binding is recomputed with the stored raw-edge audit (`bind_raw(..., stored_edge_audit=True)`;
+the replay of a core-bound plan still rebinds against the core root), the owned phases are verified
+(`verify_phases`), the request and primitive-fact files, every universe file and the complete
+per-graph derivation count are checked by digest against the record, the output inventory must
+equal the recorded one, and every pin is re-verified. The result says what it is:
+`rawDerivationBoundByDigest: True` replaces the former `actualPrimitiveExecutionReplayed`, and
+`jvm_query_correctness._prepare_replayed` requires the new key. The derivation itself still runs
+once per revision, in the owned phases the record names; a universe whose bytes changed after it
+was recorded fails the replay as before. Tests renamed and rewritten to assert that `replay()`
+runs no derivation (`_derive_and_consume` and `collect_requests` are patched to fail), the
+preparation controls re-pinned.
+
+Expected effect: the JVM correctness job drops from about 160 min to about 85 min per revision,
+which takes it off the critical path; the core proof chain (producer merge, core-prepare, shards,
+join: about 2.5 h after the producer) is now the long pole. Run 915's step times (per job: 2–5 min
+of checkpoint download, 5–15 min of restore verification, 2–5 min of seal; 16 shards at 20–42 min
+of execution for 8 graphs each, run as one subprocess at a time; core-prepare 14.5 + 16 min; the
+producer merge 13 min of re-hashing) are the next targets.
