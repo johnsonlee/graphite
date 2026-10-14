@@ -21139,4 +21139,10 @@ persisted type, picks the body whose rendering of the local matches it, allows t
 identity under a collided key (`collidedMethodKey`), judges same-name raw occurrences on their
 flat type, and stays ambiguous when no body matches or an attribution would carry a
 typed-allocation creation proof. Replaying the 16 unproved rows of fixture-android-03 through the
-patched authority against the extracted exports leaves none unproved.
+patched authority against the extracted exports leaves none unproved. The other run-908 shards
+(fixture-tika-00, android-09, android-14) showed the same collision pattern plus one local a flat
+writer persists as `unknown` where one body's raw type is `boolean` and the other's is SootUp's
+`UnknownType` (`RainbowUtil.equals(short[][], short[][])` against `(short[], short[])`): a body is
+judged by the uncollided proof's own scope (`body_accepts`: a raw array must render to the
+persisted type, a raw non-array only must not be persisted as an array), and all four graphs'
+unproved rows replay clean.

@@ -89,6 +89,11 @@ class RawLocalTests(unittest.TestCase):
         other_base.observe(local('byte[]'),M[:2]+['(I)[B']);other_base.observe(local('int[]'),M[:2]+['(I)[B'])
         self.assertEqual((2,0),(other_base.finish()['arrayCount'],other_base.finish()['unprovedCount']))
         self.assertEqual(['(I)[[B','(I)[[[B'],[row['rawMethods']['B'][2] for row in other_base.rows])
+        # A body whose raw type is no array is checked only for not being persisted as one, as uncollided.
+        untyped=self.authority(mutate=lambda arm,rows:twin(arm,rows,{'kind':'unsupported','runtimeClass':'sootup.core.types.UnknownType'}),source_authority=flat)
+        untyped.observe(local('unknown'),M[:2]+['(I)[B']);untyped.observe(local('byte[]'),M[:2]+['(I)[B'])
+        self.assertEqual(0,untyped.finish()['unprovedCount'])
+        self.assertEqual(['(I)[[[B','(I)[[B'],[row['rawMethods']['B'][2] for row in untyped.rows])
         none=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,base={'kind':'primitive','name':'int'})),source_authority=flat)
         none.observe(local('long[]'),M[:2]+['(I)[B'])
         with self.assertRaisesRegex(ValueError,'conflicts/missing'):none.finish()

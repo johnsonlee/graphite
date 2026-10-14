@@ -269,10 +269,23 @@ class Authority:
         first = holders[0]
         if all(local_view(row, name) == local_view(first, name) for row in holders):
             return first, None
-        matching = [row for row in holders if saved in {render_saved(v['type'], True) for v in row['locals'][name]}]
+        matching = [row for row in holders if self.body_accepts(row, name, saved)]
         if matching and not any(row['typedAllocations'].get(name) for row in holders):
             return matching[0], None
         return None, 'flat method key ambiguous among raw overloads'
+
+    @staticmethod
+    def body_accepts(row, name, saved):
+        """Whether observing the local against this body alone would raise no issue: a raw array must
+        render to the persisted type, and a raw non-array is checked only for not being persisted
+        as an array (the same scope the uncollided proof has)."""
+        types = {json.dumps(flat_type(v['type']), sort_keys=True) for v in row['locals'][name]}
+        if len(types) != 1:
+            return False
+        raw = json.loads(next(iter(types)))
+        if raw.get('kind') == 'array':
+            return render_saved(raw, True) == saved
+        return not saved.endswith('[]')
 
     def observe(self, canonical, method):
         node, name, actual, _, _ = local_slot(canonical)
