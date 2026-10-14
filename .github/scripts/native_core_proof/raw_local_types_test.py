@@ -71,22 +71,40 @@ class RawLocalTests(unittest.TestCase):
         self.assertEqual(['C:missing raw method/local','B:missing raw method/local'],exact.rows[0]['issues'])
 
     def test_flat_overloads_sharing_a_folded_key_must_agree_on_the_local(self):
+        # Overloads that differ only in array rank share a flat writer's method key; every body persists
+        # its locals under it. They prove a local when they agree on its flat rendering, carry the
+        # recurring identity, and are ambiguous when the renderings or a creation witness differ.
         from types import SimpleNamespace
         flat=SimpleNamespace(kinds={'C':'legacy-flat','B':'legacy-flat'})
-        def twin(arm,rows,raw):
+        def twin(arm,rows,raw,witness=None):
             other=copy.deepcopy(rows[1]);other['method']=M[:2]+['(I)[[[B'];other['locals']['$stack4'][0]['type']=raw
+            if witness:other['typedAllocations']={'$stack4':[{'ordinal':0,'type':{'kind':'class','name':'owner.Alloc'}}]}
             rows.insert(2,other);rows[-1]['methodCount']=2
-        agreeing=self.authority(mutate=lambda arm,rows:twin(arm,rows,copy.deepcopy(A)),source_authority=flat)
-        agreeing.observe(local('byte[]'),M[:2]+['(I)[B']);self.assertEqual(0,agreeing.finish()['unprovedCount'])
-        disagreeing=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,dimension=3)),source_authority=flat)
-        disagreeing.observe(local('byte[]'),M[:2]+['(I)[B'])
-        with self.assertRaisesRegex(ValueError,'conflicts/missing'):disagreeing.finish()
-        self.assertIn('C:flat method key ambiguous among raw overloads',disagreeing.rows[0]['issues'])
+        rank_only=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,dimension=3)),source_authority=flat)
+        rank_only.observe(local('byte[]'),M[:2]+['(I)[B']);rank_only.observe(local('byte[]'),M[:2]+['(I)[B'])
+        report=rank_only.finish();self.assertEqual((2,0),(report['arrayCount'],report['unprovedCount']))
+        self.assertTrue(all(row['collidedMethodKey'] for row in rank_only.rows))
+        # Bodies that render the local differently: the persisted type picks its body; none matching is ambiguous.
+        other_base=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,base={'kind':'primitive','name':'int'})),source_authority=flat)
+        other_base.observe(local('byte[]'),M[:2]+['(I)[B']);other_base.observe(local('int[]'),M[:2]+['(I)[B'])
+        self.assertEqual((2,0),(other_base.finish()['arrayCount'],other_base.finish()['unprovedCount']))
+        self.assertEqual(['(I)[[B','(I)[[[B'],[row['rawMethods']['B'][2] for row in other_base.rows])
+        none=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,base={'kind':'primitive','name':'int'})),source_authority=flat)
+        none.observe(local('long[]'),M[:2]+['(I)[B'])
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):none.finish()
+        self.assertIn('C:flat method key ambiguous among raw overloads',none.rows[0]['issues'])
+        witnessed=self.authority(mutate=lambda arm,rows:twin(arm,rows,dict(A,dimension=3),witness=True),source_authority=flat)
+        witnessed.observe(local('byte[]'),M[:2]+['(I)[B'])
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):witnessed.finish()
+        self.assertIn('B:flat method key ambiguous among raw overloads',witnessed.rows[0]['issues'])
         elsewhere=self.authority(mutate=lambda arm,rows:twin(arm,rows,copy.deepcopy(A)),source_authority=flat)
         for arm in elsewhere.methods.values():
             for key,row in arm.items():
                 if key[2]=='(I)[[[B':row['locals']={}
         elsewhere.observe(local('byte[]'),M[:2]+['(I)[B']);self.assertEqual(0,elsewhere.finish()['unprovedCount'])
+        alone=self.authority(source_authority=flat);alone.observe(local('byte[]'),M[:2]+['(I)[B']);alone.observe(local('byte[]'),M[:2]+['(I)[B'])
+        with self.assertRaisesRegex(ValueError,'conflicts/missing'):alone.finish()
+        self.assertIn('duplicate persisted full method/local identity',alone.rows[1]['issues'])
 
     def test_unchanged_rank_one_is_checked(self):
         for arm in self.rows:self.rows[arm]['locals']['$stack4'][0]['type']['dimension']=1

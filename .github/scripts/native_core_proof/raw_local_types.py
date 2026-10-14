@@ -65,6 +65,11 @@ def flat_index(methods):
     return index
 
 
+def flat_type(raw):
+    """A raw type as a flat writer renders it: an array keeps its base and loses its rank."""
+    return {**raw, 'dimension': 1} if isinstance(raw, dict) and raw.get('kind') == 'array' else raw
+
+
 def local_view(row, name):
     return (row['locals'].get(name), row['typedAllocations'].get(name, []),
             row.get('ordinaryAssignments', {}).get(name, []), row['statementCount'])
@@ -237,20 +242,36 @@ class Authority:
         self.by_flat_key = {arm: flat_index(rows) for arm, rows in self.methods.items()} if self.flat else None
         self.creation_pins = None
 
-    def raw_method(self, arm, method, name):
+    def folded(self, method):
+        return (method[0], method[1], classfile.legacy_descriptor(method[2]))
+
+    def collided(self, method):
+        """Whether a flat writer's method key stands for several raw overloads (differing only in
+        array rank), whose bodies all persist their locals under that one key."""
+        return self.flat and any(len(self.by_flat_key[arm].get(self.folded(method), [])) > 1 for arm in ('C', 'B'))
+
+    def raw_method(self, arm, method, name, saved):
         """The raw export row for a persisted local's method. A rank-preserving writer's method key
         is the exact JVM descriptor; a flat writer's key folds every array to one rank, so it is
-        matched through the same fold, and an overload set that shares the folded key must agree on
-        everything about the local before any of it is used."""
+        matched through the same fold. Overloads that differ only in rank share the folded key and
+        every body persists its locals under it, so the proof for a flat writer asserts that the
+        persisted type is the flat rendering of the raw type in one of those bodies: the body whose
+        rendering of the local matches is the witness, and a local that no body renders to the
+        persisted type, or one whose attribution would carry a typed-allocation creation proof, is
+        ambiguous."""
         key = tuple(method)
         if not self.flat:
             return self.methods[arm].get(key), None
-        candidates = self.by_flat_key[arm].get((key[0], key[1], classfile.legacy_descriptor(key[2])), [])
+        candidates = self.by_flat_key[arm].get(self.folded(key), [])
         holders = [row for row in candidates if name in row['locals']]
         if not holders:
             return (candidates[0] if len(candidates) == 1 else None), None
-        if all(local_view(row, name) == local_view(holders[0], name) for row in holders):
-            return holders[0], None
+        first = holders[0]
+        if all(local_view(row, name) == local_view(first, name) for row in holders):
+            return first, None
+        matching = [row for row in holders if saved in {render_saved(v['type'], True) for v in row['locals'][name]}]
+        if matching and not any(row['typedAllocations'].get(name) for row in holders):
+            return matching[0], None
         return None, 'flat method key ambiguous among raw overloads'
 
     def observe(self, canonical, method):
@@ -259,14 +280,18 @@ class Authority:
         result = {'graphId': self.spec['graphId'], 'nodeId': node, 'method': list(method),
                   'name': name, 'savedType': actual, 'status': 'PENDING', 'arms': {}}
         issues = []
-        if key in self.seen:
+        collided = self.collided(method)
+        if collided: result['collidedMethodKey'] = True
+        if key in self.seen and not collided:
+            # Under a flat writer's collided key every overload body persists its locals, so the same
+            # (method, name) legitimately recurs; elsewhere it is a duplicate identity.
             self.duplicates.add(key)
             issues.append('duplicate persisted full method/local identity')
         self.seen.add(key)
         unique = {}
         relevant = actual.endswith('[]')
         for arm in ('C', 'B'):
-            row, ambiguity = self.raw_method(arm, method, name)
+            row, ambiguity = self.raw_method(arm, method, name, actual)
             if ambiguity: issues.append(arm + ':' + ambiguity)
             elif row is not None and self.flat: result.setdefault('rawMethods', {})[arm] = list(row['method'])
             values = row['locals'].get(name) if row else None
@@ -278,7 +303,7 @@ class Authority:
                 issues.append(arm + ':missing raw method/local')
                 continue
             relevant = relevant or any(v['type']['kind'] == 'array' for v in values)
-            candidates = {json.dumps(v['type'], sort_keys=True, separators=(',', ':')) for v in values}
+            candidates = {json.dumps(flat_type(v['type']) if self.flat else v['type'], sort_keys=True, separators=(',', ':')) for v in values}
             if len(candidates) != 1:
                 issues.append(arm + ':conflicting same-name raw types')
             else:
@@ -290,7 +315,8 @@ class Authority:
                 issues.append('actual writer raw inference differs')
             expected = render_saved(unique['B'], self.flat)
             if unique['B']['kind'] == 'array':
-                result['rawDimension'] = unique['B']['dimension']
+                # Agreement is judged on the flat type for a flat writer; the rank recorded is the raw one.
+                result['rawDimension'] = result['arms']['B']['occurrences'][0]['type']['dimension']
                 result['rawType'] = unique['B']
                 if allocation is not None:expected=allocation['expectedType']
                 result['expectedType'] = expected

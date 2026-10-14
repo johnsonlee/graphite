@@ -21123,3 +21123,20 @@ local's occurrences, allocations, assignments and statement count
 (`flat method key ambiguous among raw overloads`). Against the extracted fixture-android-04
 export all 17 keys fold to exactly one raw row and no folded key in the graph collides. Two
 raw-local tests cover the fold and the agreement rule.
+
+Run 907 (e1cb7be) then passed the per-graph proof and failed in `graph_result`:
+`verify_creation_inputs` derived the expected renderer from the Local source authority, which the
+outer runner binds only when a creation proof is required, so a flat parent's report
+(`flatRendering: true`) was compared against "not flat". The outer runner now passes the renderer
+it knows from the plan's `formatterKinds` (773bb00). Run 908 (773bb00) reached a real collision in
+fixture-android-03: `BatteryStatsImpl.detachIfNotNull(TimeBaseObs[])` and
+`detachIfNotNull(TimeBaseObs[][])` differ only in rank, so a flat writer gives them one method key
+and both bodies persist their locals under it: the same `(method, name)` recurs
+(`duplicate persisted full method/local identity`), and `$stack3` is `TimeBaseObs[]` in one body
+and `TimeBaseObs` in the other. What a flat writer's proof can assert is that each persisted local
+is the flat rendering of the raw type in one of the colliding bodies: `raw_method` now takes the
+persisted type, picks the body whose rendering of the local matches it, allows the recurring
+identity under a collided key (`collidedMethodKey`), judges same-name raw occurrences on their
+flat type, and stays ambiguous when no body matches or an attribution would carry a
+typed-allocation creation proof. Replaying the 16 unproved rows of fixture-android-03 through the
+patched authority against the extracted exports leaves none unproved.
