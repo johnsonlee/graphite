@@ -3133,7 +3133,11 @@ test("query operation evidence must bind the current PR parent revision", t => {
                 wireCompleteNs:sequence*1000+99, validationCompleteNs:sequence*1000+100, latencyNs:100}));
             const result = {schema:"graphite.multigraph-pressure.result.v1", status:"PASS", errors:[], cell,
                 arm:plan.arms[cell.arm], engine, operation:"query", planSha256:digest(file), coverage:plan.coverage,
-                cleanup:{after:[], errors:[], signals:[]}, stages:{pressure:{status:"PASS", allWorkersStopped:true,
+                cleanup:{after:[], errors:[], signals:[]}, stages:{
+                    oracle:{status:"PASS", allWorkersStopped:true, unissued:[], journalErrors:[], concurrency:4, wallNs:120,
+                    requests:[{sequence:0, caseId:"slow", status:"PASS", httpStatus:200, completeBody:true, deadlineExpired:false,
+                        startNs:10, wireCompleteNs:109, validationCompleteNs:110, latencyNs:100}]},
+                    pressure:{status:"PASS", allWorkersStopped:true,
                     unissued:[], journalErrors:[], requests, wallNs:19100,
                     caseStatistics:{slow:{n:20, sampleIds:requests.map(r=>r.sequence), p50Ns:100, p95Ns:100}},
                     resources:{cpuLowerBoundSeconds:1, cpuUpperBoundSeconds:1.01,
@@ -3153,7 +3157,38 @@ test("query operation evidence must bind the current PR parent revision", t => {
         put(path.join(directory, `multigraph-${engine}-query-status.json`), {...compared,
             evidence:{plan:path.relative(directory, file), directory:path.relative(directory, root)}});
         const current = aggregateReports(directory, metadata);
-        assert.equal(current.operationEvidence.find(row=>row.name===`${engine}-query`).status, "PASS");
+        const row = current.operationEvidence.find(row=>row.name===`${engine}-query`);
+        assert.equal(row.status, "PASS");
+        // The summary beside the status and the operation's own section carry the tail and cold
+        // verdicts with their counts, never a bare PASS over an INDETERMINATE interval.
+        assert.equal(row.summary, "p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS, 0 INDETERMINATE, 0 FAIL, cold stage wall PASS");
+        assert.match(current.body, new RegExp(`- ${engine}-query: PASS \\(p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS`));
+        assert.match(current.body, new RegExp(`#### ${engine}-query — PASS`));
+        // The fixture's stage walls are 19.1 and 19.08 µs, so the millisecond columns round to zero.
+        assert.match(current.body, /\| acceptedBaseline c0→c2 \| 0 \| 0 \| -?0 \| 1\/1 \| PASS \| PASS \|/);
+        {
+            // One candidate cell's isolated tail slower than both base cells by more than the tolerance:
+            // the comparison stays PASS, the summary and the section say INDETERMINATE with the intervals.
+            const cellFile = path.join(root, "c2", "result.json"), cellResult = JSON.parse(fs.readFileSync(cellFile));
+            cellResult.stages.isolated.requests.forEach(r => {r.latencyNs = 150e6; r.validationCompleteNs = r.startNs + 150e6; r.wireCompleteNs = r.startNs + 150e6 - 1;});
+            cellResult.stages.isolated.caseStatistics.slow.p50Ns = 150e6; cellResult.stages.isolated.caseStatistics.slow.p95Ns = 150e6;
+            put(cellFile, cellResult);
+            const auditFile = path.join(root, "c2", "audit.json"), audit = JSON.parse(fs.readFileSync(auditFile)); audit.resultSha256 = digest(cellFile); put(auditFile, audit);
+            const uncertain = comparePressure(file, root);
+            assert.equal(uncertain.passed, true); assert.equal(uncertain.tailSummary.INDETERMINATE, 1);
+            put(path.join(directory, `multigraph-${engine}-query-status.json`), {...uncertain,
+                evidence:{plan:path.relative(directory, file), directory:path.relative(directory, root)}});
+            const shown = aggregateReports(directory, metadata);
+            const uncertainRow = shown.operationEvidence.find(r=>r.name===`${engine}-query`);
+            assert.equal(uncertainRow.status, "PASS");
+            assert.match(uncertainRow.summary, /p95 tails 0 PASS, 1 INDETERMINATE, 0 FAIL/);
+            assert.match(shown.body, /\| slow \| isolated \| 0\.000–0\.000 \| 0\.000–150\.000 \| INDETERMINATE \| PASS \(≤ 250 ms\) \|/);
+            cellResult.stages.isolated.requests.forEach(r => {r.latencyNs = 100; r.validationCompleteNs = r.startNs + 100; r.wireCompleteNs = r.startNs + 99;});
+            cellResult.stages.isolated.caseStatistics.slow.p50Ns = 100; cellResult.stages.isolated.caseStatistics.slow.p95Ns = 100;
+            put(cellFile, cellResult); audit.resultSha256 = digest(cellFile); put(auditFile, audit);
+            put(path.join(directory, `multigraph-${engine}-query-status.json`), {...comparePressure(file, root),
+                evidence:{plan:path.relative(directory, file), directory:path.relative(directory, root)}});
+        }
         const stale = aggregateReports(directory, {...metadata, baseSha:"d".repeat(40)});
         assert.equal(stale.operationEvidence.find(row=>row.name===`${engine}-query`).status, "UNAVAILABLE");
         assert.ok(stale.errors.some(error=>error.startsWith(`${engine}-query:`) && error.includes("source or resource constraints")));

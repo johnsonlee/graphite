@@ -3209,7 +3209,7 @@ export function aggregateReports(directory, metadata) {
                 recomputed.parentRevision !== metadata.baseSha || !recomputed.passed) {
                 throw new Error("Required coverage, fixed comparisons, source or resource constraints failed");
             }
-            return {...operation, status:"PASS"};
+            return {...operation, status:"PASS", summary:operationSummary(recomputed), metrics:operationMetrics(operation, recomputed)};
         } catch (error) {
             errors.push(`${operation.name}: ${error.message}`);
             return {...operation, status:"UNAVAILABLE"};
@@ -3266,12 +3266,17 @@ export function aggregateReports(directory, metadata) {
         "Coverage labels follow the gate model: ✅ has no identified gate-specific gap; ⚠️ is implemented but incomplete.",
         "Run result and coverage are separate: PASS is evidence only for the stated contract, not for a listed gap or an uncovered family.",
         "Correctness and all existing genuine multi-graph constraints remain blocking. Only complete multi-graph operation evidence can establish performance acceptance.",
-        ...operationEvidence.map(item => `- ${item.name}: ${item.status}`),
+        ...operationEvidence.map(item => `- ${item.name}: ${item.status}${item.summary ? ` (${item.summary})` : ""}`),
         "",
         "| Coverage domain | Gate | Run result | Coverage | Known gap |",
         "|---|---|:---:|:---:|---|",
         ...coverageRows,
         "",
+        "### Multi-graph operations",
+        "",
+        "Each operation's own comparison, recomputed from its evidence: every pair's wall, CPU and RSS verdict, and every p95 tail or cold verdict that is not PASS with the measured intervals and their source. An INDETERMINATE verdict is neither a pass nor a regression and is listed here so it is not read as either.",
+        "",
+        ...operationEvidence.flatMap(item => item.metrics ?? [`#### ${item.name}`, "", `${item.status}: no comparison to show.`, ""]),
         "### Product performance",
         "",
         ...productSections,
@@ -3296,6 +3301,61 @@ export function aggregateReports(directory, metadata) {
         operationEvidence,
         body: `${body}\n`
     };
+}
+
+function verdictOf(value) {
+    if (value === undefined || value === null) return "n/a";
+    if (typeof value === "boolean") return value ? "PASS" : "FAIL";
+    return value.status ?? "n/a";
+}
+function counts(summary) {
+    return summary ? `${summary.PASS} PASS, ${summary.INDETERMINATE} INDETERMINATE, ${summary.FAIL} FAIL` : "n/a";
+}
+const interval = values => Array.isArray(values) ? values.map(v => v.toFixed(3)).join("–") : "n/a";
+
+/// One line beside the operation's status: a PASS that holds INDETERMINATE verdicts says so.
+export function operationSummary(recomputed) {
+    if (recomputed.operation === "query") {
+        const parts = [`p95 tails ${counts(recomputed.tailSummary)}`];
+        if (recomputed.cold) parts.push(`cold ${counts(recomputed.coldSummary)}, cold stage wall ${verdictOf(recomputed.cold.stageWall)}`);
+        return parts.join("; ");
+    }
+    return (recomputed.comparisons ?? []).filter(x => x.kind === "acceptedBaseline").map(x =>
+        `${x.base}→${x.candidate} wall ${x.deltaWallMs >= 0 ? "+" : ""}${x.deltaWallMs.toFixed(0)} ms ${x.wallPassed ? "PASS" : "FAIL"}, CPU ${verdictOf(x.cpu ?? x.cpuPassed)}, RSS ${verdictOf(x.rss ?? x.rssPassed)}`).join("; ");
+}
+
+/// The operation's metrics for the PR comment: pairs, then every non-PASS tail and cold verdict.
+export function operationMetrics(operation, recomputed) {
+    const lines = [`#### ${operation.name} — ${recomputed.status}`, ""];
+    const pairs = recomputed.comparisons ?? [];
+    if (recomputed.operation === "query") {
+        lines.push("| Pair | Base wall ms | Candidate wall ms | Δ wall ms | p50 cases within tolerance | CPU | RSS |", "|---|---:|---:|---:|---:|:---:|:---:|");
+        for (const x of pairs) {
+            lines.push(`| ${x.kind} ${x.base}→${x.candidate} | ${x.baseWallMs.toFixed(0)} | ${x.candidateWallMs.toFixed(0)} | ${x.deltaWallMs.toFixed(0)} | ${x.cases.filter(k => k.p50Passed).length}/${x.cases.length} | ${verdictOf(x.cpu)} | ${verdictOf(x.rss)} |`);
+        }
+        lines.push("", `p95 tails: ${counts(recomputed.tailSummary)} (cheap cases from the isolated stage).`);
+        const tails = Object.values(recomputed.tails ?? {}).filter(t => t.status !== "PASS");
+        if (tails.length) {
+            lines.push("", "| Case | Source | Base p95 ms | Candidate p95 ms | Tail | Collision bound |", "|---|---|---|---|:---:|---|");
+            for (const t of tails) lines.push(`| ${t.caseId} | ${t.source} | ${interval(t.baseP95Ms)} | ${interval(t.candidateP95Ms)} | ${t.status} | ${t.collisionBound ? `${t.collisionBound.status} (≤ ${t.collisionBound.limitMs.toFixed(0)} ms)` : "n/a"} |`);
+        }
+        if (recomputed.cold) {
+            const w = recomputed.cold.stageWall;
+            lines.push("", `Cold (first request per case, oracle stage): ${counts(recomputed.coldSummary)}; stage wall base ${interval(w.baseMs)} ms, candidate ${interval(w.candidateMs)} ms: ${w.status}.`);
+            const cold = Object.values(recomputed.cold.cases).filter(c => c.status !== "PASS");
+            if (cold.length) {
+                lines.push("", "| Case | Source | Base cold ms | Candidate cold ms | Cold |", "|---|---|---|---|:---:|");
+                for (const c of cold) lines.push(`| ${c.caseId} | ${c.source} | ${interval(c.baseMs)} | ${interval(c.candidateMs)} | ${c.status} |`);
+            }
+        }
+    } else {
+        lines.push("| Pair | Base wall ms | Candidate wall ms | Δ wall ms | Wall | CPU | RSS |", "|---|---:|---:|---:|:---:|:---:|:---:|");
+        for (const x of pairs) {
+            lines.push(`| ${x.kind} ${x.base}→${x.candidate} | ${x.baseWallMs.toFixed(0)} | ${x.candidateWallMs.toFixed(0)} | ${x.deltaWallMs.toFixed(0)} | ${x.wallPassed ? "PASS" : "FAIL"} | ${verdictOf(x.cpu ?? x.cpuPassed)} | ${verdictOf(x.rss ?? x.rssPassed)} |`);
+        }
+    }
+    lines.push("");
+    return lines;
 }
 
 const GRAPH_ROUTING_STATES = ["cold", "warm", "startup-prepared"];

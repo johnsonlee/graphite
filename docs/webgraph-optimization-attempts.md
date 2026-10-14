@@ -21227,3 +21227,65 @@ requires it to exist as a regular file with the sealed mode and reports a conten
 bound by content; a delta checkpoint sealed on the drifted image keeps the bundle facts it
 inherited. A JDK patch rollout mid-run would still stop a run, by a missing versioned root, which
 is the right failure for a toolchain change.
+
+### Attempt291 — the review's five findings: deferred cost measured cold, unreadable tables fail the query, no table read outside declarations (2026-10-14)
+
+The PR author's review of 05407c7 raised one P1 and four P2 findings against the lazy declared
+table of Attempt271 and the gates around it. All five hold; what each changes:
+
+- **P1, cold cost escaped both gates.** Attempt271 moved the table's parse, validation and index
+  build to first use. The native loading gate ends at registry-ready and the pressure gate
+  compares the pressure stage, which the oracle and warmup stages precede, so the first request
+  that touched a declaration paid for all 64 tables and no gate saw it. `comparePressure` now
+  reads the oracle stage, one request per case at concurrency 4, the only cold measurement the
+  run makes, and judges every case's first-request latency and the stage's wall as the user's
+  interval protocol judges p95: the two base cells against the two candidate cells, FAIL only
+  when every candidate cell is slower than every base cell by more than the latency tolerance,
+  INDETERMINATE between, reported in `cold`/`coldSummary`, the status report and the PR comment.
+  `measuredConstraintsPassed` requires no cold FAIL. The pressure fixture and the gate's test
+  cells carry oracle stages; a result without one is refused (`Missing oracle stage`).
+- **P2, an unreadable table read as an absent one.** `Graph::declared()` memoises a read failure
+  and `declared_types()` answered `None` for it, so a query asked for `generic_type` on a graph
+  whose table failed its metadata digest returned `null` and the server never looked at
+  `declared_types_error`. The executor now records the first failed access
+  (`note_declared_failure`) at every read the engine makes, in planning
+  (`declared_tag_available`, `declared`, `declared_node_type_present`) and in the property
+  wrappers, and `execute_clauses` ends the query with `declared types unreadable: ...` instead of
+  rows. A result that returns a field, parameter, return or method value is rendered by the
+  caller after the query returns (the server materialises rows as it streams them), so such a
+  value from a graph with an unreadable table is noted before the result is handed back. Loading
+  stays lazy; CallSite and constant queries keep answering. The explorer's node detail adds
+  `declared_types_error` beside the nulls. Tests: `declared_access_tests` against the declared
+  types fixture, with the table poisoned through `Graph::with_declared_types_error`.
+- **P2, the table read before the tag.** `has_declared_types_for_tag` read the table and then
+  matched the tag, so a `MATCH (n:CallSiteNode) RETURN labels(n), count(*)` partition plan and a
+  `RETURN n` over call sites opened `graph.types`. The tag and node kind decide first
+  (`declaration_bearing`); the scan's generic-leaf check considers only the tags the scan reads;
+  the result-value note reads the state only for declaration-bearing values. The fixture test
+  asserts `declared_types_initialized()` stays false across CallSite aggregations, projections
+  through SKIP, `RETURN n`, `keys(n)` and a text predicate, and turns true on the first
+  `generic_type`.
+- **P2, INDETERMINATE compressed to PASS.** The regression gate's operation line read
+  `native-query: PASS` whatever `tailSummary` held and the comment had no table for the new
+  operations. The line now carries the tail and cold counts and the comment gains a
+  "Multi-graph operations" section: per pair wall, p50 cases within tolerance, CPU and RSS
+  verdicts, every non-PASS tail and cold verdict with its source and both intervals, and the
+  construction and loading pairs' wall/CPU/RSS verdicts (`operationSummary`,
+  `operationMetrics`); the gate test rewrites one candidate cell's isolated tail and asserts the
+  INDETERMINATE row with its intervals.
+- **P2, lossy strings marked only when verified.** `decode_serialized` recorded unpaired UTF-16
+  surrogates only under `verified`, and `Graph::load` decodes unverified; `load_bound` then bound
+  the digest and `strict_get` served the lossily converted text as valid, so the same table
+  `DeclaredTypes::load` refused answered `�[][]` through a loaded graph. The decode now records
+  every lossy ID (`invalid_text`: unpaired surrogates, and invalid UTF-8 kept lossily in an
+  ordinary decode, which also replaces the unchecked bytes the arena used to hold), so a table
+  bound after the load refuses the same IDs a verified load does; a verified decode still refuses
+  invalid UTF-8 outright.
+
+Evidence: `cargo test -p graphite-storage -p graphite-cypher -p graphite-explore` against the
+fixtures `DeclaredTypePersistenceTest` writes, the JS suites of the pressure comparator and the
+gate, and the controls suites after re-pinning `benchmark-gate.mjs`'s six workflow digests. The
+cold verdicts of the first run that carries them are the measurement of Attempt271's deferred
+work; if the candidate's first declared request fails the cold interval on the hosted runner, the
+options are the ones the review names: initialise the table inside the loading boundary (where
+the user approved +1.6 s for this feature) or accept the cold cost explicitly.
