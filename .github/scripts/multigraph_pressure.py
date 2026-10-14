@@ -1510,36 +1510,70 @@ def evidence_eligible(result, plan):
 
 
 PAGE_CACHE_EVICTION = 'posix_fadvise(POSIX_FADV_DONTNEED) on every file of every graph after sync(), before each cell starts'
+PAGE_CACHE_WARMING = ("every arm's graph files advised out of the page cache after sync(), then every file of the cell's own graphs "
+                      "read in full, before each cell starts: the cache holds exactly the graphs the cell loads")
+READ_CHUNK = 8 << 20
 
 
-def evict_graph_pages(graphs):
-    """Drop every file of `graphs` from the page cache, so each cell loads cold.
-
-    A loading cell's wall is the time to read its 64 graphs; what the kernel still holds of them from
-    the checkpoint restore or from the previous cell decides it more than the engine does. Run
-    38630296899 measured the same arm at 7.4 and 12.9 s (CPU 8.8 and 10.9 s) and failed one pair of
-    the loading gate on it. Dirty pages are flushed first, then every graph file is advised out;
-    the kernel honours the advice for clean pages, so each cell starts from the disk. Returns what
-    was evicted for the cell's record. A graph directory that does not exist contributes nothing.
-    """
-    os.sync()
-    files = 0
-    total = 0
+def graph_files(graphs):
+    """Every regular file of every graph directory that exists, in path order; symlinks are skipped."""
     for graph in graphs:
         root = Path(graph['path'])
         if not root.is_dir():
             continue
         for path in sorted(root.rglob('*')):
-            if not path.is_file() or path.is_symlink():
-                continue
-            fd = os.open(path, os.O_RDONLY)
-            try:
-                os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
-            finally:
-                os.close(fd)
-            files += 1
-            total += path.stat().st_size
+            if path.is_file() and not path.is_symlink():
+                yield path
+
+
+def evict_graph_pages(graphs):
+    """Drop every file of `graphs` from the page cache.
+
+    A loading cell's wall is the time to read its 64 graphs; what the kernel still holds of them from
+    the checkpoint restore or from the previous cell decides it more than the engine does. Run
+    38630296899 measured the same arm at 7.4 and 12.9 s (CPU 8.8 and 10.9 s) and failed one pair of
+    the loading gate on it. Dirty pages are flushed first, then every graph file is advised out;
+    the kernel honours the advice for clean pages. Returns what was evicted for the cell's record.
+    A graph directory that does not exist contributes nothing.
+    """
+    os.sync()
+    files = 0
+    total = 0
+    for path in graph_files(graphs):
+        fd = os.open(path, os.O_RDONLY)
+        try:
+            os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+        finally:
+            os.close(fd)
+        files += 1
+        total += path.stat().st_size
     return {'method': PAGE_CACHE_EVICTION, 'files': files, 'bytes': total}
+
+
+def warm_graph_pages(all_graphs, graphs):
+    """Leave the page cache holding exactly the cell's graphs: every arm's are evicted, the cell's read in full.
+
+    Cold is not a usable state either: run 38647742862 evicted before every cell and each read 3.2 GB
+    from the disk (6.3M file system inputs in `time -v`), so the walls were the runner's disk
+    throughput, 14.2–18.2 s at a CPU of 11.7–12.1 s, and three pairs failed the 5% wall rule where
+    the CPU agreed within 0.3 s. Before the digest cache (Attempt293), the input verification read
+    every graph file in full before each launch and left it warm; this makes that state explicit
+    and independent of the previous cell: every arm's graphs are advised out, then the cell's own
+    graphs are read through, so the engine's loading work is what the wall measures, equally for
+    every arm. The bytes counted are the bytes read, so the record proves the read completed.
+    """
+    evicted = evict_graph_pages(all_graphs)
+    files = 0
+    total = 0
+    for path in graph_files(graphs):
+        with path.open('rb') as handle:
+            while True:
+                chunk = handle.read(READ_CHUNK)
+                if not chunk:
+                    break
+                total += len(chunk)
+        files += 1
+    return {'method': PAGE_CACHE_WARMING, 'evicted': evicted, 'files': files, 'bytes': total}
 
 
 def graph_arguments(graphs):
@@ -1597,9 +1631,9 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', cell['port']))
         launch_env = clean_env()
-        # Every cell loads its graphs from the disk, not from what the restore or the previous cell
-        # left in the page cache (the JVM loading cells do the same).
-        record['pageCache'] = evict_graph_pages(arm['graphs'])
+        # Every cell loads its graphs from a page cache that holds exactly them, not what the restore or
+        # the previous cell left there (the JVM loading cells do the same).
+        record['pageCache'] = warm_graph_pages([g for a in plan['arms'].values() for g in a['graphs']], arm['graphs'])
         with deferred_signals():
             with (out / 'stdout.log').open('x') as stdout, (out / 'stderr.log').open('x') as stderr:
                 if loading:

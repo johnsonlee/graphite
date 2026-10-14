@@ -1874,6 +1874,21 @@ class PageCacheEvictionTest(unittest.TestCase):
             self.assertEqual(synced, [True])
             self.assertEqual(sorted(advised), sorted(str(root/n) for n in ('a/graph.nodes', 'a/sub/graph.edges', 'b/forward.graph')))
 
+    def test_warming_evicts_every_arm_and_reads_the_cell_graphs_through(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, size in (('a/graph.nodes', 10), ('a/sub/graph.edges', 20), ('b/forward.graph', 30)):
+                (root/name).parent.mkdir(parents=True, exist_ok=True); (root/name).write_bytes(b'x'*size)
+            (root/'a/link').symlink_to(root/'b/forward.graph')
+            advised = []
+            def fadvise(fd, offset, length, advice): advised.append(os.readlink(f'/proc/self/fd/{fd}'))
+            every = [{'id': 'a', 'path': str(root/'a')}, {'id': 'b', 'path': str(root/'b')}]
+            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise), patch.object(p, 'READ_CHUNK', 7):
+                value = p.warm_graph_pages(every, [every[0], {'id': 'c', 'path': str(root/'absent')}])
+            self.assertEqual(value, {'method': p.PAGE_CACHE_WARMING, 'evicted': {'method': p.PAGE_CACHE_EVICTION, 'files': 3, 'bytes': 60},
+                                     'files': 2, 'bytes': 30})
+            self.assertEqual(len(advised), 3)
+
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)

@@ -33,7 +33,7 @@ SCOPE = {
     'readiness': 'All64 MAPPED registrations and saved counts; includes required startup topology work',
     'cpu': 'Process-zero cumulative user+system CPU; in-boundary sample lower, first post-ready sample upper, with two ticks uncertainty',
     'rss': 'In-boundary sampled peak lower; first post-ready Linux VmHWM upper; GNU time lifetime RSS is only corroboration',
-    'cache': 'Matched full closed-input reads before every process; uncontrolled OS cache; no disk-cold claim',
+    'cache': "Every arm's graphs evicted, then the cell's graphs read in full before every process; the page cache holds exactly the cell's graphs; no disk-cold claim",
     'deferredWork': 'Registry-ready only; deferred first-query work is not counted as already paid',
     'aggregation': 'Fixed CABBAC and two directions; no pooling, retry selection, quiet-host or saturation claim',
 }
@@ -64,7 +64,7 @@ def prepare(packet, base, candidate, *, measurement_only=False):
     plan.pop('timeouts'); plan.pop('cachePolicy')
     plan.pop('retentionPolicy'); plan.pop('retentionSources')
     plan['limits'] = {'readinessSeconds': 900, 'rssIntervalSeconds': .01}
-    plan['cacheState'] = {'pageCache': 'cold', 'method': common.PAGE_CACHE_EVICTION}
+    plan['cacheState'] = {'pageCache': 'warm', 'method': common.PAGE_CACHE_WARMING}
     plan['python'] = str(Path(sys.executable).resolve())
     plan['pins'][plan['python']] = common.sha(plan['python'])
     for name, arm in plan['arms'].items():
@@ -165,7 +165,7 @@ def run_cell(plan_file, plan, cell, out):
         common.save(out/'identities-before.json', verify_inputs(plan))
         argv = command(plan, arm, cell, out); common.save(out/'command.json', argv)
         with socket.socket() as probe: probe.bind(('127.0.0.1', cell['port']))
-        record['pageCache'] = common.evict_graph_pages(arm['graphs'])
+        record['pageCache'] = common.warm_graph_pages([g for a in plan['arms'].values() for g in a['graphs']], arm['graphs'])
         with common.deferred_signals():
             with (out/'stdout.log').open('x') as stdout, (out/'stderr.log').open('x') as stderr:
                 record['startNs'] = time.perf_counter_ns()

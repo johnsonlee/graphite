@@ -21497,3 +21497,31 @@ disk; the query stages that follow warm the cache themselves as before, equally 
 eviction is recorded (method, files, bytes) and a graph directory that does not exist contributes
 nothing, so the fakes of the test suites keep working. Test: `PageCacheEvictionTest` (sync first,
 every regular file advised, symlinks and absent graphs skipped, counts returned).
+
+Corrected by Attempt299: cold cells measured the disk; the state is now evict-every-arm, then read the
+cell's graphs in full.
+### Attempt299 — every loading cell starts from a page cache that holds exactly its graphs (2026-10-14)
+
+Attempt298 (run 38647742862, head 3035f60) made every cell cold, and the JVM loading gate failed
+three of four pairs on wall alone: the six cells read 17.1, 16.1, 18.2, 16.2, 18.1 and 14.2 s of wall
+(C, A, B, B, A, C) at a ready CPU of 11.7–12.1 s, every one of them with 6.3M file system inputs
+in `time -v` (3.2 GB from the disk) and a `pageCache` record of 1216 files evicted. CPU agreed
+between arms within 0.3 s and RSS within 10 MB; the 4 s spread of the walls is the hosted runner's
+disk throughput, which a 5% wall rule cannot absorb, so a cold cell measures the disk, not the
+engine. The bimodal walls Attempt298 set out to fix had another cause than it named: before the
+digest cache (Attempt293) the input verification before each launch (`identities-before.json`)
+hashed every graph file, which read it in full and left it in the page cache; the cache made those
+reads disappear, and with them the warm state every earlier run had measured in without declaring
+it ("Matched full closed-input reads before every process").
+
+The state is now explicit: `multigraph_pressure.warm_graph_pages(all_graphs, graphs)` advises every
+arm's graph files out of the page cache (sync first, `POSIX_FADV_DONTNEED`), then reads every file
+of the cell's own graphs through in 8 MiB chunks and counts the bytes it read, so the record
+proves the read completed and the cache holds exactly the graphs the cell loads, whatever the
+previous cell or the restore left. Both cell runners call it before launching
+(`run_real64_loading.run_cell`, plan `cacheState: warm`; `multigraph_pressure._run_cell` for the
+native pressure and loading cells). The cell's `pageCache` record carries the eviction (files,
+bytes) beside the warm read. `evict_graph_pages` stays as the first half. Test:
+`PageCacheEvictionTest.test_warming_evicts_every_arm_and_reads_the_cell_graphs_through`.
+Expected effect: JVM loading walls back near the CPU (run 915 read 8.4–12.4 s), and the native
+loading cells likewise; the loading rule itself is unchanged.
