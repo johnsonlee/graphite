@@ -4281,6 +4281,16 @@ jobs:
     - name: Set up Rust
       uses: dtolnay/rust-toolchain@stable
 
+    # The legacy latency comparison queries the shared fixture64 corpus itself. The producer
+    # checkpoint carries the corpus's four manifests, not its graphs (Attempt295), so this job
+    # takes the graphs from the fixture job's artifact, as the routing and global-wide jobs do;
+    # the restore below finds the manifests it carries already present with the same bytes.
+    - name: Download shared fixture64 corpus
+      uses: actions/download-artifact@v8
+      with:
+        name: shared-fixture64-${{ github.event.pull_request.head.sha }}
+        path: shared-fixture64
+
     - name: Download producer checkpoint
       uses: actions/download-artifact@v8
       with:

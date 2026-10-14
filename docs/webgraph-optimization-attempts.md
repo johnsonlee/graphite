@@ -21403,6 +21403,14 @@ less to download and extract at every hop (the producer payload 43 → 32.6 GB),
 restore on the hosted runner, 15 min across the critical path, and the same again in disk headroom
 for the two-arm consumer chain that ran out of it in run 911.
 
+Correction (run 38619839960): one consumer did read the shared graphs through the checkpoint,
+`rust-query-legacy`, whose latency comparison serves `shared-fixture64/graphs/graphs.tsv` with the
+base and candidate engines (`server exited before serving`). The grep that found no reader covered
+the Python scripts, not the workflow's own shell steps. That job now downloads the fixture job's
+artifact (`shared-fixture64-<head sha>`) before the restore, as the graph-routing and global-wide
+jobs do; the restore finds the four manifests present with the same bytes and leaves them. The
+chain still carries only the manifests.
+
 ### Attempt296 — user-approved 2026-10-14: p50 and construction resources as cell intervals, collision bound needs both cells (2026-10-14)
 
 Run 915's two gate failures that were noise, and the user's answer "三个判定规则就按你的建议来":
