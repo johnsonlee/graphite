@@ -21475,3 +21475,25 @@ arm (16–22 min) still bounds the stage. Tests: `test_fixture64_arm_cache` (ide
 every changed input named, moved revision, missing products or jars, CLI round trip) and the
 workflow test's new case (key, refs, conditions, identical restore and save paths, the candidate
 excluded). The build step keeps its script, so the dispatch test still runs it unchanged.
+
+### Attempt298 — every loading cell starts from the disk: page cache eviction before launch (2026-10-14)
+
+Run 38630296899's JVM loading gate failed one pair: 01-C → 03-B wall 8030 → 11484 ms. The six cells
+in launch order read 8.0, 12.9, 11.5, 7.0, 7.4 and 12.5 s of wall while their ready CPU stayed
+within 8.5–10.9 s (the candidate's lowest): the same arm loaded in 7.4 and 12.9 s, so the wall was
+disk time, decided by what the kernel still held of the 64 graphs from the checkpoint restore (its
+alphabetical payload leaves the last arm's graphs in memory) and from the previous cell. Run 915
+had read 12.0/11.7, 12.4/12.4 and 8.4/8.4 s on the same protocol; Attempt295 changed the amount
+the restore extracts, and with it the cache state every cell inherited. The protocol never
+controlled that state; CLAUDE.md asks that loading match it.
+
+`multigraph_pressure.evict_graph_pages` flushes dirty pages (`os.sync`) and advises every file of
+every graph the cell will load out of the page cache (`posix_fadvise(POSIX_FADV_DONTNEED)`), and
+both cell runners call it before launching the server: `run_real64_loading.run_cell` (JVM
+zero-query loading; the plan declares `cacheState: cold`) and `multigraph_pressure._run_cell`
+(the native pressure cells, whose readiness is the native loading gate; the eviction is recorded in
+the cell's `pageCache` and in its `loading` record). Every cell of every arm thus loads from the
+disk; the query stages that follow warm the cache themselves as before, equally for every arm. The
+eviction is recorded (method, files, bytes) and a graph directory that does not exist contributes
+nothing, so the fakes of the test suites keep working. Test: `PageCacheEvictionTest` (sync first,
+every regular file advised, symlinks and absent graphs skipped, counts returned).

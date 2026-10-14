@@ -1509,6 +1509,39 @@ def evidence_eligible(result, plan):
                 for stage in result['stages'].values()) and not plan['coverage']['unavailableFamilies'])
 
 
+PAGE_CACHE_EVICTION = 'posix_fadvise(POSIX_FADV_DONTNEED) on every file of every graph after sync(), before each cell starts'
+
+
+def evict_graph_pages(graphs):
+    """Drop every file of `graphs` from the page cache, so each cell loads cold.
+
+    A loading cell's wall is the time to read its 64 graphs; what the kernel still holds of them from
+    the checkpoint restore or from the previous cell decides it more than the engine does. Run
+    38630296899 measured the same arm at 7.4 and 12.9 s (CPU 8.8 and 10.9 s) and failed one pair of
+    the loading gate on it. Dirty pages are flushed first, then every graph file is advised out;
+    the kernel honours the advice for clean pages, so each cell starts from the disk. Returns what
+    was evicted for the cell's record. A graph directory that does not exist contributes nothing.
+    """
+    os.sync()
+    files = 0
+    total = 0
+    for graph in graphs:
+        root = Path(graph['path'])
+        if not root.is_dir():
+            continue
+        for path in sorted(root.rglob('*')):
+            if not path.is_file() or path.is_symlink():
+                continue
+            fd = os.open(path, os.O_RDONLY)
+            try:
+                os.posix_fadvise(fd, 0, 0, os.POSIX_FADV_DONTNEED)
+            finally:
+                os.close(fd)
+            files += 1
+            total += path.stat().st_size
+    return {'method': PAGE_CACHE_EVICTION, 'files': files, 'bytes': total}
+
+
 def graph_arguments(graphs):
     # Readiness validates resolved paths; pass those same paths to the server.
     return [value for graph in graphs
@@ -1564,11 +1597,14 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
         with socket.socket() as sock:
             sock.bind(('127.0.0.1', cell['port']))
         launch_env = clean_env()
+        # Every cell loads its graphs from the disk, not from what the restore or the previous cell
+        # left in the page cache (the JVM loading cells do the same).
+        record['pageCache'] = evict_graph_pages(arm['graphs'])
         with deferred_signals():
             with (out / 'stdout.log').open('x') as stdout, (out / 'stderr.log').open('x') as stderr:
                 if loading:
                     record['loading'] = {'schema': 'graphite.native64-loading.cell.v1', 'graphCount': 64,
-                                         'queriesIssuedDuringLoading': 0}
+                                         'queriesIssuedDuringLoading': 0, 'pageCache': record['pageCache']}
                     record['loading']['startNs'] = time.perf_counter_ns()
                 proc = subprocess.Popen(command, stdout=stdout, stderr=stderr, start_new_session=True, env=launch_env)
             save(out / 'launch-owner.json', {'runnerPid': os.getpid(), 'group': proc.pid})

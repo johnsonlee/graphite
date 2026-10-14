@@ -64,6 +64,7 @@ def prepare(packet, base, candidate, *, measurement_only=False):
     plan.pop('timeouts'); plan.pop('cachePolicy')
     plan.pop('retentionPolicy'); plan.pop('retentionSources')
     plan['limits'] = {'readinessSeconds': 900, 'rssIntervalSeconds': .01}
+    plan['cacheState'] = {'pageCache': 'cold', 'method': common.PAGE_CACHE_EVICTION}
     plan['python'] = str(Path(sys.executable).resolve())
     plan['pins'][plan['python']] = common.sha(plan['python'])
     for name, arm in plan['arms'].items():
@@ -164,6 +165,7 @@ def run_cell(plan_file, plan, cell, out):
         common.save(out/'identities-before.json', verify_inputs(plan))
         argv = command(plan, arm, cell, out); common.save(out/'command.json', argv)
         with socket.socket() as probe: probe.bind(('127.0.0.1', cell['port']))
+        record['pageCache'] = common.evict_graph_pages(arm['graphs'])
         with common.deferred_signals():
             with (out/'stdout.log').open('x') as stdout, (out/'stderr.log').open('x') as stderr:
                 record['startNs'] = time.perf_counter_ns()

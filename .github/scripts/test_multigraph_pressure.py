@@ -1858,5 +1858,22 @@ class ExecutionAuthorityReuse(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'invalidated'): context.audit_cell(output)
 
 
+class PageCacheEvictionTest(unittest.TestCase):
+    def test_every_graph_file_is_advised_out_after_sync_and_missing_graphs_contribute_nothing(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, size in (('a/graph.nodes', 10), ('a/sub/graph.edges', 20), ('b/forward.graph', 30)):
+                (root/name).parent.mkdir(parents=True, exist_ok=True); (root/name).write_bytes(b'x'*size)
+            (root/'a/link').symlink_to(root/'b/forward.graph')
+            advised = []; synced = []
+            def fadvise(fd, offset, length, advice):
+                self.assertEqual((offset, length, advice), (0, 0, os.POSIX_FADV_DONTNEED)); advised.append(os.readlink(f'/proc/self/fd/{fd}'))
+            with patch.object(p.os, 'sync', lambda: synced.append(True)), patch.object(p.os, 'posix_fadvise', fadvise):
+                value = p.evict_graph_pages([{'id': 'a', 'path': str(root/'a')}, {'id': 'b', 'path': str(root/'b')}, {'id': 'c', 'path': str(root/'absent')}])
+            self.assertEqual(value, {'method': p.PAGE_CACHE_EVICTION, 'files': 3, 'bytes': 60})
+            self.assertEqual(synced, [True])
+            self.assertEqual(sorted(advised), sorted(str(root/n) for n in ('a/graph.nodes', 'a/sub/graph.edges', 'b/forward.graph')))
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)
