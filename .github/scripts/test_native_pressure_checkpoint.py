@@ -53,6 +53,10 @@ class CheckpointTests(unittest.TestCase):
         self.write(self.root/'B/graphs/graph.nodes', 'tiny saved graph')
         self.json(self.workspace/'benchmark-results/rust-provenance/provenance.json', {'files': {}})
         self.write(self.workspace/'shared-fixture64/graphs/graphs.tsv', 'tiny source corpus')
+        self.write(self.workspace/'shared-fixture64/graphs/fixture-provenance.tsv', 'tiny provenance')
+        self.write(self.workspace/'shared-fixture64/graphs/alpha-00/graph.nodes', 'builder output no stage reads')
+        self.json(self.workspace/'shared-fixture64/fixture64.complete.json', {'schema': 'graphite-shared-fixture64-v1'})
+        self.json(self.workspace/'shared-fixture64/fixture-reproducibility.json', {'passed': True})
         self.directory = self.workspace/'pressure-checkpoints/producer-producer'
 
     def write(self, p, value):
@@ -100,6 +104,22 @@ class CheckpointTests(unittest.TestCase):
             self.system_tools[name] = str(tool)
         self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': self.system_tools})
         return root, certificate, link
+
+    def test_shared_fixture_carries_its_four_manifests_never_the_builder_graphs(self):
+        manifest = self.seal()
+        fixture = self.workspace/'shared-fixture64'
+        for name in checkpoint.SHARED_FIXTURE_FILES:
+            self.assertIn(str(fixture/name), manifest['files'], name)
+            self.assertIn(str(fixture/name), manifest['payload'], name)
+        self.assertNotIn(str(fixture/'graphs/alpha-00/graph.nodes'), manifest['files'])
+        self.assertFalse(any(name.startswith(str(fixture)) for name in manifest['closedDirectories']))
+        self.assertFalse(any(name.startswith(str(fixture/'graphs/alpha-00')) for name in manifest['directories']))
+        self.remove_payload(manifest)
+        self.assertFalse((fixture/'graphs/graphs.tsv').exists())
+        shutil.rmtree(fixture/'graphs/alpha-00')  # not payload: left where it was, so cleared by hand
+        checkpoint.restore(self.args())
+        self.assertEqual('tiny source corpus', (fixture/'graphs/graphs.tsv').read_text())
+        self.assertFalse((fixture/'graphs/alpha-00').exists(), 'the builder graphs are not restored')
 
     def test_system_jdk_roundtrip_verifies_preexisting_files_and_never_writes_external_paths(self):
         root, certificate, link = self.system_jdk_fixture()

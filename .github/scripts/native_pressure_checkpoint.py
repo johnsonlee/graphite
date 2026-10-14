@@ -125,10 +125,23 @@ def git_sources(workspace, base, head):
     return result
 
 
+SHARED_FIXTURE_FILES = ('fixture64.complete.json', 'fixture-reproducibility.json',
+                        'graphs/graphs.tsv', 'graphs/fixture-provenance.tsv')
+
+
+def shared_fixture_paths(workspace):
+    """The four files of the shared fixture64 corpus that the chain reads: its completion record,
+    its reproducibility receipt, the graph manifest and the provenance that `source-inputs.json`
+    pins. The 64 graph directories beside them are the fixture builder's own output, which no stage
+    reads (every arm builds its graphs with its own writer); carried as a closed tree they were
+    10.5 GB of run 915's 43 GB producer closure, extracted again at every hop of the chain."""
+    return [workspace/'shared-fixture64'/name for name in SHARED_FIXTURE_FILES]
+
+
 def selected_roots(workspace, stage, arm):
     root = workspace/'native-pressure-artifacts'
     if stage == 'producer-common':
-        return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
+        return [root, workspace/'benchmark-results/rust-provenance', *shared_fixture_paths(workspace)]
     if stage == 'producer-arm':
         return [root/arm]
     if stage in ('core', 'core-prepare', 'core-shard'):
@@ -140,13 +153,14 @@ def selected_roots(workspace, stage, arm):
         return paths
     if stage in ('jvm','jvm-pending'):
         return [root/arm/'jvm-raw-derivation', root/arm/'jvm-query-correctness',*([root/arm/'jvm-raw-edges'] if stage=='jvm-pending' else [])]
-    return [root, workspace/'benchmark-results/rust-provenance', workspace/'shared-fixture64']
+    return [root, workspace/'benchmark-results/rust-provenance', *shared_fixture_paths(workspace)]
 
 
 def evidence_paths(workspace, stage, arm, ident=None):
     roots = selected_roots(workspace, stage, arm)
     for root in roots:
-        require(root.is_dir() and not root.is_symlink(), 'missing stage root: '+str(root))
+        # A root is a directory collected as a closed tree, or one of the shared fixture's files.
+        require((root.is_dir() or root.is_file()) and not root.is_symlink(), 'missing stage root: '+str(root))
     if stage in ('core-prepare', 'core-shard'):
         return core_shard_paths(roots[0], ident) + roots[1:]
     if stage == 'producer-common':

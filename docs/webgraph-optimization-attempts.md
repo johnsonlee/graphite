@@ -21378,3 +21378,27 @@ graph completed, so the final check still catches the mutation of a completed gr
 start phases through `producer.Phase`. Expected: the shard's proof time halves (12 → ~6–7 min; the
 slowest shard of run 915 ran 42 min of phases) and core-prepare's export step drops from ~9 to ~5
 min, both on the critical path.
+
+### Attempt295 — the checkpoints carry the shared fixture's four manifests, not its 64 graphs (2026-10-14)
+
+Run 915's merged producer checkpoint (its manifest, read off the artifact): 43.1 GB of payload in
+16,577 files, of which 10.5 GB were `shared-fixture64/graphs`, the corpus `prepare-fixture64`
+builds with the candidate's writer to prove the fixture reproducible. No stage of the chain reads
+those graphs: every arm builds its own 64 with its own writer (`native-pressure-artifacts/<arm>/graphs`,
+10.4–10.5 GB each), and what the chain reads of the shared fixture is `fixture64.complete.json`,
+`fixture-reproducibility.json`, `graphs/graphs.tsv` and `graphs/fixture-provenance.tsv` (the
+provenance `source-inputs.json` pins, the manifests `prepare_native_pressure_plan` re-hashes). The
+`producer-common` and `producer` stages collected the whole `shared-fixture64` tree as a closed
+root, so every one of the ~30 restores of a run extracted 10.5 GB it never opened, and every seal,
+merge and verification hashed it (Attempt293 removed the re-hashing; the extraction remained).
+
+`selected_roots` now names the four files (`SHARED_FIXTURE_FILES`, `shared_fixture_paths`) in place
+of the tree, and `evidence_paths` accepts a file root beside the closed directories. A restore
+recreates the two parent directories and the four files; the builder's graphs stay where the
+fixture job left them and travel in their own artifact for the jobs that verify the fixture.
+Test: a sealed producer checkpoint lists and pays out the four files, no closed directory under
+the fixture and none of the builder's graph files, and a restore from a cleared workspace brings the
+manifests back without the graphs. The eight checkpoint and chain suites pass. Expected: a quarter
+less to download and extract at every hop (the producer payload 43 → 32.6 GB), roughly 2–3 min per
+restore on the hosted runner, 15 min across the critical path, and the same again in disk headroom
+for the two-arm consumer chain that ran out of it in run 911.
