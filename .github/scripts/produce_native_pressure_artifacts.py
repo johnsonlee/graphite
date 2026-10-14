@@ -16,6 +16,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import time
 
 # Keep the clean candidate checkout clean when this controller lives inside it.
 sys.dont_write_bytecode = True
@@ -137,45 +138,72 @@ def construction_resources(path, exit_code):
     return value
 
 
-def phase(name, argv, cwd, env, out, timeout, construction_time=None):
-    directory = out / name
-    directory.mkdir()
-    record = {'name': name, 'argv': argv, 'cwd': str(cwd), 'timeoutSeconds': timeout, 'errors': []}
-    proc = None
-    launch_argv = argv
-    launch_env = env
-    if construction_time is not None:
-        require(name == 'prepare-real64' and '-Xmx4g' in argv and '-XX:ActiveProcessorCount=4' in argv,
-                'construction capture only for bounded real64 writer')
-        launch_argv = [construction_time, '-v', '-o', str(directory / 'time-v.log'), '--', *argv]
-        launch_env = {**env, 'LC_ALL': 'C'}
-        record.update(launchArgv=launch_argv, environmentOverrides={'LC_ALL': 'C'})
-    try:
-        with common.deferred_signals():
-            with (directory / 'stdout.log').open('x') as stdout, (directory / 'stderr.log').open('x') as stderr:
-                proc = subprocess.Popen(launch_argv, cwd=cwd, env=launch_env, stdout=stdout, stderr=stderr, start_new_session=True)
-            common.save(directory / 'owner.json', {'runnerPid': os.getpid(), 'group': proc.pid, 'argv': launch_argv})
-        record['exit'] = proc.wait(timeout=timeout)
-        require(record['exit'] == 0, name + ' command failed')
-    except BaseException as error:
-        record['errors'].append(repr(error))
-    finally:
-        try:
-            record['cleanup'] = cleanup_process(proc)
-            require(not record['cleanup']['after'] and not record['cleanup']['errors'], 'phase cleanup')
-        except BaseException as error:
-            record['errors'].append('cleanup: ' + repr(error))
+class Phase:
+    """One owned child command: started on construction, accounted when `finish` is called.
+
+    A stage that runs two graphs' proofs side by side starts two of these and finishes each as it
+    ends; `phase` starts and finishes one, as every caller did before. The record a phase writes is
+    the same either way: argv, cwd, bounded timeout, exit, cleanup proof, log digests, status.
+    """
+    def __init__(self, name, argv, cwd, env, out, timeout, construction_time=None):
+        self.name = name
+        self.directory = directory = out / name
+        directory.mkdir()
+        self.record = record = {'name': name, 'argv': argv, 'cwd': str(cwd), 'timeoutSeconds': timeout, 'errors': []}
+        self.proc = None
+        self.timeout = timeout
+        self.construction_time = construction_time
+        launch_argv = argv
+        launch_env = env
         if construction_time is not None:
+            require(name == 'prepare-real64' and '-Xmx4g' in argv and '-XX:ActiveProcessorCount=4' in argv,
+                    'construction capture only for bounded real64 writer')
+            launch_argv = [construction_time, '-v', '-o', str(directory / 'time-v.log'), '--', *argv]
+            launch_env = {**env, 'LC_ALL': 'C'}
+            record.update(launchArgv=launch_argv, environmentOverrides={'LC_ALL': 'C'})
+        self.started = time.monotonic()
+        try:
+            with common.deferred_signals():
+                with (directory / 'stdout.log').open('x') as stdout, (directory / 'stderr.log').open('x') as stderr:
+                    self.proc = subprocess.Popen(launch_argv, cwd=cwd, env=launch_env, stdout=stdout, stderr=stderr, start_new_session=True)
+                common.save(directory / 'owner.json', {'runnerPid': os.getpid(), 'group': self.proc.pid, 'argv': launch_argv})
+        except BaseException as error:
+            record['errors'].append(repr(error))
+
+    def done(self):
+        """Whether `finish` would return without waiting: the child ended, failed to start or timed out."""
+        return (self.proc is None or self.proc.poll() is not None or
+                time.monotonic() - self.started >= self.timeout)
+
+    def finish(self):
+        record = self.record; proc = self.proc; directory = self.directory; name = self.name
+        try:
+            if not record['errors']:
+                record['exit'] = proc.wait(timeout=max(0.0, self.timeout - (time.monotonic() - self.started)))
+                require(record['exit'] == 0, name + ' command failed')
+        except BaseException as error:
+            record['errors'].append(repr(error))
+        finally:
             try:
-                require('exit' in record, 'construction process did not complete')
-                record['constructionResources'] = construction_resources(directory / 'time-v.log', record['exit'])
+                record['cleanup'] = cleanup_process(proc)
+                require(not record['cleanup']['after'] and not record['cleanup']['errors'], 'phase cleanup')
             except BaseException as error:
-                record['errors'].append('construction metrics: ' + repr(error))
-        record['status'] = 'FAIL' if record['errors'] else 'PASS'
-        record['logs'] = {str(p): common.sha(p) for p in directory.glob('*.log')}
-        common.save(directory / 'record.json', record)
-    require(record['status'] == 'PASS', name + ': ' + repr(record['errors']))
-    return record
+                record['errors'].append('cleanup: ' + repr(error))
+            if self.construction_time is not None:
+                try:
+                    require('exit' in record, 'construction process did not complete')
+                    record['constructionResources'] = construction_resources(directory / 'time-v.log', record['exit'])
+                except BaseException as error:
+                    record['errors'].append('construction metrics: ' + repr(error))
+            record['status'] = 'FAIL' if record['errors'] else 'PASS'
+            record['logs'] = {str(p): common.sha(p) for p in directory.glob('*.log')}
+            common.save(directory / 'record.json', record)
+        require(record['status'] == 'PASS', name + ': ' + repr(record['errors']))
+        return record
+
+
+def phase(name, argv, cwd, env, out, timeout, construction_time=None):
+    return Phase(name, argv, cwd, env, out, timeout, construction_time).finish()
 
 
 def fixture_records(root, inputs):

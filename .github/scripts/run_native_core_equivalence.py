@@ -570,6 +570,53 @@ def _graph_output_shape(root):
     return tuple(entries)
 
 
+PHASE_WORKERS=2
+
+
+def phase_dependency(name):
+    """The phase that must have completed before `name` may start, or None.
+
+    A graph's topology proof reads the field bijection its core proof wrote; a raw-local export runs
+    the helper its arm's compile phase produced. Every other phase of a stage is independent.
+    """
+    if name.endswith('-topology') and name!='compile-topology':return name[:-len('-topology')]+'-core'
+    if name.startswith('raw-'):return 'compile-raw-'+name.split('-')[1]
+    return None
+
+
+def run_phases(plan,expected,out,started,completed,workers=PHASE_WORKERS):
+    """Run a stage's phases at most `workers` at a time, each once its dependency has completed.
+
+    Run 915 ran a shard's sixteen phases one at a time, about 1.5 min per graph on a four-core
+    runner whose proof child uses one core and whose JVM is bounded to four; two graphs side by
+    side fit the runner's memory (two 4 GB heaps) and halve the stage. Phases start in the stage's
+    order. A failure starts nothing more: the phases already running finish and are accounted, then
+    the first failure is raised, so the stage still stops at its first failure and a record never
+    names a phase that did not run.
+    """
+    names=[name for name,_,_ in expected];pending=list(expected);running=[];done=set();failure=None
+    while pending or running:
+        while failure is None and pending and len(running)<workers:
+            item=next((item for item in pending if phase_dependency(item[0]) in (None,*done)),None)
+            if item is None:break
+            pending.remove(item);name,argv,timeout=item
+            started(name,names.index(name)+1)
+            running.append((name,producer.Phase(name,argv,PACKAGE.parent,
+                strings.environment(raw_local_export.phase_java(plan,name)),out,timeout)))
+        if not running:
+            if failure is None:require(not pending,'phase dependency never scheduled: '+pending[0][0])
+            break
+        finished=[entry for entry in running if entry[1].done()]
+        if not finished:time.sleep(0.25);continue
+        for entry in finished:
+            running.remove(entry);name,phase=entry
+            try:
+                phase.finish();done.add(name);completed(name)
+            except BaseException as error:
+                if failure is None:failure=error
+    if failure is not None:raise failure
+
+
 def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     """Own one bounded serial stage; distinct workers never write shared receipts."""
     out=Path(plan['output']);is_preparation=rows is None
@@ -584,11 +631,12 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
     try:
         for sig in (signal.SIGINT,signal.SIGTERM):previous[sig]=signal.signal(sig,interrupted)
         artifacts.verify_pins(plan['pins'])
-        for ordinal,(name,argv,timeout) in enumerate(expected,1):
+        refs={};results={}
+        def started(name,ordinal):
             progress('phase','start',phase=name,ordinal=ordinal,total=len(expected),
                      completedGraphs=len(record.get('graphs',[])))
-            producer.phase(name,argv,PACKAGE.parent,strings.environment(raw_local_export.phase_java(plan,name)),out,timeout)
-            record['phases'].append(artifacts.ref(out/name/'record.json'))
+        def completed(name):
+            refs[name]=artifacts.ref(out/name/'record.json')
             if not is_preparation and name.endswith('-topology'):
                 row=next(row for row in rows if row['id']==name[:-len('-topology')])
                 result=graph_result(plan,row)
@@ -596,10 +644,14 @@ def execute_stage(plan,expected,path,rows=None,_input_authority=None):
                 require({name for name,kind in shape if kind=='file'}==set(result['files']),
                         'completed graph file inventory changed')
                 # Only this invocation owns the frozen successful semantic result.
-                completed_graphs.append((root,json.dumps(result,sort_keys=True),shape))
-                record['graphs'].append(result)
+                results[row['id']]=(result,(root,json.dumps(result,sort_keys=True),shape))
+                record['graphs']=[results[row['id']][0] for row in rows if row['id'] in results]
+                completed_graphs[:]=[results[row['id']][1] for row in rows if row['id'] in results]
+            # Receipts keep the stage's order whatever order the phases ended in.
+            record['phases']=[refs[name] for name,_,_ in expected if name in refs]
             path.write_text(json.dumps(record,indent=2)+'\n')
             progress('phase','complete',phase=name,completedGraphs=len(record.get('graphs',[])))
+        run_phases(plan,expected,out,started,completed)
         checked_phases(plan,record['phases'],expected)
         if is_preparation:record['files']=preparation_files(plan)
         else:

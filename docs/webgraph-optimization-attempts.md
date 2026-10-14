@@ -21354,3 +21354,27 @@ unusable location, both pinned helpers routed), and the seven checkpoint suites 
 without the cache set, all passing. Expected per job: the shard's non-proof time falls from ~37 to
 ~15 min (the extraction itself remains), core-prepare, the merge and every consumer gate lose their
 re-hash passes; roughly an hour off the critical path. The first run with the cache measures it.
+
+### Attempt294 — two graphs' proofs at a time in a shard, two raw-local exports at a time in core-prepare (2026-10-14)
+
+Run 915's shard logs: the sixteen phases of a shard ran one at a time, about 1–1.8 min per graph's
+`check_graph` child (one Python process, one core) followed by its `VerifyTopology` JVM, on a
+four-core, 16 GB runner; core-prepare's eight raw-local exports (one JVM each, ~1.1 min) ran the
+same way. `producer.phase` is now a `Phase` that is started on construction and accounted by
+`finish()` (`phase()` does both, and writes the same record: argv, cwd, timeout, exit, cleanup
+proof, log digests, status). `run_phases` runs a stage's phases at most `PHASE_WORKERS` (2) at a
+time, in the stage's order, each after the phase it depends on (`phase_dependency`: a topology
+proof after its graph's core proof, a raw export after its arm's compile); two 4 GB heaps fit the
+runner. A failure starts nothing more: the phases already running finish and are accounted, then
+the first failure is raised, so a stage still stops at its first failure and a record never names
+a phase that did not run. Receipts and graph results are kept in the stage's order whatever order
+the phases ended in (`checked_phases` and the shard record's graph order are unchanged). The
+single-process `execute` keeps running one phase at a time.
+
+Tests: the scheduler's order, worker bound, dependency wait and stop-after-failure
+(`PhaseSchedulerTests`); the two shard tests that fixed a failure's position moved to the
+concurrent order (the failing phase is now the second graph's topology, which ends after the first
+graph completed, so the final check still catches the mutation of a completed graph); the fakes
+start phases through `producer.Phase`. Expected: the shard's proof time halves (12 → ~6–7 min; the
+slowest shard of run 915 ran 42 min of phases) and core-prepare's export step drops from ~9 to ~5
+min, both on the critical path.

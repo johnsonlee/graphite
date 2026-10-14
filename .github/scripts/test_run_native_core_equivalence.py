@@ -242,6 +242,13 @@ class LifecycleTests(unittest.TestCase):
         p=patch.object(r.sys,'stderr',self.progress);p.start();self.addCleanup(p.stop)
         p=patch.object(r,'rebind',side_effect=lambda plan:copy.deepcopy(self.plan));p.start();self.addCleanup(p.stop)
         p=patch.object(r.producer,'phase',side_effect=self.phase);p.start();self.addCleanup(p.stop)
+        fixture=self
+        class FakePhase:
+            def __init__(self,name,argv,cwd,env,out,timeout):self.args=(name,argv,cwd,env,out,timeout);fixture.started.append(name)
+            def done(self):return True
+            def finish(self):return r.producer.phase(*self.args)
+        self.started=[]
+        p=patch.object(r.producer,'Phase',FakePhase);p.start();self.addCleanup(p.stop)
         p=patch('subprocess.Popen',side_effect=AssertionError('no subprocess permitted'));p.start();self.addCleanup(p.stop)
 
     def events(self,stage,event):
@@ -514,7 +521,9 @@ class ShardLifecycleTests(unittest.TestCase):
         r.prepare(self.plan);self.f.failed_phase='fixture-00-core'
         failed=r.run_shard(self.out,0,8)
         self.assertEqual('FAIL',failed['status']);self.assertEqual([],failed['graphs'])
-        self.assertEqual(2,len(self.f.calls))
+        # Two graphs' core proofs were running when the first failed; nothing started after it.
+        assigned=r.shard_rows(self.plan,0)
+        self.assertEqual(['compile-topology',assigned[0]['id']+'-core',assigned[1]['id']+'-core'],[call[0] for call in self.f.calls])
         self.f.failed_phase=None
         for index in range(1,8):self.worker(index,8)
         with self.assertRaisesRegex(ValueError,'successful shard'):r.join_shards(self.out,8)
@@ -803,7 +812,7 @@ class ShardTerminalReuseTests(unittest.TestCase):
 
     def test_partial_phase_failure_still_fresh_checks_completed_outputs(self):
         case=self.fixture();original=case.f.phase;assigned=r.shard_rows(case.plan,0)
-        failed=assigned[1]['id']+'-core'
+        failed=assigned[1]['id']+'-topology'  # ends after the first graph's proof completed
         def phase(*args):
             if args[0]==failed:
                 (case.out/'graphs'/assigned[0]['id']/'core/field-bijection.tsv').write_bytes(b'MAPPING')
@@ -816,6 +825,49 @@ class ShardTerminalReuseTests(unittest.TestCase):
         self.assertTrue(any('output bytes changed' in error for error in result['errors']))
         self.assertEqual(result,r.common.read(case.out/'shards/0/record.json'))
         self.assertFalse((case.out/'shards/0/audit.json').exists())
+
+
+class PhaseSchedulerTests(unittest.TestCase):
+    def test_dependencies_name_the_core_proof_and_the_arm_compile(self):
+        self.assertIsNone(r.phase_dependency('compile-topology'));self.assertIsNone(r.phase_dependency('compile-raw-C'))
+        self.assertEqual('fixture-kotlin-compiler-04-core',r.phase_dependency('fixture-kotlin-compiler-04-topology'))
+        self.assertEqual('compile-raw-B',r.phase_dependency('raw-B-kotlin-compiler'))
+        self.assertIsNone(r.phase_dependency('fixture-00-core'))
+
+    def test_two_phases_run_at_a_time_in_order_after_their_dependency_and_a_failure_starts_nothing_more(self):
+        events=[];polls={}
+        class Fake:
+            def __init__(self,name,argv,cwd,env,out,timeout):
+                self.name=name;events.append(('start',name));polls[name]=0
+                self.assertion=(argv,cwd,env,out,timeout)
+            def done(self):polls[self.name]+=1;return polls[self.name]>=2
+            def finish(self):
+                events.append(('finish',self.name))
+                if self.name=='g1-core':raise ValueError('boom '+self.name)
+        names=('compile-topology','g0-core','g0-topology','g1-core','g1-topology','g2-core','g2-topology')
+        expected=[(name,['argv',name],7) for name in names];plan={'java':'/jdk/bin/java'};sleeps=[]
+        with patch.object(r.producer,'Phase',Fake),patch.object(r.strings,'environment',lambda java:{'JAVA':java}), \
+                patch.object(r.time,'sleep',sleeps.append):
+            with self.assertRaisesRegex(ValueError,'boom g1-core'):
+                r.run_phases(plan,expected,Path('/out'),lambda name,ordinal:events.append(('started',name,ordinal)),
+                             lambda name:events.append(('completed',name)))
+        self.assertEqual([('started','compile-topology',1),('start','compile-topology'),('started','g0-core',2),('start','g0-core'),
+                          ('finish','compile-topology'),('completed','compile-topology'),('finish','g0-core'),('completed','g0-core'),
+                          ('started','g0-topology',3),('start','g0-topology'),('started','g1-core',4),('start','g1-core'),
+                          ('finish','g0-topology'),('completed','g0-topology'),('finish','g1-core')],events)
+        self.assertEqual([0.25,0.25],sleeps,'one wait per pair of running phases')
+        self.assertEqual(2,r.PHASE_WORKERS)
+
+    def test_every_phase_completes_in_stage_order_when_none_fails(self):
+        order=[]
+        class Fake:
+            def __init__(self,name,argv,cwd,env,out,timeout):self.name=name
+            def done(self):return True
+            def finish(self):order.append(self.name)
+        names=['compile-topology','compile-raw-C','compile-raw-B','raw-C-android','raw-C-tika','raw-B-android','raw-B-tika']
+        with patch.object(r.producer,'Phase',Fake),patch.object(r.strings,'environment',lambda java:{}):
+            r.run_phases({'java':'/j'},[(n,[],1) for n in names],Path('/out'),lambda n,o:None,order.append)
+        self.assertEqual([n for n in names for _ in (0,1)][:0]+[x for pair in zip(names,names) for x in pair],order)
 
 
 class FreshPreparationTests(unittest.TestCase):

@@ -113,7 +113,11 @@ class WorkerInputTests(unittest.TestCase):
         def phase(*args):
             directory=output/'owned';directory.mkdir();(directory/'record.json').write_text('{}')
             (f.root/'marker/changed-during-phase').mkdir()
-        with patch.object(r.producer,'phase',side_effect=phase),patch.object(r,'checked_phases'), \
+        class FakePhase:  # the stage starts phases through producer.Phase and finishes each as it ends
+            def __init__(self,*args):self.args=args
+            def done(self):return True
+            def finish(self):return phase(*self.args)
+        with patch.object(r.producer,'Phase',FakePhase),patch.object(r,'checked_phases'), \
                 patch.object(r,'check_preparation'),patch.object(r,'check_worker_graphs'), \
                 patch.object(r.raw_local_export,'phase_java',return_value='/java'):
             result=r.execute_stage(plan,[('owned',[],10)],receipt,[],authority)
