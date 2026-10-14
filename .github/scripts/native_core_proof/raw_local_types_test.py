@@ -89,6 +89,26 @@ class RawLocalTests(unittest.TestCase):
         other_base.observe(local('byte[]'),M[:2]+['(I)[B']);other_base.observe(local('int[]'),M[:2]+['(I)[B'])
         self.assertEqual((2,0),(other_base.finish()['arrayCount'],other_base.finish()['unprovedCount']))
         self.assertEqual(['(I)[[B','(I)[[[B'],[row['rawMethods']['B'][2] for row in other_base.rows])
+        # Non-array locals of the same name are attributed by their rendering too (run 910: cloneArray's
+        # $stack4 is a NullPointerException in one body and an int in the other).
+        def scalar(arm,rows,raw,witness=None):
+            rows[1]=copy.deepcopy(rows[1]);rows[1]['locals']['$stack4'][0]['type']={'kind':'class','name':'owner.First'}
+            twin(arm,rows,raw,witness)
+        pair=self.authority(mutate=lambda arm,rows:scalar(arm,rows,{'kind':'class','name':'owner.Second'}),source_authority=flat)
+        pair.observe(local('owner.Second'),M[:2]+['(I)[B']);pair.observe(local('owner.First'),M[:2]+['(I)[B'])
+        self.assertEqual(0,pair.finish()['unprovedCount'])
+        self.assertEqual(['(I)[[[B','(I)[[B'],[row['rawMethods']['B'][2] for row in pair.rows])
+        # A typed allocation of a non-array local never carries a creation proof, so it does not block.
+        allocated=self.authority(mutate=lambda arm,rows:scalar(arm,rows,{'kind':'class','name':'owner.Alloc'},witness=True),source_authority=flat)
+        allocated.observe(local('owner.Alloc'),M[:2]+['(I)[B']);allocated.observe(local('owner.First'),M[:2]+['(I)[B'])
+        self.assertEqual(0,allocated.finish()['unprovedCount'])
+        # The single body rendering the persisted array is its witness, whatever another body allocates into
+        # a local of the same name (run 910: AbstractSimplex.<init>'s $stack18 is a new ZeroException in the
+        # double[] overload and a row of the matrix in the double[][] one).
+        beside=self.authority(mutate=lambda arm,rows:twin(arm,rows,{'kind':'class','name':'owner.Alloc'},witness=True),source_authority=flat)
+        beside.observe(local('byte[]'),M[:2]+['(I)[B']);beside.observe(local('owner.Alloc'),M[:2]+['(I)[B'])
+        report=beside.finish();self.assertEqual((1,0),(report['arrayCount'],report['unprovedCount']))
+        self.assertEqual(['(I)[[B','(I)[[[B'],[row['rawMethods']['B'][2] for row in beside.rows])
         # A body whose raw type is no array is checked only for not being persisted as one, as uncollided.
         untyped=self.authority(mutate=lambda arm,rows:twin(arm,rows,{'kind':'unsupported','runtimeClass':'sootup.core.types.UnknownType'}),source_authority=flat)
         untyped.observe(local('unknown'),M[:2]+['(I)[B']);untyped.observe(local('byte[]'),M[:2]+['(I)[B'])

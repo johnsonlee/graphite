@@ -254,11 +254,13 @@ class Authority:
         """The raw export row for a persisted local's method. A rank-preserving writer's method key
         is the exact JVM descriptor; a flat writer's key folds every array to one rank, so it is
         matched through the same fold. Overloads that differ only in rank share the folded key and
-        every body persists its locals under it, so the proof for a flat writer asserts that the
-        persisted type is the flat rendering of the raw type in one of those bodies: the body whose
-        rendering of the local matches is the witness, and a local that no body renders to the
-        persisted type, or one whose attribution would carry a typed-allocation creation proof, is
-        ambiguous."""
+        every body persists its locals under it, so the proof for a flat writer attributes the
+        persisted local to the body that renders it to the persisted type: a persisted row is one
+        body's rendering of its local, so a single body rendering to it is the witness, whatever
+        another body allocates into a local of the same name. Several bodies rendering to it are
+        told apart only when no creation proof depends on the choice: an array local that one of
+        them allocates is ambiguous. A local that no body renders to the persisted type is
+        ambiguous too."""
         key = tuple(method)
         if not self.flat:
             return self.methods[arm].get(key), None
@@ -269,23 +271,32 @@ class Authority:
         first = holders[0]
         if all(local_view(row, name) == local_view(first, name) for row in holders):
             return first, None
-        matching = [row for row in holders if self.body_accepts(row, name, saved)]
-        if matching and not any(row['typedAllocations'].get(name) for row in holders):
+        matching = self.rendering_bodies(holders, name, saved)
+        if len(matching) == 1:
+            return matching[0], None
+        # A creation proof is only ever required for an array local (needs_creation_proof), so a
+        # typed allocation in a matching body blocks the choice only when the local is an array.
+        array_local = saved.endswith('[]') or any(
+            v['type'].get('kind') == 'array' for row in matching for v in row['locals'][name])
+        if matching and not (array_local and any(row['typedAllocations'].get(name) for row in matching)):
             return matching[0], None
         return None, 'flat method key ambiguous among raw overloads'
 
     @staticmethod
-    def body_accepts(row, name, saved):
-        """Whether observing the local against this body alone would raise no issue: a raw array must
-        render to the persisted type, and a raw non-array is checked only for not being persisted
-        as an array (the same scope the uncollided proof has)."""
-        types = {json.dumps(flat_type(v['type']), sort_keys=True) for v in row['locals'][name]}
-        if len(types) != 1:
-            return False
-        raw = json.loads(next(iter(types)))
-        if raw.get('kind') == 'array':
-            return render_saved(raw, True) == saved
-        return not saved.endswith('[]')
+    def rendering_bodies(holders, name, saved):
+        """The bodies whose flat rendering of the local is the persisted type; failing any, the bodies
+        observing the local against which alone would raise no issue: a raw non-array is checked only
+        for not being persisted as an array (the uncollided proof's scope)."""
+        raw = {}
+        for row in holders:
+            types = {json.dumps(flat_type(v['type']), sort_keys=True) for v in row['locals'][name]}
+            if len(types) == 1:
+                raw[id(row)] = json.loads(next(iter(types)))
+        exact = [row for row in holders if id(row) in raw and render_saved(raw[id(row)], True) == saved]
+        if exact:
+            return exact
+        return [row for row in holders if id(row) in raw and raw[id(row)].get('kind') != 'array'
+                and not saved.endswith('[]')]
 
     def observe(self, canonical, method):
         node, name, actual, _, _ = local_slot(canonical)

@@ -21146,3 +21146,22 @@ writer persists as `unknown` where one body's raw type is `boolean` and the othe
 judged by the uncollided proof's own scope (`body_accepts`: a raw array must render to the
 persisted type, a raw non-array only must not be persisted as an array), and all four graphs'
 unproved rows replay clean.
+
+Run 910 (36628ee) failed seven of the eight A shards on one more shape of the same collision: a
+typed allocation into a same-name local of the *other* body. `AbstractFieldMatrix.extractField`
+allocates `new NoDataException()` into `$stack5`, `FastMathCalc.printarray` a `StringBuilder` into
+`$stack15`, `AbstractSimplex.<init>(double[])` a `ZeroException` into `$stack18` while
+`<init>(double[][])` holds a row of the matrix in it, `XMSSUtil.cloneArray(byte[])` a
+`NullPointerException` into a `$stack4` that is an `int` in `cloneArray(byte[][])`, and
+`FixedSecureRandom.<init>(byte[])` a `Data` into a `$stack2` that is `Data[]` in the other
+overload. The 908 rule refused any attribution while a holder of the name had a typed allocation,
+so every such persisted local, array or not, was ambiguous. A persisted row is one body's rendering
+of its local, so the body whose rendering matches the persisted type is the witness whatever
+another body allocates into a local of the same name; a creation proof is only ever required for
+an array local (`needs_creation_proof`), so a typed allocation blocks the choice only when several
+bodies render to the persisted type, the local is an array, and one of them allocates it
+(`rendering_bodies`: exact renderings first, the uncollided non-array scope as the fallback).
+Replaying the kept rows of fixture-tika-07, -08 and -11 (the 14 unproved among 349k) through the
+patched authority against the extracted exports leaves none unproved, the `double[]` and `Data[]`
+rows now `PASS_ARRAY`. Shard A,4 passed in the same run; `rust-jvm-correctness (A)` ran for the
+first time past the thirty minutes earlier pushes had allowed it.
