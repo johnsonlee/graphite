@@ -4384,7 +4384,7 @@ jobs:
         if node "${COMPARATOR}" compare-rust-latency \
           --base benchmark-results/base-rust.json \
           --candidate benchmark-results/candidate-rust.json \
-          --threshold 15 --minimum 1 "${RESPONSE_ARGS[@]}" \
+          --threshold 15 --minimum 5 "${RESPONSE_ARGS[@]}" \
           --report benchmark-results/initial-rust-latency-report.md \
           --status benchmark-results/initial-rust-latency-status.json; then
           mv benchmark-results/initial-rust-latency-report.md benchmark-results/rust-latency-report.md
@@ -4409,7 +4409,7 @@ jobs:
             --initial benchmark-results/initial-rust-latency-status.json \
             --base benchmark-results/base-rust-confirmation.json \
             --candidate benchmark-results/candidate-rust-confirmation.json \
-            --threshold 15 --minimum 1 "${RESPONSE_ARGS[@]}" \
+            --threshold 15 --minimum 5 "${RESPONSE_ARGS[@]}" \
             --report benchmark-results/rust-latency-report.md \
             --status benchmark-results/rust-latency-status.json
         fi
