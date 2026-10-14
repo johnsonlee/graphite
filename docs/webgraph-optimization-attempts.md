@@ -21436,3 +21436,34 @@ interval test covers INDETERMINATE/FAIL/PASS, the collision test covers one cell
 and both (FAIL); the gate renders `p50` counts and a table of its non-PASS cases and the collision
 bound's two cells. CLAUDE.md records the approval; the controls and the workflow's six gate digests
 are re-pinned.
+
+### Attempt297 — the baseline's and the parent's products are cached across runs (2026-10-14)
+
+User instruction: "把 baseline 和 main 的产物缓存起来，key 用 ${name}-v${n}-{ref}，baseline 的 ref 用 commit
+短 sha，main 就用分支名". The accepted baseline (4f2ccf3) and the PR's parent (main) do not change
+between runs of one PR, yet every run rebuilt both arms: gradle and cargo builds of the revision, its
+64 graphs with its own writer, the query-correctness run; 15–24 min per arm on the hosted runner.
+
+`rust-producer-arm` now restores `fixture64-producer-arm-<arm>-v<n>-<ref>` from the Actions cache
+for arms C (`<ref>` = `4f2ccf3`) and A (`<ref>` = the base branch name, `main`), never for B. A hit
+is trusted only when `fixture64_arm_cache.py check` finds this run's inputs unchanged against the
+identity recorded beside the products: the revision and role the packet names, the candidate's
+preparation controls digest (the scripts that produced and audited the arm), the digests of
+`source-inputs.json`, `portable-expectations.json` and `producer-common.json`, the versions the
+toolchain paths answer with (a path keeps its name across versions), the workspace (the products
+record absolute paths), and the presence of the products and the checkout's built jars. A stale
+entry (main moved, the scripts changed, the image's toolchain changed) is deleted with `gh cache
+delete` (the job gains `actions: write`), the arm is rebuilt and saved again; `v<n>`
+(`FIXTURE64_ARM_CACHE_VERSION`) retires every entry at once. The cached paths are the arm's
+evidence as the checkpoint collects it (root files, `runtime`, `graphs`, `query-correctness`,
+`core-string-exports`, the seven phase directories, the built binary under `native-target`) plus
+the checkout's `*-jmh.jar` and `graphite.jar`, which the arm's packet pins; the cargo target and
+gradle home directories are not cached. Compressed, an arm is about 1 GB of the repository's 10 GB
+cache. The sealing, the checkpoint identity and every consumer are unchanged: a restored arm is
+sealed into this run's checkpoint like a built one.
+
+The cache saves machine time, not wall time: the three arms build in parallel and the candidate's
+arm (16–22 min) still bounds the stage. Tests: `test_fixture64_arm_cache` (identity contents,
+every changed input named, moved revision, missing products or jars, CLI round trip) and the
+workflow test's new case (key, refs, conditions, identical restore and save paths, the candidate
+excluded). The build step keeps its script, so the dispatch test still runs it unchanged.

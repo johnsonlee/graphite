@@ -138,5 +138,32 @@ class ProducerWorkflowTests(unittest.TestCase):
                                         'native-pressure-artifacts/'+arm in call for call in calls))
 
 
+    def test_baseline_and_parent_products_are_cached_by_name_version_and_ref_never_the_candidate(self):
+        arm = self.job('rust-producer-arm')
+        self.assertIn("      actions: write\n", arm)
+        self.assertIn("FIXTURE64_ARM_CACHE_VERSION: '1'", arm)
+        self.assertIn('echo "key=fixture64-producer-arm-${CHECKPOINT_ARM}-v${FIXTURE64_ARM_CACHE_VERSION}-${REF}"', arm)
+        self.assertIn('C) REF="${ACCEPTED_SHA:0:7}"', arm)
+        self.assertIn('A) REF="${BASE_REF}"', arm)
+        self.assertIn('BASE_REF: ${{ github.event.pull_request.base.ref }}', arm)
+        for step in ('Resolve the cached products key', 'Restore the cached products', 'Validate the restored products',
+                     'Record the identity of the products', 'Save the baseline or parent arm products'):
+            self.assertIn(step, arm)
+        restore = arm.split('    - name: Restore the cached products of the baseline or parent arm\n')[1].split('\n    - name:')[0]
+        save = arm.split('    - name: Save the baseline or parent arm products for later runs\n')[1].split('\n    - name:')[0]
+        self.assertIn("if: matrix.arm != 'B'\n", restore)
+        self.assertIn("if: matrix.arm != 'B' && steps.arm-cache-check.outputs.valid != 'true'\n", save)
+        self.assertIn('continue-on-error: true', save)
+        paths = lambda body: [line.strip() for line in body.split('path: |\n')[1].splitlines() if line.startswith('          ')]
+        self.assertEqual(paths(restore), paths(save))
+        self.assertIn('native-pressure-artifacts/${{ matrix.arm }}/graphs', paths(restore))
+        self.assertIn('${{ steps.arm-cache-key.outputs.checkout }}/frontend/jvm/query/build/libs/graphite.jar', paths(restore))
+        build = arm.split('    - name: Build one exact-revision runtime and its own real64 graphs\n')[1].split('\n      run:')[0]
+        self.assertIn("if: matrix.arm == 'B' || steps.arm-cache-check.outputs.valid != 'true'", build)
+        self.assertIn('gh cache delete "${CACHE_KEY}"', arm)
+        self.assertIn('fixture64_arm_cache.py check', arm)
+        self.assertIn('fixture64_arm_cache.py identity', arm)
+
+
 if __name__ == '__main__':
     unittest.main()
