@@ -933,9 +933,13 @@ def _restore_chain(args, entries):
     authority.preflight = False
     _chain_progress('preflight', 'complete', checkpoints=len(entries))
     for entry in entries:
-        _chain_progress('restore', 'start', stage=entry.stage, shardIndex=entry.shard_index)
+        # Free workspace bytes travel with the events: a chain that outgrows the hosted runner's disk
+        # (run 911 restored a 93 GB closure) must say so at the entry where it did, not only by an ENOSPC.
+        _chain_progress('restore', 'start', stage=entry.stage, shardIndex=entry.shard_index,
+                        freeBytes=shutil.disk_usage(workspace).free)
         restore(entry, authority)
-        _chain_progress('restore', 'complete', stage=entry.stage, shardIndex=entry.shard_index)
+        _chain_progress('restore', 'complete', stage=entry.stage, shardIndex=entry.shard_index,
+                        freeBytes=shutil.disk_usage(workspace).free)
     # Validate each inventory while reading each unique file exactly once at the
     # final boundary. A fresh authority cannot reuse an intermediate digest.
     _chain_progress('final-verification', 'start', uniqueFiles=len(prior_files))

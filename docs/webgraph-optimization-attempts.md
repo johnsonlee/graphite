@@ -21165,3 +21165,26 @@ Replaying the kept rows of fixture-tika-07, -08 and -11 (the 14 unproved among 3
 patched authority against the extracted exports leaves none unproved, the `double[]` and `Data[]`
 rows now `PASS_ARRAY`. Shard A,4 passed in the same run; `rust-jvm-correctness (A)` ran for the
 first time past the thirty minutes earlier pushes had allowed it.
+
+Run 911 (7a9b13b) passed all sixteen core shards and both `rust-core` joins, the first complete
+A-arm proof chain, and then failed every consumer gate (`rust-loading`, `rust-query-native`,
+`rust-construction`) in the same place: `restore-consumer-chain` ran out of disk restoring the
+second core checkpoint (`OSError: [Errno 28] No space left on device`). The consumer chain is the
+producer checkpoint plus one core checkpoint per non-accepted arm, and the rebase made that two.
+The manifests give the footprint: the producer payload is 41.1 GB (four copies of the 64 graphs:
+`shared-fixture64` and arms C, A, B at ~10 GB each), core A 27.5 GB and core B 24.8 GB, 93.5 GB
+in all, where the last run whose loading gate passed (b7e0e5b, one core arm) restored 55.7 GB.
+Of the core checkpoints, 30.7 GB are the per-node `raw-local-type-proof.json` reports (227 MB per
+tika graph) and 20.5 GB the raw local exports (`fixture-*.jsonl`, ~65–250 MB each); the rest of a
+core checkpoint is under 1 GB. Both are JSON that gzips 13–20× (a 227 MB report to 10.6 MB at
+level 1, a 66 MB export to 5.1 MB). Hardlinking byte-identical files at restore was measured
+(28 GB of the chain is duplicated content, 25 GB of it arm graphs identical to `shared-fixture64`)
+and rejected: the JVM reader rewrites files beside a graph in place (`DeclaredTypeStore`,
+`GraphStore` properties), so aliasing one arm's directory into another's would let a consumer
+alter a sibling arm's input. The exporter now gzips its JSON lines (`<id>.jsonl.gz`;
+`GZIPOutputStream` writes a zero mtime) and the proof writer its report
+(`raw-local-type-proof.json.gz`, `mtime=0`); the readers (`raw_local_types.load`,
+`multigraph_pressure.read`) decompress on the gzip magic, so a pin stays a digest of the file's
+bytes, and the restore progress events now carry the workspace's free bytes so a chain that
+outgrows the runner says where. Expected core consumer chain: about 45 GB restored plus 7 GB of
+downloaded archives, against the 60 GB that passed before.

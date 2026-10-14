@@ -1,5 +1,6 @@
 """CLI-to-Authority correctness; unrelated node/source checks use test doubles."""
 import contextlib
+import gzip
 import json
 from pathlib import Path
 import unittest
@@ -30,7 +31,7 @@ class RawLocalCliTests(unittest.TestCase):
                 f"{spec['graphId']}\t{spec['shardBytecodeSha256']}\t{spec['classCount']}\n")
             plan['pins'][str(provenance)] = raw.sha(provenance)
             plan['rawLocalExports'].append({'arm': arm, 'corpus': 'test', 'provenance': str(provenance)})
-            target = output/'raw-locals'/('raw-'+arm+'-test')/(row['id']+'.jsonl')
+            target = output/'raw-locals'/('raw-'+arm+'-test')/(row['id']+'.jsonl.gz')
             target.parent.mkdir(parents=True); target.write_bytes(Path(ref['path']).read_bytes())
         path = root/'plan.json'; path.write_text(json.dumps(plan))
         return declaration, plan, row, path
@@ -75,7 +76,7 @@ class RawLocalCliTests(unittest.TestCase):
                 saved = json.loads((proof/'record.json').read_text())
                 self.assertTrue(saved['status'].startswith('PASS_CORE_'))
                 self.assertFalse(saved['strictEquivalence'])
-                self.assertEqual(json.loads((proof/'core/raw-local-type-proof.json').read_text()), expected_report)
+                self.assertEqual(json.loads(gzip.decompress((proof/'core/raw-local-type-proof.json.gz').read_bytes())), expected_report)
             else:
                 message = 'duplicate raw export JSON key' if mode == 'malformed' else 'raw Local export pin'
                 with self.assertRaisesRegex(ValueError, message): check.main()

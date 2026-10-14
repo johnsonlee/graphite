@@ -273,7 +273,7 @@ def graph_result(plan,row):
             'declaration table presence must match the actual writer renderer')
     if 'rawLocalExports' in plan:
         expected=raw_local_export.binding(plan,row)
-        report=common.read(root/'core/raw-local-type-proof.json')
+        report=common.read(root/'core/raw-local-type-proof.json.gz')
         require(report['status']=='PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE' and report['completeNodeInventory'] is True and report['unprovedCount']==0,'all persisted raw Local proof')
         require(all(report[k] is False for k in ('strictEquivalence','completeSemanticEquivalence','performanceAcceptance')) and
                 all(item['graphId']==row['id'] for item in report['occurrences']) and len(report['inputs'])==2,

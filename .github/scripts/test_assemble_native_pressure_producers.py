@@ -383,7 +383,7 @@ class CorrectedComparisonTests(unittest.TestCase):
         for c,b in zip(arms['C']['graphs'],arms['B']['graphs']):
             rows.append({'id':c['id'],'C':c['path'],'B':b['path']})
             inputs = [put('raw/'+c['id']+'-'+arm+'.json', {'raw':arm}) for arm in ('C','B')]
-            raw = put('proof/graphs/'+c['id']+'/core/raw-local-type-proof.json', {
+            raw = put('proof/graphs/'+c['id']+'/core/raw-local-type-proof.json.gz', {
                 'status':'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE','completeNodeInventory':True,'unprovedCount':0,
                 'strictEquivalence':False,'completeSemanticEquivalence':False,'performanceAcceptance':False,
                 'localCount':1,'arrayCount':1,'occurrences':[{'graphId':c['id'],'status':'PASS_ARRAY','issues':[]}],
@@ -437,7 +437,7 @@ class CorrectedComparisonTests(unittest.TestCase):
     def test_audited_allocation_classification_is_bound_without_array_or_global_promotion(self):
         # This adapter test stubs upstream replay; the real creation proof and
         # source closure are exercised through graph_result in raw_local_types_test.
-        path=self.root/'proof/graphs/g00/core/raw-local-type-proof.json';value=bundle.common.read(path)
+        path=self.root/'proof/graphs/g00/core/raw-local-type-proof.json.gz';value=bundle.common.read(path)
         value.update(arrayCount=0,typedAllocationCount=1)
         value['occurrences'][0]['status']='PASS_TYPED_ALLOCATION'
         self.repin(path,value);self.audit['graphs'][0]['files'][str(path)]=bundle.common.sha(path)
@@ -465,7 +465,7 @@ class CorrectedComparisonTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'actual raw Local phases'):self.check()
 
     def test_changed_or_unbound_raw_proof_never_qualifies(self):
-        path = self.root/'proof/graphs/g00/core/raw-local-type-proof.json'
+        path = self.root/'proof/graphs/g00/core/raw-local-type-proof.json.gz'
         original = path.read_bytes(); original_audit = copy.deepcopy(self.audit)
         for change in ('bytes', 'missing-pin', 'receipt-digest'):
             self.audit = copy.deepcopy(original_audit); path.write_bytes(original)
@@ -478,7 +478,7 @@ class CorrectedComparisonTests(unittest.TestCase):
     def test_consumption_does_not_parse_already_audited_local_occurrences(self):
         read = bundle.common.read
         def metadata_only(path):
-            if Path(path).name == 'raw-local-type-proof.json':
+            if Path(path).name == 'raw-local-type-proof.json.gz':
                 raise AssertionError('independent worker already parsed these occurrences')
             return read(path)
         with patch.object(bundle.common, 'read', side_effect=metadata_only):

@@ -307,6 +307,16 @@ class PressureTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 p.parse(raw)
 
+    def test_read_decompresses_gzip_evidence_on_its_magic_only(self):
+        import gzip
+        with tempfile.TemporaryDirectory() as tmp:
+            plain = Path(tmp) / 'a.json'; plain.write_bytes(b'{"x":[1,2]}')
+            zipped = Path(tmp) / 'a.json.gz'; zipped.write_bytes(gzip.compress(b'{"x":[1,2]}', mtime=0))
+            self.assertEqual(p.read(plain), p.read(zipped))
+            self.assertNotEqual(p.sha(plain), p.sha(zipped))
+            # The sniff is the reader's: the strict parser itself takes no compressed bytes.
+            with self.assertRaises(ValueError): p.parse(gzip.compress(b'{}'))
+
     def test_inline_validation_is_in_latency_and_every_case_has_20_samples(self):
         clock = Clock()
         def validate(raw, case):

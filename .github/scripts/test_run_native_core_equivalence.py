@@ -302,16 +302,16 @@ class LifecycleTests(unittest.TestCase):
         exports={arm:{'path':name,'sha256':digest} for arm,(name,digest) in zip(('C','B'),report['inputs'].items())}
         flat={**self.plan,'rawLocalExports':[],'formatterKinds':{'C':'legacy-flat','B':'legacy-flat'}}
         with patch.object(r.raw_local_export,'binding',return_value={'exports':exports}):
-            (proof/'core/raw-local-type-proof.json').write_text(json.dumps(report))
+            (proof/'core/raw-local-type-proof.json.gz').write_text(json.dumps(report))
             self.assertEqual(row['id'],r.graph_result(flat,row)['id'])
-            report['flatRendering']=False;(proof/'core/raw-local-type-proof.json').write_text(json.dumps(report))
+            report['flatRendering']=False;(proof/'core/raw-local-type-proof.json.gz').write_text(json.dumps(report))
             with self.assertRaisesRegex(ValueError,'renderer differs'):r.graph_result(flat,row)
 
     def test_raw_local_scope_and_claims_are_part_of_independent_graph_audit(self):
         second=self.root/'second-input';second.write_text('second exact raw export')
         self.plan['pins'][str(second)]=r.common.sha(second);r.execute(self.plan)
         plan={**self.plan,'rawLocalExports':[]};row=plan['graphs'][0]
-        path=self.out/'graphs'/row['id']/'core/raw-local-type-proof.json'
+        path=self.out/'graphs'/row['id']/'core/raw-local-type-proof.json.gz'
         report={'status':'PASS_ALL_PERSISTED_ARRAY_LOCALS_RAW_TYPE','completeNodeInventory':True,'unprovedCount':0,
                 'strictEquivalence':False,'completeSemanticEquivalence':False,'performanceAcceptance':False,
                 'localCount':1,'arrayCount':0,'occurrences':[{'graphId':row['id'],'status':'NON_ARRAY','issues':[],

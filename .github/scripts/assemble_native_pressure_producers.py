@@ -181,7 +181,7 @@ def corrected_comparison(packet, arm_id, path):
     raw_refs = []
     for c, b, row, receipt in zip(arms['C']['graphs'], arms[arm_id]['graphs'], plan['graphs'], actual['graphs']):
         require(row['C'] == c['path'] and row['B'] == b['path'], 'comparison actual graph roots')
-        raw = artifacts.ref(path.parent / 'graphs' / row['id'] / 'core/raw-local-type-proof.json')
+        raw = artifacts.ref(path.parent / 'graphs' / row['id'] / 'core/raw-local-type-proof.json.gz')
         # The independent graph/shard auditor checks every occurrence and its
         # source linkage. Consume only that exact byte closure here; rereading
         # the complete Local transcript at every downstream handoff repeats it.

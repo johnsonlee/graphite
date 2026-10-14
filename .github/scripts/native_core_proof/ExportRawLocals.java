@@ -62,7 +62,10 @@ public final class ExportRawLocals {
         for (Value use:v.getUses()) value(use,origin,locals,seen);
     }
     static void graph(Path shard, String graphId, Path output, String bytecodeHash, int classCount) throws Exception {
-        try (var sink=Files.newBufferedWriter(output,StandardOpenOption.CREATE_NEW)) {
+        // Gzip: a 64-graph export is about 10 GB of JSON lines that compress thirteenfold, and every
+        // consumer of the core checkpoint restores it beside the graphs on a hosted runner's disk.
+        try (var sink=new BufferedWriter(new OutputStreamWriter(new java.util.zip.GZIPOutputStream(
+                Files.newOutputStream(output,StandardOpenOption.CREATE_NEW)),java.nio.charset.StandardCharsets.UTF_8))) {
             sink.write(JSON.toJson(row("record","header","graphId",graphId,"shardBytecodeSha256",bytecodeHash,
                     "classCount",classCount,"scope","fixture64-no-fold","folding",false))+"\n");
             int count=0;
@@ -134,7 +137,7 @@ public final class ExportRawLocals {
             var expected=rows.get(i);String digest=(String)hash.invoke(shard);int classes=((Number)count.invoke(shard)).intValue();
             need(expected.get("shardBytecodeSha256").equals(digest) && Integer.parseInt(expected.get("classCount"))==classes,"original shard bytecode identity");
             String id=expected.get("graphId");need(id.equals("fixture-"+corpus+"-"+String.format(Locale.ROOT,"%02d",i)),"graph identity");
-            graph((Path)path.invoke(shard),id,out.resolve(id+".jsonl"),digest,classes);
+            graph((Path)path.invoke(shard),id,out.resolve(id+".jsonl.gz"),digest,classes);
             Files.delete((Path)path.invoke(shard));
         }
         Files.delete(shards);

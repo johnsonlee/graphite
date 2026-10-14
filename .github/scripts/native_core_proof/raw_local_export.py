@@ -62,7 +62,7 @@ def _binding_identity(plan, row):
         current = (original[0]['shardBytecodeSha256'], int(original[0]['classCount']))
         need(identity is None or current == identity, 'paired identical bytecode shards')
         identity = current
-        path = Path(plan['output'])/'raw-locals'/('raw-'+arm+'-'+corpus)/(row['id']+'.jsonl')
+        path = Path(plan['output'])/'raw-locals'/('raw-'+arm+'-'+corpus)/(row['id']+'.jsonl.gz')
         ref = {'path': str(path.resolve()), 'sha256': sha(path)}
         exports[arm] = ref
     return {'graphId': row['id'], 'shardBytecodeSha256': identity[0], 'classCount': identity[1], 'exports': exports}

@@ -1,4 +1,5 @@
 import copy
+import gzip
 import json
 from pathlib import Path
 import tempfile
@@ -130,6 +131,21 @@ class RawLocalTests(unittest.TestCase):
         alone=self.authority(source_authority=flat);alone.observe(local('byte[]'),M[:2]+['(I)[B']);alone.observe(local('byte[]'),M[:2]+['(I)[B'])
         with self.assertRaisesRegex(ValueError,'conflicts/missing'):alone.finish()
         self.assertIn('duplicate persisted full method/local identity',alone.rows[1]['issues'])
+
+    def test_gzip_compressed_export_loads_as_the_plain_one(self):
+        # The exporter gzips its JSON lines (a 64-graph export is ~10 GB plain); the pin is over the
+        # file's bytes and the rows read the same.
+        plain=self.authority();plain.observe(local('byte[][]'),M);plain.finish()
+        for arm,ref in plain.spec['exports'].items():
+            path=Path(ref['path']);zipped=path.with_suffix('.jsonl.gz')
+            zipped.write_bytes(gzip.compress(path.read_bytes(),mtime=0))
+            self.assertEqual(r.load(ref,plain.spec['graphId'],'a'*64,3),
+                             r.load({'path':str(zipped),'sha256':r.sha(zipped)},plain.spec['graphId'],'a'*64,3))
+            with self.assertRaisesRegex(ValueError,'raw Local export pin'):
+                r.load({'path':str(zipped),'sha256':ref['sha256']},plain.spec['graphId'],'a'*64,3)
+        report=self.root/'raw-local-type-proof.json.gz'
+        self.assertEqual(b'\x1f\x8b',report.read_bytes()[:2])
+        self.assertEqual(1,json.loads(gzip.decompress(report.read_bytes()))['localCount'])
 
     def test_unchanged_rank_one_is_checked(self):
         for arm in self.rows:self.rows[arm]['locals']['$stack4'][0]['type']['dimension']=1
@@ -387,16 +403,16 @@ class RawLocalTests(unittest.TestCase):
             source_pin=next(iter(report['sourceCreationInputs']))
             report=copy.deepcopy(report)
             del report['sourceCreationInputs'][source_pin]
-            save(proof/'core/raw-local-type-proof.json',report)
+            save(proof/'core/raw-local-type-proof.json.gz',report)
             with self.assertRaisesRegex(ValueError,'exact Local creation source'):runner.graph_result(plan,row)
             report=copy.deepcopy(oracle.finish())
             del report['sourceCreationInputs'];del report['occurrences'][0]['creationOrderProof']
-            save(proof/'core/raw-local-type-proof.json',report)
+            save(proof/'core/raw-local-type-proof.json.gz',report)
             with self.assertRaisesRegex(ValueError,'required exact ordinary'):runner.graph_result(plan,row)
             report=copy.deepcopy(oracle.finish())
             key='firstStatementOrdinal' if allocation else 'firstTypedAllocationOrdinal'
             report['occurrences'][0]['creationOrderProof']['arms']['B'][key]=58
-            save(proof/'core/raw-local-type-proof.json',report)
+            save(proof/'core/raw-local-type-proof.json.gz',report)
             with self.assertRaisesRegex(ValueError,'required exact ordinary'):runner.graph_result(plan,row)
             report=oracle.finish();del receipt['inputs'][source_pin];write_receipts()
             with self.assertRaisesRegex(ValueError,'missing from core'):runner.graph_result(plan,row)
@@ -412,7 +428,7 @@ class RawLocalTests(unittest.TestCase):
         oracle=self.authority();oracle.observe(local('byte[][]',name='missing',node=1),M)
         oracle.observe(local('byte[][]',node=2),M)
         with self.assertRaises(ValueError):oracle.finish()
-        report=json.loads((self.root/'raw-local-type-proof.json').read_text())
+        report=json.loads(gzip.decompress((self.root/'raw-local-type-proof.json.gz').read_bytes()))
         self.assertEqual((2,1,1),(report['localCount'],report['arrayCount'],report['unprovedCount']))
 
     def test_duplicate_persisted_identity_rejected(self):

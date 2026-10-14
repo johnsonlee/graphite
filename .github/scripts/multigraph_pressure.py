@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import gzip
 import hashlib
 import http.client
 import json
@@ -88,7 +89,10 @@ def parse(raw):
 
 
 def read(path):
-    return parse(Path(path).read_bytes())
+    raw = Path(path).read_bytes()
+    if raw[:2] == b'\x1f\x8b':
+        raw = gzip.decompress(raw)
+    return parse(raw)
 
 
 def canonical(value):

@@ -659,6 +659,13 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
   corrections are what absorb that, for any pair.
 - Before pushing a fix for one failing CI step, read the arm's remaining steps against the
   arm's actual shape; each later step would otherwise cost another full run.
+- A consumer gate restores the whole checkpoint closure onto a hosted runner's disk, so every
+  evidence file a stage seals is paid for again by every consumer, per arm. The per-node raw
+  local proof reports (16.8 GB for one arm's 64 graphs) and the raw local exports (10 GB) made a
+  two-arm chain 93 GB where 56 GB had fit; both are JSON lines that gzip 13–20×, and the readers
+  decompress on the gzip magic so a pin remains the digest of the file's bytes. Size the evidence
+  for the consumer, and do not hardlink identical files across arm directories: the JVM reader
+  rewrites files beside a graph in place.
 
 ### Why `buildGraph()` Is Not Parallelized
 

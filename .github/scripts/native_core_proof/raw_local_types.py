@@ -5,6 +5,7 @@ module checks exact output hashes and inventories every persisted candidate Loca
 including unchanged rank-one strings. It never resolves a conflict by selecting a
 candidate-matching type. Legacy correction policy and global claims stay intact.
 """
+import gzip
 import hashlib
 import json
 import re
@@ -83,7 +84,10 @@ def flat_renderer(source_authority):
 def load(ref, graph_id, bytecode_sha, class_count):
     path = Path(ref['path'])
     need(path.is_absolute() and not path.is_symlink() and sha(path) == ref['sha256'], 'raw Local export pin')
-    rows = [json.loads(line, object_pairs_hook=pairs) for line in path.read_text().splitlines()]
+    data = path.read_bytes()
+    if data[:2] == b'\x1f\x8b':
+        data = gzip.decompress(data)
+    rows = [json.loads(line, object_pairs_hook=pairs) for line in data.decode('utf-8').splitlines()]
     need(len(rows) >= 2 and rows[0].get('folding') is False and type(rows[0].get('classCount')) is int and rows[0] == {'record': 'header', 'graphId': graph_id,
          'shardBytecodeSha256': bytecode_sha, 'classCount': class_count,
          'scope': 'fixture64-no-fold', 'folding': False}, 'raw Local graph/shard/no-fold identity')
@@ -380,8 +384,12 @@ class Authority:
                   'unprovedCount': len(failures), 'occurrences': self.rows, 'inputs': self.export_pins,
                   'sourceCreationInputs': self.creation_pins or {},
                   'strictEquivalence': False, 'completeSemanticEquivalence': False, 'performanceAcceptance': False}
-        # This complete per-node report can be hundreds of MB; omit formatting whitespace.
-        (self.out/'raw-local-type-proof.json').write_text(json.dumps(result, separators=(',', ':'))+'\n')
+        # This complete per-node report is hundreds of MB per graph (16.8 GB for a 64-graph arm) and
+        # travels in the core checkpoint that every consumer gate restores; gzip shrinks it twentyfold.
+        payload = (json.dumps(result, separators=(',', ':'))+'\n').encode('utf-8')
+        with (self.out/'raw-local-type-proof.json.gz').open('wb') as stream:
+            with gzip.GzipFile(filename='', mode='wb', fileobj=stream, mtime=0) as compressed:
+                compressed.write(payload)
         return result
 
     def finish(self):
