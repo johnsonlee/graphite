@@ -284,6 +284,46 @@ fn shared_all_global_id_positions_references_and_partial_inputs_remain_checked()
 }
 
 #[test]
+fn ordinary_decode_marks_lossy_text_for_a_table_bound_after_the_load() {
+    // Graph::load decodes without verification and the declared table binds the dictionary to
+    // its bytes on first use; the lossy IDs must be known from that first decode, or a text the
+    // writer could not encode reads as valid after the binding.
+    let wire = shared_wire(&full_table());
+    let mut units = wire
+        .dictionary
+        .iter()
+        .map(|s| s.encode_utf16().collect())
+        .collect::<Vec<Vec<u16>>>();
+    units.push(vec![0xd800]);
+    let raw = serialized(&units);
+    let lossy = units.len() - 1;
+    let strings = StringTable::from_serialized(&raw).unwrap();
+    assert_eq!(strings.get(lossy), "\u{FFFD}");
+    assert!(
+        strings.strict_get(0).is_err(),
+        "unbound tables answer nothing strictly"
+    );
+    strings.bind_serialized(&raw);
+    assert_eq!(strings.strict_get(0).unwrap(), wire.dictionary[0]);
+    assert!(strings
+        .strict_get(lossy)
+        .unwrap_err()
+        .to_string()
+        .contains("UTF-16"));
+    let verified = StringTable::from_serialized_for_declared_types(&raw).unwrap();
+    assert_eq!(
+        verified.strict_get(lossy).is_err(),
+        strings.strict_get(lossy).is_err()
+    );
+    let invalid = serialized_utf8(&[b"ordinary".to_vec(), vec![0xff]]);
+    let utf8 = StringTable::from_serialized(&invalid).unwrap();
+    assert_eq!(utf8.get(1), "\u{FFFD}");
+    utf8.bind_serialized(&invalid);
+    assert_eq!(utf8.strict_get(0).unwrap(), "ordinary");
+    assert!(utf8.strict_get(1).is_err());
+}
+
+#[test]
 fn shared_utf16_rejects_only_referenced_bad_ids_and_utf8_is_checked_before_access() {
     let wire = shared_wire(&full_table());
     let mut units = wire

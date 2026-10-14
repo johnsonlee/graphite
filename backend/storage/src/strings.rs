@@ -30,7 +30,10 @@ struct StringBacking {
     arena: Vec<u8>,
     /// `offsets[i]..offsets[i+1]` is string i (UTF-8).
     offsets: Vec<u32>,
-    invalid_utf16: Vec<usize>,
+    /// IDs whose text the decode could only render lossily (an unpaired UTF-16 surrogate, or
+    /// invalid UTF-8 in a table decoded without verification). Recorded on every decode, so a
+    /// table the graph loaded for ordinary reads and bound to its bytes later refuses them too.
+    invalid_text: Vec<usize>,
     /// Whether the dictionary is strictly ascending in Java order, decided once on first
     /// use: the writer always sorts and deduplicates, and a reader may then equate IDs
     /// with texts and binary-search by text.
@@ -87,7 +90,7 @@ impl StringTable {
             _ => return Err(StringTableError::Layout("missing ratio".into())),
         };
         let mut arena = Vec::new();
-        let mut invalid_utf16 = Vec::new();
+        let mut invalid_text = Vec::new();
         let mut offsets = Vec::with_capacity(n + 1);
         offsets.push(0u32);
         if utf8 {
@@ -113,14 +116,20 @@ impl StringTable {
                 |v| v as usize,
                 |_| 1,
                 &mut |bytes: &[u8]| {
-                    if verified && std::str::from_utf8(bytes).is_err() {
-                        invalid_utf8 = true;
+                    match std::str::from_utf8(bytes) {
+                        Ok(text) => arena.extend_from_slice(text.as_bytes()),
+                        Err(_) => {
+                            // A verified table refuses invalid UTF-8 outright; an ordinary load
+                            // keeps a lossy rendering and marks the ID, never unchecked bytes.
+                            invalid_utf8 = true;
+                            invalid_text.push(offsets.len() - 1);
+                            arena.extend_from_slice(String::from_utf8_lossy(bytes).as_bytes());
+                        }
                     }
-                    arena.extend_from_slice(bytes);
                     offsets.push(arena.len() as u32);
                 },
             );
-            if invalid_utf8 {
+            if verified && invalid_utf8 {
                 return Err(StringTableError::Layout(
                     "invalid UTF-8 in shared string table".into(),
                 ));
@@ -170,8 +179,8 @@ impl StringTable {
                     buf.extend_from_slice(&flat[pos..pos + len]);
                     pos += len;
                 }
-                if verified && char::decode_utf16(buf.iter().copied()).any(|unit| unit.is_err()) {
-                    invalid_utf16.push(i);
+                if char::decode_utf16(buf.iter().copied()).any(|unit| unit.is_err()) {
+                    invalid_text.push(i);
                 }
                 let s = String::from_utf16_lossy(&buf);
                 arena.extend_from_slice(s.as_bytes());
@@ -184,7 +193,7 @@ impl StringTable {
             backing: Arc::new(StringBacking {
                 arena,
                 offsets,
-                invalid_utf16,
+                invalid_text,
                 canonical: std::sync::OnceLock::new(),
             }),
             identity: None,
@@ -233,13 +242,13 @@ impl StringTable {
                 "unverified shared string table".into(),
             ));
         }
-        if i >= self.len() || self.backing.invalid_utf16.binary_search(&i).is_ok() {
+        if i >= self.len() || self.backing.invalid_text.binary_search(&i).is_ok() {
             return Err(StringTableError::Layout(
-                "invalid shared string ID or UTF-16 text".into(),
+                "invalid shared string ID or lossy UTF-16/UTF-8 text".into(),
             ));
         }
-        // Verified UTF-8 tables were checked before any unchecked string access;
-        // UTF-16 tables retain legacy lossy strings but reject bad referenced IDs.
+        // Lossy IDs were marked when the table was decoded, verified or not; a table bound to
+        // its bytes after an ordinary load rejects the same referenced IDs a verified load does.
         Ok(self.get(i))
     }
 
