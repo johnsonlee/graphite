@@ -666,6 +666,10 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
   decompress on the gzip magic so a pin remains the digest of the file's bytes. Size the evidence
   for the consumer, and do not hardlink identical files across arm directories: the JVM reader
   rewrites files beside a graph in place.
+- The hosted runner image rolls out while a four-hour run is in flight (run 912: sealing jobs on
+  one provisioner version, every job from 10:54Z on the next). Bind a chain's toolchain by
+  content digests, never by the image's version label; a label check only turns a rollout into a
+  failed run.
 
 ### Why `buildGraph()` Is Not Parallelized
 

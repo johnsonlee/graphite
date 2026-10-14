@@ -109,7 +109,7 @@ class ProducerMergeSmokeTests(unittest.TestCase):
                         if kind=='head':value['identity']['head']='a'*40
                         elif kind=='run':value['identity']['runId']='9876'
                         elif kind=='common-bytes':value['files'][str(case.f.root/'source-inputs.json')]['sha256']='0'*64
-                        elif kind=='image':value['runnerImage']['ImageVersion']='foreign-image'
+                        elif kind=='image':value['runnerImage']['ImageOS']='foreign-image'
                         else:value['upstream'][0]['sha256']='0'*64
                         checkpoint.save(path,value)
                     with self.assertRaises(ValueError):checkpoint.merge_producer(case.args)

@@ -27,6 +27,29 @@ SYSTEM_JDK_PARENT = Path('/usr/lib/jvm')
 SYSTEM_CACERTS = frozenset((Path('/etc/ssl/certs/java/cacerts'), Path('/etc/ssl/certs/adoptium/cacerts')))
 SYSTEM_JDK_NAME = re.compile(r'temurin-[1-9][0-9]*-jdk-(?:amd64|arm64)\Z')
 IMAGE_KEYS = ('ImageOS', 'ImageVersion', 'RUNNER_OS', 'RUNNER_ARCH')
+# The hosted image's version label may roll out while a run is in flight (run 912: the sealing
+# jobs ran on provisioner 20261002.596, the consumers started at 10:54Z on 20261012.601), so a
+# consumer matches the sealing job's OS and architecture exactly, lets the version label differ,
+# and reports the drift. What a new image could change in the toolchain is bound by content: the
+# JDK files, the interpreter path and the pinned binaries are compared by digest, not by label.
+IMAGE_LABEL = 'ImageVersion'
+
+
+def runner_image():
+    return {key: os.environ.get(key) for key in IMAGE_KEYS}
+
+
+def same_runner_image(recorded):
+    current = runner_image()
+    return isinstance(recorded, dict) and set(recorded) == set(IMAGE_KEYS) and all(
+        recorded[key] == current[key] for key in IMAGE_KEYS if key != IMAGE_LABEL)
+
+
+def runner_image_drift(recorded):
+    current = runner_image()
+    if recorded.get(IMAGE_LABEL) == current[IMAGE_LABEL]:
+        return None
+    return {'sealed': recorded.get(IMAGE_LABEL), 'current': current[IMAGE_LABEL]}
 PRODUCER_TREES = ('runtime', 'graphs', 'query-correctness', 'core-string-exports',
                   'core-marker', 'core-formatter-source', 'formatter-tests')
 CORE_INPUT_TREES = ('core-string-exports', 'core-marker', 'core-formatter-source', 'formatter-tests')
@@ -474,7 +497,7 @@ def upstreams(args, ident, _authority=None):
         require(value['schema'] == SCHEMA and all(value['identity'][k] == ident[k] for k in
             ('head', 'base', 'accepted', 'runId', 'runAttempt', 'workspace')), 'upstream identity')
         require(value['python'] == str(Path(sys.executable).resolve()) and
-                value['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS}, 'upstream interpreter/runner identity')
+                same_runner_image(value['runnerImage']), 'upstream interpreter/runner identity')
         if _authority is None or not _authority.preflight:
             check_files(value, _authority)
         upstream_ident = value['identity']
@@ -546,7 +569,7 @@ def seal(args):
                 tar.add(name, arcname=f'files/{index:08d}', recursive=False)
         manifest = {'schema': SCHEMA, 'identity': ident, 'sources': sources, 'upstream': upstream,
                     'python': str(Path(sys.executable).resolve()),
-                    'runnerImage': {key: os.environ.get(key) for key in IMAGE_KEYS}, 'files': collector.files,
+                    'runnerImage': runner_image(), 'files': collector.files,
                     'directories': sorted(collector.directories),
                     'directoryModes': {name: stat.S_IMODE(Path(name).stat().st_mode) for name in sorted(collector.directories)},
                     'closedDirectories': collector.closed,
@@ -576,7 +599,10 @@ def restore(args, _authority=None):
     require(manifest['schema'] == SCHEMA and manifest['identity'] == ident and
             manifest['proofAuthority'] is False and manifest['performanceAcceptance'] is False, 'checkpoint identity')
     require(manifest['python'] == str(Path(sys.executable).resolve()), 'Python interpreter path changed')
-    require(manifest['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS}, 'runner image changed')
+    require(same_runner_image(manifest['runnerImage']), 'runner image changed')
+    drift = runner_image_drift(manifest['runnerImage'])
+    if drift is not None:
+        _chain_progress('runner-image', 'drift', stage=ident['stage'], arm=ident['arm'], **drift)
     if _authority is None:
         require(git_sources(workspace, ident['base'], ident['head']) == manifest['sources'], 'source inventory changed')
     else:
@@ -885,7 +911,7 @@ def _restore_chain(args, entries):
                 manifest['proofAuthority'] is False and manifest['performanceAcceptance'] is False,
                 'chain checkpoint identity')
         require(manifest['sources'] == sources and manifest['python'] == str(Path(sys.executable).resolve()) and
-                manifest['runnerImage'] == {key: os.environ.get(key) for key in IMAGE_KEYS},
+                same_runner_image(manifest['runnerImage']),
                 'chain exact source/interpreter/runner')
         require(upstreams(entry, ident, authority) == manifest['upstream'], 'chain exact upstream binding')
         check_system_jdks(manifest)

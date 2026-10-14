@@ -21188,3 +21188,30 @@ alter a sibling arm's input. The exporter now gzips its JSON lines (`<id>.jsonl.
 bytes, and the restore progress events now carry the workspace's free bytes so a chain that
 outgrows the runner says where. Expected core consumer chain: about 45 GB restored plus 7 GB of
 downloaded archives, against the 60 GB that passed before.
+
+Run 912 (0687a3d) did not reach the consumer gates. Two unrelated things happened first. The
+`rust-query-legacy` gate (the sequential 73-case Rust diagnostic over the 64 graphs, blocking as a
+historical multi-graph constraint) failed on one row, `shape-skip`
+(`MATCH (n:CallSite) RETURN n.caller_class SKIP 1000 LIMIT 200`): base 3.779 ms, PR 5.827 ms
+(+54.2%), reverse-order confirmation 4.072 -> 5.076 ms (+24.7%), above the 15% limit and the 1 ms
+floor twice, while every other row passed (`collect`, `order-by` 18–24% faster; `shape-all-nodes`
++28% and `shape-function-calls` +127% were NOISE in the same job). The product code is the one the
+previous seven runs measured with this row at -2.5%, -60.4%, +24.2% (NOISE), +6.5%, 0.0%, -10.1%,
++27.7% (NOISE) and +2.3%. The candidate reads `caller_class` through the new scalar call-site path
+(`call_site_scalar_strings`), which does less work than the base's node decode, and SKIP is applied
+after projection in both engines (`pipeline.rs`). A local A/B over the same 64 graphs with freshly
+built base (d2e6f7f) and candidate (0687a3d) binaries, three interleaved rounds of five passes of
+the full suite each, gives shape-skip medians per round of base 7.46/5.43/8.01 ms against
+candidate 5.55/8.27/10.82 ms; over all 15 samples base median 6.37 ms (3.2–18.5), candidate
+7.04 ms (2.9–33.6), the candidate's minimum lower and its mean higher by one 33.6 ms sample.
+A request whose samples spread six-fold within one revision is not resolved by a 15% limit with a
+1 ms floor; the gate is left as it is (its floor is an acceptance rule), the row is recorded as
+hosted-runner noise on this evidence, and the next run measures it again. Then the hosted runner
+image rolled out during the run: the sealing jobs ran on image provisioner 20261002.596 and every
+job starting at 10:54Z (the JVM correctness jobs, the core shards) on 20261012.601, and the
+checkpoint chain required the exact `ImageVersion` (`chain exact source/interpreter/runner`), so the
+run could not finish. A consumer now matches the sealing job's `ImageOS`, `RUNNER_OS` and
+`RUNNER_ARCH` exactly and lets the version label differ, reporting the drift as a
+`runner-image` progress event; what a new image could change in the toolchain is bound by content
+already (JDK files, interpreter path and pinned binaries by digest), so the label check guarded
+nothing the digests do not.

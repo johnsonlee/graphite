@@ -2,6 +2,7 @@
 import argparse
 import copy
 import io
+import contextlib
 import json
 import os
 from pathlib import Path
@@ -331,9 +332,25 @@ class CheckpointTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'checkpoint identity'): checkpoint.restore(args)
 
     def test_runner_image_change_rejected(self):
-        with patch.dict(os.environ, {'ImageVersion': 'first'}): self.seal()
-        with patch.dict(os.environ, {'ImageVersion': 'second'}):
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'first'}): self.seal()
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu26', 'ImageVersion': 'first'}):
             with self.assertRaisesRegex(ValueError, 'runner image changed'): checkpoint.restore(self.args())
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'RUNNER_ARCH': 'ARM64', 'ImageVersion': 'first'}):
+            with self.assertRaisesRegex(ValueError, 'runner image changed'): checkpoint.restore(self.args())
+
+    def test_runner_image_version_rollout_mid_run_is_tolerated_and_reported(self):
+        # The hosted image's version label rolled out between a run's sealing and consuming jobs
+        # (run 912); the toolchain is bound by digest, so the label drifts and the drift is reported.
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'first'}): manifest = self.seal()
+        self.remove_payload(manifest); diagnostic = io.StringIO()
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'second'}), contextlib.redirect_stderr(diagnostic):
+            checkpoint.restore(self.args())
+        events = [json.loads(line.removeprefix('CHECKPOINT_PROGRESS ')) for line in diagnostic.getvalue().splitlines()
+                  if line.startswith('CHECKPOINT_PROGRESS ')]
+        drift = [e for e in events if e['phase'] == 'runner-image']
+        self.assertEqual([{'diagnosticOnly': True, 'phase': 'runner-image', 'event': 'drift', 'stage': 'producer',
+                           'arm': 'producer', 'sealed': 'first', 'current': 'second'}], drift)
+        self.assertTrue(self.binary.exists())
 
     def test_tar_traversal_and_links_rejected_even_with_resealed_digest(self):
         manifest = self.seal()
