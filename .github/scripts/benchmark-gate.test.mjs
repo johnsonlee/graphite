@@ -4516,7 +4516,7 @@ test("confirmed Rust failure diagnostic is pinned, isolated and cannot repair th
     const diagnostic = job.slice(start, end);
     const original = job.slice(job.indexOf("    - name: Measure base then PR"), start);
     assert.match(original, /id: rust_comparison/);
-    assert.match(original, /--threshold 15 --minimum 1/g);
+    assert.match(original, /--threshold 15 --minimum 5/g);
     assert.match(original, /confirm-rust-latency/);
     assert.doesNotMatch(original, /diagnostic-metrics-case|continue-on-error/);
     assert.match(diagnostic, /if: \$\{\{ failure\(\) && steps\.rust_comparison\.outcome == 'failure' \}\}/);
@@ -4656,7 +4656,7 @@ test("native declared-type migration uses reviewed controls for both timing dire
     const compareStart = workflow.indexOf("    - name: Compare Rust engine latency");
     const comparison = workflow.slice(compareStart, workflow.indexOf("    - name: Diagnose confirmed Rust shape regression", compareStart));
     assert.match(comparison, /--declared-types-transition/);
-    assert.equal((comparison.match(/--threshold 15 --minimum 1 "\$\{RESPONSE_ARGS\[@\]\}"/g) ?? []).length, 2);
+    assert.equal((comparison.match(/--threshold 15 --minimum 5 "\$\{RESPONSE_ARGS\[@\]\}"/g) ?? []).length, 2);
 });
 
 test("untimed routing preserves full result/access/index assertions and cannot supply latency evidence", () => {
