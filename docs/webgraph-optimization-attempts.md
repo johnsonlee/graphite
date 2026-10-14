@@ -21215,3 +21215,15 @@ run could not finish. A consumer now matches the sealing job's `ImageOS`, `RUNNE
 `runner-image` progress event; what a new image could change in the toolchain is bound by content
 already (JDK files, interpreter path and pinned binaries by digest), so the label check guarded
 nothing the digests do not.
+
+Run 913 (d0468bc) showed what the digests do guard: with the fleet mid-rollout, the producer-common
+checkpoint sealed on one image and `rust-producer-arm (A)` landed on the next, whose JDK trust store
+`/etc/ssl/certs/adoptium/cacerts` (the target of the system JDK's `lib/security/cacerts` link, a
+`verificationOnly` dependency of every manifest) has other bytes: `preexisting dependency identity`.
+A CA bundle is trust configuration the image updates on its own schedule and nothing in the chain
+reads (no build, measurement or query goes through TLS with it), so `dependency_identity` now
+requires it to exist as a regular file with the sealed mode and reports a content change as a
+`system-certificates` drift event, while every JDK file, payload file and workspace file stays
+bound by content; a delta checkpoint sealed on the drifted image keeps the bundle facts it
+inherited. A JDK patch rollout mid-run would still stop a run, by a missing versioned root, which
+is the right failure for a toolchain change.

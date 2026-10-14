@@ -129,14 +129,36 @@ class CheckpointTests(unittest.TestCase):
         root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
         self.remove_payload(manifest)
         original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        modules = root/'lib/modules'; jdk_bytes = modules.read_bytes()
         for change, reset in (
-            (lambda: certificate.write_bytes(b'changed'), lambda: certificate.write_bytes(original)),
+            (lambda: modules.write_bytes(b'changed'), lambda: modules.write_bytes(jdk_bytes)),
             (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
             (certificate.unlink, lambda: certificate.write_bytes(original)),
         ):
             change()
             with self.assertRaises(ValueError): checkpoint.restore(self.args())
             self.assertFalse(self.binary.exists()); reset()
+
+    def test_system_certificate_bundle_content_drift_is_tolerated_and_reported(self):
+        # The hosted image updates the CA bundle on its own schedule (run 913); it is trust
+        # configuration no build or measurement reads, so it must exist with the sealed mode and
+        # its content drift is reported, while every JDK file stays bound by content.
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest); certificate.write_bytes(b'rolled-out bundle')
+        diagnostic = io.StringIO()
+        with contextlib.redirect_stderr(diagnostic): checkpoint.restore(self.args())
+        self.assertTrue(self.binary.exists())
+        events = [json.loads(line.removeprefix('CHECKPOINT_PROGRESS ')) for line in diagnostic.getvalue().splitlines()
+                  if line.startswith('CHECKPOINT_PROGRESS ')]
+        drift = [e for e in events if e['phase'] == 'system-certificates']
+        self.assertEqual([{'diagnosticOnly': True, 'phase': 'system-certificates', 'event': 'drift', 'path': str(certificate),
+                           'sealed': manifest['files'][str(certificate)]['sha256'], 'current': checkpoint.sha(certificate)}], drift[:1])
+        checkpoint.check_files(manifest)
+        # A delta sealed on the drifted image keeps the inherited bundle facts rather than its own.
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        core = checkpoint.seal(self.args('core', 'B', self.workspace/'pressure-checkpoints/core-B', [self.directory/'manifest.json']))
+        self.assertEqual(manifest['files'][str(certificate)], core['files'][str(certificate)])
 
     def test_system_jdk_link_root_and_directory_changes_rejected_before_writes(self):
         root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
@@ -197,8 +219,8 @@ class CheckpointTests(unittest.TestCase):
             self.assertIn(str(certificate), value['verificationOnly'])
             self.assertFalse(any(Path(p).is_relative_to(root) or p == str(certificate) for p in value['payload']))
         self.remove_payload(jvm); checkpoint.restore(args)
-        certificate.write_bytes(b'changed')
-        with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.restore(args)
+        (root/'lib/modules').write_bytes(b'changed')
+        with self.assertRaisesRegex(ValueError, 'identity'): checkpoint.restore(args)
 
     def test_official_adoptium_target_roundtrip_delta_and_mutations_remain_readonly(self):
         root, certificate, link = self.system_jdk_fixture('adoptium')
@@ -224,8 +246,9 @@ class CheckpointTests(unittest.TestCase):
         # rejection must happen before recreating the saved runtime binary.
         self.remove_payload(producer)
         original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        modules = root/'lib/modules'; jdk_bytes = modules.read_bytes()
         for change, reset in (
-            (lambda: certificate.write_bytes(b'changed'), lambda: certificate.write_bytes(original)),
+            (lambda: modules.write_bytes(b'changed'), lambda: modules.write_bytes(jdk_bytes)),
             (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
             (certificate.unlink, lambda: certificate.write_bytes(original)),
         ):

@@ -319,12 +319,18 @@ class Collector:
         prior = self.files.get(str(p))
         if prior is None and self._authority is not None:
             prior = self._authority.verified.get(str(p))
-        actual = (self._authority.digest(p, prior) if prior is not None and self._authority is not None
-                  else prior['sha256'] if prior is not None else sha(p))
-        require(digest is None or actual == digest, 'artifact digest: '+str(p))
-        mode = stat.S_IMODE(p.stat().st_mode)
-        require(not mode & 0o6000, 'setuid/setgid payload prohibited')
-        value = {'sha256': actual, 'mode': mode, 'size': p.stat().st_size}
+        if prior is not None and p in SYSTEM_CACERTS:
+            # A delta checkpoint keeps the bundle facts it inherited; the bundle itself may have
+            # drifted with the image, which dependency_identity reports.
+            dependency_identity(p, prior)
+            value = dict(prior)
+        else:
+            actual = (self._authority.digest(p, prior) if prior is not None and self._authority is not None
+                      else prior['sha256'] if prior is not None else sha(p))
+            require(digest is None or actual == digest, 'artifact digest: '+str(p))
+            mode = stat.S_IMODE(p.stat().st_mode)
+            require(not mode & 0o6000, 'setuid/setgid payload prohibited')
+            value = {'sha256': actual, 'mode': mode, 'size': p.stat().st_size}
         require(str(p) not in self.files or self.files[str(p)] == value, 'conflicting file')
         self.files[str(p)] = value
         if self._authority is not None:
@@ -437,6 +443,25 @@ class Collector:
         return self
 
 
+def dependency_identity(p, facts, _authority=None):
+    """Whether a preexisting dependency is the one the manifest sealed. Every file is bound by
+    content, except the system CA bundle the JDK's lib/security/cacerts links to: a trust store
+    is configuration the hosted image updates on its own schedule (run 913: the producer-common
+    checkpoint sealed one image's bundle and rust-producer-arm (A) landed on the next image's), and
+    no build, measurement or query result reads it. It must still exist as a regular file with the
+    sealed mode; a content change is reported as a system-certificates drift event, never hidden."""
+    if p in SYSTEM_CACERTS:
+        require(p.is_file() and not p.is_symlink() and stat.S_IMODE(p.stat().st_mode) == facts['mode'],
+                'system certificate bundle identity: '+str(p))
+        actual = sha(p)
+        if actual != facts['sha256']:
+            _chain_progress('system-certificates', 'drift', path=str(p), sealed=facts['sha256'], current=actual)
+        return True
+    return (p.is_file() and not p.is_symlink() and
+            (_authority.digest(p, facts) if _authority is not None else sha(p)) == facts['sha256'] and
+            stat.S_IMODE(p.stat().st_mode) == facts['mode'] and p.stat().st_size == facts['size'])
+
+
 def check_system_jdks(manifest):
     """System packages are preexisting read-only dependencies, never restore roots."""
     roots = [canonical(Path(name)) for name in manifest.get('systemJdkRoots', [])]
@@ -477,8 +502,7 @@ def check_files(manifest, _authority=None):
     check_system_jdks(manifest)
     for name, value in manifest['files'].items():
         p = canonical(Path(name))
-        require(p.is_file() and not p.is_symlink() and (_authority.digest(p, value) if _authority is not None else sha(p)) == value['sha256'] and
-                stat.S_IMODE(p.stat().st_mode) == value['mode'] and p.stat().st_size == value['size'], 'restored file identity/mode: '+name)
+        require(dependency_identity(p, value, _authority), 'restored file identity/mode: '+name)
     for name in manifest['directories']:
         require(canonical(Path(name)).is_dir() and stat.S_IMODE(Path(name).stat().st_mode) == manifest['directoryModes'][name], 'restored directory mode')
     for name in manifest['absent']:
@@ -631,7 +655,7 @@ def restore(args, _authority=None):
     for name, facts in manifest['files'].items():
         if name not in manifest['payload']:
             p = canonical(Path(name))
-            require(p.is_file() and (_authority.digest(p, facts) if _authority is not None else sha(p)) == facts['sha256'] and stat.S_IMODE(p.stat().st_mode) == facts['mode'], 'preexisting dependency identity: '+name)
+            require(dependency_identity(p, facts, _authority), 'preexisting dependency identity: '+name)
     for name in manifest['absent']:
         require(not Path(name).exists() and not Path(name).is_symlink(), 'absent path appeared: '+name)
     with tarfile.open(directory/'payload.tar.gz', 'r:gz') as tar:

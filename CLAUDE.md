@@ -669,7 +669,9 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
 - The hosted runner image rolls out while a four-hour run is in flight (run 912: sealing jobs on
   one provisioner version, every job from 10:54Z on the next). Bind a chain's toolchain by
   content digests, never by the image's version label; a label check only turns a rollout into a
-  failed run.
+  failed run. The JDK's trust store (`cacerts`) is image configuration, not toolchain: it changes
+  between images and nothing in the chain reads it, so it is required present and its content
+  drift reported, not refused (run 913).
 
 ### Why `buildGraph()` Is Not Parallelized
 
