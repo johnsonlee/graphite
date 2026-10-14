@@ -28,6 +28,8 @@ import sys
 import threading
 import time
 
+import ci_digest_cache as digest_cache
+
 from native_legal_response import CompiledDataflowOracle
 
 PLAN_SCHEMA = 'graphite.multigraph-pressure.plan.v1'
@@ -105,11 +107,9 @@ def digest_bytes(raw):
 
 
 def sha(path):
-    value = hashlib.sha256()
-    with Path(path).open('rb') as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b''):
-            value.update(block)
-    return value.hexdigest()
+    # One hash per file per job (ci_digest_cache): a recorded digest is returned only while the
+    # file's kernel identity is unchanged; otherwise the bytes are hashed.
+    return digest_cache.sha(path)
 
 
 def save(path, value):

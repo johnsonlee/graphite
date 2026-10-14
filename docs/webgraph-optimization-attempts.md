@@ -21321,3 +21321,36 @@ join: about 2.5 h after the producer) is now the long pole. Run 915's step times
 of checkpoint download, 5–15 min of restore verification, 2–5 min of seal; 16 shards at 20–42 min
 of execution for 8 graphs each, run as one subprocess at a time; core-prepare 14.5 + 16 min; the
 producer merge 13 min of re-hashing) are the next targets.
+
+### Attempt293 — one hash per file per job: the digest cache keyed by kernel identity (2026-10-14)
+
+Run 915's step times, read off the job logs: a core shard job ran 49 min, of which 12 min were the
+eight graphs' proofs. The rest hashed the same ~40 GB producer closure again and again: the restore
+hashed every payload byte as it landed and again at its final boundary (8.1 + 3.0 min), the proof
+runner hashed every pin when it bound the plan (9.4 min before the first graph) and again when it
+rebound it after the last (6.6 min), and the seal hashed everything twice more (2.4 + 2.4 min).
+The same pattern costs core-prepare 4.4 min of binding, the producer merge 13 min, every consumer
+gate 5–10 min of restore and the JVM correctness job 7–15 min. The design re-read "independently"
+at every boundary to catch a file rewritten between two checks; what it caught at that price was
+nothing, because the kernel already records whether a file was rewritten.
+
+`ci_digest_cache` keeps each hashed file's digest next to its identity (device, inode, size, mtime
+and ctime in nanoseconds) in one SQLite file per job (`GRAPHITE_CI_DIGEST_CACHE`, under
+`runner.temp`, set in every `rust-*` job). `native_pressure_checkpoint.sha` and
+`multigraph_pressure.sha` consult it: a request for a path whose identity is unchanged returns the
+recorded digest, anything else hashes. ctime cannot be set from user space, so a rewrite that
+restores size and mtime (the mutation `test_seal_fresh_final_reads_reject_same_size_same_mtime_mutations`
+plants) still misses. Kernel timestamps tick at the coarse clock's granularity, so a digest is
+recorded only once the identity is older than two seconds (`SETTLE_NS`); a file rewritten in the
+same tick as its hash cannot be mistaken for the bytes that were hashed. The restore records the
+digest of every payload file as it writes it (`record`, immediate: the restore wrote those bytes
+itself), so the final boundary, the plan binding, the rebinding and the seal all hit. Without the
+variable every call hashes as before; a variable naming an unusable location is an error. The
+per-graph child (`check_graph`) keeps its own hashing: it reads two graphs, a few seconds.
+
+Verification: `test_ci_digest_cache` (hit, miss on every identity change including a same-size
+same-mtime rewrite, settle window, immediate `record`, cross-process sharing, unset variable,
+unusable location, both pinned helpers routed), and the seven checkpoint suites run twice, with and
+without the cache set, all passing. Expected per job: the shard's non-proof time falls from ~37 to
+~15 min (the extraction itself remains), core-prepare, the merge and every consumer gate lose their
+re-hash passes; roughly an hour off the critical path. The first run with the cache measures it.

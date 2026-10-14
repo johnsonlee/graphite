@@ -18,6 +18,8 @@ import sys
 import tarfile
 import time
 
+import ci_digest_cache as digest_cache
+
 SCHEMA = 'graphite.pressure-checkpoint.v1'
 ACCEPTED = '4f2ccf33b969e684972e56b5e810034e6e67c1b3'
 DIGEST = re.compile(r'[0-9a-f]{64}\Z')
@@ -63,8 +65,9 @@ def require(value, message):
 
 
 def sha(path):
-    with Path(path).open('rb') as stream:
-        return hashlib.file_digest(stream, 'sha256').hexdigest()
+    # One hash per file per job: a file whose kernel identity is unchanged since it was hashed keeps
+    # its recorded digest (ci_digest_cache); every other request hashes the bytes.
+    return digest_cache.sha(path)
 
 
 def read(path):
@@ -675,6 +678,7 @@ def restore(args, _authority=None):
                     dst.write(chunk); digest.update(chunk)
             p.chmod(facts['mode'])
             require(digest.hexdigest() == facts['sha256'], 'restored payload digest')
+            digest_cache.record(p, facts['sha256'])
             # check_files below independently reads the final on-disk bytes; the
             # transport stream check does not need an additional full-file read.
     for name in manifest['directories']:
