@@ -7,7 +7,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
-import {comparePressure,pressureProgress,resourceBound,withinLatencyTolerance,withinWallTolerance,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
+import {comparePressure,pressureProgress,resourceBound,withinLatencyTolerance,withinWallTolerance,coldStatistics,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
 // Past both tolerances of the fixture's 100ns base: more than 100ms and more than 5%.
 const SLOW=150e6;
 const digest=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
@@ -122,6 +122,11 @@ test('JVM35 retains full projections and raw zero-hit coverage with complete bod
    stage.wallNs=(35*20-1)*1000+lat;
    stage.caseStatistics=Object.fromEntries(f.plan.cases.map((c,j)=>[c.id,{n:20,
     sampleIds:Array.from({length:20},(_,k)=>k*35+j),p50Ns:lat,p95Ns:lat}]));
+   const oracle=r.stages.oracle;
+   oracle.requests=Array.from({length:35},(_,sequence)=>({sequence,caseId:f.plan.cases[sequence].id,
+    status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:sequence*1000,
+    wireCompleteNs:sequence*1000+lat-1,validationCompleteNs:sequence*1000+lat,latencyNs:lat}));
+   oracle.wallNs=34*1000+lat;
    const isolated=r.stages.isolated;
    isolated.requests=Array.from({length:35*40},(_,sequence)=>({sequence,caseId:f.plan.cases[Math.floor(sequence/40)].id,
     status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:1e6+sequence*1000,
@@ -333,4 +338,50 @@ test('tails: an isolated stage that disagrees with the pressure-derived task lis
  const h=fixture(t);
  h.rewrite(2,x=>{x.stages.isolated.concurrency=4;});
  assert.throws(()=>comparePressure(h.file,h.root),/Incomplete isolated stage/);
+});
+
+// Cold acceptance (reviewer P1): a table read on first use lands in the first request of a case,
+// which the loading gate (registry-ready) and the pressure stage (after oracle and warmup) never see.
+const coldSlow=(r,ns)=>{const q=r.stages.oracle.requests[0];q.latencyNs=ns;q.validationCompleteNs=q.startNs+ns;q.wireCompleteNs=q.startNs+ns-1;};
+test('cold: the first request of every case is judged as base/candidate cell intervals and blocks only when every candidate cell is slower',t=>{
+ const f=fixture(t);
+ let v=comparePressure(f.file,f.root);
+ assert.equal(v.cold.cases.slow.status,'PASS');assert.equal(v.cold.cases.slow.source,'oracle');assert.deepEqual(v.coldSummary,{PASS:1,INDETERMINATE:0,FAIL:0});
+ assert.equal(v.cold.stageWall.status,'PASS');assert.deepEqual(v.cold.cases.slow.baseMs,[0.0001,0.0001]);assert.deepEqual(v.cold.cases.slow.candidateMs,[0.00008,0.00008]);
+ assert.match(v.tailRule.cold,/first request of every case/);
+ // One candidate cell cold-slow: indeterminate, reported, not red.
+ f.rewrite(2,r=>coldSlow(r,SLOW));
+ v=comparePressure(f.file,f.root);assert.equal(v.cold.cases.slow.status,'INDETERMINATE');assert.equal(v.passed,true);assert.equal(v.status,'PASS');
+ assert.deepEqual(v.coldSummary,{PASS:0,INDETERMINATE:1,FAIL:0});
+ // Both candidate cells cold-slow by more than the tolerance: the deferred work is a regression.
+ f.rewrite(3,r=>coldSlow(r,SLOW));
+ v=comparePressure(f.file,f.root);assert.equal(v.cold.cases.slow.status,'FAIL');assert.equal(v.passed,false);assert.equal(v.status,'FAIL');
+ // The oracle stage's wall is judged the same way.
+ const g=fixture(t);
+ for(const i of [2,3]) g.rewrite(i,r=>{r.stages.oracle.wallNs=SLOW;});
+ v=comparePressure(g.file,g.root);assert.equal(v.cold.stageWall.status,'FAIL');assert.equal(v.cold.cases.slow.status,'PASS');assert.equal(v.passed,false);
+ g.rewrite(3,r=>{r.stages.oracle.wallNs=120;});
+ v=comparePressure(g.file,g.root);assert.equal(v.cold.stageWall.status,'INDETERMINATE');assert.equal(v.passed,true);
+ // The report carries the verdict, the measured intervals and their source.
+ const prefix=path.join(g.root,'out','pressure');
+ const run=spawnSync(process.execPath,[fileURLToPath(new URL('./benchmark-multigraph-pressure.mjs',import.meta.url)),g.file,g.root,prefix],{encoding:'utf8'});
+ const report=fs.readFileSync(prefix+'-report.md','utf8');
+ assert.match(report,/Cold \(first request per case, oracle stage\): 1 PASS, 0 INDETERMINATE, 0 FAIL; stage wall base 0\.000–0\.000 ms, candidate 0\.000–150\.000 ms: INDETERMINATE\./);
+ assert.equal(JSON.parse(fs.readFileSync(prefix+'-status.json','utf8')).coldSummary.PASS,1);
+ assert.equal(run.status,0);
+});
+test('cold: a missing, incomplete or inconsistent oracle stage is refused',t=>{
+ const f=fixture(t);
+ f.rewrite(0,r=>{delete r.stages.oracle;});
+ assert.throws(()=>comparePressure(f.file,f.root),/Missing oracle stage/);
+ const g=fixture(t);
+ g.rewrite(0,r=>{r.stages.oracle.requests=[];});
+ assert.throws(()=>comparePressure(g.file,g.root),/Incomplete oracle stage/);
+ const h=fixture(t);
+ h.rewrite(0,r=>{r.stages.oracle.requests[0].latencyNs=5;});
+ assert.throws(()=>comparePressure(h.file,h.root),/Invalid complete cold request boundary/);
+ assert.throws(()=>coldStatistics(undefined,{cases:[]}),/Missing oracle stage/);
+ // Progress over the first pair reports cold intervals from one base and one candidate cell.
+ const p=pressureProgress(fixture(t).file,fixture(t).root,3);
+ assert.equal(p.cold.cases.slow.status,'PASS');assert.equal(p.status,'PROVISIONAL');
 });

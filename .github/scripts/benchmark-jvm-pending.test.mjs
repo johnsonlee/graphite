@@ -34,6 +34,10 @@ function fixture(t,mutation={}) {
    })).flat();
    r.stages.pressure.caseStatistics=Object.fromEntries(f.plan.cases.map((c,k)=>[c.id,{n:20,sampleIds:Array.from({length:20},(_,n)=>n*35+k),p50Ns:latency,p95Ns:latency}]));
    r.stages.pressure.wallNs=700000;
+   // One cold request per case, in case order, before warmup and pressure.
+   r.stages.oracle.requests=f.plan.cases.map((c,sequence)=>({sequence,caseId:c.id,status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
+    startNs:sequence*1000,wireCompleteNs:sequence*1000+latency-1,validationCompleteNs:sequence*1000+latency,latencyNs:latency}));
+   r.stages.oracle.wallNs=34*1000+latency;
    // Every case is cheap here, so the isolated stage repeats all 35 of them 40 times, case-major.
    r.stages.isolated.requests=Array.from({length:35*40},(_,sequence)=>({sequence,caseId:f.plan.cases[Math.floor(sequence/40)].id,status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
     startNs:1e6+sequence*1000,wireCompleteNs:1e6+sequence*1000+latency-1,validationCompleteNs:1e6+sequence*1000+latency,latencyNs:latency}));

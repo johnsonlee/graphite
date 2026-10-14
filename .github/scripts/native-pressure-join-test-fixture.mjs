@@ -25,7 +25,12 @@ export function fixture(t) {
    const isolatedRequests=Array.from({length:40},(_,sequence)=>({sequence,caseId:'slow',status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,
    startNs:100000+sequence*1000,wireCompleteNs:100000+sequence*1000+lat-1,validationCompleteNs:100000+sequence*1000+lat,latencyNs:lat}));
    const result={schema:'graphite.multigraph-pressure.result.v1',status:'PASS',errors:[],cell,arm:plan.arms[cell.arm],engine:plan.engine,operation:'query',planSha256:digest(file),coverage:plan.coverage,
-   cleanup:{after:[],errors:[],signals:[]},stages:{pressure:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],requests,wallNs:cell.arm==='B'?19080:19100,
+   cleanup:{after:[],errors:[],signals:[]},stages:{
+   oracle:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],concurrency:4,wallNs:lat+20,
+   requests:[{sequence:0,caseId:'slow',status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:10,wireCompleteNs:10+lat-1,validationCompleteNs:10+lat,latencyNs:lat}]},
+   warmup:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],concurrency:4,wallNs:2*lat+20,
+   requests:Array.from({length:2},(_,sequence)=>({sequence,caseId:'slow',status:'PASS',httpStatus:200,completeBody:true,deadlineExpired:false,startNs:500+sequence*1000,wireCompleteNs:500+sequence*1000+lat-1,validationCompleteNs:500+sequence*1000+lat,latencyNs:lat}))},
+   pressure:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],requests,wallNs:cell.arm==='B'?19080:19100,
    caseStatistics:{slow:{n:20,sampleIds:Array.from({length:20},(_,x)=>x),p50Ns:lat,p95Ns:lat}},
    resources:{cpuLowerBoundSeconds:1,cpuUpperBoundSeconds:1.01,rss:{lowerBoundBytes:1000,upperBoundBytes:1010}}},
    isolated:{status:'PASS',allWorkersStopped:true,unissued:[],journalErrors:[],concurrency:1,requests:isolatedRequests,wallNs:39000+lat,

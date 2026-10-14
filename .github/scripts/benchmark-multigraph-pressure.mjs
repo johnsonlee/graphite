@@ -216,6 +216,41 @@ export function tailSummary(tails){
     for(const t of Object.values(tails??{})) summary[t.status]++;
     return summary;
 }
+// Cold acceptance. The first request of every case (the oracle stage, concurrency 4) is the only
+// cold measurement the run makes: work a reader defers from loading to first use (a declared type
+// table read on its first access) lands here and nowhere else, since the loading gate ends at
+// registry-ready and warmup and pressure run after it. The cold latency of every case and the
+// oracle stage's wall are judged like the tails, as intervals across the run's two base cells and
+// two candidate cells with the latency tolerance: FAIL blocks, INDETERMINATE is reported.
+export function coldStatistics(stage,plan){
+    require(stage!==undefined && stage!==null,'Missing oracle stage');
+    require(stage.status==='PASS' && stage.allWorkersStopped && stage.unissued.length===0 && stage.journalErrors.length===0 &&
+        stage.requests.length===plan.cases.length && Number.isSafeInteger(stage.wallNs) && stage.wallNs>0,'Incomplete oracle stage');
+    const latencyNs={};
+    for(const [i,r] of stage.requests.entries()){
+        require(r.sequence===i && r.caseId===plan.cases[i].id && r.status==='PASS' && r.httpStatus===200 && r.completeBody===true &&
+            r.deadlineExpired===false && Number.isSafeInteger(r.latencyNs) && r.latencyNs>0 && r.latencyNs===r.validationCompleteNs-r.startNs &&
+            r.startNs<=r.wireCompleteNs && r.wireCompleteNs<=r.validationCompleteNs,'Invalid complete cold request boundary');
+        latencyNs[r.caseId]=r.latencyNs;
+    }
+    return {latencyNs,wallNs:stage.wallNs};
+}
+export function coldVerdicts(plan,cells){
+    const base=cells.filter(c=>c.cell.arm==='C'),candidate=cells.filter(c=>c.cell.arm==='B');
+    if(!base.length||!candidate.length) return null;
+    const range=(group,pick)=>{const v=group.map(pick);return [Math.min(...v),Math.max(...v)];};
+    const interval=(pick)=>{
+        const [baseLo,baseHi]=range(base,pick),[candLo,candHi]=range(candidate,pick);
+        return {baseMs:[baseLo/1e6,baseHi/1e6],candidateMs:[candLo/1e6,candHi/1e6],status:tailBound(baseLo,baseHi,candLo,candHi)};
+    };
+    const cases=Object.fromEntries(plan.cases.map(k=>[k.id,{caseId:k.id,source:'oracle',...interval(c=>c.cold.latencyNs[k.id])}]));
+    return {cases,stageWall:{source:'oracle',...interval(c=>c.cold.wallNs)}};
+}
+export function coldSummary(cold){
+    const summary={PASS:0,INDETERMINATE:0,FAIL:0};
+    for(const c of Object.values(cold?.cases??{})) summary[c.status]++;
+    return summary;
+}
 // User-approved resource tolerances (2026-10-12): construction and loading wall time may exceed
 // the base by 5%, total CPU time and peak RSS by 10%, in every fixture64 gate. The pressure
 // stage's own wall time stays strict. Each limit is independent of the others.
@@ -291,10 +326,11 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
         require(same(stats,result.stages.pressure.caseStatistics),'Recomputed nearest-rank per-case statistics');
         const isolated=isolatedStatistics(result.stages.isolated,plan,stats);
         require(same(isolated,result.stages.isolated.caseStatistics),'Recomputed isolated per-case statistics');
+        const cold=coldStatistics(result.stages.oracle,plan);
         require(audit.completeBodies===plan.cases.length*23+isolatedCases(plan,stats).length*plan.schedule.isolatedPerCase,'Bound full raw audit body count');
         require(same(result.cleanup.after,[]) && same(result.cleanup.errors,[]) &&
             result.cleanup.signals.every(s=>!s.signal.includes('KILL')),'Owned cleanup');
-        return {cell,stats,isolated,stage:result.stages.pressure,queryEvidenceComplete:true,
+        return {cell,stats,isolated,cold,stage:result.stages.pressure,queryEvidenceComplete:true,
             rssSemantics:rssSemantics(result.stages.pressure.resources.rss)};
     });
     require(new Set(cells.map(c=>c.rssSemantics)).size===1,'Mixed RSS measurement semantics');
@@ -315,13 +351,14 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
             rss:{measurementSemantics:base.rssSemantics,baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
                 status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes,RSS_TOLERANCE_RATIO)}};
     }).filter(Boolean));
-    const tails=tailVerdicts(plan,cells);
+    const tails=tailVerdicts(plan,cells),cold=coldVerdicts(plan,cells);
     const tailRule={cheapP50Ms:CHEAP_P50_NS/1e6,isolated:ISOLATED_SCHEDULE,collisionFactor:COLLISION_TAIL_FACTOR,collisionMs:COLLISION_TAIL_NS/1e6,
-        interval:'p95 FAIL only when every candidate cell exceeds every base cell by more than the latency tolerance; INDETERMINATE is reported, not red'};
+        interval:'p95 FAIL only when every candidate cell exceeds every base cell by more than the latency tolerance; INDETERMINATE is reported, not red',
+        cold:'the first request of every case (oracle stage) and that stage\'s wall, as the same base/candidate cell intervals with the latency tolerance: work deferred from loading to first use is measured here; FAIL blocks, INDETERMINATE is reported'};
     if (provisional) return {
         schema:'graphite.multigraph-pressure.progress.v1',status:'PROVISIONAL',
         scope:'multi-graph-pressure',engine:plan.engine,operation:'query',planSha256,
-        completedCells:cells.map(c=>c.cell.id),comparisons,tailRule,tails,tailSummary:tailSummary(tails),inputs,
+        completedCells:cells.map(c=>c.cell.id),comparisons,tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),inputs,
         passed:false,performanceAcceptance:false,queryEvidenceComplete:false,otherOperationsEligible:false,
         limitation:'Completed fixed pairs only. All six cells and complete correctness evidence remain required; this report cannot establish acceptance.'
     };
@@ -330,18 +367,19 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
     const coverageComplete=coverage.unavailableFamilies.length===0 && coverage.requiredFamilies.length>0 &&
         coverage.requiredFamilies.every(f=>coverage.coveredFamilies.includes(f));
     const accepted= comparisons.filter(c=>c.kind==='acceptedBaseline');
-    require(tails!==null,'Tail verdicts need both base cells and both candidate cells');
+    require(tails!==null && cold!==null,'Tail and cold verdicts need both base cells and both candidate cells');
     const measuredConstraintsPassed=accepted.every(c=>c.cases.every(k=>k.p50Passed)&&c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0) &&
-        Object.values(tails).every(t=>t.status!=='FAIL');
+        Object.values(tails).every(t=>t.status!=='FAIL') &&
+        Object.values(cold.cases).every(c=>c.status!=='FAIL') && cold.stageWall.status!=='FAIL';
     return {schema:'graphite.multigraph-pressure.comparison.v1',scope:'multi-graph-pressure',engine:plan.engine,operation:'query',
         latencyTolerance:{absoluteMs:LATENCY_TOLERANCE_NS/1e6,ratio:LATENCY_TOLERANCE_RATIO},resourceTolerance:{cpuRatio:CPU_TOLERANCE_RATIO,rssRatio:RSS_TOLERANCE_RATIO},
-        tailRule,tails,tailSummary:tailSummary(tails),
+        tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),
         planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
         status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
         ...(('pendingComparabilityAuthority' in plan || 'pendingJvmComparabilityAuthority' in plan)?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
-        otherOperationsEligible:false,limitation:'Two fixed directions; p50 per pair, p95 as base/candidate cell intervals with cheap cases measured in isolation (user-approved 2026-10-13); no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
+        otherOperationsEligible:false,limitation:'Two fixed directions; p50 per pair, p95 as base/candidate cell intervals with cheap cases measured in isolation (user-approved 2026-10-13), the first request of every case and the oracle stage wall as the cold intervals; no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;
@@ -370,6 +408,16 @@ function main(argv) {
         if(shown.length){
             lines.push('| Case | Source | Base p95 ms | Candidate p95 ms | Tail | Collision bound |','|---|---|---|---|---|---|');
             for(const t of shown) lines.push(`| ${t.caseId} | ${t.source} | ${t.baseP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.candidateP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.status} | ${t.collisionBound?`${t.collisionBound.status} (≤ ${t.collisionBound.limitMs.toFixed(0)} ms)`:'n/a'} |`);
+            lines.push('');
+        }
+    }
+    if(result.cold){
+        const s=result.coldSummary,w=result.cold.stageWall,ms=v=>v.map(x=>x.toFixed(3)).join('–');
+        lines.push(`Cold (first request per case, oracle stage): ${s.PASS} PASS, ${s.INDETERMINATE} INDETERMINATE, ${s.FAIL} FAIL; stage wall base ${ms(w.baseMs)} ms, candidate ${ms(w.candidateMs)} ms: ${w.status}.`,'');
+        const shown=Object.values(result.cold.cases).filter(c=>c.status!=='PASS');
+        if(shown.length){
+            lines.push('| Case | Source | Base cold ms | Candidate cold ms | Cold |','|---|---|---|---|---|');
+            for(const c of shown) lines.push(`| ${c.caseId} | ${c.source} | ${ms(c.baseMs)} | ${ms(c.candidateMs)} | ${c.status} |`);
             lines.push('');
         }
     }
