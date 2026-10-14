@@ -3161,8 +3161,8 @@ test("query operation evidence must bind the current PR parent revision", t => {
         assert.equal(row.status, "PASS");
         // The summary beside the status and the operation's own section carry the tail and cold
         // verdicts with their counts, never a bare PASS over an INDETERMINATE interval.
-        assert.equal(row.summary, "p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS, 0 INDETERMINATE, 0 FAIL, cold stage wall PASS");
-        assert.match(current.body, new RegExp(`- ${engine}-query: PASS \\(p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS`));
+        assert.equal(row.summary, "p50 1 PASS, 0 INDETERMINATE, 0 FAIL; p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS, 0 INDETERMINATE, 0 FAIL, cold stage wall PASS");
+        assert.match(current.body, new RegExp(`- ${engine}-query: PASS \\(p50 1 PASS, 0 INDETERMINATE, 0 FAIL; p95 tails 1 PASS, 0 INDETERMINATE, 0 FAIL; cold 1 PASS`));
         assert.match(current.body, new RegExp(`#### ${engine}-query — PASS`));
         // The fixture's stage walls are 19.1 and 19.08 µs, so the millisecond columns round to zero.
         assert.match(current.body, /\| acceptedBaseline c0→c2 \| 0 \| 0 \| -?0 \| 1\/1 \| PASS \| PASS \|/);
@@ -3182,7 +3182,7 @@ test("query operation evidence must bind the current PR parent revision", t => {
             const uncertainRow = shown.operationEvidence.find(r=>r.name===`${engine}-query`);
             assert.equal(uncertainRow.status, "PASS");
             assert.match(uncertainRow.summary, /p95 tails 0 PASS, 1 INDETERMINATE, 0 FAIL/);
-            assert.match(shown.body, /\| slow \| isolated \| 0\.000–0\.000 \| 0\.000–150\.000 \| INDETERMINATE \| PASS \(≤ 250 ms\) \|/);
+            assert.match(shown.body, /\| slow \| isolated \| 0\.000–0\.000 \| 0\.000–150\.000 \| INDETERMINATE \| PASS \(0\.000–0\.000 ms ≤ 250 ms\) \|/);
             cellResult.stages.isolated.requests.forEach(r => {r.latencyNs = 100; r.validationCompleteNs = r.startNs + 100; r.wireCompleteNs = r.startNs + 99;});
             cellResult.stages.isolated.caseStatistics.slow.p50Ns = 100; cellResult.stages.isolated.caseStatistics.slow.p95Ns = 100;
             put(cellFile, cellResult); audit.resultSha256 = digest(cellFile); put(auditFile, audit);

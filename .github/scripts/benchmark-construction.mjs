@@ -2,7 +2,7 @@
 // Recompute the six usable-save observations. Never accepts a producer's single CAB run.
 import fs from 'node:fs';
 import {verifyLifecycleJoin} from './benchmark-lifecycle-join.mjs';
-import {withinWallTolerance,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
+import {withinWallTolerance,resourceBound,RESOURCE_TOLERANCE,CPU_TOLERANCE_RATIO,RSS_TOLERANCE_RATIO} from './benchmark-multigraph-pressure.mjs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import {fileURLToPath} from 'node:url';
@@ -91,15 +91,32 @@ export function compareConstruction(planFile, directory,comparabilityReceipt=nul
             baseRssBytes:base.peakRssBytes,candidateRssBytes:candidate.peakRssBytes,deltaRssBytes:candidate.peakRssBytes-base.peakRssBytes,
             wallPassed:withinWallTolerance(candidate.realSeconds,base.realSeconds),cpuPassed:candidate.totalCpuSeconds<=base.totalCpuSeconds*(1+CPU_TOLERANCE_RATIO),
             rssPassed:candidate.peakRssBytes<=base.peakRssBytes*(1+RSS_TOLERANCE_RATIO)};}));
-    const measuredConstraintsPassed=comparisons.filter(x=>x.kind==='acceptedBaseline').every(x=>x.wallPassed&&x.cpuPassed&&x.rssPassed);
+    // User-approved 2026-10-14: CPU and RSS are judged as the loading gate judges them, the run's two
+    // base cells against its two candidate cells (resourceBound): FAIL only when every candidate cell
+    // is over every base cell by more than the tolerance, PASS when none is, INDETERMINATE between
+    // (reported, not red). Run 915's four base cells spread 535–553 s of CPU, the two candidate cells
+    // 569–596 s, and the per-pair rule failed one pair at +10.1% and passed the other at +5.3%.
+    // The per-pair cpuPassed/rssPassed stay reported.
+    const resourceVerdicts=Object.fromEntries(Object.entries(pairs).map(([kind,ps])=>{
+        const baseCells=[...new Set(ps.map(([b])=>b))],candidateCells=[...new Set(ps.map(([,c])=>c))];
+        const range=(cells,key)=>{const v=cells.map(i=>rows[i][key]);return [Math.min(...v),Math.max(...v)];};
+        const resource=(key,ratio)=>{const [baseLower,baseUpper]=range(baseCells,key),[candidateLower,candidateUpper]=range(candidateCells,key);
+            return {baseLower,baseUpper,candidateLower,candidateUpper,status:resourceBound(baseLower,baseUpper,candidateLower,candidateUpper,ratio)};};
+        return [kind,{cpu:resource('totalCpuSeconds',CPU_TOLERANCE_RATIO),rss:resource('peakRssBytes',RSS_TOLERANCE_RATIO)}];
+    }));
+    for(const x of comparisons){x.cpu=resourceVerdicts[x.kind].cpu;x.rss=resourceVerdicts[x.kind].rss;}
+    const accepted=resourceVerdicts.acceptedBaseline;
+    const measuredConstraintsPassed=comparisons.filter(x=>x.kind==='acceptedBaseline').every(x=>x.wallPassed)&&
+        accepted.cpu.status!=='FAIL'&&accepted.rss.status!=='FAIL';
     const coreComparabilityVerified=verifyLifecycleJoin(planFile,directory,plan,comparabilityReceipt);
     const passed=coreComparabilityVerified&&measuredConstraintsPassed;
     return {schema:'graphite.real64-construction.comparison.v1',engine:'jvm',operation:'construction',scope:'multi-graph-usable-save',
         passed,status:!coreComparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':passed?'PASS':'FAIL',
-        measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,acceptedBaselineRevision:plan.arms.C.revision,
+        measuredConstraintsPassed,resourceTolerance:RESOURCE_TOLERANCE,resourceRule:'CPU and RSS as base/candidate cell intervals: FAIL blocks, INDETERMINATE is reported (user-approved 2026-10-14); per-pair cpuPassed/rssPassed reported',
+        resourceVerdicts,...(plan.comparabilityPending===true?{comparabilityPending:!coreComparabilityVerified,coreComparabilityVerified}:{}),planSha256:digest,comparisons,acceptedBaselineRevision:plan.arms.C.revision,
         parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,completeSemanticEquivalence:false,
         strictEquivalence:false,sourceToDeclarationCompletenessClaim:false,otherOperationsEligible:false,
-        limitation:'Two fixed directions; wall within 5%, CPU within 10%, RSS within 10% of the base (user-approved 2026-10-12); source-corrected comparability and fresh-output validity, not complete semantic equality. No query/loading acceptance.'};
+        limitation:'Two fixed directions; wall within 5% per pair, CPU within 10% and RSS within 10% as base/candidate cell intervals (user-approved 2026-10-12/14); source-corrected comparability and fresh-output validity, not complete semantic equality. No query/loading acceptance.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;require(plan&&dir&&prefix && (argv.length===3 ||

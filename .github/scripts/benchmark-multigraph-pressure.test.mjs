@@ -63,9 +63,15 @@ test('progress CLI publishes an explicitly incomplete report without requiring f
  assert.match(fs.readFileSync(prefix+'-report.md','utf8'),/cannot establish acceptance/);
  assert.equal(spawnSync(process.execPath,command).status,1);
 });
-test('each fixed direction is required; a slower reverse cannot be pooled away',t=>{
- const f=fixture(t);f.rewrite(3,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});r.stages.pressure.caseStatistics.slow.p50Ns=SLOW;r.stages.pressure.caseStatistics.slow.p95Ns=SLOW;r.stages.isolated.requests=[];r.stages.isolated.caseStatistics={};});
- const r=comparePressure(f.file,f.root);assert.equal(r.passed,false);assert.equal(r.comparisons[3].cases[0].p95Passed,false);
+test('one slow candidate cell is INDETERMINATE and reported; both slow cells fail (user-approved 2026-10-14 intervals)',t=>{
+ const slow=(f,i)=>f.rewrite(i,r=>{r.stages.pressure.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});r.stages.pressure.caseStatistics.slow.p50Ns=SLOW;r.stages.pressure.caseStatistics.slow.p95Ns=SLOW;r.stages.isolated.requests=[];r.stages.isolated.caseStatistics={};});
+ const f=fixture(t);slow(f,3);
+ let r=comparePressure(f.file,f.root);assert.equal(r.passed,true);
+ assert.equal(r.comparisons[3].cases[0].p95Passed,false);assert.equal(r.comparisons[3].cases[0].p50Passed,false);
+ assert.equal(r.p50.slow.status,'INDETERMINATE');assert.equal(r.tails.slow.status,'INDETERMINATE');
+ slow(f,2);
+ r=comparePressure(f.file,f.root);assert.equal(r.passed,false);assert.equal(r.status,'FAIL');
+ assert.equal(r.p50.slow.status,'FAIL');assert.equal(r.tails.slow.status,'FAIL');
 });
 test('altered evidence, wrong typed boundary, stale quantiles, failures and singleton scope reject',t=>{
  const f=fixture(t);f.rewrite(0,r=>{r.stages.pressure.requests[0].validationCompleteNs++;});assert.throws(()=>comparePressure(f.file,f.root),/boundary/);
@@ -235,14 +241,15 @@ test('receipt placement and metadata paths cannot escape their portable artifact
 test('valid complete join cannot mask latency, CPU or RSS regression',t=>{
  for(const metric of ['latency','cpu','rss']) {
   const f=joinedFixture(t,{changeCell:(r,i)=>{
-   if(i!==2)return;const s=r.stages.pressure;
+   if(i!==2&&!(metric==='latency'&&i===3))return;const s=r.stages.pressure;
+   // Latency intervals need both candidate cells slow to fail; CPU and RSS keep the per-pair PASS requirement.
    if(metric==='latency') {s.requests.forEach(x=>{x.latencyNs=SLOW;x.validationCompleteNs=x.startNs+SLOW;});s.caseStatistics.slow.p50Ns=SLOW;s.caseStatistics.slow.p95Ns=SLOW;r.stages.isolated.requests=[];r.stages.isolated.caseStatistics={};}
    if(metric==='cpu') {s.resources.cpuLowerBoundSeconds=2;s.resources.cpuUpperBoundSeconds=2;}
    if(metric==='rss') {s.resources.rss.lowerBoundBytes=2000;s.resources.rss.upperBoundBytes=2000;}
   }});
   const r=comparePressure(f.file,f.root,f.receiptFile);assert.equal(r.passed,false);assert.equal(r.status,'FAIL');
   const pair=r.comparisons.find(x=>x.kind==='acceptedBaseline'&&x.candidate==='c2');
-  if(metric==='latency')assert.equal(pair.cases[0].p95Passed,false);else assert.equal(pair[metric].status,'FAIL');
+  if(metric==='latency'){assert.equal(pair.cases[0].p95Passed,false);assert.equal(r.p50.slow.status,'FAIL');assert.equal(r.tails.slow.status,'FAIL');}else assert.equal(pair[metric].status,'FAIL');
  }
 });
 
@@ -305,6 +312,26 @@ test('tails: p95 intervals across both base and both candidate cells, cheap case
  slowIsolated(2,90e6);slowIsolated(3,90e6);
  v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.status,'PASS');assert.equal(v.passed,true);
 });
+test('p50: base/candidate cell intervals decide; the per-pair verdicts are reported',t=>{
+ // Fixture p50: C cells 100ns, B cells 80ns. Move one candidate cell's p50 far past every base cell.
+ const f=fixture(t);
+ // A cell whose pressure p50 reaches the isolated threshold runs no isolated samples for the case.
+ const p50=(i,ns)=>f.rewrite(i,x=>{x.stages.pressure.requests.forEach(q=>{q.latencyNs=ns;q.validationCompleteNs=q.startNs+ns;});x.stages.pressure.caseStatistics.slow.p50Ns=ns;x.stages.pressure.caseStatistics.slow.p95Ns=ns;
+  if(ns>=100e6){x.stages.isolated.requests=[];x.stages.isolated.caseStatistics={};}});
+ p50(2,300e6);
+ let v=comparePressure(f.file,f.root);
+ assert.equal(v.p50.slow.status,'INDETERMINATE');assert.deepEqual(v.p50Summary,{PASS:0,INDETERMINATE:1,FAIL:0});
+ assert.deepEqual(v.p50.slow.candidateP50Ms,[0.00008,300]);assert.equal(v.tailRule.p50.includes('2026-10-14'),true);
+ // The per-pair rule still says FAIL for the pairs that meet that cell, and the gate ignores it.
+ assert.equal(v.comparisons.filter(c=>c.candidate==='2-B').every(c=>c.cases[0].p50Passed===false),true);
+ assert.equal(v.passed,true);
+ // Both candidate cells slower than both base cells by more than the tolerance: FAIL.
+ p50(3,300e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.p50.slow.status,'FAIL');assert.equal(v.passed,false);assert.equal(v.status,'FAIL');
+ // Inside the tolerance (100 ms absolute on a 100 ns base): PASS.
+ p50(2,100e6);p50(3,100e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.p50.slow.status,'PASS');assert.equal(v.passed,true);
+});
 test('tails: the pressure p95 of a cheap case is only a collision bound; a heavy case keeps the pressure interval',t=>{
  const f=fixture(t);
  // Nearest-rank p95 of 20 samples is the second-slowest, so two samples move.
@@ -314,8 +341,14 @@ test('tails: the pressure p95 of a cheap case is only a collision bound; a heavy
  let v=comparePressure(f.file,f.root);
  assert.ok(v.comparisons.filter(c=>c.kind==='acceptedBaseline').every(c=>c.cases[0].p95Passed===false));
  assert.equal(v.tails.slow.collisionBound.status,'PASS');assert.equal(v.tails.slow.status,'PASS');assert.equal(v.passed,true);
- // Past the collision bound (twice the base or +250ms, whichever allows more) the cheap case fails even though isolation is clean.
- pressureP95(2,400e6);pressureP95(3,400e6);
+ // One candidate cell past the collision bound (twice the base or +250ms, whichever allows more) is one collision:
+ // INDETERMINATE, reported, not red (user-approved 2026-10-14).
+ pressureP95(2,400e6);
+ v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.collisionBound.status,'INDETERMINATE');assert.equal(v.tails.slow.status,'INDETERMINATE');
+ assert.deepEqual(v.tails.slow.collisionBound.candidatePressureP95Ms,[200,400]);assert.equal(v.passed,true);
+ assert.deepEqual(v.tailSummary,{PASS:0,INDETERMINATE:1,FAIL:0});
+ // Both candidate cells past it: the cheap case fails even though isolation is clean.
+ pressureP95(3,400e6);
  v=comparePressure(f.file,f.root);assert.equal(v.tails.slow.collisionBound.status,'FAIL');assert.equal(v.tails.slow.status,'FAIL');assert.equal(v.passed,false);
  // A heavy case (base pressure p50 at 2s) has no isolated samples and is judged on the pressure interval.
  const g=fixture(t);

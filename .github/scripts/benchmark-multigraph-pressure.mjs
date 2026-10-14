@@ -202,11 +202,14 @@ export function tailVerdicts(plan,cells){
         const verdict={caseId:id,cheap,source:isolated?'isolated':'pressure',baseP95Ms:[baseLo/1e6,baseHi/1e6],
             candidateP95Ms:[candLo/1e6,candHi/1e6],status:tailBound(baseLo,baseHi,candLo,candHi)};
         if(cheap){
-            const [,pressureBaseHi]=range(base,c=>c.stats[id].p95Ns),[,pressureCandHi]=range(candidate,c=>c.stats[id].p95Ns);
+            // User-approved 2026-10-14: one candidate cell over the bound is one collision (a 20-sample p95 is
+            // the second-slowest sample), reported as INDETERMINATE; FAIL needs every candidate cell over it.
+            const [,pressureBaseHi]=range(base,c=>c.stats[id].p95Ns),[pressureCandLo,pressureCandHi]=range(candidate,c=>c.stats[id].p95Ns);
             const limit=Math.max(COLLISION_TAIL_FACTOR*pressureBaseHi,pressureBaseHi+COLLISION_TAIL_NS);
-            verdict.collisionBound={basePressureP95Ms:pressureBaseHi/1e6,candidatePressureP95Ms:pressureCandHi/1e6,limitMs:limit/1e6,
-                status:pressureCandHi<=limit?'PASS':'FAIL'};
+            verdict.collisionBound={basePressureP95Ms:pressureBaseHi/1e6,candidatePressureP95Ms:[pressureCandLo/1e6,pressureCandHi/1e6],limitMs:limit/1e6,
+                status:pressureCandHi<=limit?'PASS':pressureCandLo>limit?'FAIL':'INDETERMINATE'};
             if(verdict.collisionBound.status==='FAIL') verdict.status='FAIL';
+            else if(verdict.collisionBound.status==='INDETERMINATE'&&verdict.status==='PASS') verdict.status='INDETERMINATE';
         }
         return [id,verdict];
     }));
@@ -215,6 +218,20 @@ export function tailSummary(tails){
     const summary={PASS:0,INDETERMINATE:0,FAIL:0};
     for(const t of Object.values(tails??{})) summary[t.status]++;
     return summary;
+}
+// User-approved 2026-10-14: p50 is judged like p95, as the run's two base cells against its two
+// candidate cells with the latency tolerance. Run 915's shape-group-count-broad spread 2012–2306 ms
+// across the four base cells (±7%) while both candidate cells fell inside that range, and the
+// per-pair rule failed two of the four pairs on that noise. The per-pair p50Passed stays reported.
+export function p50Verdicts(plan,cells){
+    const base=cells.filter(c=>c.cell.arm==='C'),candidate=cells.filter(c=>c.cell.arm==='B');
+    if(!base.length||!candidate.length) return null;
+    const range=(group,pick)=>{const v=group.map(pick);return [Math.min(...v),Math.max(...v)];};
+    return Object.fromEntries(plan.cases.map(k=>{
+        const id=k.id,[baseLo,baseHi]=range(base,c=>c.stats[id].p50Ns),[candLo,candHi]=range(candidate,c=>c.stats[id].p50Ns);
+        return [id,{caseId:id,source:'pressure',baseP50Ms:[baseLo/1e6,baseHi/1e6],candidateP50Ms:[candLo/1e6,candHi/1e6],
+            status:tailBound(baseLo,baseHi,candLo,candHi)}];
+    }));
 }
 // Cold acceptance. The first request of every case (the oracle stage, concurrency 4) is the only
 // cold measurement the run makes: work a reader defers from loading to first use (a declared type
@@ -351,14 +368,16 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
             rss:{measurementSemantics:base.rssSemantics,baseLower:br.rss.lowerBoundBytes,baseUpper:br.rss.upperBoundBytes,candidateLower:cr.rss.lowerBoundBytes,candidateUpper:cr.rss.upperBoundBytes,
                 status:resourceBound(br.rss.lowerBoundBytes,br.rss.upperBoundBytes,cr.rss.lowerBoundBytes,cr.rss.upperBoundBytes,RSS_TOLERANCE_RATIO)}};
     }).filter(Boolean));
-    const tails=tailVerdicts(plan,cells),cold=coldVerdicts(plan,cells);
+    const tails=tailVerdicts(plan,cells),cold=coldVerdicts(plan,cells),p50=p50Verdicts(plan,cells);
     const tailRule={cheapP50Ms:CHEAP_P50_NS/1e6,isolated:ISOLATED_SCHEDULE,collisionFactor:COLLISION_TAIL_FACTOR,collisionMs:COLLISION_TAIL_NS/1e6,
         interval:'p95 FAIL only when every candidate cell exceeds every base cell by more than the latency tolerance; INDETERMINATE is reported, not red',
+        p50:'p50 is judged as the same base/candidate cell intervals with the latency tolerance (user-approved 2026-10-14); the per-pair verdicts are reported',
+        collision:'a cheap case\'s pressure p95 FAILs its collision bound only when every candidate cell exceeds it; one cell over is INDETERMINATE (user-approved 2026-10-14)',
         cold:'the first request of every case (oracle stage) and that stage\'s wall, as the same base/candidate cell intervals with the latency tolerance: work deferred from loading to first use is measured here; FAIL blocks, INDETERMINATE is reported'};
     if (provisional) return {
         schema:'graphite.multigraph-pressure.progress.v1',status:'PROVISIONAL',
         scope:'multi-graph-pressure',engine:plan.engine,operation:'query',planSha256,
-        completedCells:cells.map(c=>c.cell.id),comparisons,tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),inputs,
+        completedCells:cells.map(c=>c.cell.id),comparisons,tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),p50,p50Summary:tailSummary(p50),inputs,
         passed:false,performanceAcceptance:false,queryEvidenceComplete:false,otherOperationsEligible:false,
         limitation:'Completed fixed pairs only. All six cells and complete correctness evidence remain required; this report cannot establish acceptance.'
     };
@@ -367,19 +386,20 @@ function compareCompletedCells(planFile,directory,comparabilityReceipt,completed
     const coverageComplete=coverage.unavailableFamilies.length===0 && coverage.requiredFamilies.length>0 &&
         coverage.requiredFamilies.every(f=>coverage.coveredFamilies.includes(f));
     const accepted= comparisons.filter(c=>c.kind==='acceptedBaseline');
-    require(tails!==null && cold!==null,'Tail and cold verdicts need both base cells and both candidate cells');
-    const measuredConstraintsPassed=accepted.every(c=>c.cases.every(k=>k.p50Passed)&&c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0) &&
+    require(tails!==null && cold!==null && p50!==null,'Tail, cold and p50 verdicts need both base cells and both candidate cells');
+    const measuredConstraintsPassed=accepted.every(c=>c.cpu.status==='PASS'&&c.rss.status==='PASS'&&c.deltaWallMs<=0) &&
+        Object.values(p50).every(v=>v.status!=='FAIL') &&
         Object.values(tails).every(t=>t.status!=='FAIL') &&
         Object.values(cold.cases).every(c=>c.status!=='FAIL') && cold.stageWall.status!=='FAIL';
     return {schema:'graphite.multigraph-pressure.comparison.v1',scope:'multi-graph-pressure',engine:plan.engine,operation:'query',
         latencyTolerance:{absoluteMs:LATENCY_TOLERANCE_NS/1e6,ratio:LATENCY_TOLERANCE_RATIO},resourceTolerance:{cpuRatio:CPU_TOLERANCE_RATIO,rssRatio:RSS_TOLERANCE_RATIO},
-        tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),
+        tailRule,tails,tailSummary:tailSummary(tails),cold,coldSummary:coldSummary(cold),p50,p50Summary:tailSummary(p50),
         planSha256,passed:comparabilityVerified&&coverageComplete&&measuredConstraintsPassed,
         status:!comparabilityVerified?'MEASURED_CORE_COMPARABILITY_PENDING':!coverageComplete?'UNAVAILABLE':measuredConstraintsPassed?'PASS':'FAIL',
         queryEvidenceComplete:true,coverageComplete,coverage,measuredConstraintsPassed,comparisons,inputs,
         ...(('pendingComparabilityAuthority' in plan || 'pendingJvmComparabilityAuthority' in plan)?{comparabilityPending:!comparabilityVerified,coreComparabilityVerified:comparabilityVerified}:{}),
         acceptedBaselineRevision:plan.arms.C.revision,parentRevision:plan.arms.A.revision,candidateRevision:plan.arms.B.revision,
-        otherOperationsEligible:false,limitation:'Two fixed directions; p50 per pair, p95 as base/candidate cell intervals with cheap cases measured in isolation (user-approved 2026-10-13), the first request of every case and the oracle stage wall as the cold intervals; no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
+        otherOperationsEligible:false,limitation:'Two fixed directions; p50 and p95 as base/candidate cell intervals with cheap cases measured in isolation (user-approved 2026-10-13/14, the per-pair p50 verdicts reported), the first request of every case and the oracle stage wall as the cold intervals; no pooling, quiet-host or saturation claim. RSS observation envelopes may leave query RSS indeterminate; Linux kernel counters are approximate, not mathematical physical-memory bounds.'};
 }
 function main(argv) {
     const [plan,dir,prefix,flag,receipt]=argv;
@@ -402,12 +422,21 @@ function main(argv) {
         for(const k of c.cases) lines.push(`| ${k.caseId} | ${k.baseP50Ms.toFixed(3)} | ${k.candidateP50Ms.toFixed(3)} | ${k.deltaP50Ms.toFixed(3)} | ${k.baseP95Ms.toFixed(3)} | ${k.candidateP95Ms.toFixed(3)} | ${k.deltaP95Ms.toFixed(3)} |`);
         lines.push('');
     }
+    if(result.p50){
+        const s=result.p50Summary;lines.push(`p50 (base/candidate cell intervals): ${s.PASS} PASS, ${s.INDETERMINATE} INDETERMINATE, ${s.FAIL} FAIL.`,'');
+        const shown=Object.values(result.p50).filter(v=>v.status!=='PASS');
+        if(shown.length){
+            lines.push('| Case | Base p50 ms | Candidate p50 ms | p50 |','|---|---|---|---|');
+            for(const v of shown) lines.push(`| ${v.caseId} | ${v.baseP50Ms.map(x=>x.toFixed(3)).join('–')} | ${v.candidateP50Ms.map(x=>x.toFixed(3)).join('–')} | ${v.status} |`);
+            lines.push('');
+        }
+    }
     if(result.tails){
         const s=result.tailSummary;lines.push(`Tails: ${s.PASS} PASS, ${s.INDETERMINATE} INDETERMINATE, ${s.FAIL} FAIL (cheap cases from the isolated stage).`,'');
         const shown=Object.values(result.tails).filter(t=>t.status!=='PASS');
         if(shown.length){
             lines.push('| Case | Source | Base p95 ms | Candidate p95 ms | Tail | Collision bound |','|---|---|---|---|---|---|');
-            for(const t of shown) lines.push(`| ${t.caseId} | ${t.source} | ${t.baseP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.candidateP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.status} | ${t.collisionBound?`${t.collisionBound.status} (≤ ${t.collisionBound.limitMs.toFixed(0)} ms)`:'n/a'} |`);
+            for(const t of shown) lines.push(`| ${t.caseId} | ${t.source} | ${t.baseP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.candidateP95Ms.map(v=>v.toFixed(3)).join('–')} | ${t.status} | ${t.collisionBound?`${t.collisionBound.status} (${t.collisionBound.candidatePressureP95Ms.map(v=>v.toFixed(0)).join('–')} ms ≤ ${t.collisionBound.limitMs.toFixed(0)} ms)`:'n/a'} |`);
             lines.push('');
         }
     }

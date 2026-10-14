@@ -3316,7 +3316,9 @@ const interval = values => Array.isArray(values) ? values.map(v => v.toFixed(3))
 /// One line beside the operation's status: a PASS that holds INDETERMINATE verdicts says so.
 export function operationSummary(recomputed) {
     if (recomputed.operation === "query") {
-        const parts = [`p95 tails ${counts(recomputed.tailSummary)}`];
+        const parts = [];
+        if (recomputed.p50) parts.push(`p50 ${counts(recomputed.p50Summary)}`);
+        parts.push(`p95 tails ${counts(recomputed.tailSummary)}`);
         if (recomputed.cold) parts.push(`cold ${counts(recomputed.coldSummary)}, cold stage wall ${verdictOf(recomputed.cold.stageWall)}`);
         return parts.join("; ");
     }
@@ -3333,11 +3335,19 @@ export function operationMetrics(operation, recomputed) {
         for (const x of pairs) {
             lines.push(`| ${x.kind} ${x.base}→${x.candidate} | ${x.baseWallMs.toFixed(0)} | ${x.candidateWallMs.toFixed(0)} | ${x.deltaWallMs.toFixed(0)} | ${x.cases.filter(k => k.p50Passed).length}/${x.cases.length} | ${verdictOf(x.cpu)} | ${verdictOf(x.rss)} |`);
         }
+        if (recomputed.p50) {
+            lines.push("", `p50 (base/candidate cell intervals): ${counts(recomputed.p50Summary)}.`);
+            const p50 = Object.values(recomputed.p50).filter(v => v.status !== "PASS");
+            if (p50.length) {
+                lines.push("", "| Case | Base p50 ms | Candidate p50 ms | p50 |", "|---|---|---|:---:|");
+                for (const v of p50) lines.push(`| ${v.caseId} | ${interval(v.baseP50Ms)} | ${interval(v.candidateP50Ms)} | ${v.status} |`);
+            }
+        }
         lines.push("", `p95 tails: ${counts(recomputed.tailSummary)} (cheap cases from the isolated stage).`);
         const tails = Object.values(recomputed.tails ?? {}).filter(t => t.status !== "PASS");
         if (tails.length) {
             lines.push("", "| Case | Source | Base p95 ms | Candidate p95 ms | Tail | Collision bound |", "|---|---|---|---|:---:|---|");
-            for (const t of tails) lines.push(`| ${t.caseId} | ${t.source} | ${interval(t.baseP95Ms)} | ${interval(t.candidateP95Ms)} | ${t.status} | ${t.collisionBound ? `${t.collisionBound.status} (≤ ${t.collisionBound.limitMs.toFixed(0)} ms)` : "n/a"} |`);
+            for (const t of tails) lines.push(`| ${t.caseId} | ${t.source} | ${interval(t.baseP95Ms)} | ${interval(t.candidateP95Ms)} | ${t.status} | ${t.collisionBound ? `${t.collisionBound.status} (${interval(t.collisionBound.candidatePressureP95Ms)} ms ≤ ${t.collisionBound.limitMs.toFixed(0)} ms)` : "n/a"} |`);
         }
         if (recomputed.cold) {
             const w = recomputed.cold.stageWall;

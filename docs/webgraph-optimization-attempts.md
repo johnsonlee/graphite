@@ -21402,3 +21402,37 @@ manifests back without the graphs. The eight checkpoint and chain suites pass. E
 less to download and extract at every hop (the producer payload 43 → 32.6 GB), roughly 2–3 min per
 restore on the hosted runner, 15 min across the critical path, and the same again in disk headroom
 for the two-arm consumer chain that ran out of it in run 911.
+
+### Attempt296 — user-approved 2026-10-14: p50 and construction resources as cell intervals, collision bound needs both cells (2026-10-14)
+
+Run 915's two gate failures that were noise, and the user's answer "三个判定规则就按你的建议来":
+
+- **p50 as intervals.** `shape-group-count-broad` p50: base cells 2150/2012 (main) and 2035/2306 (4f) ms,
+  candidate cells 2220/2119 ms. Two of four pairs failed the per-pair 100 ms/5% rule (+107 ms, +185 ms)
+  while both candidate cells lay inside the base cells' own spread. `p50Verdicts` judges each case as
+  `tailVerdicts` judges p95: the two base cells against the two candidate cells with the latency
+  tolerance, FAIL only when every candidate cell is slower than every base cell by more than it,
+  INDETERMINATE between (reported in `p50`/`p50Summary`, the status report and the PR comment).
+  `measuredConstraintsPassed` requires no p50 FAIL; the per-pair `p50Passed` stays reported.
+- **Collision bound needs both cells.** `slow-valueMiss` (isolated p95 2.0 → 2.6 ms, PASS) failed its
+  collision bound on one candidate cell's pressure p95 of 470 ms (the other 45 ms; base 43–198 ms): a
+  20-sample p95 is the second-slowest sample, so one cell over the bound is one collision. The bound
+  now FAILs only when every candidate cell exceeds it; one cell over is INDETERMINATE, and the bound
+  records both candidate cells' pressure p95.
+- **Construction CPU and RSS as intervals.** Candidate cells 596/569 s against base cells 541/540
+  (main) and 535/553 s (4f): one pair at +10.1% failed the per-pair 10% limit, the other at +5.3%
+  passed, and Attempt281 had put the real cost at about +4% with ±5% runner noise. `resourceVerdicts`
+  judges CPU and RSS per pair kind as `benchmark-loading.mjs` does (`resourceBound` over the two base
+  and two candidate cells): FAIL blocks, INDETERMINATE is reported (the loading and query gates keep
+  requiring PASS for their intervals; construction's wall rule, 5% per pair, is unchanged). Under
+  these rules run 915's construction (CPU INDETERMINATE: 569 ≤ 553×1.1, 596 > 535×1.1) and its
+  native query gate (p50 INDETERMINATE, collision INDETERMINATE) would be red only for the four cold
+  FAILs, which are the deferred declared-table work and the user's open A/B/C decision.
+
+Tests: the construction test now walks one overrun cell (INDETERMINATE, passed) to two (FAIL) and
+keeps the per-pair wall failure; the pressure suite's single-slow-cell test asserts INDETERMINATE and
+its two-cell variant FAIL, the joined-fixture test slows both cells for the latency FAIL, a p50
+interval test covers INDETERMINATE/FAIL/PASS, the collision test covers one cell over (INDETERMINATE)
+and both (FAIL); the gate renders `p50` counts and a table of its non-PASS cases and the collision
+bound's two cells. CLAUDE.md records the approval; the controls and the workflow's six gate digests
+are re-pinned.

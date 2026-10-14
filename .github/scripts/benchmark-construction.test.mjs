@@ -89,14 +89,29 @@ test('single CAB, missing readback, changed graph count and promoted semantic fl
  const j=fixture(t);j.audit.completeSemanticEquivalence=true;j.seal();assert.throws(()=>compareConstruction(j.file,j.directory),/independent construction audit/);
 });
 test('a slower reverse or resource overrun cannot be pooled away',t=>{
- const f=fixture(t),i=3,row=f.audit.rows[i],cell=f.execution.cells[i],dir=path.join(f.cells,cell.cell.id);
- const clock=path.join(dir,'prepare-real64/time-v.log');
- fs.writeFileSync(clock,'User time (seconds): 70\nSystem time (seconds): 3.5\nElapsed (wall clock) time (h:mm:ss or m:ss): 1:05\nMaximum resident set size (kbytes): 4096\nExit status: 0\n');
- cell.construction.constructionResources=constructionResources(clock);row.resources=cell.construction.constructionResources;
- write(path.join(dir,'prepare-real64/record.json'),cell.construction);write(path.join(dir,'cell.json'),cell);
- for(const name of Object.keys(row.rawPins))row.rawPins[name]=hash(path.join(f.cells,name));f.seal();
- const result=compareConstruction(f.file,f.directory);assert.equal(result.passed,false);
+ const overrun=(f,i,clockText)=>{
+  const row=f.audit.rows[i],cell=f.execution.cells[i],dir=path.join(f.cells,cell.cell.id),clock=path.join(dir,'prepare-real64/time-v.log');
+  fs.writeFileSync(clock,clockText);
+  cell.construction.constructionResources=constructionResources(clock);row.resources=cell.construction.constructionResources;
+  write(path.join(dir,'prepare-real64/record.json'),cell.construction);write(path.join(dir,'cell.json'),cell);
+  for(const name of Object.keys(row.rawPins))row.rawPins[name]=hash(path.join(f.cells,name));
+ };
+ const heavy='User time (seconds): 70\nSystem time (seconds): 3.5\nElapsed (wall clock) time (h:mm:ss or m:ss): 1:05\nMaximum resident set size (kbytes): 4096\nExit status: 0\n';
+ // One candidate cell over the CPU and RSS limits (user-approved 2026-10-14 intervals): INDETERMINATE,
+ // reported, not red; the per-pair verdicts of that cell still read FAIL.
+ const f=fixture(t);overrun(f,3,heavy);f.seal();
+ let result=compareConstruction(f.file,f.directory);assert.equal(result.passed,true);
  assert.equal(result.comparisons[3].deltaWallMs,1000);assert.equal(result.comparisons[3].cpuPassed,false);assert.equal(result.comparisons[3].rssPassed,false);
+ assert.equal(result.resourceVerdicts.acceptedBaseline.cpu.status,'INDETERMINATE');assert.equal(result.resourceVerdicts.acceptedBaseline.rss.status,'INDETERMINATE');
+ assert.equal(result.comparisons[3].cpu.status,'INDETERMINATE');assert.deepEqual(result.comparisons[3].cpu.candidateUpper,73.5);
+ // Both candidate cells over every base cell by more than the limit: FAIL, red.
+ overrun(f,2,heavy);f.seal();
+ result=compareConstruction(f.file,f.directory);assert.equal(result.passed,false);assert.equal(result.status,'FAIL');
+ assert.equal(result.resourceVerdicts.acceptedBaseline.cpu.status,'FAIL');assert.equal(result.resourceVerdicts.acceptedBaseline.rss.status,'FAIL');
+ // A slower wall in one direction still fails per pair.
+ const g=fixture(t);overrun(g,3,'User time (seconds): 60\nSystem time (seconds): 3.5\nElapsed (wall clock) time (h:mm:ss or m:ss): 1:20\nMaximum resident set size (kbytes): 2048\nExit status: 0\n');g.seal();
+ result=compareConstruction(g.file,g.directory);assert.equal(result.passed,false);assert.equal(result.comparisons[3].wallPassed,false);
+ assert.equal(result.resourceVerdicts.acceptedBaseline.cpu.status,'PASS');
 });
 test('aggregate consumes real construction evidence while other missing operations remain unavailable',t=>{
  const f=fixture(t),result=compareConstruction(f.file,f.directory);
