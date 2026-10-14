@@ -290,6 +290,11 @@ pub fn node_to_map(g: &Graph, node: &Node) -> J {
                 declared_json(&graphite_cypher::engine::props::node_property(g, node, key)),
             );
         }
+        // A table that failed to read is not a node without declarations: the detail says so
+        // beside the nulls instead of passing damaged declaration data off as absent metadata.
+        if let Some(error) = g.declared_types_error() {
+            put(&mut m, "declared_types_error", json!(error.to_string()));
+        }
     }
     J::Object(m)
 }

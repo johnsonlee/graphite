@@ -94,15 +94,31 @@ fn declared_method<'a>(
     Some((table, table.method(m, g.strings())?))
 }
 
+/// Only fields, parameters and returns carry declarations, so the tag decides before the table is
+/// touched: a CallSite aggregation or a constant scan never pays the table's first read.
 pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
-    g.declared_types().is_some_and(|table| match tag {
-        TAG_FIELD_NODE => table.field_count() != 0,
-        TAG_PARAMETER_NODE | TAG_RETURN_NODE => table.method_count() != 0,
+    match tag {
+        TAG_FIELD_NODE => g
+            .declared_types()
+            .is_some_and(|table| table.field_count() != 0),
+        TAG_PARAMETER_NODE | TAG_RETURN_NODE => g
+            .declared_types()
+            .is_some_and(|table| table.method_count() != 0),
         _ => false,
-    })
+    }
+}
+
+pub(super) fn declaration_bearing(node: &Node) -> bool {
+    matches!(
+        node.kind,
+        NodeKind::Field { .. } | NodeKind::Parameter { .. } | NodeKind::Return { .. }
+    )
 }
 
 fn declared_node_type(g: &Graph, node: &Node) -> Option<usize> {
+    if !declaration_bearing(node) {
+        return None;
+    }
     g.declared_types()?.node_type_id(node, g.strings())
 }
 

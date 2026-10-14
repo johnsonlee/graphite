@@ -990,10 +990,13 @@ impl ScanPlan {
             graphite_storage::node::TAG_PARAMETER_NODE,
             graphite_storage::node::TAG_RETURN_NODE,
         ];
+        // Only a tag this scan reads can carry a generic leaf: a CallSite-only scan must not
+        // open the declared table on behalf of the field, parameter and return tags it skips.
         let absent_generic = if declaration_tags.iter().any(|&tag| {
-            matches!(plans[tag as usize], TagPlan::Generic)
+            self.tags.contains(&tag)
+                && matches!(plans[tag as usize], TagPlan::Generic)
                 && !graph.ids_by_tag(tag).is_empty()
-                && super::props::has_declared_types_for_tag(graph, tag)
+                && ex.declared_tag_available(graph, tag)
         }) {
             declared_text_absent(graph, &self.tree)
         } else {
@@ -1010,7 +1013,7 @@ impl ScanPlan {
                 graphite_storage::node::TAG_FIELD_NODE
                     | graphite_storage::node::TAG_PARAMETER_NODE
                     | graphite_storage::node::TAG_RETURN_NODE
-            ) && !super::props::has_declared_types_for_tag(graph, tag);
+            ) && !ex.declared_tag_available(graph, tag);
             let declared_tag = matches!(
                 tag,
                 graphite_storage::node::TAG_FIELD_NODE

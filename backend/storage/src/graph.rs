@@ -418,6 +418,26 @@ impl Graph {
         self.declared().as_ref().err()
     }
 
+    /// Whether the declaration state has been read: a query that never consults the table
+    /// must leave it unread (`graph.types` untouched).
+    pub fn declared_types_initialized(&self) -> bool {
+        self.declared.get().is_some()
+    }
+
+    /// The read failure of a declaration state that has already been read; `None` for a state
+    /// not yet read, which this never reads (unlike [`Self::declared_types_error`]).
+    pub fn declared_types_failure(&self) -> Option<&crate::types::TypeError> {
+        self.declared.get()?.as_ref().err()
+    }
+
+    /// Test hook: a graph whose declaration state failed to read with `message`, as a table
+    /// whose internal metadata digest no longer matches does after a successful load.
+    #[doc(hidden)]
+    pub fn with_declared_types_error(mut self, message: &str) -> Self {
+        self.declared = std::sync::OnceLock::from(Err(crate::types::TypeError(message.into())));
+        self
+    }
+
     /// Mutations cannot leave derived key partitions stale, including unwinding
     /// from the updater: invalidate first and rebuild only after normal return.
     pub fn update_declared_types(

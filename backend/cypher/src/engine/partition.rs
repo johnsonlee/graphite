@@ -858,7 +858,7 @@ impl PartitionPlan {
                         let Some(&first) = s.graph.ids_by_tag(tag).first() else {
                             continue;
                         };
-                        let declared_keys = super::props::has_declared_types_for_tag(&s.graph, tag);
+                        let declared_keys = ex.declared_tag_available(&s.graph, tag);
                         let strategy = match by_tag[declared_keys as usize][tag as usize] {
                             Some(decided) => decided,
                             None => {
@@ -1073,7 +1073,7 @@ impl PartitionPlan {
         for (si, source) in ex.sources.iter().enumerate() {
             ex.cancel.check()?;
             let graph = &source.graph;
-            let table = graph.declared_types();
+            let table = ex.declared(graph);
             let mut partitions: [Option<(u32, i64)>; 2] = [None, None];
             for (index, method) in graph.methods().iter().enumerate() {
                 // Also poll absent-table scans: skipping identity lookup does
@@ -1161,7 +1161,7 @@ impl PartitionPlan {
                     masked(mask),
                     if graph
                         .node(id)
-                        .is_some_and(|node| super::props::has_declared_node_type(graph, &node))
+                        .is_some_and(|node| ex.declared_node_type_present(graph, &node))
                     {
                         KeySet::Declared
                     } else {
