@@ -2784,7 +2784,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -3052,7 +3052,7 @@ jobs:
       matrix:
         arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["C","B"]' || '["C","A","B"]') }}
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       CHECKPOINT_ARM: ${{ matrix.arm }}
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -3208,7 +3208,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -3321,7 +3321,7 @@ jobs:
       matrix:
         arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["B"]' || '["A","B"]') }}
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -3476,7 +3476,7 @@ jobs:
         arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["B"]' || '["A","B"]') }}
         shard: [0, 1, 2, 3, 4, 5, 6, 7]
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       CHECKPOINT_ARM: ${{ matrix.arm }}
       CORE_SHARD: ${{ matrix.shard }}
       PYTHONDONTWRITEBYTECODE: '1'
@@ -3614,7 +3614,7 @@ jobs:
       matrix:
         arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["B"]' || '["A","B"]') }}
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       CHECKPOINT_ARM: ${{ matrix.arm }}
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
@@ -3757,7 +3757,7 @@ jobs:
       matrix:
         arm: ${{ fromJSON(github.event.pull_request.base.sha == '4f2ccf33b969e684972e56b5e810034e6e67c1b3' && '["C","B"]' || '["C","A","B"]') }}
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -3899,7 +3899,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4019,7 +4019,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4127,7 +4127,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4353,7 +4353,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4476,7 +4476,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4608,7 +4608,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4728,7 +4728,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4829,7 +4829,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
@@ -4949,7 +4949,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 360
     env:
-      GRAPHITE_CI_DIGEST_CACHE: ${{ runner.temp }}/graphite-digest-cache.sqlite
+      GRAPHITE_CI_DIGEST_CACHE: ${{ github.workspace }}/../graphite-digest-cache.sqlite
       PYTHONDONTWRITEBYTECODE: '1'
       BASE_SHA: ${{ github.event.pull_request.base.sha }}
       CANDIDATE_SHA: ${{ github.event.pull_request.head.sha }}
