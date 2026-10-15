@@ -151,7 +151,7 @@ class JvmPreparationTests(unittest.TestCase):
         packet = self.packet()
         self.assertEqual(3, self.audit_mock.call_count); self.assertEqual(['A', 'B'], self.comparison_calls)
         for arm in packet['arms'].values():
-            self.assertEqual(35, len(arm['cases'])); self.assertEqual(4*1024**3, arm['maxHeapBytes']); self.assertEqual('-Xmx4g', arm['serverArgv'][1])
+            self.assertEqual(35, len(arm['cases'])); self.assertEqual(8*1024**3, arm['maxHeapBytes']); self.assertEqual('-Xmx8g', arm['serverArgv'][1])
             self.assertEqual('io.johnsonlee.graphite.cli.MainKt', arm['serverArgv'][5])
         for key in ('strictEquivalence', 'completeSemanticEquivalence', 'sourceToDeclarationCompletenessClaim',
                     'performanceAcceptance', 'acceptanceEligible'): self.assertIs(False, packet[key])
@@ -315,7 +315,7 @@ class JvmPreparationTests(unittest.TestCase):
     def test_raw_universe_scope_wrong_runtime_launch_and_unknown_role_reject(self):
         root = Path(self.roots['B'])
         with self.assertRaises(ValueError): p.audited_arm(root, 'b'*40, 'parent')
-        audit = self.observed[str(root)]; plan = p.common.read(root/'plan.json'); plan['argv'][1] = p.PRESSURE_HEAP  # the correctness server's heap, not the pressure server's
+        audit = self.observed[str(root)]; plan = p.common.read(root/'plan.json'); plan['argv'][1] = '-Xmx2g'  # neither the correctness server's heap nor the pressure server's
         ref = self.write(root/'plan.json', plan); audit['plan'] = ref; audit['pins'][ref['path']] = ref['sha256']; self.write(root/'audit.json', audit)
         with self.assertRaisesRegex(ValueError, 'server entry'): p.audited_arm(root, 'b'*40, 'candidate')
 

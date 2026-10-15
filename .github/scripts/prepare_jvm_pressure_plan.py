@@ -20,10 +20,13 @@ STATUS = assembled.CORRECTED_STATUS
 PENDING_STATUS = 'JVM35_RESPONSES_AUDITED_CORE_COMPARABILITY_PENDING'
 MODE = 'jvm35-before-core-v1'
 CATALOG = Path(__file__).resolve().parent/'fixtures/jvm-multigraph-pressure-cases.json'
-# The pressure server's own heap, matched across arms and within the 8g ceiling; the
-# correctness server that produced the audited plan runs under queries.CORRECTNESS_HEAP.
-PRESSURE_HEAP = '-Xmx4g'
-PRESSURE_HEAP_BYTES = 4*1024**3
+# The pressure server's own heap, matched across arms and at the 8g ceiling, as the
+# correctness server's (queries.CORRECTNESS_HEAP): at -Xmx4g the accepted baseline's own
+# server answered four concurrent wrapped-discovery and feature-nodes requests over the 64
+# shards with "Java heap space" in the first pressure cell (run 38661758869, Attempt305), as
+# the correctness run had before Attempt277 moved it to 8g.
+PRESSURE_HEAP = '-Xmx8g'
+PRESSURE_HEAP_BYTES = 8*1024**3
 require = common.require
 merge_pins = assembled.merge_pins
 

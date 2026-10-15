@@ -21476,6 +21476,9 @@ every changed input named, moved revision, missing products or jars, CLI round t
 workflow test's new case (key, refs, conditions, identical restore and save paths, the candidate
 excluded). The build step keeps its script, so the dispatch test still runs it unchanged.
 
+Corrected by Attempt303: the identity named every reviewed control and never hit across a day of
+pushes; it now names the producer job and its scripts' import closure.
+
 ### Attempt298 — every loading cell starts from the disk: page cache eviction before launch (2026-10-14)
 
 Run 38630296899's JVM loading gate failed one pair: 01-C → 03-B wall 8030 → 11484 ms. The six cells
@@ -21525,6 +21528,13 @@ bytes) beside the warm read. `evict_graph_pages` stays as the first half. Test:
 `PageCacheEvictionTest.test_warming_evicts_every_arm_and_reads_the_cell_graphs_through`.
 Expected effect: JVM loading walls back near the CPU (run 915 read 8.4–12.4 s), and the native
 loading cells likewise; the loading rule itself is unchanged.
+
+Run 38661758869 (6e3c95f) proved the state and failed the job: every cell read 8–77 MB from the
+disk during loading (file system inputs 7.6k–77k blocks against 6.3M cold), ready CPU 14.5–15.1 s
+in all six cells, and `benchmark-loading.mjs` refused the plan ("JVM zero-query loading plan")
+because it pins the plan's `scope` sentences and the runner's `cache` sentence had changed. The
+comparators (`benchmark-loading.mjs`, `benchmark-native-loading.mjs`) and the native declaration
+(`native_loading.py`) now carry the new sentence; a scope sentence is a contract both sides name.
 
 ### Attempt300 — the legacy Rust latency gate stops judging sub-5 ms rows (2026-10-14)
 
@@ -21614,6 +21624,34 @@ that the eviction grows with the cells before it; `PageCacheEvictionTest` covers
 Expected effect: the later cells' walls return to the first cells' 400 s, the forward pairs pass;
 no rule changes.
 
+Run 38661758869 (6e3c95f): the construction gate's measured constraints passed for the first
+time. Walls 339, 334, 342, 351, 416, 420 s (C A B B A C): every pair within 5% (02-A→03-B +2.4%,
+01-C→03-B +0.9%, the reverse pairs favour the candidate), CPU PASS on all four, RSS PASS on the
+baseline pairs and INDETERMINATE on the parent pairs. The first four cells read nothing from the
+disk during construction (file system inputs 22k–405k blocks); cells 05-A and 06-C still read
+17.5M and 20.7M blocks (9–10 GB) and were 20% slower, so something still crowds their fresh
+writes out of the page cache late in the job; the eviction grew with the cells (3780 → 10126
+files) as intended. Noted, not chased: the pairs pass under the rule and the effect now helps
+the base, not the candidate.
+
+### Attempt303 — the arm product cache is keyed by the code that can touch the products, not by every control (2026-10-15)
+
+Attempt297's cache identity named the whole reviewed preparation controls manifest
+(`controlsSha256`), which pins every gate comparator, every test and every script of the chain.
+Each push of 2026-10-14 changed at least one pinned file (a gate rule in `benchmark-*.mjs`, a
+test, the loading or construction runner), so the restored baseline and parent products were
+judged stale on `identity.controlsSha256` in every run and rebuilt: the cache saved nothing
+across the day. A gate rule or a test cannot change what the producer-arm job writes.
+
+The identity (schema v2, `FIXTURE64_ARM_CACHE_VERSION` 2) now names what can: the
+`rust-producer-arm` job's own block of `benchmark.yml` (`job_definition`, hashed as written) and
+the import closure of the scripts that block runs (`job_scripts` → `import_closure`: the seven
+entry scripts, every module under `.github/scripts` they import transitively, a package whole,
+tests excluded; 57 files on this checkout, since `multigraph_pressure` imports most of the
+chain). A change to any of those still misses; a change to a gate comparator, a workflow job
+other than the producer's, or a test hits. Test: `ArmCacheTest` builds a candidate checkout with a
+job, a helper, a package and a gate script, and checks that only the helper and the job text
+invalidate. The common inputs, toolchain versions, revision, role and workspace are unchanged.
 ### Attempt304 — the server reads the declared tables on worker threads once it answers (2026-10-15)
 
 Run 38661758869 (6e3c95f) is the first with the persisted key summary (Attempt301): the
@@ -21641,3 +21679,19 @@ The HTTP server and the MCP server both call it. Test:
 `declared_tables_are_read_in_the_background_after_start` on the interop fixture. Expected
 effect: `feature-nodes` cold returns to milliseconds; the parse CPU (~2 s) appears in the oracle
 stage of the pressure cells, far inside the query CPU tolerance; loading is unchanged.
+
+### Attempt305 — the JVM pressure server gets the 8g heap the correctness server already has (2026-10-15)
+
+Run 38661758869 was the first in which `rust-query-jvm-measurement` ran to its cells (every
+earlier run had been cancelled by a later push), and its first cell, 0-C, the accepted
+baseline's own `graphite.jar serve` at `-Xmx4g`, failed the oracle stage after 25 of 35
+requests: four concurrent requests (`wrapped-broadly_distributed_prefix_query`,
+`wrapped-first_last_graph_bimodal_query`, `wrapped-skewed_mixed_operator_query`,
+`feature-nodes`) each answered `{"error":"Java heap space","code":"cypher_query_failed"}` after
+17.6–19.0 s, the process at 6.0 GB RSS. Attempt277 found the same on the correctness server
+(`feature-nodes` materializes every binding before grouping, base engine and candidate alike)
+and moved it to `-Xmx8g`; a12ae55 kept the pressure server at 4g, which no cell had exercised.
+`PRESSURE_HEAP`/`PRESSURE_HEAP_BYTES` move to 8g, matched across arms and at the `CLAUDE.md`
+ceiling; the plan audit (`multigraph_pressure`, heap ≤ 8g and equal across arms) is unchanged.
+One JVM server runs at a time in the measurement job, and the 8g correctness server peaked at
+9.7 GB RSS on the same runner type (Attempt277), so the runner holds it.
