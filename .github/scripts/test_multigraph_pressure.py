@@ -1888,6 +1888,13 @@ class PageCacheEvictionTest(unittest.TestCase):
             self.assertEqual(value, {'method': p.PAGE_CACHE_WARMING, 'evicted': {'method': p.PAGE_CACHE_EVICTION, 'files': 3, 'bytes': 60},
                                      'files': 2, 'bytes': 30})
             self.assertEqual(len(advised), 3)
+            # A file entry (a source JAR) is read as is; a symlink entry is nothing.
+            advised.clear()
+            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise):
+                value = p.warm_graph_pages([{'id': 'f', 'path': str(root/'b/forward.graph')}, {'id': 'l', 'path': str(root/'a/link')}],
+                                           [{'id': 'f', 'path': str(root/'b/forward.graph')}])
+            self.assertEqual((value['files'], value['bytes'], value['evicted']['files']), (1, 30, 1))
+            self.assertEqual(advised, [str(root/'b/forward.graph')])
 
 
 if __name__ == '__main__':

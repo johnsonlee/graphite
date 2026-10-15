@@ -21590,3 +21590,26 @@ every tag (android-00: fields 3751 unbound / 15850 bound, parameters 0 / 28022, 
 and the first table read of a graph fell from 49 to 27 ms (the parse alone; `declared_cost`
 example). Expected effect in CI: the three cold FAIL rows and the indeterminate first-request rows
 return to the base's milliseconds; loading is unchanged.
+
+### Attempt302 — every construction cell starts with the source JARs cached and nothing of the earlier cells (2026-10-15)
+
+The construction gate of run 38630296899 failed both forward pairs on wall alone: 02-A 400 s →
+03-B 447 s and 01-C 401 s → 03-B 447 s, while the reverse pairs passed (05-A 446 → 04-B 445,
+06-C 441 → 04-B 445) and CPU (503–536 s) and RSS passed as intervals. The six cells in launch
+order (C A B B A C) took 400, 400, 447, 445, 446, 441 s: the first two 10% faster than the rest,
+whichever arm. `time -v` of the writer says why: file system inputs 0.74M, 3.5M, 21.0M, 21.3M,
+21.3M and 20.1M blocks (0.4, 1.8, then 10–11 GB read from the disk per cell) at flat CPU. The
+writer reads every graph it saved back to validate it; in the first two cells that readback hit
+the page cache, from the third the retained outputs of the earlier cells (3 GB a cell) had filled
+it, the kernel evicted the current cell's own fresh writes, and the readback came from the disk.
+A position effect of 10% cannot pass a 5% per-pair wall rule, and the CABBAC order only halves it.
+
+`run_real64_construction.page_cache_state` now runs before each cell's timed phase: every
+earlier cell's outputs and the retention sources are advised out of the page cache and the
+cell's input JARs are read through (`multigraph_pressure.warm_graph_pages`, whose file walk now
+takes a file entry as is), so each cell meets the state the first one met; the cell row records
+it (`pageCache`: method, evicted files and bytes, files and bytes read). Tests:
+`test_six_fresh64_and_second_readbacks_are_audited_with_raw_units` checks every cell's record and
+that the eviction grows with the cells before it; `PageCacheEvictionTest` covers file entries.
+Expected effect: the later cells' walls return to the first cells' 400 s, the forward pairs pass;
+no rule changes.

@@ -164,6 +164,26 @@ def environment():
     return env
 
 
+def page_cache_state(plan, output, cell, inputs):
+    """Leave the page cache holding the source JARs and nothing of the earlier cells.
+
+    A cell's writer reads every graph it saved back to validate it; in run 38630296899 the first
+    two cells read 0.4 and 1.8 GB from the disk during construction and the last four 10–11 GB
+    each (`time -v` file system inputs 0.74M, 3.5M, then 20–21M blocks), with CPU flat at
+    503–536 s: the retained outputs of the earlier cells (3 GB a cell) filled the page cache, the
+    kernel evicted the current cell's own fresh writes before the readback, and the later cells'
+    walls were 441–447 s against 400 s for the first two, failing both forward pairs of the 5% wall
+    rule by position alone. Every earlier cell's outputs and the retention sources are advised out
+    before a cell starts, and its input JARs read through, so each cell meets the cache state the
+    first one met.
+    """
+    earlier = [{'id': other['id'], 'path': str(output / other['id'] / 'graphs')}
+               for other in plan['cells'] if other['id'] != cell['id']]
+    retained = [{'id': 'retention', 'path': name} for name in plan['retentionSources']]
+    jars = [{'id': item['corpus'], 'path': item['path']} for item in inputs['jars']]
+    return common.warm_graph_pages(earlier + retained + jars, jars)
+
+
 def verify_writer(plan, arm):
     source = common.pinned_authority_metadata(plan, arm['sourceManifest'])
     require(artifacts.source_inventory(Path(source['root']), arm['revision']) == source['files'],
@@ -214,6 +234,7 @@ def run(plan_file, output):
                 # Equal untimed reads precede each launch; required writer reads stay timed.
                 require(common.sha(arm['writer']['path']) == arm['writer']['sha256'], 'prewarm sealed writer')
                 graphs = directory / 'graphs'
+                row['pageCache'] = page_cache_state(plan, output, cell, inputs)
                 phase_started = diagnostic('prepare-real64', 'started', cell=cell)
                 row['construction'] = producer.phase('prepare-real64', [*arm['argv'], str(graphs)],
                     directory, environment(), directory, plan['timeouts']['prepare-real64'], construction_time='/usr/bin/time')

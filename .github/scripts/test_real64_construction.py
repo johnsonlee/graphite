@@ -119,6 +119,13 @@ class ConstructionTests(unittest.TestCase):
     def test_six_fresh64_and_second_readbacks_are_audited_with_raw_units(self):
         result = self.execute(); audit = self.audit()
         self.assertEqual('PASS_ALL_SIX_USABLE_SAVED64',result['status'])
+        # Every cell starts with the source JARs read through and the earlier cells' outputs evicted.
+        states = [row['pageCache'] for row in result['cells']]
+        self.assertTrue(all(s['method'] == p.PAGE_CACHE_WARMING and s['files'] == 4 for s in states), states)
+        self.assertEqual(sum(len(j['corpus']) for j in self.jars), states[0]['bytes'])
+        evicted = [s['evicted']['files'] for s in states]
+        self.assertEqual(sorted(evicted), evicted, 'each cell evicts every earlier cell\'s outputs')
+        self.assertGreater(evicted[-1], evicted[0])
         self.assertEqual([],result['unissued']); self.assertEqual(12,len(self.calls))
         self.assertEqual(list('CABBAC'),[r['cell']['arm'] for r in result['cells']])
         self.assertEqual(['prepare-real64','verify-real64']*6,[c[0] for c in self.calls])

@@ -1516,9 +1516,17 @@ READ_CHUNK = 8 << 20
 
 
 def graph_files(graphs):
-    """Every regular file of every graph directory that exists, in path order; symlinks are skipped."""
+    """Every regular file of every graph directory that exists, in path order; symlinks are skipped.
+
+    An entry whose path is itself a regular file (a source JAR, a retained output) is yielded as is,
+    so the same walk serves the construction cells, whose inputs are files and whose earlier
+    outputs are directories.
+    """
     for graph in graphs:
         root = Path(graph['path'])
+        if root.is_file() and not root.is_symlink():
+            yield root
+            continue
         if not root.is_dir():
             continue
         for path in sorted(root.rglob('*')):
