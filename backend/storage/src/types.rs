@@ -413,7 +413,10 @@ impl DeclaredTypes {
     }
     fn check_binding(bytes: &[u8], binding: &str) -> Result<[u8; 32], TypeError> {
         let digest: [u8; 32] = Sha256::digest(bytes).into();
-        let actual = digest.iter().map(|b| format!("{b:02x}")).collect::<String>();
+        let actual = digest
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect::<String>();
         if !actual.eq_ignore_ascii_case(binding) {
             return Err(TypeError("forward.properties type digest mismatch".into()));
         }
