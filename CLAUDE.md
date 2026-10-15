@@ -586,7 +586,14 @@ reads as absent. `graph.metadata` stays untouched: its tail is the ordinal bindi
 reader and the proof chain read from the last 36 bytes, so a new binding there would have broken
 both. The reader answers from the summary while the table is unread and from the table's own state
 afterwards; parity is proved on the interop fixture (`persisted_key_summary_*`) and by the
-fixture64 query-correctness oracles, since a wrong summary changes a `keys()` histogram.
+fixture64 query-correctness oracles, since a wrong summary changes a `keys()` histogram. The
+table itself is still needed by the first request that renders a declared type, and where that
+read goes was measured three ways: on first use it was a 1.5–2.3 s cold row; after the server
+listens it competed with the first requests on the same cores and slowed a heavy aggregate by
+50%; so the server reads each table on a second thread beside the single-threaded loader and
+is ready with the tables read (`serve::DeclaredTableReader`), about 1 s of CPU inside the
+loading boundary and no wall. Deferred work is not free anywhere: put it where the gate that
+owns the cost has room, and never where it overlaps what another gate measures.
 
 ### SootUp 3.x: What the Upgrade From 2.0.0 Changed
 

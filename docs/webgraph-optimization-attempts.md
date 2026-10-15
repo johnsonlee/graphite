@@ -21680,6 +21680,14 @@ The HTTP server and the MCP server both call it. Test:
 effect: `feature-nodes` cold returns to milliseconds; the parse CPU (~2 s) appears in the oracle
 stage of the pressure cells, far inside the query CPU tolerance; loading is unchanged.
 
+Run 38690860344 (591dca1): `feature-nodes` cold 4.2–5.9 → 3.7–7.9 ms PASS and
+`slow-dataflowSourceMiss` PASS, as intended; but the two reading threads ran during the oracle
+stage's first requests on the same four cores, and the heavy ones paid: `shape-group-count-broad`
+cold 1275–1348 → 1963–2048 ms FAIL (run 918 had it faster than the base, 1919–2016 → 1063–1133),
+`global-wide-wrapped-case-insensitive-distinct-dense` 250–272 → 321–354 ms INDETERMINATE. A
+read that competes with the first requests fails the cold rule for whichever request it
+overlaps. Superseded by Attempt306.
+
 ### Attempt305 — the JVM pressure server gets the 8g heap the correctness server already has (2026-10-15)
 
 Run 38661758869 was the first in which `rust-query-jvm-measurement` ran to its cells (every
@@ -21695,3 +21703,22 @@ and moved it to `-Xmx8g`; a12ae55 kept the pressure server at 4g, which no cell 
 ceiling; the plan audit (`multigraph_pressure`, heap ≤ 8g and equal across arms) is unchanged.
 One JVM server runs at a time in the measurement job, and the 8g correctness server peaked at
 9.7 GB RSS on the same runner type (Attempt277), so the runner holds it.
+
+### Attempt306 — the declared tables are read beside the loader, so the server is ready with them read (2026-10-15)
+
+Where the table read can go, after Attempts 301 and 304: not on first use (the first declared
+request paid 1.5–2.3 s), not after the server listens (it slowed the heavy first requests by 50%,
+Attempt304), and not as an eager step of `Graph::load` on the loading thread (loading is one
+thread over 64 graphs, 45 s of CPU for 45 s of wall, so an inline parse would add its wall too).
+Measured, the parse of one table is 16 ms of work plus 9 ms hashing the 2.8 MB `graph.metadata`
+it binds to (types 3, signatures and their index 7–8, fields 2, methods 4 ms on android-00,
+8377 types, 15850 fields, 25301 methods), about 1–1.3 s of CPU for 64 graphs on the hosted
+runner. The server (`serve::DeclaredTableReader`) now reads each graph's table on one thread
+as the loader registers it and waits for the last one before readiness, so the CPU lands inside
+the loading boundary, where the candidate sat at +0.9–1.7 s over the baseline's 44.4–45.2 s with
+a 10% (4.4 s) tolerance, and no wall is added beyond the last graph's read. A graph loaded
+through the API reads its table inline. Off under `GRAPHITE_NO_FASTPATH`. The post-listen read
+of Attempt304 is removed. Test: `open_reads_the_declared_tables_during_loading` on the interop
+fixture. Expected effect: every cold row measures the engine, native loading CPU +1–1.3 s
+(within the tolerance, and the kind of cost the 2026-10-09 approval named for this feature),
+loading wall unchanged.
