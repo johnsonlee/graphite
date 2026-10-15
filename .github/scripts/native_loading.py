@@ -15,7 +15,7 @@ DECLARATION = {
     'readiness': 'All64 MAPPED registrations and saved counts; includes required startup topology work',
     'cpu': 'Process-zero cumulative CPU; in-boundary sample lower and first post-ready sample upper with two ticks uncertainty',
     'rss': 'In-boundary sampled peak lower and first post-ready Linux VmHWM upper; later query RSS is excluded',
-    'cache': 'Matched full closed-input reads before every process; uncontrolled OS cache; no disk-cold claim',
+    'cache': "Every arm's graphs evicted, then the cell's graphs read in full before every process; the page cache holds exactly the cell's graphs; no disk-cold claim",
     'queriesIssuedDuringLoading': 0,
     'deferredWork': 'Registry-ready only; first-query work remains in query evidence',
     'aggregation': 'Fixed six CABBAC cells and two directions; no pooling or retry selection',

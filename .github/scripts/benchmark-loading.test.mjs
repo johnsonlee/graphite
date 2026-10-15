@@ -16,7 +16,7 @@ const scope={
  readiness:'All64 MAPPED registrations and saved counts; includes required startup topology work',
  cpu:'Process-zero cumulative user+system CPU; in-boundary sample lower, first post-ready sample upper, with two ticks uncertainty',
  rss:'In-boundary sampled peak lower; first post-ready Linux VmHWM upper; GNU time lifetime RSS is only corroboration',
- cache:'Matched full closed-input reads before every process; uncontrolled OS cache; no disk-cold claim',
+ cache:"Every arm's graphs evicted, then the cell's graphs read in full before every process; the page cache holds exactly the cell's graphs; no disk-cold claim",
  deferredWork:'Registry-ready only; deferred first-query work is not counted as already paid',
  aggregation:'Fixed CABBAC and two directions; no pooling, retry selection, quiet-host or saturation claim',
 };
