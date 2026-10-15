@@ -11,3 +11,6 @@ sha2.workspace = true
 crc32fast = "1"
 rayon.workspace = true
 parking_lot.workspace = true
+
+[dev-dependencies]
+graphite-schema = { path = "../schema" }

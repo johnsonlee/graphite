@@ -12,6 +12,13 @@ frontend remains a proposal; neither should be read as a released capability.
 See the [README architecture](../README.md#architecture) and
 [runnable demo](quickstart-demo.md) for the current user workflow.
 
+The [generic graph schema proposal](graph-schema.md) refines the contract below:
+record kinds, fields, type operators and relationship predicates are open,
+self-described definitions rather than closed language enums. Its extensibility
+rules supersede the fixed kind tags and per-kind wire structs sketched here.
+The carrier and physical version must be coordinated before implementation;
+adding a language must not require changing the common codec or wire format.
+
 Graphite today is one JVM program: SootUp builds the graph, the same jar persists it, serves
 it and answers Cypher over it. PR #124 adds a Rust server and CLI that read the persisted
 graph, and the differential harness shows the two servers answer identically. That leaves the
@@ -82,9 +89,10 @@ Non-goals
 | Backend | `graphite-explore` | Rust (exists) | HTTP API, registry, guard, metrics, UI, C4, topology |
 | CLI | `graphite` | Rust (exists as `cli/`, grows) | `build`/`serve`/`query`/`explore`/`ir`/`frontend`; the one entry point, independent of any single frontend or backend crate |
 
-The Kotlin modules `cypher`, `webgraph` (writer side excepted, see migration), `explore`
-and `query` under `frontend/jvm/` are retired at the end of the migration;
-`core` and `sootup` (under `frontend/jvm/`) become the JVM frontend.
+The Kotlin modules `cypher`, `webgraph`, `explore` and `query` under `frontend/jvm/`
+remain legacy-only during validation and are retired from the new-format pipeline.
+`core` and `sootup` plus the IR writer become the JVM frontend; its temporary graph
+storage is an implementation detail, not a second persisted-format reader.
 
 ### 2.1 Repository layout
 
@@ -287,8 +295,26 @@ embarrassingly parallel across graphs of a corpus.
 
 **Compatibility.** The Rust backend keeps reading v1–v3 graphs (it already does). A v3
 graph reports `lang=jvm`, `frontend=legacy`, and the property aliases are the only names
-it has. `graphite build --from <v3 graph>` re-indexes an existing graph into v4 without a
-frontend, so a corpus can be upgraded without rebuilding from the jars.
+it has. The planned `graphite build --from <v3 graph> -o <target>` accepts a directory or
+`.graphite` container and upgrades it without a frontend, JDK or original jar. It is a
+release requirement for the new format, not yet an implemented CLI path. A strict Rust
+legacy importer streams persisted facts into the same generic indexer used for frontend
+IR. It must also import GRX/GRS, branch definitions and resource-presence state that the
+current Rust query view does not fully expose; re-saving that view alone is insufficient.
+
+The migration rebuilds all derived indexes, preserves public node IDs and corpus graph
+IDs/order, records the source fingerprint as lineage, and computes a new target fingerprint.
+It cannot recover information the source graph never stored, but missing generics do not
+require rebuilding jars merely to upgrade the format. Batch migration uses verified staged
+outputs, source-bound retry state and a rollbackable registry switch. The complete contract
+is in the [generic schema proposal](graph-schema.md).
+
+**Reader ownership.** Kotlin emits IR and retains its existing v1–v3 legacy readers and
+temporary graph-building storage. `NodeSerializer`, `GraphStore` and
+`MappedWebGraphBackedGraph` do not gain the new persisted format. Rust owns its only new
+writer/indexer, reader and query stack. Kotlin's v3 writer/query paths remain temporarily
+for differential validation and are retired after the Rust cutover; migration does not
+duplicate the new format across Kotlin and Rust.
 
 ## 6. The backend (as implemented in PR #124, and what changes)
 
@@ -300,8 +326,10 @@ records at fixed offsets (`node.rs`), type and offset indexes, metadata, resourc
 comparisons, the CallSite trigram/CSR index (`callsite_index.rs`, built in memory when the
 file is absent, byte-identical to the Kotlin writer), and per-type string columns
 (`columns.rs`). Nothing is decoded that a query does not touch; a graph costs page cache,
-not heap. v4 makes the columns and the signature column persisted (Section 5) and adds the
-symbol and extension stores; the rest of the reader is unchanged.
+not heap. The new-format branch uses the schema-driven tables and indexes of Section 5
+and the generic schema proposal. The legacy branch remains available for old queries;
+its strict migration importer additionally covers all persisted metadata, including
+sections the current query reader does not expose.
 
 Every loader reads through `source.rs`: a graph is a directory of files or one
 `.graphite` container (`container.rs`), a STORED zip with page-aligned entries and a
@@ -383,9 +411,10 @@ an explicit executable. Everything after the frontend's own `--` is passed throu
 A frontend is an executable named `graphite-frontend-<lang>` found on `PATH`, in
 `~/.graphite/frontends/`, or given with `--frontend`. The contract is three commands:
 
-- `describe` → JSON on stdout: `{name, version, ir_schema: [versions], inputs: [...],
-  aliases: {...}, indexable: [...]}`. The CLI refuses a frontend whose IR schema it does not
-  read.
+- `describe` → JSON on stdout: `{name, version, ir_wire: [versions], profiles: [...],
+  inputs: [...], aliases: {...}, indexable: [...]}`. The CLI checks physical transport
+  compatibility. New vocabulary definitions or language profiles do not require a CLI
+  upgrade when their records use a supported wire format; definitions travel with the IR.
 - `build --out <dir.graphite-ir> [args...]` → writes the IR; progress as JSON lines on
   stderr (`{"phase": "...", "done": n, "total": m}`); exit code 0 on success, 2 for
   unsupported input, 3 for a partial graph (the CLI then refuses to index unless
@@ -421,14 +450,18 @@ How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`,
 executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
 If none is present, `graphite build` prints the exact `graphite frontend install <lang>`
 command and exits 2; `graphite frontend install` downloads the newest release asset whose
-`describe` reports an IR schema this CLI reads, checks its sha256 against the release
-manifest, and records it. `graphite frontend list` shows what is installed and which IR
-schema each speaks; `graphite frontend update` upgrades within the compatible range.
+`describe` reports a physical IR wire format this CLI reads, checks its sha256 against the
+release manifest, and records it. `graphite frontend list` shows the installed versions,
+wire formats and profiles; `graphite frontend update` upgrades within the compatible wire
+range. Unknown vocabulary or profile revisions do not disqualify a decodable frontend.
 
-Compatibility is a single contract, the IR schema version (Section 4). The CLI declares
-the range it reads; each frontend declares the versions it writes; either side can move
-independently as long as the ranges overlap. A frontend release never requires a CLI
-release, and a CLI release only requires new frontends when the IR schema itself changes.
+Compatibility follows the [generic schema's separate version contracts](graph-schema.md):
+physical wire format, vocabulary definitions, language profiles and analysis capabilities.
+The CLI and frontend negotiate only decodable wire/transport capabilities for ingestion.
+New kinds, fields, predicates and profiles are data, not grounds to reject structurally
+decodable input. A reader preserves, queries and re-emits unknown definitions; only a
+requested analysis that needs unavailable semantics reports unsupported. Physical encoding
+changes can require codec upgrades, while adding a language must not.
 
 Release mechanics: one tag on this repository builds and uploads the CLI binaries, the
 `graphite-explore` server image, the JVM frontend jar (from `frontend/jvm`, published to
@@ -447,8 +480,8 @@ is taken on trust.
 | 0 | Merge PR #124. Rust backend serves v3 graphs; Kotlin server still shipped. | 875/875 differential, gate green (done) |
 | 1 | `graphite` CLI gains `build` as a shell over the existing jar (`java -jar graphite.jar build ...`), `serve` (the Explorer; `backend/explore` becomes a library and the standalone binary goes away) and `frontend list/describe/install`; the release ships the binary per platform, the Homebrew formula installs it with the jar as its frontend, the container image serves with it. One command line for users. **Done in PR #124.** | `graphite build` on the CI fixtures produces the same graph as the jar (byte-identical but for a properties timestamp), and the 875-check differential runs against `graphite serve` |
 | 2 | Graph IR v1 spec, `graphite-ir` crate (reader, writer, JSONL bridge, `check`/`diff`), `graphite-build` indexer producing **v3** graphs from IR (no model change yet). JVM frontend emits IR alongside its direct save. | For every fixture graph (core jar, acme, the 64-graph corpus): `build` from the jar's IR is query-identical to the jar's own save (170-query digests + 875-case differential); `ir diff` between two runs is empty |
-| 3 | Persisted v4: manifest, persisted columns, symbol table, extension store; `build --from` re-index; backend reads v3 and v4. | v3 and v4 of the same graph answer every differential case identically; column pre-warm cost disappears from first-query latency |
-| 4 | Core model: `Module`/`Type`/`Member` nodes, `CONTAINS`, symbol references on the JVM frontend; aliases wired into property access, `keys()`, serialisation. Kotlin server frozen. | Old queries unchanged on v4 JVM graphs; C4 output byte-identical to today on the six reference graphs |
+| 3 | New generic persisted format and indexes in Rust; strict `build --from` importer and corpus migration. Kotlin persisted codecs remain v1–v3 only. | Kotlin legacy, Rust v3 and migrated Rust query parity; full metadata/resource preservation; corpus upgrades without jars or a JDK, with verified retry and rollback |
+| 4 | Core model and language profiles through IR; `Module`/`Type`/`Member`, symbol references, aliases and schema-driven property access in Rust. Kotlin query/server remain legacy-only. Direct format migration does not add topology nodes or change existing node counts. | Old queries on migrated graphs remain unchanged; newly extracted JVM IR retains complete declarations; C4 compatibility on the reference graphs |
 | 5 | Retire Kotlin `serve`/`query`/`explore`/`cypher`: `graphite.jar` becomes the frontend only; Docker image, Homebrew formula and docs switch to the Rust binary; Kotlin modules deleted. | Release pipeline publishes one CLI + frontends; parity harness retargeted to v-1 Rust vs current Rust |
 | 6 | Web frontend (TypeScript). | The IR validates; the Explorer's own web UI (a TypeScript-free static app today, the first candidate) builds into a graph the explorer can browse; C4 on a multi-package workspace |
 | 7 | Apple frontend (Swift, then ObjC). | A sample iOS app builds; cross-graph queries across a JVM backend graph and a Swift client graph |
@@ -456,6 +489,9 @@ is taken on trust.
 Compatibility rules, enforced by the harness at every phase:
 
 - Persisted v1–v3 graphs load and answer as before, forever (the reader shims are small).
+- New-format persistence and queries are Rust-only; Kotlin legacy readers do not migrate.
+- Every released new format includes direct v3 corpus conversion and re-indexing without
+  invoking a language frontend. Extraction from jars is required only for semantic enrichment.
 - Every property name, label, function and route in use today keeps its meaning.
 - A frontend's IR from version N builds with indexer N+1 (the IR schema is additive within a
   major version).
@@ -473,8 +509,9 @@ regress JVM users.
 
 Inputs: JAR, WAR (`WEB-INF/lib`), Spring Boot fat jars (`BOOT-INF/lib`), APK/AAR/DEX
 (Android platform classes via `--android-sdk`), class directories. Analysis: SootUp.
-Becomes `graphite-frontend-jvm` with no analysis change; the only work is the IR writer
-(`arrow-java`) and the `describe` command. Kotlin, Java, Scala and Groovy are all covered
+Becomes `graphite-frontend-jvm`, retaining the existing analysis and adding the IR writer,
+the `describe` command and the declaration/type extraction required by the JVM profile.
+It does not gain a reader for the new persisted format. Kotlin, Java, Scala and Groovy are all covered
 at the bytecode level, which is why this frontend stays on the JVM.
 
 ### 8.2 Web: TypeScript and JavaScript

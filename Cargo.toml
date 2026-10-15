@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["backend/storage", "backend/cypher", "backend/explore", "cli"]
+members = ["backend/schema", "backend/storage", "backend/cypher", "backend/explore", "cli"]
 
 [workspace.package]
 version = "2.5.0"
