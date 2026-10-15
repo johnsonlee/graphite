@@ -456,6 +456,8 @@ dependencies = [
  "memmap2",
  "parking_lot",
  "rayon",
+ "serde",
+ "serde_json",
  "sha2",
  "thiserror",
 ]

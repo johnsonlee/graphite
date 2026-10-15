@@ -4,7 +4,7 @@
 
 English · [简体中文](README.zh.md)
 
-**Structured codebase context for LLMs.** Graphite turns JVM bytecode into a queryable program graph — so AI agents can understand your codebase without reading every file.
+**Structured codebase context for LLMs.** Graphite turns JVM bytecode and TypeScript source into a queryable program graph — so AI agents can understand your codebase without reading every file.
 
 [Production scale](#production-scale) · [Run the demo](docs/quickstart-demo.md) · [Quick start](#quick-start) · [Connect an AI agent](#mcp-integration) · [Kotlin API](#kotlin-api)
 
@@ -142,6 +142,12 @@ other.
 The current released frontend reads JVM and Android artifacts. Graph building
 requires Java; APK analysis also requires Android platform jars. These inputs
 can be analyzed without their source checkout.
+
+The **TypeScript source frontend** accepts a `tsconfig.json`, source directory or
+TS/JS file via `graphite build --lang ts`. Build it from `frontend/web` and set
+`GRAPHITE_FRONTEND_TS` to its `dist/cli.js` entry point. It requires Node.js for
+analysis and uses the same Rust query/server and `.graphite` container commands.
+See [setup, analysis scope and pinned mitt/Zod end-to-end checks](docs/typescript-frontend.md).
 
 **In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
 adds an Apple frontend for Swift packages and Xcode projects, feeding the shared
@@ -719,7 +725,7 @@ drills down to its class overview.
 
 ## Architecture
 
-Graphite is split into per-language *frontends*, which turn compiled artifacts into a
+Graphite is split into per-language *frontends*, which turn compiled artifacts or source into a
 graph, one Rust *backend*, which stores, serves, and queries those graphs, and one Rust
 *CLI* (`graphite`) that drives both. See
 [docs/architecture-frontend-backend.md](docs/architecture-frontend-backend.md).
@@ -727,6 +733,7 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 ```
 graphite/
 ├── frontend/
+│   ├── web/                # TypeScript compiler source frontend (Node.js)
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)
