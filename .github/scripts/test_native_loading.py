@@ -24,6 +24,12 @@ def record_fixture():
 
 
 class NativeLoading(unittest.TestCase):
+    def setUp(self):
+        # The cells' page-cache drop would reach sudo through the faked Popen on a non-root host.
+        for name, value in (('drop_page_cache', lambda: {'method': pressure.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'test'}),
+                            ('host_memory', lambda: {'available': False, 'platform': 'test'})):
+            patcher = patch.object(pressure, name, value); patcher.start(); self.addCleanup(patcher.stop)
+
     def test_original_startup_cpu_and_ready_rss_exclude_later_query_peak(self):
         record,result,samples,lifecycle=record_fixture()
         samples.append(sample(4_000_000_000,4_000_000_010,500,900000))

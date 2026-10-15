@@ -146,6 +146,10 @@ class ExpectationVariantTests(unittest.TestCase):
 
 class PressureTests(unittest.TestCase):
     def setUp(self):
+        # The cells' page-cache drop would reach sudo on a non-root host and the host's /proc; neither belongs in a test.
+        for name, value in (('drop_page_cache', lambda: {'method': p.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'test'}),
+                            ('host_memory', lambda: {'available': False, 'platform': 'test'})):
+            patcher = patch.object(p, name, value); patcher.start(); self.addCleanup(patcher.stop)
         self.child_guard = patch.object(p.subprocess, 'Popen', side_effect=AssertionError('No child in correctness tests'))
         self.child_guard.start()
         self.addCleanup(self.child_guard.stop)

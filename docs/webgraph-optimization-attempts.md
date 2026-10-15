@@ -21765,3 +21765,14 @@ Expected effect: 0-C holds what 5-C holds, the accepted pairs' RSS within the to
 a cell still runs under pressure its record names what the host held. If the anon split shows the
 candidate's own memory above the base's (the parsed declared tables of 64 graphs are new memory),
 that is the engine's regression and is reported as such; the file share is not.
+
+Correction (a6024cd → next push): `candidate-gate-tests (controls)` failed on a6024cd in
+`test_run_failure_still_cleans_owned_group_and_preserves_final_pin_failure`: the harness tests
+fake `subprocess.Popen` to capture the server launch, the hosted runner is not root, so the
+cells' `drop_page_cache` went through `sudo -n` and the fake recorded that call as the launch
+(`'--pid-file' is not in list`). Locally the tests ran as root and took the direct write, so
+they passed. The drop now records whatever refuses the write instead of raising, and the test
+modules that run cells (`test_multigraph_pressure`, `test_real64_loading`,
+`test_real64_construction`, `test_native_loading`, `test_prepare_native_pressure_plan`) stub it
+and `host_memory` in `setUp`; every top-level test module was re-run with `os.geteuid` returning
+1000 before the push. Nothing downstream of the gate tests ran on a6024cd.

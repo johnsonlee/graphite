@@ -1610,7 +1610,8 @@ def drop_page_cache(target=DROP_CACHES, run=subprocess.run):
     Dropping everything puts every cell, the first included, on the same footing before its own
     graphs are read back in. `drop_caches` needs root: written directly as root, through
     `sudo -n` otherwise (the hosted runner grants it); a host that allows neither is recorded,
-    not failed, and the per-file eviction still runs.
+    not failed, and the per-file eviction still runs. Whatever refuses the write (a denied
+    sudo, a missing binary, a test's fake `Popen`) is the record's detail, never the cell's error.
     """
     os.sync()
     try:
@@ -1621,7 +1622,7 @@ def drop_page_cache(target=DROP_CACHES, run=subprocess.run):
         if result.returncode == 0:
             return {'method': PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'sudo'}
         return {'method': PAGE_CACHE_DROP, 'status': 'unavailable', 'detail': (result.stderr or result.stdout).strip()[:500]}
-    except (OSError, subprocess.SubprocessError) as error:
+    except Exception as error:  # noqa: BLE001 - a best-effort privileged write; whatever refused it is the record
         return {'method': PAGE_CACHE_DROP, 'status': 'unavailable', 'detail': repr(error)[:500]}
 
 

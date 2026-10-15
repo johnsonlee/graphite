@@ -7,6 +7,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import prepare_native_pressure_plan as b
+import multigraph_pressure as pressure
 
 
 class PreparationTests(unittest.TestCase):
@@ -116,6 +117,12 @@ class PreparationTests(unittest.TestCase):
 
 
 class ActualProducerShapeTests(unittest.TestCase):
+    def setUp(self):
+        # The cells' page-cache drop would reach sudo through the faked Popen on a non-root host.
+        for name, value in (('drop_page_cache', lambda: {'method': pressure.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'test'}),
+                            ('host_memory', lambda: {'available': False, 'platform': 'test'})):
+            patcher = patch.object(pressure, name, value); patcher.start(); self.addCleanup(patcher.stop)
+
     def test_structured_toolchain_and_escaped_versions_preserve_raw_identity(self):
         import copy
         identity = {'java':'/jdk/bin/java','cargo':'/rust/bin/cargo','rustc':'/rust/bin/rustc',
