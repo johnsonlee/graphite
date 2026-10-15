@@ -368,8 +368,7 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
         _ => false,
     };
     checks.push(json!({"name":"host OOM events","kind":"heap","passed":host_ok,"detail":format!("before={before:?}; after={after:?}")}));
-    let comparable = results.iter().all(Option::is_some);
-    let timing = json!({"case":"real64-build-save","stage":"frontend-build-save","workload":"jar/4-corpora/64-distinct-shards","method":"JMH SingleShotTime; one fork; informational only","baseMs":results[0].as_ref().map(value_ms),"headMs":results[1].as_ref().map(value_ms),"samplesBase":usize::from(results[0].is_some()),"samplesHead":usize::from(results[1].is_some()),"comparable":comparable,"unavailableReason":if comparable{None}else{Some("base or head frontend build/save did not complete; see statuses and raw logs")}});
+    let timing = build_save_timing(results[0].as_ref(), results[1].as_ref(), host_ok);
     let report = json!({"schema":plan::SCHEMA,"suite":"frontend-build-save","baseSha":args.base_sha,"headSha":args.head_sha,"baseLabel":args.base_label,"baseStatus":if results[0].is_some(){"AVAILABLE"}else{"UNAVAILABLE"},"headStatus":if results[1].is_some(){"AVAILABLE"}else{"UNAVAILABLE"},"baseUnavailableReason":if results[0].is_some(){Value::Null}else{statuses[0]["detail"].clone()},"checks":checks,"timings":[timing],"artifacts":artifacts,"statuses":statuses,"sourceInputs":inputs});
     fs::write(
         output.join("report.json"),
@@ -377,6 +376,21 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
     )?;
     Ok(report)
 }
+fn build_save_timing(base: Option<&Value>, head: Option<&Value>, host_ok: bool) -> Value {
+    let comparable = host_ok && base.is_some() && head.is_some();
+    let unavailable_reason = if !host_ok {
+        Some("Host OOM evidence invalidates timing comparison; see heap checks and raw logs")
+    } else if !comparable {
+        Some("base or head frontend build/save did not complete; see statuses and raw logs")
+    } else {
+        None
+    };
+    json!({"case":"real64-build-save","stage":"frontend-build-save","workload":"jar/4-corpora/64-distinct-shards",
+        "method":"JMH SingleShotTime; one fork; informational only","baseMs":base.map(value_ms),"headMs":head.map(value_ms),
+        "samplesBase":usize::from(base.is_some()),"samplesHead":usize::from(head.is_some()),
+        "comparable":comparable,"unavailableReason":unavailable_reason})
+}
+
 fn validate_saved_graphs(root: &Path) -> Result<()> {
     let text = fs::read_to_string(root.join("graphs.tsv"))?;
     let rows: Vec<_> = text
@@ -482,6 +496,44 @@ mod tests {
         assert!(heap_audit(&root).is_err());
         fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn host_oom_keeps_observations_but_suppresses_report_comparisons() {
+        let base = json!({"primaryMetric":{"rawData":[[100.0]]}});
+        let head = json!({"primaryMetric":{"rawData":[[50.0]]}});
+        assert_eq!(
+            build_save_timing(Some(&base), Some(&head), true)["comparable"],
+            true
+        );
+        let timing = build_save_timing(Some(&base), Some(&head), false);
+        assert_eq!(timing["comparable"], false);
+        assert_eq!(timing["baseMs"], 100.0);
+        assert_eq!(timing["headMs"], 50.0);
+        assert!(timing["unavailableReason"]
+            .as_str()
+            .unwrap()
+            .contains("Host OOM"));
+        let mut suite = crate::report::failed_suite(
+            "frontend-build-save",
+            &"a".repeat(40),
+            &"b".repeat(40),
+            "Host OOM",
+        );
+        for check in suite["checks"].as_array_mut().unwrap() {
+            check["passed"] = json!(check["kind"] != "heap");
+        }
+        suite["timings"] = json!([timing]);
+        let root = temp();
+        assert!(!crate::report::write_suite(&root, &suite).unwrap());
+        let saved: Value =
+            serde_json::from_slice(&fs::read(root.join("suite.json")).unwrap()).unwrap();
+        assert!(saved["timings"][0]["deltaMs"].is_null());
+        assert!(saved["timings"][0]["deltaPercent"].is_null());
+        let markdown = fs::read_to_string(root.join("report.md")).unwrap();
+        assert!(markdown.contains("100.000 | 50.000 | UNAVAILABLE | UNAVAILABLE"));
+        assert!(markdown.contains("Host OOM evidence invalidates timing comparison"));
+        fs::remove_dir_all(root).unwrap();
+    }
+
     #[test]
     fn cached_or_partial_graphs_do_not_complete_build() {
         let root = temp();
