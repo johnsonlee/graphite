@@ -66,8 +66,11 @@ internal object DeclaredTypeStore {
 
     fun save(table: DeclaredTypeTable, dir: Path, strings: StringTable) = saveTable(table, dir, strings)
 
-    /** Consume the exact format decision used to collect this save's shared dictionary. */
-    fun save(plan: DeclaredTypeSavePlan, dir: Path, strings: StringTable) = plan.use {
+    /**
+     * Consume the exact format decision used to collect this save's shared dictionary. Returns the
+     * SHA-256 of the written `graph.types`, which the binding records, or `null` for an empty table.
+     */
+    fun save(plan: DeclaredTypeSavePlan, dir: Path, strings: StringTable): ByteArray? = plan.use {
         it.requireOpen()
         saveTable(it.table, dir, strings, prepared = it)
     }
@@ -83,12 +86,12 @@ internal object DeclaredTypeStore {
     private fun saveTable(
         table: DeclaredTypeTable, dir: Path, strings: StringTable?, maximumVersion: Int = CURRENT_VERSION,
         prepared: DeclaredTypeSavePlan? = null
-    ) {
+    ): ByteArray? {
         val path = dir.resolve(FILE_NAME)
         if (table == DeclaredTypeTable.EMPTY) {
             Files.deleteIfExists(path)
             writeBinding(dir, null)
-            return
+            return null
         }
         table.validate()
         // A loaded table can map this same path. Replace its inode only after
@@ -104,6 +107,7 @@ internal object DeclaredTypeStore {
                 Files.move(temporary, path, StandardCopyOption.REPLACE_EXISTING)
             }
             writeBinding(dir, HexFormat.of().formatHex(digest))
+            return digest
         } finally {
             Files.deleteIfExists(temporary)
         }

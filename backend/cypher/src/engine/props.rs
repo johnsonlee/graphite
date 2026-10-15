@@ -97,15 +97,7 @@ fn declared_method<'a>(
 /// Only fields, parameters and returns carry declarations, so the tag decides before the table is
 /// touched: a CallSite aggregation or a constant scan never pays the table's first read.
 pub fn has_declared_types_for_tag(g: &Graph, tag: u8) -> bool {
-    match tag {
-        TAG_FIELD_NODE => g
-            .declared_types()
-            .is_some_and(|table| table.field_count() != 0),
-        TAG_PARAMETER_NODE | TAG_RETURN_NODE => g
-            .declared_types()
-            .is_some_and(|table| table.method_count() != 0),
-        _ => false,
-    }
+    g.declared_members_present(tag)
 }
 
 pub(super) fn declaration_bearing(node: &Node) -> bool {

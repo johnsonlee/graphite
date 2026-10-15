@@ -391,6 +391,15 @@ class DeclaredTypePersistenceTest {
             Files.createDirectories(output)
             GraphStore.save(graph, output)
             assertEquals(0x47545905, ByteBuffer.wrap(Files.readAllBytes(output.resolve("graph.types"))).int)
+            // The key summary beside the table is what the native reader would compute from it.
+            val keys = DecodedDeclaredKeys.decode(Files.readAllBytes(output.resolve(DeclaredKeySummaryBuilder.FILE_NAME)))
+            assertContentEquals(
+                MessageDigest.getInstance("SHA-256").digest(Files.readAllBytes(output.resolve("graph.types"))), keys.typesDigest
+            )
+            assertEquals(types.fields.size.toLong(), keys.fieldCount)
+            assertEquals(types.methods.size.toLong(), keys.methodCount)
+            assertEquals(DecodedDeclaredKeys.expected(graph), keys.partitions)
+            assertTrue(keys.partitions.all { it != null && it[1].count > 0 }, "the compiled fixture binds every kind")
             val legacy = System.getenv("GRAPHITE_TYPES_V1_FIXTURE")?.let(Path::of) ?: dir.resolve("legacy")
             Files.createDirectories(legacy)
             Files.list(output).use { files ->

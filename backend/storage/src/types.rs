@@ -411,26 +411,30 @@ impl DeclaredTypes {
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
         Self::parse_context(&bytes, &metadata, strings).map(Some)
     }
-    fn check_binding(bytes: &[u8], binding: &str) -> Result<(), TypeError> {
-        let actual = Sha256::digest(bytes)
-            .iter()
-            .map(|b| format!("{b:02x}"))
-            .collect::<String>();
+    fn check_binding(bytes: &[u8], binding: &str) -> Result<[u8; 32], TypeError> {
+        let digest: [u8; 32] = Sha256::digest(bytes).into();
+        let actual = digest.iter().map(|b| format!("{b:02x}")).collect::<String>();
         if !actual.eq_ignore_ascii_case(binding) {
             return Err(TypeError("forward.properties type digest mismatch".into()));
         }
-        Ok(())
+        Ok(digest)
     }
     /// Refuses a graph whose `graph.types` is not the file `forward.properties` binds, without
     /// reading its content: the table is query-only state, read and validated on first use.
     pub fn verify_binding(source: &GraphSource) -> Result<(), TypeError> {
+        Self::bound_digest(source).map(|_| ())
+    }
+    /// The SHA-256 of `graph.types` that `forward.properties` binds, checked against the file's
+    /// bytes; `None` for a graph without a table. The `graph.declared-keys` sidecar names this
+    /// digest, so a load that has verified it binds the sidecar at no further cost.
+    pub fn bound_digest(source: &GraphSource) -> Result<Option<[u8; 32]>, TypeError> {
         let Some(binding) = Self::binding(source)? else {
-            return Ok(());
+            return Ok(None);
         };
         let bytes = source
             .require("graph.types")
             .map_err(|(p, e)| TypeError(format!("{p}: {e}")))?;
-        Self::check_binding(&bytes, &binding)
+        Self::check_binding(&bytes, &binding).map(Some)
     }
     /// Reads the table against `strings`, binding the dictionary to its serialized bytes
     /// first when the table shares them and the load did not hash them.

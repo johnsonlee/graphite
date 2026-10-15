@@ -239,6 +239,11 @@ pub struct Graph {
     /// charged every graph's load for declarations no request had asked for yet. The load
     /// still refuses a `graph.types` that is not the file `forward.properties` binds.
     declared: std::sync::OnceLock<Result<DeclaredState, crate::types::TypeError>>,
+    /// The key-set summary the writer persisted beside the table (`graph.declared-keys`), bound
+    /// to the `graph.types` the load verified; absent for a graph written without it or whose
+    /// sidecar names another table. It answers the planner's declared-key questions without
+    /// reading the table.
+    declared_keys: Option<DeclaredKeySummary>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
     /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
@@ -335,7 +340,17 @@ impl Graph {
             })
             .unwrap_or_default();
 
-        crate::types::DeclaredTypes::verify_binding(&src)?;
+        // The key summary is read only against the digest the binding check just verified: a
+        // sidecar left beside a rewritten table (or copied under another graph) names a digest
+        // the table no longer has, and is read as absent, as the ordinal sidecar is.
+        let types_digest = crate::types::DeclaredTypes::bound_digest(&src)?;
+        let declared_keys = match types_digest {
+            Some(digest) => src
+                .bytes("graph.declared-keys")
+                .map_err(io)?
+                .and_then(|bytes| DeclaredKeySummary::parse(&bytes, &digest)),
+            None => None,
+        };
         let mut graph = Graph {
             dir,
             node_version,
@@ -352,6 +367,7 @@ impl Graph {
             class_overview,
             resources,
             declared: std::sync::OnceLock::new(),
+            declared_keys,
             call_site_index,
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
@@ -467,14 +483,55 @@ impl Graph {
         }
     }
 
+    /// The key-set partitions of `tag`'s nodes, [unbound, bound]. Answered from the persisted
+    /// summary while the table is unread, so a `keys()` histogram over a fresh graph reads no
+    /// table; once the table has been read or replaced, its own state answers.
     pub fn declared_key_partitions(&self, tag: u8) -> Option<&[DeclaredKeyPartition; 2]> {
         let index = usize::from(tag.checked_sub(crate::node::TAG_FIELD_NODE)?);
-        self.declared()
-            .as_ref()
-            .ok()?
-            .partitions
-            .get(index)?
-            .as_ref()
+        let state = match (self.declared.get(), &self.declared_keys) {
+            (None, Some(summary)) => return summary.partitions.get(index)?.as_ref(),
+            (Some(state), _) => state,
+            (None, None) => self.declared(),
+        };
+        state.as_ref().ok()?.partitions.get(index)?.as_ref()
+    }
+
+    /// Whether `tag`'s nodes can carry declarations here: the table has fields (Field) or
+    /// methods (Parameter, Return). Answered from the persisted summary while the table is
+    /// unread, else from the table; `false` for any other tag, or a table that cannot be read.
+    pub fn declared_members_present(&self, tag: u8) -> bool {
+        use crate::node::{TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
+        let fields = match tag {
+            TAG_FIELD_NODE => true,
+            TAG_PARAMETER_NODE | TAG_RETURN_NODE => false,
+            _ => return false,
+        };
+        if let (None, Some(summary)) = (self.declared.get(), &self.declared_keys) {
+            return if fields {
+                summary.field_count != 0
+            } else {
+                summary.method_count != 0
+            };
+        }
+        self.declared_types().is_some_and(|table| {
+            if fields {
+                table.field_count() != 0
+            } else {
+                table.method_count() != 0
+            }
+        })
+    }
+
+    /// Whether the load bound a persisted key summary to this graph's table.
+    pub fn has_persisted_declared_keys(&self) -> bool {
+        self.declared_keys.is_some()
+    }
+
+    /// Test and audit hook: the partitions recomputed from the table and the nodes, ignoring any
+    /// persisted summary, so a writer's summary can be checked against this reader's computation.
+    #[doc(hidden)]
+    pub fn recomputed_declared_key_partitions(&self) -> [Option<[DeclaredKeyPartition; 2]>; 3] {
+        self.compute_declared_key_partitions(self.declared_types())
     }
 
     #[cfg(test)]
@@ -875,6 +932,67 @@ impl Graph {
     }
 }
 
+/// Header of the `graph.declared-keys` sidecar: "GDK" and the format version.
+pub const MAGIC_DECLARED_KEYS: u32 = 0x4744_4B00;
+const DECLARED_KEYS_VERSION: u32 = 1;
+
+/// The `graph.declared-keys` sidecar: what [`Graph::compute_declared_key_partitions`] computes
+/// from the table and the nodes, written by the Kotlin saver in the same pass that writes the
+/// nodes. Layout, big-endian: `u32 header = "GDK" | 1`, the 32-byte SHA-256 of `graph.types`
+/// (the digest `forward.properties` binds, which the load verifies anyway), `i64 fieldCount`,
+/// `i64 methodCount`, then for Field, Parameter and Return in turn `u8 present` and, when 1,
+/// `u32 first, i64 count` for the unbound partition and again for the bound one. Nothing else:
+/// a file of another length is refused. Without it, the first `keys()` over a fresh graph read
+/// and parsed every table and walked every declaration-bearing node of all 64 graphs before it
+/// could answer (3.8 s on the hosted runner, Attempt301); with it, the planner's questions are
+/// answered from under 130 bytes and the table is read only by a query that needs a declared
+/// type's value.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DeclaredKeySummary {
+    pub field_count: usize,
+    pub method_count: usize,
+    pub partitions: [Option<[DeclaredKeyPartition; 2]>; 3],
+}
+
+impl DeclaredKeySummary {
+    /// The summary in `bytes` when it is well-formed and names `types_digest`; `None` otherwise.
+    pub fn parse(bytes: &[u8], types_digest: &[u8; 32]) -> Option<Self> {
+        let mut c = Cursor::new(bytes);
+        if c.u32().ok()? != MAGIC_DECLARED_KEYS | DECLARED_KEYS_VERSION {
+            return None;
+        }
+        if c.bytes(32).ok()? != types_digest {
+            return None;
+        }
+        let count = |c: &mut Cursor<'_>| usize::try_from(c.i64().ok()?).ok();
+        let field_count = count(&mut c)?;
+        let method_count = count(&mut c)?;
+        let mut partitions = [None; 3];
+        for slot in &mut partitions {
+            *slot = match c.u8().ok()? {
+                0 => None,
+                1 => {
+                    let mut pair = [DeclaredKeyPartition::default(); 2];
+                    for partition in &mut pair {
+                        partition.first = c.u32().ok()?;
+                        partition.count = count(&mut c)?;
+                    }
+                    Some(pair)
+                }
+                _ => return None,
+            };
+        }
+        if c.remaining() != 0 {
+            return None;
+        }
+        Some(Self {
+            field_count,
+            method_count,
+            partitions,
+        })
+    }
+}
+
 /// Query-only declaration state: the table bound to the dictionary bytes and the
 /// metadata, and the Field/Parameter/Return key-set summaries over it, each
 /// [unbound, bound]. Only ascending ID lists have summaries: replacing an unsorted
@@ -889,7 +1007,12 @@ impl DeclaredState {
         let src = GraphSource::open(&graph.dir)
             .map_err(|error| crate::types::TypeError(error.to_string()))?;
         let table = crate::types::DeclaredTypes::load_bound(&src, &graph.strings)?;
-        let partitions = graph.compute_declared_key_partitions(table.as_ref());
+        // The writer's summary is the same function of the table and the nodes; a table that
+        // reads at all keeps it rather than walking every declaration-bearing node again.
+        let partitions = match (&graph.declared_keys, &table) {
+            (Some(summary), Some(_)) => summary.partitions,
+            _ => graph.compute_declared_key_partitions(table.as_ref()),
+        };
         Ok(Self { table, partitions })
     }
 }
@@ -1174,6 +1297,146 @@ mod declared_key_tests {
         drop(graphs);
         std::fs::remove_dir_all(root).unwrap();
         eprintln!("dual Java GTY01/GTY02 directory+packed complete partitions, partial bindings and legacy mutation PASS");
+    }
+
+    fn encode_summary(digest: &[u8; 32], summary: &DeclaredKeySummary) -> Vec<u8> {
+        let mut bytes = (MAGIC_DECLARED_KEYS | DECLARED_KEYS_VERSION)
+            .to_be_bytes()
+            .to_vec();
+        bytes.extend_from_slice(digest);
+        bytes.extend((summary.field_count as i64).to_be_bytes());
+        bytes.extend((summary.method_count as i64).to_be_bytes());
+        for slot in &summary.partitions {
+            match slot {
+                None => bytes.push(0),
+                Some(pair) => {
+                    bytes.push(1);
+                    for partition in pair {
+                        bytes.extend(partition.first.to_be_bytes());
+                        bytes.extend((partition.count as i64).to_be_bytes());
+                    }
+                }
+            }
+        }
+        bytes
+    }
+
+    #[test]
+    fn persisted_key_summary_parses_exactly_and_refuses_every_other_shape() {
+        let digest = [7u8; 32];
+        let summary = DeclaredKeySummary {
+            field_count: 3,
+            method_count: 0,
+            partitions: [
+                Some([
+                    DeclaredKeyPartition { first: 4, count: 2 },
+                    DeclaredKeyPartition { first: 9, count: 1 },
+                ]),
+                None,
+                Some([DeclaredKeyPartition::default(); 2]),
+            ],
+        };
+        let bytes = encode_summary(&digest, &summary);
+        assert_eq!(DeclaredKeySummary::parse(&bytes, &digest), Some(summary));
+        assert_eq!(
+            DeclaredKeySummary::parse(&bytes, &[8u8; 32]),
+            None,
+            "another table"
+        );
+        assert_eq!(
+            DeclaredKeySummary::parse(&bytes[..bytes.len() - 1], &digest),
+            None,
+            "cut short"
+        );
+        let mut trailing = bytes.clone();
+        trailing.push(0);
+        assert_eq!(
+            DeclaredKeySummary::parse(&trailing, &digest),
+            None,
+            "trailing bytes"
+        );
+        let mut other_version = bytes.clone();
+        other_version[3] = 2;
+        assert_eq!(
+            DeclaredKeySummary::parse(&other_version, &digest),
+            None,
+            "unknown version"
+        );
+        let mut flag = bytes.clone();
+        flag[4 + 32 + 16] = 2;
+        assert_eq!(
+            DeclaredKeySummary::parse(&flag, &digest),
+            None,
+            "presence flag must be 0 or 1"
+        );
+        let mut negative = bytes.clone();
+        negative[4 + 32] = 0xff;
+        assert_eq!(
+            DeclaredKeySummary::parse(&negative, &digest),
+            None,
+            "negative count"
+        );
+        assert_eq!(DeclaredKeySummary::parse(&[], &digest), None);
+    }
+
+    #[test]
+    fn persisted_key_summary_answers_before_the_table_is_read_and_agrees_with_it() {
+        let Some(graph) = fixture() else {
+            return;
+        };
+        if !graph.has_persisted_declared_keys() {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                "the fixture writer persists graph.declared-keys"
+            );
+            eprintln!("persisted_key_summary_answers_before_the_table_is_read_and_agrees_with_it: fixture without a summary; skipped");
+            return;
+        }
+        let before = partitions(&graph);
+        let members: Vec<bool> = [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE]
+            .iter()
+            .map(|&tag| graph.declared_members_present(tag))
+            .collect();
+        assert!(
+            graph.declared.get().is_none(),
+            "the summary answers without reading the table"
+        );
+        assert!(before.iter().all(Option::is_some));
+        assert_eq!(members, vec![true, true, true]);
+        assert!(!graph.declared_members_present(crate::node::TAG_CALL_SITE_NODE));
+        let computed = graph.recomputed_declared_key_partitions();
+        assert!(graph.declared_types().is_some());
+        assert_eq!(
+            before, computed,
+            "the writer's summary is the reader's computation"
+        );
+        assert_eq!(
+            partitions(&graph),
+            computed,
+            "the read state keeps the same partitions"
+        );
+        // A sidecar that names another table is read as absent, and the table answers instead.
+        let root =
+            std::env::temp_dir().join(format!("graphite-declared-keys-{}", std::process::id()));
+        std::fs::create_dir_all(&root).unwrap();
+        for entry in std::fs::read_dir(&graph.dir).unwrap() {
+            let entry = entry.unwrap();
+            if entry.file_type().unwrap().is_file() {
+                std::fs::copy(entry.path(), root.join(entry.file_name())).unwrap();
+            }
+        }
+        let sidecar = root.join("graph.declared-keys");
+        let mut bytes = std::fs::read(&sidecar).unwrap();
+        bytes[4] ^= 1;
+        std::fs::write(&sidecar, &bytes).unwrap();
+        let stale = Graph::load(&root).unwrap();
+        assert!(!stale.has_persisted_declared_keys());
+        assert_eq!(partitions(&stale), computed);
+        assert!(
+            stale.declared.get().is_some(),
+            "without a summary the table is read"
+        );
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[test]

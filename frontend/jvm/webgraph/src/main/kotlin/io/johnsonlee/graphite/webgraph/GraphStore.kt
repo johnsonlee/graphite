@@ -385,7 +385,8 @@ private class NodeDataWriteContext(
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
     val classOverviewEdges: ClassOverviewEdgeBuilder,
-    val callSites: CallSiteWriteContext
+    val callSites: CallSiteWriteContext,
+    val declaredKeys: DeclaredKeySummaryBuilder?
 )
 
 private class CallSiteWriteContext(
@@ -626,6 +627,7 @@ object GraphStore {
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
         Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
         Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
+        Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -697,8 +699,10 @@ object GraphStore {
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
 
-        // 6. Write nodedata + nodeindex and capture compact ordinal fields in the same pass.
+        // 6. Write nodedata + nodeindex and capture compact ordinal fields and the declared-key
+        //    summary in the same pass.
         val ordinalInput = CallSiteOrdinalPersistenceInput(ordinalCount)
+        val declaredKeys = if (declaredTypes == DeclaredTypeTable.EMPTY) null else DeclaredKeySummaryBuilder(declaredTypes)
         writeNodeDataAndIndex(
             graph,
             dir,
@@ -709,7 +713,8 @@ object GraphStore {
             stringTable,
             classOverviewEdges,
             callSiteIndexInput,
-            ordinalInput
+            ordinalInput,
+            declaredKeys
         )
 
         // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
@@ -725,7 +730,10 @@ object GraphStore {
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
 
-        DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
+        val typesDigest = DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
+        if (declaredKeys != null && typesDigest != null) {
+            Files.write(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME), declaredKeys.encode(typesDigest))
+        }
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
@@ -758,7 +766,8 @@ object GraphStore {
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
         callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
+        declaredKeys: DeclaredKeySummaryBuilder?
     ) {
         val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
             update(stringTable.contentIdentity())
@@ -780,7 +789,8 @@ object GraphStore {
                     stringTable,
                     classOverviewEdges,
                     callSiteIndexInput,
-                    callSiteOrdinals
+                    callSiteOrdinals,
+                    declaredKeys
                 )
             }
         }
@@ -801,7 +811,8 @@ object GraphStore {
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
         callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
+        declaredKeys: DeclaredKeySummaryBuilder?
     ) {
         NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
             TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
@@ -819,7 +830,8 @@ object GraphStore {
                         cos,
                         stringTable,
                         classOverviewEdges,
-                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals)
+                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals),
+                        declaredKeys
                     )
                 )
             }
@@ -835,6 +847,7 @@ object GraphStore {
             context.idxDos.writeLong(offset)
             context.offsetWriter.write(node.id.value, offset)
             context.typeIndexWriter.write(tag, node.id.value)
+            context.declaredKeys?.add(node)
             if (node is CallSiteNode) {
                 context.classOverviewEdges.add(node)
                 context.callSites.identity.updateContentInt(node.id.value)

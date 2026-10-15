@@ -569,6 +569,25 @@ Lessons from building it:
   and only then write a replacement. Here the upgrade showed a second bug the replacement
   also covers, which is the kind of thing only the diff plus a test tells you.
 
+### A Query-Only Table's Derived Summary Is Written by the Saver, Not Computed by the Reader
+
+The native reader read `graph.types` lazily (the table is query-only state, and reading it before
+readiness charged every graph's load for declarations no request had asked for), but the planner's
+first declared-key question (`keys(n)` over Field/Parameter/Return nodes) then parsed the table
+and walked every declaration-bearing node of every graph: 49 ms a graph, 3.8 s for the 64-graph
+corpus on the hosted runner, paid by whichever first requests collided on the same `OnceLock`.
+Eager loading would have spent most of the loading CPU budget; a background read after readiness
+still left the first requests waiting. The saver holds both the table and the nodes, so it writes
+the answer (`graph.declared-keys`, under 130 bytes, `DeclaredKeySummaryBuilder`) in the pass that
+writes the nodes, with the same lookups and the same declining conditions as the reader's
+computation, and binds it to the SHA-256 of `graph.types` that `forward.properties` already names
+and the load already verifies, so binding costs nothing and a sidecar beside a rewritten table
+reads as absent. `graph.metadata` stays untouched: its tail is the ordinal binding that the JVM
+reader and the proof chain read from the last 36 bytes, so a new binding there would have broken
+both. The reader answers from the summary while the table is unread and from the table's own state
+afterwards; parity is proved on the interop fixture (`persisted_key_summary_*`) and by the
+fixture64 query-correctness oracles, since a wrong summary changes a `keys()` histogram.
+
 ### SootUp 3.x: What the Upgrade From 2.0.0 Changed
 
 - API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/

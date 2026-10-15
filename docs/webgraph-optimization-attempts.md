@@ -21542,3 +21542,51 @@ blocks only when it is 15% slower and at least 5 ms slower, which leaves every r
 (where 15% is already 5 ms) exactly as judged before and stops the gate from deciding on the
 jitter of a 1–3 ms request. The user was offered this floor or a report-only `rust-latency` and
 the floor is the smaller change; it stands as proposed until the user says otherwise.
+
+### Attempt301 — the declared-key summary is written beside the table, so the first `keys()` reads no table (2026-10-15)
+
+The cold rows of the query-native gate (run 38630296899) failed on three cases and left five
+indeterminate, every one a first request after loading: `schema-key-histogram` 5.6–8.5 → 3792–3803 ms,
+`schema-label-histogram` 3.2–8.2 → 3790–3801 ms, `global-wide-wrapped-case-insensitive-distinct-zero`
+2.5–3.0 → 140–337 ms. The oracle stage issues its 39 cases on four workers, and the first request
+that asks a declared-key question of a graph reads its declaration state (`DeclaredState::read`):
+`graph.types` parsed, the shared dictionary and the metadata hashed, and every Field, Parameter and
+Return node decoded and looked up for the key-set partitions. Measured on the 64 local fixture
+graphs (`backend/storage/examples/declared_cost.rs`): parse 1497 ms, partitions ≈1400 ms, hashing
+≈200 ms, 3112 ms in all (49 ms a graph), 1054 ms wall on four threads; the hosted runner is slower
+and the histogram requests waited on the same `OnceLock` from both workers, so both paid the whole
+3.8 s. Keeping the read lazy was the recovery of the native loading gate (Attempt with the eager
+partitions removed); moving it back to loading costs the loading CPU budget (45 s, 10%) most of
+what it has, and a background read after readiness still leaves the first requests waiting.
+
+The partitions are a function of the table and the nodes, both of which the Kotlin saver holds, so
+it now writes them: `DeclaredKeySummaryBuilder` (webgraph) records every Field, Parameter and
+Return node in the pass that writes the nodes (`writeNodes`), bound or unbound by the same
+lookups the native reader makes (`MemberTypeKey(owner, name, descriptor)` in the table's fields or
+methods; a parameter also needs its index within the method's parameter count), and declines a tag
+exactly where `compute_declared_key_partitions` does (no members of its kind, ids not ascending in
+type-index order, more than 256 parameters, identity strings over 1 MB of UTF-8). The sidecar
+`graph.declared-keys` (under 130 bytes: header, the SHA-256 of `graph.types`, field and method
+counts, per tag a presence byte and two `(first id, count)` pairs) names the digest
+`forward.properties` already binds, which the native load verifies anyway
+(`DeclaredTypes::bound_digest`), so binding it costs nothing and a sidecar beside a rewritten table
+is read as absent. `graph.metadata` is untouched: its tail is the ordinal binding that the JVM
+reader and the proof chain's `bind_metadata` read from the last 36 bytes.
+
+Reader: `Graph::declared_key_partitions` and the new `Graph::declared_members_present` (what
+`props::has_declared_types_for_tag` now calls) answer from the summary while the table is unread
+and from the table's own state once it has been read or replaced (`update_declared_types`
+recomputes as before); `DeclaredState::read` keeps the summary's partitions instead of walking the
+nodes, so the table's first read is the parse alone. Queries that read a declared type's value
+still read the table on first use. Tests: `DeclaredKeySummaryTest` (partitions, absent tags,
+every declining condition, UTF-8 length, save and re-save), the compiled-jar fixture of
+`DeclaredTypePersistenceTest` checks the sidecar against an independent computation, and the Rust
+`persisted_key_summary_*` tests parse the format strictly and, on the interop fixture, prove the
+summary answers before the table is read, equals the recomputation, and is dropped when its digest
+names another table (`rust.yml` runs it with the fixture). Parity on real corpora: the three local
+shards built with the new writer (`fx/shards/android-00.jar`, 364k nodes; `kc-15.jar`, 211k;
+`tika-10.jar`, 273k) carry a 127-byte sidecar whose partitions equal the reader's recomputation on
+every tag (android-00: fields 3751 unbound / 15850 bound, parameters 0 / 28022, returns 0 / 25301),
+and the first table read of a graph fell from 49 to 27 ms (the parse alone; `declared_cost`
+example). Expected effect in CI: the three cold FAIL rows and the indeterminate first-request rows
+return to the base's milliseconds; loading is unchanged.
