@@ -108,6 +108,8 @@ class ConstructionTests(unittest.TestCase):
     def execute(self, phase=None):
         with patch.object(runner,'validate',side_effect=lambda x:x), \
                 patch.object(runner.sys,'platform','linux'), \
+                patch.object(p,'drop_page_cache',lambda:{'method':p.PAGE_CACHE_DROP,'status':'dropped','how':'sudo'}), \
+                patch.object(p,'host_memory',lambda:{'available':False,'platform':'test'}), \
                 patch.object(runner.artifacts,'source_inventory',side_effect=lambda *args:{f:p.sha(f) for f in self.source}), \
                 patch.object(runner.producer,'phase',side_effect=phase or self.phase):
             return runner.run(self.plan_file,self.root/'cells')

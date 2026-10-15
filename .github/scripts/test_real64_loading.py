@@ -35,6 +35,9 @@ def fixture():
 
 class LoadingTests(unittest.TestCase):
     def setUp(self):
+        for name, value in (('drop_page_cache', lambda: {'method': p.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'sudo'}),
+                            ('host_memory', lambda: {'available': False, 'platform': 'test'})):
+            patcher = patch.object(p, name, value); patcher.start(); self.addCleanup(patcher.stop)
         tmp=tempfile.TemporaryDirectory();self.addCleanup(tmp.cleanup);self.root=Path(tmp.name).resolve()
         self.no_child=patch('subprocess.Popen',side_effect=AssertionError('real children prohibited'))
         self.no_child.start();self.addCleanup(self.no_child.stop)

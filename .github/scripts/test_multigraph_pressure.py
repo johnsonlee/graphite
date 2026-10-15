@@ -9,6 +9,7 @@ import signal
 import tempfile
 import threading
 import unittest
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 spec = importlib.util.spec_from_file_location('pressure', Path(__file__).with_name('multigraph_pressure.py'))
@@ -1883,18 +1884,75 @@ class PageCacheEvictionTest(unittest.TestCase):
             advised = []
             def fadvise(fd, offset, length, advice): advised.append(os.readlink(f'/proc/self/fd/{fd}'))
             every = [{'id': 'a', 'path': str(root/'a')}, {'id': 'b', 'path': str(root/'b')}]
-            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise), patch.object(p, 'READ_CHUNK', 7):
+            dropped = {'method': p.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'sudo'}
+            memory = {'available': True, 'bytes': {'MemAvailable': 1}, 'topProcesses': [], 'selfPid': 1}
+            drops = []
+            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise), patch.object(p, 'READ_CHUNK', 7), \
+                    patch.object(p, 'drop_page_cache', lambda: drops.append(True) or dropped), patch.object(p, 'host_memory', lambda: memory):
                 value = p.warm_graph_pages(every, [every[0], {'id': 'c', 'path': str(root/'absent')}])
-            self.assertEqual(value, {'method': p.PAGE_CACHE_WARMING, 'evicted': {'method': p.PAGE_CACHE_EVICTION, 'files': 3, 'bytes': 60},
-                                     'files': 2, 'bytes': 30})
-            self.assertEqual(len(advised), 3)
+            self.assertEqual(value, {'method': p.PAGE_CACHE_WARMING, 'dropped': dropped,
+                                     'evicted': {'method': p.PAGE_CACHE_EVICTION, 'files': 3, 'bytes': 60},
+                                     'files': 2, 'bytes': 30, 'memoryAfterWarming': memory})
+            self.assertEqual((len(advised), drops), (3, [True]), 'the whole cache is dropped once, then every arm advised out')
             # A file entry (a source JAR) is read as is; a symlink entry is nothing.
             advised.clear()
-            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise):
+            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'posix_fadvise', fadvise), \
+                    patch.object(p, 'drop_page_cache', lambda: dropped), patch.object(p, 'host_memory', lambda: memory):
                 value = p.warm_graph_pages([{'id': 'f', 'path': str(root/'b/forward.graph')}, {'id': 'l', 'path': str(root/'a/link')}],
                                            [{'id': 'f', 'path': str(root/'b/forward.graph')}])
             self.assertEqual((value['files'], value['bytes'], value['evicted']['files']), (1, 30, 1))
             self.assertEqual(advised, [str(root/'b/forward.graph')])
+
+    def test_dropping_the_page_cache_writes_as_root_or_through_sudo_and_records_a_host_that_allows_neither(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp)/'drop_caches'
+            synced = []
+            calls = []
+            def run(argv, **kwargs):
+                calls.append(argv); return SimpleNamespace(returncode=kwargs.pop('rc', 0), stdout='', stderr='')
+            with patch.object(p.os, 'sync', lambda: synced.append(True)), patch.object(p.os, 'geteuid', lambda: 0):
+                self.assertEqual(p.drop_page_cache(target, run), {'method': p.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'root'})
+            self.assertEqual((target.read_text(), synced, calls), ('3\n', [True], []))
+            with patch.object(p.os, 'sync', lambda: synced.append(True)), patch.object(p.os, 'geteuid', lambda: 1001):
+                self.assertEqual(p.drop_page_cache(target, run), {'method': p.PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'sudo'})
+                self.assertEqual(calls, [['sudo', '-n', 'sh', '-c', 'echo 3 > ' + str(target)]])
+                denied = lambda argv, **kw: SimpleNamespace(returncode=1, stdout='', stderr='sudo: a password is required')
+                self.assertEqual(p.drop_page_cache(target, denied),
+                                 {'method': p.PAGE_CACHE_DROP, 'status': 'unavailable', 'detail': 'sudo: a password is required'})
+                def missing(argv, **kw): raise FileNotFoundError('sudo')
+                self.assertEqual(p.drop_page_cache(target, missing)['status'], 'unavailable')
+            with patch.object(p.os, 'sync', lambda: None), patch.object(p.os, 'geteuid', lambda: 0):
+                value = p.drop_page_cache(Path(tmp)/'absent'/'drop_caches', run)
+            self.assertEqual(value['status'], 'unavailable'); self.assertIn('FileNotFoundError', value['detail'])
+
+    def test_host_memory_names_the_counters_and_the_largest_processes(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            proc = Path(tmp)
+            (proc/'meminfo').write_text('MemTotal:       16479424 kB\nMemFree:         1000 kB\nMemAvailable:   15664040 kB\n'
+                                        'Dirty:               12 kB\nHugePages_Total:       0\nActive(file):    2048 kB\n')
+            for pid, name, rss in ((10, 'graphite', 4096), (7, 'python3', 8192), (12, 'sshd', 8192), (3, 'kthreadd', None)):
+                (proc/str(pid)).mkdir()
+                body = 'Name:\t' + name + '\nPid:\t' + str(pid) + '\n' + ('' if rss is None else 'VmRSS:\t' + str(rss) + ' kB\n')
+                (proc/str(pid)/'status').write_text(body)
+            (proc/'self').mkdir(); (proc/'not-a-pid').write_text('x')
+            with patch.object(p.sys, 'platform', 'linux'):
+                value = p.host_memory(proc, top=2)
+            self.assertEqual(value, {'available': True, 'selfPid': os.getpid(),
+                                     'bytes': {'MemTotal': 16479424*1024, 'MemFree': 1024000, 'MemAvailable': 15664040*1024, 'Dirty': 12*1024, 'Active(file)': 2048*1024},
+                                     'topProcesses': [{'pid': 7, 'name': 'python3', 'rssBytes': 8192*1024}, {'pid': 12, 'name': 'sshd', 'rssBytes': 8192*1024}]})
+            with patch.object(p.sys, 'platform', 'darwin'):
+                self.assertEqual(p.host_memory(proc), {'available': False, 'platform': 'darwin'})
+            with patch.object(p.sys, 'platform', 'linux'):
+                self.assertEqual(p.host_memory(proc/'absent'), {'available': False, 'platform': 'linux'})
+
+    def test_rss_split_reads_anon_and_file_pages_and_contributes_nothing_without_them(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            status = Path(tmp)/'status'
+            status.write_text('Name:\tgraphite\nVmRSS:\t   300 kB\nRssAnon:\t   200 kB\nRssFile:\t   100 kB\nRssShmem:\t 0 kB\n')
+            self.assertEqual(p.rss_split(status), {'rssAnonBytes': 200*1024, 'rssFileBytes': 100*1024})
+            status.write_text('Name:\tgraphite\nVmRSS:\t   300 kB\n')
+            self.assertEqual(p.rss_split(status), {})
+            self.assertEqual(p.rss_split(Path(tmp)/'gone'), {})
 
 
 if __name__ == '__main__':

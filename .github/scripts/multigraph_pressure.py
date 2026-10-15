@@ -1197,6 +1197,7 @@ def proc_sample(pid, expected_start=None):
         raw = subprocess.check_output(['ps', '-p', str(pid), '-o', 'lstart=', '-o', 'time=', '-o', 'rss='], text=True, timeout=5, env=clean_env()).strip()
         return parse_macos_sample(raw, pid, start, time.perf_counter_ns(), expected_start)
     raw = (Path('/proc') / str(pid) / 'stat').read_text()
+    split = rss_split(Path('/proc') / str(pid) / 'status')
     tail = raw[raw.rfind(')') + 2:].split()
     ticks = os.sysconf('SC_CLK_TCK')
     identity = int(tail[19])
@@ -1205,7 +1206,30 @@ def proc_sample(pid, expected_start=None):
             'startTicks': identity, 'userTicks': int(tail[11]), 'systemTicks': int(tail[12]),
             'ticksPerSecond': ticks, 'cpuSeconds': (int(tail[11]) + int(tail[12])) / ticks,
             'rssBytes': int(tail[21]) * os.sysconf('SC_PAGE_SIZE'), 'raw': raw,
-            'backend': 'linux-proc', 'pageSize': os.sysconf('SC_PAGE_SIZE')}
+            'backend': 'linux-proc', 'pageSize': os.sysconf('SC_PAGE_SIZE'), **split}
+
+
+def rss_split(status):
+    """The anonymous and file-backed parts of a process's resident set, from `/proc/<pid>/status`.
+
+    The gate's RSS is the whole resident set, file pages included (`CLAUDE.md`), and the mapped
+    graph pages the kernel keeps resident move with the host's memory, not with the engine: the
+    same baseline binary peaked at 9.6 and 12.7 GB in two cells of one run. `RssAnon` is the
+    engine's own memory and `RssFile` the resident mapped pages; both ride along with each sample
+    as diagnostics, keyed `rssAnonBytes` and `rssFileBytes`, so a verdict can be read against its
+    cause. A kernel or a read that does not provide them contributes no keys; nothing requires them.
+    """
+    try:
+        text = Path(status).read_text()
+    except OSError:
+        return {}
+    out = {}
+    for line in text.splitlines():
+        if line.startswith('RssAnon:'):
+            out['rssAnonBytes'] = int(line.split()[1]) * 1024
+        elif line.startswith('RssFile:'):
+            out['rssFileBytes'] = int(line.split()[1]) * 1024
+    return out
 
 
 def parse_macos_sample(raw, pid, start, end, expected_start=None):
@@ -1482,6 +1506,13 @@ def resource_summary(stage, samples, lifecycle, rss_samples=None):
                     row['readStartNs'] <= row['readEndNs'] for row in observed), 'valid Linux RSS observations')
         sampled_peak = max(row['rssBytes'] for row in observed)
         require(sampled_peak > 0, 'positive Linux sampled RSS peak')
+        split = [row for row in observed if 'rssAnonBytes' in row and 'rssFileBytes' in row]
+        if split:
+            at_peak = max(split, key=lambda row: row['rssBytes'])
+            rss['split'] = {'anonPeakBytes': max(row['rssAnonBytes'] for row in split),
+                            'filePeakBytes': max(row['rssFileBytes'] for row in split),
+                            'anonAtSampledPeakBytes': at_peak['rssAnonBytes'], 'fileAtSampledPeakBytes': at_peak['rssFileBytes'],
+                            'samples': len(split), 'scope': 'diagnostic: RssAnon/RssFile beside each sample; the verdict stays on the whole RSS'}
         rss.update(measurementSemantics='linux-rss-observed-envelope-v1',
                    lifecyclePeakBytes=peak, lifecycleSampledPeakBytes=sampled_peak,
                    sampledMinusLifecycleBytes=sampled_peak - peak,
@@ -1510,9 +1541,16 @@ def evidence_eligible(result, plan):
 
 
 PAGE_CACHE_EVICTION = 'posix_fadvise(POSIX_FADV_DONTNEED) on every file of every graph after sync(), before each cell starts'
-PAGE_CACHE_WARMING = ("every arm's graph files advised out of the page cache after sync(), then every file of the cell's own graphs "
-                      "read in full, before each cell starts: the cache holds exactly the graphs the cell loads")
+PAGE_CACHE_DROP = ('sync(), then 3 written to /proc/sys/vm/drop_caches (directly as root, else through sudo -n), before each cell '
+                   'starts: the page cache, dentries and inodes dropped host-wide, whatever the restore or the previous cell left')
+PAGE_CACHE_WARMING = ("the whole page cache dropped where the host allows it, every arm's graph files advised out after sync(), "
+                      "then every file of the cell's own graphs read in full, before each cell starts: the cache holds exactly "
+                      "the graphs the cell loads")
+DROP_CACHES = Path('/proc/sys/vm/drop_caches')
 READ_CHUNK = 8 << 20
+MEMINFO_KEYS = ('MemTotal', 'MemFree', 'MemAvailable', 'Buffers', 'Cached', 'SwapCached', 'Active(file)', 'Inactive(file)',
+                'Dirty', 'Writeback', 'AnonPages', 'Mapped', 'Shmem', 'SwapTotal', 'SwapFree')
+TOP_PROCESSES = 5
 
 
 def graph_files(graphs):
@@ -1558,6 +1596,73 @@ def evict_graph_pages(graphs):
     return {'method': PAGE_CACHE_EVICTION, 'files': files, 'bytes': total}
 
 
+def drop_page_cache(target=DROP_CACHES, run=subprocess.run):
+    """Drop the whole page cache, host-wide, when the host allows it; say what happened either way.
+
+    Advising the graphs out is not enough. In runs 38661758869 and 38706906914 the first query
+    cell of the stage, 0-C, and only it, read 7 GB from the disk during its six minutes (10.7k
+    major faults, 14M file system inputs in `time -v`; every later cell about 300 faults and
+    1.2M inputs) and its peak RSS was 9.6 GB where the five cells after it, the same baseline
+    binary among them, held 12.2-12.7 GB: the 10.4 GB of mapped graphs cannot all stay resident
+    beside a 9 GB heap on a 16 GB host, and what else the kernel still held from the input
+    verification and the checkpoint restore decided how much of the cell's own graphs it kept.
+    The accepted-baseline pair 0-C -> 2-B failed the 10% RSS rule on that position effect alone.
+    Dropping everything puts every cell, the first included, on the same footing before its own
+    graphs are read back in. `drop_caches` needs root: written directly as root, through
+    `sudo -n` otherwise (the hosted runner grants it); a host that allows neither is recorded,
+    not failed, and the per-file eviction still runs.
+    """
+    os.sync()
+    try:
+        if os.geteuid() == 0:
+            Path(target).write_text('3\n')
+            return {'method': PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'root'}
+        result = run(['sudo', '-n', 'sh', '-c', 'echo 3 > ' + str(target)], capture_output=True, text=True, timeout=120)
+        if result.returncode == 0:
+            return {'method': PAGE_CACHE_DROP, 'status': 'dropped', 'how': 'sudo'}
+        return {'method': PAGE_CACHE_DROP, 'status': 'unavailable', 'detail': (result.stderr or result.stdout).strip()[:500]}
+    except (OSError, subprocess.SubprocessError) as error:
+        return {'method': PAGE_CACHE_DROP, 'status': 'unavailable', 'detail': repr(error)[:500]}
+
+
+def host_memory(proc='/proc', top=TOP_PROCESSES):
+    """What the host holds: the kernel's memory counters and the processes with the most resident memory.
+
+    A cell's RSS is partly the mapped graph pages the kernel kept resident, which depends on what
+    else the host held when the cell started (`drop_page_cache`). The record names the counters
+    (`MemAvailable`, `Cached`, `Dirty`, the file LRU lists, swap) and the largest processes, the
+    harness itself included, so a cell that ran under pressure the others did not see is
+    recognisable from its record, not from a theory. Linux only; elsewhere the record says so.
+    """
+    proc = Path(proc)
+    meminfo = proc / 'meminfo'
+    if sys.platform != 'linux' or not meminfo.is_file():
+        return {'available': False, 'platform': sys.platform}
+    counters = {}
+    for line in meminfo.read_text().splitlines():
+        key, _, rest = line.partition(':')
+        if key in MEMINFO_KEYS:
+            counters[key] = int(rest.split()[0]) * 1024
+    processes = []
+    for entry in proc.iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            status = (entry / 'status').read_text()
+        except OSError:
+            continue
+        name = rss = None
+        for line in status.splitlines():
+            if line.startswith('Name:'):
+                name = line.split(':', 1)[1].strip()
+            elif line.startswith('VmRSS:'):
+                rss = int(line.split()[1]) * 1024
+        if rss is not None:
+            processes.append({'pid': int(entry.name), 'name': name, 'rssBytes': rss})
+    processes.sort(key=lambda row: (-row['rssBytes'], row['pid']))
+    return {'available': True, 'bytes': counters, 'topProcesses': processes[:top], 'selfPid': os.getpid()}
+
+
 def warm_graph_pages(all_graphs, graphs):
     """Leave the page cache holding exactly the cell's graphs: every arm's are evicted, the cell's read in full.
 
@@ -1569,7 +1674,11 @@ def warm_graph_pages(all_graphs, graphs):
     and independent of the previous cell: every arm's graphs are advised out, then the cell's own
     graphs are read through, so the engine's loading work is what the wall measures, equally for
     every arm. The bytes counted are the bytes read, so the record proves the read completed.
+    The whole page cache is dropped first where the host allows it (`drop_page_cache`: the first
+    cell of a stage otherwise meets what the input verification and the restore left, and its
+    RSS said so), and the host's memory counters after the warm-up read go in the record.
     """
+    dropped = drop_page_cache()
     evicted = evict_graph_pages(all_graphs)
     files = 0
     total = 0
@@ -1581,7 +1690,8 @@ def warm_graph_pages(all_graphs, graphs):
                     break
                 total += len(chunk)
         files += 1
-    return {'method': PAGE_CACHE_WARMING, 'evicted': evicted, 'files': files, 'bytes': total}
+    return {'method': PAGE_CACHE_WARMING, 'dropped': dropped, 'evicted': evicted, 'files': files, 'bytes': total,
+            'memoryAfterWarming': host_memory()}
 
 
 def graph_arguments(graphs):
@@ -1616,7 +1726,7 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
     record = {'schema': RESULT_SCHEMA, 'status': 'RUNNING', 'planSha256': sha(plan_path),
               'cell': cell, 'engine': plan['engine'], 'operation': 'query', 'arm': arm,
               'coverage': plan['coverage'], 'stages': {}, 'errors': [], 'acceptanceEligible': False,
-              'hostObservationScope': 'before/after loadavg only; no quiet-host, disk-cold or saturation claim'}
+              'hostObservationScope': 'before/after loadavg and memory counters only; no quiet-host, disk-cold or saturation claim'}
     started = time.perf_counter_ns()
     proc = pid = pid_start = monitor = transport = None
     previous = {}
@@ -1628,7 +1738,7 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
         save(out / 'identities-before.json',
              before_identities if _before_inputs is not None else verify_inputs(plan))
         validator = compile_response_validator(plan['cases'], cell['arm'], pins=plan['pins'])
-        save(out / 'host-before.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform})
+        save(out / 'host-before.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform, 'memory': host_memory()})
         data = out / 'data'
         args = [*arm['serverArgv'], '--data', str(data), '--port', str(cell['port']), '--load-mode', 'MAPPED',
                 '--max-concurrent-cypher', '4', '--cypher-max-timeout-ms', str(int(plan['limits']['requestSeconds'] * 1000)), '--metrics']
@@ -1727,7 +1837,7 @@ def _run_cell(plan_path, cell_id, output, plan, *, _before_inputs=None):
                 except BaseException as error:
                     record['errors'].append('final identities: ' + repr(error))
                 try:
-                    save(out / 'host-after.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform})
+                    save(out / 'host-after.json', {'loadavg': os.getloadavg(), 'cpuCount': os.cpu_count(), 'platform': sys.platform, 'memory': host_memory()})
                 except BaseException as error:
                     record['errors'].append('host receipt: ' + repr(error))
                 record['cellWallNsIncludingFinalVerification'] = time.perf_counter_ns() - started

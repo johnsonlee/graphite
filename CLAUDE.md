@@ -700,6 +700,14 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
   failed run. The JDK's trust store (`cacerts`) is image configuration, not toolchain: it changes
   between images and nothing in the chain reads it, so it is required present and its content
   drift reported, not refused (run 913).
+- A whole-process RSS on a host that cannot hold the mapped graphs beside the heap (10.4 GB of
+  graphs, a 9 GB heap, 16 GB of RAM) is the engine's memory plus the share of the graphs the
+  kernel kept resident, and that share is set by what else the host held: the first cell of a
+  stage, after the input verification and the restore, held 3 GB less than the same binary in
+  the sixth cell and re-read 7 GB from the disk, failing the RSS rule by position alone (runs
+  38661758869, 38706906914). Drop the whole page cache before every cell, not only the graphs,
+  and record the host's memory counters and the anon/file split of each sample beside the
+  verdict, so a pressure one cell saw is visible in its record rather than inferred.
 
 ### Why `buildGraph()` Is Not Parallelized
 

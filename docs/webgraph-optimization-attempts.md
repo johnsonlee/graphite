@@ -21722,3 +21722,46 @@ of Attempt304 is removed. Test: `open_reads_the_declared_tables_during_loading` 
 fixture. Expected effect: every cold row measures the engine, native loading CPU +1–1.3 s
 (within the tolerance, and the kind of cost the 2026-10-09 approval named for this feature),
 loading wall unchanged.
+
+### Attempt307 — the page cache is dropped before every cell, and each record says what the host held (2026-10-15)
+
+Run 38706906914 (4829581) measured Attempt306 as intended: every cold row PASS (33) or
+INDETERMINATE (6), none FAIL; p50 39/39 and tails 39/39 PASS; `shape-group-count-broad` cold back
+to 849–936 ms base against 898–920 ms candidate. The query-native gate still failed, on RSS: the
+accepted-baseline pair 0-C → 2-B at 8.84–9.12 GB base against 11.97 GB candidate, FAIL by the 10%
+rule; 5-C → 3-B 11.87–11.88 against 11.89–13.29, INDETERMINATE. The same pair had failed the same
+way in run 38661758869 (8.94–9.20 against 11.91 GB), unnoticed behind that run's cold FAIL.
+
+The cause is position, not arm. In both runs the first cell of the stage, 0-C, and only it, read
+7 GB from the disk during its six minutes (`time -v`: 10.7k major faults, 14.2M/13.8M file system
+inputs) where every later cell, the second baseline cell 5-C included, took about 300 faults and
+1.2M inputs, and only 0-C held 9.6 GB where the others held 12.2–12.7 GB. An arm's 64 graphs are
+10.4 GB of mapped files (1216 files; every arm's together 31.4 GB), the server's own memory about
+9 GB, the hosted runner 16 GB: the mapped pages cannot all stay resident, so the whole-process
+RSS the gate judges is the engine's memory plus whatever share of the graphs the kernel keeps,
+and that share is set by what else the host holds. Before 0-C the job had just verified the
+input closure (303 s over every arm's graphs) and restored the checkpoints; `warm_graph_pages`
+advised every arm's graphs out and read the cell's own back, but nothing else was evicted, and
+the kernel reclaimed the cell's freshly read pages instead, over and over (hence the 7 GB of
+reads and the RSS 3 GB short). The later cells started on a host the first cell had cleaned.
+3-B's 13.29 GB peak is the same quantity moving the other way: at 46–75 s its resident set ran
+1.5 GB above 2-B's, the same binary, from the kernel keeping more of the graphs resident.
+
+Change (`multigraph_pressure.py`): `drop_page_cache()` syncs and writes 3 to
+`/proc/sys/vm/drop_caches`, directly as root or through `sudo -n` (the hosted runner grants it),
+before the per-arm eviction and the cell's warm-up read, so every cell, the first included,
+meets the same host; a host that allows neither is recorded as `unavailable`, not failed, and
+the eviction still runs. `host_memory()` records the kernel's memory counters (`MemAvailable`,
+`Cached`, `Dirty`, the file LRU lists, swap) and the five largest processes in
+`host-before.json`, `host-after.json` and the warm-up record (`memoryAfterWarming`), and every
+Linux sample carries `rssAnonBytes`/`rssFileBytes` from `/proc/<pid>/status`, summarised per
+stage as `rss.split` (anon and file peaks, the split at the sampled peak), so a verdict can be
+read against its cause. The verdict itself is unchanged: the gate's RSS stays the whole resident
+set with the 10% tolerance, as approved on 2026-10-12. The loading and construction cells use the
+same `warm_graph_pages`, so they get the drop too (their input JARs and the cell's graphs are
+read back after it). The pinned scope sentence of the loading comparators ("every arm's graphs
+evicted, then the cell's graphs read in full before every process") stays true and unchanged.
+Expected effect: 0-C holds what 5-C holds, the accepted pairs' RSS within the tolerance, and if
+a cell still runs under pressure its record names what the host held. If the anon split shows the
+candidate's own memory above the base's (the parsed declared tables of 64 graphs are new memory),
+that is the engine's regression and is reported as such; the file share is not.
