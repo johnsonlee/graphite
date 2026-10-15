@@ -45,10 +45,11 @@ async function publish({ github, context, core, directory }) {
   for (const association of pulls) {
     const pull = (await github.rest.pulls.get({ ...repo, pull_number: association.number })).data;
     if (pull.state !== 'open' || pull.base.repo.id !== context.payload.repository.id || pull.head.sha !== run.head_sha) continue;
-    const artifact = artifacts.find(item => item.name === `benchmark-report-${pull.number}` && !item.expired);
+    const artifactName = `benchmark-report-${pull.number}-${run.run_attempt}`;
+    const artifact = artifacts.find(item => item.name === artifactName && !item.expired);
     let recordedBase = association.base?.sha;
     let markdown = `Correctness/OOM execution: **${run.conclusion}**.\n\nNo complete report was produced. See the workflow diagnostics.\n\nTimings are informational and do not decide the gate.\n`;
-    const reportDirectory = path.join(directory, `benchmark-report-${pull.number}`);
+    const reportDirectory = path.join(directory, artifactName);
     const filename = path.join(reportDirectory, 'summary.md');
     if (artifact && fs.existsSync(filename)) {
       const identityFile = path.join(reportDirectory, 'report.json');

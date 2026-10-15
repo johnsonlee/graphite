@@ -56,7 +56,8 @@ function harness(t, options = {}) {
   const initialPull = {
     number: 9, state: 'open', base: { sha: baseSha, repo: { id: 1 } }, head: { sha: run.head_sha },
   };
-  const reportDirectory = path.join(directory, 'benchmark-report-9');
+  const artifactName = `benchmark-report-9-${current.run_attempt}`;
+  const reportDirectory = path.join(directory, artifactName);
   if (options.report !== false) {
     fs.mkdirSync(reportDirectory);
     fs.writeFileSync(path.join(reportDirectory, 'summary.md'), options.markdown || 'Measured base/head timings; report only.');
@@ -81,7 +82,7 @@ function harness(t, options = {}) {
   github.paginate = async (method, request) => {
     calls.pagination.push({ method, request });
     if (method === github.rest.actions.listWorkflowRunArtifacts) {
-      return options.artifacts || [{ id: 50, name: 'benchmark-report-9', expired: false }];
+      return options.artifacts || [{ id: 50, name: artifactName, expired: false }];
     }
     if (method === github.rest.issues.listComments) return options.comments || [];
     if (method === github.rest.repos.listPullRequestsAssociatedWithCommit) {
@@ -189,7 +190,7 @@ test('missing downloaded Markdown and expired artifacts also use explicit fallba
   const missing = harness(t, { report: false });
   await missing.invoke();
   assert.match(missing.calls.creates[0].body, /No complete report was produced/);
-  const expired = harness(t, { artifacts: [{ id: 50, name: 'benchmark-report-9', expired: true }] });
+  const expired = harness(t, { artifacts: [{ id: 50, name: 'benchmark-report-9-2', expired: true }] });
   await expired.invoke();
   assert.match(expired.calls.creates[0].body, /No complete report was produced/);
   assert.ok(!expired.calls.creates[0].body.includes('Measured base/head timings'));
@@ -258,4 +259,15 @@ test('an existing legacy benchmark bot report is migrated in place', async t => 
   assert.equal(h.calls.updates.length, 1);
   assert.equal(h.calls.updates[0].comment_id, 77);
   assert.ok(h.calls.updates[0].body.startsWith(MARKER));
+});
+
+
+test('a retry never reads an artifact from an earlier attempt', async t => {
+  const h = harness(t, { artifacts: [{ id: 49, name: 'benchmark-report-9-1', expired: false }] });
+  fs.renameSync(h.reportDirectory, path.join(path.dirname(h.reportDirectory), 'benchmark-report-9-1'));
+  await h.invoke();
+  assert.equal(h.calls.creates.length, 1);
+  assert.match(h.calls.creates[0].body, /No complete report was produced/);
+  assert.ok(!h.calls.creates[0].body.includes('Measured base/head timings'));
+  assert.ok(!h.calls.creates[0].body.includes('/artifacts/49'));
 });
