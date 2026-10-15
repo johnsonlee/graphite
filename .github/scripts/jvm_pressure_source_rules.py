@@ -256,6 +256,20 @@ REBASED_OVERRIDES = {
     'frontend/jvm/sootup/src/main/kotlin/io/johnsonlee/graphite/sootup/SootUpAdapter.kt':
         'ce5e30bcb3320bedcf07e29d238b5f5c2e23b7ac0cfc9ea059f8dfdb8d93ddcb',
 }
+# The writer persists the declared-key summary beside the table (Attempt301, PR #174, 3c7abaf):
+# GraphStore writes graph.declared-keys in the pass that writes the nodes, DeclaredTypeStore.save
+# returns the table digest the sidecar binds to, and DeclaredKeySummaryBuilder is the new source.
+# Every declared property, validation and rendering rule is unchanged; the native reader answers
+# keys() partitions from the sidecar instead of reading the table. Historical profiles stay exact.
+REVIEWED_AT['declared-keys-3c7a'] = '3c7abaf5f8f9eb31b3d643b28f07ec6ed4058177'
+DECLARED_KEYS_OVERRIDES = {
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredKeySummaryBuilder.kt':
+        '2fd93e50fc04b731cd861d4f4f069bbc22cd28407e9245416f7013a32f902de9',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/DeclaredTypeStore.kt':
+        '6347e9677f90374cd4a43c218cefb9782f7bd13eebcdf6c79bb91ca13185882f',
+    'frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt':
+        '5e17d389171dceb143f4fd9f967e18ce0d5c1103e03bf92038c3555b962cfefe',
+}
 REVIEWED_HELPERS = {'jvm_pressure_oracles.py': '07e6d3927021c674a49689314e4e5e810d5b7fd1d8061bebb782839a1cc05906', 'jvm_pressure_derivation.py': '7a0f34205b036194718779cc010ffa951d904235fee96aeb940a8f0559962ecc', 'jvm_pressure_distinct.py': 'b43ec1ef82170c22229f0a62bc8b0dc33601c6b74f70257096685b6790bc5a3d', 'jvm_pressure_inputs.py': 'b9f2842ba45f4c42381e36d7c6fa27717973bbefe881455c66270022bc199c17', 'jvm_primitive_facts.py': '90bc6f1d6b7efdda374d068ad955174bedfce6a7b6099ff117f145b40514e6d2', 'JvmPrimitiveFacts.java': 'b2555994b5119172ff62c12a137f4d3d1e1df8d4ebe2d6dc97e7c6b9f3eaa582', 'native_core_proof/__init__.py': '5e49ef50d972046206c6a7025a28bfb2ec6fd38f10db76d2818968476393c0a7', 'native_core_proof/legacy_wire.py': '596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115', 'native_core_proof/legacy_schema_wire.py': '709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b', 'native_core_proof/wire_gty05.py': '051af6b89c9f6643864bcf000f469397d4bfed994f607dbaea8480ac758405ec', 'native_core_proof/declarations.py': '3ff048113e14c56f7ceca0b8a1f3964e8a23eae4d5172b1de8dd4c1be536345b', 'native_core_proof/callsite_ordinals.py': '464b5832217f8c2cad0537caad46a34d1a478cb03cc3a303acc4b715f8599fc3'}
 REQUEST_CONTRACT_SHA = '5da64e89009f4702d5f55b23e75def8561636841a605fb940dab24d93ba023d4'
 
@@ -329,6 +343,7 @@ def profiles():
     result['erased-first-f004'] = {**result['streamed-digest-16c1'], **ERASED_FIRST_OVERRIDES}
     result['callgraph-off-d2e6'] = {**result['accepted4f'], **CALLGRAPH_OFF_OVERRIDES}
     result['rebased-a12a'] = {**result['erased-first-f004'], **REBASED_OVERRIDES}
+    result['declared-keys-3c7a'] = {**result['rebased-a12a'], **DECLARED_KEYS_OVERRIDES}
     return result
 
 
