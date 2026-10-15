@@ -16,6 +16,7 @@ resourceFixture.isTransitive = false
 
 dependencies {
     implementation(project(":core"))
+    implementation(project(":ir"))
     implementation(project(":cypher"))
     implementation(project(":explore"))
     implementation(project(":sootup"))

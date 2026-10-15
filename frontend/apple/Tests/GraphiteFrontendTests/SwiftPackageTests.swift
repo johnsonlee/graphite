@@ -1,0 +1,48 @@
+import Foundation
+import XCTest
+@testable import GraphiteFrontend
+
+final class SwiftPackageTests: XCTestCase {
+    func testBuiltTargetsContributeTheirSourcesWhereverTheManifestPutsThem() throws {
+        let describe = """
+        {
+          "name": "AcmeShop",
+          "path": "/src/AcmeShop",
+          "targets": [
+            {"name": "AcmeShop", "type": "library", "path": "Sources/AcmeShop", "sources": ["CartService.swift", "Models.swift", "Shaders.metal"]},
+            {"name": "Tool", "type": "executable", "path": "CommandLineTool", "sources": ["Tool.swift"]},
+            {"name": "Macros", "type": "macro", "path": "Sources/Macros", "sources": ["Macro.swift"]},
+            {"name": "AcmeShopTests", "type": "test", "path": "Tests/AcmeShopTests", "sources": ["CartServiceTests.swift"]},
+            {"name": "Lint", "type": "plugin", "path": "Plugins/Lint", "sources": ["Plugin.swift"]},
+            {"name": "CLib", "type": "library", "module_type": "ClangTarget", "path": "Sources/CLib", "sources": ["lib.c"]},
+            {"name": "Vendored", "type": "binary", "path": "Vendored.xcframework"},
+            {"name": "Absolute", "type": "library", "path": "/elsewhere/Absolute", "sources": ["A.swift"]}
+          ]
+        }
+        """
+        XCTAssertEqual(
+            try SwiftPackage.sourceFiles(fromDescribe: Data(describe.utf8), root: "/src/AcmeShop"),
+            [
+                "/src/AcmeShop/Sources/AcmeShop/CartService.swift",
+                "/src/AcmeShop/Sources/AcmeShop/Models.swift",
+                "/src/AcmeShop/CommandLineTool/Tool.swift",
+                "/src/AcmeShop/Sources/Macros/Macro.swift",
+                "/elsewhere/Absolute/A.swift",
+            ]
+        )
+        XCTAssertEqual(
+            SwiftPackage.describeArguments(root: "/src/AcmeShop"),
+            ["package", "--package-path", "/src/AcmeShop", "describe", "--type", "json"]
+        )
+    }
+
+    func testUnreadableDescribeOutputIsAnError() {
+        for text in ["", "not json", "[]", "{\"targets\": 3}"] {
+            XCTAssertThrowsError(try SwiftPackage.sourceFiles(fromDescribe: Data(text.utf8), root: "/src")) {
+                XCTAssertEqual("\($0)", FrontendError.packageUnreadable.description)
+            }
+        }
+        XCTAssertEqual(try SwiftPackage.sourceFiles(fromDescribe: Data("{\"targets\": []}".utf8), root: "/src"), [])
+        XCTAssertEqual(FrontendError.describeFailed(2).description, "swift package describe failed with exit code 2")
+    }
+}
