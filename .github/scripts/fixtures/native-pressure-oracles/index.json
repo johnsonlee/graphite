@@ -1,0 +1,4750 @@
+{
+  "schema": "graphite.native-portable-oracles.v1",
+  "sourceRevisions": {
+    "C": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+    "B": "42377d8c1967a59ec3b4a71835f4538e803b3555"
+  },
+  "sourceJars": [
+    {
+      "corpus": "android",
+      "sha256": "6be2218c6a53fe3c57bc22ebdc723edcb7270a8a6f187545708aa5c0ed813977"
+    },
+    {
+      "corpus": "tika",
+      "sha256": "87e06f88c801fcb2beae5f15e707241edb14da468a154ad78be4e31ff982c3da"
+    },
+    {
+      "corpus": "hive",
+      "sha256": "232d67c5d2ff54806944bb5b7402eaf1ebb81f11dbe4fd51bc5604a8e0c0bdad"
+    },
+    {
+      "corpus": "kotlin-compiler",
+      "sha256": "9fa8cdd1de0dccffe154c997d423ec6b5f53cd6d9177e3a77a9b0de03fb1bc81"
+    }
+  ],
+  "graphIds": [
+    "fixture-android-00",
+    "fixture-android-01",
+    "fixture-android-02",
+    "fixture-android-03",
+    "fixture-android-04",
+    "fixture-android-05",
+    "fixture-android-06",
+    "fixture-android-07",
+    "fixture-android-08",
+    "fixture-android-09",
+    "fixture-android-10",
+    "fixture-android-11",
+    "fixture-android-12",
+    "fixture-android-13",
+    "fixture-android-14",
+    "fixture-android-15",
+    "fixture-tika-00",
+    "fixture-tika-01",
+    "fixture-tika-02",
+    "fixture-tika-03",
+    "fixture-tika-04",
+    "fixture-tika-05",
+    "fixture-tika-06",
+    "fixture-tika-07",
+    "fixture-tika-08",
+    "fixture-tika-09",
+    "fixture-tika-10",
+    "fixture-tika-11",
+    "fixture-tika-12",
+    "fixture-tika-13",
+    "fixture-tika-14",
+    "fixture-tika-15",
+    "fixture-hive-00",
+    "fixture-hive-01",
+    "fixture-hive-02",
+    "fixture-hive-03",
+    "fixture-hive-04",
+    "fixture-hive-05",
+    "fixture-hive-06",
+    "fixture-hive-07",
+    "fixture-hive-08",
+    "fixture-hive-09",
+    "fixture-hive-10",
+    "fixture-hive-11",
+    "fixture-hive-12",
+    "fixture-hive-13",
+    "fixture-hive-14",
+    "fixture-hive-15",
+    "fixture-kotlin-compiler-00",
+    "fixture-kotlin-compiler-01",
+    "fixture-kotlin-compiler-02",
+    "fixture-kotlin-compiler-03",
+    "fixture-kotlin-compiler-04",
+    "fixture-kotlin-compiler-05",
+    "fixture-kotlin-compiler-06",
+    "fixture-kotlin-compiler-07",
+    "fixture-kotlin-compiler-08",
+    "fixture-kotlin-compiler-09",
+    "fixture-kotlin-compiler-10",
+    "fixture-kotlin-compiler-11",
+    "fixture-kotlin-compiler-12",
+    "fixture-kotlin-compiler-13",
+    "fixture-kotlin-compiler-14",
+    "fixture-kotlin-compiler-15"
+  ],
+  "bindingRecordSha256": "14d5dd425e05598e72f249acc91666a5e0d0a3ef80d47cfc595949fb1943c107",
+  "limitations": [
+    "DATAFLOW validates complete legal LIMIT submultisets without exact encounter-order claims.",
+    "Discovery preserves existing absent-first-projection provenance behavior.",
+    "B schema uses separately completed independent materialized-node oracle; original partial producer status is unchanged.",
+    "This binds local actual response evidence and does not implement CI producer or accept construction/loading/pressure performance."
+  ],
+  "performanceAcceptance": false,
+  "completeSemanticEquivalence": false,
+  "ciAcceptance": false,
+  "cases": [
+    {
+      "id": "shape-collect",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) WITH collect(n.callee_name) AS names RETURN names[0..10] AS names"
+        }
+      },
+      "querySha256": "920a011a3f0fd70b86c8e96978ec8828fd67b07c4b21f46b1ae0dce3adac6261",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0.json",
+            "sha256": "d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0"
+          },
+          "digest": "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+          "rows": 1,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0.json",
+            "sha256": "d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0"
+          },
+          "digest": "2f32327eb8de6fd78df2f9afe1103dafcf0d49f2b06733cb58b3a18f3d1229dc",
+          "rows": 1,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339.json",
+              "sha256": "f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "d426856c56e76d97c642fdc207c125773b456814acf60c527964929ae37c1aa0"
+          }
+        }
+      }
+    },
+    {
+      "id": "schema-key-histogram",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) UNWIND keys(n) AS k RETURN k, count(*) AS c ORDER BY c DESC LIMIT 50"
+        }
+      },
+      "querySha256": "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/6881d5827ae979d7be5d68b531d9ef90f60c1c4836761a6301567db61d821837.json",
+            "sha256": "6881d5827ae979d7be5d68b531d9ef90f60c1c4836761a6301567db61d821837"
+          },
+          "digest": "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c",
+          "rows": 26,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "6881d5827ae979d7be5d68b531d9ef90f60c1c4836761a6301567db61d821837"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/a5786f911f2a1f456a918a736345c841148e41a711f4688bb014f8de476d728f.json",
+            "sha256": "a5786f911f2a1f456a918a736345c841148e41a711f4688bb014f8de476d728f"
+          },
+          "digest": "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
+          "rows": 28,
+          "authority": {
+            "kind": "independent-completed-schema-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/161aea949d79c25f384fb5d8f717f78547af46c5d0dfb4cdff1add9c60089b02.json",
+              "sha256": "161aea949d79c25f384fb5d8f717f78547af46c5d0dfb4cdff1add9c60089b02"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-current-b-schema-oracle-result-2/expected-response.json",
+              "sha256": "a5786f911f2a1f456a918a736345c841148e41a711f4688bb014f8de476d728f"
+            },
+            "observedBodySha256": "a10868a37e5f4255dbf2cfb7656936654097da4b7e84b492bba51922d0267b72"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-order-by",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200"
+        }
+      },
+      "querySha256": "88cb04da13ed7fcb5a8eb263eda499cad1bedb7808f5cf3eef0d6826e0e29744",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7.json",
+            "sha256": "142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7"
+          },
+          "digest": "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7.json",
+            "sha256": "142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7"
+          },
+          "digest": "6270291bcd5b883b6f9212dcb906d573e2a2ba861d76cebe4d9dd44514714b4a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339.json",
+              "sha256": "f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "142321d30e7c5dccd130852d7ffd58e278d8adcb68ff6ac90d851462b93565e7"
+          }
+        }
+      }
+    },
+    {
+      "id": "schema-label-histogram",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) RETURN labels(n) AS labels, count(*) AS c ORDER BY c DESC LIMIT 40"
+        }
+      },
+      "querySha256": "07ae98d5ad31558407b0da905e76bbc696f89e229c91584711536fa38708de25",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e.json",
+            "sha256": "db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e"
+          },
+          "digest": "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394",
+          "rows": 12,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e.json",
+            "sha256": "db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e"
+          },
+          "digest": "ced37e75ba754d2c1fbaac5004708cda705b3183d8c5dbc4bcc8b7f411e71394",
+          "rows": 12,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339.json",
+              "sha256": "f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "db983f3be4617150d4410655e238aed286f581c70fcfe7e7071c2e632b4e557e"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-with-filter",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 200"
+        }
+      },
+      "querySha256": "1100d048a0d279d87643fd15810de59ad71187854262f28e9a14571dbe7ac26d",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893.json",
+            "sha256": "b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893"
+          },
+          "digest": "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893.json",
+            "sha256": "b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893"
+          },
+          "digest": "51830d2cc6a7bd7374526a98cea5e39ae263c79e2735ce9cdc9497c9171e9119",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339.json",
+              "sha256": "f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "b51c33e1f98032d894afd2cfbfdeba9dae973e0c3c90d1cdd6a954f511987893"
+          }
+        }
+      }
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-dense",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "47d5e2210bd9aff3b431faf3fe8e58c07eae5354433b9c50b94af4aa4ca006b9",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd.json",
+            "sha256": "497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd"
+          },
+          "digest": "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7.json",
+              "sha256": "d7a92d132ebb9863c641701cecfe7d247277ff3450a46f4ef96112f78ed7eac7"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd.json",
+            "sha256": "497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd"
+          },
+          "digest": "8eb0b12edef31b61cf65fe0b1c0fecfaf24f78fbaf4e8c00526d4c55695a7142",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339.json",
+              "sha256": "f0f4bb30aec84bea40e45d540e19da7d3bf9510a18e7913c72b33969d5cf7339"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "497e02c335fad97f4ad71dcd98f63cf3eff9ad5cbec1edc6a9e4d131369c22dd"
+          }
+        }
+      }
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-zero",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS '__graphite_fixture64_absent_fixture-android-00__'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "17934101df82ef251dfb7206490382fc01b91e62284d8cad0f5788340ef34564",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0.json",
+            "sha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          },
+          "digest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+          "rows": 0,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0.json",
+            "sha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          },
+          "digest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+          "rows": 0,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          }
+        }
+      }
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-distinct-targeted",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'android.media.internal.guava_common.util.concurrent.trustedlistenablefuturetask$trustedfutureinterruptibleasynctask'\nRETURN DISTINCT n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "c951ae1a56b8289abd4fba22833152af54ff0e7323ac292d2a48377cd22bef7d",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a.json",
+            "sha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a"
+          },
+          "digest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+          "rows": 11,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a.json",
+            "sha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a"
+          },
+          "digest": "710d123fa3d5a6595f990122b12a89489111654d17b08c7a96dde80219b7ebcd",
+          "rows": 11,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "434d29aca283f2678710276cd5c89683ed2de19cfb571d58e0aa6272bce1e50a"
+          }
+        }
+      }
+    },
+    {
+      "id": "global-wide-wrapped-case-insensitive-dense",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "d6a1e51bdc9fb4fca41d14a7ec3aa6c9f7552bda595f9368ab58c5d0e8969d08",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd.json",
+            "sha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          },
+          "digest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd.json",
+            "sha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          },
+          "digest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          }
+        }
+      }
+    },
+    {
+      "id": "global-wide-provenance-dense",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE n.caller_class CONTAINS 'get' OR n.caller_name CONTAINS 'get' OR n.callee_class CONTAINS 'get' OR n.callee_name CONTAINS 'get'\nRETURN n.graphId, n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "e7c1d4089cb756636e9b73ec2ac891d60e3dce26e237f4f2985a943e347c5826",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710.json",
+            "sha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710"
+          },
+          "digest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710.json",
+            "sha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710"
+          },
+          "digest": "8434f7588bf2d1db41cc477eb3241fc5ea8e52e5c48e00e115f2db81a11f2f6a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "13ed60ff9c57309dba884f71533ca7d83204ddbcdcb037369ca8d5caab2d3710"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-group-count-broad",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) RETURN n.callee_class, count(*) AS c ORDER BY c DESC LIMIT 20"
+        }
+      },
+      "querySha256": "7f71983908cab00265b8280df5a69a87e94aa2a7fa926d2798c99bcb25fea9a8",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f.json",
+            "sha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f"
+          },
+          "digest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+          "rows": 20,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f.json",
+            "sha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f"
+          },
+          "digest": "243ad94a738bb9f4b6632d15e945ab4d091839a75a92c603cd24c867b861736b",
+          "rows": 20,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "f31fb00364b09a5a1530097d16c1ea6d68a368b51402cc95c50398825c20419f"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-count-traversal-broad",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (a)-[r]->(b) RETURN count(*)"
+        }
+      },
+      "querySha256": "0c0eb528ce456f3b8a996edfec5f51ada004216adf66e0261d67696a81ec6801",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea.json",
+            "sha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea"
+          },
+          "digest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3",
+          "rows": 1,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea.json",
+            "sha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea"
+          },
+          "digest": "d73fb737c486da3e59f951cbc41ab7c91bb801de8b88dc5155436b3d5f38cbc3",
+          "rows": 1,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "1c1aebc76de1b03abba5d978c7c278aa93f47d33dda391bd83ae358da3cc87ea"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-order-by-desc-broad",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) RETURN n.callee_name ORDER BY n.callee_name DESC LIMIT 200"
+        }
+      },
+      "querySha256": "5027d879d533d800096e2d9fbaeecb7a409f5a8744a27401dc97f82cb2f17ad0",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74.json",
+            "sha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74"
+          },
+          "digest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74.json",
+            "sha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74"
+          },
+          "digest": "92397c7279182fe6255c57e0424cb13cbc48e8bb6b980b84e903b0dd54b1196a",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "1a3efbbe204203dec1fa599c2a594e3a9529ae7613538ed22993dcc17c881b74"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-with-aggregate-broad",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:CallSite) WITH n.callee_class AS c, count(*) AS k WHERE k > 5 RETURN c, k LIMIT 50"
+        }
+      },
+      "querySha256": "be7b22e552251ee59d665d048dc80bab6a3beb13634f31a375dffc0ba04b1d32",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417.json",
+            "sha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417"
+          },
+          "digest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+          "rows": 50,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417.json",
+            "sha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417"
+          },
+          "digest": "bd258a2aa48391c6b415680b023e5d6a86f052d9887be11e54aacd5298b90d81",
+          "rows": 50,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "38475956b7023e83261fcb20de4a68c496ed39b4acb2aa05a331289962e8b417"
+          }
+        }
+      }
+    },
+    {
+      "id": "shape-var-length-broad",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (a)-[*1..2]->(b) RETURN a.id, b.id LIMIT 200"
+        }
+      },
+      "querySha256": "bbca77bd13a3c89dd634a3c4818730ffc1d4a1203bcfce37bfcbec4764dae24c",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e.json",
+            "sha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e"
+          },
+          "digest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e.json",
+            "sha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e"
+          },
+          "digest": "7222dc22354bd2001062501f9395837ed148a3f207d255c9322ae5f96cd88287",
+          "rows": 200,
+          "authority": {
+            "kind": "original73-predetermined-digest-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f.json",
+              "sha256": "5546340e20d68db27d534cb78f95a5e30b35910535abde2f6b35913868e2d84f"
+            },
+            "originalExpected": {
+              "path": "/Users/johnsonlee/.codex/worktrees/ce28/graphite/.github/scripts/fixtures/declared-types-native-responses.json",
+              "sha256": "6690c00a2b92d0d6b7004fc17467a91d40b24e5ff17a52fa85267ce6fe13cf81"
+            },
+            "observedBodySha256": "cb8b69378e559e5fbd40d3ae88947a9b7884940a6a983fcf5afd84a0b74ef09e"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-valueHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE n.value CONTAINS 'android.permission.INTERNET' RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "1b1fd2a586b2945868ab64dbc28d086a4c901bb0b7f7ef129074b710cf3e5c6b",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7.json",
+            "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+          },
+          "digest": "8a39dab5454bea96a6e5abe2213d632a45941dbf2a6ac6c18329d7f6d9270525",
+          "rows": 3,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-valueHit-expected.json",
+              "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+              "rows": 3
+            },
+            "observedBodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7.json",
+            "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+          },
+          "digest": "8a39dab5454bea96a6e5abe2213d632a45941dbf2a6ac6c18329d7f6d9270525",
+          "rows": 3,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-valueHit-expected.json",
+              "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+              "rows": 3
+            },
+            "observedBodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-qualifiedIdHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE n.qualifiedId CONTAINS '938826' RETURN id(n) AS id, labels(n) AS labels, n.qualifiedId AS qualifiedId, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "54624c18b1d1cc8d189221c38269a56ca5c812ba6ab44b1ef91499dbbbda5ef8",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409.json",
+            "sha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409"
+          },
+          "digest": "952975daaa70f3d6995919426944f5a944ffcf677ac32c82a96d1ab925f575ea",
+          "rows": 39,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-qualifiedIdHit-expected.json",
+              "sha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409",
+              "rows": 39
+            },
+            "observedBodySha256": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409.json",
+            "sha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409"
+          },
+          "digest": "952975daaa70f3d6995919426944f5a944ffcf677ac32c82a96d1ab925f575ea",
+          "rows": 39,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-qualifiedIdHit-expected.json",
+              "sha256": "84fc8ebbee516e4d531d0551c8dced72a3c7d81ad70f624c5b087d9110a4a409",
+              "rows": 39
+            },
+            "observedBodySha256": "27b22ef38ad2a77930dcdf470d39a47b4c8fe1d8e0ebd549a9f32a5c6042c3e1"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dynamicHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'android.permission.INTERNET') RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "dcdeb0f30926216c539ba97f1a3bc1a1cffad70ee642794db44b234decbf8707",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7.json",
+            "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+          },
+          "digest": "8a39dab5454bea96a6e5abe2213d632a45941dbf2a6ac6c18329d7f6d9270525",
+          "rows": 3,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-dynamicHit-expected.json",
+              "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+              "rows": 3
+            },
+            "observedBodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7.json",
+            "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7"
+          },
+          "digest": "8a39dab5454bea96a6e5abe2213d632a45941dbf2a6ac6c18329d7f6d9270525",
+          "rows": 3,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-dynamicHit-expected.json",
+              "sha256": "21b38ac80e0949bebc980c8c736e2e76529d958527a62d7dc67da508b5b24cc7",
+              "rows": 3
+            },
+            "observedBodySha256": "0bdb11ac70f3195a8d07a36e42569793292d90d403c1ab44855d6ff775118aec"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-wrappedCallerHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE toString(n.caller_class) CONTAINS 'android.app.Activity' RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "72f5743c37e7388b422b44502472b94221abec8e9092e69692cf9fdfb3d4b6eb",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01.json",
+            "sha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01"
+          },
+          "digest": "07e17407b37d47c7e988bfc5a0623b22d61af6cfb7594992584ed8182b013e53",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-wrappedCallerHit-expected.json",
+              "sha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01",
+              "rows": 50
+            },
+            "observedBodySha256": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01.json",
+            "sha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01"
+          },
+          "digest": "07e17407b37d47c7e988bfc5a0623b22d61af6cfb7594992584ed8182b013e53",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-wrappedCallerHit-expected.json",
+              "sha256": "7df7c1697b3d43a22ad54184193e076f12fd461303a884148584855eea5f0e01",
+              "rows": 50
+            },
+            "observedBodySha256": "ac9462de25f6bf7d3e8dc42ca726547cbf02123a7509008991660dd029339970"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dataflowSourceHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (c)-[r:DATAFLOW]->(n) WHERE c.value CONTAINS 'android.permission.INTERNET' RETURN id(c) AS source, id(n) AS target, type(r) AS relationship, c.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "1d541a417dc874a485549445578a7264a906656f0b999aae23a9d3982e87efe7",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-complete-legal-limit-multiset-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d.json",
+            "sha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d"
+          },
+          "digest": "9689e10cdee30908ad23ce07365c6e88a967fcc510162e789902ef4165ef1203",
+          "rows": 5,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowSourceHit-legal-oracle.json",
+              "sha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d",
+              "totalMatches": 5
+            },
+            "observedBodySha256": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d.json",
+            "sha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d"
+          },
+          "digest": "9689e10cdee30908ad23ce07365c6e88a967fcc510162e789902ef4165ef1203",
+          "rows": 5,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowSourceHit-legal-oracle.json",
+              "sha256": "5d4b5e828ad07a23565b5566a1a7db9ca25b66e1adcf59679365f2efd8b0d16d",
+              "totalMatches": 5
+            },
+            "observedBodySha256": "702094bb7b5cf681aa54bd111da63e8961ee9bcb72f9ca8a5db2311377632914"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dataflowTargetHit",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (c)-[r:DATAFLOW]->(n) WHERE n.caller_class CONTAINS 'android.app.Activity' RETURN id(c) AS source, id(n) AS target, type(r) AS relationship, c.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "e4c8f0dce5675f627c6db0cac25dc4be1b9a136cfdc347e0e1aafe1acf6537a9",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-complete-legal-limit-multiset-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6.json",
+            "sha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6"
+          },
+          "digest": "323ce90b28a79eb1570dd52b5e6a2c8f3f87c5db171dd6a3b3f9b66509420f76",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowTargetHit-legal-oracle.json",
+              "sha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6",
+              "totalMatches": 11795
+            },
+            "observedBodySha256": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6.json",
+            "sha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6"
+          },
+          "digest": "323ce90b28a79eb1570dd52b5e6a2c8f3f87c5db171dd6a3b3f9b66509420f76",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowTargetHit-legal-oracle.json",
+              "sha256": "0b8db042aab4fe0c0a6b8a9d1a689f8534c320e0ea0b074d153429f638c997a6",
+              "totalMatches": 11795
+            },
+            "observedBodySha256": "ad8a51607554ddeeaae14490f84c5175b8c101bd6d2ce5e3199e8b7544a208d7"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-valueMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE n.value CONTAINS 'GraphiteSlowShapeAbsent293746X' RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "023d73057b32dc0686f4a7321722f41a3491da866d575187177a0fe60da553f9",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-valueMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-valueMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-qualifiedIdMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE n.qualifiedId CONTAINS '93882699' RETURN id(n) AS id, labels(n) AS labels, n.qualifiedId AS qualifiedId, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "56a1faed85924a0d88e1449ac7b9e75606dee8e25fb3b5e24c78fafa4146a3aa",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1.json",
+            "sha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1"
+          },
+          "digest": "3b6c7b7159b4ee7302f66d44661369015e19e29f8069758e9ae87862c0a08dc7",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-qualifiedIdMiss-expected.json",
+              "sha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1",
+              "rows": 0
+            },
+            "observedBodySha256": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1.json",
+            "sha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1"
+          },
+          "digest": "3b6c7b7159b4ee7302f66d44661369015e19e29f8069758e9ae87862c0a08dc7",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-qualifiedIdMiss-expected.json",
+              "sha256": "601f7cdfa1ccd2ec366ea55094023b4e706b5680874f3c5dcc6fc54d4d8088a1",
+              "rows": 0
+            },
+            "observedBodySha256": "e61c66634a5505bf285a9ea2e9be1de09cc2d0575ed6afc4080a86acadf63e40"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dynamicMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'GraphiteSlowShapeAbsent293746X') RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "933075dfd24a82c99f433db5f457ff86680aac74b63ec1964f1e1256914fc8a4",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-dynamicMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-dynamicMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-wrappedCallerMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n) WHERE toString(n.caller_class) CONTAINS 'GraphiteSlowShapeAbsent293746X' RETURN id(n) AS id, labels(n) AS labels, n.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "319ddd9a2b3e105c50ffca377bda515071129d383191fa94ccf9cc2577e1b4c9",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/C/slow-wrappedCallerMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9.json",
+            "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9"
+          },
+          "digest": "862abf567fe9ccf7a5106046cdcf1f205279ff88073ca738b45e2a5379b0a5e5",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3.json",
+              "sha256": "3ba71346f9924b18be4e8efbeadee67a63b6de24effb0f33af250cf0fba933a3"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-slow-node-execution-1/derived/B/slow-wrappedCallerMiss-expected.json",
+              "sha256": "98af298e95e399785c3b47bf47e0db6a55c16d4fc30bda109aff24ae5c93c7a9",
+              "rows": 0
+            },
+            "observedBodySha256": "01b406e3e270c3779cd7f79cedd21f9dd9d342d57dc003093f7552a79389ebcf"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dataflowSourceMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (c)-[r:DATAFLOW]->(n) WHERE c.value CONTAINS 'GraphiteSlowShapeAbsent293746X' RETURN id(c) AS source, id(n) AS target, type(r) AS relationship, c.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "40d426cee3b10b643f37272a111c13b5c5cca119e2c64a59c572acf0e7cf3a2e",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-complete-legal-limit-multiset-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd.json",
+            "sha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd"
+          },
+          "digest": "8afba8a7f6a9f2a793135de03fcbd8bbdd829beb7f1b821b9e70abc96ba76c03",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowSourceMiss-legal-oracle.json",
+              "sha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd",
+              "totalMatches": 0
+            },
+            "observedBodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd.json",
+            "sha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd"
+          },
+          "digest": "8afba8a7f6a9f2a793135de03fcbd8bbdd829beb7f1b821b9e70abc96ba76c03",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowSourceMiss-legal-oracle.json",
+              "sha256": "3866e0cc892a59b51d9bab661458a3bd400d20f249c4dcf3ab50a9514660a8bd",
+              "totalMatches": 0
+            },
+            "observedBodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc"
+          }
+        }
+      }
+    },
+    {
+      "id": "slow-dataflowTargetMiss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (c)-[r:DATAFLOW]->(n) WHERE n.caller_class CONTAINS 'GraphiteSlowShapeAbsent293746X' RETURN id(c) AS source, id(n) AS target, type(r) AS relationship, c.value AS value, n.caller_class AS caller, n.graphId AS graphId LIMIT 50"
+        }
+      },
+      "querySha256": "db15ad26506db8f34a4d3f31a62392a4de7a133c639ca838cb28a98d50bec86b",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-complete-legal-limit-multiset-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab.json",
+            "sha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab"
+          },
+          "digest": "1cbddbba56d33d67d7a1c2e3a33a14069aa216e9a81a16aab25dfda6c1220404",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/C/slow-dataflowTargetMiss-legal-oracle.json",
+              "sha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab",
+              "totalMatches": 0
+            },
+            "observedBodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab.json",
+            "sha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab"
+          },
+          "digest": "1cbddbba56d33d67d7a1c2e3a33a14069aa216e9a81a16aab25dfda6c1220404",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a.json",
+              "sha256": "cb1816d3510dce04d064b61f53c77242f564b8d08390594c7299ca5e1113ab6a"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-dataflow-derived-2/derived/B/slow-dataflowTargetMiss-legal-oracle.json",
+              "sha256": "56f1537caeedae54b57eba1e812a0d79c4e9533573c3e8bd2dfecbe9cf0703ab",
+              "totalMatches": 0
+            },
+            "observedBodySha256": "673b3c5471aeaab9f1218803df3e6422b15feac910b5838a6694a1242b694cbc"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-zero_hit_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.caller_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_class, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'graphite_latency_no_such_symbol_9f36'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250\n"
+        }
+      },
+      "querySha256": "cf111a12b1319278611b630af39d70e905f84e5afa8324b09fdfdeeb0b4332f5",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0.json",
+            "sha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0"
+          },
+          "digest": "f12e9374accf02e80c4048d0c402e3c520e2c0a2b82dda2a305fc86a7d1ca2e2",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-zero_hit_query-expected.json",
+              "sha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0",
+              "rows": 0
+            },
+            "observedBodySha256": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0.json",
+            "sha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0"
+          },
+          "digest": "f12e9374accf02e80c4048d0c402e3c520e2c0a2b82dda2a305fc86a7d1ca2e2",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-zero_hit_query-expected.json",
+              "sha256": "3e7896462961357e0d4951bf540c211c068fce56fef4627d222367c5adc201e0",
+              "rows": 0
+            },
+            "observedBodySha256": "22052306ad4995d332eb885ce35a04c8f7a67ad90f6e33a2d1a6525043a55df9"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-dense_distributed_method_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n   OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 50\n"
+        }
+      },
+      "querySha256": "b5a5c170aa8633c9c16dc138d159f19427cfb5e8441f7244e74ac9d3b7c9084f",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e.json",
+            "sha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e"
+          },
+          "digest": "90fb8d74571a958446beb0dba6d3ec62d3f122ed36b8729b0716f154034ac442",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-dense_distributed_method_query-expected.json",
+              "sha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e",
+              "rows": 50
+            },
+            "observedBodySha256": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e.json",
+            "sha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e"
+          },
+          "digest": "90fb8d74571a958446beb0dba6d3ec62d3f122ed36b8729b0716f154034ac442",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-dense_distributed_method_query-expected.json",
+              "sha256": "6f75d5ce4a6c6ddfab76ed920688dd49d20b382a49ff6b7cbd20c1ab774a7a4e",
+              "rows": 50
+            },
+            "observedBodySha256": "4d190b506bfdbb7f8c86706c48dee1bda81a639660f039184e5ef2eee6962000"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-early_graph_prefix_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 1\n"
+        }
+      },
+      "querySha256": "694be962090ff2e3215c837b705ff7f7a27691d0008c2fd2f398b4cdde799247",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9.json",
+            "sha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9"
+          },
+          "digest": "e637f9e6e87b66281573ae8a2a4582b823f518dfd872efef61be07453e58a9c8",
+          "rows": 1,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-early_graph_prefix_query-expected.json",
+              "sha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9",
+              "rows": 1
+            },
+            "observedBodySha256": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9.json",
+            "sha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9"
+          },
+          "digest": "e637f9e6e87b66281573ae8a2a4582b823f518dfd872efef61be07453e58a9c8",
+          "rows": 1,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-early_graph_prefix_query-expected.json",
+              "sha256": "2cb70ecd6c03f509cd6aac7f9b0f63c96819cc4adce786effeb1149b377389d9",
+              "rows": 1
+            },
+            "observedBodySha256": "e2be58c6fff8250f5ef5d33d7aaeae62f648dc8b8ed4037eefa9587e6aac0c72"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-middle_graphs_prefix_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.apache.tika.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.apache.tika.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.apache.hadoop.hive.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.apache.hadoop.hive.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250\n"
+        }
+      },
+      "querySha256": "5629b8e1ef68d037625e45229a2ef268b8d371069e60313f2be8adbf35f671a6",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187.json",
+            "sha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187"
+          },
+          "digest": "e8f697d3d26542e3c1dfe103ae741aa0ec4a02f34446ba87b2a50bd98b490573",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-middle_graphs_prefix_query-expected.json",
+              "sha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187",
+              "rows": 250
+            },
+            "observedBodySha256": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187.json",
+            "sha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187"
+          },
+          "digest": "e8f697d3d26542e3c1dfe103ae741aa0ec4a02f34446ba87b2a50bd98b490573",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-middle_graphs_prefix_query-expected.json",
+              "sha256": "e2133ce9d04ac011cbf889fa7cb86a0b11d166e36f40cb463806099d8dcba187",
+              "rows": 250
+            },
+            "observedBodySha256": "67d152057ddd058a1f09431de5537274afe6bf4464196effb698af174ed025bc"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-late_graph_prefix_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 50\n"
+        }
+      },
+      "querySha256": "8fd344c240c9adc61ea5dbc250115712dd3cf88564b1200485ebd0b21afc1e7c",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc.json",
+            "sha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc"
+          },
+          "digest": "f6e0eb22c5ec5a7fc6e0ca3ba2b815ffdba28942f7cd2c1ddec729471bd072a1",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-late_graph_prefix_query-expected.json",
+              "sha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc",
+              "rows": 50
+            },
+            "observedBodySha256": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc.json",
+            "sha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc"
+          },
+          "digest": "f6e0eb22c5ec5a7fc6e0ca3ba2b815ffdba28942f7cd2c1ddec729471bd072a1",
+          "rows": 50,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-late_graph_prefix_query-expected.json",
+              "sha256": "26144a4ce1dde6431da3dad25d44c6edd3776fd19635edf1d5a493df5f3bcfbc",
+              "rows": 50
+            },
+            "observedBodySha256": "cc378c1439595a0a583d74cc3aa16db9c912df5d6ace9bca38f3a6d3e01746d7"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-broadly_distributed_prefix_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'java.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'java.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250\n"
+        }
+      },
+      "querySha256": "47694acad7096e970ccc30d28daee27fcdf5ed827a8912da3ba4be3b6f78448c",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2.json",
+            "sha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2"
+          },
+          "digest": "28171a7708b70fc45e962930ad90587bc8817ecfc316c56f2b98c6d69fbe8525",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-broadly_distributed_prefix_query-expected.json",
+              "sha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2",
+              "rows": 250
+            },
+            "observedBodySha256": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2.json",
+            "sha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2"
+          },
+          "digest": "28171a7708b70fc45e962930ad90587bc8817ecfc316c56f2b98c6d69fbe8525",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-broadly_distributed_prefix_query-expected.json",
+              "sha256": "f7ad748ac408f5c0ac1b393793ebeeb9e6a7c67caf2cfd821464873c7727f8b2",
+              "rows": 250
+            },
+            "observedBodySha256": "dbf1f97e5399f4672f9be38bd72829b9e711944c0461fa5ef45e9e4bc1a91dd6"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-first_last_graph_bimodal_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'org.jetbrains.kotlin.'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250\n"
+        }
+      },
+      "querySha256": "266118d15c6737884df621cac9c3c4f7a222f5851dddc03f79ff002d2402ba4a",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90.json",
+            "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+          },
+          "digest": "225d723154cb7d46f944173076bd09705ec7bb6862f8c3f9c5d4578b7f298d74",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-first_last_graph_bimodal_query-expected.json",
+              "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+              "rows": 250
+            },
+            "observedBodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90.json",
+            "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+          },
+          "digest": "225d723154cb7d46f944173076bd09705ec7bb6862f8c3f9c5d4578b7f298d74",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-first_last_graph_bimodal_query-expected.json",
+              "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+              "rows": 250
+            },
+            "observedBodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa"
+          }
+        }
+      }
+    },
+    {
+      "id": "wrapped-skewed_mixed_operator_query",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "\nMATCH (n)\nWHERE toLower(coalesce(n.caller_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.callee_class, '')) STARTS WITH 'android.'\n   OR toLower(coalesce(n.caller_name, '')) ENDS WITH 'provider'\n   OR toLower(coalesce(n.callee_name, '')) ENDS WITH 'provider'\nRETURN DISTINCT n.graph_id, n.caller_class AS caller, n.caller_name AS callerMethod,\n    n.callee_class AS callee, n.callee_name AS calleeMethod\nLIMIT 250\n"
+        }
+      },
+      "querySha256": "b67240ef5ab3979669941d707f849c66439d1ac05699b39348d13493e7d50f31",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90.json",
+            "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+          },
+          "digest": "225d723154cb7d46f944173076bd09705ec7bb6862f8c3f9c5d4578b7f298d74",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/wrapped-skewed_mixed_operator_query-expected.json",
+              "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+              "rows": 250
+            },
+            "observedBodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90.json",
+            "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90"
+          },
+          "digest": "225d723154cb7d46f944173076bd09705ec7bb6862f8c3f9c5d4578b7f298d74",
+          "rows": 250,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/wrapped-skewed_mixed_operator_query-expected.json",
+              "sha256": "a47e1c1e517967f0b276a0b583961c3645cf0f308b4f417f73d6e6782575ef90",
+              "rows": 250
+            },
+            "observedBodySha256": "0259b4f3a03e2b7ba96fe1dfd6389de64f964110ff09375d7f37df996120f0fa"
+          }
+        }
+      }
+    },
+    {
+      "id": "routing-pair-dense",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE n.graphId IN ['fixture-android-00', 'fixture-kotlin-compiler-15']\n  AND (toLower(coalesce(n.caller_class, '')) CONTAINS 'get'\n    OR toLower(coalesce(n.caller_name, '')) CONTAINS 'get'\n    OR toLower(coalesce(n.callee_class, '')) CONTAINS 'get'\n    OR toLower(coalesce(n.callee_name, '')) CONTAINS 'get')\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "b7784fe7a28f6741783e0a5ecc5fd43538a68981cb56009ed291edd26eaa4fda",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6.json",
+            "sha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6"
+          },
+          "digest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+          "rows": 200,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/routing-pair-dense-expected.json",
+              "sha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6",
+              "rows": 200
+            },
+            "observedBodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6.json",
+            "sha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6"
+          },
+          "digest": "fa63ff17fbdc8e40964c8449a620f4a985029ba769a29e0d23698d7198292c2d",
+          "rows": 200,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/routing-pair-dense-expected.json",
+              "sha256": "c4b91697d83ff26fae6507584b5ed6c01684caf899e112f1d5056d6b367fbed6",
+              "rows": 200
+            },
+            "observedBodySha256": "30253e2d69a3e03ebba8fc5390f27746c2de998cfff8b2967ff088fe723773fd"
+          }
+        }
+      }
+    },
+    {
+      "id": "routing-pair-miss",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n)\nWHERE n.graphId IN ['fixture-android-00', 'fixture-kotlin-compiler-15']\n  AND (toLower(coalesce(n.caller_class, '')) CONTAINS 'GraphitePressureAbsentRoutingPairX'\n    OR toLower(coalesce(n.caller_name, '')) CONTAINS 'GraphitePressureAbsentRoutingPairX'\n    OR toLower(coalesce(n.callee_class, '')) CONTAINS 'GraphitePressureAbsentRoutingPairX'\n    OR toLower(coalesce(n.callee_name, '')) CONTAINS 'GraphitePressureAbsentRoutingPairX')\nRETURN n.caller_class, n.caller_name, n.callee_class, n.callee_name\nLIMIT 200"
+        }
+      },
+      "querySha256": "27c7c0637202b9f05799f9f97d6e94a1c4af45c81264745eea1661547258ea34",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70.json",
+            "sha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70"
+          },
+          "digest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/C/routing-pair-miss-expected.json",
+              "sha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70",
+              "rows": 0
+            },
+            "observedBodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70.json",
+            "sha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70"
+          },
+          "digest": "8d47567d000c33d01c01ab0e3fbf0f0df948e38e4d66db731f68c7776468f760",
+          "rows": 0,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209.json",
+              "sha256": "bb40e92412ad9c8410fbc4c4dd5f2f2077f9f5391ad79fbc217c3275db79f209"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-discovery-execution-2/derived/B/routing-pair-miss-expected.json",
+              "sha256": "27a5dffc64761cc1f94fe195e7ab367280b49ca8761a52b3a600e4cae6d42c70",
+              "rows": 0
+            },
+            "observedBodySha256": "768eda6917c61c94622bb0bbedfc966ef424a1f0db23ffe4b97f7245eec125c0"
+          }
+        }
+      }
+    },
+    {
+      "id": "feature-nodes",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (n:FieldNode) RETURN n.graphId AS graphId, 'FieldNode' AS kind, n.generic_type IS NOT NULL AS rendered, n.type_info IS NOT NULL AS structured, count(*) AS members\nUNION ALL\nMATCH (n:ParameterNode) RETURN n.graphId AS graphId, 'ParameterNode' AS kind, n.generic_type IS NOT NULL AS rendered, n.type_info IS NOT NULL AS structured, count(*) AS members\nUNION ALL\nMATCH (n:ReturnNode) RETURN n.graphId AS graphId, 'ReturnNode' AS kind, n.generic_type IS NOT NULL AS rendered, n.type_info IS NOT NULL AS structured, count(*) AS members"
+        }
+      },
+      "querySha256": "bdeac1224d6299e1908c8f2dc6cb36f0b9fbcc9a9baadb8031aa035961e66922",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/1c98aadba915550704921b208d3af55e1ef3db092efc19c5ab9e286fa10cb48d.json",
+            "sha256": "1c98aadba915550704921b208d3af55e1ef3db092efc19c5ab9e286fa10cb48d"
+          },
+          "digest": "bbd91892e1cdcde2d76e522ed7598bd18ea729d78d9d4dd671c474b7273dd0ba",
+          "rows": 192,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1.json",
+              "sha256": "308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-feature-presence-execution-1/derived/C/feature-nodes-expected.json",
+              "sha256": "1c98aadba915550704921b208d3af55e1ef3db092efc19c5ab9e286fa10cb48d",
+              "canonicalSha256": "bbd91892e1cdcde2d76e522ed7598bd18ea729d78d9d4dd671c474b7273dd0ba",
+              "rows": 192
+            },
+            "observedBodySha256": "980ee028e1bf40f17f1cc4dc68bcc782a0c681dcdb7f06d88f792912b7373daa"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/a99832a2591b3ce4683111e10f52942d230371b9218511418cd039a6ef9675d5.json",
+            "sha256": "a99832a2591b3ce4683111e10f52942d230371b9218511418cd039a6ef9675d5"
+          },
+          "digest": "634e679f90c3daec18cbd7837514b4049c0cf9ca24499e5cbf575b250f072b2d",
+          "rows": 256,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1.json",
+              "sha256": "308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-feature-presence-execution-1/derived/B/feature-nodes-expected.json",
+              "sha256": "a99832a2591b3ce4683111e10f52942d230371b9218511418cd039a6ef9675d5",
+              "canonicalSha256": "634e679f90c3daec18cbd7837514b4049c0cf9ca24499e5cbf575b250f072b2d",
+              "rows": 256
+            },
+            "observedBodySha256": "139cc08b79f80241a8b581b213e52b225b3e370e44f71a995cc8d3e8580a5753"
+          }
+        }
+      }
+    },
+    {
+      "id": "feature-methods",
+      "request": {
+        "endpoint": "/api/cypher",
+        "body": {
+          "query": "MATCH (m:Method) RETURN m.graphId AS graphId, m.generic_return_type IS NOT NULL AS returnRendered, m.return_type_info IS NOT NULL AS returnStructured, m.generic_parameter_types IS NOT NULL AS parametersRendered, m.parameter_type_info IS NOT NULL AS parametersStructured, m.type_parameters IS NOT NULL AS formalParameters, count(*) AS members"
+        }
+      },
+      "querySha256": "704898dd4aec9afe640defd8f857d820dfbaf6f73934fc84666b49b8200eacb2",
+      "targetGraphIds": [
+        "fixture-android-00",
+        "fixture-android-01",
+        "fixture-android-02",
+        "fixture-android-03",
+        "fixture-android-04",
+        "fixture-android-05",
+        "fixture-android-06",
+        "fixture-android-07",
+        "fixture-android-08",
+        "fixture-android-09",
+        "fixture-android-10",
+        "fixture-android-11",
+        "fixture-android-12",
+        "fixture-android-13",
+        "fixture-android-14",
+        "fixture-android-15",
+        "fixture-tika-00",
+        "fixture-tika-01",
+        "fixture-tika-02",
+        "fixture-tika-03",
+        "fixture-tika-04",
+        "fixture-tika-05",
+        "fixture-tika-06",
+        "fixture-tika-07",
+        "fixture-tika-08",
+        "fixture-tika-09",
+        "fixture-tika-10",
+        "fixture-tika-11",
+        "fixture-tika-12",
+        "fixture-tika-13",
+        "fixture-tika-14",
+        "fixture-tika-15",
+        "fixture-hive-00",
+        "fixture-hive-01",
+        "fixture-hive-02",
+        "fixture-hive-03",
+        "fixture-hive-04",
+        "fixture-hive-05",
+        "fixture-hive-06",
+        "fixture-hive-07",
+        "fixture-hive-08",
+        "fixture-hive-09",
+        "fixture-hive-10",
+        "fixture-hive-11",
+        "fixture-hive-12",
+        "fixture-hive-13",
+        "fixture-hive-14",
+        "fixture-hive-15",
+        "fixture-kotlin-compiler-00",
+        "fixture-kotlin-compiler-01",
+        "fixture-kotlin-compiler-02",
+        "fixture-kotlin-compiler-03",
+        "fixture-kotlin-compiler-04",
+        "fixture-kotlin-compiler-05",
+        "fixture-kotlin-compiler-06",
+        "fixture-kotlin-compiler-07",
+        "fixture-kotlin-compiler-08",
+        "fixture-kotlin-compiler-09",
+        "fixture-kotlin-compiler-10",
+        "fixture-kotlin-compiler-11",
+        "fixture-kotlin-compiler-12",
+        "fixture-kotlin-compiler-13",
+        "fixture-kotlin-compiler-14",
+        "fixture-kotlin-compiler-15"
+      ],
+      "oracleKind": "native-full-json-sha256-v1",
+      "expected": {
+        "base": {
+          "payload": {
+            "path": "blobs/8bbd3481326cb712f9f0996957809df9a29afe33d1978085cff572dc2497fe4c.json",
+            "sha256": "8bbd3481326cb712f9f0996957809df9a29afe33d1978085cff572dc2497fe4c"
+          },
+          "digest": "36911699d8acf096d172d468c4631cf27944572d239a1d5774eba5218c500616",
+          "rows": 64,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "4f2ccf33b969e684972e56b5e810034e6e67c1b3",
+            "audit": {
+              "path": "blobs/308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1.json",
+              "sha256": "308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-feature-presence-execution-1/derived/C/feature-methods-expected.json",
+              "sha256": "8bbd3481326cb712f9f0996957809df9a29afe33d1978085cff572dc2497fe4c",
+              "canonicalSha256": "36911699d8acf096d172d468c4631cf27944572d239a1d5774eba5218c500616",
+              "rows": 64
+            },
+            "observedBodySha256": "d7614631d383199e849a6e38f787e1d4d42a2528533f579da9507c36749e2129"
+          }
+        },
+        "candidate": {
+          "payload": {
+            "path": "blobs/2f783c88655fd85aac2149825cbe3b4189ea69ad18ded5102a095166b08dd0b6.json",
+            "sha256": "2f783c88655fd85aac2149825cbe3b4189ea69ad18ded5102a095166b08dd0b6"
+          },
+          "digest": "33adea8c044690ebb4584e1a7263e752900ac5e0064125c38a1ac2bf71144f44",
+          "rows": 64,
+          "authority": {
+            "kind": "independent-persisted-graph-oracle-v1",
+            "revision": "42377d8c1967a59ec3b4a71835f4538e803b3555",
+            "audit": {
+              "path": "blobs/308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1.json",
+              "sha256": "308f82aa5ae59b60ebe25dd5c80a7b11ccb6087cb7aa954306d9caa24e56a5b1"
+            },
+            "originalExpected": {
+              "path": "/private/tmp/graphite-native-feature-presence-execution-1/derived/B/feature-methods-expected.json",
+              "sha256": "2f783c88655fd85aac2149825cbe3b4189ea69ad18ded5102a095166b08dd0b6",
+              "canonicalSha256": "33adea8c044690ebb4584e1a7263e752900ac5e0064125c38a1ac2bf71144f44",
+              "rows": 64
+            },
+            "observedBodySha256": "2753e236c4fe4154c3eba915916fbf562bc58c62fead73977aa186513fa91a23"
+          }
+        }
+      }
+    }
+  ]
+}

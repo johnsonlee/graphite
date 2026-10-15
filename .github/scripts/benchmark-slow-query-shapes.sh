@@ -8,7 +8,7 @@ CANDIDATE=$(realpath "$4")
 FIXTURE=$(realpath "$5")
 mkdir -p "$6"
 OUTPUT=$(realpath "$6")
-test ! -e "$OUTPUT/initial-base-slow-shapes.json" || { echo 'Existing measurement series; use a fresh output directory.' >&2; exit 1; }
+test ! -e "$OUTPUT/base-slow-shapes-correctness.log" || { echo 'Existing correctness series; use a fresh output directory.' >&2; exit 1; }
 # JVM modules live under frontend/jvm/<module>; older revisions keep graphite-<module>.
 jvm() { if [[ -d "$1/frontend/jvm/$2" ]]; then echo "$1/frontend/jvm/$2"; else echo "$1/graphite-$2"; fi; }
 HARNESS=src/jmh/kotlin/io/johnsonlee/graphite/webgraph/SlowQueryShapesBenchmark.kt
@@ -24,7 +24,7 @@ REFERENCE=
 trap 'if [[ -n "$REFERENCE" ]]; then rm -rf -- "$REFERENCE"; fi' EXIT
 
 # Repair only the exact reviewed legacy implementation. Unknown bases are never patched.
-# They must pass the dynamic-hit oracle directly, or fail closed before timing.
+# They must pass the dynamic-hit oracle directly, or fail closed before correctness replay.
 if [[ $(sha256sum "$(jvm "$BASE" cypher)/$EVALUATOR" | cut -d' ' -f1) == b4c1bb76cde0be2bcc7b3485e4ac92fd28e0555839cb7d0954748436868510c8 ]]; then
   test "$(sha256sum "$PATCH" | cut -d' ' -f1)" = 1ed0f211886dec1bfb2557983400afb34586405583acfbeef0f3f9c07136557a
   REFERENCE=$(mktemp -d "${RUNNER_TEMP:-/tmp}/graphite-slow-shapes-reference-XXXXXX")
@@ -82,50 +82,33 @@ jq -n --arg baseSha "$(git -C "$BASE" rev-parse HEAD)" \
   --arg comparatorSha256 "$(sha256sum "$COMPARATOR" | cut -d' ' -f1)" \
   '{baseSha:$baseSha,candidateSha:$candidateSha,referenceKind:$referenceKind,fixture:$fixture,
     harnessSha256:$harnessSha256,comparatorSha256:$comparatorSha256,
-    fixtureProtocol:"private-copy-no-callsite-index-v2",forks:5,thresholdPercent:15,verdict:"delta-over-threshold-with-separated-99.9-percent-confidence"}' \
+    fixtureProtocol:"private-copy-no-callsite-index-v2",scope:"correctness-only",performanceAcceptance:false}' \
   > "$OUTPUT/slow-query-shapes-provenance.json"
 
-measure() {
-  local revision=$1 phase=$2 queries=$ALL_QUERIES
+correctness() {
+  local revision=$1 queries=$ALL_QUERIES
   if [[ "$revision" == base && "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then queries=$REGULAR_QUERIES; fi
   if [[ "$revision" == reference ]]; then queries=$DYNAMIC_QUERIES; fi
-  java -jar "$OUTPUT/$revision-slow-shapes.jar" \
-    'io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute' \
-    -p corpus=android -p "queryName=$queries" -p cacheState=COLD,WARM \
-    -f 5 -t 1 -wi 0 -i 1 -foe true -prof gc -rf json \
-    -jvmArgsAppend "-Dandroid.graph.path=$FIXTURE" \
-    -rff "$OUTPUT/$phase-$revision-slow-shapes.json" \
-    > "$OUTPUT/$phase-$revision-slow-shapes.log" 2>&1
+  local selected=()
+  IFS=, read -r -a selected <<< "$queries"
+  for query in "${selected[@]}"; do
+    java -Xmx8g -XX:ActiveProcessorCount=4 "-Dandroid.graph.path=$FIXTURE" \
+      -cp "$OUTPUT/$revision-slow-shapes.jar" \
+      io.johnsonlee.graphite.webgraph.SlowQueryShapesCorrectness android "$query"
+  done > "$OUTPUT/$revision-slow-shapes-correctness.log" 2>&1
 }
-compare_phase() {
-  local phase=$1
-  local extra=()
-  if [[ "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then
-    extra=(--reference "$OUTPUT/$phase-reference-slow-shapes.json" --reference-log "$OUTPUT/$phase-reference-slow-shapes.log")
-  fi
-  node "$COMPARATOR" compare --fixture "$FIXTURE" --reference-kind "$REFERENCE_KIND" \
-    --base "$OUTPUT/$phase-base-slow-shapes.json" --base-log "$OUTPUT/$phase-base-slow-shapes.log" \
-    --candidate "$OUTPUT/$phase-candidate-slow-shapes.json" --candidate-log "$OUTPUT/$phase-candidate-slow-shapes.log" \
-    "${extra[@]}" --status "$OUTPUT/$phase-slow-query-shapes-status.json" \
-    --report "$OUTPUT/$phase-slow-query-shapes-report.md"
-}
-measure base initial
-if [[ "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then measure reference initial; fi
-measure candidate initial
-if compare_phase initial; then
-  cp "$OUTPUT/initial-slow-query-shapes-status.json" "$OUTPUT/slow-query-shapes-status.json"
-  cp "$OUTPUT/initial-slow-query-shapes-report.md" "$OUTPUT/slow-query-shapes-report.md"
-else
-  # Integrity failures are permanent; only valid numerical suspects get another run.
-  jq -e '.errors == [] and (.rows | length) == 24' "$OUTPUT/initial-slow-query-shapes-status.json" >/dev/null
-  measure candidate confirmation
-  if [[ "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then measure reference confirmation; fi
-  measure base confirmation
-  compare_phase confirmation || true
-  node "$COMPARATOR" confirm --initial "$OUTPUT/initial-slow-query-shapes-status.json" \
-    --confirmation "$OUTPUT/confirmation-slow-query-shapes-status.json" \
-    --status "$OUTPUT/slow-query-shapes-status.json" --report "$OUTPUT/slow-query-shapes-report.md"
+correctness base
+extra=()
+if [[ "$REFERENCE_KIND" == base-plus-subscript-correctness-repair ]]; then
+  correctness reference
+  extra=(--reference-log "$OUTPUT/reference-slow-shapes-correctness.log")
 fi
+correctness candidate
+node "$COMPARATOR" correctness --fixture "$FIXTURE" --reference-kind "$REFERENCE_KIND" \
+  --base-log "$OUTPUT/base-slow-shapes-correctness.log" \
+  --candidate-log "$OUTPUT/candidate-slow-shapes-correctness.log" "${extra[@]}" \
+  --status "$OUTPUT/slow-query-shapes-status.json" --report "$OUTPUT/slow-query-shapes-report.md"
+
 node "$COMPARATOR" verify-fixture --fixture "$FIXTURE" --before "$OUTPUT/slow-shapes-fixture-before.json" \
   --output "$OUTPUT/slow-shapes-fixture-verification.json" \
   --status "$OUTPUT/slow-query-shapes-status.json" --report "$OUTPUT/slow-query-shapes-report.md"

@@ -153,6 +153,69 @@ pub fn report_c4_warmup(graphs: usize) {
     }
 }
 
+/// Reads the declared table of every graph the startup loads, on one thread beside the
+/// loader, so the server is ready with its tables read.
+///
+/// `Graph::load` leaves the table unread (it is query-only state), and the planner's
+/// declared-key questions are answered by the saver's summary (`graph.declared-keys`); but
+/// the first request that renders or filters by a declared type parsed all 64 tables, 1.5–2.3
+/// s on the hosted runner (the query-native gate's cold row for `feature-nodes`, run
+/// 38661758869). Reading them after the server listens competed with the first requests on
+/// the same cores and slowed a heavy first aggregate by 50% (run 38690860344, Attempt304).
+/// Loading itself is one thread over 64 graphs (45 s of CPU for 45 s of wall), so the tables
+/// are read on a second thread as each graph is registered and the loader waits for the last
+/// one before readiness: about 20 ms of CPU a graph inside the loading boundary, where the
+/// gate's 10% CPU tolerance holds it, and no wall of its own. Off under `GRAPHITE_NO_FASTPATH`.
+pub struct DeclaredTableReader {
+    sender: Option<std::sync::mpsc::Sender<Arc<graphite_storage::graph::Graph>>>,
+    worker: Option<std::thread::JoinHandle<usize>>,
+}
+
+impl DeclaredTableReader {
+    pub fn start() -> DeclaredTableReader {
+        if graphite_cypher::engine::optimizations_disabled() {
+            return DeclaredTableReader {
+                sender: None,
+                worker: None,
+            };
+        }
+        let (sender, receiver) = std::sync::mpsc::channel::<Arc<graphite_storage::graph::Graph>>();
+        let worker = std::thread::Builder::new()
+            .name("declared-tables".into())
+            .spawn(move || {
+                receiver
+                    .iter()
+                    .filter(|graph| graph.declared_types().is_some())
+                    .count()
+            })
+            .ok();
+        DeclaredTableReader {
+            sender: worker.is_some().then_some(sender),
+            worker,
+        }
+    }
+
+    /// Queue a loaded graph; without a worker the table is read here, inline.
+    pub fn queue(&self, graph: &Arc<graphite_storage::graph::Graph>) {
+        match &self.sender {
+            Some(sender) if sender.send(graph.clone()).is_ok() => {}
+            Some(_) => {
+                graph.declared_types();
+            }
+            None => {}
+        }
+    }
+
+    /// Wait for every queued table; the number of graphs whose table was present and readable.
+    pub fn finish(mut self) -> usize {
+        drop(self.sender.take());
+        self.worker
+            .take()
+            .and_then(|worker| worker.join().ok())
+            .unwrap_or(0)
+    }
+}
+
 /// Warn once when this is a debug build; every long-running mode calls it first.
 pub fn warn_if_debug_build() {
     if cfg!(debug_assertions) {
@@ -228,6 +291,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
     std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
 
     let registry = Arc::new(GraphRegistry::new(root.clone(), load_mode));
+    let tables = DeclaredTableReader::start();
     let mut ids: Vec<String> = Vec::new();
     if let Some(dir) = &cli.graph_dir {
         let id = cli
@@ -235,6 +299,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
             .clone()
             .ok_or("--id is required when a positional graph is provided")?;
         let served = registry.load(&id, dir, Some(load_mode))?;
+        tables.queue(&served.graph);
         eprintln!(
             "Loaded graph '{}' from {} using {} mode",
             served.id,
@@ -254,6 +319,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
             return Err(format!("Duplicate initial graph id: {id}"));
         }
         let served = registry.load(id, std::path::Path::new(path), Some(load_mode))?;
+        tables.queue(&served.graph);
         eprintln!(
             "Loaded graph '{}' from {} using {} mode",
             served.id,
@@ -274,6 +340,7 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
                 ));
             }
             let served = registry.load(id, path, Some(load_mode))?;
+            tables.queue(&served.graph);
             eprintln!(
                 "Loaded graph '{}' from {} using {} mode",
                 served.id,
@@ -289,6 +356,10 @@ pub fn open(cli: &GraphArgs, metrics: bool) -> Result<Opened, String> {
                 data.display()
             );
         }
+    }
+    let tables_read = tables.finish();
+    if tables_read > 0 {
+        eprintln!("Declared types: read {tables_read} graph table(s) during loading");
     }
     // Topology rules are validated at startup even though relations are derived lazily.
     let topology_queries = crate::topology::load_topology_queries(cli.topology.as_deref())?;
@@ -349,6 +420,47 @@ pub fn serve(cli: ServeArgs) -> Result<(), String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the server is ready with its declared
+    /// tables read, so the first request that needs a declared value parses nothing.
+    #[test]
+    fn open_reads_the_declared_tables_during_loading() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = PathBuf::from(dir);
+        let args = GraphArgs {
+            graph_dir: Some(dir.clone()),
+            data: None,
+            graphs: vec![],
+            id: Some("fixture".into()),
+            load_mode: "MAPPED".into(),
+            topology: None,
+            max_concurrent_cypher: 2,
+            cypher_work_budget: None,
+            cypher_max_timeout_ms: 1_000,
+        };
+        let opened = open(&args, false).unwrap();
+        let graph = opened.registry.acquire("fixture").unwrap().unwrap().graph;
+        assert!(
+            graph.declared_types_initialized(),
+            "ready means the tables are read"
+        );
+        assert!(graph.declared_types().is_some());
+        // A reader without a worker reads inline, and finishing twice-queued work is harmless.
+        let reader = DeclaredTableReader {
+            sender: None,
+            worker: None,
+        };
+        let fresh = Arc::new(graphite_storage::graph::Graph::load(&dir).unwrap());
+        reader.queue(&fresh);
+        assert_eq!(reader.finish(), 0);
+        let reader = DeclaredTableReader::start();
+        reader.queue(&fresh);
+        assert_eq!(reader.finish(), 1);
+        assert!(fresh.declared_types_initialized());
+    }
 
     fn tempdir(name: &str) -> PathBuf {
         let dir =

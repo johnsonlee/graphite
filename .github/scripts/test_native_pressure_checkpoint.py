@@ -1,0 +1,874 @@
+"""Transport correctness only: tiny persisted bytes, never graphs or performance."""
+import argparse
+import copy
+import io
+import contextlib
+import json
+import os
+from pathlib import Path
+import shutil
+import subprocess
+import tarfile
+import tempfile
+import unittest
+from unittest.mock import patch
+
+import native_pressure_checkpoint as checkpoint
+
+
+class CheckpointTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(); self.addCleanup(self.tmp.cleanup)
+        self.workspace = Path(self.tmp.name).resolve()/'workspace'; self.workspace.mkdir()
+        for name in ('base', 'candidate'):
+            root = self.workspace/name; root.mkdir()
+            self.write(root/'tracked', 'original source')
+            self.write(root/'.github/scripts/run_native_core_equivalence.py',
+                       Path(__file__).with_name('run_native_core_equivalence.py').read_text())
+            self.write(root/'.gitignore', 'build/\n')
+            subprocess.run(['git', 'init', '-q', str(root)], check=True)
+            subprocess.run(['git', '-C', str(root), 'add', '.'], check=True)
+            subprocess.run(['git', '-C', str(root), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '-qm', 'fixture'], check=True,
+                           env={**os.environ, 'GIT_AUTHOR_DATE': '2020-01-01T00:00:00Z', 'GIT_COMMITTER_DATE': '2020-01-01T00:00:00Z'})
+        self.revision = subprocess.check_output(['git', '-C', str(self.workspace/'base'), 'rev-parse', 'HEAD'], text=True).strip()
+        self.assertEqual(self.revision, subprocess.check_output(['git', '-C', str(self.workspace/'candidate'), 'rev-parse', 'HEAD'], text=True).strip())
+        p = patch.object(checkpoint, 'ACCEPTED', self.revision); p.start(); self.addCleanup(p.stop)
+        self.root = self.workspace/'native-pressure-artifacts'
+        self.binary = self.root/'B/runtime/graphite'; self.write(self.binary, 'tiny binary'); self.binary.chmod(0o755)
+        self.writer = self.root/'B/runtime/writer.jar'; self.write(self.writer, 'tiny writer bytes')
+        self.original = self.workspace/'candidate/build/libs/writer-jmh.jar'; self.write(self.original, 'tiny writer bytes')
+        self.classes = self.workspace/'candidate/build/classes'; self.write(self.classes/'A.class', 'class bytes')
+        self.jar = self.root/'B/gradle-home/caches/selected.jar'; self.write(self.jar, 'selected dependency')
+        self.write(self.root/'B/gradle-home/caches/unrelated.secret', 'must not be transported')
+        self.empty = self.root/'B/gradle-home/init.d'; self.empty.mkdir()
+        self.absent = self.root/'B/gradle-home/init.gradle'
+        cp = {'schema': 'graphite.formatter-test-classpath.v1', 'classpath': [
+            {'kind': 'directory', 'path': str(self.classes), 'files': {'A.class': checkpoint.sha(self.classes/'A.class')}},
+            {'kind': 'file', 'path': str(self.jar), 'sha256': checkpoint.sha(self.jar)},
+            {'kind': 'absent', 'path': str(self.workspace/'candidate/build/absent-resources')}]}
+        self.json(self.root/'B/formatter-tests/results/classpath-webgraph-before.json', cp)
+        self.json(self.root/'B/packet.json', {'configurationBefore': {str(self.absent): None, str(self.empty): 'EMPTY_DIRECTORY'},
+            'originalArtifacts': {str(self.original): checkpoint.sha(self.original)},
+            'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+        self.write(self.root/'B/graphs/graph.nodes', 'tiny saved graph')
+        self.json(self.workspace/'benchmark-results/rust-provenance/provenance.json', {'files': {}})
+        self.write(self.workspace/'shared-fixture64/graphs/graphs.tsv', 'tiny source corpus')
+        self.write(self.workspace/'shared-fixture64/graphs/fixture-provenance.tsv', 'tiny provenance')
+        self.write(self.workspace/'shared-fixture64/graphs/alpha-00/graph.nodes', 'builder output no stage reads')
+        self.json(self.workspace/'shared-fixture64/fixture64.complete.json', {'schema': 'graphite-shared-fixture64-v1'})
+        self.json(self.workspace/'shared-fixture64/fixture-reproducibility.json', {'passed': True})
+        self.directory = self.workspace/'pressure-checkpoints/producer-producer'
+
+    def write(self, p, value):
+        p.parent.mkdir(parents=True, exist_ok=True); p.write_text(value)
+
+    def json(self, p, value):
+        self.write(p, json.dumps(value))
+
+    def args(self, stage='producer', arm='producer', directory=None, upstream=()):
+        return argparse.Namespace(stage=stage, arm=arm, directory=str(directory or self.directory),
+            workspace=str(self.workspace), head_sha=self.revision, base_sha=getattr(self, 'base_revision', self.revision),
+            run_id='1234', run_attempt='2', upstream=[str(p) for p in upstream])
+
+    def seal(self):
+        return checkpoint.seal(self.args())
+
+    def remove_payload(self, manifest):
+        for name in manifest['payload']:
+            Path(name).unlink()
+        for name in sorted(manifest['directories'], key=len, reverse=True):
+            p = Path(name)
+            if p.exists() and not list(p.iterdir()):
+                p.rmdir()
+
+    def mutate_manifest(self, update):
+        p = self.directory/'manifest.json'; value = checkpoint.read(p); update(value); checkpoint.save(p, value)
+
+    def system_jdk_fixture(self, provider='java'):
+        parent = self.workspace.parent/'usr/lib/jvm'
+        certificate = self.workspace.parent/f'etc/ssl/certs/{provider}/cacerts'
+        allowed = frozenset(self.workspace.parent/f'etc/ssl/certs/{name}/cacerts' for name in ('java', 'adoptium'))
+        for name, value in (('SYSTEM_JDK_PARENT', parent), ('SYSTEM_CACERTS', allowed)):
+            mocked = patch.object(checkpoint, name, value); mocked.start(); self.addCleanup(mocked.stop)
+        root = parent/'temurin-17-jdk-amd64'
+        for name in ('bin/java', 'bin/javac', 'release', 'lib/modules'):
+            self.write(root/name, 'jdk '+name)
+        (root/'bin/java').chmod(0o755)
+        self.write(certificate, 'opaque certificate bytes')
+        link = root/'lib/security/cacerts'; link.parent.mkdir()
+        link.symlink_to(certificate)
+        (root/'bin/java-link').symlink_to('java')
+        self.system_tools = {'java': str(root/'bin/java')}
+        for name in ('cargo', 'rustc'):
+            tool = self.workspace.parent/'toolchain/bin'/name; self.write(tool, name+' bytes')
+            self.system_tools[name] = str(tool)
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': self.system_tools})
+        return root, certificate, link
+
+    def test_shared_fixture_carries_its_four_manifests_never_the_builder_graphs(self):
+        manifest = self.seal()
+        fixture = self.workspace/'shared-fixture64'
+        for name in checkpoint.SHARED_FIXTURE_FILES:
+            self.assertIn(str(fixture/name), manifest['files'], name)
+            self.assertIn(str(fixture/name), manifest['payload'], name)
+        self.assertNotIn(str(fixture/'graphs/alpha-00/graph.nodes'), manifest['files'])
+        self.assertFalse(any(name.startswith(str(fixture)) for name in manifest['closedDirectories']))
+        self.assertFalse(any(name.startswith(str(fixture/'graphs/alpha-00')) for name in manifest['directories']))
+        self.remove_payload(manifest)
+        self.assertFalse((fixture/'graphs/graphs.tsv').exists())
+        shutil.rmtree(fixture/'graphs/alpha-00')  # not payload: left where it was, so cleared by hand
+        checkpoint.restore(self.args())
+        self.assertEqual('tiny source corpus', (fixture/'graphs/graphs.tsv').read_text())
+        self.assertFalse((fixture/'graphs/alpha-00').exists(), 'the builder graphs are not restored')
+
+    def test_system_jdk_roundtrip_verifies_preexisting_files_and_never_writes_external_paths(self):
+        root, certificate, link = self.system_jdk_fixture()
+        manifest = self.seal()
+        self.assertEqual([str(root)], manifest['systemJdkRoots'])
+        self.assertEqual(str(certificate), manifest['systemJdkLinks'][str(link)]['resolved'])
+        for p in (root/'bin/java', root/'lib/modules', certificate):
+            self.assertIn(str(p), manifest['verificationOnly']); self.assertNotIn(str(p), manifest['payload'])
+        with tarfile.open(self.directory/'payload.tar.gz', 'r:gz') as tar:
+            self.assertNotIn(b'opaque certificate bytes', b''.join(tar.extractfile(m).read() for m in tar.getmembers()))
+        self.remove_payload(manifest)
+        original_mkdir, original_chmod, original_symlink = Path.mkdir, Path.chmod, Path.symlink_to
+        def writable(p):
+            self.assertTrue(p.is_relative_to(self.workspace), 'attempted external write: '+str(p))
+        def mkdir(p, *args, **kwargs):
+            writable(p); return original_mkdir(p, *args, **kwargs)
+        def chmod(p, *args, **kwargs):
+            writable(p); return original_chmod(p, *args, **kwargs)
+        def symlink(p, *args, **kwargs):
+            writable(p); return original_symlink(p, *args, **kwargs)
+        with patch.object(Path, 'mkdir', mkdir), patch.object(Path, 'chmod', chmod), patch.object(Path, 'symlink_to', symlink):
+            checkpoint.restore(self.args())
+        checkpoint.check_files(manifest)
+        self.assertEqual('opaque certificate bytes', certificate.read_text())
+
+    def test_system_jdk_external_dependency_changes_rejected_before_payload_writes(self):
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest)
+        original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        modules = root/'lib/modules'; jdk_bytes = modules.read_bytes()
+        for change, reset in (
+            (lambda: modules.write_bytes(b'changed'), lambda: modules.write_bytes(jdk_bytes)),
+            (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
+            (certificate.unlink, lambda: certificate.write_bytes(original)),
+        ):
+            change()
+            with self.assertRaises(ValueError): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); reset()
+
+    def test_system_certificate_bundle_content_drift_is_tolerated_and_reported(self):
+        # The hosted image updates the CA bundle on its own schedule (run 913); it is trust
+        # configuration no build or measurement reads, so it must exist with the sealed mode and
+        # its content drift is reported, while every JDK file stays bound by content.
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest); certificate.write_bytes(b'rolled-out bundle')
+        diagnostic = io.StringIO()
+        with contextlib.redirect_stderr(diagnostic): checkpoint.restore(self.args())
+        self.assertTrue(self.binary.exists())
+        events = [json.loads(line.removeprefix('CHECKPOINT_PROGRESS ')) for line in diagnostic.getvalue().splitlines()
+                  if line.startswith('CHECKPOINT_PROGRESS ')]
+        drift = [e for e in events if e['phase'] == 'system-certificates']
+        self.assertEqual([{'diagnosticOnly': True, 'phase': 'system-certificates', 'event': 'drift', 'path': str(certificate),
+                           'sealed': manifest['files'][str(certificate)]['sha256'], 'current': checkpoint.sha(certificate)}], drift[:1])
+        checkpoint.check_files(manifest)
+        # A delta sealed on the drifted image keeps the inherited bundle facts rather than its own.
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        core = checkpoint.seal(self.args('core', 'B', self.workspace/'pressure-checkpoints/core-B', [self.directory/'manifest.json']))
+        self.assertEqual(manifest['files'][str(certificate)], core['files'][str(certificate)])
+
+    def test_system_jdk_link_root_and_directory_changes_rejected_before_writes(self):
+        root, certificate, link = self.system_jdk_fixture(); manifest = self.seal()
+        self.remove_payload(manifest)
+        # A different spelling of the same canonical target is still a different link identity.
+        link.unlink(); link.symlink_to(certificate.parent/'..'/'java/cacerts')
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        foreign = certificate.with_name('foreign'); self.write(foreign, 'opaque certificate bytes')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        java = root/'bin/java'; java.chmod(0o644)
+        with self.assertRaisesRegex(ValueError, 'preexisting dependency'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); java.chmod(0o755)
+        for directory in (root, root/'lib/security'):
+            mode = directory.stat().st_mode & 0o777; directory.chmod(0o700)
+            with self.assertRaisesRegex(ValueError, 'mode'): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); directory.chmod(mode)
+        moved = root.with_name('temurin-17-jdk-arm64'); root.rename(moved)
+        with self.assertRaisesRegex(ValueError, 'root identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); moved.rename(root)
+        extra = root/'unexpected'; self.write(extra, 'extra')
+        with self.assertRaisesRegex(ValueError, 'closed directory'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists())
+
+    def test_system_jdk_unapproved_or_dangling_external_links_rejected_at_seal(self):
+        root, certificate, link = self.system_jdk_fixture()
+        foreign = certificate.with_name('foreign'); self.write(foreign, 'foreign')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+        link.unlink(); link.symlink_to(certificate); certificate.unlink()
+        with self.assertRaisesRegex(ValueError, 'dangling'): self.seal()
+        self.write(certificate, 'opaque certificate bytes')
+        (root/'bin/foreign').symlink_to(certificate)
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+        (root/'bin/foreign').unlink()
+        renamed = root.with_name('other-17-jdk-amd64'); root.rename(renamed)
+        self.system_tools['java'] = str(renamed/'bin/java')
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': self.system_tools})
+        with self.assertRaisesRegex(ValueError, 'unsafe symlink'): self.seal()
+
+    def test_system_jdk_delta_inherits_readonly_links_and_external_target_authority(self):
+        root, certificate, link = self.system_jdk_fixture(); producer = self.seal()
+        producer_ref = self.directory/'manifest.json'
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        core_dir = self.workspace/'pressure-checkpoints/core-B'
+        core_args = self.args('core', 'B', core_dir, [producer_ref]); core = checkpoint.seal(core_args)
+        self.remove_payload(core); checkpoint.restore(core_args)
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'C'/name/'plan.json', {'pins': pins})
+        args = self.args('jvm', 'C', self.workspace/'pressure-checkpoints/jvm-C', [producer_ref, core_dir/'manifest.json'])
+        jvm = checkpoint.seal(args)
+        for value in (core, jvm):
+            self.assertEqual(producer['systemJdkLinks'], value['systemJdkLinks'])
+            self.assertEqual(producer['systemJdkRootModes'], value['systemJdkRootModes'])
+            self.assertIn(str(certificate), value['verificationOnly'])
+            self.assertFalse(any(Path(p).is_relative_to(root) or p == str(certificate) for p in value['payload']))
+        self.remove_payload(jvm); checkpoint.restore(args)
+        (root/'lib/modules').write_bytes(b'changed')
+        with self.assertRaisesRegex(ValueError, 'identity'): checkpoint.restore(args)
+
+    def test_official_adoptium_target_roundtrip_delta_and_mutations_remain_readonly(self):
+        root, certificate, link = self.system_jdk_fixture('adoptium')
+        producer = self.seal(); self.remove_payload(producer)
+        checkpoint.restore(self.args())
+        self.assertIn(str(certificate), producer['verificationOnly'])
+        self.assertNotIn(str(certificate), producer['payload'])
+        pins = {str(root/'bin/javac'): checkpoint.sha(root/'bin/javac')}
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': pins})
+        producer_ref = self.directory/'manifest.json'; core_dir = self.workspace/'pressure-checkpoints/core-B'
+        core_args = self.args('core', 'B', core_dir, [producer_ref]); core = checkpoint.seal(core_args)
+        self.remove_payload(core); checkpoint.restore(core_args)
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'C'/name/'plan.json', {'pins': pins})
+        args = self.args('jvm', 'C', self.workspace/'pressure-checkpoints/jvm-C', [producer_ref, core_dir/'manifest.json'])
+        jvm = checkpoint.seal(args); self.remove_payload(jvm); checkpoint.restore(args)
+        for value in (producer, core, jvm):
+            self.assertIn(str(certificate), value['verificationOnly'])
+            self.assertEqual(producer['files'][str(certificate)], value['files'][str(certificate)])
+            self.assertEqual(producer['systemJdkLinks'], value['systemJdkLinks'])
+            self.assertNotIn(str(certificate), value['payload'])
+        # Re-run producer restoration with its payload absent, so any dependency
+        # rejection must happen before recreating the saved runtime binary.
+        self.remove_payload(producer)
+        original = certificate.read_bytes(); mode = certificate.stat().st_mode & 0o777
+        modules = root/'lib/modules'; jdk_bytes = modules.read_bytes()
+        for change, reset in (
+            (lambda: modules.write_bytes(b'changed'), lambda: modules.write_bytes(jdk_bytes)),
+            (lambda: certificate.chmod(0o600), lambda: certificate.chmod(mode)),
+            (certificate.unlink, lambda: certificate.write_bytes(original)),
+        ):
+            change()
+            with self.assertRaises(ValueError): checkpoint.restore(self.args())
+            self.assertFalse(self.binary.exists()); reset()
+        legacy = certificate.parent.parent/'java/cacerts'; self.write(legacy, 'opaque certificate bytes')
+        link.unlink(); link.symlink_to(legacy)
+        with self.assertRaisesRegex(ValueError, 'link identity'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); link.unlink(); link.symlink_to(certificate)
+        self.mutate_manifest(lambda v: v['payload'].append(str(certificate)))
+        with self.assertRaisesRegex(ValueError, 'read-only system JDK in payload'): checkpoint.restore(self.args())
+        self.assertFalse(self.binary.exists()); self.assertEqual(original, certificate.read_bytes())
+
+    def test_rejected_certificate_reports_actual_link_and_resolved_context(self):
+        root, certificate, link = self.system_jdk_fixture('adoptium')
+        foreign = certificate.with_name('unapproved'); self.write(foreign, 'foreign')
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaises(ValueError) as error: self.seal()
+        for part in ('link='+str(link), 'root='+str(root), 'rawTarget='+repr(str(foreign)),
+                     'resolved='+str(foreign), 'tool=True'):
+            self.assertIn(part, str(error.exception))
+        link.unlink(); link.symlink_to(certificate); self.seal()
+        link.unlink(); link.symlink_to(foreign)
+        with self.assertRaises(ValueError) as error: checkpoint.restore(self.args())
+        for part in ('link='+str(link), 'root='+str(root), 'rawTarget='+repr(str(foreign)),
+                     'resolved='+str(foreign), 'expectedResolved='+str(certificate)):
+            self.assertIn(part, str(error.exception))
+
+    def test_actual_seal_restore_closure_modes_empty_dirs_without_unrelated_cache(self):
+        manifest = self.seal()
+        self.assertFalse(manifest['proofAuthority']); self.assertFalse(manifest['performanceAcceptance'])
+        self.assertIn(str(self.original), manifest['payload']); self.assertIn(str(self.jar), manifest['payload'])
+        self.assertNotIn(str(self.root/'B/gradle-home/caches/unrelated.secret'), manifest['files'])
+        self.assertIn(str(self.classes), manifest['closedDirectories']); self.assertIn(str(self.empty), manifest['directories'])
+        before = {name: Path(name).read_bytes() for name in manifest['payload']}
+        self.remove_payload(manifest)
+        checkpoint.restore(self.args())
+        self.assertEqual(before, {name: Path(name).read_bytes() for name in manifest['payload']})
+        self.assertEqual(0o755, self.binary.stat().st_mode & 0o777)
+        self.assertEqual([], list(self.empty.iterdir())); self.assertFalse(self.absent.exists())
+
+    def test_seal_archive_failure_does_not_publish_or_report_completion(self):
+        stream=io.StringIO();error=OSError('archive write failed')
+        with patch.object(checkpoint.sys,'stderr',stream),patch.object(checkpoint.tarfile,'open',side_effect=error):
+            with self.assertRaises(OSError) as raised:self.seal()
+        self.assertIs(error,raised.exception)
+        self.assertFalse((self.directory/'manifest.json').exists())
+        events=[json.loads(line.split(' ',1)[1]) for line in stream.getvalue().splitlines()]
+        selected=[event for event in events if event['phase']=='seal-archive']
+        self.assertEqual(['start','failed'],[event['event'] for event in selected])
+        self.assertGreaterEqual(selected[-1]['elapsedSeconds'],0)
+        self.assertFalse(any(event['phase']=='seal-final-identity' for event in events))
+
+    def test_seal_broken_diagnostics_preserve_verified_roundtrip(self):
+        stream=io.StringIO();stream.close()
+        with patch.object(checkpoint.sys,'stderr',stream):manifest=self.seal()
+        before={name:Path(name).read_bytes() for name in manifest['payload']}
+        self.remove_payload(manifest)
+        checkpoint.restore(self.args())
+        self.assertEqual(before,{name:Path(name).read_bytes() for name in manifest['payload']})
+        self.assertFalse(manifest['proofAuthority'])
+
+    def test_missing_original_artifact_fails_seal(self):
+        self.original.unlink()
+        with self.assertRaisesRegex(ValueError, 'missing artifact'): self.seal()
+
+    def test_missing_classpath_member_fails_seal(self):
+        (self.classes/'A.class').unlink()
+        with self.assertRaisesRegex(ValueError, 'classpath member'): self.seal()
+
+    def test_extra_classpath_member_rejected(self):
+        self.write(self.classes/'Extra.class', 'foreign')
+        with self.assertRaisesRegex(ValueError, 'classpath member'): self.seal()
+
+    def test_absent_configuration_appearing_rejected_before_restore(self):
+        self.seal(); self.write(self.absent, 'foreign configuration')
+        with self.assertRaisesRegex(ValueError, 'absent path appeared'): checkpoint.restore(self.args())
+
+    def test_absent_classpath_appearing_rejected(self):
+        self.seal(); (self.workspace/'candidate/build/absent-resources').mkdir()
+        with self.assertRaisesRegex(ValueError, 'absent path appeared'): checkpoint.restore(self.args())
+
+    def test_python_path_and_hash_cannot_change(self):
+        manifest = self.seal()
+        self.mutate_manifest(lambda v: v.update(python='/different/python'))
+        with self.assertRaisesRegex(ValueError, 'Python interpreter path'): checkpoint.restore(self.args())
+        checkpoint.save(self.directory/'manifest.json', manifest)
+        self.mutate_manifest(lambda v: v['files'][v['python']].update(sha256='0'*64))
+        with self.assertRaisesRegex(ValueError, 'preexisting dependency'): checkpoint.restore(self.args())
+
+    def test_existing_binary_lost_execute_bit_rejected(self):
+        self.seal(); self.binary.chmod(0o644)
+        with self.assertRaisesRegex(ValueError, 'different file'): checkpoint.restore(self.args())
+
+    def test_source_revision_and_source_bytes_remain_required(self):
+        self.seal(); self.write(self.workspace/'candidate/tracked', 'modified')
+        with self.assertRaisesRegex(ValueError, 'exact clean checkout'): checkpoint.restore(self.args())
+
+    def test_workspace_relocation_and_wrong_run_identity_rejected(self):
+        self.seal(); args = self.args(); args.workspace = str(self.workspace.parent/'relocated')
+        with self.assertRaisesRegex(ValueError, 'checkpoint identity'): checkpoint.restore(args)
+        args = self.args(); args.run_attempt = '3'
+        with self.assertRaisesRegex(ValueError, 'checkpoint identity'): checkpoint.restore(args)
+
+    def test_runner_image_change_rejected(self):
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'first'}): self.seal()
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu26', 'ImageVersion': 'first'}):
+            with self.assertRaisesRegex(ValueError, 'runner image changed'): checkpoint.restore(self.args())
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'RUNNER_ARCH': 'ARM64', 'ImageVersion': 'first'}):
+            with self.assertRaisesRegex(ValueError, 'runner image changed'): checkpoint.restore(self.args())
+
+    def test_runner_image_version_rollout_mid_run_is_tolerated_and_reported(self):
+        # The hosted image's version label rolled out between a run's sealing and consuming jobs
+        # (run 912); the toolchain is bound by digest, so the label drifts and the drift is reported.
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'first'}): manifest = self.seal()
+        self.remove_payload(manifest); diagnostic = io.StringIO()
+        with patch.dict(os.environ, {'ImageOS': 'ubuntu24', 'ImageVersion': 'second'}), contextlib.redirect_stderr(diagnostic):
+            checkpoint.restore(self.args())
+        events = [json.loads(line.removeprefix('CHECKPOINT_PROGRESS ')) for line in diagnostic.getvalue().splitlines()
+                  if line.startswith('CHECKPOINT_PROGRESS ')]
+        drift = [e for e in events if e['phase'] == 'runner-image']
+        self.assertEqual([{'diagnosticOnly': True, 'phase': 'runner-image', 'event': 'drift', 'stage': 'producer',
+                           'arm': 'producer', 'sealed': 'first', 'current': 'second'}], drift)
+        self.assertTrue(self.binary.exists())
+
+    def test_tar_traversal_and_links_rejected_even_with_resealed_digest(self):
+        manifest = self.seal()
+        for kind in ('traversal', 'symlink'):
+            archive = self.directory/'payload.tar.gz'
+            with tarfile.open(archive, 'w:gz') as tar:
+                member = tarfile.TarInfo('../../escape' if kind == 'traversal' else 'files/00000000')
+                if kind == 'symlink': member.type = tarfile.SYMTYPE; member.linkname = '/etc/passwd'
+                tar.addfile(member, io.BytesIO(b''))
+            self.mutate_manifest(lambda v: v.update(archiveSha256=checkpoint.sha(archive)))
+            with self.assertRaisesRegex(ValueError, 'unsafe or incomplete archive'): checkpoint.restore(self.args())
+        self.assertFalse((self.workspace.parent/'escape').exists())
+
+    def test_external_payload_destination_rejected(self):
+        self.seal(); outside = self.workspace.parent/'outside'
+        def change(v):
+            old = v['payload'][0]; v['payload'][0] = str(outside); v['files'][str(outside)] = v['files'].pop(old)
+        self.mutate_manifest(change)
+        with self.assertRaisesRegex(ValueError, 'outside restore roots'): checkpoint.restore(self.args())
+        self.assertFalse(outside.exists())
+
+    def test_archive_truncation_and_digest_mutation_rejected(self):
+        self.seal(); archive = self.directory/'payload.tar.gz'; archive.write_bytes(archive.read_bytes()[:10])
+        with self.assertRaisesRegex(ValueError, 'archive digest'): checkpoint.restore(self.args())
+
+    def test_restore_rejects_corrupt_member_with_valid_archive_hash(self):
+        manifest = self.seal(); archive = self.directory/'payload.tar.gz'
+        with tarfile.open(archive, 'r:gz') as stream:
+            members = [(member, stream.extractfile(member).read()) for member in stream.getmembers()]
+        selected = manifest['payload'].index(str(self.binary))
+        with tarfile.open(archive, 'w:gz') as stream:
+            for index, (member, content) in enumerate(members):
+                if index == selected: content = b'x' * len(content)
+                stream.addfile(member, io.BytesIO(content))
+        self.mutate_manifest(lambda value: value.update(archiveSha256=checkpoint.sha(archive)))
+        self.remove_payload(manifest)
+        with self.assertRaisesRegex(ValueError, 'restored payload digest'): checkpoint.restore(self.args())
+
+    def test_fresh_output_required(self):
+        self.seal()
+        with self.assertRaisesRegex(ValueError, 'fresh checkpoint'): self.seal()
+
+    def test_core_delta_keeps_upstream_closed_graphs_but_allows_later_stage(self):
+        producer = self.seal(); upstream = self.directory/'manifest.json'
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+        self.write(self.root/'B/core-equivalence/graphs/fixture-0/record.json', '{}')
+        args = self.args('core', 'B', self.workspace/'pressure-checkpoints/core-B', [upstream])
+        manifest = checkpoint.seal(args)
+        self.assertNotIn(str(self.binary), manifest['payload'])
+        self.remove_payload(manifest)
+        # Producer manifest may be downloaded under a different transport name.
+        downloaded = self.workspace/'pressure-checkpoints/native-checkpoint-producer/manifest.json'
+        downloaded.parent.mkdir(); shutil.copyfile(upstream, downloaded)
+        args.upstream = [str(downloaded)]; checkpoint.restore(args)
+        checkpoint.check_files(producer)
+        self.write(self.root/'B/graphs/extra', 'not allowed')
+        with self.assertRaisesRegex(ValueError, 'closed directory'): checkpoint.restore(args)
+
+    def test_jvm_requires_producer_and_all_actual_core_not_subset(self):
+        self.seal(); producer = self.directory/'manifest.json'
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+        core_dir = self.workspace/'pressure-checkpoints/core-B'
+        checkpoint.seal(self.args('core', 'B', core_dir, [producer]))
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'C'/name/'plan.json', {'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+        args = self.args('jvm', 'C', self.workspace/'pressure-checkpoints/jvm-C', [producer])
+        with self.assertRaisesRegex(ValueError, 'exact upstream'): checkpoint.seal(args)
+        args.upstream.append(str(core_dir/'manifest.json'))
+        manifest = checkpoint.seal(args)
+        self.assertEqual([('core', 'B'), ('producer', 'producer')], [(v['stage'], v['arm']) for v in manifest['upstream']])
+
+    def test_relative_legacy_binary_provenance_is_preserved(self):
+        binary = self.workspace/'base/build/graphite'
+        self.write(binary, 'original snapshot binary'); binary.chmod(0o755)
+        provenance = self.workspace/'benchmark-results/rust-provenance/provenance.json'
+        self.json(provenance, {'files': {'base/build/graphite': checkpoint.sha(binary)}})
+        manifest = self.seal()
+        self.assertIn(str(binary), manifest['payload'])
+        self.remove_payload(manifest); checkpoint.restore(self.args())
+        self.assertEqual('original snapshot binary', binary.read_text())
+
+    def test_named_artifact_audit_pin_outside_standard_trees_is_collected(self):
+        referenced = self.root/'B/gradle-home/caches/audited.jar'; self.write(referenced, 'audited dependency')
+        self.json(self.root/'B/artifact-audit.json', {'pins': {str(referenced): checkpoint.sha(referenced)}})
+        self.assertIn(str(referenced), self.seal()['payload'])
+
+    def test_low_disk_seal_fails_without_publishing_manifest(self):
+        with patch.object(checkpoint.shutil, 'disk_usage', return_value=argparse.Namespace(free=0)):
+            with self.assertRaisesRegex(ValueError, 'disk headroom'): self.seal()
+        self.assertFalse((self.directory/'manifest.json').exists())
+
+    def test_delta_inherits_exact_external_tool_pins_without_repacking_jdk(self):
+        jdk = self.workspace/'jdk/17/x64'
+        for name in ('bin/java', 'bin/javac', 'release', 'lib/modules'):
+            self.write(jdk/name, name)
+        cargo = self.workspace.parent/'toolchain/bin/cargo'; self.write(cargo, 'cargo bytes')
+        rustc = self.workspace.parent/'toolchain/bin/rustc'; self.write(rustc, 'rustc bytes')
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': {'java': str(jdk/'bin/java'), 'cargo': str(cargo), 'rustc': str(rustc)}})
+        producer = self.seal(); upstream = self.directory/'manifest.json'
+        self.json(self.root/'B/core-equivalence/plan.json', {'pins': {str(p): checkpoint.sha(p) for p in (cargo, rustc, jdk/'bin/javac', jdk/'lib/modules')}})
+        core = self.workspace/'pressure-checkpoints/core-B'; args = self.args('core', 'B', core, [upstream])
+        value = checkpoint.seal(args)
+        self.assertIn(str(cargo), value['files']); self.assertEqual([], [p for p in value['payload'] if str(jdk) in p])
+        self.remove_payload(value); checkpoint.restore(args)
+        self.write(cargo, 'changed external compiler')
+        with self.assertRaisesRegex(ValueError, 'restored file identity'): checkpoint.restore(args)
+
+    def test_regular_hardlinks_roundtrip_as_independent_regular_payloads(self):
+        first = self.root/'B/graphs/a'; self.write(first, 'shared inode')
+        second = self.root/'B/graphs/a-/child'; second.parent.mkdir(); os.link(first, second)
+        manifest = self.seal()
+        with tarfile.open(self.directory/'payload.tar.gz', 'r:gz') as tar:
+            self.assertTrue(all(member.isfile() and not member.islnk() for member in tar.getmembers()))
+        self.remove_payload(manifest); checkpoint.restore(self.args())
+        self.assertEqual(first.read_bytes(), second.read_bytes())
+        self.assertEqual(b'shared inode', first.read_bytes())
+
+    def test_provenance_cargo_config_is_hash_only_never_payload(self):
+        config = self.workspace/'.cargo/config.toml'; self.write(config, 'sensitive setting')
+        self.json(self.workspace/'benchmark-results/rust-provenance/provenance.json',
+                  {'files': {'.cargo/config.toml': checkpoint.sha(config)}})
+        manifest = self.seal()
+        self.assertIn(str(config), manifest['verificationOnly']); self.assertNotIn(str(config), manifest['payload'])
+        with tarfile.open(self.directory/'payload.tar.gz', 'r:gz') as tar:
+            self.assertNotIn(b'sensitive setting', b''.join(tar.extractfile(m).read() for m in tar.getmembers()))
+        config.unlink()
+        with self.assertRaisesRegex(ValueError, 'preexisting dependency'): checkpoint.restore(self.args())
+
+    def test_nonalias_three_checkouts_two_cores_and_jvm_requires_whole_upstream_set(self):
+        subprocess.run(['git', 'clone', '-q', str(self.workspace/'base'), str(self.workspace/'accepted')], check=True)
+        self.write(self.workspace/'base/tracked', 'distinct actual parent')
+        subprocess.run(['git', '-C', str(self.workspace/'base'), 'add', 'tracked'], check=True)
+        subprocess.run(['git', '-C', str(self.workspace/'base'), '-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid',
+                        'commit', '-qm', 'distinct parent'], check=True)
+        self.base_revision = subprocess.check_output(['git', '-C', str(self.workspace/'base'), 'rev-parse', 'HEAD'], text=True).strip()
+        producer = self.seal(); producer_ref = self.directory/'manifest.json'
+        self.assertEqual({'base', 'candidate', 'accepted'}, set(producer['sources']))
+        refs = [producer_ref]
+        for arm in ('A', 'B'):
+            self.json(self.root/arm/'core-equivalence/plan.json', {'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+            directory = self.workspace/('pressure-checkpoints/core-'+arm)
+            args = self.args('core', arm, directory, [producer_ref]); manifest = checkpoint.seal(args)
+            self.remove_payload(manifest); checkpoint.restore(args)
+            renamed = directory/'downloaded-manifest.json'; shutil.copyfile(directory/'manifest.json', renamed); refs.append(renamed)
+        for name in ('jvm-raw-derivation', 'jvm-query-correctness'):
+            self.json(self.root/'A'/name/'plan.json', {'pins': {str(self.binary): checkpoint.sha(self.binary)}})
+        args = self.args('jvm', 'A', self.workspace/'pressure-checkpoints/jvm-A', refs[:2])
+        with self.assertRaisesRegex(ValueError, 'exact upstream stages'): checkpoint.seal(args)
+        args.upstream = [str(p) for p in refs]; value = checkpoint.seal(args)
+        self.assertEqual([('core', 'A'), ('core', 'B'), ('producer', 'producer')], [(r['stage'], r['arm']) for r in value['upstream']])
+        self.remove_payload(value); checkpoint.restore(args)
+
+    def test_full_jdk_includes_nonpinned_runtime_files_and_internal_links(self):
+        jdk = self.workspace/'jdk/17/x64'
+        for name in ('bin/java', 'bin/javac', 'release', 'lib/modules', 'lib/server/libjvm.so'):
+            self.write(jdk/name, name)
+        (jdk/'bin/java').chmod(0o755); (jdk/'legal').mkdir(); (jdk/'legal/module').symlink_to('../release')
+        self.json(self.root/'B/runtime-manifest.json', {'toolchainIdentity': {'java': str(jdk/'bin/java'), 'cargo': str(self.binary), 'rustc': str(self.binary)}})
+        manifest = self.seal()
+        self.assertIn(str(jdk/'lib/server/libjvm.so'), manifest['payload'])
+        self.assertEqual('../release', manifest['links'][str(jdk/'legal/module')])
+        (jdk/'legal/module').unlink(); self.remove_payload(manifest)
+        checkpoint.restore(self.args())
+        self.assertEqual('lib/server/libjvm.so', (jdk/'lib/server/libjvm.so').read_text())
+        self.assertTrue((jdk/'legal/module').is_symlink())
+
+    def sharded_core_fixture(self):
+        import run_native_core_equivalence as core
+        self.seal()
+        out = self.root/'B/core-equivalence'
+        plan = {'schema': 'graphite.native-core-equivalence-plan.v1', 'output': str(out),
+                'execution': core.shard_execution(8), 'stopAtFirstFailure': False,
+                'python': '/python', 'java': '/java', 'javac': '/javac', 'writerJar': str(self.writer),
+                'pins': {str(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py'):
+                         checkpoint.sha(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py')},
+                'maxOwnedPhases': 139, 'graphs': [
+                    {'id': f'{corpus}-{n:02}', 'C': '/reference', 'B': '/candidate',
+                     'fieldAuthority': {'corpus': corpus}}
+                    for corpus in ('alpha', 'beta', 'gamma', 'delta') for n in range(16)],
+                'rawLocalExports': [{'arm': arm, 'corpus': corpus, 'java': '/java', 'javac': '/javac',
+                    'writerJar': str(self.writer), 'sourceJar': '/source', 'provenance': '/provenance'}
+                    for arm in ('C', 'B') for corpus in ('alpha', 'beta', 'gamma', 'delta')]}
+        self.json(out/'plan.json', plan)
+        self.write(out/'classes/VerifyTopology.class', 'tiny compiled helper')
+        self.write(out/'raw-locals/input', 'tiny local export')
+        for name, _, _ in core.preparation_commands(plan): self.json(out/name/'record.json', {'phase': name})
+        ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
+        self.json(out/'preparation.json', {'plan': ref(out/'plan.json'),
+            'files': {str(p): checkpoint.sha(p) for directory in (out/'classes', out/'raw-locals')
+                      for p in directory.rglob('*') if p.is_file()}})
+        prep_args = self.args('core-prepare', 'B', self.workspace/'pressure-checkpoints/core-prepare-B', [self.directory/'manifest.json'])
+        prep_args.shard_count = 8
+        prep = checkpoint.seal(prep_args)
+        return core, out, plan, prep_args, prep
+
+    def test_arm_local_core_inputs_survive_preparation_and_standalone_final_transport(self):
+        shared = self.root/'C/core-string-exports/shared.bin'
+        self.write(shared, 'shared baseline export produced exactly once')
+        # This topology seals producer before arm-local formatter inputs exist.
+        shutil.rmtree(self.root/'B/formatter-tests')
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        local_files = []
+        for name in checkpoint.CORE_INPUT_TREES:
+            path = self.root/'B'/name/'evidence.bin'
+            self.write(path, 'complete arm-local '+name); local_files.append(path)
+        # Formatter audits bind complete actual test classpath directories, even
+        # when no individually pinned member otherwise mentions their extra file.
+        classes = self.workspace/'candidate/build/test-classes'
+        self.write(classes/'Main.class', 'actual tested production class')
+        self.write(classes/'Resource.txt', 'required classpath resource')
+        self.json(self.root/'B/formatter-tests/classpath-before.json', {
+            'schema': 'graphite.formatter-test-classpath.v1', 'classpath': [{
+                'path': str(classes), 'kind': 'directory',
+                'files': {p.name: checkpoint.sha(p) for p in classes.iterdir()}}]})
+        plan['pins'].update({str(p): checkpoint.sha(p) for p in [shared, *local_files]})
+        self.json(out/'plan.json', plan)
+        preparation = checkpoint.read(out/'preparation.json')
+        preparation['plan']['sha256'] = checkpoint.sha(out/'plan.json')
+        self.json(out/'preparation.json', preparation)
+        prep_args.directory = str(self.workspace/'pressure-checkpoints/core-prepare-local-B')
+        prepared = checkpoint.seal(prep_args)
+        final_args = self.args('core', 'B', self.workspace/'pressure-checkpoints/core-local-B',
+                               [self.directory/'manifest.json'])
+        final = checkpoint.seal(final_args)
+        producer = checkpoint.read(self.directory/'manifest.json')
+        self.assertIn(str(shared), producer['payload'])
+        for manifest in (prepared, final):
+            self.assertNotIn(str(shared), manifest['payload'])
+            for path in local_files:
+                self.assertIn(str(path), manifest['payload'])
+                self.assertIn(str(path.parent), manifest['closedDirectories'])
+            self.assertIn(str(classes/'Resource.txt'), manifest['payload'])
+            self.assertIn(str(classes), manifest['closedDirectories'])
+        # Final core transport has producer ancestry only: it cannot rely on a
+        # preparation checkout surviving on its fresh downstream consumer.
+        self.remove_payload(final)
+        checkpoint.restore(final_args)
+        self.assertEqual('shared baseline export produced exactly once', shared.read_text())
+        self.assertEqual('required classpath resource', (classes/'Resource.txt').read_text())
+        for path in local_files:
+            self.assertEqual('complete arm-local '+path.parent.name, path.read_text())
+        extra = local_files[0].parent/'unaccounted'
+        self.write(extra, 'unexpected dependency')
+        with self.assertRaisesRegex(ValueError, 'closed directory'):
+            checkpoint.check_files(final)
+
+    def write_core_shard(self, core, out, plan, prep_args, index):
+        ref = lambda path: {'path': str(path), 'sha256': checkpoint.sha(path)}
+        rows = []
+        for row in core.shard_rows(plan, index):
+            directory = out/'graphs'/row['id']
+            self.json(directory/'record.json', {'tinyProofFixture': row['id']})
+            self.json(directory/'topology.json', {'tinyTopologyFixture': row['id']})
+            rows.append({'id': row['id'], 'core': ref(directory/'record.json'),
+                         'topology': ref(directory/'topology.json'),
+                         'files': {str(p): checkpoint.sha(p) for p in directory.rglob('*') if p.is_file()}})
+        phases = []
+        for name, _, _ in core.shard_commands(plan, index):
+            self.json(out/name/'record.json', {'phase': name}); phases.append(ref(out/name/'record.json'))
+            self.json(out/name/'owner.json', {'tinyOwnerFixture': name})
+            for leaf in ('stdout.log', 'stderr.log'): self.write(out/name/leaf, 'tiny phase output')
+        record_path = out/'shards'/str(index)/'record.json'
+        self.json(record_path, {'shardCount': 8, 'shardIndex': index, 'graphs': rows, 'phases': phases,
+            'plan': ref(out/'plan.json'), 'preparation': ref(out/'preparation.json')})
+        refs = {'plan': ref(out/'plan.json'), 'preparation': ref(out/'preparation.json'), 'record': ref(record_path),
+                'checker': ref(self.workspace/'candidate/.github/scripts/run_native_core_equivalence.py')}
+        pins = {**plan['pins'], **checkpoint.read(out/'preparation.json')['files'],
+                **{value['path']: value['sha256'] for value in refs.values()}}
+        for row in rows: pins.update(row['files'])
+        for name, _, _ in core.shard_commands(plan, index):
+            for leaf in ('record.json', 'owner.json', 'stdout.log', 'stderr.log'):
+                value = ref(out/name/leaf); pins[value['path']] = value['sha256']
+        # These are byte-transport fixtures for audited claims, not real graph proofs.
+        self.json(record_path.with_name('audit.json'), {'schema': 'graphite.native-core-shard-audit.v1',
+            'status': core.SHARD_AUDIT_PASS, 'errors': [], 'finalIdentity': 'PASS', 'shardIndex': index, 'shardCount': 8,
+            **refs, 'graphs': rows, 'phases': phases, 'pins': pins,
+            'completeAssignedCoreTopologyIndexComparison': True, **{key: False for key in core.FALSE_CLAIMS}})
+        args = self.args('core-shard', 'B', self.workspace/f'pressure-checkpoints/core-shard-B-{index}',
+                         [self.directory/'manifest.json', Path(prep_args.directory)/'manifest.json'])
+        args.shard_count = 8; args.shard_index = index
+        return args
+
+    def seal_overlap_fixture(self):
+        graph = self.root/'B/graphs/graph.nodes'
+        original_json = self.json
+        def with_graph_pins(path, value):
+            if path.name == 'plan.json' and value.get('schema') == 'graphite.native-core-equivalence-plan.v1':
+                value['pins'].update({str(p): checkpoint.sha(p) for p in (graph, self.writer)})
+            original_json(path, value)
+        with patch.object(self, 'json', side_effect=with_graph_pins):
+            core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        return args, graph, out
+
+    def test_seal_reads_overlapping_graph_and_writer_once_per_fresh_boundary(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        original_sha = checkpoint.sha; reads = []
+        def counting(path):
+            reads.append(str(path)); return original_sha(path)
+        with patch.object(checkpoint, 'sha', side_effect=counting):
+            manifest = checkpoint.seal(args)
+        for path in (graph, self.writer):
+            self.assertEqual(2, reads.count(str(path)), str(path))
+            self.assertNotIn(str(path), manifest['payload'])
+            self.assertEqual(original_sha(path), manifest['files'][str(path)]['sha256'])
+        # Scope cannot escape a seal invocation, including a later identical seal.
+        args.directory += '-again'; reads.clear()
+        with patch.object(checkpoint, 'sha', side_effect=counting):
+            again = checkpoint.seal(args)
+        for path in (graph, self.writer): self.assertEqual(2, reads.count(str(path)))
+        self.assertEqual(manifest['files'], again['files'])
+        self.assertEqual(manifest['payload'], again['payload'])
+
+    def test_seal_fresh_final_reads_reject_same_size_same_mtime_mutations(self):
+        args, graph, out = self.seal_overlap_fixture()
+        upstream_only = self.workspace/'shared-fixture64/graphs/graphs.tsv'
+        payload = out/'graphs/alpha-00/topology.json'
+        source = self.workspace/'candidate/tracked'
+        original_sha = checkpoint.sha
+        for index, target in enumerate((graph, self.writer, upstream_only, payload, source)):
+            with self.subTest(target=target):
+                before = target.read_bytes(); times = target.stat()
+                args.directory = str(self.workspace/f'pressure-checkpoints/mutation-{index}')
+                def mutate_after_archive(path):
+                    result = original_sha(path)
+                    if Path(path) == Path(args.directory)/'payload.tar.gz':
+                        target.write_bytes(bytes([before[0] ^ 1])+before[1:])
+                        os.utime(target, ns=(times.st_atime_ns, times.st_mtime_ns))
+                    return result
+                try:
+                    with patch.object(checkpoint, 'sha', side_effect=mutate_after_archive):
+                        with self.assertRaises(ValueError): checkpoint.seal(args)
+                    self.assertFalse((Path(args.directory)/'manifest.json').exists())
+                finally:
+                    target.write_bytes(before); os.utime(target, ns=(times.st_atime_ns, times.st_mtime_ns))
+
+    def test_seal_reuse_rejects_conflicting_upstream_file_declarations(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        preparation = Path(args.upstream[1]); original = preparation.read_bytes()
+        for key, value in (('sha256', '0'*64), ('size', graph.stat().st_size+1), ('mode', 0o700)):
+            with self.subTest(attribute=key):
+                mutated = json.loads(original)
+                mutated['files'][str(graph)][key] = value
+                checkpoint.save(preparation, mutated)
+                with self.assertRaises(ValueError): checkpoint.seal(args)
+                self.assertFalse(Path(args.directory).exists())
+                preparation.write_bytes(original)
+
+    def test_seal_fresh_final_boundary_keeps_structural_and_upstream_checks(self):
+        args, graph, _ = self.seal_overlap_fixture()
+        original_sha = checkpoint.sha
+        preparation = Path(args.upstream[1]); original_manifest = preparation.read_bytes()
+        original_mode = graph.stat().st_mode & 0o777
+        extra = graph.parent/'unexpected'; removed = graph.with_name('moved')
+        def wrong_mode(): graph.chmod(0o700)
+        def new_member(): self.write(extra, 'unexpected')
+        def changed_upstream(): preparation.write_bytes(original_manifest+b' ')
+        def replaced_link(): graph.rename(removed); graph.symlink_to(removed.name)
+        for index, mutation in enumerate((wrong_mode, new_member, changed_upstream, replaced_link)):
+            with self.subTest(mutation=mutation.__name__):
+                args.directory = str(self.workspace/f'pressure-checkpoints/structure-{index}')
+                def mutate_after_archive(path):
+                    result = original_sha(path)
+                    if Path(path) == Path(args.directory)/'payload.tar.gz': mutation()
+                    return result
+                try:
+                    with patch.object(checkpoint, 'sha', side_effect=mutate_after_archive):
+                        with self.assertRaises(ValueError): checkpoint.seal(args)
+                    self.assertFalse((Path(args.directory)/'manifest.json').exists())
+                finally:
+                    if graph.is_symlink(): graph.unlink(); removed.rename(graph)
+                    graph.chmod(original_mode); extra.unlink(missing_ok=True)
+                    preparation.write_bytes(original_manifest)
+
+    def test_sharded_core_roundtrip_preserves_disjoint_leaves_and_shared_preparation(self):
+        core, out, plan, prep_args, prep = self.sharded_core_fixture()
+        args, manifests = [], []
+        for index in range(8):
+            arg = self.write_core_shard(core, out, plan, prep_args, index)
+            manifest = checkpoint.seal(arg)
+            args.append(arg); manifests.append(manifest)
+            self.remove_payload(manifest)  # Each worker owns a fresh restored preparation.
+
+        for manifest in [prep, *manifests]:
+            for shared in (out, out/'graphs', out/'shards'):
+                self.assertNotIn(str(shared), manifest['closedDirectories'])
+        for index, manifest in enumerate(manifests):
+            expected = {str(out/'graphs'/row['id']) for row in core.shard_rows(plan, index)}
+            actual = {path for path in manifest['closedDirectories'] if Path(path).parent == out/'graphs'}
+            self.assertEqual(expected, actual)
+            self.assertEqual(8, len(actual))
+            self.assertEqual(index, manifest['identity']['shardIndex'])
+            self.assertFalse(any(path.startswith(str(out/'raw-locals')) for path in manifest['payload']))
+        self.remove_payload(prep)
+        checkpoint.restore(prep_args)
+        for arg in reversed(args): checkpoint.restore(arg)
+        for manifest in [prep, *manifests]: checkpoint.check_files(manifest)
+        self.assertEqual(64, len(list((out/'graphs').iterdir())))
+
+    def test_shard_checkpoint_rejects_wrong_index_count_and_missing_preparation_before_writes(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0); manifest = checkpoint.seal(args)
+        self.remove_payload(manifest)
+        for field, bad in (('shard_index', 1), ('shard_count', 4)):
+            wrong = copy.copy(args); setattr(wrong, field, bad)
+            with self.assertRaisesRegex(ValueError, 'checkpoint identity'): checkpoint.restore(wrong)
+            self.assertFalse((out/'shards/0/record.json').exists())
+        wrong = copy.copy(args); wrong.upstream = wrong.upstream[:1]
+        with self.assertRaisesRegex(ValueError, 'exact same producer'): checkpoint.restore(wrong)
+        self.assertFalse((out/'shards/0/record.json').exists())
+        checkpoint.restore(args)
+
+    def test_shard_seal_rejects_extra_graph_output_instead_of_discarding_it(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        extra = out/'graphs/unassigned-graph'
+        self.write(extra/'proof', 'must not disappear during transport')
+        with self.assertRaisesRegex(ValueError, 'exact assigned shard graph output inventory'):
+            checkpoint.seal(args)
+        self.assertFalse(Path(args.directory).exists())
+        shutil.rmtree(extra)
+        checkpoint.seal(args)
+
+    def test_shard_seal_requires_complete_successful_audit_and_byte_closure(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        path = out/'shards/0/audit.json'; original = checkpoint.read(path)
+        mutations = [lambda value: value.update(status='FAIL'),
+                     lambda value: value.update(shardIndex=1),
+                     lambda value: value.update(checker=value['record']),
+                     lambda value: value.update(performanceAcceptance=True),
+                     lambda value: value['graphs'].pop(),
+                     lambda value: value['pins'].pop(str(out/'classes/VerifyTopology.class')),
+                     lambda value: value['pins'].pop(value['phases'][0]['path'])]
+        for mutate in mutations:
+            changed = copy.deepcopy(original); mutate(changed); self.json(path, changed)
+            with self.assertRaises(ValueError): checkpoint.seal(args)
+            self.assertFalse(Path(args.directory).exists())
+        self.json(path, original)
+        extra = out/'graphs'/core.shard_rows(plan, 0)[0]['id']/'unreported'
+        self.write(extra, 'must be bound by original worker audit')
+        with self.assertRaisesRegex(ValueError, 'audited complete graph byte closure'): checkpoint.seal(args)
+        extra.unlink()
+        checkpoint.seal(args)
+
+    def test_prepare_and_shard_reject_invalid_cli_partition(self):
+        for stage, count, index in (('core-prepare', None, None), ('core-prepare', 8, 0),
+                                    ('core-shard', 8, None), ('core-shard', 8, 8),
+                                    ('core-shard', 8, -1), ('core-shard', 2, 0), ('core', 8, None)):
+            args = self.args(stage, 'B'); args.shard_count = count; args.shard_index = index
+            with self.assertRaisesRegex(ValueError, 'checkpoint shard'): checkpoint.identity(args)
+
+    def test_shard_seal_rejects_different_preparation_and_receipt_identity(self):
+        core, out, plan, prep_args, _ = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        record = out/'shards/0/record.json'; original = checkpoint.read(record)
+        changed = {**original, 'shardIndex': 1}; self.json(record, changed)
+        with self.assertRaisesRegex(ValueError, 'shard receipt identity'): checkpoint.seal(args)
+        self.json(record, original)
+        manifest = Path(prep_args.directory)/'manifest.json'; original_prep = checkpoint.read(manifest)
+        for change in ({'arm': 'A'}, {'shardCount': 4}):
+            altered = copy.deepcopy(original_prep); altered['identity'].update(change); self.json(manifest, altered)
+            with self.assertRaisesRegex(ValueError, 'same arm and partition'): checkpoint.seal(args)
+        altered = copy.deepcopy(original_prep); altered['upstream'][0]['sha256'] = '0'*64; self.json(manifest, altered)
+        with self.assertRaisesRegex(ValueError, 'exact same producer'): checkpoint.seal(args)
+        self.json(manifest, original_prep)
+        checkpoint.seal(args)
+
+    def test_preparation_growth_is_allowed_but_pinned_helper_drift_fails(self):
+        core, out, plan, prep_args, prep = self.sharded_core_fixture()
+        args = self.write_core_shard(core, out, plan, prep_args, 0)
+        checkpoint.check_files(prep)
+        self.write(out/'classes/VerifyTopology.class', 'changed helper')
+        with self.assertRaisesRegex(ValueError, 'restored file identity|chain file type/mode/size changed'): checkpoint.seal(args)
+
+
+if __name__ == '__main__':
+    unittest.main()

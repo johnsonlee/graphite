@@ -19,6 +19,8 @@ import io.johnsonlee.graphite.input.ResourceAccessor
  * to use either implementation transparently.
  */
 interface FullGraphBuilder : GraphBuilder {
+    fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder
+
     override fun addNode(node: Node): FullGraphBuilder
     override fun addEdge(edge: Edge): FullGraphBuilder
     fun addMethod(method: MethodDescriptor): FullGraphBuilder

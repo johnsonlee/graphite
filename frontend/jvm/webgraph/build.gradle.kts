@@ -51,6 +51,8 @@ dependencies {
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
     testImplementation(project(":sootup"))
+    testImplementation(libs.asm)
+    testImplementation("org.ow2.asm:asm-tree:$asmVersion")
     add(androidIntegrationFixture.name, libs.android.all)
     add(largeCorpusFixtures.name, libs.tika.app)
     add(largeCorpusFixtures.name, libs.hive.exec)
@@ -104,6 +106,13 @@ val prepareBenchmarkFixtures by tasks.registering(Sync::class) {
     from(androidIntegrationFixture)
     from(largeCorpusFixtures)
     into(layout.buildDirectory.dir("benchmark-fixtures"))
+}
+
+// Correctness entrypoints remain in the standalone harness JAR and are exercised by unit tests.
+// includeTests=false below prevents the reverse dependency or packaging tests into that JAR.
+sourceSets.test {
+    compileClasspath += sourceSets.named("jmh").get().output
+    runtimeClasspath += sourceSets.named("jmh").get().runtimeClasspath
 }
 
 jmh {
@@ -180,7 +189,7 @@ tasks.test {
 }
 
 val largeCorpusTest by tasks.registering(Test::class) {
-    description = "Runs Tika, Hive, and Kotlin compiler gates in isolated 4 GiB JVMs"
+    description = "Verifies Tika, Hive, and Kotlin compiler persistence correctness in isolated 4 GiB JVMs"
     group = "verification"
     testClassesDirs = sourceSets.test.get().output.classesDirs
     classpath = sourceSets.test.get().runtimeClasspath
@@ -189,9 +198,8 @@ val largeCorpusTest by tasks.registering(Test::class) {
     maxParallelForks = 1
     forkEvery = 1
     failFast = true
-    doNotTrackState("Large-corpus timing and heap gates must execute on every invocation")
+    doNotTrackState("Large-corpus correctness gates must execute on every invocation")
     shouldRunAfter(tasks.test)
-    systemProperty("large.corpus.record", System.getProperty("large.corpus.record", "false"))
     testLogging {
         events("passed", "skipped", "failed", "standardOut")
         showStandardStreams = true

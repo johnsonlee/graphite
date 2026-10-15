@@ -7,6 +7,7 @@ import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.ResourceEdge
 import io.johnsonlee.graphite.core.TypeEdge
+import io.johnsonlee.graphite.graph.Graph
 import java.util.LinkedHashMap
 import java.util.RandomAccess
 import java.util.regex.Pattern
@@ -29,14 +30,16 @@ private val ASCII_RANGE_SEQUENCE_TOKEN = Pattern.compile("\\[([A-Za-z0-9_])(?:-(
  */
 class ExpressionEvaluator private constructor(
     private val checkCancelled: (() -> Unit)?,
-    private val parameterResolver: ((String) -> Any?)?
+    private val parameterResolver: ((String) -> Any?)?,
+    private val graph: Graph?
 ) {
-    constructor(checkCancelled: (() -> Unit)? = null) : this(checkCancelled, null)
+    constructor(checkCancelled: (() -> Unit)? = null) : this(checkCancelled, null, null)
 
     internal constructor(
         parameterResolver: (String) -> Any?,
-        checkCancelled: (() -> Unit)?
-    ) : this(checkCancelled, parameterResolver)
+        checkCancelled: (() -> Unit)?,
+        graph: Graph? = null
+    ) : this(checkCancelled, parameterResolver, graph)
 
     private val regexCache = object : LinkedHashMap<String, CompiledCypherRegex>(
         MAX_REGEX_CACHE_SIZE + 1,
@@ -68,8 +71,7 @@ class ExpressionEvaluator private constructor(
         is CypherExpr.FunctionCall -> {
             checkCancelled?.invoke()
             val args = expr.args.map { evaluate(it, bindings) }
-            val result = checkCancelled?.let { CypherFunctions.call(expr.name, args, it) }
-                ?: CypherFunctions.call(expr.name, args)
+            val result = CypherFunctions.call(expr.name, args, checkCancelled, graph)
             result.also { checkCancelled?.invoke() }
         }
         is CypherExpr.BinaryOp -> evaluateBinaryOp(expr, bindings)
@@ -78,8 +80,8 @@ class ExpressionEvaluator private constructor(
         is CypherExpr.StringOp -> evaluateStringOp(expr, bindings)
         is CypherExpr.ListOp -> evaluateListOp(expr, bindings)
         is CypherExpr.RegexMatch -> evaluateRegex(expr, bindings)
-        is CypherExpr.IsNull -> evaluate(expr.expression, bindings) == null
-        is CypherExpr.IsNotNull -> evaluate(expr.expression, bindings) != null
+        is CypherExpr.IsNull -> !isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
+        is CypherExpr.IsNotNull -> isPropertyPresent(expr.expression, bindings, ::evaluate, ::resolveProperty, graph)
         is CypherExpr.CaseExpr -> evaluateCase(expr, bindings)
         is CypherExpr.ListLiteral -> expr.elements.map { evaluate(it, bindings) }
         is CypherExpr.MapLiteral -> expr.entries.mapValues { evaluate(it.value, bindings) }
@@ -93,7 +95,7 @@ class ExpressionEvaluator private constructor(
             val shadowedParameter = parameterResolver == null &&
                 (plan?.term as? CypherExpr.Parameter)?.name == plan?.keyVariable
             if (plan != null && nodeTarget && !shadowedParameter) {
-                plan.evaluate(checkNotNull(target), evaluate(plan.term, bindings), ::resolveProperty, checkCancelled)
+                plan.evaluate(checkNotNull(target), evaluate(plan.term, bindings), ::resolveProperty, checkCancelled, graph)
             } else {
                 evaluatePredicateFunction(expr, bindings, { expression, row -> evaluate(expression, row) }, checkCancelled)
             }
@@ -370,11 +372,11 @@ class ExpressionEvaluator private constructor(
     @Suppress("CyclomaticComplexMethod")
     private fun resolveProperty(obj: Any?, propertyName: String): Any? = when (obj) {
         is MethodValue -> obj.property(propertyName)
-        is Node -> NodePropertyAccessor.getProperty(obj, propertyName)
+        is Node -> NodePropertyAccessor.getProperty(obj, propertyName, graph)
         is QualifiedNode -> when (propertyName) {
             GRAPH_ID_PROPERTY -> obj.graphId
             ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY -> obj.elementId
-            else -> NodePropertyAccessor.getProperty(obj.node, propertyName)
+            else -> NodePropertyAccessor.getProperty(obj.node, propertyName, obj.graph)
         }
         is Edge -> getEdgeProperty(obj, propertyName)
         is QualifiedEdge -> when (propertyName) {

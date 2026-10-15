@@ -1,0 +1,154 @@
+{
+  "scope": "historical source provenance only; not runtime input paths",
+  "sources": {
+    "callsite_index.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/callsite_index.py",
+      "sha256": "3102244d811d9113cef054efd0671d8c7046cae61eb8e33652af60d4cf9d12ee"
+    },
+    "callsite_index_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/callsite_index_test.py",
+      "sha256": "abe076e839e8184a9da6f89a2cb1c7f6f1764a588b54d30ddf85681bc5d1d5f7"
+    },
+    "callsite_ordinals.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/callsite_ordinals.py",
+      "sha256": "5dbbefc3aea4d3d192ba0d6a660e228c2a45e25bbd8cde4fab7efe9f1af59246"
+    },
+    "callsite_ordinals_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/callsite_ordinals_test.py",
+      "sha256": "ce6afee63f933588ecd63c0d1659bed5a39f4844cbdabe36f991ddcf8f1d0620"
+    },
+    "core_semantics.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/core_semantics.py",
+      "sha256": "a525b6a73fea246a98ee3573df3d891a34f7835adadacdf14fa07033df91b3ba"
+    },
+    "core_semantics_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/core_semantics_test.py",
+      "sha256": "eb1ea7b48dd3d10ffc306177fbc6cf9871da2a7964736eeda0f06ac55b891c8b"
+    },
+    "field_authority.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/field_authority.py",
+      "sha256": "c777b34d371be76c9cade17199b423c83f1f19d176af1aa37434e89b714b60d2"
+    },
+    "field_authority_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/field_authority_test.py",
+      "sha256": "abb7301a3d417048aaaa918e773a6d79856e6fc279a821b0ba66665375618f3f"
+    },
+    "inherited_field_authority_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/inherited_field_authority_test.py",
+      "sha256": "d440d0a51275073f17ffd6e774237d9b30c2543253f8b06249a37fb5b1d56923"
+    },
+    "inherited_method_authority_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/inherited_method_authority_test.py",
+      "sha256": "f0b01ea273955b7af39bb15b7a9805e8257b80c6bf5e8006dec1272a9992ba3f"
+    },
+    "legacy_method_collisions.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/legacy_method_collisions.py",
+      "sha256": "c98e79780863f22ebb96ab26da77bf25465ffb3d3fa661b2fb5857ba753f194f"
+    },
+    "legacy_method_collisions_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/legacy_method_collisions_test.py",
+      "sha256": "afc38b9e03380eb51360caf15c2c035254ec35750adb938991ced06acb7b8fde"
+    },
+    "legacy_wire.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/legacy_wire.py",
+      "sha256": "596662d14042024761c6643c1bec751b0b95cb8b73d235ccbd833e8748e05115"
+    },
+    "local_array_corrections.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/local_array_corrections.py",
+      "sha256": "89d3f763a7f380b2788ee7bf2d8595dabcb56a8a00e17e44f046b2876b341695"
+    },
+    "local_array_corrections_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/local_array_corrections_test.py",
+      "sha256": "c2e79fd7f62fa9b629def57f7ba4b40640afd22fc9c15bb908623335608badb7"
+    },
+    "marker_authority.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/marker_authority.py",
+      "sha256": "6f884cc7536d2a0842bb04a54c441f8d3c6d13e85e2d1a2a3c98353be9b15d71"
+    },
+    "marker_authority_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/marker_authority_test.py",
+      "sha256": "17ba0c29bade4729a6787993919197fb0fc07dee5e168c1d7c03ba51de198fdb"
+    },
+    "metadata_signature_collisions.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/metadata_signature_collisions.py",
+      "sha256": "f1abe8a439766e64b2a077df8d3c8445c7a1c255389e425a524ed3be237ee32a"
+    },
+    "metadata_signature_collisions_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/metadata_signature_collisions_test.py",
+      "sha256": "439ab09b07ee53d37471345190f451f60f8941fccfa9674744b0c5b3a7baa59a"
+    },
+    "method_authority.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/method_authority.py",
+      "sha256": "1188fe55c2b0bc13837370c22711500e57acfe34c37b5cf0e5c9c6a76ed6a782"
+    },
+    "method_authority_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/method_authority_test.py",
+      "sha256": "97cb51413f8fbac75281255ac054d231f366a6eb6a391ec6ce44eda2877da0f4"
+    },
+    "method_classfile.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/method_classfile.py",
+      "sha256": "bbc58096823f772a1cc2b9d0201342f6991490c5ca2e2beaf4eace975fbf8238"
+    },
+    "migration_order_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/migration_order_test.py",
+      "sha256": "fe990cd8a553585b575a39c803ff76cdee6d23b8c59f419bfa9910a910c768ed"
+    },
+    "parameter_array_corrections.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/parameter_array_corrections.py",
+      "sha256": "ac81bebdd5055c9b40fa88e004380f9bee632fe5014c1c1c781b618b0a32a2dd"
+    },
+    "parameter_array_corrections_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/parameter_array_corrections_test.py",
+      "sha256": "9a3c2fd89da86515788f16f6feff1ed69b8308de9b83c261efb3dc51762e4e45"
+    },
+    "synthetic_bridge_metadata_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/synthetic_bridge_metadata_test.py",
+      "sha256": "45f065486c0e68b76cdcd80a4adb92f002708f0e3335db9410974d940ca3f9ee"
+    },
+    "synthetic_collisions.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/synthetic_collisions.py",
+      "sha256": "65830e27432ca3f89b83aaa73b98d2bd5d8962975e6382730d65c03d9b9f739e"
+    },
+    "synthetic_collisions_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/synthetic_collisions_test.py",
+      "sha256": "c886df14e7b17d54e1a928c703bb0a30474e46212784237a710f79fc8b10087b"
+    },
+    "synthetic_metadata.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/synthetic_metadata.py",
+      "sha256": "c15065de69a51b350bf421b40384bf07c7cdfe143aa532ad2abad5fa9cf4b5f8"
+    },
+    "synthetic_metadata_test.py": {
+      "source": "/tmp/graphite-current64-core-proof-source-16/synthetic_metadata_test.py",
+      "sha256": "d8a073c99252278f8ef2459932290cd606180dcafaba6ab9f6d17880b58f87d5"
+    },
+    "VerifyTopology.java": {
+      "source": "/tmp/graphite-current64-core-execution-prep-14/VerifyTopology.java",
+      "sha256": "4893df7971334d451885b2a7574e4d2ff0da2c6ec3ff2139f7922b3082c17cd8"
+    },
+    "legacy_schema_wire.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/legacy_schema_wire.py",
+      "sha256": "709bc7d22ad74847749075c5be233578263932cb3ea62a95d6d6e405c4c4f18b"
+    },
+    "wire_gty05.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/wire_gty05.py",
+      "sha256": "26568384d34845488ae39eef18971993f8df7c9b407f4c23c7e7254dbbb7218d"
+    },
+    "wire_gty05_test.py": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/test_wire_gty05.py",
+      "sha256": "e69f3de4e97e0dbad11a3290185099c6c078afb4e4221fba35bc0ebc86ce5908"
+    },
+    "ExportStrings.java": {
+      "source": "/tmp/graphite-gty05-independent-wire-1/ExportStrings.java",
+      "sha256": "2957d2ddbcd32dd595e4496dfa12a597ef5dd88a07118a4e89fea611c9358835"
+    },
+    "ExportSerializable.java": {
+      "source": "/tmp/graphite-platform-field-class-prep-1/ExportSerializable.java",
+      "sha256": "c322dd8096d437eb435ac89df099ce2e535ceccbba9f309bc65d89da7d4a5a87"
+    },
+    "formatter_source_contract.json": {
+      "source": "/tmp/graphite-array-formatter-migration-prep-1/source-invariant.json",
+      "sha256": "9e65802d13161121b504cf54a5bf697f200789a6453cb745e5e346e3fb700905",
+      "transform": "Reviewed exact boundary/formatter/cache/dependency fragments only; no historical statuses or pass claims copied"
+    }
+  }
+}

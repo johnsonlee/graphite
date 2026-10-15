@@ -1,7 +1,11 @@
 package io.johnsonlee.graphite.webgraph
 
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.Node
 import io.johnsonlee.graphite.core.checkThreadInterrupted
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import io.johnsonlee.graphite.graph.StringMatchMode
 import java.nio.ByteBuffer
@@ -12,9 +16,11 @@ internal class MappedPropertyTextCandidates(
     private val data: ByteBuffer,
     private val offsets: NodeOffsetIndex,
     private val types: NodeTypeIndex,
-    private val strings: StringTable
+    private val strings: StringTable,
+    private val declaredTypes: DeclaredTypeTable = DeclaredTypeTable.EMPTY
 ) {
     fun ids(type: Class<out Node>, fragments: List<String>, work: GraphWorkConsumer?): Sequence<Int> = sequence {
+        val declaredKinds = declaredKinds(type, fragments)
         val matchers = fragments.map { fragment ->
             val predicate = StringPredicateKey(null, StringMatchMode.CONTAINS, fragment)
             // A byte per string avoids repeated decompression while capping each cache at 1 MiB.
@@ -32,8 +38,27 @@ internal class MappedPropertyTextCandidates(
             }
             work?.consume()
             val offset = offsets.offset(id).toInt()
-            if (matchers.all { matcher -> mightMatch(offset, matcher) }) yield(id)
+            if (declaredKind(data.get(offset + Int.SIZE_BYTES).toInt()) and declaredKinds != 0 ||
+                matchers.all { matcher -> mightMatch(offset, matcher) }
+            ) yield(id)
         }
+    }
+
+    private fun declaredKinds(type: Class<out Node>, fragments: List<String>): Int {
+        var kinds = 0
+        if (type.isAssignableFrom(FieldNode::class.java) && declaredTypes.fields.isNotEmpty()) kinds = kinds or FIELD
+        if (declaredTypes.methods.isNotEmpty()) {
+            if (type.isAssignableFrom(ParameterNode::class.java)) kinds = kinds or PARAMETER
+            if (type.isAssignableFrom(ReturnNode::class.java)) kinds = kinds or RETURN
+        }
+        return if (kinds != 0 && declaredTextMayMatch(declaredTypes, fragments)) kinds else 0
+    }
+
+    private fun declaredKind(tag: Int): Int = when (tag) {
+        NodeSerializer.TAG_FIELD_NODE -> FIELD
+        NodeSerializer.TAG_PARAMETER_NODE -> PARAMETER
+        NodeSerializer.TAG_RETURN_NODE -> RETURN
+        else -> 0
     }
 
     @Suppress("CyclomaticComplexMethod")
@@ -82,6 +107,9 @@ internal class MappedPropertyTextCandidates(
     }
 
     private companion object {
+        const val FIELD = 1
+        const val PARAMETER = 2
+        const val RETURN = 4
         const val DENSE_MATCHER_LIMIT = 1 shl 20
         const val NODE_HEADER_BYTES = Int.SIZE_BYTES + 1
         const val METHOD_FIXED_INTS = 4

@@ -1,0 +1,419 @@
+#!/usr/bin/env python3
+"""Derive all35 JVM row universes from one audited own-writer64 arm.
+
+This correctness entry point reuses completed core/string/producer evidence and
+original GSE01 edges. It never queries a server or learns an expected response.
+Its output still requires independent JVM source-rule and execution replay;
+core migration scope is not promoted to complete semantic equivalence.
+"""
+import argparse
+import json
+import math
+import os
+from pathlib import Path
+import signal
+import sys
+
+sys.dont_write_bytecode = True
+import audit_native_pressure_artifacts as artifacts
+from assemble_native_pressure_producers import merge_pins
+import jvm_pressure_derivation as derivation
+import jvm_pressure_distinct as distinct
+import jvm_pressure_inputs as inputs
+import jvm_pressure_oracles as model
+import jvm_primitive_facts as primitive
+import multigraph_pressure as common
+import produce_native_pressure_artifacts as producer
+import run_native_core_equivalence as core
+
+SOURCE = Path(__file__).resolve().with_name('JvmPrimitiveFacts.java')
+PASS = 'COMPLETE_ALL35_RAW_DERIVATION_REQUIRES_INDEPENDENT_SOURCE_RULE_AUDIT'
+FALSE_CLAIMS = ('oracleAuthorityVerified', 'completeSemanticEquivalence', 'fresh64Acceptance', 'performanceAcceptance')
+require = common.require
+
+
+def declared_bindings(fixture, arm):
+    """Whether the derivation must see every case's full projections bind declared types: only an
+    actual arm whose graphs carry the declared-type table (the candidate) has them; a rebased PR's
+    parent arm is compared as the actual arm with none, and the reference arm never has them."""
+    return arm == 'B' and common.expectation_variant(fixture) == 'B'
+
+
+def bind(producer_root, core_root, arm, output):
+    """Verify exact upstream closure once; consume completed shard audits when available."""
+    require(arm in ('C', 'B'), 'actual core reference/actual arm required')
+    root, proof, out = (Path(p).resolve() for p in (producer_root, core_root, output))
+    stored = common.read(proof/'audit.json')
+    audited = core.audit_consumable(proof)
+    require(common.typed(stored) == common.typed(audited), 'core audit differs from actual owned evidence')
+    require(audited['status'] == core.AUDIT_PASS and audited['completeCoreTopologyIndexComparison'] is True,
+            'complete original core/topology execution evidence')
+    plan = common.pinned_authority_metadata(audited, artifacts.ref(proof/'plan.json'))
+    require(plan.get('rawEdgeExports') is True, 'actual raw edge export mode required')
+    require(str(root) == plan['referenceRoot' if arm == 'C' else 'actualRoot'], 'selected producer belongs to core arm')
+    export_ref = plan['upstream'][arm+'Strings']
+    exports = common.pinned_authority_metadata(audited, export_ref)
+    require(export_ref == artifacts.ref(root/'core-string-exports/audit.json') and
+            exports['artifactAudit'] == artifacts.ref(root/'artifact-audit.json'), 'exact arm string/producer evidence')
+    artifact = common.pinned_authority_metadata(audited, exports['artifactAudit'])
+    fixture = common.pinned_authority_metadata(audited, artifact['fixtureManifest'])
+    source = common.pinned_authority_metadata(audited, artifact['sourceManifest'])
+    export_plan = common.pinned_authority_metadata(audited, exports['plan'])
+    require(artifact['revision'] == fixture['writerRevision'] == plan['revisions'][arm] and
+            artifact['fixtureManifest'] == plan['fixtureManifests'][arm], 'same writer revision and fixture manifest')
+    require(not any(out.is_relative_to(Path(p)) for p in (source['root'], root/'graphs', root/'runtime', proof)),
+            'derivation output outside source/runtime/graph/core proof roots')
+    ids = [r['id'] for r in plan['graphs']]
+    require(ids == [r['id'] for r in audited['graphs']] == [r['id'] for r in fixture['graphs']],
+            'complete ordered same-arm64 evidence')
+    model.cases(ids)
+    pins = dict(audited['pins']); merge_pins(pins, {str(proof/'audit.json'): common.sha(proof/'audit.json')})
+    modules = (Path(__file__), SOURCE, Path(derivation.__file__), Path(distinct.__file__),
+               Path(inputs.__file__), Path(model.__file__), Path(primitive.__file__))
+    merge_pins(pins, {str(p.resolve()): common.sha(p) for p in modules})
+    java, javac, writer = (export_plan[k] for k in ('java', 'javac', 'writerJar'))
+    require(all(p in pins for p in (java, javac, writer)), 'actual writer and JDK executable pins')
+    home = Path(java).resolve().parent.parent
+    jdk = {'home': str(home), 'files': {name: artifacts.ref(home/name) for name in primitive.JDK_FILES}}
+    require(all(pins.get(ref['path']) == ref['sha256'] for ref in jdk['files'].values()), 'same audited JDK image')
+    graphs = []
+    for row, checked in zip(plan['graphs'], audited['graphs']):
+        gid = row['id']; spec = inputs.graph_inputs(fixture, exports, gid)
+        require(spec['root'] == row[arm], 'same arm graph path')
+        top = common.pinned_authority_metadata(audited, checked['topology'])
+        receipt = top['rawEdgeExports']['reference' if arm == 'C' else 'actual']
+        require(receipt['graphRoot'] == spec['root'], 'same actual topology export arm')
+        require(all(pins.get(ref['path']) == ref['sha256'] for ref in
+                    (receipt['output'], receipt['helperSource'], receipt['helperClass'])), 'audited raw edge/helper bytes')
+        graphs.append({'id': gid, 'spec': spec, 'edges': receipt, 'topology': checked['topology']})
+    return {'schema': 'graphite.jvm-raw-oracle-plan.v1', 'producerRoot': str(root), 'coreRoot': str(proof),
+            'arm': arm, 'declaredBindings': declared_bindings(fixture, arm),
+            'output': str(out), 'revision': artifact['revision'], 'role': artifact['role'],
+            'sourceManifest': artifact['sourceManifest'], 'runtimeManifest': artifact['runtimeManifest'],
+            'fixtureManifest': artifact['fixtureManifest'], 'upstreamCoreAudit': artifacts.ref(proof/'audit.json'),
+            'graphs': graphs, 'java': java, 'javac': javac, 'writerJar': writer, 'jdkImage': jdk,
+            'helperSource': artifacts.ref(SOURCE), 'pins': pins, **{key: False for key in FALSE_CLAIMS}}
+
+
+def bind_raw(producer_root, raw_export_root, arm, output, stored_edge_audit=False):
+    """Bind independently owned single-arm bytes; complete core stays pending.
+
+    The raw edge export audit decodes every original edge of the 64 graphs. A fresh derivation
+    recomputes it; a replay of a recorded derivation takes the stored audit, whose bytes the plan
+    pins (`stored_edge_audit`), since decoding the same bytes again with the same code adds
+    nothing the pin does not.
+    """
+    import export_jvm_raw_edges as edges
+    require(arm in ('C','B'), 'actual reference/candidate oracle arm')
+    root,proof,out=(Path(p).resolve() for p in (producer_root,raw_export_root,output))
+    observed=common.read(proof/'audit.json') if stored_edge_audit else edges.audit(proof)
+    require(stored_edge_audit or common.typed(common.read(proof/'audit.json'))==common.typed(observed), 'stored raw edge audit differs from replay')
+    require(observed['status']==edges.AUDIT and observed['completeCoreTopologyIndexComparison'] is False,
+            'owned raw edge evidence never core authority')
+    pins=dict(observed['pins']); merge_pins(pins,{str(proof/'audit.json'):common.sha(proof/'audit.json')})
+    export_plan=common.pinned_authority_metadata({'pins':pins},observed['plan'])
+    require(export_plan['producerRoot']==str(root), 'raw export belongs to own producer')
+    artifact=common.pinned_authority_metadata({'pins':pins},observed['artifactAudit'])
+    fixture=common.pinned_authority_metadata({'pins':pins},artifact['fixtureManifest'])
+    source=common.pinned_authority_metadata({'pins':pins},artifact['sourceManifest'])
+    exports=common.pinned_authority_metadata({'pins':pins},observed['stringAudit'])
+    require(not any(out.is_relative_to(Path(p)) for p in (source['root'],root/'graphs',root/'runtime',proof)),
+            'derivation outside immutable raw authority')
+    require([g['id'] for g in fixture['graphs']]==[g['id'] for g in observed['graphs']]==list(model.FIXTURE_GRAPH_IDS),
+            'same complete ordered64 raw derivation')
+    java,javac,writer=(export_plan[k] for k in ('java','javac','writerJar'))
+    home=Path(java).resolve().parent.parent
+    jdk={'home':str(home),'files':{name:artifacts.ref(home/name) for name in primitive.JDK_FILES}}
+    require(all(pins.get(ref['path'])==ref['sha256'] for ref in jdk['files'].values()),'actual raw-export JDK image')
+    graphs=[]
+    for row in observed['graphs']:
+        spec=inputs.graph_inputs(fixture,exports,row['id'])
+        require(row['edges']['graphRoot']==spec['root'], 'same original graph edge root')
+        graphs.append({'id':row['id'],'spec':spec,'edges':row['edges'],'rawExportReceipt':row['receipt']})
+    modules=(Path(__file__),SOURCE,Path(derivation.__file__),Path(distinct.__file__),Path(inputs.__file__),Path(model.__file__),Path(primitive.__file__))
+    merge_pins(pins,{str(p.resolve()):common.sha(p) for p in modules})
+    return {'schema':'graphite.jvm-raw-oracle-plan.v1','producerRoot':str(root),'rawExportRoot':str(proof),
+            'coreComparabilityPending':True,'upstreamRawExportAudit':artifacts.ref(proof/'audit.json'),
+            'arm':arm,'declaredBindings':declared_bindings(fixture,arm),
+            'output':str(out),'revision':artifact['revision'],'role':artifact['role'],
+            **{k:artifact[k] for k in ('sourceManifest','runtimeManifest','fixtureManifest')},
+            'graphs':graphs,'java':java,'javac':javac,'writerJar':writer,'jdkImage':jdk,
+            'helperSource':artifacts.ref(SOURCE),'pins':pins,**{key:False for key in FALSE_CLAIMS}}
+
+
+def environment(plan):
+    env = common.clean_env()
+    for key in ('JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS', 'JDK_JAVAC_OPTIONS', 'CLASSPATH'):
+        env.pop(key, None)
+    env.update(JAVA_HOME=plan['jdkImage']['home'], LC_ALL='C')
+    return env
+
+
+def commands(plan):
+    out = Path(plan['output'])
+    return [
+        ('compile-primitives', [plan['javac'], '-J-Xmx4g', '-J-XX:ActiveProcessorCount=4', '-proc:none',
+                               '-cp', plan['writerJar'], '-d', str(out/'classes'), plan['helperSource']['path']], 180),
+        ('primitive-facts', [plan['java'], '-Xmx4g', '-XX:ActiveProcessorCount=4', '-cp',
+                             str(out/'classes')+os.pathsep+plan['writerJar'], 'JvmPrimitiveFacts',
+                             str(out/'requests.json'), str(out/'primitive-facts.json'), plan['helperSource']['path']], 1800)]
+
+
+def collect_requests(plan):
+    request = primitive.RequestCollector([row['id'] for row in plan['graphs']])
+    for row in plan['graphs']:
+        graph = inputs.read_graph(row['spec'])
+        request.add_graph(graph)
+        del graph  # No all64 node/metadata/type tables retained.
+    classes = Path(plan['output'])/'classes'
+    require({p.name for p in classes.iterdir()} == {'JvmPrimitiveFacts.class'}, 'exact primitive compiled helper closure')
+    return request.finish(plan['helperSource'], artifacts.ref(classes/'JvmPrimitiveFacts.class'), plan['jdkImage'])
+
+
+def consume_facts(plan):
+    out = Path(plan['output'])
+    facts = primitive.PrimitiveFacts((out/'requests.json').read_bytes(), str(out/'requests.json'),
+                                     (out/'primitive-facts.json').read_bytes())
+    require(facts.request['helperSource'] == plan['helperSource'] and facts.request['jdkImage'] == plan['jdkImage'],
+            'actual owned primitive source/runtime identity')
+    require(facts.request['helperClass'] == artifacts.ref(out/'classes/JvmPrimitiveFacts.class'), 'actual compiled primitive bytes')
+    require([g['id'] for g in facts.request['sourceGraphs']] == [g['id'] for g in plan['graphs']], 'actual primitive arm scope')
+    return facts
+
+
+def derive(plan, facts):
+    """Reusable public result; independent callers still receive every universe."""
+    return _derive(plan, facts)
+
+
+def _derive_and_consume(plan, facts, emit):
+    """Owned synchronous sink for one complete checked universe at a time."""
+    return _derive(plan, facts, emit)
+
+
+def _derive(plan, facts, emit=None):
+    """Pure source-model derivation; consumes every original node and raw edge."""
+    collector = derivation.Collector([row['id'] for row in plan['graphs']], primitive_facts=facts)
+    try:
+        for row in plan['graphs']:
+            graph = inputs.read_graph(row['spec'])
+            raw = inputs.edge_export_input(row['edges'], row['spec']['root'], plan['pins'], plan['pins'])
+            require(row['edges']['nodeSlots'] == graph['nodeSlots'], 'raw edge/node slot identity')
+            collector.add_graph(graph, raw, row['edges']['labeledEdges'])
+            del graph, raw
+        if plan['declaredBindings']:
+            bindings = collector._result_metadata(consume=False)['fullProjectionBindings']
+            require(all(count > 0 for counts in bindings.values() for count in counts.values()),
+                    'candidate full projections must exercise actual declared bindings in both target graphs for every case')
+        return collector._consume_finish() if emit is None else collector._consume_cases(emit)
+    finally:
+        collector._discard()
+
+
+def verify_phases(plan):
+    out = Path(plan['output']); refs = []
+    for name, argv, timeout in commands(plan):
+        path = out/name/'record.json'; phase = artifacts.check_phase(path, argv, out)
+        require(phase['name'] == name and phase['timeoutSeconds'] == timeout, 'exact primitive owned phase')
+        refs.append(artifacts.ref(path))
+    return refs
+
+
+def run(producer_root, core_root, arm, output, *, raw_export_root=None):
+    require((core_root is None) != (raw_export_root is None), 'exactly one upstream raw authority')
+    plan = bind_raw(producer_root,raw_export_root,arm,output) if raw_export_root is not None else bind(producer_root, core_root, arm, output)
+    return _run_plan(plan)
+
+
+def _run_plan(plan):
+    out = Path(plan['output']); out.mkdir(parents=True, exist_ok=False); (out/'classes').mkdir()
+    common.save(out/'plan.json', plan)
+    record = {'schema': 'graphite.jvm-raw-oracle-record.v1', 'status': 'FAIL', 'errors': [], 'phases': [],
+              'plan': artifacts.ref(out/'plan.json'), 'unissued': [name for name, _, _ in commands(plan)],
+              **{key: False for key in FALSE_CLAIMS}}
+    handlers = {}
+    def interrupted(signum, frame): raise InterruptedError('signal '+str(signum))
+    try:
+        for sig in (signal.SIGINT, signal.SIGTERM): handlers[sig] = signal.signal(sig, interrupted)
+        for name, argv, timeout in commands(plan):
+            if name == 'primitive-facts': common.save(out/'requests.json', collect_requests(plan))
+            record['unissued'].remove(name)
+            producer.phase(name, argv, out, environment(plan), out, timeout)
+            record['phases'].append(artifacts.ref(out/name/'record.json'))
+        require(verify_phases(plan) == record['phases'], 'actual two-phase primitive execution')
+        def save_universe(name, universe):
+            if 'universes' not in record:
+                (out/'universes').mkdir()
+                record['universes'] = {}
+            path = out/'universes'/(name+'.json'); common.save(path, universe)
+            record['universes'][name] = artifacts.ref(path)
+        record['derivation'] = _derive_and_consume(plan, consume_facts(plan), save_universe)
+        record['request'] = artifacts.ref(out/'requests.json'); record['primitiveFacts'] = artifacts.ref(out/'primitive-facts.json')
+        record['status'] = PASS
+    except BaseException as error: record['errors'].append(repr(error))
+    finally:
+        for sig in handlers: signal.signal(sig, signal.SIG_IGN)
+        try:
+            artifacts.verify_pins(plan['pins'])
+            record['finalIdentity'] = 'PASS'
+            record['outputFiles'] = producer.inventory(out)
+        except BaseException as error:
+            record['errors'].append('final input/output verification: '+repr(error)); record['finalIdentity'] = 'FAIL'
+        if record['errors']: record['status'] = 'FAIL'
+        common.save(out/'record.json', record)
+        for sig, handler in handlers.items(): signal.signal(sig, handler)
+    return record
+
+
+def _directory_entries(root):
+    root = Path(root)
+    require(root.is_dir() and not root.is_symlink(), 'fresh derivation closed root')
+    result = {}
+    for path in [root, *root.rglob('*')]:
+        require(not path.is_symlink() and (path.is_file() or path.is_dir()), 'fresh derivation regular closure')
+        result[str(path)] = ('file' if path.is_file() else 'directory', path.stat().st_mode)
+    return result
+
+
+def _fresh_input_closure(plan):
+    """Small structural/source closure; callers separately verify all pinned bytes."""
+    root = Path(plan['producerRoot'])
+    report = common.pinned_authority_metadata(plan, artifacts.ref(root/'artifact-audit.json'))
+    source = common.pinned_authority_metadata(plan, report['sourceManifest'])
+    runtime = common.pinned_authority_metadata(plan, report['runtimeManifest'])
+    packet = common.pinned_authority_metadata(plan, report['producerPacket'])
+    checkout = Path(source['root'])
+    directories = artifacts._ProducerReplayContext._inventories(report)
+    trees = {str(path): _directory_entries(path) for path in
+             (root/'core-string-exports', Path(plan['rawExportRoot']))}
+    def check():
+        require(artifacts._ProducerReplayContext._inventories(report) == directories,
+                'fresh producer directory closure changed')
+        require(artifacts.source_inventory(checkout, report['revision']) == source['files'] == report['sourceBefore'],
+                'fresh source inventory changed')
+        require(artifacts.configs(checkout, packet['buildEnvironment']) ==
+                packet['configurationBefore'] == packet['configurationAfter'], 'fresh configuration changed')
+        writers = list((checkout/'frontend/jvm/webgraph/build/libs').glob('*-jmh.jar'))
+        require(len(writers) == 1 and str(writers[0]) in runtime['originalArtifacts'], 'fresh single source-built writer')
+        require(all(_directory_entries(path) == entries for path, entries in trees.items()),
+                'fresh raw/string export closure changed')
+    return check
+
+
+def _run_and_consume_raw(producer_root, raw_export_root, arm, output, consume):
+    """Keep fresh authority only inside this invocation, never in a saved token."""
+    plan = bind_raw(producer_root, raw_export_root, arm, output)
+    closure = _fresh_input_closure(plan)
+    active = True
+    def check():
+        require(active, 'expired fresh derivation invocation')
+        closure()
+        require(_directory_entries(output) == entries, 'fresh derivation output closure changed')
+    try:
+        record = _run_plan(plan)
+        require(record['status'] == PASS and record['errors'] == [] and record['finalIdentity'] == 'PASS',
+                'successful fresh raw derivation required')
+        # _run_plan has returned: Collector, universes and compiled indexes are released.
+        require(common.read(Path(output)/'record.json') == record and
+                record['plan'] == artifacts.ref(Path(output)/'plan.json'), 'fresh derivation record bytes changed')
+        entries = _directory_entries(output)
+        evidence = {'record': artifacts.ref(Path(output)/'record.json'), 'universes': record['universes']}
+        check()
+        return consume(evidence, check)
+    finally:
+        active = False
+
+
+def _same_typed_json(left, right):
+    """Compare common.typed JSON semantics without materializing tagged trees.
+
+    Validate the whole left input, then the whole right input, before comparing:
+    an earlier mismatch must not hide an invalid later value. Object keys retain
+    common.typed's sorted/raw-key semantics; finite floats use native equality,
+    including +0.0 == -0.0. Only traversal frames and sorted key lists are owned.
+    """
+    def validate(value):
+        if value is None or type(value) in (bool, int, str): return
+        if type(value) is float:
+            require(math.isfinite(value), 'nonfinite scalar')
+            return
+        if type(value) is list:
+            for item in value: validate(item)
+            return
+        require(type(value) is dict, 'unexpected JSON value')
+        for key in sorted(value): validate(value[key])
+
+    def equal(a, b):
+        if type(a) is not type(b): return False
+        if type(a) is list:
+            if len(a) != len(b): return False
+            for x, y in zip(a, b):
+                if not equal(x, y): return False
+            return True
+        if type(a) is dict:
+            akeys, bkeys = sorted(a), sorted(b)
+            if akeys != bkeys: return False
+            for x, y in zip(akeys, bkeys):
+                if not equal(a[x], b[y]): return False
+            return True
+        return a == b
+
+    validate(left)
+    validate(right)
+    return equal(left, right)
+
+
+def replay(output):
+    """Verify a recorded raw derivation against its pinned inputs and owned phases.
+
+    The derivation ran once in this job on inputs the plan pins by digest. Recomputing it here
+    (recollecting the primitive requests from all 64 graphs and re-deriving the 35 universes with
+    the same code on the same bytes) reproduced the same outputs for about 70 minutes per arm and
+    could detect nothing the digests do not: a tampered universe, request or fact file fails its
+    recorded reference, a changed input fails its pin. What is still read: the plan rebinds
+    against the stored upstream evidence, every owned phase record, and every output's bytes.
+    """
+    out = Path(output).resolve(); record = common.read(out/'record.json'); plan = common.read(out/'plan.json')
+    require(record['schema'] == 'graphite.jvm-raw-oracle-record.v1' and record['status'] == PASS and
+            record['errors'] == [] and record['unissued'] == [] and record['finalIdentity'] == 'PASS' and
+            all(record[key] is False for key in FALSE_CLAIMS), 'complete scoped raw derivation record')
+    require(plan['output'] == str(out) and record['plan'] == artifacts.ref(out/'plan.json'), 'actual derivation plan bytes')
+    actual = (bind_raw(plan['producerRoot'],plan['rawExportRoot'],plan['arm'],out,stored_edge_audit=True) if plan.get('coreComparabilityPending') is True
+              else bind(plan['producerRoot'], plan['coreRoot'], plan['arm'], out))
+    require(common.typed(actual) == common.typed(plan), 'raw derivation plan differs from upstream evidence')
+    require(verify_phases(plan) == record['phases'], 'actual owned phase linkage')
+    require(record['request'] == artifacts.ref(out/'requests.json') and
+            record['primitiveFacts'] == artifacts.ref(out/'primitive-facts.json'), 'primitive request/result bytes')
+    names = [case['id'] for case in model.cases()]
+    require(set(record['universes']) == set(names) and
+            {p.name for p in (out/'universes').iterdir()} == {name+'.json' for name in names}, 'closed exact35 outputs')
+    for name in names:
+        require(record['universes'][name] == artifacts.ref(out/'universes'/(name+'.json')),
+                'actual derived universe bytes: '+name)
+    require(isinstance(record.get('derivation'), dict) and len(record['derivation'].get('graphs', [])) == len(plan['graphs']),
+            'complete per-graph derivation counts')
+    inventory = producer.inventory(out); inventory.pop(str(out/'record.json'), None)
+    require(inventory == record['outputFiles'], 'closed raw derivation output inventory')
+    artifacts.verify_pins(plan['pins'])
+    return {'status': PASS, 'record': artifacts.ref(out/'record.json'), 'universes': record['universes'],
+            'actualPrimitiveExecutionVerified': True, 'rawDerivationBoundByDigest': True,
+            'remainingAuthority': 'Independent applicability audit of JVM source-model rules to this exact writer/runtime revision.',
+            **{key: False for key in FALSE_CLAIMS}}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--producer-root', type=Path); parser.add_argument('--core-root', type=Path)
+    parser.add_argument('--raw-export-root', type=Path)
+    parser.add_argument('--arm', choices=('C', 'B')); parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--replay-only', action='store_true')
+    args = parser.parse_args()
+    if args.replay_only:
+        print(json.dumps(replay(args.output))); return 0
+    require(all((args.producer_root, args.arm)), 'actual producer/arm required')
+    record = run(args.producer_root, args.core_root, args.arm, args.output,raw_export_root=args.raw_export_root)
+    print(json.dumps({'status': record['status'], 'errors': record['errors'], 'output': str(args.output.resolve())}))
+    return 0 if record['status'] == PASS else 1
+
+
+if __name__ == '__main__': raise SystemExit(main())

@@ -4,6 +4,7 @@
 use crate::javaser::{read_object, JavaSerError, Value};
 use crate::source::GraphSource;
 use sha2::{Digest, Sha256};
+use std::sync::Arc;
 
 #[derive(Debug, thiserror::Error)]
 pub enum StringTableError {
@@ -15,19 +16,45 @@ pub enum StringTableError {
     Layout(String),
 }
 
+#[derive(Clone, Debug)]
 pub struct StringTable {
+    backing: Arc<StringBacking>,
+    identity: Option<[u8; 32]>,
+    /// SHA-256 of the serialized bytes this table was decoded from, bound at decode or by
+    /// [`Self::bind_serialized`] when a GTY03–GTY05 table is first read.
+    serialized_digest: std::sync::OnceLock<[u8; 32]>,
+}
+
+#[derive(Debug)]
+struct StringBacking {
     arena: Vec<u8>,
     /// `offsets[i]..offsets[i+1]` is string i (UTF-8).
     offsets: Vec<u32>,
-    identity: Option<[u8; 32]>,
+    /// IDs whose text the decode could only render lossily (an unpaired UTF-16 surrogate, or
+    /// invalid UTF-8 in a table decoded without verification). Recorded on every decode, so a
+    /// table the graph loaded for ordinary reads and bound to its bytes later refuses them too.
+    invalid_text: Vec<usize>,
+    /// Whether the dictionary is strictly ascending in Java order, decided once on first
+    /// use: the writer always sorts and deduplicates, and a reader may then equate IDs
+    /// with texts and binary-search by text.
+    canonical: std::sync::OnceLock<bool>,
 }
 
 impl StringTable {
     pub fn load(src: &GraphSource) -> Result<Self, StringTableError> {
+        Self::load_mode(src, false)
+    }
+
+    /// Bind GTY03–GTY05 to the exact serialized bytes used by this decode, not a sidecar.
+    pub fn load_for_declared_types(src: &GraphSource) -> Result<Self, StringTableError> {
+        Self::load_mode(src, true)
+    }
+
+    fn load_mode(src: &GraphSource, verified: bool) -> Result<Self, StringTableError> {
         let data = src
             .require("graph.strings")
             .map_err(|(path, e)| StringTableError::Io(path, e))?;
-        let mut table = Self::from_serialized(&data)?;
+        let mut table = Self::decode_serialized(&data, verified)?;
         if let Ok(Some(bytes)) = src.bytes("graph.strings.identity") {
             if bytes.len() == 32 {
                 table.identity = Some(bytes[..].try_into().unwrap());
@@ -37,6 +64,14 @@ impl StringTable {
     }
 
     pub fn from_serialized(data: &[u8]) -> Result<Self, StringTableError> {
+        Self::decode_serialized(data, false)
+    }
+
+    pub fn from_serialized_for_declared_types(data: &[u8]) -> Result<Self, StringTableError> {
+        Self::decode_serialized(data, true)
+    }
+
+    fn decode_serialized(data: &[u8], verified: bool) -> Result<Self, StringTableError> {
         let root = read_object(data)?;
         let utf8 = matches!(root.field("utf8"), Some(Value::Bool(true)));
         let inner = if utf8 {
@@ -55,6 +90,7 @@ impl StringTable {
             _ => return Err(StringTableError::Layout("missing ratio".into())),
         };
         let mut arena = Vec::new();
+        let mut invalid_text = Vec::new();
         let mut offsets = Vec::with_capacity(n + 1);
         offsets.push(0u32);
         if utf8 {
@@ -72,6 +108,7 @@ impl StringTable {
                 _ => return Err(StringTableError::Layout("missing array".into())),
             }
             let flat: Vec<u8> = segs.concat();
+            let mut invalid_utf8 = false;
             decode_front_coded(
                 &flat,
                 n,
@@ -79,10 +116,24 @@ impl StringTable {
                 |v| v as usize,
                 |_| 1,
                 &mut |bytes: &[u8]| {
-                    arena.extend_from_slice(bytes);
+                    match std::str::from_utf8(bytes) {
+                        Ok(text) => arena.extend_from_slice(text.as_bytes()),
+                        Err(_) => {
+                            // A verified table refuses invalid UTF-8 outright; an ordinary load
+                            // keeps a lossy rendering and marks the ID, never unchecked bytes.
+                            invalid_utf8 = true;
+                            invalid_text.push(offsets.len() - 1);
+                            arena.extend_from_slice(String::from_utf8_lossy(bytes).as_bytes());
+                        }
+                    }
                     offsets.push(arena.len() as u32);
                 },
             );
+            if verified && invalid_utf8 {
+                return Err(StringTableError::Layout(
+                    "invalid UTF-8 in shared string table".into(),
+                ));
+            }
         } else {
             let mut segs: Vec<&[u16]> = Vec::new();
             match inner.field("array") {
@@ -128,6 +179,9 @@ impl StringTable {
                     buf.extend_from_slice(&flat[pos..pos + len]);
                     pos += len;
                 }
+                if char::decode_utf16(buf.iter().copied()).any(|unit| unit.is_err()) {
+                    invalid_text.push(i);
+                }
                 let s = String::from_utf16_lossy(&buf);
                 arena.extend_from_slice(s.as_bytes());
                 offsets.push(arena.len() as u32);
@@ -136,15 +190,26 @@ impl StringTable {
         }
         arena.shrink_to_fit();
         Ok(StringTable {
-            arena,
-            offsets,
+            backing: Arc::new(StringBacking {
+                arena,
+                offsets,
+                invalid_text,
+                canonical: std::sync::OnceLock::new(),
+            }),
             identity: None,
+            serialized_digest: {
+                let digest = std::sync::OnceLock::new();
+                if verified {
+                    let _ = digest.set(Sha256::digest(data).into());
+                }
+                digest
+            },
         })
     }
 
     #[inline]
     pub fn len(&self) -> usize {
-        self.offsets.len() - 1
+        self.backing.offsets.len() - 1
     }
 
     #[inline]
@@ -154,10 +219,37 @@ impl StringTable {
 
     #[inline]
     pub fn get(&self, i: usize) -> &str {
-        let s = self.offsets[i] as usize;
-        let e = self.offsets[i + 1] as usize;
+        let s = self.backing.offsets[i] as usize;
+        let e = self.backing.offsets[i + 1] as usize;
         // SAFETY: arena is built from valid UTF-8 strings at these boundaries.
-        unsafe { std::str::from_utf8_unchecked(&self.arena[s..e]) }
+        unsafe { std::str::from_utf8_unchecked(&self.backing.arena[s..e]) }
+    }
+
+    /// Available only when the same serialized input was fully hashed and decoded.
+    pub fn serialized_digest(&self) -> Option<&[u8; 32]> {
+        self.serialized_digest.get()
+    }
+
+    /// Binds this table to `data`, the serialized bytes it was decoded from, for a table
+    /// whose declared types are read after the load; a digest already bound stays.
+    pub fn bind_serialized(&self, data: &[u8]) {
+        let _ = self.serialized_digest.set(Sha256::digest(data).into());
+    }
+
+    pub fn strict_get(&self, i: usize) -> Result<&str, StringTableError> {
+        if self.serialized_digest.get().is_none() {
+            return Err(StringTableError::Layout(
+                "unverified shared string table".into(),
+            ));
+        }
+        if i >= self.len() || self.backing.invalid_text.binary_search(&i).is_ok() {
+            return Err(StringTableError::Layout(
+                "invalid shared string ID or lossy UTF-16/UTF-8 text".into(),
+            ));
+        }
+        // Lossy IDs were marked when the table was decoded, verified or not; a table bound to
+        // its bytes after an ordinary load rejects the same referenced IDs a verified load does.
+        Ok(self.get(i))
     }
 
     pub fn identity(&self) -> Option<&[u8; 32]> {
@@ -174,6 +266,15 @@ impl StringTable {
             d.update(s);
         }
         d.finalize().into()
+    }
+
+    /// A strictly ascending dictionary (the writer's `toSortedSet()`): two IDs are equal
+    /// exactly when their texts are, and [`Self::index_of`] finds every text it holds.
+    pub fn canonical_dictionary(&self) -> bool {
+        *self.backing.canonical.get_or_init(|| {
+            (1..self.len())
+                .all(|i| java_cmp(self.get(i - 1), self.get(i)) == std::cmp::Ordering::Less)
+        })
     }
 
     /// Binary search (strings are sorted by Java `String.compareTo`, i.e. UTF-16 order).

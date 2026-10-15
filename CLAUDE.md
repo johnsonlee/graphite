@@ -24,10 +24,22 @@ Follow these steps in order when working on a task:
 
 These rules apply to graph construction, graph loading, and query execution. When a change such as a SootUp upgrade introduces a regression that cannot be eliminated across every metric, apply the following priorities independently to each affected operation and workload. These are acceptance constraints, not permission to declare an unresolved regression fixed.
 
+**User-defined priority order (2026-10-10): correctness > availability and stability > query p50/p95 performance > build/save performance.** Apply this order when scheduling work and evaluating tradeoffs. Complete correctness and service availability/stability validation before query performance acceptance; prioritize those checks and representative multi-graph query validation over build/save optimization. Never improve a lower-priority metric at the expense of a higher-priority requirement. Keep build/save observations visible and evaluate them separately; their lower priority does not establish regression recovery or change the explicit resource limits and scoped exceptions below.
+
 1. **Preserve correctness and stability.** Existing features, graph semantics, query results, cancellation, work-budget behavior, and stability are non-negotiable. Do not disable features, reduce coverage, weaken checks, or accept failures to obtain better performance numbers.
 2. **Respect the heap ceiling.** JVM maximum heap must not exceed `-Xmx8g` (8 GiB). This is a hard limit and cannot be traded for speed or used to bypass an out-of-memory failure. Smaller heaps are allowed; baseline and candidate must use matching settings. Apply the ceiling to launchers and forked JVMs as well.
 3. **Prioritize server query p50 and p95 latency, then end-to-end time.** Query p50 and p95 latency are the primary performance metrics because Graphite operates as a server. Restore or improve both relative to the accepted baseline before the regression (for an upgrade, the pre-upgrade version). End-to-end time is the secondary optimization priority; a faster overall pipeline or a lower mean cannot compensate for worse query p50/p95. Accept graph construction, loading, and query execution separately for each representative workload. Measure construction through production of a usable saved graph, loading through readiness for the declared use, and queries through complete consumption of requested results. Include required work within each boundary; improvements in one operation or workload do not establish recovery in another.
 4. **Allow bounded CPU and RSS increases for latency gains.** For each affected operation and workload, total CPU time (user plus system) and peak process RSS may each increase by at most **5%** over its matching pre-regression baseline. These are independent limits: latency gains or savings in one resource or workload cannot offset an overrun in another. CPU and RSS have equal standing as constraints; neither has an approved priority over the other. Among cumulative candidates satisfying the hard constraints and both resource limits, prioritize query p50/p95, then end-to-end time, and avoid unnecessary resource increases.
+
+**User-approved loading tradeoff (2026-10-09).** For the declared-type feature's native64 loading workload, the user explicitly accepts the observed approximately1–2s extra loading time and CPU time: wall +1,630.718/+1,647.832ms and ready CPU +2.10/+2.04s versus accepted4f. Treat these scoped time/CPU increases as an accepted feature tradeoff, including the CPU increase above the default5% limit; do not keep optimizing solely to eliminate this approved overhead or present it as a remaining blocker. Preserve the actual measurements and label the exception as accepted overhead, not performance recovery. This approval does not waive RSS, query p50/p95, correctness, stability or heap constraints, and does not grant an unbounded allowance to other workloads or operations.
+
+**User-approved query latency tolerance (2026-10-12).** In the multi-graph pressure gates, a case's p50 or p95 is accepted when the candidate is within 100ms of the base or within 5% of it, whichever allows more (`withinLatencyTolerance` in `benchmark-multigraph-pressure.mjs`). Repeated-request quantiles of a 50ms case move by that much between runs on the hosted runner; the rule accepts that variance, not a regression a slower case shows beyond both bounds. It applies to query cases only; the pressure stage's own wall time stays strict.
+
+**User-approved query tail protocol (2026-10-13).** In the multi-graph pressure gates, p50 keeps the per-pair 100ms/5% rule. p95 is judged as intervals: the run's two base cells against its two candidate cells, FAIL only when every candidate cell is slower than every base cell by more than the latency tolerance, PASS when none is, INDETERMINATE between (reported in the status and the PR comment, not red). A cheap case, base pressure p50 under 50ms, takes its tail from the isolated stage that every cell runs after the pressure stage (one worker, 40 samples of every case whose pressure p50 is under 100ms, `isolated_tasks` in `multigraph_pressure.py`), and keeps its pressure p95 only as a collision bound: at most twice the base's, or 250ms more. A 20-sample pressure p95 is the second-slowest sample and a cheap case's pressure tail is the queue behind the heavy requests it collided with, which a faster candidate changes (Attempt278, Attempt285); the rule measures the engine's tail and leaves the collision tail as a sanity bound. The tolerances themselves are unchanged.
+
+**User-approved construction/loading, CPU and RSS tolerance (2026-10-12).** In the fixture64 gates, construction and loading wall time may exceed the base by up to 5% (`withinWallTolerance`), and total CPU time and peak RSS may each exceed it by up to 10% in every gate (construction, JVM and native loading, native and JVM query pressure: `CPU_TOLERANCE_RATIO` and `RSS_TOLERANCE_RATIO` in `benchmark-multigraph-pressure.mjs`); this supersedes the 5% CPU/RSS limit of rule 4 for these gates. The hosted runner's base cells themselves spread by about that much between runs (construction wall 397–421s and CPU 505–528s across four base cells of one run; whole-stage peak RSS 11.75–12.93GB), so the tolerance accepts that variance, not a regression a slower candidate shows beyond it. Each limit is independent: a wall gain cannot pay for an RSS overrun, and the interval rule (PASS only when the candidate's upper bound is within the limit of the base's lower bound, FAIL only when its lower bound is past the base's upper bound, INDETERMINATE between) is unchanged. The CI job names carry the limits they enforce. This approval does not change the heap ceiling, correctness, stability or the query latency rules.
+
+**User-approved interval verdicts for p50, construction resources and the collision bound (2026-10-14).** In the multi-graph pressure gates, p50 is judged as p95 is: the run's two base cells against its two candidate cells with the latency tolerance (`p50Verdicts` in `benchmark-multigraph-pressure.mjs`), FAIL only when every candidate cell is slower than every base cell by more than the tolerance, INDETERMINATE between, reported, not red; the per-pair `p50Passed` verdicts stay in the report. Run 915's `shape-group-count-broad` spread 2012–2306 ms across the four base cells while both candidate cells fell inside that range, and the per-pair rule failed two of four pairs on that noise. A cheap case's collision bound (twice the base pressure p95, or 250 ms more) FAILs only when every candidate cell exceeds it; one cell over is one collision and INDETERMINATE. In the construction gate, total CPU and peak RSS are judged as the loading gate judges them, as base/candidate cell intervals with the 10% tolerances (`resourceVerdicts` in `benchmark-construction.mjs`), FAIL blocking and INDETERMINATE reported; the per-pair `cpuPassed`/`rssPassed` stay in the report and the construction wall rule (5% per pair) is unchanged. The loading and query gates keep requiring PASS for their CPU and RSS intervals. The tolerances themselves are unchanged.
 
 Peak RSS includes non-heap memory and is separate from the maximum heap setting. A permitted RSS increase never permits raising the heap ceiling; heap size or allocation measurements do not substitute for RSS evidence. The CPU/RSS allowance does not authorize regressions in other existing performance guarantees or relax required regression gates.
 
@@ -557,6 +569,32 @@ Lessons from building it:
   and only then write a replacement. Here the upgrade showed a second bug the replacement
   also covers, which is the kind of thing only the diff plus a test tells you.
 
+### A Query-Only Table's Derived Summary Is Written by the Saver, Not Computed by the Reader
+
+The native reader read `graph.types` lazily (the table is query-only state, and reading it before
+readiness charged every graph's load for declarations no request had asked for), but the planner's
+first declared-key question (`keys(n)` over Field/Parameter/Return nodes) then parsed the table
+and walked every declaration-bearing node of every graph: 49 ms a graph, 3.8 s for the 64-graph
+corpus on the hosted runner, paid by whichever first requests collided on the same `OnceLock`.
+Eager loading would have spent most of the loading CPU budget; a background read after readiness
+still left the first requests waiting. The saver holds both the table and the nodes, so it writes
+the answer (`graph.declared-keys`, under 130 bytes, `DeclaredKeySummaryBuilder`) in the pass that
+writes the nodes, with the same lookups and the same declining conditions as the reader's
+computation, and binds it to the SHA-256 of `graph.types` that `forward.properties` already names
+and the load already verifies, so binding costs nothing and a sidecar beside a rewritten table
+reads as absent. `graph.metadata` stays untouched: its tail is the ordinal binding that the JVM
+reader and the proof chain read from the last 36 bytes, so a new binding there would have broken
+both. The reader answers from the summary while the table is unread and from the table's own state
+afterwards; parity is proved on the interop fixture (`persisted_key_summary_*`) and by the
+fixture64 query-correctness oracles, since a wrong summary changes a `keys()` histogram. The
+table itself is still needed by the first request that renders a declared type, and where that
+read goes was measured three ways: on first use it was a 1.5–2.3 s cold row; after the server
+listens it competed with the first requests on the same cores and slowed a heavy aggregate by
+50%; so the server reads each table on a second thread beside the single-threaded loader and
+is ready with the tables read (`serve::DeclaredTableReader`), about 1 s of CPU inside the
+loading boundary and no wall. Deferred work is not free anywhere: put it where the gate that
+owns the cost has room, and never where it overlaps what another gate measures.
+
 ### SootUp 3.x: What the Upgrade From 2.0.0 Changed
 
 - API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/
@@ -623,6 +661,53 @@ Lessons from building it:
   across threads produced a `ClassNode` whose methods were plain `MethodNode`s (a
   `ClassCastException` in `resolveMethods`); one node per class does not.
 
+
+### The Benchmark Proof Chain Compares an Actual Arm by Its Shape, Not Its Slot
+
+The fixture64 gates prove each non-accepted arm's 64 graphs equivalent to the accepted baseline's
+(4f2ccf3) before comparing latency. The chain was written while the only actual arm was the
+candidate, and it assumed the candidate's shape in five places: the renderer kind of the `B`
+comparison slot, the production formatter tests, the declared-type table, the raw local array
+rendering, and the JVM derivation's declared bindings. A PR rebased onto main gets main as its
+parent arm `A`, compared in the same slot with the baseline's flat renderer and no table, and every
+one of those assumptions failed in turn, one CI hour apart. Lessons:
+
+- A fact about a writer (its renderer, whether it writes `graph.types`) is read off its bytes
+  (`formatter_binding.formatter_kind`, `declarations.table_shape`) and recorded in the rule or
+  the receipt, never inferred from which slot the arm is compared in.
+- The facts are tied to each other where they are one feature: the writer that keeps every array
+  rank is the one that writes the table, so the outer runner refuses a rank-preserving writer
+  without a table and a flat one with it; a candidate build that silently lost its table cannot
+  pass as "a parent".
+- A claim that does not apply is recorded as not applicable, not as verified: a flat writer's
+  audit says `productionFormatterTestsApplicable: false`, and every consumer checks the verdict
+  against the pair's renderers rather than for `true`.
+- The 4f writer is not byte-deterministic (two builds of one shard differ in `graph.metadata`
+  and `graph.nodedata`), so "A's graphs equal C's" is never a usable shortcut; the proof's
+  corrections are what absorb that, for any pair.
+- Before pushing a fix for one failing CI step, read the arm's remaining steps against the
+  arm's actual shape; each later step would otherwise cost another full run.
+- A consumer gate restores the whole checkpoint closure onto a hosted runner's disk, so every
+  evidence file a stage seals is paid for again by every consumer, per arm. The per-node raw
+  local proof reports (16.8 GB for one arm's 64 graphs) and the raw local exports (10 GB) made a
+  two-arm chain 93 GB where 56 GB had fit; both are JSON lines that gzip 13–20×, and the readers
+  decompress on the gzip magic so a pin remains the digest of the file's bytes. Size the evidence
+  for the consumer, and do not hardlink identical files across arm directories: the JVM reader
+  rewrites files beside a graph in place.
+- The hosted runner image rolls out while a four-hour run is in flight (run 912: sealing jobs on
+  one provisioner version, every job from 10:54Z on the next). Bind a chain's toolchain by
+  content digests, never by the image's version label; a label check only turns a rollout into a
+  failed run. The JDK's trust store (`cacerts`) is image configuration, not toolchain: it changes
+  between images and nothing in the chain reads it, so it is required present and its content
+  drift reported, not refused (run 913).
+- A whole-process RSS on a host that cannot hold the mapped graphs beside the heap (10.4 GB of
+  graphs, a 9 GB heap, 16 GB of RAM) is the engine's memory plus the share of the graphs the
+  kernel kept resident, and that share is set by what else the host held: the first cell of a
+  stage, after the input verification and the restore, held 3 GB less than the same binary in
+  the sixth cell and re-read 7 GB from the disk, failing the RSS rule by position alone (runs
+  38661758869, 38706906914). Drop the whole page cache before every cell, not only the graphs,
+  and record the host's memory counters and the anon/file split of each sample beside the
+  verdict, so a pressure one cell saw is visible in its record rather than inferred.
 
 ### Why `buildGraph()` Is Not Parallelized
 

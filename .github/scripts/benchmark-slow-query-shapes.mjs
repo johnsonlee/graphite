@@ -12,7 +12,7 @@ export const QUERIES = [
 export const DYNAMIC_QUERIES = ["dynamicHit", "dynamicMiss"];
 export const COMPONENT = {
     name: "slow-query-shapes", report: "slow-query-shapes-report.md", status: "slow-query-shapes-status.json",
-    coverage: "partial", gap: "Five query families on real Android, hit/miss and cold/warm; other corpora and arbitrary expressions remain uncovered."
+    correctnessOnly: true, coverage: "partial", gap: "Complete untimed Android hit/miss assertions; multi-graph pressure remains separately required."
 };
 const BENCHMARK = "io.johnsonlee.graphite.webgraph.SlowQueryShapesBenchmark.execute";
 const STATES = ["COLD", "WARM"];
@@ -57,7 +57,9 @@ export function measurements(entries, queries, fixture) {
     return result;
 }
 
-export function resultMarkers(text, queries, fixture, exists = fs.existsSync) {
+export function resultMarkers(text, queries, fixture, exists = fs.existsSync, correctnessOnly = false) {
+    const forks = correctnessOnly ? 1 : FORKS;
+    require(!correctnessOnly || !text.includes("SLOW_QUERY_SHAPE_RESOURCES"), "Single-graph resource sampling is prohibited");
     require(!/<failure>|Exception in thread|ERROR:/.test(text), "Benchmark execution failure marker");
     const rows = new Map();
     for (const match of text.matchAll(/SLOW_QUERY_SHAPE_RESULT\tandroid\t([^\t]+)\t([^\t]+)\trows=(\d+)\tsha256=([a-f0-9]{64})/g)) {
@@ -70,9 +72,9 @@ export function resultMarkers(text, queries, fixture, exists = fs.existsSync) {
         rows.set(id, { rows: count, sha256: digest, forks: (previous?.forks ?? 0) + 1 });
     }
     require(sameKeys(rows, expected(queries)), "Missing or unexpected ordered result keys");
-    require([...rows.values()].every(row => row.forks === FORKS), "Missing or duplicate result fork");
+    require([...rows.values()].every(row => row.forks === forks), "Missing or duplicate result fork");
     const snapshots = [...text.matchAll(/SLOW_QUERY_SHAPE_FIXTURE\tprotocol=private-copy-no-callsite-index-v2\tcorpus=android\tsource=([^\t]+)\tsnapshot=([^\t]+)\tindexAbsent=true/g)];
-    require(snapshots.length === rows.size * FORKS, "Incorrect private fixture count");
+    require(snapshots.length === (correctnessOnly ? rows.size / 2 : rows.size * FORKS), "Incorrect private fixture count");
     require(new Set(snapshots.map(match => match[2])).size === snapshots.length, "Reused private fixture");
     for (const [, source, snapshot] of snapshots) {
         require(source === fixture && path.basename(snapshot) === "android" &&
@@ -80,6 +82,18 @@ export function resultMarkers(text, queries, fixture, exists = fs.existsSync) {
         require(!exists(path.dirname(snapshot)), `Private fixture was not removed: ${snapshot}`);
     }
     return rows;
+}
+
+export function compareCorrectness(base, candidate, referenceKind) {
+    require(["unmodified-base", "base-plus-subscript-correctness-repair"].includes(referenceKind), "Unknown reference policy");
+    require([base, candidate].every(values => sameKeys(values, expected(QUERIES))), "Incomplete correctness cases");
+    const rows = [...expected(QUERIES)].map(id => {
+        const a = base.get(id), b = candidate.get(id);
+        require(a.rows === b.rows && a.sha256 === b.sha256, `Ordered semantic mismatch: ${id}`);
+        return { key: id, rows: a.rows, sha256: a.sha256 };
+    });
+    return { passed: true, errors: [], rows, scope: "correctness-only", performanceAcceptance: false,
+        referenceKind, orderedResultParity: true };
 }
 
 export function compare(base, candidate, baseResults, candidateResults, referenceKind) {
@@ -122,6 +136,9 @@ export function confirm(initial, confirmation) {
 }
 
 export function render(comparison) {
+    if (comparison.scope === "correctness-only") {
+        return `### Five slow query families: correctness only\n\n${comparison.rows.length} complete ordered hit/miss and fresh/repeated cases match. No single-graph timing or resource evidence.\n`;
+    }
     const lines = ["### Five slow query families", "", "Real persisted Android; value, qualifiedId, dynamic properties, toString caller, and single-hop DATAFLOW. Every hit/miss runs COLD and WARM in five fresh private mappings. Ordered full result digests must match.",
         "COLD means a fresh mapping with no persisted callsite index, not cold OS pages. Primary latency excludes fixture copying; first-trial GC profiler values include setup/priming/cleanup and are diagnostic only.",
         "The ongoing gate blocks a row only when the candidate is more than 15% slower than the current base and the two 99.9% confidence intervals over the five forks do not overlap, confirmed candidate-first; a point estimate over 15% with overlapping intervals is reported and passes. Historical 10× acceptance against 144d98ef is a separate experiment.",
@@ -134,7 +151,11 @@ export function render(comparison) {
 }
 
 export function addComponent(baseModule) {
-    require(!baseModule.BENCHMARK_COMPONENTS.some(component => component.name === COMPONENT.name), "Duplicate slow-shape component registration");
+    const existing = baseModule.BENCHMARK_COMPONENTS.find(component => component.name === COMPONENT.name);
+    if (existing) {
+        require(existing.correctnessOnly === true, "Conflicting slow-shape component registration");
+        return;
+    }
     const domain = baseModule.BENCHMARK_COVERAGE_DOMAINS.find(item => item.name === "Latency regression");
     require(domain !== undefined, "Base aggregator lacks latency domain");
     baseModule.BENCHMARK_COMPONENTS.push({ ...COMPONENT });
@@ -172,7 +193,15 @@ async function main(argv) {
             // workflow's authoritative enforcement step reject it after artifact upload.
         } else {
             let result;
-            if (command === "confirm") result = confirm(read(needed("initial")), read(needed("confirmation")));
+            if (command === "correctness") {
+                const fixture = needed("fixture"), policy = needed("reference-kind");
+                const regular = policy === "base-plus-subscript-correctness-repair" ? QUERIES.filter(query => !DYNAMIC_QUERIES.includes(query)) : QUERIES;
+                const base = resultMarkers(fs.readFileSync(needed("base-log"), "utf8"), regular, fixture, fs.existsSync, true);
+                if (policy === "base-plus-subscript-correctness-repair") {
+                    for (const [id, value] of resultMarkers(fs.readFileSync(needed("reference-log"), "utf8"), DYNAMIC_QUERIES, fixture, fs.existsSync, true)) base.set(id, value);
+                }
+                result = compareCorrectness(base, resultMarkers(fs.readFileSync(needed("candidate-log"), "utf8"), QUERIES, fixture, fs.existsSync, true), policy);
+            } else if (command === "confirm") result = confirm(read(needed("initial")), read(needed("confirmation")));
             else {
                 require(command === "compare", `Unknown command: ${command}`);
                 const fixture = needed("fixture"), policy = needed("reference-kind");
@@ -196,4 +225,4 @@ async function main(argv) {
         console.error(error.stack); process.exitCode = 1;
     }
 }
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) await main(process.argv.slice(2));
+if (process.argv[1] && fs.realpathSync(process.argv[1]) === fs.realpathSync(fileURLToPath(import.meta.url))) await main(process.argv.slice(2));

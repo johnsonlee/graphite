@@ -1,0 +1,158 @@
+"""Tiny source-value semantics and complete DISTINCT representatives only."""
+import copy
+import struct
+import unittest
+from unittest.mock import patch
+
+import jvm_pressure_distinct as d
+import jvm_pressure_inputs as raw
+import jvm_pressure_oracles as model
+
+
+def f(value, width=64): return raw.FloatBits(width, struct.pack('>f' if width == 32 else '>d', value))
+
+def facts(value):
+    known = {(32, f(.1,32).bits): '0.1', (64, f(.1).bits): '0.1',
+             (32, f(1,32).bits): '1.0', (64, f(1).bits): '1.0',
+             (64, f(9007199254740992).bits): '9.007199254740992E15',
+             (32, f(-0.,32).bits): '-0.0', (64, f(-0.).bits): '-0.0',
+             (32, f(0.,32).bits): '0.0', (64, f(0.).bits): '0.0',
+             (64, f(float('inf')).bits): 'Infinity', (64, f(float('nan')).bits): 'NaN'}
+    return known[(value.width, value.bits)]
+
+
+def visible(**changes):
+    return {'n.graph_id': None, 'caller':'android.Test', 'callerMethod': 1,
+            'callee': None, 'calleeMethod': None, **changes}
+
+
+def groups(*values):
+    result = d.DistinctGroups(facts)
+    for row, graph in values: result.add(row, graph)
+    return result.finish()
+
+
+class DistinctTests(unittest.TestCase):
+    def test_accumulation_retains_only_exact_keys_provenance_and_variant_membership(self):
+        collector=d.DistinctGroups(facts)
+        first=visible(callerMethod=[{'z':1,'a':None}],calleeMethod=raw.EnumReference('E','N'))
+        # Keep a second semantic group whose JSON projection collides exactly.
+        other=visible(callerMethod=[{'z':1}],calleeMethod=raw.EnumReference('E','N'))
+        collector.add(first,'g2');collector.add(first,'g1');collector.add(other,'g1')
+        self.assertEqual(2,len(collector.groups))
+        self.assertEqual([model.key(d.semantic_key(row,facts)) for row in (first,other)],list(collector.groups))
+        for entry in collector.groups.values():
+            self.assertEqual({'graphIds','variants'},set(entry))
+            self.assertTrue(all(type(key) is str and value is None for key,value in entry['variants'].items()))
+        result=collector.finish()
+        self.assertEqual([['g1','g2'],['g1']],[group['graphIds'] for group in result])
+        self.assertEqual(result[0]['variants'],result[1]['variants'])
+        self.assertNotEqual(result[0]['semanticKey'],result[1]['semanticKey'])
+
+    def test_owned_decode_failure_discards_all_remaining_encoded_state(self):
+        collector=d.DistinctGroups(facts);collector.add(visible(),'g');collector.add(visible(caller='other'),'g')
+        original=collector.groups
+        with patch.object(model,'decode_key',side_effect=ValueError('bad typed encoding')):
+            with self.assertRaisesRegex(ValueError,'bad typed encoding'):collector._consume_finish()
+        self.assertEqual({},original);self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+        self.assertTrue(collector.failed);self.assertIsNone(collector.number_text)
+
+    def test_numeric_keys_use_exact_decimal_facts_not_binary_widening(self):
+        self.assertEqual(d.semantic_key(1), d.semantic_key(f(1,32), facts))
+        self.assertEqual(d.semantic_key(1), d.semantic_key(f(1), facts))
+        self.assertEqual(d.semantic_key(f(.1,32), facts), d.semantic_key(f(.1), facts))
+        self.assertNotEqual(d.semantic_key(9007199254740993), d.semantic_key(f(9007199254740992), facts))
+        self.assertEqual(['number','123456789012345678901234567890123456789',-38], d.decimal_key('1.2345678901234567890123456789012345678900'))
+        self.assertEqual(d.semantic_key(0), d.semantic_key(f(-0.), facts))
+        self.assertNotEqual(d.semantic_key(True), d.semantic_key(1))
+
+    def test_missing_or_wrong_facts_and_raw_python_float_are_rejected(self):
+        with self.assertRaisesRegex(ValueError,'facts'): d.semantic_key(f(1))
+        with self.assertRaisesRegex(ValueError,'roundtrip'): d.semantic_key(f(1), lambda _: '2.0')
+        with self.assertRaises(ValueError): d.semantic_key(1.0)
+        collector = d.DistinctGroups()
+        with self.assertRaises(ValueError): collector.add(visible(callerMethod=f(1)), 'g')
+        with self.assertRaisesRegex(ValueError,'previous'): collector.finish()
+
+    def test_enum_list_map_null_semantics_are_pre_gson(self):
+        enum = raw.EnumReference('E','N')
+        self.assertNotEqual(d.semantic_key(enum), d.semantic_key('E.N'))
+        self.assertNotEqual(d.semantic_key(enum), d.semantic_key({'enumClass':'E','enumName':'N'}))
+        self.assertEqual(d.semantic_key([{'n':1,'v':None}]), d.semantic_key([{'v':None,'n':f(1)}],facts))
+        self.assertNotEqual(d.semantic_key([1,2]), d.semantic_key([2,1]))
+        self.assertNotEqual(d.semantic_key({}), d.semantic_key({'x':None}))
+        self.assertEqual({'enumClass':'E','enumName':'N'},d.projected_value(enum))
+
+    def test_group_keeps_whole_observed_variants_and_complete_provenance(self):
+        result = groups((visible(), 'g2'), (visible(callerMethod=f(1)), 'g1'), (visible(),'g1'))
+        self.assertEqual(1,len(result)); self.assertEqual(['g1','g2'],result[0]['graphIds'])
+        self.assertEqual(2,len(result[0]['variants']))
+        self.assertEqual({int,float},{type(v['callerMethod']) for v in result[0]['variants']})
+        self.assertTrue(all('n.graph_id' not in v for v in result[0]['variants']))
+        pair = groups((visible(callerMethod=1,calleeMethod=f(1)),'g'),(visible(callerMethod=f(1),calleeMethod=1),'g'))[0]
+        self.assertEqual([(int,float),(float,int)],[(type(v['callerMethod']),type(v['calleeMethod'])) for v in pair['variants']])
+
+    def test_signed_zero_variants_and_nonfinite_groups_preserve_total(self):
+        result=groups((visible(callerMethod=f(-0.)),'g'),(visible(callerMethod=f(0.)),'g'))
+        self.assertEqual(1,len(result)); self.assertEqual(2,len(result[0]['variants']))
+        result=groups((visible(callerMethod=f(float('inf'))),'g'))
+        self.assertEqual(1,len(result)); self.assertEqual([],result[0]['variants'])
+        self.assertEqual(['nonfinite','NaN'],d.semantic_key(f(float('nan')),facts))
+
+    def test_snapshot_and_bound_facts_are_not_mutable_aliases(self):
+        calls=[]
+        collector=d.DistinctGroups(lambda value: calls.append(value) or facts(value))
+        row=visible(callerMethod=f(1));collector.add(row,'g');collector.add(row,'g')
+        self.assertEqual(1,len(calls));row['caller']='changed'
+        result=collector.finish();result[0]['variants'][0]['caller']='changed'
+        self.assertEqual('android.Test',collector.finish()[0]['variants'][0]['caller'])
+
+    def test_public_snapshot_stays_isolated_when_more_sources_are_added(self):
+        collector=d.DistinctGroups(facts);collector.add(visible(callerMethod=f(-0.)), 'g2')
+        before=collector.finish()
+        collector.add(visible(callerMethod=f(0.)), 'g1')
+        after=collector.finish()
+        self.assertEqual(['g2'],before[0]['graphIds'])
+        self.assertEqual(1,len(before[0]['variants']))
+        self.assertEqual(['g1','g2'],after[0]['graphIds'])
+        after[0]['semanticKey'][1].clear()
+        self.assertTrue(collector.finish()[0]['semanticKey'][1])
+
+    def test_owned_consume_preserves_typed_groups_and_releases_source_state(self):
+        collector=d.DistinctGroups(facts)
+        for value in (1,f(1),f(-0.),f(0.),f(float('nan')),f(float('inf'))):
+            for gid in ('g2','g1'):collector.add(visible(callerMethod=value),gid)
+        before=collector.finish();source=collector.groups
+        with patch.object(copy,'deepcopy',side_effect=AssertionError('owned finish must not copy trees')):
+            actual=collector._consume_finish()
+        self.assertEqual(model.typed(before),model.typed(actual))
+        self.assertEqual({},source);self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+        self.assertIsNone(collector.number_text)
+        actual[0]['semanticKey'][1].clear()
+        self.assertTrue(before[0]['semanticKey'][1])
+        for action in (collector.finish,collector._consume_finish,lambda:collector.add(visible(),'g3')):
+            with self.assertRaisesRegex(ValueError,'previous'):action()
+
+    def test_owned_consume_failure_is_terminal_and_discards_remaining_groups(self):
+        for malformed in (False,True):
+            with self.subTest(malformed=malformed):
+                collector=d.DistinctGroups(facts);collector.add(visible(),'g')
+                if malformed:next(iter(collector.groups.values()))['graphIds']={None,'g'}
+                else:collector.failed=True
+                with self.assertRaises((ValueError,TypeError)):collector._consume_finish()
+                self.assertEqual({},collector.groups);self.assertEqual({},collector.facts)
+                self.assertIsNone(collector.number_text)
+                with self.assertRaises(ValueError):collector.finish()
+
+    def test_projection_uses_float_decimal_and_preserves_large_integer(self):
+        self.assertEqual(.1,d.projected_value(f(.1,32),facts))
+        self.assertNotEqual(struct.unpack('>f',f(.1,32).bits)[0],d.projected_value(f(.1,32),facts))
+        self.assertEqual(9223372036854775807,d.projected_value(9223372036854775807))
+        self.assertEqual('-0x0.0p+0',d.projected_value(f(-0.),facts).hex())
+
+    def test_key_grammar_rejects_noncanonical_forms(self):
+        for key in (['number','10',0],['number','-0',0],['number','0',1],['number','1',True],['map',[['z',['null']],['a',['null']]]],['enum','E'],['unknown']):
+            with self.subTest(key=key),self.assertRaises(ValueError):d.validate_key(key)
+
+
+if __name__ == '__main__': unittest.main()

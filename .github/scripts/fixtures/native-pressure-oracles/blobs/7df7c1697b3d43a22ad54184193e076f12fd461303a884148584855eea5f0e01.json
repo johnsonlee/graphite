@@ -1,0 +1,667 @@
+{
+  "columns": [
+    "id",
+    "labels",
+    "value",
+    "caller",
+    "graphId"
+  ],
+  "rows": [
+    {
+      "id": 355777,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355779,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355785,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355792,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355795,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355797,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355801,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355803,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355808,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355813,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355817,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355820,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355823,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355824,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355826,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityTransitionCoordinator$GhostViewListeners"
+    },
+    {
+      "id": 355837,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ProviderRefCount"
+    },
+    {
+      "id": 355848,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355853,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355858,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355912,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355914,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355916,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355923,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355944,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355945,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355947,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355949,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355951,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355952,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355959,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355970,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355973,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355979,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355980,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355983,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355988,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355989,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355995,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 355996,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356007,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356008,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356009,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356012,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356014,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356015,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356025,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356026,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356029,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356033,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    },
+    {
+      "id": 356036,
+      "labels": [
+        "CallSiteNode"
+      ],
+      "graphId": "fixture-android-00",
+      "$metadata": {
+        "graphIds": [
+          "fixture-android-00"
+        ]
+      },
+      "caller": "android.app.ActivityThread$ApplicationThread"
+    }
+  ],
+  "rowCount": 50,
+  "graphCount": 64,
+  "total": {
+    "value": 51,
+    "relation": "gte"
+  }
+}

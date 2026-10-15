@@ -17,6 +17,8 @@ import io.johnsonlee.graphite.core.ControlFlowEdge
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.Edge
 import io.johnsonlee.graphite.core.EnumConstant
+import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.LocalVariable
 import io.johnsonlee.graphite.core.Node
@@ -354,12 +356,14 @@ class QueryPipeline private constructor(
     }
 
     private val graph: Graph get() = sources.single().graph
+    internal val defaultGraph: Graph? get() = sources.singleOrNull()?.graph
 
     private val activeWorkTracker = ThreadLocal<CypherWorkTracker?>()
     private val activeParameters = ThreadLocal<Map<String, Any?>>()
     private val evaluator = ExpressionEvaluator(
         checkCancelled = if (workTrackingEnabled) ::checkCancelled else null,
-        parameterResolver = { name -> activeParameters.get()?.get(name) }
+        parameterResolver = { name -> activeParameters.get()?.get(name) },
+        graph = defaultGraph
     )
 
     /**
@@ -1269,6 +1273,7 @@ class QueryPipeline private constructor(
         val localEvaluator = if (directStringWorkerActive.get()) {
             ExpressionEvaluator(
                 parameterResolver = parameters::get,
+                graph = source.graph,
                 checkCancelled = {
                     checkThreadInterrupted { CypherQueryCancelledException() }
                 }
@@ -1366,7 +1371,7 @@ class QueryPipeline private constructor(
                     count++
                 } else {
                     val value = countedProperty?.let { property ->
-                        NodePropertyAccessor.getProperty(node, property)
+                        NodePropertyAccessor.getProperty(node, property, source.graph)
                     } ?: continue
                     if (distinctValues == null || distinctValues.add(cypherValueKey(value))) count++
                 }
@@ -1500,8 +1505,8 @@ class QueryPipeline private constructor(
             )
             if (directStringConjunction != null) {
                 val candidates = DirectStringDisjunction(listOf(directStringConjunction.required))
-                val predicateFactory: DirectNodePredicateFactory = { _ ->
-                    { node: Node -> directStringConjunction.matches(node) }
+                val predicateFactory: DirectNodePredicateFactory = { source ->
+                    { node: Node -> directStringConjunction.matches(node, source.graph) }
                 }
                 return if (ret.distinct) {
                     executeDirectStringDisjunction(
@@ -1540,6 +1545,7 @@ class QueryPipeline private constructor(
                     val predicateBindings = mutableMapOf<String, Any?>(variable to null)
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = stringParameters::get,
+                        graph = source.graph,
                         checkCancelled = {
                             tracker?.checkCancelled()
                             checkThreadInterrupted { CypherQueryCancelledException() }
@@ -1680,7 +1686,7 @@ class QueryPipeline private constructor(
                 nodeClass,
                 filter,
                 limit - rows.size
-            ) ?: trackWork(source.graph.nodes(nodeClass)).filter(filter::matches)
+            ) ?: trackWork(source.graph.nodes(nodeClass)).filter { filter.matches(it, source.graph) }
             for (node in candidates) {
                 val candidate = nodeValue(source, node)
                 val bindings = mutableMapOf<String, Any?>(variable to candidate)
@@ -2497,7 +2503,7 @@ class QueryPipeline private constructor(
             this[columns[index]] = if (projectedProperties[index] == GRAPH_ID_PROPERTY) {
                 source.id
             } else {
-                NodePropertyAccessor.getProperty(node, projectedProperties[index])
+                NodePropertyAccessor.getProperty(node, projectedProperties[index], source.graph)
             }
         }
         put(INTERNAL_PROVENANCE_KEY, setOf(source.id))
@@ -2975,7 +2981,7 @@ class QueryPipeline private constructor(
             graph !is StringPropertyLookupOrder
         ) {
             return interruptible(trackWork(graph.nodes(nodeClass), tracker))
-                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node) }
+                .filter { node -> node.javaClass !in excludedTypes && disjunction.matches(node, graph) }
                 .take(limit)
         }
         val candidateSequences = mutableListOf<Sequence<Node>>()
@@ -2991,7 +2997,7 @@ class QueryPipeline private constructor(
             if (candidateType == AnnotationNode::class.java && filters.any { it.coercesToString }) {
                 if (graph.nodeCount(candidateType) != 0L) {
                     candidateSequences += interruptible(trackWork(graph.nodes(candidateType), tracker))
-                        .filter(disjunction::matches).take(limit)
+                        .filter { disjunction.matches(it, graph) }.take(limit)
                 }
                 continue
             }
@@ -3026,11 +3032,11 @@ class QueryPipeline private constructor(
                 )
             }
             val candidates: Sequence<Node> = if (accelerated.any { it == null }) {
-                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter(disjunction::matches)
+                interruptible(trackWork(graph.nodes(candidateType), tracker)).filter { disjunction.matches(it, graph) }
             } else if (graph is StringPropertyLookupOrder) {
                 mergeNodeSequences(accelerated.filterNotNull(), graph::stringPropertyNodeOrder)
             } else {
-                filterOwnedNodes(filters, accelerated.filterNotNull())
+                filterOwnedNodes(graph, filters, accelerated.filterNotNull())
             }
             candidateSequences += candidates
         }
@@ -3052,13 +3058,14 @@ class QueryPipeline private constructor(
     }
 
     private fun <T : Node> filterOwnedNodes(
+        graph: Graph,
         filters: List<DirectStringFilter>,
         sequences: List<Sequence<T>>
     ): Sequence<Node> = sequence {
         for ((index, nodes) in sequences.withIndex()) {
             for (node in nodes) {
                 val ownedByEarlierFilter = (0 until index).any { earlierIndex ->
-                    filters[earlierIndex].matches(node)
+                    filters[earlierIndex].matches(node, graph)
                 }
                 if (!ownedByEarlierFilter) yield(node)
             }
@@ -3113,8 +3120,8 @@ class QueryPipeline private constructor(
         val transform: StringValueTransform? = null,
         val coercesToString: Boolean = false
     ) {
-        fun matches(node: Node): Boolean {
-            val value = NodePropertyAccessor.getProperty(node, property)
+        fun matches(node: Node, graph: Graph): Boolean {
+            val value = NodePropertyAccessor.getProperty(node, property, graph)
             val raw = (if (coercesToString) value?.toString() else value as? String) ?: return false
             val actual = when (transform) {
                 null -> raw
@@ -3255,7 +3262,7 @@ class QueryPipeline private constructor(
             }
         }
 
-        fun matches(node: Node): Boolean = filters.any { it.matches(node) }
+        fun matches(node: Node, graph: Graph): Boolean = filters.any { it.matches(node, graph) }
 
         companion object {
             @Suppress("ReturnCount")
@@ -3323,7 +3330,7 @@ class QueryPipeline private constructor(
         val required: DirectStringFilter,
         val anyOf: DirectStringDisjunction
     ) {
-        fun matches(node: Node): Boolean = required.matches(node) && anyOf.matches(node)
+        fun matches(node: Node, graph: Graph): Boolean = required.matches(node, graph) && anyOf.matches(node, graph)
 
         companion object {
             @Suppress("ReturnCount")
@@ -3724,6 +3731,7 @@ class QueryPipeline private constructor(
                     val source = candidateSources[sourceIndex]
                     val localEvaluator = ExpressionEvaluator(
                         parameterResolver = parameters::get,
+                        graph = source.graph,
                         checkCancelled = {
                             checkThreadInterrupted { CypherQueryCancelledException() }
                         }
@@ -4884,6 +4892,13 @@ class QueryPipeline private constructor(
         }
     }
 
+    private fun hasDeclaredNodeProperties(graph: Graph, nodeClass: Class<out Node>): Boolean {
+        val table = graph.declaredTypes()
+        return (nodeClass.isAssignableFrom(FieldNode::class.java) && table.fields.isNotEmpty()) ||
+            ((nodeClass.isAssignableFrom(ParameterNode::class.java) || nodeClass.isAssignableFrom(ReturnNode::class.java)) &&
+                table.methods.isNotEmpty())
+    }
+
     /** A storage candidate is never an answer: the complete ANY predicate still runs on every survivor. */
     private fun dynamicPropertyCandidates(
         nodeClass: Class<out Node>,
@@ -4905,7 +4920,10 @@ class QueryPipeline private constructor(
             // Metadata is not stored in the node record. A graph ID hit (including
             // the prefix of an element ID) must retain every node in that graph.
             val lookup = (source.graph as? NodePropertyTextCandidates)
-                ?.takeUnless { qualified && source.id.contains(fragment) }
+                ?.takeUnless {
+                    qualified && source.id.contains(fragment) ||
+                        !it.includesDeclaredTypeProperties && hasDeclaredNodeProperties(source.graph, nodeClass)
+                }
             val candidates = lookup?.propertyTextCandidates(nodeClass, fragments, tracker)
                 ?: trackWork(source.graph.nodes(nodeClass), tracker)
             candidates.map { node -> nodeValue(source, node) }
@@ -4932,7 +4950,7 @@ class QueryPipeline private constructor(
         return sources.asSequence().flatMap { source ->
             val methods = cancellationConsumer?.let { source.graph.methods(MethodPattern(), it) }
                 ?: source.graph.methods(MethodPattern())
-            methods.map { method -> MethodValue(source.id.takeIf { qualified }, method) }
+            methods.map { method -> MethodValue(source.id.takeIf { qualified }, method, source.graph) }
         }
     }
 
@@ -5052,9 +5070,9 @@ class QueryPipeline private constructor(
         is QualifiedNode -> when (property) {
             GRAPH_ID_PROPERTY -> value.graphId
             ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY -> value.elementId
-            else -> NodePropertyAccessor.getProperty(value.node, property)
+            else -> NodePropertyAccessor.getProperty(value.node, property, value.graph)
         }
-        is Node -> NodePropertyAccessor.getProperty(value, property)
+        is Node -> NodePropertyAccessor.getProperty(value, property, defaultGraph)
         else -> null
     }
 

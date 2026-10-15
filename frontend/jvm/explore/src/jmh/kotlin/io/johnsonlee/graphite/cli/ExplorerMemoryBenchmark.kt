@@ -49,6 +49,7 @@ import kotlin.io.path.isRegularFile
 @Measurement(iterations = 1)
 @Fork(1, jvmArgs = ["-Xmx4g"])
 open class ExplorerMemoryBenchmark {
+    var correctnessOnly: Boolean = false
 
     @Param("3")
     var repeats: Int = 0
@@ -154,6 +155,13 @@ open class ExplorerMemoryBenchmark {
         counters: ExplorerMemoryCounters,
         issueCycle: (cycle: Int, issue: (String) -> Unit) -> Unit
     ): Long {
+        if (correctnessOnly) {
+            var bytes = request("/api/graphs") + request("/api/overview?limit=200") + requestMethodDiscovery()
+            repeat(waterlineWarmupCycles + waterlineMeasuredCycles) { cycle ->
+                issueCycle(cycle) { path -> bytes += request(path) }
+            }
+            return bytes
+        }
         var bytes = 0L
         var maxUsedHeapBytes = 0L
         var maxCommittedHeapBytes = 0L
@@ -282,6 +290,7 @@ open class ExplorerMemoryBenchmark {
     }
 
     private fun measureRetainedHeap(counters: ExplorerMemoryCounters, action: () -> Long): Long {
+        if (correctnessOnly) return action()
         forceGc()
         val before = currentMemorySample()
         val bytes = action()
@@ -383,6 +392,7 @@ open class ExplorerMemoryBenchmark {
 // the window and makes RequestCpuAccounting fail closed on a non-request client-lifecycle thread.
 @Fork(1, jvmArgs = ["-Xmx8g", "-Dhttp.keepAlive=false"])
 open class MethodDiscoveryCompatibilityBenchmark {
+    var correctnessOnly: Boolean = false
 
     @Param("4", "17", "36")
     var graphCount: Int = 0
@@ -432,7 +442,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
         port = app.port()
         legacyMethodsRoute = rawRequest(legacyPath(services.first().fixture.className, 0)).code == HTTP_OK
         writeCompatibilityManifest()
-        quiesceBeforeMeasurement()
+        if (!correctnessOnly) quiesceBeforeMeasurement()
         // The accounting contract runs in a JVM of its own (MethodCompatibilityCpuAccountingContract);
         // here only its availability is required, without touching the heap the trial measures.
         RequestCpuAccounting.requireAvailable()
@@ -790,6 +800,7 @@ open class MethodDiscoveryCompatibilityBenchmark {
     }
 
     private fun measure(counters: MethodCompatibilityCounters, action: () -> Long): Long {
+        if (correctnessOnly) return action()
         val beforeRss = residentSetBytes()
         val beforeGcTime = gcTimeMillis()
         val beforeJit = jitTimeMillis()

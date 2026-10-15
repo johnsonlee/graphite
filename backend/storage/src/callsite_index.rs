@@ -930,8 +930,8 @@ mod tests {
             ))
         });
         let built = CallSiteStringIndex::build(
-            graph.strings.len(),
-            &|i| graph.strings.get(i).to_string(),
+            graph.strings().len(),
+            &|i| graph.strings().get(i).to_string(),
             &mut call_sites,
         )
         .unwrap();
