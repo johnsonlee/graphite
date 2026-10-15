@@ -38,10 +38,12 @@ jobs:
         node --test .github/scripts/benchmark-comment.test.cjs
     - uses: actions/upload-artifact@v7
       with:
-        name: benchmark-controller-${{ github.run_attempt }}
+        name: benchmark-controller
         path: target/release/graphite-benchmark
         if-no-files-found: error
-        retention-days: 7
+        # Reuse the same binary when only failed downstream jobs are rerun.
+        overwrite: true
+        retention-days: 30
 
   compare:
     name: benchmark-base-head
@@ -79,7 +81,7 @@ jobs:
           head
     - uses: actions/download-artifact@v8
       with:
-        name: benchmark-controller-${{ github.run_attempt }}
+        name: benchmark-controller
         path: controller
     - name: Prepare source-built base and head with identical fixture inputs
       id: prepare
@@ -87,14 +89,14 @@ jobs:
         chmod +x controller/graphite-benchmark
         controller/graphite-benchmark prepare --base-source base --head-source head --output prepared
     - name: JMH frontend build and save under the fixed heap ceiling
-      if: always() && steps.prepare.outcome != 'skipped'
+      if: ${{ !cancelled() && steps.prepare.outcome != 'skipped' }}
       run: |
         controller/graphite-benchmark jvm --suite frontend-build-save \
           --base-jar prepared/base/webgraph-jmh.jar --head-jar prepared/head/webgraph-jmh.jar \
           --fixtures prepared/fixtures --output results/frontend \
           --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"
     - name: Rust server loading, correctness, and real64 pressure
-      if: always() && steps.prepare.outcome != 'skipped'
+      if: ${{ !cancelled() && steps.prepare.outcome != 'skipped' }}
       run: |
         controller/graphite-benchmark native \
           --base prepared/base/graphite --head prepared/head/graphite \
