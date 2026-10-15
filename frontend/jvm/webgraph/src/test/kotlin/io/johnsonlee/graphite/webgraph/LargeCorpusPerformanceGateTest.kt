@@ -30,6 +30,8 @@ import kotlin.test.assertTrue
 private const val FOUR_GIB_BYTES = 4L * 1024L * 1024L * 1024L
 private const val RECORD_PROPERTY = "large.corpus.record"
 private const val MAPPED_LOAD_SAMPLE_COUNT = 5
+private val correctnessOnly get() = java.lang.Boolean.getBoolean("graphite.correctness.only")
+private fun phaseStart(): Long = if (correctnessOnly) 0L else System.nanoTime()
 private const val CALL_SITE_INDEX_FILE = "graph.callsite-string-index"
 private const val BRANCH_DEFINITIONS_FILE = "graph.branchdefs"
 private const val METADATA_FILE = "graph.metadata"
@@ -189,7 +191,11 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         )
 
         val measurement = PeakHeapSampler().use { sampler -> runPipeline(jar, sampler) }
-        println(measurement.baselineLine(baseline))
+        if (correctnessOnly) {
+            println("CORRECTNESS_PASS\tlarge-corpus\t${baseline.id}\tnodes=${measurement.nodes}" +
+                "\tsourceEdges=${measurement.sourceEdges}\tpersistedEdges=${measurement.persistedEdges}" +
+                "\tmethods=${measurement.methods}\tcallSites=${measurement.callSites}")
+        } else println(measurement.baselineLine(baseline))
 
         assertEquals(baseline.nodeCount, measurement.nodes, "Node baseline changed for ${baseline.id}")
         assertEquals(baseline.sourceEdgeCount, measurement.sourceEdges, "Source edge baseline changed for ${baseline.id}")
@@ -200,7 +206,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         )
         assertEquals(baseline.methodCount, measurement.methods, "Method baseline changed for ${baseline.id}")
         assertEquals(baseline.callSiteCount, measurement.callSites, "Call-site baseline changed for ${baseline.id}")
-        if (!java.lang.Boolean.getBoolean(RECORD_PROPERTY)) {
+        if (!correctnessOnly && !java.lang.Boolean.getBoolean(RECORD_PROPERTY)) {
             assertTrue(
                 measurement.pipelineMillis <= baseline.maxPipelineMillis,
                 "${baseline.id} pipeline took ${measurement.pipelineMillis} ms; ceiling=${baseline.maxPipelineMillis} ms"
@@ -219,7 +225,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         var sourceGraph: Graph? = null
         var loadedGraph: Graph? = null
         try {
-            val buildStart = System.nanoTime()
+            val buildStart = phaseStart()
             sourceGraph = JavaProjectLoader(
                 LoaderConfig(
                     buildCallGraph = false,
@@ -229,7 +235,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             ).load(jar)
             val buildMillis = elapsedMillis(buildStart)
 
-            val saveStart = System.nanoTime()
+            val saveStart = phaseStart()
             val productionIndexPrepared = saveWithProductionCallSiteIndex(sourceGraph, output)
             val saveMillis = elapsedMillis(saveStart)
             val callSiteIndex = output.resolve(CALL_SITE_INDEX_FILE)
@@ -260,7 +266,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
 
             val mappedLoadSamples = LongArray(MAPPED_LOAD_SAMPLE_COUNT)
             repeat(MAPPED_LOAD_SAMPLE_COUNT) { index ->
-                val loadStart = System.nanoTime()
+                val loadStart = phaseStart()
                 val sampleGraph = GraphStore.loadMapped(output)
                 mappedLoadSamples[index] = elapsedMillis(loadStart)
                 if (index == mappedLoadSamples.lastIndex) {
@@ -272,7 +278,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             val mappedLoadMillis = mappedLoadSamples.sorted()[mappedLoadSamples.size / 2]
             val queryGraph = checkNotNull(loadedGraph) { "Mapped graph sample was not retained" }
 
-            val queryStart = System.nanoTime()
+            val queryStart = phaseStart()
             val loadedCallSites = queryGraph.query(CALL_SITE_COUNT_QUERY)
             val loadedPropertyRows = queryGraph.query(PROPERTY_QUERY).rows
             val loadedRelationshipRows = queryGraph.query(RELATIONSHIP_QUERY).rows
@@ -297,7 +303,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
             )
             // First branch-definition access on the mapped graph: reads and verifies the sidecar, materialises
             // every scope and table. Timed and reported separately; it is not part of the pipeline sum.
-            val branchDefinitionsStart = System.nanoTime()
+            val branchDefinitionsStart = phaseStart()
             val mappedDefinitions = definitionFingerprint(queryGraph)
             val branchDefinitionsMillis = elapsedMillis(branchDefinitionsStart)
             assertEquals(expectedDefinitions, mappedDefinitions, "Mapped graph must restore the source graph's definitions")
@@ -546,7 +552,7 @@ abstract class LargeCorpusGate(private val baseline: CorpusBaseline) {
         "peakHeapBytes=$peakHeapBytes"
     ).joinToString("\t")
 
-    private fun elapsedMillis(start: Long): Long = (System.nanoTime() - start) / 1_000_000
+    private fun elapsedMillis(start: Long): Long = if (correctnessOnly) 0L else (System.nanoTime() - start) / 1_000_000
 
     private fun sourceEdgeCounts(graph: Graph): EdgeCounts {
         var logical = 0L
@@ -615,7 +621,7 @@ private class PeakHeapSampler : Closeable {
     private val running = AtomicBoolean(true)
     private val peak = AtomicLong(0)
     private val thread = Thread({
-        while (running.get()) {
+        while (running.get() && !correctnessOnly) {
             sample()
             Thread.sleep(10)
         }
@@ -625,6 +631,7 @@ private class PeakHeapSampler : Closeable {
     }
 
     fun sample() {
+        if (correctnessOnly) return
         val runtime = Runtime.getRuntime()
         peak.accumulateAndGet(runtime.totalMemory() - runtime.freeMemory(), ::maxOf)
     }

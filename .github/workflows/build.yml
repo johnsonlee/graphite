@@ -1,5 +1,8 @@
 name: Run unit tests
 
+env:
+  JAVA_TOOL_OPTIONS: -Xmx4g -XX:+ExitOnOutOfMemoryError -Dgraphite.correctness.only=true
+
 on:
   push:
     branches: [ '*' ]
@@ -38,8 +41,8 @@ jobs:
         set -o pipefail
         ./gradlew check -S --no-daemon 2>&1 | tee build-output.txt
       env:
-        JAVA_OPTS: -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
-        JVM_OPTS:  -Xmx8g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
+        JAVA_OPTS: -Xmx4g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
+        JVM_OPTS:  -Xmx4g -XX:MetaspaceSize=1g -Dfile.encoding=UTF-8
 
     - name: Preserve failed test diagnostics
       if: failure()

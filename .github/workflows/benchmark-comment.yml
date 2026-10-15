@@ -1,0 +1,42 @@
+name: Update benchmark report comment
+
+on:
+  workflow_run:
+    workflows: [Benchmark correctness and OOM]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+# Serialize publication, including old/new heads and reruns of the same SHA.
+concurrency:
+  group: benchmark-report-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+    - name: Checkout trusted comment publisher
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ github.workflow_sha }}
+        persist-credentials: false
+    - name: Download report as data
+      continue-on-error: true
+      uses: actions/download-artifact@v8
+      with:
+        pattern: benchmark-report-*
+        path: reports
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        run-id: ${{ github.event.workflow_run.id }}
+    - name: Update the single report comment for the current PR head
+      uses: actions/github-script@v9
+      with:
+        script: |
+          const { publish } = require('./.github/scripts/benchmark-comment.cjs');
+          await publish({ github, context, core, directory: 'reports' });

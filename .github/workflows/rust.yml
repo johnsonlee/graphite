@@ -1,5 +1,8 @@
 name: Rust
 
+env:
+  JAVA_TOOL_OPTIONS: -Xmx4g -XX:+ExitOnOutOfMemoryError -Dgraphite.correctness.only=true
+
 # No path filter: the differential below serves graphs built by the JVM frontend with the
 # Kotlin explorer as the baseline, so a frontend, Gradle or fixture change must run it too.
 on:
