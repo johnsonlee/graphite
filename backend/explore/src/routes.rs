@@ -28,6 +28,13 @@ pub const MAX_ENDPOINT_LIMIT: i64 = 2000;
 pub const MAX_RESOURCE_BYTES: usize = 1_048_576;
 /// How long the server must have been idle before the C4 warm-up builds a graph.
 pub const C4_WARM_QUIET: std::time::Duration = std::time::Duration::from_secs(2);
+/// How long after the server starts answering the declared tables are read on worker threads
+/// (`AppState::warm_declared_tables`): long enough for a readiness probe to be answered first,
+/// so the read is query-stage work, not loading.
+pub const DECLARED_WARM_DELAY: std::time::Duration = std::time::Duration::from_millis(250);
+/// Worker threads that read the declared tables; two leaves cores for the requests already
+/// arriving.
+pub const DECLARED_WARM_THREADS: usize = 2;
 const C4_WARM_POLL: std::time::Duration = std::time::Duration::from_millis(200);
 
 pub struct AppState {
@@ -64,6 +71,9 @@ pub struct AppState {
     /// How long the server must be idle before the worker builds; `C4_WARM_QUIET`
     /// unless a test shortens it.
     c4_warm_quiet: std::time::Duration,
+    /// How long after `warm_declared_tables` the tables are read; `DECLARED_WARM_DELAY` in
+    /// production, zero in tests.
+    declared_warm_delay: std::time::Duration,
     /// The topology rules from `--topology`, and the graph built from them, with the
     /// registry catalog it was built against so a later load or unload marks it stale
     /// until the rebuild that follows it lands.
@@ -171,6 +181,7 @@ impl AppState {
             requests_in_flight: std::sync::atomic::AtomicUsize::new(0),
             c4_warm: parking_lot::Mutex::new(C4WarmQueue::default()),
             c4_warm_quiet: C4_WARM_QUIET,
+            declared_warm_delay: DECLARED_WARM_DELAY,
             topology_queries: Vec::new(),
             topology: parking_lot::RwLock::new(None),
         }
@@ -289,6 +300,48 @@ impl AppState {
         let count = ids.len();
         self.warm_c4_graphs(ids);
         count
+    }
+
+    /// Read every served graph's declared table on worker threads, shortly after the server
+    /// starts answering, so the first request that needs a declared value finds the tables
+    /// read. The table is query-only state read on first use (`Graph::declared_types`), and
+    /// the key summary the saver persists answers the planner without it; but the first
+    /// request that renders or filters by a declared type still parsed all 64 tables, 1.5–2.3 s
+    /// on the hosted runner, which the query-native gate's cold row for `feature-nodes` paid
+    /// (run 38661758869). Unlike the C4 warm-up this does not wait for an idle server: the
+    /// request it serves is the one arriving now. A request that reaches a graph first reads
+    /// (or waits for) that graph's table as before. Returns the number of graphs queued; the
+    /// worker reports what it read.
+    pub fn warm_declared_tables(self: &Arc<Self>) -> usize {
+        self.spawn_declared_warm().map_or(0, |(count, _)| count)
+    }
+
+    /// `warm_declared_tables` with the worker's handle, for tests; `None` when optimizations
+    /// are disabled or no graph is loaded.
+    fn spawn_declared_warm(self: &Arc<Self>) -> Option<(usize, std::thread::JoinHandle<usize>)> {
+        if graphite_cypher::engine::optimizations_disabled() {
+            return None;
+        }
+        let leases = self.registry.acquire_all();
+        if leases.is_empty() {
+            return None;
+        }
+        let count = leases.len();
+        let delay = self.declared_warm_delay;
+        let handle = std::thread::Builder::new()
+            .name("declared-warm".into())
+            .spawn(move || {
+                std::thread::sleep(delay);
+                let started = Instant::now();
+                let read = read_declared_tables(&leases, DECLARED_WARM_THREADS);
+                eprintln!(
+                    "Declared types: read {read} of {count} graph table(s) in the background in {} ms",
+                    started.elapsed().as_millis()
+                );
+                read
+            })
+            .ok()?;
+        Some((count, handle))
     }
 
     /// Queue graphs, by id, for inference on one background worker, so the first
@@ -2268,6 +2321,25 @@ async fn style_css(headers: HeaderMap) -> Response {
     asset(&headers, "text/css", STYLE_CSS)
 }
 
+/// Read the declared table of every leased graph on up to `threads` threads; the count of
+/// graphs whose table is present and readable.
+pub fn read_declared_tables(leases: &[crate::registry::GraphLease], threads: usize) -> usize {
+    let chunk = leases.len().div_ceil(threads.max(1)).max(1);
+    std::thread::scope(|scope| {
+        let workers: Vec<_> = leases
+            .chunks(chunk)
+            .map(|part| {
+                scope.spawn(move || {
+                    part.iter()
+                        .filter(|lease| lease.graph.declared_types().is_some())
+                        .count()
+                })
+            })
+            .collect();
+        workers.into_iter().map(|w| w.join().unwrap_or(0)).sum()
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -2680,6 +2752,56 @@ mod tests {
             tokio::time::sleep(std::time::Duration::from_millis(5)).await;
         }
         assert_eq!(state.c4_builds.available_permits(), 1);
+    }
+
+    /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): the background read leaves every
+    /// served graph's declared table read, so the first request that needs a declared value
+    /// does not parse it; an empty registry queues nothing.
+    #[test]
+    fn declared_tables_are_read_in_the_background_after_start() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping");
+            return;
+        };
+        let dir = std::path::PathBuf::from(dir);
+        let registry = Arc::new(GraphRegistry::new(
+            dir.parent().map(|p| p.to_path_buf()).unwrap_or_default(),
+            LoadMode::Mapped,
+        ));
+        let guard = Arc::new(CypherGuard::new(2, 1_000));
+        let empty = Arc::new(AppState::new(
+            registry.clone(),
+            guard.clone(),
+            "test".into(),
+            false,
+        ));
+        assert!(
+            empty.spawn_declared_warm().is_none(),
+            "nothing loaded, nothing queued"
+        );
+        assert_eq!(empty.warm_declared_tables(), 0);
+        registry.load("fixture", &dir, None).unwrap();
+        let graph = registry.acquire("fixture").unwrap().unwrap().graph;
+        assert!(
+            !graph.declared_types_initialized(),
+            "loading reads no table"
+        );
+        let mut state = AppState::new(registry, guard, "test".into(), false);
+        state.declared_warm_delay = std::time::Duration::ZERO;
+        let state = Arc::new(state);
+        let (queued, worker) = state.spawn_declared_warm().unwrap();
+        assert_eq!(queued, 1);
+        let read = worker.join().unwrap();
+        assert!(
+            graph.declared_types_initialized(),
+            "the worker read the table"
+        );
+        assert_eq!(read, usize::from(graph.declared_types().is_some()));
+        assert_eq!(
+            read_declared_tables(&state.registry.acquire_all(), 0),
+            read,
+            "a zero thread count still reads"
+        );
     }
 
     /// Against a real graph (`GRAPHITE_INDEX_FIXTURE`): a burst of cold requests for

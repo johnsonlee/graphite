@@ -21613,3 +21613,31 @@ it (`pageCache`: method, evicted files and bytes, files and bytes read). Tests:
 that the eviction grows with the cells before it; `PageCacheEvictionTest` covers file entries.
 Expected effect: the later cells' walls return to the first cells' 400 s, the forward pairs pass;
 no rule changes.
+
+### Attempt304 — the server reads the declared tables on worker threads once it answers (2026-10-15)
+
+Run 38661758869 (6e3c95f) is the first with the persisted key summary (Attempt301): the
+query-native gate's cold rows for `schema-key-histogram` fell from 3792–3803 ms to 55.6–60.6 ms
+(base 6.1–8.3 ms, PASS under the 100 ms tolerance), `schema-label-histogram` to 52.1–58.7 ms,
+`global-wide-wrapped-case-insensitive-distinct-zero` to 2.4–5.6 ms; p50 39/39 and tails 39/39
+PASS; native loading PASS on every pair (wall 44.7–46.0 → 45.4–45.8 s, CPU 44.4–45.8 → 46.0–46.5 s,
+RSS PASS). One cold row moved rather than vanished: `feature-nodes` (base 6.5–7.1 ms, candidate
+1469–2347 ms) renders `generic_type` and `type_info` of Field, Parameter and Return nodes, so it
+is now the first request that reads the tables, and it paid the parse of all 64 (23 ms a graph
+locally, Attempt301's breakdown); `slow-dataflowSourceMiss` (1.8–658 ms) is the same parse in the
+cell whose oracle order put it first, INDETERMINATE. Before the summary, the histogram requests
+paid the parse and `feature-nodes` found the tables read.
+
+Eager reading at load would land ~2 s of CPU in native loading, whose base/candidate gap is
+already +1.6–2.1 s of its 10% (4.5 s) budget; a background read that waits for an idle server
+(the C4 warm-up's rule) never runs during the oracle stage. `AppState::warm_declared_tables`
+(explore) spawns one `declared-warm` thread after the server listens and after
+`DECLARED_WARM_DELAY` (250 ms, so a readiness probe is answered first and the read is
+query-stage work, counted in the pressure cell's CPU where the 10% tolerance applies), which
+reads every served graph's table on `DECLARED_WARM_THREADS` (2) threads via `Graph::declared_types`
+and reports the count; a request that reaches a graph first reads or waits for that graph's
+table as before (`OnceLock`), and `optimizations_disabled()` turns it off like the C4 warm-up.
+The HTTP server and the MCP server both call it. Test:
+`declared_tables_are_read_in_the_background_after_start` on the interop fixture. Expected
+effect: `feature-nodes` cold returns to milliseconds; the parse CPU (~2 s) appears in the oracle
+stage of the pressure cells, far inside the query CPU tolerance; loading is unchanged.

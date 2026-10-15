@@ -1134,6 +1134,7 @@ pub fn run_stdio(cli: GraphArgs) -> Result<(), String> {
     let opened = open(&cli, false)?;
     report_loaded(&opened, &cli);
     report_c4_warmup(opened.state.warm_c4());
+    crate::serve::report_declared_warmup(opened.state.warm_declared_tables());
     eprintln!("MCP server ready on stdio ({} tools)", tools().len());
     let runtime = runtime(cli.max_concurrent_cypher)?;
     runtime.block_on(async move {
