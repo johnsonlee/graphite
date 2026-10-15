@@ -60,7 +60,7 @@ benchmark machine is required.
 
 The current main-branch catalog contains 73 multi-graph cases. Each revision uses a fresh server,
 one complete oracle pass, two warmups per case and twenty measured requests per case at four
-workers. Requests are interleaved by round. Cases whose pressure p95 is below 100 ms receive
+workers. Requests are interleaved by round. Cases whose pressure p50 is below 100 ms receive
 forty additional isolated requests; this is a fixed sampling rule, not a pass threshold.
 Isolated and concurrent results remain separate. If only one revision qualifies for isolated
 sampling, the report does not invent a paired delta.

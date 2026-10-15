@@ -373,9 +373,14 @@ fn response(bytes: &[u8], ids: &BTreeSet<String>) -> Result<Value> {
     );
     for row in rows {
         let object = row.as_object().context("Nonobject row")?;
+        // The production RowBody formatter omits null-valued projected keys,
+        // matching Gson. Keep that omission in the typed oracle rather than
+        // inventing null fields or rejecting valid nullable projections.
         ensure!(
-            columns.iter().all(|c| object.contains_key(*c)),
-            "Missing projected value"
+            object
+                .keys()
+                .all(|key| key == "$metadata" || columns.contains(&key.as_str())),
+            "Row contains an undeclared projected field"
         );
         let metadata = row["$metadata"]["graphIds"]
             .as_array()
@@ -1176,7 +1181,7 @@ mod tests {
         }
     }
     #[test]
-    fn rejects_error_count_scope_and_missing_projection() {
+    fn rejects_error_count_scope_and_undeclared_projection() {
         let row = json!({"v":1,"$metadata":{"graphIds":["g00"]}});
         let original = body(json!([row]));
         assert!(response(&serde_json::to_vec(&original).unwrap(), &ids()).is_ok());
@@ -1184,7 +1189,10 @@ mod tests {
             ("error", json!("broken")),
             ("rowCount", json!(2)),
             ("graphCount", json!(1)),
-            ("rows", json!([{"$metadata":{"graphIds":["g00"]}}])),
+            (
+                "rows",
+                json!([{"unexpected":1,"$metadata":{"graphIds":["g00"]}}]),
+            ),
         ] {
             let mut invalid = original.clone();
             invalid[key] = value;
@@ -1192,6 +1200,33 @@ mod tests {
         }
         let foreign = body(json!([{"v":1,"$metadata":{"graphIds":["other"]}}]));
         assert!(response(&serde_json::to_vec(&foreign).unwrap(), &ids()).is_err());
+    }
+    #[test]
+    fn production_null_constant_omission_is_preserved_in_complete_response() {
+        // CI 38756010269 case40 returned exactly this mixed projection shape:
+        // a string constant, a null constant with no n.value key, then an int.
+        let wire = json!({"columns":["n.value"],"rowCount":3,"graphCount":64,"rows":[
+            {"n.value":"","$metadata":{"graphIds":["g00"]}},
+            {"$metadata":{"graphIds":["g00"]}},
+            {"n.value":-2147483648i64,"$metadata":{"graphIds":["g00"]}}
+        ]});
+        let checked = response(&serde_json::to_vec(&wire).unwrap(), &ids()).unwrap();
+        assert_eq!(checked, canonical(&wire));
+        assert!(checked["rows"][1].get("n.value").is_none());
+        assert_eq!(checked["rows"][0]["n.value"], "");
+        assert_eq!(checked["rows"][2]["n.value"], -2147483648i64);
+        let mut explicit_null = wire.clone();
+        explicit_null["rows"][1]["n.value"] = Value::Null;
+        assert_ne!(
+            checked,
+            response(&serde_json::to_vec(&explicit_null).unwrap(), &ids()).unwrap()
+        );
+        let mut changed = wire;
+        changed["rows"][1]["n.value"] = json!(0);
+        assert_ne!(
+            checked,
+            response(&serde_json::to_vec(&changed).unwrap(), &ids()).unwrap()
+        );
     }
     #[test]
     fn canonical_comparison_keeps_order_multiplicity_types_and_metadata() {
