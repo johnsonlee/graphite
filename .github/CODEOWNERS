@@ -1,6 +1,3 @@
-/.github/CODEOWNERS @johnsonlee
-/.github/workflows/** @johnsonlee
-/.github/scripts/benchmark-* @johnsonlee
-/.github/scripts/verify-jmh-jar-isolation.sh @johnsonlee
+/.github/ @johnsonlee
 /frontend/jvm/*/src/jmh/** @johnsonlee
 /frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt @johnsonlee
