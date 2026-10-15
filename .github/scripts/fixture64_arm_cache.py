@@ -6,8 +6,11 @@ query-correctness run, 15–20 minutes per arm. The user asked (2026-10-14) for 
 cached under `${name}-v${n}-${ref}`, the baseline by its short commit sha and main by its branch
 name. A branch moves and the candidate's scripts change, so a restored product is trusted only when
 this identity matches what the run would produce: the revision and role the arm's packet names;
-the candidate's reviewed preparation controls (the scripts that produced and audited the arm); the
-common producer inputs of the run (`source-inputs.json`: source JARs and provenance;
+the code that can touch the products, which is the producer-arm job's own definition in the
+workflow and the import closure of the scripts that job runs (not the whole reviewed controls
+manifest: that names every gate's comparator and test, and a gate-rule or test change invalidated
+products it could not have changed, so the cache never hit across the day's pushes); the common
+producer inputs of the run (`source-inputs.json`: source JARs and provenance;
 `portable-expectations.json`: what the correctness run compares against; `producer-common.json`:
 the toolchain paths); the versions those toolchain paths answer with; and the workspace, because
 the products record absolute paths. A mismatch is a miss: the workflow deletes the stale entry,
@@ -15,17 +18,22 @@ rebuilds the arm and saves it again. The cache saves machine time, not wall time
 own arm builds alongside and is never cached.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
+import re
 import subprocess
 import sys
 
 import ci_digest_cache as digest_cache
 
-SCHEMA = 'graphite.fixture64-producer-arm-cache-identity.v1'
+SCHEMA = 'graphite.fixture64-producer-arm-cache-identity.v2'
 COMMON_INPUTS = ('source-inputs.json', 'portable-expectations.json', 'producer-common.json')
-CONTROLS = '.github/scripts/multigraph-pressure-preparation-controls.sha256'
+WORKFLOW = '.github/workflows/benchmark.yml'
+JOB = 'rust-producer-arm'
+SCRIPTS = '.github/scripts'
 ROLES = {'C': 'accepted-baseline', 'A': 'parent'}
+IMPORT = re.compile(r'^\s*(?:from\s+([\w.]+)\s+import\b|import\s+([\w.]+(?:\s*,\s*[\w.]+)*))', re.M)
 
 
 def require(condition, message):
@@ -35,6 +43,60 @@ def require(condition, message):
 
 def read(path):
     return json.loads(Path(path).read_text())
+
+
+def job_definition(workflow_text, job=JOB):
+    """The producer-arm job's block of the workflow: from its key to the next job's, as written."""
+    lines = workflow_text.splitlines(keepends=True)
+    start = next(i for i, line in enumerate(lines) if line.rstrip('\n') == '  ' + job + ':')
+    end = next((i for i in range(start + 1, len(lines)) if re.fullmatch(r'  [A-Za-z0-9_-]+:\n?', lines[i])), len(lines))
+    return ''.join(lines[start:end])
+
+
+def job_scripts(workflow_text, job=JOB):
+    """The scripts under .github/scripts the job's steps name, by their path under the checkout."""
+    names = re.findall(r'(?:candidate/)?\.github/scripts/([A-Za-z0-9_./-]+\.py)', job_definition(workflow_text, job))
+    return sorted(set(names))
+
+
+def is_test(path):
+    return path.name.startswith('test_') or path.name.endswith('_test.py')
+
+
+def import_closure(scripts_dir, entries):
+    """Every module under `scripts_dir` the entry scripts import, transitively; a package counts whole, its tests aside."""
+    scripts_dir = Path(scripts_dir)
+    modules = {path.stem: path for path in scripts_dir.glob('*.py')}
+    packages = {path.name: path for path in scripts_dir.iterdir() if (path/'__init__.py').is_file()}
+    def imports(path):
+        found = set()
+        for match in IMPORT.finditer(path.read_text()):
+            names = [match.group(1)] if match.group(1) else [n.strip() for n in match.group(2).split(',')]
+            for name in names:
+                top = name.split('.')[0]
+                if top in modules:
+                    found.add(modules[top])
+                elif top in packages:
+                    found.update(path for path in sorted(packages[top].rglob('*.py')) if not is_test(path))
+        return found
+    seen = set()
+    todo = [scripts_dir/name for name in entries]
+    while todo:
+        path = todo.pop()
+        if path in seen or not path.is_file():
+            continue
+        seen.add(path)
+        todo.extend(imports(path))
+    return sorted(path.relative_to(scripts_dir).as_posix() for path in seen)
+
+
+def producer_code(checkout):
+    """What can touch an arm's products: the job definition and the scripts it can run, by digest."""
+    checkout = Path(checkout)
+    workflow = (checkout/WORKFLOW).read_text()
+    scripts = import_closure(checkout/SCRIPTS, job_scripts(workflow))
+    return {'jobDefinitionSha256': hashlib.sha256(job_definition(workflow).encode()).hexdigest(),
+            'scripts': {name: digest_cache.sha(checkout/SCRIPTS/name) for name in scripts}}
 
 
 def toolchain_versions(common):
@@ -56,7 +118,7 @@ def identity(workspace, arm, revision, role, checkout):
     inputs = {name: digest_cache.sha(artifacts/name) for name in COMMON_INPUTS}
     return {'schema': SCHEMA, 'arm': arm, 'revision': revision, 'role': role, 'checkout': checkout,
             'workspace': str(workspace),
-            'controlsSha256': digest_cache.sha(workspace/'candidate'/CONTROLS),
+            'producerCode': producer_code(workspace/'candidate'),
             'commonInputs': inputs,
             'toolchainVersions': toolchain_versions(read(artifacts/'producer-common.json'))}
 

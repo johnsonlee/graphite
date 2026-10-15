@@ -23,8 +23,23 @@ class ArmCacheTest(unittest.TestCase):
         self.write(artifacts/'source-inputs.json', {'jars': [{'corpus': 'android', 'sha256': 'a'*64}]})
         self.write(artifacts/'portable-expectations.json', {'cases': 39})
         self.write(artifacts/'producer-common.json', {'toolchainIdentity': {name: str(self.tools/name) for name in ('java', 'cargo', 'rustc')}})
-        self.write(self.workspace/'candidate'/cache.CONTROLS, 'controls')
+        self.candidate_code()
         self.arm(self.workspace, 'C', ACCEPTED, 'accepted-baseline', 'accepted')
+
+    def candidate_code(self, helper='def sha(path): return path\n', job='      - run: python3 candidate/.github/scripts/produce.py\n'):
+        """A candidate checkout: the producer job names one script, which imports a helper and a package."""
+        workflow = ('name: bench\njobs:\n  earlier:\n    steps: []\n  ' + cache.JOB + ':\n    steps:\n' + job +
+                    '      - run: python3 candidate/.github/scripts/audit.py\n  later:\n    steps:\n      - run: python3 candidate/.github/scripts/gate.py\n')
+        self.write(self.workspace/'candidate'/cache.WORKFLOW, workflow)
+        scripts = self.workspace/'candidate'/cache.SCRIPTS
+        self.write(scripts/'produce.py', 'import helper\nfrom proof import rows\nimport json, os\n')
+        self.write(scripts/'audit.py', 'import helper as h\n')
+        self.write(scripts/'helper.py', helper)
+        self.write(scripts/'proof/__init__.py', '')
+        self.write(scripts/'proof/rows.py', 'import helper\n')
+        self.write(scripts/'proof/rows_test.py', 'import rows\n')
+        self.write(scripts/'gate.py', 'import helper\n')
+        self.write(scripts/'test_produce.py', 'import produce\n')
 
     def tool(self, name, text, stream=1):
         tool = self.tools/name
@@ -50,6 +65,10 @@ class ArmCacheTest(unittest.TestCase):
         value = cache.identity(self.workspace, 'C', ACCEPTED, 'accepted-baseline', 'accepted')
         self.assertEqual(value['schema'], cache.SCHEMA)
         self.assertEqual(set(value['commonInputs']), set(cache.COMMON_INPUTS))
+        self.assertEqual(sorted(value['producerCode']['scripts']), ['audit.py', 'helper.py', 'produce.py', 'proof/__init__.py', 'proof/rows.py'],
+                         'the job\'s scripts and what they import, never the gate or the tests')
+        job = cache.job_definition((self.workspace/'candidate'/cache.WORKFLOW).read_text())
+        self.assertTrue(job.startswith('  ' + cache.JOB + ':\n') and 'audit.py' in job and 'gate.py' not in job)
         self.assertEqual(value['toolchainVersions'], {'java': 'openjdk version "17.0.12"', 'cargo': 'cargo 1.90.0', 'rustc': 'rustc 1.90.0\nhost: x86_64'})
         self.assertEqual(value['workspace'], str(self.workspace))
         with self.assertRaisesRegex(ValueError, 'only the accepted baseline and parent'):
@@ -62,9 +81,14 @@ class ArmCacheTest(unittest.TestCase):
         identity.write_text(json.dumps(cache.identity(self.workspace, 'C', ACCEPTED, 'accepted-baseline', 'accepted')))
         args = (identity, self.workspace, 'C', ACCEPTED, 'accepted-baseline', 'accepted')
         self.assertEqual([], cache.check(*args))
-        self.write(self.workspace/'candidate'/cache.CONTROLS, 'other controls')
-        self.assertEqual(['identity.controlsSha256'], cache.check(*args))
-        self.write(self.workspace/'candidate'/cache.CONTROLS, 'controls')
+        self.candidate_code(helper='def sha(path): return None\n')
+        self.assertEqual(['identity.producerCode.scripts.helper.py'], cache.check(*args))
+        self.candidate_code(job='      - run: python3 candidate/.github/scripts/produce.py --jobs 2\n')
+        self.assertEqual(['identity.producerCode.jobDefinitionSha256'], cache.check(*args))
+        self.candidate_code()
+        self.write(self.workspace/'candidate'/cache.SCRIPTS/'gate.py', 'import helper\nRULE = 5\n')
+        self.write(self.workspace/'candidate'/cache.SCRIPTS/'test_produce.py', 'import produce\nX = 1\n')
+        self.assertEqual([], cache.check(*args), 'a gate or a test cannot change the products')
         self.write(self.workspace/'native-pressure-artifacts/portable-expectations.json', {'cases': 40})
         self.assertEqual(['identity.commonInputs.portable-expectations.json'], cache.check(*args))
         self.write(self.workspace/'native-pressure-artifacts/portable-expectations.json', {'cases': 39})

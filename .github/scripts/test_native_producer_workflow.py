@@ -141,7 +141,7 @@ class ProducerWorkflowTests(unittest.TestCase):
     def test_baseline_and_parent_products_are_cached_by_name_version_and_ref_never_the_candidate(self):
         arm = self.job('rust-producer-arm')
         self.assertIn("      actions: write\n", arm)
-        self.assertIn("FIXTURE64_ARM_CACHE_VERSION: '1'", arm)
+        self.assertIn("FIXTURE64_ARM_CACHE_VERSION: '2'", arm)
         self.assertIn('echo "key=fixture64-producer-arm-${CHECKPOINT_ARM}-v${FIXTURE64_ARM_CACHE_VERSION}-${REF}"', arm)
         self.assertIn('C) REF="${ACCEPTED_SHA:0:7}"', arm)
         self.assertIn('A) REF="${BASE_REF}"', arm)
