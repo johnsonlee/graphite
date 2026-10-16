@@ -8,6 +8,27 @@ plugins {
     id("me.champeau.jmh")
 }
 
+// Shared JUnit/JMH assertions are harness code, never application classes. Keep this
+// explicit so unrelated test output cannot silently enter the benchmark fat JAR.
+val sharedWholeJarHarnessClasses = listOf(
+    "ApprovedCorpusCounts",
+    "CorpusBaseline",
+    "DefinitionFingerprint",
+    "EdgeCounts",
+    "GateMeasurement",
+    "LargeCorpusBaselines",
+    "LargeCorpusValidation",
+    "LargeCorpusValidationKt",
+    "LongArrayBuilder",
+    "PeakHeapSampler"
+).map { "io.johnsonlee.graphite.webgraph.$it" }
+
+fun isSharedWholeJarHarnessClass(entry: String): Boolean {
+    if (!entry.endsWith(".class")) return false
+    val className = entry.removeSuffix(".class").replace('/', '.')
+    return sharedWholeJarHarnessClasses.any { className == it || className.startsWith("$it\$") }
+}
+
 kover {
     currentProject {
         instrumentation {
@@ -17,6 +38,7 @@ kover {
     reports {
         filters {
             excludes {
+                classes(*sharedWholeJarHarnessClasses.flatMap { listOf(it, "$it\$*") }.toTypedArray())
                 classes(
                     "*Benchmark*",
                     "*Fixture64GraphPreparation*",
@@ -122,12 +144,14 @@ jmh {
 }
 
 val verifyJmhJarExcludesTests by tasks.registering {
-    description = "Fails if the benchmark fat JAR packages this project's test output"
+    description = "Rejects test leakage into JMH and shared harness leakage into the application JAR"
     group = "verification"
     val jmhJar = tasks.named<Jar>("jmhJar")
+    val applicationJar = tasks.named<Jar>("jar")
     val testOutput = sourceSets.test.get().output
-    dependsOn(jmhJar, tasks.named("testClasses"))
+    dependsOn(jmhJar, applicationJar, tasks.named("testClasses"))
     inputs.file(jmhJar.flatMap { it.archiveFile })
+    inputs.file(applicationJar.flatMap { it.archiveFile })
     inputs.files(testOutput)
 
     doLast {
@@ -146,11 +170,22 @@ val verifyJmhJarExcludesTests by tasks.registering {
             zip.entries().asSequence()
                 .map { it.name }
                 .filter(testEntries::contains)
+                .filterNot(::isSharedWholeJarHarnessClass)
                 .sorted()
                 .toList()
         }
         check(leakedEntries.isEmpty()) {
             "JMH JAR contains test output:\n${leakedEntries.joinToString("\n")}"
+        }
+        val leakedHarness = ZipFile(applicationJar.get().archiveFile.get().asFile).use { zip ->
+            zip.entries().asSequence()
+                .map { it.name }
+                .filter(::isSharedWholeJarHarnessClass)
+                .sorted()
+                .toList()
+        }
+        check(leakedHarness.isEmpty()) {
+            "Application JAR contains shared benchmark harness:\n${leakedHarness.joinToString("\n")}"
         }
     }
 }
@@ -216,5 +251,5 @@ val largeCorpusTest by tasks.registering(Test::class) {
 }
 
 tasks.named("check") {
-    dependsOn(largeCorpusTest)
+    dependsOn(largeCorpusTest, verifyJmhJarExcludesTests)
 }
