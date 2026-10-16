@@ -204,6 +204,11 @@ fn build(source: &Path, trusted: &Path, output: &Path, role: &str) -> Result<Val
     // Capture production source identity before installing any trusted harness files.
     let revision = identity(source, "HEAD^{commit}")?;
     let source_tree = identity(source, "HEAD^{tree}")?;
+    let product_identity = crate::product_identity::compute(source)?;
+    fs::write(
+        target.join("product-identity.txt"),
+        format!("{product_identity}\n"),
+    )?;
     fs::write(target.join("source-tree.txt"), format!("{source_tree}\n"))?;
     let source_module = module(source)?;
     let overlays = install_harness(source, trusted, &target)?;
@@ -281,7 +286,7 @@ fn build(source: &Path, trusted: &Path, output: &Path, role: &str) -> Result<Val
         target.join("graphite"),
     )?;
     Ok(
-        json!({"role":role,"revision":revision,"sourceTree":source_tree,"passed":true,"overlays":overlays,"fixtures":fixtures,
+        json!({"role":role,"revision":revision,"sourceTree":source_tree,"productIdentity":product_identity,"passed":true,"overlays":overlays,"fixtures":fixtures,
               "jvmBuild":jvm,"nativeBuild":native,"jmhJarSha256":hash(&target.join("webgraph-jmh.jar"))?,
               "nativeSha256":hash(&target.join("graphite"))?}),
     )

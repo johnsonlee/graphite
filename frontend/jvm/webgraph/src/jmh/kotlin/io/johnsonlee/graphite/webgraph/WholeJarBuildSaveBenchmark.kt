@@ -23,10 +23,10 @@ open class WholeJarBuildSaveBenchmark {
         check(java.lang.Boolean.getBoolean("graphite.correctness.only")) {
             "Whole-JAR hosted execution must disable performance thresholds"
         }
-        val sourceTree = requireNotNull(System.getProperty("graphite.benchmark.sourceTree")) {
-            "Whole-JAR hosted execution requires the prepared source tree identity"
+        val productIdentity = requireNotNull(System.getProperty("graphite.benchmark.productIdentity")) {
+            "Whole-JAR hosted execution requires the prepared product identity"
         }
-        val baseline = LargeCorpusBaselines.forSource(corpus, sourceTree)
+        val baseline = LargeCorpusBaselines.forProduct(corpus, productIdentity)
         LargeCorpusValidation(baseline).verify()
     }
 }

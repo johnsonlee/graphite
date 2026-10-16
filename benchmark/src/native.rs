@@ -1047,13 +1047,16 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         _ => false,
     };
     let response_match = arms[0].oracle.len() == CASE_COUNT && arms[0].oracle == arms[1].oracle;
-    let head_tree = args
-        .head
-        .parent()
-        .and_then(|p| fs::read_to_string(p.join("source-tree.txt")).ok())
-        .unwrap_or_default()
-        .trim()
-        .to_owned();
+    let product_identity = |binary: &Path| {
+        binary
+            .parent()
+            .and_then(|p| fs::read_to_string(p.join("product-identity.txt")).ok())
+            .unwrap_or_default()
+            .trim()
+            .to_owned()
+    };
+    let base_product_identity = product_identity(&args.base);
+    let head_product_identity = product_identity(&args.head);
     let mut observations = Vec::new();
     if let (Some(base), Some(head)) = (&catalogs[0], &catalogs[1]) {
         if base.len() == CASE_COUNT
@@ -1073,7 +1076,11 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
             }
         }
     }
-    let transitions = crate::transitions::evaluate(&args.base_sha, &head_tree, &observations);
+    let transitions = crate::transitions::evaluate(
+        &base_product_identity,
+        &head_product_identity,
+        &observations,
+    );
     fs::write(
         args.output.join("semantic-transitions.json"),
         serde_json::to_vec_pretty(&transitions)?,
@@ -1119,7 +1126,7 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         json!({"name":"base-real64-pressure-correctness","kind":"correctness","passed":arms[0].error.is_none(),"detail":arms[0].error.clone().unwrap_or_else(||"All complete responses, repeated-request stability and semantic scope assertions passed".into())}),
         json!({"name":"head-real64-pressure-correctness","kind":"correctness","passed":arms[1].error.is_none(),"detail":arms[1].error.clone().unwrap_or_else(||"All complete responses, repeated-request stability and semantic scope assertions passed".into())}),
         json!({"name":"matched-real-source-inputs","kind":"coverage","passed":source_match,"detail":format!("source JAR/shard hashes match: {source_match}; exact 73 query texts match: {query_match}")}),
-        json!({"name":"base-head-reviewed-semantics","kind":"correctness","passed":semantics_approved,"detail":format!("Exact queries and complete typed responses, or compiled-in directed expectations bound to base commit and candidate source tree; exact query match: {query_match}; exact response match: {response_match}; see semantic-transitions.json")}),
+        json!({"name":"base-head-reviewed-semantics","kind":"correctness","passed":semantics_approved,"detail":format!("Exact queries and complete typed responses, or compiled-in directed expectations bound to both product content identities; exact query match: {query_match}; exact response match: {response_match}; see semantic-transitions.json")}),
         json!({"name":"fixed-real64-pressure-protocol","kind":"coverage","passed":complete,"detail":"73 cases; concurrency4; first-use1/warmup2/pressure20; pressure p50<100ms selects isolated40 at concurrency1. Selection changes reporting only, never acceptance."}),
         json!({"name":"native-host-oom","kind":"heap","passed":oom_passed,"detail":if cfg!(target_os="linux") {"Linux cgroup OOM counters must remain unchanged; every native process must survive all requests. JVM heap ceilings are checked by frontend-build-save"}else{"No Linux cgroup accounting on this platform; process failures are checked; formal hosted OOM evidence requires Linux"}}),
     ];
@@ -1135,7 +1142,7 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         args.output.join("base"),
         args.output.join("head"),
     ];
-    let identity = |binary: &Path, manifest: &Path| json!({"binaryPath":binary,"binarySha256":fs::read(binary).ok().map(|b|sha(&b)),"manifestPath":manifest,"manifestSha256":fs::read(manifest).ok().map(|b|sha(&b))});
+    let identity = |binary: &Path, manifest: &Path| json!({"binaryPath":binary,"binarySha256":fs::read(binary).ok().map(|b|sha(&b)),"productIdentity":product_identity(binary),"sourceTree":binary.parent().and_then(|p|fs::read_to_string(p.join("source-tree.txt")).ok()).map(|s|s.trim().to_owned()),"manifestPath":manifest,"manifestSha256":fs::read(manifest).ok().map(|b|sha(&b))});
     Ok(
         json!({"schema":"graphite-benchmark-suite-v1","suite":"native-real64","baseSha":args.base_sha,"headSha":args.head_sha,
         "baseStatus":if arms[0].error.is_none(){"AVAILABLE"}else{"UNAVAILABLE"},"headStatus":if arms[1].error.is_none(){"AVAILABLE"}else{"UNAVAILABLE"},

@@ -44,7 +44,7 @@ consistent across the launcher and forks.
 
 Use three dedicated checkouts: product base, product head and trusted controller/harness.
 `prepare` overlays the trusted JMH sources and shared whole-JAR assertions into both product
-checkouts. The product implementation remains revision-specific. Source commit/tree identities,
+checkouts. The product implementation remains revision-specific. Source commit/tree and product content identities,
 trusted harness revision and installed file hashes are recorded in `prepared/preparation.json`.
 Build the CLI from the trusted checkout; run preparation in its parent so outputs never
 modify that trusted tree.
@@ -130,23 +130,34 @@ Default behavior is exact query and complete typed-response equality, including 
 duplicates, missing versus null fields and provenance. An intended node-count, schema or query
 fix can use a two-step reviewed transition:
 
-1. Run the feature comparison to retain its full bodies and `semantic-transitions.json`.
-   Independently check the expected behavior. Record the comparison base commit, feature Git
-   tree, case IDs and both query/response SHA-256 values.
+1. Run the feature comparison to retain full bodies and `semantic-transitions.json`.
+   Independently check the expected behavior. Record both product content identities,
+   case IDs and both query/response SHA-256 values.
 2. Land literal directed expectations with a rationale in `src/transitions.rs` on the trusted
-   target branch first. For whole-JAR shape changes, add exact `(sourceTree, corpus)` count
-   expectations in `LargeCorpusBaselines` in the trusted shared Kotlin harness. Fixture hashes,
-   class counts and readback/semantic assertions remain mandatory.
-3. Rerun the feature PR without changing its approved tree. An empty commit can trigger a run
-   with the same tree after the policy lands. A rebase or implementation edit changes the tree
-   and requires a new reviewed expectation.
+   target branch first. For whole-JAR shape changes, add exact `(productIdentity, corpus)`
+   count expectations in `LargeCorpusBaselines` in the trusted shared Kotlin harness.
+   Fixture hashes, class counts and readback/semantic assertions remain mandatory.
+3. Update the feature branch to the latest target, as required by strict branch protection,
+   and run the comparison again. A policy-only merge/rebase preserves both product identities;
+   changing product contents requires a fresh independently reviewed expectation.
+
+`prepare` computes product identities from committed Git objects before any overlay, using
+SHA-256 over the domain `graphite-product-identity-v1\0` and sorted, NUL-terminated `git ls-tree`
+records (path, file mode, object type and object ID). Exactly two policy-bearing paths are
+excluded: `benchmark/src/transitions.rs` and
+`frontend/jvm/webgraph/src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt`.
+These are always supplied by the trusted controller/harness, never the candidate product;
+the required JAR verifier also prevents the shared Kotlin assertions from entering the
+application JAR. Their full Git identities and installed hashes remain in preparation evidence.
+Product source, build/lockfiles, fixture identities, query catalog and every other path remain
+in the content identity. Keeping approval-only commits within those two paths avoids making
+the approval refer to its own hash; unrelated target changes require new approval.
 
 Both approved tables start empty. No wildcard, CLI/environment override or candidate-owned
 expectation file can authorize a difference. Additional changed cases or changed expected
 queries/results fail. Approved semantic changes can pass correctness, but differing queries
 or responses make native timing deltas `UNAVAILABLE`; raw values and reasons remain visible.
-The feature branch need not absorb the policy commit: the target tip provides policy while
-its merge-base with the feature provides the comparison product.
+Full base/head commit and tree identities are retained separately for provenance.
 
 ## Cancellation and work-budget correctness
 

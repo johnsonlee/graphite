@@ -171,6 +171,7 @@ jobs:
           results/**/*.txt
           prepared/preparation.json
           prepared/**/source-tree.txt
+          prepared/**/product-identity.txt
           prepared/**/*.log
         if-no-files-found: warn
         retention-days: 14

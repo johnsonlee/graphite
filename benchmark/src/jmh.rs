@@ -292,14 +292,17 @@ fn source_inputs(root: &Path) -> Result<BTreeMap<String, String>> {
     }
     Ok(result)
 }
-fn source_tree(jar: &Path) -> Result<String> {
-    let identity = fs::read_to_string(jar.with_file_name("source-tree.txt"))?;
+fn product_identity(jar: &Path) -> Result<String> {
+    let identity = fs::read_to_string(jar.with_file_name("product-identity.txt"))?;
     let identity = identity.trim();
     ensure!(
-        identity.len() == 40 && identity.bytes().all(|c| c.is_ascii_hexdigit()),
-        "invalid prepared source tree identity"
+        identity.len() == 64
+            && identity
+                .bytes()
+                .all(|c| c.is_ascii_digit() || (b'a'..=b'f').contains(&c)),
+        "invalid prepared product identity"
     );
-    Ok(identity.to_ascii_lowercase())
+    Ok(identity.to_owned())
 }
 
 pub fn run(args: &JmhArgs) -> Result<Value> {
@@ -324,9 +327,9 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
             let jar = jar
                 .canonicalize()
                 .context("frontend JMH artifact unavailable for this revision")?;
-            let source_tree = source_tree(&jar)?;
+            let product_identity = product_identity(&jar)?;
             let props = vec![
-                format!("-Dgraphite.benchmark.sourceTree={source_tree}"),
+                format!("-Dgraphite.benchmark.productIdentity={product_identity}"),
                 "-Xmx4g".to_string(),
                 "-XX:+UseG1GC".into(),
                 "-Dgraphite.correctness.only=true".into(),
@@ -552,22 +555,26 @@ mod tests {
         fs::remove_dir_all(root).unwrap();
     }
     #[test]
-    fn source_identity_is_required_and_cannot_inject_jvm_options() {
+    fn product_identity_requires_lowercase_sha256_and_cannot_inject_jvm_options() {
         let root = temp();
         let jar = root.join("webgraph-jmh.jar");
-        assert!(source_tree(&jar).is_err());
+        assert!(product_identity(&jar).is_err());
         fs::write(
-            root.join("source-tree.txt"),
-            format!("{}\n", "a".repeat(40)),
+            root.join("product-identity.txt"),
+            format!("{}\n", "a".repeat(64)),
         )
         .unwrap();
-        assert_eq!(source_tree(&jar).unwrap(), "a".repeat(40));
-        fs::write(
-            root.join("source-tree.txt"),
-            format!("{} -Xmx8g", "a".repeat(40)),
-        )
-        .unwrap();
-        assert!(source_tree(&jar).is_err());
+        assert_eq!(product_identity(&jar).unwrap(), "a".repeat(64));
+        for invalid in [
+            "a".repeat(40),
+            "a".repeat(63),
+            "a".repeat(65),
+            "A".repeat(64),
+            format!("{} -Xmx8g", "a".repeat(64)),
+        ] {
+            fs::write(root.join("product-identity.txt"), invalid).unwrap();
+            assert!(product_identity(&jar).is_err());
+        }
         fs::remove_dir_all(root).unwrap();
     }
 

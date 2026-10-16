@@ -107,18 +107,18 @@ data class CorpusBaseline(
  * (Tika +8,190,900, Hive +11,754,172, Kotlin compiler +7,512,796 bytes), again with every count unchanged.
  */
 internal object LargeCorpusBaselines {
-    // Add only independently reviewed exact source-tree/corpus expectations here.
+    // Add only independently reviewed exact product-identity/corpus expectations here.
     // The default remains empty: an unapproved graph change must fail the historical counts.
     private val approvedCounts = emptyMap<Pair<String, String>, ApprovedCorpusCounts>()
 
-    fun forSource(corpus: String, sourceTree: String?): CorpusBaseline {
+    fun forProduct(corpus: String, productIdentity: String?): CorpusBaseline {
         val baseline = when (corpus) {
             "tika" -> tika
             "hive" -> hive
             "kotlin-compiler" -> kotlinCompiler
             else -> error("Unknown whole-JAR corpus: $corpus")
         }
-        return applyApprovedCounts(baseline, sourceTree, approvedCounts)
+        return applyApprovedCounts(baseline, productIdentity, approvedCounts)
     }
 
     val tika = CorpusBaseline(
@@ -178,12 +178,12 @@ internal data class ApprovedCorpusCounts(
 
 internal fun applyApprovedCounts(
     baseline: CorpusBaseline,
-    sourceTree: String?,
+    productIdentity: String?,
     approvals: Map<Pair<String, String>, ApprovedCorpusCounts>
 ): CorpusBaseline {
-    if (sourceTree == null) return baseline
-    require(sourceTree.matches(Regex("[0-9a-f]{40}"))) { "Invalid source tree identity" }
-    val counts = approvals[sourceTree to baseline.id] ?: return baseline
+    if (productIdentity == null) return baseline
+    require(productIdentity.matches(Regex("[0-9a-f]{64}"))) { "Invalid product identity" }
+    val counts = approvals[productIdentity to baseline.id] ?: return baseline
     return baseline.copy(
         nodeCount = counts.nodes,
         sourceEdgeCount = counts.sourceEdges,

@@ -19,8 +19,8 @@ pub struct Observation {
 }
 
 struct Rule<'a> {
-    base_sha: &'a str,
-    head_tree: &'a str,
+    base_product_identity: &'a str,
+    head_product_identity: &'a str,
     case_id: &'a str,
     base_query_sha256: &'a str,
     head_query_sha256: &'a str,
@@ -31,7 +31,8 @@ struct Rule<'a> {
 
 // No wildcards, external policy file, environment setting or CLI override.
 // Land reviewed literal entries in the trusted base first, then rerun the
-// feature comparison. Candidate tree identity is stable across commit metadata.
+// feature comparison. Product identities exclude only the exact trusted policy
+// files, so merging policy-only commits does not invalidate reviewed products.
 const RULES: &[Rule<'static>] = &[];
 
 fn digest(value: &str, bytes: usize) -> bool {
@@ -41,31 +42,39 @@ fn digest(value: &str, bytes: usize) -> bool {
             .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
 }
 
-pub fn evaluate(base_sha: &str, head_tree: &str, observations: &[Observation]) -> Value {
-    evaluate_rules(base_sha, head_tree, observations, RULES)
+pub fn evaluate(
+    base_product_identity: &str,
+    head_product_identity: &str,
+    observations: &[Observation],
+) -> Value {
+    evaluate_rules(
+        base_product_identity,
+        head_product_identity,
+        observations,
+        RULES,
+    )
 }
 
 fn evaluate_rules(
-    base_sha: &str,
-    head_tree: &str,
+    base_product_identity: &str,
+    head_product_identity: &str,
     observations: &[Observation],
     rules: &[Rule<'_>],
 ) -> Value {
     let mut errors = Vec::new();
-    if !digest(base_sha, 20) || !digest(head_tree, 20) {
+    if !digest(base_product_identity, 32) || !digest(head_product_identity, 32) {
         errors.push(
-            "Expected full lowercase base commit and candidate Git tree SHA-1 identities"
-                .to_owned(),
+            "Expected full lowercase base and candidate product SHA-256 identities".to_owned(),
         );
     }
     if observations.is_empty() {
         errors.push("No semantic observations supplied".to_owned());
     }
     let mut applicable = BTreeMap::new();
-    for rule in rules
-        .iter()
-        .filter(|r| r.base_sha == base_sha && r.head_tree == head_tree)
-    {
+    for rule in rules.iter().filter(|r| {
+        r.base_product_identity == base_product_identity
+            && r.head_product_identity == head_product_identity
+    }) {
         if rule.case_id.is_empty()
             || rule.reason.trim().is_empty()
             || ![
@@ -112,7 +121,7 @@ fn evaluate_rules(
                 && rule.head_response_sha256 == observation.head_response_sha256
         });
         // An applicable expectation must match even if the observed case became
-        // equal: changed/missing expected behavior is not the reviewed tree.
+        // equal: changed/missing expected behavior is not the reviewed product.
         let approved = valid && unique && if rule.is_some() { matched } else { exact };
         let reason = if !valid {
             "Invalid case identity or SHA-256 digest"
@@ -145,7 +154,7 @@ fn evaluate_rules(
     }
     let approved = errors.is_empty();
     json!({"schema":"graphite-semantic-transitions-v1","policy":"compiled-in",
-        "baseSha":base_sha,"headTree":head_tree,"approved":approved,
+        "baseProductIdentity":base_product_identity,"headProductIdentity":head_product_identity,"approved":approved,
         "exact":approved && cases.iter().all(|case| case["exact"] == true),
         "cases":cases,"errors":errors})
 }
@@ -154,8 +163,8 @@ fn evaluate_rules(
 mod tests {
     use super::*;
     use sha2::{Digest, Sha256};
-    const BASE: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    const TREE: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+    const BASE: &str = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    const HEAD: &str = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
 
     fn hash(value: &str) -> String {
         Sha256::digest(value.as_bytes())
@@ -180,8 +189,8 @@ mod tests {
     }
     fn rule(observation: &Observation) -> Rule<'_> {
         Rule {
-            base_sha: BASE,
-            head_tree: TREE,
+            base_product_identity: BASE,
+            head_product_identity: HEAD,
             case_id: &observation.case_id,
             base_query_sha256: &observation.base_query_sha256,
             head_query_sha256: &observation.head_query_sha256,
@@ -219,11 +228,36 @@ mod tests {
     #[test]
     fn default_policy_accepts_equality_and_rejects_every_unreviewed_difference() {
         let same = observation("same", "RETURN 1", "RETURN 1", "[[1]]", "[[1]]");
-        let result = evaluate(BASE, TREE, &[same]);
+        let result = evaluate(BASE, HEAD, &[same]);
         assert_eq!(result["approved"], true);
         assert_eq!(result["exact"], true);
+        assert_eq!(result["baseProductIdentity"], BASE);
+        assert_eq!(result["headProductIdentity"], HEAD);
+        assert!(result.get("baseSha").is_none());
+        assert!(result.get("headTree").is_none());
         for changed in intended() {
-            assert_eq!(evaluate(BASE, TREE, &[changed])["approved"], false);
+            assert_eq!(evaluate(BASE, HEAD, &[changed])["approved"], false);
+        }
+    }
+
+    #[test]
+    fn both_product_identities_require_full_lowercase_sha256_even_for_equal_results() {
+        let same = observation("same", "RETURN 1", "RETURN 1", "[[1]]", "[[1]]");
+        for invalid in [
+            "".to_owned(),
+            "*".to_owned(),
+            "a".repeat(40),
+            "a".repeat(63),
+            "a".repeat(65),
+            "A".repeat(64),
+            "g".repeat(64),
+        ] {
+            for (base, head) in [(invalid.as_str(), HEAD), (BASE, invalid.as_str())] {
+                let result = evaluate(base, head, std::slice::from_ref(&same));
+                assert_eq!(result["approved"], false, "{base}/{head}");
+                assert_eq!(result["exact"], false);
+                assert!(!result["errors"].as_array().unwrap().is_empty());
+            }
         }
     }
 
@@ -239,7 +273,7 @@ mod tests {
             "[[1]]",
             "[[1]]",
         ));
-        let result = evaluate_rules(BASE, TREE, &observed, &rules);
+        let result = evaluate_rules(BASE, HEAD, &observed, &rules);
         assert_eq!(result["approved"], true);
         assert_eq!(result["exact"], false);
         assert_eq!(result["cases"][0]["mode"], "reviewed-transition");
@@ -247,26 +281,26 @@ mod tests {
     }
 
     #[test]
-    fn commit_metadata_does_not_change_a_tree_bound_expectation() {
+    fn commit_metadata_does_not_change_a_product_bound_expectation() {
         let changes = intended();
         let rules = changes.iter().map(rule).collect::<Vec<_>>();
-        // Two candidate commits can name exactly this tree; no candidate commit
-        // identity participates in this API or the transition key.
+        // Different commits can have the same approved product identity. Neither
+        // commit metadata nor a complete Git tree participates in this key.
         let commits = [
             "cccccccccccccccccccccccccccccccccccccccc",
             "dddddddddddddddddddddddddddddddddddddddd",
         ];
-        let results = commits.map(|_| evaluate_rules(BASE, TREE, &changes, &rules));
+        let results = commits.map(|_| evaluate_rules(BASE, HEAD, &changes, &rules));
         assert_eq!(results[0], results[1]);
         assert_eq!(results[0]["approved"], true);
     }
 
     #[test]
-    fn wrong_base_wrong_tree_and_reversed_direction_are_not_approved() {
+    fn wrong_base_wrong_head_product_and_reversed_direction_are_not_approved() {
         let changes = intended();
         let rules = changes.iter().map(rule).collect::<Vec<_>>();
         assert_eq!(
-            evaluate_rules(TREE, TREE, &changes, &rules)["approved"],
+            evaluate_rules(HEAD, HEAD, &changes, &rules)["approved"],
             false
         );
         assert_eq!(
@@ -279,7 +313,7 @@ mod tests {
             std::mem::swap(&mut row.base_response_sha256, &mut row.head_response_sha256);
         }
         assert_eq!(
-            evaluate_rules(BASE, TREE, &reverse, &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &reverse, &rules)["approved"],
             false
         );
     }
@@ -297,19 +331,19 @@ mod tests {
             "[[1]]",
         ));
         assert_eq!(
-            evaluate_rules(BASE, TREE, &extra, &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &extra, &rules)["approved"],
             false
         );
         let mut query = changes.clone();
         query[2].head_query_sha256 = hash("MATCH(n) RETURN n LIMIT 1");
         assert_eq!(
-            evaluate_rules(BASE, TREE, &query, &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &query, &rules)["approved"],
             false
         );
         let mut body = changes.clone();
         body[2].head_response_sha256 =
             hash(r#"{"rows":[[{"id":1,"name":"New"}]],"graphIds":["a"]}"#);
-        assert_eq!(evaluate_rules(BASE, TREE, &body, &rules)["approved"], false);
+        assert_eq!(evaluate_rules(BASE, HEAD, &body, &rules)["approved"], false);
     }
 
     #[test]
@@ -317,22 +351,22 @@ mod tests {
         let changes = intended();
         let rules = changes.iter().map(rule).collect::<Vec<_>>();
         assert_eq!(
-            evaluate_rules(BASE, TREE, &changes[..2], &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &changes[..2], &rules)["approved"],
             false
         );
         let mut duplicate = changes.clone();
         duplicate.push(changes[0].clone());
         assert_eq!(
-            evaluate_rules(BASE, TREE, &duplicate, &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &duplicate, &rules)["approved"],
             false
         );
         let mut malformed = changes.clone();
         malformed[0].base_response_sha256 = "*".into();
         assert_eq!(
-            evaluate_rules(BASE, TREE, &malformed, &rules)["approved"],
+            evaluate_rules(BASE, HEAD, &malformed, &rules)["approved"],
             false
         );
-        assert_eq!(evaluate(BASE, TREE, &[])["approved"], false);
-        assert_eq!(evaluate("*", TREE, &changes)["approved"], false);
+        assert_eq!(evaluate(BASE, HEAD, &[])["approved"], false);
+        assert_eq!(evaluate("*", HEAD, &changes)["approved"], false);
     }
 }
