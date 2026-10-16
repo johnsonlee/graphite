@@ -40,7 +40,7 @@ jobs:
           test "$GITHUB_REPOSITORY" = johnsonlee/graphite
           test "$PR_NUMBER" = 179
           test "$TARGET_BASE" = 7c693e0f29ef5abf318640bdb20c31bf84d8818e
-          controller_ref=ff654089aeeb1d117f834fc5a5444bd73a78dd53
+          controller_ref=a2a7669c66e7e1a09903d7242a4651dcf26545cc
         fi
         echo "comparison-base=$comparison_base" >> "$GITHUB_OUTPUT"
         echo "controller-ref=$controller_ref" >> "$GITHUB_OUTPUT"
