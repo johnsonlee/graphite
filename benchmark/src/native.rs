@@ -21,6 +21,9 @@ use crate::plan::{
 };
 use crate::process::{ManagedProcess, ProcessSpec};
 
+#[path = "native_capacity.rs"]
+mod capacity;
+
 const GRAPH_COUNT: usize = 64;
 const CASE_COUNT: usize = 73;
 const CONCURRENCY: usize = 4;
@@ -540,6 +543,7 @@ struct Arm {
     load_ms: Option<f64>,
     first_use_ms: Option<f64>,
     error: Option<String>,
+    capacity: Option<Value>,
 }
 
 fn percentile(samples: &[f64], fraction: f64) -> Option<f64> {
@@ -871,6 +875,14 @@ fn run_revision(
         "Native server exited before completion"
     );
     server.terminate()?;
+    let capacity = capacity::run(binary, &m.graphs, &output.join("capacity"))?;
+    let passed = capacity["passed"] == true;
+    arm.capacity = Some(capacity.clone());
+    ensure!(
+        passed,
+        "Native capacity correctness failed: {}",
+        capacity["error"]
+    );
     Ok(())
 }
 
@@ -1035,8 +1047,45 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         _ => false,
     };
     let response_match = arms[0].oracle.len() == CASE_COUNT && arms[0].oracle == arms[1].oracle;
+    let head_tree = args
+        .head
+        .parent()
+        .and_then(|p| fs::read_to_string(p.join("source-tree.txt")).ok())
+        .unwrap_or_default()
+        .trim()
+        .to_owned();
+    let mut observations = Vec::new();
+    if let (Some(base), Some(head)) = (&catalogs[0], &catalogs[1]) {
+        if base.len() == CASE_COUNT
+            && head.len() == CASE_COUNT
+            && arms[0].oracle.len() == CASE_COUNT
+            && arms[1].oracle.len() == CASE_COUNT
+            && base.iter().map(|c| &c.id).eq(head.iter().map(|c| &c.id))
+        {
+            for (i, (a, b)) in base.iter().zip(head).enumerate() {
+                observations.push(crate::transitions::Observation {
+                    case_id: a.id.clone(),
+                    base_query_sha256: sha(a.query.as_bytes()),
+                    head_query_sha256: sha(b.query.as_bytes()),
+                    base_response_sha256: sha(&serde_json::to_vec(&canonical(&arms[0].oracle[i]))?),
+                    head_response_sha256: sha(&serde_json::to_vec(&canonical(&arms[1].oracle[i]))?),
+                });
+            }
+        }
+    }
+    let transitions = crate::transitions::evaluate(&args.base_sha, &head_tree, &observations);
+    fs::write(
+        args.output.join("semantic-transitions.json"),
+        serde_json::to_vec_pretty(&transitions)?,
+    )?;
+    let semantics_approved = transitions["approved"] == true && observations.len() == CASE_COUNT;
     let complete = arms.iter().all(|a| a.error.is_none());
-    let comparable = complete && oom_passed && source_match && query_match && response_match;
+    let comparable = complete
+        && oom_passed
+        && source_match
+        && query_match
+        && response_match
+        && semantics_approved;
     let mut timings = Vec::new();
     for (stage, base, head) in [
         ("registry-ready", arms[0].load_ms, arms[1].load_ms),
@@ -1066,15 +1115,21 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
             }
         }
     }
-    let checks = vec![
+    let mut checks = vec![
         json!({"name":"base-real64-pressure-correctness","kind":"correctness","passed":arms[0].error.is_none(),"detail":arms[0].error.clone().unwrap_or_else(||"All complete responses, repeated-request stability and semantic scope assertions passed".into())}),
         json!({"name":"head-real64-pressure-correctness","kind":"correctness","passed":arms[1].error.is_none(),"detail":arms[1].error.clone().unwrap_or_else(||"All complete responses, repeated-request stability and semantic scope assertions passed".into())}),
-        json!({"name":"matched-real-source-inputs-and-queries","kind":"coverage","passed":source_match && query_match,"detail":format!("source JAR/shard hashes match: {source_match}; exact 73 query texts match: {query_match}")}),
-        json!({"name":"base-head-complete-response-equivalence","kind":"correctness","passed":response_match,"detail":"Every typed response field, order, duplicate row, metadata and actual graph scope participates"}),
+        json!({"name":"matched-real-source-inputs","kind":"coverage","passed":source_match,"detail":format!("source JAR/shard hashes match: {source_match}; exact 73 query texts match: {query_match}")}),
+        json!({"name":"base-head-reviewed-semantics","kind":"correctness","passed":semantics_approved,"detail":format!("Exact queries and complete typed responses, or compiled-in directed expectations bound to base commit and candidate source tree; exact query match: {query_match}; exact response match: {response_match}; see semantic-transitions.json")}),
         json!({"name":"fixed-real64-pressure-protocol","kind":"coverage","passed":complete,"detail":"73 cases; concurrency4; first-use1/warmup2/pressure20; pressure p50<100ms selects isolated40 at concurrency1. Selection changes reporting only, never acceptance."}),
         json!({"name":"native-host-oom","kind":"heap","passed":oom_passed,"detail":if cfg!(target_os="linux") {"Linux cgroup OOM counters must remain unchanged; every native process must survive all requests. JVM heap ceilings are checked by frontend-build-save"}else{"No Linux cgroup accounting on this platform; process failures are checked; formal hosted OOM evidence requires Linux"}}),
     ];
+    for (label, arm) in ["base", "head"].into_iter().zip(&arms) {
+        checks.push(json!({"name":format!("{label}-native-rejection-timeout-recovery"),"kind":"correctness",
+            "passed":arm.capacity.as_ref().is_some_and(|c|c["passed"] == true),
+            "detail":arm.capacity.as_ref().map_or_else(||"Capacity probes did not complete".into(),|c|if c["passed"] == true {"Separate real64 server: concurrency rejection, capped deadlines, permit release, invalid inputs and exact recovery results passed; no performance samples".into()}else{c["error"].to_string()})}));
+    }
     let artifacts = vec![
+        args.output.join("semantic-transitions.json"),
         args.output.join("base-requests.json"),
         args.output.join("head-requests.json"),
         args.output.join("base"),
@@ -1086,7 +1141,7 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         "baseStatus":if arms[0].error.is_none(){"AVAILABLE"}else{"UNAVAILABLE"},"headStatus":if arms[1].error.is_none(){"AVAILABLE"}else{"UNAVAILABLE"},
         "baseUnavailableReason":arms[0].error,"headUnavailableReason":arms[1].error,
         "inputs":{"base":identity(&args.base,&args.base_manifest),"head":identity(&args.head,&args.head_manifest)},
-        "checks":checks,"timings":timings,"artifacts":artifacts,"performanceAcceptance":false,
+        "checks":checks,"timings":timings,"artifacts":artifacts,"performanceAcceptance":false,"semanticTransitions":transitions,
         "sampling":{"concurrency":CONCURRENCY,"oraclePerCase":1,"warmupPerCase":WARMUP_PER_CASE,"pressurePerCase":PRESSURE_PER_CASE,"isolatedPerCase":ISOLATED_PER_CASE,"isolatedThresholdMs":ISOLATED_THRESHOLD_MS,
         "percentiles":"nearest-rank requestMs per individual case, never across cases","boundary":"requestMs ends at complete HTTP body consumption before artifact writes and JSON validation; validatedRequestMs is client-cycle diagnostic only; workers validate before next task","cold":"first-use sequence after registry readiness; not independent cold start per case; no disk-cold claim"}}),
     )

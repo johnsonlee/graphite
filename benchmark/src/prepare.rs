@@ -20,9 +20,12 @@ pub struct PrepareArgs {
     /// Dedicated checkout: benchmark source files are installed into this tree.
     #[arg(long)]
     pub base_source: PathBuf,
-    /// Dedicated PR checkout, also the owner of the shared benchmark harness.
+    /// Dedicated PR checkout: benchmark source files are installed into this tree.
     #[arg(long)]
     pub head_source: PathBuf,
+    /// Independent trusted checkout supplying identical policy and harness for both revisions.
+    #[arg(long)]
+    pub harness_source: PathBuf,
     #[arg(long)]
     pub output: PathBuf,
 }
@@ -31,6 +34,7 @@ const HARNESS: &[&str] = &[
     "Fixture64BuildBenchmark.kt",
     "Fixture64GraphPreparation.kt",
     "BenchmarkCorpus.kt",
+    "WholeJarBuildSaveBenchmark.kt",
 ];
 
 fn module(source: &Path) -> Result<PathBuf> {
@@ -78,11 +82,14 @@ fn command(
     let mut env = BTreeMap::new();
     env.insert(
         "JAVA_TOOL_OPTIONS".into(),
-        "-Xmx4g -XX:+ExitOnOutOfMemoryError -Dgraphite.correctness.only=true".into(),
+        "-Xmx4g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError -Dgraphite.correctness.only=true".into(),
     );
     env.insert("GRADLE_OPTS".into(), "-Dorg.gradle.daemon=false -Dorg.gradle.project.kotlin.compiler.execution.strategy=in-process".into());
     for key in ["JAVA_OPTS", "JVM_OPTS"] {
-        env.insert(key.into(), "-Xmx4g -XX:+ExitOnOutOfMemoryError".into());
+        env.insert(
+            key.into(),
+            "-Xmx4g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError".into(),
+        );
     }
     for key in ["_JAVA_OPTIONS", "JDK_JAVA_OPTIONS"] {
         env.insert(key.into(), "".into());
@@ -117,51 +124,103 @@ fn command(
     Ok(value)
 }
 
-fn build(source: &Path, head: &Path, output: &Path, role: &str) -> Result<Value> {
-    let target = output.join(role);
-    fs::create_dir_all(&target)?;
-    let revision = std::process::Command::new("git")
-        .args(["rev-parse", "HEAD"])
+fn identity(source: &Path, expression: &str) -> Result<String> {
+    let result = std::process::Command::new("git")
+        .args(["rev-parse", "--verify", expression])
         .current_dir(source)
         .env("GIT_NO_REPLACE_OBJECTS", "1")
         .output()?;
     ensure!(
-        revision.status.success(),
-        "cannot resolve {role} source commit"
+        result.status.success(),
+        "cannot resolve {expression} in {}",
+        source.display()
     );
-    let revision = String::from_utf8(revision.stdout)?.trim().to_owned();
+    let value = String::from_utf8(result.stdout)?.trim().to_owned();
     ensure!(
-        revision.len() == 40 && revision.chars().all(|c| c.is_ascii_hexdigit()),
-        "invalid {role} commit"
+        value.len() == 40 && value.bytes().all(|c| c.is_ascii_hexdigit()),
+        "invalid Git identity"
     );
-    let source_module = module(source)?;
-    let harness_relative = Path::new("src/jmh/kotlin/io/johnsonlee/graphite/webgraph");
-    let owner_harness = module(head)?.join(harness_relative);
-    let destination = source_module.join(harness_relative);
-    fs::create_dir_all(&destination)?;
-    let mut overlays = Vec::new();
-    for name in HARNESS {
-        let original = owner_harness.join(name);
-        let installed = destination.join(name);
-        ensure!(
-            !original.is_symlink() && !installed.is_symlink(),
-            "redirected harness file: {name}"
-        );
-        if original != installed {
-            fs::copy(&original, &installed)?;
+    Ok(value.to_ascii_lowercase())
+}
+
+fn distinct_checkouts(paths: &[&Path]) -> Result<()> {
+    for (index, left) in paths.iter().enumerate() {
+        for right in &paths[index + 1..] {
+            ensure!(
+                !left.starts_with(right) && !right.starts_with(left),
+                "base, head and trusted harness must be distinct, non-nested checkouts"
+            );
         }
-        overlays.push(json!({"file":name,"sha256":hash(&original)?}));
     }
-    let args = [
+    Ok(())
+}
+
+// Reject redirected parent directories as well as redirected leaf files before any write.
+fn safe_path(root: &Path, relative: &Path) -> Result<PathBuf> {
+    let mut path = root.to_owned();
+    for component in relative.components() {
+        ensure!(
+            matches!(component, std::path::Component::Normal(_)),
+            "invalid overlay path"
+        );
+        path.push(component);
+        ensure!(
+            !path.is_symlink(),
+            "redirected harness path: {}",
+            path.display()
+        );
+    }
+    Ok(path)
+}
+
+fn install_harness(source: &Path, trusted: &Path, target: &Path) -> Result<Vec<Value>> {
+    let source_module = module(source)?;
+    let trusted_module = module(trusted)?;
+    let jmh_relative = Path::new("src/jmh/kotlin/io/johnsonlee/graphite/webgraph");
+    let mut files: Vec<PathBuf> = HARNESS.iter().map(|name| jmh_relative.join(name)).collect();
+    files.push(
+        "src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt".into(),
+    );
+    let mut overlays = Vec::new();
+    for relative in files {
+        let original = safe_path(
+            trusted,
+            &trusted_module.strip_prefix(trusted)?.join(&relative),
+        )?;
+        let installed = safe_path(source, &source_module.strip_prefix(source)?.join(&relative))?;
+        fs::create_dir_all(installed.parent().context("overlay parent")?)?;
+        fs::copy(&original, &installed)?;
+        overlays.push(json!({"file":relative,"sha256":hash(&original)?}));
+    }
+    let original = safe_path(trusted, Path::new("benchmark/jvm/whole-jar.init.gradle"))?;
+    fs::copy(&original, target.join("whole-jar.init.gradle"))?;
+    overlays.push(json!({"file":"benchmark/jvm/whole-jar.init.gradle","sha256":hash(&original)?}));
+    Ok(overlays)
+}
+
+fn build(source: &Path, trusted: &Path, output: &Path, role: &str) -> Result<Value> {
+    let target = output.join(role);
+    fs::create_dir_all(&target)?;
+    // Capture production source identity before installing any trusted harness files.
+    let revision = identity(source, "HEAD^{commit}")?;
+    let source_tree = identity(source, "HEAD^{tree}")?;
+    fs::write(target.join("source-tree.txt"), format!("{source_tree}\n"))?;
+    let source_module = module(source)?;
+    let overlays = install_harness(source, trusted, &target)?;
+    let mut args: Vec<OsString> = [
         ":webgraph:jmhJar",
         ":webgraph:prepareBenchmarkFixtures",
         "--no-daemon",
         "--max-workers=2",
-        "-Dorg.gradle.jvmargs=-Xmx4g -XX:+ExitOnOutOfMemoryError",
+        "-Dorg.gradle.jvmargs=-Xmx4g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError",
     ]
     .into_iter()
     .map(OsString::from)
     .collect();
+    args.extend([
+        OsString::from("--init-script"),
+        target.join("whole-jar.init.gradle").into_os_string(),
+    ]);
     let jvm = command("jvm-build", source.join("gradlew"), args, source, &target)?;
     let jar = one_file(&source_module.join("build/libs"), |name| {
         name.ends_with("-jmh.jar")
@@ -222,7 +281,7 @@ fn build(source: &Path, head: &Path, output: &Path, role: &str) -> Result<Value>
         target.join("graphite"),
     )?;
     Ok(
-        json!({"role":role,"revision":revision,"passed":true,"overlays":overlays,"fixtures":fixtures,
+        json!({"role":role,"revision":revision,"sourceTree":source_tree,"passed":true,"overlays":overlays,"fixtures":fixtures,
               "jvmBuild":jvm,"nativeBuild":native,"jmhJarSha256":hash(&target.join("webgraph-jmh.jar"))?,
               "nativeSha256":hash(&target.join("graphite"))?}),
     )
@@ -231,28 +290,135 @@ fn build(source: &Path, head: &Path, output: &Path, role: &str) -> Result<Value>
 pub fn run(args: &PrepareArgs) -> Result<Value> {
     let base = args.base_source.canonicalize()?;
     let head = args.head_source.canonicalize()?;
-    ensure!(
-        base != head,
-        "base and head must be distinct dedicated checkouts"
-    );
+    let trusted = args.harness_source.canonicalize()?;
+    distinct_checkouts(&[&base, &head, &trusted])?;
+    let harness_revision = identity(&trusted, "HEAD^{commit}")?;
+    let harness_tree = identity(&trusted, "HEAD^{tree}")?;
     ensure!(
         !args.output.exists(),
         "prepare requires a fresh output directory"
     );
+    let output_parent = args
+        .output
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    ensure!(
+        !output_parent.canonicalize()?.starts_with(&trusted),
+        "output must not modify the trusted checkout"
+    );
     fs::create_dir_all(&args.output)?;
     let output = args.output.canonicalize()?;
+    ensure!(
+        !output.starts_with(&trusted),
+        "output must not modify the trusted checkout"
+    );
     let mut results = Vec::new();
     for (role, source) in [("base", &base), ("head", &head)] {
-        results.push(match build(source, &head, &output, role) {
+        results.push(match build(source, &trusted, &output, role) {
             Ok(result) => result,
             Err(error) => json!({"role":role,"passed":false,"error":format!("{error:#}")}),
         });
     }
     let report = json!({"schema":"graphite-benchmark-preparation-v1", "performanceAcceptance":false,
+                       "harnessRevision":harness_revision,"harnessTree":harness_tree,
                        "passed":results.iter().all(|r| r["passed"] == true),"builds":results});
     fs::write(
         output.join("preparation.json"),
         serde_json::to_vec_pretty(&report)?,
     )?;
     Ok(report)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn temporary() -> PathBuf {
+        let root = std::env::temp_dir().join(format!(
+            "graphite-prepare-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir_all(&root).unwrap();
+        root
+    }
+
+    fn fixture(root: &Path, contents: &str) {
+        let module = root.join("frontend/jvm/webgraph");
+        let jmh = module.join("src/jmh/kotlin/io/johnsonlee/graphite/webgraph");
+        fs::create_dir_all(&jmh).unwrap();
+        fs::write(module.join("build.gradle.kts"), "original build").unwrap();
+        for name in HARNESS {
+            fs::write(jmh.join(name), contents).unwrap();
+        }
+        let shared = module.join("src/benchmark/kotlin/io/johnsonlee/graphite/webgraph");
+        fs::create_dir_all(&shared).unwrap();
+        fs::write(shared.join("LargeCorpusValidation.kt"), contents).unwrap();
+        fs::create_dir_all(root.join("benchmark/jvm")).unwrap();
+        fs::write(root.join("benchmark/jvm/whole-jar.init.gradle"), contents).unwrap();
+    }
+
+    #[test]
+    fn both_revisions_receive_trusted_policy_without_changing_build_files_or_trust() {
+        let root = temporary();
+        let trusted = root.join("trusted");
+        fixture(&trusted, "reviewed policy");
+        for role in ["base", "head"] {
+            let source = root.join(role);
+            let output = root.join(format!("{role}-output"));
+            fixture(&source, "candidate policy must not survive");
+            fs::create_dir(&output).unwrap();
+            let overlays = install_harness(&source, &trusted, &output).unwrap();
+            assert_eq!(overlays.len(), 6);
+            for file in overlays.iter().take(5) {
+                let relative = file["file"].as_str().unwrap();
+                assert_eq!(
+                    fs::read_to_string(module(&source).unwrap().join(relative)).unwrap(),
+                    "reviewed policy"
+                );
+                assert_eq!(
+                    fs::read_to_string(module(&trusted).unwrap().join(relative)).unwrap(),
+                    "reviewed policy"
+                );
+            }
+            assert_eq!(
+                fs::read_to_string(output.join("whole-jar.init.gradle")).unwrap(),
+                "reviewed policy"
+            );
+            assert_eq!(
+                fs::read_to_string(module(&source).unwrap().join("build.gradle.kts")).unwrap(),
+                "original build"
+            );
+        }
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn overlapping_checkouts_and_redirected_overlay_directories_are_rejected() {
+        assert!(distinct_checkouts(&[
+            Path::new("/base"),
+            Path::new("/head"),
+            Path::new("/trusted")
+        ])
+        .is_ok());
+        assert!(distinct_checkouts(&[
+            Path::new("/trusted/base"),
+            Path::new("/head"),
+            Path::new("/trusted")
+        ])
+        .is_err());
+        assert!(distinct_checkouts(&[Path::new("/same"), Path::new("/same")]).is_err());
+        let root = temporary();
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink("/tmp", root.join("redirect")).unwrap();
+            assert!(safe_path(&root, Path::new("redirect/new-file")).is_err());
+        }
+        assert!(safe_path(&root, Path::new("../escape")).is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
 }

@@ -3,7 +3,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
-/** Every inherited JVM checks its actual heap, including Gradle workers and forks. */
+/**
+ * Checks actual heap for the launcher and every inherited JVM, including JMH probes/forks.
+ * The controller fixes G1GC as well as -Xmx, so effective maxMemory is comparable across arms.
+ * Hosted -XX:+ExitOnOutOfMemoryError is intentionally stricter than production paths that
+ * catch an OOM: any OOM attempt fails this gate, even when production could recover.
+ */
 public final class HeapGuard {
     public static void premain(String args, Instrumentation ignored) throws Exception {
         String[] fields = args.split(",", 2);

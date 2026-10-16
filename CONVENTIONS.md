@@ -19,7 +19,9 @@
 - Every PR must pass `benchmark-regression-gate` for correctness, complete execution and OOM checks.
 - GitHub-hosted runners do not enforce performance thresholds. Their timing observations are report-only.
 - Use the Rust controller in `benchmark/`: frontend build/save runs on its native technology stack (JMH for JVM), and production Rust servers run the real64 load/query workload.
-- Run exact base/head revisions on the same runner with matching source fixtures and fixed settings. JAR workloads use 4 GiB maximum heap; APK workloads use 8 GiB. Never retry an OOM with a larger heap.
+- Run product merge-base/head revisions on the same runner with matching source fixtures and fixed settings. JAR workloads use 4 GiB maximum heap; APK workloads use 8 GiB. Never retry an OOM with a larger heap.
+- Build the benchmark controller and shared frontend validation harness from the trusted target base tip. Intentional semantic changes need exact reviewed expectations landed there before the feature run.
+- Whole Tika, Hive and Kotlin compiler JARs must complete JMH build/save/readback under 4 GiB in addition to the 64-shard workload; single-graph durations are correctness diagnostics only.
 - Keep one benchmark report comment per PR and update it for new commits. Include exact source revisions, correctness/OOM outcomes, base/head values, absolute changes before percentages, sampling methods, measurement boundaries, and links to raw evidence.
 - Missing, failed or incomparable measurements must remain explicit; do not turn them into zero values or performance PASS results.
 - Existing historical reports and experiment records remain historical evidence with their original limitations. A report-only hosted timing improvement is not formal performance acceptance.

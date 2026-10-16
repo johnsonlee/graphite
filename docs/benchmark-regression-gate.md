@@ -4,10 +4,13 @@ Every PR runs the Rust controller in [`benchmark/`](../benchmark/README.md). The
 `benchmark-regression-gate` check now enforces correctness, complete execution and OOM checks.
 It does **not** reject a PR because a timing, CPU or RSS comparison becomes worse.
 
-The same GitHub runner executes the exact PR base and head. JVM frontend build/save runs through
-JMH with a 4 GiB heap and fresh real64 graph outputs. Each revision's Rust server then loads its
+The same GitHub runner executes the product merge-base and exact PR head. JVM frontend build/save runs through
+JMH with G1, a 4 GiB heap, whole-JAR correctness/OOM cases and fresh real64 graph outputs. Each revision's Rust server then loads its
 own graphs and executes the fixed multi-graph pressure plan. The fixed APK heap policy is 8 GiB;
 APK is not a member of the existing four-JAR real64 corpus.
+
+Controller policy and frontend harness come from the trusted target base tip; exact reviewed
+semantic transitions allow intentional result changes without relaxing unrelated checks.
 
 One Markdown performance report comment is created per PR and updated for subsequent commits.
 It includes source SHAs, correctness/OOM results, base/head timing values, absolute and percentage

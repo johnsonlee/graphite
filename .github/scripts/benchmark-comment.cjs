@@ -47,23 +47,43 @@ async function publish({ github, context, core, directory }) {
     if (pull.state !== 'open' || pull.base.repo.id !== context.payload.repository.id || pull.head.sha !== run.head_sha) continue;
     const artifactName = `benchmark-report-${pull.number}-${run.run_attempt}`;
     const artifact = artifacts.find(item => item.name === artifactName && !item.expired);
-    let recordedBase = association.base?.sha;
+    const recordedBaseTip = association.base?.sha;
+    let comparisonBase;
     let markdown = `Correctness/OOM execution: **${run.conclusion}**.\n\nNo complete report was produced. See the workflow diagnostics.\n\nTimings are informational and do not decide the gate.\n`;
     const reportDirectory = path.join(directory, artifactName);
     const filename = path.join(reportDirectory, 'summary.md');
+    if (recordedBaseTip) {
+      try {
+        const comparison = await github.rest.repos.compareCommits({
+          ...repo, base: recordedBaseTip, head: run.head_sha,
+        });
+        comparisonBase = comparison.data.merge_base_commit?.sha;
+        if (!/^[0-9a-f]{40}$/.test(comparisonBase)) throw new Error('Missing comparison merge base');
+      } catch (error) {
+        if (artifact && fs.existsSync(filename)) throw error;
+        comparisonBase = undefined;
+        core.info(`Comparison merge base unavailable for run ${run.id}/${run.run_attempt}`);
+      }
+    }
     if (artifact && fs.existsSync(filename)) {
       const identityFile = path.join(reportDirectory, 'report.json');
       const identityStat = fs.lstatSync(identityFile);
       if (!identityStat.isFile() || identityStat.size > 4 * 1024 * 1024) throw new Error('Invalid report identity');
       const identity = JSON.parse(fs.readFileSync(identityFile, 'utf8'));
+      // The target branch tip selects the trusted controller, while the actual
+      // comparison is rooted at its Git merge base with the candidate. Resolve
+      // that identity from GitHub, never from the report being verified.
       if (!/^[0-9a-f]{40}$/.test(identity.baseSha) || identity.headSha !== run.head_sha ||
-          identity.baseSha !== pull.base.sha || (recordedBase && identity.baseSha !== recordedBase)) {
+          !comparisonBase || identity.baseSha !== comparisonBase) {
         throw new Error('Report does not describe this workflow run');
       }
-      recordedBase = identity.baseSha;
       const stat = fs.lstatSync(filename);
       if (!stat.isFile() || stat.size > 4 * 1024 * 1024) throw new Error('Invalid benchmark Markdown artifact');
       markdown = fs.readFileSync(filename, 'utf8');
+    }
+    if (recordedBaseTip && recordedBaseTip !== pull.base.sha) {
+      core.info(`Ignoring run ${run.id}/${run.run_attempt}: PR base has changed`);
+      continue;
     }
     const comments = await github.paginate(github.rest.issues.listComments,
       { ...repo, issue_number: pull.number, per_page: 100 });
@@ -73,8 +93,8 @@ async function publish({ github, context, core, directory }) {
     const latest = (await github.rest.pulls.get({ ...repo, pull_number: pull.number })).data;
     if (latest.state !== 'open' || latest.head.sha !== run.head_sha) continue;
     // A changed base needs a fresh matched comparison too.
-    if (recordedBase && latest.base.sha !== recordedBase) continue;
-    const body = bodyFor(markdown, run, recordedBase || 'unavailable',
+    if (recordedBaseTip && latest.base.sha !== recordedBaseTip) continue;
+    const body = bodyFor(markdown, run, comparisonBase || 'unavailable',
       artifact ? `${run.html_url}/artifacts/${artifact.id}` : run.html_url);
     if (existing) await github.rest.issues.updateComment({ ...repo, comment_id: existing.id, body });
     else await github.rest.issues.createComment({ ...repo, issue_number: pull.number, body });

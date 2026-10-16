@@ -16,10 +16,39 @@ jobs:
     name: benchmark-harness-tests
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    outputs:
+      comparison-base: ${{ steps.sources.outputs.comparison-base }}
+      controller-ref: ${{ steps.sources.outputs.controller-ref }}
     steps:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
+        fetch-depth: 0
+        persist-credentials: false
+    - name: Resolve product ancestry and trusted controller source
+      id: sources
+      env:
+        TARGET_BASE: ${{ github.event.pull_request.base.sha }}
+        PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: |
+        test "$(git rev-parse HEAD)" = "$PR_HEAD"
+        comparison_base=$(git merge-base "$TARGET_BASE" "$PR_HEAD")
+        controller_ref="$TARGET_BASE"
+        if ! git cat-file -e "$TARGET_BASE:benchmark/Cargo.toml" 2>/dev/null; then
+          # One reviewed migration snapshot, never the candidate's moving HEAD.
+          test "$GITHUB_REPOSITORY" = johnsonlee/graphite
+          test "$PR_NUMBER" = 179
+          test "$TARGET_BASE" = 7c693e0f29ef5abf318640bdb20c31bf84d8818e
+          controller_ref=BOOTSTRAP_CONTROLLER_SNAPSHOT
+        fi
+        echo "comparison-base=$comparison_base" >> "$GITHUB_OUTPUT"
+        echo "controller-ref=$controller_ref" >> "$GITHUB_OUTPUT"
+    - name: Checkout trusted controller and frontend harness
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ steps.sources.outputs.controller-ref }}
+        path: trusted
         persist-credentials: false
     - uses: dtolnay/rust-toolchain@stable
       with:
@@ -29,7 +58,10 @@ jobs:
         distribution: temurin
         java-version: '17'
     - uses: Swatinem/rust-cache@v2
-    - name: Verify the benchmark controller
+      with:
+        workspaces: trusted
+    - name: Verify the trusted benchmark controller
+      working-directory: trusted
       run: |
         cargo fmt --all --check
         cargo clippy --locked -p graphite-benchmark --all-targets -- -D warnings
@@ -39,7 +71,7 @@ jobs:
     - uses: actions/upload-artifact@v7
       with:
         name: benchmark-controller
-        path: target/release/graphite-benchmark
+        path: trusted/target/release/graphite-benchmark
         if-no-files-found: error
         # Reuse the same binary when only failed downstream jobs are rerun.
         overwrite: true
@@ -51,20 +83,26 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 180
     env:
-      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      BASE_SHA: ${{ needs.harness.outputs.comparison-base }}
       HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
     - name: Checkout exact base
       uses: actions/checkout@v7
       with:
-        ref: ${{ github.event.pull_request.base.sha }}
+        ref: ${{ needs.harness.outputs.comparison-base }}
         path: base
         persist-credentials: false
-    - name: Checkout exact head and shared benchmark harness
+    - name: Checkout exact product head
       uses: actions/checkout@v7
       with:
         ref: ${{ github.event.pull_request.head.sha }}
         path: head
+        persist-credentials: false
+    - name: Checkout the matching trusted frontend harness
+      uses: actions/checkout@v7
+      with:
+        ref: ${{ needs.harness.outputs.controller-ref }}
+        path: trusted
         persist-credentials: false
     - uses: actions/setup-java@v5
       with:
@@ -87,7 +125,7 @@ jobs:
       id: prepare
       run: |
         chmod +x controller/graphite-benchmark
-        controller/graphite-benchmark prepare --base-source base --head-source head --output prepared
+        controller/graphite-benchmark prepare --base-source base --head-source head --harness-source trusted --output prepared
     - name: JMH frontend build and save under the fixed heap ceiling
       if: ${{ !cancelled() && steps.prepare.outcome != 'skipped' }}
       run: |
@@ -130,7 +168,9 @@ jobs:
           results/**/*.log
           results/**/*.receipt
           results/**/*.tsv
+          results/**/*.txt
           prepared/preparation.json
+          prepared/**/source-tree.txt
           prepared/**/*.log
         if-no-files-found: warn
         retention-days: 14

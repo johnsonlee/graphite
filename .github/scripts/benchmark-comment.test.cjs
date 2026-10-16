@@ -65,13 +65,20 @@ function harness(t, options = {}) {
       schema: 'graphite-benchmark-report-v1', baseSha, headSha: run.head_sha, ...options.identity,
     }));
   }
-  const calls = { creates: [], updates: [], info: [], gets: [], pagination: [] };
+  const calls = { creates: [], updates: [], info: [], gets: [], pagination: [], comparisons: [] };
   const github = { rest: {
     pulls: { get: async request => {
       calls.gets.push(request);
       return { data: calls.gets.length > 1 ? (options.latestPull || initialPull) : (options.initialPull || initialPull) };
     } },
-    repos: { listPullRequestsAssociatedWithCommit() {} },
+    repos: {
+      listPullRequestsAssociatedWithCommit() {},
+      compareCommits: async request => {
+        calls.comparisons.push(request);
+        if (options.comparisonError) throw new Error(options.comparisonError);
+        return { data: { merge_base_commit: { sha: options.mergeBaseSha || baseSha } } };
+      },
+    },
     actions: { listWorkflowRunArtifacts() {} },
     issues: {
       listComments() {},
@@ -144,6 +151,37 @@ test('base changing during publication prevents labeling old measurements as cur
   } });
   await h.invoke();
   assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+});
+
+test('a valid run report quietly skips an already advanced PR base', async t => {
+  for (const existing of [false, true]) {
+    const h = harness(t, { initialPull: {
+      number: 9, state: 'open', base: { sha: 'c'.repeat(40), repo: { id: 1 } }, head: { sha: run.head_sha },
+    }, comments: existing ? [{ id: 50, user: { login: 'github-actions[bot]' }, body: MARKER }] : [] });
+    await h.invoke();
+    assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+    assert.equal(h.calls.gets.length, 1);
+    assert.equal(h.calls.pagination.filter(call => call.method === h.github.rest.issues.listComments).length, 0);
+    assert.match(h.calls.info[0], /PR base has changed/);
+  }
+});
+
+test('an advanced PR base does not excuse an artifact that misstates its run base', async t => {
+  const h = harness(t, { identity: { baseSha: 'c'.repeat(40) }, initialPull: {
+    number: 9, state: 'open', base: { sha: 'c'.repeat(40), repo: { id: 1 } }, head: { sha: run.head_sha },
+  } });
+  await assert.rejects(h.invoke, /Report does not describe this workflow run/);
+  assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+  assert.equal(h.calls.info.length, 0);
+});
+
+test('missing-report fallback also quietly skips a recorded obsolete base', async t => {
+  const h = harness(t, { report: false, artifacts: [], initialPull: {
+    number: 9, state: 'open', base: { sha: 'c'.repeat(40), repo: { id: 1 } }, head: { sha: run.head_sha },
+  } });
+  await h.invoke();
+  assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+  assert.match(h.calls.info[0], /PR base has changed/);
 });
 
 test('an older run or old/equal attempt cannot overwrite a marked newer report', async t => {
@@ -227,17 +265,16 @@ test('oversized or redirected identity files are rejected as artifact data', asy
   assert.equal(redirected.calls.creates.length + redirected.calls.updates.length, 0);
 });
 
-test('without association base SHA, artifact base must still match the current PR', async t => {
+test('without recorded run base, an artifact cannot establish its own comparison identity', async t => {
   const h = harness(t, { run: { pull_requests: [{ number: 9 }] }, identity: { baseSha: 'c'.repeat(40) } });
   await assert.rejects(h.invoke, /Report does not describe this workflow run/);
   assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
 });
 
-test('artifact base remains guarded on the final read when association omits it', async t => {
-  const h = harness(t, { run: { pull_requests: [{ number: 9 }] }, latestPull: {
-    number: 9, state: 'open', base: { sha: 'c'.repeat(40), repo: { id: 1 } }, head: { sha: run.head_sha },
-  } });
-  await h.invoke();
+test('even a plausible artifact base cannot replace a missing recorded run base', async t => {
+  const h = harness(t, { run: { pull_requests: [{ number: 9 }] } });
+  await assert.rejects(h.invoke, /Report does not describe this workflow run/);
+  assert.equal(h.calls.comparisons.length, 0);
   assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
 });
 
@@ -270,4 +307,43 @@ test('a retry never reads an artifact from an earlier attempt', async t => {
   assert.match(h.calls.creates[0].body, /No complete report was produced/);
   assert.ok(!h.calls.creates[0].body.includes('Measured base/head timings'));
   assert.ok(!h.calls.creates[0].body.includes('/artifacts/49'));
+});
+
+test('a divergent target branch compares and labels the actual merge base', async t => {
+  const mergeBase = 'c'.repeat(40);
+  const h = harness(t, { mergeBaseSha: mergeBase, identity: { baseSha: mergeBase } });
+  await h.invoke();
+  assert.deepEqual(h.calls.comparisons, [{ owner: 'johnsonlee', repo: 'graphite', base: h.baseSha, head: run.head_sha }]);
+  assert.equal(h.calls.creates.length, 1);
+  assert.ok(h.calls.creates[0].body.includes(`Base: \`${mergeBase}\``));
+  assert.ok(!h.calls.creates[0].body.includes(`Base: \`${h.baseSha}\``));
+});
+
+test('target branch tip cannot masquerade as comparison merge base', async t => {
+  const h = harness(t, { mergeBaseSha: 'c'.repeat(40) });
+  await assert.rejects(h.invoke, /Report does not describe this workflow run/);
+  assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+});
+
+test('valid merge-base evidence quietly skips an advanced controller base tip', async t => {
+  const mergeBase = 'c'.repeat(40);
+  const h = harness(t, { mergeBaseSha: mergeBase, identity: { baseSha: mergeBase }, initialPull: {
+    number: 9, state: 'open', base: { sha: 'd'.repeat(40), repo: { id: 1 } }, head: { sha: run.head_sha },
+  } });
+  await h.invoke();
+  assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+  assert.match(h.calls.info[0], /PR base has changed/);
+});
+
+test('merge-base lookup failure cannot authorize report data', async t => {
+  const h = harness(t, { comparisonError: 'GitHub comparison unavailable' });
+  await assert.rejects(h.invoke, /GitHub comparison unavailable/);
+  assert.equal(h.calls.creates.length + h.calls.updates.length, 0);
+});
+
+test('missing-report fallback labels unresolved merge base unavailable', async t => {
+  const h = harness(t, { comparisonError: 'GitHub comparison unavailable', report: false, artifacts: [] });
+  await h.invoke();
+  assert.match(h.calls.creates[0].body, /Base: `unavailable`/);
+  assert.match(h.calls.creates[0].body, /No complete report was produced/);
 });

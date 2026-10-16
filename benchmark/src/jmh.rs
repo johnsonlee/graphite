@@ -40,7 +40,7 @@ pub struct JmhArgs {
     pub base_sha: String,
     #[arg(long)]
     pub head_sha: String,
-    #[arg(long, default_value = "PR base")]
+    #[arg(long, default_value = "PR merge-base")]
     pub base_label: String,
 }
 fn command(label: &str, program: &str, args: Vec<OsString>, output: &Path) -> ProcessSpec {
@@ -128,6 +128,52 @@ fn heap_audit(directory: &Path) -> Result<usize> {
     ensure!(count >= 2, "missing launcher or JMH fork heap receipts");
     Ok(count)
 }
+const REAL64_BENCHMARK: &str =
+    "io.johnsonlee.graphite.webgraph.Fixture64BuildBenchmark.buildAndSaveDistinctRealGraphs";
+const WHOLE_JAR_BENCHMARK: &str =
+    "io.johnsonlee.graphite.webgraph.WholeJarBuildSaveBenchmark.buildSaveAndValidateWholeJar";
+const WHOLE_JAR_CORPORA: [&str; 3] = ["tika", "hive", "kotlin-compiler"];
+
+fn require_frontend_coverage(rows: &BTreeMap<String, Value>) -> Result<&Value> {
+    let mut whole = BTreeSet::new();
+    let mut real64 = None;
+    for row in rows.values() {
+        match row["benchmark"].as_str() {
+            Some(REAL64_BENCHMARK) => {
+                ensure!(
+                    real64.replace(row).is_none(),
+                    "duplicate real64 build/save case"
+                );
+                ensure!(
+                    row.get("params")
+                        .is_none_or(|v| v.is_null() || v.as_object().is_some_and(|p| p.is_empty())),
+                    "unexpected real64 parameters"
+                );
+            }
+            Some(WHOLE_JAR_BENCHMARK) => {
+                let params = row["params"]
+                    .as_object()
+                    .context("missing whole-JAR corpus parameter")?;
+                let corpus = row["params"]["corpus"]
+                    .as_str()
+                    .context("missing whole-JAR corpus")?;
+                ensure!(
+                    params.len() == 1
+                        && WHOLE_JAR_CORPORA.contains(&corpus)
+                        && whole.insert(corpus),
+                    "unknown or duplicated whole-JAR corpus"
+                );
+            }
+            _ => anyhow::bail!("unexpected frontend benchmark case"),
+        }
+    }
+    ensure!(
+        whole.len() == WHOLE_JAR_CORPORA.len(),
+        "missing complete whole-JAR correctness/OOM cases"
+    );
+    real64.context("missing real64 build/save case")
+}
+
 fn parse_jmh(path: &Path, expected: usize, iterations: usize) -> Result<BTreeMap<String, Value>> {
     let value: Value = serde_json::from_slice(&fs::read(path)?)?;
     let rows = value.as_array().context("JMH result must be an array")?;
@@ -145,6 +191,20 @@ fn parse_jmh(path: &Path, expected: usize, iterations: usize) -> Result<BTreeMap
                 && row["measurementIterations"] == iterations,
             "unexpected JMH execution protocol"
         );
+        let jvm_args = row["jvmArgs"]
+            .as_array()
+            .context("missing actual JMH JVM arguments")?;
+        for required in [
+            "-Xmx4g",
+            "-XX:+UseG1GC",
+            "-XX:+ExitOnOutOfMemoryError",
+            "-Dgraphite.correctness.only=true",
+        ] {
+            ensure!(
+                jvm_args.iter().any(|arg| arg == required),
+                "missing fixed JMH JVM policy: {required}"
+            );
+        }
         ensure!(
             row["primaryMetric"]["scoreUnit"] == "ms/op",
             "JMH units must be ms/op"
@@ -232,6 +292,16 @@ fn source_inputs(root: &Path) -> Result<BTreeMap<String, String>> {
     }
     Ok(result)
 }
+fn source_tree(jar: &Path) -> Result<String> {
+    let identity = fs::read_to_string(jar.with_file_name("source-tree.txt"))?;
+    let identity = identity.trim();
+    ensure!(
+        identity.len() == 40 && identity.bytes().all(|c| c.is_ascii_hexdigit()),
+        "invalid prepared source tree identity"
+    );
+    Ok(identity.to_ascii_lowercase())
+}
+
 pub fn run(args: &JmhArgs) -> Result<Value> {
     fs::create_dir_all(&args.output)?;
     let output = args.output.canonicalize()?;
@@ -254,8 +324,12 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
             let jar = jar
                 .canonicalize()
                 .context("frontend JMH artifact unavailable for this revision")?;
+            let source_tree = source_tree(&jar)?;
             let props = vec![
+                format!("-Dgraphite.benchmark.sourceTree={source_tree}"),
                 "-Xmx4g".to_string(),
+                "-XX:+UseG1GC".into(),
+                "-Dgraphite.correctness.only=true".into(),
                 "-XX:+ExitOnOutOfMemoryError".into(),
                 format!(
                     "-Dgraphite.fixture64.output={}",
@@ -282,7 +356,7 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
                 "-cp".into(),
                 jar.into_os_string(),
                 "org.openjdk.jmh.Main".into(),
-                ".*Fixture64BuildBenchmark\\.buildAndSaveDistinctRealGraphs$".into(),
+                ".*(Fixture64BuildBenchmark\\.buildAndSaveDistinctRealGraphs|WholeJarBuildSaveBenchmark\\.buildSaveAndValidateWholeJar)$".into(),
                 "-f".into(),
                 "1".into(),
                 "-wi".into(),
@@ -315,7 +389,7 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
             spec.env.insert(
                 "JAVA_TOOL_OPTIONS".into(),
                 format!(
-                    "-Xmx4g -XX:+ExitOnOutOfMemoryError {}",
+                    "-Xmx4g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError {}",
                     quote(&format!(
                         "-javaagent:{}=jar,{}",
                         guard.display(),
@@ -327,11 +401,9 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
             let outcome = process::run(&spec)?;
             ensure!(outcome.success, "{}", outcome.reason);
             let receipts = heap_audit(&receipts)?;
-            let parsed = parse_jmh(&result_path, 1, 1)?;
-            let row = parsed
-                .into_values()
-                .next()
-                .context("missing completed build/save sample")?;
+            let parsed = parse_jmh(&result_path, 4, 1)?;
+            // Single whole-JAR values stay only in raw diagnostics, never performance report rows.
+            let row = require_frontend_coverage(&parsed)?.clone();
             validate_saved_graphs(&dir.join("graphs"))?;
             ensure!(
                 source_inputs(&fixtures)? == inputs,
@@ -343,7 +415,7 @@ pub fn run(args: &JmhArgs) -> Result<Value> {
             .as_ref()
             .map(|(_, n)| {
                 format!(
-                    "fresh 64-graph production build/save complete; {n} JVM receipts under 4 GiB"
+                    "fresh real64 build/save plus whole Tika/Hive/Kotlin correctness/readback complete; {n} G1 JVM receipts under 4 GiB; ExitOnOutOfMemoryError rejects even recoverable production OOM"
                 )
             })
             .unwrap_or_else(|e| format!("{e:#}"));
@@ -467,7 +539,7 @@ mod tests {
     fn incomplete_jmh_cannot_publish_timings() {
         let root = temp();
         let file = root.join("jmh.json");
-        let mut row = json!({"benchmark":"Fixture64BuildBenchmark.buildAndSaveDistinctRealGraphs","mode":"ss","forks":1,"warmupIterations":0,"measurementIterations":1,"primaryMetric":{"scoreUnit":"ms/op","rawData":[[1234.5]]}});
+        let mut row = json!({"benchmark":"Fixture64BuildBenchmark.buildAndSaveDistinctRealGraphs","mode":"ss","forks":1,"warmupIterations":0,"measurementIterations":1,"jvmArgs":["-Xmx4g","-XX:+UseG1GC","-XX:+ExitOnOutOfMemoryError","-Dgraphite.correctness.only=true"],"primaryMetric":{"scoreUnit":"ms/op","rawData":[[1234.5]]}});
         fs::write(&file, serde_json::to_vec(&vec![row.clone()]).unwrap()).unwrap();
         assert!(parse_jmh(&file, 1, 1).is_ok());
         row["primaryMetric"]["rawData"] = json!([[]]);
@@ -479,6 +551,42 @@ mod tests {
         assert!(parse_jmh(&file, 1, 1).is_err());
         fs::remove_dir_all(root).unwrap();
     }
+    #[test]
+    fn source_identity_is_required_and_cannot_inject_jvm_options() {
+        let root = temp();
+        let jar = root.join("webgraph-jmh.jar");
+        assert!(source_tree(&jar).is_err());
+        fs::write(
+            root.join("source-tree.txt"),
+            format!("{}\n", "a".repeat(40)),
+        )
+        .unwrap();
+        assert_eq!(source_tree(&jar).unwrap(), "a".repeat(40));
+        fs::write(
+            root.join("source-tree.txt"),
+            format!("{} -Xmx8g", "a".repeat(40)),
+        )
+        .unwrap();
+        assert!(source_tree(&jar).is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn frontend_requires_whole_inputs_but_reports_only_real64_time() {
+        let real64 = json!({"benchmark":REAL64_BENCHMARK,"primaryMetric":{"rawData":[[100.0]]}});
+        let mut rows = BTreeMap::from([("real64".to_owned(), real64)]);
+        assert!(require_frontend_coverage(&rows).is_err());
+        for corpus in WHOLE_JAR_CORPORA {
+            rows.insert(corpus.into(), json!({"benchmark":WHOLE_JAR_BENCHMARK,"params":{"corpus":corpus},"primaryMetric":{"rawData":[[999999.0]]}}));
+        }
+        let result = require_frontend_coverage(&rows).unwrap();
+        let timing = build_save_timing(Some(result), Some(result), true);
+        assert_eq!(timing["case"], "real64-build-save");
+        assert_eq!(timing["baseMs"], 100.0);
+        rows.get_mut("hive").unwrap()["params"]["corpus"] = json!("tika");
+        assert!(require_frontend_coverage(&rows).is_err());
+    }
+
     #[test]
     fn every_jvm_receipt_must_complete_under_policy() {
         let root = temp();

@@ -34,6 +34,10 @@ kover {
     }
 }
 
+// Share complete whole-JAR invariants between the JUnit entry points and isolated JMH forks.
+kotlin.sourceSets.named("test") { kotlin.srcDir("src/benchmark/kotlin") }
+kotlin.sourceSets.named("jmh") { kotlin.srcDir("src/benchmark/kotlin") }
+
 val androidIntegrationFixture: Configuration by configurations.creating
 androidIntegrationFixture.isTransitive = false
 val largeCorpusFixtures: Configuration by configurations.creating
@@ -47,6 +51,7 @@ val graphOverrideProperties = listOf(
 )
 
 dependencies {
+    add("jmhImplementation", kotlin("test"))
     api(project(":core"))
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
