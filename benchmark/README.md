@@ -1,5 +1,7 @@
 # Graphite benchmark controller
 
+English · [简体中文](README.zh.md)
+
 `graphite-benchmark` is a development-only Cargo workspace binary. It runs the same
 base/head workload on one machine and emits one result model as JSON, Markdown and HTML.
 Correctness, complete coverage and OOM failures block the PR. Timing differences never do.

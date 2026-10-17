@@ -1,5 +1,7 @@
 # CI scripts
 
+English · [简体中文](README.zh.md)
+
 CI helpers are TypeScript, executed directly with Bun. The runtime version is pinned
 in the `packageManager` field of `package.json`; `bun.lock` pins the development
 dependencies. Scripts use built-in modules and the existing `gh`, Java and
