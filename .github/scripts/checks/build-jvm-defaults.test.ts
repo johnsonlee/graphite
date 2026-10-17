@@ -90,14 +90,14 @@ test('JAR agent checks the real build JVM defaults and override after environmen
   assert.notEqual(repeated.status, 0, 'existing evidence must not be reused');
 });
 
-test('wrong effective heap or GC, omitted agent and corrupted graph fail the executable check', t => {
-  for (const [variable, expected] of [
-    ['WRONG_HEAP', /Effective JVM MaxHeapSize/],
-    ['WRONG_GC', /Effective JVM GCTimeRatio/],
-    ['MIX_PROFILE', /Explicit override must contain only -Xmx2g/],
-    ['SKIP_AGENT', /ENOENT/],
-    ['CORRUPT_GRAPH', /Persisted file differs/],
-  ] as const) {
+for (const [variable, expected] of [
+  ['WRONG_HEAP', /Effective JVM MaxHeapSize/],
+  ['WRONG_GC', /Effective JVM GCTimeRatio/],
+  ['MIX_PROFILE', /Explicit override must contain only -Xmx2g/],
+  ['SKIP_AGENT', /ENOENT/],
+  ['CORRUPT_GRAPH', /Persisted file differs/],
+] as const) {
+  test(`executable JVM check rejects ${variable}`, t => {
     const root = mkdtempSync(join(tmpdir(), 'build-defaults-reject-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const setup = fixture(root);
@@ -110,8 +110,8 @@ test('wrong effective heap or GC, omitted agent and corrupted graph fail the exe
       assert.ok(!existsSync(join(setup.output, `${failedCase}.json`)), 'failed JVM validation must not produce a receipt');
       assert.ok(!existsSync(join(setup.output, failedCase)), 'frontend main must not run after failed validation');
     }
-  }
-});
+  });
+}
 
 test('persisted comparison ignores only text comment lines and preserves bytes, paths and line endings', t => {
   const root = mkdtempSync(join(tmpdir(), 'persisted-equality-'));
