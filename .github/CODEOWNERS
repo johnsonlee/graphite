@@ -1,3 +1,4 @@
 /.github/ @johnsonlee
+/benchmark/ @johnsonlee
 /frontend/jvm/*/src/jmh/** @johnsonlee
 /frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt @johnsonlee

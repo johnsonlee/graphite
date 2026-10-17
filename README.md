@@ -740,7 +740,8 @@ graphite/
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 ├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
-├── Cargo.toml              # Cargo workspace: backend/* and cli
+├── benchmark/              # Rust benchmark runner and shared JVM validation
+├── Cargo.toml              # Cargo workspace: backend/*, cli and benchmark
 └── docs/
 ```
 

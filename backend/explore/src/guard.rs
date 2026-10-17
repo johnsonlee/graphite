@@ -225,6 +225,34 @@ mod tests {
     }
 
     #[test]
+    fn acquired_token_uses_the_effective_server_deadline() {
+        use std::time::{Duration, Instant};
+        let guard = CypherGuard::new(2, 1);
+        let requested = guard
+            .try_acquire(Some(60_000))
+            .ok()
+            .expect("requested permit");
+        let default = guard.try_acquire(None).ok().expect("default permit");
+        assert_eq!(requested.timeout_millis, 1);
+        assert_eq!(default.timeout_millis, 1);
+        // Wait past the configured deadline, without requiring any query to be slow
+        // or setting an upper bound on scheduler latency. Test the original tokens,
+        // so metadata alone cannot conceal an uncapped or missing deadline.
+        let after_deadline = Instant::now() + Duration::from_millis(2);
+        while Instant::now() < after_deadline {
+            std::thread::sleep(after_deadline.saturating_duration_since(Instant::now()));
+        }
+        assert!(matches!(
+            requested.cancel.check(),
+            Err(CypherError::Timeout(1))
+        ));
+        assert!(matches!(
+            default.cancel.check(),
+            Err(CypherError::Timeout(1))
+        ));
+    }
+
+    #[test]
     fn permits_are_bounded_and_released() {
         let g = CypherGuard::new(1, 1000);
         let p = g.try_acquire(None).ok().expect("first permit");

@@ -32,7 +32,7 @@ JVM 前端从**编译后的字节码**出发：方法描述符、字段引用和
 
 [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) 提供语法树。在其上构建同等级别的程序分析，需要另外实现符号与类型解析、控制流与数据流模型、实参与形参映射，以及跨方法分析。这些都是超出解析器职责的分析系统。Graphite 将程序图模型、持久化存储和 Cypher／MCP 访问整合在同一套系统中。
 
-这套基础也已用于生产规模：**单进程服务 40+ 张图、100M+ 节点**；仓库还提供包含 1,943 万节点的[公开 64 图演示及复现步骤](docs/public-scale-demo.md)。
+这套基础也已用于生产规模：**单进程服务 40+ 张图、100M+ 节点**；仓库还提供包含 1,940 万节点的[公开 64 图演示及复现步骤](docs/public-scale-demo.md)。
 
 | 问题 | 语法之外所需的信息 | Graphite 提供的可查询上下文 |
 |----------|---------------------------|-----------------------------|
@@ -194,6 +194,126 @@ graphite build app.jar -o /data/app-graph --include com.example
      `/usr/local/android-sdk`、`/usr/lib/android-sdk`
    - Windows：`%USERPROFILE%\AppData\Local\Android\Sdk`
 3. 从 `PATH` 中的 `adb`、`emulator` 或 `sdkmanager` 推断出的 SDK 根目录。
+
+### 在构图时折叠开关条件
+
+即使功能开关或实验尚未开启，将新代码放在开关后面的 PR 也会改变图。`--fold` 指定需要折叠的调用点：在构图时、任何节点创建之前，每个匹配的调用都会替换为常量。依赖该值的分支随之折叠，被排除的分支则被移除。如果开关折叠为 `false`，受它控制的代码块就不会留下任何图内容，无论代码写成 `if (gate) { ... }`、`if (!gate) return;` 还是 `x = a && gate()`。用同一份规则文件构建 base 和 head，比较两张图时就不会看到这些被开关屏蔽的代码。
+
+```bash
+graphite build app.jar -o /data/app-graph --include com.example --fold folds.yml
+```
+
+#### 折叠规则文件
+
+规则沿用图自身的术语，写法类似 Cypher `MATCH` 指定节点：需要匹配的 `CallSite` 属性、必须流入各参数的常量，以及调用将被替换成的常量。当属性和参数常量不足以描述要折叠的调用时，可以改用 Cypher 查询（见下文的 `select`）。JSON 和 YAML 使用相同的键。
+
+```yaml
+# folds.yml
+version: 1
+folds:
+  # Flags.isEnabled("new_checkout") 在所有位置都为 false
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: isEnabled }
+    args:
+      0: new_checkout
+    value: false
+
+  # Flags.isEnabled(Flag.DARK_MODE) 为 true，但仅限 checkout 包中的调用
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: isEnabled, caller_class: "com.example.checkout.*" }
+    args:
+      0: { EnumConstant: { enum_type: com.example.Flag, name: DARK_MODE } }
+    value: true
+
+  # Experiments.variant(<任意字符串>, 7L) 为 0；标签限定常量类型
+  - match:
+      CallSite: { callee_signature: com.example.Experiments.variant(java.lang.String,long) }
+    args:
+      0: { StringConstant: {} }
+      1: { LongConstant: { value: 7 } }
+    value: { IntConstant: { value: 0 } }
+
+  # Flags.limit() 的所有调用，不限制参数
+  - match:
+      CallSite: { callee_class: com.example.Flags, callee_name: limit }
+    value: 3
+```
+
+| 键 | 含义 |
+|---|---|
+| `version` | `1` |
+| `folds` | 按顺序列出的规则。每个调用只应用第一条匹配的规则 |
+| `match` | 仅允许 `CallSite` 标签，后跟调用点必须具有的属性。列出的所有属性都必须匹配；值中的 `*` 匹配任意长度的字符序列 |
+| `args` | 可选。将参数索引（第一个参数为 `0`）映射到必须流入该参数的常量节点。调用没有对应索引的参数时，不会匹配 |
+| `select` | 替代 `match`：在未应用折叠规则的图上执行 Cypher 查询，返回要折叠的 `CallSite` 节点。无论外层方法由谁调用，每个选中的调用都会折叠。`args`（与 `match` 中相同）和 `receiver_args` 是附加条件；后者指定产生接收者的调用必须传入哪些常量，例如 `Box a = boxed(1234); if (a.isOn())` 对应 `receiver_args: {0: 1234}`。无法证明这些条件成立的调用会被记录并保持原样 |
+| `value` | 调用将被替换成的常量 |
+| `frontend` | 可选。指定其他前端（`jvm`、`swift`、`js`）的规则会被当前前端跳过 |
+
+`CallSite` 属性与查询中使用的属性一致：`callee_class`、`callee_name`、`callee_signature`（`pkg.Cls.name(p1,p2)`，用于指定某个重载）、`callee_descriptor`（包含返回类型的 JVM 描述符，如 `(Ljava/lang/String;)Z`）、`caller_class`、`caller_name`、`caller_signature`、`caller_descriptor` 和 `ordinal`。至少需要一个 `callee_*` 属性。
+
+与图中的定义相同，`callee_class` 表示声明该方法的类：如果 `Sub.isEnabled()` 调用的方法声明在 `Base` 中，它对应的是 `callee_class: Base`。`ordinal` 按调用方法字节码中的语句顺序，从 `0` 开始统计对同一被调用方法的每次调用；这也包括图中以数据流而非调用点呈现的装箱和拆箱调用。因此，`{caller_signature, caller_descriptor, callee_signature, callee_descriptor, ordinal}` 可以标识唯一的调用点。`select` 查询从未应用规则的图中读取这个键，再将规则应用于同一份输入时，折叠的就是该调用。
+
+常量节点可以写成标量，也可以写成 `{Label: {properties}}`：
+
+| 写法 | 匹配对象 |
+|---|---|
+| `new_checkout`、`7`、`true`、`0.5` | 具有该值的任意标签常量。数值按数值比较，不受位宽影响，因此 `7` 可以匹配 `7L`；整数精确比较（保留 `long` 的全部位），浮点数遵循 IEEE 754（`-0.0` 匹配 `0.0`，`NaN` 不匹配任何值） |
+| `null` | `NullConstant` |
+| `{StringConstant: {value: "checkout_*"}}` | 字符串常量；其值也支持 glob 通配符 |
+| `{BooleanConstant: {value: true}}`、`{IntConstant: {value: 7}}`、`{LongConstant: {value: 7}}`、`{FloatConstant: {value: 1.5}}`、`{DoubleConstant: {value: 0.5}}` | 类型和值都完全一致的常量 |
+| `{StringConstant: {}}`、`{LongConstant: {}}` 等 | 该类型的任意常量 |
+| `{EnumConstant: {enum_type: com.example.Flag, name: DARK_MODE}}` | 枚举常量，即枚举类声明为枚举项的字段（带 `ACC_ENUM`；枚举类中的其他静态字段属于 `FieldNode`）。用作 `value` 时，调用会替换成该常量，方法必须返回这个枚举类型。与枚举常量的 `==`/`!=` 比较会折叠；操作数已知且枚举接收者非空时，`equals(Object)` 也会折叠 |
+| `{FieldNode: {class: com.example.Flags, name: MARKER}}` | 其他静态字段读取 |
+
+规则替换查找调用后，操作数已知的 String 和基本类型包装类 `equals(Object)` 比较也会折叠。`Objects.equals(Object, Object)` 和 Kotlin 对象比较的 `Intrinsics.areEqual` 支持已知值与 null。运行时作用域条件保持不变；未知值和自定义 `equals` 实现仍保留为调用。
+
+只有常量参数才能匹配：字面量、编译器内联的 `static final`，或枚举常量。经参数、字段或计算传入调用的键不属于这类常量，此时会记录该调用，但不折叠。标量形式的 `value` 按返回类型表示（`false` 用于 `boolean`，`3` 可用于 `int`、`long`、`float` 或 `double`，`null` 可用于任意引用类型）；带标签的常量则必须与返回类型完全匹配。返回类型无法表示该值的调用会被记录并保持原样。
+
+YAML 1.1 会将未加引号的 `on`、`off`、`yes` 或 `no` 解析为布尔值：方法名或键使用这些名称时，需要加引号。
+
+#### 用 Cypher 选择调用点
+
+`match` 只能描述一个调用：它的属性，以及流入其参数的常量。如果开关的键在别处构造，例如 `getAbTestOption(fn)` 中的 `fn` 经辅助方法返回 `ABTest.of(ImmutableList.of(ABKey.of(1234)))`，就不能仅靠一个调用描述它。这是图中的一条路径，可以直接用 Cypher 表达。`select` 规则就是这样的查询：
+
+```yaml
+version: 1
+folds:
+  # 常量 1234 经任意辅助方法流入的所有 getAbTestOption(...) 调用
+  - select: >
+      MATCH (k:IntConstant {value: 1234})-[:DATAFLOW*1..8]->(cs:CallSite {callee_name: 'getAbTestOption'})
+      RETURN cs
+    value: { EnumConstant: { enum_type: com.example.ABTestOption, name: CONTROL } }
+```
+
+查询中的字符串遵循 Cypher 语法，需要加引号，与 `match` 中可以不加引号的标量不同。`graphite build` 负责解析这类规则：先在输出目录旁的临时目录中构建未应用规则的图，用 Rust 引擎执行每条 `select`，读取各 `CallSite` 行的稳定键（`caller_signature`、`callee_signature`、`ordinal`），再折叠这些调用点并重新构图。查询必须只返回一列 `CallSite` 节点（`RETURN cs`）；返回属性、多列或其他节点的查询会被拒绝，并显示出错的行及其内容。查询未选中任何调用的规则，与未匹配到任何调用的 `match` 一样会被记录；启用 `--fold-strict` 时构建会失败。
+
+报告在 `select` 下保留查询，在 `selected` 下列出选中的键。对于已填好 `selected` 的文件（报告自身的 `folds`，或根据 `RETURN cs.caller_signature, cs.callee_signature, cs.ordinal` 手工填写的键），CLI 和 `graphite.jar build` 都只需一遍构建。单独运行 `graphite.jar build` 时，没有可执行查询的图，因此会拒绝尚未解析的 `select`。
+
+键之所以稳定，是因为 `ordinal` 按语句顺序标识调用方对同一被调用方法的第几次调用；构图与折叠阶段使用同一个函数，在相同方法体上计数。只有在同一方法中、该位置之前增删了对同一被调用方法的调用，序号才会改变。折叠移除调用后会留下序号空缺，保留下来的调用仍使用字节码中的原序号，因此从已折叠图中读取的键仍指向同一个调用。派生调用（通过函数值到达的 lambda 方法体）从 `-1` 开始递减编号，不能作为开关：查询返回这类调用时会被拒绝，应改为选择对函数值的调用。选择操作在未应用规则的图上进行，随后应用于相同字节码，因此会命中相同调用。
+
+#### 构建过程的诊断信息
+
+读取任何字节码之前，程序就会校验规则文件。每个错误都会指出文件、规则、键，以及应如何修正：
+
+```
+folds.yml: folds[0]: unknown CallSite property 'callee_clas' (did you mean 'callee_class'?); use callee_class, callee_name, callee_signature, caller_class, caller_name, caller_signature or ordinal
+folds.yml: folds[1]: 'args.0': unknown constant label 'String' (did you mean 'StringConstant'?); use BooleanConstant, Constant, DoubleConstant, EnumConstant, FieldNode, FloatConstant, IntConstant, LongConstant, NullConstant or StringConstant
+folds.yml: folds[2]: 'match.CallSite.callee_name' must be a string, got boolean true (YAML reads a bare on, off, yes or no as a boolean: quote it)
+```
+
+构建过程为每条规则输出一行信息。没有折叠任何调用的规则会产生警告，并列出最接近的调用，便于立即发现类名、键或调用方范围不正确的问题；同时还会给出一条 Cypher 查询，用于在未应用该规则的图上预览匹配结果：
+
+```
+fold CallSite {callee_class: com.example.Flags, callee_name: isEnabled} [0: "new_checkout"] = false: 0 call(s) in 0 method(s), 0 statement(s) removed, 1 unsupported
+  warning: this rule folded nothing, no call matched; the nearest are:
+    com.example.Flags.isEnabled(java.lang.String) is called with argument 0 = StringConstant {value: "new-checkout"} (12 call(s))
+    com.example.Flags.isEnabled(java.lang.String) is called with argument 0 = not a constant (1 call(s))
+    preview on a built graph: MATCH (cs:CallSite {callee_class: "com.example.Flags", callee_name: "isEnabled"}), (a0:Constant {value: "new_checkout"})-[:DATAFLOW*1..2]->(cs) RETURN cs.caller_signature AS caller, count(cs) AS calls
+Warning: no fold rule folded any call; the graph is the same as a build without --fold
+```
+
+`--fold-strict` 会使未匹配到任何调用的规则导致构建失败。输出目录中的 `graph.folds.json` 按原文件的结构保留所有规则，并为每条规则补充预览查询、已折叠的调用、调用方方法及其折叠前后的语句数、匹配到但无法折叠的调用及其原因，以及接近但未匹配的调用。它本身也可以作为折叠规则文件使用：`--fold graph.folds.json` 读取其中的规则，忽略附加信息。没有被规则触及的方法仍按前端默认流程处理，因此折叠只会改变调用了被折叠方法的那些方法。各处理阶段的详细行为见 `docs/constant-folding.md`。
+
 ## Kotlin API
 
 ### 构建与查询
@@ -400,6 +520,7 @@ RETURN graphId(call) AS source,
 ```
 
 加载多个图时，Explorer 首页默认显示此拓扑。孤立的图也会保持可见，双击一个图即可进入其类概览。
+
 ## 架构
 
 Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI*（`graphite`）组成。前端将编译产物转换为图，后端负责存储、提供服务和查询这些图，CLI 则驱动前后端。详见
@@ -421,7 +542,8 @@ graphite/
 │   ├── explore/            # HTTP server, UI, C4, topology
 │   └── bench/              # Kotlin-vs-Rust differential harness and benchmarks
 ├── cli/                    # `graphite` CLI (Rust): build, query, serve, mcp, frontend
-├── Cargo.toml              # Cargo workspace: backend/* and cli
+├── benchmark/              # Rust benchmark runner and shared JVM validation
+├── Cargo.toml              # Cargo workspace: backend/*, cli and benchmark
 └── docs/
 ```
 
@@ -456,7 +578,7 @@ graphite unpack app.graphite saved-graph/ # for graphite.jar or the Kotlin API (
 | 常量追踪 | 直接使用、局部变量、字段、跨类、枚举 |
 | 自动装箱 | 透明处理 `Integer.valueOf()` |
 | Lambda / 方法引用 | Java 与 Kotlin lambda、方法与可调用引用、`suspend` lambda、匿名类、SAM 转换以及 D8/R8 脱糖后的 lambda → 实际目标 |
-| 函数式分派 | 回调（含多层转发）、返回值、字段、构造器注入、捕获、可变参数、条件表达式、接口与重写边界 |
+| 函数式分派 | 回调（含多层转发）、返回值、字段、构造器注入、捕获、可变参数、条件表达式、接口与重写边界；当超过 64 个函数值流入同一个值时，不会将其解析到其中任何一个目标 |
 | Controller 继承 | 沿类继承层次发现端点 |
 | 泛型类型分析 | `ApiResponse<PageData<User>>` 嵌套结构 |
 | 分支可达性 | 通过条件常量分析识别死代码 |

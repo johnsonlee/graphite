@@ -1,0 +1,15 @@
+// Trusted shared validation for both source revisions, including bases predating this source set.
+// Tests keep their original source layout; only the real JMH harness receives these assertions.
+gradle.projectsEvaluated {
+    def webgraph = gradle.rootProject.project(':webgraph')
+    def kotlin = webgraph.extensions.getByName('kotlin')
+    def jmhSources = kotlin.sourceSets.getByName('jmh').kotlin
+    // Intermediate bases may already attach the old module-local policy. Exclude
+    // only that file; preserve every other JMH source and all ordinary test sources.
+    def legacyPolicy = webgraph.file(
+        'src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt').canonicalFile
+    jmhSources.exclude { details -> details.file.canonicalFile == legacyPolicy }
+    jmhSources.srcDir(gradle.rootProject.file('benchmark/jvm/src/main/kotlin'))
+    webgraph.dependencies.add('jmhImplementation',
+        "org.jetbrains.kotlin:kotlin-test:${kotlin.coreLibrariesVersion}")
+}

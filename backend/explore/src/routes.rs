@@ -30,7 +30,13 @@ pub const MAX_RESOURCE_BYTES: usize = 1_048_576;
 pub const C4_WARM_QUIET: std::time::Duration = std::time::Duration::from_secs(2);
 const C4_WARM_POLL: std::time::Duration = std::time::Duration::from_millis(200);
 
+#[cfg(test)]
+type CypherExecutionHook = Arc<dyn Fn(&mut Arc<CancelToken>, u64) + Send + Sync>;
+
 pub struct AppState {
+    // Test-only execution boundary: no hook or tuning surface exists in production.
+    #[cfg(test)]
+    cypher_before_execute: Option<CypherExecutionHook>,
     pub registry: Arc<GraphRegistry>,
     pub guard: Arc<CypherGuard>,
     pub version: String,
@@ -152,6 +158,8 @@ impl AppState {
         metrics_enabled: bool,
     ) -> AppState {
         AppState {
+            #[cfg(test)]
+            cypher_before_execute: None,
             registry,
             guard,
             version,
@@ -1872,6 +1880,8 @@ async fn run_cypher(
     };
     let timeout_millis = permit.timeout_millis;
     let guard = s.guard.clone();
+    #[cfg(test)]
+    let before_execute = s.cypher_before_execute.clone();
     let started = Instant::now();
     // The query runs on this worker thread, with the runtime told to move its other
     // tasks elsewhere first, rather than being handed to the blocking pool and awaited
@@ -1879,6 +1889,15 @@ async fn run_cypher(
     // request whose whole engine time is a few hundred -- and the concurrency guard
     // already bounds how many queries run at once, so the runtime keeps workers free.
     let result: Result<_, tokio::task::JoinError> = Ok(tokio::task::block_in_place(move || {
+        let cancel = permit.cancel.clone();
+        #[cfg(test)]
+        let cancel = {
+            let mut cancel = cancel;
+            if let Some(hook) = before_execute {
+                hook(&mut cancel, timeout_millis);
+            }
+            cancel
+        };
         let sources = match sources {
             CypherSources::Shared(sources) => sources,
             CypherSources::Leases(leases) => leases
@@ -1890,7 +1909,7 @@ async fn run_cypher(
                 .collect(),
         };
         let ex = Executor::new(sources, cross)
-            .with_cancel(permit.cancel.clone())
+            .with_cancel(cancel)
             .with_compact()
             .with_probe();
         let out = ex.execute(&query, Some(limit.max(0) as usize));
@@ -2353,6 +2372,150 @@ mod tests {
         assert_eq!(result["rowCount"], 2);
         assert_eq!(result["graphCount"], 2);
         assert_eq!(result["total"], json!({"value": 3, "relation": "gte"}));
+    }
+
+    /// The route is tested with real guard permits and the real executor, but an
+    /// execution barrier replaces any assumption about how long a query takes.
+    #[tokio::test(flavor = "multi_thread", worker_threads = 6)]
+    async fn capacity_timeout_rejection_and_recovery_do_not_depend_on_query_speed() {
+        use std::sync::{
+            atomic::{AtomicUsize, Ordering},
+            Condvar, Mutex,
+        };
+        use std::time::Duration;
+        use tower::ServiceExt;
+
+        let (_, original) = metrics_app();
+        let guard = Arc::new(CypherGuard::new(4, 10_000));
+        let mut state = AppState::new(
+            original.registry.clone(),
+            guard.clone(),
+            "test".into(),
+            true,
+        );
+        struct ReleaseOnDrop(Arc<(Mutex<bool>, Condvar)>);
+        impl Drop for ReleaseOnDrop {
+            fn drop(&mut self) {
+                *self.0 .0.lock().unwrap_or_else(|error| error.into_inner()) = true;
+                self.0 .1.notify_all();
+            }
+        }
+        let released = Arc::new((Mutex::new(false), Condvar::new()));
+        // An assertion failure must not leave blocking runtime workers parked.
+        let _cleanup = ReleaseOnDrop(released.clone());
+        let (entered, entries) = std::sync::mpsc::channel();
+        let arrived = AtomicUsize::new(0);
+        let release = released.clone();
+        state.cypher_before_execute = Some(Arc::new(move |cancel, timeout_millis| {
+            if arrived.fetch_add(1, Ordering::SeqCst) >= 4 {
+                return;
+            }
+            assert_eq!(timeout_millis, 10_000, "client timeout must be capped");
+            entered.send(()).unwrap();
+            let (lock, wake) = &*release;
+            let (ready, timeout) = wake
+                .wait_timeout_while(lock.lock().unwrap(), Duration::from_secs(10), |ready| {
+                    !*ready
+                })
+                .unwrap();
+            assert!(
+                *ready && !timeout.timed_out(),
+                "test did not release query execution"
+            );
+            // Advance only this request's cancellation input to an expired deadline.
+            // The executor, error mapping, configured cap and permit lifecycle stay real.
+            *cancel = CancelToken::with_timeout(0);
+        }));
+        let state = Arc::new(state);
+        let app = instrumented(router(state.clone()), state);
+        async fn post(app: Router, query: &str, timeout: Option<u64>) -> Response {
+            app.oneshot(
+                axum::http::Request::builder()
+                    .method("POST")
+                    .uri("/api/cypher")
+                    .header(header::CONTENT_TYPE, "application/json")
+                    .body(Body::from(
+                        json!({"query":query,"timeoutMs":timeout}).to_string(),
+                    ))
+                    .unwrap(),
+            )
+            .await
+            .unwrap()
+        }
+        async fn body(response: Response) -> J {
+            serde_json::from_slice(
+                &axum::body::to_bytes(response.into_body(), usize::MAX)
+                    .await
+                    .unwrap(),
+            )
+            .unwrap()
+        }
+        let requests: Vec<_> = (0..4)
+            .map(|_| tokio::spawn(post(app.clone(), "RETURN 1 AS ok", Some(20_000))))
+            .collect();
+        for _ in 0..4 {
+            entries
+                .recv_timeout(Duration::from_secs(5))
+                .expect("four requests acquired permits");
+        }
+        assert_eq!(guard.metrics.active.load(Ordering::Relaxed), 4);
+        let rejected = post(app.clone(), "RETURN 1 AS ok", None).await;
+        assert_eq!(rejected.status(), StatusCode::TOO_MANY_REQUESTS);
+        assert_eq!(rejected.headers()[header::RETRY_AFTER], "1");
+        let rejection = body(rejected).await;
+        assert_eq!(rejection["code"], "cypher_concurrency_limit");
+        assert_eq!(
+            rejection["error"],
+            "Cypher concurrency limit reached (4 active queries); retry later"
+        );
+        assert_eq!(guard.metrics.rejected.load(Ordering::Relaxed), 1);
+        assert_eq!(guard.metrics.active.load(Ordering::Relaxed), 4);
+        *released.0.lock().unwrap() = true;
+        released.1.notify_all();
+        for request in requests {
+            let response = request.await.unwrap();
+            assert_eq!(response.status(), StatusCode::GATEWAY_TIMEOUT);
+            let error = body(response).await;
+            assert_eq!(error["code"], "cypher_query_timeout");
+            assert_eq!(error["timeoutMs"], 10_000);
+            assert!(error["error"].as_str().is_some_and(|s| !s.is_empty()));
+        }
+        assert_eq!(guard.metrics.active.load(Ordering::Relaxed), 0);
+        assert_eq!(
+            guard
+                .metrics
+                .snapshot()
+                .iter()
+                .find(|(o, _, _)| *o == Outcome::Timeout)
+                .unwrap()
+                .1,
+            4
+        );
+        let recovered = post(app, "RETURN 1 AS ok", None).await;
+        assert_eq!(recovered.status(), StatusCode::OK);
+        let recovered = body(recovered).await;
+        assert_eq!(recovered["columns"], json!(["ok"]));
+        assert_eq!(
+            recovered["rows"],
+            json!([{"ok":1,"$metadata":{"graphIds":[]}}])
+        );
+        assert_eq!(recovered["rowCount"], 1);
+        assert_eq!(guard.metrics.active.load(Ordering::Relaxed), 0);
+        assert_eq!(
+            guard
+                .metrics
+                .snapshot()
+                .iter()
+                .find(|(o, _, _)| *o == Outcome::Success)
+                .unwrap()
+                .1,
+            1
+        );
+        // Recovery must release its permit too, allowing the full capacity again.
+        let permits: Vec<_> = (0..4)
+            .map(|_| guard.try_acquire(None).ok().expect("released capacity"))
+            .collect();
+        drop(permits);
     }
 
     #[tokio::test(flavor = "multi_thread")]
