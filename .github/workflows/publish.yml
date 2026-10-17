@@ -48,7 +48,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version-file: .github/scripts/.bun-version
+        bun-version-file: .github/scripts/package.json
     - name: Parse the release tag as SemVer
       id: semver
       run: |
@@ -174,7 +174,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version-file: .github/scripts/.bun-version
+        bun-version-file: .github/scripts/package.json
     - uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ matrix.target }}
@@ -244,7 +244,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version-file: .github/scripts/.bun-version
+        bun-version-file: .github/scripts/package.json
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'

@@ -53,7 +53,7 @@ jobs:
     - name: Setup trusted CI script runtime
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version-file: trusted/.github/scripts/.bun-version
+        bun-version-file: trusted/.github/scripts/package.json
     - name: Check and test the trusted comment publisher
       working-directory: trusted/.github/scripts
       run: |

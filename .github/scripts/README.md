@@ -1,9 +1,9 @@
 # CI scripts
 
 CI helpers are TypeScript, executed directly with Bun. The runtime version is pinned
-in `.bun-version`; `bun.lock` pins the development dependencies. Scripts use built-in
-modules and the existing `gh`, Java and binary-inspection tools, with no runtime npm
-dependencies.
+in the `packageManager` field of `package.json`; `bun.lock` pins the development
+dependencies. Scripts use built-in modules and the existing `gh`, Java and
+binary-inspection tools, with no runtime npm dependencies.
 
 | Directory | Responsibility |
 | --- | --- |

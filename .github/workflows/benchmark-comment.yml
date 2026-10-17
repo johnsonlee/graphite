@@ -29,7 +29,7 @@ jobs:
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
-        bun-version-file: .github/scripts/.bun-version
+        bun-version-file: .github/scripts/package.json
     - name: Download report as data
       continue-on-error: true
       uses: actions/download-artifact@v8
