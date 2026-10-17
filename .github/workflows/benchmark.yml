@@ -41,7 +41,7 @@ jobs:
           test "$PR_NUMBER" = 179
           # Main may advance before migration; the controller remains pinned.
           git merge-base --is-ancestor 7c693e0f29ef5abf318640bdb20c31bf84d8818e "$TARGET_BASE"
-          controller_ref=7287a7be974ecd8dc54e757cc552359acd580831
+          controller_ref=02e516653427a53a453df6c87c0b2d706298a23e
         fi
         echo "comparison-base=$comparison_base" >> "$GITHUB_OUTPUT"
         echo "controller-ref=$controller_ref" >> "$GITHUB_OUTPUT"
