@@ -8,10 +8,14 @@ concurrency or acceptance rules; change the reviewed Rust/JMH source to change t
 
 ## Pipeline
 
-1. `prepare` builds the product merge-base and exact PR head with one trusted frontend harness.
+`run` owns the complete pipeline; the workflow does not assemble phase inputs or pass source
+SHAs between commands. The controller reads both committed identities before installing the
+trusted harness. Its internal phases are:
+
+1. Preparation builds the product merge-base and exact PR head with one trusted frontend harness.
    Gradle resolves the four pinned real JARs; the controller verifies their SHA256 and sizes.
    Compiler/build-tool time is preparation overhead, not graph construction performance.
-2. `jvm` runs `Fixture64BuildBenchmark` through real JMH: one fork, zero warmups, one
+2. JVM execution runs `Fixture64BuildBenchmark` through real JMH: one fork, zero warmups, one
    single-shot invocation per revision. The invocation partitions the four JARs into 16
    shards each, builds and saves 64 distinct graphs, and retains the original resource,
    semantic, persisted-index and readback assertions. It never restores a saved-graph cache.
@@ -19,55 +23,54 @@ concurrency or acceptance rules; change the reviewed Rust/JMH source to change t
    preserving the historical node/edge/method/call-site counts and mapped readback assertions.
    These whole-JAR cases gate correctness and OOM only; their single-graph durations are not
    performance evidence and do not appear in the comparison table.
-3. `native` starts each revision's production Rust server with that revision's saved graphs.
+3. Native execution starts each revision's production Rust server with that revision's saved graphs.
    It checks identical source/shard identities, completely consumes and checks responses,
    then runs the fixed real64 pressure plan. Queries and complete results must match unless
    an exact semantic transition was approved in the trusted controller beforehand. JVM query benchmarks are not used
    as a proxy for the Rust server. A separate real64 server checks four simultaneous requests,
    fifth-request rejection, capped server timeouts, permit release, invalid inputs and exact
    recovery results. These correctness probes never contribute timing samples.
-4. `report` requires exactly one frontend and one native result for the same base/head pair.
+4. Reporting requires exactly one frontend and one native result for the same base/head pair.
    Missing, cancelled or failed work is not PASS. Timing rows are always `REPORT_ONLY`.
 
 The JMH launcher and forks explicitly use G1 and 4 GiB for JAR fixtures. The Java agent checks actual
-`Runtime.maxMemory()`, not just command-line text. The fixed APK policy is 8 GiB; the current
+`MemoryMXBean.getHeapMemoryUsage().getMax()`, not just command-line text. The fixed APK policy is 8 GiB; the current
 real64 workload consists of Android-all, Tika, Hive and Kotlin compiler **JARs**, not APKs.
 APK fixture publication and APK workload integration are not part of this change.
 Linux cgroup OOM counters and process exit status supplement the JVM heap checks. A host OOM
 is a failed run, not evidence that the configured Java heap was exceeded. There is no retry
 with a larger heap. `-XX:+ExitOnOutOfMemoryError` deliberately makes the benchmark stricter
 than production's SootUp recovery handlers: an OOM that production could catch and skip still
-terminates the benchmark and fails the gate. Fixing G1 makes the exact `maxMemory()` check
+terminates the benchmark and fails the gate. Fixing G1 makes the effective heap check
 consistent across the launcher and forks.
 
 ## Running
 
 Use three dedicated checkouts: product base, product head and trusted controller/harness.
-`prepare` overlays the trusted JMH sources and shared whole-JAR assertions into both product
+`run` overlays the trusted JMH sources and shared whole-JAR assertions into both product
 checkouts. The product implementation remains revision-specific. Source commit/tree and product content identities,
-trusted harness revision and installed file hashes are recorded in `prepared/preparation.json`.
+trusted harness revision and installed file hashes are recorded in `<output>/prepared/preparation.json`.
 Build the CLI from the trusted checkout; run preparation in its parent so outputs never
 modify that trusted tree.
 
 ```sh
 cd /work
 cargo build --release --locked --manifest-path trusted/Cargo.toml -p graphite-benchmark
-BENCH=/work/trusted/target/release/graphite-benchmark
-$BENCH prepare --base-source /work/base --head-source /work/head --harness-source /work/trusted --output prepared
-$BENCH jvm --suite frontend-build-save \
-  --base-jar prepared/base/webgraph-jmh.jar --head-jar prepared/head/webgraph-jmh.jar \
-  --fixtures prepared/fixtures --output results/frontend \
-  --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"
-$BENCH native --base prepared/base/graphite --head prepared/head/graphite \
-  --base-manifest results/frontend/base/graphs/graphs.tsv \
-  --head-manifest results/frontend/head/graphs/graphs.tsv \
-  --output results/native --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"
-$BENCH report --input results --output report
+/work/trusted/target/release/graphite-benchmark run \
+  --base-source /work/base --head-source /work/head --harness-source /work/trusted \
+  --output /work/benchmark-run
+
+# Re-render the same retained evidence, including after an interrupted run.
+/work/trusted/target/release/graphite-benchmark report --run /work/benchmark-run
 ```
 
 The hosted acceptance environment is Linux with cgroup v2, JDK 17 and Rust. Diagnostic local
 runs on other platforms do not provide Linux host-OOM evidence. Outputs are retained on failure;
-use a fresh preparation/output directory for another run. No signing key, service or separate
+use a fresh output directory for another run. It contains `prepared/`, `results/`, and
+`report/`; `execution.json` records completion and orchestration errors. Preparation failure,
+missing completion evidence or a failed suite makes the final report fail. The workflow
+always re-renders retained evidence in a separate step, so a killed controller cannot
+accidentally produce a passing report. No signing key, service or separate
 benchmark machine is required.
 
 ## Timing protocol
@@ -128,7 +131,10 @@ local attestation and private fixture distribution are deferred.
 
 Shared JVM validation lives in `benchmark/jvm/`: `src/main/kotlin` contains the
 whole-corpus assertions reused by frontend JUnit and JMH, and `src/main/java`
-contains the forked JVM heap guard. `jmh-validation.init.gradle` wires the trusted
+contains the forked JVM heap guard and the CLI default-configuration check. Both
+read effective JVM configuration in process through MXBeans. The CLI check is attached to
+a temporary frontend JAR via `Launcher-Agent-Class`, preserving its real main method and
+the clean-environment default path; no generated Java wrapper or observer script is needed. `jmh-validation.init.gradle` wires the trusted
 shared Kotlin source into the product revision being measured, including older
 revisions. Frontend JMH adapters remain with the frontend implementation. These
 validation sources are excluded from the application JAR.

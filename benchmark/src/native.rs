@@ -1,7 +1,6 @@
 //! Fixed real64 pressure workload through the production HTTP server.
 //! Request durations are observations only; they never decide acceptance.
 use anyhow::{ensure, Context, Result};
-use clap::Args;
 use reqwest::blocking::Client;
 use serde::de::{self, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer};
@@ -42,21 +41,14 @@ const DISTRIBUTIONS: [&str; 4] = [
     "broad-all-64",
 ];
 
-#[derive(Args, Debug)]
+#[derive(Debug)]
 pub struct NativeArgs {
-    #[arg(long)]
     pub base: PathBuf,
-    #[arg(long, alias = "candidate")]
     pub head: PathBuf,
-    #[arg(long)]
     pub base_manifest: PathBuf,
-    #[arg(long)]
     pub head_manifest: PathBuf,
-    #[arg(long)]
     pub output: PathBuf,
-    #[arg(long)]
     pub base_sha: String,
-    #[arg(long)]
     pub head_sha: String,
 }
 

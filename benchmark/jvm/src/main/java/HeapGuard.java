@@ -1,11 +1,12 @@
 import java.lang.instrument.Instrumentation;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 /**
  * Checks actual heap for the launcher and every inherited JVM, including JMH probes/forks.
- * The controller fixes G1GC as well as -Xmx, so effective maxMemory is comparable across arms.
+ * The controller fixes G1GC as well as -Xmx, so the effective heap maximum is comparable across arms.
  * Hosted -XX:+ExitOnOutOfMemoryError is intentionally stricter than production paths that
  * catch an OOM: any OOM attempt fails this gate, even when production could recover.
  */
@@ -20,10 +21,10 @@ public final class HeapGuard {
         Path directory = Path.of(fields[1]);
         Files.createDirectories(directory);
         Path receipt = directory.resolve(ProcessHandle.current().pid() + "-" + System.nanoTime() + ".receipt");
-        long actual = Runtime.getRuntime().maxMemory();
+        long actual = ManagementFactory.getMemoryMXBean().getHeapMemoryUsage().getMax();
         Files.writeString(receipt, "START\t" + actual + "\t" + limit + "\n", StandardOpenOption.CREATE_NEW);
-        if (actual > limit) {
-            Files.writeString(receipt, "HEAP_LIMIT_EXCEEDED\n", StandardOpenOption.APPEND);
+        if (actual <= 0 || actual > limit) {
+            Files.writeString(receipt, actual <= 0 ? "HEAP_LIMIT_INVALID\n" : "HEAP_LIMIT_EXCEEDED\n", StandardOpenOption.APPEND);
             Runtime.getRuntime().halt(78);
         }
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

@@ -24,6 +24,12 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Setup Java
+      uses: actions/setup-java@v5
+      with:
+        distribution: 'adopt'
+        java-version: '17'
+
     - name: Setup Bun
       uses: oven-sh/setup-bun@v2
       with:
@@ -34,12 +40,6 @@ jobs:
         bun install --frozen-lockfile
         bun run check
         bun test
-
-    - name: Setup Java
-      uses: actions/setup-java@v5
-      with:
-        distribution: 'adopt'
-        java-version: '17'
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v6

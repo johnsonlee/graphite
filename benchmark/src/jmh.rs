@@ -4,7 +4,6 @@ use crate::{
     process::{self, ProcessSpec},
 };
 use anyhow::{ensure, Context, Result};
-use clap::{Args, ValueEnum};
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::io::Read;
@@ -15,32 +14,14 @@ use std::{
     path::{Path, PathBuf},
 };
 
-#[derive(Clone, Debug, ValueEnum)]
-pub enum Suite {
-    FrontendBuildSave,
-}
-impl Suite {
-    pub fn name(&self) -> &'static str {
-        "frontend-build-save"
-    }
-}
-#[derive(Debug, Args)]
+#[derive(Debug)]
 pub struct JmhArgs {
-    #[arg(long, value_enum, default_value = "frontend-build-save")]
-    pub suite: Suite,
-    #[arg(long)]
     pub base_jar: PathBuf,
-    #[arg(long)]
     pub head_jar: PathBuf,
-    #[arg(long)]
     pub fixtures: PathBuf,
-    #[arg(long)]
     pub output: PathBuf,
-    #[arg(long)]
     pub base_sha: String,
-    #[arg(long)]
     pub head_sha: String,
-    #[arg(long, default_value = "PR merge-base")]
     pub base_label: String,
 }
 fn command(label: &str, program: &str, args: Vec<OsString>, output: &Path) -> ProcessSpec {

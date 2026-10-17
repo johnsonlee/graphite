@@ -413,12 +413,25 @@ fn collect_suites(path: &Path, results: &mut Vec<Value>) -> Result<()> {
 
 /// Aggregate only fixed suite filenames, requiring every mandatory suite exactly once.
 pub fn aggregate(input: &Path, output: &Path, required: &[&str]) -> Result<bool> {
-    aggregate_count(input, output, required, 1)
+    aggregate_count(input, output, required, 1, Vec::new())
 }
 
-fn aggregate_count(input: &Path, output: &Path, required: &[&str], count: usize) -> Result<bool> {
+pub(crate) fn aggregate_with_errors(
+    input: &Path,
+    output: &Path,
+    errors: Vec<String>,
+) -> Result<bool> {
+    aggregate_count(input, output, crate::plan::REQUIRED_SUITES, 1, errors)
+}
+
+fn aggregate_count(
+    input: &Path,
+    output: &Path,
+    required: &[&str],
+    count: usize,
+    mut errors: Vec<String>,
+) -> Result<bool> {
     let mut suites = Vec::new();
-    let mut errors = Vec::new();
     if let Err(error) = collect_suites(input, &mut suites) {
         errors.push(format!("Incomplete report inputs: {error:#}"));
     }
@@ -574,7 +587,8 @@ mod tests {
             &path.join("input"),
             &path.join("output"),
             &["native", "methods"],
-            1
+            1,
+            Vec::new()
         )
         .unwrap());
         let mut other = passing();
@@ -585,7 +599,8 @@ mod tests {
             &path.join("input"),
             &path.join("output"),
             &["native", "methods"],
-            1
+            1,
+            Vec::new()
         )
         .unwrap());
         let report: Value =

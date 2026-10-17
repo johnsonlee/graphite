@@ -91,9 +91,6 @@ jobs:
     needs: harness
     runs-on: ubuntu-24.04
     timeout-minutes: 180
-    env:
-      BASE_SHA: ${{ needs.harness.outputs.comparison-base }}
-      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
     steps:
     - name: Checkout exact base
       uses: actions/checkout@v7
@@ -130,40 +127,26 @@ jobs:
       with:
         name: benchmark-controller
         path: controller
-    - name: Prepare source-built base and head with identical fixture inputs
-      id: prepare
+    - name: Run matched base/head correctness, OOM and timing report
+      id: benchmark
       run: |
         chmod +x controller/graphite-benchmark
-        controller/graphite-benchmark prepare --base-source base --head-source head --harness-source trusted --output prepared
-    - name: JMH frontend build and save under the fixed heap ceiling
-      if: ${{ !cancelled() && steps.prepare.outcome != 'skipped' }}
-      run: |
-        controller/graphite-benchmark jvm --suite frontend-build-save \
-          --base-jar prepared/base/webgraph-jmh.jar --head-jar prepared/head/webgraph-jmh.jar \
-          --fixtures prepared/fixtures --output results/frontend \
-          --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"
-    - name: Rust server loading, correctness, and real64 pressure
-      if: ${{ !cancelled() && steps.prepare.outcome != 'skipped' }}
-      run: |
-        controller/graphite-benchmark native \
-          --base prepared/base/graphite --head prepared/head/graphite \
-          --base-manifest results/frontend/base/graphs/graphs.tsv \
-          --head-manifest results/frontend/head/graphs/graphs.tsv \
-          --output results/native --base-sha "$BASE_SHA" --head-sha "$HEAD_SHA"
-    - name: Require complete correctness and OOM evidence; render report-only timings
-      if: always() && steps.prepare.outcome != 'skipped'
-      run: |
-        controller/graphite-benchmark report --input results --output report
+        controller/graphite-benchmark run \
+          --base-source base --head-source head --harness-source trusted \
+          --output benchmark-run
+    - name: Finalize retained evidence even after an interrupted controller
+      if: always() && steps.benchmark.outcome != 'skipped'
+      run: controller/graphite-benchmark report --run benchmark-run
     - name: Publish Markdown summary
       if: always()
       run: |
-        if test -f report/summary.md; then cat report/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
+        if test -f benchmark-run/report/summary.md; then cat benchmark-run/report/summary.md >> "$GITHUB_STEP_SUMMARY"; fi
     - name: Retain report for the PR comment
       if: always()
       uses: actions/upload-artifact@v7
       with:
         name: benchmark-report-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
-        path: report/
+        path: benchmark-run/report/
         if-no-files-found: warn
         retention-days: 30
     - name: Retain raw evidence and failures
@@ -172,16 +155,17 @@ jobs:
       with:
         name: benchmark-evidence-${{ github.event.pull_request.number }}-${{ github.run_attempt }}
         path: |
-          results/**/suite.json
-          results/**/*.json
-          results/**/*.log
-          results/**/*.receipt
-          results/**/*.tsv
-          results/**/*.txt
-          prepared/preparation.json
-          prepared/**/source-tree.txt
-          prepared/**/product-identity.txt
-          prepared/**/*.log
+          benchmark-run/results/**/suite.json
+          benchmark-run/results/**/*.json
+          benchmark-run/results/**/*.log
+          benchmark-run/results/**/*.receipt
+          benchmark-run/results/**/*.tsv
+          benchmark-run/results/**/*.txt
+          benchmark-run/execution.json
+          benchmark-run/prepared/preparation.json
+          benchmark-run/prepared/**/source-tree.txt
+          benchmark-run/prepared/**/product-identity.txt
+          benchmark-run/prepared/**/*.log
         if-no-files-found: warn
         retention-days: 14
 

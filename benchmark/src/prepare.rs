@@ -4,7 +4,6 @@ use crate::{
     process::{self, ProcessSpec},
 };
 use anyhow::{bail, ensure, Context, Result};
-use clap::Args;
 use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::{
@@ -15,18 +14,14 @@ use std::{
     time::Duration,
 };
 
-#[derive(Debug, Args)]
+#[derive(Debug)]
 pub struct PrepareArgs {
     /// Dedicated checkout: benchmark source files are installed into this tree.
-    #[arg(long)]
     pub base_source: PathBuf,
     /// Dedicated PR checkout: benchmark source files are installed into this tree.
-    #[arg(long)]
     pub head_source: PathBuf,
     /// Independent trusted checkout supplying identical policy and harness for both revisions.
-    #[arg(long)]
     pub harness_source: PathBuf,
-    #[arg(long)]
     pub output: PathBuf,
 }
 
@@ -124,7 +119,7 @@ fn command(
     Ok(value)
 }
 
-fn identity(source: &Path, expression: &str) -> Result<String> {
+pub(crate) fn identity(source: &Path, expression: &str) -> Result<String> {
     let result = std::process::Command::new("git")
         .args(["rev-parse", "--verify", expression])
         .current_dir(source)

@@ -1,21 +1,20 @@
 // Real CLI/JVM launcher correctness, not a performance benchmark.
 import assert from 'node:assert/strict';
 import { spawn } from 'node:child_process';
-import { accessSync, closeSync, constants, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, closeSync, constants, copyFileSync, mkdirSync, openSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { delimiter, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
-export const PROFILE = '-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4';
 const OPTIONS = ['JAVA_TOOL_OPTIONS', 'JAVA_OPTS', 'JDK_JAVA_OPTIONS', '_JAVA_OPTIONS'];
 const BUILD_TIMEOUT_MS = 120_000;
 
-function findJava(env: NodeJS.ProcessEnv): string {
+function findTool(name: string, env: NodeJS.ProcessEnv): string {
   for (const directory of (env.PATH ?? '').split(delimiter)) {
-    const path = resolve(directory, 'java');
+    const path = resolve(directory, name);
     try { accessSync(path, constants.X_OK); if (statSync(path).isFile()) return path; } catch { /* Try the next PATH entry. */ }
   }
-  throw new Error('Java must be installed');
+  throw new Error(`${name} must be installed`);
 }
 
 export async function runWithDeadline(command: string, args: string[], env: NodeJS.ProcessEnv, stdout: string, stderr: string, timeoutMs: number): Promise<void> {
@@ -85,17 +84,6 @@ export function comparePersisted(reference: string, actual: string): void {
   }
 }
 
-const shellQuote = (text: string): string => `'${text.replaceAll("'", "'\\''")}'`;
-
-function observer(root: string): string {
-  const module = join(root, 'java-observer.ts');
-  writeFileSync(module, `import { appendFileSync } from 'node:fs';\nimport { spawnSync } from 'node:child_process';\nappendFileSync(process.env.BUILD_JVM_LOG, JSON.stringify({args:process.argv.slice(2),toolOptions:process.env.JAVA_TOOL_OPTIONS ?? null})+'\\n');\nconst result=spawnSync(process.env.BUILD_REAL_JAVA,process.argv.slice(2),{env:process.env,stdio:'inherit'});\nif(result.error)throw result.error;\nif(result.signal)process.kill(process.pid,result.signal);\nelse process.exit(result.status ?? 1);\n`);
-  const wrapper = join(root, 'java-observer');
-  // Shell exec preserves the group while safely quoting a runtime path with spaces.
-  writeFileSync(wrapper, `#!/bin/sh\nexec ${shellQuote(process.execPath)} ${shellQuote(module)} "$@"\n`, { mode: 0o700 });
-  return wrapper;
-}
-
 export async function main(argv: string[] = process.argv.slice(2), inherited: NodeJS.ProcessEnv = process.env): Promise<void> {
   const { values } = parseArgs({ args: argv, strict: true, options: {
     cli: { type: 'string' }, frontend: { type: 'string' }, input: { type: 'string' }, reference: { type: 'string' }, output: { type: 'string' },
@@ -107,29 +95,36 @@ export async function main(argv: string[] = process.argv.slice(2), inherited: No
   const input = resolve(values.input!);
   const reference = resolve(values.reference!);
   const root = resolve(values.output!);
-  const java = findJava(inherited);
+  const java = findTool('java', inherited);
   mkdirSync(dirname(root), { recursive: true });
-  mkdirSync(root); // A prior run must not supply stale invocation or graph evidence.
+  mkdirSync(root); // A prior run must not supply stale JVM or graph evidence.
   const env = { ...inherited };
   for (const key of OPTIONS) delete env[key];
-  env.GRAPHITE_JAVA = observer(root);
-  env.GRAPHITE_FRONTEND_JVM = frontend;
-  env.BUILD_REAL_JAVA = java;
+  const classes = join(root, 'agent-classes');
+  mkdirSync(classes);
+  const source = fileURLToPath(new URL('../../../benchmark/jvm/src/main/java/BuildJvmDefaults.java', import.meta.url));
+  await runWithDeadline(findTool('javac', env), ['--release', '17', '-d', classes, source], env,
+    join(root, 'javac.stdout'), join(root, 'javac.stderr'), BUILD_TIMEOUT_MS);
+  const checkedFrontend = join(root, 'frontend.jar');
+  copyFileSync(frontend, checkedFrontend);
+  const manifest = join(root, 'agent.mf');
+  writeFileSync(manifest, 'Launcher-Agent-Class: BuildJvmDefaults\n');
+  await runWithDeadline(findTool('jar', env), ['--update', '--file', checkedFrontend, '--manifest', manifest,
+    '-C', classes, 'BuildJvmDefaults.class'], env, join(root, 'jar.stdout'), join(root, 'jar.stderr'), BUILD_TIMEOUT_MS);
+  env.GRAPHITE_JAVA = java;
+  env.GRAPHITE_FRONTEND_JVM = checkedFrontend;
   for (const [name, override] of [['default', undefined], ['explicit-small-heap', '-Xmx2g']] as const) {
-    const log = join(root, `${name}.jsonl`);
-    const caseEnv: NodeJS.ProcessEnv = { ...env, BUILD_JVM_LOG: log };
+    const log = join(root, `${name}.json`);
+    const caseEnv: NodeJS.ProcessEnv = { ...env, BUILD_JVM_DEFAULTS_CASE: name, BUILD_JVM_DEFAULTS_RECEIPT: log };
     if (override !== undefined) caseEnv.JAVA_OPTS = override;
     const graph = join(root, name);
     const buildArgs = ['build', input, '-o', graph, '--include', values.include!];
     if (values['android-sdk']) buildArgs.push('--android-sdk', resolve(values['android-sdk']));
     await runWithDeadline(cli, buildArgs, caseEnv, join(root, `${name}.stdout`), join(root, `${name}.stderr`), BUILD_TIMEOUT_MS);
-    const calls: unknown[] = readFileSync(log, 'utf8').trimEnd().split('\n').map(line => JSON.parse(line));
-    const expected = [];
-    if (override === undefined) expected.push({ args: [...PROFILE.split(' '), '-XX:+PrintFlagsFinal', '-version'], toolOptions: null });
-    expected.push({ args: ['-jar', frontend, ...buildArgs], toolOptions: override ?? PROFILE });
-    assert.deepEqual(calls, expected, `${name}: unexpected Java invocations`);
+    const receipt = JSON.parse(readFileSync(log, 'utf8'));
+    assert.equal(receipt.case, name, 'Missing effective JVM configuration receipt');
     comparePersisted(reference, graph);
-    console.log(`PASS ${name}: exact JVM invocations and persisted graph match`);
+    console.log(`PASS ${name}: effective JVM configuration and persisted graph match`);
   }
 }
 

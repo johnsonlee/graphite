@@ -3,11 +3,12 @@ import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { delimiter, join } from 'node:path';
+import { join } from 'node:path';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
-import { comparePersisted, PROFILE, runWithDeadline } from './build-jvm-defaults.ts';
+import { comparePersisted, runWithDeadline } from './build-jvm-defaults.ts';
 
+const PROFILE = '-Xmx8g -XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:G1MaxNewSizePercent=30 -XX:MinHeapFreeRatio=20 -XX:GCTimeRatio=4';
 const script = fileURLToPath(new URL('./build-jvm-defaults.ts', import.meta.url));
 
 function fixture(root: string): { args: string[]; env: NodeJS.ProcessEnv; output: string } {
@@ -18,48 +19,97 @@ function fixture(root: string): { args: string[]; env: NodeJS.ProcessEnv; output
   const input = join(root, 'input with spaces.jar');
   const frontend = join(root, 'frontend with spaces.jar');
   writeFileSync(input, 'fixture input');
-  writeFileSync(frontend, 'fixture frontend');
-  const java = join(root, 'java');
-  writeFileSync(java, `#!${process.execPath}\nimport { cpSync,writeFileSync } from 'node:fs';\nconst args=process.argv.slice(2);\nif(args.includes('-version')){console.log('probe ran');process.exit(0);}\nif(process.env.JDK_JAVA_OPTIONS || process.env._JAVA_OPTIONS)throw new Error('inherited JVM environment leaked');\nconst output=args[args.indexOf('-o')+1];\ncpSync(process.env.FIXTURE_REFERENCE,output,{recursive:true});\nwriteFileSync(output+'/forward.properties','# new timestamp\\nnodes='+(process.env.CORRUPT_GRAPH ? '4' : '3')+'\\n');\nconsole.log('actual JVM fixture build');\n`, { mode: 0o700 });
+  const source = join(root, 'FixtureFrontend.java');
+  writeFileSync(source, `
+import java.nio.file.*;
+public class FixtureFrontend {
+    public static void main(String[] args) throws Exception {
+        if (System.getenv("JDK_JAVA_OPTIONS") != null || System.getenv("_JAVA_OPTIONS") != null)
+            throw new IllegalStateException("Inherited JVM environment leaked");
+        Path output = null;
+        for (int i = 0; i < args.length - 1; i++) if (args[i].equals("-o")) output = Path.of(args[i + 1]);
+        Files.createDirectory(output);
+        try (var files = Files.list(Path.of(System.getenv("FIXTURE_REFERENCE")))) {
+            for (Path file : files.toList()) Files.copy(file, output.resolve(file.getFileName()));
+        }
+        Files.writeString(output.resolve("forward.properties"), "# new timestamp\\nnodes="
+            + (System.getenv("CORRUPT_GRAPH") == null ? "3" : "4") + "\\n");
+        System.out.println("actual JVM fixture build");
+    }
+}
+`);
+  for (const [tool, args] of [
+    ['javac', ['--release', '17', '-d', root, source]],
+    ['jar', ['--create', '--file', frontend, '--main-class', 'FixtureFrontend', '-C', root, 'FixtureFrontend.class']],
+  ] as const) {
+    const result = spawnSync(tool, args, { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+  }
   const cli = join(root, 'cli with spaces');
-  writeFileSync(cli, `#!${process.execPath}\nimport { spawnSync } from 'node:child_process';\nconst profile=${JSON.stringify(PROFILE)};\nif(process.env.JAVA_TOOL_OPTIONS || process.env.JDK_JAVA_OPTIONS || process.env._JAVA_OPTIONS)throw new Error('inherited options leaked into CLI');\nif(process.env.JAVA_OPTS && process.env.JAVA_OPTS !== '-Xmx2g')throw new Error('inherited JAVA_OPTS leaked');\nconst launch=(args,env)=>{const result=spawnSync(process.env.GRAPHITE_JAVA,args,{env,stdio:'inherit'});if(result.error)throw result.error;if(result.status!==0)process.exit(result.status ?? 1);};\nif(!process.env.JAVA_OPTS)launch([...profile.split(' '),'-XX:+PrintFlagsFinal','-version'],process.env);\nconst args=['-jar',process.env.GRAPHITE_FRONTEND_JVM,...process.argv.slice(2)];\nif(process.env.EXTRA_JAVA_CALL)args.push('--unexpected');\nlaunch(args,{...process.env,JAVA_TOOL_OPTIONS:process.env.JAVA_OPTS || profile});\n`, { mode: 0o700 });
+  writeFileSync(cli, `#!${process.execPath}
+import { spawnSync } from 'node:child_process';
+const profile=${JSON.stringify(PROFILE)};
+if(process.env.JAVA_TOOL_OPTIONS || process.env.JDK_JAVA_OPTIONS || process.env._JAVA_OPTIONS)throw new Error('inherited options leaked into CLI');
+if(process.env.JAVA_OPTS && process.env.JAVA_OPTS !== '-Xmx2g')throw new Error('inherited JAVA_OPTS leaked');
+const launch=(args,env)=>{const result=spawnSync(process.env.GRAPHITE_JAVA,args,{env,stdio:'inherit'});if(result.error)throw result.error;if(result.status!==0)process.exit(result.status ?? 1);};
+if(!process.env.JAVA_OPTS)launch([...profile.split(' '),'-XX:+PrintFlagsFinal','-version'],process.env);
+const frontend=process.env.SKIP_AGENT ? process.env.FIXTURE_ORIGINAL_FRONTEND : process.env.GRAPHITE_FRONTEND_JVM;
+let options=process.env.JAVA_OPTS || profile;
+if(process.env.WRONG_HEAP)options+=' -Xmx1g';
+if(process.env.WRONG_GC)options+=' -XX:GCTimeRatio=99';
+if(process.env.MIX_PROFILE && process.env.JAVA_OPTS)options=profile+' '+process.env.JAVA_OPTS;
+launch(['-jar',frontend,...process.argv.slice(2)],{...process.env,JAVA_TOOL_OPTIONS:options});
+`, { mode: 0o700 });
   const output = join(root, 'evidence');
   return {
     args: [script, '--cli', cli, '--frontend', frontend, '--input', input, '--reference', reference, '--output', output, '--include', 'com.acme', '--android-sdk', join(root, 'sdk with spaces')],
-    env: { ...process.env, PATH: `${root}${delimiter}${process.env.PATH ?? ''}`, FIXTURE_REFERENCE: reference,
+    env: { ...process.env, FIXTURE_REFERENCE: reference, FIXTURE_ORIGINAL_FRONTEND: frontend,
       JAVA_TOOL_OPTIONS: '-Xmx99g', JAVA_OPTS: '-Xmx100g', JDK_JAVA_OPTIONS: '-Xmx101g', _JAVA_OPTIONS: '-Xmx102g' },
     output,
   };
 }
 
-test('Bun CLI and observer preserve exact default/override launches and clean Java environment', t => {
+test('JAR agent checks the real build JVM defaults and override after environment cleanup', t => {
   const root = mkdtempSync(join(tmpdir(), 'build-defaults-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   const setup = fixture(root);
-  const result = spawnSync(process.execPath, setup.args, { env: setup.env, encoding: 'utf8', timeout: 15_000 });
+  const originalFrontend = readFileSync(setup.env.FIXTURE_ORIGINAL_FRONTEND!);
+  const result = spawnSync(process.execPath, setup.args, { env: setup.env, encoding: 'utf8', timeout: 30_000 });
   assert.equal(result.status, 0, `${result.stderr}\n${result.stdout}`);
+  assert.deepEqual(readFileSync(setup.env.FIXTURE_ORIGINAL_FRONTEND!), originalFrontend, 'original frontend JAR must remain unchanged');
   assert.match(result.stdout, /PASS default:/);
   assert.match(result.stdout, /PASS explicit-small-heap:/);
-  const defaults = readFileSync(join(setup.output, 'default.jsonl'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
-  assert.equal(defaults.length, 2);
-  assert.deepEqual(defaults[0], { args: [...PROFILE.split(' '), '-XX:+PrintFlagsFinal', '-version'], toolOptions: null });
-  assert.equal(defaults[1].toolOptions, PROFILE);
-  assert.deepEqual(defaults[1].args.slice(-2), ['--android-sdk', join(root, 'sdk with spaces')]);
-  const override = JSON.parse(readFileSync(join(setup.output, 'explicit-small-heap.jsonl'), 'utf8'));
-  assert.equal(override.toolOptions, '-Xmx2g');
+  const defaults = JSON.parse(readFileSync(join(setup.output, 'default.json'), 'utf8'));
+  assert.deepEqual(defaults, { case: 'default', maxHeapBytes: 8 * 1024 ** 3, useG1GC: true,
+    g1MaxNewSizePercent: 30, minHeapFreeRatio: 20, gcTimeRatio: 4 });
+  const override = JSON.parse(readFileSync(join(setup.output, 'explicit-small-heap.json'), 'utf8'));
+  assert.equal(override.maxHeapBytes, 2 * 1024 ** 3);
   assert.match(readFileSync(join(setup.output, 'default.stdout'), 'utf8'), /actual JVM fixture build/);
+  assert.ok(!existsSync(join(setup.output, 'java-observer.ts')));
   const repeated = spawnSync(process.execPath, setup.args, { env: setup.env, encoding: 'utf8' });
   assert.notEqual(repeated.status, 0, 'existing evidence must not be reused');
 });
 
-test('unexpected invocation and corrupted persisted graph each fail the executable CLI check', t => {
-  for (const extra of [{ EXTRA_JAVA_CALL: '1' }, { CORRUPT_GRAPH: '1' }]) {
+test('wrong effective heap or GC, omitted agent and corrupted graph fail the executable check', t => {
+  for (const [variable, expected] of [
+    ['WRONG_HEAP', /Effective JVM MaxHeapSize/],
+    ['WRONG_GC', /Effective JVM GCTimeRatio/],
+    ['MIX_PROFILE', /Explicit override must contain only -Xmx2g/],
+    ['SKIP_AGENT', /ENOENT/],
+    ['CORRUPT_GRAPH', /Persisted file differs/],
+  ] as const) {
     const root = mkdtempSync(join(tmpdir(), 'build-defaults-reject-'));
     t.after(() => rmSync(root, { recursive: true, force: true }));
     const setup = fixture(root);
-    const result = spawnSync(process.execPath, setup.args, { env: { ...setup.env, ...extra }, encoding: 'utf8', timeout: 15_000 });
+    const result = spawnSync(process.execPath, setup.args, { env: { ...setup.env, [variable]: '1' }, encoding: 'utf8', timeout: 30_000 });
     assert.notEqual(result.status, 0);
-    assert.match(result.stderr, 'EXTRA_JAVA_CALL' in extra ? /unexpected Java invocations/ : /Persisted file differs/);
+    const failedCase = variable === 'MIX_PROFILE' ? 'explicit-small-heap' : 'default';
+    const javaError = readFileSync(join(setup.output, `${failedCase}.stderr`), 'utf8');
+    assert.match(result.stderr + javaError, expected);
+    if (variable.startsWith('WRONG_') || variable === 'MIX_PROFILE') {
+      assert.ok(!existsSync(join(setup.output, `${failedCase}.json`)), 'failed JVM validation must not produce a receipt');
+      assert.ok(!existsSync(join(setup.output, failedCase)), 'frontend main must not run after failed validation');
+    }
   }
 });
 

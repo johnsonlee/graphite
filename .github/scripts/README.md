@@ -25,7 +25,10 @@ bun test
 
 Type checking is separate from runtime execution. Tests use temporary fixtures and
 stub GitHub transports; they do not publish releases or comments. `checks/` also runs
-against the real Rust CLI, JVM frontend and Linux binary in the Rust workflow.
+against the real Rust CLI, JVM frontend and Linux binary in the Rust workflow. JVM
+configuration assertions live in `benchmark/jvm/` and use MXBeans inside the actual
+frontend process; TypeScript prepares the check and compares saved graph outputs.
+These integration tests require JDK 17.
 
 The required unit-test job checks the PR's scripts. The benchmark workflow checks its
 trusted controller snapshot's publisher. The comment workflow executes the publisher
