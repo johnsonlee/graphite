@@ -16,6 +16,11 @@ permissions:
   contents: read
   pull-requests: write
 
+# One active PR run owns the sticky CI status comment.
+concurrency:
+  group: jvm-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   run-unit-test:
     runs-on: ubuntu-latest
@@ -160,31 +165,67 @@ jobs:
           exit 1
         fi
 
-    - name: Comment build failure on PR
-      if: failure() && github.event_name == 'pull_request'
+    - name: Update build status comment on PR
+      if: always() && !cancelled() && github.event_name == 'pull_request'
       uses: actions/github-script@v9
+      env:
+        CI_JOB_STATUS: ${{ job.status }}
       with:
         script: |
-          const fs = require('fs');
-          let output = '';
-          try {
-            output = fs.readFileSync('build-output.txt', 'utf8');
-          } catch (e) {
-            output = 'Build output not available.';
-          }
-
-          // Truncate to last 200 lines to stay within comment size limits
-          const lines = output.split('\n');
-          const tail = lines.slice(-200).join('\n');
-          const truncated = lines.length > 200
-            ? `\n> Showing last 200 of ${lines.length} lines\n\n`
-            : '';
-
-          const body = `## :x: Build Failed\n\n${truncated}\`\`\`\n${tail}\n\`\`\`\n\n[View full logs](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})`;
-
-          await github.rest.issues.createComment({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: body
+          const marker = '<!-- graphite-build-status:v1 -->';
+          const { owner, repo } = context.repo;
+          const number = context.payload.pull_request.number;
+          const head = context.payload.pull_request.head.sha;
+          const run = String(context.runId);
+          const attempt = Number(process.env.GITHUB_RUN_ATTEMPT || '1');
+          const failed = process.env.CI_JOB_STATUS === 'failure';
+          if (!failed && process.env.CI_JOB_STATUS !== 'success') return;
+          const runPrefix = `${context.serverUrl}/${owner}/${repo}/actions/runs/`;
+          const runUrl = `${runPrefix}${run}/attempts/${attempt}`;
+          const current = async () => {
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: number });
+            return pull.state === 'open' && pull.head.sha === head;
+          };
+          if (!await current()) return;
+          const comments = await github.paginate(github.rest.issues.listComments, {
+            owner, repo, issue_number: number, per_page: 100
           });
+          const owned = comments.filter(c => c.user?.login === 'github-actions[bot]' && c.user?.type === 'Bot');
+          const existing = owned.filter(c => c.body?.startsWith(marker)).sort((a, b) => a.id - b.id)[0]
+            ?? owned.filter(c => c.body?.startsWith('## :x: Build Failed') && c.body.includes(runPrefix))
+              .sort((a, b) => b.id - a.id)[0];
+          // A previously successful PR needs no new status comment.
+          if (!existing && !failed) return;
+          const previous = existing?.body?.startsWith(marker)
+            ? existing.body.split('\n')[1]?.match(/^<!-- graphite-build-run:(\d+):(\d+):[0-9a-f]{40} -->$/)
+            : undefined;
+          if (previous && (BigInt(previous[1]) > BigInt(run) ||
+              (BigInt(previous[1]) === BigInt(run) && Number(previous[2]) >= attempt))) return;
+          const identity = `<!-- graphite-build-run:${run}:${attempt}:${head} -->`;
+          let body = `${marker}\n${identity}\n`;
+          if (failed) {
+            let output;
+            try { output = require('fs').readFileSync('build-output.txt', 'utf8'); }
+            catch { output = 'Build output not available.'; }
+            const lines = output.split('\n');
+            let tail = lines.slice(-200).join('\n');
+            const truncated = lines.length > 200 || tail.length > 48000;
+            tail = tail.slice(-48000);
+            // Do not start a truncated excerpt in the middle of a UTF-16 pair.
+            if (/^[\uDC00-\uDFFF]/.test(tail)) tail = tail.slice(1);
+            // Indented code keeps log fences and HTML as data, within the comment limit.
+            const excerpt = tail.split('\n').map(line => `    ${line}`).join('\n');
+            body += `## :x: CI failed\n\nThe workflow failed for \`${head}\`. See the run for the failing step.\n\n`;
+            body += `Gradle log excerpt (the failure may be in another step):\n\n`;
+            if (truncated) body += '> Showing only the last part of the log.\n\n';
+            body += `${excerpt}\n\n`;
+          } else {
+            body += `## :white_check_mark: CI recovered\n\nThe workflow passed for \`${head}\`; the earlier failure is resolved.\n\n`;
+          }
+          body += `[View full logs](${runUrl})`;
+          if (!await current()) return;
+          if (existing) {
+            await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+          } else {
+            await github.rest.issues.createComment({ owner, repo, issue_number: number, body });
+          }

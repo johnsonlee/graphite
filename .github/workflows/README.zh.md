@@ -10,7 +10,7 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 
 | Workflow | 触发条件 | 职责 |
 | --- | --- | --- |
-| [`build.yml`](build.yml) — Run unit tests | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR、`repository_dispatch: test` | 检查 TypeScript 辅助脚本，测试 Explorer 网页状态，运行 Gradle 检查，在 PR 上要求应用代码行覆盖率达到 98%，发布覆盖率和失败诊断评论。 |
+| [`build.yml`](build.yml) — Run unit tests | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR、`repository_dispatch: test` | 检查 TypeScript 辅助脚本，测试 Explorer 网页状态，运行 Gradle 检查，在 PR 上要求应用代码行覆盖率达到 98%，更新覆盖率和 CI 状态评论。 |
 | [`rust.yml`](rust.yml) — Rust | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR | 检查 Rust 格式、lint、构建和测试；校验 Linux 静态二进制与容器启动；验证真实 JVM 构图、持久化图及 Kotlin/Rust 响应一致性。同时在 Windows 上进行 workspace 编译检查。 |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | 目标分支匹配 `**` 的 PR | 在同一个 runner 上比较产品 merge-base 和精确 PR head。以正确性、执行完整性和 OOM 为 gate，计时差异只生成报告，不设阈值。 |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Benchmark correctness and OOM 执行完成；仅为 PR 触发的运行发布评论 | 校验报告来源，更新当前 PR head 对应的唯一 benchmark 评论。 |
@@ -33,6 +33,12 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 `rust-check-windows` 运行的是 `cargo check`，不是 Windows 执行测试套件。
 `benchmark-regression-gate` 为兼容分支保护而保留原名，但性能变化不决定其结果。
 哪些 check 必须通过，由仓库的分支保护或 ruleset 设置管理，不由这些 YAML 文件决定。
+
+`build.yml` 为每个 PR 维护一条带固定标记的 CI 状态评论。首次失败时创建，后续失败
+更新其中的日志摘要和运行链接；之后运行成功时，也在同一条评论上标记已恢复。
+从未失败的 PR 不会新增状态评论。迁移时会复用已有的 GitHub Actions 失败评论。
+发布前会检查当前 PR head 和 run/attempt 顺序，忽略人工评论。同一事件和 PR 的
+过时运行会被取消，以减少并发写入。
 
 benchmark workflow 包含三个 job：
 

@@ -10,7 +10,7 @@ configuration live in [`.github/scripts/`](../scripts/README.md).
 
 | Workflow | Trigger | Responsibility |
 | --- | --- | --- |
-| [`build.yml`](build.yml) — Run unit tests | Branch pushes matching `*`, PRs targeting `**`, `repository_dispatch: test` | Check TypeScript helpers, test Explorer web state, run Gradle checks, enforce 98% application line coverage on PRs, and post coverage/failure diagnostics. |
+| [`build.yml`](build.yml) — Run unit tests | Branch pushes matching `*`, PRs targeting `**`, `repository_dispatch: test` | Check TypeScript helpers, test Explorer web state, run Gradle checks, enforce 98% application line coverage on PRs, and update coverage/CI status comments. |
 | [`rust.yml`](rust.yml) — Rust | Branch pushes matching `*`, PRs targeting `**` | Format, lint, build and test Rust; check static Linux binaries and container startup; exercise real JVM construction, persisted graphs and Kotlin/Rust response parity. Also compile-check the workspace on Windows. |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | PRs targeting `**` | Compare the product merge-base and exact PR head on one runner. Gate correctness, execution completeness and OOM; report timing differences without thresholds. |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Completion of Benchmark correctness and OOM; only PR-originated runs are published | Validate report provenance and update one benchmark comment for the current PR head. |
@@ -34,6 +34,13 @@ The correctness workflows run independently. Their job names are:
 `benchmark-regression-gate` retains its historical name for branch protection, but
 performance changes never determine its result. Required-check selection is managed
 in repository branch protection/rulesets, separately from these YAML files.
+
+`build.yml` keeps one marked CI status comment per PR. The first failure creates it;
+subsequent failures replace its log excerpt and run link. A later successful run
+updates the same comment to show recovery; a PR with no previous failure gets no new
+status comment. Existing GitHub Actions failure comments are reused during migration.
+The publisher checks the current PR head and run/attempt ordering, and ignores human
+comments. Superseded runs of the same event/PR are cancelled to limit concurrent writes.
 
 The benchmark workflow has three jobs:
 
