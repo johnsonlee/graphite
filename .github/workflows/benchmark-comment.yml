@@ -26,6 +26,10 @@ jobs:
       with:
         ref: ${{ github.workflow_sha }}
         persist-credentials: false
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
     - name: Download report as data
       continue-on-error: true
       uses: actions/download-artifact@v8
@@ -35,8 +39,6 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         run-id: ${{ github.event.workflow_run.id }}
     - name: Update the single report comment for the current PR head
-      uses: actions/github-script@v9
-      with:
-        script: |
-          const { publish } = require('./.github/scripts/benchmark-comment.cjs');
-          await publish({ github, context, core, directory: 'reports' });
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: bun .github/scripts/benchmark/comment.ts --directory reports

@@ -24,6 +24,17 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
+    - name: Check and test CI scripts
+      working-directory: .github/scripts
+      run: |
+        bun install --frozen-lockfile
+        bun run check
+        bun test
+
     - name: Setup Java
       uses: actions/setup-java@v5
       with:

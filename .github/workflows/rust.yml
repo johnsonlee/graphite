@@ -24,6 +24,11 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v7
 
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
+
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
       with:
@@ -57,7 +62,7 @@ jobs:
       run: |
         sudo apt-get install -y -q musl-tools
         cargo build --release --locked --target x86_64-unknown-linux-musl -p graphite-cli
-        bash .github/scripts/require-static.sh target/x86_64-unknown-linux-musl/release/graphite
+        bun .github/scripts/checks/static-link.ts target/x86_64-unknown-linux-musl/release/graphite
         mkdir -p release-assets/linux/amd64
         cp target/x86_64-unknown-linux-musl/release/graphite release-assets/linux/amd64/graphite
         docker build -f backend/explore/Dockerfile --build-arg VERSION=ci -t graphite-explore:ci .
@@ -111,8 +116,8 @@ jobs:
         diff -r -I '^#' "${RUNNER_TEMP}/acme-graph" "${RUNNER_TEMP}/acme-graph-direct"
         # Exercise the clean-env default through the actual CLI and JVM, then a
         # smaller explicit heap. Existing JAVA_TOOL_OPTIONS=4g builds above also
-        # retain their override; the observer execs Java with unchanged arguments.
-        python3 .github/scripts/check-build-jvm-defaults.py \
+        # retain their override; the observer launches Java with unchanged arguments.
+        bun .github/scripts/checks/build-jvm-defaults.ts \
           --cli ./target/release/graphite \
           --frontend frontend/jvm/query/build/libs/graphite.jar \
           --input "${RUNNER_TEMP}/acme.jar" \
@@ -306,12 +311,6 @@ jobs:
 
     - name: Benchmark harness tests (fail-closed sampling and warmup)
       run: python3 -m unittest discover -s backend/bench -p 'test_*.py' -v
-    # The release scripts' own checks, so a release does not find out first.
-    - name: Release script self-tests
-      run: |
-        python3 .github/scripts/release-version.py --self-test
-        bash .github/scripts/publish-release.sh --self-test
-
     # The same persisted graph served by both servers, every parity check compared.
     - name: Kotlin-vs-Rust differential over the fixture
       run: |

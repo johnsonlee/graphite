@@ -50,6 +50,16 @@ jobs:
         ref: ${{ steps.sources.outputs.controller-ref }}
         path: trusted
         persist-credentials: false
+    - name: Setup trusted CI script runtime
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: trusted/.github/scripts/.bun-version
+    - name: Check and test the trusted comment publisher
+      working-directory: trusted/.github/scripts
+      run: |
+        bun install --frozen-lockfile
+        bun run check
+        bun test benchmark
     - uses: dtolnay/rust-toolchain@stable
       with:
         components: rustfmt, clippy
@@ -67,7 +77,6 @@ jobs:
         cargo clippy --locked -p graphite-benchmark --all-targets -- -D warnings
         cargo test --locked -p graphite-benchmark
         cargo build --release --locked -p graphite-benchmark
-        node --test .github/scripts/benchmark-comment.test.cjs
     - uses: actions/upload-artifact@v7
       with:
         name: benchmark-controller

@@ -113,7 +113,9 @@ check name, `benchmark-regression-gate`, is retained for branch protection, but 
 correctness/OOM only. Existing JVM unit tests and native tests/differential checks remain in
 `build.yml` and `rust.yml`.
 
-`benchmark-comment.yml` runs the comment publisher from the trusted default-branch workflow.
+`benchmark-comment.yml` runs `.github/scripts/benchmark/comment.ts` with the pinned Bun
+runtime from the trusted default-branch workflow. CI helpers are organized by responsibility
+under [`.github/scripts/`](../.github/scripts/README.md); benchmark execution remains in Rust.
 It reads artifacts as data and updates one bot comment identified by a hidden marker. It checks
 the current PR head/base and run/attempt identity before updating, so a superseded run cannot
 replace the latest report. No PR checkout is executed with its write token. The PR comment uses

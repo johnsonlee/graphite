@@ -45,11 +45,15 @@ jobs:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
     - name: Parse the release tag as SemVer
       id: semver
       run: |
-        python3 .github/scripts/release-version.py --self-test
-        python3 .github/scripts/release-version.py "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
+        bun test ./.github/scripts/release/version.test.ts
+        bun .github/scripts/release/version.ts "${RELEASE_TAG}" | tee -a "${GITHUB_OUTPUT}"
 
   # ---- Maven Central (Sonatype) ----
   maven:
@@ -167,6 +171,10 @@ jobs:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
     - uses: dtolnay/rust-toolchain@stable
       with:
         targets: ${{ matrix.target }}
@@ -197,7 +205,7 @@ jobs:
         mkdir -p release-assets
         ${{ matrix.exec }} "target/${{ matrix.target }}/release/graphite" --version | grep -F "${RELEASE_VERSION}"
         case "${{ matrix.target }}" in
-          *-linux-musl) bash .github/scripts/require-static.sh "target/${{ matrix.target }}/release/graphite" ;;
+          *-linux-musl) bun .github/scripts/checks/static-link.ts "target/${{ matrix.target }}/release/graphite" ;;
         esac
         tar -czf "release-assets/${ASSET}" -C "target/${{ matrix.target }}/release" graphite
         (cd release-assets && shasum -a 256 "${ASSET}" > "${ASSET}.sha256")
@@ -213,7 +221,7 @@ jobs:
   # build the jar, collect the binaries, verify the checksums, render the formula, keep
   # them all as the `release-<tag>` artifact. The last step is the only one that changes
   # remote state, and it is re-runnable too: this repository has immutable releases, so
-  # `.github/scripts/publish-release.sh` builds the release as a draft, makes the draft's
+  # `.github/scripts/release/publish.ts` builds the release as a draft, makes the draft's
   # assets equal to `release-assets/` by name and sha256, publishes it, and reads the
   # state back rather than trusting the publish response. A re-run after that finds the
   # published release, verifies its assets against the local ones and uploads nothing,
@@ -233,6 +241,10 @@ jobs:
     - uses: actions/checkout@v7
       with:
         ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/.bun-version
     - uses: actions/setup-java@v5
       with:
         distribution: 'temurin'
@@ -347,14 +359,14 @@ jobs:
     # Homebrew formula is left alone, and the image is not tagged `latest` (see the
     # docker job). The flag comes from the validate job's parse, so build metadata
     # such as v2.5.0+linux-1 stays a stable release.
-    - name: Self-test the publish script against a stub gh
-      run: bash .github/scripts/publish-release.sh --self-test
+    - name: Test release publication and recovery with a stub gh
+      run: bun test ./.github/scripts/release
     - name: Publish the GitHub Release
       if: env.DRY_RUN != 'true'
       env:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GH_REPO: ${{ github.repository }}
-      run: bash .github/scripts/publish-release.sh release-assets
+      run: bun .github/scripts/release/publish.ts release-assets
 
   # ---- Homebrew tap ----
   # Runs after the release is published and can be re-run on its own: the formula was
