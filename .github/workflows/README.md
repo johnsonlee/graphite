@@ -40,7 +40,7 @@ subsequent failures replace its log excerpt and run link. A later successful run
 updates the same comment to show recovery; a PR with no previous failure gets no new
 status comment. Existing GitHub Actions failure comments are reused during migration.
 The publisher checks the current PR head and run/attempt ordering, and ignores human
-comments. Superseded runs of the same event/PR are cancelled to limit concurrent writes.
+comments. Superseded PR runs are cancelled to limit concurrent writes; push runs are not cancelled.
 
 The benchmark workflow has three jobs:
 

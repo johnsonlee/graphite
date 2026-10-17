@@ -26,7 +26,11 @@ bun test
 ```
 
 Type checking is separate from runtime execution. Tests use temporary fixtures and
-stub GitHub transports; they do not publish releases or comments. `checks/` also runs
+stub GitHub transports; the release integration test also runs the real `gh` CLI against
+a local HTTP API over a Unix socket, with isolated configuration and a fake token. It covers
+uploads, draft recovery, pagination, digest fallback and immutable reruns without publishing
+releases or comments. This verifies the client transport, not GitHub permissions or release
+policy. It requires `gh` and a Unix host; a real prerelease remains a separate publishing action. `checks/` also runs
 against the real Rust CLI, JVM frontend and Linux binary in the Rust workflow. JVM
 configuration assertions live in `benchmark/jvm/` and use MXBeans inside the actual
 frontend process; TypeScript prepares the check and compares saved graph outputs.

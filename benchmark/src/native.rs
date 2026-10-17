@@ -1123,9 +1123,9 @@ pub fn run(args: &NativeArgs) -> Result<Value> {
         json!({"name":"native-host-oom","kind":"heap","passed":oom_passed,"detail":if cfg!(target_os="linux") {"Linux cgroup OOM counters must remain unchanged; every native process must survive all requests. JVM heap ceilings are checked by frontend-build-save"}else{"No Linux cgroup accounting on this platform; process failures are checked; formal hosted OOM evidence requires Linux"}}),
     ];
     for (label, arm) in ["base", "head"].into_iter().zip(&arms) {
-        checks.push(json!({"name":format!("{label}-native-rejection-timeout-recovery"),"kind":"correctness",
+        checks.push(json!({"name":format!("{label}-native-concurrent-error-recovery"),"kind":"correctness",
             "passed":arm.capacity.as_ref().is_some_and(|c|c["passed"] == true),
-            "detail":arm.capacity.as_ref().map_or_else(||"Capacity probes did not complete".into(),|c|if c["passed"] == true {"Separate real64 server: concurrency rejection, capped deadlines, permit release, invalid inputs and exact recovery results passed; no performance samples".into()}else{c["error"].to_string()})}));
+            "detail":arm.capacity.as_ref().map_or_else(||"Capacity probes did not complete".into(),|c|if c["passed"] == true {"Separate real64 server: four concurrent complete requests, outcome metrics, invalid inputs and exact recovery results passed; deterministic rejection/deadline contracts are covered by production-handler unit tests, not these paired network probes; no performance samples".into()}else{c["error"].to_string()})}));
     }
     let artifacts = vec![
         args.output.join("semantic-transitions.json"),

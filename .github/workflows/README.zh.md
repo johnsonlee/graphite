@@ -37,8 +37,8 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 `build.yml` 为每个 PR 维护一条带固定标记的 CI 状态评论。首次失败时创建，后续失败
 更新其中的日志摘要和运行链接；之后运行成功时，也在同一条评论上标记已恢复。
 从未失败的 PR 不会新增状态评论。迁移时会复用已有的 GitHub Actions 失败评论。
-发布前会检查当前 PR head 和 run/attempt 顺序，忽略人工评论。同一事件和 PR 的
-过时运行会被取消，以减少并发写入。
+发布前会检查当前 PR head 和 run/attempt 顺序，忽略人工评论。同一 PR 的
+过时运行会被取消，以减少并发写入；push 运行不会被取消。
 
 benchmark workflow 包含三个 job：
 

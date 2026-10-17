@@ -29,9 +29,10 @@ trusted harness. Its internal phases are:
    It checks identical source/shard identities, completely consumes and checks responses,
    then runs the fixed real64 pressure plan. Queries and complete results must match unless
    an exact semantic transition was approved in the trusted controller beforehand. JVM query benchmarks are not used
-   as a proxy for the Rust server. A separate real64 server checks four simultaneous requests,
-   fifth-request rejection, capped server timeouts, permit release, invalid inputs and exact
-   recovery results. These correctness probes never contribute timing samples.
+   as a proxy for the Rust server. A separate real64 server checks four concurrent constant
+   queries, complete results, metrics counters, invalid inputs and exact recovery results on
+   both revisions. Required head-revision Rust route tests check rejection, timeout caps and
+   permit release deterministically. These correctness checks never contribute timing samples.
 4. Reporting requires exactly one frontend and one native result for the same base/head pair.
    Missing, cancelled or failed work is not PASS. Timing rows are always `REPORT_ONLY`.
 
@@ -105,13 +106,19 @@ identities: the publisher independently obtains merge-base through GitHub's comp
 uses the target base tip only to discard stale runs.
 
 PR #179 has one bounded bootstrap exception because its target base predates this controller:
-the workflow pins a literal reviewed snapshot SHA and requires this repository, PR number and
-exact old base SHA. It never selects the moving PR head as controller source. After migration,
-normal PRs use their target base's controller. Harness changes are tested by ordinary Rust/JVM
-CI on the candidate and take effect in the required comparison after landing on the base.
-This prevents a feature PR from changing its own benchmark policy through `benchmark/` or
-frontend harness edits. Workflow changes remain subject to owner review. It is not a sandbox
-against hostile build scripts and does not claim cryptographic proof of execution.
+while the target has no controller, the workflow accepts only this repository and PR number,
+and requires the recorded original base to be an ancestor of the current target tip. It uses
+a literal reviewed snapshot SHA, never the moving PR head. A descendant main commit does not
+by itself require re-pinning; if the target contains the controller, that target version takes
+precedence. The frozen snapshot must still compile against both product revisions. If an API
+change makes it incompatible, a replacement snapshot needs independent review, compatibility
+validation and an explicit pin update. The ancestry check does not supply compatibility.
+
+After migration, normal PRs use their target base's controller. Harness changes are tested by
+ordinary Rust/JVM CI on the candidate and take effect in the required comparison after landing
+on the base. This prevents a feature PR from changing its own benchmark policy through
+`benchmark/` or frontend harness edits. Workflow changes remain subject to owner review. It is
+not a sandbox against hostile build scripts and does not claim cryptographic proof of execution.
 
 The workflow runs the paired pipeline. The existing required
 check name, `benchmark-regression-gate`, is retained for branch protection, but its decision is
@@ -141,34 +148,76 @@ shared Kotlin source into the product revision being measured, including older
 revisions. Frontend JMH adapters remain with the frontend implementation. These
 validation sources are excluded from the application JAR.
 
+## Harness API compatibility
+
+The trusted Kotlin JMH adapters and shared assertions compile directly against each product
+revision's APIs, including `GraphStore`. The overlay is source code, not a stable binary adapter
+or an automatic API migration. A constructor, method, package or signature change can therefore
+fail preparation before any graph is measured. Updating only the feature branch's harness
+cannot fix the required comparison, because that harness is replaced by the target-tip version.
+
+Stage such changes compatibly: first land the necessary product compatibility API while keeping
+the interface used by the current trusted harness. Then migrate the harness on the target branch
+and verify it compiles against both comparison revisions. Update the feature branch to that
+compatible base before removing the old API; remove it only after the trusted harness no longer
+uses it. This can require separate preparatory PRs and additional builds. Count or response
+approvals do not authorize a compilation failure or adapt an incompatible harness.
+
 ## Intentional semantic changes
 
 Default behavior is exact query and complete typed-response equality, including ordering,
 duplicates, missing versus null fields and provenance. An intended node-count, schema or query
-fix can use a two-step reviewed transition:
+fix needs the following reviewed sequence:
 
-1. Run the feature comparison to retain full bodies and `semantic-transitions.json`.
-   Independently check the expected behavior. Record both product content identities,
-   case IDs and both query/response SHA-256 values.
+1. Finish the feature changes, including their ordinary correctness-test expectations. Run the
+   comparison to retain full bodies and `semantic-transitions.json`, and independently verify
+   the new behavior. Record both product content identities, case IDs and both query/response
+   SHA-256 values. A failed run may lack complete query evidence; independently establish and
+   review changed whole-JAR counts before collecting any missing query evidence.
 2. Land literal directed expectations with a rationale in `src/transitions.rs` on the trusted
    target branch first. For whole-JAR shape changes, add exact `(productIdentity, corpus)`
-   count expectations in `LargeCorpusBaselines` in the trusted shared Kotlin harness.
-   Fixture hashes, class counts and readback/semantic assertions remain mandatory.
+   count expectations in `LargeCorpusBaselines` in the trusted shared Kotlin harness. Keep the
+   target branch's default counts valid for its unchanged product. Fixture hashes, class counts
+   and readback/semantic assertions remain mandatory.
 3. Update the feature branch to the latest target, as required by strict branch protection,
-   and run the comparison again. A policy-only merge/rebase preserves both product identities;
-   changing product contents requires a fresh independently reviewed expectation.
+   resolve policy-file conflicts without losing either the approved entries or the feature's
+   ordinary test expectations, and rerun the comparison. A merge/rebase that changes only the
+   two excluded policy files preserves the product identities. Any other changed tree contents
+   require fresh identities and independently reviewed expectations for affected differences.
+
+Whole-JAR JUnit tests need separate attention. `:webgraph:largeCorpusTest`, also required by
+Gradle `check`, reads the default `LargeCorpusBaselines.tika`, `hive` and `kotlinCompiler` values
+directly. It does not apply the identity-keyed approval table; this is the same baseline behavior
+as `productIdentity = null`. A feature that changes those counts must update its default
+expectations as well as obtain trusted benchmark approval. These defaults and the approval
+entries live in the same `LargeCorpusValidation.kt`, so merging the policy PR may conflict.
+Keep the reviewed new defaults on the feature branch and the literal approved entries. The
+required benchmark still installs the trusted target copy, so changing the feature copy alone
+cannot approve it. Once new defaults land on the target, comparisons that still use an older
+product base need exact approvals for that older base's counts where they differ.
+
+This workflow costs a separate policy review, independent evidence collection, branch updates
+and another full build/save/load/query run. Later edits outside the excluded files, including
+documentation-only edits, can require repeating identity-specific approval. Finalize such edits
+before collecting approval evidence where possible; do not resolve the extra work by weakening
+counts, skipping cases or treating a failed build as an approved transition.
 
 `prepare` computes product identities from committed Git objects before any overlay, using
 SHA-256 over the domain `graphite-product-identity-v2\0` and sorted, NUL-terminated `git ls-tree`
 records (path, file mode, object type and object ID). Exactly two policy-bearing paths are
 excluded: `benchmark/src/transitions.rs` and
 `benchmark/jvm/src/main/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt`.
-These are always supplied by the trusted controller/harness, never the candidate product;
-the required JAR verifier also prevents the shared Kotlin assertions from entering the
+For the required paired benchmark, these are supplied by the trusted controller/harness,
+never the candidate product; the required JAR verifier also prevents the shared Kotlin assertions from entering the
 application JAR. Their full Git identities and installed hashes remain in preparation evidence.
-Product source, build/lockfiles, fixture identities, query catalog and every other path remain
-in the content identity. Keeping approval-only commits within those two paths avoids making
-the approval refer to its own hash; unrelated target changes require new approval.
+This is an all-tree identity, not a production-source-only hash: product source, build/lockfiles,
+fixture identities, query catalog, READMEs, other documentation, workflows and every other
+tracked path remain bound, including paths, modes and object IDs. Changing any of them changes
+the identity even when application behavior is unchanged. Keeping approval-only changes within
+the two excluded files avoids self-reference. Changes to default counts in the excluded Kotlin
+file also leave this identity unchanged, but still require review and ordinary JUnit validation;
+the exclusion is not permission to change expectations silently. After merging unrelated target
+changes into the feature, recompute both identities and refresh any approval whose key changed.
 
 Product identity v2 uses the relocated policy path above. Historical v1 reports
 retain their original identities and must not be reinterpreted as v2 identities.
@@ -184,7 +233,13 @@ Full base/head commit and tree identities are retained separately for provenance
 
 The production Rust server enforces concurrency and deadlines; its deprecated work-budget
 option is ignored, and client disconnect is not wired to Cypher cancellation. The native
-probes test the actual Rust contracts rather than asserting capabilities it does not have.
+network probes check concurrent successful queries, invalid inputs and recovery on both revisions.
+They do not depend on a Cartesian query being slow enough to hold permits or hit a deadline.
+Required head-revision `graphite-explore` route tests use test-only execution barriers and expired
+cancellation tokens to check four occupied permits, fifth-request rejection, the timeout cap,
+four timeout responses, permit release and successful recovery. These deterministic tests are
+head correctness coverage, not evidence that both measured revisions exercised rejection or
+timeouts over the network. Neither layer claims native work-budget or disconnect cancellation.
 The existing JVM contracts remain covered by the required `build.yml` unit-test job:
 
 - `CypherClientCancellationTest`: real TCP disconnect stops work and restores capacity.

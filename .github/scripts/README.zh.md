@@ -24,8 +24,11 @@ bun run check
 bun test
 ```
 
-类型检查与运行时执行分开进行。测试使用临时 fixture 和模拟的 GitHub 接口，
-不会实际发布 release 或评论。Rust workflow 还会用真实 Rust CLI、JVM frontend
+类型检查与运行时执行分开进行。测试使用临时 fixture 和模拟的 GitHub 接口；
+release 集成测试还会运行真实 `gh` CLI，通过 Unix socket 访问本地 HTTP API，
+使用隔离配置和假 token。它覆盖上传、草稿恢复、分页、摘要缺失时的下载校验，
+以及已发布版本的只读重跑，不实际发布 release 或评论。此测试验证客户端传输，
+不能验证 GitHub 权限或发布策略。运行需要 `gh` 和 Unix 系统；真实预发布仍是单独的发布操作。Rust workflow 还会用真实 Rust CLI、JVM frontend
 和 Linux 二进制运行 `checks/` 中的检查。JVM 配置断言位于 `benchmark/jvm/`，
 通过实际 frontend 进程内的 MXBean 读取生效配置；TypeScript 负责准备检查，
 并比较保存的图产物。这些集成测试需要 JDK 17。

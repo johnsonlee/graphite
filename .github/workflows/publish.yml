@@ -359,7 +359,7 @@ jobs:
     # Homebrew formula is left alone, and the image is not tagged `latest` (see the
     # docker job). The flag comes from the validate job's parse, so build metadata
     # such as v2.5.0+linux-1 stays a stable release.
-    - name: Test release publication and recovery with a stub gh
+    - name: Test release publication transport and recovery
       run: bun test ./.github/scripts/release
     - name: Publish the GitHub Release
       if: env.DRY_RUN != 'true'

@@ -2,7 +2,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { pathToFileURL } from 'node:url';
 
 export const MARKER = '<!-- graphite-benchmark-report:v1 -->';
 export const LEGACY_MARKER = '<!-- graphite-benchmark-regression-gate -->';
@@ -178,6 +177,6 @@ export async function main(args: string[], env: NodeJS.ProcessEnv = process.env)
   await publish({ github: new GhGitHub(env.GITHUB_REPOSITORY), payload, directory: args[1] });
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (import.meta.main) {
   main(process.argv.slice(2)).catch(error => { console.error(error); process.exitCode = 1; });
 }

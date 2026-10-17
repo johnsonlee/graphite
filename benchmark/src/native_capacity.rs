@@ -17,8 +17,6 @@ use std::time::{Duration, Instant};
 const DEADLINE_MS: u64 = 10_000;
 const HTTP_TIMEOUT: Duration = Duration::from_secs(30);
 const POLL_DEADLINE: Duration = Duration::from_secs(5);
-// Streaming aggregate: no Cartesian result materialization, no unbounded output.
-const OCCUPY_QUERY: &str = "MATCH (a), (b) RETURN count(*) AS pairs";
 const RECOVERY_QUERY: &str = "RETURN 1 AS ok";
 
 struct Reply {
@@ -234,6 +232,9 @@ fn probe(binary: &Path, graphs: &[Graph], output: &Path) -> Result<()> {
         "Unexpected initial guard state"
     );
     let url = format!("http://127.0.0.1:{PORT}/api/cypher");
+    // Correctness only: all four requests may finish immediately. Rejection and
+    // expired-deadline contracts are tested at the production handler with a
+    // deterministic test-only execution barrier, never a deliberately slow query.
     std::thread::scope(|scope| -> Result<()> {
         let workers: Vec<_> = (0..4)
             .map(|i| {
@@ -243,67 +244,43 @@ fn probe(binary: &Path, graphs: &[Graph], output: &Path) -> Result<()> {
                     exchange(
                         client,
                         url,
-                        Some(json!({"query":OCCUPY_QUERY,"timeoutMs":DEADLINE_MS * 2})),
-                        &output.join(format!("timeout-{i}.json")),
+                        Some(json!({"query":RECOVERY_QUERY,"timeoutMs":DEADLINE_MS * 2})),
+                        &output.join(format!("concurrent-{i}.json")),
                     )
                 })
             })
             .collect();
-        // Keep cleanup inside the scope: killing the server closes blocked HTTP reads.
-        let check = (|| -> Result<()> {
-            poll_active(&mut server, &client, output, 4)?;
-            let rejected = exchange(
-                &client,
-                &url,
-                Some(json!({"query":RECOVERY_QUERY})),
-                &output.join("rejected.json"),
-            )?;
-            error_reply(&rejected, 429, "cypher_concurrency_limit", None)?;
-            while workers.iter().any(|worker| !worker.is_finished()) {
-                ensure!(
-                    server.try_wait()?.is_none(),
-                    "Capacity server exited while queries were active"
-                );
-                std::thread::sleep(Duration::from_millis(25));
-            }
-            Ok(())
-        })();
-        if check.is_err() {
-            let _ = server.terminate();
-        }
         let results: Vec<_> = workers
             .into_iter()
-            .map(|w| {
-                w.join()
+            .map(|worker| {
+                worker
+                    .join()
                     .map_err(|_| anyhow::anyhow!("Capacity request worker panicked"))
                     .and_then(|r| r)
             })
             .collect();
-        check?;
         for result in results {
-            error_reply(&result?, 504, "cypher_query_timeout", Some(DEADLINE_MS))?;
+            recovery(&result?, &ids)?;
         }
         Ok(())
     })?;
     let after = poll_active(&mut server, &client, output, 0)?;
-    for (name, delta) in [
-        ("graphite_cypher_queries_rejected_total", 1),
-        (
-            "graphite_cypher_query_duration_seconds_count{outcome=\"timeout\"}",
-            4,
-        ),
-    ] {
-        ensure!(
-            metric(&after, name)? == metric(&before, name)? + delta,
-            "Wrong {name} outcome count"
-        );
-    }
+    let successful = "graphite_cypher_query_duration_seconds_count{outcome=\"success\"}";
+    ensure!(
+        metric(&after, successful)? == metric(&before, successful)? + 4,
+        "Four concurrent requests did not complete successfully"
+    );
+    ensure!(
+        metric(&after, "graphite_cypher_queries_rejected_total")?
+            == metric(&before, "graphite_cypher_queries_rejected_total")?,
+        "Requests within configured capacity were rejected"
+    );
     recovery(
         &exchange(
             &client,
             &url,
             Some(json!({"query":RECOVERY_QUERY})),
-            &output.join("recovered-after-timeout.json"),
+            &output.join("recovered-after-concurrent.json"),
         )?,
         &ids,
     )?;
@@ -348,8 +325,8 @@ pub(super) fn run(binary: &Path, graphs: &[Graph], output: &Path) -> Result<Valu
     let result = probe(binary, graphs, output);
     let value = json!({"passed":result.is_ok(),"performanceEvidence":false,
         "graphIds":graphs.iter().map(|g|&g.id).collect::<Vec<_>>(),"concurrency":4,"serverTimeoutMs":DEADLINE_MS,
-        "query":OCCUPY_QUERY,"checks":["four simultaneous accepted requests","fifth request rejected with Retry-After","four capped server timeouts","permits released and exact recovery result","invalid timeout/query rejection and recovery"],
-        "limitations":"Native has no work-budget enforcement or HTTP-disconnect cancellation contract; JVM contract tests cover those existing JVM features.",
+        "query":RECOVERY_QUERY,"checks":["four concurrent complete requests with exact results","successful outcome metrics and idle recovery","invalid timeout/query rejection and exact recovery"],
+        "limitations":"These base/head network probes do not force saturation or deadline expiry. Required production-handler unit tests on the candidate deterministically verify fifth-request rejection, deadline capping, timeout responses and permit release. Native has no work-budget enforcement or HTTP-disconnect cancellation contract; JVM contract tests cover those existing JVM features.",
         "error":result.err().map(|e|format!("{e:#}"))});
     fs::write(
         output.join("checks.json"),

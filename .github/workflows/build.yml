@@ -18,8 +18,8 @@ permissions:
 
 # One active PR run owns the sticky CI status comment.
 concurrency:
-  group: jvm-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: jvm-ci-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   run-unit-test:
