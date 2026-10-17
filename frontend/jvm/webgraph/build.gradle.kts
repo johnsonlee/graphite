@@ -57,8 +57,8 @@ kover {
 }
 
 // Share complete whole-JAR invariants between the JUnit entry points and isolated JMH forks.
-kotlin.sourceSets.named("test") { kotlin.srcDir("src/benchmark/kotlin") }
-kotlin.sourceSets.named("jmh") { kotlin.srcDir("src/benchmark/kotlin") }
+kotlin.sourceSets.named("test") { kotlin.srcDir(rootProject.file("benchmark/jvm/src/main/kotlin")) }
+kotlin.sourceSets.named("jmh") { kotlin.srcDir(rootProject.file("benchmark/jvm/src/main/kotlin")) }
 
 val androidIntegrationFixture: Configuration by configurations.creating
 androidIntegrationFixture.isTransitive = false

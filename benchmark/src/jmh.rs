@@ -59,7 +59,7 @@ fn prepare_guard(output: &Path) -> Result<PathBuf> {
     let classes = output.join("agent-classes");
     fs::create_dir_all(&classes)?;
     let source = output.join("HeapGuard.java");
-    fs::write(&source, include_str!("../jvm/HeapGuard.java"))?;
+    fs::write(&source, include_str!("../jvm/src/main/java/HeapGuard.java"))?;
     let compile = command(
         "compile-heap-agent",
         "javac",

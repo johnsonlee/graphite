@@ -8,9 +8,9 @@ use std::{path::Path, process::Command};
 /// product revision. Every other tracked path, mode and object ID remains bound.
 pub const EXCLUDED_POLICY_PATHS: [&str; 2] = [
     "benchmark/src/transitions.rs",
-    "frontend/jvm/webgraph/src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt",
+    "benchmark/jvm/src/main/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt",
 ];
-const DOMAIN: &[u8] = b"graphite-product-identity-v1\0";
+const DOMAIN: &[u8] = b"graphite-product-identity-v2\0";
 
 pub fn compute(source: &Path) -> Result<String> {
     let output = Command::new("git")
@@ -178,6 +178,10 @@ mod tests {
             "benchmark/native_queries.json",
             ".github/workflows/benchmark.yml",
             "benchmark/src/transitions.rs.backup",
+            "frontend/jvm/webgraph/src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt",
+            "benchmark/jvm/src/main/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt.backup",
+            "benchmark/jvm/src/main/java/HeapGuard.java",
+            "benchmark/jvm/jmh-validation.init.gradle",
             "other/benchmark/src/transitions.rs",
         ] {
             repo.write(path, "changed tracked contents");
@@ -215,7 +219,7 @@ mod tests {
             hash_records(&reverse).unwrap()
         );
         let mut expected = Sha256::new();
-        expected.update(DOMAIN);
+        expected.update(b"graphite-product-identity-v2\0");
         expected.update(&forward);
         assert_eq!(
             hash_records(&forward).unwrap(),

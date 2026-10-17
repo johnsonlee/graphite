@@ -126,6 +126,13 @@ scripts are retired. Historical measurements in `backend/bench/` and optimizatio
 unchanged; their original scripts are available from Git history. Recent-release comparisons,
 local attestation and private fixture distribution are deferred.
 
+Shared JVM validation lives in `benchmark/jvm/`: `src/main/kotlin` contains the
+whole-corpus assertions reused by frontend JUnit and JMH, and `src/main/java`
+contains the forked JVM heap guard. `jmh-validation.init.gradle` wires the trusted
+shared Kotlin source into the product revision being measured, including older
+revisions. Frontend JMH adapters remain with the frontend implementation. These
+validation sources are excluded from the application JAR.
+
 ## Intentional semantic changes
 
 Default behavior is exact query and complete typed-response equality, including ordering,
@@ -144,16 +151,20 @@ fix can use a two-step reviewed transition:
    changing product contents requires a fresh independently reviewed expectation.
 
 `prepare` computes product identities from committed Git objects before any overlay, using
-SHA-256 over the domain `graphite-product-identity-v1\0` and sorted, NUL-terminated `git ls-tree`
+SHA-256 over the domain `graphite-product-identity-v2\0` and sorted, NUL-terminated `git ls-tree`
 records (path, file mode, object type and object ID). Exactly two policy-bearing paths are
 excluded: `benchmark/src/transitions.rs` and
-`frontend/jvm/webgraph/src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt`.
+`benchmark/jvm/src/main/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt`.
 These are always supplied by the trusted controller/harness, never the candidate product;
 the required JAR verifier also prevents the shared Kotlin assertions from entering the
 application JAR. Their full Git identities and installed hashes remain in preparation evidence.
 Product source, build/lockfiles, fixture identities, query catalog and every other path remain
 in the content identity. Keeping approval-only commits within those two paths avoids making
 the approval refer to its own hash; unrelated target changes require new approval.
+
+Product identity v2 uses the relocated policy path above. Historical v1 reports
+retain their original identities and must not be reinterpreted as v2 identities.
+The old frontend policy path is now bound like every other non-policy file.
 
 Both approved tables start empty. No wildcard, CLI/environment override or candidate-owned
 expectation file can authorize a difference. Additional changed cases or changed expected

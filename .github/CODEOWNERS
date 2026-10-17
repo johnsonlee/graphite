@@ -2,4 +2,3 @@
 /benchmark/ @johnsonlee
 /frontend/jvm/*/src/jmh/** @johnsonlee
 /frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusPerformanceGateTest.kt @johnsonlee
-/frontend/jvm/webgraph/src/benchmark/** @johnsonlee

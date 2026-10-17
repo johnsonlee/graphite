@@ -173,28 +173,39 @@ fn safe_path(root: &Path, relative: &Path) -> Result<PathBuf> {
     Ok(path)
 }
 
+const SHARED_VALIDATION: &str =
+    "benchmark/jvm/src/main/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt";
+const VALIDATION_INIT: &str = "benchmark/jvm/jmh-validation.init.gradle";
+
 fn install_harness(source: &Path, trusted: &Path, target: &Path) -> Result<Vec<Value>> {
     let source_module = module(source)?;
     let trusted_module = module(trusted)?;
     let jmh_relative = Path::new("src/jmh/kotlin/io/johnsonlee/graphite/webgraph");
-    let mut files: Vec<PathBuf> = HARNESS.iter().map(|name| jmh_relative.join(name)).collect();
-    files.push(
-        "src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt".into(),
-    );
+    let mut files: Vec<(PathBuf, PathBuf)> = HARNESS
+        .iter()
+        .map(|name| {
+            let relative = jmh_relative.join(name);
+            Ok((
+                trusted_module.strip_prefix(trusted)?.join(&relative),
+                source_module.strip_prefix(source)?.join(relative),
+            ))
+        })
+        .collect::<Result<_>>()?;
+    files.push((SHARED_VALIDATION.into(), SHARED_VALIDATION.into()));
     let mut overlays = Vec::new();
-    for relative in files {
-        let original = safe_path(
-            trusted,
-            &trusted_module.strip_prefix(trusted)?.join(&relative),
-        )?;
-        let installed = safe_path(source, &source_module.strip_prefix(source)?.join(&relative))?;
+    for (original_relative, installed_relative) in files {
+        let original = safe_path(trusted, &original_relative)?;
+        let installed = safe_path(source, &installed_relative)?;
         fs::create_dir_all(installed.parent().context("overlay parent")?)?;
         fs::copy(&original, &installed)?;
-        overlays.push(json!({"file":relative,"sha256":hash(&original)?}));
+        // Provenance is always relative to the same trusted checkout, even when
+        // an older product revision uses a different webgraph module directory.
+        overlays.push(json!({"file":original_relative,"sha256":hash(&original)?}));
     }
-    let original = safe_path(trusted, Path::new("benchmark/jvm/whole-jar.init.gradle"))?;
-    fs::copy(&original, target.join("whole-jar.init.gradle"))?;
-    overlays.push(json!({"file":"benchmark/jvm/whole-jar.init.gradle","sha256":hash(&original)?}));
+    let original = safe_path(trusted, Path::new(VALIDATION_INIT))?;
+    let installed = safe_path(target, Path::new("jmh-validation.init.gradle"))?;
+    fs::copy(&original, installed)?;
+    overlays.push(json!({"file":VALIDATION_INIT,"sha256":hash(&original)?}));
     Ok(overlays)
 }
 
@@ -224,7 +235,7 @@ fn build(source: &Path, trusted: &Path, output: &Path, role: &str) -> Result<Val
     .collect();
     args.extend([
         OsString::from("--init-script"),
-        target.join("whole-jar.init.gradle").into_os_string(),
+        target.join("jmh-validation.init.gradle").into_os_string(),
     ]);
     let jvm = command("jvm-build", source.join("gradlew"), args, source, &target)?;
     let jar = one_file(&source_module.join("build/libs"), |name| {
@@ -352,52 +363,111 @@ mod tests {
         root
     }
 
-    fn fixture(root: &Path, contents: &str) {
-        let module = root.join("frontend/jvm/webgraph");
+    fn fixture(root: &Path, layout: &str, contents: &str) {
+        let module = root.join(layout);
         let jmh = module.join("src/jmh/kotlin/io/johnsonlee/graphite/webgraph");
         fs::create_dir_all(&jmh).unwrap();
         fs::write(module.join("build.gradle.kts"), "original build").unwrap();
         for name in HARNESS {
             fs::write(jmh.join(name), contents).unwrap();
         }
-        let shared = module.join("src/benchmark/kotlin/io/johnsonlee/graphite/webgraph");
-        fs::create_dir_all(&shared).unwrap();
-        fs::write(shared.join("LargeCorpusValidation.kt"), contents).unwrap();
-        fs::create_dir_all(root.join("benchmark/jvm")).unwrap();
-        fs::write(root.join("benchmark/jvm/whole-jar.init.gradle"), contents).unwrap();
+        let shared = root.join(SHARED_VALIDATION);
+        fs::create_dir_all(shared.parent().unwrap()).unwrap();
+        fs::write(shared, contents).unwrap();
+        fs::write(root.join(VALIDATION_INIT), contents).unwrap();
     }
 
     #[test]
-    fn both_revisions_receive_trusted_policy_without_changing_build_files_or_trust() {
+    fn modern_and_legacy_modules_receive_one_root_owned_trusted_policy() {
         let root = temporary();
-        let trusted = root.join("trusted");
-        fixture(&trusted, "reviewed policy");
-        for role in ["base", "head"] {
-            let source = root.join(role);
-            let output = root.join(format!("{role}-output"));
-            fixture(&source, "candidate policy must not survive");
-            fs::create_dir(&output).unwrap();
-            let overlays = install_harness(&source, &trusted, &output).unwrap();
-            assert_eq!(overlays.len(), 6);
-            for file in overlays.iter().take(5) {
-                let relative = file["file"].as_str().unwrap();
+        for trusted_layout in ["frontend/jvm/webgraph", "graphite-webgraph"] {
+            let trusted = root.join(format!("trusted-{}", trusted_layout.replace('/', "-")));
+            fixture(&trusted, trusted_layout, "reviewed policy");
+            for source_layout in ["frontend/jvm/webgraph", "graphite-webgraph"] {
+                let source = root.join(format!(
+                    "source-{}-{}",
+                    trusted_layout.replace('/', "-"),
+                    source_layout.replace('/', "-")
+                ));
+                let output = source.join("prepared");
+                fixture(&source, source_layout, "candidate policy must not survive");
+                // A mid-migration base may still have this source: the trusted init
+                // script excludes it from JMH without altering that revision's tests.
+                let legacy = source.join(source_layout).join(
+                    "src/benchmark/kotlin/io/johnsonlee/graphite/webgraph/LargeCorpusValidation.kt",
+                );
+                fs::create_dir_all(legacy.parent().unwrap()).unwrap();
+                fs::write(&legacy, "legacy test policy").unwrap();
+                fs::create_dir(&output).unwrap();
+                let overlays = install_harness(&source, &trusted, &output).unwrap();
+                assert_eq!(overlays.len(), 6);
+                for file in overlays.iter().take(5) {
+                    let original_relative = Path::new(file["file"].as_str().unwrap());
+                    let installed_relative = if original_relative == Path::new(SHARED_VALIDATION) {
+                        original_relative.to_owned()
+                    } else {
+                        Path::new(source_layout)
+                            .join(original_relative.strip_prefix(trusted_layout).unwrap())
+                    };
+                    assert_eq!(
+                        fs::read_to_string(source.join(installed_relative)).unwrap(),
+                        "reviewed policy"
+                    );
+                    assert_eq!(
+                        fs::read_to_string(trusted.join(original_relative)).unwrap(),
+                        "reviewed policy"
+                    );
+                }
+                assert_eq!(overlays[4]["file"], SHARED_VALIDATION);
+                assert_eq!(overlays[5]["file"], VALIDATION_INIT);
                 assert_eq!(
-                    fs::read_to_string(module(&source).unwrap().join(relative)).unwrap(),
+                    fs::read_to_string(output.join("jmh-validation.init.gradle")).unwrap(),
                     "reviewed policy"
                 );
                 assert_eq!(
-                    fs::read_to_string(module(&trusted).unwrap().join(relative)).unwrap(),
-                    "reviewed policy"
+                    fs::read_to_string(module(&source).unwrap().join("build.gradle.kts")).unwrap(),
+                    "original build"
                 );
+                assert_eq!(fs::read_to_string(legacy).unwrap(), "legacy test policy");
             }
+        }
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn root_owned_policy_cannot_follow_source_or_trusted_symlink_parents() {
+        let root = temporary();
+        for (index, (redirect_trusted, relative)) in [
+            (false, "benchmark"),
+            (false, "benchmark/jvm/src"),
+            (true, "benchmark"),
+            (true, "benchmark/jvm/src/main/kotlin"),
+        ]
+        .into_iter()
+        .enumerate()
+        {
+            let source = root.join(format!("source-{index}"));
+            let trusted = root.join(format!("trusted-{index}"));
+            let output = root.join(format!("output-{index}"));
+            let outside = root.join(format!("outside-{index}"));
+            fixture(&source, "frontend/jvm/webgraph", "candidate");
+            fixture(&trusted, "frontend/jvm/webgraph", "trusted");
+            fs::create_dir(&output).unwrap();
+            fs::create_dir(&outside).unwrap();
+            fs::write(outside.join("sentinel"), "untouched").unwrap();
+            let redirected = if redirect_trusted { &trusted } else { &source }.join(relative);
+            fs::remove_dir_all(&redirected).unwrap();
+            std::os::unix::fs::symlink(&outside, redirected).unwrap();
+            assert!(install_harness(&source, &trusted, &output)
+                .unwrap_err()
+                .to_string()
+                .contains("redirected harness path"));
             assert_eq!(
-                fs::read_to_string(output.join("whole-jar.init.gradle")).unwrap(),
-                "reviewed policy"
+                fs::read_to_string(outside.join("sentinel")).unwrap(),
+                "untouched"
             );
-            assert_eq!(
-                fs::read_to_string(module(&source).unwrap().join("build.gradle.kts")).unwrap(),
-                "original build"
-            );
+            assert_eq!(fs::read_dir(outside).unwrap().count(), 1);
         }
         fs::remove_dir_all(root).unwrap();
     }
