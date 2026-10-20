@@ -1,5 +1,7 @@
 # acme: a small application fixture for the C4 component level
 
+English · [简体中文](README.zh.md)
+
 Six classes in five packages under `com.acme.shop`, with a `main` in `api` and
 cross-package calls (`api -> orders -> billing -> inventory`, everything using
 `common`). Built as a persisted graph it infers as an application with a runtime

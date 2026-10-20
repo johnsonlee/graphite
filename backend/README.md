@@ -1,5 +1,7 @@
 # Graphite Explorer (Rust)
 
+English · [简体中文](README.zh.md)
+
 A Rust reimplementation of `graphite-explore`. It reads the same on-disk graph format
 and serves the same HTTP API, so it is a drop-in replacement for the Kotlin server.
 
@@ -13,7 +15,7 @@ corpus. These counts describe the tested revisions and coverage in that report,
 not a guarantee of parity for every current route or command. See
 [What the parity suite covers, and what it does not](../docs/rust-explorer-parity-and-latency.md#what-the-parity-suite-covers-and-what-it-does-not).
 
-Against the repository's real baseline — 64 graphs, 19.4M nodes, cold, P95 taken across
+In the historical real-corpus comparison — 64 graphs, 19.4M nodes, cold, P95 taken across
 queries — **P95 is 16.7x lower than the Kotlin server** (10.9x pairing Kotlin's best
 repetition against Rust's worst), and P50 is 5.3x lower.
 
@@ -35,7 +37,7 @@ for the separate single-graph comparison.
 | `graphite-explore` | `explore/` | HTTP server exposing the Explorer API |
 
 The `graphite` CLI lives outside this directory, in `cli/` at the repository root; the Cargo
-workspace (`Cargo.toml` at the root) spans `backend/*` and `cli`. `graphite serve` runs the
+workspace (`Cargo.toml` at the root) spans `backend/*`, `cli` and `benchmark`. `graphite serve` runs the
 `serve` module of this crate; `explore/Dockerfile` packages the `graphite` binary as the
 `graphite-explore` container image.
 
@@ -70,9 +72,17 @@ on port 18080, serving the same graph under the id `app`.
 
 ## Multi-graph query benchmarks
 
-Use the real 64-graph corpus for query performance comparisons. The original
-string-search suite does not cover sorting, aggregation, traversal, WITH pipelines
-or ID lookups. The broad suite reuses the 36 query shapes in `bench/shapes.py` and
+Current CI uses the Rust controller in [`benchmark/`](../benchmark/README.md) to run
+matched base/head construction, loading and real64 multi-graph queries. Correctness,
+complete coverage and OOM failures block the PR; hosted timing observations are
+report-only. The controller retains full responses, per-case repeated-request
+latency samples and p50/p95 results. See its README for the fixed workload and
+current execution protocol.
+
+The following Python snapshot tools remain available for historical replay and
+diagnosis; they are not the current CI gate. Use the real 64-graph corpus for those
+comparisons. The original string-search suite does not cover sorting, aggregation,
+traversal, WITH pipelines or ID lookups. The broad suite reuses the 36 query shapes in `bench/shapes.py` and
 the three schema queries; `all` also retains the original string-search controls.
 
 ```bash
@@ -82,11 +92,9 @@ python3 backend/bench/snapshot.py --manifest /path/to/graphs.tsv \
   --responses-dir benchmark-results/responses --out benchmark-results/snapshot.json
 ```
 
-CI runs the same reviewed query definitions against both revisions, preserves
-complete responses, and rejects missing cases or changed results as well as
-confirmed latency regressions. Reports show absolute milliseconds before relative
-changes. `fixture64` preserves the historical search-plus-schema plan; `fast34`
-selects only searches, and `broad` selects the 36 shapes plus schema queries.
+The snapshot command preserves complete responses. `fixture64` preserves the
+historical search-plus-schema plan; `fast34` selects only searches, and `broad`
+selects the 36 shapes plus schema queries.
 
 These serial passes report per-case medians. The aggregate p50/p95 rows describe
 different queries within a pass, not repeated-request server percentiles or
@@ -103,8 +111,9 @@ four-query guard and one successful query per window. HTTP duration ends at
 response construction; guard duration ends before serialization; client latency
 includes the complete response read. Metrics sum/count is not a p95 estimate.
 
-After a confirmed broad-shape CI failure, CI performs this diagnosis once for the
-case with the largest absolute regression, keeping the complete 73-query order
-and five passes. Results go under `rust-failure-diagnostic`, separately from the
-unchanged failed gate. Enabling metrics and inserting scrapes changes execution
-history, so a successful diagnostic does not clear the original regression.
+Historical CI ran this diagnosis once for the case with the largest absolute
+regression, keeping the complete 73-query order and five passes. It retained the
+results under `rust-failure-diagnostic`, separately from the original gate results.
+The current workflow does not run that legacy diagnostic stage. Enabling metrics and inserting scrapes changes execution
+history, so a successful diagnostic does not establish performance acceptance or
+clear an earlier regression.
