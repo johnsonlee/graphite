@@ -28,6 +28,9 @@ private const val TYPE_PARAMETERS = 4
 
 /** Declaration projections keep erased graph identities and declaration metadata separate. */
 object DeclaredTypeProperties {
+    /** [CypherExpr.Property.declaredMethodKind] before [methodPropertyKind] classified the name. */
+    internal const val KIND_UNRESOLVED = -2
+
     val nodePropertyNames: List<String> = listOf(GENERIC_TYPE_PROPERTY, TYPE_INFO_PROPERTY)
     val methodPropertyNames: List<String> = listOf(
         GENERIC_RETURN_TYPE_PROPERTY, GENERIC_PARAMETER_TYPES_PROPERTY, RETURN_TYPE_INFO_PROPERTY,
@@ -63,8 +66,10 @@ object DeclaredTypeProperties {
         }
     }
 
-    internal fun methodPropertyPresent(method: MethodDescriptor, property: String, graph: Graph?): Boolean? {
-        val kind = methodPropertyKind(property)
+    /** [kind] is [methodPropertyKind] of [property], classified once by the caller for a repeated question. */
+    internal fun methodPropertyPresent(
+        method: MethodDescriptor, kind: Int, property: String, graph: Graph?
+    ): Boolean? {
         val table = if (kind < 0) null else graph?.declaredTypes()?.takeIf { it.types.isNotEmpty() }
         return when {
             kind < 0 -> null
@@ -239,7 +244,7 @@ object DeclaredTypeProperties {
 private fun DeclaredTypeTable.isImmutable(): Boolean =
     (types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(this) == true
 
-/** Presence of a node property once its row is bound: the row exists, and what rendering it would validate is validated. */
+/** Presence of a node property once its row is bound: the row exists, and what rendering it validates is validated. */
 private fun decodedNodePresence(binding: Pair<DeclaredTypeTable, Int>?, property: String): Boolean {
     val (table, id) = binding ?: return false
     if (table.isImmutable()) {
@@ -255,8 +260,13 @@ private fun decodedNodePresence(binding: Pair<DeclaredTypeTable, Int>?, property
     return true
 }
 
+/** Null means this property is outside the declaration specialization. */
+internal fun DeclaredTypeProperties.methodPropertyPresent(
+    method: MethodDescriptor, property: String, graph: Graph?
+): Boolean? = methodPropertyPresent(method, methodPropertyKind(property), property, graph)
+
 /** Which of the five declaration properties [property] is, by one string switch; -1 for none. */
-private fun methodPropertyKind(property: String): Int = when (property) {
+internal fun methodPropertyKind(property: String): Int = when (property) {
     GENERIC_RETURN_TYPE_PROPERTY -> RETURN_RENDERED
     GENERIC_PARAMETER_TYPES_PROPERTY -> PARAMETERS_RENDERED
     RETURN_TYPE_INFO_PROPERTY -> RETURN_STRUCTURED

@@ -17,7 +17,14 @@ internal inline fun isPropertyPresent(
     val declaredPresence = when (receiver) {
         is Node -> DeclaredTypeProperties.nodePropertyPresent(receiver, property, graph)
         is QualifiedNode -> DeclaredTypeProperties.nodePropertyPresent(receiver.node, property, receiver.graph)
-        is MethodValue -> DeclaredTypeProperties.methodPropertyPresent(receiver.method, property, receiver.graph)
+        is MethodValue -> {
+            var kind = expression.declaredMethodKind
+            if (kind == DeclaredTypeProperties.KIND_UNRESOLVED) {
+                kind = methodPropertyKind(property)
+                expression.declaredMethodKind = kind
+            }
+            DeclaredTypeProperties.methodPropertyPresent(receiver.method, kind, property, receiver.graph)
+        }
         else -> null
     }
     return declaredPresence ?: (resolveProperty(receiver, property) != null)

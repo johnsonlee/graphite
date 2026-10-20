@@ -810,7 +810,10 @@ private fun evaluateSinglePredicate(results: List<Boolean?>): Boolean? = when {
 sealed class CypherExpr {
     data class Literal(val value: Any?) : CypherExpr()
     data class Variable(val name: String) : CypherExpr()
-    data class Property(val expression: CypherExpr, val propertyName: String) : CypherExpr()
+    data class Property(val expression: CypherExpr, val propertyName: String) : CypherExpr() {
+        /** Which declared-type method property this names, classified once per node ([methodPropertyKind]). */
+        internal var declaredMethodKind: Int = DeclaredTypeProperties.KIND_UNRESOLVED
+    }
     data class Parameter(val name: String) : CypherExpr()
     data class FunctionCall(
         val name: String,
