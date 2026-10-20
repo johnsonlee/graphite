@@ -72,7 +72,7 @@ class DynamicPropertyContainsTest {
             (CypherFunctions.call("keys", listOf(first)) as MutableList<String>)[0] = "corrupt"
         }
         assertEquals(listOf("id", "value"), CypherFunctions.call("keys", listOf(second)))
-        assertNull(CypherFunctions.call("keys", listOf(mapOf("name" to "value"))))
+        assertEquals(listOf("name"), CypherFunctions.call("keys", listOf(mapOf("name" to "value"))))
     }
 
     @Test

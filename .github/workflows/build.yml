@@ -75,7 +75,7 @@ jobs:
       if: success() && github.event_name == 'pull_request'
       run: |
         set -o pipefail
-        ./gradlew koverLog --no-daemon 2>&1 | tee coverage-output.txt
+        ./gradlew koverLog koverXmlReport koverHtmlReport --no-daemon 2>&1 | tee coverage-output.txt
 
     - name: Comment coverage on PR
       if: success() && github.event_name == 'pull_request'
@@ -164,6 +164,17 @@ jobs:
         if [ "$FAILED" = true ]; then
           exit 1
         fi
+
+    - name: Preserve coverage diagnostics
+      if: always() && github.event_name == 'pull_request'
+      uses: actions/upload-artifact@v7
+      with:
+        name: coverage-diagnostics
+        path: |
+          **/build/reports/kover/**
+          coverage-output.txt
+        if-no-files-found: warn
+        retention-days: 7
 
     - name: Update build status comment on PR
       if: always() && !cancelled() && github.event_name == 'pull_request'

@@ -2,6 +2,7 @@ package io.johnsonlee.graphite.cypher
 
 import io.johnsonlee.graphite.core.AnnotationNode
 import io.johnsonlee.graphite.core.Node
+import io.johnsonlee.graphite.graph.Graph
 import java.util.Collections
 import java.util.LinkedHashMap
 import java.util.concurrent.ConcurrentHashMap
@@ -13,21 +14,28 @@ private val methodPropertyNames = Collections.unmodifiableList(listOf(
     METHOD_PARAMETER_TYPES_PROPERTY, METHOD_RETURN_TYPE_PROPERTY
 ))
 private val qualifiedMethodPropertyNames = Collections.unmodifiableList(methodPropertyNames + GRAPH_ID_PROPERTY)
+private val declaredMethodPropertyNames = Collections.unmodifiableList(methodPropertyNames + DeclaredTypeProperties.methodPropertyNames)
+private val qualifiedDeclaredMethodPropertyNames = Collections.unmodifiableList(declaredMethodPropertyNames + GRAPH_ID_PROPERTY)
 private val graphPropertyNames = listOf(GRAPH_ID_PROPERTY, ELEMENT_ID_PROPERTY, QUALIFIED_ID_PROPERTY)
-private val qualifiedNodePropertyNames = ConcurrentHashMap<Class<out Node>, List<String>>()
+private val qualifiedNodePropertyNames = ConcurrentHashMap<List<String>, List<String>>()
 
 /** The same ordered keys as properties(), without materializing static property values. */
-internal fun dynamicPropertyKeys(value: Any?): List<String>? = when (value) {
-    is MethodValue -> if (value.graphId == null) methodPropertyNames else qualifiedMethodPropertyNames
-    is Node -> NodePropertyAccessor.getPropertyNames(value)
+internal fun dynamicPropertyKeys(value: Any?, graph: Graph? = null): List<String>? = when (value) {
+    is Map<*, *> -> value.keys.filterIsInstance<String>()
+    is MethodValue -> if (DeclaredTypeProperties.hasMethodProperties(value.method, value.graph)) {
+        if (value.graphId == null) declaredMethodPropertyNames else qualifiedDeclaredMethodPropertyNames
+    } else {
+        if (value.graphId == null) methodPropertyNames else qualifiedMethodPropertyNames
+    }
+    is Node -> NodePropertyAccessor.getPropertyNames(value, graph)
     is QualifiedNode -> {
-        val node = value.node
-        if (node is AnnotationNode) {
+        val names = NodePropertyAccessor.getPropertyNames(value.node, value.graph)
+        if (value.node is AnnotationNode) {
             // Annotation values can override metadata keys without changing their position.
-            (NodePropertyAccessor.getPropertyNames(node) + graphPropertyNames).distinct()
+            (names + graphPropertyNames).distinct()
         } else {
-            qualifiedNodePropertyNames[node.javaClass] ?: qualifiedNodePropertyNames.computeIfAbsent(node.javaClass) {
-                Collections.unmodifiableList(NodePropertyAccessor.getPropertyNames(node) + graphPropertyNames)
+            qualifiedNodePropertyNames.computeIfAbsent(names) {
+                Collections.unmodifiableList(it + graphPropertyNames)
             }
         }
     }
@@ -43,9 +51,10 @@ internal class DynamicPropertyContainsPlan private constructor(
         target: Any,
         expected: Any?,
         resolveProperty: (Any?, String) -> Any?,
-        checkCancelled: (() -> Unit)?
+        checkCancelled: (() -> Unit)?,
+        graph: Graph? = null
     ): Boolean? {
-        val names = requireNotNull(dynamicPropertyKeys(target))
+        val names = requireNotNull(dynamicPropertyKeys(target, graph))
         val text = expected as? String
         var matched = false
         var unknown = false

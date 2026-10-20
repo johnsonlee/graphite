@@ -1,11 +1,24 @@
 package io.johnsonlee.graphite.graph
 
+import io.johnsonlee.graphite.core.Node
 import org.junit.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PropertyTextCandidatesTest {
+    @Test
+    fun `legacy candidate providers do not advertise declared property coverage`() {
+        val provider = object : NodePropertyTextCandidates {
+            override fun <T : Node> propertyTextCandidates(
+                type: Class<T>, fragment: String, workConsumer: GraphWorkConsumer?
+            ): Sequence<T>? = null
+        }
+        assertFalse(provider.includesDeclaredTypeProperties)
+        assertNull(provider.propertyTextCandidates(Node::class.java, "needle", null))
+    }
+
     @Test
     fun `plural selection retains two longest distinct fragments with stable ties`() {
         assertEquals(listOf("permission", "INTERNET"), propertyTextFragments("android.permission.INTERNET"))

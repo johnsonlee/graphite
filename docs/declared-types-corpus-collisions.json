@@ -1,0 +1,356 @@
+{
+  "hive": {
+    "sha256": "232d67c5d2ff54806944bb5b7402eaf1ebb81f11dbe4fd51bc5604a8e0c0bdad",
+    "legacy_methods": 404016,
+    "accurate_methods": 404043,
+    "collision_groups": {
+      "shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterator,boolean[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterator,boolean[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.booleans.BooleanIterator,boolean[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.bytes.ByteArrays.radixSort(byte[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.chars.CharArrays.radixSort(char[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleArrays.radixSort(double[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterator,double[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterator,double[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.doubles.DoubleIterator,double[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatArrays.radixSort(float[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterator,float[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterator,float[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.floats.FloatIterator,float[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntArrays.radixSort(int[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterator,int[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterator,int[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.ints.IntIterator,int[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongArrays.radixSort(long[][],int,int)"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterator,long[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterator,long[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterators.unwrap(shaded.parquet.it.unimi.dsi.fastutil.longs.LongIterator,long[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.objects.ObjectIterators.unwrap(java.util.Iterator,java.lang.Object[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.objects.ObjectIterators.unwrap(java.util.Iterator,java.lang.Object[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.objects.ObjectIterators.unwrap(java.util.Iterator,java.lang.Object[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[])": [
+        "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[])",
+        "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[][])"
+      ],
+      "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[],int,int)": [
+        "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[],int,int)",
+        "shaded.parquet.it.unimi.dsi.fastutil.shorts.ShortArrays.radixSort(short[][],int,int)"
+      ],
+      "javolution.io.Struct.array(javolution.io.Struct[])": [
+        "javolution.io.Struct.array(javolution.io.Struct[])",
+        "javolution.io.Struct.array(javolution.io.Struct[][])",
+        "javolution.io.Struct.array(javolution.io.Struct[][][])"
+      ],
+      "javolution.io.Struct.array(javolution.io.Struct$Member[])": [
+        "javolution.io.Struct.array(javolution.io.Struct$Member[])",
+        "javolution.io.Struct.array(javolution.io.Struct$Member[][])",
+        "javolution.io.Struct.array(javolution.io.Struct$Member[][][])"
+      ],
+      "org.codehaus.jackson.map.introspect.AnnotatedClass._collectRelevantAnnotations(java.lang.annotation.Annotation[])": [
+        "org.codehaus.jackson.map.introspect.AnnotatedClass._collectRelevantAnnotations(java.lang.annotation.Annotation[])",
+        "org.codehaus.jackson.map.introspect.AnnotatedClass._collectRelevantAnnotations(java.lang.annotation.Annotation[][])"
+      ],
+      "com.esri.core.geometry.AttributeStreamOfDbl.writeRange(int,int,double[],int,boolean)": [
+        "com.esri.core.geometry.AttributeStreamOfDbl.writeRange(int,int,double[],int,boolean)",
+        "com.esri.core.geometry.AttributeStreamOfDbl.writeRange(int,int,double[][],int,boolean)"
+      ],
+      "com.esri.core.geometry.AttributeStreamOfDbl.readRange(int,int,double[],int,boolean)": [
+        "com.esri.core.geometry.AttributeStreamOfDbl.readRange(int,int,double[],int,boolean)",
+        "com.esri.core.geometry.AttributeStreamOfDbl.readRange(int,int,double[][],int,boolean)"
+      ]
+    }
+  },
+  "tika": {
+    "sha256": "87e06f88c801fcb2beae5f15e707241edb14da468a154ad78be4e31ff982c3da",
+    "legacy_methods": 312788,
+    "accurate_methods": 312852,
+    "collision_groups": {
+      "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[])": [
+        "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[])",
+        "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[][])"
+      ],
+      "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[],int,int)": [
+        "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[],int,int)",
+        "org.codelibs.jhighlight.fastutil.chars.CharArrays.radixSort(char[][],int,int)"
+      ],
+      "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[])": [
+        "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[])",
+        "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[][])"
+      ],
+      "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[],int,int)": [
+        "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[],int,int)",
+        "org.codelibs.jhighlight.fastutil.ints.IntArrays.radixSort(int[][],int,int)"
+      ],
+      "com.jmatio.types.MLInt32.<init>(java.lang.String,int[])": [
+        "com.jmatio.types.MLInt32.<init>(java.lang.String,int[])",
+        "com.jmatio.types.MLInt32.<init>(java.lang.String,int[][])"
+      ],
+      "com.jmatio.types.MLUInt32.<init>(java.lang.String,int[])": [
+        "com.jmatio.types.MLUInt32.<init>(java.lang.String,int[])",
+        "com.jmatio.types.MLUInt32.<init>(java.lang.String,int[][])"
+      ],
+      "org.bouncycastle.asn1.tsp.PartialHashtree.<init>(byte[])": [
+        "org.bouncycastle.asn1.tsp.PartialHashtree.<init>(byte[])",
+        "org.bouncycastle.asn1.tsp.PartialHashtree.<init>(byte[][])"
+      ],
+      "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[])": [
+        "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[])",
+        "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[][])"
+      ],
+      "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[],org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$1)": [
+        "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[],org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$1)",
+        "org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$IndexedPartialHashtree.<init>(int,byte[][],org.bouncycastle.tsp.ers.ERSArchiveTimeStampGenerator$1)"
+      ],
+      "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(byte[])": [
+        "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(byte[])",
+        "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(byte[][])"
+      ],
+      "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(boolean,byte[])": [
+        "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(boolean,byte[])",
+        "org.bouncycastle.crypto.prng.FixedSecureRandom.<init>(boolean,byte[][])"
+      ],
+      "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[])": [
+        "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[])",
+        "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[][])"
+      ],
+      "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[],int,int)": [
+        "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[],int,int)",
+        "org.bouncycastle.pqc.crypto.lms.Composer.bytes(byte[][],int,int)"
+      ],
+      "org.bouncycastle.pqc.crypto.rainbow.ComputeInField.multiplyMatrix(short[],short[])": [
+        "org.bouncycastle.pqc.crypto.rainbow.ComputeInField.multiplyMatrix(short[][],short[])",
+        "org.bouncycastle.pqc.crypto.rainbow.ComputeInField.multiplyMatrix(short[][],short[][])"
+      ],
+      "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.equals(short[],short[])": [
+        "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.equals(short[],short[])",
+        "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.equals(short[][],short[][])",
+        "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.equals(short[][][],short[][][])"
+      ],
+      "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.cloneArray(short[])": [
+        "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.cloneArray(short[][])",
+        "org.bouncycastle.pqc.crypto.rainbow.RainbowUtil.cloneArray(short[][][])"
+      ],
+      "org.bouncycastle.pqc.crypto.xmss.XMSSUtil.cloneArray(byte[])": [
+        "org.bouncycastle.pqc.crypto.xmss.XMSSUtil.cloneArray(byte[])",
+        "org.bouncycastle.pqc.crypto.xmss.XMSSUtil.cloneArray(byte[][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(byte[])": [
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(byte[][])",
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(byte[][][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(org.bouncycastle.pqc.legacy.crypto.gmss.Treehash[])": [
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(org.bouncycastle.pqc.legacy.crypto.gmss.Treehash[])",
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(org.bouncycastle.pqc.legacy.crypto.gmss.Treehash[][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(java.util.Vector[])": [
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(java.util.Vector[])",
+        "org.bouncycastle.pqc.legacy.crypto.gmss.GMSSUtils.clone(java.util.Vector[][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.gmss.util.GMSSUtil.printArray(java.lang.String,byte[])": [
+        "org.bouncycastle.pqc.legacy.crypto.gmss.util.GMSSUtil.printArray(java.lang.String,byte[])",
+        "org.bouncycastle.pqc.legacy.crypto.gmss.util.GMSSUtil.printArray(java.lang.String,byte[][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.rainbow.util.ComputeInField.multiplyMatrix(short[],short[])": [
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.ComputeInField.multiplyMatrix(short[][],short[])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.ComputeInField.multiplyMatrix(short[][],short[][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(byte[])": [
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(byte[])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(byte[][])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(byte[][][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(short[])": [
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(short[])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(short[][])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.convertArray(short[][][])"
+      ],
+      "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.equals(short[],short[])": [
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.equals(short[],short[])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.equals(short[][],short[][])",
+        "org.bouncycastle.pqc.legacy.crypto.rainbow.util.RainbowUtil.equals(short[][][],short[][][])"
+      ],
+      "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.equals(byte[],byte[])": [
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.equals(byte[],byte[])",
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.equals(byte[][],byte[][])",
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.equals(byte[][][],byte[][][])"
+      ],
+      "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.deepHashCode(byte[])": [
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.deepHashCode(byte[])",
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.deepHashCode(byte[][])",
+        "org.bouncycastle.pqc.legacy.math.linearalgebra.ByteUtils.deepHashCode(byte[][][])"
+      ],
+      "org.bouncycastle.util.Arrays.hashCode(int[])": [
+        "org.bouncycastle.util.Arrays.hashCode(int[])",
+        "org.bouncycastle.util.Arrays.hashCode(int[][])"
+      ],
+      "org.bouncycastle.util.Arrays.hashCode(short[])": [
+        "org.bouncycastle.util.Arrays.hashCode(short[])",
+        "org.bouncycastle.util.Arrays.hashCode(short[][])",
+        "org.bouncycastle.util.Arrays.hashCode(short[][][])"
+      ],
+      "org.bouncycastle.util.Arrays.clone(byte[])": [
+        "org.bouncycastle.util.Arrays.clone(byte[])",
+        "org.bouncycastle.util.Arrays.clone(byte[][])",
+        "org.bouncycastle.util.Arrays.clone(byte[][][])"
+      ],
+      "org.bouncycastle.util.test.FixedSecureRandom.<init>(byte[])": [
+        "org.bouncycastle.util.test.FixedSecureRandom.<init>(byte[])",
+        "org.bouncycastle.util.test.FixedSecureRandom.<init>(byte[][])"
+      ],
+      "org.bouncycastle.util.test.SimpleTest.areEqual(byte[],byte[])": [
+        "org.bouncycastle.util.test.SimpleTest.areEqual(byte[],byte[])",
+        "org.bouncycastle.util.test.SimpleTest.areEqual(byte[][],byte[][])"
+      ],
+      "org.apache.commons.math3.stat.inference.GTest.entropy(long[])": [
+        "org.apache.commons.math3.stat.inference.GTest.entropy(long[])",
+        "org.apache.commons.math3.stat.inference.GTest.entropy(long[][])"
+      ],
+      "org.apache.commons.math3.linear.Array2DRowRealMatrix.<init>(double[])": [
+        "org.apache.commons.math3.linear.Array2DRowRealMatrix.<init>(double[])",
+        "org.apache.commons.math3.linear.Array2DRowRealMatrix.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.linear.AbstractFieldMatrix.extractField(org.apache.commons.math3.FieldElement[])": [
+        "org.apache.commons.math3.linear.AbstractFieldMatrix.extractField(org.apache.commons.math3.FieldElement[])",
+        "org.apache.commons.math3.linear.AbstractFieldMatrix.extractField(org.apache.commons.math3.FieldElement[][])"
+      ],
+      "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.FieldElement[])": [
+        "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.FieldElement[])",
+        "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.FieldElement[][])"
+      ],
+      "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.Field,org.apache.commons.math3.FieldElement[])": [
+        "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.Field,org.apache.commons.math3.FieldElement[])",
+        "org.apache.commons.math3.linear.Array2DRowFieldMatrix.<init>(org.apache.commons.math3.Field,org.apache.commons.math3.FieldElement[][])"
+      ],
+      "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[])",
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[],double,double,double,double)": [
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[],double,double,double,double)",
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.NelderMeadSimplex.<init>(double[][],double,double,double,double)"
+      ],
+      "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[])",
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[],double,double)": [
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[],double,double)",
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.MultiDirectionalSimplex.<init>(double[][],double,double)"
+      ],
+      "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.AbstractSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.AbstractSimplex.<init>(double[])",
+        "org.apache.commons.math3.optim.nonlinear.scalar.noderiv.AbstractSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[])",
+        "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[],double,double,double,double)": [
+        "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[],double,double,double,double)",
+        "org.apache.commons.math3.optimization.direct.NelderMeadSimplex.<init>(double[][],double,double,double,double)"
+      ],
+      "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[])",
+        "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[],double,double)": [
+        "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[],double,double)",
+        "org.apache.commons.math3.optimization.direct.MultiDirectionalSimplex.<init>(double[][],double,double)"
+      ],
+      "org.apache.commons.math3.optimization.direct.AbstractSimplex.<init>(double[])": [
+        "org.apache.commons.math3.optimization.direct.AbstractSimplex.<init>(double[])",
+        "org.apache.commons.math3.optimization.direct.AbstractSimplex.<init>(double[][])"
+      ],
+      "org.apache.commons.math3.util.FastMathCalc.printarray(java.io.PrintStream,java.lang.String,int,double[])": [
+        "org.apache.commons.math3.util.FastMathCalc.printarray(java.io.PrintStream,java.lang.String,int,double[])",
+        "org.apache.commons.math3.util.FastMathCalc.printarray(java.io.PrintStream,java.lang.String,int,double[][])"
+      ],
+      "org.apache.commons.math3.util.MathArrays.checkNonNegative(long[])": [
+        "org.apache.commons.math3.util.MathArrays.checkNonNegative(long[])",
+        "org.apache.commons.math3.util.MathArrays.checkNonNegative(long[][])"
+      ],
+      "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[],javax.xml.namespace.QName)": [
+        "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[],javax.xml.namespace.QName)",
+        "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[][],javax.xml.namespace.QName)"
+      ],
+      "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[],javax.xml.namespace.QName,org.apache.xmlbeans.QNameSet)": [
+        "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[],javax.xml.namespace.QName,org.apache.xmlbeans.QNameSet)",
+        "org.apache.xmlbeans.impl.values.XmlComplexContentImpl.arraySetterHelper(byte[][],javax.xml.namespace.QName,org.apache.xmlbeans.QNameSet)"
+      ],
+      "org.apache.xerces.impl.dtd.DTDGrammar.resize(java.lang.String[],int)": [
+        "org.apache.xerces.impl.dtd.DTDGrammar.resize(java.lang.String[][],int)",
+        "org.apache.xerces.impl.dtd.DTDGrammar.resize(java.lang.String[][][],int)"
+      ],
+      "org.apache.commons.compress.harmony.pack200.BandSet.encodeFlags(java.lang.String,long[],org.apache.commons.compress.harmony.pack200.BHSDCodec,org.apache.commons.compress.harmony.pack200.BHSDCodec,boolean)": [
+        "org.apache.commons.compress.harmony.pack200.BandSet.encodeFlags(java.lang.String,long[],org.apache.commons.compress.harmony.pack200.BHSDCodec,org.apache.commons.compress.harmony.pack200.BHSDCodec,boolean)",
+        "org.apache.commons.compress.harmony.pack200.BandSet.encodeFlags(java.lang.String,long[][],org.apache.commons.compress.harmony.pack200.BHSDCodec,org.apache.commons.compress.harmony.pack200.BHSDCodec,boolean)"
+      ],
+      "org.apache.commons.compress.harmony.unpack200.BandSet.getReferences(int[],java.lang.String[])": [
+        "org.apache.commons.compress.harmony.unpack200.BandSet.getReferences(int[],java.lang.String[])",
+        "org.apache.commons.compress.harmony.unpack200.BandSet.getReferences(int[][],java.lang.String[])"
+      ],
+      "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countBit16(long[])": [
+        "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countBit16(long[])",
+        "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countBit16(long[][])"
+      ],
+      "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countMatches(long[],org.apache.commons.compress.harmony.unpack200.IMatcher)": [
+        "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countMatches(long[],org.apache.commons.compress.harmony.unpack200.IMatcher)",
+        "org.apache.commons.compress.harmony.unpack200.SegmentUtils.countMatches(long[][],org.apache.commons.compress.harmony.unpack200.IMatcher)"
+      ]
+    }
+  },
+  "kotlin-compiler": {
+    "sha256": "9fa8cdd1de0dccffe154c997d423ec6b5f53cd6d9177e3a77a9b0de03fb1bc81",
+    "legacy_methods": 249669,
+    "accurate_methods": 249669,
+    "collision_groups": {}
+  }
+}

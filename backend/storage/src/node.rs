@@ -477,6 +477,39 @@ pub fn read_call_site_strings(data: &[u8], record_pos: usize) -> CallSiteStrings
     }
 }
 
+/// The four scalar string IDs, only after the complete CallSite framing is checked.
+/// Counts retain Node::read's negative-as-zero behavior. No parameter/argument
+/// vectors are constructed; invalid or other-kind records keep the caller's fallback.
+pub fn read_call_site_scalar_strings(data: &[u8], record_pos: usize) -> Option<CallSiteStrings> {
+    fn ids(c: &mut Cursor<'_>) -> Option<()> {
+        let count = c.i32().ok()?.max(0) as usize;
+        c.skip(count.checked_mul(4)?).ok()
+    }
+    fn method(c: &mut Cursor<'_>) -> Option<(StrId, StrId)> {
+        let class = c.u32().ok()?;
+        let name = c.u32().ok()?;
+        ids(c)?;
+        c.u32().ok()?; // return type
+        Some((class, name))
+    }
+    let mut c = Cursor::new(data.get(record_pos..)?);
+    c.u32().ok()?; // Like Node::read, do not require header id == lookup id.
+    if c.u8().ok()? != TAG_CALL_SITE_NODE {
+        return None;
+    }
+    let (caller_class, caller_name) = method(&mut c)?;
+    let (callee_class, callee_name) = method(&mut c)?;
+    c.i32().ok()?; // line
+    c.i32().ok()?; // receiver
+    ids(&mut c)?;
+    Some(CallSiteStrings {
+        caller_class,
+        caller_name,
+        callee_class,
+        callee_name,
+    })
+}
+
 /// The `graph.callsite-ordinals` sidecar: the ordinal of every call site that has one, and
 /// the call site a derived one was resolved from, by node id. Layout: `int32 header = "GRQ"
 /// | 4`, a copy of the 32-byte binding digest, then the index the binding is the SHA-256 of

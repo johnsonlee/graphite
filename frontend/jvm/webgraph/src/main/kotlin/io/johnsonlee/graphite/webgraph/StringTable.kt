@@ -4,6 +4,9 @@ import io.johnsonlee.graphite.graph.GraphWorkConsumer
 import it.unimi.dsi.fastutil.io.BinIO
 import it.unimi.dsi.lang.MutableString
 import it.unimi.dsi.util.FrontCodedStringList
+import java.io.BufferedOutputStream
+import java.io.ObjectOutputStream
+import java.security.DigestOutputStream
 import java.nio.charset.StandardCharsets
 import java.nio.file.Files
 import java.nio.file.Path
@@ -23,8 +26,13 @@ import java.security.MessageDigest
 internal class StringTable private constructor(
     private val list: FrontCodedStringList,
     private val indexMap: Map<String, Int>?,
-    contentIdentity: ByteArray?
+    contentIdentity: ByteArray?,
+    serializedDigest: Lazy<ByteArray>? = null
 ) {
+
+    /** SHA-256 of the serialized file, available when the table was built or loaded for a shared-string type table. */
+    private val serializedIdentity = serializedDigest
+    internal fun serializedDigest(): ByteArray? = serializedIdentity?.value?.copyOf()
 
     @Volatile
     private var persistedContentIdentity: ByteArray? = contentIdentity?.copyOf()
@@ -79,6 +87,7 @@ internal class StringTable private constructor(
 
     companion object {
 
+        private const val DIGEST_ALGORITHM = "SHA-256"
         private const val FILE_NAME = "graph.strings"
         internal const val CONTENT_IDENTITY_FILE_NAME = "graph.strings.identity"
         private const val CONTENT_IDENTITY_BYTES = 32
@@ -90,33 +99,48 @@ internal class StringTable private constructor(
          * The ratio parameter controls the trade-off between compression and
          * random access speed.
          */
-        fun build(strings: Collection<String>, dir: Path): StringTable {
+        fun build(strings: Collection<String>, dir: Path, captureSerializedDigest: Boolean = false): StringTable {
             val sorted = strings.toSortedSet().toList()
             val fcl = FrontCodedStringList(sorted.iterator(), FRONT_CODED_STRING_RATIO, false)
-            BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
+            val serializedHash = if (captureSerializedDigest) MessageDigest.getInstance(DIGEST_ALGORITHM) else null
+            if (serializedHash == null) {
+                BinIO.storeObject(fcl, dir.resolve(FILE_NAME).toString())
+            } else {
+                DigestOutputStream(BufferedOutputStream(Files.newOutputStream(dir.resolve(FILE_NAME))), serializedHash).use { raw ->
+                    ObjectOutputStream(raw).use { it.writeObject(fcl) }
+                }
+            }
             val contentIdentity = semanticContentIdentity(sorted)
             Files.write(dir.resolve(CONTENT_IDENTITY_FILE_NAME), contentIdentity)
             val indexMap = HashMap<String, Int>(sorted.size)
             for (i in sorted.indices) {
                 indexMap[sorted[i]] = i
             }
-            return StringTable(fcl, indexMap, contentIdentity)
+            return StringTable(fcl, indexMap, contentIdentity, serializedHash?.let { lazyOf(it.digest()) })
         }
 
         /**
          * Load a previously persisted [StringTable] from disk.
          */
-        fun load(dir: Path): StringTable {
-            @Suppress("UNCHECKED_CAST")
-            val fcl = BinIO.loadObject(dir.resolve(FILE_NAME).toString()) as FrontCodedStringList
+        fun load(dir: Path, verifySerializedDigest: Boolean = false): StringTable {
+            val path = dir.resolve(FILE_NAME)
+            val fcl = Files.newInputStream(path).use { BinIO.loadObject(it) as FrontCodedStringList }
+            // The digest binds a shared-string type table to the file this list was decoded
+            // from. It is taken when that table is first read, not here: the table is
+            // query-only state, and hashing the file (through the deserializer's small reads,
+            // or in bulk, which held a second copy of it) charged every graph's load for it.
+            // It streams the file through a small buffer: the first read happens inside a
+            // query, on a heap that may hold that query's rows, and a 15 MB array for a large
+            // dictionary is a humongous allocation there.
+            val serializedDigest = if (verifySerializedDigest) lazy { WireIo.digest(path) } else null
             val contentIdentity = dir.resolve(CONTENT_IDENTITY_FILE_NAME).takeIf(Files::isRegularFile)
                 ?.let(Files::readAllBytes)
                 ?.takeIf { identity -> identity.size == CONTENT_IDENTITY_BYTES }
-            return StringTable(fcl, null, contentIdentity)
+            return StringTable(fcl, null, contentIdentity, serializedDigest)
         }
 
         private fun semanticContentIdentity(strings: List<String>): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance(DIGEST_ALGORITHM)
             digest.updateInt(strings.size)
             strings.forEach { value ->
                 val bytes = value.toByteArray(StandardCharsets.UTF_8)
@@ -130,7 +154,7 @@ internal class StringTable private constructor(
             strings: FrontCodedStringList,
             workConsumer: GraphWorkConsumer?
         ): ByteArray {
-            val digest = MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance(DIGEST_ALGORITHM)
             digest.updateInt(strings.size)
             val reusable = MutableString()
             val accounting = BufferedGraphWorkConsumer(workConsumer)

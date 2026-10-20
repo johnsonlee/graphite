@@ -93,6 +93,20 @@ internal val nodeLabelDescriptors = listOf(
  */
 object CypherFunctions {
 
+    internal fun call(
+        name: String,
+        args: List<Any?>,
+        checkCancelled: (() -> Unit)?,
+        graph: io.johnsonlee.graphite.graph.Graph?
+    ): Any? =
+        if (name.equals("properties", ignoreCase = true) && args.firstOrNull() is Node) {
+            NodePropertyAccessor.getAllProperties(args[0] as Node, graph)
+        } else if (name.equals("keys", ignoreCase = true)) {
+            dynamicPropertyKeys(args[0], graph)
+        } else {
+            dispatch(name, args, checkCancelled)
+        }
+
     fun call(name: String, args: List<Any?>): Any? = dispatch(name, args, null)
 
     internal fun call(
@@ -295,8 +309,8 @@ object CypherFunctions {
 
     private fun properties(value: Any?): Map<String, Any?>? = when (value) {
         is MethodValue -> value.properties()
-        is Node -> NodePropertyAccessor.getAllProperties(value)
-        is QualifiedNode -> NodePropertyAccessor.getAllProperties(value.node) + mapOf(
+        is Node -> NodePropertyAccessor.getAllProperties(value, null)
+        is QualifiedNode -> NodePropertyAccessor.getAllProperties(value.node, value.graph) + mapOf(
             GRAPH_ID_PROPERTY to value.graphId,
             ELEMENT_ID_PROPERTY to value.elementId,
             QUALIFIED_ID_PROPERTY to value.elementId

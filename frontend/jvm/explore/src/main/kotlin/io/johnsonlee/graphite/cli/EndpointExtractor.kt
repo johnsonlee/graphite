@@ -1,5 +1,6 @@
 package io.johnsonlee.graphite.cli
 
+import io.johnsonlee.graphite.cypher.DeclaredTypeProperties
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 
@@ -39,7 +40,7 @@ internal class EndpointExtractor {
                                 "returns" to method.returnType.className,
                                 "parameters" to method.parameterTypes.map { it.className },
                                 "annotations" to memberAnnotations.keys.sorted()
-                            )
+                            ) + DeclaredTypeProperties.methodProperties(method, graph)
                         }
                     }
                 }

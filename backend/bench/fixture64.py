@@ -2,7 +2,7 @@
 """Cross-graph P95 over the repository's own 64-graph fixture.
 
 This mirrors the shape of `LargeBroadQueryPressureBenchmark`'s `global-wide` family and
-the way `.github/scripts/benchmark-gate.mjs` derives P95: the percentile is taken across
+the way the former `benchmark-gate.mjs` CI gate derived P95: the percentile is taken across
 *queries*, each executed once, cold, single-threaded, with no warmup. That is a
 different statistic from a per-endpoint request percentile, and it is the one this
 repository gates on.

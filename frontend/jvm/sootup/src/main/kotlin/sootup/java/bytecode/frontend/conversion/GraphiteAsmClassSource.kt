@@ -16,11 +16,27 @@ internal class GraphiteAsmClassSource(
     location: AnalysisInputLocation,
     path: Path,
     type: ClassType,
-    private val node: ClassNode
-) : AsmClassSource(location, path, type, node) {
+    override val parsedDeclarationNode: ClassNode
+) : AsmClassSource(location, path, type, parsedDeclarationNode), ParsedDeclarationSource {
     fun methodSources(): List<AsmMethodSource> =
-        node.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))
+        parsedDeclarationNode.methods.map { it as AsmMethodSource }.sortedWith(compareBy({ it.name }, { it.desc }))
 }
+
+/** The same retained ASM node used by lazy member/body resolution. */
+internal interface ParsedDeclarationSource {
+    val parsedDeclarationNode: ClassNode
+}
+
+internal class GraphiteAsmAnnotationClassSource(
+    location: AnalysisInputLocation,
+    path: Path,
+    type: ClassType,
+    override val parsedDeclarationNode: ClassNode
+) : AsmAnnotationClassSource(location, path, type, parsedDeclarationNode), ParsedDeclarationSource
+
+/** Foreign sources retain the existing resource-based fallback. */
+internal fun SootClassSource.parsedDeclarationNode(): ClassNode? =
+    (this as? ParsedDeclarationSource)?.parsedDeclarationNode
 
 /** Only our own lazy source has this path; overriding and annotation sources keep theirs. */
 internal fun SootClassSource.streamingMethodSources(): List<AsmMethodSource>? =

@@ -15,6 +15,10 @@
 - Performance benchmarks and performance regression gates must use real persisted graph datasets
   representative of the production workload. If the required real graphs are unavailable, report
   the performance evidence as unavailable; never substitute synthetic measurements.
+- **Multi-graph load tests are the only performance regression acceptance standard. Single-graph
+  runs are correctness gates only.** Do not run or require single-graph performance measurements,
+  including JMH, for diagnosis, candidate selection or regression acceptance. Every measured query
+  must actually target multiple graphs; loading multiple graphs alone does not qualify.
 - After fixing or tightening unit tests for a performance-sensitive path, rerun the relevant module tests and lint gate.
 - Every PR must pass `benchmark-regression-gate` for correctness, complete execution and OOM checks.
 - GitHub-hosted runners do not enforce performance thresholds. Their timing observations are report-only.
@@ -26,6 +30,17 @@
 - Missing, failed or incomparable measurements must remain explicit; do not turn them into zero values or performance PASS results.
 - Existing historical reports and experiment records remain historical evidence with their original limitations. A report-only hosted timing improvement is not formal performance acceptance.
 - See `benchmark/README.md` for the fixed workload, measurement protocol and execution commands.
+
+### Verification feedback and reuse
+
+- **First make the feedback loop fast; then begin validation and optimization.** Before the first expensive iteration, estimate the end-to-end critical path, including preparation, transfers, verification and final consumers. Establish fast actionable checks and remove avoidable serial dependencies or repeated work first. Do not treat hours per iteration as an acceptable default or postpone workflow repair until after repeated long runs; retain complete correctness coverage and real multi-graph performance acceptance.
+- Before starting an expensive acceptance run, exercise the producer-to-consumer handoff with a fast correctness smoke check, including checkpoint sealing, the workflow's download layout, restoration, and consumption. Small or synthetic fixtures are permitted for this correctness check only; they provide no performance evidence.
+- Declare the required acceptance checks, baseline, workload, and approved tradeoffs before measurement. Add checks only when a concrete defect, changed dependency, or new evidence justifies them; do not expand the acceptance scope merely because a run is still in progress.
+- Run independent measurement and complete correctness verification concurrently when their actual data dependencies permit it. A measurement may finish while comparability is pending, but neither its job nor its report may claim final acceptance until the matching complete correctness proof succeeds. Preserve all failures and original samples.
+- Reuse reviewed evidence for unchanged revisions, inputs, controls, environments, and measurement boundaries. Revalidate the affected dependency closure when one changes; do not repeatedly download, hash, or rerun the same evidence without a new reason. Required integrity checks when transporting or consuming artifacts still apply.
+- If a long-running stage produces no new diagnostic or completed-stage result for 30 minutes, inspect the live process and critical path. Record whether it is advancing, waiting on a real dependency, or failed, and choose the next action from that evidence. This is a feedback deadline, not a timeout or permission to cancel a healthy run. Do not restart work because an observation timed out.
+- Preserve an active run while preparing workflow repairs locally. Report separately what has been implemented, locally verified, and exercised by hosted CI; a proposed workflow change is not a completed improvement.
+- Once a replacement is ready, compare the active run's remaining critical path with the replacement's full critical path before deciding to continue or supersede it. Use matched historical stage timings where available, include rebuilding, artifact transfer, final audits, downstream dependencies, queueing and uncertainty, and state which evidence can actually be reused. Elapsed time is a sunk cost; an active status alone does not justify continuing. Revisit the decision when new evidence changes the estimates. Do not estimate a parallel workflow by dividing its total serial runtime by the worker count.
 
 ### Performance experiment history
 

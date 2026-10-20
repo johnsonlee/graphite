@@ -68,6 +68,13 @@ fun propertyTextFragments(needle: String): List<String> = PropertyTextFragmentSe
  * the graphId contains the fragment, bypass this prefilter and retain normal evaluation.
  */
 interface NodePropertyTextCandidates {
+    /**
+     * True only when candidates also cover declared generic type properties, including structured values.
+     * Callers must retain ordinary scanning for relevant declared nodes when a legacy provider returns false.
+     */
+    val includesDeclaredTypeProperties: Boolean
+        get() = false
+
     fun <T : Node> propertyTextCandidates(
         type: Class<T>,
         fragment: String,

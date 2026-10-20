@@ -118,7 +118,22 @@ mod tests {
         assert_eq!(a.node_count(), b.node_count());
         assert_eq!(a.node_capacity(), b.node_capacity());
         assert_eq!(a.edge_count(), b.edge_count());
-        assert_eq!(a.strings.len(), b.strings.len());
+        assert_eq!(a.strings().len(), b.strings().len());
+        match (a.declared_types(), b.declared_types()) {
+            (Some(left), Some(right)) => {
+                assert_eq!(
+                    left.field_entries().collect::<Vec<_>>(),
+                    right.field_entries().collect::<Vec<_>>()
+                );
+                assert_eq!(left.method_count(), right.method_count());
+                assert_eq!(left.type_count(), right.type_count());
+                for id in 0..left.type_count() {
+                    assert_eq!(left.render(id), right.render(id));
+                }
+            }
+            (None, None) => {}
+            _ => panic!("packed graph lost its declared types"),
+        }
         assert_eq!(a.call_site_index().is_some(), b.call_site_index().is_some());
         let mut expected_mapped = std::fs::metadata(dir.join("graph.nodedata")).unwrap().len()
             + std::fs::metadata(dir.join("graph.nodeoffsets"))
