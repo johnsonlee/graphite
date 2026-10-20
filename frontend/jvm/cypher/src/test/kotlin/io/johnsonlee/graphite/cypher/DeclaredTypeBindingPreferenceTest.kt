@@ -13,8 +13,10 @@ import io.johnsonlee.graphite.graph.DeclaredTypeBinding
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.ImmutableDeclaredTypeStorage
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodTypes
+import io.johnsonlee.graphite.graph.TypeParameter
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,12 +48,24 @@ class DeclaredTypeBindingPreferenceTest {
         override fun declaredTypeBinding(): DeclaredTypeBinding = binding
     }
 
-    private fun graph(binding: DeclaredTypeBinding): Graph = Bound(
+    private fun graph(binding: DeclaredTypeBinding, declared: DeclaredTypeTable = table): Graph = Bound(
         DefaultGraph.Builder().apply {
-            addNode(field); addNode(parameter); addNode(result); addMethod(method); setDeclaredTypes(table)
+            addNode(field); addNode(parameter); addNode(result); addMethod(method); setDeclaredTypes(declared)
         }.build(),
         binding
     )
+
+    /** The same table as a persisted reader would hold it: an immutable storage that answers presence from flags. */
+    private fun immutable(): DeclaredTypeTable {
+        val types = object : AbstractList<DeclaredType>(), ImmutableDeclaredTypeStorage {
+            override val immutableFields = table.fields
+            override val immutableMethods = table.methods
+            override val immutableClasses = table.classes
+            override val size: Int get() = table.types.size
+            override fun get(index: Int): DeclaredType = table.types[index]
+        }
+        return table.copy(types = types)
+    }
 
     private fun binding(fieldId: Int, memberId: Int, descriptorMethod: MethodTypes?) = object : DeclaredTypeBinding {
         override fun fieldTypeId(node: FieldNode): Int = fieldId
@@ -93,6 +107,32 @@ class DeclaredTypeBindingPreferenceTest {
         assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "type_parameters", plain))
         val unbound = graph(binding(unanswered, unanswered, null))
         assertEquals(false, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", unbound))
+    }
+
+    @Test
+    fun `an immutable table answers method presence from the bound row's flags`() {
+        val unanswered = DeclaredTypeBinding.UNANSWERED
+        val bounded = MethodTypes(listOf(0), 0, listOf(TypeParameter("T", "example.Box", listOf(0))))
+        val shaped = graph(binding(unanswered, unanswered, bounded), immutable())
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", shaped))
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_parameter_types", shaped))
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "type_parameters", shaped))
+        // An empty projection is present too; the flags only decide whether the types must be validated first.
+        val plain = graph(binding(unanswered, unanswered, MethodTypes(emptyList(), 0)), immutable())
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", plain))
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_parameter_types", plain))
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "type_parameters", plain))
+        val unbound = graph(binding(unanswered, unanswered, null), immutable())
+        assertEquals(false, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", unbound))
+        val deferred = graph(binding(unanswered, unanswered, DeclaredTypeBinding.UNANSWERED_METHOD), immutable())
+        assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", deferred))
+    }
+
+    @Test
+    fun `a property the declarations do not define reads as absent on a bound node`() {
+        val graph = graph(binding(0, 0, byId))
+        assertNull(DeclaredTypeProperties.nodeProperty(field, "name", graph))
+        assertNull(DeclaredTypeProperties.methodProperty(method, "name", graph))
     }
 
     @Test

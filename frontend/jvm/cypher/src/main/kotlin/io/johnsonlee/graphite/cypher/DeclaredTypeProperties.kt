@@ -172,8 +172,7 @@ object DeclaredTypeProperties {
             node.descriptor.declaringClass.className, node.descriptor.name, jvmTypeDescriptor(node.descriptor.type.className)
         )]
         is ParameterNode -> table.methods[methodKey(node.method)]?.parameterTypes?.getOrNull(node.index)
-        is ReturnNode -> table.methods[methodKey(node.method)]?.returnType
-        else -> null
+        else -> table.methods[methodKey((node as ReturnNode).method)]?.returnType // supportsNode admits no other kind
     }
 
     private fun methodBinding(method: MethodDescriptor, graph: Graph?): Pair<DeclaredTypeTable, MethodTypes>? {
