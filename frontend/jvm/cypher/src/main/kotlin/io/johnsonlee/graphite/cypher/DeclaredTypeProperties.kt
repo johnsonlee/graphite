@@ -18,12 +18,19 @@ private const val TYPE_INFO_PROPERTY = "type_info"
 private const val GENERIC_PARAMETER_TYPES_PROPERTY = "generic_parameter_types"
 private const val PARAMETER_TYPE_INFO_PROPERTY = "parameter_type_info"
 private const val TYPE_PARAMETERS_PROPERTY = "type_parameters"
+private const val GENERIC_RETURN_TYPE_PROPERTY = "generic_return_type"
+private const val RETURN_TYPE_INFO_PROPERTY = "return_type_info"
+private const val RETURN_RENDERED = 0
+private const val PARAMETERS_RENDERED = 1
+private const val RETURN_STRUCTURED = 2
+private const val PARAMETERS_STRUCTURED = 3
+private const val TYPE_PARAMETERS = 4
 
 /** Declaration projections keep erased graph identities and declaration metadata separate. */
 object DeclaredTypeProperties {
     val nodePropertyNames: List<String> = listOf(GENERIC_TYPE_PROPERTY, TYPE_INFO_PROPERTY)
     val methodPropertyNames: List<String> = listOf(
-        "generic_return_type", GENERIC_PARAMETER_TYPES_PROPERTY, "return_type_info",
+        GENERIC_RETURN_TYPE_PROPERTY, GENERIC_PARAMETER_TYPES_PROPERTY, RETURN_TYPE_INFO_PROPERTY,
         PARAMETER_TYPE_INFO_PROPERTY, TYPE_PARAMETERS_PROPERTY
     )
 
@@ -39,27 +46,30 @@ object DeclaredTypeProperties {
     /** Null means this property is outside the declaration specialization. */
     internal fun nodePropertyPresent(node: Node, property: String, graph: Graph?): Boolean? {
         if (!isNodeProperty(node, property)) return null
-        return nodeBinding(node, graph)?.let { (table, id) ->
-            if (table.isImmutable()) {
-                // render/info validate before traversing the selected type, including unrelated rows.
-                table.validate()
-            } else {
-                // Ordinary public collections may have changed since the cached validation succeeded.
-                when (property) {
-                    GENERIC_TYPE_PROPERTY -> table.render(id)
-                    else -> table.info(id)
-                }
+        // A persisted graph answers presence from the bits its saver wrote, without resolving the row.
+        val table = graph?.declaredTypes()?.takeIf { it.types.isNotEmpty() }
+        val persisted = if (table != null && table.isImmutable()) {
+            graph.declaredTypeBinding()?.nodePresence(node) ?: DeclaredTypeBinding.UNANSWERED
+        } else {
+            DeclaredTypeBinding.UNANSWERED
+        }
+        return when (persisted) {
+            DeclaredTypeBinding.PRESENT -> {
+                table?.validate()
+                true
             }
-            true
-        } ?: false
+            DeclaredTypeBinding.ABSENT -> false
+            else -> decodedNodePresence(nodeBinding(node, graph), property)
+        }
     }
 
     internal fun methodPropertyPresent(method: MethodDescriptor, property: String, graph: Graph?): Boolean? {
-        val table = graph?.declaredTypes()?.takeIf { it.types.isNotEmpty() }
+        val kind = methodPropertyKind(property)
+        val table = if (kind < 0) null else graph?.declaredTypes()?.takeIf { it.types.isNotEmpty() }
         return when {
-            property !in methodPropertyNames -> null
+            kind < 0 -> null
             table == null -> false
-            else -> boundMethodPresence(method, property, table, graph)
+            else -> graph?.let { boundMethodPresence(method, kind, table, it) }
                 ?: decodedMethodPresence(method, property, graph)
         }
     }
@@ -80,22 +90,28 @@ object DeclaredTypeProperties {
 
     /**
      * A persisted graph answers a presence check from two flags of the row, read without decoding
-     * the declaration; the memo keeps that to one read for the row's five properties. Null when the
-     * binding does not know the method or the table may change, so the decoded path decides.
+     * the declaration. The descriptor remembers the answer for this table, so a row's five
+     * properties read a field after the first; a hand-built descriptor or a mutable table hands
+     * the question to the decoded path (null).
      */
-    private fun boundMethodPresence(
-        method: MethodDescriptor, property: String, table: DeclaredTypeTable, graph: Graph
-    ): Boolean? {
-        val binding = graph.declaredTypeBinding() ?: return null
-        val shape = bind(method, table, lastMethodShape) {
-            binding.methodShape(method).takeIf { it != DeclaredTypeBinding.UNANSWERED }
+    private fun boundMethodPresence(method: MethodDescriptor, kind: Int, table: DeclaredTypeTable, graph: Graph): Boolean? {
+        if (!table.isImmutable()) return null
+        val shape = if (method.declaredShapeOwner === table) {
+            method.declaredShape
+        } else {
+            (graph.declaredTypeBinding()?.methodShape(method) ?: DeclaredTypeBinding.UNANSWERED).also {
+                method.declaredShape = it
+                method.declaredShapeOwner = table
+            }
         }
-        return when {
-            shape == null || !table.isImmutable() -> null
-            shape == DeclaredTypeBinding.UNBOUND -> false
+        return when (shape) {
+            DeclaredTypeBinding.UNANSWERED -> null
+            DeclaredTypeBinding.UNBOUND -> false
             else -> {
-                val projects = projectsType(property, shape and DeclaredTypeBinding.HAS_PARAMETERS != 0) {
-                    shape and DeclaredTypeBinding.HAS_BOUNDS != 0
+                val projects = when (kind) {
+                    PARAMETERS_RENDERED, PARAMETERS_STRUCTURED -> shape and DeclaredTypeBinding.HAS_PARAMETERS != 0
+                    TYPE_PARAMETERS -> shape and DeclaredTypeBinding.HAS_BOUNDS != 0
+                    else -> true
                 }
                 if (projects) table.validate()
                 true
@@ -212,7 +228,6 @@ object DeclaredTypeProperties {
     }
 
     private val lastNodeBinding = ThreadLocal.withInitial { LastBinding<Node, Pair<DeclaredTypeTable, Int>>() }
-    private val lastMethodShape = ThreadLocal.withInitial { LastBinding<MethodDescriptor, Int>() }
     private val lastMethodBinding =
         ThreadLocal.withInitial { LastBinding<MethodDescriptor, Pair<DeclaredTypeTable, MethodTypes>>() }
 
@@ -223,3 +238,29 @@ object DeclaredTypeProperties {
 
 private fun DeclaredTypeTable.isImmutable(): Boolean =
     (types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(this) == true
+
+/** Presence of a node property once its row is bound: the row exists, and what rendering it would validate is validated. */
+private fun decodedNodePresence(binding: Pair<DeclaredTypeTable, Int>?, property: String): Boolean {
+    val (table, id) = binding ?: return false
+    if (table.isImmutable()) {
+        // render/info validate before traversing the selected type, including unrelated rows.
+        table.validate()
+    } else {
+        // Ordinary public collections may have changed since the cached validation succeeded.
+        when (property) {
+            GENERIC_TYPE_PROPERTY -> table.render(id)
+            else -> table.info(id)
+        }
+    }
+    return true
+}
+
+/** Which of the five declaration properties [property] is, by one string switch; -1 for none. */
+private fun methodPropertyKind(property: String): Int = when (property) {
+    GENERIC_RETURN_TYPE_PROPERTY -> RETURN_RENDERED
+    GENERIC_PARAMETER_TYPES_PROPERTY -> PARAMETERS_RENDERED
+    RETURN_TYPE_INFO_PROPERTY -> RETURN_STRUCTURED
+    PARAMETER_TYPE_INFO_PROPERTY -> PARAMETERS_STRUCTURED
+    TYPE_PARAMETERS_PROPERTY -> TYPE_PARAMETERS
+    else -> -1
+}

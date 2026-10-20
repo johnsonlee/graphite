@@ -261,6 +261,14 @@ data class MethodDescriptor(
      */
     var declarationHandle: Int = -1
 
+    /**
+     * The presence shape a declared-type binding answered for this descriptor, and the table it
+     * answered for: a row's five declaration properties ask the same question, and a persisted
+     * graph's answer is a byte read that must not be paid five times. Not part of equality.
+     */
+    var declaredShape: Int = 0
+    var declaredShapeOwner: Any? = null
+
     val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"
 
     /**

@@ -30,14 +30,19 @@ import java.nio.ByteBuffer
  * [MAX_PARAMETERS] parameters, and no node's identity strings exceed [MAX_KEY_BYTES] in UTF-8;
  * otherwise the reader is left to its own computation, which declines the same way.
  */
-internal class DeclaredKeySummaryBuilder(private val table: DeclaredTypeTable) {
+internal class DeclaredKeySummaryBuilder(private val table: DeclaredTypeTable, maxNodeId: Int = -1) {
+    /** One bit per node id, set for a bound node; empty when the saver did not say how many ids there are. */
+    val presenceWords: LongArray = LongArray(if (maxNodeId < 0) 0 else DeclaredPresence.wordsFor(maxNodeId + 1))
+    val nodeBits: Int = maxNodeId + 1
+
     private class Partitions {
         var present = true
         var previousId = -1L
         val first = IntArray(2)
         val count = LongArray(2)
 
-        fun add(id: Int, bound: Boolean) {
+        fun add(id: Int, bound: Boolean, words: LongArray) {
+            if (bound && words.isNotEmpty()) words[id ushr WORD_SHIFT] = words[id ushr WORD_SHIFT] or (1L shl (id and WORD_MASK))
             if (id.toLong() < previousId) present = false
             previousId = id.toLong()
             val index = if (bound) 1 else 0
@@ -57,16 +62,16 @@ internal class DeclaredKeySummaryBuilder(private val table: DeclaredTypeTable) {
                 val type = descriptor.type.className
                 val slot = tags[FIELD]
                 if (keyBytes(classes, descriptor.name, type) > MAX_KEY_BYTES) slot.present = false
-                slot.add(node.id.value, MemberTypeKey(classes, descriptor.name, jvmTypeDescriptor(type)) in table.fields)
+                slot.add(node.id.value, MemberTypeKey(classes, descriptor.name, jvmTypeDescriptor(type)) in table.fields, presenceWords)
             }
             is ParameterNode -> {
                 val slot = tags[PARAMETER]
                 val method = method(node.method, slot)
-                slot.add(node.id.value, method != null && node.index >= 0 && node.index < method.parameterTypes.size)
+                slot.add(node.id.value, method != null && node.index >= 0 && node.index < method.parameterTypes.size, presenceWords)
             }
             is ReturnNode -> {
                 val slot = tags[RETURN]
-                slot.add(node.id.value, method(node.method, slot) != null)
+                slot.add(node.id.value, method(node.method, slot) != null, presenceWords)
             }
             else -> Unit
         }
@@ -116,6 +121,8 @@ internal class DeclaredKeySummaryBuilder(private val table: DeclaredTypeTable) {
         private const val PARAMETER = 1
         private const val RETURN = 2
         private const val DIGEST_BYTES = 32
+        private const val WORD_SHIFT = 6
+        private const val WORD_MASK = 63
         private const val HEADER_BYTES = Int.SIZE_BYTES + DIGEST_BYTES + 2 * Long.SIZE_BYTES + TAGS
         private const val PRESENT_TAG_BYTES = 2 * (Int.SIZE_BYTES + Long.SIZE_BYTES)
         /** JVM descriptors have at most 255 parameter slots; the native summary decoder stops at 256. */

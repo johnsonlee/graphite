@@ -272,7 +272,7 @@ internal object DeclaredTypeStore {
         }
     }
 
-    private fun readBinding(dir: Path): String? {
+    internal fun readBinding(dir: Path): String? {
         val path = dir.resolve(PROPERTIES_FILE)
         if (!Files.exists(path)) return null
         return Files.newInputStream(path).use { input ->

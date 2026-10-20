@@ -170,7 +170,9 @@ internal class MappedWebGraphBackedGraph(
     private val branchDefinitions: Lazy<PersistedBranchDefinitions> = lazy { PersistedBranchDefinitions.EMPTY },
     private val callSiteOrdinals: Lazy<CallSiteOrdinals> = lazy { CallSiteOrdinals.EMPTY },
     /** Read and validated on first use, like the other sidecars: readiness owes queries nothing of it. */
-    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY)
+    private val declaredTypeTable: Lazy<DeclaredTypeTable> = lazyOf(DeclaredTypeTable.EMPTY),
+    /** The saver's per-node and per-method presence answers, bound to the same table; absent for older graphs. */
+    private val declaredPresence: Lazy<DeclaredPresence?> = lazyOf(null)
 ) : Graph,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
@@ -262,12 +264,25 @@ internal class MappedWebGraphBackedGraph(
         override fun methodShape(method: MethodDescriptor): Int {
             val handle = method.declarationHandle
             if (handle < 0) return DeclaredTypeBinding.UNANSWERED
+            val persisted = declaredPresence.value?.methodShape(handle) ?: DeclaredTypeBinding.UNANSWERED
+            if (persisted != DeclaredTypeBinding.UNANSWERED) return persisted
             val index = methodIndex()
             if (!index.holds(handle)) return DeclaredTypeBinding.UNANSWERED
             return ids.methodShape(
                 index.declaringClassId(handle), index.nameId(handle),
                 index.parameterTypeIds(handle), index.returnTypeId(handle)
             )
+        }
+
+        override fun nodePresence(node: Node): Int {
+            val presence = declaredPresence.value ?: return DeclaredTypeBinding.UNANSWERED
+            val tag = when (node) {
+                is FieldNode -> NodeSerializer.TAG_FIELD_NODE
+                is ParameterNode -> NodeSerializer.TAG_PARAMETER_NODE
+                is ReturnNode -> NodeSerializer.TAG_RETURN_NODE
+                else -> return DeclaredTypeBinding.UNANSWERED
+            }
+            return if (record(node.id.value, tag) < 0) DeclaredTypeBinding.UNANSWERED else presence.node(node.id.value)
         }
 
         /** The byte position of [nodeId]'s tag-specific fields when the record carries [tag], else -1. */

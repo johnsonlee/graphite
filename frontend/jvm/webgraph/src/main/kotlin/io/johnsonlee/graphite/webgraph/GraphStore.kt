@@ -26,6 +26,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
+import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraph
@@ -628,6 +629,7 @@ object GraphStore {
         Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
         Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
         Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
+        Files.deleteIfExists(dir.resolve(DeclaredPresence.FILE_NAME))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -702,7 +704,8 @@ object GraphStore {
         // 6. Write nodedata + nodeindex and capture compact ordinal fields and the declared-key
         //    summary in the same pass.
         val ordinalInput = CallSiteOrdinalPersistenceInput(ordinalCount)
-        val declaredKeys = if (declaredTypes == DeclaredTypeTable.EMPTY) null else DeclaredKeySummaryBuilder(declaredTypes)
+        val declaredKeys =
+            if (declaredTypes == DeclaredTypeTable.EMPTY) null else DeclaredKeySummaryBuilder(declaredTypes, maxNodeId)
         writeNodeDataAndIndex(
             graph,
             dir,
@@ -733,6 +736,7 @@ object GraphStore {
         val typesDigest = DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
         if (declaredKeys != null && typesDigest != null) {
             Files.write(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME), declaredKeys.encode(typesDigest))
+            writeDeclaredPresence(dir, metadata, declaredTypes, declaredKeys, typesDigest)
         }
 
         // 8. Save class-level overview summary for explorer routes
@@ -753,6 +757,29 @@ object GraphStore {
         if (prepareCallSiteIndex) {
             persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
         }
+    }
+
+    /**
+     * The saver's presence answers: the node bits the summary builder collected, and a shape per
+     * method in saveMetadata's order, which is the mapped index's.
+     */
+    private fun writeDeclaredPresence(
+        dir: Path,
+        metadata: GraphMetadata,
+        declaredTypes: DeclaredTypeTable,
+        declaredKeys: DeclaredKeySummaryBuilder,
+        typesDigest: ByteArray
+    ) {
+        val shapes = ByteArray(metadata.methods.size)
+        var ordinal = 0
+        for ((_, method) in metadata.methods) {
+            val key = MemberTypeKey(method.declaringClass.className, method.name, method.descriptor)
+            shapes[ordinal++] = DeclaredPresence.shapeByte(declaredTypes.methods[key])
+        }
+        Files.write(
+            dir.resolve(DeclaredPresence.FILE_NAME),
+            DeclaredPresence.encode(typesDigest, declaredKeys.presenceWords, declaredKeys.nodeBits, shapes)
+        )
     }
 
     @Suppress("LongParameterList")
@@ -1032,7 +1059,8 @@ object GraphStore {
             callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
             // The table is query-only state. Reading, binding and validating it before readiness
             // charged every graph's load for declarations no request had asked for yet.
-            declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) }
+            declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) },
+            declaredPresence = lazy { DeclaredPresence.load(dir) }
         )
         if (prepareCallSiteStringIndex) {
             try {

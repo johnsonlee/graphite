@@ -608,6 +608,16 @@ row's ints. The native reader (`field_type_by_ids`) had done this from the start
 that mirrors a Rust one should mirror its lookup path too, and a per-node cost is only visible
 under the multi-graph measurement, never in the single-graph tests.
 
+### A Presence Question Must Cost What a Name Check Costs
+
+Binding by string ID (above) made a declared-type lookup cheap, and `IS NOT NULL` over every node
+of 64 graphs still paid 22% for it, because the base answers a property it does not have by its
+name alone. The saver resolves every node and knows the method order it writes, so it persists
+the answer (`graph.declared-presence`: a bit per node id, a shape byte per method, bound to
+`graph.types` and to its own digest), and the engine reads a bit where it resolved a row
+(Attempt310). When a feature adds a per-node question to a hot scan, measure it against a base
+that never asks it, and put the work where the saver already has the answer.
+
 ### Node Order Must Not Depend on Identity Hashes
 
 SootUp's `resolveFields()` returns a `HashSet` of `JavaSootField` without a `hashCode`, so it iterates

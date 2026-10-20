@@ -1,6 +1,7 @@
 package io.johnsonlee.graphite.webgraph
 
 import io.johnsonlee.graphite.core.FieldDescriptor
+import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.FieldNode
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
@@ -21,6 +22,7 @@ import java.util.jar.JarOutputStream
 import javax.tools.ToolProvider
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertSame
@@ -117,6 +119,87 @@ class MappedDeclaredTypeBindingTest {
         assertEquals(run.returnType, ids.memberTypeId(holder, runName, runIds, void, -1))
         assertEquals(DeclaredTypeBinding.UNBOUND, ids.memberTypeId(holder, runName, runIds, void, 2))
         assertEquals(DeclaredTypeBinding.UNBOUND, ids.memberTypeId(holder, runName, IntArray(0), void, -1))
+    }
+
+    @Test
+    fun `the saver's presence bits and method shapes agree with the row lookups`() = fixture { dir, graph ->
+        val binding = assertNotNull(graph.declaredTypeBinding())
+        val presence = assertNotNull(DeclaredPresence.load(dir), "a GTY05 save writes graph.declared-presence")
+        var bound = 0
+        var unbound = 0
+        for (node in graph.nodes(FieldNode::class.java)) {
+            val expected = if (binding.fieldTypeId(node) == DeclaredTypeBinding.UNBOUND) {
+                DeclaredTypeBinding.ABSENT
+            } else {
+                DeclaredTypeBinding.PRESENT
+            }
+            assertEquals(expected, binding.nodePresence(node), node.descriptor.name)
+            if (expected == DeclaredTypeBinding.PRESENT) bound++ else unbound++
+        }
+        for (node in graph.nodes(ParameterNode::class.java) + graph.nodes(ReturnNode::class.java)) {
+            val expected = if (binding.memberTypeId(node) == DeclaredTypeBinding.UNBOUND) {
+                DeclaredTypeBinding.ABSENT
+            } else {
+                DeclaredTypeBinding.PRESENT
+            }
+            assertEquals(expected, binding.nodePresence(node), node.toString())
+            if (expected == DeclaredTypeBinding.PRESENT) bound++ else unbound++
+        }
+        assertTrue(bound >= 8, "the fixture's declared members are present, saw $bound")
+        // Shapes come from the sidecar; the ID-keyed lookup must say the same for every method.
+        val ids = assertNotNull((graph.declaredTypes().types as MappedDeclaredTypeIds).binding())
+        for (method in graph.methods(MethodPattern())) {
+            val handle = method.declarationHandle
+            val fromIds = ids.methodShape(
+                StringTable.load(dir).findId(method.declaringClass.className), StringTable.load(dir).findId(method.name),
+                method.parameterTypes.map { StringTable.load(dir).findId(it.className) }.toIntArray(),
+                StringTable.load(dir).findId(method.returnType.className)
+            )
+            assertEquals(fromIds, presence.methodShape(handle), method.signature)
+            assertEquals(fromIds, binding.methodShape(method), method.signature)
+        }
+        assertEquals(DeclaredTypeBinding.UNANSWERED, presence.methodShape(-1))
+        assertEquals(DeclaredTypeBinding.UNANSWERED, presence.methodShape(Int.MAX_VALUE))
+        assertEquals(DeclaredTypeBinding.UNANSWERED, presence.node(-1))
+        assertEquals(DeclaredTypeBinding.UNANSWERED, presence.node(Int.MAX_VALUE))
+        // A node this graph does not hold, or holds under another tag, is not answered from the bits.
+        val foreign = FieldDescriptor(TypeDescriptor("x.Y"), "z", TypeDescriptor("int"))
+        val stranger = FieldNode(NodeId(Int.MAX_VALUE - 1), foreign, false)
+        assertEquals(DeclaredTypeBinding.UNANSWERED, binding.nodePresence(stranger))
+        val someParameter = graph.nodes(ParameterNode::class.java).first()
+        assertEquals(DeclaredTypeBinding.UNANSWERED, binding.nodePresence(FieldNode(someParameter.id, foreign, false)))
+        assertEquals(DeclaredTypeBinding.UNANSWERED, binding.nodePresence(graph.nodes(CallSiteNode::class.java).first()))
+    }
+
+    @Test
+    fun `a presence sidecar of another table reads as absent and a corrupted one refuses`() = fixture { dir, graph ->
+        val file = dir.resolve(DeclaredPresence.FILE_NAME)
+        val original = Files.readAllBytes(file)
+        val someField = graph.nodes(FieldNode::class.java).first()
+        val expected = assertNotNull(graph.declaredTypeBinding()).nodePresence(someField)
+        assertTrue(expected == DeclaredTypeBinding.PRESENT || expected == DeclaredTypeBinding.ABSENT)
+        // Another table's digest in the header: not this graph's sidecar.
+        val stale = original.copyOf().also { it[Int.SIZE_BYTES] = (it[Int.SIZE_BYTES].toInt() xor 1).toByte() }
+        Files.write(file, stale)
+        assertNull(DeclaredPresence.load(dir))
+        // A flipped bit behind the header: corruption after binding, never silently another answer.
+        val firstWord = Int.SIZE_BYTES + 32 + Int.SIZE_BYTES
+        val corrupt = original.copyOf().also { it[firstWord] = (it[firstWord].toInt() xor 1).toByte() }
+        Files.write(file, corrupt)
+        assertFailsWith<IllegalStateException> { DeclaredPresence.load(dir) }
+        // Without the file, the binding has no per-node answer and the lookups decide.
+        Files.delete(file)
+        assertNull(DeclaredPresence.load(dir))
+        val reloaded = GraphStore.loadMapped(dir)
+        try {
+            val binding = assertNotNull(reloaded.declaredTypeBinding())
+            assertEquals(DeclaredTypeBinding.UNANSWERED, binding.nodePresence(someField))
+            for (method in reloaded.methods(MethodPattern())) {
+                assertEquals(assertNotNull(graph.declaredTypeBinding()).methodShape(method), binding.methodShape(method))
+            }
+        } finally { (reloaded as? AutoCloseable)?.close() }
+        Files.write(file, original)
+        assertEquals(0, DeclaredPresence.shapeByte(null).toInt(), "no row, no shape")
     }
 
     @Test

@@ -35,9 +35,22 @@ interface DeclaredTypeBinding {
      */
     fun methodShape(method: MethodDescriptor): Int
 
+    /**
+     * Whether [node] (a Field, Parameter or Return node) carries a declaration at all: [PRESENT],
+     * [ABSENT], or [UNANSWERED] when the binding has no per-node answer cheaper than
+     * [fieldTypeId] or [memberTypeId]. A persisted graph answers from bits its saver wrote.
+     */
+    fun nodePresence(node: Node): Int = UNANSWERED
+
     companion object {
         const val UNBOUND = -1
         const val UNANSWERED = -2
+
+        /** [nodePresence]: the node has no declaration in the table. */
+        const val ABSENT = 0
+
+        /** [nodePresence]: the node has a declaration in the table. */
+        const val PRESENT = 1
 
         /** The method declares at least one parameter type. */
         const val HAS_PARAMETERS = 1

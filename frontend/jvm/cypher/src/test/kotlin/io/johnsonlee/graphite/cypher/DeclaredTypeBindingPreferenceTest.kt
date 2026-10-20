@@ -67,9 +67,12 @@ class DeclaredTypeBindingPreferenceTest {
         return table.copy(types = types)
     }
 
-    private fun binding(fieldId: Int, memberId: Int, descriptorMethod: MethodTypes?) = object : DeclaredTypeBinding {
+    private fun binding(
+        fieldId: Int, memberId: Int, descriptorMethod: MethodTypes?, presence: Int = DeclaredTypeBinding.UNANSWERED
+    ) = object : DeclaredTypeBinding {
         override fun fieldTypeId(node: FieldNode): Int = fieldId
         override fun memberTypeId(node: Node): Int = memberId
+        override fun nodePresence(node: Node): Int = presence
         override fun methodTypes(method: MethodDescriptor): MethodTypes? = descriptorMethod
         override fun methodShape(method: MethodDescriptor): Int = when {
             descriptorMethod === DeclaredTypeBinding.UNANSWERED_METHOD -> DeclaredTypeBinding.UNANSWERED
@@ -126,6 +129,27 @@ class DeclaredTypeBindingPreferenceTest {
         assertEquals(false, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", unbound))
         val deferred = graph(binding(unanswered, unanswered, DeclaredTypeBinding.UNANSWERED_METHOD), immutable())
         assertEquals(true, DeclaredTypeProperties.methodPropertyPresent(method, "generic_return_type", deferred))
+    }
+
+    @Test
+    fun `an immutable table answers node presence from the saver's bits before any row lookup`() {
+        val unbound = DeclaredTypeBinding.UNBOUND
+        val present = graph(binding(unbound, unbound, null, DeclaredTypeBinding.PRESENT), immutable())
+        for (node in listOf(field, parameter, result)) {
+            assertEquals(true, DeclaredTypeProperties.nodePropertyPresent(node, "generic_type", present), node.toString())
+            assertEquals(true, DeclaredTypeProperties.nodePropertyPresent(node, "type_info", present), node.toString())
+        }
+        val absent = graph(binding(0, 0, byId, DeclaredTypeBinding.ABSENT), immutable())
+        for (node in listOf(field, parameter, result)) {
+            assertEquals(false, DeclaredTypeProperties.nodePropertyPresent(node, "generic_type", absent), node.toString())
+        }
+        // No per-node answer: the row lookup decides, as before.
+        val unanswered = graph(binding(0, 0, byId, DeclaredTypeBinding.UNANSWERED), immutable())
+        assertEquals(true, DeclaredTypeProperties.nodePropertyPresent(field, "generic_type", unanswered))
+        // A mutable table may have changed since the bits were written: they are not consulted.
+        val mutable = graph(binding(unbound, unbound, null, DeclaredTypeBinding.PRESENT))
+        assertEquals(false, DeclaredTypeProperties.nodePropertyPresent(field, "generic_type", mutable))
+        assertNull(DeclaredTypeProperties.nodePropertyPresent(field, "name", present))
     }
 
     @Test

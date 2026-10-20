@@ -21922,3 +21922,33 @@ changes the frontend's numbering of declared-only fields and nothing in the stor
 the query engines, so those measurements stand for it. Sorting the fields of a class is linear in
 their count and not measurable against the construction gate's tolerance.
 
+## Attempt310: the saver writes the presence answers (`graph.declared-presence`)
+
+**Finding (JFR, feature-presence cases, head 0ea4461 vs main, warm requests).** After Attempt308 the
+Kotlin engine still spent 22% of `feature-nodes` on resolving each node's row to answer
+`generic_type IS NOT NULL`: `MemberIndex.first` 3.9%, `methodRow` 3.1%, `memberTypeId` 3.1%,
+`nodeBinding` 2.4%, `ErasedDeclaredTypes.canonical` 2.3%, `Integer.valueOf` 2.3% (the memo's
+`Pair<DeclaredTypeTable, Int>`), `MappedNodeOffsetIndex.offset` 2.4%, `ThreadLocal` 1.1%, the
+rest in the presence entry points. Main answers the same property by its name alone (its graphs
+have no table), so the question itself has to cost as little as a name check to meet the p50 rule.
+
+**Change.** The saver already resolves every Field, Parameter and Return node while writing the
+nodes (`DeclaredKeySummaryBuilder`) and knows the order it writes the methods in, so it writes the
+answers: `graph.declared-presence` carries one bit per node id (set when the node has a row) and
+one byte per method of the method index (0 without a row, else 1 + the `HAS_PARAMETERS`/`HAS_BOUNDS`
+flags), bound to the SHA-256 of `graph.types` that `forward.properties` names, with its own SHA-256
+as a trailer verified on first use. `DeclaredTypeBinding.nodePresence` (default `UNANSWERED`) lets
+`DeclaredTypeProperties.nodePropertyPresent` answer an immutable table's presence from the bit
+after the record's tag is checked, and `methodShape` reads the byte at the method's handle before
+touching the index or the table. A sidecar naming another table reads as absent; one that no
+longer hashes throws; a graph without the file keeps the Attempt308 lookups.
+
+The method case needed more than the byte: with the sidecar alone `feature-methods` stayed at
++44% (1106 → 1597 ms), and an experiment that short-circuited `methodPropertyPresent` put it at
+main's 1.1 s, so the whole regression was the question's own overhead, 6.9 million times (five
+properties per method): `property !in methodPropertyNames` searched a `List` of five strings with
+`equals`, `projectsType` switched on the string again, and the per-row memo went through a
+`ThreadLocal`. The property is now classified by one string switch into an int kind, and the
+descriptor remembers the shape the binding answered for this table (`MethodDescriptor.declaredShape`
+and `declaredShapeOwner`, outside equality), so a row's five properties read a field after the first.
+
