@@ -208,7 +208,13 @@ class ErasedDeclaredTypeStoreTest {
         context.finishIndexing()
         assertEquals(methodHash, context.hash(0, method = true))
         assertEquals(fieldHash, context.hash(0, method = false))
-        assertEquals(listOf(initialReads[0] + 2, initialReads[1] + 1), reads.toList(), "Load-only caches must be released")
+        assertEquals(
+            initialReads,
+            reads.toList(),
+            "Released hash caches are respelled from retained leaf shapes, not rows",
+        )
+        assertEquals(listOf(0, 1), context.signatureRows(0).toList())
+        assertEquals(1, context.signatureCount)
     }
 
     @Test

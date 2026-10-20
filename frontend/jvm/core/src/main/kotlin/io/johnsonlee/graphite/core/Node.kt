@@ -254,6 +254,13 @@ data class MethodDescriptor(
     val parameterTypes: List<TypeDescriptor>,
     val returnType: TypeDescriptor
 ) {
+    /**
+     * An opaque handle the graph that materialized this descriptor may attach, so its declared
+     * types can be found by the IDs the graph stores rather than by re-reading these strings.
+     * Not part of equality; -1 when no graph attached one.
+     */
+    var declarationHandle: Int = -1
+
     val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"
 
     /**

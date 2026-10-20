@@ -224,9 +224,15 @@ internal object DeclaredTypeStore {
             // Member index text is not part of generic_type/type_info and must not dilute their negative summary.
             val textSummary = (reader.strings as? SharedDeclaredTypeTexts)?.finishTypeTextSummary()
             var loadingRaw: ErasedDeclaredTypes? = null
+            // A type row's leaf name string ID, read off its bytes when the table shares the graph's strings.
+            val sharedNames = if (reader.strings is SharedDeclaredTypeTexts) {
+                { id: Int -> reader.bytes.getInt(typeOffsets[id] + StructuralDeclaredTypeWire.NAME_OFFSET) }
+            } else {
+                null
+            }
             try {
                 if (header == ERASED_HEADER) {
-                    val raw = ErasedDeclaredTypes(typeCount, cacheLoadingShapes = true) { id ->
+                    val raw = ErasedDeclaredTypes(typeCount, cacheLoadingShapes = true, rawName = sharedNames) { id ->
                         Reader(reader.bytes.duplicate().apply { position(typeOffsets[id]) }, reader.strings, reader.structural)
                             .type(resolveScope = false)
                     }
@@ -324,8 +330,21 @@ internal object DeclaredTypeStore {
         override var textSummary: DeclaredTypeTextSummary?,
         private val structural: StructuralDeclaredTypeContext?
     ) :
-        AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess, ImmutableDeclaredTypeStorage {
+        AbstractList<DeclaredType>(), DeclaredTypeAtoms, DeclaredTypeValidationAccess, ImmutableDeclaredTypeStorage,
+        MappedDeclaredTypeIds {
         private var projectionRows: java.util.BitSet? = null
+
+        @Suppress("UNCHECKED_CAST")
+        private val idBinding: MappedDeclaredTypeBinding? by lazy {
+            val texts = strings as? SharedDeclaredTypeTexts
+            val erased = structural?.erased
+            val fields = immutableFields as? MappedMemberRows<Int>
+            val methods = immutableMethods as? MappedMemberRows<MethodTypes>
+            if (texts == null || erased == null) null
+            else MappedDeclaredTypeBinding(texts, erased, fields ?: EMPTY_FIELD_ROWS, methods ?: EMPTY_METHOD_ROWS)
+        }
+
+        override fun binding(): MappedDeclaredTypeBinding? = idBinding
         override fun isProjectionType(id: Int): Boolean = projectionRows?.get(id) ?: true
 
         fun finishProjectionRows() {
@@ -454,6 +473,23 @@ internal object DeclaredTypeStore {
         }
     }
 
+    private const val FORMAL_SCOPE_BYTES = 1 + StructuralDeclaredTypeWire.FORMAL_RESERVED_BYTES + Int.SIZE_BYTES
+
+
+    private object EmptyMemberRows : MappedMemberRows<Nothing> {
+        override val rowCount: Int get() = 0
+        override fun ownerAt(row: Int): Int = none(row)
+        override fun nameAt(row: Int): Int = none(row)
+        override fun erasedAt(row: Int): Int = none(row)
+        override fun valueAt(row: Int): Nothing = none(row)
+        override fun intValueAt(row: Int): Int = none(row)
+        override fun methodTypeIdAt(row: Int, parameterIndex: Int): Int = none(row)
+        override fun methodShapeAt(row: Int): Int = none(row)
+        private fun none(row: Int): Nothing = throw IndexOutOfBoundsException("row=$row, size=0")
+    }
+    private val EMPTY_FIELD_ROWS: MappedMemberRows<Int> = EmptyMemberRows
+    private val EMPTY_METHOD_ROWS: MappedMemberRows<MethodTypes> = EmptyMemberRows
+
     private fun interface RowKeyHash {
         fun hash(reader: Reader): Int
     }
@@ -473,11 +509,48 @@ internal object DeclaredTypeStore {
         private val references: TypeReferenceCheck,
         private val structural: StructuralDeclaredTypeContext?,
         private val kind: String
-    ) : AbstractMap<K, V>(), DeclaredTypeReferences {
+    ) : AbstractMap<K, V>(), DeclaredTypeReferences, MappedMemberRows<V> {
         private val offsets get() = index.offsets
         private val valuesAt get() = index.valuesAt
         private val hashes get() = index.hashes
         private val slots get() = index.slots
+
+        override val rowCount: Int get() = offsets.size
+        override fun ownerAt(row: Int): Int = bytes.getInt(offsets[row])
+        override fun nameAt(row: Int): Int = bytes.getInt(offsets[row] + Int.SIZE_BYTES)
+        override fun erasedAt(row: Int): Int = bytes.getInt(offsets[row] + 2 * Int.SIZE_BYTES)
+        override fun valueAt(row: Int): V = value(reader(valuesAt[row]))
+        override fun intValueAt(row: Int): Int = bytes.getInt(valuesAt[row])
+
+        override fun methodShapeAt(row: Int): Int {
+            var offset = valuesAt[row]
+            val count = bytes.getInt(offset)
+            var shape = if (count > 0) io.johnsonlee.graphite.graph.DeclaredTypeBinding.HAS_PARAMETERS else 0
+            offset += (2 + count) * Int.SIZE_BYTES
+            val formals = bytes.getInt(offset)
+            offset += Int.SIZE_BYTES
+            repeat(formals) {
+                // name text id, then the formal scope (a tag byte, reserved bytes, a target int) or a scope text id
+                offset += Int.SIZE_BYTES
+                offset += if (structural == null) Int.SIZE_BYTES else FORMAL_SCOPE_BYTES
+                val bounds = bytes.getInt(offset)
+                if (bounds > 0) shape = shape or io.johnsonlee.graphite.graph.DeclaredTypeBinding.HAS_BOUNDS
+                offset += (1 + bounds) * Int.SIZE_BYTES
+            }
+            return shape
+        }
+
+        // A method value is [parameter count][parameter type IDs][return type ID][type parameters].
+        override fun methodTypeIdAt(row: Int, parameterIndex: Int): Int {
+            val offset = valuesAt[row]
+            val count = bytes.getInt(offset)
+            return when {
+                parameterIndex == -1 -> bytes.getInt(offset + (1 + count) * Int.SIZE_BYTES)
+                parameterIndex in 0 until count -> bytes.getInt(offset + (1 + parameterIndex) * Int.SIZE_BYTES)
+                else -> -1
+            }
+        }
+
         override val size: Int get() = offsets.size
 
         private fun reader(offset: Int) = Reader(bytes.duplicate().apply { position(offset) }, strings, structural)

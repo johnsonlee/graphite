@@ -595,6 +595,19 @@ is ready with the tables read (`serve::DeclaredTableReader`), about 1 s of CPU i
 loading boundary and no wall. Deferred work is not free anywhere: put it where the gate that
 owns the cost has room, and never where it overlaps what another gate measures.
 
+### Bind Persisted Nodes to Side Tables by String ID, Never by Spelled Keys
+
+A property read of a mapped node must not rebuild the member key the table was saved under: the
+Kotlin engine spelled (class, name, JVM descriptor) from freshly decoded strings, hashed them and
+let the table decode its own texts per probe, and the first complete JVM multi-graph measurement
+put `feature-nodes` at 2.3× and `feature-methods` at 3.5× the base (Attempt308). The record already
+carries the string IDs and the GTY05 table keys its rows by the same IDs, so a graph that can answer
+by ID exposes `Graph.declaredTypeBinding()`, the index (class ID, name ID) → rows is built once per
+table, erased shapes compare as (leaf name ID, dimensions) ints, and presence flags are read off the
+row's ints. The native reader (`field_type_by_ids`) had done this from the start; a Kotlin feature
+that mirrors a Rust one should mirror its lookup path too, and a per-node cost is only visible
+under the multi-graph measurement, never in the single-graph tests.
+
 ### SootUp 3.x: What the Upgrade From 2.0.0 Changed
 
 - API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/

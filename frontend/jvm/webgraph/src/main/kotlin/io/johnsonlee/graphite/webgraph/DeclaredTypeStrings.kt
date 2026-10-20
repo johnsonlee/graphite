@@ -22,18 +22,26 @@ internal interface DeclaredTypeTexts {
 internal class SharedDeclaredTypeTexts(private val strings: StringTable) : DeclaredTypeTexts {
     private val checked = java.util.BitSet()
     private var loadingStats: SharedDeclaredTypeTextStats? = SharedDeclaredTypeTextStats(strings)
+    /** The graph's string table these texts are IDs into. */
+    val table: StringTable get() = strings
 
     override fun validateId(id: Int) {
         require(id in 0 until strings.size()) { "Invalid graph.types string ID" }
-        if (!checked[id]) {
-            val stats = loadingStats
-            if (stats == null) {
-                requireWellFormedUtf16(strings.get(id))
-            } else {
+        val stats = loadingStats
+        if (stats != null) {
+            if (!checked[id]) {
                 stats.add(id)
                 checked.set(id)
             }
+            return
         }
+        // After loading, query threads ask about IDs the table never referenced (a node whose class
+        // declares nothing); each is decoded and checked once, not per node.
+        synchronized(checked) {
+            if (checked[id]) return
+        }
+        requireWellFormedUtf16(strings.get(id))
+        synchronized(checked) { checked.set(id) }
     }
 
     override fun text(id: Int): String { validateId(id); return loadingStats?.text(id) ?: strings.get(id) }

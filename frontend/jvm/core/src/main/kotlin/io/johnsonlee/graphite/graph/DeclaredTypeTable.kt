@@ -33,12 +33,27 @@ data class DeclaredTypeTable(
 ) {
     private val validation by lazy { validateExpressions() }
 
+    /**
+     * Rendered text and structured projections by type ID, kept only for immutable storage: a
+     * query over a corpus renders the same few thousand types for millions of nodes, and a
+     * mutable table may change between two reads.
+     */
+    private val renderedTypes: java.util.concurrent.atomic.AtomicReferenceArray<String>? by lazy {
+        if (isImmutable()) java.util.concurrent.atomic.AtomicReferenceArray(types.size) else null
+    }
+    private val typeInfos: java.util.concurrent.atomic.AtomicReferenceArray<Map<String, Any?>>? by lazy {
+        if (isImmutable()) java.util.concurrent.atomic.AtomicReferenceArray(types.size) else null
+    }
+
+    private fun isImmutable(): Boolean = (types as? ImmutableDeclaredTypeStorage)?.isImmutableTable(this) == true
+
     /** Validate shape, references, nesting and maximum recursive projection expansion once. */
     fun validate() { validation }
 
     fun render(id: Int): String {
         validate()
-        return renderType(id)
+        val cache = renderedTypes ?: return renderType(id)
+        return cache.get(id) ?: renderType(id).also { cache.set(id, it) }
     }
 
     private fun renderType(id: Int): String {
@@ -60,7 +75,8 @@ data class DeclaredTypeTable(
     /** Structured query projection; IDs are an implementation detail and never cross graphs. */
     fun info(id: Int): Map<String, Any?> {
         validate()
-        return typeInfo(id)
+        val cache = typeInfos ?: return typeInfo(id)
+        return cache.get(id) ?: java.util.Collections.unmodifiableMap(typeInfo(id)).also { cache.set(id, it) }
     }
 
     private fun typeInfo(id: Int): Map<String, Any?> {

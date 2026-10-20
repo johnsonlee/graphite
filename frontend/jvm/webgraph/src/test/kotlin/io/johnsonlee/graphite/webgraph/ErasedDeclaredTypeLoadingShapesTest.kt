@@ -21,10 +21,15 @@ class ErasedDeclaredTypeLoadingShapesTest {
         assertEquals(initialReads, reads)
         raw.finishLoading()
         assertNull(raw.javaClass.getDeclaredField("loadingShapes").apply { isAccessible = true }.get(raw))
+        // The decoded Shape objects are released; the validated leaf and dimensions of every row read
+        // during loading stay as ints, so spelling a descriptor afterwards decodes no row again.
         assertEquals("[Lfixture/名;", raw.descriptor(1))
-        assertEquals(initialReads + 2, reads)
-        raw.descriptor(1)
-        assertEquals(initialReads + 4, reads)
+        assertEquals(raw.shape(1), raw.shape(1))
+        assertEquals(initialReads, reads)
+        assertEquals(0, raw.leaf(1))
+        assertEquals(1, raw.dimensions(1))
+        assertEquals("fixture.名[]", raw.javaName(1))
+        assertEquals(initialReads, reads)
     }
 
     @Test

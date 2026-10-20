@@ -19,7 +19,10 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.ClassOverview
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.DeclaredTypeBinding
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
+import io.johnsonlee.graphite.graph.MethodTypes
+import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.graph.NodeIdCandidateLookup
 import java.util.function.IntPredicate
 import io.johnsonlee.graphite.graph.NodePropertyTextCandidates
@@ -200,6 +203,83 @@ internal class MappedWebGraphBackedGraph(
     }
 
     override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable.value
+
+    private val recordBinding: DeclaredTypeBinding? by lazy {
+        (declaredTypeTable.value.types as? MappedDeclaredTypeIds)?.binding()?.let(::RecordDeclaredTypeBinding)
+    }
+
+    /** Field, Parameter and Return records name their members by string IDs; the GTY05 table keys rows by the same. */
+    override fun declaredTypeBinding(): DeclaredTypeBinding? = recordBinding
+
+    /**
+     * Reads the string IDs straight off a node's record (after the 4-byte id and the tag) and
+     * off the method index's arrays, so binding a node costs a few integer reads and one probe.
+     */
+    private inner class RecordDeclaredTypeBinding(private val ids: MappedDeclaredTypeBinding) : DeclaredTypeBinding {
+        override fun fieldTypeId(node: FieldNode): Int {
+            val record = record(node.id.value, NodeSerializer.TAG_FIELD_NODE)
+            if (record < 0) return DeclaredTypeBinding.UNANSWERED
+            return ids.fieldTypeId(
+                mappedNodeData.getInt(record), mappedNodeData.getInt(record + Int.SIZE_BYTES),
+                mappedNodeData.getInt(record + 2 * Int.SIZE_BYTES)
+            )
+        }
+
+        override fun memberTypeId(node: Node): Int {
+            val (methodAt, parameterIndex) = when (node) {
+                // index, type, then the method
+                is ParameterNode -> record(node.id.value, NodeSerializer.TAG_PARAMETER_NODE)
+                    .let { if (it < 0) it else it + 2 * Int.SIZE_BYTES } to node.index
+                is ReturnNode -> record(node.id.value, NodeSerializer.TAG_RETURN_NODE) to -1
+                else -> -1 to -1
+            }
+            if (methodAt < 0) return DeclaredTypeBinding.UNANSWERED
+            val owner = mappedNodeData.getInt(methodAt)
+            val name = mappedNodeData.getInt(methodAt + Int.SIZE_BYTES)
+            val count = mappedNodeData.getInt(methodAt + 2 * Int.SIZE_BYTES)
+            val end = methodAt + (METHOD_DESCRIPTOR_FIXED_INTS + count) * Int.SIZE_BYTES
+            if (count < 0 || end > mappedNodeData.limit()) {
+                return DeclaredTypeBinding.UNANSWERED
+            }
+            val parameters = IntArray(count) {
+                mappedNodeData.getInt(methodAt + (METHOD_PARAMETERS_OFFSET_INTS + it) * Int.SIZE_BYTES)
+            }
+            val returns = mappedNodeData.getInt(methodAt + (METHOD_PARAMETERS_OFFSET_INTS + count) * Int.SIZE_BYTES)
+            return ids.memberTypeId(owner, name, parameters, returns, parameterIndex)
+        }
+
+        override fun methodTypes(method: MethodDescriptor): MethodTypes? {
+            val handle = method.declarationHandle
+            if (handle < 0) return DeclaredTypeBinding.UNANSWERED_METHOD
+            val index = methodIndex()
+            if (!index.holds(handle)) return DeclaredTypeBinding.UNANSWERED_METHOD
+            return ids.methodTypes(
+                index.declaringClassId(handle), index.nameId(handle),
+                index.parameterTypeIds(handle), index.returnTypeId(handle)
+            )
+        }
+
+        override fun methodShape(method: MethodDescriptor): Int {
+            val handle = method.declarationHandle
+            if (handle < 0) return DeclaredTypeBinding.UNANSWERED
+            val index = methodIndex()
+            if (!index.holds(handle)) return DeclaredTypeBinding.UNANSWERED
+            return ids.methodShape(
+                index.declaringClassId(handle), index.nameId(handle),
+                index.parameterTypeIds(handle), index.returnTypeId(handle)
+            )
+        }
+
+        /** The byte position of [nodeId]'s tag-specific fields when the record carries [tag], else -1. */
+        private fun record(nodeId: Int, tag: Int): Int {
+            if (nodeId < 0 || nodeId >= nodeOffsets.size) return -1
+            val offset = nodeOffsets.offset(nodeId)
+            if (offset < 0 || offset > mappedNodeData.limit() - NODE_HEADER_BYTES) return -1
+            val position = offset.toInt()
+            if (mappedNodeData.get(position + Int.SIZE_BYTES).toInt() != tag) return -1
+            return position + NODE_HEADER_BYTES
+        }
+    }
 
     override fun localDefinitions(): Map<NodeId, List<LocalDefinition>> = localDefinitionIndex
 
@@ -2681,6 +2761,9 @@ internal class MappedWebGraphBackedGraph(
 private const val NODE_ID_SCAN_CANCELLATION_MASK = 255
 private const val NODE_HEADER_BYTES = Int.SIZE_BYTES + Byte.SIZE_BYTES
 private const val METHOD_DESCRIPTOR_FIXED_INTS = 4
+
+/** Owner, name and count precede a method descriptor record's parameter type IDs. */
+private const val METHOD_PARAMETERS_OFFSET_INTS = 3
 private const val GRAPH_ID_PROJECTION_PROPERTY = "graphId"
 private val CALL_SITE_NULL_STRING_PROPERTIES = setOf("class", "name")
 private const val ASCII_MAX_CODE = 0x7f

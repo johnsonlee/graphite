@@ -9,10 +9,16 @@ import java.nio.ByteBuffer
 
 private const val INVALID_ERASED_REFERENCE = "Invalid erased type reference"
 private const val ERASED_DESCRIPTOR_LIMIT = "Erased descriptor exceeds string representation"
+private const val VOID = "void"
+private const val VOID_MEMBER = "Void erased field, parameter or array"
 
 /** A descriptor is rendered from raw expressions only, never by erasing a generic variable or bound. */
 internal class ErasedDeclaredTypes(
-    private val count: Int, cacheLoadingShapes: Boolean = false, private val type: (Int) -> DeclaredType
+    private val count: Int,
+    cacheLoadingShapes: Boolean = false,
+    /** The string ID of a row's name where the table shares the graph's strings; null elsewhere. */
+    private val rawName: ((Int) -> Int)? = null,
+    private val type: (Int) -> DeclaredType
 ) {
     // Only immutable loading readers opt in; release before publishing the mapped table.
     private var loadingShapes: Int2ObjectOpenHashMap<Shape>? =
@@ -21,6 +27,14 @@ internal class ErasedDeclaredTypes(
     private val utf16Lengths = IntArray(count) { -1 }
     private val validatedLeaves = BooleanArray(count)
     private val voidRoots = BooleanArray(count)
+    // The validated shape of a row, kept as two ints: a lookup by ID compares and renders
+    // descriptors without decoding the row again, which the released loading cache made every
+    // probe do. -1 means not yet read; a leaf row's own id when it is not an array.
+    private val shapeLeaves = IntArray(count) { -1 }
+    private val shapeDimensions = IntArray(count)
+    // A leaf row's validated kind and name, kept once per distinct leaf (a few thousand per graph)
+    // so a descriptor is spelled from ints and one shared string after loading.
+    private val leafShapes = java.util.concurrent.atomic.AtomicReferenceArray<Shape>(count)
 
     data class Shape(val dimensions: Int, val primitive: Boolean, val name: String)
 
@@ -30,14 +44,52 @@ internal class ErasedDeclaredTypes(
 
     fun shape(id: Int, allowVoid: Boolean = false): Shape {
         require(id in 0 until count) { INVALID_ERASED_REFERENCE }
-        loadingShapes?.get(id)?.let { shape ->
-            require(!shape.primitive || shape.name != "void" || allowVoid && shape.dimensions == 0) {
-                "Void erased field, parameter or array"
-            }
-            return shape
+        val known = loadingShapes?.get(id) ?: retainedShape(id)
+        if (known != null) {
+            require(!known.primitive || known.name != VOID || allowVoid && known.dimensions == 0) { VOID_MEMBER }
+            return known
         }
         return readShape(id, allowVoid).also { loadingShapes?.put(id, it) }
     }
+
+    /** The shape [finishLoading] retained as ints, or null while the row's leaf has not been validated. */
+    private fun retainedShape(id: Int): Shape? {
+        val leaf = shapeLeaves[id]
+        val known = if (leaf >= 0) leafShapes.get(leaf) else null
+        return when {
+            known == null -> null
+            shapeDimensions[id] == 0 -> known
+            else -> Shape(shapeDimensions[id], known.primitive, known.name)
+        }
+    }
+
+    /** The leaf row of [id]'s shape (itself for a non-array), after the shape has been validated once. */
+    fun leaf(id: Int): Int {
+        if (shapeLeaves[id] < 0) shape(id, allowVoid = true)
+        return shapeLeaves[id]
+    }
+
+    /** Array dimensions of [id]'s shape, after the shape has been validated once. */
+    fun dimensions(id: Int): Int {
+        if (shapeLeaves[id] < 0) shape(id, allowVoid = true)
+        return shapeDimensions[id]
+    }
+
+    /** The string ID of the leaf name of [id]'s shape; only for a table that shares the graph's strings. */
+    fun leafName(id: Int): Int = checkNotNull(rawName) { "Table does not share the graph's strings" }(leaf(id))
+
+    /**
+     * The shape of [id] as the graph's strings spell it: the string ID of its leaf name and its
+     * dimensions, packed so two rows with equal shapes compare as one long. Null when the table
+     * does not share the graph's strings.
+     */
+    fun canonical(id: Int): Long? {
+        val names = rawName ?: return null
+        return canonical(names(leaf(id)), dimensions(id))
+    }
+
+    /** The Java name of an array shape (`int[][]`), for the one lookup that maps it to a string ID. */
+    fun javaName(id: Int): String = shape(id, allowVoid = true).let { it.name + "[]".repeat(it.dimensions) }
 
     private fun readShape(id: Int, allowVoid: Boolean): Shape {
         var current = id
@@ -49,7 +101,11 @@ internal class ErasedDeclaredTypes(
                 "Noncanonical erased type"
             }
             if (row.kind != "array") {
-                return leafShape(current, row, dimensions, allowVoid)
+                return leafShape(current, row, dimensions, allowVoid).also {
+                    leafShapes.compareAndSet(current, null, Shape(0, it.primitive, it.name))
+                    shapeDimensions[id] = dimensions
+                    shapeLeaves[id] = current
+                }
             }
             require(row.name.isEmpty() && ++dimensions < DeclaredTypeTable.MAX_DEPTH) { "Invalid erased array nesting" }
             current = requireNotNull(row.component) { "Missing erased array component" }
@@ -65,7 +121,7 @@ internal class ErasedDeclaredTypes(
             }
             "primitive" -> {
                 require(row.name in PRIMITIVES) { "Invalid erased primitive" }
-                require(row.name != "void" || allowVoid && dimensions == 0) { "Void erased field, parameter or array" }
+                require(row.name != VOID || allowVoid && dimensions == 0) { VOID_MEMBER }
             }
             else -> throw IllegalArgumentException("Noncanonical erased type kind")
         }
@@ -89,7 +145,7 @@ internal class ErasedDeclaredTypes(
             require(bytes <= Int.MAX_VALUE && units <= Int.MAX_VALUE) { ERASED_DESCRIPTOR_LIMIT }
             utf8Lengths[id] = bytes.toInt()
             utf16Lengths[id] = units.toInt()
-            voidRoots[id] = shape.primitive && shape.name == "void"
+            voidRoots[id] = shape.primitive && shape.name == VOID
         }
         require(allowVoid || !voidRoots[id]) { "Void erased field or parameter" }
         return if (utf8) utf8Lengths[id] else utf16Lengths[id]
@@ -111,6 +167,12 @@ internal class ErasedDeclaredTypes(
         private const val ASCII_LIMIT = 128
         private const val TWO_BYTE_LIMIT = 2048
         private const val THREE_BYTE_LENGTH = 3
+        private const val DIMENSION_BITS = 32
+        private const val LOW_WORD_MASK = 0xFFFF_FFFFL
+
+        /** A leaf name string ID and array dimensions as one comparable long. */
+        fun canonical(leafName: Int, dimensions: Int): Long =
+            (dimensions.toLong() shl DIMENSION_BITS) or (leafName.toLong() and LOW_WORD_MASK)
         private fun utf8Width(char: Char): Int = when {
             char.code < ASCII_LIMIT -> 1
             char.code < TWO_BYTE_LIMIT || char.isSurrogate() -> 2
@@ -127,7 +189,7 @@ internal class ErasedDeclaredTypes(
             }
         }
         private val PRIMITIVES = mapOf("boolean" to "Z", "byte" to "B", "char" to "C", "short" to "S", "int" to "I",
-            "long" to "J", "float" to "F", "double" to "D", "void" to "V")
+            "long" to "J", "float" to "F", "double" to "D", VOID to "V")
     }
 }
 
@@ -229,6 +291,17 @@ internal class ErasedDeclaredTypeContext(
         }
         return hash
     }
+
+    /** The erased parameter rows of signature [id], then its return row. */
+    fun signatureRows(id: Int): IntArray {
+        val input = signature(id)
+        val count = input.int
+        return IntArray(count + 1) { input.int }
+    }
+
+    val signatureCount: Int get() = signatureOffsets.size
+
+    val rawTypes: ErasedDeclaredTypes get() = raw
 
     fun finishIndexing() {
         fieldHashes = null

@@ -385,6 +385,13 @@ interface Graph {
     fun declaredTypes(): DeclaredTypeTable = DeclaredTypeTable.EMPTY
 
     /**
+     * Binds this graph's nodes and methods to [declaredTypes] by the IDs the graph stores them
+     * under, or null when only the member-key lookup can answer (an in-memory graph, a table in
+     * an older wire format).
+     */
+    fun declaredTypeBinding(): DeclaredTypeBinding? = null
+
+    /**
      * Get a node by its ID
      */
     fun node(id: NodeId): Node?

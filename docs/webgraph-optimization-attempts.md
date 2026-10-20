@@ -21820,3 +21820,69 @@ counts the declared-type keys recover (Tika 312,852, Hive 404,043) move into the
 `LargeCorpusBaselines` defaults; the required benchmark installs the target branch's copy of that
 file, so a policy change on `main` (`transitions.rs` and identity-keyed count approvals) must land
 before this PR's `benchmark-regression-gate` can pass, per `benchmark/README.md`.
+
+## Attempt308: the Kotlin engine binds declared types by string ID, as the native engine does
+
+**Finding (run 38727361126, JVM query measurement at `-Xmx8g`, and its local reproduction).** The
+first complete JVM multi-graph measurement showed the candidate slower on every case that reads a
+declared-type property of many nodes: `feature-nodes` p50 15.9 s → 36 s, `feature-methods` 3.4 →
+12 s, `field-properties` 2.1 → 3.1 s, and the `wrapped-*`/`dynamic-miss` cases +25–40% (their first
+request touched the tables for the first time). Locally, one request at a time against the same 64
+graphs (4 cores, 15 GB, `-Xmx8g`, MAPPED mode), main `d2e6f7f` vs the branch before this attempt:
+`feature-nodes` 17.3 s cold / 8.1 s warm vs 29.6 / 14.7; `feature-methods` 2.0 / 1.05 vs 3.8 / 3.4;
+`wrapped-early_graph_prefix_query` cold 3.2 vs 20.3 s; `dynamic-miss` 2.1 / 1.9 vs 3.1 / 2.2;
+`field-properties` and `return-full` equal.
+
+**Cause (JFR, warm window).** For every Field, Parameter and Return node a presence check or
+property read built a `MemberTypeKey`: the class name, member name and a JVM descriptor spelled by
+`jvmTypeDescriptor` from strings the node had just been decoded into, hashed as three Java strings,
+and probed against the mapped table, whose `keyMatches` decoded the row's own texts from the string
+table (`StringTable.get` 26–34% of samples, `SharedDeclaredTypeTexts.text` 11–13%,
+`jvmTypeDescriptor` 6–7%, `MethodDescriptor.getDescriptor` 4%) and whose erased-type matcher
+re-decoded type rows on every probe because the shape cache was released after loading
+(`DeclaredTypeStore$Reader.type` 8%). `IS NOT NULL` asked twice per node and five times per method
+row. The native engine (`field_type_by_ids`, `method_types_by_ids`) compares the string IDs the
+records carry and never decodes a name; the Kotlin engine had no such path.
+
+**Change.** `Graph.declaredTypeBinding()` (core) exposes an ID-keyed binding a persisted graph can
+answer definitively: `MappedWebGraphBackedGraph` reads a Field record's three string IDs and a
+Parameter/Return record's method IDs straight off `graph.nodedata`, `MappedMethodIndex` attaches
+its ordinal to every `MethodDescriptor` it materializes (`declarationHandle`, outside equality), and
+`MappedDeclaredTypeBinding` (webgraph) resolves them against the GTY05 table with indexes built on
+first use and never written again: (class ID, name ID) → rows chained in row order, Java type name
+string ID → erased row (a non-array's name is its leaf name, one `findId` per distinct array
+shape), and canonical erased signatures → signature row. A row matches when its two stored IDs
+match and its erased shape (leaf name ID, dimensions) equals the resolved one; the erased rows keep
+their validated leaf and dimensions as ints after loading, and a method's presence flags
+(`HAS_PARAMETERS`, `HAS_BOUNDS`) are read from the row's ints without decoding the declaration.
+`DeclaredTypeProperties` prefers the binding (`UNANSWERED` hands a foreign node or a hand-built
+descriptor back to the key lookup), keeps its per-row memo around both paths, and `render`/`info`
+are memoized per type ID for immutable tables. Tests: `DeclaredTypeRenderCacheTest` (core),
+`DeclaredTypeBindingPreferenceTest` (cypher), `MappedDeclaredTypeBindingTest` (webgraph, parity of
+every node and method of a compiled fixture against the key lookup, arrays, unbound and unanswered
+cases, legacy formats without a binding); the two tests that pinned "shapes are re-decoded after
+loading" now pin the retained ints.
+
+**Result (same local protocol, cold / warm; main vs this attempt).** `feature-nodes` 17.3 / 8.1 s
+vs 19.5 / 10.3–10.8 s (+13% / +27–33%; was +71% / +81%); `feature-methods` 2.0 / 1.05 vs 2.4 /
+1.59–1.63 (+20% / +50%; was +90% / +220%); `wrapped-early_graph_prefix_query` 3.2 / 0.81 vs 3.4 /
+0.78–0.84; `dynamic-miss` 2.1 / 1.9 vs 2.1 / 1.9–2.0; `field-properties` 0.69 / 0.63 vs 0.69 /
+0.55–0.57; `return-full` 1.57 / 1.44 vs 1.44 / 1.39–1.40. The remaining `StringTable.get` samples
+are node and method materialization, which main pays identically; what the two `feature-*` cases
+still pay is one int-keyed lookup per node or method row (`MappedDeclaredTypeBinding.methodRow`
+7% of warm samples, mostly the signature key allocation and compare), which main does not do at
+all because the property does not exist there. Under the user's p50 rule (within 100 ms or 5%) the
+two feature-presence cases remain regressions on the JVM engine; every other measured case is at
+parity. The complete 35-case A/B with `backend/bench/jvm_query_ab.py` (3 warm requests per case,
+`--dump-answers` checked by `jvm_query_ab_answers.py`) on a corpus built by the head's
+`Fixture64GraphPreparation`, main `30b16e1` vs the jar built from the pushed head, is recorded in
+the PR body. Of the 25 cases whose answers match, 23 are within the p50 rule; `dynamic-miss` 2023 →
+2258 ms (+235 ms) and `wrapped-first_last_graph_bimodal_query` 1567 → 1704 ms (+137 ms) exceed it
+on this run and were within it (+4%, +1%) on a previous run of the same protocol against a head jar
+that differed only by detekt-driven restructuring, where `slow-dynamicHit` (2066 → 2177, +111 ms)
+was the one case over and is +33 ms here; main's own `dynamic-miss` warm p50 moved 165 ms between
+the runs. Of the 10 cases whose answers legitimately differ (head carries the new properties, and
+the answer check proves every main property present in head with an equal value and only the
+declared-type keys added), `feature-nodes` is 8448 → 10187 ms (+1739 ms, +21%) and `feature-methods`
+1137 → 1618 ms (+481 ms, +42%), over the rule in both runs; the other eight are within it or faster.
+Those two remain the feature's JVM-engine cost, reported for the user's decision, not accepted.
