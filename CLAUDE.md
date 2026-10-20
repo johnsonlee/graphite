@@ -608,6 +608,15 @@ row's ints. The native reader (`field_type_by_ids`) had done this from the start
 that mirrors a Rust one should mirror its lookup path too, and a per-node cost is only visible
 under the multi-graph measurement, never in the single-graph tests.
 
+### Node Order Must Not Depend on Identity Hashes
+
+SootUp's `resolveFields()` returns a `HashSet` of `JavaSootField` without a `hashCode`, so it iterates
+in identity-hash order. HotSpot seeds that generator the same way every run, so a revision builds the
+same graph twice, but any change in how many objects the build hashes first (new snapshots, a new
+table) renumbers the fields a body never references, and an order-sensitive gate query (`LIMIT 200`
+without `ORDER BY`) then flags a reorder on classes the change never touched (Attempt309). Sort any
+SootUp collection before numbering nodes from it; `SyntheticIdentity` and `visitFieldsForClass` do.
+
 ### SootUp 3.x: What the Upgrade From 2.0.0 Changed
 
 - API renames, all mechanical: `StmtGraph`/`MutableStmtGraph` are `ControlFlowGraph`/

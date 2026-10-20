@@ -21886,3 +21886,39 @@ the answer check proves every main property present in head with an equal value 
 declared-type keys added), `feature-nodes` is 8448 → 10187 ms (+1739 ms, +21%) and `feature-methods`
 1137 → 1618 ms (+481 ms, +42%), over the rule in both runs; the other eight are within it or faster.
 Those two remain the feature's JVM-engine cost, reported for the user's decision, not accepted.
+
+## Attempt309: declared-only fields are numbered in a deterministic order
+
+**Finding (run 39350632361, `benchmark-regression-gate`, `shape-label-scan-field`).** `MATCH (n:FieldNode)
+RETURN n.name LIMIT 200` returned the same 200 names on the base and the head build of
+`fixture-android-00`, 53 rows in a different order. Reproduced locally by building the corpus with
+main `30b16e1` and with the head (`Fixture64GraphPreparation`, same four JARs, same provenance):
+55 of the 200 rows differ, all of them static constants of six classes (`org.ccil.cowan.tagsoup.Schema`,
+`com.google.android.mms.util.PduCache`, `WindowFramesProto`, ...); the instance fields of the same
+classes keep their order. On gson 2.11.0 the two revisions number 47 of 475 fields differently while
+the field set is identical, and two builds of one revision agree byte for byte on the order.
+
+**Cause.** A field a body references is numbered when the body is processed, in statement order.
+A field only the class declares (a static constant is inlined at its uses) is numbered by
+`visitFieldsForClass`, which iterated `sootClass.fields`: SootUp's `AsmClassSource.resolveFields`
+collects the fields with `Collectors.toSet()`, a `HashSet` of `JavaSootField`, and neither
+`JavaSootField` nor `SootClassMember` defines `hashCode`, so the set iterates in identity-hash order.
+HotSpot's identity hashes come from a per-thread generator that is seeded the same way on every run,
+which is why one revision is deterministic, and that shifts with the number of objects the build has
+hashed before the class is reached, which is why this PR's extra work (the declaration snapshots,
+the type table) renumbered fields it never touched. Node ids, not graph semantics: the sets, edges
+and every ordered query agree.
+
+**Change.** `inDeterministicOrder` sorts a class's declared fields by name and signature before the
+annotation pass and the field pass read them (`SyntheticIdentity` already sorted the same set by
+name). The order no longer depends on allocation history, so a future change elsewhere in the build
+cannot reorder the field nodes again. This moves the order of declared-only fields for every class,
+so the `shape-label-scan-field` transition on `main` is keyed by this revision's result, with this
+cause as its reason, rather than by an identity-hash order that the next unrelated change would
+have broken again.
+
+**Measurement scope.** The A/B of Attempt308 was run against the jar of `1c43654`; this attempt
+changes the frontend's numbering of declared-only fields and nothing in the storage, the readers or
+the query engines, so those measurements stand for it. Sorting the fields of a class is linear in
+their count and not measurable against the construction gate's tolerance.
+

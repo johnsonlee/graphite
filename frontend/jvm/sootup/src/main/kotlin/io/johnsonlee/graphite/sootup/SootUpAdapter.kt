@@ -109,6 +109,7 @@ import sootup.core.jimple.common.expr.JGtExpr
 import sootup.core.jimple.common.expr.JLeExpr
 import sootup.core.model.Body
 import sootup.core.model.SootClass
+import sootup.core.model.SootField
 import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
@@ -556,7 +557,7 @@ class SootUpAdapter(
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
                 val className = sootClass.type.fullyQualifiedName
                 extractAnnotations(sootClass.annotations, className, "<class>")
-                sootClass.fields.forEach { field ->
+                sootClass.fields.inDeterministicOrder().forEach { field ->
                     extractAnnotations(field.annotations, className, field.name)
                 }
             }
@@ -767,6 +768,17 @@ class SootUpAdapter(
     }
 
     /**
+     * A class's declared fields in a deterministic order. SootUp collects them into a `HashSet`
+     * of `JavaSootField`, which has no `hashCode` of its own, so the set iterates in identity-hash
+     * order: stable for one program, and shifted by any change in how many objects the build
+     * hashes before the class is reached. Fields a body references are numbered when the body is
+     * processed; the ones only this pass sees were numbered in that order, and a run of the same
+     * input on another revision renumbered them (PR #174, `shape-label-scan-field`).
+     */
+    private fun <F : SootField> Collection<F>.inDeterministicOrder(): List<F> =
+        sortedWith(compareBy({ it.name }, { it.signature.toString() }))
+
+    /**
      * Process all declared fields for a single class, ensuring FieldNodes are created.
      *
      * This is important for return type analysis to discover ALL fields in a class,
@@ -777,7 +789,7 @@ class SootUpAdapter(
      */
     private fun visitFieldsForClass(sootClass: SootClass) {
         val className = sootClass.type.fullyQualifiedName
-        sootClass.fields.forEach { field ->
+        sootClass.fields.inDeterministicOrder().forEach { field ->
             val fieldName = field.name
 
             // Skip synthetic fields
