@@ -254,6 +254,21 @@ data class MethodDescriptor(
     val parameterTypes: List<TypeDescriptor>,
     val returnType: TypeDescriptor
 ) {
+    /**
+     * An opaque handle the graph that materialized this descriptor may attach, so its declared
+     * types can be found by the IDs the graph stores rather than by re-reading these strings.
+     * Not part of equality; -1 when no graph attached one.
+     */
+    var declarationHandle: Int = -1
+
+    /**
+     * The presence shape a declared-type binding answered for this descriptor, and the table it
+     * answered for: a row's five declaration properties ask the same question, and a persisted
+     * graph's answer is a byte read that must not be paid five times. Not part of equality.
+     */
+    var declaredShape: Int = 0
+    var declaredShapeOwner: Any? = null
+
     val signature: String get() = "${declaringClass.className}.$name(${parameterTypes.joinToString(",") { it.className }})"
 
     /**

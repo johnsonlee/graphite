@@ -142,7 +142,7 @@ pub fn extract_endpoints(g: &Graph) -> Vec<Map<String, J>> {
     // loop skip the string formatting and dictionary lookup that dominate this scan.
     let mapping_ids: Vec<StrId> = MAPPING_ANNOTATIONS
         .iter()
-        .filter_map(|fqn| g.strings.index_of(fqn).map(|i| i as StrId))
+        .filter_map(|fqn| g.strings().index_of(fqn).map(|i| i as StrId))
         .collect();
     if mapping_ids.is_empty() {
         return out;
@@ -167,7 +167,7 @@ pub fn extract_endpoints(g: &Graph) -> Vec<Map<String, J>> {
         key_buf.push('#');
         key_buf.push_str(method_name);
         // Skip the lookup entirely unless this member carries a mapping annotation.
-        match g.strings.index_of(&key_buf) {
+        match g.strings().index_of(&key_buf) {
             Some(i) if annotated.contains(&(i as StrId)) => {}
             _ => continue,
         }
@@ -198,7 +198,7 @@ pub fn extract_endpoints(g: &Graph) -> Vec<Map<String, J>> {
                     let mut e = Map::new();
                     e.insert("class".into(), json!(class_name));
                     e.insert("member".into(), json!(method_name));
-                    e.insert("signature".into(), json!(m.signature(&g.strings)));
+                    e.insert("signature".into(), json!(m.signature(g.strings())));
                     e.insert("httpMethod".into(), json!(verb));
                     e.insert("path".into(), json!(path));
                     e.insert("annotation".into(), json!(fqn));

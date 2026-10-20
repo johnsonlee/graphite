@@ -99,6 +99,12 @@ class MmapGraphBuilder(
     private val branchScopes = mutableListOf<DefaultGraph.RawBranchScope>()
     private val localDefinitions = HashMap<Int, IntArray>()
     private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
+    private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+
+    override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
+        declaredTypeTable = table
+        return this
+    }
 
     private val nodeDos = DataOutputStream(nodeStream)
     private val edgeDos = DataOutputStream(edgeStream)
@@ -265,7 +271,8 @@ class MmapGraphBuilder(
             branchScopeData = branchScopes.toList(),
             localDefinitionData = localDefinitions.toMap(),
             incomingIndex = null,
-            resources = resourceAccessor
+            resources = resourceAccessor,
+            declaredTypeTable = declaredTypeTable
         )
     }
 

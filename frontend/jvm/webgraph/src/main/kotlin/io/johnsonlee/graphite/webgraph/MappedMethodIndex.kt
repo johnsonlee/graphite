@@ -78,7 +78,18 @@ internal class MappedMethodIndex private constructor(
             strings.get(nameIds[index]),
             parameters,
             TypeDescriptor(strings.get(returnTypeIds[index]))
-        )
+        ).also { it.declarationHandle = index }
+    }
+
+    /** Whether [handle] names a method of this index. */
+    fun holds(handle: Int): Boolean = handle in declaringClassIds.indices
+
+    fun declaringClassId(handle: Int): Int = declaringClassIds[handle]
+    fun nameId(handle: Int): Int = nameIds[handle]
+    fun returnTypeId(handle: Int): Int = returnTypeIds[handle]
+    fun parameterTypeIds(handle: Int): IntArray {
+        val offset = parameterOffsets[handle]
+        return IntArray(parameterCounts[handle]) { parameterTypeIds[offset + it] }
     }
 
     private class RawMethodPattern(pattern: MethodPattern, private val strings: StringTable) {
@@ -193,7 +204,7 @@ internal class MappedMethodIndex private constructor(
                     parametersMatch &&
                     (exact.returnTypeId == null || returnTypeId == exact.returnTypeId)
                 ) {
-                    result += exact.materialize(strings, returnTypeId)
+                    result += exact.materialize(strings, returnTypeId).also { it.declarationHandle = index }
                     if (result.size >= limit) return result
                 }
             }

@@ -105,6 +105,10 @@ data class CorpusBaseline(
  * node id and the SHA-256 of its entries, so a mapped graph proves a block on its first touch rather
  * than hash the whole sidecar per mapping) and the 36-byte binding at the end of `graph.metadata`
  * (Tika +8,190,900, Hive +11,754,172, Kotlin compiler +7,512,796 bytes), again with every count unchanged.
+ * The declared-type table keeps every array dimension of a method's parameter and return types, so
+ * methods whose keys collided on the flattened rendering are distinct again: Tika +64 methods
+ * (312,788 -> 312,852), Hive +27 (404,016 -> 404,043), Kotlin compiler unchanged; nodes, edges and
+ * call sites are unchanged (`docs/declared-types-corpus-identity-audit.md`).
  */
 internal object LargeCorpusBaselines {
     // Add only independently reviewed exact product-identity/corpus expectations here.
@@ -131,7 +135,7 @@ internal object LargeCorpusBaselines {
         nodeCount = 3_901_103,
         sourceEdgeCount = 4_510_016,
         persistedEdgeCount = 4_353_588,
-        methodCount = 312_788,
+        methodCount = 312_852,
         callSiteCount = 1_006_172,
         maxPipelineMillis = 120_000
     )
@@ -145,7 +149,7 @@ internal object LargeCorpusBaselines {
         nodeCount = 5_992_914,
         sourceEdgeCount = 6_597_267,
         persistedEdgeCount = 6_376_682,
-        methodCount = 404_016,
+        methodCount = 404_043,
         callSiteCount = 1_443_886,
         maxPipelineMillis = 180_000
     )
