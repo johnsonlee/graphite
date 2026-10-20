@@ -21952,3 +21952,15 @@ properties per method): `property !in methodPropertyNames` searched a `List` of 
 descriptor remembers the shape the binding answered for this table (`MethodDescriptor.declaredShape`
 and `declaredShapeOwner`, outside equality), so a row's five properties read a field after the first.
 
+**Result (same protocol, corpus rebuilt by the head so the sidecar exists, 5 warm requests, main
+`30b16e1` vs `9039659`).** `feature-nodes` 9611 → 9767 ms (+2%; was 8448 → 10187, +21%, before this
+attempt, and 14.7 s before Attempt308): at parity. `feature-methods` 1197 → 1356 ms (+159 ms, +13%;
+was +481 ms, +42%): interleaved 10-request runs on a quiet machine put the head 3–6% over main by the
+fastest request and 5–19% by p50, and an experiment that short-circuits the question runs at main's
+speed, so the remainder is the question itself, about 20 ns per property per method, 6.9 million
+times; this case stays marginally over the p50 rule and is reported, not accepted. Of the 25
+same-answer cases 22 are within the rule in this run; the three over it (+72 to +135 ms, 10–11%) were
+within it in the previous run, as the three over it there are within it here, and this host's noise
+today swings same-answer cases by −64% to +59% between runs. Every differing case's answers contain
+main's (`jvm_query_ab_answers.py`). The full table is in the PR body.
+
