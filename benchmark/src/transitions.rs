@@ -33,7 +33,40 @@ struct Rule<'a> {
 // Land reviewed literal entries in the trusted base first, then rerun the
 // feature comparison. Product identities exclude only the exact trusted policy
 // files, so merging policy-only commits does not invalidate reviewed products.
-const RULES: &[Rule<'static>] = &[];
+// PR #174 (head edc7fb5, base main 30b16e1): deduplicated declared types with JVM generics.
+// Verified from run 39379876956's retained bodies; see the PR's acceptance section.
+const RULES: &[Rule<'static>] = &[
+    Rule {
+        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
+        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        case_id: "schema-key-histogram",
+        base_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+        head_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+        base_response_sha256: "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c",
+        head_response_sha256: "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
+        reason: "PR #174: Field, Parameter and Return nodes carry generic_type and type_info (3,485,883 each); the 26 pre-existing key counts are unchanged",
+    },
+    Rule {
+        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
+        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        case_id: "shape-label-scan-field",
+        base_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+        head_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+        base_response_sha256: "9919b1ed8bb619dd7b038a065c2f139bdd030137b2b0a755732d11a5cc869bea",
+        head_response_sha256: "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b",
+        reason: "PR #174 (Attempt309): declared-only fields are numbered in (name, signature) order instead of SootUp's identity-hash set order; the same 200 (name, graph) rows, 57 reordered",
+    },
+    Rule {
+        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
+        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        case_id: "shape-all-nodes",
+        base_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+        head_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+        base_response_sha256: "d970e9a364104e9424bd1db998d805a9c706a0747bee0b12032502e093c4a88a",
+        head_response_sha256: "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+        reason: "PR #174: generic_type and type_info added on 49 of the 200 nodes; every pre-existing property, value and provenance unchanged",
+    },
+];
 
 fn digest(value: &str, bytes: usize) -> bool {
     value.len() == bytes * 2
