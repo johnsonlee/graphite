@@ -768,24 +768,7 @@ impl ScanPlan {
         // rules out is still visited for the other types it holds.
         let cs_tree: Option<&PredTree> = self.call_site.as_ref().map(|(t, _)| t);
         let all_sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
-        // Annotation values can carry CallSite property names. If any source has
-        // such records, the general schedule must merge the types by node id before
-        // LIMIT and must not filter that source with a CallSite-only bitmap.
-        let annotations_possible = matches!(
-            self.tag_plans[TAG_ANNOTATION_NODE as usize],
-            TagPlan::Generic
-        ) && all_sources
-            .iter()
-            .any(|s| !ex.graph(*s).ids_by_tag(TAG_ANNOTATION_NODE).is_empty());
-        let cs_only = cs_tree.is_some()
-            && !self.has_synthetic
-            && !annotations_possible
-            && self.tag_plans.iter().enumerate().all(|(tag, p)| {
-                tag == TAG_CALL_SITE_NODE as usize
-                    || matches!(p, TagPlan::Skip)
-                    || (tag == TAG_ANNOTATION_NODE as usize && matches!(p, TagPlan::Generic))
-            });
-        if !cs_only {
+        if !self.can_batch_callsite_sources(ex, &all_sources)? {
             // Types other than CallSite are swept per graph, in source order, with the
             // CallSite plan for that graph built on the spot when it has one.
             return self.run_by_source(ex, row, &all_sources, emit);
@@ -815,6 +798,44 @@ impl ScanPlan {
                 }
             }
         }
+        Ok(true)
+    }
+
+    /// Preserve the CallSite-only batch schedule when every other type is absent
+    /// or proved unable to match. Annotation value pairs can use CallSite property
+    /// names, so their complete-dictionary proof must precede the CallSite bitmap:
+    /// an unproved annotation requires the general node-id merge before LIMIT.
+    fn can_batch_callsite_sources(
+        &self,
+        ex: &Executor,
+        sources: &[SourceIdx],
+    ) -> CypherResult<bool> {
+        ex.cancel.check()?;
+        let static_shape = self.call_site.is_some()
+            && !self.has_synthetic
+            && self.tag_plans.iter().enumerate().all(|(tag, plan)| {
+                tag == TAG_CALL_SITE_NODE as usize
+                    || matches!(plan, TagPlan::Skip)
+                    || (tag == TAG_ANNOTATION_NODE as usize && matches!(plan, TagPlan::Generic))
+            });
+        if !static_shape {
+            return Ok(false);
+        }
+        if matches!(
+            self.tag_plans[TAG_ANNOTATION_NODE as usize],
+            TagPlan::Generic
+        ) {
+            for &source in sources {
+                ex.cancel.check()?;
+                if !ex.graph(source).ids_by_tag(TAG_ANNOTATION_NODE).is_empty() {
+                    let mut memo = signature::DictionaryMemo::new(self.tests);
+                    if !annotation::cannot_match(ex, source, &self.tree, &mut memo)? {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+        ex.cancel.check()?;
         Ok(true)
     }
 

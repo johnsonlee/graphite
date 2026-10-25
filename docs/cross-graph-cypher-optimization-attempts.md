@@ -2275,10 +2275,10 @@ the same candidate runs serve both comparisons, not independent replications.
 | direct indexed absent | 0.381 | 0.683 | +0.301 | 0.548 | 19.961 | +19.413 |
 | CallSite signature absent | 0.819 | 0.742 | -0.077 | 36.113 | 12.056 | -24.057 |
 | CallSite prefix absent | 0.783 | 0.764 | -0.019 | 46.522 | 10.731 | -35.791 |
-| Return type absent | 0.768 | 0.745 | -0.023 | 9.557 | 8.222 | -1.335 |
+| Return type absent | 0.768 | 0.745 | -0.022 | 9.557 | 8.222 | -1.335 |
 | Annotation absent | 35.066 | 0.717 | -34.349 | 83.985 | 6.620 | -77.365 |
 | Annotation space boundary | 33.443 | 33.500 | +0.057 | 78.604 | 73.756 | -4.848 |
-| indexed toString absent | 0.543 | 0.724 | +0.181 | 8.255 | 13.016 | +4.761 |
+| indexed toString absent | 0.543 | 0.724 | +0.180 | 8.255 | 13.016 | +4.761 |
 | Annotation present | 52.409 | 54.906 | +2.497 | 96.990 | 96.930 | -0.060 |
 | Annotation rendered atoms | 10.447 | 10.714 | +0.267 | 53.696 | 47.730 | -5.966 |
 
@@ -2339,3 +2339,116 @@ indexed P95 and some controls regress, and historical Attempt042 RSS+5.96% is no
 erased by a new fixture. Next isolate the unnecessary general schedule when an
 Annotation absence proof already permits the CallSite-only path. #181's separate
 indexed-toString bitmap tweak is deferred absent demonstrated material benefit.
+
+### 2026-10-26 - Attempt 045: Prove Annotation absence before choosing CallSite scheduling
+
+**Hypothesis:** preserve Attempt044's Annotation completeness and mixed-node LIMIT
+order, but use the lightweight CallSite schedule when an otherwise eligible shape
+has a cancellable absence proof for every annotation-bearing source. Any unknown
+falls back to merged node-ID execution using the complete source list. Do not
+apply the CallSite bitmap until these proofs finish. Broad searches do not pay
+this extra check. No indexed-toString bitmap expansion is included.
+
+**Identity:** parent `e2ce4f1e`; candidate is the commit containing this record.
+Candidate release SHA-256
+`933990f677ea07876794fd5be0804b41a2614f3bfbb497cf051122450fbbf659`.
+Parent and original `bc0fb443` binary hashes are in Attempts043/044. Later test-only
+coverage does not change this measured production binary.
+
+**Protocol:** `/tmp/graphite-181-integration-wM3kwK/protocol-routing.md`, declared
+before runs. Same annotation-bearing 12-graph fixture and 13-case catalog as044,
+same full-response boundary, C4/Rayon4/admission4, 2warmup+20measured rounds/worker.
+Fresh order: original A,044 A,045 A,045 B,044 B,original B. Output prefixes
+`routing-{original,base,candidate}-{a,b}` preserve every sample/body/resource log;
+`routing-comparison.json` and `routing-cumulative-comparison.json` retain all
+per-run ranges and paired resource deltas. Shared candidate runs serve both
+comparisons, not independent replications. No compilation overlapped measurement.
+This is one targeted routing experiment, not repeated stabilization of tiny controls.
+
+**Correctness and review:** deterministic route tests compare actual typed rows to
+an independent forced-generic oracle, including a first source with absence and
+a later source with a real Annotation match, full materialization/provenance,
+LIMIT1, and cancellation. Independent review found no correctness blocker; it
+identified eager serial proofs and discarded work on late-unknown sources as a
+possible cost, retained for this workload comparison rather than assumed free.
+
+All 6,240 measured and 624 warmup requests succeeded, with identical complete
+response hashes across all six runs. Within-case nearest-rank pooling uses160
+measured samples per revision. Incremental results against044:
+
+| Case | 044 P50 ms | Candidate P50 ms | Delta ms | 044 P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 4.966 | 5.517 | +0.550 | 16.026 | 30.140 | +14.114 |
+| keys-targeted-all | 462.719 | 461.240 | -1.479 | 575.623 | 569.506 | -6.117 |
+| keys-dense-all | 1416.553 | 1417.110 | +0.557 | 1538.781 | 1555.913 | +17.133 |
+| keys-boundary-all | 776.261 | 798.755 | +22.493 | 863.912 | 917.272 | +53.360 |
+| direct-absent | 0.683 | 0.549 | -0.135 | 11.924 | 0.725 | -11.200 |
+| callsite-signature-absent | 0.728 | 0.716 | -0.012 | 21.675 | 6.217 | -15.458 |
+| callsite-prefix-absent | 0.789 | 0.757 | -0.032 | 23.904 | 9.215 | -14.689 |
+| return-type-absent | 0.754 | 0.781 | +0.026 | 30.314 | 33.922 | +3.608 |
+| annotation-absent | 0.728 | 0.724 | -0.004 | 12.441 | 13.194 | +0.753 |
+| annotation-space-boundary | 33.676 | 32.491 | -1.185 | 76.142 | 73.585 | -2.557 |
+| indexed-tostring-absent | 0.719 | 0.701 | -0.018 | 19.918 | 18.646 | -1.272 |
+| annotation-present | 53.538 | 53.147 | -0.391 | 102.324 | 92.845 | -9.479 |
+| annotation-rendered-atoms | 10.449 | 10.551 | +0.101 | 36.883 | 49.871 | +12.988 |
+
+Cumulative results against original #182 on the same annotated fixture:
+
+| Case | Original P50 ms | Candidate P50 ms | Delta ms | Original P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 232.821 | 5.517 | -227.305 | 331.478 | 30.140 | -301.339 |
+| keys-targeted-all | 483.359 | 461.240 | -22.119 | 627.741 | 569.506 | -58.235 |
+| keys-dense-all | 1446.912 | 1417.110 | -29.801 | 1561.622 | 1555.913 | -5.709 |
+| keys-boundary-all | 807.351 | 798.755 | -8.597 | 918.693 | 917.272 | -1.421 |
+| direct-absent | 0.409 | 0.549 | +0.139 | 0.522 | 0.725 | +0.202 |
+| callsite-signature-absent | 39.334 | 0.716 | -38.618 | 113.629 | 6.217 | -107.412 |
+| callsite-prefix-absent | 21.932 | 0.757 | -21.175 | 87.575 | 9.215 | -78.360 |
+| return-type-absent | 4.022 | 0.781 | -3.241 | 47.456 | 33.922 | -13.534 |
+| annotation-absent | 35.593 | 0.724 | -34.868 | 80.019 | 13.194 | -66.825 |
+| annotation-space-boundary | 33.045 | 32.491 | -0.555 | 66.426 | 73.585 | +7.159 |
+| indexed-tostring-absent | 0.603 | 0.701 | +0.097 | 24.108 | 18.646 | -5.463 |
+| annotation-present | 55.230 | 53.147 | -2.083 | 96.653 | 92.845 | -3.808 |
+| annotation-rendered-atoms | 10.675 | 10.551 | -0.124 | 44.343 | 49.871 | +5.528 |
+
+| Run | Query window s | Harness wall s | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| original A | 65.165 | 71.890 | 335.000 | 339.260 | 2854.672 |
+| 044 A | 56.514 | 62.487 | 291.980 | 296.180 | 2875.922 |
+| 045 A | 56.655 | 62.720 | 292.500 | 296.712 | 2849.688 |
+| 045 B | 56.793 | 62.833 | 292.810 | 296.986 | 2863.500 |
+| 044 B | 56.661 | 62.598 | 290.840 | 295.030 | 2946.438 |
+| original B | 65.194 | 72.006 | 334.070 | 338.280 | 2936.500 |
+
+Incremental CPU A/B +0.520/+1.970 s (+0.18%/+0.68%); RSS -26.234/-82.938 MiB
+(-0.91%/-2.81%). Cumulative CPU -42.500/-41.260 s (-12.69%/-12.35%); RSS
+-4.984/-73.000 MiB (-0.17%/-2.49%). Every paired CPU/RSS boundary satisfies+5%
+against these matching comparators. CPU includes warmup/validation; RSS is process
+lifetime including load/C4 readiness. No pipeline E2E, construction/loading,
+cold-cache or accepted pre-regression recovery is established.
+
+**Variability and tradeoffs:** candidate business per-run P50 5.438–5.517 ms,
+P95 18.591–34.624 ms; direct-indexed P50 0.541–0.552 ms, P95 0.658–0.787 ms.
+All other run ranges remain in JSON. Only two repeats: no confidence intervals
+or saturation evidence. The target routing control P95 improves by11.200 ms
+against044, but incremental business P95+14.114 ms and boundary P95+53.360 ms
+worsen; unchanged broad-query paths can still experience scheduling contention.
+Cumulative direct-indexed P50/P95 +0.139/+0.202 ms, Annotation space-boundary
+P95+7.159 ms and rendered-atoms P95+5.528 ms remain regressions. Do not hide these
+using pooled slow-case gains, small percentages or resource savings. The eager
+serial proof cost is bounded/cancellable, not assumed zero.
+
+**Validation:** the production candidate passed160 Cypher,120 explore and42
+storage library tests without a fixture override (fixture-gated tests skip in
+that mode), workspace/all-target/all-feature Clippy with warnings denied, format
+and diff checks. Fourteen targeted signature/descriptor tests also passed against
+the new real annotation-bearing Tika shard. The final test-only heterogeneous
+source addition then passed all161 Cypher library tests, all11 signature tests
+on the real annotated Tika fixture, workspace Clippy, formatting and diff checks.
+
+**Decision:** retain the verified routing benefit and all correctness protections,
+as a positive intermediate increment, not all-case performance acceptance. The
+cumulative integration preserves material slow-search gains and satisfies the
+paired resource limits on this workload, but mixed P95s and the separate historical
+Attempt042 RSS+5.96% limitation remain. Do not spend additional stabilization runs
+on tiny controls, expand allowances or claim pre-regression recovery. Hosted
+correctness/completion/OOM CI must independently pass on the pushed head.

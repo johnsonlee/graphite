@@ -178,6 +178,10 @@ fn fixture() -> (Fixture, Arc<Graph>) {
 }
 
 fn fixture_with_callsite(with_callsite: bool) -> (Fixture, Arc<Graph>) {
+    fixture_with_annotation_needle(with_callsite, "NoCallSiteNeedle")
+}
+
+fn fixture_with_annotation_needle(with_callsite: bool, needle: &str) -> (Fixture, Arc<Graph>) {
     static NEXT: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
     let fixture = Fixture(std::env::temp_dir().join(format!(
         "graphite-annotation-proof-{}-{}",
@@ -203,7 +207,7 @@ fn fixture_with_callsite(with_callsite: bool) -> (Fixture, Arc<Graph>) {
         "Other",
         "nestedBeta",
         "caller_class",
-        "NoCallSiteNeedle",
+        needle,
         "phrase",
         "option comparison",
         "type",
@@ -478,6 +482,141 @@ fn callsite_bitmap_must_not_discard_annotation_only_property_matches() {
         assert_eq!(actual.rows[0].get("name").unwrap().as_str(), Some("Marker"));
         assert_eq!(
             materialize(actual.rows[0].get("n").unwrap(), &ex),
+            materialize(expected.rows[0].get("n").unwrap(), &ex)
+        );
+    }
+}
+
+#[test]
+fn absent_annotations_restore_callsite_batch_route_without_filtering_possible_matches() {
+    let (_fixture, graph) = fixture_with_callsite(true);
+    let ex = Executor::new(
+        ["first", "second"]
+            .into_iter()
+            .map(|id| Source {
+                id: Arc::from(id),
+                graph: graph.clone(),
+            })
+            .collect(),
+        true,
+    );
+    let cases = [
+        ("MATCH (n) WHERE n.caller_class CONTAINS 'MissingAtom' RETURN n.id AS id", true, vec![]),
+        ("MATCH (n) WHERE n.caller_class CONTAINS 'NoCallSiteNeedle' RETURN n.id AS id", false, vec![0, 0]),
+        ("MATCH (n) WHERE n.caller_class CONTAINS 'Owner' OR n.caller_class CONTAINS 'NoCallSiteNeedle' RETURN n.id AS id LIMIT 1", false, vec![0]),
+        ("MATCH (n:CallSite) WHERE n.caller_class CONTAINS 'Owner' RETURN n.id AS id", true, vec![2, 2]),
+        ("MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'MissingAtom') RETURN n.id AS id", false, vec![]),
+    ];
+    for (query, expected_batch, ids) in cases {
+        let clauses = crate::parser::parse(query).unwrap();
+        let Clause::Match { patterns, .. } = &clauses[0] else {
+            unreachable!()
+        };
+        let Clause::Where(predicate) = &clauses[1] else {
+            unreachable!()
+        };
+        let plan = ScanPlan::build(patterns, Some(predicate)).expect("pushable test clause");
+        assert_eq!(
+            plan.can_batch_callsite_sources(&ex, &[0, 1]).unwrap(),
+            expected_batch,
+            "route: {query}"
+        );
+        let actual = ex.execute_clauses(&clauses, None).unwrap();
+        let expected = ex.execute_clauses(&generic_oracle(&clauses), None).unwrap();
+        assert_eq!(actual.columns, expected.columns, "{query}");
+        assert_eq!(
+            format!("{:?}", actual.rows),
+            format!("{:?}", expected.rows),
+            "typed ordered rows: {query}"
+        );
+        assert_eq!(
+            actual
+                .rows
+                .iter()
+                .map(|row| match row.get("id").unwrap() {
+                    Value::Int(id) => *id,
+                    other => panic!("unexpected id: {other:?}"),
+                })
+                .collect::<Vec<_>>(),
+            ids,
+            "{query}"
+        );
+    }
+    let clauses =
+        crate::parser::parse("MATCH (n) WHERE n.caller_class CONTAINS 'MissingAtom' RETURN n")
+            .unwrap();
+    let Clause::Match { patterns, .. } = &clauses[0] else {
+        unreachable!()
+    };
+    let Clause::Where(predicate) = &clauses[1] else {
+        unreachable!()
+    };
+    let plan = ScanPlan::build(patterns, Some(predicate)).unwrap();
+    ex.cancel.cancel();
+    assert!(matches!(
+        plan.can_batch_callsite_sources(&ex, &[0, 1]),
+        Err(crate::CypherError::Cancelled)
+    ));
+}
+
+#[test]
+fn later_annotation_match_prevents_batching_after_an_absent_first_source() {
+    let (_first_fixture, first) = fixture_with_annotation_needle(true, "UnrelatedAnnotation");
+    let (_second_fixture, second) = fixture_with_callsite(true);
+    let ex = Executor::new(
+        vec![
+            Source {
+                id: Arc::from("first"),
+                graph: first,
+            },
+            Source {
+                id: Arc::from("second"),
+                graph: second,
+            },
+        ],
+        true,
+    );
+    for suffix in ["", " LIMIT 1"] {
+        let text = format!("MATCH (n) WHERE n.caller_class CONTAINS 'NoCallSiteNeedle' RETURN n.id AS id, n.graphId AS gid, n.caller_class AS caller, n{suffix}");
+        let clauses = crate::parser::parse(&text).unwrap();
+        let Clause::Match { patterns, .. } = &clauses[0] else {
+            unreachable!()
+        };
+        let Clause::Where(predicate) = &clauses[1] else {
+            unreachable!()
+        };
+        let plan = ScanPlan::build(patterns, Some(predicate)).unwrap();
+        assert!(
+            plan.can_batch_callsite_sources(&ex, &[0]).unwrap(),
+            "first source proves absence"
+        );
+        assert!(
+            !plan.can_batch_callsite_sources(&ex, &[1]).unwrap(),
+            "second source may match"
+        );
+        assert!(
+            !plan.can_batch_callsite_sources(&ex, &[0, 1]).unwrap(),
+            "a later possible match requires merged execution"
+        );
+        let actual = ex.execute_clauses(&clauses, None).unwrap();
+        let expected = ex.execute_clauses(&generic_oracle(&clauses), None).unwrap();
+        assert_eq!(actual.columns, expected.columns, "{text}");
+        assert_eq!(
+            format!("{:?}", actual.rows),
+            format!("{:?}", expected.rows),
+            "typed rows/provenance: {text}"
+        );
+        assert_eq!(actual.rows.len(), 1, "{text}");
+        let row = &actual.rows[0];
+        assert!(matches!(row.get("id"), Some(Value::Int(0))));
+        assert_eq!(row.get("gid").unwrap().as_str(), Some("second"));
+        assert_eq!(
+            row.get("caller").unwrap().as_str(),
+            Some("NoCallSiteNeedle")
+        );
+        assert_eq!(crate::engine::QueryResult::graph_ids(row), vec!["second"]);
+        assert_eq!(
+            materialize(row.get("n").unwrap(), &ex),
             materialize(expected.rows[0].get("n").unwrap(), &ex)
         );
     }
