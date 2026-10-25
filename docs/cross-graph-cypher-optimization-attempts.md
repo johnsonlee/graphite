@@ -1988,3 +1988,168 @@ pass.
 **Conclusion:** keep. Schema exploration costs the number of types, graphs
 and distinct column values a segment reads, however it is phrased; and an
 agent has a tool that answers the whole question in one call.
+
+### 2026-10-26 - Attempt 042: Prove absent signature terms before broad property scans
+
+**Hypothesis:** `ANY(k IN keys(n) WHERE toString(n[k]) CONTAINS ... OR ...)`
+expands into per-type property predicates. The composed method signatures force
+raw-record sweeps and per-leaf method memos even when none of the search terms
+occurs in a graph. `LIMIT 200` cannot stop the eager candidate sweep, and an empty
+result must exhaust all sources. Proving eligible terms absent from the complete
+string dictionary can eliminate these leaves before selecting the sweep. This is
+a Rust query-engine change; no JVM tuning or JVM process is involved.
+
+**Correctness prerequisite:** the original revision `d2e6f7f` omitted
+`caller_descriptor` and `callee_descriptor` from `ALL_KEYS`, despite exposing both
+through `keys(n)`. The independent generic-executor comparison found a real false
+negative: Tika node 6041642 matched `java` only in its `()Ljava/lang/String;` and
+`()Ljava/lang/Object;` descriptors. Both the original revision and the first
+candidate skipped it. Commit `61759ea1` separately fixes key completeness and
+uses the existing raw method memo for descriptors, preserving return types,
+primitive codes, arrays and slash-separated reference types. The performance
+baseline below is this correctness-fixed revision, not the incomplete original
+query. This is an incremental comparison, not a claim of pre-regression recovery.
+
+**Design:** one dictionary pass per prepared source tests each eligible distinct
+literal once per dictionary entry, retiring it at the first occurrence and ending
+when every literal is found. Only a proven-absent composed-property leaf is folded
+to false. Ordinary fields, dynamic annotations/resource values, synthetic graph
+identities and unsupported operators/transforms keep their existing semantics.
+Signature literals must be nonempty, untransformed `CONTAINS` terms without the
+inserted signature separators. Descriptor terms additionally exclude descriptor
+wrappers/separators, `L`, and primitive-code-only strings, so a match must occur
+unchanged within an original dictionary component. The full dictionary includes
+parameter and return types and local-only methods; the CallSite trigram index
+alone cannot establish absence. Memory is proportional to query terms, not the
+dictionary. Cancellation is checked before, periodically during, and after the
+pass. The general per-source path is changed; CallSite-only planning, lazy sweep
+streaming and cross-leaf method memo sharing are not part of this experiment.
+
+**Fixture and protocol:** twelve distinct persisted JAR shards, Hive, Kotlin
+compiler and Tika 00–03, from
+`/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908`; 3,309,087 nodes
+and 827,385 CallSites. Every measured root `/api/cypher` request targets all twelve
+graphs. Missing-term queries exhaust all sources; the targeted, dense and boundary
+controls return `n.graphId, count(*)` to force full multi-source evaluation, not
+just an early LIMIT on the first graph. No synthetic performance data or
+single-graph query timings are used.
+
+The predeclared protocol and complete fixture file hashes/provenance are retained
+under `/tmp/graphite-signature-Xf2ESc/{protocol.md,fixture.json,queries.json,run.py}`.
+macOS arm64, 16 logical CPUs, 64 GiB RAM, release Rust builds with identical lock
+files, `RAYON_NUM_THREADS=4`, four concurrent clients and four server query permits,
+60 s server/120 s client deadlines. Both revisions first finish the all-graph C4
+readiness request, then record two warmup rounds per worker separately. OS page
+cache is uncontrolled; no cold-cache claim. Run order is baseline A, candidate A,
+candidate B, baseline B. Each run has 20 measured rounds per worker, 80 samples per
+case and 400 requests total. Every attempted request and failure is retained.
+
+`backend/bench/signature-load.py` drives independent seeded closed-loop workers
+without inter-case barriers. Timing ends only after the complete HTTP body is
+consumed; JSON validation, full-response hashes and disk writes occur after each
+phase. No response fields are excluded, including row order, provenance and probe
+totals. P50 and P95 are nearest ranks within each repeated query case, not across
+different queries. Both individual runs and their pooled distribution are reported;
+run-to-run ranges describe variability, not statistical confidence. This fixed
+concurrency investigation is not a saturation test or a production traffic trace.
+
+CPU is the server's user+system time around the complete harness (including
+warmup); process-lifetime CPU and peak RSS are also retained with matched loading
+and C4 readiness. Resources belong to the mixed workload/process, not individual
+query cases. Graph construction and standalone loading are not measured, and no
+recovery for those operations is claimed. Reproduction uses `run.py --binary
+<release-graphite> --name <new-run> --concurrency 4 --rounds 20`, adding
+`--reference base-a` for candidates. The checked-in load driver accepts an external
+server, query catalog, output directory and optional baseline reference.
+
+**Verification:** the ten proof tests pass, including exhaustive eligible
+substrings of generated primitive/reference/array descriptors, cancellation,
+property/tag isolation, and six real two-source query comparisons against an
+independently forced generic executor. Comparisons retain columns, ordered typed
+rows, all materialized properties, provenance and probe state. Three descriptor
+tests cover exact formatting, raw-path admission and real return-type-only
+matches. The no-fixture suites pass (151 Cypher and 118 explore tests; fixture
+gates skip when unset). Workspace/all-target/all-feature locked Clippy with
+warnings denied, formatting, and the load driver's four unit tests also pass.
+
+The full existing suite was also attempted with Tika-00. Five unrelated tests
+fail identically on the original baseline: missing Annotation fixture coverage
+(three tests), a threshold assumption on sparse IDs, and NaN node equality.
+The long reversed-ID fixture test was interrupted on both revisions; it is not
+reported as passing. Targeted new fixture tests do pass. The canonical CI fixture
+and required remote benchmark-regression gate have not been run here.
+
+**Measurements:** all four runs completed. Each revision contributes 160 measured
+requests per case, pooled without excluding samples. All 1,600 measured requests
+and 160 warmup requests succeeded with identical full-response identities across
+revisions and repetitions. The candidate is this attempt's production diff; its
+release binary SHA-256 is
+`a69b42b13d8cdb97fe0abf27520b77b68d3cee6062a4357627724116063c0711`;
+the corrected baseline binary is
+`84f9cb1e342512a18e24739b9cb2da110a14694abad9c88b3ee688f6a6abbc2a`.
+Full sample bodies, latencies, failures, resource snapshots and commands live in
+the four evidence directories `base-a`, `candidate-a`, `candidate-b`, `base-b`;
+`summarize.py` produces `comparison.json` from them.
+
+Pooled repeated-request latency, milliseconds; delta is candidate minus baseline:
+
+| Query case | Base P50 | Candidate P50 | P50 delta | Base P95 | Candidate P95 | P95 delta |
+|------------|---------:|--------------:|----------:|---------:|--------------:|----------:|
+| Screenshot-shaped missing business terms, LIMIT 200 | 1979.623 | 95.125 | -1884.498 | 2467.876 | 171.744 | -2296.132 |
+| Targeted + absent terms, all-graph counts | 1978.666 | 436.120 | -1542.545 | 2668.141 | 604.937 | -2063.205 |
+| Dense terms, all-graph counts | 2075.927 | 1375.670 | -700.257 | 2685.737 | 1531.688 | -1154.049 |
+| Boundary-character fallback, all-graph counts | 1262.020 | 794.304 | -467.716 | 1743.325 | 916.089 | -827.236 |
+| Direct indexed missing-term control | 0.533 | 0.536 | +0.002 | 0.671 | 0.635 | -0.036 |
+
+Every individual run is retained, with P50 / P95 in milliseconds:
+
+| Query case | Base A | Candidate A | Candidate B | Base B |
+|------------|-------:|------------:|------------:|-------:|
+| Business absent | 1964.244 / 2447.347 | 104.463 / 174.103 | 85.078 / 163.393 | 1989.462 / 2618.180 |
+| Targeted | 1897.092 / 2545.955 | 425.718 / 564.902 | 437.418 / 612.862 | 2087.116 / 2773.507 |
+| Dense | 1907.325 / 2466.207 | 1383.457 / 1497.715 | 1373.608 / 1537.103 | 2203.699 / 2774.502 |
+| Boundary | 1186.528 / 1534.278 | 790.099 / 922.485 | 794.953 / 906.427 | 1324.091 / 1767.988 |
+| Direct control | 0.523 / 0.618 | 0.541 / 0.641 | 0.527 / 0.613 | 0.541 / 0.676 |
+
+The missing-business query saves 1,884 ms at P50 and 2,296 ms at P95 (95.2% and
+93.0%). Its candidate run-to-run P50 range is 85–104 ms and P95 range 163–174 ms;
+baseline ranges are 1964–1989 ms and 2447–2618 ms. The boundary terms are deliberately
+ineligible for the new proof: their improvement under the mixed load is consistent
+with reduced contention, not proof that their fallback path was optimized. The
+sub-millisecond direct control has mixed signs (including a +0.002 ms pooled P50),
+not an established improvement; it is not used to select the candidate or justify
+additional stabilization runs. Two runs do not establish confidence bounds or
+production tail guarantees.
+
+| Run | Query window s | Harness wall s (warmup included) | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|-----|---------------:|--------------------------------:|--------------:|---------------:|----------------------:|
+| Base A | 140.482 | 154.480 | 627.56 | 632.601 | 2973.625 |
+| Candidate A | 54.797 | 60.556 | 274.86 | 279.828 | 3070.719 |
+| Candidate B | 55.207 | 60.909 | 275.34 | 280.324 | 3079.250 |
+| Base B | 155.032 | 171.906 | 702.49 | 707.529 | 2906.094 |
+
+**Separate conclusions and decision:**
+
+- **Query P50 and P95:** both improve materially for all four slow multi-graph
+  cases in both matched pairs. The direct control is mixed, as shown above; do not
+  claim every percentile of every query improved.
+- **End-to-end request workload:** the measured query window decreases by 85.685 s
+  in pair A and 99.825 s in pair B (61.0% and 64.4%). This is not construction or
+  load-to-query pipeline recovery.
+- **CPU:** mixed-workload harness CPU decreases by 352.70 s and 427.15 s (56.2% and
+  60.8%); process-lifetime CPU also decreases in both pairs. This passes the CPU
+  allowance at the declared mixed-workload boundary, not a per-query-case CPU test.
+- **RSS:** lifetime peak increases by 97.094 MiB / 3.27% in pair A, but by
+  173.156 MiB / **5.96% in pair B, exceeding the 5% ceiling**. Loading/C4 is included
+  in these peaks, so query-only memory is not isolated. Neither pooling a more
+  favorable baseline peak nor the CPU/latency savings can erase the pair-B failure.
+- **Correctness and stability:** all new targeted tests and full-response
+  comparisons pass; no request failures occurred in this bounded load. The five
+  existing fixture failures and interrupted test above remain limitations, and
+  long-duration stability and the remote CI regression gate remain unverified.
+- **Keep as an intermediate candidate, not accepted recovery.** The substantial
+  repeated P50/P95 and CPU benefit is preserved per the experiment policy, but
+  RSS prevents full acceptance. Next work is to attribute the peak across
+  load/readiness and overlapping multi-graph query shapes, then reduce or validate
+  that overrun under a separately declared protocol. Do not deploy or claim all
+  resource/regression gates passed on this evidence.

@@ -44,6 +44,7 @@ use rayon::prelude::*;
 
 #[cfg(test)]
 mod descriptor_tests;
+mod signature;
 
 /// What a scan hands each surviving node to: the node, the source's shared provenance
 /// value when one serves every row, and whether the plan was exact.
@@ -793,7 +794,7 @@ impl ScanPlan {
         if !cs_only {
             // Types other than CallSite are swept per graph, in source order, with the
             // CallSite plan for that graph built on the spot when it has one.
-            return self.run_by_source(ex, ev, row, &all_sources, cs_tree, cs_preds, emit);
+            return self.run_by_source(ex, row, &all_sources, emit);
         }
         // Planned in batches, in parallel within each: see `batch_schedule`.
         for batch in batch_schedule(&sources) {
@@ -909,30 +910,25 @@ impl ScanPlan {
     /// which is most of the cost of a broad term over many graphs, uses every core.
     /// The batches follow the CallSite schedule: one graph, one per thread, then
     /// doubling, so a LIMIT met early never pays for preparing what it will not read.
-    #[allow(clippy::too_many_arguments)]
     fn run_by_source(
         &self,
         ex: &Executor,
-        ev: &Evaluator,
         row: &Row,
         sources: &[SourceIdx],
-        cs_tree: Option<&PredTree>,
-        cs_preds: &[StringPredicate],
         emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
-        let _ = ev;
         for batch in batch_schedule(sources) {
             ex.cancel.check()?;
             let prepared: Vec<Prepared> = if batch.len() > 1 {
                 batch
                     .par_iter()
-                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
-                    .collect()
+                    .map(|s| self.prepare_source(ex, *s))
+                    .collect::<CypherResult<_>>()?
             } else {
                 batch
                     .iter()
-                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
-                    .collect()
+                    .map(|s| self.prepare_source(ex, *s))
+                    .collect::<CypherResult<_>>()?
             };
             for p in prepared {
                 if !self.sweep_prepared(ex, row, p, emit)? {
@@ -945,13 +941,7 @@ impl ScanPlan {
 
     /// Plan one graph: settle the per-type plans it needs settled per graph, resolve
     /// its column trees and build its CallSite plan.
-    fn prepare_source(
-        &self,
-        ex: &Executor,
-        source: SourceIdx,
-        cs_tree: Option<&PredTree>,
-        cs_preds: &[StringPredicate],
-    ) -> Prepared {
+    fn prepare_source(&self, ex: &Executor, source: SourceIdx) -> CypherResult<Prepared> {
         let graph = ex.graph(source);
         let graph_id: &str = &ex.sources[source as usize].id;
         // With a synthetic key in the clause the per-type plans depend on this
@@ -969,19 +959,16 @@ impl ScanPlan {
                 .collect()
         });
         let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
+        // A signature is assembled from dictionary components. Prove impossible
+        // leaves before choosing a record sweep, keeping dynamic types untouched.
+        let signature_plans = signature::prune_plans(plans, graph, &ex.cancel)?;
+        let plans = signature_plans.as_deref().unwrap_or(plans);
         let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
             TagPlan::CallSite(t) => {
-                let leaves: Vec<StringPredicate>;
-                let (t, preds): (&PredTree, &[StringPredicate]) = if source_plans.is_some() {
-                    let mut out = Vec::new();
-                    t.leaves(&mut out);
-                    leaves = out;
-                    (t, &leaves)
-                } else {
-                    (cs_tree.expect("CallSite plan"), cs_preds)
-                };
+                let mut preds = Vec::new();
+                t.leaves(&mut preds);
                 may_match(graph, t)
-                    .then(|| build_source_plan(source, graph, graph_id, t, preds, self.tests))
+                    .then(|| build_source_plan(source, graph, graph_id, t, &preds, self.tests))
             }
             _ => None,
         };
@@ -1036,11 +1023,11 @@ impl ScanPlan {
             };
             streams.push(stream);
         }
-        Prepared {
+        Ok(Prepared {
             source,
             cs_plan,
             streams,
-        }
+        })
     }
 
     /// Sweep one prepared graph's types, merged by node id: the Kotlin server walks an
@@ -3232,6 +3219,7 @@ fn fold_synthetic(cross: bool, graph_id: &str, p: &StringPredicate) -> Option<bo
 }
 
 /// What the scan does for one node type.
+#[derive(Clone)]
 enum TagPlan {
     /// No record of this type can satisfy the clause.
     Skip,
@@ -4694,7 +4682,7 @@ mod tests {
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         let never = &|_: &str| false;
         let no = &|_: &StringPredicate| Fold::Known(false);
-        // CallSites: the four indexed strings and the two signatures are read raw
+        // CallSites: the four indexed strings, signatures and descriptors are read raw
         // off the record; a string constant is a column; an integer constant cannot
         // print letters; annotations always decode.
         assert!(matches!(
