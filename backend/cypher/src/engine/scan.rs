@@ -42,6 +42,7 @@ use graphite_storage::node::{
 use graphite_storage::Graph;
 use rayon::prelude::*;
 
+mod annotation;
 #[cfg(test)]
 mod descriptor_tests;
 mod signature;
@@ -767,20 +768,18 @@ impl ScanPlan {
         // rules out is still visited for the other types it holds.
         let cs_tree: Option<&PredTree> = self.call_site.as_ref().map(|(t, _)| t);
         let all_sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
-        let sources: Vec<SourceIdx> = match cs_tree {
-            Some(t) => all_sources
-                .iter()
-                .copied()
-                .filter(|s| may_match(ex.graph(*s), t))
-                .collect(),
-            None => Vec::new(),
-        };
-        // The batched, parallel planning below is for the CallSite type. It also covers
-        // the Annotation type when the clause names CallSite properties, since an
-        // annotation's value pairs can carry any key: that type is settled per graph
-        // after the graph's CallSite records, as it always was.
+        // Annotation values can carry CallSite property names. If any source has
+        // such records, the general schedule must merge the types by node id before
+        // LIMIT and must not filter that source with a CallSite-only bitmap.
+        let annotations_possible = matches!(
+            self.tag_plans[TAG_ANNOTATION_NODE as usize],
+            TagPlan::Generic
+        ) && all_sources
+            .iter()
+            .any(|s| !ex.graph(*s).ids_by_tag(TAG_ANNOTATION_NODE).is_empty());
         let cs_only = cs_tree.is_some()
             && !self.has_synthetic
+            && !annotations_possible
             && self.tag_plans.iter().enumerate().all(|(tag, p)| {
                 tag == TAG_CALL_SITE_NODE as usize
                     || matches!(p, TagPlan::Skip)
@@ -791,6 +790,11 @@ impl ScanPlan {
             // CallSite plan for that graph built on the spot when it has one.
             return self.run_by_source(ex, row, &all_sources, emit);
         }
+        let sources: Vec<SourceIdx> = all_sources
+            .iter()
+            .copied()
+            .filter(|s| may_match(ex.graph(*s), cs_tree.expect("CallSite plan")))
+            .collect();
         // Planned in batches, in parallel within each: see `batch_schedule`.
         for batch in batch_schedule(&sources) {
             ex.cancel.check()?;
@@ -807,13 +811,6 @@ impl ScanPlan {
             };
             for sp in &plans {
                 if !self.sweep_call_sites_of(ex, sp, row, emit)? {
-                    return Ok(false);
-                }
-                if matches!(
-                    self.tag_plans[TAG_ANNOTATION_NODE as usize],
-                    TagPlan::Generic
-                ) && !self.sweep_annotations(ex, sp.source, row, emit)?
-                {
                     return Ok(false);
                 }
             }
@@ -850,64 +847,6 @@ impl ScanPlan {
             &predicates,
             self.tests,
         ))
-    }
-
-    /// The Annotation records of one graph, by the plan the graph's dictionary allows:
-    /// a key no string in it spells reaches no annotation, so the type is often skipped
-    /// outright; otherwise its raw fields are swept or every record goes through WHERE.
-    fn sweep_annotations(
-        &self,
-        ex: &Executor,
-        source: SourceIdx,
-        row: &Row,
-        emit: &mut Emit<'_>,
-    ) -> CypherResult<bool> {
-        let graph = ex.graph(source);
-        let tag = TAG_ANNOTATION_NODE;
-        if graph.ids_by_tag(tag).is_empty() {
-            return Ok(true);
-        }
-        let plan = tag_plan(
-            &self.tree,
-            tag,
-            &|key| {
-                !matches!(key, "name" | "class" | "member" | "values")
-                    && graph.strings.index_of(key).is_none()
-            },
-            &|p| synthetic_truth(ex, source, p),
-        );
-        let mut stream = match plan {
-            TagPlan::Skip | TagPlan::CallSite(_) => return Ok(true),
-            TagPlan::All => TypeStream::All {
-                ids: graph.ids_by_tag(tag),
-                pos: 0,
-            },
-            TagPlan::Generic => TypeStream::Generic {
-                ids: graph.ids_by_tag(tag),
-                pos: 0,
-            },
-            TagPlan::Column(t) => {
-                let graph_id = &ex.sources[source as usize].id;
-                let mut memos = 0usize;
-                let Some(tree) = ColumnTree::resolve(graph, graph_id, &t, tag, &mut memos) else {
-                    return Ok(true);
-                };
-                let ids = tree.row_ids(graph, tag);
-                TypeStream::column(tree, ids, memos)
-            }
-        };
-        let provenance: Option<Value> = (ex.cross
-            && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
-        .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
-        let verified = stream.verified();
-        while let Some(id) = stream.next(ex, graph)? {
-            ex.tick()?;
-            let value = Value::Node(NodeRef { source, id });
-            if !emit(value, provenance.as_ref(), self.verified(verified))? {
-                return Ok(false);
-            }
-        }
-        Ok(true)
     }
 
     /// Every type of one graph, in tag order, each by its own plan.
@@ -988,6 +927,11 @@ impl ScanPlan {
             // key absent from this graph's dictionary reaches no annotation here.
             let annotation_plan;
             let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
+                if graph.ids_by_tag(tag).is_empty()
+                    || annotation::cannot_match(ex, source, &self.tree, &mut dictionary)?
+                {
+                    continue;
+                }
                 annotation_plan = tag_plan(
                     &self.tree,
                     tag,
