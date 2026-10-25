@@ -112,8 +112,23 @@ data class CorpusBaseline(
  */
 internal object LargeCorpusBaselines {
     // Add only independently reviewed exact product-identity/corpus expectations here.
-    // The default remains empty: an unapproved graph change must fail the historical counts.
-    private val approvedCounts = emptyMap<Pair<String, String>, ApprovedCorpusCounts>()
+    // An unapproved graph change must fail the historical counts; entries are keyed by the exact
+    // product identity (v2) of the reviewed head.
+    private val approvedCounts = mapOf(
+        // PR #174 (head edc7fb5): declared-type member keys keep every array dimension, so methods whose
+        // keys collided on the flattened rendering are distinct again (Tika +64, Hive +27); nodes, edges
+        // and call sites are unchanged.
+        ("5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750" to "tika") to
+            ApprovedCorpusCounts(
+                nodes = 3_901_103, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
+                methods = 312_852, callSites = 1_006_172
+            ),
+        ("5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750" to "hive") to
+            ApprovedCorpusCounts(
+                nodes = 5_992_914, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
+                methods = 404_043, callSites = 1_443_886
+            )
+    )
 
     fun forProduct(corpus: String, productIdentity: String?): CorpusBaseline {
         val baseline = when (corpus) {
