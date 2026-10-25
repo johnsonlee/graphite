@@ -1988,3 +1988,90 @@ pass.
 **Conclusion:** keep. Schema exploration costs the number of types, graphs
 and distinct column values a segment reads, however it is phrased; and an
 agent has a tool that answers the whole question in one call.
+
+### 2026-10-25 - Attempt 042: Settle composed and annotation leaves from the dictionary
+
+**Production evidence:** the all-properties search from the Explorer workbench,
+
+```cypher
+MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'alpha beta'
+  OR toString(n[k]) CONTAINS 'AlphaBeta' OR toString(n[k]) CONTAINS 'GammaBadge'
+  OR toString(n[k]) CONTAINS 'gammaBadge' OR toString(n[k]) CONTAINS 'deltaRank'
+  OR toString(n[k]) CONTAINS 'DeltaRank' OR toString(n[k]) CONTAINS 'EpsilonTable')
+RETURN labels(n) AS labels, n LIMIT 100
+```
+
+ran about a hundred times slower than the same terms on `n.value`. The plan was
+not the problem: `keys(n)` expands to one leaf per key, and the planner settled
+every type. What it could not settle was four keys composed from the record
+rather than read from one string (a local's `method`, a call site's two
+signatures, a return node's `actual_type`), which sent every graph to a sweep of
+its locals, parameters, return nodes and call sites, and the Annotation type,
+whose keys are open-ended, which decoded every annotation of every graph (a
+Kotlin class carries one for its metadata) and ran the seven-term clause on
+each. Neither cost depended on whether the term existed anywhere: a term in no
+graph paid the same as a term in all of them.
+
+**Design:** a literal that holds none of the characters a rendering adds between
+dictionary strings can only match inside one dictionary string. For a signature
+those are `.`, `(`, `,` and `)`; for an annotation's values (`{k=v, k2=[a, b]}`,
+`Enum.NAME`, `EnumValueReference(enumClass=..., enumName=...)`) also `{`, `}`,
+`=`, `[` and `]`, and the fixed atoms a value prints as: a number, a boolean,
+`null`, and the words of the enum rendering. `StringTable::any_contains` answers
+"is this literal in some dictionary string" with one substring search over the
+arena that holds every string end to end (a hit across two neighbours is a false
+positive, never a miss; `memchr::memmem` reads the fixture's 680 KB dictionary
+in well under a millisecond), memoised per literal and graph. Per graph, the
+planner folds the composed leaves it rules out before deciding whether a record
+sweep is needed (`fold_absent`, on the CallSite tree and on each column tree),
+and skips the Annotation type when every leaf of the clause is ruled out
+(`annotation_cannot_match`; a synthetic key folds against the graph id as it
+always did). `may_match` also stops treating `toString()` of one of the four
+indexed strings as unfilterable, since the call is the identity on a string.
+Lowercased, regex and numeric leaves are left as they were.
+
+**Measurements:** one `graphite serve` over sixty-four ids of the fixture graph
+built from this repository's core module (25,673 nodes per copy: 12,614 locals,
+6,162 call sites, 1,528 annotations), sequential HTTP requests, one warm-up then
+sixty samples per shape, four cores, this container. p95 is the 57th of the
+sixty sorted samples (an earlier fifteen-sample run reported its maximum as p95,
+which a single outlier set). Base is the parent commit's binary, run after the
+candidate. Every shape's rows (or count) hash identically on both.
+
+| Shape | Base p50 | Base p95 | Candidate p50 | Candidate p95 |
+|-------|---------:|---------:|--------------:|--------------:|
+| the workbench query above (seven terms, none present), `LIMIT 100` | `2,977 ms` | `3,411 ms` | `12.1 ms` | `15.4 ms` |
+| `any(k IN keys(n) ...) CONTAINS 'zzqqxxvv' RETURN n LIMIT 25` | `761 ms` | `878 ms` | `3.5 ms` | `4.0 ms` |
+| the same, `RETURN count(*)` | `796 ms` | `1,040 ms` | `3.8 ms` | `4.4 ms` |
+| `n.value CONTAINS` x3, none present, `LIMIT 25` | `91 ms` | `112 ms` | `3.1 ms` | `3.8 ms` |
+| `(n:CallSite) n.callee_signature CONTAINS 'zzqqxxvv' RETURN count(*)` | `15.4 ms` | `18.2 ms` | `2.1 ms` | `3.3 ms` |
+| `... CONTAINS 'StringConstant' RETURN n LIMIT 25` (present) | `5.4 ms` | `6.5 ms` | `5.6 ms` | `6.8 ms` |
+| `... CONTAINS 'Graph' RETURN count(*)` (present in most records) | `1,075 ms` | `1,256 ms` | `903 ms` | `1,031 ms` |
+| seven terms, four present, `count(*)` | `4,176 ms` | `4,755 ms` | `3,514 ms` | `3,904 ms` |
+| `n.method CONTAINS 'build' RETURN count(*)` (present) | `199 ms` | `218 ms` | `166 ms` | `196 ms` |
+
+On the shapes the change targets (a term the dictionary holds nowhere) p95
+follows p50 down by two orders of magnitude. A term the dictionary holds costs
+what it did: its composed leaves cannot fold, and the sweep is the answer. The
+present-term rows read 10-16% faster on the candidate here, but the base ran
+second on a shared container and an earlier fifteen-sample pair had them within
+noise in both directions, so that difference is not claimed. The `value` search
+gained from the annotation skip alone, which every clause benefits from. Cold
+mappings were not measured, and the fixture's dictionary is small, so the arena
+search's share on a production dictionary (a few megabytes, one search per
+literal per graph) is an estimate from `memmem` throughput, not a measurement.
+
+**Verification:** `cargo test --release` for the cypher, storage and explore
+crates with `GRAPHITE_INDEX_FIXTURE` set, `cargo clippy --workspace
+--all-targets --all-features -- -D warnings` and `cargo fmt --all --check` pass.
+A fixture-gated test folds the CallSite and local-variable trees for an absent
+term and not for a present one, checks `annotation_cannot_match` on absent,
+present, numeric, `null`, lowercased and synthetic-key clauses, and compares the
+streamed count against the decoded path and the per-property search for five
+terms singly and as one disjunction. Unit tests pin which leaves the dictionary
+settles (separators, operators, transforms, the fixed atoms, `type` inside and
+outside `keys(n)`), and the arena search's hit, miss and straddling cases.
+
+**Conclusion:** keep. A search over every property for a term the graph does
+not know now costs a dictionary search per literal and graph; the remaining
+second on a present term is the record sweep that finds it.

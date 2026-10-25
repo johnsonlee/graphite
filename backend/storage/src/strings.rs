@@ -176,6 +176,17 @@ impl StringTable {
         d.finalize().into()
     }
 
+    /// Whether `needle` occurs in some string of the table, or could: one substring
+    /// search over the arena that holds every string end to end, so a hit may straddle
+    /// two neighbours and a string containing the needle always hits. A superset test,
+    /// for ruling a literal out of a whole graph before anything per node is read: a
+    /// value composed from dictionary strings (a method signature) cannot contain a
+    /// needle that no dictionary string contains, once the needle holds none of the
+    /// separators the composition adds.
+    pub fn any_contains(&self, needle: &str) -> bool {
+        needle.is_empty() || memchr::memmem::find(&self.arena, needle.as_bytes()).is_some()
+    }
+
     /// Binary search (strings are sorted by Java `String.compareTo`, i.e. UTF-16 order).
     pub fn index_of(&self, s: &str) -> Option<usize> {
         let (mut lo, mut hi) = (0usize, self.len());
@@ -235,5 +246,45 @@ fn decode_front_coded(
         }
         emit(&buf);
         std::mem::swap(&mut prev, &mut buf);
+    }
+}
+
+#[cfg(test)]
+mod any_contains_tests {
+    use super::StringTable;
+
+    fn table(strings: &[&str]) -> StringTable {
+        let mut arena = Vec::new();
+        let mut offsets = vec![0u32];
+        for s in strings {
+            arena.extend_from_slice(s.as_bytes());
+            offsets.push(arena.len() as u32);
+        }
+        StringTable {
+            arena,
+            offsets,
+            identity: None,
+        }
+    }
+
+    #[test]
+    fn finds_a_needle_inside_one_string_and_never_misses_one() {
+        let t = table(&["com.example.EpsilonTable", "get", "deltaRank"]);
+        assert!(t.any_contains("EpsilonTable"));
+        assert!(t.any_contains("example.Eps"));
+        assert!(t.any_contains("deltaRank"));
+        assert!(t.any_contains(""));
+        assert!(!t.any_contains("gammaBadge"));
+        assert!(!t.any_contains("epsilontable"), "no case folding");
+    }
+
+    #[test]
+    fn a_hit_across_two_neighbours_is_a_false_positive_not_a_miss() {
+        // "get" + "delta..." reads "getdelta" in the arena: reported as possible,
+        // which the caller treats as "not ruled out".
+        let t = table(&["get", "deltaRank"]);
+        assert!(t.any_contains("getdelta"));
+        assert!(!t.any_contains("Rankget"), "the arena is read in order");
+        assert!(!table(&[]).any_contains("x"));
     }
 }

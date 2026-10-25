@@ -803,7 +803,7 @@ impl ScanPlan {
                             &ex.sources[*s as usize].id,
                             cs_tree.expect("CallSite plan"),
                             cs_preds,
-                            self.tests,
+                            &mut Memo::new(self.tests),
                         )
                     })
                     .collect()
@@ -817,7 +817,7 @@ impl ScanPlan {
                             &ex.sources[*s as usize].id,
                             cs_tree.expect("CallSite plan"),
                             cs_preds,
-                            self.tests,
+                            &mut Memo::new(self.tests),
                         )
                     })
                     .collect()
@@ -850,7 +850,9 @@ impl ScanPlan {
     ) -> CypherResult<bool> {
         let graph = ex.graph(source);
         let tag = TAG_ANNOTATION_NODE;
-        if graph.ids_by_tag(tag).is_empty() {
+        if graph.ids_by_tag(tag).is_empty()
+            || annotation_cannot_match(ex, source, &self.tree, &mut Memo::new(self.tests))
+        {
             return Ok(true);
         }
         let plan = tag_plan(
@@ -964,6 +966,9 @@ impl ScanPlan {
                 .collect()
         });
         let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
+        // One dictionary memo for every type of this graph: a literal tested against
+        // a call site's signature and a local's method is resolved once.
+        let mut memo = Memo::new(self.tests);
         let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
             TagPlan::CallSite(t) => {
                 let leaves: Vec<StringPredicate>;
@@ -976,7 +981,7 @@ impl ScanPlan {
                     (cs_tree.expect("CallSite plan"), cs_preds)
                 };
                 may_match(graph, t)
-                    .then(|| build_source_plan(source, graph, graph_id, t, preds, self.tests))
+                    .then(|| build_source_plan(source, graph, graph_id, t, preds, &mut memo))
             }
             _ => None,
         };
@@ -987,6 +992,9 @@ impl ScanPlan {
             // key absent from this graph's dictionary reaches no annotation here.
             let annotation_plan;
             let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
+                if annotation_cannot_match(ex, source, &self.tree, &mut memo) {
+                    continue;
+                }
                 annotation_plan = tag_plan(
                     &self.tree,
                     tag,
@@ -1018,6 +1026,17 @@ impl ScanPlan {
                     PreparedStream::CallSite
                 }
                 TagPlan::Column(t) => {
+                    // A `method` or `actual_type` leaf reads every record of the
+                    // type; folded away where the dictionary rules its literal out.
+                    let folded;
+                    let t: &PredTree = match fold_absent(graph, t, &mut memo) {
+                        Folded::Same => t,
+                        Folded::Changed(f) => {
+                            folded = f;
+                            &folded
+                        }
+                        Folded::Nothing => continue,
+                    };
                     let mut memos = 0usize;
                     match ColumnTree::resolve(graph, graph_id, t, tag, &mut memos) {
                         Some(tree) => PreparedStream::Column {
@@ -1751,11 +1770,10 @@ fn number_or_text(number: Option<f64>, value: u32, p: &StringPredicate) -> bool 
 
 /// Every CallSite record of the graph that satisfies the tree, in id order, each
 /// tested from its raw fields.
-fn raw_sweep(graph: &Graph, graph_id: &str, tree: &PredTree, tests: usize) -> Vec<u32> {
+fn raw_sweep(graph: &Graph, graph_id: &str, tree: &PredTree, memo: &mut Memo) -> Vec<u32> {
     let idx = usable_index(graph);
-    let mut memo = Memo::new(tests);
     let mut memos = 0usize;
-    let raw = RawTree::build(graph, graph_id, idx, tree, &mut memo, &mut memos);
+    let raw = RawTree::build(graph, graph_id, idx, tree, memo, &mut memos);
     let ids = graph.ids_by_tag(TAG_CALL_SITE_NODE);
     let data = graph.nodedata();
     let chunks: Vec<Vec<u32>> = ids
@@ -1786,7 +1804,7 @@ fn build_source_plan(
     graph_id: &str,
     tree: &PredTree,
     preds: &[StringPredicate],
-    tests: usize,
+    memo: &mut Memo,
 ) -> SourcePlan {
     let pruned = |candidates: Candidates, exact: bool| SourcePlan {
         source,
@@ -1795,14 +1813,29 @@ fn build_source_plan(
         call_site_exact: exact,
         no_prefilter: false,
     };
+    // A signature leaf whose literal this graph's dictionary holds nowhere is folded
+    // first: it is what sends the tree to the record sweep, and without it the
+    // string index decides the graph as it does for any other term.
+    let folded;
+    let leaves;
+    let (tree, preds): (&PredTree, &[StringPredicate]) = match fold_absent(graph, tree, memo) {
+        Folded::Same => (tree, preds),
+        Folded::Changed(t) => {
+            folded = t;
+            let mut out = Vec::new();
+            folded.leaves(&mut out);
+            leaves = out;
+            (&folded, &leaves)
+        }
+        Folded::Nothing => return pruned(Candidates::Nodes(Vec::new()), true),
+    };
     if needs_raw_sweep(tree) {
         return pruned(
-            Candidates::Nodes(raw_sweep(graph, graph_id, tree, tests)),
+            Candidates::Nodes(raw_sweep(graph, graph_id, tree, memo)),
             true,
         );
     }
     if let Some(idx) = usable_index(graph) {
-        let mut memo = Memo::new(tests);
         // Pruning first, and separately from enumeration. Whether a graph can match at
         // all is a question about its dictionary; whether to reach the matches through
         // postings or by sweeping records is a question about cost. Answering the second
@@ -1812,7 +1845,7 @@ fn build_source_plan(
         // A conjunction decides its own emptiness -- from run sizes and one side's
         // records -- rather than resolving every literal first.
         if let PredTree::And(children) = tree {
-            match plan_conjunction(graph, idx, children, &mut memo) {
+            match plan_conjunction(graph, idx, children, memo) {
                 Conjunction::Empty => return pruned(Candidates::Nodes(Vec::new()), true),
                 Conjunction::Nodes(nodes) => return pruned(Candidates::Nodes(nodes), true),
                 Conjunction::Intersect(sides) => return pruned(Candidates::Intersect(sides), true),
@@ -1827,7 +1860,7 @@ fn build_source_plan(
                 }
                 Conjunction::Probe => {}
             }
-        } else if tree_matches_nothing(graph, idx, tree, &mut memo) {
+        } else if tree_matches_nothing(graph, idx, tree, memo) {
             return pruned(Candidates::Nodes(Vec::new()), true);
         }
         // A disjunction's candidates are a union of posting lists, and a union of sorted
@@ -1835,7 +1868,7 @@ fn build_source_plan(
         // merge keeps the answer identical and makes its cost proportional to how much of
         // it the query actually consumes.
         if tree.is_flat_or() {
-            if let Some(sets) = property_sets(graph, idx, tree, &mut memo) {
+            if let Some(sets) = property_sets(graph, idx, tree, memo) {
                 let ceiling = idx.call_site_count() / POSTING_SWEEP_RATIO;
                 let cost = sets.posting_cost_up_to(idx, ceiling);
                 if cost > ceiling {
@@ -1861,7 +1894,7 @@ fn build_source_plan(
                 return pruned(Candidates::Nodes(sets.nodes(idx)), true);
             }
         }
-        if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, &mut memo) {
+        if let Some((candidates, exact)) = indexed_candidates(graph, idx, tree, memo) {
             return pruned(Candidates::Nodes(candidates), exact);
         }
     }
@@ -1957,12 +1990,175 @@ fn resolve_strings<'m>(
 /// and the copies alone were hundreds of allocations.
 struct Memo {
     slots: Vec<Option<Option<Vec<u32>>>>,
+    /// Per distinct test: whether the literal is in no string of the dictionary at
+    /// all, as `composed_leaf_absent` asks; one arena search per literal per graph.
+    absent: Vec<Option<bool>>,
 }
 
 impl Memo {
     fn new(tests: usize) -> Memo {
         Memo {
             slots: vec![None; tests],
+            absent: vec![None; tests],
+        }
+    }
+}
+
+/// Properties the sweep composes from a record's string ids rather than reading from
+/// one string: `class.name(p1,p2)` for a method or a call site's two signatures, and a
+/// return node's `actual_type`, a single string with no column of its own.
+fn is_composed_prop(property: &str) -> bool {
+    matches!(
+        property,
+        "method" | "caller_signature" | "callee_signature" | "actual_type"
+    )
+}
+
+/// The characters a composed signature adds between its dictionary strings.
+const SIGNATURE_SEPARATORS: [char; 4] = ['.', '(', ',', ')'];
+
+/// Whether the literal of a leaf on a composed property can be settled from the
+/// dictionary alone: `CONTAINS` or `STARTS WITH` an untransformed text literal that
+/// no separator could complete across two strings. Such a literal lies inside one
+/// dictionary string wherever it matches, so a dictionary that holds it nowhere rules
+/// the leaf out for the whole graph; the whole record sweep that leaf would cost on
+/// the most numerous types (every local, parameter, return node and call site) is
+/// then skipped. A search over every key names all four such properties, and before
+/// this it swept every graph for them even when the term was in no dictionary.
+fn dictionary_settles(p: &StringPredicate) -> bool {
+    p.shape == LeafShape::Text
+        && matches!(p.op, PushOp::Contains | PushOp::StartsWith)
+        && p.transform == Transform::None
+        && p.regex.is_none()
+        && is_composed_prop(p.prop())
+        && !p.literal.is_empty()
+        && (p.prop() == "actual_type" || !p.literal.contains(SIGNATURE_SEPARATORS))
+}
+
+/// Whether a composed leaf can match nothing in this graph: its literal is in no
+/// dictionary string. `false` is "not ruled out", never "present".
+fn composed_leaf_absent(graph: &Graph, p: &StringPredicate, memo: &mut Memo) -> bool {
+    if !dictionary_settles(p) {
+        return false;
+    }
+    *memo.absent[p.test].get_or_insert_with(|| !graph.strings.any_contains(&p.literal))
+}
+
+/// A tree with its absent composed leaves folded to false for one graph.
+enum Folded {
+    /// No leaf folded: the tree stands as it was.
+    Same,
+    /// Some leaves folded and the rest remain.
+    Changed(PredTree),
+    /// Every path through the tree crosses a folded leaf: nothing can match.
+    Nothing,
+}
+
+/// Fold the composed leaves that `composed_leaf_absent` rules out of `graph`, as the
+/// planner folds synthetic keys per graph: a folded leaf leaves its disjunction and
+/// empties its conjunction. The tree is only rebuilt when some leaf folds.
+fn fold_absent(graph: &Graph, tree: &PredTree, memo: &mut Memo) -> Folded {
+    if !has_absent_leaf(graph, tree, memo) {
+        return Folded::Same;
+    }
+    match without_absent(graph, tree, memo) {
+        Some(t) => Folded::Changed(t),
+        None => Folded::Nothing,
+    }
+}
+
+fn has_absent_leaf(graph: &Graph, tree: &PredTree, memo: &mut Memo) -> bool {
+    match tree {
+        PredTree::Leaf(p) => composed_leaf_absent(graph, p, memo),
+        PredTree::Or(cs) | PredTree::And(cs) => cs.iter().any(|c| has_absent_leaf(graph, c, memo)),
+    }
+}
+
+/// What an annotation's properties render through besides dictionary strings: the
+/// characters `{k=v, k2=[a, b]}` and `Enum.NAME` add around them, and the fixed words
+/// a value can print as. A literal holding no separator matches inside one atom or
+/// not at all, so a dictionary that spells it nowhere, when no fixed atom does
+/// either, rules it out of every annotation of the graph. The renderings' only space
+/// follows a comma, so a literal with a space and no comma (`alpha beta`)
+/// still lies inside one atom.
+const ANNOTATION_SEPARATORS: [char; 9] = ['{', '}', '=', ',', '[', ']', '(', ')', '.'];
+const ANNOTATION_ATOMS: [&str; 4] = ["null", "EnumValueReference", "enumClass", "enumName"];
+
+/// Whether a Text leaf on an annotation can be settled by its dictionary: an
+/// untransformed literal without separators, which no number, boolean or fixed word
+/// can render. Every annotation key is read the same way, whether `keys(n)` named it
+/// or the clause did: `name`, `class` and `member` are strings, `values` is the whole
+/// map, and any other key is a value pair, or `type`, which prints the type name.
+fn annotation_settles(p: &StringPredicate) -> bool {
+    p.shape == LeafShape::Text
+        && p.transform == Transform::None
+        && p.regex.is_none()
+        && !is_synthetic_key(p.prop())
+        && !p.literal.is_empty()
+        && !p.literal.contains(ANNOTATION_SEPARATORS)
+        && !number_text_can_satisfy(p)
+        && !boolean_text_can_satisfy(p)
+        && !ANNOTATION_ATOMS.iter().any(|atom| p.matches_raw(atom))
+        && (p.from_keys
+            || p.prop() != "type"
+            || !p.matches_raw(graphite_storage::node::tag_type_name(TAG_ANNOTATION_NODE)))
+}
+
+/// Whether no annotation of `graph` can satisfy the tree, from its dictionary and the
+/// graph's id alone: every leaf of a disjunction is ruled out, or one of a conjunction
+/// is. A leaf this cannot settle is "not ruled out". Before this, a search over every
+/// key decoded every annotation of every graph (a Kotlin class carries one for its
+/// metadata), which was all that remained of its cost once the record sweeps folded.
+fn annotation_cannot_match(
+    ex: &Executor,
+    source: SourceIdx,
+    tree: &PredTree,
+    memo: &mut Memo,
+) -> bool {
+    let graph = ex.graph(source);
+    match tree {
+        PredTree::Leaf(p) if is_synthetic_key(p.prop()) => {
+            matches!(synthetic_truth(ex, source, p), Fold::Known(false))
+        }
+        PredTree::Leaf(p) => {
+            annotation_settles(p)
+                && *memo.absent[p.test]
+                    .get_or_insert_with(|| !graph.strings.any_contains(&p.literal))
+        }
+        PredTree::Or(children) => children
+            .iter()
+            .all(|c| annotation_cannot_match(ex, source, c, memo)),
+        PredTree::And(children) => children
+            .iter()
+            .any(|c| annotation_cannot_match(ex, source, c, memo)),
+    }
+}
+
+/// The tree without its absent leaves; `None` when nothing is left to match.
+fn without_absent(graph: &Graph, tree: &PredTree, memo: &mut Memo) -> Option<PredTree> {
+    match tree {
+        PredTree::Leaf(p) => (!composed_leaf_absent(graph, p, memo)).then(|| tree.clone()),
+        PredTree::Or(children) => {
+            let mut kept: Vec<PredTree> = children
+                .iter()
+                .filter_map(|c| without_absent(graph, c, memo))
+                .collect();
+            match kept.len() {
+                0 => None,
+                1 => kept.pop(),
+                _ => Some(PredTree::Or(kept)),
+            }
+        }
+        PredTree::And(children) => {
+            let mut kept = Vec::with_capacity(children.len());
+            for c in children {
+                kept.push(without_absent(graph, c, memo)?);
+            }
+            if kept.len() == 1 {
+                kept.pop()
+            } else {
+                Some(PredTree::And(kept))
+            }
         }
     }
 }
@@ -4006,10 +4202,12 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         // A synthetic key is not in any dictionary, and a number's text is not either:
         // their trigrams say nothing about whether the graph can match.
         // Nor does a number, a list test, a node id, or a type name.
+        // `toString()` of one of the four strings is the string itself, so a
+        // leaf on it is filtered as if the call were not there.
         PredTree::Leaf(p)
             if p.shape != LeafShape::Text
                 || is_synthetic_key(p.prop())
-                || p.via_to_string
+                || (p.via_to_string && !CALL_SITE_PROPS.contains(&p.prop()))
                 || matches!(p.prop(), "id" | "type" | "method")
                 || is_raw_call_site_prop(p.prop()) =>
         {
@@ -5037,5 +5235,238 @@ mod tests {
         let threads = rayon::current_num_threads().max(1);
         assert!(batches.iter().all(|b| b.len() <= threads * 4));
         assert_eq!(batches.iter().map(|b| b.len()).sum::<usize>(), 64);
+    }
+
+    #[test]
+    fn the_dictionary_settles_only_separator_free_text_leaves_on_composed_properties() {
+        let settles = |property: &'static str, op: PushOp, literal: &str| {
+            dictionary_settles(&synthetic_leaf(property, op, literal))
+        };
+        for property in ["method", "caller_signature", "callee_signature"] {
+            assert!(
+                settles(property, PushOp::Contains, "deltaRank"),
+                "{property}"
+            );
+            assert!(settles(property, PushOp::StartsWith, "com"), "{property}");
+            // A separator may be completed across two dictionary strings.
+            for literal in ["io.johnsonlee", "main(", "a,b", "x)"] {
+                assert!(!settles(property, PushOp::Contains, literal), "{literal}");
+            }
+            assert!(!settles(property, PushOp::Equals, "deltaRank"));
+            assert!(!settles(property, PushOp::EndsWith, "deltaRank"));
+            assert!(!settles(property, PushOp::Contains, ""));
+        }
+        // A return node's actual type is one dictionary string: any text is inside it.
+        assert!(settles("actual_type", PushOp::Contains, "java.lang.String"));
+        assert!(!settles("actual_type", PushOp::Equals, "java.lang.String"));
+        // Only composed properties; the columns and the CallSite index answer the rest.
+        for property in ["value", "name", "callee_class", "id", "qualifiedId"] {
+            assert!(
+                !settles(property, PushOp::Contains, "deltaRank"),
+                "{property}"
+            );
+        }
+        // A lowercased or regex leaf is not compared the way the arena is read.
+        let mut lowered = synthetic_leaf("method", PushOp::Contains, "salesrank");
+        lowered.transform = Transform::Lowercase;
+        assert!(!dictionary_settles(&lowered));
+        let mut numeric = synthetic_leaf("method", PushOp::Equals, "1");
+        numeric.shape = LeafShape::Numeric;
+        assert!(!dictionary_settles(&numeric));
+    }
+
+    #[test]
+    fn an_annotation_leaf_settles_when_no_separator_number_or_fixed_word_can_render_it() {
+        let keys = |literal: &str, op: PushOp| {
+            let mut p = synthetic_leaf("value", op, literal);
+            p.from_keys = true;
+            p.via_to_string = true;
+            annotation_settles(&p)
+        };
+        assert!(keys("deltaRank", PushOp::Contains));
+        assert!(keys("deltaRank", PushOp::Equals));
+        assert!(keys("Metadata", PushOp::StartsWith));
+        // The renderings' own characters: `{k=v, k2=[a, b]}`, `Enum.NAME`, `f(x)`.
+        for literal in ["a=b", "a, b", "[x", "x]", "{", "}", "a.b", "f(", ")"] {
+            assert!(!keys(literal, PushOp::Contains), "{literal}");
+        }
+        // A space without a comma cannot straddle `, `: it is inside one string.
+        assert!(keys("alpha beta", PushOp::Contains));
+        // Numbers, booleans and the fixed words a value can print as.
+        for literal in [
+            "105873", "1.5E10", "NaN", "true", "als", "null", "ull", "Enum", "enumName",
+        ] {
+            assert!(!keys(literal, PushOp::Contains), "{literal}");
+        }
+        assert!(!keys("EnumValueReference", PushOp::StartsWith));
+        assert!(keys("nul", PushOp::EndsWith), "no fixed word ends with it");
+        // `type` outside `keys(n)` prints the type name; inside, it is a value pair.
+        let mut typed = synthetic_leaf("type", PushOp::Contains, "Annotation");
+        assert!(!annotation_settles(&typed));
+        typed.from_keys = true;
+        assert!(annotation_settles(&typed));
+        assert!(annotation_settles(&synthetic_leaf(
+            "name",
+            PushOp::Contains,
+            "Deprecated"
+        )));
+        assert!(!annotation_settles(&synthetic_leaf(
+            "qualifiedId",
+            PushOp::Contains,
+            "x"
+        )));
+        let mut lowered = synthetic_leaf("name", PushOp::Contains, "deprecated");
+        lowered.transform = Transform::Lowercase;
+        assert!(!annotation_settles(&lowered));
+    }
+
+    /// The search over every key names a local's `method` and a call site's two
+    /// signatures, each composed from the record: before this they swept every record
+    /// of the most numerous types in every graph, whatever the term. A term in no
+    /// dictionary string of a graph now folds those leaves out of its plan, and the
+    /// rows are the ones the decoded path produces. Fixture-gated.
+    #[test]
+    fn a_term_in_no_dictionary_string_folds_the_composed_leaves_out_of_the_graph() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            return;
+        };
+        let graph = std::sync::Arc::new(
+            graphite_storage::graph::Graph::load(std::path::Path::new(&dir)).unwrap(),
+        );
+        let absent = "zzqqxxvv";
+        assert!(!graph.strings.any_contains(absent));
+        assert!(graph.strings.any_contains("Graph"));
+        let shape = |terms: &[&str]| {
+            let test = terms
+                .iter()
+                .map(|t| format!("toString(n[k]) CONTAINS '{t}'"))
+                .collect::<Vec<_>>()
+                .join(" OR ");
+            format!("MATCH (n) WHERE any(k IN keys(n) WHERE {test}) RETURN n")
+        };
+        let plan_of = |q: &str| {
+            let (p, w) = parse_where(q);
+            ScanPlan::build(&p, w.as_ref()).expect("planned")
+        };
+        // The CallSite tree loses its signature leaves and keeps the four strings;
+        // a local's tree loses `method` and keeps its columns.
+        let plan = plan_of(&shape(&[absent]));
+        // The synthetic keys fold per graph (to false: no graph id spells the
+        // terms), as a source folds them before planning a type.
+        let never = &|_: &str| false;
+        let no = &|_: &StringPredicate| Fold::Known(false);
+        let TagPlan::CallSite(cs_tree) = tag_plan(&plan.tree, TAG_CALL_SITE_NODE, never, no) else {
+            panic!("call sites plan their records");
+        };
+        let cs_tree = &cs_tree;
+        assert!(needs_raw_sweep(cs_tree));
+        let mut memo = Memo::new(plan.tests);
+        let props = |t: &PredTree| {
+            let mut out = Vec::new();
+            t.leaves(&mut out);
+            let mut props: Vec<String> = out.iter().map(|p| p.prop().to_string()).collect();
+            props.sort();
+            props.dedup();
+            props
+        };
+        match fold_absent(&graph, cs_tree, &mut memo) {
+            Folded::Changed(t) => {
+                assert!(!needs_raw_sweep(&t));
+                assert_eq!(
+                    props(&t),
+                    ["callee_class", "callee_name", "caller_class", "caller_name"]
+                );
+            }
+            _ => panic!("the signature leaves fold and the string leaves remain"),
+        }
+        let TagPlan::Column(local) = tag_plan(&plan.tree, TAG_LOCAL_VARIABLE, never, no) else {
+            panic!("locals plan their columns");
+        };
+        assert!(props(&local).contains(&"method".to_string()));
+        match fold_absent(&graph, &local, &mut memo) {
+            Folded::Changed(t) => assert!(!props(&t).contains(&"method".to_string())),
+            _ => panic!("the method leaf folds and the columns remain"),
+        }
+        // A term the dictionary holds folds nothing: the sweep is still needed.
+        let present = plan_of(&shape(&["Graph"]));
+        let TagPlan::CallSite(cs_tree) = tag_plan(&present.tree, TAG_CALL_SITE_NODE, never, no)
+        else {
+            panic!("call sites plan their records");
+        };
+        let mut memo = Memo::new(present.tests);
+        assert!(matches!(
+            fold_absent(&graph, &cs_tree, &mut memo),
+            Folded::Same
+        ));
+        // Over a disjunction of terms, only the absent ones fold; the rows agree with
+        // the decoded path (an unpushable conjunct relaxes the plan) and with a search
+        // over the named properties, term by term and all together.
+        let sources = vec![super::super::Source {
+            id: std::sync::Arc::from("g"),
+            graph,
+        }];
+        let ex = super::super::Executor::new(sources, true);
+        // The annotations (a Kotlin class carries `kotlin.Metadata`) are skipped for
+        // the absent term and the graph id, and not for a term the dictionary holds,
+        // one a number could print, or a lowercased test.
+        let cannot = |q: &str| {
+            let plan = plan_of(q);
+            let mut memo = Memo::new(plan.tests);
+            annotation_cannot_match(&ex, 0, &plan.tree, &mut memo)
+        };
+        assert!(cannot(&shape(&[absent])));
+        assert!(cannot(&shape(&[absent, "qqzz"])));
+        assert!(cannot(
+            "MATCH (n) WHERE n.name CONTAINS 'zzqqxxvv' OR n.value = 'qqzz' RETURN n"
+        ));
+        assert!(!cannot(&shape(&["Metadata"])));
+        assert!(!cannot(&shape(&[absent, "Metadata"])));
+        assert!(!cannot(&shape(&["1"])));
+        assert!(!cannot(&shape(&["null"])));
+        assert!(!cannot(
+            "MATCH (n) WHERE toLower(n.name) CONTAINS 'zzqqxxvv' RETURN n"
+        ));
+        assert!(!cannot(
+            "MATCH (n) WHERE n.qualifiedId STARTS WITH 'g:' RETURN n"
+        ));
+        assert!(cannot("MATCH (n) WHERE n.graphId = 'other' RETURN n"));
+        assert!(cannot(
+            "MATCH (n) WHERE n.graphId = 'g' AND n.name CONTAINS 'zzqqxxvv' RETURN n"
+        ));
+        let count = |q: &str| -> i64 {
+            let r = ex
+                .execute(q, None)
+                .unwrap_or_else(|e| panic!("{q}: {e}"))
+                .rows;
+            match r.first().and_then(|row| row.get("c")) {
+                Some(Value::Int(n)) => *n,
+                other => panic!("{q}: {other:?}"),
+            }
+        };
+        let terms = [absent, "Graph", "qqzz", "StringConstant", "build"];
+        let mut total = 0;
+        for t in terms {
+            let streamed = count(&shape(&[t]).replace("RETURN n", "RETURN count(*) AS c"));
+            let decoded = count(&format!(
+                "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{t}') AND n.id >= 0 RETURN count(*) AS c"
+            ));
+            assert_eq!(streamed, decoded, "{t}");
+            total += streamed;
+        }
+        assert_eq!(
+            count(&shape(&[absent, "qqzz"]).replace("RETURN n", "RETURN count(*) AS c")),
+            0
+        );
+        let all = count(&shape(&terms).replace("RETURN n", "RETURN count(*) AS c"));
+        assert!(all > 0 && all <= total, "{all} of {total}");
+        let decoded_all = count(&format!(
+            "MATCH (n) WHERE any(k IN keys(n) WHERE {}) AND n.id >= 0 RETURN count(*) AS c",
+            terms
+                .iter()
+                .map(|t| format!("toString(n[k]) CONTAINS '{t}'"))
+                .collect::<Vec<_>>()
+                .join(" OR ")
+        ));
+        assert_eq!(all, decoded_all);
     }
 }
