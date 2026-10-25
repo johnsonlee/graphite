@@ -2153,3 +2153,81 @@ production tail guarantees.
   load/readiness and overlapping multi-graph query shapes, then reduce or validate
   that overrun under a separately declared protocol. Do not deploy or claim all
   resource/regression gates passed on this evidence.
+### 2026-10-26 - Attempt 043: Cancellable arena proofs across composed-property paths
+
+**Hypothesis:** adapt PR #181's arena search to the descriptor-correct #182
+baseline, with bounded cancellation checks, and use that complete-dictionary
+proof in the pure CallSite schedule as well as broad searches. `STARTS WITH`
+also requires substring presence; Return `actual_type` is a complete dictionary
+string. No Annotation pruning or indexed `toString` change is included here.
+
+**Revisions and identity:** parent `bc0fb4432320b9dd1cd2401f628f7d74c850e345`;
+candidate is the commit containing this record. Release binary SHA-256:
+parent `0cca9c4aed88e016f0d12f9ce7b4d6ee1e7d21bd51eaca006b6dc9fbea96a329`,
+candidate `6f251e2701cee36ffac16d416bed15e310a438668d1d0d47c3351c586bb4ab33`.
+`StringTable::try_any_contains` uses memmem over 1 MiB windows with needle overlap,
+no arena copy, and cancellation before/during/after. Cross-string hits are only
+conservative false positives. Per-graph `DictionaryMemo` shares test answers.
+
+**Protocol/evidence:** `/tmp/graphite-181-integration-wM3kwK/{protocol.md,queries.json,run.py,arena-comparison.json}`;
+all `arena-{base-a,candidate-a,candidate-b,base-b}/{resource.json,server.log,load/}`
+retain every body, failure, sample and per-case/run distribution. Fixture is the
+same 12 distinct real Hive/Kotlin compiler/Tika shards 00..03 as Attempt 042:
+3,309,087 nodes, 827,385 CallSites. Every file hash was reverified against that
+attempt's `fixture.json`. Root requests target all 12 graphs, not one graph.
+Four sustained closed-loop clients, Rayon/admission 4, two warmup rounds and
+20 measured rounds per worker; 80 samples/case/run, ABBA, 160/case/revision.
+The 11-case catalog adds pure CallSite, Return and Annotation controls. All
+3,520 measured and 352 warmup requests succeeded with identical complete parsed
+responses across revisions. Nearest-rank P50/P95 are within-case, not across cases.
+
+| Case | Parent P50 ms | Candidate P50 ms | Delta ms | Parent P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| business terms absent | 91.780 | 5.295 | -86.486 | 183.307 | 36.466 | -146.840 |
+| targeted mixed terms, all graphs | 456.701 | 395.415 | -61.286 | 600.045 | 514.663 | -85.382 |
+| dense terms, all graphs | 1394.336 | 1362.986 | -31.350 | 1567.445 | 1517.905 | -49.540 |
+| boundary terms, all graphs | 806.661 | 767.298 | -39.363 | 971.232 | 888.050 | -83.182 |
+| direct indexed absent | 0.401 | 0.354 | -0.047 | 0.532 | 0.502 | -0.030 |
+| CallSite signature absent | 38.436 | 0.884 | -37.552 | 114.142 | 20.894 | -93.248 |
+| CallSite prefix absent | 25.312 | 0.759 | -24.553 | 87.095 | 31.230 | -55.865 |
+| Return actual_type absent | 6.803 | 0.766 | -6.037 | 62.182 | 28.042 | -34.141 |
+| Annotation absent (zero nodes) | 0.763 | 0.537 | -0.226 | 22.672 | 24.727 | +2.055 |
+| Annotation space boundary (zero nodes) | 0.791 | 0.488 | -0.303 | 8.097 | 17.937 | +9.840 |
+| indexed toString absent control | 0.651 | 0.557 | -0.094 | 13.740 | 26.095 | +12.355 |
+
+The fixture generation had annotations disabled: **all 64 persisted graphs have
+zero Annotation records**. The Annotation rows above are empty-work controls,
+not Annotation optimization evidence. Their concurrent P95 worsened, as did the
+indexed-toString control, and these observations are retained, not filtered out.
+Do not spend stabilization runs on these tiny baselines or claim all-case recovery.
+The slow cases and pure CallSite queries are the material positive increments.
+Boundary/dense improvements can include reduced contention, not direct pruning.
+Business-term per-run P50 ranges: parent 88.073–104.149 ms, candidate 5.230–5.331 ms;
+P95 ranges: parent 165.438–190.904 ms, candidate 21.965–51.944 ms. Only two runs per
+revision: all ranges are in the JSON, not confidence intervals or saturation proof.
+
+| Run | Query window s | Harness wall s | Server harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| parent A | 58.025 | 64.057 | 285.830 | 290.755 | 3053.313 |
+| candidate A | 51.840 | 57.378 | 258.940 | 264.014 | 3009.641 |
+| candidate B | 52.097 | 57.441 | 258.020 | 263.037 | 2988.422 |
+| parent B | 58.284 | 64.386 | 288.510 | 293.466 | 3065.766 |
+
+CPU A/B decreases 26.890/30.490 s (9.41%/10.57%); RSS decreases
+43.672/77.344 MiB (1.43%/2.52%). Each paired resource is within +5% versus this
+parent. CPU includes warmup/validation windows; peak RSS includes load and C4
+readiness. No query-only RSS, cold-cache, construction/loading or pipeline E2E
+recovery is claimed. Required C4 work finished before query warmup; OS page cache
+was uncontrolled and warm, and no compilation overlapped measured runs.
+
+**Correctness/stability:** three storage arena tests and eleven real-fixture
+signature tests passed, including new two-source pure CallSite/Return paths,
+independent forced-generic typed/full-row comparisons, primitive/descriptor
+boundaries, window-overlap and cancellation/cache-hit behavior. Storage/Cypher
+all-target/all-feature Clippy with warnings denied and formatting passed.
+No request failed in the load runs. No JVM ran in these query measurements.
+
+**Decision:** retain this positive incremental candidate. This is attribution
+against #182, not acceptance against a pre-regression baseline: the historical
+Attempt 042 RSS +5.96% overrun and the control P95 increases above remain explicit.
+The next Annotation experiment needs genuinely annotation-bearing real graphs.

@@ -1,4 +1,4 @@
-//! Negative proofs for composed method signatures in broad property searches.
+//! Negative proofs for composed method properties and dictionary-backed types.
 //!
 //! The CallSite trigram index covers only four class/name fields, not parameter
 //! types or methods referenced only by locals. Only the complete dictionary can
@@ -21,10 +21,13 @@ mod tests;
 /// wrap object names in L...;, prefix arrays with [, and concatenate primitive
 /// codes. A descriptor literal with no wrapper/separator or L, and at least one
 /// non-primitive-code character, cannot be formed across component boundaries.
-/// Other operators, transforms and ambiguous literals retain their existing path.
+/// A prefix match implies substring presence too, so the same proof applies to
+/// STARTS WITH. Return actual_type is stored verbatim in the dictionary and needs
+/// no separator restrictions. Other operators, transforms and ambiguous literals
+/// retain their existing path.
 fn component_literal(p: &StringPredicate, tag: u8) -> Option<&str> {
     if p.shape != super::LeafShape::Text
-        || p.op != PushOp::Contains
+        || !matches!(p.op, PushOp::Contains | PushOp::StartsWith)
         || p.transform != Transform::None
         || p.literal.is_empty()
     {
@@ -38,6 +41,7 @@ fn component_literal(p: &StringPredicate, tag: u8) -> Option<&str> {
         TAG_CALL_SITE_NODE if matches!(p.prop(), "caller_signature" | "callee_signature") => {
             !p.literal.contains(['.', '(', ',', ')'])
         }
+        TAG_RETURN_NODE if p.prop() == "actual_type" => true,
         TAG_LOCAL_VARIABLE | TAG_PARAMETER_NODE | TAG_RETURN_NODE => {
             p.prop() == "method" && !p.literal.contains(['.', '(', ',', ')'])
         }
@@ -46,13 +50,13 @@ fn component_literal(p: &StringPredicate, tag: u8) -> Option<&str> {
     safe.then_some(p.literal.as_str())
 }
 
-fn collect_terms<'a>(tree: &'a PredTree, tag: u8, terms: &mut Vec<(usize, &'a str)>) {
+fn collect_terms<'a>(tree: &'a PredTree, tag: u8, terms: &mut Vec<&'a StringPredicate>) {
     match tree {
         PredTree::Leaf(p) => {
-            if let Some(text) = component_literal(p, tag) {
-                if !terms.iter().any(|(id, _)| *id == p.test) {
-                    terms.push((p.test, text));
-                }
+            if component_literal(p, tag).is_some()
+                && !terms.iter().any(|other| other.test == p.test)
+            {
+                terms.push(p);
             }
         }
         PredTree::Or(children) | PredTree::And(children) => {
@@ -63,28 +67,48 @@ fn collect_terms<'a>(tree: &'a PredTree, tag: u8, terms: &mut Vec<(usize, &'a st
     }
 }
 
-/// One dictionary pass for every distinct eligible test. Stop testing a term
-/// after its first occurrence; stop reading the dictionary when all are found.
-/// Memory is proportional to the query's terms, not the graph's string count.
-fn absent_terms<'a>(
-    mut pending: Vec<(usize, &str)>,
-    strings: impl IntoIterator<Item = &'a str>,
-    cancel: &CancelToken,
-) -> CypherResult<HashSet<usize>> {
-    cancel.check()?;
-    if !pending.is_empty() {
-        for (i, text) in strings.into_iter().enumerate() {
-            if i % 1024 == 0 {
-                cancel.check()?;
-            }
-            pending.retain(|(_, literal)| !text.contains(literal));
-            if pending.is_empty() {
-                break;
-            }
+/// One conservative arena search per distinct test, shared across properties
+/// and tags within one graph. A memo must never be reused for a different graph.
+pub(super) struct DictionaryMemo {
+    absent: Vec<Option<bool>>,
+}
+
+impl DictionaryMemo {
+    pub(super) fn new(tests: usize) -> Self {
+        Self {
+            absent: vec![None; tests],
         }
     }
-    cancel.check()?;
-    Ok(pending.into_iter().map(|(id, _)| id).collect())
+
+    fn get_or_try_insert(
+        &mut self,
+        test: usize,
+        check_absent: impl FnOnce() -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        if let Some(absent) = self.absent[test] {
+            return Ok(absent);
+        }
+        let absent = check_absent()?;
+        self.absent[test] = Some(absent);
+        Ok(absent)
+    }
+
+    pub(super) fn absent(
+        &mut self,
+        graph: &Graph,
+        p: &StringPredicate,
+        cancel: &CancelToken,
+    ) -> CypherResult<bool> {
+        cancel.check()?;
+        let absent = self.get_or_try_insert(p.test, || {
+            graph
+                .strings
+                .try_any_contains(&p.literal, || cancel.check())
+                .map(|found| !found)
+        })?;
+        cancel.check()?;
+        Ok(absent)
+    }
 }
 
 /// None is false, not unknown: OR drops a false branch, AND becomes false.
@@ -120,7 +144,9 @@ pub(super) fn prune_plans(
     plans: &[TagPlan],
     graph: &Graph,
     cancel: &CancelToken,
+    memo: &mut DictionaryMemo,
 ) -> CypherResult<Option<Vec<TagPlan>>> {
+    cancel.check()?;
     let mut terms = Vec::new();
     for (tag, plan) in plans.iter().enumerate() {
         if graph.ids_by_tag(tag as u8).is_empty() {
@@ -133,11 +159,12 @@ pub(super) fn prune_plans(
     if terms.is_empty() {
         return Ok(None);
     }
-    let absent = absent_terms(
-        terms,
-        (0..graph.strings.len()).map(|id| graph.strings.get(id)),
-        cancel,
-    )?;
+    let mut absent = HashSet::new();
+    for term in terms {
+        if memo.absent(graph, term, cancel)? {
+            absent.insert(term.test);
+        }
+    }
     if absent.is_empty() {
         return Ok(None);
     }
@@ -156,4 +183,23 @@ pub(super) fn prune_plans(
             })
             .collect(),
     ))
+}
+
+/// `None` proves the complete CallSite predicate false for this graph.
+pub(super) fn prune_callsite(
+    tree: &PredTree,
+    graph: &Graph,
+    cancel: &CancelToken,
+    memo: &mut DictionaryMemo,
+) -> CypherResult<Option<PredTree>> {
+    cancel.check()?;
+    let mut terms = Vec::new();
+    collect_terms(tree, TAG_CALL_SITE_NODE, &mut terms);
+    let mut absent = HashSet::new();
+    for term in terms {
+        if memo.absent(graph, term, cancel)? {
+            absent.insert(term.test);
+        }
+    }
+    Ok(prune_tree(tree, TAG_CALL_SITE_NODE, &absent))
 }

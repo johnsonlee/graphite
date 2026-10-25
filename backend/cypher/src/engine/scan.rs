@@ -766,11 +766,6 @@ impl ScanPlan {
         // decided when the sweep reaches its graph. A graph the CallSite prefilter
         // rules out is still visited for the other types it holds.
         let cs_tree: Option<&PredTree> = self.call_site.as_ref().map(|(t, _)| t);
-        let cs_preds: &[StringPredicate] = self
-            .call_site
-            .as_ref()
-            .map(|(_, p)| p.as_slice())
-            .unwrap_or(&[]);
         let all_sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
         let sources: Vec<SourceIdx> = match cs_tree {
             Some(t) => all_sources
@@ -802,31 +797,13 @@ impl ScanPlan {
             let plans: Vec<SourcePlan> = if batch.len() > 1 {
                 batch
                     .par_iter()
-                    .map(|s| {
-                        build_source_plan(
-                            *s,
-                            ex.graph(*s),
-                            &ex.sources[*s as usize].id,
-                            cs_tree.expect("CallSite plan"),
-                            cs_preds,
-                            self.tests,
-                        )
-                    })
-                    .collect()
+                    .map(|s| self.prepare_callsite_source(ex, *s, cs_tree.expect("CallSite plan")))
+                    .collect::<CypherResult<_>>()?
             } else {
                 batch
                     .iter()
-                    .map(|s| {
-                        build_source_plan(
-                            *s,
-                            ex.graph(*s),
-                            &ex.sources[*s as usize].id,
-                            cs_tree.expect("CallSite plan"),
-                            cs_preds,
-                            self.tests,
-                        )
-                    })
-                    .collect()
+                    .map(|s| self.prepare_callsite_source(ex, *s, cs_tree.expect("CallSite plan")))
+                    .collect::<CypherResult<_>>()?
             };
             for sp in &plans {
                 if !self.sweep_call_sites_of(ex, sp, row, emit)? {
@@ -842,6 +819,37 @@ impl ScanPlan {
             }
         }
         Ok(true)
+    }
+
+    /// The CallSite-only schedule uses the same complete-dictionary proof as broad
+    /// scans. In particular, a signature's parameter types are not all indexed.
+    fn prepare_callsite_source(
+        &self,
+        ex: &Executor,
+        source: SourceIdx,
+        tree: &PredTree,
+    ) -> CypherResult<SourcePlan> {
+        let graph = ex.graph(source);
+        let mut memo = signature::DictionaryMemo::new(self.tests);
+        let Some(tree) = signature::prune_callsite(tree, graph, &ex.cancel, &mut memo)? else {
+            return Ok(SourcePlan {
+                source,
+                call_site: Vec::new(),
+                call_site_candidates: Some(Candidates::Nodes(Vec::new())),
+                call_site_exact: true,
+                no_prefilter: false,
+            });
+        };
+        let mut predicates = Vec::new();
+        tree.leaves(&mut predicates);
+        Ok(build_source_plan(
+            source,
+            graph,
+            &ex.sources[source as usize].id,
+            &tree,
+            &predicates,
+            self.tests,
+        ))
     }
 
     /// The Annotation records of one graph, by the plan the graph's dictionary allows:
@@ -961,7 +969,8 @@ impl ScanPlan {
         let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
         // A signature is assembled from dictionary components. Prove impossible
         // leaves before choosing a record sweep, keeping dynamic types untouched.
-        let signature_plans = signature::prune_plans(plans, graph, &ex.cancel)?;
+        let mut dictionary = signature::DictionaryMemo::new(self.tests);
+        let signature_plans = signature::prune_plans(plans, graph, &ex.cancel, &mut dictionary)?;
         let plans = signature_plans.as_deref().unwrap_or(plans);
         let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
             TagPlan::CallSite(t) => {

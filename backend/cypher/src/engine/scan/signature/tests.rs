@@ -51,99 +51,44 @@ fn tree_shape(tree: &PredTree) -> String {
 }
 
 #[test]
-fn complete_dictionary_keeps_parameter_and_local_only_components() {
-    // Parameter types and methods referenced only by locals need not occur in the
-    // CallSite index's four fields. Their late dictionary entries still disprove
-    // absence; only the truly missing, case-sensitive test is returned.
-    let strings = [
-        "Caller",
-        "call",
-        "Callee",
-        "target",
-        "OnlyParameter",
-        "OnlyLocal",
-    ];
+fn dictionary_memo_shares_positive_and_negative_proofs_across_tags() {
+    let mut memo = DictionaryMemo::new(3);
     let reads = Cell::new(0);
-    let absent = absent_terms(
-        vec![
-            (0, "OnlyParameter"),
-            (1, "OnlyLocal"),
-            (2, "onlylocal"),
-            (3, "Caller"),
-            (4, "call"),
-            (5, "Callee"),
-            (6, "target"),
-        ],
-        strings.into_iter().inspect(|_| reads.set(reads.get() + 1)),
-        &CancelToken::default(),
-    )
-    .unwrap();
-    assert_eq!(absent, HashSet::from([2]));
-    assert_eq!(reads.get(), strings.len());
+    for expected in [false, true] {
+        let test = usize::from(expected);
+        assert_eq!(
+            memo.get_or_try_insert(test, || {
+                reads.set(reads.get() + 1);
+                Ok(expected)
+            })
+            .unwrap(),
+            expected
+        );
+        assert_eq!(
+            memo.get_or_try_insert(test, || panic!("cached test must not rescan"))
+                .unwrap(),
+            expected
+        );
+    }
+    assert_eq!(reads.get(), 2);
+    assert_eq!(memo.absent, vec![Some(false), Some(true), None]);
 }
 
 #[test]
-fn dictionary_scan_stops_when_all_terms_are_found_and_skips_empty_work() {
-    let reads = Cell::new(0);
-    let strings = ["AlphaBeta", "must not read"];
-    let absent = absent_terms(
-        vec![(7, "Alpha"), (9, "Beta")],
-        strings.into_iter().inspect(|_| reads.set(reads.get() + 1)),
-        &CancelToken::default(),
-    )
-    .unwrap();
-    assert!(absent.is_empty());
-    assert_eq!(reads.get(), 1);
-    let absent = absent_terms(
-        Vec::new(),
-        strings
-            .into_iter()
-            .inspect(|_| panic!("no tests need dictionary access")),
-        &CancelToken::default(),
-    )
-    .unwrap();
-    assert!(absent.is_empty());
-    assert_eq!(
-        absent_terms(vec![(8, "missing")], [], &CancelToken::default()).unwrap(),
-        HashSet::from([8])
-    );
-}
-
-#[test]
-fn dictionary_scan_propagates_cancellation_before_during_and_after_iteration() {
-    let cancel = CancelToken::default();
-    cancel.cancel();
+fn dictionary_memo_propagates_failures_without_caching_partial_proofs() {
+    let mut memo = DictionaryMemo::new(1);
     assert!(matches!(
-        absent_terms(Vec::new(), [], &cancel),
+        memo.get_or_try_insert(0, || Err(CypherError::Cancelled)),
         Err(CypherError::Cancelled)
     ));
-
-    let cancel = CancelToken::default();
-    let reads = Cell::new(0);
-    let strings = (0..2048).map(|i| {
-        reads.set(reads.get() + 1);
-        if i == 1 {
-            cancel.cancel();
-        }
-        "other"
-    });
+    assert_eq!(memo.absent, vec![None]);
     assert!(matches!(
-        absent_terms(vec![(0, "missing")], strings, &cancel),
-        Err(CypherError::Cancelled)
-    ));
-    assert_eq!(reads.get(), 1025);
-
-    let cancel = CancelToken::default();
-    let strings = ["other", "found"].into_iter().enumerate().map(|(i, text)| {
-        if i == 1 {
-            cancel.timeout(17);
-        }
-        text
-    });
-    assert!(matches!(
-        absent_terms(vec![(0, "found")], strings, &cancel),
+        memo.get_or_try_insert(0, || Err(CypherError::Timeout(17))),
         Err(CypherError::Timeout(17))
     ));
+    assert_eq!(memo.absent, vec![None]);
+    assert!(memo.get_or_try_insert(0, || Ok(true)).unwrap());
+    assert_eq!(memo.absent, vec![Some(true)]);
 }
 
 #[test]
@@ -160,11 +105,17 @@ fn terms_are_shared_by_test_across_properties_tags_and_nested_trees() {
     let mut terms = Vec::new();
     collect_terms(&tree, TAG_CALL_SITE_NODE, &mut terms);
     collect_terms(&local, TAG_LOCAL_VARIABLE, &mut terms);
-    assert_eq!(terms, vec![(4, "Needle"), (5, "Other")]);
+    assert_eq!(
+        terms
+            .iter()
+            .map(|p| (p.test, p.literal.as_str()))
+            .collect::<Vec<_>>(),
+        vec![(4, "Needle"), (5, "Other")]
+    );
 }
 
 #[test]
-fn only_untransformed_nonempty_contains_without_signature_separators_is_eligible() {
+fn only_untransformed_nonempty_contains_or_prefix_without_signature_separators_is_eligible() {
     for (tag, property) in [
         (TAG_CALL_SITE_NODE, "caller_signature"),
         (TAG_CALL_SITE_NODE, "callee_signature"),
@@ -177,6 +128,9 @@ fn only_untransformed_nonempty_contains_without_signature_separators_is_eligible
                 component_literal(&predicate(property, literal, 0), tag),
                 Some(literal)
             );
+            let mut prefix = predicate(property, literal, 0);
+            prefix.op = PushOp::StartsWith;
+            assert_eq!(component_literal(&prefix, tag), Some(literal));
         }
         for literal in [
             "",
@@ -194,12 +148,7 @@ fn only_untransformed_nonempty_contains_without_signature_separators_is_eligible
                 None
             );
         }
-        for op in [
-            PushOp::Equals,
-            PushOp::StartsWith,
-            PushOp::EndsWith,
-            PushOp::Regex,
-        ] {
+        for op in [PushOp::Equals, PushOp::EndsWith, PushOp::Regex] {
             let mut p = predicate(property, "Missing", 0);
             p.op = op;
             assert_eq!(component_literal(&p, tag), None);
@@ -213,6 +162,31 @@ fn only_untransformed_nonempty_contains_without_signature_separators_is_eligible
         p.transform = Transform::Lowercase;
         assert_eq!(component_literal(&p, tag), None);
     }
+}
+
+#[test]
+fn actual_type_is_a_complete_dictionary_string_only_on_return_nodes() {
+    for literal in ["java.lang.String[]", "int", "类型", "(", "L"] {
+        for op in [PushOp::Contains, PushOp::StartsWith] {
+            let mut p = predicate("actual_type", literal, 0);
+            p.op = op;
+            assert_eq!(component_literal(&p, TAG_RETURN_NODE), Some(literal));
+            for tag in [
+                TAG_CALL_SITE_NODE,
+                TAG_LOCAL_VARIABLE,
+                TAG_PARAMETER_NODE,
+                TAG_ANNOTATION_NODE,
+            ] {
+                assert_eq!(component_literal(&p, tag), None);
+            }
+        }
+    }
+    assert_eq!(
+        component_literal(&predicate("actual_type", "", 0), TAG_RETURN_NODE),
+        None
+    );
+    let tree = leaf("actual_type", "Missing", 0);
+    assert!(prune_tree(&tree, TAG_RETURN_NODE, &HashSet::from([0])).is_none());
 }
 
 #[test]
@@ -394,6 +368,8 @@ fn real_multi_graph_keys_search_matches_generic_rows_order_and_materialized_prop
         "toString(n[k]) CONTAINS 'SignatureProofAbsent87429' OR toString(n[k]) CONTAINS 'java.'",
         "toString(n[k]) CONTAINS '' OR toString(n[k]) CONTAINS 'SignatureProofAbsent87429'",
         "toString(n[k]) CONTAINS 'SignatureProofGraphOnly87429'",
+        "toString(n[k]) STARTS WITH 'SignatureProofAbsent87429'",
+        "toString(n[k]) STARTS WITH 'java'",
     ];
     for (case, inner) in cases.into_iter().enumerate() {
         let query = format!("MATCH (n) WHERE any(k IN keys(n) WHERE {inner}) RETURN labels(n) AS labels, n LIMIT 200");
@@ -503,4 +479,113 @@ fn real_multi_graph_keys_search_matches_generic_rows_order_and_materialized_prop
             }
         }
     }
+}
+
+#[test]
+fn real_multi_graph_callsite_and_return_scans_match_independent_generic_execution() {
+    let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+        eprintln!("GRAPHITE_INDEX_FIXTURE unset; skipping composed-path differential test");
+        return;
+    };
+    let graph = Arc::new(Graph::load(std::path::Path::new(&dir)).unwrap());
+    let ex = Executor::new(
+        ["first", "second"]
+            .into_iter()
+            .map(|id| Source {
+                id: Arc::from(id),
+                graph: graph.clone(),
+            })
+            .collect(),
+        true,
+    )
+    .with_probe();
+    let cases = [
+        ("CallSite", "n.callee_signature CONTAINS 'SignatureProofAbsent87429'", true),
+        ("CallSite", "n.caller_signature STARTS WITH 'SignatureProofAbsent87429'", true),
+        ("CallSite", "n.callee_signature CONTAINS 'java'", false),
+        ("CallSite", "n.callee_signature STARTS WITH 'java'", false),
+        ("CallSite", "n.callee_descriptor CONTAINS 'SignatureProofAbsent87429' OR n.callee_descriptor CONTAINS 'java'", false),
+        ("Return", "n.actual_type CONTAINS 'SignatureProofAbsent87429'", true),
+        ("Return", "n.actual_type STARTS WITH 'java'", false),
+    ];
+    for (label, filter, absent) in cases {
+        let query = format!("MATCH (n:{label}) WHERE {filter} RETURN n LIMIT 200");
+        let original = crate::parser::parse(&query).unwrap();
+        let [Clause::Match { patterns, .. }, Clause::Where(where_clause), ..] = original.as_slice()
+        else {
+            panic!("MATCH WHERE expected");
+        };
+        let plan = ScanPlan::build(patterns, Some(where_clause)).expect("optimized plan");
+        let mut memo = DictionaryMemo::new(plan.tests);
+        if label == "CallSite" {
+            assert_eq!(plan.tags, vec![TAG_CALL_SITE_NODE]);
+            let (tree, _) = plan.call_site.as_ref().expect("pure CallSite path");
+            assert_eq!(
+                prune_callsite(tree, &graph, &CancelToken::default(), &mut memo)
+                    .unwrap()
+                    .is_none(),
+                absent,
+                "{query}"
+            );
+        } else {
+            assert_eq!(plan.tags, vec![TAG_RETURN_NODE]);
+            if absent {
+                let pruned =
+                    prune_plans(&plan.tag_plans, &graph, &CancelToken::default(), &mut memo)
+                        .unwrap()
+                        .expect("return proof");
+                assert!(matches!(pruned[TAG_RETURN_NODE as usize], TagPlan::Skip));
+            }
+        }
+        let mut generic = original.clone();
+        generic[1] = Clause::Where(Expr::Or(
+            Box::new(where_clause.clone()),
+            Box::new(Expr::Literal(Literal::Bool(false))),
+        ));
+        let Clause::Where(generic_where) = &generic[1] else {
+            unreachable!()
+        };
+        assert!(
+            ScanPlan::build(patterns, Some(generic_where)).is_none(),
+            "oracle bypass: {query}"
+        );
+        let actual = ex.execute_clauses(&original, None).unwrap();
+        let expected = ex.execute_clauses(&generic, None).unwrap();
+        assert_eq!(actual.columns, expected.columns, "{query}");
+        assert_eq!(actual.more, expected.more, "{query}");
+        assert_eq!(
+            format!("{:?}", actual.rows),
+            format!("{:?}", expected.rows),
+            "typed rows and provenance: {query}"
+        );
+        let bodies = |result: &crate::engine::QueryResult| {
+            result
+                .rows
+                .iter()
+                .map(|row| materialize(row.get("n").unwrap(), &ex))
+                .collect::<Vec<_>>()
+        };
+        assert_eq!(
+            bodies(&actual),
+            bodies(&expected),
+            "materialized rows: {query}"
+        );
+        if absent {
+            assert!(actual.rows.is_empty(), "{query}");
+        } else if label == "CallSite" {
+            assert!(
+                !actual.rows.is_empty(),
+                "fixture needs java CallSites: {query}"
+            );
+        }
+    }
+    let mut memo = DictionaryMemo::new(1);
+    let p = predicate("callee_signature", "SignatureProofAbsent87429", 0);
+    assert!(memo.absent(&graph, &p, &CancelToken::default()).unwrap());
+    let cancel = CancelToken::default();
+    cancel.cancel();
+    assert!(matches!(
+        memo.absent(&graph, &p, &cancel),
+        Err(CypherError::Cancelled)
+    ));
 }
