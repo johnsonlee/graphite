@@ -42,6 +42,9 @@ use graphite_storage::node::{
 use graphite_storage::Graph;
 use rayon::prelude::*;
 
+#[cfg(test)]
+mod descriptor_tests;
+
 /// What a scan hands each surviving node to: the node, the source's shared provenance
 /// value when one serves every row, and whether the plan was exact.
 pub type Emit<'a> = dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool> + 'a;
@@ -51,7 +54,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 26] = [
+const PUSHABLE_PROPS: [&str; 28] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -70,6 +73,8 @@ const PUSHABLE_PROPS: [&str; 26] = [
     // decides per type, so a predicate on them still skips every other type.
     "callee_signature",
     "caller_signature",
+    "callee_descriptor",
+    "caller_descriptor",
     "line",
     "ordinal",
     "static",
@@ -88,8 +93,8 @@ const PUSHABLE_PROPS: [&str; 26] = [
 /// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
 /// value pairs add keys of their own, which is why the Annotation type is always
 /// decoded for that shape.
-const ALL_KEYS: [&str; 27] = {
-    let mut keys = ["id"; 27];
+const ALL_KEYS: [&str; 29] = {
+    let mut keys = ["id"; 29];
     let mut i = 0;
     while i < PUSHABLE_PROPS.len() {
         keys[i + 1] = PUSHABLE_PROPS[i];
@@ -1526,7 +1531,7 @@ fn needs_raw_sweep(tree: &PredTree) -> bool {
 enum RawLeaf {
     /// One of the four indexed strings: the record's string id is in the set.
     Field(usize, StringBitset),
-    /// The caller's or callee's signature, composed from the record's string ids and
+    /// The caller's or callee's signature/descriptor, composed from string ids and
     /// remembered per distinct method, in the memo at this index.
     Signature { callee: bool, memo: usize },
     /// The line number as text, or against a number.
@@ -1546,9 +1551,9 @@ enum RawTree {
     And(Vec<RawTree>),
 }
 
-/// A signature leaf's memo, keyed by the method's string ids -- class, name,
+/// A signature/descriptor leaf's memo, keyed by the method's string ids -- class, name,
 /// parameters, return type -- so a method with a thousand call sites or locals
-/// composes its signature once.
+/// composes its requested text once per leaf.
 #[derive(Default)]
 struct SignatureMemo {
     memo: std::collections::HashMap<Box<[u32]>, bool>,
@@ -1574,20 +1579,13 @@ impl SignatureMemo {
         if let Some(&hit) = self.memo.get(self.key.as_slice()) {
             return hit;
         }
-        let key = &self.key;
         let text = &mut self.text;
-        text.clear();
-        text.push_str(graph.str(key[0]));
-        text.push('.');
-        text.push_str(graph.str(key[1]));
-        text.push('(');
-        for (i, param) in key[2..key.len() - 1].iter().enumerate() {
-            if i > 0 {
-                text.push(',');
-            }
-            text.push_str(graph.str(*param));
-        }
-        text.push(')');
+        Self::write_text(
+            &self.key,
+            matches!(p.prop(), "caller_descriptor" | "callee_descriptor"),
+            |id| graph.str(id),
+            text,
+        );
         let hit = match p.transform {
             Transform::None => p.matches_raw(text),
             Transform::Lowercase => {
@@ -1595,12 +1593,44 @@ impl SignatureMemo {
                 p.matches_raw(&lowered)
             }
         };
-        self.memo.insert(key.clone().into_boxed_slice(), hit);
+        self.memo.insert(self.key.clone().into_boxed_slice(), hit);
         hit
+    }
+
+    /// The same formatting as MethodDesc, without decoding a node or allocating its
+    /// parameter vector. A descriptor includes the return type; a signature does not.
+    fn write_text<'a>(
+        key: &[u32],
+        descriptor: bool,
+        string_of: impl Fn(u32) -> &'a str,
+        text: &mut String,
+    ) {
+        use graphite_storage::node::push_type_descriptor;
+        text.clear();
+        if !descriptor {
+            text.push_str(string_of(key[0]));
+            text.push('.');
+            text.push_str(string_of(key[1]));
+        }
+        text.push('(');
+        for (i, param) in key[2..key.len() - 1].iter().enumerate() {
+            if descriptor {
+                push_type_descriptor(string_of(*param), text);
+            } else {
+                if i > 0 {
+                    text.push(',');
+                }
+                text.push_str(string_of(*param));
+            }
+        }
+        text.push(')');
+        if descriptor {
+            push_type_descriptor(string_of(*key.last().unwrap()), text);
+        }
     }
 }
 
-/// Per-thread state of the raw sweep: one signature memo per signature leaf.
+/// Per-thread state of the raw sweep: one memo per signature/descriptor leaf.
 struct RawSweepState {
     memos: Vec<SignatureMemo>,
     text: String,
@@ -1657,11 +1687,12 @@ impl RawTree {
                         prefix: synthetic_prefix(graph_id, p),
                         with_id: key != "graphId",
                     },
-                    "callee_signature" | "caller_signature" => {
+                    "callee_signature" | "caller_signature" | "callee_descriptor"
+                    | "caller_descriptor" => {
                         let index = *memos;
                         *memos += 1;
                         RawLeaf::Signature {
-                            callee: p.prop() == "callee_signature",
+                            callee: matches!(p.prop(), "callee_signature" | "callee_descriptor"),
                             memo: index,
                         }
                     }
@@ -2900,7 +2931,13 @@ fn record_field(tag: u8, property: &str, shape: LeafShape) -> Option<RecordField
 fn is_raw_call_site_prop(property: &str) -> bool {
     matches!(
         property,
-        "callee_signature" | "caller_signature" | "line" | "ordinal" | "id"
+        "callee_signature"
+            | "caller_signature"
+            | "callee_descriptor"
+            | "caller_descriptor"
+            | "line"
+            | "ordinal"
+            | "id"
     )
 }
 
@@ -2964,7 +3001,7 @@ fn leaf_exposure(tag: u8, p: &StringPredicate) -> Exposure {
             other => other,
         },
     };
-    // A CallSite record's signatures, line and id are read raw by the record sweep
+    // A CallSite record's signatures, descriptors, line and id are read raw by the sweep
     // instead of decoding the record: what a search over every property, which names
     // all of them, would otherwise cost on the most numerous type. Likewise the
     // method of a local, a parameter or a return node, and the numbers a record
@@ -3038,8 +3075,7 @@ fn exposure_of(
             property,
             "callee_signature" | "caller_signature" | "callee_descriptor" | "caller_descriptor"
         ) {
-            // The descriptors are composed from the record like the signatures, but not
-            // read raw by the sweep: a leaf on one decodes the record.
+            // leaf_exposure upgrades these composed fields to raw record reads.
             Exposure::Dynamic
         } else {
             Exposure::Absent
