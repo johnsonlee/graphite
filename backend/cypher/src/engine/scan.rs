@@ -2728,7 +2728,9 @@ fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPre
     if matches!(*compiled, crate::eval::CompiledRegex::Unsupported(_)) {
         return false;
     }
-    let Some((property, Transform::None, via_to_string)) = property_operand(left, variable) else {
+    // The nonempty required literal proves an empty fallback cannot match.
+    let Some((property, Transform::None, via_to_string)) = property_operand(left, variable, true)
+    else {
         return false;
     };
     let trigrams = std::sync::Arc::new(if literal.is_ascii() {
@@ -2765,7 +2767,7 @@ fn push_predicate(
         Expr::Literal(crate::ast::Literal::Str(s)) => s.clone(),
         _ => return false,
     };
-    match property_operand(left, variable) {
+    match property_operand(left, variable, !literal.is_empty()) {
         Some((property, transform, via_to_string)) => {
             // Trigrams exist only for an ASCII literal. The index was written from the
             // JVM's `String.lowercase()`, which is context-sensitive (a final sigma
@@ -3670,7 +3672,11 @@ fn prop_name(key: &str) -> Prop {
     }
 }
 
-fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)> {
+fn property_operand(
+    e: &Expr,
+    variable: &str,
+    empty_fallback_cannot_match: bool,
+) -> Option<(Prop, Transform, bool)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {
             Expr::Variable(v) if v == variable => Some((prop_name(key), Transform::None, false)),
@@ -3680,11 +3686,27 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)>
             let lower = name.to_ascii_lowercase();
             match lower.as_str() {
                 "tolower" | "tolowercase" => {
-                    let (p, _, via) = property_operand(args.first()?, variable)?;
+                    let (p, _, via) =
+                        property_operand(args.first()?, variable, empty_fallback_cannot_match)?;
                     Some((p, Transform::Lowercase, via))
                 }
                 "coalesce" => {
-                    let (p, t, via) = property_operand(args.first()?, variable)?;
+                    let first = args.first()?;
+                    // Missing-property proofs are valid only when every fallback
+                    // is also unable to satisfy this predicate. Null stays null;
+                    // empty strings are safe only for a nonempty tested literal.
+                    // Nonliteral/nonempty alternatives retain the generic evaluator.
+                    if !args[1..].iter().all(|arg| match arg {
+                        Expr::Literal(crate::ast::Literal::Null) => true,
+                        Expr::Literal(crate::ast::Literal::Str(s)) => {
+                            empty_fallback_cannot_match && s.is_empty()
+                        }
+                        _ => false,
+                    }) {
+                        return None;
+                    }
+                    let (p, t, via) =
+                        property_operand(first, variable, empty_fallback_cannot_match)?;
                     Some((p, t, via))
                 }
                 // `toString` of a string is the string; of a number or boolean it is the
@@ -3693,7 +3715,8 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)>
                     if args.len() != 1 {
                         return None;
                     }
-                    let (p, t, _) = property_operand(&args[0], variable)?;
+                    let (p, t, _) =
+                        property_operand(&args[0], variable, empty_fallback_cannot_match)?;
                     Some((p, t, true))
                 }
                 _ => None,

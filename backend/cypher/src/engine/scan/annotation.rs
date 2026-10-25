@@ -40,6 +40,48 @@ fn dictionary_settles(p: &StringPredicate) -> bool {
         && (p.prop() != "type" || !tag_type_name(TAG_ANNOTATION_NODE).contains(&p.literal))
 }
 
+/// A direct dynamic property cannot exist when its key is not in the sorted
+/// dictionary. This logarithmic key lookup precedes any whole-arena literal
+/// search. ANY(keys(n)) leaves stand for open-ended attributes, not their finite
+/// expansion's property names; built-ins and cross-graph identities need no
+/// dictionary key at all. Outside cross mode the identity names are dynamic.
+fn keys_cannot_match(ex: &Executor, source: SourceIdx, tree: &PredTree) -> CypherResult<bool> {
+    ex.cancel.check()?;
+    let absent = match tree {
+        PredTree::Leaf(p) => {
+            if p.from_keys
+                || matches!(
+                    p.prop(),
+                    "id" | "name" | "class" | "member" | "values" | "type"
+                )
+                || (ex.cross && is_synthetic_key(p.prop()))
+            {
+                false
+            } else {
+                ex.graph(source).strings.index_of(p.prop()).is_none()
+            }
+        }
+        PredTree::Or(children) => {
+            for child in children {
+                if !keys_cannot_match(ex, source, child)? {
+                    return Ok(false);
+                }
+            }
+            true
+        }
+        PredTree::And(children) => {
+            for child in children {
+                if keys_cannot_match(ex, source, child)? {
+                    return Ok(true);
+                }
+            }
+            false
+        }
+    };
+    ex.cancel.check()?;
+    Ok(absent)
+}
+
 /// `true` proves the whole tree false for every annotation in this source;
 /// `false` means unknown, never that any particular annotation matches.
 pub(super) fn cannot_match(
@@ -49,6 +91,11 @@ pub(super) fn cannot_match(
     memo: &mut DictionaryMemo,
 ) -> CypherResult<bool> {
     ex.cancel.check()?;
+    // Check the complete subtree first: an absent key later in a conjunction
+    // should avoid the arena search of an earlier, dictionary-present key.
+    if keys_cannot_match(ex, source, tree)? {
+        return Ok(true);
+    }
     match tree {
         // Outside cross-graph mode these names may be ordinary annotation keys;
         // the executor only replaces them with graph identity when cross=true.

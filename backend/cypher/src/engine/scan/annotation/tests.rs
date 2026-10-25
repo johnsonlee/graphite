@@ -363,6 +363,400 @@ fn annotation_absence_respects_boolean_structure_synthetic_identity_and_cancel()
 }
 
 #[test]
+fn coalesce_fallback_must_survive_annotation_key_absence_pruning() {
+    let (_fixture, graph) = fixture();
+    let ex = Executor::new(
+        vec![Source {
+            id: Arc::from("first"),
+            graph,
+        }],
+        true,
+    );
+    let query = "MATCH (n:Annotation) WHERE coalesce(n.absent_attribute, 'Marker') CONTAINS 'Marker' OR n.caller_class CONTAINS 'MissingAtom' RETURN n.id AS id, n.name AS name, n";
+    let clauses = crate::parser::parse(query).unwrap();
+    let property = |key: &str| Expr::Property {
+        expr: Box::new(Expr::Variable("n".into())),
+        key: key.into(),
+    };
+    let text = |value: &str| Expr::Literal(Literal::Str(value.into()));
+    let contains = |left: Expr, value: &str| Expr::StringOp {
+        op: crate::ast::StrOp::Contains,
+        left: Box::new(left),
+        right: Box::new(text(value)),
+    };
+    assert_eq!(
+        clauses[1],
+        Clause::Where(Expr::Or(
+            Box::new(contains(
+                Expr::FunctionCall {
+                    name: "coalesce".into(),
+                    distinct: false,
+                    args: vec![property("absent_attribute"), text("Marker")]
+                },
+                "Marker"
+            )),
+            Box::new(contains(property("caller_class"), "MissingAtom")),
+        ))
+    );
+    let Clause::Match { patterns, .. } = &clauses[0] else {
+        unreachable!()
+    };
+    let Clause::Where(predicate) = &clauses[1] else {
+        unreachable!()
+    };
+    assert!(
+        ScanPlan::build(patterns, Some(predicate)).is_none(),
+        "the matching fallback cannot be pushed away"
+    );
+    let actual = ex.execute_clauses(&clauses, None).unwrap();
+    let expected = ex.execute_clauses(&generic_oracle(&clauses), None).unwrap();
+    let ids = |result: &crate::engine::QueryResult| {
+        result
+            .rows
+            .iter()
+            .map(|row| match row.get("id").unwrap() {
+                Value::Int(id) => *id,
+                other => panic!("unexpected id: {other:?}"),
+            })
+            .collect::<Vec<_>>()
+    };
+    assert_eq!(
+        ids(&expected),
+        vec![0, 1],
+        "fallback matches both annotations"
+    );
+    assert_eq!(
+        ids(&actual),
+        vec![0, 1],
+        "key absence cannot erase a matching fallback"
+    );
+    assert_eq!(format!("{:?}", actual.rows), format!("{:?}", expected.rows));
+    for (a, e) in actual.rows.iter().zip(&expected.rows) {
+        assert_eq!(
+            materialize(a.get("n").unwrap(), &ex),
+            materialize(e.get("n").unwrap(), &ex)
+        );
+    }
+}
+
+#[test]
+fn coalesce_pushdown_preserves_safe_empty_fallbacks_and_rejects_matching_alternatives() {
+    let (_fixture, graph) = fixture();
+    let ex = Executor::new(
+        vec![Source {
+            id: Arc::from("first"),
+            graph,
+        }],
+        true,
+    );
+    let cases = [
+        (
+            "coalesce(n.absent_attribute, '') CONTAINS 'Marker'",
+            true,
+            vec![],
+        ),
+        (
+            "coalesce(coalesce(n.absent_attribute, ''), null) CONTAINS 'Marker'",
+            true,
+            vec![],
+        ),
+        (
+            "coalesce(coalesce(n.absent_attribute, 'Marker'), null) CONTAINS 'Marker'",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(coalesce(n.absent_attribute, ''), null) CONTAINS ''",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(toString(n.number), '') CONTAINS '123'",
+            true,
+            vec![0],
+        ),
+        (
+            "toLower(coalesce(n.name, '')) CONTAINS 'marker'",
+            true,
+            vec![0],
+        ),
+        (
+            "coalesce(n.name, null, '', null) CONTAINS 'Marker'",
+            true,
+            vec![0],
+        ),
+        ("coalesce(n.name, '') STARTS WITH 'Mar'", true, vec![0]),
+        ("coalesce(n.name, '') ENDS WITH 'ker'", true, vec![0]),
+        ("coalesce(n.name, '') = 'Marker'", true, vec![0]),
+        (
+            "coalesce(n.absent_attribute, null) CONTAINS ''",
+            true,
+            vec![],
+        ),
+        (
+            "coalesce(n.absent_attribute, '') =~ '.*Marker.*'",
+            true,
+            vec![],
+        ),
+        (
+            "coalesce(n.absent_attribute, 'Marker') =~ '.*Marker.*'",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(n.absent_attribute, '') =~ '.*'",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(n.absent_attribute, '') CONTAINS ''",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(n.absent_attribute, '') STARTS WITH ''",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "coalesce(n.absent_attribute, '') ENDS WITH ''",
+            false,
+            vec![0, 1],
+        ),
+        ("coalesce(n.absent_attribute, '') = ''", false, vec![0, 1]),
+        (
+            "coalesce(n.absent_attribute, n.name) CONTAINS 'Marker'",
+            false,
+            vec![0],
+        ),
+        (
+            "coalesce(n.absent_attribute, null, 'Marker') CONTAINS 'Marker'",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "toLower(coalesce(toString(n.absent_attribute), 'Marker')) CONTAINS 'marker'",
+            false,
+            vec![0, 1],
+        ),
+        (
+            "toString(coalesce(n.absent_attribute, 123)) CONTAINS '123'",
+            false,
+            vec![0, 1],
+        ),
+        ("coalesce(n.absent_attribute, 123) = 123", false, vec![0, 1]),
+        (
+            "'Marker' IN coalesce(n.absent_attribute, ['Marker'])",
+            false,
+            vec![0, 1],
+        ),
+        ("coalesce() CONTAINS 'Marker'", false, vec![]),
+    ];
+    for (filter, pushed, ids) in cases {
+        let query =
+            format!("MATCH (n:Annotation) WHERE {filter} RETURN n.id AS id, n.name AS name, n");
+        let clauses = crate::parser::parse(&query).unwrap();
+        let Clause::Match { patterns, .. } = &clauses[0] else {
+            unreachable!()
+        };
+        let Clause::Where(predicate) = &clauses[1] else {
+            unreachable!()
+        };
+        let plan = ScanPlan::build(patterns, Some(predicate));
+        assert_eq!(plan.is_some(), pushed, "pushdown: {filter}");
+        if let Some(plan) = plan {
+            let mut leaves = Vec::new();
+            plan.tree.leaves(&mut leaves);
+            assert_eq!(leaves.len(), 1, "one property predicate: {filter}");
+            let leaf = &leaves[0];
+            assert_eq!(leaf.shape, LeafShape::Text);
+            let expected_property = if filter.contains("n.number") {
+                "number"
+            } else if filter.contains("n.name") {
+                "name"
+            } else {
+                "absent_attribute"
+            };
+            assert_eq!(leaf.prop(), expected_property, "{filter}");
+            let expected_op = if filter.contains("=~") {
+                PushOp::Regex
+            } else if filter.contains("STARTS WITH") {
+                PushOp::StartsWith
+            } else if filter.contains("ENDS WITH") {
+                PushOp::EndsWith
+            } else if filter.contains("CONTAINS") {
+                PushOp::Contains
+            } else {
+                PushOp::Equals
+            };
+            assert_eq!(leaf.op, expected_op, "{filter}");
+            let expected_literal = if filter.contains("'123'") {
+                "123"
+            } else if filter.contains("'marker'") {
+                "marker"
+            } else if filter.contains("'Mar'") {
+                "Mar"
+            } else if filter.contains("'ker'") {
+                "ker"
+            } else if filter.ends_with("CONTAINS ''") {
+                ""
+            } else {
+                "Marker"
+            };
+            assert_eq!(leaf.literal, expected_literal, "{filter}");
+            assert_eq!(leaf.via_to_string, filter.contains("toString"), "{filter}");
+            assert!(
+                matches!(leaf.transform, Transform::Lowercase) == filter.starts_with("toLower"),
+                "{filter}"
+            );
+        }
+        let actual = ex.execute_clauses(&clauses, None).unwrap();
+        let expected = ex.execute_clauses(&generic_oracle(&clauses), None).unwrap();
+        assert_eq!(actual.columns, expected.columns, "{filter}");
+        assert_eq!(
+            format!("{:?}", actual.rows),
+            format!("{:?}", expected.rows),
+            "typed rows: {filter}"
+        );
+        assert_eq!(
+            actual
+                .rows
+                .iter()
+                .map(|row| match row.get("id").unwrap() {
+                    Value::Int(id) => *id,
+                    other => panic!("unexpected id: {other:?}"),
+                })
+                .collect::<Vec<_>>(),
+            ids,
+            "{filter}"
+        );
+        for (a, e) in actual.rows.iter().zip(&expected.rows) {
+            assert_eq!(
+                a.get("name").unwrap().as_str(),
+                Some(if matches!(a.get("id"), Some(Value::Int(0))) {
+                    "Marker"
+                } else {
+                    "Other"
+                })
+            );
+            assert_eq!(
+                materialize(a.get("n").unwrap(), &ex),
+                materialize(e.get("n").unwrap(), &ex),
+                "{filter}"
+            );
+        }
+    }
+}
+
+#[test]
+fn absent_dynamic_keys_are_proved_before_consuming_dictionary_memo() {
+    let (_fixture, graph) = fixture_with_callsite(true);
+    let ex = Executor::new(
+        vec![Source {
+            id: Arc::from("first"),
+            graph: graph.clone(),
+        }],
+        true,
+    );
+    let leaf = |property, literal| PredTree::Leaf(pred(property, literal));
+    let cases = [
+        leaf("missing_attribute", "Marker"),
+        leaf("missing_attribute", ""),
+        {
+            let mut p = pred("missing_attribute", "123");
+            p.shape = LeafShape::Numeric;
+            PredTree::Leaf(p)
+        },
+        {
+            let mut p = pred("missing_attribute", "Marker");
+            p.shape = LeafShape::Member;
+            PredTree::Leaf(p)
+        },
+        PredTree::And(vec![
+            leaf("name", "MissingAtom"),
+            leaf("missing_attribute", "Marker"),
+        ]),
+        PredTree::Or(vec![
+            leaf("missing_attribute", "Marker"),
+            leaf("another_missing_attribute", "Owner"),
+        ]),
+        PredTree::Or(vec![
+            PredTree::And(vec![
+                leaf("name", "MissingAtom"),
+                leaf("missing_attribute", "Marker"),
+            ]),
+            leaf("another_missing_attribute", "Owner"),
+        ]),
+    ];
+    for tree in cases {
+        // Every leaf uses test slot zero. A literal arena proof would access
+        // that slot and panic: success proves the cheap key preflight alone
+        // settled the tree, independent of timings and dictionary contents.
+        assert!(cannot_match(&ex, 0, &tree, &mut DictionaryMemo::new(0)).unwrap());
+    }
+    for key in [
+        "id",
+        "name",
+        "class",
+        "member",
+        "values",
+        "type",
+        "graphId",
+        "elementId",
+        "qualifiedId",
+        "caller_class",
+    ] {
+        assert!(
+            !keys_cannot_match(&ex, 0, &leaf(key, "MissingAtom")).unwrap(),
+            "built-in or present key: {key}"
+        );
+    }
+    let mut expanded = pred("missing_attribute", "NoCallSiteNeedle");
+    expanded.from_keys = true;
+    let expanded = PredTree::Leaf(expanded);
+    assert!(!keys_cannot_match(&ex, 0, &expanded).unwrap());
+    assert!(
+        !cannot_match(&ex, 0, &expanded, &mut DictionaryMemo::new(1)).unwrap(),
+        "an expanded keys leaf may match another dynamic attribute"
+    );
+    assert!(!cannot_match(
+        &ex,
+        0,
+        &leaf("caller_class", "NoCallSiteNeedle"),
+        &mut DictionaryMemo::new(1)
+    )
+    .unwrap());
+    let local = Executor::new(
+        vec![Source {
+            id: Arc::from("first"),
+            graph,
+        }],
+        false,
+    );
+    assert!(!keys_cannot_match(&local, 0, &leaf("graphId", "AnnotationIdentity")).unwrap());
+    assert!(
+        cannot_match(
+            &local,
+            0,
+            &leaf("elementId", "MissingAtom"),
+            &mut DictionaryMemo::new(0)
+        )
+        .unwrap(),
+        "non-cross identities are ordinary dynamic keys"
+    );
+    ex.cancel.cancel();
+    assert!(matches!(
+        cannot_match(
+            &ex,
+            0,
+            &leaf("missing_attribute", "Marker"),
+            &mut DictionaryMemo::new(0)
+        ),
+        Err(crate::CypherError::Cancelled)
+    ));
+}
+
+#[test]
 fn every_eligible_substring_of_rendered_annotations_is_dictionary_backed() {
     let (_fixture, graph) = fixture();
     let node = graph.node(0).unwrap();
@@ -505,6 +899,7 @@ fn absent_annotations_restore_callsite_batch_route_without_filtering_possible_ma
         ("MATCH (n) WHERE n.caller_class CONTAINS 'NoCallSiteNeedle' RETURN n.id AS id", false, vec![0, 0]),
         ("MATCH (n) WHERE n.caller_class CONTAINS 'Owner' OR n.caller_class CONTAINS 'NoCallSiteNeedle' RETURN n.id AS id LIMIT 1", false, vec![0]),
         ("MATCH (n:CallSite) WHERE n.caller_class CONTAINS 'Owner' RETURN n.id AS id", true, vec![2, 2]),
+        ("MATCH (n) WHERE n.callee_class CONTAINS 'Owner' RETURN n.id AS id", true, vec![2, 2]),
         ("MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'MissingAtom') RETURN n.id AS id", false, vec![]),
     ];
     for (query, expected_batch, ids) in cases {
@@ -709,6 +1104,19 @@ fn rendered_annotation_boundaries_and_values_match_independent_generic_results()
     let cases = [
         ("toString(n.values) CONTAINS ' beta'", vec![0]),
         ("toString(n.values) CONTAINS 'MissingAtom'", vec![]),
+        ("toString(n.absent_attribute) CONTAINS 'Marker'", vec![]),
+        ("toString(n.absent_attribute) CONTAINS ''", vec![]),
+        ("toString(n.absent_attribute) CONTAINS 'null'", vec![]),
+        ("n.absent_attribute = 123", vec![]),
+        ("'Marker' IN n.absent_attribute", vec![]),
+        (
+            "toString(n.absent_attribute) CONTAINS 'Marker' OR n.name CONTAINS 'Marker'",
+            vec![0],
+        ),
+        (
+            "n.name CONTAINS 'Marker' AND toString(n.absent_attribute) CONTAINS 'Marker'",
+            vec![],
+        ),
         ("toString(n.values) CONTAINS 'beta'", vec![0]),
         ("toString(n.values) CONTAINS 'option comparison'", vec![0]),
         ("toString(n.values) CONTAINS 'absent phrase'", vec![]),

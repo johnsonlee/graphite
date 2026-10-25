@@ -2452,3 +2452,126 @@ paired resource limits on this workload, but mixed P95s and the separate histori
 Attempt042 RSS+5.96% limitation remain. Do not spend additional stabilization runs
 on tiny controls, expand allowances or claim pre-regression recovery. Hosted
 correctness/completion/OOM CI must independently pass on the pushed head.
+
+### 2026-10-26 - Attempt 046: Check Annotation property names before literal arena searches
+
+**Hypothesis/review:** review of045 identified unnecessary full-arena scans before
+the common indexed CallSite schedule. A direct Annotation property whose key is
+absent from the sorted dictionary cannot match. Check that structural condition
+first, including whole AND/OR subtrees, before any literal arena proof. Both the
+batched and general schedule share the preflight through `annotation::cannot_match`.
+Preserve built-ins, type fallback, open-ended `keys(n)` leaves and cross-graph
+identities. Do not confuse a CallSite bitmap with Annotation key coverage.
+
+**Identity:** parent `131b80c4de00bbf760db7ecd475fc2914d2ffda7`; candidate is the
+commit containing this record. Parent release SHA is in045. The rejected prototype
+release SHA is `5b9f181092da59ca2ff4dd8414aa095c2c90e0a406cbba04c5b2a15098d3db02`;
+the corrected candidate identity is recorded with the final results below.
+No cross-stage memo-retention or indexed-toString bitmap change is bundled here.
+Those independent optional optimizations remain separate proposals, not claimed
+benefits. Common missing-key paths now avoid literal memo consumption altogether.
+
+**Protocol:** `/tmp/graphite-181-integration-wM3kwK/protocol-key-presence.md`,
+declared before measurement; fixed13case catalog, same12distinct real annotated
+graphs as044/045, every request spans all12graphs, C4 closed-loop, Rayon/admission4,
+2warmup+20measured rounds/worker, full-body consumption and complete-response hash
+oracle. ABBA directories `key-{base,candidate}-{a,b}` retain every sample/body and
+resource log; `key-comparison.json` retains all per-run ranges. Nearest-rank P50/P95
+are repeated requests within each case,80samples/case/run,160/revision. This is a
+single bounded regression check for the review fix, not repeated fast-control
+stabilization. The review's copied-core fixture timings are not acceptance evidence.
+
+**Correctness:**10 Annotation tests passed, including zero-slot memo sentinels that
+would panic if a missing-key proof attempted any literal lookup. They cover nested
+AND/OR, empty literals, null conversion, numeric and IN-list predicates, key-present
+Annotation matches, built-in/synthetic/from_keys distinctions, cancellation and
+heterogeneous-source LIMIT/provenance against an independent generic executor.
+All162 Cypher,120 explore and42 storage library tests passed without overrides;
+14 targeted signature/descriptor tests passed with the real annotation-bearing
+Tika fixture. Workspace/all-target/all-feature Clippy with warnings denied, fmt
+and diff checks passed before measurement; no compilation overlapped load runs.
+
+**Rejected prototype / correctness discovery:** after the checks above, independent
+review identified a new interaction with inherited lossy `coalesce` extraction:
+`coalesce(n.absent_attribute, 'Marker') CONTAINS 'Marker' OR
+n.caller_class CONTAINS 'MissingAtom'` can still match through its fallback.
+The parent may retain Generic evaluation due to the second dynamic property;
+the new key proof plus literal proof can instead prune both OR branches. The
+prototype is rejected, not accepted on its passing existing tests. `key-base-a`
+completed and `key-candidate-a` was deliberately interrupted by SIGINT; logs and
+partial failures remain, with no latency/resource acceptance claim from either.
+No prototype production changes were pushed. Corrected pushdown eligibility and
+an explicit regression must precede the fresh `protocol-key-safe.md` ABBA run;
+all original samples remain separate and no post-hoc favorable pooling is allowed.
+
+The regression was reproduced as optimized `[]` versus independently evaluated
+and hardcoded `[0,1]`; exact failure output is in
+`coalesce-prototype-failure.txt`. Corrected `property_operand` retains only NULL
+fallbacks, or empty strings when the actual predicate requires a nonempty literal.
+All fallback arguments and nested wrappers are checked; unsafe alternatives use
+the existing generic evaluator. Regex must first have a nonempty required literal;
+numeric/member collectors already require bare properties. No existing feature is
+disabled. Safe empty-fallback/nonempty-term plans remain optimized.
+
+Corrected candidate SHA-256:
+`9fa30c65943607e5e119ab58e728ec026f55d1a07f1e03713f093a41a53db78e`.
+Independent review approved the corrected guard. Twelve Annotation tests include
+25 coalesce AST/plan/execution cases; all164 Cypher,120 explore and42 storage lib
+tests then passed, plus14 targeted signature/descriptor tests on annotated real
+Tika, workspace Clippy, fmt and diff checks. Saved binary hash matches a rebuild
+after final edits. Fresh `key-safe-{base,candidate}-{a,b}` runs use the unchanged
+catalog and settings under `protocol-key-safe.md`; no prototype data is included.
+The frozen load catalog does not exercise the intentionally corrected unsafe
+fallback shapes, so no performance claim is made for their generic fallback.
+
+All4,160 measured and416 warmup requests succeeded with identical complete
+parsed-response hashes. Evidence is in `key-safe-comparison.json`, each fresh
+run's `resource.json`, and all retained load bodies/samples. No aborted prototype
+observations enter these statistics.
+
+| Case | Parent P50 ms | Candidate P50 ms | Delta ms | Parent P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 4.798 | 5.326 | +0.527 | 37.916 | 31.309 | -6.607 |
+| keys-targeted-all | 461.441 | 465.373 | +3.932 | 566.318 | 557.518 | -8.800 |
+| keys-dense-all | 1404.834 | 1396.899 | -7.935 | 1523.337 | 1516.754 | -6.583 |
+| keys-boundary-all | 780.248 | 790.138 | +9.890 | 883.402 | 879.469 | -3.933 |
+| direct-absent | 0.584 | 0.418 | -0.166 | 0.745 | 0.536 | -0.209 |
+| callsite-signature-absent | 0.757 | 0.847 | +0.090 | 11.485 | 37.216 | +25.731 |
+| callsite-prefix-absent | 0.791 | 0.795 | +0.005 | 14.255 | 35.046 | +20.791 |
+| return-type-absent | 0.804 | 0.837 | +0.033 | 6.426 | 14.999 | +8.574 |
+| annotation-absent | 0.819 | 0.751 | -0.068 | 8.359 | 6.309 | -2.050 |
+| annotation-space-boundary | 32.937 | 33.055 | +0.118 | 71.540 | 74.987 | +3.447 |
+| indexed-tostring-absent | 0.747 | 0.568 | -0.178 | 15.267 | 5.208 | -10.059 |
+| annotation-present | 53.492 | 53.831 | +0.339 | 95.979 | 96.338 | +0.359 |
+| annotation-rendered-atoms | 10.618 | 10.950 | +0.332 | 39.988 | 46.130 | +6.142 |
+
+| Run | Query window s | Harness wall s | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| base-a | 56.229 | 62.172 | 291.470 | 295.649 | 2867.969 |
+| candidate-a | 56.494 | 62.400 | 292.420 | 296.704 | 2920.453 |
+| candidate-b | 56.230 | 62.275 | 292.640 | 296.827 | 2829.922 |
+| base-b | 56.372 | 62.305 | 291.440 | 295.610 | 2910.438 |
+
+CPU A/B +0.950/+1.200 s (+0.33%/+0.41%); RSS +52.484/-80.516 MiB
+(+1.83%/-2.77%). Each paired CPU and RSS remains within+5% versus131b80c4.
+CPU includes warmup/validation; RSS includes graph loading/C4 readiness. Query
+window/harness durations have mixed signs, not pipeline E2E evidence. No loading,
+construction, cold-cache, unsafe-coalesce timing or pre-regression recovery claim.
+
+**Tradeoffs/uncertainty:** direct-indexed P50/P95 drop0.166/0.209 ms; this tiny
+absolute control benefit is not a material broad-workload speedup claim. Missing
+dynamic-key tests independently prove avoided arena access without timings.
+Slow-case P95s improve3.933–8.800 ms, but their P50s are mixed. CallSite signature
+P95+25.731 ms, prefix P95+20.791 ms, Return P95+8.574 ms, Annotation boundary
+P95+3.447 ms and rendered-atoms P95+6.142 ms regress. No causal attribution to
+unchanged paths is asserted from this concurrent mixed workload. All per-run
+ranges remain in JSON; two runs are not confidence intervals or saturation proof.
+
+**Decision:** retain the reviewed structural work reduction and its necessary
+coalesce correctness guard as an intermediate candidate. The resource limits pass
+against this parent, but the mixed concurrent tails prevent all-case performance
+acceptance. This does not erase Attempts042–045, compound unmatched percentages,
+or certify recovery against the accepted pre-regression baseline. No further
+stabilization or optional bitmap/memo optimization is inferred from these numbers.
+Fresh remote CI is required for the new commit; the preceding131b80c4's six green
+checks and complete correctness/OOM artifact do not certify this head.
