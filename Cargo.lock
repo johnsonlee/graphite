@@ -501,6 +501,7 @@ dependencies = [
  "crc32fast",
  "hashbrown",
  "indexmap",
+ "memchr",
  "memmap2",
  "parking_lot",
  "rayon",

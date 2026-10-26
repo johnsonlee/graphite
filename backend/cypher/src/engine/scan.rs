@@ -42,6 +42,11 @@ use graphite_storage::node::{
 use graphite_storage::Graph;
 use rayon::prelude::*;
 
+mod annotation;
+#[cfg(test)]
+mod descriptor_tests;
+mod signature;
+
 /// What a scan hands each surviving node to: the node, the source's shared provenance
 /// value when one serves every row, and whether the plan was exact.
 pub type Emit<'a> = dyn FnMut(Value, Option<&Value>, bool) -> CypherResult<bool> + 'a;
@@ -51,7 +56,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 28] = [
+const PUSHABLE_PROPS: [&str; 30] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -70,6 +75,8 @@ const PUSHABLE_PROPS: [&str; 28] = [
     // decides per type, so a predicate on them still skips every other type.
     "callee_signature",
     "caller_signature",
+    "callee_descriptor",
+    "caller_descriptor",
     "line",
     "ordinal",
     "static",
@@ -90,8 +97,8 @@ const PUSHABLE_PROPS: [&str; 28] = [
 /// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
 /// value pairs add keys of their own, which is why the Annotation type is always
 /// decoded for that shape.
-const ALL_KEYS: [&str; 29] = {
-    let mut keys = ["id"; 29];
+const ALL_KEYS: [&str; 31] = {
+    let mut keys = ["id"; 31];
     let mut i = 0;
     while i < PUSHABLE_PROPS.len() {
         keys[i + 1] = PUSHABLE_PROPS[i];
@@ -762,77 +769,33 @@ impl ScanPlan {
         // decided when the sweep reaches its graph. A graph the CallSite prefilter
         // rules out is still visited for the other types it holds.
         let cs_tree: Option<&PredTree> = self.call_site.as_ref().map(|(t, _)| t);
-        let cs_preds: &[StringPredicate] = self
-            .call_site
-            .as_ref()
-            .map(|(_, p)| p.as_slice())
-            .unwrap_or(&[]);
         let all_sources: Vec<SourceIdx> = (0..ex.sources.len() as SourceIdx).collect();
-        let sources: Vec<SourceIdx> = match cs_tree {
-            Some(t) => all_sources
-                .iter()
-                .copied()
-                .filter(|s| may_match(ex.graph(*s), t))
-                .collect(),
-            None => Vec::new(),
-        };
-        // The batched, parallel planning below is for the CallSite type. It also covers
-        // the Annotation type when the clause names CallSite properties, since an
-        // annotation's value pairs can carry any key: that type is settled per graph
-        // after the graph's CallSite records, as it always was.
-        let cs_only = cs_tree.is_some()
-            && !self.has_synthetic
-            && self.tag_plans.iter().enumerate().all(|(tag, p)| {
-                tag == TAG_CALL_SITE_NODE as usize
-                    || matches!(p, TagPlan::Skip)
-                    || (tag == TAG_ANNOTATION_NODE as usize && matches!(p, TagPlan::Generic))
-            });
-        if !cs_only {
+        if !self.can_batch_callsite_sources(ex, &all_sources)? {
             // Types other than CallSite are swept per graph, in source order, with the
             // CallSite plan for that graph built on the spot when it has one.
-            return self.run_by_source(ex, ev, row, &all_sources, cs_tree, cs_preds, emit);
+            return self.run_by_source(ex, row, &all_sources, emit);
         }
+        let sources: Vec<SourceIdx> = all_sources
+            .iter()
+            .copied()
+            .filter(|s| may_match(ex.graph(*s), cs_tree.expect("CallSite plan")))
+            .collect();
         // Planned in batches, in parallel within each: see `batch_schedule`.
         for batch in batch_schedule(&sources) {
             ex.cancel.check()?;
             let plans: Vec<SourcePlan> = if batch.len() > 1 {
                 batch
                     .par_iter()
-                    .map(|s| {
-                        build_source_plan(
-                            *s,
-                            ex.graph(*s),
-                            &ex.sources[*s as usize].id,
-                            cs_tree.expect("CallSite plan"),
-                            cs_preds,
-                            self.tests,
-                        )
-                    })
-                    .collect()
+                    .map(|s| self.prepare_callsite_source(ex, *s, cs_tree.expect("CallSite plan")))
+                    .collect::<CypherResult<_>>()?
             } else {
                 batch
                     .iter()
-                    .map(|s| {
-                        build_source_plan(
-                            *s,
-                            ex.graph(*s),
-                            &ex.sources[*s as usize].id,
-                            cs_tree.expect("CallSite plan"),
-                            cs_preds,
-                            self.tests,
-                        )
-                    })
-                    .collect()
+                    .map(|s| self.prepare_callsite_source(ex, *s, cs_tree.expect("CallSite plan")))
+                    .collect::<CypherResult<_>>()?
             };
             for sp in &plans {
                 if !self.sweep_call_sites_of(ex, sp, row, emit)? {
-                    return Ok(false);
-                }
-                if matches!(
-                    self.tag_plans[TAG_ANNOTATION_NODE as usize],
-                    TagPlan::Generic
-                ) && !self.sweep_annotations(ex, sp.source, row, emit)?
-                {
                     return Ok(false);
                 }
             }
@@ -840,62 +803,73 @@ impl ScanPlan {
         Ok(true)
     }
 
-    /// The Annotation records of one graph, by the plan the graph's dictionary allows:
-    /// a key no string in it spells reaches no annotation, so the type is often skipped
-    /// outright; otherwise its raw fields are swept or every record goes through WHERE.
-    fn sweep_annotations(
+    /// Preserve the CallSite-only batch schedule when every other type is absent
+    /// or proved unable to match. Annotation value pairs can use CallSite property
+    /// names, so their complete-dictionary proof must precede the CallSite bitmap:
+    /// an unproved annotation requires the general node-id merge before LIMIT.
+    fn can_batch_callsite_sources(
+        &self,
+        ex: &Executor,
+        sources: &[SourceIdx],
+    ) -> CypherResult<bool> {
+        ex.cancel.check()?;
+        let static_shape = self.call_site.is_some()
+            && !self.has_synthetic
+            && self.tag_plans.iter().enumerate().all(|(tag, plan)| {
+                tag == TAG_CALL_SITE_NODE as usize
+                    || matches!(plan, TagPlan::Skip)
+                    || (tag == TAG_ANNOTATION_NODE as usize && matches!(plan, TagPlan::Generic))
+            });
+        if !static_shape {
+            return Ok(false);
+        }
+        if matches!(
+            self.tag_plans[TAG_ANNOTATION_NODE as usize],
+            TagPlan::Generic
+        ) {
+            for &source in sources {
+                ex.cancel.check()?;
+                if !ex.graph(source).ids_by_tag(TAG_ANNOTATION_NODE).is_empty() {
+                    let mut memo = signature::DictionaryMemo::new(self.tests);
+                    if !annotation::cannot_match(ex, source, &self.tree, &mut memo)? {
+                        return Ok(false);
+                    }
+                }
+            }
+        }
+        ex.cancel.check()?;
+        Ok(true)
+    }
+
+    /// The CallSite-only schedule uses the same complete-dictionary proof as broad
+    /// scans. In particular, a signature's parameter types are not all indexed.
+    fn prepare_callsite_source(
         &self,
         ex: &Executor,
         source: SourceIdx,
-        row: &Row,
-        emit: &mut Emit<'_>,
-    ) -> CypherResult<bool> {
+        tree: &PredTree,
+    ) -> CypherResult<SourcePlan> {
         let graph = ex.graph(source);
-        let tag = TAG_ANNOTATION_NODE;
-        if graph.ids_by_tag(tag).is_empty() {
-            return Ok(true);
-        }
-        let plan = tag_plan(
-            &self.tree,
-            tag,
-            &|key| {
-                !matches!(key, "name" | "class" | "member" | "values")
-                    && graph.strings().index_of(key).is_none()
-            },
-            &|p| synthetic_truth(ex, source, p),
-        );
-        let mut stream = match plan {
-            TagPlan::Skip | TagPlan::CallSite(_) => return Ok(true),
-            TagPlan::All => TypeStream::All {
-                ids: graph.ids_by_tag(tag),
-                pos: 0,
-            },
-            TagPlan::Generic => TypeStream::Generic {
-                ids: graph.ids_by_tag(tag),
-                pos: 0,
-            },
-            TagPlan::Column(t) => {
-                let graph_id = &ex.sources[source as usize].id;
-                let mut memos = 0usize;
-                let Some(tree) = ColumnTree::resolve(graph, graph_id, &t, tag, &mut memos) else {
-                    return Ok(true);
-                };
-                let ids = tree.row_ids(graph, tag);
-                TypeStream::column(tree, ids, memos)
-            }
+        let mut memo = signature::DictionaryMemo::new(self.tests);
+        let Some(tree) = signature::prune_callsite(tree, graph, &ex.cancel, &mut memo)? else {
+            return Ok(SourcePlan {
+                source,
+                call_site: Vec::new(),
+                call_site_candidates: Some(Candidates::Nodes(Vec::new())),
+                call_site_exact: true,
+                no_prefilter: false,
+            });
         };
-        let provenance: Option<Value> = (ex.cross
-            && !row.contains_key(super::pipeline::INTERNAL_PROVENANCE_KEY))
-        .then(|| Value::list(vec![Value::Str(ex.sources[source as usize].id.clone())]));
-        let verified = stream.verified();
-        while let Some(id) = stream.next(ex, graph)? {
-            ex.tick()?;
-            let value = Value::Node(NodeRef { source, id });
-            if !emit(value, provenance.as_ref(), self.verified(verified))? {
-                return Ok(false);
-            }
-        }
-        Ok(true)
+        let mut predicates = Vec::new();
+        tree.leaves(&mut predicates);
+        Ok(build_source_plan(
+            source,
+            graph,
+            &ex.sources[source as usize].id,
+            &tree,
+            &predicates,
+            self.tests,
+        ))
     }
 
     /// Every type of one graph, in tag order, each by its own plan.
@@ -906,30 +880,25 @@ impl ScanPlan {
     /// which is most of the cost of a broad term over many graphs, uses every core.
     /// The batches follow the CallSite schedule: one graph, one per thread, then
     /// doubling, so a LIMIT met early never pays for preparing what it will not read.
-    #[allow(clippy::too_many_arguments)]
     fn run_by_source(
         &self,
         ex: &Executor,
-        ev: &Evaluator,
         row: &Row,
         sources: &[SourceIdx],
-        cs_tree: Option<&PredTree>,
-        cs_preds: &[StringPredicate],
         emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
-        let _ = ev;
         for batch in batch_schedule(sources) {
             ex.cancel.check()?;
             let prepared: Vec<Prepared> = if batch.len() > 1 {
                 batch
                     .par_iter()
-                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
-                    .collect()
+                    .map(|s| self.prepare_source(ex, *s))
+                    .collect::<CypherResult<_>>()?
             } else {
                 batch
                     .iter()
-                    .map(|s| self.prepare_source(ex, *s, cs_tree, cs_preds))
-                    .collect()
+                    .map(|s| self.prepare_source(ex, *s))
+                    .collect::<CypherResult<_>>()?
             };
             for p in prepared {
                 if !self.sweep_prepared(ex, row, p, emit)? {
@@ -942,13 +911,7 @@ impl ScanPlan {
 
     /// Plan one graph: settle the per-type plans it needs settled per graph, resolve
     /// its column trees and build its CallSite plan.
-    fn prepare_source(
-        &self,
-        ex: &Executor,
-        source: SourceIdx,
-        cs_tree: Option<&PredTree>,
-        cs_preds: &[StringPredicate],
-    ) -> Prepared {
+    fn prepare_source(&self, ex: &Executor, source: SourceIdx) -> CypherResult<Prepared> {
         let graph = ex.graph(source);
         let graph_id: &str = &ex.sources[source as usize].id;
         // With a synthetic key in the clause the per-type plans depend on this
@@ -966,19 +929,17 @@ impl ScanPlan {
                 .collect()
         });
         let plans: &[TagPlan] = source_plans.as_deref().unwrap_or(&self.tag_plans);
+        // A signature is assembled from dictionary components. Prove impossible
+        // leaves before choosing a record sweep, keeping dynamic types untouched.
+        let mut dictionary = signature::DictionaryMemo::new(self.tests);
+        let signature_plans = signature::prune_plans(plans, graph, &ex.cancel, &mut dictionary)?;
+        let plans = signature_plans.as_deref().unwrap_or(plans);
         let cs_plan: Option<SourcePlan> = match &plans[TAG_CALL_SITE_NODE as usize] {
             TagPlan::CallSite(t) => {
-                let leaves: Vec<StringPredicate>;
-                let (t, preds): (&PredTree, &[StringPredicate]) = if source_plans.is_some() {
-                    let mut out = Vec::new();
-                    t.leaves(&mut out);
-                    leaves = out;
-                    (t, &leaves)
-                } else {
-                    (cs_tree.expect("CallSite plan"), cs_preds)
-                };
+                let mut preds = Vec::new();
+                t.leaves(&mut preds);
                 may_match(graph, t)
-                    .then(|| build_source_plan(source, graph, graph_id, t, preds, self.tests))
+                    .then(|| build_source_plan(source, graph, graph_id, t, &preds, self.tests))
             }
             _ => None,
         };
@@ -1025,6 +986,12 @@ impl ScanPlan {
                 || (declared_tag && absent_generic.iter().any(|absent| *absent)))
                 && matches!(plan, TagPlan::Generic)
             {
+                if tag == TAG_ANNOTATION_NODE
+                    && (graph.ids_by_tag(tag).is_empty()
+                        || annotation::cannot_match(ex, source, &self.tree, &mut dictionary)?)
+                {
+                    continue;
+                }
                 contextual_plan = tag_plan(
                     &self.tree,
                     tag,
@@ -1077,11 +1044,11 @@ impl ScanPlan {
             };
             streams.push(stream);
         }
-        Prepared {
+        Ok(Prepared {
             source,
             cs_plan,
             streams,
-        }
+        })
     }
 
     /// Sweep one prepared graph's types, merged by node id: the Kotlin server walks an
@@ -1572,7 +1539,7 @@ fn needs_raw_sweep(tree: &PredTree) -> bool {
 enum RawLeaf {
     /// One of the four indexed strings: the record's string id is in the set.
     Field(usize, StringBitset),
-    /// The caller's or callee's signature, composed from the record's string ids and
+    /// The caller's or callee's signature/descriptor, composed from string ids and
     /// remembered per distinct method, in the memo at this index.
     Signature { callee: bool, memo: usize },
     /// The line number as text, or against a number.
@@ -1595,9 +1562,9 @@ enum RawTree {
     And(Vec<RawTree>),
 }
 
-/// A signature leaf's memo, keyed by the method's string ids -- class, name,
+/// A signature/descriptor leaf's memo, keyed by the method's string ids -- class, name,
 /// parameters, return type -- so a method with a thousand call sites or locals
-/// composes its signature once.
+/// composes its requested text once per leaf.
 #[derive(Default)]
 struct SignatureMemo {
     memo: std::collections::HashMap<Box<[u32]>, bool>,
@@ -1623,20 +1590,13 @@ impl SignatureMemo {
         if let Some(&hit) = self.memo.get(self.key.as_slice()) {
             return hit;
         }
-        let key = &self.key;
         let text = &mut self.text;
-        text.clear();
-        text.push_str(graph.str(key[0]));
-        text.push('.');
-        text.push_str(graph.str(key[1]));
-        text.push('(');
-        for (i, param) in key[2..key.len() - 1].iter().enumerate() {
-            if i > 0 {
-                text.push(',');
-            }
-            text.push_str(graph.str(*param));
-        }
-        text.push(')');
+        Self::write_text(
+            &self.key,
+            matches!(p.prop(), "caller_descriptor" | "callee_descriptor"),
+            |id| graph.str(id),
+            text,
+        );
         let hit = match p.transform {
             Transform::None => p.matches_raw(text),
             Transform::Lowercase => {
@@ -1644,12 +1604,44 @@ impl SignatureMemo {
                 p.matches_raw(&lowered)
             }
         };
-        self.memo.insert(key.clone().into_boxed_slice(), hit);
+        self.memo.insert(self.key.clone().into_boxed_slice(), hit);
         hit
+    }
+
+    /// The same formatting as MethodDesc, without decoding a node or allocating its
+    /// parameter vector. A descriptor includes the return type; a signature does not.
+    fn write_text<'a>(
+        key: &[u32],
+        descriptor: bool,
+        string_of: impl Fn(u32) -> &'a str,
+        text: &mut String,
+    ) {
+        use graphite_storage::node::push_type_descriptor;
+        text.clear();
+        if !descriptor {
+            text.push_str(string_of(key[0]));
+            text.push('.');
+            text.push_str(string_of(key[1]));
+        }
+        text.push('(');
+        for (i, param) in key[2..key.len() - 1].iter().enumerate() {
+            if descriptor {
+                push_type_descriptor(string_of(*param), text);
+            } else {
+                if i > 0 {
+                    text.push(',');
+                }
+                text.push_str(string_of(*param));
+            }
+        }
+        text.push(')');
+        if descriptor {
+            push_type_descriptor(string_of(*key.last().unwrap()), text);
+        }
     }
 }
 
-/// Per-thread state of the raw sweep: one signature memo per signature leaf.
+/// Per-thread state of the raw sweep: one memo per signature/descriptor leaf.
 struct RawSweepState {
     memos: Vec<SignatureMemo>,
     text: String,
@@ -1730,11 +1722,12 @@ impl RawTree {
                     {
                         RawLeaf::Never
                     }
-                    "callee_signature" | "caller_signature" => {
+                    "callee_signature" | "caller_signature" | "callee_descriptor"
+                    | "caller_descriptor" => {
                         let index = *memos;
                         *memos += 1;
                         RawLeaf::Signature {
-                            callee: p.prop() == "callee_signature",
+                            callee: matches!(p.prop(), "callee_signature" | "callee_descriptor"),
                             memo: index,
                         }
                     }
@@ -2893,7 +2886,9 @@ fn push_regex(left: &Expr, right: &Expr, variable: &str, out: &mut Vec<StringPre
     if matches!(*compiled, crate::eval::CompiledRegex::Unsupported(_)) {
         return false;
     }
-    let Some((property, Transform::None, via_to_string)) = property_operand(left, variable) else {
+    // The nonempty required literal proves an empty fallback cannot match.
+    let Some((property, Transform::None, via_to_string)) = property_operand(left, variable, true)
+    else {
         return false;
     };
     let trigrams = std::sync::Arc::new(if literal.is_ascii() {
@@ -2930,7 +2925,7 @@ fn push_predicate(
         Expr::Literal(crate::ast::Literal::Str(s)) => s.clone(),
         _ => return false,
     };
-    match property_operand(left, variable) {
+    match property_operand(left, variable, !literal.is_empty()) {
         Some((property, transform, via_to_string)) => {
             // Trigrams exist only for an ASCII literal. The index was written from the
             // JVM's `String.lowercase()`, which is context-sensitive (a final sigma
@@ -3057,7 +3052,13 @@ fn record_field(tag: u8, property: &str, shape: LeafShape) -> Option<RecordField
 fn is_raw_call_site_prop(property: &str) -> bool {
     matches!(
         property,
-        "callee_signature" | "caller_signature" | "line" | "ordinal" | "id"
+        "callee_signature"
+            | "caller_signature"
+            | "callee_descriptor"
+            | "caller_descriptor"
+            | "line"
+            | "ordinal"
+            | "id"
     )
 }
 
@@ -3121,7 +3122,7 @@ fn leaf_exposure(tag: u8, p: &StringPredicate) -> Exposure {
             other => other,
         },
     };
-    // A CallSite record's signatures, line and id are read raw by the record sweep
+    // A CallSite record's signatures, descriptors, line and id are read raw by the sweep
     // instead of decoding the record: what a search over every property, which names
     // all of them, would otherwise cost on the most numerous type. Likewise the
     // method of a local, a parameter or a return node, and the numbers a record
@@ -3195,8 +3196,7 @@ fn exposure_of(
             property,
             "callee_signature" | "caller_signature" | "callee_descriptor" | "caller_descriptor"
         ) {
-            // The descriptors are composed from the record like the signatures, but not
-            // read raw by the sweep: a leaf on one decodes the record.
+            // leaf_exposure upgrades these composed fields to raw record reads.
             Exposure::Dynamic
         } else {
             Exposure::Absent
@@ -3358,6 +3358,7 @@ fn fold_synthetic(cross: bool, graph_id: &str, p: &StringPredicate) -> Option<bo
 }
 
 /// What the scan does for one node type.
+#[derive(Clone)]
 enum TagPlan {
     /// No record of this type can satisfy the clause.
     Skip,
@@ -3923,7 +3924,11 @@ fn prop_name(key: &str) -> Prop {
     }
 }
 
-fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)> {
+fn property_operand(
+    e: &Expr,
+    variable: &str,
+    empty_fallback_cannot_match: bool,
+) -> Option<(Prop, Transform, bool)> {
     match e {
         Expr::Property { expr, key } => match expr.as_ref() {
             Expr::Variable(v) if v == variable => Some((prop_name(key), Transform::None, false)),
@@ -3933,11 +3938,27 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)>
             let lower = name.to_ascii_lowercase();
             match lower.as_str() {
                 "tolower" | "tolowercase" => {
-                    let (p, _, via) = property_operand(args.first()?, variable)?;
+                    let (p, _, via) =
+                        property_operand(args.first()?, variable, empty_fallback_cannot_match)?;
                     Some((p, Transform::Lowercase, via))
                 }
                 "coalesce" => {
-                    let (p, t, via) = property_operand(args.first()?, variable)?;
+                    let first = args.first()?;
+                    // Missing-property proofs are valid only when every fallback
+                    // is also unable to satisfy this predicate. Null stays null;
+                    // empty strings are safe only for a nonempty tested literal.
+                    // Nonliteral/nonempty alternatives retain the generic evaluator.
+                    if !args[1..].iter().all(|arg| match arg {
+                        Expr::Literal(crate::ast::Literal::Null) => true,
+                        Expr::Literal(crate::ast::Literal::Str(s)) => {
+                            empty_fallback_cannot_match && s.is_empty()
+                        }
+                        _ => false,
+                    }) {
+                        return None;
+                    }
+                    let (p, t, via) =
+                        property_operand(first, variable, empty_fallback_cannot_match)?;
                     Some((p, t, via))
                 }
                 // `toString` of a string is the string; of a number or boolean it is the
@@ -3946,7 +3967,8 @@ fn property_operand(e: &Expr, variable: &str) -> Option<(Prop, Transform, bool)>
                     if args.len() != 1 {
                         return None;
                     }
-                    let (p, t, _) = property_operand(&args[0], variable)?;
+                    let (p, t, _) =
+                        property_operand(&args[0], variable, empty_fallback_cannot_match)?;
                     Some((p, t, true))
                 }
                 _ => None,
@@ -5174,7 +5196,7 @@ mod tests {
         let plan = ScanPlan::build(&p, w.as_ref()).expect("planned");
         let never = &|_: &str| false;
         let no = &|_: &StringPredicate| Fold::Known(false);
-        // CallSites: the four indexed strings and the two signatures are read raw
+        // CallSites: the four indexed strings, signatures and descriptors are read raw
         // off the record; a string constant is a column; an integer constant cannot
         // print letters; annotations always decode.
         assert!(matches!(
