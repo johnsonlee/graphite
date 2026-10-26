@@ -11638,3 +11638,28 @@ Correctness: both graphs have 4,744,132 nodes; node counts per label and the sor
 Not measured: the APK itself (not available in this environment), query latency and loading (no persisted-format or query-path change), and repeated or matched-GC samples. One sample per side does not establish variability. With `--include`, a fold report no longer lists methods outside the graph that only CHA resolved.
 
 Decision: retain. The APK result is pending a build of the reporting APK with this change.
+
+### Attempt151 — look up an exact node id before scanning, for the Explorer's neighbourhood shape
+
+`MATCH (n {graphId: 'g', id: 616246})-[r]-(m) RETURN type(r), m.graphId, m.id, m.type, m.path, m.class, m.name, m.value LIMIT 50` is how an Explorer client expands one node. Observed on a production server holding a few dozen graphs: four such requests in flight took 11 s, 22 s, 33 s and 44 s, each queued behind the previous one.
+
+Hypothesis: no plan accepts the shape, so the generic matcher enumerates every node of every loaded graph as `n` and decodes each record to compare the map's `id`. `IdCandidatePlan` (attempt144) takes only a bare node with a whole-clause `WHERE id(n) = k`; `ScanPlan` refuses a relationship; `HopPlan` refuses a property map and needs a WHERE. `graphId` is answered without the record across graphs, but `id` is not, and the other graphs are walked in full.
+
+Change (`backend/cypher`): the id plan reads the id from the property map (`{id: k}`) or from any top-level WHERE conjunct (`id(n) = k`, `n.id = k`), and a pinned graph from `{graphId: 'g'}` or `n.graphId = 'g'`; it accepts labels, relationships, path variables and further patterns, and anchors only on the first node of the first pattern so row order is the exhaustive walk's. The matcher gains `match_patterns_at`, which enters a pattern at a given candidate exactly as its own enumeration would (`match_candidate`, shared with the enumeration), so the node's constraints and the whole WHERE are still evaluated on every row. The id plan runs before the scan and hop plans. `Executor::node_property` answers `id` from the reference without decoding the record, for every caller. Phantom and duplicate ids in the type index keep the behaviour attempt144 pinned.
+
+Fixture: the core jar of this repository built with `graphite build --include io.johnsonlee.graphite` (25,673 nodes), loaded 64 times as sources `g00`..`g63` of one cross-graph `Executor`, the Explorer's representative multi-graph scope. Base `f26bd19`, candidate = base + this change, both release builds, Linux x86-64, 4 vCPU, one process each, a throwaway `#[ignore]` test not kept in the tree. Per query: one warm-up, then 21 sequential samples; p50 is the 11th and p95 the 20th sorted sample. `n` is the fixture's first CallSite id; the pinned queries name `g63`, the last source.
+
+| Query | Rows | Base p50 ms | Base p95 ms | Candidate p50 ms | Candidate p95 ms | Δ p50 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| Explorer shape, `{graphId: 'g63', id: k}`, `-[r]-`, LIMIT 50 | 2 | 192.36 | 209.37 | 0.26 | 0.29 | -192.10 |
+| `{id: k}` unpinned, `-[r]-`, LIMIT 50 | 50 | 125.68 | 150.33 | 5.89 | 6.57 | -119.79 |
+| `WHERE id(n) = k AND n.graphId = 'g63'`, `-[r]-` | 2 | 103.00 | 130.26 | 0.25 | 0.29 | -102.75 |
+| `{graphId: 'g63', id: k}` single node | 1 | 0.68 | 1.17 | 0.24 | 0.27 | -0.44 |
+
+The unpinned shape still walks the 64 type-index lists (a linear scan of ids, no record decoded), hence its 5.9 ms; a pinned graph skips the other 63 outright. Base samples ranged 176.8–233.8 ms for the Explorer shape; candidate 0.23–0.30 ms.
+
+Correctness: `id_candidates_expand_the_node_the_explorer_names` and `id_candidates_read_the_property_map_and_the_pinned_graph` compare every planned shape (maps, labels, both directions, a path, `*1..2`, a WHERE, two patterns, a LIMIT, a graph alone without `graphId`) against the generic matcher on the real fixture, rows, provenance and probe included; the oracle rewrites the map's `id` to `k + 0` so no plan reads it. The attempt144 oracle (`AND true`) no longer disables the plan, since the plan reads conjuncts, and became `(predicate) = true`. All 166 `graphite-cypher`, 120 `graphite-explore` and the fixture-gated `graphite-storage` tests pass with `GRAPHITE_INDEX_FIXTURE`; fmt and strict Clippy pass.
+
+Not measured: CPU and RSS separately (the candidate does strictly less work per request: no record decode, 63 graphs fewer walked, no new allocation or index), the Kotlin engine (unchanged), concurrent latency, and the production corpus that produced the 11–44 s observations. One warm-up and 21 samples per query do not establish variability beyond the ranges reported.
+
+Decision: retain.
