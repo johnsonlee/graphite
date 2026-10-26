@@ -256,9 +256,14 @@ impl GraphContext for Executor {
         &self.sources[source as usize].id
     }
     fn node_property(&self, node: NodeRef, key: &str) -> Value {
-        // The id is the reference itself: no record to decode.
+        // The id is the reference itself: no record to decode, but a reference that
+        // no record backs (a phantom type-index entry) has no properties at all.
         if key == "id" {
-            return Value::Int(i64::from(node.id));
+            return if self.graph(node.source).has_node(node.id) {
+                Value::Int(i64::from(node.id))
+            } else {
+                Value::Null
+            };
         }
         if self.cross {
             match key {

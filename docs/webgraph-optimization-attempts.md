@@ -11663,3 +11663,16 @@ Correctness: `id_candidates_expand_the_node_the_explorer_names` and `id_candidat
 Not measured: CPU and RSS separately (the candidate does strictly less work per request: no record decode, 63 graphs fewer walked, no new allocation or index), the Kotlin engine (unchanged), concurrent latency, and the production corpus that produced the 11–44 s observations. One warm-up and 21 samples per query do not establish variability beyond the ranges reported.
 
 Decision: retain.
+
+**Review iteration (same attempt).** Two review findings on the PR: `node_property("id")` answered from the reference made a phantom type-index entry (no record behind the id) match `n.id` and `{id: k}` where the generic path returned null; and the plan still walked every id of the admitted type lists of the pinned graph, O(nodes in that graph) rather than a seek. Now `id` is `Null` unless `Graph::has_node` holds (an offset-table read, no decode), and `Graph` decides at load whether each type list is in ascending order (`ids_by_tag_sorted`); a sorted list is probed with two `partition_point` searches for the run equal to the id, so duplicates stay and a phantom in the list is still a candidate, and an unsorted list (a legacy or hand-made index) is walked as before. The phantom oracles cover the map, `n.id` in WHERE, and `n.id` projected; sorted lists with duplicates and phantoms, and a mixed graph with one unsorted list, compare against the walk. `MATCH (n {id: k}) RETURN n.id` alone is the scan's compact projection, which reads the id raw off the type index and admits a phantom on the base revision too; it is not this plan's path and is left as it is.
+
+Same fixture, same method, candidate = base + the reviewed change:
+
+| Query | Rows | Base p50 ms | Base p95 ms | Candidate p50 ms | Candidate p95 ms |
+|---|---:|---:|---:|---:|---:|
+| Explorer shape, `{graphId: 'g63', id: k}`, `-[r]-`, LIMIT 50 | 2 | 192.36 | 209.37 | 0.02 | 0.02 |
+| `{id: k}` unpinned, `-[r]-`, LIMIT 50 | 50 | 125.68 | 150.33 | 0.12 | 0.14 |
+| `WHERE id(n) = k AND n.graphId = 'g63'`, `-[r]-` | 2 | 103.00 | 130.26 | 0.01 | 0.01 |
+| `{graphId: 'g63', id: k}` single node | 1 | 0.68 | 1.17 | 0.01 | 0.01 |
+
+The unpinned shape, which walked the 64 type-index lists before, now probes them. The single-node row runs the scan plan's compact path in both candidate runs; its earlier 0.24 ms against 0.01 ms here is run-to-run variance of a sub-millisecond shape, not a change on that path.

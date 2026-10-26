@@ -126,6 +126,10 @@ impl<'a> IdCandidatePlan<'a> {
     /// Keep the original type-index domain, including duplicates and phantom IDs. Within a
     /// source every survivor has exactly the same NodeRef, so tag order and MergedWalk order
     /// produce identical visible rows even for unsorted lists. Sources retain their order.
+    ///
+    /// A list the graph knows to be sorted is searched: the entries equal to the id are
+    /// one run, found by two binary searches, so a graph costs a few probes rather than a
+    /// walk of its nodes. An unsorted list is walked, which keeps the same domain.
     fn candidates(
         &self,
         ex: &Executor,
@@ -141,7 +145,23 @@ impl<'a> IdCandidatePlan<'a> {
                 }
             }
             for &tag in &self.tags {
-                for &id in src.graph.ids_by_tag(tag) {
+                let ids = src.graph.ids_by_tag(tag);
+                if ids.is_empty() {
+                    continue;
+                }
+                if src.graph.ids_by_tag_sorted(tag) {
+                    ex.tick()?;
+                    let first = ids.partition_point(|&id| id < self.wanted);
+                    let end = ids.partition_point(|&id| id <= self.wanted);
+                    for _ in first..end {
+                        ex.tick()?;
+                        if !emit(source as SourceIdx, self.wanted)? {
+                            return Ok(false);
+                        }
+                    }
+                    continue;
+                }
+                for &id in ids {
                     ex.tick()?;
                     if id == self.wanted && !emit(source as SourceIdx, id)? {
                         return Ok(false);

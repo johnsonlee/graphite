@@ -165,12 +165,47 @@ fn compare_map_generic(
     );
     let actual = ex.execute_clauses(&clauses, limit).unwrap();
     let expected = ex.execute_clauses(&generic, limit).unwrap();
+    // A literal map may take the compact projection where the rewritten one does not:
+    // compare the rows the two representations carry, in order, with their provenance.
     assert_eq!(
-        format!("{actual:?}"),
-        format!("{expected:?}"),
+        flattened(&actual),
+        flattened(&expected),
         "complete typed rows, provenance and probe: {query}"
     );
     actual
+}
+
+type Flat = (Vec<String>, Vec<(Vec<String>, Vec<String>)>, bool);
+
+fn flattened(result: &super::super::QueryResult) -> Flat {
+    let rows = match &result.compact {
+        Some(compact) => compact
+            .values
+            .iter()
+            .zip(&compact.graph_ids)
+            .map(|(values, graph)| {
+                (
+                    values.iter().map(|v| format!("{v:?}")).collect(),
+                    vec![graph.to_string()],
+                )
+            })
+            .collect(),
+        None => result
+            .rows
+            .iter()
+            .map(|row| {
+                (
+                    result
+                        .columns
+                        .iter()
+                        .map(|c| format!("{:?}", row[c.as_str()]))
+                        .collect(),
+                    super::super::QueryResult::graph_ids(row),
+                )
+            })
+            .collect(),
+    };
+    (result.columns.clone(), rows, result.more)
 }
 
 fn multi(graph: Arc<Graph>) -> Executor {
@@ -481,6 +516,45 @@ fn id_candidates_preserve_unsorted_duplicates_phantoms_and_omissions() {
             compare_generic(&ex, &query, Some(limit));
         }
     }
+    // The property map and `n.id` read the record: a phantom has none, so neither
+    // matches it, planned or walked, and projecting its id gives null either way.
+    // (`MATCH (n {id: k}) RETURN n.id` alone is the scan's compact projection, which
+    // reads the id raw off the type index and is not this plan's.)
+    for id in [wanted, u32::MAX] {
+        compare_map_generic(&ex, &format!("MATCH (n {{id: {id}}}) RETURN n"), None);
+        compare_map_generic(
+            &ex,
+            &format!("MATCH (n {{id: {id}}})-[r]-(m) RETURN n.id, m.id"),
+            None,
+        );
+        compare_map_generic(
+            &ex,
+            &format!("MATCH (n {{id: {id}}}), (m) RETURN n.id LIMIT 3"),
+            None,
+        );
+        compare_generic(&ex, &format!("MATCH (n) WHERE n.id = {id} RETURN n"), None);
+        compare_generic(
+            &ex,
+            &format!("MATCH (n) WHERE id(n) = {id} RETURN n.id, n.graphId"),
+            None,
+        );
+    }
+    assert!(ex
+        .execute(&format!("MATCH (n {{id: {}}}) RETURN n", u32::MAX), None)
+        .unwrap()
+        .rows
+        .is_empty());
+    let projected = ex
+        .execute(
+            &format!("MATCH (n) WHERE id(n) = {} RETURN n.id", u32::MAX),
+            None,
+        )
+        .unwrap();
+    assert_eq!(projected.rows.len(), 4);
+    assert!(projected
+        .rows
+        .iter()
+        .all(|row| matches!(row["n.id"], Value::Null)));
     let omitted = (0..original.node_capacity() as u32)
         .find(|id| original.has_node(*id) && lists.iter().all(|(_, ids)| !ids.contains(id)))
         .unwrap();
@@ -712,4 +786,98 @@ fn id_candidates_expand_the_node_the_explorer_names() {
     assert!(!compare_map_generic(&single, &unpinned, None)
         .rows
         .is_empty());
+}
+
+#[test]
+fn id_candidates_search_sorted_lists_and_walk_unsorted_ones() {
+    let Some((dir, original)) = fixture() else {
+        return;
+    };
+    // A built graph writes every type list in id order, and the plan then probes each
+    // list instead of walking it: two sources, one tick per non-empty list plus one
+    // per hit.
+    assert!((0..TAG_COUNT as u8).all(|tag| original.ids_by_tag_sorted(tag)));
+    let wanted = original.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+    let ex = multi(original.clone());
+    let rows = compare_generic(
+        &ex,
+        &format!("MATCH (n) WHERE id(n) = {wanted} RETURN n"),
+        None,
+    );
+    assert_eq!(rows.rows.len(), 2);
+    let plan = IdCandidatePlan {
+        wanted,
+        graph: None,
+        tags: (0..TAG_COUNT as u8).collect(),
+    };
+    let probed = multi(original.clone());
+    let mut seen = Vec::new();
+    assert!(plan
+        .candidates(&probed, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(0, wanted), (1, wanted)]);
+    let lists = (0..TAG_COUNT as u8)
+        .filter(|&tag| !original.ids_by_tag(tag).is_empty())
+        .count() as u64;
+    assert!(lists > 1 && original.node_count() as u64 > 100 * lists);
+    assert_eq!(probed.poll.load(Ordering::Relaxed), 2 * (lists + 1));
+    // Sorted lists with duplicates and a phantom: the search finds the whole run, so
+    // the domain is the walk's.
+    let (_sorted, graph) = variant(
+        &dir,
+        &[
+            (TAG_INT_CONSTANT, vec![0, wanted, wanted, u32::MAX]),
+            (TAG_BOOLEAN_CONSTANT, vec![wanted, u32::MAX, u32::MAX]),
+        ],
+    );
+    assert!(graph.ids_by_tag_sorted(TAG_INT_CONSTANT));
+    assert!(graph.ids_by_tag_sorted(TAG_BOOLEAN_CONSTANT));
+    assert!(
+        graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE),
+        "an empty list is sorted"
+    );
+    let ex = multi(graph);
+    for (id, per_graph) in [(wanted, 3), (u32::MAX, 3), (0, 1), (wanted + 1, 0)] {
+        let query = format!("MATCH (n) WHERE id(n) = {id} RETURN n");
+        assert_eq!(compare_generic(&ex, &query, None).rows.len(), per_graph * 2);
+        for limit in [0, 1, per_graph, per_graph + 1] {
+            compare_generic(&ex, &query, Some(limit));
+        }
+        compare_map_generic(&ex, &format!("MATCH (n {{id: {id}}}) RETURN n"), None);
+    }
+    // One list out of order is walked; the others are still searched.
+    let (_mixed, graph) = variant(
+        &dir,
+        &[
+            (TAG_INT_CONSTANT, vec![wanted, 0, wanted]),
+            (TAG_BOOLEAN_CONSTANT, vec![0, wanted, u32::MAX]),
+        ],
+    );
+    assert!(!graph.ids_by_tag_sorted(TAG_INT_CONSTANT));
+    assert!(graph.ids_by_tag_sorted(TAG_BOOLEAN_CONSTANT));
+    let ex = multi(graph);
+    let query = format!("MATCH (n) WHERE id(n) = {wanted} RETURN n");
+    assert_eq!(compare_generic(&ex, &query, None).rows.len(), 6);
+    let probed = multi(ex.sources[0].graph.clone());
+    let plan = IdCandidatePlan {
+        wanted,
+        graph: Some("a"),
+        tags: vec![TAG_INT_CONSTANT, TAG_BOOLEAN_CONSTANT],
+    };
+    let mut seen = Vec::new();
+    assert!(plan
+        .candidates(&probed, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(0, wanted), (0, wanted), (0, wanted)]);
+    assert_eq!(
+        probed.poll.load(Ordering::Relaxed),
+        3 + 2,
+        "three ticks walking the unsorted list, one probing the sorted one plus its hit"
+    );
 }

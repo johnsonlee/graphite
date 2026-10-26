@@ -218,6 +218,10 @@ pub struct Graph {
     /// number of entries in nodeoffsets (= maxNodeId + 1)
     node_capacity: usize,
     type_index: Vec<Vec<NodeId>>,
+    /// Whether each type list is in ascending id order, decided at load: a sorted list
+    /// can be searched for an id; an unsorted one (a legacy or hand-made index) can
+    /// only be walked.
+    type_index_sorted: Vec<bool>,
     pub forward: Csr,
     pub backward: Csr,
     comparisons: Comparisons,
@@ -268,6 +272,10 @@ impl Graph {
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
 
         let type_index = load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
+        let type_index_sorted = type_index
+            .iter()
+            .map(|ids| ids.windows(2).all(|w| w[0] <= w[1]))
+            .collect();
 
         let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
@@ -329,6 +337,7 @@ impl Graph {
             node_offsets,
             node_capacity,
             type_index,
+            type_index_sorted,
             forward,
             backward,
             comparisons,
@@ -530,6 +539,15 @@ impl Graph {
             .get(tag as usize)
             .map(|v| v.as_slice())
             .unwrap_or(&[])
+    }
+
+    /// Whether [`Graph::ids_by_tag`] for `tag` is in ascending order, so that the
+    /// entries equal to an id are one contiguous run a binary search finds.
+    pub fn ids_by_tag_sorted(&self, tag: u8) -> bool {
+        self.type_index_sorted
+            .get(tag as usize)
+            .copied()
+            .unwrap_or(true)
     }
 
     pub fn count_by_tag(&self, tag: u8) -> usize {
