@@ -1988,3 +1988,590 @@ pass.
 **Conclusion:** keep. Schema exploration costs the number of types, graphs
 and distinct column values a segment reads, however it is phrased; and an
 agent has a tool that answers the whole question in one call.
+
+### 2026-10-26 - Attempt 042: Prove absent signature terms before broad property scans
+
+**Hypothesis:** `ANY(k IN keys(n) WHERE toString(n[k]) CONTAINS ... OR ...)`
+expands into per-type property predicates. The composed method signatures force
+raw-record sweeps and per-leaf method memos even when none of the search terms
+occurs in a graph. `LIMIT 200` cannot stop the eager candidate sweep, and an empty
+result must exhaust all sources. Proving eligible terms absent from the complete
+string dictionary can eliminate these leaves before selecting the sweep. This is
+a Rust query-engine change; no JVM tuning or JVM process is involved.
+
+**Correctness prerequisite:** the original revision `d2e6f7f` omitted
+`caller_descriptor` and `callee_descriptor` from `ALL_KEYS`, despite exposing both
+through `keys(n)`. The independent generic-executor comparison found a real false
+negative: Tika node 6041642 matched `java` only in its `()Ljava/lang/String;` and
+`()Ljava/lang/Object;` descriptors. Both the original revision and the first
+candidate skipped it. Commit `61759ea1` separately fixes key completeness and
+uses the existing raw method memo for descriptors, preserving return types,
+primitive codes, arrays and slash-separated reference types. The performance
+baseline below is this correctness-fixed revision, not the incomplete original
+query. This is an incremental comparison, not a claim of pre-regression recovery.
+
+**Design:** one dictionary pass per prepared source tests each eligible distinct
+literal once per dictionary entry, retiring it at the first occurrence and ending
+when every literal is found. Only a proven-absent composed-property leaf is folded
+to false. Ordinary fields, dynamic annotations/resource values, synthetic graph
+identities and unsupported operators/transforms keep their existing semantics.
+Signature literals must be nonempty, untransformed `CONTAINS` terms without the
+inserted signature separators. Descriptor terms additionally exclude descriptor
+wrappers/separators, `L`, and primitive-code-only strings, so a match must occur
+unchanged within an original dictionary component. The full dictionary includes
+parameter and return types and local-only methods; the CallSite trigram index
+alone cannot establish absence. Memory is proportional to query terms, not the
+dictionary. Cancellation is checked before, periodically during, and after the
+pass. The general per-source path is changed; CallSite-only planning, lazy sweep
+streaming and cross-leaf method memo sharing are not part of this experiment.
+
+**Fixture and protocol:** twelve distinct persisted JAR shards, Hive, Kotlin
+compiler and Tika 00–03, from
+`/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908`; 3,309,087 nodes
+and 827,385 CallSites. Every measured root `/api/cypher` request targets all twelve
+graphs. Missing-term queries exhaust all sources; the targeted, dense and boundary
+controls return `n.graphId, count(*)` to force full multi-source evaluation, not
+just an early LIMIT on the first graph. No synthetic performance data or
+single-graph query timings are used.
+
+The predeclared protocol and complete fixture file hashes/provenance are retained
+under `/tmp/graphite-signature-Xf2ESc/{protocol.md,fixture.json,queries.json,run.py}`.
+macOS arm64, 16 logical CPUs, 64 GiB RAM, release Rust builds with identical lock
+files, `RAYON_NUM_THREADS=4`, four concurrent clients and four server query permits,
+60 s server/120 s client deadlines. Both revisions first finish the all-graph C4
+readiness request, then record two warmup rounds per worker separately. OS page
+cache is uncontrolled; no cold-cache claim. Run order is baseline A, candidate A,
+candidate B, baseline B. Each run has 20 measured rounds per worker, 80 samples per
+case and 400 requests total. Every attempted request and failure is retained.
+
+`backend/bench/signature-load.py` drives independent seeded closed-loop workers
+without inter-case barriers. Timing ends only after the complete HTTP body is
+consumed; JSON validation, full-response hashes and disk writes occur after each
+phase. No response fields are excluded, including row order, provenance and probe
+totals. P50 and P95 are nearest ranks within each repeated query case, not across
+different queries. Both individual runs and their pooled distribution are reported;
+run-to-run ranges describe variability, not statistical confidence. This fixed
+concurrency investigation is not a saturation test or a production traffic trace.
+
+CPU is the server's user+system time around the complete harness (including
+warmup); process-lifetime CPU and peak RSS are also retained with matched loading
+and C4 readiness. Resources belong to the mixed workload/process, not individual
+query cases. Graph construction and standalone loading are not measured, and no
+recovery for those operations is claimed. Reproduction uses `run.py --binary
+<release-graphite> --name <new-run> --concurrency 4 --rounds 20`, adding
+`--reference base-a` for candidates. The checked-in load driver accepts an external
+server, query catalog, output directory and optional baseline reference.
+
+**Verification:** the ten proof tests pass, including exhaustive eligible
+substrings of generated primitive/reference/array descriptors, cancellation,
+property/tag isolation, and six real two-source query comparisons against an
+independently forced generic executor. Comparisons retain columns, ordered typed
+rows, all materialized properties, provenance and probe state. Three descriptor
+tests cover exact formatting, raw-path admission and real return-type-only
+matches. The no-fixture suites pass (151 Cypher and 118 explore tests; fixture
+gates skip when unset). Workspace/all-target/all-feature locked Clippy with
+warnings denied, formatting, and the load driver's four unit tests also pass.
+
+The full existing suite was also attempted with Tika-00. Five unrelated tests
+fail identically on the original baseline: missing Annotation fixture coverage
+(three tests), a threshold assumption on sparse IDs, and NaN node equality.
+The long reversed-ID fixture test was interrupted on both revisions; it is not
+reported as passing. Targeted new fixture tests do pass. The canonical CI fixture
+and required remote benchmark-regression gate have not been run here.
+
+**Measurements:** all four runs completed. Each revision contributes 160 measured
+requests per case, pooled without excluding samples. All 1,600 measured requests
+and 160 warmup requests succeeded with identical full-response identities across
+revisions and repetitions. The candidate is this attempt's production diff; its
+release binary SHA-256 is
+`a69b42b13d8cdb97fe0abf27520b77b68d3cee6062a4357627724116063c0711`;
+the corrected baseline binary is
+`84f9cb1e342512a18e24739b9cb2da110a14694abad9c88b3ee688f6a6abbc2a`.
+Full sample bodies, latencies, failures, resource snapshots and commands live in
+the four evidence directories `base-a`, `candidate-a`, `candidate-b`, `base-b`;
+`summarize.py` produces `comparison.json` from them.
+
+Pooled repeated-request latency, milliseconds; delta is candidate minus baseline:
+
+| Query case | Base P50 | Candidate P50 | P50 delta | Base P95 | Candidate P95 | P95 delta |
+|------------|---------:|--------------:|----------:|---------:|--------------:|----------:|
+| Screenshot-shaped missing business terms, LIMIT 200 | 1979.623 | 95.125 | -1884.498 | 2467.876 | 171.744 | -2296.132 |
+| Targeted + absent terms, all-graph counts | 1978.666 | 436.120 | -1542.545 | 2668.141 | 604.937 | -2063.205 |
+| Dense terms, all-graph counts | 2075.927 | 1375.670 | -700.257 | 2685.737 | 1531.688 | -1154.049 |
+| Boundary-character fallback, all-graph counts | 1262.020 | 794.304 | -467.716 | 1743.325 | 916.089 | -827.236 |
+| Direct indexed missing-term control | 0.533 | 0.536 | +0.002 | 0.671 | 0.635 | -0.036 |
+
+Every individual run is retained, with P50 / P95 in milliseconds:
+
+| Query case | Base A | Candidate A | Candidate B | Base B |
+|------------|-------:|------------:|------------:|-------:|
+| Business absent | 1964.244 / 2447.347 | 104.463 / 174.103 | 85.078 / 163.393 | 1989.462 / 2618.180 |
+| Targeted | 1897.092 / 2545.955 | 425.718 / 564.902 | 437.418 / 612.862 | 2087.116 / 2773.507 |
+| Dense | 1907.325 / 2466.207 | 1383.457 / 1497.715 | 1373.608 / 1537.103 | 2203.699 / 2774.502 |
+| Boundary | 1186.528 / 1534.278 | 790.099 / 922.485 | 794.953 / 906.427 | 1324.091 / 1767.988 |
+| Direct control | 0.523 / 0.618 | 0.541 / 0.641 | 0.527 / 0.613 | 0.541 / 0.676 |
+
+The missing-business query saves 1,884 ms at P50 and 2,296 ms at P95 (95.2% and
+93.0%). Its candidate run-to-run P50 range is 85–104 ms and P95 range 163–174 ms;
+baseline ranges are 1964–1989 ms and 2447–2618 ms. The boundary terms are deliberately
+ineligible for the new proof: their improvement under the mixed load is consistent
+with reduced contention, not proof that their fallback path was optimized. The
+sub-millisecond direct control has mixed signs (including a +0.002 ms pooled P50),
+not an established improvement; it is not used to select the candidate or justify
+additional stabilization runs. Two runs do not establish confidence bounds or
+production tail guarantees.
+
+| Run | Query window s | Harness wall s (warmup included) | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|-----|---------------:|--------------------------------:|--------------:|---------------:|----------------------:|
+| Base A | 140.482 | 154.480 | 627.56 | 632.601 | 2973.625 |
+| Candidate A | 54.797 | 60.556 | 274.86 | 279.828 | 3070.719 |
+| Candidate B | 55.207 | 60.909 | 275.34 | 280.324 | 3079.250 |
+| Base B | 155.032 | 171.906 | 702.49 | 707.529 | 2906.094 |
+
+**Separate conclusions and decision:**
+
+- **Query P50 and P95:** both improve materially for all four slow multi-graph
+  cases in both matched pairs. The direct control is mixed, as shown above; do not
+  claim every percentile of every query improved.
+- **End-to-end request workload:** the measured query window decreases by 85.685 s
+  in pair A and 99.825 s in pair B (61.0% and 64.4%). This is not construction or
+  load-to-query pipeline recovery.
+- **CPU:** mixed-workload harness CPU decreases by 352.70 s and 427.15 s (56.2% and
+  60.8%); process-lifetime CPU also decreases in both pairs. This passes the CPU
+  allowance at the declared mixed-workload boundary, not a per-query-case CPU test.
+- **RSS:** lifetime peak increases by 97.094 MiB / 3.27% in pair A, but by
+  173.156 MiB / **5.96% in pair B, exceeding the 5% ceiling**. Loading/C4 is included
+  in these peaks, so query-only memory is not isolated. Neither pooling a more
+  favorable baseline peak nor the CPU/latency savings can erase the pair-B failure.
+- **Correctness and stability:** all new targeted tests and full-response
+  comparisons pass; no request failures occurred in this bounded load. The five
+  existing fixture failures and interrupted test above remain limitations, and
+  long-duration stability and the remote CI regression gate remain unverified.
+- **Keep as an intermediate candidate, not accepted recovery.** The substantial
+  repeated P50/P95 and CPU benefit is preserved per the experiment policy, but
+  RSS prevents full acceptance. Next work is to attribute the peak across
+  load/readiness and overlapping multi-graph query shapes, then reduce or validate
+  that overrun under a separately declared protocol. Do not deploy or claim all
+  resource/regression gates passed on this evidence.
+### 2026-10-26 - Attempt 043: Cancellable arena proofs across composed-property paths
+
+**Hypothesis:** adapt PR #181's arena search to the descriptor-correct #182
+baseline, with bounded cancellation checks, and use that complete-dictionary
+proof in the pure CallSite schedule as well as broad searches. `STARTS WITH`
+also requires substring presence; Return `actual_type` is a complete dictionary
+string. No Annotation pruning or indexed `toString` change is included here.
+
+**Revisions and identity:** parent `bc0fb4432320b9dd1cd2401f628f7d74c850e345`;
+candidate is the commit containing this record. Release binary SHA-256:
+parent `0cca9c4aed88e016f0d12f9ce7b4d6ee1e7d21bd51eaca006b6dc9fbea96a329`,
+candidate `6f251e2701cee36ffac16d416bed15e310a438668d1d0d47c3351c586bb4ab33`.
+`StringTable::try_any_contains` uses memmem over 1 MiB windows with needle overlap,
+no arena copy, and cancellation before/during/after. Cross-string hits are only
+conservative false positives. Per-graph `DictionaryMemo` shares test answers.
+
+**Protocol/evidence:** `/tmp/graphite-181-integration-wM3kwK/{protocol.md,queries.json,run.py,arena-comparison.json}`;
+all `arena-{base-a,candidate-a,candidate-b,base-b}/{resource.json,server.log,load/}`
+retain every body, failure, sample and per-case/run distribution. Fixture is the
+same 12 distinct real Hive/Kotlin compiler/Tika shards 00..03 as Attempt 042:
+3,309,087 nodes, 827,385 CallSites. Every file hash was reverified against that
+attempt's `fixture.json`. Root requests target all 12 graphs, not one graph.
+Four sustained closed-loop clients, Rayon/admission 4, two warmup rounds and
+20 measured rounds per worker; 80 samples/case/run, ABBA, 160/case/revision.
+The 11-case catalog adds pure CallSite, Return and Annotation controls. All
+3,520 measured and 352 warmup requests succeeded with identical complete parsed
+responses across revisions. Nearest-rank P50/P95 are within-case, not across cases.
+
+| Case | Parent P50 ms | Candidate P50 ms | Delta ms | Parent P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| business terms absent | 91.780 | 5.295 | -86.486 | 183.307 | 36.466 | -146.840 |
+| targeted mixed terms, all graphs | 456.701 | 395.415 | -61.286 | 600.045 | 514.663 | -85.382 |
+| dense terms, all graphs | 1394.336 | 1362.986 | -31.350 | 1567.445 | 1517.905 | -49.540 |
+| boundary terms, all graphs | 806.661 | 767.298 | -39.363 | 971.232 | 888.050 | -83.182 |
+| direct indexed absent | 0.401 | 0.354 | -0.047 | 0.532 | 0.502 | -0.030 |
+| CallSite signature absent | 38.436 | 0.884 | -37.552 | 114.142 | 20.894 | -93.248 |
+| CallSite prefix absent | 25.312 | 0.759 | -24.553 | 87.095 | 31.230 | -55.865 |
+| Return actual_type absent | 6.803 | 0.766 | -6.037 | 62.182 | 28.042 | -34.141 |
+| Annotation absent (zero nodes) | 0.763 | 0.537 | -0.226 | 22.672 | 24.727 | +2.055 |
+| Annotation space boundary (zero nodes) | 0.791 | 0.488 | -0.303 | 8.097 | 17.937 | +9.840 |
+| indexed toString absent control | 0.651 | 0.557 | -0.094 | 13.740 | 26.095 | +12.355 |
+
+The fixture generation had annotations disabled: **all 64 persisted graphs have
+zero Annotation records**. The Annotation rows above are empty-work controls,
+not Annotation optimization evidence. Their concurrent P95 worsened, as did the
+indexed-toString control, and these observations are retained, not filtered out.
+Do not spend stabilization runs on these tiny baselines or claim all-case recovery.
+The slow cases and pure CallSite queries are the material positive increments.
+Boundary/dense improvements can include reduced contention, not direct pruning.
+Business-term per-run P50 ranges: parent 88.073–104.149 ms, candidate 5.230–5.331 ms;
+P95 ranges: parent 165.438–190.904 ms, candidate 21.965–51.944 ms. Only two runs per
+revision: all ranges are in the JSON, not confidence intervals or saturation proof.
+
+| Run | Query window s | Harness wall s | Server harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| parent A | 58.025 | 64.057 | 285.830 | 290.755 | 3053.313 |
+| candidate A | 51.840 | 57.378 | 258.940 | 264.014 | 3009.641 |
+| candidate B | 52.097 | 57.441 | 258.020 | 263.037 | 2988.422 |
+| parent B | 58.284 | 64.386 | 288.510 | 293.466 | 3065.766 |
+
+CPU A/B decreases 26.890/30.490 s (9.41%/10.57%); RSS decreases
+43.672/77.344 MiB (1.43%/2.52%). Each paired resource is within +5% versus this
+parent. CPU includes warmup/validation windows; peak RSS includes load and C4
+readiness. No query-only RSS, cold-cache, construction/loading or pipeline E2E
+recovery is claimed. Required C4 work finished before query warmup; OS page cache
+was uncontrolled and warm, and no compilation overlapped measured runs.
+
+**Correctness/stability:** three storage arena tests and eleven real-fixture
+signature tests passed, including new two-source pure CallSite/Return paths,
+independent forced-generic typed/full-row comparisons, primitive/descriptor
+boundaries, window-overlap and cancellation/cache-hit behavior. Storage/Cypher
+all-target/all-feature Clippy with warnings denied and formatting passed.
+No request failed in the load runs. No JVM ran in these query measurements.
+
+**Decision:** retain this positive incremental candidate. This is attribution
+against #182, not acceptance against a pre-regression baseline: the historical
+Attempt 042 RSS +5.96% overrun and the control P95 increases above remain explicit.
+The next Annotation experiment needs genuinely annotation-bearing real graphs.
+
+### 2026-10-26 - Attempt 044: Safe dictionary absence proofs for Annotation values
+
+**Hypothesis:** reuse Attempt 043's cancellable arena memo to skip Annotation
+materialization when every branch is impossible. Adapt #181's idea, but protect
+rendered punctuation, leading separator spaces, numeric/boolean/fixed atoms,
+`type: null` fallback and non-cross-graph identity properties. Interior spaces
+remain eligible. Mixed CallSite/Annotation results must use the node-ID merged
+schedule: a CallSite-only bitmap cannot discard matching annotations, and a
+separate Annotation sweep changes LIMIT results.
+
+**Identity:** parent `120a0542`; candidate is the commit containing this record.
+Release SHA-256 `9a4f99104721ec2cb67fd5d7677a36e73c67f042f4e7a745ec227800c7b04c77`.
+Parent SHA and original #182 `bc0fb443` SHA are recorded in Attempt 043.
+
+**New real fixture/protocol:** `/tmp/graphite-181-integration-wM3kwK/` retains
+`protocol-annotated.md`, `queries-annotated.json`, `annotation-comparison.json`,
+`cumulative-comparison.json`, all six run directories and raw bodies/samples.
+`annotated-fixtures/fixtures.json` records source JAR/file hashes, deterministic
+class partitioning and feature settings. Replace shard00 only of Hive 4.0.0,
+Kotlin compiler 2.0.21 and Tika 2.9.2 with annotation-enabled graphs; retain
+shards01..03: 12 distinct graphs, 3,320,013 nodes, 10,459 Annotations. Frontend
+is pinned to `bc0fb443`, annotations=true, callgraph/crossdispatch=false, verified
+4 GiB maximum heap. JVM/Rust readback passed. Initial JGit-worktree build and
+incorrect packed-file verify invocation failed; logs remain, corrected standalone
+checkout build and directory query readback succeeded. No OOM/larger-heap retry.
+Construction/loading here are correctness checks, not performance claims.
+
+Predeclared order: original A, arena A, annotation A, annotation B, arena B,
+original B. C4 closed-loop mixed load, Rayon/admission4, all requests span all12
+graphs, 2 warmup +20 measured rounds/worker, 13 cases, nearest-rank within-case
+percentiles. All 6,240 measured and 624 warmup requests succeeded with identical
+complete parsed response hashes. Each comparison pools160 samples/case/revision;
+the same candidate runs serve both comparisons, not independent replications.
+
+| Case | Arena P50 ms | Candidate P50 ms | Delta ms | Arena P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| business absent | 120.923 | 5.310 | -115.613 | 163.090 | 47.702 | -115.389 |
+| targeted all | 455.371 | 456.896 | +1.525 | 567.518 | 582.259 | +14.741 |
+| dense all | 1380.600 | 1413.598 | +32.998 | 1508.092 | 1551.658 | +43.567 |
+| boundary all | 761.214 | 784.858 | +23.644 | 882.570 | 901.282 | +18.712 |
+| direct indexed absent | 0.381 | 0.683 | +0.301 | 0.548 | 19.961 | +19.413 |
+| CallSite signature absent | 0.819 | 0.742 | -0.077 | 36.113 | 12.056 | -24.057 |
+| CallSite prefix absent | 0.783 | 0.764 | -0.019 | 46.522 | 10.731 | -35.791 |
+| Return type absent | 0.768 | 0.745 | -0.022 | 9.557 | 8.222 | -1.335 |
+| Annotation absent | 35.066 | 0.717 | -34.349 | 83.985 | 6.620 | -77.365 |
+| Annotation space boundary | 33.443 | 33.500 | +0.057 | 78.604 | 73.756 | -4.848 |
+| indexed toString absent | 0.543 | 0.724 | +0.180 | 8.255 | 13.016 | +4.761 |
+| Annotation present | 52.409 | 54.906 | +2.497 | 96.990 | 96.930 | -0.060 |
+| Annotation rendered atoms | 10.447 | 10.714 | +0.267 | 53.696 | 47.730 | -5.966 |
+
+Cumulative comparison against original #182 on this SAME annotated fixture:
+
+| Case | Original P50 ms | Candidate P50 ms | Delta ms | Original P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| business absent | 221.624 | 5.310 | -216.314 | 313.231 | 47.702 | -265.529 |
+| targeted all | 489.423 | 456.896 | -32.527 | 621.898 | 582.259 | -39.639 |
+| dense all | 1450.298 | 1413.598 | -36.699 | 1577.381 | 1551.658 | -25.723 |
+| boundary all | 809.380 | 784.858 | -24.522 | 913.470 | 901.282 | -12.188 |
+| direct indexed absent | 0.397 | 0.683 | +0.286 | 0.543 | 19.961 | +19.418 |
+| CallSite signature absent | 36.613 | 0.742 | -35.872 | 99.840 | 12.056 | -87.784 |
+| CallSite prefix absent | 22.691 | 0.764 | -21.927 | 76.718 | 10.731 | -65.987 |
+| Return type absent | 3.928 | 0.745 | -3.182 | 53.369 | 8.222 | -45.147 |
+| Annotation absent | 35.816 | 0.717 | -35.099 | 77.940 | 6.620 | -71.320 |
+| Annotation space boundary | 33.418 | 33.500 | +0.081 | 79.062 | 73.756 | -5.305 |
+| indexed toString absent | 0.584 | 0.724 | +0.140 | 13.034 | 13.016 | -0.018 |
+| Annotation present | 54.537 | 54.906 | +0.369 | 97.316 | 96.930 | -0.386 |
+| Annotation rendered atoms | 10.840 | 10.714 | -0.126 | 41.881 | 47.730 | +5.849 |
+
+| Run | Query window s | Harness wall s | Server harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| original A | 65.256 | 72.097 | 333.890 | 338.002 | 2856.359 |
+| arena A | 58.816 | 65.112 | 304.690 | 308.844 | 2847.031 |
+| annotation A | 56.747 | 62.699 | 291.720 | 295.966 | 2879.719 |
+| annotation B | 56.802 | 62.894 | 291.490 | 295.681 | 2880.078 |
+| arena B | 58.591 | 64.776 | 303.500 | 307.792 | 2858.125 |
+| original B | 65.363 | 72.255 | 336.120 | 340.327 | 2856.156 |
+
+Incremental CPU A/B -12.97/-12.01 s (-4.26%/-3.96%); RSS +32.688/+21.953 MiB
+(+1.15%/+0.77%). Cumulative CPU -42.17/-44.63 s (-12.63%/-13.28%); RSS
++23.359/+23.922 MiB (+0.82%/+0.84%). Each paired CPU/RSS is within +5% against
+its matching comparison. CPU includes warmup/validation; lifetime RSS includes
+load/C4 readiness, not isolated query RSS. Query-window reduction is not pipeline
+E2E recovery. No construction, loading, cold-cache or pre-regression acceptance.
+
+**Uncertainty/tradeoffs:** all per-run ranges are retained in JSON. Business
+candidate P50 ranges5.298–5.436 ms, P9547.673–50.689 ms; original214.286–224.962
+and281.033–319.428 ms. Direct-indexed candidate P955.453–24.125 ms versus original
+0.511–0.564 ms. Two repeats are not confidence intervals or saturation evidence.
+The heavier safe schedule can expose cheap indexed requests to shared planning
+queues; incremental slow-case P50/P95 also worsened. Do not hide either by quoting
+only cumulative improvements or CPU savings. No repeated tuning on tiny baselines.
+
+**Correctness/stability:** seven new Annotation tests cover exact concrete values,
+typed/full materialization against an independent forced-generic oracle, rendered
+map/list boundaries, type:null, dynamic graphId, cancellation, bitmap false
+negatives and mixed-node LIMIT order. Full Cypher159 lib tests, workspace all-target
+all-feature Clippy with warnings denied, formatting and diff checks pass. Earlier
+storage/Cypher/explore suite and fourteen real descriptor/signature tests passed;
+the final annotated real-fixture rerun is recorded with the next validation.
+No load request failed; this bounded run is not long-duration stability evidence.
+
+**Decision:** retain the substantial Annotation/slow-search benefit and correctness
+fixes as an intermediate candidate. Not all-case performance acceptance: direct
+indexed P95 and some controls regress, and historical Attempt042 RSS+5.96% is not
+erased by a new fixture. Next isolate the unnecessary general schedule when an
+Annotation absence proof already permits the CallSite-only path. #181's separate
+indexed-toString bitmap tweak is deferred absent demonstrated material benefit.
+
+### 2026-10-26 - Attempt 045: Prove Annotation absence before choosing CallSite scheduling
+
+**Hypothesis:** preserve Attempt044's Annotation completeness and mixed-node LIMIT
+order, but use the lightweight CallSite schedule when an otherwise eligible shape
+has a cancellable absence proof for every annotation-bearing source. Any unknown
+falls back to merged node-ID execution using the complete source list. Do not
+apply the CallSite bitmap until these proofs finish. Broad searches do not pay
+this extra check. No indexed-toString bitmap expansion is included.
+
+**Identity:** parent `e2ce4f1e`; candidate is the commit containing this record.
+Candidate release SHA-256
+`933990f677ea07876794fd5be0804b41a2614f3bfbb497cf051122450fbbf659`.
+Parent and original `bc0fb443` binary hashes are in Attempts043/044. Later test-only
+coverage does not change this measured production binary.
+
+**Protocol:** `/tmp/graphite-181-integration-wM3kwK/protocol-routing.md`, declared
+before runs. Same annotation-bearing 12-graph fixture and 13-case catalog as044,
+same full-response boundary, C4/Rayon4/admission4, 2warmup+20measured rounds/worker.
+Fresh order: original A,044 A,045 A,045 B,044 B,original B. Output prefixes
+`routing-{original,base,candidate}-{a,b}` preserve every sample/body/resource log;
+`routing-comparison.json` and `routing-cumulative-comparison.json` retain all
+per-run ranges and paired resource deltas. Shared candidate runs serve both
+comparisons, not independent replications. No compilation overlapped measurement.
+This is one targeted routing experiment, not repeated stabilization of tiny controls.
+
+**Correctness and review:** deterministic route tests compare actual typed rows to
+an independent forced-generic oracle, including a first source with absence and
+a later source with a real Annotation match, full materialization/provenance,
+LIMIT1, and cancellation. Independent review found no correctness blocker; it
+identified eager serial proofs and discarded work on late-unknown sources as a
+possible cost, retained for this workload comparison rather than assumed free.
+
+All 6,240 measured and 624 warmup requests succeeded, with identical complete
+response hashes across all six runs. Within-case nearest-rank pooling uses160
+measured samples per revision. Incremental results against044:
+
+| Case | 044 P50 ms | Candidate P50 ms | Delta ms | 044 P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 4.966 | 5.517 | +0.550 | 16.026 | 30.140 | +14.114 |
+| keys-targeted-all | 462.719 | 461.240 | -1.479 | 575.623 | 569.506 | -6.117 |
+| keys-dense-all | 1416.553 | 1417.110 | +0.557 | 1538.781 | 1555.913 | +17.133 |
+| keys-boundary-all | 776.261 | 798.755 | +22.493 | 863.912 | 917.272 | +53.360 |
+| direct-absent | 0.683 | 0.549 | -0.135 | 11.924 | 0.725 | -11.200 |
+| callsite-signature-absent | 0.728 | 0.716 | -0.012 | 21.675 | 6.217 | -15.458 |
+| callsite-prefix-absent | 0.789 | 0.757 | -0.032 | 23.904 | 9.215 | -14.689 |
+| return-type-absent | 0.754 | 0.781 | +0.026 | 30.314 | 33.922 | +3.608 |
+| annotation-absent | 0.728 | 0.724 | -0.004 | 12.441 | 13.194 | +0.753 |
+| annotation-space-boundary | 33.676 | 32.491 | -1.185 | 76.142 | 73.585 | -2.557 |
+| indexed-tostring-absent | 0.719 | 0.701 | -0.018 | 19.918 | 18.646 | -1.272 |
+| annotation-present | 53.538 | 53.147 | -0.391 | 102.324 | 92.845 | -9.479 |
+| annotation-rendered-atoms | 10.449 | 10.551 | +0.101 | 36.883 | 49.871 | +12.988 |
+
+Cumulative results against original #182 on the same annotated fixture:
+
+| Case | Original P50 ms | Candidate P50 ms | Delta ms | Original P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 232.821 | 5.517 | -227.305 | 331.478 | 30.140 | -301.339 |
+| keys-targeted-all | 483.359 | 461.240 | -22.119 | 627.741 | 569.506 | -58.235 |
+| keys-dense-all | 1446.912 | 1417.110 | -29.801 | 1561.622 | 1555.913 | -5.709 |
+| keys-boundary-all | 807.351 | 798.755 | -8.597 | 918.693 | 917.272 | -1.421 |
+| direct-absent | 0.409 | 0.549 | +0.139 | 0.522 | 0.725 | +0.202 |
+| callsite-signature-absent | 39.334 | 0.716 | -38.618 | 113.629 | 6.217 | -107.412 |
+| callsite-prefix-absent | 21.932 | 0.757 | -21.175 | 87.575 | 9.215 | -78.360 |
+| return-type-absent | 4.022 | 0.781 | -3.241 | 47.456 | 33.922 | -13.534 |
+| annotation-absent | 35.593 | 0.724 | -34.868 | 80.019 | 13.194 | -66.825 |
+| annotation-space-boundary | 33.045 | 32.491 | -0.555 | 66.426 | 73.585 | +7.159 |
+| indexed-tostring-absent | 0.603 | 0.701 | +0.097 | 24.108 | 18.646 | -5.463 |
+| annotation-present | 55.230 | 53.147 | -2.083 | 96.653 | 92.845 | -3.808 |
+| annotation-rendered-atoms | 10.675 | 10.551 | -0.124 | 44.343 | 49.871 | +5.528 |
+
+| Run | Query window s | Harness wall s | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| original A | 65.165 | 71.890 | 335.000 | 339.260 | 2854.672 |
+| 044 A | 56.514 | 62.487 | 291.980 | 296.180 | 2875.922 |
+| 045 A | 56.655 | 62.720 | 292.500 | 296.712 | 2849.688 |
+| 045 B | 56.793 | 62.833 | 292.810 | 296.986 | 2863.500 |
+| 044 B | 56.661 | 62.598 | 290.840 | 295.030 | 2946.438 |
+| original B | 65.194 | 72.006 | 334.070 | 338.280 | 2936.500 |
+
+Incremental CPU A/B +0.520/+1.970 s (+0.18%/+0.68%); RSS -26.234/-82.938 MiB
+(-0.91%/-2.81%). Cumulative CPU -42.500/-41.260 s (-12.69%/-12.35%); RSS
+-4.984/-73.000 MiB (-0.17%/-2.49%). Every paired CPU/RSS boundary satisfies+5%
+against these matching comparators. CPU includes warmup/validation; RSS is process
+lifetime including load/C4 readiness. No pipeline E2E, construction/loading,
+cold-cache or accepted pre-regression recovery is established.
+
+**Variability and tradeoffs:** candidate business per-run P50 5.438–5.517 ms,
+P95 18.591–34.624 ms; direct-indexed P50 0.541–0.552 ms, P95 0.658–0.787 ms.
+All other run ranges remain in JSON. Only two repeats: no confidence intervals
+or saturation evidence. The target routing control P95 improves by11.200 ms
+against044, but incremental business P95+14.114 ms and boundary P95+53.360 ms
+worsen; unchanged broad-query paths can still experience scheduling contention.
+Cumulative direct-indexed P50/P95 +0.139/+0.202 ms, Annotation space-boundary
+P95+7.159 ms and rendered-atoms P95+5.528 ms remain regressions. Do not hide these
+using pooled slow-case gains, small percentages or resource savings. The eager
+serial proof cost is bounded/cancellable, not assumed zero.
+
+**Validation:** the production candidate passed160 Cypher,120 explore and42
+storage library tests without a fixture override (fixture-gated tests skip in
+that mode), workspace/all-target/all-feature Clippy with warnings denied, format
+and diff checks. Fourteen targeted signature/descriptor tests also passed against
+the new real annotation-bearing Tika shard. The final test-only heterogeneous
+source addition then passed all161 Cypher library tests, all11 signature tests
+on the real annotated Tika fixture, workspace Clippy, formatting and diff checks.
+
+**Decision:** retain the verified routing benefit and all correctness protections,
+as a positive intermediate increment, not all-case performance acceptance. The
+cumulative integration preserves material slow-search gains and satisfies the
+paired resource limits on this workload, but mixed P95s and the separate historical
+Attempt042 RSS+5.96% limitation remain. Do not spend additional stabilization runs
+on tiny controls, expand allowances or claim pre-regression recovery. Hosted
+correctness/completion/OOM CI must independently pass on the pushed head.
+
+### 2026-10-26 - Attempt 046: Check Annotation property names before literal arena searches
+
+**Hypothesis/review:** review of045 identified unnecessary full-arena scans before
+the common indexed CallSite schedule. A direct Annotation property whose key is
+absent from the sorted dictionary cannot match. Check that structural condition
+first, including whole AND/OR subtrees, before any literal arena proof. Both the
+batched and general schedule share the preflight through `annotation::cannot_match`.
+Preserve built-ins, type fallback, open-ended `keys(n)` leaves and cross-graph
+identities. Do not confuse a CallSite bitmap with Annotation key coverage.
+
+**Identity:** parent `131b80c4de00bbf760db7ecd475fc2914d2ffda7`; candidate is the
+commit containing this record. Parent release SHA is in045. The rejected prototype
+release SHA is `5b9f181092da59ca2ff4dd8414aa095c2c90e0a406cbba04c5b2a15098d3db02`;
+the corrected candidate identity is recorded with the final results below.
+No cross-stage memo-retention or indexed-toString bitmap change is bundled here.
+Those independent optional optimizations remain separate proposals, not claimed
+benefits. Common missing-key paths now avoid literal memo consumption altogether.
+
+**Protocol:** `/tmp/graphite-181-integration-wM3kwK/protocol-key-presence.md`,
+declared before measurement; fixed13case catalog, same12distinct real annotated
+graphs as044/045, every request spans all12graphs, C4 closed-loop, Rayon/admission4,
+2warmup+20measured rounds/worker, full-body consumption and complete-response hash
+oracle. ABBA directories `key-{base,candidate}-{a,b}` retain every sample/body and
+resource log; `key-comparison.json` retains all per-run ranges. Nearest-rank P50/P95
+are repeated requests within each case,80samples/case/run,160/revision. This is a
+single bounded regression check for the review fix, not repeated fast-control
+stabilization. The review's copied-core fixture timings are not acceptance evidence.
+
+**Correctness:**10 Annotation tests passed, including zero-slot memo sentinels that
+would panic if a missing-key proof attempted any literal lookup. They cover nested
+AND/OR, empty literals, null conversion, numeric and IN-list predicates, key-present
+Annotation matches, built-in/synthetic/from_keys distinctions, cancellation and
+heterogeneous-source LIMIT/provenance against an independent generic executor.
+All162 Cypher,120 explore and42 storage library tests passed without overrides;
+14 targeted signature/descriptor tests passed with the real annotation-bearing
+Tika fixture. Workspace/all-target/all-feature Clippy with warnings denied, fmt
+and diff checks passed before measurement; no compilation overlapped load runs.
+
+**Rejected prototype / correctness discovery:** after the checks above, independent
+review identified a new interaction with inherited lossy `coalesce` extraction:
+`coalesce(n.absent_attribute, 'Marker') CONTAINS 'Marker' OR
+n.caller_class CONTAINS 'MissingAtom'` can still match through its fallback.
+The parent may retain Generic evaluation due to the second dynamic property;
+the new key proof plus literal proof can instead prune both OR branches. The
+prototype is rejected, not accepted on its passing existing tests. `key-base-a`
+completed and `key-candidate-a` was deliberately interrupted by SIGINT; logs and
+partial failures remain, with no latency/resource acceptance claim from either.
+No prototype production changes were pushed. Corrected pushdown eligibility and
+an explicit regression must precede the fresh `protocol-key-safe.md` ABBA run;
+all original samples remain separate and no post-hoc favorable pooling is allowed.
+
+The regression was reproduced as optimized `[]` versus independently evaluated
+and hardcoded `[0,1]`; exact failure output is in
+`coalesce-prototype-failure.txt`. Corrected `property_operand` retains only NULL
+fallbacks, or empty strings when the actual predicate requires a nonempty literal.
+All fallback arguments and nested wrappers are checked; unsafe alternatives use
+the existing generic evaluator. Regex must first have a nonempty required literal;
+numeric/member collectors already require bare properties. No existing feature is
+disabled. Safe empty-fallback/nonempty-term plans remain optimized.
+
+Corrected candidate SHA-256:
+`9fa30c65943607e5e119ab58e728ec026f55d1a07f1e03713f093a41a53db78e`.
+Independent review approved the corrected guard. Twelve Annotation tests include
+25 coalesce AST/plan/execution cases; all164 Cypher,120 explore and42 storage lib
+tests then passed, plus14 targeted signature/descriptor tests on annotated real
+Tika, workspace Clippy, fmt and diff checks. Saved binary hash matches a rebuild
+after final edits. Fresh `key-safe-{base,candidate}-{a,b}` runs use the unchanged
+catalog and settings under `protocol-key-safe.md`; no prototype data is included.
+The frozen load catalog does not exercise the intentionally corrected unsafe
+fallback shapes, so no performance claim is made for their generic fallback.
+
+All4,160 measured and416 warmup requests succeeded with identical complete
+parsed-response hashes. Evidence is in `key-safe-comparison.json`, each fresh
+run's `resource.json`, and all retained load bodies/samples. No aborted prototype
+observations enter these statistics.
+
+| Case | Parent P50 ms | Candidate P50 ms | Delta ms | Parent P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| keys-business-absent | 4.798 | 5.326 | +0.527 | 37.916 | 31.309 | -6.607 |
+| keys-targeted-all | 461.441 | 465.373 | +3.932 | 566.318 | 557.518 | -8.800 |
+| keys-dense-all | 1404.834 | 1396.899 | -7.935 | 1523.337 | 1516.754 | -6.583 |
+| keys-boundary-all | 780.248 | 790.138 | +9.890 | 883.402 | 879.469 | -3.933 |
+| direct-absent | 0.584 | 0.418 | -0.166 | 0.745 | 0.536 | -0.209 |
+| callsite-signature-absent | 0.757 | 0.847 | +0.090 | 11.485 | 37.216 | +25.731 |
+| callsite-prefix-absent | 0.791 | 0.795 | +0.005 | 14.255 | 35.046 | +20.791 |
+| return-type-absent | 0.804 | 0.837 | +0.033 | 6.426 | 14.999 | +8.574 |
+| annotation-absent | 0.819 | 0.751 | -0.068 | 8.359 | 6.309 | -2.050 |
+| annotation-space-boundary | 32.937 | 33.055 | +0.118 | 71.540 | 74.987 | +3.447 |
+| indexed-tostring-absent | 0.747 | 0.568 | -0.178 | 15.267 | 5.208 | -10.059 |
+| annotation-present | 53.492 | 53.831 | +0.339 | 95.979 | 96.338 | +0.359 |
+| annotation-rendered-atoms | 10.618 | 10.950 | +0.332 | 39.988 | 46.130 | +6.142 |
+
+| Run | Query window s | Harness wall s | Harness CPU s | Lifetime CPU s | Lifetime peak RSS MiB |
+|---|---:|---:|---:|---:|---:|
+| base-a | 56.229 | 62.172 | 291.470 | 295.649 | 2867.969 |
+| candidate-a | 56.494 | 62.400 | 292.420 | 296.704 | 2920.453 |
+| candidate-b | 56.230 | 62.275 | 292.640 | 296.827 | 2829.922 |
+| base-b | 56.372 | 62.305 | 291.440 | 295.610 | 2910.438 |
+
+CPU A/B +0.950/+1.200 s (+0.33%/+0.41%); RSS +52.484/-80.516 MiB
+(+1.83%/-2.77%). Each paired CPU and RSS remains within+5% versus131b80c4.
+CPU includes warmup/validation; RSS includes graph loading/C4 readiness. Query
+window/harness durations have mixed signs, not pipeline E2E evidence. No loading,
+construction, cold-cache, unsafe-coalesce timing or pre-regression recovery claim.
+
+**Tradeoffs/uncertainty:** direct-indexed P50/P95 drop0.166/0.209 ms; this tiny
+absolute control benefit is not a material broad-workload speedup claim. Missing
+dynamic-key tests independently prove avoided arena access without timings.
+Slow-case P95s improve3.933–8.800 ms, but their P50s are mixed. CallSite signature
+P95+25.731 ms, prefix P95+20.791 ms, Return P95+8.574 ms, Annotation boundary
+P95+3.447 ms and rendered-atoms P95+6.142 ms regress. No causal attribution to
+unchanged paths is asserted from this concurrent mixed workload. All per-run
+ranges remain in JSON; two runs are not confidence intervals or saturation proof.
+
+**Decision:** retain the reviewed structural work reduction and its necessary
+coalesce correctness guard as an intermediate candidate. The resource limits pass
+against this parent, but the mixed concurrent tails prevent all-case performance
+acceptance. This does not erase Attempts042–045, compound unmatched percentages,
+or certify recovery against the accepted pre-regression baseline. No further
+stabilization or optional bitmap/memo optimization is inferred from these numbers.
+Fresh remote CI is required for the new commit; the preceding131b80c4's six green
+checks and complete correctness/OOM artifact do not certify this head.

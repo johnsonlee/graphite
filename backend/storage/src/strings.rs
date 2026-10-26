@@ -5,6 +5,8 @@ use crate::javaser::{read_object, JavaSerError, Value};
 use crate::source::GraphSource;
 use sha2::{Digest, Sha256};
 
+const SEARCH_CHUNK_BYTES: usize = 1024 * 1024;
+
 #[derive(Debug, thiserror::Error)]
 pub enum StringTableError {
     #[error("io error on {0}: {1}")]
@@ -164,6 +166,45 @@ impl StringTable {
         self.identity.as_ref()
     }
 
+    /// Conservative substring presence in the complete dictionary, without
+    /// allocating or visiting individual strings. Matches crossing string
+    /// boundaries are allowed: only `false` proves absence from every string.
+    ///
+    /// Check cancellation between bounded windows, including before and after
+    /// a successful match. Windows overlap by `needle.len() - 1`, so a match
+    /// spanning a window boundary cannot be missed. Very long needles increase
+    /// the window size proportionally, but never cause an arena-sized copy.
+    pub fn try_any_contains<E>(
+        &self,
+        needle: &str,
+        mut check: impl FnMut() -> Result<(), E>,
+    ) -> Result<bool, E> {
+        check()?;
+        let found = if needle.is_empty() {
+            !self.is_empty()
+        } else if needle.len() > self.arena.len() {
+            false
+        } else {
+            let finder = memchr::memmem::Finder::new(needle.as_bytes());
+            let chunk = SEARCH_CHUNK_BYTES.max(needle.len());
+            let mut found = false;
+            for start in (0..self.arena.len()).step_by(chunk) {
+                check()?;
+                let end = start
+                    .saturating_add(chunk)
+                    .saturating_add(needle.len() - 1)
+                    .min(self.arena.len());
+                if finder.find(&self.arena[start..end]).is_some() {
+                    found = true;
+                    break;
+                }
+            }
+            found
+        };
+        check()?;
+        Ok(found)
+    }
+
     /// SHA-256 over count + each string (length-prefixed), as the Kotlin writer computes it.
     pub fn compute_identity(&self) -> [u8; 32] {
         let mut d = Sha256::new();
@@ -235,5 +276,99 @@ fn decode_front_coded(
         }
         emit(&buf);
         std::mem::swap(&mut prev, &mut buf);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn table(strings: &[&str]) -> StringTable {
+        let mut arena = Vec::new();
+        let mut offsets = vec![0];
+        for string in strings {
+            arena.extend_from_slice(string.as_bytes());
+            offsets.push(arena.len() as u32);
+        }
+        StringTable {
+            arena,
+            offsets,
+            identity: None,
+        }
+    }
+
+    fn contains(table: &StringTable, needle: &str) -> bool {
+        table.try_any_contains(needle, || Ok::<_, ()>(())).unwrap()
+    }
+
+    #[test]
+    fn arena_search_has_no_false_negatives_at_chunk_or_string_boundaries() {
+        let padding = "x".repeat(SEARCH_CHUNK_BYTES - 2);
+        let text = format!("{padding}类型needle尾");
+        let strings = table(&[&text, "alpha", "beta"]);
+        for needle in ["类型", "类型needle尾", "needle", "尾", "alpha", "beta"] {
+            assert!(contains(&strings, needle), "{needle:?}");
+        }
+        assert!(!contains(&strings, "missing"));
+        // Concatenated-arena matches are intentionally conservative: callers
+        // must still evaluate the original predicate when this returns true.
+        assert!(contains(&strings, "alphabeta"));
+    }
+
+    #[test]
+    fn arena_search_handles_empty_tables_strings_and_long_needles() {
+        assert!(!contains(&table(&[]), ""));
+        assert!(contains(&table(&[""]), ""));
+        assert!(!contains(&table(&[""]), "x"));
+        assert!(!contains(&table(&["short"]), "longer than arena"));
+        let needle = format!("{}z", "a".repeat(SEARCH_CHUNK_BYTES + 13));
+        let padding = "x".repeat(needle.len() - 2);
+        let text = format!("{padding}{needle}suffix");
+        assert!(contains(&table(&[&text]), &needle));
+        assert!(!contains(&table(&[&text]), &format!("{needle}absent")));
+    }
+
+    #[test]
+    fn arena_search_checks_cancellation_before_during_and_after_search() {
+        let text = "x".repeat(SEARCH_CHUNK_BYTES * 3);
+        let strings = table(&[&text]);
+        for stop in [1, 2, 3, 4, 5] {
+            let mut checks = 0;
+            let result = strings.try_any_contains("absent", || {
+                checks += 1;
+                if checks == stop {
+                    Err(stop)
+                } else {
+                    Ok(())
+                }
+            });
+            assert_eq!(result, Err(stop));
+            assert_eq!(checks, stop);
+        }
+        let mut checks = 0;
+        assert_eq!(
+            strings.try_any_contains("x", || {
+                checks += 1;
+                if checks == 3 {
+                    Err("after match")
+                } else {
+                    Ok(())
+                }
+            }),
+            Err("after match")
+        );
+        assert_eq!(checks, 3);
+        let mut checks = 0;
+        assert_eq!(
+            table(&[]).try_any_contains("", || {
+                checks += 1;
+                if checks == 2 {
+                    Err("after empty")
+                } else {
+                    Ok(())
+                }
+            }),
+            Err("after empty")
+        );
     }
 }

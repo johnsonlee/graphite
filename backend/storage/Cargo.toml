@@ -6,6 +6,7 @@ license.workspace = true
 
 [dependencies]
 memmap2.workspace = true
+memchr = "2"
 thiserror.workspace = true
 sha2.workspace = true
 crc32fast = "1"
