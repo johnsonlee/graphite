@@ -21958,7 +21958,9 @@ attempt, and 14.7 s before Attempt308): at parity. `feature-methods` 1197 → 13
 was +481 ms, +42%): interleaved 10-request runs on a quiet machine put the head 3–6% over main by the
 fastest request and 5–19% by p50, and an experiment that short-circuits the question runs at main's
 speed, so the remainder is the question itself, about 20 ns per property per method, 6.9 million
-times; this case stays marginally over the p50 rule and is reported, not accepted. Of the 25
+times; this case stays marginally over the p50 rule. The user accepted this residual on 2026-10-24
+as the feature's cost (CLAUDE.md, "User-approved JVM presence-scan tolerance"): +159 ms (+13%) warm
+p50, 3–6% by fastest request, not performance recovery; the p50 rule itself is unchanged. Of the 25
 same-answer cases 22 are within the rule in this run; the three over it (+72 to +135 ms, 10–11%) were
 within it in the previous run, as the three over it there are within it here, and this host's noise
 today swings same-answer cases by −64% to +59% between runs. Every differing case's answers contain
