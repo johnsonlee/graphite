@@ -11669,3 +11669,73 @@ Both resource constraints pass independently, well inside the +5% ceiling. This 
 Decision: retain. Query p50/p95, measured-window time, CPU and RSS all improve materially, and exact response equality plus the malformed-index differential tests preserve correctness and stability.
 
 Not covered: `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value ... RETURN ... LIMIT 100` remains a distinct seed-pushdown problem. `ScanPlan` only accepts a single node and `HopPlan` rejects variable length, so generic matching expands every `StringConstant` through the complete `*1..3` search before applying the value predicate; the final LIMIT cannot bound that work. Exact equality, `CONTAINS`, disjunctions and `toLower(...)` also have different indexability. They require a separate cumulative candidate and representative multi-graph measurement rather than being claimed by this attempt.
+
+### Attempt152 — filter a StringConstant seed before expanding its paths
+
+The follow-up shape from attempt151 expands every `StringConstant` through a fixed or
+variable-length relationship before WHERE can test `s.value`. Its LIMIT bounds returned
+rows, not that discarded expansion work.
+
+Hypothesis: build the existing string-column `ScanPlan` for the first node alone, use
+one necessary top-level WHERE conjunct to enumerate matching seed nodes in the exhaustive
+walk's source/id order, then enter the unchanged matcher at each seed through
+`match_patterns_at`. The complete WHERE must remain after every pattern variable is
+bound. This should remove expansion from nonmatching literals without changing inline
+node constraints, relationship order or uniqueness, path values, duplicate rows,
+provenance, LIMIT probing, cancellation or timeout behaviour.
+
+Change: `StringSeedPlan` accepts an empty input row, a first pattern node whose resolved
+class is exactly `StringConstant`, and at least one relationship. It derives a one-node
+scan from a pushable top-level conjunct (including `=`, `CONTAINS`, disjunctions and
+`toLower`) or a literal inline property map. Each scan survivor is passed to
+`Matcher::match_patterns_at`; the existing pipeline still evaluates the whole WHERE and
+owns projection and early termination. A predicate involving a later pattern variable,
+without a separately necessary seed conjunct, declines the plan; so do an
+unlabelled/broader class, a pre-bound row or a node-only pattern.
+Parent is `6079a984`; candidate is the commit containing this record.
+
+Fixture and protocol: the retained `native-warm-64-filtered-count-attempt21-final-run1`
+fixture, 64 distinct persisted class shards from the pinned Android, Tika, Hive and
+Kotlin compiler JARs, MAPPED production Rust server, query concurrency four and a
+120-second cap. One global `/api/cypher` request is four `UNION ALL` segments, each
+explicitly constrained to a different real graph (`fixture-android-00` through `03`),
+and each uses `(s:StringConstant)-[*1..2]-(n)` with a `CONTAINS OR CONTAINS OR
+toLower(... ) CONTAINS` seed predicate. Every segment fully returns 40 rows, so each
+request consumes 160 rows from four actual graphs. Two warm-up rounds and 20 measured
+rounds per worker give 80 retained measured samples per revision; p50/p95 are nearest
+rank over repeated requests. The boundary is request start through complete HTTP-body
+consumption. The candidate run used the base summary as an exact full-response oracle.
+Raw protocol, every body/sample, summaries and `/usr/bin/time -l` resources are retained
+under `/tmp/graphite-string-bench/`; the query catalog SHA-256 is
+`386a0f82ae3d34d732f0f38cab0753fc1e66ea0aaca47222baa3683654615aeb`.
+
+| Metric | Parent | Candidate | Absolute delta |
+|---|---:|---:|---:|
+| request p50 ms | 959.635 | 2.822 | -956.813 |
+| request p95 ms | 1059.302 | 3.132 | -1056.170 |
+| measured query window s | 19.433 | 0.063 | -19.370 |
+| process CPU s (user + system) | 108.390 | 25.360 | -83.030 (-76.60%) |
+| process peak RSS bytes | 7,215,710,208 | 7,234,174,976 | +18,464,768 (+0.26%) |
+
+All 80 requests on each revision completed successfully with 160 rows and the same
+complete-response digest
+`109d6646bbb3db9591bca9918097df09bed0b8eb7635ae4de4f93e3c9c2db704`.
+The paired RSS increase is below the independent +5% ceiling and CPU decreases. Resource
+figures cover the whole server lifetime, including loading, warm-up and background C4
+readiness; they are not query-only attribution or construction/loading acceptance.
+
+Correctness: planner tests cover fixed hops, `*1..2`, `*1..3`, path variables, a second
+pattern, inline maps, unsafe mixed-variable disjunction rejection and pre-bound rows. Against a real
+persisted Tika shard, fixed and `*1..3` queries compare complete typed rows, order,
+duplicates, later-variable conjuncts, provenance and probe state with a semantically identical query forced
+through the generic matcher; pre-cancellation remains observable. All 171 Cypher tests
+pass without a fixture override, the four new tests pass in release mode against the
+real shard, workspace/all-target/all-feature Clippy passes with warnings denied, and
+format/diff checks pass.
+
+Limitations and decision: this is one local macOS pair, not ABBA and not the hosted
+trusted-controller run; OS page-cache state is uncontrolled, and no confidence interval,
+construction, loading, JVM-query or accepted pre-regression claim is made. Retain the
+large, response-identical multi-graph improvement as a positive attempt. The required
+`benchmark-regression-gate` remains authoritative for correctness, completion and OOM on
+the eventual stacked PR.

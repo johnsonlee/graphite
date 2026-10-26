@@ -869,6 +869,11 @@ impl Executor {
         {
             return plan.run(self, matcher, patterns, &mut emit);
         }
+        // Filter literal starting nodes before expanding their fixed or variable-length
+        // paths.  The full WHERE remains in `emit`, after every variable is bound.
+        if let Some(plan) = super::string_seed::StringSeedPlan::build(patterns, where_clause, row) {
+            return plan.run(self, ev, matcher, patterns, &mut emit);
+        }
         if let Some(plan) = scan {
             if row.is_empty() {
                 return plan.run(self, ev, row, where_clause, consume);
