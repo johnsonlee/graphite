@@ -111,22 +111,22 @@ internal object LargeCorpusBaselines {
     // An unapproved graph change must fail the historical counts; entries are keyed by the exact
     // product identity (v2) of the reviewed head.
     private val approvedCounts = mapOf(
-        // PR #174 (head 055e0d6): declared-type member keys keep every array dimension, so methods whose
+        // PR #174 (head 6d0104e): declared-type member keys keep every array dimension, so methods whose
         // keys collided on the flattened rendering are distinct again (Tika +64, Hive +27), and methods
         // are keyed by their complete identity (signature plus return type), so a bridge is counted
         // beside the covariant override it delegates to (Tika +5,133, Hive +48,464, Kotlin compiler
         // +14,959; Attempt311). Nodes, edges and call sites are unchanged in all three corpora.
-        ("162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1" to "tika") to
+        ("98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097" to "tika") to
             ApprovedCorpusCounts(
                 nodes = 3_901_103, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
                 methods = 317_985, callSites = 1_006_172
             ),
-        ("162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1" to "hive") to
+        ("98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097" to "hive") to
             ApprovedCorpusCounts(
                 nodes = 5_992_914, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
                 methods = 452_507, callSites = 1_443_886
             ),
-        ("162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1" to "kotlin-compiler") to
+        ("98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097" to "kotlin-compiler") to
             ApprovedCorpusCounts(
                 nodes = 3_292_214, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
                 methods = 264_628, callSites = 922_876

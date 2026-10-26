@@ -33,14 +33,14 @@ struct Rule<'a> {
 // Land reviewed literal entries in the trusted base first, then rerun the
 // feature comparison. Product identities exclude only the exact trusted policy
 // files, so merging policy-only commits does not invalidate reviewed products.
-// PR #174 (head 055e0d6, base main f26bd19): deduplicated declared types with JVM generics.
+// PR #174 (head 6d0104e, base main f26bd19): deduplicated declared types with JVM generics.
 // The three response digests were verified from run 39379876956's retained bodies and are
-// unchanged on this head (run 40249949452); the identities moved with the review fixes
+// unchanged on this head (runs 40249949452, 40274371615); the identities moved with the review fixes
 // (Attempt311) and the merge of #182. See the PR's acceptance section.
 const RULES: &[Rule<'static>] = &[
     Rule {
         base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
-        head_product_identity: "162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1",
+        head_product_identity: "98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097",
         case_id: "schema-key-histogram",
         base_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
         head_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
@@ -50,7 +50,7 @@ const RULES: &[Rule<'static>] = &[
     },
     Rule {
         base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
-        head_product_identity: "162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1",
+        head_product_identity: "98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097",
         case_id: "shape-label-scan-field",
         base_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
         head_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
@@ -60,7 +60,7 @@ const RULES: &[Rule<'static>] = &[
     },
     Rule {
         base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
-        head_product_identity: "162d537a08e5a48cc8f9e9c613d3b7125ca037c9dd9079d00f741fe2718a86f1",
+        head_product_identity: "98747997791cec143fce5792da6ba1a689643922730311d9f4041a8d2f314097",
         case_id: "shape-all-nodes",
         base_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
         head_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
