@@ -33,12 +33,16 @@ struct Rule<'a> {
 // Land reviewed literal entries in the trusted base first, then rerun the
 // feature comparison. Product identities exclude only the exact trusted policy
 // files, so merging policy-only commits does not invalidate reviewed products.
-// PR #174 (head edc7fb5, base main 30b16e1): deduplicated declared types with JVM generics.
-// Verified from run 39379876956's retained bodies; see the PR's acceptance section.
+// PR #174 (head e6f122d, base main 52df93e): deduplicated declared types with JVM generics.
+// The three response digests were verified from run 39379876956's retained bodies and are
+// unchanged on the code of this head (runs 40249949452, 40274371615, 40309014252 on 6d0104e and
+// 9a0b5f7; e6f122d is that code squashed and rebased onto main 52df93e, #184 and #186, whose planner
+// changes are on both sides); the identities moved with the review fixes
+// (Attempt311) and the merge of #182. See the PR's acceptance section.
 const RULES: &[Rule<'static>] = &[
     Rule {
-        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
-        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        base_product_identity: "dda0f6d5b7393e5eb7cde4eec6fd954a4d72425517d0a299118ed6b4ace5d7b7",
+        head_product_identity: "b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c",
         case_id: "schema-key-histogram",
         base_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
         head_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
@@ -47,8 +51,8 @@ const RULES: &[Rule<'static>] = &[
         reason: "PR #174: Field, Parameter and Return nodes carry generic_type and type_info (3,485,883 each); the 26 pre-existing key counts are unchanged",
     },
     Rule {
-        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
-        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        base_product_identity: "dda0f6d5b7393e5eb7cde4eec6fd954a4d72425517d0a299118ed6b4ace5d7b7",
+        head_product_identity: "b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c",
         case_id: "shape-label-scan-field",
         base_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
         head_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
@@ -57,8 +61,8 @@ const RULES: &[Rule<'static>] = &[
         reason: "PR #174 (Attempt309): declared-only fields are numbered in (name, signature) order instead of SootUp's identity-hash set order; the same 200 (name, graph) rows, 57 reordered",
     },
     Rule {
-        base_product_identity: "c5a80dde96f80f044657d1aa3fa069e5e06db8a676e730381d109d9637cfb854",
-        head_product_identity: "5ae421c4b7837158518656448f26fac507488a532210e71345ba2f2ea2f07750",
+        base_product_identity: "dda0f6d5b7393e5eb7cde4eec6fd954a4d72425517d0a299118ed6b4ace5d7b7",
+        head_product_identity: "b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c",
         case_id: "shape-all-nodes",
         base_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
         head_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
