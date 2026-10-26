@@ -256,6 +256,10 @@ impl GraphContext for Executor {
         &self.sources[source as usize].id
     }
     fn node_property(&self, node: NodeRef, key: &str) -> Value {
+        // The id is the reference itself: no record to decode.
+        if key == "id" {
+            return Value::Int(i64::from(node.id));
+        }
         if self.cross {
             match key {
                 "graphId" => return Value::str(self.graph_id(node.source)),
