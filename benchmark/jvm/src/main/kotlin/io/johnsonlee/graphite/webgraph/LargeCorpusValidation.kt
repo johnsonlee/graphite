@@ -111,22 +111,22 @@ internal object LargeCorpusBaselines {
     // An unapproved graph change must fail the historical counts; entries are keyed by the exact
     // product identity (v2) of the reviewed head.
     private val approvedCounts = mapOf(
-        // PR #174 (head 9a0b5f7, the code of 6d0104e plus main 002aa09): declared-type member keys keep every array dimension, so methods whose
+        // PR #174 (head e6f122d, the code of 6d0104e rebased onto main 52df93e): declared-type member keys keep every array dimension, so methods whose
         // keys collided on the flattened rendering are distinct again (Tika +64, Hive +27), and methods
         // are keyed by their complete identity (signature plus return type), so a bridge is counted
         // beside the covariant override it delegates to (Tika +5,133, Hive +48,464, Kotlin compiler
         // +14,959; Attempt311). Nodes, edges and call sites are unchanged in all three corpora.
-        ("c941ed182597a997f743c5df34b7599fad7504f4d6b362c96f711e18137d344d" to "tika") to
+        ("b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c" to "tika") to
             ApprovedCorpusCounts(
                 nodes = 3_901_103, sourceEdges = 4_510_016, persistedEdges = 4_353_588,
                 methods = 317_985, callSites = 1_006_172
             ),
-        ("c941ed182597a997f743c5df34b7599fad7504f4d6b362c96f711e18137d344d" to "hive") to
+        ("b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c" to "hive") to
             ApprovedCorpusCounts(
                 nodes = 5_992_914, sourceEdges = 6_597_267, persistedEdges = 6_376_682,
                 methods = 452_507, callSites = 1_443_886
             ),
-        ("c941ed182597a997f743c5df34b7599fad7504f4d6b362c96f711e18137d344d" to "kotlin-compiler") to
+        ("b94430b5ec2f971b4ec6037ed72841c688e08b7c9a7be12c11de22d72299732c" to "kotlin-compiler") to
             ApprovedCorpusCounts(
                 nodes = 3_292_214, sourceEdges = 3_906_617, persistedEdges = 3_785_858,
                 methods = 264_628, callSites = 922_876
