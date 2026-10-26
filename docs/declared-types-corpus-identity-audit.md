@@ -521,10 +521,11 @@ source exclusion or failure behavior has been relaxed.
 ## Correctness-driver control bindings and per-file CI accounting (2026-10-10)
 
 At `d23`, benchmark run `37982075270` rejected the reviewed-control manifest
-before executing several correctness jobs. The coverage-test seams changed
-`SingleGraphCorrectness.kt` and `SyntheticQueryCorrectness.kt`, but their old
-source hashes were still pinned. Candidate gate job `113995249102` and synthetic
-correctness job `113995249059` both retained this failure. The correction updates
+before executing several correctness jobs. The coverage-test seams changed two
+standalone correctness drivers that were later retired with the old benchmark
+controller, but their old source hashes were still pinned. Candidate gate job
+`113995249102` and synthetic correctness job `113995249059` both retained this
+failure. The correction updates
 only those two source hashes and the workflow's hash of the eight-entry manifest;
 the other six entries, verification commands, thresholds and result checks stay
 unchanged. The new manifest SHA-256 is
