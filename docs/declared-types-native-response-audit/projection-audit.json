@@ -1,0 +1,596 @@
+{
+  "artifactRun": 37779605564,
+  "jar": "android-all-14-robolectric-10818077.jar",
+  "jarSha256": "6be2218c6a53fe3c57bc22ebdc723edcb7270a8a6f187545708aa5c0ed813977",
+  "unchangedRows": 151,
+  "verifiedAddedProjections": [
+    {
+      "nodeId": 111,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isDeclared",
+      "descriptor": "(I)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 112,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isDeclared",
+      "descriptor": "(Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 113,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isDeclared",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 114,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isSpecified",
+      "descriptor": "(I)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 115,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isSpecified",
+      "descriptor": "(Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 116,
+      "owner": "org.xml.sax.ext.Attributes2",
+      "name": "isSpecified",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 117,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getContentHandler",
+      "descriptor": "()Lorg/xml/sax/ContentHandler;",
+      "generic_type": "org.xml.sax.ContentHandler",
+      "type_info": {
+        "kind": "class",
+        "name": "org.xml.sax.ContentHandler",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 118,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getDTDHandler",
+      "descriptor": "()Lorg/xml/sax/DTDHandler;",
+      "generic_type": "org.xml.sax.DTDHandler",
+      "type_info": {
+        "kind": "class",
+        "name": "org.xml.sax.DTDHandler",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 119,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getEntityResolver",
+      "descriptor": "()Lorg/xml/sax/EntityResolver;",
+      "generic_type": "org.xml.sax.EntityResolver",
+      "type_info": {
+        "kind": "class",
+        "name": "org.xml.sax.EntityResolver",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 120,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getErrorHandler",
+      "descriptor": "()Lorg/xml/sax/ErrorHandler;",
+      "generic_type": "org.xml.sax.ErrorHandler",
+      "type_info": {
+        "kind": "class",
+        "name": "org.xml.sax.ErrorHandler",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 121,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getFeature",
+      "descriptor": "(Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 122,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "getProperty",
+      "descriptor": "(Ljava/lang/String;)Ljava/lang/Object;",
+      "generic_type": "java.lang.Object",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.Object",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 123,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "parse",
+      "descriptor": "(Ljava/lang/String;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 124,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "parse",
+      "descriptor": "(Lorg/xml/sax/InputSource;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 125,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setContentHandler",
+      "descriptor": "(Lorg/xml/sax/ContentHandler;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 126,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setDTDHandler",
+      "descriptor": "(Lorg/xml/sax/DTDHandler;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 127,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setEntityResolver",
+      "descriptor": "(Lorg/xml/sax/EntityResolver;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 128,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setErrorHandler",
+      "descriptor": "(Lorg/xml/sax/ErrorHandler;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 129,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setFeature",
+      "descriptor": "(Ljava/lang/String;Z)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 130,
+      "owner": "org.xml.sax.XMLReader",
+      "name": "setProperty",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/Object;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 131,
+      "owner": "org.xml.sax.SAXNotSupportedException",
+      "name": "<init>",
+      "descriptor": "()V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 134,
+      "owner": "org.xml.sax.SAXNotSupportedException",
+      "name": "<init>",
+      "descriptor": "(Ljava/lang/String;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 135,
+      "owner": "org.xml.sax.SAXNotSupportedException",
+      "name": "<init>",
+      "descriptor": "(Ljava/lang/String;)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 139,
+      "owner": "org.w3c.dom.DOMStringList",
+      "name": "contains",
+      "descriptor": "(Ljava/lang/String;)Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 140,
+      "owner": "org.w3c.dom.DOMStringList",
+      "name": "getLength",
+      "descriptor": "()I",
+      "generic_type": "int",
+      "type_info": {
+        "kind": "primitive",
+        "name": "int",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 141,
+      "owner": "org.w3c.dom.DOMStringList",
+      "name": "item",
+      "descriptor": "(I)Ljava/lang/String;",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 142,
+      "owner": "org.w3c.dom.Attr",
+      "name": "getName",
+      "descriptor": "()Ljava/lang/String;",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 143,
+      "owner": "org.w3c.dom.Attr",
+      "name": "getOwnerElement",
+      "descriptor": "()Lorg/w3c/dom/Element;",
+      "generic_type": "org.w3c.dom.Element",
+      "type_info": {
+        "kind": "class",
+        "name": "org.w3c.dom.Element",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 144,
+      "owner": "org.w3c.dom.Attr",
+      "name": "getSchemaTypeInfo",
+      "descriptor": "()Lorg/w3c/dom/TypeInfo;",
+      "generic_type": "org.w3c.dom.TypeInfo",
+      "type_info": {
+        "kind": "class",
+        "name": "org.w3c.dom.TypeInfo",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 145,
+      "owner": "org.w3c.dom.Attr",
+      "name": "getSpecified",
+      "descriptor": "()Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 146,
+      "owner": "org.w3c.dom.Attr",
+      "name": "getValue",
+      "descriptor": "()Ljava/lang/String;",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 147,
+      "owner": "org.w3c.dom.Attr",
+      "name": "isId",
+      "descriptor": "()Z",
+      "generic_type": "boolean",
+      "type_info": {
+        "kind": "primitive",
+        "name": "boolean",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 148,
+      "owner": "org.w3c.dom.Attr",
+      "name": "setValue",
+      "descriptor": "(Ljava/lang/String;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 149,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "<init>",
+      "descriptor": "()V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 154,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "theEntities",
+      "descriptor": "Ljava/util/HashMap;",
+      "generic_type": "java.util.HashMap",
+      "type_info": {
+        "kind": "class",
+        "name": "java.util.HashMap",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 157,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "theElementTypes",
+      "descriptor": "Ljava/util/HashMap;",
+      "generic_type": "java.util.HashMap",
+      "type_info": {
+        "kind": "class",
+        "name": "java.util.HashMap",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 158,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "theURI",
+      "descriptor": "Ljava/lang/String;",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 160,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "thePrefix",
+      "descriptor": "Ljava/lang/String;",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 161,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "theRoot",
+      "descriptor": "Lorg/ccil/cowan/tagsoup/ElementType;",
+      "generic_type": "org.ccil.cowan.tagsoup.ElementType",
+      "type_info": {
+        "kind": "class",
+        "name": "org.ccil.cowan.tagsoup.ElementType",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 163,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "attribute",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 164,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "attribute",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 165,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "attribute",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 166,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "attribute",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 167,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "attribute",
+      "descriptor": "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 192,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "elementType",
+      "descriptor": "(Ljava/lang/String;III)V",
+      "generic_type": "void",
+      "type_info": {
+        "kind": "primitive",
+        "name": "void",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 193,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "elementType",
+      "descriptor": "(Ljava/lang/String;III)V",
+      "generic_type": "java.lang.String",
+      "type_info": {
+        "kind": "class",
+        "name": "java.lang.String",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 194,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "elementType",
+      "descriptor": "(Ljava/lang/String;III)V",
+      "generic_type": "int",
+      "type_info": {
+        "kind": "primitive",
+        "name": "int",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 195,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "elementType",
+      "descriptor": "(Ljava/lang/String;III)V",
+      "generic_type": "int",
+      "type_info": {
+        "kind": "primitive",
+        "name": "int",
+        "arguments": []
+      }
+    },
+    {
+      "nodeId": 196,
+      "owner": "org.ccil.cowan.tagsoup.Schema",
+      "name": "elementType",
+      "descriptor": "(Ljava/lang/String;III)V",
+      "generic_type": "int",
+      "type_info": {
+        "kind": "primitive",
+        "name": "int",
+        "arguments": []
+      }
+    }
+  ]
+}

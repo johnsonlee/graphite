@@ -15,6 +15,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -45,8 +46,11 @@ class DefaultGraph private constructor(
     override val resources: ResourceAccessor,
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>>,
-    private val edgeCount: Long
+    private val edgeCount: Long,
+    private val declaredTypeTable: DeclaredTypeTable
 ) : Graph, PackedBranchMetadataSource {
+    override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+
 
     /**
      * Compact storage for branch scope data, used until [branchScopes] or
@@ -189,7 +193,9 @@ class DefaultGraph private constructor(
         private val nodes = Int2ObjectOpenHashMap<Node>()
         private val outgoing = Int2ObjectOpenHashMap<MutableList<Edge>>()
         private val incoming = Int2ObjectOpenHashMap<MutableList<Edge>>()
-        private val methods = ConcurrentHashMap<String, MethodDescriptor>()
+        // Insertion order, as MmapGraphBuilder keeps it: the saved metadata, the mapped method index
+        // and every Method scan follow this order, and a hash order of the key moved with the key.
+        private val methods: MutableMap<String, MethodDescriptor> = Collections.synchronizedMap(LinkedHashMap())
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
         private val classOrigins = ConcurrentHashMap<String, String>()
@@ -202,6 +208,12 @@ class DefaultGraph private constructor(
         private val branchScopes = ObjectArrayList<RawBranchScope>()
         private val localDefinitions = Int2ObjectOpenHashMap<IntArray>()
         private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
+        private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+
+        override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
+            declaredTypeTable = table
+            return this
+        }
 
         override fun addNode(node: Node): FullGraphBuilder {
             nodes.put(node.id.value, node)
@@ -215,7 +227,7 @@ class DefaultGraph private constructor(
         }
 
         override fun addMethod(method: MethodDescriptor): FullGraphBuilder {
-            methods[method.signature] = method
+            methods[method.identity] = method
             return this
         }
 
@@ -318,6 +330,7 @@ class DefaultGraph private constructor(
                 rawBranchScopes = branchScopes.toTypedArray(),
                 rawLocalDefinitions = localDefinitions,
                 resources = resourceAccessor,
+                declaredTypeTable = declaredTypeTable,
                 nodesByType = nodesByType,
                 edgeCount = edgeCount
             )

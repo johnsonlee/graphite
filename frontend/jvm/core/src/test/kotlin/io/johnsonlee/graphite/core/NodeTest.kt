@@ -224,6 +224,8 @@ class NodeTest {
         val bridge = method("java.lang.Object")
         val override = method("java.lang.String")
         assertEquals(bridge.signature, override.signature)
+        assertEquals("com.example.Foo.same(I[Ljava/lang/String;La/B\$C;)Ljava/lang/Object;", bridge.identity)
+        assertEquals("com.example.Foo.same(I[Ljava/lang/String;La/B\$C;)Ljava/lang/String;", override.identity)
         assertEquals("(I[Ljava/lang/String;La/B\$C;)Ljava/lang/Object;", bridge.descriptor)
         assertEquals("(I[Ljava/lang/String;La/B\$C;)Ljava/lang/String;", override.descriptor)
         assertEquals(

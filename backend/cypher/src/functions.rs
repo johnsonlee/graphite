@@ -40,11 +40,13 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
         },
         "elementid" | "qualifiedid" => match arg(args, 0)? {
             Value::Method(m) => {
-                let sig = ctx.method_signature(*m);
+                // The complete identity: a bridge and its covariant override share a
+                // signature, never an element id.
+                let identity = ctx.method_identity(*m);
                 if ctx.is_cross_graph() {
-                    Value::str(format!("{}:Method:{}", ctx.graph_id(m.source), sig))
+                    Value::str(format!("{}:Method:{}", ctx.graph_id(m.source), identity))
                 } else {
-                    Value::str(format!("Method:{sig}"))
+                    Value::str(format!("Method:{identity}"))
                 }
             }
             Value::Node(n) => Value::str(element_id(*n, ctx)),
@@ -121,12 +123,7 @@ pub fn call(name: &str, args: &[Value], ctx: &dyn GraphContext) -> CypherResult<
             _ => Value::Null,
         },
         "keys" => match arg(args, 0)? {
-            Value::Node(n) => Value::list(
-                ctx.node_properties(*n)
-                    .keys()
-                    .map(|k| Value::str(k.as_str()))
-                    .collect(),
-            ),
+            Value::Node(n) => Value::list(ctx.node_keys(*n).into_iter().map(Value::str).collect()),
             Value::Method(m) => Value::list(
                 ctx.method_properties(*m)
                     .keys()

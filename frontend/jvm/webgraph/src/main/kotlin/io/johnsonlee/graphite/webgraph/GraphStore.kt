@@ -25,6 +25,8 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
+import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.MmapGraph
@@ -50,7 +52,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
 import java.nio.file.StandardOpenOption
+import java.security.DigestOutputStream
 import java.security.MessageDigest
+import java.util.HexFormat
 import java.util.Arrays
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionException
@@ -384,7 +388,8 @@ private class NodeDataWriteContext(
     val countingOutput: CountingOutputStream,
     val stringTable: StringTable,
     val classOverviewEdges: ClassOverviewEdgeBuilder,
-    val callSites: CallSiteWriteContext
+    val callSites: CallSiteWriteContext,
+    val declaredKeys: DeclaredKeySummaryBuilder?
 )
 
 private class CallSiteWriteContext(
@@ -604,11 +609,29 @@ object GraphStore {
         dir: Path,
         compressionThreads: Int = 2,
         prepareCallSiteStringIndex: Boolean
+    ) = saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex, declaredTypeVersion = CURRENT_DECLARED_TYPE_VERSION)
+
+    /** Explicit compatibility fixture path; ordinary saves always choose the current representation. */
+    internal fun saveLegacyDeclaredTypesV3(graph: Graph, dir: Path, compressionThreads: Int = 2) =
+        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false, declaredTypeVersion = SHARED_DECLARED_TYPE_VERSION)
+
+    internal fun saveLegacyDeclaredTypesV4(graph: Graph, dir: Path, compressionThreads: Int = 2) =
+        saveGraph(graph, dir, compressionThreads, prepareCallSiteStringIndex = false,
+            declaredTypeVersion = STRUCTURAL_DECLARED_TYPE_VERSION)
+
+    private const val CURRENT_DECLARED_TYPE_VERSION = 5
+    private const val STRUCTURAL_DECLARED_TYPE_VERSION = 4
+    private const val SHARED_DECLARED_TYPE_VERSION = 3
+
+    private fun saveGraph(
+        graph: Graph, dir: Path, compressionThreads: Int, prepareCallSiteStringIndex: Boolean, declaredTypeVersion: Int
     ) {
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
         Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
         Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
+        Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
+        Files.deleteIfExists(dir.resolve(DeclaredPresence.FILE_NAME))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -637,6 +660,8 @@ object GraphStore {
             null
         }
 
+        val declaredTypes = graph.declaredTypes()
+
         // 2. Collect metadata
         val metadata = collectMetadata(graph)
         NodeSerializer.collectMetadataStrings(metadata, allStrings)
@@ -648,7 +673,8 @@ object GraphStore {
             ),
             allStrings
         )
-        val stringTable = StringTable.build(allStrings, dir)
+        val declaredTypePlan = DeclaredTypeStore.collectStrings(declaredTypes, allStrings, declaredTypeVersion)
+        val stringTable = StringTable.build(allStrings, dir, declaredTypes != DeclaredTypeTable.EMPTY)
         allStrings.clear()
 
         // 3. Build forward adjacency + labels + comparisons
@@ -677,9 +703,12 @@ object GraphStore {
             NodeSerializer.writeComparisons(dos, comparisonMap)
         }
 
-        // 6. Write nodedata + nodeindex and capture compact ordinal fields in the same pass.
+        // 6. Write nodedata + nodeindex and capture compact ordinal fields and the declared-key
+        //    summary in the same pass.
         val ordinalInput = CallSiteOrdinalPersistenceInput(ordinalCount)
-        writeNodeDataAndIndex(
+        val declaredKeys =
+            if (declaredTypes == DeclaredTypeTable.EMPTY) null else DeclaredKeySummaryBuilder(declaredTypes, maxNodeId)
+        val layoutDigest = writeNodeDataAndIndex(
             graph,
             dir,
             nodeCount,
@@ -689,8 +718,11 @@ object GraphStore {
             stringTable,
             classOverviewEdges,
             callSiteIndexInput,
-            ordinalInput
+            ordinalInput,
+            declaredKeys
         )
+        // The node layout identity: which node sits at which id. Sidecars indexed by node id carry it.
+        ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to HexFormat.of().formatHex(layoutDigest)))
 
         // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
         //    the binding of the call-site ordinal sidecar, then the two sidecars.
@@ -704,6 +736,12 @@ object GraphStore {
         }
         Files.write(dir.resolve(BRANCH_DEFINITIONS_FILE), branchDefinitions.bytes)
         if (callSiteOrdinals != null) Files.write(dir.resolve(CALL_SITE_ORDINALS_FILE), callSiteOrdinals.bytes)
+
+        val typesDigest = DeclaredTypeStore.save(declaredTypePlan, dir, stringTable)
+        if (declaredKeys != null && typesDigest != null) {
+            Files.write(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME), declaredKeys.encode(typesDigest, layoutDigest))
+            writeDeclaredPresence(dir, metadata, declaredTypes, declaredKeys, typesDigest, layoutDigest)
+        }
 
         // 8. Save class-level overview summary for explorer routes
         ClassOverviewStore.save(
@@ -725,6 +763,31 @@ object GraphStore {
         }
     }
 
+    /**
+     * The saver's presence answers: the node bits the summary builder collected, and a shape per
+     * method in saveMetadata's order, which is the mapped index's.
+     */
+    @Suppress("LongParameterList")
+    private fun writeDeclaredPresence(
+        dir: Path,
+        metadata: GraphMetadata,
+        declaredTypes: DeclaredTypeTable,
+        declaredKeys: DeclaredKeySummaryBuilder,
+        typesDigest: ByteArray,
+        layoutDigest: ByteArray
+    ) {
+        val shapes = ByteArray(metadata.methods.size)
+        var ordinal = 0
+        for ((_, method) in metadata.methods) {
+            val key = MemberTypeKey(method.declaringClass.className, method.name, method.descriptor)
+            shapes[ordinal++] = DeclaredPresence.shapeByte(declaredTypes.methods[key])
+        }
+        Files.write(
+            dir.resolve(DeclaredPresence.FILE_NAME),
+            DeclaredPresence.encode(typesDigest, layoutDigest, declaredKeys.presenceWords, declaredKeys.nodeBits, shapes)
+        )
+    }
+
     @Suppress("LongParameterList")
     private fun writeNodeDataAndIndex(
         graph: Graph,
@@ -736,14 +799,18 @@ object GraphStore {
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
         callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput
-    ) {
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
+        declaredKeys: DeclaredKeySummaryBuilder?
+    ): ByteArray {
         val callSiteIdentity = MessageDigest.getInstance("SHA-256").apply {
             update(stringTable.contentIdentity())
             updateContentInt(callSiteCount)
         }
+        // Hashed as it is written: the node layout identity is the SHA-256 of graph.nodedata, and
+        // reading the file back for it would be the one read of a file this save had just produced.
+        val nodeLayout = MessageDigest.getInstance("SHA-256")
         CountingOutputStream(BufferedOutputStream(dir.resolve(NODE_DATA_FILE).toFile().outputStream())).use { cos ->
-            val dataDos = DataOutputStream(cos)
+            val dataDos = DataOutputStream(DigestOutputStream(cos, nodeLayout))
             DataOutputStream(BufferedOutputStream(dir.resolve(NODE_INDEX_FILE).toFile().outputStream())).use { idxDos ->
                 writeNodeDataAndIndex(
                     graph,
@@ -758,11 +825,13 @@ object GraphStore {
                     stringTable,
                     classOverviewEdges,
                     callSiteIndexInput,
-                    callSiteOrdinals
+                    callSiteOrdinals,
+                    declaredKeys
                 )
             }
         }
         Files.write(dir.resolve(CALL_SITE_STRING_CONTENT_IDENTITY_FILE), callSiteIdentity.digest())
+        return nodeLayout.digest()
     }
 
     @Suppress("LongParameterList")
@@ -779,7 +848,8 @@ object GraphStore {
         stringTable: StringTable,
         classOverviewEdges: ClassOverviewEdgeBuilder,
         callSiteIndexInput: CallSiteIndexPersistenceInput?,
-        callSiteOrdinals: CallSiteOrdinalPersistenceInput
+        callSiteOrdinals: CallSiteOrdinalPersistenceInput,
+        declaredKeys: DeclaredKeySummaryBuilder?
     ) {
         NodeOffsetIndexWriter(dir.resolve(NODE_OFFSETS_FILE), maxNodeId + 1).use { offsetWriter ->
             TypeIndexWriter(dir.resolve(TYPE_INDEX_FILE), nodeTypeCounts).use { typeIndexWriter ->
@@ -797,7 +867,8 @@ object GraphStore {
                         cos,
                         stringTable,
                         classOverviewEdges,
-                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals)
+                        CallSiteWriteContext(callSiteIdentity, callSiteIndexInput, callSiteOrdinals),
+                        declaredKeys
                     )
                 )
             }
@@ -813,6 +884,7 @@ object GraphStore {
             context.idxDos.writeLong(offset)
             context.offsetWriter.write(node.id.value, offset)
             context.typeIndexWriter.write(tag, node.id.value)
+            context.declaredKeys?.add(node)
             if (node is CallSiteNode) {
                 context.classOverviewEdges.add(node)
                 context.callSites.identity.updateContentInt(node.id.value)
@@ -871,7 +943,7 @@ object GraphStore {
     private fun loadEager(dir: Path): Graph {
         val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
 
         val forward = forwardFuture.join()
@@ -911,7 +983,8 @@ object GraphStore {
             metadata,
             classOverview,
             PersistedResourceStore.load(dir),
-            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) }
+            lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
+            lazy { DeclaredTypeStore.load(dir, stringTable) }
         )
     }
 
@@ -946,7 +1019,7 @@ object GraphStore {
         val (nodeDataVersion, nodeCount) = readNodeDataHeader(dir)
         val metadataFile = dir.resolve(METADATA_FILE)
         val forwardFuture = CompletableFuture.supplyAsync { BVGraph.load(dir.resolve(FORWARD_GRAPH).toString()) }
-        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir) }
+        val stringTableFuture = CompletableFuture.supplyAsync { StringTable.load(dir, DeclaredTypeStore.needsSerializedStrings(dir)) }
         val nodeIndexFuture = CompletableFuture.supplyAsync { readMappedNodeIndex(dir) }
         val labelsFuture = CompletableFuture.supplyAsync { BinIO.loadBytes(dir.resolve(LABELS_FILE).toString()) }
         val methodCountFuture = CompletableFuture.supplyAsync { readMetadataMethodCount(metadataFile) }
@@ -993,7 +1066,11 @@ object GraphStore {
             classOverviewProvider = classOverview,
             resourceAccessor = lazy { PersistedResourceStore.load(dir) },
             branchDefinitions = branchDefinitions,
-            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) }
+            callSiteOrdinals = lazy { loadCallSiteOrdinals(dir) },
+            // The table is query-only state. Reading, binding and validating it before readiness
+            // charged every graph's load for declarations no request had asked for yet.
+            declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) },
+            declaredPresence = lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) }
         )
         if (prepareCallSiteStringIndex) {
             try {
@@ -1412,7 +1489,7 @@ object GraphStore {
 
         // Collect methods
         val methods = graph.methods(MethodPattern())
-            .associateBy { it.signature }
+            .associateBy { it.identity }
 
         // Collect enum values - we can't enumerate all enum keys from Graph interface,
         // so we extract from EnumConstant nodes

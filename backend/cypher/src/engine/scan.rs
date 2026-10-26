@@ -56,7 +56,7 @@ const CALL_SITE_PROPS: [&str; 4] = ["caller_class", "caller_name", "callee_class
 
 /// Every property name the scan can read raw off some record: CallSite's four through
 /// the CallSite index, the rest through a per-type string column.
-const PUSHABLE_PROPS: [&str; 28] = [
+const PUSHABLE_PROPS: [&str; 30] = [
     "caller_class",
     "caller_name",
     "callee_class",
@@ -83,6 +83,8 @@ const PUSHABLE_PROPS: [&str; 28] = [
     "index",
     "method",
     "actual_type",
+    "generic_type",
+    "type_info",
     "profile",
     // Synthesised from the graph id and the node id in cross-graph mode; folded per
     // graph without decoding anything.
@@ -95,8 +97,8 @@ const PUSHABLE_PROPS: [&str; 28] = [
 /// `any(k IN keys(n) WHERE ...)` ranges over. `id` is on every node; an annotation's
 /// value pairs add keys of their own, which is why the Annotation type is always
 /// decoded for that shape.
-const ALL_KEYS: [&str; 29] = {
-    let mut keys = ["id"; 29];
+const ALL_KEYS: [&str; 31] = {
+    let mut keys = ["id"; 31];
     let mut i = 0;
     while i < PUSHABLE_PROPS.len() {
         keys[i + 1] = PUSHABLE_PROPS[i];
@@ -941,28 +943,73 @@ impl ScanPlan {
             }
             _ => None,
         };
+        // A negative summary only removes a generic leaf when every occurrence
+        // of that key is an untransformed CONTAINS proven absent. MAYBE retains
+        // the complete original predicate and its ordinary fallback.
+        let declaration_tags = [
+            graphite_storage::node::TAG_FIELD_NODE,
+            graphite_storage::node::TAG_PARAMETER_NODE,
+            graphite_storage::node::TAG_RETURN_NODE,
+        ];
+        // Only a tag this scan reads can carry a generic leaf: a CallSite-only scan must not
+        // open the declared table on behalf of the field, parameter and return tags it skips.
+        let absent_generic = if declaration_tags.iter().any(|&tag| {
+            self.tags.contains(&tag)
+                && matches!(plans[tag as usize], TagPlan::Generic)
+                && !graph.ids_by_tag(tag).is_empty()
+                && ex.declared_tag_available(graph, tag)
+        }) {
+            declared_text_absent(graph, &self.tree)
+        } else {
+            [false; 2]
+        };
         let mut streams: Vec<PreparedStream> = Vec::new();
         for &tag in &self.tags {
             let plan = &plans[tag as usize];
             // An annotation's keys are whatever strings its value pairs carry, so a
             // key absent from this graph's dictionary reaches no annotation here.
-            let annotation_plan;
-            let plan = if tag == TAG_ANNOTATION_NODE && matches!(plan, TagPlan::Generic) {
-                if graph.ids_by_tag(tag).is_empty()
-                    || annotation::cannot_match(ex, source, &self.tree, &mut dictionary)?
+            let contextual_plan;
+            let missing_declarations = matches!(
+                tag,
+                graphite_storage::node::TAG_FIELD_NODE
+                    | graphite_storage::node::TAG_PARAMETER_NODE
+                    | graphite_storage::node::TAG_RETURN_NODE
+            ) && !ex.declared_tag_available(graph, tag);
+            let declared_tag = matches!(
+                tag,
+                graphite_storage::node::TAG_FIELD_NODE
+                    | graphite_storage::node::TAG_PARAMETER_NODE
+                    | graphite_storage::node::TAG_RETURN_NODE
+            );
+            let plan = if (tag == TAG_ANNOTATION_NODE
+                || missing_declarations
+                || (declared_tag && absent_generic.iter().any(|absent| *absent)))
+                && matches!(plan, TagPlan::Generic)
+            {
+                if tag == TAG_ANNOTATION_NODE
+                    && (graph.ids_by_tag(tag).is_empty()
+                        || annotation::cannot_match(ex, source, &self.tree, &mut dictionary)?)
                 {
                     continue;
                 }
-                annotation_plan = tag_plan(
+                contextual_plan = tag_plan(
                     &self.tree,
                     tag,
                     &|key| {
-                        !matches!(key, "name" | "class" | "member" | "values")
-                            && graph.strings.index_of(key).is_none()
+                        if tag == TAG_ANNOTATION_NODE {
+                            !matches!(key, "name" | "class" | "member" | "values")
+                                && graph.strings().index_of(key).is_none()
+                        } else {
+                            match key {
+                                "generic_type" => missing_declarations || absent_generic[0],
+                                "type_info" => missing_declarations || absent_generic[1],
+                                _ => false,
+                            }
+                        }
                     },
                     &synthetic,
                 );
-                &annotation_plan
+                &contextual_plan
             } else {
                 plan
             };
@@ -1438,11 +1485,11 @@ fn sweep_call_sites(graph: &Graph, ids: &[u32], sp: &SourcePlan, out: &mut Vec<u
 
 /// Indices of dictionary entries matching a seekable predicate, via binary search.
 fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
-    let n = graph.strings.len();
+    let n = graph.strings().len();
     let lower = lower_bound(graph, &p.literal);
     match p.op {
         PushOp::Equals => {
-            if lower < n && graph.strings.get(lower) == p.literal {
+            if lower < n && graph.strings().get(lower) == p.literal {
                 lower..lower + 1
             } else {
                 lower..lower
@@ -1451,7 +1498,7 @@ fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
         // Every string with the prefix sorts together, starting at the lower bound.
         PushOp::StartsWith => {
             let mut end = lower;
-            while end < n && graph.strings.get(end).starts_with(&p.literal) {
+            while end < n && graph.strings().get(end).starts_with(&p.literal) {
                 end += 1;
             }
             lower..end
@@ -1462,10 +1509,10 @@ fn seek_range(graph: &Graph, p: &StringPredicate) -> std::ops::Range<usize> {
 
 /// First index whose string is not ordered before `needle` (Java string ordering).
 fn lower_bound(graph: &Graph, needle: &str) -> usize {
-    let (mut lo, mut hi) = (0usize, graph.strings.len());
+    let (mut lo, mut hi) = (0usize, graph.strings().len());
     while lo < hi {
         let mid = (lo + hi) / 2;
-        if graphite_storage::strings::java_cmp(graph.strings.get(mid), needle).is_lt() {
+        if graphite_storage::strings::java_cmp(graph.strings().get(mid), needle).is_lt() {
             lo = mid + 1;
         } else {
             hi = mid;
@@ -1502,7 +1549,10 @@ enum RawLeaf {
     /// The node id as text, or against a number.
     NodeId(Option<f64>),
     /// A synthetic key tested per node: the graph's prefix, then the id.
-    Synthetic { prefix: String, with_id: bool },
+    Synthetic(SyntheticMatcher),
+    /// A test no record of this graph can pass: a word against a number's text, or a
+    /// descriptor whose component words the graph's dictionary does not hold.
+    Never,
 }
 
 /// The CallSite tree with each leaf ready to test one record.
@@ -1632,6 +1682,26 @@ impl RawRecord {
 }
 
 impl RawTree {
+    /// Synthetic identity is independent of the record body. Keep the offset
+    /// existence check: a stale type-index entry must still be skipped.
+    fn matches_at(
+        &self,
+        graph: &Graph,
+        data: &[u8],
+        offset: Option<usize>,
+        id: u32,
+        st: &mut RawSweepState,
+    ) -> bool {
+        let Some(offset) = offset else {
+            return false;
+        };
+        if let RawTree::Leaf(RawLeaf::Synthetic(matcher), p) = self {
+            return matcher.matches(p, id, &mut st.text);
+        }
+        let record = RawRecord::read(data, offset, id);
+        self.eval(graph, data, &record, st)
+    }
+
     fn build(
         graph: &Graph,
         graph_id: &str,
@@ -1644,10 +1714,14 @@ impl RawTree {
             PredTree::Leaf(p) => {
                 let number = || leaf_number(p);
                 let leaf = match p.prop() {
-                    key if is_synthetic_key(key) => RawLeaf::Synthetic {
-                        prefix: synthetic_prefix(graph_id, p),
-                        with_id: key != "graphId",
-                    },
+                    key if is_synthetic_key(key) => {
+                        RawLeaf::Synthetic(SyntheticMatcher::new(graph_id, p))
+                    }
+                    "callee_signature" | "caller_signature"
+                        if !idx.is_none_or(|idx| composed_text_may_match(graph, idx, p)) =>
+                    {
+                        RawLeaf::Never
+                    }
                     "callee_signature" | "caller_signature" | "callee_descriptor"
                     | "caller_descriptor" => {
                         let index = *memos;
@@ -1657,6 +1731,11 @@ impl RawTree {
                             memo: index,
                         }
                     }
+                    "line" | "ordinal" | "id"
+                        if number().is_none() && !decimal_text_may_match(p) =>
+                    {
+                        RawLeaf::Never
+                    }
                     "line" => RawLeaf::Line(number()),
                     "ordinal" => RawLeaf::Ordinal(number()),
                     "id" => RawLeaf::NodeId(number()),
@@ -1665,7 +1744,7 @@ impl RawTree {
                             .iter()
                             .position(|c| *c == prop)
                             .expect("a CallSite leaf");
-                        let n = graph.strings.len();
+                        let n = graph.strings().len();
                         let mut set = StringBitset::new(n);
                         let resolved = idx.and_then(|idx| resolve_strings(graph, idx, p, memo));
                         match resolved {
@@ -1712,20 +1791,104 @@ impl RawTree {
                 Some(ordinal) => number_or_text_i64(*number, ordinal as i64, p),
             },
             RawTree::Leaf(RawLeaf::NodeId(number), p) => number_or_text(*number, r.id, p),
-            RawTree::Leaf(RawLeaf::Synthetic { prefix, with_id }, p) => {
-                st.text.clear();
-                st.text.push_str(prefix);
-                if *with_id {
-                    let mut buf = [0u8; 10];
-                    st.text.push_str(u32_text(r.id, &mut buf));
-                }
-                p.matches_raw(&st.text)
-            }
+            RawTree::Leaf(RawLeaf::Never, _) => false,
+            RawTree::Leaf(RawLeaf::Synthetic(matcher), p) => matcher.matches(p, r.id, &mut st.text),
             RawTree::Leaf(RawLeaf::Signature { callee, memo }, p) => {
                 let start = if *callee { r.callee } else { r.caller };
                 st.memos[*memo].matches(graph, data, start, p)
             }
         }
+    }
+}
+
+/// A digit-only needle cannot cross the colon before the node id. Resolve the
+/// graph prefix once, then test decimal windows without formatting each id.
+enum DecimalContains {
+    Constant(bool),
+    Digits {
+        value: u64,
+        modulus: u64,
+        minimum: u64,
+    },
+}
+
+impl DecimalContains {
+    fn compile(prefix: &str, with_id: bool, pred: &StringPredicate) -> Option<Self> {
+        let literal = pred.literal.as_str();
+        if !with_id
+            || pred.op != PushOp::Contains
+            || literal.is_empty()
+            || !literal.bytes().all(|b| b.is_ascii_digit())
+        {
+            return None;
+        }
+        if prefix.contains(literal) {
+            return Some(Self::Constant(true));
+        }
+        if literal.len() > 10 {
+            return Some(Self::Constant(false));
+        }
+        let modulus = 10_u64.pow(literal.len() as u32);
+        Some(Self::Digits {
+            value: literal.parse().expect("at most ten ASCII digits"),
+            modulus,
+            minimum: modulus / 10,
+        })
+    }
+
+    fn matches(&self, id: u32) -> bool {
+        match *self {
+            Self::Constant(value) => value,
+            Self::Digits {
+                value,
+                modulus,
+                minimum,
+            } => {
+                if id == 0 {
+                    return value == 0 && modulus == 10;
+                }
+                let mut remaining = u64::from(id);
+                while remaining >= minimum {
+                    if remaining % modulus == value {
+                        return true;
+                    }
+                    remaining /= 10;
+                }
+                false
+            }
+        }
+    }
+}
+
+struct SyntheticMatcher {
+    prefix: String,
+    with_id: bool,
+    decimal_contains: Option<DecimalContains>,
+}
+
+impl SyntheticMatcher {
+    fn new(graph_id: &str, pred: &StringPredicate) -> Self {
+        let prefix = synthetic_prefix(graph_id, pred);
+        let with_id = pred.prop() != "graphId";
+        let decimal_contains = DecimalContains::compile(&prefix, with_id, pred);
+        Self {
+            prefix,
+            with_id,
+            decimal_contains,
+        }
+    }
+
+    fn matches(&self, pred: &StringPredicate, id: u32, text: &mut String) -> bool {
+        if let Some(compiled) = &self.decimal_contains {
+            return compiled.matches(id);
+        }
+        text.clear();
+        text.push_str(&self.prefix);
+        if self.with_id {
+            let mut buf = [0u8; 10];
+            text.push_str(u32_text(id, &mut buf));
+        }
+        pred.matches_raw(text)
     }
 }
 
@@ -1760,12 +1923,7 @@ fn raw_sweep(graph: &Graph, graph_id: &str, tree: &PredTree, tests: usize) -> Ve
             chunk
                 .iter()
                 .copied()
-                .filter(|&id| {
-                    graph.node_offset(id).is_some_and(|offset| {
-                        let record = RawRecord::read(data, offset, id);
-                        raw.eval(graph, data, &record, &mut st)
-                    })
-                })
+                .filter(|&id| raw.matches_at(graph, data, graph.node_offset(id), id, &mut st))
                 .collect()
         })
         .collect();
@@ -1815,7 +1973,7 @@ fn build_source_plan(
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
-                    }
+                    };
                 }
                 Conjunction::Probe => {}
             }
@@ -1838,7 +1996,7 @@ fn build_source_plan(
                     // over a millisecond per graph on a term like "get".
                     return SourcePlan {
                         source,
-                        call_site: vec![sets.bitsets(graph.strings.len())],
+                        call_site: vec![sets.bitsets(graph.strings().len())],
                         call_site_candidates: None,
                         call_site_exact: true,
                         no_prefilter: false,
@@ -2246,7 +2404,7 @@ fn plan_conjunction(
         return Conjunction::Empty;
     }
     if min > ceiling {
-        let len = graph.strings.len();
+        let len = graph.strings().len();
         return Conjunction::Sweep(sets.iter().map(|s| s.bitsets(len)).collect());
     }
     if costs.iter().any(|&c| c > ceiling)
@@ -2334,7 +2492,7 @@ fn matching_string_ids(
 
 /// Apply a predicate to a dictionary entry, transforming it the way the sweep does.
 fn predicate_matches(graph: &Graph, p: &StringPredicate, id: u32) -> bool {
-    let text = graph.strings.get(id as usize);
+    let text = graph.strings().get(id as usize);
     match p.transform {
         Transform::None => p.matches_raw(text),
         Transform::Lowercase => {
@@ -2354,7 +2512,7 @@ fn predicate_matches(graph: &Graph, p: &StringPredicate, id: u32) -> bool {
 
 /// The original plan: scan the dictionary into bitsets, then sweep records against them.
 fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate]) -> SourcePlan {
-    let n = graph.strings.len();
+    let n = graph.strings().len();
     // Group predicates by property once, then make a single pass over the dictionary.
     // A separate pass per property would re-read (and re-lowercase) every string.
     let mut by_property: [Vec<&StringPredicate>; 4] = [vec![], vec![], vec![], vec![]];
@@ -2404,7 +2562,7 @@ fn build_sweep_plan(source: SourceIdx, graph: &Graph, preds: &[StringPredicate])
                 let mut hits: [Vec<u32>; 4] = Default::default();
                 let mut lowered = String::new();
                 for s in start..end {
-                    let text = graph.strings.get(s);
+                    let text = graph.strings().get(s);
                     let cased: &str = if needs_lowercase && !is_lowercase_ascii(text) {
                         lowered.clear();
                         if text.is_ascii() {
@@ -3044,6 +3202,11 @@ fn exposure_of(
             Exposure::Absent
         };
     }
+    if matches!(tag, TAG_FIELD_NODE | TAG_PARAMETER_NODE | TAG_RETURN_NODE)
+        && matches!(property, "generic_type" | "type_info")
+    {
+        return Exposure::Dynamic;
+    }
     if let Some(slot) = graphite_storage::columns::raw_string_field(tag, property) {
         return Exposure::Column(slot);
     }
@@ -3340,7 +3503,7 @@ fn resolve_column_leaf(
     } else {
         let candidates: Option<Vec<u32>> = match (p.literal.is_ascii(), p.trigrams.as_ref()) {
             (true, Some(trigrams)) if !trigrams.is_empty() => {
-                column.trigram_candidates(&graph.strings, trigrams)
+                column.trigram_candidates(graph.strings(), trigrams)
             }
             _ => None,
         };
@@ -3402,6 +3565,52 @@ impl ColumnLeaf {
     }
 }
 
+/// A key can be treated as absent only if all its leaves are independently
+/// impossible. Only keys-quantifier leaves qualify: arbitrary coalesce wrappers
+/// may introduce text on an absent binding. A second supported/unsupported test must never be
+/// hidden by a negative result for the first literal.
+fn declared_text_absent(graph: &Graph, tree: &PredTree) -> [bool; 2] {
+    let Some(table) = graph.declared_types() else {
+        return [false; 2];
+    };
+    fn visit(
+        tree: &PredTree,
+        table: &graphite_storage::types::DeclaredTypes,
+        seen: &mut [bool; 2],
+        absent: &mut [bool; 2],
+    ) {
+        match tree {
+            PredTree::Leaf(leaf) => {
+                let index = match leaf.prop() {
+                    "generic_type" => 0,
+                    "type_info" => 1,
+                    _ => return,
+                };
+                seen[index] = true;
+                if absent[index]
+                    && (!leaf.from_keys
+                        || leaf.shape != LeafShape::Text
+                        || leaf.op != PushOp::Contains
+                        || leaf.transform != Transform::None
+                        || (index == 1 && !leaf.via_to_string)
+                        || table.generic_text_may_contain(&leaf.literal))
+                {
+                    absent[index] = false;
+                }
+            }
+            PredTree::Or(children) | PredTree::And(children) => {
+                for child in children {
+                    visit(child, table, seen, absent);
+                }
+            }
+        }
+    }
+    let mut seen = [false; 2];
+    let mut absent = [true; 2];
+    visit(tree, table, &mut seen, &mut absent);
+    [seen[0] && absent[0], seen[1] && absent[1]]
+}
+
 /// A column plan resolved against one graph: the tree with each leaf's matching ids.
 enum ColumnTree {
     Leaf(ColumnLeaf),
@@ -3412,8 +3621,7 @@ enum ColumnTree {
     },
     /// A synthetic key, tested per node: the graph's prefix and the node id.
     Synthetic {
-        prefix: String,
-        with_id: bool,
+        matcher: SyntheticMatcher,
         pred: StringPredicate,
     },
     /// A raw field of the record, found from the node id; `memo` indexes the
@@ -3440,6 +3648,48 @@ struct RowState {
 }
 
 /// The literal as a number, for a numeric leaf.
+/// Whether the decimal text of an integer (digits, at most a leading minus) can satisfy
+/// the text test at all. A literal holding any other byte is never a substring, prefix,
+/// suffix or equal of one, so a `keys(n)` search for a word need not read a single row
+/// for the node id or an integer field: before this, `MATCH (n) WHERE any(k IN keys(n)
+/// WHERE toString(n[k]) CONTAINS 'word')` rendered every node id of every graph as text.
+/// A regex is left to its matcher.
+fn decimal_text_may_match(p: &StringPredicate) -> bool {
+    match p.op {
+        PushOp::Regex => true,
+        _ => p.literal.bytes().all(|b| b.is_ascii_digit() || b == b'-'),
+    }
+}
+
+/// Whether a composed method descriptor (`class.name(param,param)`) can hold the
+/// literal. Its class and name are CallSite strings the trigram index covers; its
+/// parameter types are erased type names, which the declared type table's text summary
+/// covers. The literal's maximal runs between the joining punctuation each lie inside
+/// one part, so a run that neither the index nor the summary can hold rules the graph
+/// out; a graph without a declared table keeps every run possible. Only an ASCII
+/// literal is split, as `push_predicate` reasons about case; a regex is left to its
+/// matcher.
+fn composed_text_may_match(
+    graph: &Graph,
+    idx: &graphite_storage::callsite_index::CallSiteStringIndex,
+    p: &StringPredicate,
+) -> bool {
+    if p.op == PushOp::Regex || !p.literal.is_ascii() {
+        return true;
+    }
+    let Some(table) = graph.declared_types() else {
+        return true;
+    };
+    p.literal.split(['.', '(', ',', ')']).all(|run| {
+        match graphite_storage::callsite_index::literal_trigrams(run) {
+            Some(trigrams) if !trigrams.is_empty() => {
+                idx.may_contain_all(&trigrams) || table.generic_text_may_contain(run)
+            }
+            _ => true,
+        }
+    })
+}
+
 fn leaf_number(p: &StringPredicate) -> Option<f64> {
     match p.shape {
         LeafShape::Numeric => p.literal.parse::<f64>().ok(),
@@ -3478,23 +3728,37 @@ impl ColumnTree {
                     Exposure::Column(slot) => slot,
                     Exposure::Synthetic => {
                         return Some(ColumnTree::Synthetic {
-                            prefix: synthetic_prefix(graph_id, p),
-                            with_id: p.prop() != "graphId",
+                            matcher: SyntheticMatcher::new(graph_id, p),
                             pred: p.clone(),
-                        })
+                        });
                     }
                     Exposure::NodeId => {
+                        let number = leaf_number(p);
+                        if number.is_none() && !decimal_text_may_match(p) {
+                            return None;
+                        }
                         return Some(ColumnTree::NodeId {
-                            number: leaf_number(p),
+                            number,
                             pred: p.clone(),
-                        })
+                        });
                     }
                     Exposure::Record(field) => {
+                        let number = leaf_number(p);
+                        let possible = match field {
+                            RecordField::I32(_) | RecordField::I64(_) => {
+                                number.is_some() || decimal_text_may_match(p)
+                            }
+                            RecordField::Bool(_) => p.matches_raw("true") || p.matches_raw("false"),
+                            RecordField::Method(_) | RecordField::ActualTypeAfterMethod => true,
+                        };
+                        if !possible {
+                            return None;
+                        }
                         let memo = *memos;
                         *memos += 1;
                         return Some(ColumnTree::Record {
                             field,
-                            number: leaf_number(p),
+                            number,
                             pred: p.clone(),
                             memo,
                         });
@@ -3507,7 +3771,7 @@ impl ColumnTree {
                     return None;
                 }
                 let bits = (matched.len() > 8).then(|| {
-                    let mut b = StringBitset::new(graph.strings.len());
+                    let mut b = StringBitset::new(graph.strings().len());
                     for &id in matched.iter() {
                         b.set(id as usize);
                     }
@@ -3567,19 +3831,7 @@ impl ColumnTree {
         match self {
             ColumnTree::Leaf(l) => l.holds(graph.string_column(l.slot).string_ids()[row]),
             ColumnTree::NodeId { number, pred } => number_or_text(*number, id, pred),
-            ColumnTree::Synthetic {
-                prefix,
-                with_id,
-                pred,
-            } => {
-                st.text.clear();
-                st.text.push_str(prefix);
-                if *with_id {
-                    let mut buf = [0u8; 10];
-                    st.text.push_str(u32_text(id, &mut buf));
-                }
-                pred.matches_raw(&st.text)
-            }
+            ColumnTree::Synthetic { matcher, pred } => matcher.matches(pred, id, &mut st.text),
             ColumnTree::Record {
                 field,
                 number,
@@ -3746,7 +3998,9 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
     else {
         return false;
     };
-    if !name.eq_ignore_ascii_case("any") {
+    // The quantifier binds its variable before evaluating the predicate. If it
+    // shadows the scan variable, n[n] reads the key string, not the graph node.
+    if !name.eq_ignore_ascii_case("any") || key_var == variable {
         return false;
     }
     match list.as_ref() {
@@ -3770,7 +4024,12 @@ fn expand_keys_predicate(e: &Expr, variable: &str, out: &mut Vec<StringPredicate
     let subscripted = |operand: &Expr| -> Option<bool> {
         let (inner, via) = match operand {
             Expr::FunctionCall { name, args, .. } if name.eq_ignore_ascii_case("tostring") => {
-                (args.first()?, true)
+                // Extra arguments still evaluate (and can fail) in the ordinary
+                // evaluator. Pushdown must never discard their work or errors.
+                let [argument] = args.as_slice() else {
+                    return None;
+                };
+                (argument, true)
             }
             other => (other, false),
         };
@@ -4024,18 +4283,26 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         return true;
     };
     match tree {
-        // A synthetic key is not in any dictionary, and a number's text is not either:
-        // their trigrams say nothing about whether the graph can match.
-        // Nor does a number, a list test, a node id, or a type name.
+        // A synthetic key is not in any dictionary, and a type or method name is composed:
+        // their trigrams say nothing about whether the graph can match. Nor does a number
+        // or a list test.
         PredTree::Leaf(p)
             if p.shape != LeafShape::Text
                 || is_synthetic_key(p.prop())
-                || p.via_to_string
-                || matches!(p.prop(), "id" | "type" | "method")
-                || is_raw_call_site_prop(p.prop()) =>
+                || matches!(p.prop(), "type" | "method") =>
         {
             true
         }
+        // A number's text holds digits: a word never matches it, whatever the graph.
+        PredTree::Leaf(p) if matches!(p.prop(), "id" | "line" | "ordinal") => {
+            decimal_text_may_match(p)
+        }
+        // A descriptor is CallSite strings and type names joined by punctuation: each
+        // word of the literal must be in one of them.
+        PredTree::Leaf(p) if is_raw_call_site_prop(p.prop()) => {
+            composed_text_may_match(graph, idx, p)
+        }
+        // `toString` of a string property is that string: the trigrams stand.
         PredTree::Leaf(p) => match p.trigrams.as_ref() {
             Some(trigrams) if !trigrams.is_empty() => idx.may_contain_all(trigrams),
             _ => true,
@@ -4044,6 +4311,10 @@ fn may_match(graph: &Graph, tree: &PredTree) -> bool {
         PredTree::And(children) => children.iter().all(|c| may_match(graph, c)),
     }
 }
+
+#[cfg(test)]
+#[path = "synthetic_id_sweep_tests.rs"]
+mod synthetic_id_sweep_tests;
 
 #[cfg(test)]
 mod tests {
@@ -4077,6 +4348,230 @@ mod tests {
         }
     }
 
+    fn ordered_test_rows(rows: &[crate::semantics::Row]) -> Vec<Vec<(String, String)>> {
+        rows.iter()
+            .map(|row| {
+                row.iter()
+                    .map(|(key, value)| (key.clone(), format!("{value:?}")))
+                    .collect()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn keys_expansion_rejects_tostring_arity_and_shadowed_node_variables() {
+        for predicate in [
+            "any(k IN keys(n) WHERE toString(n[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(properties(n)[k], 'unused') CONTAINS 'first')",
+            "any(k IN keys(n) WHERE toString() CONTAINS 'ZZZAbsent')",
+            "any(n IN keys(n) WHERE toString(n[n]) CONTAINS 'first')",
+            "any(n IN keys(n) WHERE toString(properties(n)[n]) CONTAINS 'first')",
+        ] {
+            let query = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
+            let (patterns, condition) = parse_where(&query);
+            assert!(
+                ScanPlan::build(&patterns, condition.as_ref()).is_none(),
+                "{query}"
+            );
+        }
+        let (patterns, condition) = parse_where(
+            "MATCH (n:FieldNode) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS 'first') RETURN id(n)",
+        );
+        assert!(ScanPlan::build(&patterns, condition.as_ref()).is_some());
+    }
+
+    #[test]
+    fn keys_expansion_preserves_argument_errors_and_shadowed_variable_results() {
+        let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none()
+                    && std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_TYPES_FIXTURE required for keys expansion parity"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        assert!(graph.count_by_tag(TAG_FIELD_NODE) > 0);
+        let ex = Executor::single("generic", std::sync::Arc::new(graph));
+        let queries = |predicate: &str| {
+            let direct = format!("MATCH (n:FieldNode) WHERE {predicate} RETURN id(n)");
+            // CASE is deliberately outside scan predicate extraction. It leaves
+            // WHERE truth/error semantics unchanged without global env mutation.
+            let fallback = format!(
+                "MATCH (n:FieldNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n)"
+            );
+            let (patterns, condition) = parse_where(&fallback);
+            assert!(
+                ScanPlan::build(&patterns, condition.as_ref()).is_none(),
+                "{fallback}"
+            );
+            (direct, fallback)
+        };
+        for predicate in [
+            "any(k IN keys(n) WHERE toString(n[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+            "any(k IN keys(n) WHERE toString(properties(n)[k], unknownFunction()) CONTAINS 'ZZZAbsent')",
+        ] {
+            let (direct, fallback) = queries(predicate);
+            let actual = ex.execute(&direct, None).unwrap_err().to_string();
+            let expected = ex.execute(&fallback, None).unwrap_err().to_string();
+            assert!(actual.contains("Unknown function"), "{actual}");
+            assert_eq!(actual, expected);
+        }
+        for predicate in [
+            "any(n IN keys(n) WHERE toString(n[n]) CONTAINS 'first')",
+            "any(n IN keys(n) WHERE toString(properties(n)[n]) CONTAINS 'first')",
+        ] {
+            let (direct, fallback) = queries(predicate);
+            let actual = ex.execute(&direct, None).unwrap().rows;
+            assert!(actual.is_empty(), "shadowed n is a key string: {direct}");
+            assert_eq!(
+                ordered_test_rows(&actual),
+                ordered_test_rows(&ex.execute(&fallback, None).unwrap().rows)
+            );
+        }
+        let (direct, fallback) =
+            queries("any(k IN keys(n) WHERE toString(n[k], 'unused') CONTAINS 'first')");
+        let actual = ex.execute(&direct, None).unwrap().rows;
+        assert!(
+            !actual.is_empty(),
+            "the retained typed fixture has the first field"
+        );
+        assert_eq!(
+            ordered_test_rows(&actual),
+            ordered_test_rows(&ex.execute(&fallback, None).unwrap().rows)
+        );
+    }
+
+    #[test]
+    fn declared_summary_never_rejects_actual_rendered_and_structured_fixture_text() {
+        let variables = [
+            "GRAPHITE_TYPES_V1_FIXTURE",
+            "GRAPHITE_TYPES_V2_FIXTURE",
+            "GRAPHITE_TYPES_V3_FIXTURE",
+            "GRAPHITE_TYPES_V4_FIXTURE",
+            "GRAPHITE_TYPES_FIXTURE",
+        ];
+        for variable in variables {
+            let Some(dir) = std::env::var_os(variable) else {
+                assert!(
+                    std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                    "{variable} required"
+                );
+                continue;
+            };
+            let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+            let table = graph.declared_types().unwrap();
+            let mut checked = 0;
+            for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+                for &id in graph.ids_by_tag(tag) {
+                    let node = graph.node(id).unwrap();
+                    for key in ["generic_type", "type_info"] {
+                        let value = super::super::props::node_property(&graph, &node, key);
+                        if value.is_null() {
+                            continue;
+                        }
+                        let text = crate::semantics::kotlin_to_string_plain(&value);
+                        assert!(
+                            table.generic_text_may_contain(&text),
+                            "{variable}: {key}: {text}"
+                        );
+                        // Every possible negative is a missing 1/2/3-gram within
+                        // an ASCII run. Check every short substring of the actual
+                        // projection, including generated punctuation boundaries.
+                        let ends: Vec<_> = text
+                            .char_indices()
+                            .map(|(i, _)| i)
+                            .chain([text.len()])
+                            .collect();
+                        for a in 0..ends.len() {
+                            for b in a..(a + 5).min(ends.len()) {
+                                assert!(
+                                    table.generic_text_may_contain(&text[ends[a]..ends[b]]),
+                                    "{variable}: {key}: {:?}",
+                                    &text[ends[a]..ends[b]]
+                                );
+                            }
+                        }
+                        checked += 1;
+                    }
+                }
+            }
+            assert!(checked > 0, "{variable}: no generic projections checked");
+        }
+    }
+
+    #[test]
+    fn declared_negative_summary_preserves_uncertain_leaves_and_complete_query_rows() {
+        use super::super::Source;
+        use std::sync::Arc;
+        let Some(dir) = std::env::var_os("GRAPHITE_TYPES_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_DUAL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_TYPES_FIXTURE required for declared summary validation"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        let mut absent = leaf("generic_type", PushOp::Contains, "ZZZAbsent");
+        if let PredTree::Leaf(p) = &mut absent {
+            p.from_keys = true;
+        }
+        assert!(declared_text_absent(&graph, &absent)[0]);
+        for mut mixed in [
+            leaf("generic_type", PushOp::Contains, ""),
+            leaf("generic_type", PushOp::StartsWith, "ZZZAbsent"),
+            leaf("generic_type", PushOp::Contains, "ZZZAbsent"),
+        ] {
+            if let PredTree::Leaf(p) = &mut mixed {
+                p.from_keys = true;
+                if p.op == PushOp::Contains && !p.literal.is_empty() {
+                    p.transform = Transform::Lowercase;
+                }
+            }
+            assert!(!declared_text_absent(&graph, &PredTree::Or(vec![absent.clone(), mixed]))[0]);
+        }
+        assert!(
+            !declared_text_absent(&graph, &leaf("type_info", PushOp::Contains, "ZZZAbsent"))[1]
+        );
+        let mut owned = Graph::load(std::path::Path::new(&dir)).unwrap();
+        owned.update_declared_types(|_| {});
+        assert!(!declared_text_absent(&owned, &absent)[0]);
+        let ex = Executor::new(
+            vec![Source {
+                id: "generic".into(),
+                graph: Arc::new(graph),
+            }],
+            true,
+        );
+        let slow = Executor::new(
+            vec![Source {
+                id: "generic".into(),
+                graph: Arc::new(owned),
+            }],
+            true,
+        );
+        // Owning mutation is an independent fallback selector: same declarations,
+        // no negative summary, so generic leaves retain the full row predicate.
+        for literal in [
+            "ZZZAbsent",
+            "java",
+            "<",
+            "arguments=[]",
+            "scope=method:",
+            "",
+            "类型",
+        ] {
+            let query = format!(
+                "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN id(n), n.graphId LIMIT 50"
+            );
+            assert_eq!(
+                ordered_test_rows(&ex.execute(&query, None).unwrap().rows),
+                ordered_test_rows(&slow.execute(&query, None).unwrap().rows),
+                "{query}"
+            );
+        }
+    }
+
     #[test]
     fn exposure_follows_the_record_layouts() {
         assert_eq!(exposure(TAG_STRING_CONSTANT, "value"), Exposure::Column(0));
@@ -4105,6 +4600,21 @@ mod tests {
             Exposure::Column(_)
         ));
         assert_eq!(exposure(TAG_LOCAL_VARIABLE, "method"), Exposure::Dynamic);
+        for tag in [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE] {
+            for key in ["generic_type", "type_info"] {
+                assert_eq!(exposure(tag, key), Exposure::Dynamic);
+                assert!(ALL_KEYS.contains(&key));
+                assert_eq!(
+                    kind(&prune(
+                        &leaf(key, PushOp::Contains, "java.lang.String"),
+                        tag,
+                        &|_| false,
+                        &|_| Fold::Unknown
+                    )),
+                    "generic"
+                );
+            }
+        }
     }
 
     #[test]
@@ -4469,11 +4979,15 @@ mod tests {
         // An exact CallSite stream (`All`/`Column`) would skip the WHERE clause on an
         // unrelaxed plan; relaxed, it must not: IS NULL on a name every call site has.
         assert_eq!(
-            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)"),
+            count(
+                "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NULL RETURN count(*)"
+            ),
             0
         );
         assert_eq!(
-            count("MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"),
+            count(
+                "MATCH (n) WHERE n.callee_class CONTAINS 'java' AND n.callee_name IS NOT NULL RETURN count(*)"
+            ),
             b
         );
     }
@@ -4533,7 +5047,10 @@ mod tests {
             if p[0].rels.is_empty() {
                 assert!(ScanPlan::build(&p, w.as_ref()).is_some(), "{q}");
             } else {
-                assert!(super::super::hop::HopPlan::build(&p, w.as_ref()).is_some(), "{q}");
+                assert!(
+                    super::super::hop::HopPlan::build(&p, w.as_ref()).is_some(),
+                    "{q}"
+                );
             }
         }
         let (p, w) = parse_where("MATCH (n) WHERE n.callee_name IN ['toString'] RETURN n");
@@ -5040,6 +5557,152 @@ mod tests {
         assert_eq!(p[TAG_STRING_CONSTANT as usize], "skip");
         let (p, w) = parse_where(r#"MATCH (n {value: n.name}) RETURN n"#);
         assert!(ScanPlan::build(&p, w.as_ref()).is_none());
+    }
+
+    fn to_string_leaf(property: &'static str, op: PushOp, literal: &str) -> PredTree {
+        let PredTree::Leaf(mut p) = leaf(property, op, literal) else {
+            unreachable!()
+        };
+        p.via_to_string = true;
+        p.from_keys = true;
+        PredTree::Leaf(p)
+    }
+
+    #[test]
+    fn words_never_match_decimal_text() {
+        let text = |literal: &str| match leaf("id", PushOp::Contains, literal) {
+            PredTree::Leaf(p) => p,
+            _ => unreachable!(),
+        };
+        assert!(decimal_text_may_match(&text("12")));
+        assert!(decimal_text_may_match(&text("-3")));
+        assert!(decimal_text_may_match(&text("")));
+        assert!(!decimal_text_may_match(&text("ab")));
+        assert!(!decimal_text_may_match(&text("1a")));
+        assert!(!decimal_text_may_match(&text("1.5")));
+        let mut regex = text("ab");
+        regex.op = PushOp::Regex;
+        assert!(decimal_text_may_match(&regex));
+        // The planner drops the leaf for the id and the integer fields alike, keeps it
+        // for a digit literal, and keeps a method or a boolean word it can hold.
+        let p = plans(r#"MATCH (n) WHERE toString(n.id) CONTAINS "ab" RETURN n"#);
+        assert!(p.iter().all(|k| *k == "skip" || *k == "generic"), "{p:?}");
+        let p = plans(r#"MATCH (n) WHERE toString(n.index) CONTAINS "ab" RETURN n"#);
+        assert_eq!(p[TAG_PARAMETER_NODE as usize], "skip");
+        let p = plans(r#"MATCH (n) WHERE toString(n.value) CONTAINS "ab" RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_LONG_CONSTANT as usize], "skip");
+        assert_eq!(p[TAG_STRING_CONSTANT as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.value) CONTAINS "12" RETURN n"#);
+        assert_eq!(p[TAG_INT_CONSTANT as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.static) CONTAINS "ru" RETURN n"#);
+        assert_eq!(p[TAG_FIELD_NODE as usize], "column");
+        let p = plans(r#"MATCH (n) WHERE toString(n.static) CONTAINS "yes" RETURN n"#);
+        assert_eq!(p[TAG_FIELD_NODE as usize], "skip");
+    }
+
+    #[test]
+    fn word_searches_skip_numbers_and_absent_descriptor_words() {
+        let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+            assert!(
+                std::env::var_os("GRAPHITE_REQUIRE_ALL_TYPES_FIXTURES").is_none(),
+                "GRAPHITE_INDEX_FIXTURE required for the word search prefilter"
+            );
+            return;
+        };
+        let graph = Graph::load(std::path::Path::new(&dir)).unwrap();
+        assert!(
+            usable_index(&graph).is_some(),
+            "the indexed fixture carries a CallSite index"
+        );
+        assert!(graph.declared_types().is_some());
+        let absent = |property| to_string_leaf(property, PushOp::Contains, "ZZZAbsentWord");
+        // A word against a number's text: the node id, the line, the ordinal.
+        for property in ["id", "line", "ordinal"] {
+            assert!(!may_match(&graph, &absent(property)), "{property}");
+            assert!(may_match(
+                &graph,
+                &to_string_leaf(property, PushOp::Contains, "1")
+            ));
+        }
+        // `toString` of a CallSite string is the string: the index answers.
+        assert!(!may_match(&graph, &absent("callee_name")));
+        // A descriptor word neither a CallSite string nor a type name holds.
+        assert!(!may_match(&graph, &absent("callee_signature")));
+        assert!(!may_match(&graph, &absent("caller_signature")));
+        // Words the fixture does hold: a callee's name, and a parameter type's name,
+        // which only the declared table knows.
+        let first = graph.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+        let node = graph.node(first).unwrap();
+        let callee = crate::semantics::kotlin_to_string_plain(&super::super::props::node_property(
+            &graph,
+            &node,
+            "callee_name",
+        ));
+        assert!(callee.len() >= 3, "{callee}");
+        assert!(may_match(
+            &graph,
+            &to_string_leaf("callee_signature", PushOp::Contains, &callee)
+        ));
+        let table = graph.declared_types().unwrap();
+        let type_name = (0..table.type_count())
+            .map(|id| table.type_expr(id).name.to_owned())
+            .find(|name| name.len() >= 3 && name.bytes().all(|b| b.is_ascii_alphanumeric()))
+            .expect("a type name");
+        assert!(may_match(
+            &graph,
+            &to_string_leaf("caller_signature", PushOp::Contains, &type_name)
+        ));
+        // The whole word search over every key, as the CallSite type plans it once the
+        // synthetic keys are folded for a graph: nothing to sweep for the absent word,
+        // a sweep for a digit.
+        let call_site_tree = |literal: &str| {
+            let (pt, w) = parse_where(&format!(
+                "MATCH (n) WHERE any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}') RETURN n"
+            ));
+            let plan = ScanPlan::build(&pt, w.as_ref()).expect("planned");
+            let never = |_: &str| false;
+            let no = |_: &StringPredicate| Fold::Known(false);
+            match tag_plan(&plan.tree, TAG_CALL_SITE_NODE, &never, &no) {
+                TagPlan::CallSite(tree) => tree,
+                other => panic!("{}", kind_of(&other)),
+            }
+        };
+        assert!(!may_match(&graph, &call_site_tree("ZZZAbsentWord")));
+        assert!(may_match(&graph, &call_site_tree("1")));
+        // And the answers match the unpushed evaluation, hit or miss. (A type name is
+        // left out: the keys search has never pushed `callee_descriptor`, where a word
+        // like `int` can hide in a package name, on this revision or the base.)
+        let ex = Executor::single("generic", std::sync::Arc::new(graph));
+        for literal in ["ZZZAbsentWord", "1", callee.as_str()] {
+            let predicate = format!("any(k IN keys(n) WHERE toString(n[k]) CONTAINS '{literal}')");
+            let direct =
+                format!("MATCH (n:CallSiteNode) WHERE {predicate} RETURN id(n) ORDER BY id(n)");
+            let fallback = format!(
+                "MATCH (n:CallSiteNode) WHERE CASE WHEN {predicate} THEN true ELSE false END RETURN id(n) ORDER BY id(n)"
+            );
+            let actual = ex.execute(&direct, None).unwrap().rows;
+            let expected = ex.execute(&fallback, None).unwrap().rows;
+            let (actual_rows, expected_rows) =
+                (ordered_test_rows(&actual), ordered_test_rows(&expected));
+            let only_direct: Vec<_> = actual_rows
+                .iter()
+                .filter(|r| !expected_rows.contains(r))
+                .take(3)
+                .collect();
+            let only_fallback: Vec<_> = expected_rows
+                .iter()
+                .filter(|r| !actual_rows.contains(r))
+                .take(3)
+                .collect();
+            assert_eq!(
+                actual_rows.len(),
+                expected_rows.len(),
+                "{literal}: only direct {only_direct:?}, only fallback {only_fallback:?}"
+            );
+            assert_eq!(actual_rows, expected_rows, "{literal}");
+            assert_eq!(actual.is_empty(), literal == "ZZZAbsentWord", "{literal}");
+        }
     }
 
     #[test]

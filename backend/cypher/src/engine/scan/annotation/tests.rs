@@ -773,7 +773,7 @@ fn every_eligible_substring_of_rendered_annotations_is_dictionary_backed() {
             let literal = &text[start..end];
             if dictionary_settles(&pred("values", literal)) {
                 assert!(
-                    (0..graph.strings.len()).any(|id| graph.strings.get(id).contains(literal)),
+                    (0..graph.strings().len()).any(|id| graph.strings().get(id).contains(literal)),
                     "rendered-only literal cannot be pruned: {literal:?}"
                 );
                 checked += 1;
@@ -1090,7 +1090,7 @@ fn mixed_annotation_callsite_results_preserve_node_order_before_limit() {
 #[test]
 fn rendered_annotation_boundaries_and_values_match_independent_generic_results() {
     let (_fixture, graph) = fixture();
-    assert!((0..graph.strings.len()).all(|id| !graph.strings.get(id).contains(" beta")));
+    assert!((0..graph.strings().len()).all(|id| !graph.strings().get(id).contains(" beta")));
     let ex = Executor::new(
         ["first", "GraphOnly"]
             .into_iter()

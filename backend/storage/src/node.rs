@@ -79,6 +79,17 @@ impl MethodDesc {
         out
     }
 
+    /// `"$class.$name$descriptor"` — the Kotlin `MethodDescriptor.identity`: the signature plus the
+    /// return type the descriptor keeps, so a bridge and its covariant override have two.
+    pub fn identity(&self, s: &StringTable) -> String {
+        let mut out = String::with_capacity(96);
+        out.push_str(s.get(self.declaring_class as usize));
+        out.push('.');
+        out.push_str(s.get(self.name as usize));
+        out.push_str(&self.descriptor(s));
+        out
+    }
+
     pub fn signature_into(&self, s: &StringTable, out: &mut String) {
         out.push_str(s.get(self.declaring_class as usize));
         out.push('.');
@@ -475,6 +486,39 @@ pub fn read_call_site_strings(data: &[u8], record_pos: usize) -> CallSiteStrings
         callee_class,
         callee_name,
     }
+}
+
+/// The four scalar string IDs, only after the complete CallSite framing is checked.
+/// Counts retain Node::read's negative-as-zero behavior. No parameter/argument
+/// vectors are constructed; invalid or other-kind records keep the caller's fallback.
+pub fn read_call_site_scalar_strings(data: &[u8], record_pos: usize) -> Option<CallSiteStrings> {
+    fn ids(c: &mut Cursor<'_>) -> Option<()> {
+        let count = c.i32().ok()?.max(0) as usize;
+        c.skip(count.checked_mul(4)?).ok()
+    }
+    fn method(c: &mut Cursor<'_>) -> Option<(StrId, StrId)> {
+        let class = c.u32().ok()?;
+        let name = c.u32().ok()?;
+        ids(c)?;
+        c.u32().ok()?; // return type
+        Some((class, name))
+    }
+    let mut c = Cursor::new(data.get(record_pos..)?);
+    c.u32().ok()?; // Like Node::read, do not require header id == lookup id.
+    if c.u8().ok()? != TAG_CALL_SITE_NODE {
+        return None;
+    }
+    let (caller_class, caller_name) = method(&mut c)?;
+    let (callee_class, callee_name) = method(&mut c)?;
+    c.i32().ok()?; // line
+    c.i32().ok()?; // receiver
+    ids(&mut c)?;
+    Some(CallSiteStrings {
+        caller_class,
+        caller_name,
+        callee_class,
+        callee_name,
+    })
 }
 
 /// The `graph.callsite-ordinals` sidecar: the ordinal of every call site that has one, and

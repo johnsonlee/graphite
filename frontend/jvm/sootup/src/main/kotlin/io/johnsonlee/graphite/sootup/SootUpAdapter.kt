@@ -35,6 +35,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
@@ -108,6 +109,7 @@ import sootup.core.jimple.common.expr.JGtExpr
 import sootup.core.jimple.common.expr.JLeExpr
 import sootup.core.model.Body
 import sootup.core.model.SootClass
+import sootup.core.model.SootField
 import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
@@ -121,6 +123,7 @@ import sootup.java.bytecode.frontend.conversion.AsmMethodSource
 import sootup.java.bytecode.frontend.conversion.asStreamingMethod
 import sootup.java.bytecode.frontend.conversion.signatureFor
 import sootup.java.bytecode.frontend.conversion.streamingMethodSources
+import sootup.java.bytecode.frontend.conversion.parsedDeclarationNode
 import sootup.java.core.JavaSootMethod
 import sootup.core.types.ClassType
 import sootup.core.types.ArrayType
@@ -438,6 +441,18 @@ class SootUpAdapter(
         return classOriginsByName.toMap()
     }
 
+    /** Declaration snapshots are needed only while building the type table. */
+    private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
+        val declarations = classes.mapNotNull { sootClass ->
+            val name = sootClass.type.fullyQualifiedName
+            sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)
+                ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
+        }.associateBy { it.name }
+        val table = DeclaredTypesReader(declarations).build()
+        val interfaces = classes.filter { it.isInterface }.mapTo(HashSet()) { it.type.fullyQualifiedName }
+        return InheritedFieldTypes(declarations, table, interfaces).bind(fieldNodes.values)
+    }
+
     /**
      * Build the complete graph from the SootUp view
      */
@@ -529,6 +544,7 @@ class SootUpAdapter(
         }
 
         log("Starting graphBuilder.build()")
+        graphBuilder.setDeclaredTypes(buildDeclaredTypes(classes))
         graphBuilder.setResources(resourceAccessor)
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
@@ -541,7 +557,7 @@ class SootUpAdapter(
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
                 val className = sootClass.type.fullyQualifiedName
                 extractAnnotations(sootClass.annotations, className, "<class>")
-                sootClass.fields.forEach { field ->
+                sootClass.fields.inDeterministicOrder().forEach { field ->
                     extractAnnotations(field.annotations, className, field.name)
                 }
             }
@@ -752,6 +768,17 @@ class SootUpAdapter(
     }
 
     /**
+     * A class's declared fields in a deterministic order. SootUp collects them into a `HashSet`
+     * of `JavaSootField`, which has no `hashCode` of its own, so the set iterates in identity-hash
+     * order: stable for one program, and shifted by any change in how many objects the build
+     * hashes before the class is reached. Fields a body references are numbered when the body is
+     * processed; the ones only this pass sees were numbered in that order, and a run of the same
+     * input on another revision renumbered them (PR #174, `shape-label-scan-field`).
+     */
+    private fun <F : SootField> Collection<F>.inDeterministicOrder(): List<F> =
+        sortedWith(compareBy({ it.name }, { it.signature.toString() }))
+
+    /**
      * Process all declared fields for a single class, ensuring FieldNodes are created.
      *
      * This is important for return type analysis to discover ALL fields in a class,
@@ -762,7 +789,7 @@ class SootUpAdapter(
      */
     private fun visitFieldsForClass(sootClass: SootClass) {
         val className = sootClass.type.fullyQualifiedName
-        sootClass.fields.forEach { field ->
+        sootClass.fields.inDeterministicOrder().forEach { field ->
             val fieldName = field.name
 
             // Skip synthetic fields
@@ -4140,9 +4167,12 @@ class SootUpAdapter(
         fieldName: String,
         fallbackType: TypeDescriptor
     ): TypeDescriptor {
-        return signatureReader?.getFieldType(declaringClass, fieldName)
+        val generic = signatureReader?.getFieldType(declaringClass, fieldName)
             ?: fieldGenericTypes(declaringClass)[fieldName]
-            ?: fallbackType
+            ?: return fallbackType
+        // A Signature can name T or an owner-qualified inner type; neither replaces the JVM
+        // descriptor used to identify this field. Retain arguments for existing type analysis.
+        return generic.copy(className = fallbackType.className)
     }
 
     private fun fieldGenericTypes(className: String): Map<String, TypeDescriptor> =

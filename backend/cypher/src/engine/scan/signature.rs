@@ -102,7 +102,7 @@ impl DictionaryMemo {
         cancel.check()?;
         let absent = self.get_or_try_insert(p.test, || {
             graph
-                .strings
+                .strings()
                 .try_any_contains(&p.literal, || cancel.check())
                 .map(|found| !found)
         })?;

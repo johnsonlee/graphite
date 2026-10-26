@@ -349,7 +349,7 @@ fn real_multi_graph_keys_search_matches_generic_rows_order_and_materialized_prop
     };
     let graph = Arc::new(Graph::load(std::path::Path::new(&dir)).unwrap());
     let graph_only = "SignatureProofGraphOnly87429";
-    assert!((0..graph.strings.len()).all(|id| !graph.strings.get(id).contains(graph_only)));
+    assert!((0..graph.strings().len()).all(|id| !graph.strings().get(id).contains(graph_only)));
     let ex = Executor::new(
         ["first", graph_only]
             .into_iter()

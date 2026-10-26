@@ -214,7 +214,7 @@ class QualifiedIdContainsTest {
             "MATCH (n:Method) RETURN n.qualifiedId AS property, qualifiedId(n) AS identity LIMIT 1"
         )
         assertEquals(listOf(null), result.rows.map { it["property"] })
-        assertEquals(listOf("alpha:Method:${method.signature}"), result.rows.map { it["identity"] })
+        assertEquals(listOf("alpha:Method:${method.identity}"), result.rows.map { it["identity"] })
     }
 
     @Test

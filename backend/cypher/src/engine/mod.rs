@@ -4,6 +4,7 @@ pub mod fastpath;
 pub mod hop;
 mod id_candidate;
 pub mod matching;
+mod method_source_guard;
 pub mod partition;
 pub mod pipeline;
 pub mod props;
@@ -124,6 +125,11 @@ pub struct Executor {
     /// on the same thread. Monotonic, so it never repeats the way an address can.
     epoch: u64,
     poll: AtomicU64,
+    /// The first declared-type table this query needed and could not read. A table that fails
+    /// to parse is absent for the whole process, so without this the query would answer as if
+    /// the graph declared nothing; the query ends with this error instead (see
+    /// `execute_clauses`). Reads that never consult the table leave it untouched.
+    declared_failure: std::sync::Mutex<Option<String>>,
 }
 
 impl Executor {
@@ -149,7 +155,106 @@ impl Executor {
             partition: true,
             epoch: EPOCH.fetch_add(1, Ordering::Relaxed),
             poll: AtomicU64::new(0),
+            declared_failure: std::sync::Mutex::new(None),
         }
+    }
+
+    /// Records that this query needed `g`'s declared table and the table is unreadable. Called
+    /// after an access that read the state, so this never reads it for a graph left unread.
+    pub(super) fn note_declared_failure(&self, g: &Graph) {
+        if let Some(error) = g.declared_types_failure() {
+            let mut slot = self
+                .declared_failure
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner());
+            if slot.is_none() {
+                *slot = Some(format!("declared types unreadable: {error}"));
+            }
+        }
+    }
+
+    /// Notes a result value whose rendering will read a declared table that cannot be read:
+    /// a field, parameter or return node, or a method, of such a graph, at any nesting.
+    pub(super) fn note_declared_result_value(&self, value: &Value) {
+        // Rendering such a value reads the table, so reading the state here, for exactly these
+        // values, costs nothing the caller would not pay; any other value leaves it unread.
+        match value {
+            Value::Node(node) => {
+                let g = self.graph(node.source);
+                if g.node_tag(node.id).is_some_and(|tag| {
+                    matches!(
+                        tag,
+                        graphite_storage::node::TAG_FIELD_NODE
+                            | graphite_storage::node::TAG_PARAMETER_NODE
+                            | graphite_storage::node::TAG_RETURN_NODE
+                    )
+                }) && g.declared_types_error().is_some()
+                {
+                    self.note_declared_failure(g);
+                }
+            }
+            Value::Method(method) => {
+                let g = self.graph(method.source);
+                if g.declared_types_error().is_some() {
+                    self.note_declared_failure(g);
+                }
+            }
+            Value::List(items) => items
+                .iter()
+                .for_each(|item| self.note_declared_result_value(item)),
+            Value::Map(map) => map
+                .values()
+                .for_each(|item| self.note_declared_result_value(item)),
+            _ => {}
+        }
+    }
+
+    pub(super) fn take_declared_failure(&self) -> Option<String> {
+        self.declared_failure
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .take()
+    }
+
+    /// `g`'s declared table for an access this query makes.
+    pub(super) fn declared<'a>(
+        &self,
+        g: &'a Graph,
+    ) -> Option<&'a graphite_storage::types::DeclaredTypes> {
+        let table = g.declared_types();
+        if table.is_none() {
+            self.note_declared_failure(g);
+        }
+        table
+    }
+
+    /// Whether `tag`'s nodes carry declarations in `g`; a declaration-bearing tag whose table
+    /// cannot be read is a failed access, any other tag never touches the table.
+    pub(super) fn declared_tag_available(&self, g: &Graph, tag: u8) -> bool {
+        let available = props::has_declared_types_for_tag(g, tag);
+        if !available
+            && matches!(
+                tag,
+                graphite_storage::node::TAG_FIELD_NODE
+                    | graphite_storage::node::TAG_PARAMETER_NODE
+                    | graphite_storage::node::TAG_RETURN_NODE
+            )
+        {
+            self.note_declared_failure(g);
+        }
+        available
+    }
+
+    pub(super) fn declared_node_type_present(
+        &self,
+        g: &Graph,
+        node: &graphite_storage::node::Node,
+    ) -> bool {
+        let present = props::has_declared_node_type(g, node);
+        if !present && props::declaration_bearing(node) {
+            self.note_declared_failure(g);
+        }
+        present
     }
 
     pub fn with_params(mut self, params: IndexMap<String, Value>) -> Self {
@@ -278,14 +383,43 @@ impl GraphContext for Executor {
                 return Value::Int(i64::from(value));
             }
         }
+        if matches!(
+            key,
+            "caller_class" | "caller_name" | "callee_class" | "callee_name"
+        ) {
+            let graph = self.graph(node.source);
+            if let Some(fields) = graph.call_site_scalar_strings(node.id) {
+                let id = match key {
+                    "caller_class" => fields.caller_class,
+                    "caller_name" => fields.caller_name,
+                    "callee_class" => fields.callee_class,
+                    _ => fields.callee_name,
+                };
+                return Value::str(graph.str(id));
+            }
+        }
         match self.node(node) {
-            Some(n) => props::node_property(self.graph(node.source), &n, key),
+            Some(n) => {
+                let g = self.graph(node.source);
+                let value = props::node_property(g, &n, key);
+                if matches!(key, "generic_type" | "type_info") && props::declaration_bearing(&n) {
+                    self.note_declared_failure(g);
+                }
+                value
+            }
             None => Value::Null,
         }
     }
     fn node_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = match self.node(node) {
-            Some(n) => props::node_properties(self.graph(node.source), &n),
+            Some(n) => {
+                let g = self.graph(node.source);
+                let m = props::node_properties(g, &n);
+                if props::declaration_bearing(&n) {
+                    self.note_declared_failure(g);
+                }
+                m
+            }
             None => IndexMap::new(),
         };
         if self.cross {
@@ -296,6 +430,33 @@ impl GraphContext for Executor {
         }
         m
     }
+    fn node_property_is_null(&self, node: NodeRef, key: &str) -> bool {
+        if matches!(key, "generic_type" | "type_info") {
+            return self.node(node).is_none_or(|n| {
+                let g = self.graph(node.source);
+                let null = props::node_property_is_null(g, &n, key);
+                if props::declaration_bearing(&n) {
+                    self.note_declared_failure(g);
+                }
+                null
+            });
+        }
+        self.node_property(node, key).is_null()
+    }
+    fn node_keys(&self, node: NodeRef) -> Vec<String> {
+        let mut keys = self.node(node).map_or_else(Vec::new, |n| {
+            let g = self.graph(node.source);
+            let keys = props::node_keys(g, &n);
+            if props::declaration_bearing(&n) {
+                self.note_declared_failure(g);
+            }
+            keys
+        });
+        if self.cross {
+            keys.extend(["graphId", "elementId", "qualifiedId"].map(str::to_owned));
+        }
+        keys
+    }
     fn node_result_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = self.node_display_properties(node);
         m.retain(|_, v| !v.is_null());
@@ -303,7 +464,14 @@ impl GraphContext for Executor {
     }
     fn node_display_properties(&self, node: NodeRef) -> IndexMap<String, Value> {
         let mut m = match self.node(node) {
-            Some(n) => props::node_display_properties(self.graph(node.source), &n),
+            Some(n) => {
+                let g = self.graph(node.source);
+                let m = props::node_display_properties(g, &n);
+                if props::declaration_bearing(&n) {
+                    self.note_declared_failure(g);
+                }
+                m
+            }
             None => IndexMap::new(),
         };
         if self.cross {
@@ -345,22 +513,49 @@ impl GraphContext for Executor {
     fn method_property(&self, m: MethodRef, key: &str) -> Value {
         let g = self.graph(m.source);
         match g.methods().get(m.index as usize) {
-            Some(md) => props::method_property(g, md, key, self.graph_id_opt(m.source)),
+            Some(md) => {
+                let value = props::method_property(g, md, key, self.graph_id_opt(m.source));
+                if props::GENERIC_METHOD_KEYS.contains(&key) {
+                    self.note_declared_failure(g);
+                }
+                value
+            }
             None => Value::Null,
         }
     }
     fn method_properties(&self, m: MethodRef) -> IndexMap<String, Value> {
         let g = self.graph(m.source);
         match g.methods().get(m.index as usize) {
-            Some(md) => props::method_properties(g, md, self.graph_id_opt(m.source)),
+            Some(md) => {
+                let m = props::method_properties(g, md, self.graph_id_opt(m.source));
+                self.note_declared_failure(g);
+                m
+            }
             None => IndexMap::new(),
         }
+    }
+    fn method_property_is_null(&self, method: MethodRef, key: &str) -> bool {
+        let g = self.graph(method.source);
+        g.methods().get(method.index as usize).is_none_or(|md| {
+            let null = props::method_property_is_null(g, md, key, self.graph_id_opt(method.source));
+            if props::GENERIC_METHOD_KEYS.contains(&key) {
+                self.note_declared_failure(g);
+            }
+            null
+        })
     }
     fn method_signature(&self, m: MethodRef) -> String {
         let g = self.graph(m.source);
         g.methods()
             .get(m.index as usize)
-            .map(|md| md.signature(&g.strings))
+            .map(|md| md.signature(g.strings()))
+            .unwrap_or_default()
+    }
+    fn method_identity(&self, m: MethodRef) -> String {
+        let g = self.graph(m.source);
+        g.methods()
+            .get(m.index as usize)
+            .map(|md| md.identity(g.strings()))
             .unwrap_or_default()
     }
     fn check_cancelled(&self) -> CypherResult<()> {
@@ -370,3 +565,9 @@ impl GraphContext for Executor {
 
 #[cfg(test)]
 mod int_constant_tests;
+
+#[cfg(test)]
+mod call_site_scalar_tests;
+
+#[cfg(test)]
+mod declared_access_tests;

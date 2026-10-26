@@ -186,6 +186,21 @@ impl Executor {
             }
         }
         let mut res = result.unwrap_or_default();
+        // A node or method the result returns is rendered by the caller after this returns (the
+        // server materialises rows as it streams them), and rendering a field, parameter, return
+        // or method reads the declared table; so a result that carries one from a graph whose
+        // table is unreadable is noted here, before the caller can render it as if the graph
+        // declared nothing.
+        for row in &res.rows {
+            for value in row.values() {
+                self.note_declared_result_value(value);
+            }
+        }
+        // A declared table this query needed and could not read ends the query here: the
+        // rows were computed as if the graph declared nothing, which is not an answer.
+        if let Some(message) = self.take_declared_failure() {
+            return Err(crate::error::CypherError::runtime(message));
+        }
         res.more = more;
         // Strip internal keys except provenance.
         for row in &mut res.rows {
@@ -883,6 +898,11 @@ impl Executor {
             if row.is_empty() {
                 return plan.run(self, ev, matcher, patterns, where_clause, consume);
             }
+        }
+        if let Some(plan) =
+            super::method_source_guard::MethodSourceGuard::build(self, patterns, where_clause, row)
+        {
+            return plan.run(self, &mut emit);
         }
         matcher.match_patterns(row, patterns, &mut emit)
     }

@@ -58,7 +58,7 @@ fn keys_cannot_match(ex: &Executor, source: SourceIdx, tree: &PredTree) -> Cyphe
             {
                 false
             } else {
-                ex.graph(source).strings.index_of(p.prop()).is_none()
+                ex.graph(source).strings().index_of(p.prop()).is_none()
             }
         }
         PredTree::Or(children) => {

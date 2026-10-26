@@ -193,6 +193,16 @@ class DefaultGraphTest {
         assertNull(streamingGraph.methodSlice(MethodPattern(), 1, scanConsumer))
     }
 
+    @Test
+    fun `a bridge and its covariant override are two methods`() {
+        val override = makeMethod("com.example.Service", "load").copy(returnType = TypeDescriptor("java.lang.String"))
+        val bridge = override.copy(returnType = TypeDescriptor("java.lang.Object"))
+        assertEquals(bridge.signature, override.signature)
+        val graph: Graph = DefaultGraph.Builder().addMethod(bridge).addMethod(override).addMethod(bridge).build()
+        assertEquals(2L, graph.methodCount())
+        assertEquals(setOf(bridge, override), graph.methods(MethodPattern(name = "load")).toSet())
+    }
+
     // ========================================================================
     // Edge operations
     // ========================================================================
