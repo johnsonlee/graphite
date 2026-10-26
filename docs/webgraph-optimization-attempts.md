@@ -11678,3 +11678,41 @@ Same fixture, same method, candidate = base + the reviewed change:
 The unpinned shape, which walked the 64 type-index lists before, now probes them. The single-node row runs the scan plan's compact path in both candidate runs; its earlier 0.24 ms against 0.01 ms here is run-to-run variance of a sub-millisecond shape, not a change on that path.
 
 **Not covered by this attempt.** The second slow Explorer shape, `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value = '…' RETURN … LIMIT 100` (58–111 s observed on the same server for `=`, `CONTAINS` and `toLower(...) CONTAINS` variants), still takes the generic path: `ScanPlan` builds only for a single-node pattern and `HopPlan` rejects a variable-length relationship, so the matcher enumerates every `StringConstant` of every graph, expands each along `*1..3` in both directions, and evaluates the value predicate on the complete rows only, which the final LIMIT cannot bound. It is a seed-pushdown problem of the same family (the scan can answer the predicate from the string index in microseconds; what is missing is a plan that scans the anchor and enters the pattern at each hit, which `Matcher::match_patterns_at` now makes possible for an anchor that is the pattern's first node), but a distinct optimization and risk surface from the exact `(graphId, id)` lookup, with its own measurement. It is left for a separately measured follow-up attempt.
+
+### Attempt152 — enter a pattern at the scanned first node, whatever follows it
+
+The second slow Explorer shape left open by attempt151: `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value = '…' RETURN … LIMIT 100`, and its `CONTAINS` / `toLower(…) CONTAINS` / four-way `OR` variants with `*1..2`, observed at 58–111 s each on a production server holding a few dozen graphs.
+
+Hypothesis: no plan accepts the shape (`ScanPlan` builds for a single-node pattern only; `HopPlan` takes a single plain hop), and the generic matcher applies WHERE to complete rows only (`matching.rs` never reads it), so every `StringConstant` of every graph is expanded along the variable-length relationship before its value is tested, which the LIMIT cannot bound when the value is rare or absent. The string column answers the predicate at once; what is missing is a plan that scans the first node and enters the pattern at each hit.
+
+Change (`backend/cypher/src/engine/hop.rs`): when the pushable conjunct names the first node of the first pattern, `HopPlan` accepts any number of relationships, variable length, relationship properties, a path variable, property maps on the other nodes and further patterns, and runs each hit through `Matcher::match_patterns_at` (attempt151) in ascending id order per source, which checks the node's remaining constraints and expands exactly as the walk would; the whole WHERE is still evaluated on every row. The target-anchored case keeps its single-plain-hop condition, since it reaches sources back across one adjacency. An anchor carrying a property map stays generic, as before.
+
+Fixture: the core jar of this repository built with `--include io.johnsonlee.graphite` (25,673 nodes, 459 string constants), loaded 8 times as sources of one cross-graph `Executor`. Base `6079a98` (the attempt151 head), candidate = base + this change, both release builds, Linux x86-64, 4 vCPU, one process each, a throwaway `#[ignore]` test not kept in the tree. Per query: one warm-up, then 5 sequential samples; p50 is the 3rd and max the 5th sorted sample. Two workloads were run, because the first did not reproduce the production case:
+
+*Early hit.* The value the walk meets first (`ORDER BY v LIMIT 1` of the constants with neighbours) and `CONTAINS` terms that match many constants, so the LIMIT stops the walk almost at once.
+
+| Query | Rows | Base p50 ms | Base max ms | Candidate p50 ms | Candidate max ms | Δ p50 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| `s.value = first`, `*1..3`, LIMIT 100 | 100 | 7.43 | 7.71 | 0.60 | 0.71 | -6.83 |
+| `CONTAINS first OR CONTAINS second OR toLower CONTAINS prefix`, `*1..2`, LIMIT 150 | 150 | 0.52 | 0.53 | 0.78 | 0.88 | +0.26 |
+| `toLower CONTAINS prefix OR toLower CONTAINS absent`, `*1..2`, LIMIT 150 | 150 | 0.42 | 0.43 | 0.52 | 0.56 | +0.10 |
+| four `CONTAINS` numbers, one present, `*1..2`, LIMIT 100 | 100 | 32.46 | 40.49 | 0.86 | 1.89 | -31.60 |
+
+The two sub-millisecond rows are the plan resolving the terms against eight dictionaries where the walk found its 150 rows in the first graph; the absolute cost is a quarter of a millisecond on this fixture and is kept here as the tiny-baseline observation it is, not as a target.
+
+*Late or absent value* (the production case: the widget name occurs once or not at all, and the LIMIT never stops the walk). The value of the constant with the highest id, and `CONTAINS` / `toLower` terms nothing holds:
+
+| Query | Rows | Base p50 ms | Base max ms | Candidate p50 ms | Candidate max ms | Δ p50 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| `s.value = last`, `*1..3`, LIMIT 100 | 24 | 707.10 | 735.99 | 0.27 | 0.42 | -706.83 |
+| `CONTAINS last OR CONTAINS absent OR toLower CONTAINS absent`, `*1..2`, LIMIT 150 | 16 | 55.98 | 56.66 | 0.27 | 0.73 | -55.71 |
+| two `toLower CONTAINS` absent, `*1..2`, LIMIT 150 | 0 | 56.22 | 62.74 | 0.15 | 0.19 | -56.07 |
+| four `CONTAINS` numbers, all absent, `*1..2`, LIMIT 100 | 0 | 60.31 | 70.11 | 0.16 | 0.31 | -60.15 |
+
+The base cost scales with the number of string constants times the size of their `*1..N` neighbourhoods across every graph; the candidate's with the hits. The production corpus is three orders of magnitude larger in both, which is where the seconds came from.
+
+Correctness: `anchored_expansion_matches_the_exhaustive_walk` (`hop.rs`, fixture-gated) compares ten shapes against the generic matcher on the real fixture, rows, order, provenance and probe, with and without LIMIT: the four reported shapes, a path variable, two hops, a second pattern, a graph-pinned aggregate, a typed directed variable-length hop into a labelled node, an absent value, and the anchor-with-map shape that must stay generic; the oracle wraps the predicate as `(predicate) = true`, which no scan answers. Cancellation reaches the expansion. The unit tests pin what is anchored and what is declined. All 169 `graphite-cypher`, 120 `graphite-explore` and the fixture-gated `graphite-storage` tests pass with `GRAPHITE_INDEX_FIXTURE`; fmt and strict Clippy pass.
+
+Not measured: CPU and RSS separately (the plan does strictly less work when the value is rare, and resolves the predicate per graph where the walk would have stopped early; no new index or allocation beyond the per-source hit list the single-hop plan already kept), concurrent latency, and the production corpus behind the 58–111 s observations. Five samples per query do not establish variability beyond the ranges reported. Anchoring on a variable-length pattern's target end, or on a node that is not the first of its pattern, is not covered.
+
+Decision: retain.
