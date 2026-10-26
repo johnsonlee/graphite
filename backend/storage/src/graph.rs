@@ -271,11 +271,8 @@ impl Graph {
             .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
 
-        let type_index = load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
-        let type_index_sorted = type_index
-            .iter()
-            .map(|ids| ids.windows(2).all(|w| w[0] <= w[1]))
-            .collect();
+        let (type_index, type_index_sorted) =
+            load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
 
         let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
@@ -660,7 +657,7 @@ impl Graph {
     }
 }
 
-fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
+fn load_type_index(data: &[u8]) -> Result<(Vec<Vec<NodeId>>, Vec<bool>), GraphError> {
     if data.len() < 8 {
         return Err(GraphError::BadHeader("graph.typeindex"));
     }
@@ -668,6 +665,7 @@ fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
         .ok_or(GraphError::BadHeader("graph.typeindex"))?;
     let entries = read_i32_at(data, 4).max(0) as usize;
     let mut out: Vec<Vec<NodeId>> = vec![Vec::new(); TAG_COUNT];
+    let mut sorted = vec![true; TAG_COUNT];
     for i in 0..entries {
         let p = 8 + i * 13;
         if p + 13 > data.len() {
@@ -684,12 +682,18 @@ fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
             return Err(GraphError::BadHeader("graph.typeindex"));
         }
         let mut ids = Vec::with_capacity(count);
+        let mut previous = None;
         for j in 0..count {
-            ids.push(read_i32_at(data, off + j * 4) as u32);
+            let id = read_i32_at(data, off + j * 4) as u32;
+            if previous.is_some_and(|previous| previous > id) {
+                sorted[tag] = false;
+            }
+            previous = Some(id);
+            ids.push(id);
         }
         out[tag] = ids;
     }
-    Ok(out)
+    Ok((out, sorted))
 }
 
 fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
