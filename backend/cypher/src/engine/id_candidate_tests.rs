@@ -1,10 +1,13 @@
 use super::*;
 use crate::ast::Clause;
 use crate::engine::{CancelToken, Source};
+use crate::eval::Evaluator;
 use crate::materialize::materialize;
 use crate::parser::parse;
 use crate::CypherError;
-use graphite_storage::node::{TAG_BOOLEAN_CONSTANT, TAG_CALL_SITE_NODE, TAG_INT_CONSTANT};
+use graphite_storage::node::{
+    TAG_BOOLEAN_CONSTANT, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_INT_CONSTANT,
+};
 use graphite_storage::Graph;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -43,13 +46,32 @@ fn plain_match_where(clauses: &[Clause]) -> (&[Pattern], &Expr) {
 }
 
 fn eligible(query: &str, seed: &Row) -> Option<u32> {
-    let clauses = parse(query).unwrap();
-    let (patterns, predicate) = plain_match_where(&clauses);
-    IdCandidatePlan::build(patterns, Some(predicate), seed).map(|plan| plan.wanted)
+    plan_for(query, seed).map(|(wanted, _, _)| wanted)
 }
 
-// AND true deliberately disables the new exact-equality plan without changing values,
-// short-circuit errors or provenance. The old matcher remains the executor oracle.
+/// `(wanted, graph, tags)` of the plan a query gets, with or without a standalone WHERE.
+fn plan_for(query: &str, seed: &Row) -> Option<(u32, Option<String>, Vec<u8>)> {
+    let clauses = parse(query).unwrap();
+    let (patterns, predicate) = match &clauses[..] {
+        [Clause::Match {
+            patterns,
+            optional: false,
+            where_clause: None,
+        }, Clause::Where(predicate), ..] => (patterns.as_slice(), Some(predicate)),
+        [Clause::Match {
+            patterns,
+            optional: false,
+            where_clause: None,
+        }, ..] => (patterns.as_slice(), None),
+        other => panic!("plain MATCH expected: {other:?}"),
+    };
+    IdCandidatePlan::build(patterns, predicate, seed)
+        .map(|plan| (plan.wanted, plan.graph.map(str::to_owned), plan.tags))
+}
+
+// `(predicate) = true` deliberately disables the exact-equality plan without changing
+// values, short-circuit errors or provenance: the plan reads the top-level conjuncts,
+// and the equality is now an operand of one. The old matcher remains the executor oracle.
 fn compare_generic(ex: &Executor, query: &str, limit: Option<usize>) -> super::super::QueryResult {
     let clauses = parse(query).unwrap();
     let (_, original_predicate) = plain_match_where(&clauses);
@@ -57,13 +79,19 @@ fn compare_generic(ex: &Executor, query: &str, limit: Option<usize>) -> super::s
     let Clause::Where(clause) = &mut generic[1] else {
         panic!("standalone WHERE expected")
     };
-    *clause = Expr::And(
-        Box::new(clause.clone()),
-        Box::new(Expr::Literal(Literal::Bool(true))),
-    );
+    *clause = Expr::Comparison {
+        op: CmpOp::Eq,
+        left: Box::new(clause.clone()),
+        right: Box::new(Expr::Literal(Literal::Bool(true))),
+    };
     let (patterns, predicate) = plain_match_where(&generic);
-    let Expr::And(left, right) = predicate else {
-        panic!("oracle predicate must be AND")
+    let Expr::Comparison {
+        op: CmpOp::Eq,
+        left,
+        right,
+    } = predicate
+    else {
+        panic!("oracle predicate must be an equality")
     };
     assert_eq!(left.as_ref(), original_predicate);
     assert_eq!(right.as_ref(), &Expr::Literal(Literal::Bool(true)));
@@ -97,6 +125,87 @@ fn compare_generic(ex: &Executor, query: &str, limit: Option<usize>) -> super::s
         "all materialized node fields: {query}"
     );
     actual
+}
+
+// `{id: k}` becomes `{id: k + 0}` on the anchoring node, which neither this plan nor
+// the scan reads, so the generic matcher evaluates exactly the same constraint.
+fn compare_map_generic(
+    ex: &Executor,
+    query: &str,
+    limit: Option<usize>,
+) -> super::super::QueryResult {
+    let clauses = parse(query).unwrap();
+    let mut generic = clauses.clone();
+    let Clause::Match { patterns, .. } = &mut generic[0] else {
+        panic!("MATCH expected")
+    };
+    for (key, value) in &mut patterns[0].nodes[0].properties {
+        if key == "id" {
+            *value = Expr::Binary {
+                op: crate::ast::BinOp::Add,
+                left: Box::new(value.clone()),
+                right: Box::new(Expr::Literal(Literal::Int(0))),
+            };
+        }
+    }
+    let where_clause = match clauses.get(1) {
+        Some(Clause::Where(w)) => Some(w),
+        _ => None,
+    };
+    let Clause::Match { patterns, .. } = &clauses[0] else {
+        panic!("MATCH expected")
+    };
+    assert!(IdCandidatePlan::build(patterns, where_clause, &Row::new()).is_some());
+    let Clause::Match { patterns, .. } = &generic[0] else {
+        panic!("MATCH expected")
+    };
+    assert!(
+        IdCandidatePlan::build(patterns, where_clause, &Row::new()).is_none(),
+        "oracle must use the original generic candidate enumerator"
+    );
+    let actual = ex.execute_clauses(&clauses, limit).unwrap();
+    let expected = ex.execute_clauses(&generic, limit).unwrap();
+    // A literal map may take the compact projection where the rewritten one does not:
+    // compare the rows the two representations carry, in order, with their provenance.
+    assert_eq!(
+        flattened(&actual),
+        flattened(&expected),
+        "complete typed rows, provenance and probe: {query}"
+    );
+    actual
+}
+
+type Flat = (Vec<String>, Vec<(Vec<String>, Vec<String>)>, bool);
+
+fn flattened(result: &super::super::QueryResult) -> Flat {
+    let rows = match &result.compact {
+        Some(compact) => compact
+            .values
+            .iter()
+            .zip(&compact.graph_ids)
+            .map(|(values, graph)| {
+                (
+                    values.iter().map(|v| format!("{v:?}")).collect(),
+                    vec![graph.to_string()],
+                )
+            })
+            .collect(),
+        None => result
+            .rows
+            .iter()
+            .map(|row| {
+                (
+                    result
+                        .columns
+                        .iter()
+                        .map(|c| format!("{:?}", row[c.as_str()]))
+                        .collect(),
+                    super::super::QueryResult::graph_ids(row),
+                )
+            })
+            .collect(),
+    };
+    (result.columns.clone(), rows, result.more)
 }
 
 fn multi(graph: Arc<Graph>) -> Executor {
@@ -148,6 +257,23 @@ fn id_candidates_accept_only_exact_literal_function_equality() {
             Some(wanted)
         );
     }
+    // A top-level conjunct holds on every row: the equality may be one of several.
+    for predicate in [
+        "id(n) = 1 AND true",
+        "true AND id(n) = 1",
+        "n.id = 1",
+        "1 = n.id",
+        "n.id = 1 AND n.graphId = 'g' AND unknown()",
+    ] {
+        assert_eq!(
+            eligible(
+                &format!("MATCH (n) WHERE {predicate} RETURN n"),
+                &Row::new()
+            ),
+            Some(1),
+            "{predicate}"
+        );
+    }
     for predicate in [
         "id(n) = -1",
         "id(n) = 4294967296",
@@ -157,10 +283,12 @@ fn id_candidates_accept_only_exact_literal_function_equality() {
         "id(n, unknown()) = 1",
         "id(DISTINCT n) = 1",
         "id(n) = 1 OR true",
-        "id(n) = 1 AND true",
-        "n.id = 1",
+        "(id(n) = 1) = true",
         "id(other) = 1",
         "id(n) <> 1",
+        "n.ID = 1",
+        "other.id = 1",
+        "n.id = 1 + 0",
     ] {
         assert_eq!(
             eligible(
@@ -171,12 +299,32 @@ fn id_candidates_accept_only_exact_literal_function_equality() {
             "{predicate}"
         );
     }
+    // Labels, maps, paths, relationships and further patterns are matched from the
+    // node the id names; only the first node of the first pattern anchors.
     for pattern in [
         "(n:CallSite)",
         "(n {id: 1})",
         "p = (n)",
         "(n)-[]->(m)",
+        "(n)-[*1..3]-(m {id: 2})",
         "(n), (m)",
+        "(n), (m {id: 2})",
+    ] {
+        assert_eq!(
+            eligible(
+                &format!("MATCH {pattern} WHERE id(n) = 1 RETURN n"),
+                &Row::new()
+            ),
+            Some(1),
+            "{pattern}"
+        );
+    }
+    for pattern in [
+        "(n:Method)",
+        "(n:NoSuchLabel)",
+        "(m)-[]->(n)",
+        "(m), (n)",
+        "()-[]->(n)",
     ] {
         assert_eq!(
             eligible(
@@ -187,9 +335,71 @@ fn id_candidates_accept_only_exact_literal_function_equality() {
             "{pattern}"
         );
     }
+    // Another first node anchors on its own map, whatever the clause says of `n`.
+    assert_eq!(
+        eligible(
+            "MATCH (m {id: 3})-[]->(n) WHERE id(n) = 1 RETURN n",
+            &Row::new()
+        ),
+        Some(3)
+    );
+    // The map's id is read first; the clause's must hold too, so no row can match.
+    assert_eq!(
+        eligible("MATCH (n {id: 2}) WHERE id(n) = 1 RETURN n", &Row::new()),
+        Some(2)
+    );
     let mut seed = Row::new();
     seed.insert("earlier".into(), Value::Int(1));
     assert_eq!(eligible("MATCH (n) WHERE id(n) = 1 RETURN n", &seed), None);
+}
+
+#[test]
+fn id_candidates_read_the_property_map_and_the_pinned_graph() {
+    let all: Vec<u8> = (0..TAG_COUNT as u8).collect();
+    let call_sites = crate::engine::props::label_tags("CallSite").unwrap();
+    for (query, expected) in [
+        ("MATCH (n {id: 7}) RETURN n", Some((7, None, all.clone()))),
+        (
+            "MATCH (n {graphId: 'g', id: 7})-[r]-(m) RETURN type(r), m.id LIMIT 50",
+            Some((7, Some("g".to_owned()), all.clone())),
+        ),
+        (
+            "MATCH (n:CallSite {id: 7, graphId: 'g'}) RETURN n",
+            Some((7, Some("g".to_owned()), call_sites.clone())),
+        ),
+        (
+            "MATCH (n {id: 7}) WHERE n.graphId = 'g' RETURN n",
+            Some((7, Some("g".to_owned()), all.clone())),
+        ),
+        (
+            "MATCH (n {graphId: 'g'}) WHERE id(n) = 7 RETURN n",
+            Some((7, Some("g".to_owned()), all.clone())),
+        ),
+        (
+            "MATCH (n {graphId: 'g'}) WHERE 'h' = n.graphId AND n.id = 7 RETURN n",
+            Some((7, Some("g".to_owned()), all.clone())),
+        ),
+        // The parser keeps a repeated key's last value, as a map literal does.
+        (
+            "MATCH (n {id: 7, id: 8}) RETURN n",
+            Some((8, None, all.clone())),
+        ),
+        ("MATCH (n {id: 7.0}) RETURN n", None),
+        ("MATCH (n {id: -1}) RETURN n", None),
+        ("MATCH (n {id: 4294967296}) RETURN n", None),
+        ("MATCH (n {id: $id}) RETURN n", None),
+        ("MATCH (n {id: 7 + 0}) RETURN n", None),
+        ("MATCH (n {graphId: 'g'}) RETURN n", None),
+        (
+            "MATCH (n {graphId: 7, id: 7}) RETURN n",
+            Some((7, None, all.clone())),
+        ),
+        ("MATCH ({id: 7}) RETURN 1", None),
+        ("MATCH (n:Method {id: 7}) RETURN n", None),
+        ("MATCH (n:NoSuchLabel {id: 7}) RETURN n", None),
+    ] {
+        assert_eq!(plan_for(query, &Row::new()), expected, "{query}");
+    }
 }
 
 #[test]
@@ -306,6 +516,45 @@ fn id_candidates_preserve_unsorted_duplicates_phantoms_and_omissions() {
             compare_generic(&ex, &query, Some(limit));
         }
     }
+    // The property map and `n.id` read the record: a phantom has none, so neither
+    // matches it, planned or walked, and projecting its id gives null either way.
+    // (`MATCH (n {id: k}) RETURN n.id` alone is the scan's compact projection, which
+    // reads the id raw off the type index and is not this plan's.)
+    for id in [wanted, u32::MAX] {
+        compare_map_generic(&ex, &format!("MATCH (n {{id: {id}}}) RETURN n"), None);
+        compare_map_generic(
+            &ex,
+            &format!("MATCH (n {{id: {id}}})-[r]-(m) RETURN n.id, m.id"),
+            None,
+        );
+        compare_map_generic(
+            &ex,
+            &format!("MATCH (n {{id: {id}}}), (m) RETURN n.id LIMIT 3"),
+            None,
+        );
+        compare_generic(&ex, &format!("MATCH (n) WHERE n.id = {id} RETURN n"), None);
+        compare_generic(
+            &ex,
+            &format!("MATCH (n) WHERE id(n) = {id} RETURN n.id, n.graphId"),
+            None,
+        );
+    }
+    assert!(ex
+        .execute(&format!("MATCH (n {{id: {}}}) RETURN n", u32::MAX), None)
+        .unwrap()
+        .rows
+        .is_empty());
+    let projected = ex
+        .execute(
+            &format!("MATCH (n) WHERE id(n) = {} RETURN n.id", u32::MAX),
+            None,
+        )
+        .unwrap();
+    assert_eq!(projected.rows.len(), 4);
+    assert!(projected
+        .rows
+        .iter()
+        .all(|row| matches!(row["n.id"], Value::Null)));
     let omitted = (0..original.node_capacity() as u32)
         .find(|id| original.has_node(*id) && lists.iter().all(|(_, ids)| !ids.contains(id)))
         .unwrap();
@@ -354,8 +603,9 @@ fn id_candidates_filter_before_row_construction_and_keep_polling_and_stop() {
     );
     let ex = multi(graph);
     let plan = IdCandidatePlan {
-        variable: "n",
         wanted,
+        graph: None,
+        tags: (0..TAG_COUNT as u8).collect(),
     };
     let mut row_constructor_inputs = Vec::new();
     assert!(plan
@@ -375,8 +625,14 @@ fn id_candidates_filter_before_row_construction_and_keep_polling_and_stop() {
     );
     let before = ex.poll.load(Ordering::Relaxed);
     let mut emitted = 0;
+    let ev = Evaluator::new(&ex, &ex.params);
+    let matcher = Matcher { ex: &ex, ev: &ev };
+    let patterns = match parse("MATCH (n) RETURN n").unwrap().remove(0) {
+        Clause::Match { patterns, .. } => patterns,
+        other => panic!("{other:?}"),
+    };
     assert!(!plan
-        .run(&ex, &mut |_| {
+        .run(&ex, &matcher, &patterns, &mut |_| {
             emitted += 1;
             Ok(false)
         })
@@ -407,6 +663,38 @@ fn id_candidates_filter_before_row_construction_and_keep_polling_and_stop() {
         plan.candidates(&ex, &mut |_, _| panic!("cancelled before candidates")),
         Err(CypherError::Cancelled)
     );
+    // A pinned graph: the other source is not walked at all across graphs, and is
+    // walked as usual when the executor holds one graph without a graphId.
+    let pinned = IdCandidatePlan {
+        wanted,
+        graph: Some("z"),
+        tags: vec![TAG_INT_CONSTANT],
+    };
+    let cross = multi(mid.sources[0].graph.clone());
+    let mut seen = Vec::new();
+    assert!(pinned
+        .candidates(&cross, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(1, wanted), (1, wanted)]);
+    assert_eq!(cross.poll.load(Ordering::Relaxed), 4);
+    let single = Executor::new(
+        vec![Source {
+            id: Arc::from("a"),
+            graph: cross.sources[0].graph.clone(),
+        }],
+        false,
+    );
+    let mut seen = Vec::new();
+    assert!(pinned
+        .candidates(&single, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(0, wanted), (0, wanted)]);
 }
 
 #[test]
@@ -439,4 +727,157 @@ fn id_candidates_fallback_errors_parameters_and_deadline_remain_observable() {
         timed.execute(&format!("MATCH (n) WHERE id(n) = {wanted} RETURN n"), None),
         Err(CypherError::Timeout(7))
     ));
+}
+
+#[test]
+fn id_candidates_expand_the_node_the_explorer_names() {
+    let Some((_, graph)) = fixture() else { return };
+    let wanted = graph.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+    let ex = multi(graph.clone());
+    // The Explorer's neighbourhood request: the one node, both directions, a LIMIT.
+    let explorer = format!(
+        "MATCH (n {{graphId: 'z', id: {wanted}}})-[r]-(m) \
+         RETURN type(r), m.graphId, m.id, m.type, m.path, m.class, m.name, m.value LIMIT 50"
+    );
+    let before = ex.poll.load(Ordering::Relaxed);
+    let rows = ex.execute(&explorer, None).unwrap();
+    let planned = ex.poll.load(Ordering::Relaxed) - before;
+    assert!(!rows.rows.is_empty());
+    assert!(rows
+        .rows
+        .iter()
+        .all(|row| matches!(&row["m.graphId"], Value::Str(g) if &**g == "z")));
+    let result = compare_map_generic(&ex, &explorer, None);
+    assert_eq!(format!("{result:?}"), format!("{rows:?}"));
+    let generic = ex.poll.load(Ordering::Relaxed) - before - planned;
+    assert!(
+        planned * 2 < generic,
+        "the pinned graph alone is walked: {planned} ticks against {generic}"
+    );
+    for query in [
+        format!("MATCH (n {{id: {wanted}}})-[r]-(m) RETURN n, type(r), m"),
+        format!("MATCH (n:CallSite {{id: {wanted}}})-[r]->(m) RETURN n, r, m"),
+        format!("MATCH (n:CallSite {{id: {wanted}, graphId: 'a'}})<-[r]-(m) RETURN m.id"),
+        format!("MATCH p = (n {{id: {wanted}}})-[r:DATAFLOW]-(m) RETURN p"),
+        format!("MATCH (n {{id: {wanted}}})-[*1..2]-(m) RETURN DISTINCT m.id ORDER BY m.id"),
+        format!("MATCH (n {{id: {wanted}}})-[r]-(m) WHERE n.graphId = 'a' AND m.id <> {wanted} RETURN r"),
+        format!("MATCH (n {{id: {wanted}}}), (m {{id: {wanted}}}) RETURN n, m"),
+        format!("MATCH (n {{id: {wanted}}}) RETURN n"),
+        format!("MATCH (n {{id: {wanted}, graphId: 'nowhere'}}) RETURN n"),
+        format!("MATCH (n {{id: {wanted}}})-[r]-(m) RETURN count(*)"),
+    ] {
+        compare_map_generic(&ex, &query, None);
+        compare_map_generic(&ex, &query, Some(1));
+    }
+    // Alone, a graph has no graphId: the map's cannot hold, pinned or not.
+    let single = Executor::new(
+        vec![Source {
+            id: Arc::from("a"),
+            graph,
+        }],
+        false,
+    )
+    .with_probe();
+    for g in ["a", "z"] {
+        let query = format!("MATCH (n {{graphId: '{g}', id: {wanted}}})-[r]-(m) RETURN m.id");
+        assert!(compare_map_generic(&single, &query, None).rows.is_empty());
+    }
+    let unpinned = format!("MATCH (n {{id: {wanted}}})-[r]-(m) RETURN m.id");
+    assert!(!compare_map_generic(&single, &unpinned, None)
+        .rows
+        .is_empty());
+}
+
+#[test]
+fn id_candidates_search_sorted_lists_and_walk_unsorted_ones() {
+    let Some((dir, original)) = fixture() else {
+        return;
+    };
+    // A built graph writes every type list in id order, and the plan then probes each
+    // list instead of walking it: two sources, one tick per non-empty list plus one
+    // per hit.
+    assert!((0..TAG_COUNT as u8).all(|tag| original.ids_by_tag_sorted(tag)));
+    let wanted = original.ids_by_tag(TAG_CALL_SITE_NODE)[0];
+    let ex = multi(original.clone());
+    let rows = compare_generic(
+        &ex,
+        &format!("MATCH (n) WHERE id(n) = {wanted} RETURN n"),
+        None,
+    );
+    assert_eq!(rows.rows.len(), 2);
+    let plan = IdCandidatePlan {
+        wanted,
+        graph: None,
+        tags: (0..TAG_COUNT as u8).collect(),
+    };
+    let probed = multi(original.clone());
+    let mut seen = Vec::new();
+    assert!(plan
+        .candidates(&probed, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(0, wanted), (1, wanted)]);
+    let lists = (0..TAG_COUNT as u8)
+        .filter(|&tag| !original.ids_by_tag(tag).is_empty())
+        .count() as u64;
+    assert!(lists > 1 && original.node_count() as u64 > 100 * lists);
+    assert_eq!(probed.poll.load(Ordering::Relaxed), 2 * (lists + 1));
+    // Sorted lists with duplicates and a phantom: the search finds the whole run, so
+    // the domain is the walk's.
+    let (_sorted, graph) = variant(
+        &dir,
+        &[
+            (TAG_INT_CONSTANT, vec![0, wanted, wanted, u32::MAX]),
+            (TAG_BOOLEAN_CONSTANT, vec![wanted, u32::MAX, u32::MAX]),
+        ],
+    );
+    assert!(graph.ids_by_tag_sorted(TAG_INT_CONSTANT));
+    assert!(graph.ids_by_tag_sorted(TAG_BOOLEAN_CONSTANT));
+    assert!(
+        graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE),
+        "an empty list is sorted"
+    );
+    let ex = multi(graph);
+    for (id, per_graph) in [(wanted, 3), (u32::MAX, 3), (0, 1), (wanted + 1, 0)] {
+        let query = format!("MATCH (n) WHERE id(n) = {id} RETURN n");
+        assert_eq!(compare_generic(&ex, &query, None).rows.len(), per_graph * 2);
+        for limit in [0, 1, per_graph, per_graph + 1] {
+            compare_generic(&ex, &query, Some(limit));
+        }
+        compare_map_generic(&ex, &format!("MATCH (n {{id: {id}}}) RETURN n"), None);
+    }
+    // One list out of order is walked; the others are still searched.
+    let (_mixed, graph) = variant(
+        &dir,
+        &[
+            (TAG_INT_CONSTANT, vec![wanted, 0, wanted]),
+            (TAG_BOOLEAN_CONSTANT, vec![0, wanted, u32::MAX]),
+        ],
+    );
+    assert!(!graph.ids_by_tag_sorted(TAG_INT_CONSTANT));
+    assert!(graph.ids_by_tag_sorted(TAG_BOOLEAN_CONSTANT));
+    let ex = multi(graph);
+    let query = format!("MATCH (n) WHERE id(n) = {wanted} RETURN n");
+    assert_eq!(compare_generic(&ex, &query, None).rows.len(), 6);
+    let probed = multi(ex.sources[0].graph.clone());
+    let plan = IdCandidatePlan {
+        wanted,
+        graph: Some("a"),
+        tags: vec![TAG_INT_CONSTANT, TAG_BOOLEAN_CONSTANT],
+    };
+    let mut seen = Vec::new();
+    assert!(plan
+        .candidates(&probed, &mut |source, id| {
+            seen.push((source, id));
+            Ok(true)
+        })
+        .unwrap());
+    assert_eq!(seen, [(0, wanted), (0, wanted), (0, wanted)]);
+    assert_eq!(
+        probed.poll.load(Ordering::Relaxed),
+        3 + 2,
+        "three ticks walking the unsorted list, one probing the sorted one plus its hit"
+    );
 }

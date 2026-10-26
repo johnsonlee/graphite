@@ -125,14 +125,36 @@ impl<'a> Matcher<'a> {
         patterns: &[Pattern],
         emit: &mut Emit<'_>,
     ) -> CypherResult<bool> {
-        let mut state = MatchState {
+        let mut state = Self::state_for(patterns);
+        self.match_from(row, patterns, 0, &mut state, emit)
+    }
+
+    /// Enumerate matches of all `patterns` extending `row` in which the first node of
+    /// the first pattern is `cand`, exactly as `match_patterns` would once its own
+    /// enumeration reached `cand`: the constraints on that node are still checked, and
+    /// the rest of the patterns are matched from it.
+    pub fn match_patterns_at(
+        &self,
+        row: &Row,
+        patterns: &[Pattern],
+        cand: Value,
+        emit: &mut Emit<'_>,
+    ) -> CypherResult<bool> {
+        let mut state = Self::state_for(patterns);
+        let mut inner = |r: Row, st: &mut MatchState| -> CypherResult<bool> {
+            self.match_from(&r, patterns, 1, st, emit)
+        };
+        self.match_candidate(row, &patterns[0], cand, &mut state, &mut inner)
+    }
+
+    fn state_for(patterns: &[Pattern]) -> MatchState {
+        MatchState {
             used: Vec::new(),
             tracking: patterns.len() > 1
                 || patterns
                     .iter()
                     .any(|p| p.rels.len() >= 2 || p.path_variable.is_some()),
-        };
-        self.match_from(row, patterns, 0, &mut state, emit)
+        }
     }
 
     fn match_from(
@@ -160,6 +182,42 @@ impl<'a> Matcher<'a> {
         Ok(cont)
     }
 
+    /// Match `pattern` with `cand` as its first node: check the node's constraints,
+    /// bind it, and extend along the relationships.
+    fn match_candidate(
+        &self,
+        row: &Row,
+        pattern: &Pattern,
+        cand: Value,
+        state: &mut MatchState,
+        next: &mut dyn FnMut(Row, &mut MatchState) -> CypherResult<bool>,
+    ) -> CypherResult<bool> {
+        let first = &pattern.nodes[0];
+        if !self.node_matches(&cand, first, row)? {
+            return Ok(true);
+        }
+        let mut r = row.clone();
+        if let Some(v) = &first.variable {
+            r.insert(v.clone(), cand.clone());
+            add_provenance(&mut r, self.ex, &cand);
+        }
+        let mut trail_nodes: Vec<Value> = Vec::new();
+        let mut trail_edges: Vec<EdgeRef> = Vec::new();
+        if pattern.path_variable.is_some() {
+            trail_nodes.push(cand.clone());
+        }
+        self.extend(
+            &r,
+            pattern,
+            0,
+            &cand,
+            state,
+            &mut trail_nodes,
+            &mut trail_edges,
+            next,
+        )
+    }
+
     /// Match a single pattern; `next` receives each complete binding with the state.
     pub fn match_pattern(
         &self,
@@ -170,32 +228,6 @@ impl<'a> Matcher<'a> {
     ) -> CypherResult<bool> {
         let first = &pattern.nodes[0];
         let class = resolve_node_class(&first.labels);
-        // Candidate enumeration for the first node.
-        let mut on_candidate = |cand: Value, this: &Self| -> CypherResult<bool> {
-            if !this.node_matches(&cand, first, row)? {
-                return Ok(true);
-            }
-            let mut r = row.clone();
-            if let Some(v) = &first.variable {
-                r.insert(v.clone(), cand.clone());
-                add_provenance(&mut r, this.ex, &cand);
-            }
-            let mut trail_nodes: Vec<Value> = Vec::new();
-            let mut trail_edges: Vec<EdgeRef> = Vec::new();
-            if pattern.path_variable.is_some() {
-                trail_nodes.push(cand.clone());
-            }
-            this.extend(
-                &r,
-                pattern,
-                0,
-                &cand,
-                state,
-                &mut trail_nodes,
-                &mut trail_edges,
-                next,
-            )
-        };
         if let Some(v) = &first.variable {
             if let Some(existing) = row.get(v) {
                 let ok = match (&class, existing) {
@@ -211,7 +243,7 @@ impl<'a> Matcher<'a> {
                 if !ok {
                     return Ok(true);
                 }
-                return on_candidate(existing.clone(), self);
+                return self.match_candidate(row, pattern, existing.clone(), state, next);
             }
         }
         match class {
@@ -224,7 +256,7 @@ impl<'a> Matcher<'a> {
                             source: si as SourceIdx,
                             index: i as u32,
                         });
-                        if !on_candidate(v, self)? {
+                        if !self.match_candidate(row, pattern, v, state, next)? {
                             return Ok(false);
                         }
                     }
@@ -241,7 +273,7 @@ impl<'a> Matcher<'a> {
                             source: si as SourceIdx,
                             id,
                         });
-                        if !on_candidate(v, self)? {
+                        if !self.match_candidate(row, pattern, v, state, next)? {
                             return Ok(false);
                         }
                     }

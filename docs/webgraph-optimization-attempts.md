@@ -22029,3 +22029,34 @@ no node has, and a directory without the binding all read as absent and compute;
 every malformed shape are refused. `DefaultGraphTest`, `MmapGraphBuilderTest`,
 `DeclaredTypeQueryTest` and `MethodQueryPersistenceTest`: a bridge and its covariant override
 are two methods with their own `generic_return_type` in both builders, both loaders and Cypher.
+
+### Attempt151 — seek an exact node id before expanding the Explorer neighbourhood
+
+The reported shape is `MATCH (n {graphId: 'g', id: 616246})-[r]-(m) RETURN ... LIMIT 50`. With several such requests in flight on a server holding dozens of graphs, observed completion times accumulated to 11 s, 22 s, 33 s and 44 s. The final `LIMIT` did not help because no existing plan admitted a property map plus relationship: the generic matcher first enumerated nodes, decoded each record to test `id`, and only then expanded the survivor.
+
+Hypothesis and change: reuse `IdCandidatePlan` for an exact literal `id` supplied either by the first pattern node's map or by a top-level `WHERE` conjunct, optionally pinning `graphId`. `Matcher::match_patterns_at` enters the normal matcher at each candidate, so labels, relationship direction/type/length, path variables, later patterns, residual predicates, row order, provenance, LIMIT probing, cancellation and work budgets remain on the shared path. Production type-index lists are nondecreasing; `Graph` records that fact while decoding each list, and the candidate plan uses two binary bounds to find the complete equal-id run. Duplicate and phantom entries remain candidates. A malformed or legacy unsorted list retains the exhaustive walk. Property access remains record-backed: a phantom has no `n.id`, while `id(n)` still exposes the reference as before.
+
+Correctness gates compare planned and deliberately de-optimized generic execution on a real persisted graph. They cover inline maps and `WHERE`, labels, both directions, relationship types, path variables, `*1..2`, residual predicates, multiple patterns, graph pinning, wrong graph/id, LIMIT/probe and provenance. Malformed-index oracles cover duplicate, omitted, phantom and unsorted entries; sorted duplicate/phantom lists exercise the binary path. The optimization does not change persisted graph contents or the JVM engine.
+
+Performance acceptance used `/Users/johnsonlee/.codex/fixtures/graphite-real64-1152-20260908`: 64 distinct persisted JAR graphs, 16 each from Android, Tika, Hive and the Kotlin compiler. Every measured HTTP request was one `UNION ALL` query containing four Explorer-shaped branches and therefore actually targeted all four corpora: `fixture-android-00/id=1`, `fixture-tika-00/id=6041228`, `fixture-hive-00/id=10028077` and `fixture-kotlin-compiler-00/id=16098460`. The complete response has 42 rows and names all four sources; the server had all 64 graphs loaded. This is not a batch of single-graph requests.
+
+Protocol was fresh-process ABBA (`base-a`, `candidate-a`, `candidate-b`, `base-b`) on macOS arm64, release binaries, maximum concurrency four. Per process: one cold first use, two warm-up waves of four requests, then 20 measured waves of four requests (80 retained samples). Every request consumed the complete body. Nearest-rank p50 is sample 40 and p95 sample 76, declared before inspection. All 89 responses in every arm were HTTP 200 and byte-identical, SHA-256 `fbe3ab7bae4b2e5a9512af540ca6b1a63135561ea8a200ed3dc374f882796ea1`; there were no retries, exclusions or failures.
+
+| Metric | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Query p50 | 3258.552 ms | 3244.322 ms | 0.371 ms | 0.380 ms | 3251.437 → 0.376 ms | -3251.062 ms | -99.988% |
+| Query p95 | 3357.523 ms | 3320.282 ms | 0.521 ms | 0.521 ms | 3338.903 → 0.521 ms | -3338.382 ms | -99.984% |
+| Measured 80-request window | 65.631 s | 65.358 s | 0.146 s | 0.146 s | 65.494 → 0.146 s | -65.348 s | -99.777% |
+
+A separate matched fresh-process ABBA rerun retained the same 89 exact bodies per arm and measured the complete server lifecycle (startup, loading, cold/warm/measured requests, then the harness shutdown signal) with `/usr/bin/time -l`:
+
+| Resource | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CPU user+system | 304.37 s | 308.31 s | 19.18 s | 19.30 s | 306.34 → 19.24 s | -287.10 s | -93.719% |
+| Peak process RSS | 6,302,875,648 B | 6,302,040,064 B | 6,302,859,264 B | 6,298,664,960 B | 6,302,457,856 → 6,300,762,112 B | -1,695,744 B | -0.027% |
+
+Both resource constraints pass independently, well inside the +5% ceiling. This path is the native Rust server; no JVM is launched, so the 8 GiB JVM ceiling is not applicable. Evidence, including all samples, bodies, timings and resource summaries, is retained at `/tmp/qualified-id-hop-real64-abba.5nkiQC`. Base binary SHA-256 is `c58c0e728e72e9b7962d61bccacfe662ca365d3dc062254a870a45adeb1ddae2`; the measured candidate binary SHA-256 is `102e26aaf6048d9c80fa7d055de9d525a63a026b72c5559f99af25dccbf9081e`.
+
+Decision: retain. Query p50/p95, measured-window time, CPU and RSS all improve materially, and exact response equality plus the malformed-index differential tests preserve correctness and stability.
+
+Not covered: `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value ... RETURN ... LIMIT 100` remains a distinct seed-pushdown problem. `ScanPlan` only accepts a single node and `HopPlan` rejects variable length, so generic matching expands every `StringConstant` through the complete `*1..3` search before applying the value predicate; the final LIMIT cannot bound that work. Exact equality, `CONTAINS`, disjunctions and `toLower(...)` also have different indexability. They require a separate cumulative candidate and representative multi-graph measurement rather than being claimed by this attempt.

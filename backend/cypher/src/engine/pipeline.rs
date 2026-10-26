@@ -871,6 +871,19 @@ impl Executor {
         hop: &Option<super::hop::HopPlan>,
         consume: &mut dyn FnMut(Row) -> CypherResult<bool>,
     ) -> CypherResult<bool> {
+        let mut emit = |r: Row| -> CypherResult<bool> {
+            if let Some(w) = where_clause {
+                if ev.eval(w, &r)?.as_bool() != Some(true) {
+                    return Ok(true);
+                }
+            }
+            consume(r)
+        };
+        // An exact id names the node outright: cheaper than any scan.
+        if let Some(plan) = super::id_candidate::IdCandidatePlan::build(patterns, where_clause, row)
+        {
+            return plan.run(self, matcher, patterns, &mut emit);
+        }
         if let Some(plan) = scan {
             if row.is_empty() {
                 return plan.run(self, ev, row, where_clause, consume);
@@ -880,18 +893,6 @@ impl Executor {
             if row.is_empty() {
                 return plan.run(self, ev, matcher, patterns, where_clause, consume);
             }
-        }
-        let mut emit = |r: Row| -> CypherResult<bool> {
-            if let Some(w) = where_clause {
-                if ev.eval(w, &r)?.as_bool() != Some(true) {
-                    return Ok(true);
-                }
-            }
-            consume(r)
-        };
-        if let Some(plan) = super::id_candidate::IdCandidatePlan::build(patterns, where_clause, row)
-        {
-            return plan.run(self, &mut emit);
         }
         if let Some(plan) =
             super::method_source_guard::MethodSourceGuard::build(self, patterns, where_clause, row)
