@@ -11669,3 +11669,128 @@ Both resource constraints pass independently, well inside the +5% ceiling. This 
 Decision: retain. Query p50/p95, measured-window time, CPU and RSS all improve materially, and exact response equality plus the malformed-index differential tests preserve correctness and stability.
 
 Not covered: `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value ... RETURN ... LIMIT 100` remains a distinct seed-pushdown problem. `ScanPlan` only accepts a single node and `HopPlan` rejects variable length, so generic matching expands every `StringConstant` through the complete `*1..3` search before applying the value predicate; the final LIMIT cannot bound that work. Exact equality, `CONTAINS`, disjunctions and `toLower(...)` also have different indexability. They require a separate cumulative candidate and representative multi-graph measurement rather than being claimed by this attempt.
+
+### Attempt152 — filter a StringConstant seed before expanding its paths
+
+The follow-up shape from attempt151 expands every `StringConstant` through a fixed or
+variable-length relationship before WHERE can test `s.value`; its final LIMIT bounds
+returned rows, not discarded expansion work.
+
+Hypothesis and change: build the existing string-column `ScanPlan` for the first node
+alone, use one necessary top-level seed-only conjunct to enumerate matching nodes in the
+exhaustive walk's source/id order, then enter the unchanged matcher at each survivor
+through `match_patterns_at`. `StringSeedPlan` admits only an empty input row, a first
+node whose resolved class is exactly `StringConstant`, and at least one relationship.
+It supports `=`, `CONTAINS`, disjunctions, `toLower` and literal inline maps. The complete
+WHERE still runs after every pattern variable is bound. A later-variable predicate with
+no separately necessary seed filter, a broader/unlabelled class, a pre-bound row or a
+node-only pattern declines the plan. Relationship order and uniqueness, fixed and
+variable traversal, path values, duplicate rows, provenance, LIMIT probing,
+cancellation, timeout and work-budget polling stay on the shared paths.
+
+The exact stacked revisions are parent `dfaaa95cafaef39d09c22e4ab84794ca171f96b7`
+(binary SHA-256 `77685c0a7d01fe9cafdbc2cd7b5fbc34c56678d04cb402b42a4052656544254d`)
+and candidate `ccab87e1005a10ddb6c280b6b5275b053c7ea637` (binary SHA-256
+`4b4d930890fd2fe66fc36cda908eb35e7cebbc70de7f9d5c71d502b6722be874`).
+
+Performance acceptance used 64 distinct persisted shards from the pinned Android,
+Tika, Hive and Kotlin compiler JARs, MAPPED by the production Rust server. Every global
+request was four `UNION ALL` segments, explicitly targeting `fixture-android-00` through
+`03`; each segment ran the reported `(s:StringConstant)-[*1..3]-(n)` shape with a
+`CONTAINS OR CONTAINS OR toLower(...) CONTAINS` seed predicate and returned 40 complete
+rows. Thus every request actually consumed 160 rows from four graphs while all 64 were
+loaded. Query-file SHA-256 is
+`a4fe3fea0704294a1535b02dc72140e034499e553ffd46a9b7a0fbce874ac701`;
+the normalized catalog identity in every summary is
+`d63e63294566aff573f64a4d24dee5aae55a4db91069c06b570c1c0dc4d3ae77`.
+
+Protocol was fresh-server ABBA (`base-a`, `candidate-a`, `candidate-b`, `base-b`) on
+macOS arm64, concurrency four and a 120-second request cap. Each arm used two warm-up
+rounds and 20 measured rounds per worker: eight warm-up plus 80 measured requests.
+The measured boundary was request start through complete HTTP-body consumption;
+nearest-rank p50/p95 over all 80 repeated requests was declared in advance. Every one
+of the 352 total responses was HTTP 200, a complete 160-row body, with zero failures or
+timeouts and the same digest
+`a37e53aa65ace51d83ea5cc5fdce98768f82c395a0b08a2fb5784b268024a666`.
+
+| Metric | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Query p50 | 48,636.857 ms | 49,233.106 ms | 3.443 ms | 3.453 ms | 48,934.981 → 3.448 ms | -48,931.534 ms | -99.993% |
+| Query p95 | 49,158.089 ms | 49,898.073 ms | 3.853 ms | 3.718 ms | 49,528.081 → 3.786 ms | -49,524.295 ms | -99.992% |
+| Mean request latency | 48,695.316 ms | 49,323.088 ms | 3.458 ms | 3.448 ms | 49,009.202 → 3.453 ms | -49,005.749 ms | -99.993% |
+| Measured 80-request window | 974.447 s | 986.614 s | 0.076 s | 0.076 s | 980.530 → 0.076 s | -980.454 s | -99.992% |
+
+`/usr/bin/time -l` covered each fresh server's loading, readiness, warm-up, measurement
+and controlled shutdown. This lifecycle boundary does not claim separate loading or
+construction acceptance.
+
+| Resource | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CPU user + system | 4,255.73 s | 4,314.05 s | 24.41 s | 20.85 s | 4,284.89 → 22.63 s | -4,262.26 s | -99.47% |
+| Peak process RSS | 6,738,395,136 B | 7,149,305,856 B | 7,034,011,648 B | 6,643,957,760 B | 6,943,850,496 → 6,838,984,704 B | -104,865,792 B | -1.51% |
+
+Both directional RSS comparisons satisfy the independent +5% ceiling: candidate A is
++4.387% against base A, candidate B is -7.068% against base B; CPU falls in both pairs.
+All protocol JSON, 320 measured and 32 warm-up bodies, samples, empty failure arrays,
+summaries, server logs and resources are retained under
+`/tmp/graphite-string-abba-depth3.mTa1i4`. An independent audit rehashed all 352 body
+files against their JSONL declarations with zero mismatches, re-sorted every 80-sample
+arm and reproduced nearest-rank indices 40 and 76 exactly; server logs contain no
+panic, fatal error or runtime timeout.
+
+**Post-conflict exact-head confirmation:** after #184 was squash-merged and the PR
+conflict was resolved, the same predeclared depth-three ABBA was rerun rather than
+carrying the stacked result forward. The exact base is `002aa09ec50b9c26423ea0cbb2f4a49eceeb0967`
+(binary SHA-256 `4364a5ed16eafcdc86c77f8821de52a187f49a77ac8884edda645647452143b8`)
+and the exact candidate is `ff86cfb9ee07c0d41f4409101f65a77bcac731e4`
+(binary SHA-256 `4224bc860a168cc941125d0a7aca3c0ebbca62698ad214f58de8a599b3f2dbd8`).
+The two binaries were built from detached worktrees with independent target directories;
+the candidate production diff is the four seed-plan source/test/dispatch files. The query
+file and normalized catalog identities remain `a4fe3fea0704294a1535b02dc72140e034499e553ffd46a9b7a0fbce874ac701`
+and `d63e63294566aff573f64a4d24dee5aae55a4db91069c06b570c1c0dc4d3ae77`.
+
+All four fresh servers loaded the same 64 distinct persisted JAR shards. Every one of
+the 320 measured and 32 warm-up responses was HTTP 200, contained all 160 requested
+rows and had the same complete-response digest
+`a37e53aa65ace51d83ea5cc5fdce98768f82c395a0b08a2fb5784b268024a666`;
+there were no failures or timeouts. Independent post-run checks rehashed all 352 body
+files, verified 64 unique loaded graph IDs per arm, re-sorted every 80-sample cohort and
+reproduced nearest-rank indices 40 and 76. Server logs contain no panic, fatal error,
+runtime timeout or OOM.
+
+| Metric | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Query p50 | 49,150.023 ms | 49,328.394 ms | 3.463 ms | 3.445 ms | 49,239.208 → 3.454 ms | -49,235.754 ms | -99.993% |
+| Query p95 | 49,603.562 ms | 49,682.420 ms | 3.820 ms | 3.808 ms | 49,642.991 → 3.814 ms | -49,639.177 ms | -99.992% |
+| Measured 80-request window | 984.493 s | 987.698 s | 0.076 s | 0.077 s | 986.096 → 0.076 s | -986.019 s | -99.992% |
+
+`/usr/bin/time -l` again covered loading, readiness, warm-up, measurement and controlled
+shutdown. The controller checks client completion every 30 seconds, so that polling can
+add idle wall time after a fast candidate measurement; it does not enter request latency,
+and its CPU and RSS remain inside the recorded lifecycle boundary.
+
+| Resource | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CPU user + system | 4,304.97 s | 4,318.33 s | 25.48 s | 25.20 s | 4,311.65 → 25.34 s | -4,286.31 s | -99.41% |
+| Peak process RSS | 7,226,720,256 B | 7,233,175,552 B | 7,268,024,320 B | 7,265,042,432 B | 7,229,947,904 → 7,266,533,376 B | +36,585,472 B | +0.506% |
+
+Both directional RSS comparisons pass the independent +5% ceiling: candidate A is
++0.572% against base A and candidate B is +0.441% against base B. CPU falls in both
+pairs. The complete post-conflict evidence is retained at
+`/tmp/graphite-pr186-postconflict-depth3.ZqLyZl`.
+
+Correctness gates cover fixed hops, `*1..2`, `*1..3`, path variables, a second pattern,
+inline maps, unsafe mixed-variable disjunction rejection and pre-bound rows. Against a
+real persisted Tika shard, fixed and `*1..3` queries compare complete typed rows, order,
+duplicates, later-variable conjuncts, provenance and probe state with an equivalent
+query forced through generic matching; pre-cancellation and timeout remain observable.
+All 171 Cypher tests pass without a fixture override, all four new tests pass in release
+mode against the real shard, workspace/all-target/all-feature Clippy passes with warnings
+denied, and format/diff checks pass.
+
+The earlier `/tmp/graphite-string-bench/` `*1..2` base/head pair remains diagnostic only;
+it is not acceptance evidence for the reported depth-three query. This local ABBA still
+has uncontrolled OS page-cache state and makes no confidence-interval, construction,
+loading, JVM-query or pre-regression claim. Decision: retain the response-identical,
+resource-compliant multi-graph improvement; the hosted `benchmark-regression-gate`
+remains the final merge gate.

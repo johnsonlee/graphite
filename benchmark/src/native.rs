@@ -1461,7 +1461,16 @@ mod tests {
                     let _ = connection.read(&mut buffer);
                     let count = active.fetch_add(1, Ordering::SeqCst) + 1;
                     peak.fetch_max(count, Ordering::SeqCst);
-                    std::thread::sleep(Duration::from_millis(20));
+                    // Hold the request until another is in flight, so the workers'
+                    // overlap is observed however slowly a loaded runner schedules
+                    // the accepting threads; the deadline frees the last requests,
+                    // which have nobody left to overlap with.
+                    let held = Instant::now();
+                    while active.load(Ordering::SeqCst) < 2
+                        && held.elapsed() < Duration::from_secs(1)
+                    {
+                        std::thread::sleep(Duration::from_millis(5));
+                    }
                     let payload =
                         body(json!([{"v":7,"$metadata":{"graphIds":["g00"]}}])).to_string();
                     write!(
