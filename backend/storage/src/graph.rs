@@ -218,6 +218,10 @@ pub struct Graph {
     /// number of entries in nodeoffsets (= maxNodeId + 1)
     node_capacity: usize,
     type_index: Vec<Vec<NodeId>>,
+    /// Whether each type list is in ascending id order, decided at load: a sorted list
+    /// can be searched for an id; an unsorted one (a legacy or hand-made index) can
+    /// only be walked.
+    type_index_sorted: Vec<bool>,
     pub forward: Csr,
     pub backward: Csr,
     comparisons: Comparisons,
@@ -267,7 +271,8 @@ impl Graph {
             .ok_or(GraphError::BadHeader("graph.nodeoffsets"))?;
         let node_capacity = read_i32_at(&node_offsets, 4).max(0) as usize;
 
-        let type_index = load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
+        let (type_index, type_index_sorted) =
+            load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
 
         let labels = src.require("graph.labels").map_err(io)?;
         let forward = build_forward_csr(&bv, &labels);
@@ -329,6 +334,7 @@ impl Graph {
             node_offsets,
             node_capacity,
             type_index,
+            type_index_sorted,
             forward,
             backward,
             comparisons,
@@ -532,6 +538,15 @@ impl Graph {
             .unwrap_or(&[])
     }
 
+    /// Whether [`Graph::ids_by_tag`] for `tag` is in ascending order, so that the
+    /// entries equal to an id are one contiguous run a binary search finds.
+    pub fn ids_by_tag_sorted(&self, tag: u8) -> bool {
+        self.type_index_sorted
+            .get(tag as usize)
+            .copied()
+            .unwrap_or(true)
+    }
+
     pub fn count_by_tag(&self, tag: u8) -> usize {
         self.ids_by_tag(tag).len()
     }
@@ -642,7 +657,7 @@ impl Graph {
     }
 }
 
-fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
+fn load_type_index(data: &[u8]) -> Result<(Vec<Vec<NodeId>>, Vec<bool>), GraphError> {
     if data.len() < 8 {
         return Err(GraphError::BadHeader("graph.typeindex"));
     }
@@ -650,6 +665,7 @@ fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
         .ok_or(GraphError::BadHeader("graph.typeindex"))?;
     let entries = read_i32_at(data, 4).max(0) as usize;
     let mut out: Vec<Vec<NodeId>> = vec![Vec::new(); TAG_COUNT];
+    let mut sorted = vec![true; TAG_COUNT];
     for i in 0..entries {
         let p = 8 + i * 13;
         if p + 13 > data.len() {
@@ -666,12 +682,18 @@ fn load_type_index(data: &[u8]) -> Result<Vec<Vec<NodeId>>, GraphError> {
             return Err(GraphError::BadHeader("graph.typeindex"));
         }
         let mut ids = Vec::with_capacity(count);
+        let mut previous = None;
         for j in 0..count {
-            ids.push(read_i32_at(data, off + j * 4) as u32);
+            let id = read_i32_at(data, off + j * 4) as u32;
+            if previous.is_some_and(|previous| previous > id) {
+                sorted[tag] = false;
+            }
+            previous = Some(id);
+            ids.push(id);
         }
         out[tag] = ids;
     }
-    Ok(out)
+    Ok((out, sorted))
 }
 
 fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
