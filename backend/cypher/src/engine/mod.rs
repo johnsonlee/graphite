@@ -541,6 +541,13 @@ impl GraphContext for Executor {
             .map(|md| md.signature(g.strings()))
             .unwrap_or_default()
     }
+    fn method_identity(&self, m: MethodRef) -> String {
+        let g = self.graph(m.source);
+        g.methods()
+            .get(m.index as usize)
+            .map(|md| md.identity(g.strings()))
+            .unwrap_or_default()
+    }
     fn check_cancelled(&self) -> CypherResult<()> {
         self.tick()
     }

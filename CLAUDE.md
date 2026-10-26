@@ -630,7 +630,9 @@ its own trailer, readers compare the bindings and never hash the node data, and 
 also checks a summary's partitions against the type index and the table's counts before it skips
 a scan on them. Ask of every sidecar: which file's bytes does each of its answers depend on, and
 is every one of them in the binding? Likewise `MethodDescriptor.signature` has no return type:
-anything keyed by it collapses a bridge onto its covariant override (`identity` is the full key).
+anything keyed by it collapses a bridge onto its covariant override (`identity` is the full key),
+and that includes the external identity a Cypher client sees: `elementId`/`qualifiedId` of a
+Method are built from `identity` in both engines, never from the signature.
 
 ### Node Order Must Not Depend on Identity Hashes
 

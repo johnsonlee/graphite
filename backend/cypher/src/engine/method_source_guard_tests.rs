@@ -552,3 +552,51 @@ fn full_properties_aliases_errors_and_limits_match_disabled_fastpaths() {
     std::fs::remove_file(path).unwrap();
     assert_eq!(actual, expected);
 }
+
+/// A bridge and its covariant override share a signature; `elementId`/`qualifiedId` name a
+/// Method by its complete identity, so the two rows never collapse into one external id.
+#[test]
+fn element_ids_carry_the_complete_method_identity() {
+    use crate::functions::call;
+    use crate::value::MethodRef;
+    let Some(graph) = fixture() else { return };
+    let strings = graph.strings();
+    let (echo, alternate) = (graph.methods()[0].clone(), graph.methods()[2].clone());
+    assert_eq!(echo.signature(strings), alternate.signature(strings));
+    assert_ne!(echo.identity(strings), alternate.identity(strings));
+    assert_eq!(
+        echo.identity(strings),
+        "fixture.types.Holder.echo(Ljava/util/List;)Ljava/util/List;"
+    );
+    assert_eq!(
+        alternate.identity(strings),
+        "fixture.types.Holder.echo(Ljava/util/List;)Lfixture/types/Holder;"
+    );
+    let graph = Arc::new(graph);
+    let single = Executor::new(vec![source("g", graph.clone())], false);
+    let id = |ex: &Executor, function: &str, index: u32| match call(
+        function,
+        &[Value::Method(MethodRef { source: 0, index })],
+        ex,
+    )
+    .unwrap()
+    {
+        Value::Str(text) => text.to_string(),
+        other => panic!("expected a string: {other:?}"),
+    };
+    assert_eq!(
+        id(&single, "elementId", 0),
+        "Method:fixture.types.Holder.echo(Ljava/util/List;)Ljava/util/List;"
+    );
+    assert_eq!(
+        id(&single, "elementId", 2),
+        "Method:fixture.types.Holder.echo(Ljava/util/List;)Lfixture/types/Holder;"
+    );
+    assert_eq!(id(&single, "qualifiedId", 2), id(&single, "elementId", 2));
+    let cross = Executor::new(vec![source("g0", graph)], true);
+    assert_eq!(
+        id(&cross, "elementId", 2),
+        "g0:Method:fixture.types.Holder.echo(Ljava/util/List;)Lfixture/types/Holder;"
+    );
+    assert_ne!(id(&cross, "qualifiedId", 0), id(&cross, "qualifiedId", 2));
+}

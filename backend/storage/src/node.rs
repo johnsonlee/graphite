@@ -79,6 +79,17 @@ impl MethodDesc {
         out
     }
 
+    /// `"$class.$name$descriptor"` — the Kotlin `MethodDescriptor.identity`: the signature plus the
+    /// return type the descriptor keeps, so a bridge and its covariant override have two.
+    pub fn identity(&self, s: &StringTable) -> String {
+        let mut out = String::with_capacity(96);
+        out.push_str(s.get(self.declaring_class as usize));
+        out.push('.');
+        out.push_str(s.get(self.name as usize));
+        out.push_str(&self.descriptor(s));
+        out
+    }
+
     pub fn signature_into(&self, s: &StringTable, out: &mut String) {
         out.push_str(s.get(self.declaring_class as usize));
         out.push('.');

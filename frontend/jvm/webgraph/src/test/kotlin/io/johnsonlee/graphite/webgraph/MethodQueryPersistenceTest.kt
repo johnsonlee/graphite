@@ -103,6 +103,13 @@ class MethodQueryPersistenceTest {
                         ),
                         rows
                     )
+                    // Two rows, two element ids, from both loaders: the shared signature never names a method.
+                    assertEquals(
+                        listOf("Method:${bridge.identity}", "Method:${override.identity}"),
+                        CypherExecutor(loaded).execute(
+                            "MATCH (m:Method) RETURN elementId(m) AS id ORDER BY id"
+                        ).rows.map { it["id"] }
+                    )
                 } finally {
                     (loaded as? AutoCloseable)?.close()
                 }

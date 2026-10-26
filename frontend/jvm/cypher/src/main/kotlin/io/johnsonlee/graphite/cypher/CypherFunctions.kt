@@ -268,7 +268,8 @@ object CypherFunctions {
     }
 
     private fun elementId(value: Any?): String? = when (value) {
-        is MethodValue -> listOfNotNull(value.graphId, METHOD_LABEL, value.method.signature).joinToString(":")
+        // The complete identity: a bridge and its covariant override share a signature, never an element id.
+        is MethodValue -> listOfNotNull(value.graphId, METHOD_LABEL, value.method.identity).joinToString(":")
         is QualifiedNode -> value.elementId
         is Node -> value.id.value.toString()
         else -> null

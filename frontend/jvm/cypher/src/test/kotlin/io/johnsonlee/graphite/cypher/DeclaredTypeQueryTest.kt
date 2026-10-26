@@ -147,6 +147,13 @@ class DeclaredTypeQueryTest {
             ),
             rows
         )
+        // The two rows carry two element ids: the identity, not the shared signature, names a method.
+        val ids = CypherExecutor(both).execute(
+            "MATCH (m:Method) RETURN elementId(m) AS element, qualifiedId(m) AS qualified ORDER BY element"
+        ).rows
+        assertEquals(listOf("Method:${bridge.identity}", "Method:${method.identity}"), ids.map { it["element"] })
+        assertEquals(ids.map { it["element"] }, ids.map { it["qualified"] })
+        assertEquals(2, ids.map { it["element"] }.toSet().size)
         // Without a row of its own the bridge is still its own method, with no declaration.
         val undeclared = DefaultGraph.Builder().apply { addMethod(method); addMethod(bridge); setDeclaredTypes(declared) }.build()
         assertEquals(

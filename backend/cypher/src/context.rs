@@ -56,6 +56,9 @@ pub trait GraphContext {
     fn method_properties(&self, m: MethodRef) -> IndexMap<String, Value>;
     /// `method.signature`
     fn method_signature(&self, m: MethodRef) -> String;
+    /// The complete method identity (`class.name` plus the JVM descriptor): what `elementId` and
+    /// `qualifiedId` name a Method by, so a bridge and its covariant override never share one.
+    fn method_identity(&self, m: MethodRef) -> String;
 
     /// Cancellation / timeout polling hook; returns Err when cancelled.
     fn check_cancelled(&self) -> crate::CypherResult<()> {
@@ -125,6 +128,9 @@ mod tests {
             unreachable!()
         }
         fn method_signature(&self, _: MethodRef) -> String {
+            unreachable!()
+        }
+        fn method_identity(&self, _: MethodRef) -> String {
             unreachable!()
         }
     }

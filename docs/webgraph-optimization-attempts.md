@@ -21998,7 +21998,12 @@ also requires the summary's field and method counts to be the table's; every ref
 to `compute_declared_key_partitions`. Methods are keyed by `MethodDescriptor.identity`
 (`a.B.name(Ljava/lang/String;)Z`, the signature plus the descriptor's return type) in the three
 maps, so a bridge and its override are two methods in `DefaultGraph`, `MmapGraph`, the saved
-metadata and both engines.
+metadata and both engines. The review's follow-up: both engines built `elementId`/`qualifiedId`
+of a Method from the erased signature (`CypherFunctions.elementId`, `functions.rs`), so the two
+rows still exposed one external identity and a client that caches or de-duplicates by element id
+collapsed them again; the ids are built from the complete identity now (`Method:<identity>`,
+`<graph>:Method:<identity>` cross-graph; `MethodDesc::identity` in the native engine), and the
+bridge tests assert two distinct ids in both engines.
 
 **Cost.** One SHA-256 over `graph.nodedata` per save: `sha256sum` on this host (Xeon 2.1 GHz with
 SHA extensions) runs an 18 MB fixture64 shard in 0.01 s user; the whole-JAR corpora have at most
