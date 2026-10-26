@@ -11673,69 +11673,83 @@ Not covered: `MATCH (s:StringConstant)-[*1..3]-(n) WHERE s.value ... RETURN ... 
 ### Attempt152 — filter a StringConstant seed before expanding its paths
 
 The follow-up shape from attempt151 expands every `StringConstant` through a fixed or
-variable-length relationship before WHERE can test `s.value`. Its LIMIT bounds returned
-rows, not that discarded expansion work.
+variable-length relationship before WHERE can test `s.value`; its final LIMIT bounds
+returned rows, not discarded expansion work.
 
-Hypothesis: build the existing string-column `ScanPlan` for the first node alone, use
-one necessary top-level WHERE conjunct to enumerate matching seed nodes in the exhaustive
-walk's source/id order, then enter the unchanged matcher at each seed through
-`match_patterns_at`. The complete WHERE must remain after every pattern variable is
-bound. This should remove expansion from nonmatching literals without changing inline
-node constraints, relationship order or uniqueness, path values, duplicate rows,
-provenance, LIMIT probing, cancellation or timeout behaviour.
+Hypothesis and change: build the existing string-column `ScanPlan` for the first node
+alone, use one necessary top-level seed-only conjunct to enumerate matching nodes in the
+exhaustive walk's source/id order, then enter the unchanged matcher at each survivor
+through `match_patterns_at`. `StringSeedPlan` admits only an empty input row, a first
+node whose resolved class is exactly `StringConstant`, and at least one relationship.
+It supports `=`, `CONTAINS`, disjunctions, `toLower` and literal inline maps. The complete
+WHERE still runs after every pattern variable is bound. A later-variable predicate with
+no separately necessary seed filter, a broader/unlabelled class, a pre-bound row or a
+node-only pattern declines the plan. Relationship order and uniqueness, fixed and
+variable traversal, path values, duplicate rows, provenance, LIMIT probing,
+cancellation, timeout and work-budget polling stay on the shared paths.
 
-Change: `StringSeedPlan` accepts an empty input row, a first pattern node whose resolved
-class is exactly `StringConstant`, and at least one relationship. It derives a one-node
-scan from a pushable top-level conjunct (including `=`, `CONTAINS`, disjunctions and
-`toLower`) or a literal inline property map. Each scan survivor is passed to
-`Matcher::match_patterns_at`; the existing pipeline still evaluates the whole WHERE and
-owns projection and early termination. A predicate involving a later pattern variable,
-without a separately necessary seed conjunct, declines the plan; so do an
-unlabelled/broader class, a pre-bound row or a node-only pattern.
-Parent is `6079a984`; candidate is the commit containing this record.
+The exact stacked revisions are parent `dfaaa95cafaef39d09c22e4ab84794ca171f96b7`
+(binary SHA-256 `77685c0a7d01fe9cafdbc2cd7b5fbc34c56678d04cb402b42a4052656544254d`)
+and candidate `ccab87e1005a10ddb6c280b6b5275b053c7ea637` (binary SHA-256
+`4b4d930890fd2fe66fc36cda908eb35e7cebbc70de7f9d5c71d502b6722be874`).
 
-Fixture and protocol: the retained `native-warm-64-filtered-count-attempt21-final-run1`
-fixture, 64 distinct persisted class shards from the pinned Android, Tika, Hive and
-Kotlin compiler JARs, MAPPED production Rust server, query concurrency four and a
-120-second cap. One global `/api/cypher` request is four `UNION ALL` segments, each
-explicitly constrained to a different real graph (`fixture-android-00` through `03`),
-and each uses `(s:StringConstant)-[*1..2]-(n)` with a `CONTAINS OR CONTAINS OR
-toLower(... ) CONTAINS` seed predicate. Every segment fully returns 40 rows, so each
-request consumes 160 rows from four actual graphs. Two warm-up rounds and 20 measured
-rounds per worker give 80 retained measured samples per revision; p50/p95 are nearest
-rank over repeated requests. The boundary is request start through complete HTTP-body
-consumption. The candidate run used the base summary as an exact full-response oracle.
-Raw protocol, every body/sample, summaries and `/usr/bin/time -l` resources are retained
-under `/tmp/graphite-string-bench/`; the query catalog SHA-256 is
-`386a0f82ae3d34d732f0f38cab0753fc1e66ea0aaca47222baa3683654615aeb`.
+Performance acceptance used 64 distinct persisted shards from the pinned Android,
+Tika, Hive and Kotlin compiler JARs, MAPPED by the production Rust server. Every global
+request was four `UNION ALL` segments, explicitly targeting `fixture-android-00` through
+`03`; each segment ran the reported `(s:StringConstant)-[*1..3]-(n)` shape with a
+`CONTAINS OR CONTAINS OR toLower(...) CONTAINS` seed predicate and returned 40 complete
+rows. Thus every request actually consumed 160 rows from four graphs while all 64 were
+loaded. Query-file SHA-256 is
+`a4fe3fea0704294a1535b02dc72140e034499e553ffd46a9b7a0fbce874ac701`;
+the normalized catalog identity in every summary is
+`d63e63294566aff573f64a4d24dee5aae55a4db91069c06b570c1c0dc4d3ae77`.
 
-| Metric | Parent | Candidate | Absolute delta |
-|---|---:|---:|---:|
-| request p50 ms | 959.635 | 2.822 | -956.813 |
-| request p95 ms | 1059.302 | 3.132 | -1056.170 |
-| measured query window s | 19.433 | 0.063 | -19.370 |
-| process CPU s (user + system) | 108.390 | 25.360 | -83.030 (-76.60%) |
-| process peak RSS bytes | 7,215,710,208 | 7,234,174,976 | +18,464,768 (+0.26%) |
+Protocol was fresh-server ABBA (`base-a`, `candidate-a`, `candidate-b`, `base-b`) on
+macOS arm64, concurrency four and a 120-second request cap. Each arm used two warm-up
+rounds and 20 measured rounds per worker: eight warm-up plus 80 measured requests.
+The measured boundary was request start through complete HTTP-body consumption;
+nearest-rank p50/p95 over all 80 repeated requests was declared in advance. Every one
+of the 352 total responses was HTTP 200, a complete 160-row body, with zero failures or
+timeouts and the same digest
+`a37e53aa65ace51d83ea5cc5fdce98768f82c395a0b08a2fb5784b268024a666`.
 
-All 80 requests on each revision completed successfully with 160 rows and the same
-complete-response digest
-`109d6646bbb3db9591bca9918097df09bed0b8eb7635ae4de4f93e3c9c2db704`.
-The paired RSS increase is below the independent +5% ceiling and CPU decreases. Resource
-figures cover the whole server lifetime, including loading, warm-up and background C4
-readiness; they are not query-only attribution or construction/loading acceptance.
+| Metric | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Query p50 | 48,636.857 ms | 49,233.106 ms | 3.443 ms | 3.453 ms | 48,934.981 → 3.448 ms | -48,931.534 ms | -99.993% |
+| Query p95 | 49,158.089 ms | 49,898.073 ms | 3.853 ms | 3.718 ms | 49,528.081 → 3.786 ms | -49,524.295 ms | -99.992% |
+| Mean request latency | 48,695.316 ms | 49,323.088 ms | 3.458 ms | 3.448 ms | 49,009.202 → 3.453 ms | -49,005.749 ms | -99.993% |
+| Measured 80-request window | 974.447 s | 986.614 s | 0.076 s | 0.076 s | 980.530 → 0.076 s | -980.454 s | -99.992% |
 
-Correctness: planner tests cover fixed hops, `*1..2`, `*1..3`, path variables, a second
-pattern, inline maps, unsafe mixed-variable disjunction rejection and pre-bound rows. Against a real
-persisted Tika shard, fixed and `*1..3` queries compare complete typed rows, order,
-duplicates, later-variable conjuncts, provenance and probe state with a semantically identical query forced
-through the generic matcher; pre-cancellation remains observable. All 171 Cypher tests
-pass without a fixture override, the four new tests pass in release mode against the
-real shard, workspace/all-target/all-feature Clippy passes with warnings denied, and
-format/diff checks pass.
+`/usr/bin/time -l` covered each fresh server's loading, readiness, warm-up, measurement
+and controlled shutdown. This lifecycle boundary does not claim separate loading or
+construction acceptance.
 
-Limitations and decision: this is one local macOS pair, not ABBA and not the hosted
-trusted-controller run; OS page-cache state is uncontrolled, and no confidence interval,
-construction, loading, JVM-query or accepted pre-regression claim is made. Retain the
-large, response-identical multi-graph improvement as a positive attempt. The required
-`benchmark-regression-gate` remains authoritative for correctness, completion and OOM on
-the eventual stacked PR.
+| Resource | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CPU user + system | 4,255.73 s | 4,314.05 s | 24.41 s | 20.85 s | 4,284.89 → 22.63 s | -4,262.26 s | -99.47% |
+| Peak process RSS | 6,738,395,136 B | 7,149,305,856 B | 7,034,011,648 B | 6,643,957,760 B | 6,943,850,496 → 6,838,984,704 B | -104,865,792 B | -1.51% |
+
+Both directional RSS comparisons satisfy the independent +5% ceiling: candidate A is
++4.387% against base A, candidate B is -7.068% against base B; CPU falls in both pairs.
+All protocol JSON, 320 measured and 32 warm-up bodies, samples, empty failure arrays,
+summaries, server logs and resources are retained under
+`/tmp/graphite-string-abba-depth3.mTa1i4`. An independent audit rehashed all 352 body
+files against their JSONL declarations with zero mismatches, re-sorted every 80-sample
+arm and reproduced nearest-rank indices 40 and 76 exactly; server logs contain no
+panic, fatal error or runtime timeout.
+
+Correctness gates cover fixed hops, `*1..2`, `*1..3`, path variables, a second pattern,
+inline maps, unsafe mixed-variable disjunction rejection and pre-bound rows. Against a
+real persisted Tika shard, fixed and `*1..3` queries compare complete typed rows, order,
+duplicates, later-variable conjuncts, provenance and probe state with an equivalent
+query forced through generic matching; pre-cancellation and timeout remain observable.
+All 171 Cypher tests pass without a fixture override, all four new tests pass in release
+mode against the real shard, workspace/all-target/all-feature Clippy passes with warnings
+denied, and format/diff checks pass.
+
+The earlier `/tmp/graphite-string-bench/` `*1..2` base/head pair remains diagnostic only;
+it is not acceptance evidence for the reported depth-three query. This local ABBA still
+has uncontrolled OS page-cache state and makes no confidence-interval, construction,
+loading, JVM-query or pre-regression claim. Decision: retain the response-identical,
+resource-compliant multi-graph improvement; the hosted `benchmark-regression-gate`
+remains the final merge gate.
