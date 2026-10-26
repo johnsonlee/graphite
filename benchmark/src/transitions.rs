@@ -70,6 +70,41 @@ const RULES: &[Rule<'static>] = &[
         head_response_sha256: "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
         reason: "PR #174: generic_type and type_info added on 49 of the 200 nodes; every pre-existing property, value and provenance unchanged",
     },
+    // Direct v2.11.4 -> PR #187 benchmark. The response digests were retained by
+    // run 40249949452 for the same release source and PR #174 feature semantics;
+    // the candidate identity also binds the subsequently merged planner fixes and
+    // PR #187's benchmark-only cleanup. PR #187's main -> head gate proves those
+    // later changes do not introduce an additional semantic transition.
+    Rule {
+        base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
+        head_product_identity: "ffec84e9ff2640dbf41f63940c14a685fcf051e57534fb05f678483d781a7ec7",
+        case_id: "schema-key-histogram",
+        base_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+        head_query_sha256: "aac00c0011b00c13fd5ec9bebd1bc6a52f94e6eaa823668d19e35af9f25c3c8c",
+        base_response_sha256: "15da09067500c818f96a642fc123a7b706accda8604ca2242a2509863649b16c",
+        head_response_sha256: "ce4f62ac23534f10a947559830b356a29f1af4e75faaa3c6a4ef288b4fdaed41",
+        reason: "PR #174: Field, Parameter and Return nodes carry generic_type and type_info (3,485,883 each); the 26 pre-existing key counts are unchanged",
+    },
+    Rule {
+        base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
+        head_product_identity: "ffec84e9ff2640dbf41f63940c14a685fcf051e57534fb05f678483d781a7ec7",
+        case_id: "shape-label-scan-field",
+        base_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+        head_query_sha256: "61c28d12706cfe366212c4d65b2c50e528732a060951d740f0bd3eb9cae9f550",
+        base_response_sha256: "9919b1ed8bb619dd7b038a065c2f139bdd030137b2b0a755732d11a5cc869bea",
+        head_response_sha256: "caf86fbeccc186b9b34e6ef948353ea96d73148c6628535b00625ef52f267b1b",
+        reason: "PR #174 (Attempt309): declared-only fields are numbered in (name, signature) order instead of SootUp's identity-hash set order; the same 200 (name, graph) rows, 57 reordered",
+    },
+    Rule {
+        base_product_identity: "8ad5aae7820044aa84301a7cbee1fe99a005cbce46cb911b3e30bca8986c62b5",
+        head_product_identity: "ffec84e9ff2640dbf41f63940c14a685fcf051e57534fb05f678483d781a7ec7",
+        case_id: "shape-all-nodes",
+        base_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+        head_query_sha256: "ffa35341b8af522a820f76eed006980e6ac94406ccd21811dbd9ee635b6677b1",
+        base_response_sha256: "d970e9a364104e9424bd1db998d805a9c706a0747bee0b12032502e093c4a88a",
+        head_response_sha256: "c1738ba743cfc7a40ee52e2f5565f369ff0ade90bcd2dcac81f2b9dbcf14a09f",
+        reason: "PR #174: generic_type and type_info added on 49 of the 200 nodes; every pre-existing property, value and provenance unchanged",
+    },
 ];
 
 fn digest(value: &str, bytes: usize) -> bool {
