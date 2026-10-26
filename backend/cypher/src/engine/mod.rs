@@ -9,6 +9,7 @@ pub mod partition;
 pub mod pipeline;
 pub mod props;
 pub mod scan;
+mod string_seed;
 
 use crate::context::GraphContext;
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
