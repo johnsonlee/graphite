@@ -11738,6 +11738,47 @@ files against their JSONL declarations with zero mismatches, re-sorted every 80-
 arm and reproduced nearest-rank indices 40 and 76 exactly; server logs contain no
 panic, fatal error or runtime timeout.
 
+**Post-conflict exact-head confirmation:** after #184 was squash-merged and the PR
+conflict was resolved, the same predeclared depth-three ABBA was rerun rather than
+carrying the stacked result forward. The exact base is `002aa09ec50b9c26423ea0cbb2f4a49eceeb0967`
+(binary SHA-256 `4364a5ed16eafcdc86c77f8821de52a187f49a77ac8884edda645647452143b8`)
+and the exact candidate is `ff86cfb9ee07c0d41f4409101f65a77bcac731e4`
+(binary SHA-256 `4224bc860a168cc941125d0a7aca3c0ebbca62698ad214f58de8a599b3f2dbd8`).
+The two binaries were built from detached worktrees with independent target directories;
+the candidate production diff is the four seed-plan source/test/dispatch files. The query
+file and normalized catalog identities remain `a4fe3fea0704294a1535b02dc72140e034499e553ffd46a9b7a0fbce874ac701`
+and `d63e63294566aff573f64a4d24dee5aae55a4db91069c06b570c1c0dc4d3ae77`.
+
+All four fresh servers loaded the same 64 distinct persisted JAR shards. Every one of
+the 320 measured and 32 warm-up responses was HTTP 200, contained all 160 requested
+rows and had the same complete-response digest
+`a37e53aa65ace51d83ea5cc5fdce98768f82c395a0b08a2fb5784b268024a666`;
+there were no failures or timeouts. Independent post-run checks rehashed all 352 body
+files, verified 64 unique loaded graph IDs per arm, re-sorted every 80-sample cohort and
+reproduced nearest-rank indices 40 and 76. Server logs contain no panic, fatal error,
+runtime timeout or OOM.
+
+| Metric | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Query p50 | 49,150.023 ms | 49,328.394 ms | 3.463 ms | 3.445 ms | 49,239.208 → 3.454 ms | -49,235.754 ms | -99.993% |
+| Query p95 | 49,603.562 ms | 49,682.420 ms | 3.820 ms | 3.808 ms | 49,642.991 → 3.814 ms | -49,639.177 ms | -99.992% |
+| Measured 80-request window | 984.493 s | 987.698 s | 0.076 s | 0.077 s | 986.096 → 0.076 s | -986.019 s | -99.992% |
+
+`/usr/bin/time -l` again covered loading, readiness, warm-up, measurement and controlled
+shutdown. The controller checks client completion every 30 seconds, so that polling can
+add idle wall time after a fast candidate measurement; it does not enter request latency,
+and its CPU and RSS remain inside the recorded lifecycle boundary.
+
+| Resource | Base A | Base B | Candidate A | Candidate B | Base mean → candidate mean | Absolute change | Relative change |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| CPU user + system | 4,304.97 s | 4,318.33 s | 25.48 s | 25.20 s | 4,311.65 → 25.34 s | -4,286.31 s | -99.41% |
+| Peak process RSS | 7,226,720,256 B | 7,233,175,552 B | 7,268,024,320 B | 7,265,042,432 B | 7,229,947,904 → 7,266,533,376 B | +36,585,472 B | +0.506% |
+
+Both directional RSS comparisons pass the independent +5% ceiling: candidate A is
++0.572% against base A and candidate B is +0.441% against base B. CPU falls in both
+pairs. The complete post-conflict evidence is retained at
+`/tmp/graphite-pr186-postconflict-depth3.ZqLyZl`.
+
 Correctness gates cover fixed hops, `*1..2`, `*1..3`, path variables, a second pattern,
 inline maps, unsafe mixed-variable disjunction rejection and pre-bound rows. Against a
 real persisted Tika shard, fixed and `*1..3` queries compare complete typed rows, order,
