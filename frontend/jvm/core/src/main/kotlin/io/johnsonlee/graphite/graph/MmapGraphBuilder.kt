@@ -252,7 +252,7 @@ class MmapGraphBuilder(
         val outgoingOffsetIndex = buildOutgoingEdgeOffsetIndex(edgeFile, edgeFileLen, totalEdges, outgoingStarts, outgoingCounts)
 
         val methodIndex = LinkedHashMap<String, MethodDescriptor>(methods.size)
-        methods.forEach { methodIndex[it.signature] = it }
+        methods.forEach { methodIndex[it.identity] = it }
 
         return MmapGraph(
             dataDir = workDir,

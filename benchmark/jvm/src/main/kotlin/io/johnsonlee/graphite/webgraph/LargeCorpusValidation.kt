@@ -108,7 +108,11 @@ data class CorpusBaseline(
  * The declared-type table keeps every array dimension of a method's parameter and return types, so
  * methods whose keys collided on the flattened rendering are distinct again: Tika +64 methods
  * (312,788 -> 312,852), Hive +27 (404,016 -> 404,043), Kotlin compiler unchanged; nodes, edges and
- * call sites are unchanged (`docs/declared-types-corpus-identity-audit.md`).
+ * call sites are unchanged (`docs/declared-types-corpus-identity-audit.md`). Methods are then keyed
+ * by their complete identity (`MethodDescriptor.identity`, the signature plus the return type), so a
+ * bridge is counted beside the covariant override it delegates to instead of replacing it: Tika
+ * +5,133 (312,852 -> 317,985), Hive +48,464 (404,043 -> 452,507), Kotlin compiler +14,959
+ * (249,669 -> 264,628); nodes, edges and call sites are unchanged again (Attempt311).
  */
 internal object LargeCorpusBaselines {
     // Add only independently reviewed exact product-identity/corpus expectations here.
@@ -150,7 +154,7 @@ internal object LargeCorpusBaselines {
         nodeCount = 3_901_103,
         sourceEdgeCount = 4_510_016,
         persistedEdgeCount = 4_353_588,
-        methodCount = 312_852,
+        methodCount = 317_985,
         callSiteCount = 1_006_172,
         maxPipelineMillis = 120_000
     )
@@ -164,7 +168,7 @@ internal object LargeCorpusBaselines {
         nodeCount = 5_992_914,
         sourceEdgeCount = 6_597_267,
         persistedEdgeCount = 6_376_682,
-        methodCount = 404_043,
+        methodCount = 452_507,
         callSiteCount = 1_443_886,
         maxPipelineMillis = 180_000
     )
@@ -178,7 +182,7 @@ internal object LargeCorpusBaselines {
         nodeCount = 3_292_214,
         sourceEdgeCount = 3_906_617,
         persistedEdgeCount = 3_785_858,
-        methodCount = 249_669,
+        methodCount = 264_628,
         callSiteCount = 922_876,
         maxPipelineMillis = 120_000
     )

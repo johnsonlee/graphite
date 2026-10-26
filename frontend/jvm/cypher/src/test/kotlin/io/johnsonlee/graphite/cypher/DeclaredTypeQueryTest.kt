@@ -124,6 +124,40 @@ class DeclaredTypeQueryTest {
     }
 
     @Test
+    fun `a bridge beside its covariant override is a second Method row with its own declaration`() {
+        val bridge = method.copy(returnType = TypeDescriptor("java.lang.Object"))
+        assertEquals(method.signature, bridge.signature)
+        val declared = graph("java.lang.String").declaredTypes()
+        val bridgeKey = MemberTypeKey(owner.className, bridge.name, bridge.descriptor)
+        val both = DefaultGraph.Builder().apply {
+            addMethod(method)
+            addMethod(bridge)
+            setDeclaredTypes(declared.copy(methods = declared.methods + (bridgeKey to MethodTypes(listOf(1), 2))))
+        }.build()
+        assertEquals(2L, both.methodCount())
+        val rows = CypherExecutor(both).execute(
+            "MATCH (m:Method) RETURN m.return_type AS erased, m.generic_return_type AS declared, " +
+                "m.generic_parameter_types AS params ORDER BY erased"
+        ).rows
+        val parameters = listOf("java.util.List<java.lang.String>")
+        assertEquals(
+            listOf(
+                mapOf("erased" to "java.lang.Object", "declared" to "java.lang.Object", "params" to parameters),
+                mapOf("erased" to "java.util.List", "declared" to "java.util.List<java.lang.String>", "params" to parameters)
+            ),
+            rows
+        )
+        // Without a row of its own the bridge is still its own method, with no declaration.
+        val undeclared = DefaultGraph.Builder().apply { addMethod(method); addMethod(bridge); setDeclaredTypes(declared) }.build()
+        assertEquals(
+            listOf(null, "java.util.List<java.lang.String>"),
+            CypherExecutor(undeclared).execute(
+                "MATCH (m:Method) RETURN m.return_type AS erased, m.generic_return_type AS t ORDER BY erased"
+            ).rows.map { it["t"] }
+        )
+    }
+
+    @Test
     fun `metadata text remains searchable when erased node index has no candidates`() {
         val delegate = graph("java.lang.String")
         val indexed = object : Graph by delegate, NodePropertyTextCandidates {

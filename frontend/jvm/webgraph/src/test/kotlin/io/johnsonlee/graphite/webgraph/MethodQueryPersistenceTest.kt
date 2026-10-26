@@ -7,10 +7,14 @@ import io.johnsonlee.graphite.cypher.CypherExecutionBudget
 import io.johnsonlee.graphite.cypher.CypherExecutionContext
 import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.cypher.CypherQueryCancelledException
+import io.johnsonlee.graphite.graph.DeclaredType
+import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodMetadataScanConsumer
 import io.johnsonlee.graphite.graph.MethodPattern
+import io.johnsonlee.graphite.graph.MethodTypes
 import java.nio.file.Files
 import java.util.concurrent.CancellationException
 import java.util.regex.Pattern
@@ -50,6 +54,55 @@ class MethodQueryPersistenceTest {
                     assertEquals("load", result.rows.single()["m.name"])
                     assertEquals(listOf("java.lang.String"), result.rows.single()["m.parameter_types"])
                     assertEquals("java.lang.Object", result.rows.single()["m.return_type"])
+                } finally {
+                    (loaded as? AutoCloseable)?.close()
+                }
+            }
+        } finally {
+            directory.toFile().deleteRecursively()
+        }
+    }
+
+    @Test
+    fun `a bridge and its covariant override survive the save as two methods with their own declarations`() {
+        val owner = TypeDescriptor("com.example.Covariant")
+        val list = TypeDescriptor("java.util.List")
+        val override = MethodDescriptor(owner, "load", listOf(TypeDescriptor("java.lang.String")), list)
+        val bridge = override.copy(returnType = TypeDescriptor("java.lang.Object"))
+        assertEquals(override.signature, bridge.signature)
+        val table = DeclaredTypeTable(
+            listOf(
+                DeclaredType("class", "java.lang.String"),
+                DeclaredType("class", "java.util.List", arguments = listOf(0)),
+                DeclaredType("class", "java.lang.Object")
+            ),
+            emptyMap(),
+            mapOf(
+                MemberTypeKey(owner.className, "load", override.descriptor) to MethodTypes(listOf(0), 1),
+                MemberTypeKey(owner.className, "load", bridge.descriptor) to MethodTypes(listOf(0), 2)
+            ),
+            emptyMap()
+        )
+        val graph = DefaultGraph.Builder().apply { addMethod(override); addMethod(bridge); setDeclaredTypes(table) }.build()
+        val directory = Files.createTempDirectory("covariant-persistence")
+        try {
+            GraphStore.save(graph, directory)
+            listOf<() -> Graph>({ GraphStore.load(directory) }, { GraphStore.loadMapped(directory) }).forEach { load ->
+                val loaded = load()
+                try {
+                    assertEquals(2L, loaded.methodCount())
+                    assertEquals(setOf(override, bridge), loaded.methods(MethodPattern(name = "load")).toSet())
+                    val rows = CypherExecutor(loaded).execute(
+                        "MATCH (m:Method) RETURN m.return_type AS erased, m.generic_return_type AS declared, " +
+                            "m.generic_return_type IS NOT NULL AS present ORDER BY erased"
+                    ).rows
+                    assertEquals(
+                        listOf(
+                            mapOf("erased" to "java.lang.Object", "declared" to "java.lang.Object", "present" to true),
+                            mapOf("erased" to "java.util.List", "declared" to "java.util.List<java.lang.String>", "present" to true)
+                        ),
+                        rows
+                    )
                 } finally {
                     (loaded as? AutoCloseable)?.close()
                 }

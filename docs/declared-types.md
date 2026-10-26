@@ -78,7 +78,10 @@ the main node/edge format. Old graphs load without it; rebuild from the original
 JAR to obtain declaration metadata. New saves preserve the table, or remove an
 obsolete table when the source graph has no declaration metadata. Native container
 packing includes the file. The authoritative `forward.properties` file contains
-`graphite.declaredTypes.sha256`, the SHA-256 digest of the complete `graph.types` file.
+`graphite.declaredTypes.sha256`, the SHA-256 digest of the complete `graph.types` file, and
+`graphite.nodeLayout.sha256`, the SHA-256 digest of `graph.nodedata` as the save wrote it; the
+sidecars indexed by node id (`graph.declared-keys`, `graph.declared-presence`) carry both and
+are read only when they name this directory's values (see `webgraph-storage.md`).
 Readers require a matching table when this key is present. Without the key, readers
 treat the graph as legacy and ignore any orphan table. Rewriting a graph with an older
 writer therefore cannot accidentally reuse stale generic declarations, even when its

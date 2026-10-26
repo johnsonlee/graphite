@@ -338,6 +338,30 @@ impl DeclaredTypes {
         }
     }
     fn binding(source: &GraphSource) -> Result<Option<String>, TypeError> {
+        Self::property(source, "graphite.declaredTypes.sha256", "type")
+    }
+
+    /// The SHA-256 of `graph.nodedata` the save recorded in `forward.properties`: the identity of
+    /// which node sits at which node id. A sidecar indexed by node id (`graph.declared-keys`) names
+    /// it, and is read only when it names this directory's; the node data itself is not hashed
+    /// to check it, the value the save wrote beside the nodes is compared. `None` for a graph
+    /// written before the binding existed, which then has no such sidecar to accept.
+    pub fn node_layout_binding(source: &GraphSource) -> Result<Option<[u8; 32]>, TypeError> {
+        let Some(binding) = Self::property(source, "graphite.nodeLayout.sha256", "node layout")?
+        else {
+            return Ok(None);
+        };
+        let mut digest = [0u8; 32];
+        for (i, byte) in digest.iter_mut().enumerate() {
+            *byte = u8::from_str_radix(&binding[2 * i..2 * i + 2], 16)
+                .map_err(|_| TypeError("invalid forward.properties node layout binding".into()))?;
+        }
+        Ok(Some(digest))
+    }
+
+    /// A 64-hex-digit binding `key` records in `forward.properties`, or `None` when the file does
+    /// not have it; a value of another shape is an error.
+    fn property(source: &GraphSource, key: &str, what: &str) -> Result<Option<String>, TypeError> {
         // This declaration is authoritative: older BVGraph writers replace
         // forward.properties, so an orphaned table cannot survive their saves.
         let properties = source
@@ -350,8 +374,8 @@ impl DeclaredTypes {
             if line.starts_with('#') || line.starts_with('!') {
                 continue;
             }
-            if let Some((key, value)) = line.split_once('=').or_else(|| line.split_once(':')) {
-                if key.trim() == "graphite.declaredTypes.sha256" {
+            if let Some((name, value)) = line.split_once('=').or_else(|| line.split_once(':')) {
+                if name.trim() == key {
                     binding = Some(value.trim());
                 }
             }
@@ -360,7 +384,9 @@ impl DeclaredTypes {
             return Ok(None);
         };
         if binding.len() != 64 || !binding.bytes().all(|b| b.is_ascii_hexdigit()) {
-            return Err(TypeError("invalid forward.properties type binding".into()));
+            return Err(TypeError(format!(
+                "invalid forward.properties {what} binding"
+            )));
         }
         Ok(Some(binding.to_owned()))
     }

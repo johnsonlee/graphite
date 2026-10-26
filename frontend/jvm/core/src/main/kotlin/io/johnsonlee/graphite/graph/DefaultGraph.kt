@@ -15,6 +15,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
+import java.util.Collections
 import java.util.concurrent.ConcurrentHashMap
 
 /**
@@ -192,7 +193,9 @@ class DefaultGraph private constructor(
         private val nodes = Int2ObjectOpenHashMap<Node>()
         private val outgoing = Int2ObjectOpenHashMap<MutableList<Edge>>()
         private val incoming = Int2ObjectOpenHashMap<MutableList<Edge>>()
-        private val methods = ConcurrentHashMap<String, MethodDescriptor>()
+        // Insertion order, as MmapGraphBuilder keeps it: the saved metadata, the mapped method index
+        // and every Method scan follow this order, and a hash order of the key moved with the key.
+        private val methods: MutableMap<String, MethodDescriptor> = Collections.synchronizedMap(LinkedHashMap())
         private val typeHierarchyBuilder = TypeHierarchy.Builder()
         private val enumValues = ConcurrentHashMap<String, List<Any?>>()
         private val classOrigins = ConcurrentHashMap<String, String>()
@@ -224,7 +227,7 @@ class DefaultGraph private constructor(
         }
 
         override fun addMethod(method: MethodDescriptor): FullGraphBuilder {
-            methods[method.signature] = method
+            methods[method.identity] = method
             return this
         }
 

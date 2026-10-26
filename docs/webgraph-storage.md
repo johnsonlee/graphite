@@ -22,8 +22,8 @@ graph-dir/
 ├── graph.callsite-string-content.identity SHA-256 identity binding CallSite fields to node offsets
 ├── graph.branchdefs   Optional branch-side local definitions, bound to graph.metadata by its trailer
 ├── graph.callsite-ordinals Optional call-site ordinals/origins, bound to graph.metadata
-├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types by its SHA-256
-├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types
+├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
+├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
@@ -113,7 +113,9 @@ text and bytes and does not reference `graph.strings` or store Node IDs.
 
 ```mermaid
 flowchart TB
-    P["forward.properties<br/>authoritative declared-type binding"]
+    P["forward.properties<br/>authoritative declared-type and node-layout bindings"]
+    K["graph.declared-keys<br/>declared-key partitions per node kind"]
+    R["graph.declared-presence<br/>presence bit per node id, shape byte per method"]
     T["graph.types<br/>type expressions + field/method/class bindings"]
     M["graph.metadata"]
     N["graph.nodedata"]
@@ -125,6 +127,11 @@ flowchart TB
     I["graph.callsite-string-index<br/>optional CSR/trigram query index"]
 
     P -.->|"SHA-256 of complete type file"| T
+    P -.->|"SHA-256 of complete graph.nodedata (node layout)"| N
+    K -.->|"copies of both bindings; own SHA-256 trailer"| P
+    R -.->|"copies of both bindings; own SHA-256 trailer"| P
+    K -->|"first Node ID and count per partition"| N
+    R -->|"bit per Node ID; byte per method-index position"| N
     T -.->|"embedded SHA-256 of complete metadata file"| M
     T -->|"table-local type IDs: arguments, owner, component, bindings"| T
     T -->|"scope: class or method declaration row ID"| T
@@ -198,15 +205,26 @@ identity, CallSite count, and each CallSite's Node ID, byte offset and four inde
 The other sidecars have their own policies described below. On the JVM, an unusable query
 index falls back to raw scanning and unusable branch definitions fall back to empty lists.
 Rust rejects an incompatible present query index and ignores branch-definition semantics.
-Unavailable call-site ordinals read as null. The two declared-type sidecars carry the SHA-256
-of `graph.types` in their headers: one naming another table reads as absent, and the reader
-answers from the table instead. `graph.declared-keys` is the native reader's declared-key
-summary. `graph.declared-presence` (JVM reader) holds one bit per node id, set when the Field,
-Parameter or Return node has a row, and one byte per method of the method index (0 without a
-row, else 1 + the presence flags), followed by the SHA-256 of the file's own bytes, verified on
-first use; a file that no longer hashes is a load error for the presence question, never a
-different answer. The ordinal index also contains hashes for its
-entry blocks; the diagram shows the file-level binding rather than those internal blocks.
+Unavailable call-site ordinals read as null. The two declared-type sidecars are indexed by node
+id, so they are bound to two things the save records in `forward.properties`: the SHA-256 of
+`graph.types` (`graphite.declaredTypes.sha256`, which the load verifies against the file) and the
+SHA-256 of `graph.nodedata` as the save wrote it (`graphite.nodeLayout.sha256`, the node layout:
+which node, with which members, sits at which id; compared, never recomputed, by either reader).
+Each sidecar carries a copy of both digests in its header and ends with the SHA-256 of its own
+bytes. A sidecar naming another table or another node layout reads as absent, so two graphs with
+one table and different node ids never accept each other's; `graph.types` binds `graph.metadata`
+and `graph.strings` but not the node data, which is why the layout binding exists at all.
+`graph.declared-keys` is the native reader's declared-key summary: refused when it does not
+hash, when a tag's two partitions do not add up to that tag's node count or a partition's first
+id is not a node of the tag (checked at load against the type index), or when its member counts
+are not the table's (checked when the table is read); in every such case the reader computes
+the partitions from the table and the nodes. `graph.declared-presence` (JVM reader) holds one bit
+per node id, set when the Field, Parameter or Return node has a row, and one byte per method of
+the method index (0 without a row, else 1 + the presence flags); it must cover exactly the node
+id capacity and the method count of the graph it is read beside, and a bound file that no longer
+hashes or does not is a load error for the presence question, never a different answer. The
+ordinal index also contains hashes for its entry blocks; the diagram shows the file-level binding
+rather than those internal blocks.
 
 ## Binary Format
 

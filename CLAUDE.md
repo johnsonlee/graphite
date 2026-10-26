@@ -618,6 +618,20 @@ the answer (`graph.declared-presence`: a bit per node id, a shape byte per metho
 (Attempt310). When a feature adds a per-node question to a hot scan, measure it against a base
 that never asks it, and put the work where the saver already has the answer.
 
+### A Sidecar Indexed by Node Id Binds to the Node Layout
+
+`graph.types` binds `graph.metadata` and `graph.strings`, not `graph.nodedata`, so a sidecar
+that answers per node id (`graph.declared-presence`, `graph.declared-keys`) and was bound to the
+table digest alone would accept the same table's sidecar from a graph whose nodes are numbered
+differently, and a wrong `ABSENT` bit answers `IS NOT NULL` without consulting the table
+(review of #174, Attempt311). The save now hashes the node data as it writes it and records
+`graphite.nodeLayout.sha256` in `forward.properties`; each such sidecar carries both digests and
+its own trailer, readers compare the bindings and never hash the node data, and the native reader
+also checks a summary's partitions against the type index and the table's counts before it skips
+a scan on them. Ask of every sidecar: which file's bytes does each of its answers depend on, and
+is every one of them in the binding? Likewise `MethodDescriptor.signature` has no return type:
+anything keyed by it collapses a bridge onto its covariant override (`identity` is the full key).
+
 ### Node Order Must Not Depend on Identity Hashes
 
 SootUp's `resolveFields()` returns a `HashSet` of `JavaSootField` without a `hashCode`, so it iterates

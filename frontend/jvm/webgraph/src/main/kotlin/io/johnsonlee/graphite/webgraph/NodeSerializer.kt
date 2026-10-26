@@ -954,7 +954,7 @@ internal object NodeSerializer {
         val methods = mutableMapOf<String, MethodDescriptor>()
         repeat(methodCount) {
             val md = readMethodDescriptor(dis, strings)
-            methods[md.signature] = md
+            methods[md.identity] = md
         }
 
         // Type hierarchy: supertypes

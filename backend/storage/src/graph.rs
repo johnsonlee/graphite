@@ -340,16 +340,19 @@ impl Graph {
             })
             .unwrap_or_default();
 
-        // The key summary is read only against the digest the binding check just verified: a
-        // sidecar left beside a rewritten table (or copied under another graph) names a digest
-        // the table no longer has, and is read as absent, as the ordinal sidecar is.
+        // The key summary is read only against the table digest the binding check just verified
+        // and the node layout digest the save recorded beside the nodes: a sidecar left beside a
+        // rewritten table, or copied under another graph with the same table and other node ids,
+        // names a digest the directory no longer has, and is read as absent, as the ordinal
+        // sidecar is. Its own trailing digest refuses a parsable bit flip.
         let types_digest = crate::types::DeclaredTypes::bound_digest(&src)?;
-        let declared_keys = match types_digest {
-            Some(digest) => src
+        let layout_digest = crate::types::DeclaredTypes::node_layout_binding(&src)?;
+        let declared_keys = match (types_digest, layout_digest) {
+            (Some(types), Some(layout)) => src
                 .bytes("graph.declared-keys")
                 .map_err(io)?
-                .and_then(|bytes| DeclaredKeySummary::parse(&bytes, &digest)),
-            None => None,
+                .and_then(|bytes| DeclaredKeySummary::parse(&bytes, &types, &layout)),
+            _ => None,
         };
         let mut graph = Graph {
             dir,
@@ -375,6 +378,14 @@ impl Graph {
                 .map(|_| std::sync::OnceLock::new())
                 .collect(),
         };
+        // A summary that is bound but does not describe these nodes (a partition count that is
+        // not the tag's node count, a first id no node of the tag has) is refused, and the
+        // partitions are computed from the table and the nodes when first asked.
+        if let Some(summary) = graph.declared_keys {
+            if !graph.summary_describes_nodes(&summary) {
+                graph.declared_keys = None;
+            }
+        }
         if graph.call_site_index.is_none() && graph.count_by_tag(TAG_CALL_SITE_NODE) > 0 {
             // No persisted index: build the same structure in memory, as the Kotlin
             // server does for a graph written before the index existed.
@@ -525,6 +536,36 @@ impl Graph {
     /// Whether the load bound a persisted key summary to this graph's table.
     pub fn has_persisted_declared_keys(&self) -> bool {
         self.declared_keys.is_some()
+    }
+
+    /// Whether `summary` is consistent with this graph's nodes: for every tag it covers, the ids
+    /// of that tag are ascending (the only case the writer summarizes), the two partitions add
+    /// up to exactly that tag's node count, and each non-empty partition's first id is a node of
+    /// the tag (an empty one records 0). The table's own counts are checked when it is read
+    /// ([`DeclaredState::read`]).
+    fn summary_describes_nodes(&self, summary: &DeclaredKeySummary) -> bool {
+        use crate::node::{TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE};
+        [TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE]
+            .into_iter()
+            .zip(&summary.partitions)
+            .all(|(tag, partitions)| {
+                let Some(partitions) = partitions else {
+                    return true;
+                };
+                let ids = self.ids_by_tag(tag);
+                if ids.windows(2).any(|pair| pair[0] >= pair[1]) {
+                    return false;
+                }
+                let total = partitions[0].count.checked_add(partitions[1].count);
+                total == Some(ids.len())
+                    && partitions.iter().all(|partition| {
+                        if partition.count == 0 {
+                            partition.first == 0
+                        } else {
+                            ids.binary_search(&partition.first).is_ok()
+                        }
+                    })
+            })
     }
 
     /// Test and audit hook: the partitions recomputed from the table and the nodes, ignoring any
@@ -934,19 +975,22 @@ impl Graph {
 
 /// Header of the `graph.declared-keys` sidecar: "GDK" and the format version.
 pub const MAGIC_DECLARED_KEYS: u32 = 0x4744_4B00;
-const DECLARED_KEYS_VERSION: u32 = 1;
+const DECLARED_KEYS_VERSION: u32 = 2;
 
 /// The `graph.declared-keys` sidecar: what [`Graph::compute_declared_key_partitions`] computes
 /// from the table and the nodes, written by the Kotlin saver in the same pass that writes the
-/// nodes. Layout, big-endian: `u32 header = "GDK" | 1`, the 32-byte SHA-256 of `graph.types`
-/// (the digest `forward.properties` binds, which the load verifies anyway), `i64 fieldCount`,
+/// nodes. Layout, big-endian: `u32 header = "GDK" | 2`, the 32-byte SHA-256 of `graph.types`
+/// (the digest `forward.properties` binds, which the load verifies anyway), the 32-byte SHA-256
+/// of `graph.nodedata` (the node layout `forward.properties` binds: the partitions name node
+/// ids, so another graph's summary over the same table must not be accepted), `i64 fieldCount`,
 /// `i64 methodCount`, then for Field, Parameter and Return in turn `u8 present` and, when 1,
-/// `u32 first, i64 count` for the unbound partition and again for the bound one. Nothing else:
-/// a file of another length is refused. Without it, the first `keys()` over a fresh graph read
-/// and parsed every table and walked every declaration-bearing node of all 64 graphs before it
-/// could answer (3.8 s on the hosted runner, Attempt301); with it, the planner's questions are
-/// answered from under 130 bytes and the table is read only by a query that needs a declared
-/// type's value.
+/// `u32 first, i64 count` for the unbound partition and again for the bound one, then the
+/// SHA-256 of every byte before it. Nothing else: a file of another length, or one that does not
+/// hash, is refused, and the reader computes the partitions itself. Without it, the first
+/// `keys()` over a fresh graph read and parsed every table and walked every declaration-bearing
+/// node of all 64 graphs before it could answer (3.8 s on the hosted runner, Attempt301); with
+/// it, the planner's questions are answered from under 200 bytes and the table is read only by
+/// a query that needs a declared type's value.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DeclaredKeySummary {
     pub field_count: usize,
@@ -955,13 +999,25 @@ pub struct DeclaredKeySummary {
 }
 
 impl DeclaredKeySummary {
-    /// The summary in `bytes` when it is well-formed and names `types_digest`; `None` otherwise.
-    pub fn parse(bytes: &[u8], types_digest: &[u8; 32]) -> Option<Self> {
-        let mut c = Cursor::new(bytes);
+    /// The summary in `bytes` when it is well-formed, hashes, and names `types_digest` and
+    /// `layout_digest`; `None` otherwise.
+    pub fn parse(bytes: &[u8], types_digest: &[u8; 32], layout_digest: &[u8; 32]) -> Option<Self> {
+        use sha2::Digest;
+        if bytes.len() < 32 {
+            return None;
+        }
+        let (payload, trailer) = bytes.split_at(bytes.len() - 32);
+        if sha2::Sha256::digest(payload).as_slice() != trailer {
+            return None;
+        }
+        let mut c = Cursor::new(payload);
         if c.u32().ok()? != MAGIC_DECLARED_KEYS | DECLARED_KEYS_VERSION {
             return None;
         }
         if c.bytes(32).ok()? != types_digest {
+            return None;
+        }
+        if c.bytes(32).ok()? != layout_digest {
             return None;
         }
         let count = |c: &mut Cursor<'_>| usize::try_from(c.i64().ok()?).ok();
@@ -1008,9 +1064,15 @@ impl DeclaredState {
             .map_err(|error| crate::types::TypeError(error.to_string()))?;
         let table = crate::types::DeclaredTypes::load_bound(&src, &graph.strings)?;
         // The writer's summary is the same function of the table and the nodes; a table that
-        // reads at all keeps it rather than walking every declaration-bearing node again.
+        // reads at all and has the member counts the summary names keeps it rather than walking
+        // every declaration-bearing node again. Other counts mean another table: recompute.
         let partitions = match (&graph.declared_keys, &table) {
-            (Some(summary), Some(_)) => summary.partitions,
+            (Some(summary), Some(table))
+                if summary.field_count == table.field_count()
+                    && summary.method_count == table.method_count() =>
+            {
+                summary.partitions
+            }
             _ => graph.compute_declared_key_partitions(table.as_ref()),
         };
         Ok(Self { table, partitions })
@@ -1299,11 +1361,31 @@ mod declared_key_tests {
         eprintln!("dual Java GTY01/GTY02 directory+packed complete partitions, partial bindings and legacy mutation PASS");
     }
 
-    fn encode_summary(digest: &[u8; 32], summary: &DeclaredKeySummary) -> Vec<u8> {
+    fn encode_summary(
+        digest: &[u8; 32],
+        layout: &[u8; 32],
+        summary: &DeclaredKeySummary,
+    ) -> Vec<u8> {
+        let mut bytes = encode_summary_payload(digest, layout, summary);
+        bytes.extend(sign_summary(&bytes));
+        bytes
+    }
+
+    fn sign_summary(payload: &[u8]) -> [u8; 32] {
+        use sha2::Digest;
+        sha2::Sha256::digest(payload).into()
+    }
+
+    fn encode_summary_payload(
+        digest: &[u8; 32],
+        layout: &[u8; 32],
+        summary: &DeclaredKeySummary,
+    ) -> Vec<u8> {
         let mut bytes = (MAGIC_DECLARED_KEYS | DECLARED_KEYS_VERSION)
             .to_be_bytes()
             .to_vec();
         bytes.extend_from_slice(digest);
+        bytes.extend_from_slice(layout);
         bytes.extend((summary.field_count as i64).to_be_bytes());
         bytes.extend((summary.method_count as i64).to_be_bytes());
         for slot in &summary.partitions {
@@ -1324,6 +1406,7 @@ mod declared_key_tests {
     #[test]
     fn persisted_key_summary_parses_exactly_and_refuses_every_other_shape() {
         let digest = [7u8; 32];
+        let layout = [9u8; 32];
         let summary = DeclaredKeySummary {
             field_count: 3,
             method_count: 0,
@@ -1336,47 +1419,80 @@ mod declared_key_tests {
                 Some([DeclaredKeyPartition::default(); 2]),
             ],
         };
-        let bytes = encode_summary(&digest, &summary);
-        assert_eq!(DeclaredKeySummary::parse(&bytes, &digest), Some(summary));
+        let bytes = encode_summary(&digest, &layout, &summary);
         assert_eq!(
-            DeclaredKeySummary::parse(&bytes, &[8u8; 32]),
+            DeclaredKeySummary::parse(&bytes, &digest, &layout),
+            Some(summary)
+        );
+        assert_eq!(
+            DeclaredKeySummary::parse(&bytes, &[8u8; 32], &layout),
             None,
             "another table"
         );
         assert_eq!(
-            DeclaredKeySummary::parse(&bytes[..bytes.len() - 1], &digest),
+            DeclaredKeySummary::parse(&bytes, &digest, &[8u8; 32]),
+            None,
+            "another node layout: the same table over other node ids"
+        );
+        assert_eq!(
+            DeclaredKeySummary::parse(&bytes[..bytes.len() - 1], &digest, &layout),
             None,
             "cut short"
         );
         let mut trailing = bytes.clone();
         trailing.push(0);
         assert_eq!(
-            DeclaredKeySummary::parse(&trailing, &digest),
+            DeclaredKeySummary::parse(&trailing, &digest, &layout),
             None,
             "trailing bytes"
         );
-        let mut other_version = bytes.clone();
-        other_version[3] = 2;
+        let mut flipped = bytes.clone();
+        flipped[4 + 64 + 16 + 1] ^= 1;
         assert_eq!(
-            DeclaredKeySummary::parse(&other_version, &digest),
+            DeclaredKeySummary::parse(&flipped, &digest, &layout),
+            None,
+            "a parsable bit flip no longer hashes"
+        );
+        // Every other refusal is of a signed payload, so the shape itself is what is refused.
+        let resign = |mut payload: Vec<u8>| {
+            let trailer = sign_summary(&payload);
+            payload.extend(trailer);
+            payload
+        };
+        let mut other_version = encode_summary_payload(&digest, &layout, &summary);
+        other_version[3] = 3;
+        assert_eq!(
+            DeclaredKeySummary::parse(&resign(other_version), &digest, &layout),
             None,
             "unknown version"
         );
-        let mut flag = bytes.clone();
-        flag[4 + 32 + 16] = 2;
+        let mut older_version = encode_summary_payload(&digest, &layout, &summary);
+        older_version[3] = 1;
         assert_eq!(
-            DeclaredKeySummary::parse(&flag, &digest),
+            DeclaredKeySummary::parse(&resign(older_version), &digest, &layout),
+            None,
+            "the unbound version 1 layout is not read"
+        );
+        let mut flag = encode_summary_payload(&digest, &layout, &summary);
+        flag[4 + 64 + 16] = 2;
+        assert_eq!(
+            DeclaredKeySummary::parse(&resign(flag), &digest, &layout),
             None,
             "presence flag must be 0 or 1"
         );
-        let mut negative = bytes.clone();
-        negative[4 + 32] = 0xff;
+        let mut negative = encode_summary_payload(&digest, &layout, &summary);
+        negative[4 + 64] = 0xff;
         assert_eq!(
-            DeclaredKeySummary::parse(&negative, &digest),
+            DeclaredKeySummary::parse(&resign(negative), &digest, &layout),
             None,
             "negative count"
         );
-        assert_eq!(DeclaredKeySummary::parse(&[], &digest), None);
+        assert_eq!(DeclaredKeySummary::parse(&[], &digest, &layout), None);
+        assert_eq!(
+            DeclaredKeySummary::parse(&sign_summary(&[]), &digest, &layout),
+            None,
+            "a trailer alone"
+        );
     }
 
     #[test]
@@ -1426,7 +1542,14 @@ mod declared_key_tests {
             }
         }
         let sidecar = root.join("graph.declared-keys");
-        let mut bytes = std::fs::read(&sidecar).unwrap();
+        let original = std::fs::read(&sidecar).unwrap();
+        let payload = &original[..original.len() - 32];
+        assert_eq!(
+            sign_summary(payload).as_slice(),
+            &original[original.len() - 32..],
+            "the writer signs the summary"
+        );
+        let mut bytes = original.clone();
         bytes[4] ^= 1;
         std::fs::write(&sidecar, &bytes).unwrap();
         let stale = Graph::load(&root).unwrap();
@@ -1436,6 +1559,65 @@ mod declared_key_tests {
             stale.declared.get().is_some(),
             "without a summary the table is read"
         );
+        drop(stale);
+        // A sidecar of another node layout, re-signed so only the binding differs, is not read.
+        let mut other_layout = payload.to_vec();
+        other_layout[4 + 32] ^= 1;
+        let trailer = sign_summary(&other_layout);
+        other_layout.extend(trailer);
+        std::fs::write(&sidecar, &other_layout).unwrap();
+        let foreign = Graph::load(&root).unwrap();
+        assert!(!foreign.has_persisted_declared_keys());
+        assert_eq!(partitions(&foreign), computed);
+        drop(foreign);
+        // A signed and bound summary whose Field partitions do not add up to the Field nodes is
+        // refused at load, and the partitions are computed instead.
+        let mut miscounted = payload.to_vec();
+        assert_eq!(
+            miscounted[4 + 64 + 16],
+            1,
+            "the fixture summarizes Field nodes"
+        );
+        let count_at = 4 + 64 + 16 + 1 + 4;
+        let count = i64::from_be_bytes(miscounted[count_at..count_at + 8].try_into().unwrap());
+        miscounted[count_at..count_at + 8].copy_from_slice(&(count + 1).to_be_bytes());
+        let trailer = sign_summary(&miscounted);
+        miscounted.extend(trailer);
+        std::fs::write(&sidecar, &miscounted).unwrap();
+        let miscounted = Graph::load(&root).unwrap();
+        assert!(!miscounted.has_persisted_declared_keys());
+        assert_eq!(partitions(&miscounted), computed);
+        drop(miscounted);
+        // A first id no Field node has is refused the same way.
+        let mut misplaced = payload.to_vec();
+        let first_at = 4 + 64 + 16 + 1;
+        misplaced[first_at..first_at + 4].copy_from_slice(&u32::MAX.to_be_bytes());
+        let trailer = sign_summary(&misplaced);
+        misplaced.extend(trailer);
+        std::fs::write(&sidecar, &misplaced).unwrap();
+        let misplaced = Graph::load(&root).unwrap();
+        assert!(!misplaced.has_persisted_declared_keys());
+        assert_eq!(partitions(&misplaced), computed);
+        drop(misplaced);
+        // Without the node layout binding in forward.properties no summary is accepted at all.
+        std::fs::write(&sidecar, &original).unwrap();
+        let properties = std::fs::read_to_string(root.join("forward.properties")).unwrap();
+        let without: String = properties
+            .lines()
+            .filter(|line| !line.starts_with("graphite.nodeLayout.sha256="))
+            .map(|line| format!("{line}\n"))
+            .collect();
+        assert_ne!(
+            without, properties,
+            "the save records the node layout binding"
+        );
+        std::fs::write(root.join("forward.properties"), without).unwrap();
+        let unbound = Graph::load(&root).unwrap();
+        assert!(!unbound.has_persisted_declared_keys());
+        assert_eq!(partitions(&unbound), computed);
+        drop(unbound);
+        std::fs::write(root.join("forward.properties"), properties).unwrap();
+        assert!(Graph::load(&root).unwrap().has_persisted_declared_keys());
         std::fs::remove_dir_all(root).unwrap();
     }
 

@@ -21964,3 +21964,63 @@ within it in the previous run, as the three over it there are within it here, an
 today swings same-answer cases by −64% to +59% between runs. Every differing case's answers contain
 main's (`jvm_query_ab_answers.py`). The full table is in the PR body.
 
+
+## Attempt311: review fixes, the sidecars bind to the node layout and a bridge is its own method
+
+**Findings (review of PR #174 on e3f6470, 2026-10-25).** Three correctness findings, none visible
+in a measurement:
+
+1. `graph.declared-presence` (Attempt310) is indexed by node id but was accepted on the
+   `graph.types` digest alone, and `graph.types` binds `graph.metadata` and `graph.strings`, not
+   the node data. Two graphs with one type table and different Field/Parameter/Return node ids
+   (the same classes, numbered differently) would accept each other's bits, and a wrong `ABSENT`
+   answers `IS NULL`/`IS NOT NULL` without consulting the table.
+2. `graph.declared-keys` (Attempt301) had the same binding gap, no digest of its own payload
+   (a parsable bit flip was read as another partition), and its `first`/`count` were trusted
+   blindly: the planner then skipped the node scan on wrong partitions.
+3. `MethodDescriptor.signature` has no return type, and `DefaultGraph.Builder`, `MmapGraphBuilder`
+   and the metadata loader keyed their method maps by it, so a bridge and its covariant override
+   collapsed into one `Method` row; the bridge return identity the table preserves was lost at
+   the query layer.
+
+**Change.** The save hashes `graph.nodedata` as it writes it (a `DigestOutputStream` on the
+node stream, no re-read) and records the digest in `forward.properties` as
+`graphite.nodeLayout.sha256` beside the table binding (`ForwardProperties`). Both sidecars are
+version 2: header, table digest, node layout digest, payload, trailing SHA-256 of the file. A
+reader compares the two digests with the bindings and never hashes the node data: the binding
+says "written by the save that wrote these nodes", and an older writer that rewrites the
+directory drops the key, so a sidecar it leaves behind is absent. The JVM presence sidecar must
+also cover exactly the graph's node id capacity and method count (both already known to the
+mapped loader) or it throws as corruption. The native reader refuses a summary at load when a
+tag's two partitions do not add up to the tag's node count or a non-empty partition's first id
+is not a node of the tag (binary search in the sorted type index), and when the table is read it
+also requires the summary's field and method counts to be the table's; every refusal falls back
+to `compute_declared_key_partitions`. Methods are keyed by `MethodDescriptor.identity`
+(`a.B.name(Ljava/lang/String;)Z`, the signature plus the descriptor's return type) in the three
+maps, so a bridge and its override are two methods in `DefaultGraph`, `MmapGraph`, the saved
+metadata and both engines.
+
+**Cost.** One SHA-256 over `graph.nodedata` per save: `sha256sum` on this host (Xeon 2.1 GHz with
+SHA extensions) runs an 18 MB fixture64 shard in 0.01 s user; the whole-JAR corpora have at most
+a few hundred megabytes of node data, under half a second of the 400 s build. No read-side work:
+the bindings are string compares, the Rust consistency check is three binary searches, and the
+JVM count check is two int compares. The signed summary grows from under 130 to under 200 bytes.
+Whole-JAR corpus counts (`:webgraph:largeCorpusTest`, this host): methods Tika 312,852 -> 317,985
+(+5,133), Hive 404,043 -> 452,507 (+48,464), Kotlin compiler 249,669 -> 264,628 (+14,959); every
+method that was dropped shared its class, name and parameter types with another method and
+differed in return type, which only a bridge or a synthetic accessor can; nodes, edges and call
+sites are unchanged. The build and save times of the three corpora are within their usual spread
+(Hive build 67.8 s, save 20.6 s; Tika 38.7/15.3 s; Kotlin compiler 37.9/14.1 s). The CI
+report-only `real64-build-save` row is the remaining observation.
+
+**Tests.** `DeclaredKeySummaryTest`: two graphs with one table and swapped node ids share a
+table digest, differ in layout, and the second graph's presence sidecar under the first graph's
+directory reads as absent while the table still binds node 1 (accepted, it would have said node 1
+is undeclared); the saved sidecar's layout digest is the SHA-256 of `graph.nodedata` and the
+properties value; a table-less graph still records its layout. `MappedDeclaredTypeBindingTest`:
+another layout digest reads as absent, a count mismatch and a flipped bit throw, a missing
+layout binding accepts nothing. Rust: another layout, a re-signed miscount, a re-signed first id
+no node has, and a directory without the binding all read as absent and compute; a bit flip and
+every malformed shape are refused. `DefaultGraphTest`, `MmapGraphBuilderTest`,
+`DeclaredTypeQueryTest` and `MethodQueryPersistenceTest`: a bridge and its covariant override
+are two methods with their own `generic_return_type` in both builders, both loaders and Cypher.

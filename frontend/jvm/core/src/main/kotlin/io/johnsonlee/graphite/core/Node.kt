@@ -278,6 +278,13 @@ data class MethodDescriptor(
      * signature but never a descriptor.
      */
     val descriptor: String get() = jvmMethodDescriptor(parameterTypes.map { it.className }, returnType.className)
+
+    /**
+     * The complete method identity, `a.B.name(Ljava/lang/String;)Z`: [signature] plus the return
+     * type [descriptor] carries. A graph indexes its methods by this, so a bridge and the
+     * covariant override it delegates to are two methods, not one.
+     */
+    val identity: String get() = "${declaringClass.className}.$name$descriptor"
 }
 
 /** The JVM descriptor of a method with these parameter and return type names, as the graph spells them. */

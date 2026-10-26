@@ -23,13 +23,11 @@ import java.security.DigestOutputStream
 import java.security.MessageDigest
 import java.util.AbstractMap.SimpleImmutableEntry
 import java.util.HexFormat
-import java.util.Properties
 
 /** Independent, versioned type-expression table; erased node records remain unchanged. */
 internal object DeclaredTypeStore {
     const val FILE_NAME = "graph.types"
-    internal const val BINDING_KEY = "graphite.declaredTypes.sha256"
-    private const val PROPERTIES_FILE = "forward.properties"
+    internal const val BINDING_KEY = ForwardProperties.DECLARED_TYPES_KEY
     private const val LEGACY_HEADER = 0x47545901 // GTY, inline UTF-8
     private const val HEADER = 0x47545902 // GTY, table-local string dictionary
     private const val SHARED_HEADER = 0x47545903 // GTY, graph.strings IDs
@@ -272,26 +270,10 @@ internal object DeclaredTypeStore {
         }
     }
 
-    internal fun readBinding(dir: Path): String? {
-        val path = dir.resolve(PROPERTIES_FILE)
-        if (!Files.exists(path)) return null
-        return Files.newInputStream(path).use { input ->
-            Properties().apply { load(input) }.getProperty(BINDING_KEY)
-        }
-    }
+    internal fun readBinding(dir: Path): String? = ForwardProperties.read(dir, BINDING_KEY)
 
     /** BVGraph rewrites this authoritative file even when an older writer leaves an orphan sidecar. */
-    private fun writeBinding(dir: Path, binding: String?) {
-        val path = dir.resolve(PROPERTIES_FILE)
-        val text = if (Files.exists(path)) Files.readString(path) else ""
-        val lines = text.lineSequence().filterNot { it.startsWith("$BINDING_KEY=") }.toList()
-        val original = lines.joinToString("\n").trimEnd('\n')
-        val content = buildString {
-            if (original.isNotEmpty()) append(original).append('\n')
-            if (binding != null) append(BINDING_KEY).append('=').append(binding).append('\n')
-        }
-        if (text != content) Files.writeString(path, content)
-    }
+    private fun writeBinding(dir: Path, binding: String?) = ForwardProperties.write(dir, mapOf(BINDING_KEY to binding))
 
     private fun DataOutputStream.text(value: String, strings: (String) -> Int) = writeInt(strings(value))
 

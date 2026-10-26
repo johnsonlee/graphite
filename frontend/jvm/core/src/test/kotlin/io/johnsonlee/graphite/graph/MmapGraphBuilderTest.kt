@@ -464,6 +464,16 @@ class MmapGraphBuilderTest {
     }
 
     @Test
+    fun `a bridge and its covariant override are two methods`() {
+        val override = makeMethod("com.example.Foo", "load", listOf("int")).copy(returnType = TypeDescriptor("java.lang.String"))
+        val bridge = override.copy(returnType = TypeDescriptor("java.lang.Object"))
+        assertEquals(bridge.signature, override.signature)
+        val graph = MmapGraphBuilder().addMethod(bridge).addMethod(override).addMethod(bridge).build()
+        assertEquals(2L, graph.methodCount())
+        assertEquals(setOf(bridge, override), graph.methods(MethodPattern(declaringClass = "com.example.Foo", name = "load")).toSet())
+    }
+
+    @Test
     fun `round-trip type hierarchy`() {
         val sub = TypeDescriptor("com.example.Bar")
         val sup = TypeDescriptor("com.example.Foo")

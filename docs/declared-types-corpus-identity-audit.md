@@ -231,6 +231,9 @@ The oracle joins actual materialized members by full owner/name/JVM descriptor;
 it does not equate declaration rows with live Method rows. A/B expose312,852,
 404,043 and249,669 Method rows respectively. Unbound FieldNodes remain5,744,
 14,309 and1,965; their rendered and structured declaration properties stay absent.
+(Later, Attempt311 keys the graph's methods by their complete identity, so a bridge is a
+Method row beside its covariant override instead of replacing it: 317,985, 452,507 and
+264,628 Method rows; nodes, edges and call sites unchanged.)
 All three servers terminate normally by SIGTERM with empty owned groups and no
 cleanup errors.
 
