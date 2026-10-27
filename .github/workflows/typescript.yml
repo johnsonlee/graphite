@@ -1,0 +1,51 @@
+name: TypeScript frontend
+
+on:
+  push:
+    branches: [ '*' ]
+  pull_request:
+    branches: [ '**' ]
+
+permissions:
+  contents: read
+
+jobs:
+  typescript:
+    name: typescript-build-save-query
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v7
+    - name: Setup Node
+      uses: actions/setup-node@v6
+      with:
+        node-version: '22'
+        cache: npm
+        cache-dependency-path: frontend/web/package-lock.json
+    - name: Install and test TypeScript frontend
+      working-directory: frontend/web
+      run: |
+        npm ci
+        npm test
+    - name: Setup Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Cache cargo
+      uses: Swatinem/rust-cache@v2
+    - name: Build CLI
+      run: cargo build --release --locked -p graphite-cli
+    - name: Real open-source build, save and query checks
+      run: >-
+        python3 .github/scripts/check-typescript-e2e.py
+        --output "${RUNNER_TEMP}/typescript-e2e"
+    - name: Preserve complete correctness evidence
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: typescript-e2e
+        path: |
+          ${{ runner.temp }}/typescript-e2e/*.json
+          ${{ runner.temp }}/typescript-e2e/*.stdout
+          ${{ runner.temp }}/typescript-e2e/*.stderr
+        if-no-files-found: warn
+        retention-days: 14

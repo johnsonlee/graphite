@@ -14,3 +14,5 @@ hashbrown = { version = "0.17.1", default-features = false }
 crc32fast = "1"
 rayon.workspace = true
 parking_lot.workspace = true
+serde.workspace = true
+serde_json.workspace = true
