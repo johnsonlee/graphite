@@ -12,6 +12,8 @@ import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 
+private const val CLASS_TYPE_KIND = "class"
+
 /** Declaration snapshots used while constructing the deduplicated type table. */
 internal data class ClassDeclarations(
     val name: String,
@@ -77,6 +79,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private val environments = HashMap<String, Map<String, String>>()
     private val boundsByVariable = HashMap<Pair<String, String>, List<Int>>()
 
+    @Suppress("CyclomaticComplexMethod") // Class, field and method declarations share one rollback-safe table.
     fun build(): DeclaredTypeTable {
         val fields = linkedMapOf<MemberTypeKey, Int>()
         val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
@@ -234,7 +237,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         expandedBytes.add(bytes)
         types.lastIndex
     }
-    private fun classType(name: String): Int = intern(DeclaredType("class", name))
+    private fun classType(name: String): Int = intern(DeclaredType(CLASS_TYPE_KIND, name))
 
     private fun classDescriptor(name: String): String = "L${name.replace('.', '/')};"
 
@@ -253,7 +256,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     ): String? {
         val type = types[id]
         return when (type.kind) {
-            "class" -> classDescriptor(type.name)
+            CLASS_TYPE_KIND -> classDescriptor(type.name)
             "primitive" -> primitiveDescriptors[type.name]
             "array" -> erasureDescriptor(requireNotNull(type.component), bounds, visiting)?.let { "[$it" }
             "variable" -> {
@@ -366,7 +369,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val segment = text.substring(start, position).replace('/', '.')
                 require(segment.isNotEmpty())
                 binaryName = if (owner == null) segment else "$binaryName\$$segment"
-                owner = intern(DeclaredType("class", binaryName, owner = owner, arguments = arguments()))
+                owner = intern(DeclaredType(CLASS_TYPE_KIND, binaryName, owner = owner, arguments = arguments()))
                 if (text[position++] == ';') return owner
             }
         }

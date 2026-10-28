@@ -25,6 +25,7 @@ internal object DexClassDeclarations {
     private const val ENCLOSING_CLASS = "Ldalvik/annotation/EnclosingClass;"
     private const val ENCLOSING_METHOD = "Ldalvik/annotation/EnclosingMethod;"
     private const val INNER_CLASS = "Ldalvik/annotation/InnerClass;"
+    private const val VALUE = "value"
     private val dexName = Regex("classes(?:([2-9]|[1-9][0-9]+))?\\.dex")
 
     fun read(resources: ResourceAccessor): Map<String, ClassDeclarations> {
@@ -102,10 +103,11 @@ internal object DexClassDeclarations {
         null
     }
 
+    @Suppress("ReturnCount") // Every invalid system-annotation shape falls back independently.
     private fun Annotatable.signatureValue(): String? {
         val annotation = systemAnnotation(SIGNATURE) ?: return null
         if (annotation.elements.size != 1) return null
-        val value = annotation.elements.single().takeIf { it.name == "value" }?.value as? ArrayEncodedValue ?: return null
+        val value = annotation.elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue ?: return null
         if (value.value.size > MAX_SIGNATURE_FRAGMENTS) return null
         val signature = StringBuilder()
         var bytes = 0
@@ -117,13 +119,13 @@ internal object DexClassDeclarations {
     }
 
     private fun Annotatable.typeAnnotation(type: String): String? =
-        (annotationValue(type, "value") as? TypeEncodedValue)?.value
+        (annotationValue(type, VALUE) as? TypeEncodedValue)?.value
 
     private fun Annotatable.intAnnotation(type: String, name: String): Int? =
         (annotationValue(type, name) as? IntEncodedValue)?.value
 
     private fun ClassDef.enclosingMethod(): MemberTypeKey? {
-        val reference = (annotationValue(ENCLOSING_METHOD, "value") as? MethodEncodedValue)?.value ?: return null
+        val reference = (annotationValue(ENCLOSING_METHOD, VALUE) as? MethodEncodedValue)?.value ?: return null
         return MemberTypeKey(reference.definingClass.className(), reference.name, reference.descriptor())
     }
 
@@ -153,6 +155,7 @@ internal object DexClassDeclarations {
     private fun String.className(): String =
         if (length >= 2 && first() == 'L' && last() == ';') substring(1, lastIndex).replace('/', '.') else this
 
+    @Suppress("ReturnCount", "MagicNumber") // UTF-8 byte widths and surrogate rejection are the algorithm.
     private fun String.appendValidated(target: StringBuilder, initialBytes: Int): Int? {
         var bytes = initialBytes
         var index = 0
