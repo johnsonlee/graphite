@@ -62,6 +62,8 @@ kotlin.sourceSets.named("jmh") { kotlin.srcDir(rootProject.file("benchmark/jvm/s
 
 val androidIntegrationFixture: Configuration by configurations.creating
 androidIntegrationFixture.isTransitive = false
+val androidDeclaredTypesFixture: Configuration by configurations.creating
+androidDeclaredTypesFixture.isTransitive = false
 val largeCorpusFixtures: Configuration by configurations.creating
 largeCorpusFixtures.isTransitive = false
 val asmVersion = libs.versions.asm.get()
@@ -78,6 +80,10 @@ dependencies {
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
     testImplementation(project(":sootup"))
+    add(
+        androidDeclaredTypesFixture.name,
+        project(path = ":sootup", configuration = "frontendCorrectnessAndroidApk")
+    )
     testImplementation(libs.asm)
     testImplementation("org.ow2.asm:asm-tree:$asmVersion")
     add(androidIntegrationFixture.name, libs.android.all)
@@ -220,6 +226,10 @@ tasks.test {
     forkEvery = 1
     exclude("**/*CorpusPerformanceGateTest.class")
     doFirst {
+        systemProperty(
+            "android.declared.types.fixture",
+            androidDeclaredTypesFixture.singleFile.absolutePath
+        )
         androidIntegrationFixture.resolve().forEach { jar ->
             when {
                 jar.name.startsWith("android-all-") -> systemProperty("android.jar.path", jar.absolutePath)

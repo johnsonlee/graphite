@@ -296,22 +296,37 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
-    fun `field erasures are appended without changing existing generic IDs`() {
+    fun `mismatched erasures fall back without changing following generic IDs`() {
         val declaration = ClassDeclarations(
             "example.RawFields", "<T:Lexample/Bound;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
             listOf(MemberDeclaration("value", "Ljava/lang/Number;", "TT;"),
                 MemberDeclaration("items", "Ljava/util/List;", "Ljava/util/List<Ljava/lang/String;>;")),
-            emptyList(), null, null, false
+            listOf(MemberDeclaration("wrong", "()Ljava/lang/Number;", "()Ljava/lang/String;")),
+            null, null, false
         )
         val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
         assertEquals(listOf(
             DeclaredType("class", "example.Bound"), DeclaredType("class", "java.lang.Object"),
-            DeclaredType("variable", "T", "class:example.RawFields"), DeclaredType("class", "java.lang.String"),
-            DeclaredType("class", "java.util.List", arguments = listOf(3)),
-            DeclaredType("class", "java.lang.Number"), DeclaredType("class", "java.util.List")
+            DeclaredType("class", "java.lang.Number"), DeclaredType("class", "java.lang.String"),
+            DeclaredType("class", "java.util.List", arguments = listOf(3)), DeclaredType("class", "java.util.List")
         ), table.types)
         assertEquals(2, table.fields[MemberTypeKey(declaration.name, "value", "Ljava/lang/Number;")])
         assertEquals(4, table.fields[MemberTypeKey(declaration.name, "items", "Ljava/util/List;")])
+        assertEquals(2, table.methods[MemberTypeKey(declaration.name, "wrong", "()Ljava/lang/Number;")]?.returnType)
+    }
+
+    @Test
+    fun `mismatched class signature falls back to raw hierarchy`() {
+        val declaration = ClassDeclarations(
+            "example.Child", "Ljava/lang/String;", "java.lang.Object", emptyList(),
+            emptyList(), emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+
+        val type = table.classes.getValue(declaration.name)
+        assertEquals("java.lang.Object", table.render(requireNotNull(type.superType)))
+        assertEquals(emptyList(), type.typeParameters)
     }
 
 }

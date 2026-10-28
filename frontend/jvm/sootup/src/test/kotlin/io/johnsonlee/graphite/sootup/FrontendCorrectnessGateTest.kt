@@ -32,6 +32,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeEdge
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.MethodPattern
 import io.johnsonlee.graphite.graph.incoming
 import io.johnsonlee.graphite.graph.nodes
@@ -43,6 +44,7 @@ import java.nio.file.Path
 import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 /**
@@ -110,6 +112,31 @@ class FrontendCorrectnessGateTest {
         )
 
         assertEquals(listOf("static-arguments: required fact is missing: $requiredArgument"), failures.map { it.message })
+    }
+
+    @Test
+    fun `Android DEX preserves class field and method generic declarations`() {
+        val fixture = fixtures().single { it.id == "android" }
+        val types = load(fixture).declaredTypes()
+        val box = "fixture.frontend.android.AndroidCases\$GenericBox"
+        val pair = "fixture.frontend.android.AndroidCases\$GenericPair"
+        val boxTypes = assertNotNull(types.classes[box])
+
+        assertEquals(listOf("T"), boxTypes.typeParameters.map { it.name })
+        assertEquals(
+            listOf("java.lang.Comparable<T>"),
+            boxTypes.typeParameters.single().bounds.map(types::render)
+        )
+
+        val field = assertNotNull(types.fields[MemberTypeKey(box, "field", "L${pair.replace('.', '/')};")])
+        assertEquals("$pair<java.lang.String, ? extends T[]>", types.render(field))
+
+        val descriptor = "(L${pair.replace('.', '/')};)L${pair.replace('.', '/')};"
+        val method = assertNotNull(types.methods[MemberTypeKey(box, "convert", descriptor)])
+        assertEquals(listOf("R"), method.typeParameters.map { it.name })
+        assertEquals(listOf("java.lang.CharSequence"), method.typeParameters.single().bounds.map(types::render))
+        assertEquals(listOf("$pair<? extends T, R>"), method.parameterTypes.map(types::render))
+        assertEquals("$pair<T, ? super R[]>", types.render(method.returnType))
     }
 
     private fun fixtures(): List<Fixture> {

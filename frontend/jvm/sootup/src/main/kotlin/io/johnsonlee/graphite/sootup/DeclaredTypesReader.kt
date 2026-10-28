@@ -75,25 +75,40 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private val expandedNodes = IntArrayList()
     private val expandedBytes = IntArrayList()
     private val environments = HashMap<String, Map<String, String>>()
+    private val boundsByVariable = HashMap<Pair<String, String>, List<Int>>()
 
     fun build(): DeclaredTypeTable {
         val fields = linkedMapOf<MemberTypeKey, Int>()
         val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
         val classes = linkedMapOf<String, ClassTypes>()
-        declarations.values.forEach { declaration ->
+        val orderedDeclarations = declarations.values.toList()
+        orderedDeclarations.forEach { declaration ->
             val scope = classScope(declaration.name)
             val env = environment(declaration.name)
-            classes[declaration.name] = optional(declaration.signature) {
+            val classTypes = optional(declaration.signature) {
                 val parser = Parser(it, scope, env)
                 val parameters = parser.formals()
                 val superType = parser.type()
                 val interfaces = mutableListOf<Int>()
                 while (parser.hasNext()) interfaces.add(parser.type())
-                ClassTypes(parameters, superType, interfaces)
+                val result = ClassTypes(parameters, superType, interfaces)
+                val bounds = boundsByVariable + parameters.associate { parameter ->
+                    (parameter.scope to parameter.name) to parameter.bounds
+                }
+                require(declaration.superName != null && erasesTo(superType, classDescriptor(declaration.superName), bounds))
+                require(interfaces.size == declaration.interfaces.size)
+                interfaces.zip(declaration.interfaces).forEach { (type, name) ->
+                    require(erasesTo(type, classDescriptor(name), bounds))
+                }
+                result
             } ?: ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
+            classes[declaration.name] = classTypes
+            classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             declaration.fields.forEach { field ->
                 fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = optional(field.signature) {
-                    Parser(it, scope, env).completeType()
+                    Parser(it, scope, env).completeType().also { type ->
+                        require(erasesTo(type, field.descriptor, boundsByVariable))
+                    }
                 } ?: Parser(field.descriptor, scope, emptyMap()).completeType()
             }
             declaration.methods.forEach { method ->
@@ -101,7 +116,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val methodScope = methodScope(key)
                 val methodEnv = env + formalNames(method.signature).associateWith { methodScope }
                 val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
-                methods[key] = optional(method.signature) {
+                val methodTypes = optional(method.signature) {
                     val generic = Parser(it, methodScope, methodEnv).method()
                     // Constructors may omit synthetic enclosing-instance/enum arguments in Signature.
                     val missing = descriptor.parameterTypes.size - generic.parameterTypes.size
@@ -109,12 +124,23 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                     val prefix = if (missing == 0) 0 else constructorPrefix(declaration, descriptor)
                     require(prefix <= missing)
                     generic.copy(parameterTypes = descriptor.parameterTypes.take(prefix) + generic.parameterTypes +
-                        descriptor.parameterTypes.drop(prefix + generic.parameterTypes.size))
+                        descriptor.parameterTypes.drop(prefix + generic.parameterTypes.size)).also { result ->
+                        val bounds = boundsByVariable + result.typeParameters.associate { parameter ->
+                            (parameter.scope to parameter.name) to parameter.bounds
+                        }
+                        require(result.parameterTypes.size == descriptor.parameterTypes.size)
+                        result.parameterTypes.zip(descriptor.parameterTypes).forEach { (declared, erased) ->
+                            require(erasesTo(declared, erased, bounds))
+                        }
+                        require(erasesTo(result.returnType, descriptor.returnType, bounds))
+                    }
                 } ?: descriptor
+                methods[key] = methodTypes
+                methodTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             }
         }
         // Preserve previously assigned generic IDs; key erasures are appended only after declaration parsing.
-        declarations.values.forEach { declaration ->
+        orderedDeclarations.forEach { declaration ->
             declaration.fields.forEach { field -> Parser(field.descriptor, classScope(declaration.name), emptyMap()).completeType() }
         }
         return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
@@ -210,6 +236,36 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     }
     private fun classType(name: String): Int = intern(DeclaredType("class", name))
 
+    private fun classDescriptor(name: String): String = "L${name.replace('.', '/')};"
+
+    private fun erasesTo(id: Int, descriptor: String, bounds: Map<Pair<String, String>, List<Int>>): Boolean =
+        erasureDescriptor(id, bounds)?.let { it == descriptor } ?: true
+
+    private fun erasesTo(id: Int, erasedId: Int, bounds: Map<Pair<String, String>, List<Int>>): Boolean {
+        val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap()))
+        return erasesTo(id, expected, bounds)
+    }
+
+    private fun erasureDescriptor(
+        id: Int,
+        bounds: Map<Pair<String, String>, List<Int>>,
+        visiting: Set<Pair<String, String>> = emptySet()
+    ): String? {
+        val type = types[id]
+        return when (type.kind) {
+            "class" -> classDescriptor(type.name)
+            "primitive" -> primitiveDescriptors[type.name]
+            "array" -> erasureDescriptor(requireNotNull(type.component), bounds, visiting)?.let { "[$it" }
+            "variable" -> {
+                val key = type.scope to type.name
+                if (key in visiting) null else bounds[key]?.firstOrNull()
+                    ?.let { erasureDescriptor(it, bounds, visiting + key) }
+                    ?: if (bounds.containsKey(key)) "Ljava/lang/Object;" else null
+            }
+            else -> null
+        }
+    }
+
     private fun <T> optional(signature: String?, parse: (String) -> T): T? {
         if (signature == null) return null
         val checkpoint = types.size
@@ -233,6 +289,11 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             expandedBytes.removeInt(expandedBytes.size - 1)
         }
     }
+
+    private val primitiveDescriptors = mapOf(
+        "boolean" to "Z", "byte" to "B", "char" to "C", "short" to "S", "int" to "I",
+        "long" to "J", "float" to "F", "double" to "D", "void" to "V"
+    )
 
     private inner class Parser(private val text: String, private val scope: String, private val env: Map<String, String>) {
         private var position = 0

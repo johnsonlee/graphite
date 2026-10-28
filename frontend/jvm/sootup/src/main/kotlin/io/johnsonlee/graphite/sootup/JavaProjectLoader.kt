@@ -43,7 +43,8 @@ private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
 
 private data class InputLocations(
     val locations: List<AnalysisInputLocation>,
-    val sources: Map<AnalysisInputLocation, String>
+    val sources: Map<AnalysisInputLocation, String>,
+    val dexApi: Int? = null
 )
 
 /**
@@ -80,9 +81,10 @@ private fun createApkInputLocations(
         recoveries.map { it.copy(interceptors = interceptorFactory(it.interceptors)) },
         { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) }
     )
+    val androidVersion = AndroidVersionInfo(path, platforms.toString())
     val apkLocation = ApkAnalysisInputLocation(
         path,
-        AndroidVersionInfo(path, platforms.toString()),
+        androidVersion,
         listOf(guarded)
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
@@ -99,7 +101,7 @@ private fun createApkInputLocations(
         log("  + Loading Android platform: $sourceName")
     }
 
-    return InputLocations(locations, sources)
+    return InputLocations(locations, sources, androidVersion.api_version)
 }
 
 /**
@@ -307,7 +309,7 @@ class JavaProjectLoader(
         val inputLocations = createInputLocations(path, folding)
         val view = createJavaView(inputLocations.locations)
 
-        val resourceAccessor = ArchiveResourceAccessor.create(path)
+        val resourceAccessor = ArchiveResourceAccessor.create(path, inputLocations.dexApi)
         val adapter = SootUpAdapter(
             view, config,
             resourceAccessor = resourceAccessor,

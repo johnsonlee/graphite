@@ -50,6 +50,7 @@ dependencies {
     implementation(libs.sootup.java.bytecode.frontend)
     implementation(libs.sootup.apk.frontend)
     implementation(libs.sootup.callgraph)
+    implementation(libs.dexlib2)  // For generic Signature annotations in DEX files
     implementation(libs.asm)  // For parsing generic signatures from bytecode
     implementation(libs.gson)
 
@@ -165,6 +166,15 @@ val packageFrontendCorrectnessAndroidApp by tasks.registering(Zip::class) {
     from(androidCorrectnessDexDir)
     destinationDirectory.set(layout.buildDirectory.dir("frontend-correctness"))
     archiveFileName.set("frontend-correctness.apk")
+}
+val frontendCorrectnessAndroidApk by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+artifacts {
+    add(frontendCorrectnessAndroidApk.name, packageFrontendCorrectnessAndroidApp.flatMap { it.archiveFile }) {
+        builtBy(packageFrontendCorrectnessAndroidApp)
+    }
 }
 val packageFrontendCorrectnessJavaApp by tasks.registering(Jar::class) {
     dependsOn(frontendCorrectnessJavaFixtures.classesTaskName)
