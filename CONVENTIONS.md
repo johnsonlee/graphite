@@ -31,6 +31,31 @@
 - Existing historical reports and experiment records remain historical evidence with their original limitations. A report-only hosted timing improvement is not formal performance acceptance.
 - See `benchmark/README.md` for the fixed workload, measurement protocol and execution commands.
 
+### Required local PR benchmark report
+
+- Every pull request body must include a `## Local performance benchmark` section. There are
+  no documentation-only, test-only or claimed-unaffected exceptions. A hosted runner report,
+  benchmark comment or link to CI is supplementary and does not satisfy this requirement.
+- Run the benchmark locally on the exact candidate commit against its merge base, on the same
+  machine with matching settings and the representative real persisted multi-graph workload.
+  Any new candidate commit invalidates the report and requires a new matched run.
+- Record the local machine and operating system, full base and candidate revisions, workload
+  and query scope, concurrency, warmup and measured sample counts, result-consumption boundary,
+  heap settings, and cold/warm cache state. Identify any reused evidence and prove that its
+  revisions, inputs, controls, environment and measurement boundaries are unchanged.
+- Report query p50 and p95 per case, prioritizing the largest absolute regressions; report graph
+  loading and construction separately. Include base, candidate, absolute delta and percentage
+  in that order. Report end-to-end time, total CPU time and peak process RSS separately for each
+  affected operation and workload. Never collapse unavailable evidence to zero or omit failures.
+- State the number of successful and failed samples, variability/uncertainty, correctness and
+  stability outcomes, every approved exception, and a separate acceptance conclusion for query
+  latency, loading, construction, CPU, RSS, correctness and stability.
+- Retain the complete local report and raw samples. Put a durable evidence reference and SHA-256
+  digest in the PR body so a reviewer can match the summarized report to the retained evidence.
+- The `local-benchmark-report` workflow validates the required structure and exact revisions.
+  It cannot prove that claimed measurements were honestly produced; reviewers must inspect the
+  report and evidence. Keep this check required in branch protection.
+
 ### Verification feedback and reuse
 
 - **First make the feedback loop fast; then begin validation and optimization.** Before the first expensive iteration, estimate the end-to-end critical path, including preparation, transfers, verification and final consumers. Establish fast actionable checks and remove avoidable serial dependencies or repeated work first. Do not treat hours per iteration as an acceptable default or postpone workflow repair until after repeated long runs; retain complete correctness coverage and real multi-graph performance acceptance.

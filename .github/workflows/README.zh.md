@@ -14,6 +14,7 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 | [`rust.yml`](rust.yml) — Rust | 匹配 `*` 的分支 push、目标分支匹配 `**` 的 PR | 检查 Rust 格式、lint、构建和测试；校验 Linux 静态二进制与容器启动；验证真实 JVM 构图、持久化图及 Kotlin/Rust 响应一致性。同时在 Windows 上进行 workspace 编译检查。 |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | 目标分支匹配 `**` 的 PR | 在同一个 runner 上比较产品 merge-base 和精确 PR head。以正确性、执行完整性和 OOM 为 gate，计时差异只生成报告，不设阈值。 |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Benchmark correctness and OOM 执行完成；仅为 PR 触发的运行发布评论 | 校验报告来源，更新当前 PR head 对应的唯一 benchmark 评论。 |
+| [`local-benchmark-report.yml`](local-benchmark-report.yml) — Local benchmark report | PR 新建、正文编辑、提交同步或重新打开 | 要求 PR 正文包含精确 merge base 与 head 的本地代表性真实多图压测报告。 |
 | [`publish.yml`](publish.yml) — Publish | `v*` 标签 push、`repository_dispatch: publish` 或手动触发 | 构建并发布 release 产物，或通过手动 dry-run 模式演练发布。Job 仅在仓库 owner 为 `johnsonlee` 时运行。 |
 
 上表中的分支模式与 YAML 一致：`*` 不匹配分支名中的斜杠，PR workflow 使用
@@ -29,6 +30,7 @@ Workflow 负责组织检查、产物和发布流程。benchmark 执行逻辑位�
 | JVM 与 CI 脚本 | `run-unit-test` |
 | Rust | `rust-build-test`、`rust-check-windows` |
 | Benchmark | `benchmark-harness-tests` → `benchmark-base-head` → `benchmark-regression-gate` |
+| 本地 benchmark 报告 | `local-benchmark-report` |
 
 `rust-check-windows` 运行的是 `cargo check`，不是 Windows 执行测试套件。
 `benchmark-regression-gate` 为兼容分支保护而保留原名，但性能变化不决定其结果。
@@ -60,6 +62,11 @@ server 和真实 64 图负载。JAR benchmark 的最大 JVM 堆固定为 4 GiB�
 托管 runner 上的计时是观测结果，不是性能验收。报告比较 base/head 数值，并明确
 保留不可用或失败的测量。采样、负载和堆配置的详细说明见
 [benchmark 协议](../../benchmark/README.zh.md)。
+
+独立的 `local-benchmark-report` 检查只通过 `pull_request_target` 读取可信目标分支
+代码，不会检出或执行候选代码。它验证 PR 正文是否填写精确 merge base/head，以及
+必需的本地真实持久化多图报告字段。该检查无法证明所填测量真实，因此仍必须审阅
+保留的证据。分支保护中应将它保持为必需检查。
 
 ## 为什么 benchmark 评论使用独立 workflow
 

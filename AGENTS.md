@@ -18,6 +18,12 @@ Speed without quality is waste. Intent understood and channel open, the last mil
 - **Complete** — traces all downstream dependencies; if A changes, everything referencing A is accounted for
 - **Verified** — never report completion without independent evidence; if it can't be proven, it didn't happen
 
+Every pull request body must contain a benchmark report produced locally for the exact
+candidate revision. The report must compare the merge base and candidate with the
+representative real persisted multi-graph load workload. Hosted CI timing is supplementary
+and never substitutes for this local report. Follow the required report fields and evidence
+rules in `CONVENTIONS.md`.
+
 ## Revise understanding
 
 Right action flows from right understanding. When action errs, understanding is false — not incomplete, not almost-right. Correct the understanding, and the shadow follows. Rules laid on false understanding multiply without end; truth, once seen, acts on its own.

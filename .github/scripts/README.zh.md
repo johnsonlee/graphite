@@ -9,7 +9,7 @@ CI 辅助脚本使用 TypeScript 编写，由 Bun 直接执行。运行时版本
 | 目录 | 职责 |
 | --- | --- |
 | `benchmark/` | 校验 workflow 和产品版本身份后，发布或更新唯一的 benchmark 报告评论。 |
-| `checks/` | 检查实际 CLI/JVM 启动行为，以及 Linux 发布二进制的静态链接情况。 |
+| `checks/` | 检查 PR benchmark 报告结构、实际 CLI/JVM 启动行为，以及 Linux 发布二进制的静态链接情况。 |
 | `release/` | 解析发布标签，支持恢复草稿上传，并发布内容不可变的 release。 |
 
 仓库根目录 [`benchmark/`](../../benchmark/README.zh.md) 中的 Rust 控制器负责执行
