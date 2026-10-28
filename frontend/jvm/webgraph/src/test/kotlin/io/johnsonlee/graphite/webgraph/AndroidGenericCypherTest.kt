@@ -10,7 +10,7 @@ import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class AndroidDeclaredTypePersistenceTest {
+class AndroidGenericCypherTest {
     @Test
     fun `Android generic declarations survive persistence and Cypher projection`() {
         val sdk = Files.createTempDirectory("android-declared-types-sdk")

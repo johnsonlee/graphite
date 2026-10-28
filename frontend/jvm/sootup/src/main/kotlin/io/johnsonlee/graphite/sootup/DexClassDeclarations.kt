@@ -39,6 +39,8 @@ internal object DexClassDeclarations {
         return read(resourceClasses(resources))
     }
 
+    internal fun readSignature(annotatable: Annotatable): String? = annotatable.signature()
+
     private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
         resources.list("classes*.dex")
             .filter { dexName.matches(it.path) }
