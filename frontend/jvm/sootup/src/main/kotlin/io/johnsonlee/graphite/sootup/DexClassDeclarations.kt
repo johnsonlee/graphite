@@ -10,6 +10,7 @@ import org.jf.dexlib2.iface.Annotatable
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.reference.MethodReference
+import org.jf.dexlib2.iface.value.EncodedValue
 import org.jf.dexlib2.iface.value.ArrayEncodedValue
 import org.jf.dexlib2.iface.value.IntEncodedValue
 import org.jf.dexlib2.iface.value.MethodEncodedValue
@@ -41,6 +42,12 @@ internal object DexClassDeclarations {
 
     internal fun readSignature(annotatable: Annotatable): String? = annotatable.signature()
 
+    internal fun readEnclosingClass(annotatable: Annotatable): String? =
+        annotatable.typeAnnotation(ENCLOSING_CLASS)
+
+    internal fun readEnclosingMethod(annotatable: Annotatable): MemberTypeKey? =
+        annotatable.enclosingMethod()
+
     private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
         resources.list("classes*.dex")
             .filter { dexName.matches(it.path) }
@@ -64,9 +71,9 @@ internal object DexClassDeclarations {
     }
 
     private fun from(definition: ClassDef): ClassDeclarations {
-        val enclosingMethod = definition.enclosingMethod()
+        val enclosingMethod = readEnclosingMethod(definition)
         val innerAccess = definition.intAnnotation(INNER_CLASS, "accessFlags")
-        val enclosingClass = enclosingMethod?.owner ?: definition.typeAnnotation(ENCLOSING_CLASS)
+        val enclosingClass = enclosingMethod?.owner ?: readEnclosingClass(definition)
             ?.className()
             ?.takeIf { innerAccess != null && !AccessFlags.STATIC.isSet(innerAccess) }
         val hasEnclosingField = enclosingClass != null && definition.fields.any { field ->
@@ -120,27 +127,34 @@ internal object DexClassDeclarations {
         return signature.toString()
     }
 
-    private fun Annotatable.typeAnnotation(type: String): String? =
-        (annotationValue(type, VALUE) as? TypeEncodedValue)?.value
+    private fun Annotatable.typeAnnotation(type: String): String? = decodedAnnotationValue(type, VALUE) {
+        (it as? TypeEncodedValue)?.value
+    }
 
-    private fun Annotatable.intAnnotation(type: String, name: String): Int? =
-        (annotationValue(type, name) as? IntEncodedValue)?.value
+    private fun Annotatable.intAnnotation(type: String, name: String): Int? = decodedAnnotationValue(type, name) {
+        (it as? IntEncodedValue)?.value
+    }
 
-    private fun ClassDef.enclosingMethod(): MemberTypeKey? {
-        val reference = (annotationValue(ENCLOSING_METHOD, VALUE) as? MethodEncodedValue)?.value ?: return null
-        return MemberTypeKey(reference.definingClass.className(), reference.name, reference.descriptor())
+    private fun Annotatable.enclosingMethod(): MemberTypeKey? = decodedAnnotationValue(ENCLOSING_METHOD, VALUE) { value ->
+        val reference = (value as? MethodEncodedValue)?.value ?: return@decodedAnnotationValue null
+        MemberTypeKey(reference.definingClass.className(), reference.name, reference.descriptor())
     }
 
     private fun Annotatable.systemAnnotation(type: String) = annotations
         .filter { it.type == type && it.visibility == AnnotationVisibility.SYSTEM }
         .singleOrNull()
 
-    private fun Annotatable.annotationValue(type: String, name: String) = try {
+    private inline fun <T> Annotatable.decodedAnnotationValue(
+        type: String,
+        name: String,
+        decode: (EncodedValue) -> T?
+    ): T? = try {
         systemAnnotation(type)
             ?.elements
             ?.filter { it.name == name }
             ?.singleOrNull()
             ?.value
+            ?.let(decode)
     } catch (_: ExceptionWithContext) {
         null
     } catch (_: IllegalArgumentException) {

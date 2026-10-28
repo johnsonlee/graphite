@@ -14,7 +14,8 @@ class InheritedFieldTypesTest {
     private val interfaces = HashSet<String>()
     @Test
     fun `observed child aliases preserve parent type IDs and variable scope`() {
-        val parent = declaration("Parent", signature = "<T:Ljava/lang/Object;>Ljava/lang/Object;",
+        val parent = declaration("Parent", parent = "java.lang.Object",
+            signature = "<T:Ljava/lang/Object;>Ljava/lang/Object;",
             fields = listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")))
         val declarations = listOf(parent, declaration("Child", "Parent"), declaration("Unobserved", "Parent"))
             .associateBy { it.name }

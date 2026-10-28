@@ -329,4 +329,69 @@ class DeclaredTypesReaderTest {
         assertEquals(emptyList(), type.typeParameters)
     }
 
+    @Test
+    fun `undeclared variables and primitive generic arguments fall back to descriptors`() {
+        val declaration = ClassDeclarations(
+            "example.Malformed", null, "java.lang.Object", emptyList(),
+            listOf(
+                MemberDeclaration("variable", "Ljava/lang/String;", "TX;"),
+                MemberDeclaration("primitive", "Ljava/util/List;", "Ljava/util/List<I>;"),
+                MemberDeclaration("void", "Ljava/util/List;", "Ljava/util/List<V>;")
+            ),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+
+        assertEquals("java.lang.String", table.render(table.fields.getValue(
+            MemberTypeKey(declaration.name, "variable", "Ljava/lang/String;")
+        )))
+        for (name in listOf("primitive", "void")) {
+            assertEquals("java.util.List", table.render(table.fields.getValue(
+                MemberTypeKey(declaration.name, name, "Ljava/util/List;")
+            )))
+        }
+        assertTrue(table.types.none { it.kind == "variable" || it.kind == "primitive" })
+    }
+
+    @Test
+    fun `inner declarations cannot inherit rejected outer formals`() {
+        val methodKey = MemberTypeKey("example.Outer", "bad", "()V")
+        val outer = ClassDeclarations(
+            "example.Outer", "<T:Ljava/lang/Object;>Ljava/lang/Object;X", "java.lang.Object", emptyList(),
+            emptyList(), listOf(MemberDeclaration("bad", methodKey.descriptor, "<U:Ljava/lang/Object;>()V^")),
+            null, null, false
+        )
+        val inner = ClassDeclarations(
+            "example.Outer\$Inner", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/util/List;", "Ljava/util/List<TT;>;")), emptyList(),
+            outer.name, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/util/List;", "Ljava/util/List<TU;>;")), emptyList(),
+            outer.name, methodKey, false
+        )
+        val missingMethod = ClassDeclarations(
+            "example.Outer\$MissingMethod", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TX;")), emptyList(),
+            outer.name, MemberTypeKey(outer.name, "missing", "()V"), false
+        )
+        val table = DeclaredTypesReader(linkedMapOf(
+            inner.name to inner, local.name to local, missingMethod.name to missingMethod, outer.name to outer
+        )).build()
+
+        assertEquals(emptyList(), table.classes.getValue(outer.name).typeParameters)
+        assertEquals(emptyList(), table.methods.getValue(methodKey).typeParameters)
+        for (owner in listOf(inner.name, local.name)) {
+            assertEquals("java.util.List", table.render(table.fields.getValue(
+                MemberTypeKey(owner, "value", "Ljava/util/List;")
+            )))
+        }
+        assertEquals("java.lang.String", table.render(table.fields.getValue(
+            MemberTypeKey(missingMethod.name, "value", "Ljava/lang/String;")
+        )))
+        assertTrue(table.types.none { it.kind == "variable" })
+    }
+
 }

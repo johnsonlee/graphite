@@ -13,6 +13,7 @@ import org.objectweb.asm.Type
 import org.objectweb.asm.tree.ClassNode
 
 private const val CLASS_TYPE_KIND = "class"
+private const val PRIMITIVE_TYPE_KIND = "primitive"
 
 /** Declaration snapshots used while constructing the deduplicated type table. */
 internal data class ClassDeclarations(
@@ -76,7 +77,6 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private val heights = mutableListOf<Int>()
     private val expandedNodes = IntArrayList()
     private val expandedBytes = IntArrayList()
-    private val environments = HashMap<String, Map<String, String>>()
     private val boundsByVariable = HashMap<Pair<String, String>, List<Int>>()
 
     @Suppress("CyclomaticComplexMethod") // Class, field and method declarations share one rollback-safe table.
@@ -84,12 +84,15 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val fields = linkedMapOf<MemberTypeKey, Int>()
         val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
         val classes = linkedMapOf<String, ClassTypes>()
-        val orderedDeclarations = declarations.values.toList()
+        val acceptedEnvironments = hashMapOf<String, Map<String, String>>()
+        val orderedDeclarations = orderedDeclarations()
         orderedDeclarations.forEach { declaration ->
             val scope = classScope(declaration.name)
-            val env = environment(declaration.name)
+            val inheritedEnv = acceptedEnvironment(declaration, acceptedEnvironments, methods)
+            val classEnv = inheritedEnv + formalNames(declaration.signature).associateWith { scope }
+            val allowUnresolvedVariables = hasMissingEnclosingDeclaration(declaration)
             val classTypes = optional(declaration.signature) {
-                val parser = Parser(it, scope, env)
+                val parser = Parser(it, scope, classEnv, allowUnresolvedVariables)
                 val parameters = parser.formals()
                 val superType = parser.type()
                 val interfaces = mutableListOf<Int>()
@@ -107,10 +110,12 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             } ?: ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
             classes[declaration.name] = classTypes
             classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
+            val env = inheritedEnv + classTypes.typeParameters.associate { it.name to it.scope }
+            acceptedEnvironments[declaration.name] = env
             declaration.fields.forEach { field ->
                 fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = optional(field.signature) {
-                    Parser(it, scope, env).completeType().also { type ->
-                        require(erasesTo(type, field.descriptor, boundsByVariable))
+                    Parser(it, scope, env, allowUnresolvedVariables).completeType().also { type ->
+                        require(erasesTo(type, field.descriptor, boundsByVariable, allowUnresolvedVariables))
                     }
                 } ?: Parser(field.descriptor, scope, emptyMap()).completeType()
             }
@@ -120,7 +125,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val methodEnv = env + formalNames(method.signature).associateWith { methodScope }
                 val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
                 val methodTypes = optional(method.signature) {
-                    val generic = Parser(it, methodScope, methodEnv).method()
+                    val generic = Parser(it, methodScope, methodEnv, allowUnresolvedVariables).method()
                     // Constructors may omit synthetic enclosing-instance/enum arguments in Signature.
                     val missing = descriptor.parameterTypes.size - generic.parameterTypes.size
                     require(missing == 0 || method.name == "<init>" && missing > 0)
@@ -133,9 +138,9 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                         }
                         require(result.parameterTypes.size == descriptor.parameterTypes.size)
                         result.parameterTypes.zip(descriptor.parameterTypes).forEach { (declared, erased) ->
-                            require(erasesTo(declared, erased, bounds))
+                            require(erasesTo(declared, erased, bounds, allowUnresolvedVariables))
                         }
-                        require(erasesTo(result.returnType, descriptor.returnType, bounds))
+                        require(erasesTo(result.returnType, descriptor.returnType, bounds, allowUnresolvedVariables))
                     }
                 } ?: descriptor
                 methods[key] = methodTypes
@@ -168,23 +173,53 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         }
     }
 
-    private fun environment(name: String, visiting: Set<String> = emptySet()): Map<String, String> =
-        environments.getOrPut(name) {
-            val declaration = declarations[name]
-            if (name in visiting || declaration == null) {
-                emptyMap()
-            } else {
-                val inherited = declaration.enclosingClass?.let { environment(it, visiting + name) }.orEmpty().toMutableMap()
-                declaration.enclosingMethod?.let { method ->
-                    val signature = declarations[method.owner]?.methods?.firstOrNull {
-                        it.name == method.name && it.descriptor == method.descriptor
-                    }?.signature
-                    formalNames(signature).forEach { inherited[it] = methodScope(method) }
+    private fun acceptedEnvironment(
+        declaration: ClassDeclarations,
+        acceptedEnvironments: Map<String, Map<String, String>>,
+        methods: Map<MemberTypeKey, MethodTypes>
+    ): Map<String, String> {
+        val owner = declaration.enclosingClass ?: declaration.enclosingMethod?.owner
+        val inherited = owner?.let { acceptedEnvironments[it] }.orEmpty().toMutableMap()
+        declaration.enclosingMethod?.let { method ->
+            methods[method]?.typeParameters?.forEach { inherited[it.name] = it.scope }
+        }
+        return inherited
+    }
+
+    private fun hasMissingEnclosingDeclaration(declaration: ClassDeclarations): Boolean {
+        val missingClass = declaration.enclosingClass != null && declaration.enclosingClass !in declarations
+        val method = declaration.enclosingMethod
+        val missingMethodOwner = method != null && method.owner !in declarations
+        return missingClass || missingMethodOwner
+    }
+
+    @Suppress("NestedBlockDepth", "LoopWithTooManyJumpStatements") // Explicit DFS avoids untrusted enclosure recursion.
+    private fun orderedDeclarations(): List<ClassDeclarations> {
+        val ordered = mutableListOf<ClassDeclarations>()
+        val visiting = hashSetOf<String>()
+        val visited = hashSetOf<String>()
+        declarations.keys.forEach { root ->
+            val pending = ArrayDeque<Pair<String, Boolean>>()
+            pending.addLast(root to false)
+            while (pending.isNotEmpty()) {
+                val (name, expanded) = pending.removeLast()
+                if (name in visited) continue
+                val declaration = declarations[name] ?: continue
+                if (expanded) {
+                    visiting.remove(name)
+                    if (visited.add(name)) ordered.add(declaration)
+                } else if (visiting.add(name)) {
+                    pending.addLast(name to true)
+                    listOfNotNull(declaration.enclosingClass, declaration.enclosingMethod?.owner)
+                        .distinct()
+                        .asReversed()
+                        .filter { it in declarations && it !in visited }
+                        .forEach { pending.addLast(it to false) }
                 }
-                formalNames(declaration.signature).forEach { inherited[it] = classScope(name) }
-                inherited.toMap()
             }
         }
+        return ordered
+    }
 
     /** Scan formal names iteratively so untrusted signatures never enter ASM's recursive reader. */
     private fun formalNames(signature: String?): List<String> {
@@ -241,12 +276,21 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
 
     private fun classDescriptor(name: String): String = "L${name.replace('.', '/')};"
 
-    private fun erasesTo(id: Int, descriptor: String, bounds: Map<Pair<String, String>, List<Int>>): Boolean =
-        erasureDescriptor(id, bounds)?.let { it == descriptor } ?: true
+    private fun erasesTo(
+        id: Int,
+        descriptor: String,
+        bounds: Map<Pair<String, String>, List<Int>>,
+        allowUnknown: Boolean = false
+    ): Boolean = erasureDescriptor(id, bounds)?.let { it == descriptor } ?: allowUnknown
 
-    private fun erasesTo(id: Int, erasedId: Int, bounds: Map<Pair<String, String>, List<Int>>): Boolean {
+    private fun erasesTo(
+        id: Int,
+        erasedId: Int,
+        bounds: Map<Pair<String, String>, List<Int>>,
+        allowUnknown: Boolean = false
+    ): Boolean {
         val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap()))
-        return erasesTo(id, expected, bounds)
+        return erasesTo(id, expected, bounds, allowUnknown)
     }
 
     private fun erasureDescriptor(
@@ -257,7 +301,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val type = types[id]
         return when (type.kind) {
             CLASS_TYPE_KIND -> classDescriptor(type.name)
-            "primitive" -> primitiveDescriptors[type.name]
+            PRIMITIVE_TYPE_KIND -> primitiveDescriptors[type.name]
             "array" -> erasureDescriptor(requireNotNull(type.component), bounds, visiting)?.let { "[$it" }
             "variable" -> {
                 val key = type.scope to type.name
@@ -298,7 +342,12 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         "long" to "J", "float" to "F", "double" to "D", "void" to "V"
     )
 
-    private inner class Parser(private val text: String, private val scope: String, private val env: Map<String, String>) {
+    private inner class Parser(
+        private val text: String,
+        private val scope: String,
+        private val env: Map<String, String>,
+        private val allowUnresolvedVariables: Boolean = false
+    ) {
         private var position = 0
         private var depth = 0
         fun hasNext() = position < text.length
@@ -318,8 +367,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val name = until(':')
                 consume(':')
                 val bounds = mutableListOf<Int>()
-                if (peek() != ':') bounds.add(type())
-                while (peek() == ':') { position++; bounds.add(type()) }
+                if (peek() != ':') bounds.add(referenceType())
+                while (peek() == ':') { position++; bounds.add(referenceType()) }
                 parameters.add(TypeParameter(name, scope, bounds))
             }
             position++
@@ -350,11 +399,20 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         }
 
         private fun parseType(): Int = when (val tag = text[position++]) {
-            'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 'V' -> intern(DeclaredType("primitive", Type.getType(tag.toString()).className))
-            '[' -> intern(DeclaredType("array", component = type()))
+            'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z', 'V' ->
+                intern(DeclaredType(PRIMITIVE_TYPE_KIND, Type.getType(tag.toString()).className))
+            '[' -> {
+                val component = type()
+                require(types[component].let { it.kind != PRIMITIVE_TYPE_KIND || it.name != "void" })
+                intern(DeclaredType("array", component = component))
+            }
             'T' -> {
                 val name = until(';'); position++
-                intern(DeclaredType("variable", name, env[name] ?: "unresolved:$scope"))
+                val variableScope = env[name] ?: run {
+                    require(allowUnresolvedVariables) { "Undeclared type variable: $name" }
+                    "unresolved:$scope"
+                }
+                intern(DeclaredType("variable", name, variableScope))
             }
             'L' -> classExpression()
             else -> throw IllegalArgumentException("Invalid type signature tag: $tag")
@@ -383,14 +441,16 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                     '*' -> { position++; intern(DeclaredType("wildcard", variance = "unbounded")) }
                     '+', '-' -> {
                         val variance = if (text[position++] == '+') "extends" else "super"
-                        intern(DeclaredType("wildcard", component = type(), variance = variance))
+                        intern(DeclaredType("wildcard", component = referenceType(), variance = variance))
                     }
-                    else -> type()
+                    else -> referenceType()
                 })
             }
             position++
             return arguments
         }
+
+        private fun referenceType(): Int = type().also { require(types[it].kind != PRIMITIVE_TYPE_KIND) }
 
     }
 }

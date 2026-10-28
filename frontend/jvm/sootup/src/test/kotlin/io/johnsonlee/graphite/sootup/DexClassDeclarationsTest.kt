@@ -6,8 +6,14 @@ import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import java.util.zip.ZipFile
 import org.jf.dexlib2.AnnotationVisibility
+import org.jf.dexlib2.base.BaseAnnotation
+import org.jf.dexlib2.base.BaseAnnotationElement
+import org.jf.dexlib2.base.value.BaseMethodEncodedValue
+import org.jf.dexlib2.base.value.BaseTypeEncodedValue
 import org.jf.dexlib2.iface.Annotatable
-import org.jf.dexlib2.immutable.ImmutableAnnotation
+import org.jf.dexlib2.iface.AnnotationElement
+import org.jf.dexlib2.iface.reference.MethodReference
+import org.jf.dexlib2.iface.value.EncodedValue
 import org.jf.dexlib2.immutable.ImmutableAnnotationElement
 import org.jf.dexlib2.immutable.value.ImmutableArrayEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableIntEncodedValue
@@ -65,6 +71,18 @@ class DexClassDeclarationsTest {
         assertNull(DexClassDeclarations.readSignature(object : Annotatable {
             override fun getAnnotations() = throw IndexOutOfBoundsException("bad annotation")
         }))
+        assertNull(DexClassDeclarations.readEnclosingClass(annotatable(
+            annotationElement(object : BaseTypeEncodedValue() {
+                override fun getValue(): String = throw IndexOutOfBoundsException("bad type index")
+            }),
+            type = "Ldalvik/annotation/EnclosingClass;"
+        )))
+        assertNull(DexClassDeclarations.readEnclosingMethod(annotatable(
+            annotationElement(object : BaseMethodEncodedValue() {
+                override fun getValue(): MethodReference = throw ExceptionWithContext("bad method index")
+            }),
+            type = "Ldalvik/annotation/EnclosingMethod;"
+        )))
     }
 
     private fun signature(vararg fragments: String): Annotatable = annotatable(
@@ -75,16 +93,22 @@ class DexClassDeclarationsTest {
     )
 
     private fun annotatable(
-        vararg elements: ImmutableAnnotationElement,
-        visibility: Int = AnnotationVisibility.SYSTEM
+        vararg elements: AnnotationElement,
+        visibility: Int = AnnotationVisibility.SYSTEM,
+        type: String = "Ldalvik/annotation/Signature;"
     ): Annotatable {
-        val annotation = ImmutableAnnotation(
-            visibility,
-            "Ldalvik/annotation/Signature;",
-            elements.toList()
-        )
+        val annotation = object : BaseAnnotation() {
+            override fun getVisibility() = visibility
+            override fun getType() = type
+            override fun getElements() = elements.toSet()
+        }
         return object : Annotatable {
             override fun getAnnotations() = setOf(annotation)
         }
+    }
+
+    private fun annotationElement(encodedValue: EncodedValue): AnnotationElement = object : BaseAnnotationElement() {
+        override fun getName() = "value"
+        override fun getValue() = encodedValue
     }
 }
