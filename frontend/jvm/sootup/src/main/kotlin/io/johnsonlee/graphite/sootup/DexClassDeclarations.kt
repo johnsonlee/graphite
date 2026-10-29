@@ -11,7 +11,6 @@ import org.jf.dexlib2.dexbacked.value.DexBackedStringEncodedValue
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.iface.Annotatable
 import org.jf.dexlib2.iface.ClassDef
-import org.jf.dexlib2.iface.Method
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.iface.value.EncodedValue
 import org.jf.dexlib2.iface.value.ArrayEncodedValue
@@ -32,7 +31,7 @@ internal object DexClassDeclarations {
     private const val VALUE = "value"
     private val dexName = Regex("classes(?:([2-9]|[1-9][0-9]+))?\\.dex")
 
-    fun read(resources: ResourceAccessor): Map<String, ClassDeclarations> {
+    fun read(resources: ResourceAccessor, classNames: Set<String>): Map<String, ClassDeclarations> {
         if (resources is ArchiveResourceAccessor && resources.sourcePath != null && resources.dexApi != null) {
             val dexFiles = try {
                 DexFileProvider.getInstance().getDexFromSource(resources.sourcePath.toFile(), resources.dexApi)
@@ -40,18 +39,32 @@ internal object DexClassDeclarations {
                 emptyList()
             }
             val classes = dexFiles.asSequence().flatMap { safeClasses(it.base.dexFile) }
-            return read(classes)
+            return read(classes, classNames)
         }
-        return read(resourceClasses(resources))
+        return read(resourceClasses(resources), classNames)
     }
 
-    internal fun readSignature(annotatable: Annotatable): String? = annotatable.signature()
-
-    internal fun readEnclosingClass(annotatable: Annotatable): String? =
-        annotatable.typeAnnotation(ENCLOSING_CLASS)
-
-    internal fun readEnclosingMethod(annotatable: Annotatable): MemberTypeKey? =
-        annotatable.enclosingMethod()
+    internal fun read(classes: Sequence<ClassDef>, classNames: Set<String>): Map<String, ClassDeclarations> {
+        val definitions = linkedMapOf<String, ClassDef>()
+        classes.forEach { definition ->
+            val name = try {
+                definition.type.dexClassName()
+            } catch (_: Exception) {
+                return@forEach
+            }
+            if (name in classNames) {
+                // Match SootUp's multidex index: the last definition for a requested type wins.
+                definitions[name] = definition
+            }
+        }
+        return definitions.mapNotNull { (name, definition) ->
+            try {
+                name to from(definition)
+            } catch (_: Exception) {
+                null
+            }
+        }.toMap(linkedMapOf())
+    }
 
     private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
         resources.list("classes*.dex")
@@ -65,65 +78,70 @@ internal object DexClassDeclarations {
                         safeClasses(DexBackedDexFile.fromInputStream(null, BufferedInputStream(input)))
                     }
                 } catch (_: Exception) {
-                    emptyList()
+                    emptySequence()
                 }
                 yieldAll(classes)
             }
     }
 
-    private fun safeClasses(dexFile: DexFile): List<ClassDef> = try {
-        dexFile.classes.mapNotNull { definition ->
-            try {
-                definition.type to definition
-            } catch (_: Exception) {
-                null
-            }
-        }.sortedBy { it.first }.map { it.second }
-    } catch (_: Exception) {
-        emptyList()
-    }
-
-    private fun read(classes: Sequence<ClassDef>): Map<String, ClassDeclarations> {
-        val declarations = linkedMapOf<String, ClassDeclarations>()
-        classes.forEach { definition ->
-            val declaration = try {
-                from(definition)
-            } catch (_: Exception) {
-                return@forEach
-            }
-            // Android rejects duplicate definitions, but SootUp's multidex index uses the last
-            // entry when a malformed archive contains one.
-            declarations[declaration.name] = declaration
+    private fun safeClasses(dexFile: DexFile): Sequence<ClassDef> = sequence {
+        val iterator = try {
+            dexFile.classes.iterator()
+        } catch (_: Exception) {
+            return@sequence
         }
-        return declarations
+        while (true) {
+            val hasNext = try {
+                iterator.hasNext()
+            } catch (_: Exception) {
+                return@sequence
+            }
+            if (!hasNext) return@sequence
+            val definition = try {
+                iterator.next()
+            } catch (_: Exception) {
+                return@sequence
+            }
+            yield(definition)
+        }
     }
 
     private fun from(definition: ClassDef): ClassDeclarations {
-        val enclosingMethod = readEnclosingMethod(definition)
+        val name = definition.type.dexClassName()
+        val superName = definition.superclass?.dexClassName()
+        val interfaces = definition.interfaces.map { it.dexClassName() }
+        val fields = definition.fields.map { field ->
+            field.type.requireDexFieldDescriptor()
+            MemberDeclaration(field.name, field.type, field.signature(), field.accessFlags)
+        }
+        val methods = definition.methods.map { method ->
+            val descriptor = method.descriptor()
+            descriptor.requireDexMethodDescriptor()
+            MemberDeclaration(method.name, descriptor, method.signature(), method.accessFlags)
+        }
+        val enclosingMethod = definition.enclosingMethod()
         val innerAccess = definition.intAnnotation(INNER_CLASS, "accessFlags")
-        val enclosingClass = enclosingMethod?.owner ?: readEnclosingClass(definition)
-            ?.className()
+        val innerName = definition.stringAnnotation(INNER_CLASS, "name")
+        val enclosingClass = enclosingMethod?.owner ?: definition.typeAnnotation(ENCLOSING_CLASS)
+            ?.dexClassName()
             ?.takeIf { innerAccess != null && !AccessFlags.STATIC.isSet(innerAccess) }
-        val hasEnclosingField = enclosingClass != null && definition.fields.any { field ->
-            AccessFlags.SYNTHETIC.isSet(field.accessFlags) && field.name.startsWith("this\$") &&
-                field.type.className() == enclosingClass
+        val hasEnclosingField = enclosingClass != null && fields.any { field ->
+            AccessFlags.SYNTHETIC.isSet(field.access) && field.name.startsWith("this\$") &&
+                field.descriptor == "L${enclosingClass.replace('.', '/')};"
         }
         return ClassDeclarations(
-            name = definition.type.className(),
+            name = name,
             signature = definition.signature(),
-            superName = definition.superclass?.className(),
-            interfaces = definition.interfaces.map { it.className() },
-            fields = definition.fields.map { field ->
-                MemberDeclaration(field.name, field.type, field.signature(), field.accessFlags)
-            },
-            methods = definition.methods.map { method ->
-                MemberDeclaration(method.name, method.descriptor(), method.signature(), method.accessFlags)
-            },
+            superName = superName,
+            interfaces = interfaces,
+            fields = fields,
+            methods = methods,
             enclosingClass = enclosingClass,
             enclosingMethod = enclosingMethod,
             isEnum = AccessFlags.ENUM.isSet(definition.accessFlags),
             enclosingInstance = when {
                 enclosingClass == null -> false
+                enclosingMethod == null && innerName != null -> true
                 hasEnclosingField -> true
                 else -> null
             }
@@ -150,19 +168,8 @@ internal object DexClassDeclarations {
         var bytes = 0
         for (encoded in value.value) {
             val string = encoded as? StringEncodedValue ?: return null
-            if (string is DexBackedStringEncodedValue) {
-                // dexlib decodes on getValue(). Bound its temporary String before materializing it.
-                val stringIndex = dexStringIndex.getInt(string)
-                val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
-                val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
-                val utf16Length = string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
-                try {
-                    // Every UTF-16 code unit contributes at least one byte to valid UTF-8.
-                    DeclaredTypeExpansionBudget.validate(0, utf16Length)
-                } catch (_: IllegalArgumentException) {
-                    return null
-                }
-            }
+            // dexlib decodes on getValue(). Bound its temporary String before materializing it.
+            if (string is DexBackedStringEncodedValue && !string.rawLengthWithinBudget()) return null
             val fragment = string.value
             bytes = fragment.appendValidated(signature, bytes) ?: return null
         }
@@ -177,9 +184,12 @@ internal object DexClassDeclarations {
         (it as? IntEncodedValue)?.value
     }
 
+    private fun Annotatable.stringAnnotation(type: String, name: String): String? =
+        decodedAnnotationValue(type, name) { (it as? StringEncodedValue)?.value }
+
     private fun Annotatable.enclosingMethod(): MemberTypeKey? = decodedAnnotationValue(ENCLOSING_METHOD, VALUE) { value ->
         val reference = (value as? MethodEncodedValue)?.value ?: return@decodedAnnotationValue null
-        MemberTypeKey(reference.definingClass.className(), reference.name, reference.descriptor())
+        MemberTypeKey(reference.definingClass.dexClassName(), reference.name, reference.descriptor())
     }
 
     private fun Annotatable.systemAnnotation(type: String) = annotations
@@ -205,13 +215,8 @@ internal object DexClassDeclarations {
         null
     }
 
-    private fun Method.descriptor(): String = (this as MethodReference).descriptor()
-
     private fun MethodReference.descriptor(): String =
         parameterTypes.joinToString(separator = "", prefix = "(", postfix = ")$returnType")
-
-    private fun String.className(): String =
-        if (length >= 2 && first() == 'L' && last() == ';') substring(1, lastIndex).replace('/', '.') else this
 
     @Suppress("ReturnCount", "MagicNumber") // UTF-8 byte widths and surrogate rejection are the algorithm.
     private fun String.appendValidated(target: StringBuilder, initialBytes: Int): Int? {
@@ -243,7 +248,78 @@ internal object DexClassDeclarations {
 
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
     // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.
-    private val dexStringIndex = DexBackedStringEncodedValue::class.java
-        .getDeclaredField("stringIndex")
-        .apply { isAccessible = true }
+    private val dexStringIndex by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        runCatching {
+            DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
+        }.getOrNull()
+    }
+
+    private fun dexStringUtf16Length(string: DexBackedStringEncodedValue): Int? = try {
+        val stringIndex = dexStringIndex?.getInt(string) ?: return null
+        val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
+        val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
+        string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun DexBackedStringEncodedValue.rawLengthWithinBudget(): Boolean {
+        val utf16Length = dexStringUtf16Length(this) ?: return true
+        return try {
+            // Every UTF-16 code unit contributes at least one byte to valid UTF-8.
+            DeclaredTypeExpansionBudget.validate(0, utf16Length)
+            true
+        } catch (_: IllegalArgumentException) {
+            false
+        }
+    }
 }
+
+private fun String.dexClassName(): String {
+    if (dexTypeEnd(0, allowVoid = false) != length || firstOrNull() != 'L') invalidDexDescriptor("class")
+    return substring(1, lastIndex).replace('/', '.')
+}
+
+private fun String.requireDexFieldDescriptor() {
+    if (dexTypeEnd(0, allowVoid = false) != length) invalidDexDescriptor("field")
+}
+
+private fun String.requireDexMethodDescriptor() {
+    if (firstOrNull() != '(') invalidDexDescriptor(METHOD_DESCRIPTOR_KIND)
+    var index = 1
+    while (index < length && this[index] != ')') {
+        index = dexTypeEnd(index, allowVoid = false) ?: invalidDexDescriptor(METHOD_DESCRIPTOR_KIND)
+    }
+    if (index >= length || this[index] != ')') invalidDexDescriptor(METHOD_DESCRIPTOR_KIND)
+    if (dexTypeEnd(index + 1, allowVoid = true) != length) invalidDexDescriptor(METHOD_DESCRIPTOR_KIND)
+}
+
+@Suppress("CyclomaticComplexMethod", "ReturnCount") // Mirrors the compact DEX descriptor grammar.
+private fun String.dexTypeEnd(start: Int, allowVoid: Boolean): Int? {
+    if (start !in indices) return null
+    var valueStart = start
+    while (valueStart < length && this[valueStart] == '[') {
+        if (valueStart - start == MAX_DEX_ARRAY_DIMENSIONS) return null
+        valueStart++
+    }
+    if (valueStart == length) return null
+    return when (this[valueStart]) {
+        'B', 'C', 'D', 'F', 'I', 'J', 'S', 'Z' -> valueStart + 1
+        'V' -> if (allowVoid && valueStart == start) valueStart + 1 else null
+        'L' -> indexOf(';', valueStart + 1).takeIf { end ->
+            end >= 0 && substring(valueStart + 1, end).isDexObjectName()
+        }?.plus(1)
+        else -> null
+    }
+}
+
+@Suppress("ComplexCondition") // DEX names allow broad Unicode but forbid descriptor separators and empty segments.
+private fun String.isDexObjectName(): Boolean =
+    isNotEmpty() && !startsWith('/') && !endsWith('/') && "//" !in this &&
+        none { it == '.' || it == '[' || it == '(' || it == ')' || it == '\u0000' }
+
+private fun String.invalidDexDescriptor(kind: String): Nothing =
+    throw IllegalArgumentException("Invalid $kind descriptor: $this")
+
+private const val METHOD_DESCRIPTOR_KIND = "method"
+private const val MAX_DEX_ARRAY_DIMENSIONS = 255

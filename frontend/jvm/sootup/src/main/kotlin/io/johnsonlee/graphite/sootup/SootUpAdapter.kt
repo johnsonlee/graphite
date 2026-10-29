@@ -443,7 +443,8 @@ class SootUpAdapter(
 
     /** Declaration snapshots are needed only while building the type table. */
     private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
-        val dexDeclarations = DexClassDeclarations.read(resourceAccessor)
+        val classNames = classes.mapTo(HashSet(classes.size)) { it.type.fullyQualifiedName }
+        val dexDeclarations = DexClassDeclarations.read(resourceAccessor, classNames)
         val declarations = classes.mapNotNull { sootClass ->
             val name = sootClass.type.fullyQualifiedName
             sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)

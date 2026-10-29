@@ -5,6 +5,7 @@ description = "Graphite SootUp Adapter - SootUp-based bytecode analysis backend"
 
 plugins {
     id("io.johnsonlee.sonatype-publish-plugin")
+    id("java-test-fixtures")
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     id("me.champeau.jmh")
 }

@@ -38,10 +38,10 @@ import io.johnsonlee.graphite.graph.incoming
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.graph.outgoing
 import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.sootup.testfixture.minimalAndroidSdk
 import java.lang.reflect.Modifier
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -140,7 +140,7 @@ class FrontendCorrectnessGateTest {
     }
 
     private fun fixtures(): List<Fixture> {
-        val androidSdk = minimalAndroidSdk()
+        val androidSdk = minimalAndroidSdk("frontend-correctness-android-sdk")
         return listOf(
             Fixture("java", requiredPath("frontend.correctness.java"), "fixture.frontend.java"),
             Fixture("kotlin", requiredPath("frontend.correctness.kotlin"), "fixture.frontend.kotlin"),
@@ -241,13 +241,6 @@ class FrontendCorrectnessGateTest {
         return Path.of(value).also { require(Files.exists(it)) { "$property does not exist: $it" } }
     }
 
-    /** ApkAnalysisInputLocation requires an SDK layout even when the fixture references no Android API. */
-    private fun minimalAndroidSdk(): Path {
-        val root = Files.createTempDirectory("frontend-correctness-android-sdk")
-        val platform = Files.createDirectories(root.resolve("platforms/android-1"))
-        JarOutputStream(Files.newOutputStream(platform.resolve("android.jar"))).use { }
-        return root
-    }
 }
 
 private data class Fixture(val id: String, val input: Path, val packageName: String, val androidSdk: Path? = null)

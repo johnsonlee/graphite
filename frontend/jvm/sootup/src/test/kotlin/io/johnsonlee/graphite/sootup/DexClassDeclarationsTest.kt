@@ -13,14 +13,17 @@ import org.jf.dexlib2.base.BaseAnnotationElement
 import org.jf.dexlib2.base.value.BaseMethodEncodedValue
 import org.jf.dexlib2.base.value.BaseTypeEncodedValue
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
-import org.jf.dexlib2.iface.Annotatable
+import org.jf.dexlib2.iface.Annotation
 import org.jf.dexlib2.iface.AnnotationElement
+import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.iface.value.EncodedValue
 import org.jf.dexlib2.immutable.ImmutableAnnotation
 import org.jf.dexlib2.immutable.ImmutableAnnotationElement
 import org.jf.dexlib2.immutable.ImmutableClassDef
 import org.jf.dexlib2.immutable.ImmutableDexFile
+import org.jf.dexlib2.immutable.ImmutableField
+import org.jf.dexlib2.immutable.ImmutableMethod
 import org.jf.dexlib2.immutable.value.ImmutableArrayEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableIntEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableStringEncodedValue
@@ -47,7 +50,8 @@ class DexClassDeclarationsTest {
             override fun open(path: String) = ByteArrayInputStream(dex)
         }
 
-        val declarations = DexClassDeclarations.read(resources)
+        val names = setOf("fixture.frontend.android.AndroidCases\$GenericBox")
+        val declarations = DexClassDeclarations.read(resources, names)
 
         assertTrue("fixture.frontend.android.AndroidCases\$GenericBox" in declarations)
         assertTrue(declarations.values.any { declaration -> declaration.methods.any { it.signature != null } })
@@ -55,43 +59,55 @@ class DexClassDeclarationsTest {
 
     @Test
     fun `signature fragments preserve Unicode and reject malformed or excessive annotations`() {
-        assertEquals("Lé中🚀;", DexClassDeclarations.readSignature(signature("Lé", "中", "🚀;")))
-        assertNull(DexClassDeclarations.readSignature(signature("\uD800")))
-        assertNull(DexClassDeclarations.readSignature(signature("\uDC00")))
-        assertNull(DexClassDeclarations.readSignature(signature("a".repeat(1_000_001))))
-        assertNull(DexClassDeclarations.readSignature(signature(*Array(100_001) { "" })))
-        assertNull(DexClassDeclarations.readSignature(annotatable(
+        assertEquals("Lé中🚀;", readSignature("Lé", "中", "🚀;"))
+        assertNull(readSignature("\uD800"))
+        assertNull(readSignature("\uDC00"))
+        assertNull(readSignature("a".repeat(1_000_001)))
+        assertNull(readSignature(*Array(100_001) { "" }))
+        assertNull(readSignatureAnnotation(annotation(
             ImmutableAnnotationElement("value", ImmutableArrayEncodedValue(listOf(ImmutableIntEncodedValue(1))))
         )))
-        assertNull(DexClassDeclarations.readSignature(annotatable(
+        assertNull(readSignatureAnnotation(annotation(
             ImmutableAnnotationElement("value", ImmutableArrayEncodedValue(emptyList())),
             ImmutableAnnotationElement("extra", ImmutableIntEncodedValue(1))
         )))
-        assertNull(DexClassDeclarations.readSignature(annotatable(
+        assertNull(readSignatureAnnotation(annotation(
             ImmutableAnnotationElement("value", ImmutableArrayEncodedValue(emptyList())),
             visibility = AnnotationVisibility.RUNTIME
         )))
-        assertNull(DexClassDeclarations.readSignature(object : Annotatable {
-            override fun getAnnotations() = throw ExceptionWithContext("bad annotation")
-        }))
-        assertNull(DexClassDeclarations.readSignature(object : Annotatable {
-            override fun getAnnotations() = throw IllegalArgumentException("bad annotation")
-        }))
-        assertNull(DexClassDeclarations.readSignature(object : Annotatable {
-            override fun getAnnotations() = throw IndexOutOfBoundsException("bad annotation")
-        }))
-        assertNull(DexClassDeclarations.readEnclosingClass(annotatable(
+        listOf(
+            ExceptionWithContext("bad annotation"),
+            IllegalArgumentException("bad annotation"),
+            IndexOutOfBoundsException("bad annotation")
+        ).forEach { failure ->
+            val base = testDefinition()
+            val invalid = object : ClassDef by base {
+                override fun getAnnotations(): Set<Annotation> = throw failure
+            }
+            assertNull(read(invalid).signature)
+        }
+        val badEnclosingClass = annotation(
             annotationElement(object : BaseTypeEncodedValue() {
                 override fun getValue(): String = throw IndexOutOfBoundsException("bad type index")
             }),
             type = "Ldalvik/annotation/EnclosingClass;"
-        )))
-        assertNull(DexClassDeclarations.readEnclosingMethod(annotatable(
+        )
+        val enclosingClassBase = testDefinition()
+        val invalidEnclosingClass = object : ClassDef by enclosingClassBase {
+            override fun getAnnotations() = setOf(badEnclosingClass)
+        }
+        assertNull(read(invalidEnclosingClass).enclosingClass)
+        val badEnclosingMethod = annotation(
             annotationElement(object : BaseMethodEncodedValue() {
                 override fun getValue(): MethodReference = throw ExceptionWithContext("bad method index")
             }),
             type = "Ldalvik/annotation/EnclosingMethod;"
-        )))
+        )
+        val enclosingMethodBase = testDefinition()
+        val invalidEnclosingMethod = object : ClassDef by enclosingMethodBase {
+            override fun getAnnotations() = setOf(badEnclosingMethod)
+        }
+        assertNull(read(invalidEnclosingMethod).enclosingMethod)
     }
 
     @Test
@@ -120,14 +136,14 @@ class DexClassDeclarationsTest {
         DexPool.writeTo(store, ImmutableDexFile(Opcodes.getDefault(), listOf(definition)))
         val dex = DexBackedDexFile.fromInputStream(null, ByteArrayInputStream(store.data))
 
-        assertNull(DexClassDeclarations.readSignature(dex.classes.single()))
+        assertNull(read(dex.classes.single()).signature)
     }
 
     @Test
     fun `invalid dex entries and classes fall back without aborting declaration loading`() {
         val resources = dexResources("classes.dex" to "not a dex".toByteArray())
 
-        assertEquals(emptyMap(), DexClassDeclarations.read(resources))
+        assertEquals(emptyMap(), DexClassDeclarations.read(resources, setOf("fixture.Invalid")))
     }
 
     @Test
@@ -140,7 +156,7 @@ class DexClassDeclarationsTest {
             "classes10.dex" to tenth,
             "classes.dex" to primary,
             "classes2.dex" to second
-        ))
+        ), setOf("fixture.Duplicate"))
 
         assertEquals("Ljava/util/List<Ljava/lang/Integer;>;", declarations.getValue("fixture.Duplicate").signature)
     }
@@ -170,11 +186,88 @@ class DexClassDeclarationsTest {
             emptyList()
         )
 
-        val declaration = DexClassDeclarations.read(dexResources("classes.dex" to dex(definition)))
+        val declaration = DexClassDeclarations.read(
+            dexResources("classes.dex" to dex(definition)),
+            setOf("fixture.InitializerLocal")
+        )
             .getValue("fixture.InitializerLocal")
 
         assertEquals("fixture.Outer", declaration.enclosingClass)
         assertNull(declaration.enclosingInstance)
+    }
+
+    @Test
+    fun `only requested class declarations are decoded`() {
+        var ignoredDecoded = false
+        val base = testDefinition(type = "Lfixture/Ignored;")
+        val ignored = object : ClassDef by base {
+            override fun getAnnotations(): Set<Annotation> {
+                ignoredDecoded = true
+                return emptySet()
+            }
+        }
+        val requested = testDefinition(type = "Lfixture/Requested;")
+
+        val declarations = DexClassDeclarations.read(
+            sequenceOf(ignored, requested),
+            setOf("fixture.Requested")
+        )
+
+        assertEquals(setOf("fixture.Requested"), declarations.keys)
+        assertFalse(ignoredDecoded)
+    }
+
+    @Test
+    fun `malformed member descriptors drop only their class declarations`() {
+        val invalidField = ImmutableField(
+            "Lfixture/InvalidField;",
+            "field",
+            "Lmissing-semicolon",
+            AccessFlags.PUBLIC.value,
+            null,
+            emptyList(),
+            emptySet()
+        )
+        val invalidMethod = ImmutableMethod(
+            "Lfixture/InvalidMethod;",
+            "method",
+            emptyList(),
+            "Lmissing-semicolon",
+            AccessFlags.PUBLIC.value,
+            emptySet(),
+            emptySet(),
+            null
+        )
+        val invalidFieldClass = testDefinition(type = "Lfixture/InvalidField;", fields = listOf(invalidField))
+        val invalidMethodClass = testDefinition(type = "Lfixture/InvalidMethod;", methods = listOf(invalidMethod))
+        val valid = testDefinition(type = "Lfixture/Valid;")
+
+        val declarations = DexClassDeclarations.read(
+            sequenceOf(invalidFieldClass, invalidMethodClass, valid),
+            setOf("fixture.InvalidField", "fixture.InvalidMethod", "fixture.Valid")
+        )
+
+        assertEquals(setOf("fixture.Valid"), declarations.keys)
+    }
+
+    @Test
+    fun `named member class retains enclosing instance without synthetic outer field`() {
+        val annotations = listOf(
+            annotation(
+                ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+                type = "Ldalvik/annotation/EnclosingClass;"
+            ),
+            annotation(
+                ImmutableAnnotationElement("accessFlags", ImmutableIntEncodedValue(0)),
+                ImmutableAnnotationElement("name", ImmutableStringEncodedValue("Member")),
+                type = "Ldalvik/annotation/InnerClass;"
+            )
+        )
+
+        val declaration = read(testDefinition(type = "Lfixture/Outer\$Member;", annotations = annotations))
+
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertTrue(declaration.enclosingInstance == true)
     }
 
     private fun classDefinition(signature: String): ImmutableClassDef {
@@ -212,27 +305,47 @@ class DexClassDeclarationsTest {
         }
     }
 
-    private fun signature(vararg fragments: String): Annotatable = annotatable(
+    private fun annotation(
+        vararg elements: AnnotationElement,
+        visibility: Int = AnnotationVisibility.SYSTEM,
+        type: String = "Ldalvik/annotation/Signature;"
+    ): Annotation = object : BaseAnnotation() {
+        override fun getVisibility() = visibility
+        override fun getType() = type
+        override fun getElements() = elements.toSet()
+    }
+
+    private fun readSignature(vararg fragments: String): String? = readSignatureAnnotation(annotation(
         ImmutableAnnotationElement(
             "value",
             ImmutableArrayEncodedValue(fragments.map(::ImmutableStringEncodedValue))
         )
+    ))
+
+    private fun readSignatureAnnotation(annotation: Annotation): String? =
+        read(testDefinition(annotations = listOf(annotation))).signature
+
+    private fun read(definition: ClassDef): ClassDeclarations =
+        DexClassDeclarations.read(sequenceOf(definition), setOf(definition.type.classNameForTest()))
+            .getValue(definition.type.classNameForTest())
+
+    private fun testDefinition(
+        type: String = "Lfixture/Test;",
+        annotations: Collection<Annotation> = emptyList(),
+        fields: Iterable<org.jf.dexlib2.iface.Field> = emptyList(),
+        methods: Iterable<org.jf.dexlib2.iface.Method> = emptyList()
+    ): ImmutableClassDef = ImmutableClassDef(
+        type,
+        AccessFlags.PUBLIC.value,
+        "Ljava/lang/Object;",
+        emptyList(),
+        null,
+        annotations,
+        fields,
+        methods
     )
 
-    private fun annotatable(
-        vararg elements: AnnotationElement,
-        visibility: Int = AnnotationVisibility.SYSTEM,
-        type: String = "Ldalvik/annotation/Signature;"
-    ): Annotatable {
-        val annotation = object : BaseAnnotation() {
-            override fun getVisibility() = visibility
-            override fun getType() = type
-            override fun getElements() = elements.toSet()
-        }
-        return object : Annotatable {
-            override fun getAnnotations() = setOf(annotation)
-        }
-    }
+    private fun String.classNameForTest(): String = substring(1, lastIndex).replace('/', '.')
 
     private fun annotationElement(encodedValue: EncodedValue): AnnotationElement = object : BaseAnnotationElement() {
         override fun getName() = "value"

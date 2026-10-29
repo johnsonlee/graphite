@@ -80,6 +80,7 @@ dependencies {
     implementation(libs.webgraph)
     testImplementation(project(":cypher"))
     testImplementation(project(":sootup"))
+    testImplementation(testFixtures(project(":sootup")))
     add(
         androidDeclaredTypesFixture.name,
         project(path = ":sootup", configuration = "frontendCorrectnessAndroidApk")

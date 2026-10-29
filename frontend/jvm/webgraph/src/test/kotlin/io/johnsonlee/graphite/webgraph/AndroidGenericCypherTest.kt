@@ -4,9 +4,9 @@ import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.JavaProjectLoader
+import io.johnsonlee.graphite.sootup.testfixture.minimalAndroidSdk
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -14,11 +14,9 @@ class AndroidGenericCypherTest {
     @Test
     @Suppress("NestedBlockDepth") // Each persisted loader and both temp roots need independent cleanup.
     fun `Android generic declarations survive persistence and Cypher projection`() {
-        val sdk = Files.createTempDirectory("android-declared-types-sdk")
+        val sdk = minimalAndroidSdk("android-declared-types-sdk")
         val directory = Files.createTempDirectory("android-declared-types-graph")
         try {
-            val platform = Files.createDirectories(sdk.resolve("platforms/android-1"))
-            JarOutputStream(Files.newOutputStream(platform.resolve("android.jar"))).use { }
             val apk = Path.of(requireNotNull(System.getProperty("android.declared.types.fixture")))
             val graph = JavaProjectLoader(
                 LoaderConfig(
