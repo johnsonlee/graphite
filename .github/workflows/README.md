@@ -14,7 +14,6 @@ configuration live in [`.github/scripts/`](../scripts/README.md).
 | [`rust.yml`](rust.yml) — Rust | Branch pushes matching `*`, PRs targeting `**` | Format, lint, build and test Rust; check static Linux binaries and container startup; exercise real JVM construction, persisted graphs and Kotlin/Rust response parity. Also compile-check the workspace on Windows. |
 | [`benchmark.yml`](benchmark.yml) — Benchmark correctness and OOM | PRs targeting `**` | Compare the product merge-base and exact PR head on one runner. Gate correctness, execution completeness and OOM; report timing differences without thresholds. |
 | [`benchmark-comment.yml`](benchmark-comment.yml) — Update benchmark report comment | Completion of Benchmark correctness and OOM; only PR-originated runs are published | Validate report provenance and update one benchmark comment for the current PR head. |
-| [`local-benchmark-report.yml`](local-benchmark-report.yml) — Local benchmark report | PR opened, edited, synchronized or reopened | Require the PR body to contain a complete local representative multi-graph benchmark report for the exact merge base and head. |
 | [`publish.yml`](publish.yml) — Publish | `v*` tag pushes, `repository_dispatch: publish`, or manual dispatch | Build release assets and publish them, or rehearse the release with manual dry-run mode. Jobs are restricted to the `johnsonlee` repository owner. |
 
 The literal branch patterns above reflect the YAML: `*` does not match a slash in a
@@ -30,7 +29,6 @@ The correctness workflows run independently. Their job names are:
 | JVM and CI scripts | `run-unit-test` |
 | Rust | `rust-build-test`, `rust-check-windows` |
 | Benchmark | `benchmark-harness-tests` → `benchmark-base-head` → `benchmark-regression-gate` |
-| Local benchmark report | `local-benchmark-report` |
 
 `rust-check-windows` runs `cargo check`; it is not a Windows execution test suite.
 `benchmark-regression-gate` retains its historical name for branch protection, but
@@ -64,12 +62,6 @@ the current four fixtures are JARs. The separate production CLI-default check in
 Hosted timings are observations, not performance acceptance. Reports compare base/head
 values and retain unavailable or failed measurements explicitly. See the
 [benchmark protocol](../../benchmark/README.md) for sampling, workload and heap details.
-
-The separate `local-benchmark-report` check reads only trusted target-branch code through
-`pull_request_target`; it never checks out or executes the candidate. It validates that the PR
-body names the exact merge base and head and contains the required local real persisted
-multi-graph report fields. It cannot attest that the submitted measurements are genuine, so
-review of the retained evidence remains mandatory. Keep this check required in branch protection.
 
 ## Why the benchmark comment has its own workflow
 

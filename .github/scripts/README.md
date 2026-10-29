@@ -10,7 +10,7 @@ binary-inspection tools, with no runtime npm dependencies.
 | Directory | Responsibility |
 | --- | --- |
 | `benchmark/` | Publish the single benchmark report comment after validating the workflow and product identities. |
-| `checks/` | Check PR benchmark-report structure, actual CLI/JVM launch behavior and static Linux release binaries. |
+| `checks/` | Check actual CLI/JVM launch behavior and static Linux release binaries. |
 | `release/` | Parse release tags and publish immutable releases with resumable draft uploads. |
 
 The Rust controller in the repository's root `benchmark/` executes benchmarks,
