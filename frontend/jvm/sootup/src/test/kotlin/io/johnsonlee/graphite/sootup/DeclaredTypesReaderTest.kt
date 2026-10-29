@@ -19,6 +19,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 
 class DeclaredTypesReaderTest {
@@ -270,11 +271,26 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `named nested class metadata does not make undeclared variables unresolved`() {
+        val nested = ClassDeclarations(
+            "example.Outer\$Companion", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TT;")),
+            emptyList(), null, null, false, hasInnerClassMetadata = true
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/String;"))
+
+        assertEquals("java.lang.String", table.render(value))
+        assertTrue(table.types.none { it.kind == "variable" })
+    }
+
+    @Test
     fun `local declaration behind a signatureless enclosing method remains unresolved`() {
         val method = MemberTypeKey("example.Outer", "lambda\$make\$0", "()V")
         val outer = ClassDeclarations(
             method.owner, null, "java.lang.Object", emptyList(), emptyList(),
-            listOf(MemberDeclaration(method.name, method.descriptor, null)), null, null, false
+            listOf(MemberDeclaration(method.name, method.descriptor, null, Opcodes.ACC_SYNTHETIC)), null, null, false
         )
         val local = ClassDeclarations(
             "example.Outer\$1", null, "java.lang.Object", emptyList(),
@@ -288,6 +304,26 @@ class DeclaredTypesReaderTest {
 
         assertEquals("T", variable.name)
         assertEquals("unresolved:class:${local.name}", variable.scope)
+    }
+
+    @Test
+    fun `ordinary signatureless enclosing method does not allow undeclared variables`() {
+        val method = MemberTypeKey("example.Outer", "make", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, null)), null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TT;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val value = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/lang/String;"))
+
+        assertEquals("java.lang.String", table.render(value))
+        assertTrue(table.types.none { it.kind == "variable" })
     }
 
     @Test

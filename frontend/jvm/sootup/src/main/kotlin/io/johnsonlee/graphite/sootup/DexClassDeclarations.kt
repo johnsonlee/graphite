@@ -20,6 +20,7 @@ import org.jf.dexlib2.iface.value.StringEncodedValue
 import org.jf.dexlib2.iface.value.TypeEncodedValue
 import org.jf.util.ExceptionWithContext
 import java.io.BufferedInputStream
+import java.lang.reflect.Field
 import sootup.apk.frontend.dexpler.DexFileProvider
 
 /** Reads the declaration metadata that Android stores in system annotations in every DEX file. */
@@ -44,21 +45,34 @@ internal object DexClassDeclarations {
                     "Failed to read DEX declarations with SootUp; scanning archive entries instead: " +
                         "${failure.message ?: failure.javaClass.simpleName}"
                 )
-                return read(resourceClasses(resources), classNames)
+                return read(resourceClasses(resources, true, warning), classNames, warning)
             }
-            val classes = dexFiles.asSequence().flatMap { safeClasses(it.base.dexFile) }
-            return read(classes, classNames)
+            val classes = dexFiles.asSequence().flatMapIndexed { index, dex ->
+                safeClasses(dex.base.dexFile, "SootUp DEX container #${index + 1}", warning)
+            }
+            return read(classes, classNames, warning)
         }
         // JAR and directory builds have no DEX classes and must not scan every resource entry.
-        return if (resources is ArchiveResourceAccessor) emptyMap() else read(resourceClasses(resources), classNames)
+        return if (resources is ArchiveResourceAccessor) emptyMap()
+        else read(resourceClasses(resources, false, warning), classNames, warning)
     }
 
-    internal fun read(classes: Sequence<ClassDef>, classNames: Set<String>): Map<String, ClassDeclarations> {
+    @Suppress("TooGenericExceptionCaught") // Untrusted dexlib implementations may throw arbitrary runtime failures.
+    internal fun read(
+        classes: Sequence<ClassDef>,
+        classNames: Set<String>,
+        warning: (String) -> Unit = {},
+        stringIndexField: Field? = dexStringIndexField
+    ): Map<String, ClassDeclarations> {
+        if (stringIndexField == null) {
+            warning("DEX generic signatures are disabled because dexlib's raw string index is unavailable")
+        }
         val definitions = linkedMapOf<String, ClassDef>()
         classes.forEach { definition ->
             val name = try {
                 definition.type.dexClassName()
-            } catch (_: Exception) {
+            } catch (failure: Exception) {
+                warning("Skipping a DEX declaration with an invalid class type: ${failure.summary()}")
                 return@forEach
             }
             if (name in classNames) {
@@ -68,18 +82,30 @@ internal object DexClassDeclarations {
         }
         return definitions.mapNotNull { (name, definition) ->
             try {
-                name to from(definition)
-            } catch (_: Exception) {
+                name to from(definition, stringIndexField)
+            } catch (failure: Exception) {
+                warning("Skipping DEX declarations for $name: ${failure.summary()}")
                 null
             }
         }.toMap(linkedMapOf())
     }
 
-    private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
-        resources.list("**")
-            // DexFileFactory accepts every zip entry with DEX magic, including classes1.dex
-            // and entries whose names do not end in .dex. Mirror SootUp's primary/classes-first
-            // and reverse-lexical ordering so the same last duplicate wins.
+    @Suppress("TooGenericExceptionCaught") // Resource providers and dexlib surface implementation-specific failures.
+    private fun resourceClasses(
+        resources: ResourceAccessor,
+        includeNonDexNames: Boolean,
+        warning: (String) -> Unit
+    ): Sequence<ClassDef> = sequence {
+        val entries = if (includeNonDexNames) resources.list("**") else {
+            sequenceOf(resources.list("*.dex"), resources.list("**/*.dex"))
+                .flatten()
+                .filter { it.path.endsWith(".dex", ignoreCase = true) }
+                .distinctBy(ResourceEntry::path)
+        }
+        entries
+            // An exceptional SootUp-provider fallback accepts any entry with DEX magic.
+            // Generic accessors are limited to .dex names. Preserve SootUp's primary/classes-first
+            // and reverse-lexical ordering so the same last duplicate wins in both paths.
             .sortedWith(compareBy<ResourceEntry> {
                 it.path.substringAfterLast('/') != "classes.dex"
             }.thenBy {
@@ -94,64 +120,84 @@ internal object DexClassDeclarations {
                         val read = buffered.read(magic)
                         buffered.reset()
                         if (read != DEX_MAGIC_SIZE || !magic.isDexMagic()) emptySequence() else {
-                            safeClasses(DexBackedDexFile.fromInputStream(null, buffered))
+                            safeClasses(DexBackedDexFile.fromInputStream(null, buffered), entry.path, warning)
                         }
                     }
-                } catch (_: Exception) {
+                } catch (failure: Exception) {
+                    warning("Failed to read DEX declarations from ${entry.path}: ${failure.summary()}")
                     emptySequence()
                 }
                 yieldAll(classes)
             }
     }
 
-    private fun safeClasses(dexFile: DexFile): Sequence<ClassDef> = sequence {
+    @Suppress("TooGenericExceptionCaught") // Class iterators from damaged DEX files may fail at any traversal step.
+    private fun safeClasses(
+        dexFile: DexFile,
+        source: String,
+        warning: (String) -> Unit
+    ): Sequence<ClassDef> = sequence {
         val iterator = try {
             dexFile.classes.iterator()
-        } catch (_: Exception) {
+        } catch (failure: Exception) {
+            warning("Failed to enumerate classes in $source: ${failure.summary()}")
             return@sequence
         }
         while (true) {
             val hasNext = try {
                 iterator.hasNext()
-            } catch (_: Exception) {
+            } catch (failure: Exception) {
+                warning("Stopped enumerating classes in $source: ${failure.summary()}")
                 return@sequence
             }
             if (!hasNext) return@sequence
             val definition = try {
                 iterator.next()
-            } catch (_: Exception) {
+            } catch (failure: Exception) {
+                warning("Stopped enumerating classes in $source: ${failure.summary()}")
                 return@sequence
             }
             yield(definition)
         }
     }
 
-    private fun from(definition: ClassDef): ClassDeclarations {
+    private fun from(definition: ClassDef, stringIndexField: Field?): ClassDeclarations {
         val name = definition.type.dexClassName()
         val superName = definition.superclass?.dexClassName()
         val interfaces = definition.interfaces.map { it.dexClassName() }
         val fields = definition.fields.map { field ->
             field.type.requireDexFieldDescriptor()
-            MemberDeclaration(field.name, field.type, field.signature(), field.accessFlags)
+            MemberDeclaration(field.name, field.type, field.signature(stringIndexField), field.accessFlags)
         }
         val methods = definition.methods.map { method ->
             val descriptor = method.descriptor()
             descriptor.requireDexMethodDescriptor()
-            MemberDeclaration(method.name, descriptor, method.signature(), method.accessFlags)
+            MemberDeclaration(method.name, descriptor, method.signature(stringIndexField), method.accessFlags)
         }
         val enclosingMethod = definition.enclosingMethod()
+        val hasInnerClassMetadata = try {
+            definition.systemAnnotation(INNER_CLASS) != null
+        } catch (_: ExceptionWithContext) {
+            false
+        } catch (_: IllegalArgumentException) {
+            false
+        } catch (_: IndexOutOfBoundsException) {
+            false
+        }
         val innerAccess = definition.intAnnotation(INNER_CLASS, "accessFlags")
         val innerName = definition.stringAnnotation(INNER_CLASS, "name")
-        val enclosingClass = enclosingMethod?.owner ?: definition.typeAnnotation(ENCLOSING_CLASS)
-            ?.dexClassName()
-            ?.takeIf { innerAccess != null && !AccessFlags.STATIC.isSet(innerAccess) }
+        val encodedEnclosingClass = definition.typeAnnotation(ENCLOSING_CLASS)?.dexClassName()
+        val enclosingClass = enclosingMethod?.owner ?: encodedEnclosingClass?.takeIf {
+            !hasInnerClassMetadata || innerName == null ||
+                innerAccess != null && !AccessFlags.STATIC.isSet(innerAccess)
+        }
         val hasEnclosingField = enclosingClass != null && fields.any { field ->
             AccessFlags.SYNTHETIC.isSet(field.access) && field.name.startsWith("this\$") &&
                 field.descriptor == "L${enclosingClass.replace('.', '/')};"
         }
         return ClassDeclarations(
             name = name,
-            signature = definition.signature(),
+            signature = definition.signature(stringIndexField),
             superName = superName,
             interfaces = interfaces,
             fields = fields,
@@ -164,12 +210,13 @@ internal object DexClassDeclarations {
                 enclosingMethod == null && innerName != null -> true
                 hasEnclosingField -> true
                 else -> null
-            }
+            },
+            hasInnerClassMetadata = hasInnerClassMetadata
         )
     }
 
-    private fun Annotatable.signature(): String? = try {
-        signatureValue()
+    private fun Annotatable.signature(stringIndexField: Field?): String? = try {
+        signatureValue(stringIndexField)
     } catch (_: ExceptionWithContext) {
         null
     } catch (_: IllegalArgumentException) {
@@ -179,7 +226,7 @@ internal object DexClassDeclarations {
     }
 
     @Suppress("ReturnCount") // Every invalid system-annotation shape falls back independently.
-    private fun Annotatable.signatureValue(): String? {
+    private fun Annotatable.signatureValue(stringIndexField: Field?): String? {
         val annotation = systemAnnotation(SIGNATURE) ?: return null
         if (annotation.elements.size != 1) return null
         val value = annotation.elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue ?: return null
@@ -189,7 +236,7 @@ internal object DexClassDeclarations {
         for (encoded in value.value) {
             val string = encoded as? StringEncodedValue ?: return null
             // dexlib decodes on getValue(). Bound its temporary String before materializing it.
-            if (string is DexBackedStringEncodedValue && !string.rawLengthWithinBudget()) return null
+            if (string is DexBackedStringEncodedValue && !string.rawLengthWithinBudget(stringIndexField)) return null
             val fragment = string.value
             bytes = fragment.appendValidated(signature, bytes) ?: return null
         }
@@ -268,12 +315,18 @@ internal object DexClassDeclarations {
 
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
     // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.
-    internal val dexStringIndexField by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
+    internal val dexStringIndexField: Field? by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        try {
+            DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
+        } catch (_: ReflectiveOperationException) {
+            null
+        } catch (_: SecurityException) {
+            null
+        }
     }
 
-    private fun dexStringUtf16Length(string: DexBackedStringEncodedValue): Int? = try {
-        val stringIndex = dexStringIndexField.getInt(string)
+    private fun dexStringUtf16Length(string: DexBackedStringEncodedValue, stringIndexField: Field?): Int? = try {
+        val stringIndex = stringIndexField?.getInt(string) ?: return null
         val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
         val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
         string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
@@ -281,9 +334,9 @@ internal object DexClassDeclarations {
         null
     }
 
-    private fun DexBackedStringEncodedValue.rawLengthWithinBudget(): Boolean {
+    private fun DexBackedStringEncodedValue.rawLengthWithinBudget(stringIndexField: Field?): Boolean {
         // Fail closed if the pinned dexlib representation changes; never decode before bounding.
-        val utf16Length = dexStringUtf16Length(this) ?: return false
+        val utf16Length = dexStringUtf16Length(this, stringIndexField) ?: return false
         return try {
             // Every UTF-16 code unit contributes at least one byte to valid UTF-8.
             DeclaredTypeExpansionBudget.validate(0, utf16Length)
@@ -300,6 +353,8 @@ internal object DexClassDeclarations {
             (4..6).all { this[it] in '0'.code.toByte()..'9'.code.toByte() } && this[7] == 0.toByte()
 
     private const val DEX_MAGIC_SIZE = 8
+
+    private fun Exception.summary(): String = message?.takeIf(String::isNotBlank) ?: javaClass.simpleName
 }
 
 private fun String.dexClassName(): String {

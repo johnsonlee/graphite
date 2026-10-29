@@ -26,7 +26,8 @@ internal data class ClassDeclarations(
     val enclosingClass: String?,
     val enclosingMethod: MemberTypeKey?,
     val isEnum: Boolean,
-    val enclosingInstance: Boolean? = null
+    val enclosingInstance: Boolean? = null,
+    val hasInnerClassMetadata: Boolean = false
 ) {
     companion object {
         /** Keep malformed-class rejection at parse time without retaining snapshots. */
@@ -62,7 +63,8 @@ internal data class ClassDeclarations(
                         it.access and Opcodes.ACC_SYNTHETIC != 0 && it.name.startsWith("this\$") && it.desc == "L$enclosing;"
                     } -> true
                     else -> null // Local class: resolve enclosing method access before deciding.
-                }
+                },
+                inner != null
             )
         }
     }
@@ -78,6 +80,13 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     private val expandedNodes = IntArrayList()
     private val expandedBytes = IntArrayList()
     private val boundsByVariable = HashMap<Pair<String, String>, List<Int>>()
+    private val methodDeclarations = buildMap {
+        declarations.values.forEach { declaration ->
+            declaration.methods.forEach { method ->
+                put(MemberTypeKey(declaration.name, method.name, method.descriptor), method)
+            }
+        }
+    }
 
     @Suppress("CyclomaticComplexMethod") // Class, field and method declarations share one rollback-safe table.
     fun build(): DeclaredTypeTable {
@@ -118,7 +127,8 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             declaration.methods.forEach { method ->
                 val key = MemberTypeKey(declaration.name, method.name, method.descriptor)
                 val methodScope = methodScope(key)
-                val methodEnv = env + formalNames(method.signature).associateWith { methodScope }
+                val methodFormalNames = formalNames(method.signature)
+                val methodEnv = env + methodFormalNames.associateWith { methodScope }
                 val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
                 val genericMethodTypes = optional(method.signature) {
                     val generic = Parser(it, methodScope, methodEnv, allowUnresolvedVariables).method()
@@ -150,7 +160,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                         ))
                     }
                 }
-                if (genericMethodTypes == null && formalNames(method.signature).isNotEmpty()) {
+                if (genericMethodTypes == null && methodFormalNames.isNotEmpty()) {
                     rejectedMethodSignatures.add(key)
                 }
                 val methodTypes = genericMethodTypes ?: descriptor
@@ -259,13 +269,14 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     ): Boolean {
         val owner = declaration.enclosingClass ?: declaration.enclosingMethod?.owner
         val method = declaration.enclosingMethod
-        val methodSignatureIncomplete = method != null && (method in rejectedMethodSignatures ||
-            declarations[method.owner]?.methods
-                ?.firstOrNull { it.name == method.name && it.descriptor == method.descriptor }
-                ?.signature == null)
+        val enclosingMethod = method?.let(methodDeclarations::get)
+        val methodSignatureIncomplete = method != null && (
+            method in rejectedMethodSignatures || enclosingMethod == null ||
+                enclosingMethod.signature == null && enclosingMethod.access and Opcodes.ACC_SYNTHETIC != 0
+            )
         // Synthetic lambda/initializer owners commonly have no Signature even though their
         // local classes legally capture a type variable declared by the source method.
-        return owner == null && '$' in declaration.name || owner != null &&
+        return owner == null && '$' in declaration.name && !declaration.hasInnerClassMetadata || owner != null &&
             (owner !in declarations || owner in unresolvedEnvironments || methodSignatureIncomplete)
     }
 

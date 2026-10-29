@@ -141,7 +141,22 @@ class DexClassDeclarationsTest {
 
     @Test
     fun `pinned dexlib exposes the raw string index used by the allocation guard`() {
-        assertEquals(Int::class.javaPrimitiveType, DexClassDeclarations.dexStringIndexField.type)
+        assertEquals(Int::class.javaPrimitiveType, requireNotNull(DexClassDeclarations.dexStringIndexField).type)
+    }
+
+    @Test
+    fun `missing raw string index reports disabled dex generic signatures`() {
+        val warnings = mutableListOf<String>()
+
+        DexClassDeclarations.read(
+            sequenceOf(testDefinition()),
+            setOf("fixture.Test"),
+            warnings::add,
+            stringIndexField = null
+        )
+
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single().contains("raw string index"))
     }
 
     @Test
@@ -149,6 +164,25 @@ class DexClassDeclarationsTest {
         val resources = dexResources("classes.dex" to "not a dex".toByteArray())
 
         assertEquals(emptyMap(), DexClassDeclarations.read(resources, setOf("fixture.Invalid")))
+    }
+
+    @Test
+    fun `resource failures and invalid class types are reported`() {
+        val warnings = mutableListOf<String>()
+        val resources = object : ResourceAccessor {
+            override fun list(pattern: String) = sequenceOf(ResourceEntry("classes.dex", "fixture"))
+            override fun open(path: String) = error("unreadable DEX")
+        }
+        val base = testDefinition()
+        val invalidType = object : ClassDef by base {
+            override fun getType() = "not-a-class-descriptor"
+        }
+
+        assertEquals(emptyMap(), DexClassDeclarations.read(resources, setOf("fixture.Test"), warnings::add))
+        assertEquals(emptyMap(), DexClassDeclarations.read(sequenceOf(invalidType), setOf("fixture.Test"), warnings::add))
+        assertEquals(2, warnings.size)
+        assertTrue(warnings[0].contains("classes.dex"))
+        assertTrue(warnings[1].contains("invalid class type"))
     }
 
     @Test
@@ -167,17 +201,24 @@ class DexClassDeclarationsTest {
     }
 
     @Test
-    fun `resource fallback accepts classes1 and nonstandard dex entry names by magic`() {
+    fun `generic resource fallback only opens dex entry names`() {
         val first = dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;"))
         val unusual = dex(classDefinition("Ljava/util/List<Ljava/lang/Integer;>;"))
-
-        val declarations = DexClassDeclarations.read(dexResources(
+        val opened = mutableListOf<String>()
+        val content = mapOf(
             "classes1.dex" to first,
             "payload.bin" to unusual,
             "not-dex.dat" to "dex\\n039\\u0000broken".toByteArray()
-        ), setOf("fixture.Duplicate"))
+        )
+        val resources = object : ResourceAccessor {
+            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun open(path: String) = ByteArrayInputStream(content.getValue(path)).also { opened.add(path) }
+        }
 
-        assertEquals("Ljava/util/List<Ljava/lang/Integer;>;", declarations.getValue("fixture.Duplicate").signature)
+        val declarations = DexClassDeclarations.read(resources, setOf("fixture.Duplicate"))
+
+        assertEquals("Ljava/util/List<Ljava/lang/String;>;", declarations.getValue("fixture.Duplicate").signature)
+        assertEquals(listOf("classes1.dex"), opened)
     }
 
     @Test
@@ -287,6 +328,83 @@ class DexClassDeclarationsTest {
 
         assertEquals("fixture.Outer", declaration.enclosingClass)
         assertTrue(declaration.enclosingInstance == true)
+        assertTrue(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
+    fun `stripped inner metadata uses a synthetic outer field as enclosing-instance evidence`() {
+        val annotations = listOf(annotation(
+            ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+            type = "Ldalvik/annotation/EnclosingClass;"
+        ))
+        val outerField = ImmutableField(
+            "Lfixture/Outer\$Local;", "this\$0", "Lfixture/Outer;", AccessFlags.SYNTHETIC.value,
+            null, emptyList(), emptySet()
+        )
+
+        val declaration = read(testDefinition(
+            type = "Lfixture/Outer\$Local;",
+            annotations = annotations,
+            fields = listOf(outerField)
+        ))
+
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertTrue(declaration.enclosingInstance == true)
+        assertFalse(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
+    fun `enclosing class survives stripped inner class metadata`() {
+        val annotations = listOf(annotation(
+            ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+            type = "Ldalvik/annotation/EnclosingClass;"
+        ))
+
+        val declaration = read(testDefinition(type = "Lfixture/Outer\$Local;", annotations = annotations))
+
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertNull(declaration.enclosingInstance)
+        assertFalse(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
+    fun `named static member does not retain an enclosing instance`() {
+        val annotations = listOf(
+            annotation(
+                ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+                type = "Ldalvik/annotation/EnclosingClass;"
+            ),
+            annotation(
+                ImmutableAnnotationElement("accessFlags", ImmutableIntEncodedValue(AccessFlags.STATIC.value)),
+                ImmutableAnnotationElement("name", ImmutableStringEncodedValue("Nested")),
+                type = "Ldalvik/annotation/InnerClass;"
+            )
+        )
+
+        val declaration = read(testDefinition(type = "Lfixture/Outer\$Nested;", annotations = annotations))
+
+        assertNull(declaration.enclosingClass)
+        assertTrue(declaration.enclosingInstance == false)
+        assertTrue(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
+    fun `malformed requested class reports its declaration loss`() {
+        val invalidField = ImmutableField(
+            "Lfixture/Invalid;", "field", "Lmissing-semicolon", AccessFlags.PUBLIC.value,
+            null, emptyList(), emptySet()
+        )
+        val warnings = mutableListOf<String>()
+
+        val declarations = DexClassDeclarations.read(
+            sequenceOf(testDefinition(type = "Lfixture/Invalid;", fields = listOf(invalidField))),
+            setOf("fixture.Invalid"),
+            warnings::add
+        )
+
+        assertEquals(emptyMap(), declarations)
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single().contains("fixture.Invalid"))
     }
 
     private fun classDefinition(signature: String): ImmutableClassDef {
