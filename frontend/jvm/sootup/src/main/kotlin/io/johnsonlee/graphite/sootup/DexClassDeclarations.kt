@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.input.ResourceAccessor
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.AnnotationVisibility
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
+import org.jf.dexlib2.dexbacked.value.DexBackedStringEncodedValue
 import org.jf.dexlib2.iface.Annotatable
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
@@ -121,7 +122,21 @@ internal object DexClassDeclarations {
         val signature = StringBuilder()
         var bytes = 0
         for (encoded in value.value) {
-            val fragment = (encoded as? StringEncodedValue)?.value ?: return null
+            val string = encoded as? StringEncodedValue ?: return null
+            if (string is DexBackedStringEncodedValue) {
+                // dexlib decodes on getValue(). Bound its temporary String before materializing it.
+                val stringIndex = dexStringIndex.getInt(string)
+                val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
+                val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
+                val utf16Length = string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
+                try {
+                    // Every UTF-16 code unit contributes at least one byte to valid UTF-8.
+                    DeclaredTypeExpansionBudget.validate(0, utf16Length)
+                } catch (_: IllegalArgumentException) {
+                    return null
+                }
+            }
+            val fragment = string.value
             bytes = fragment.appendValidated(signature, bytes) ?: return null
         }
         return signature.toString()
@@ -202,4 +217,8 @@ internal object DexClassDeclarations {
         ?.takeIf(String::isNotEmpty) ?: "1"
 
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
+    // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.
+    private val dexStringIndex = DexBackedStringEncodedValue::class.java
+        .getDeclaredField("stringIndex")
+        .apply { isAccessible = true }
 }

@@ -5,19 +5,27 @@ import io.johnsonlee.graphite.input.ResourceEntry
 import java.io.ByteArrayInputStream
 import java.nio.file.Path
 import java.util.zip.ZipFile
+import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.AnnotationVisibility
+import org.jf.dexlib2.Opcodes
 import org.jf.dexlib2.base.BaseAnnotation
 import org.jf.dexlib2.base.BaseAnnotationElement
 import org.jf.dexlib2.base.value.BaseMethodEncodedValue
 import org.jf.dexlib2.base.value.BaseTypeEncodedValue
+import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.iface.Annotatable
 import org.jf.dexlib2.iface.AnnotationElement
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.iface.value.EncodedValue
+import org.jf.dexlib2.immutable.ImmutableAnnotation
 import org.jf.dexlib2.immutable.ImmutableAnnotationElement
+import org.jf.dexlib2.immutable.ImmutableClassDef
+import org.jf.dexlib2.immutable.ImmutableDexFile
 import org.jf.dexlib2.immutable.value.ImmutableArrayEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableIntEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableStringEncodedValue
+import org.jf.dexlib2.writer.io.MemoryDataStore
+import org.jf.dexlib2.writer.pool.DexPool
 import org.jf.util.ExceptionWithContext
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -83,6 +91,35 @@ class DexClassDeclarationsTest {
             }),
             type = "Ldalvik/annotation/EnclosingMethod;"
         )))
+    }
+
+    @Test
+    fun `dex backed signature rejects an oversized string before projection`() {
+        val annotation = ImmutableAnnotation(
+            AnnotationVisibility.SYSTEM,
+            "Ldalvik/annotation/Signature;",
+            listOf(
+                ImmutableAnnotationElement(
+                    "value",
+                    ImmutableArrayEncodedValue(listOf(ImmutableStringEncodedValue("a".repeat(1_000_001))))
+                )
+            )
+        )
+        val definition = ImmutableClassDef(
+            "Lfixture/Oversized;",
+            AccessFlags.PUBLIC.value,
+            "Ljava/lang/Object;",
+            emptyList(),
+            null,
+            listOf(annotation),
+            emptyList(),
+            emptyList()
+        )
+        val store = MemoryDataStore()
+        DexPool.writeTo(store, ImmutableDexFile(Opcodes.getDefault(), listOf(definition)))
+        val dex = DexBackedDexFile.fromInputStream(null, ByteArrayInputStream(store.data))
+
+        assertNull(DexClassDeclarations.readSignature(dex.classes.single()))
     }
 
     private fun signature(vararg fragments: String): Annotatable = annotatable(
