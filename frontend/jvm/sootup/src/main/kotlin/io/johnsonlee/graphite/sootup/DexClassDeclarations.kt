@@ -29,19 +29,28 @@ internal object DexClassDeclarations {
     private const val ENCLOSING_METHOD = "Ldalvik/annotation/EnclosingMethod;"
     private const val INNER_CLASS = "Ldalvik/annotation/InnerClass;"
     private const val VALUE = "value"
-    private val dexName = Regex("classes(?:([2-9]|[1-9][0-9]+))?\\.dex")
 
-    fun read(resources: ResourceAccessor, classNames: Set<String>): Map<String, ClassDeclarations> {
+    @Suppress("ReturnCount", "TooGenericExceptionCaught")
+    fun read(
+        resources: ResourceAccessor,
+        classNames: Set<String>,
+        warning: (String) -> Unit = {}
+    ): Map<String, ClassDeclarations> {
         if (resources is ArchiveResourceAccessor && resources.sourcePath != null && resources.dexApi != null) {
             val dexFiles = try {
                 DexFileProvider.getInstance().getDexFromSource(resources.sourcePath.toFile(), resources.dexApi)
-            } catch (_: Exception) {
-                emptyList()
+            } catch (failure: Exception) {
+                warning(
+                    "Failed to read DEX declarations with SootUp; scanning archive entries instead: " +
+                        "${failure.message ?: failure.javaClass.simpleName}"
+                )
+                return read(resourceClasses(resources), classNames)
             }
             val classes = dexFiles.asSequence().flatMap { safeClasses(it.base.dexFile) }
             return read(classes, classNames)
         }
-        return read(resourceClasses(resources), classNames)
+        // JAR and directory builds have no DEX classes and must not scan every resource entry.
+        return if (resources is ArchiveResourceAccessor) emptyMap() else read(resourceClasses(resources), classNames)
     }
 
     internal fun read(classes: Sequence<ClassDef>, classNames: Set<String>): Map<String, ClassDeclarations> {
@@ -67,15 +76,26 @@ internal object DexClassDeclarations {
     }
 
     private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
-        resources.list("classes*.dex")
-            .filter { dexName.matches(it.path) }
-            // Match DexFileProvider's order: primary first, then reverse lexical. Its class
-            // index is last-wins, so declarations must visit duplicate definitions identically.
-            .sortedWith(compareBy<ResourceEntry> { it.path != "classes.dex" }.thenByDescending { it.path })
+        resources.list("**")
+            // DexFileFactory accepts every zip entry with DEX magic, including classes1.dex
+            // and entries whose names do not end in .dex. Mirror SootUp's primary/classes-first
+            // and reverse-lexical ordering so the same last duplicate wins.
+            .sortedWith(compareBy<ResourceEntry> {
+                it.path.substringAfterLast('/') != "classes.dex"
+            }.thenBy {
+                !it.path.substringAfterLast('/').startsWith("classes")
+            }.thenByDescending { it.path.substringAfterLast('/') })
             .forEach { entry ->
                 val classes = try {
                     resources.open(entry.path).use { input ->
-                        safeClasses(DexBackedDexFile.fromInputStream(null, BufferedInputStream(input)))
+                        val buffered = BufferedInputStream(input)
+                        buffered.mark(DEX_MAGIC_SIZE)
+                        val magic = ByteArray(DEX_MAGIC_SIZE)
+                        val read = buffered.read(magic)
+                        buffered.reset()
+                        if (read != DEX_MAGIC_SIZE || !magic.isDexMagic()) emptySequence() else {
+                            safeClasses(DexBackedDexFile.fromInputStream(null, buffered))
+                        }
                     }
                 } catch (_: Exception) {
                     emptySequence()
@@ -248,14 +268,12 @@ internal object DexClassDeclarations {
 
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
     // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.
-    private val dexStringIndex by lazy(LazyThreadSafetyMode.PUBLICATION) {
-        runCatching {
-            DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
-        }.getOrNull()
+    internal val dexStringIndexField by lazy(LazyThreadSafetyMode.PUBLICATION) {
+        DexBackedStringEncodedValue::class.java.getDeclaredField("stringIndex").apply { isAccessible = true }
     }
 
     private fun dexStringUtf16Length(string: DexBackedStringEncodedValue): Int? = try {
-        val stringIndex = dexStringIndex?.getInt(string) ?: return null
+        val stringIndex = dexStringIndexField.getInt(string)
         val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
         val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
         string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
@@ -264,7 +282,8 @@ internal object DexClassDeclarations {
     }
 
     private fun DexBackedStringEncodedValue.rawLengthWithinBudget(): Boolean {
-        val utf16Length = dexStringUtf16Length(this) ?: return true
+        // Fail closed if the pinned dexlib representation changes; never decode before bounding.
+        val utf16Length = dexStringUtf16Length(this) ?: return false
         return try {
             // Every UTF-16 code unit contributes at least one byte to valid UTF-8.
             DeclaredTypeExpansionBudget.validate(0, utf16Length)
@@ -273,6 +292,14 @@ internal object DexClassDeclarations {
             false
         }
     }
+
+    @Suppress("MagicNumber") // Fixed offsets and byte values in the eight-byte DEX magic header.
+    private fun ByteArray.isDexMagic(): Boolean =
+        size == DEX_MAGIC_SIZE && this[0] == 'd'.code.toByte() && this[1] == 'e'.code.toByte() &&
+            this[2] == 'x'.code.toByte() && this[3] == '\n'.code.toByte() &&
+            (4..6).all { this[it] in '0'.code.toByte()..'9'.code.toByte() } && this[7] == 0.toByte()
+
+    private const val DEX_MAGIC_SIZE = 8
 }
 
 private fun String.dexClassName(): String {

@@ -140,6 +140,11 @@ class DexClassDeclarationsTest {
     }
 
     @Test
+    fun `pinned dexlib exposes the raw string index used by the allocation guard`() {
+        assertEquals(Int::class.javaPrimitiveType, DexClassDeclarations.dexStringIndexField.type)
+    }
+
+    @Test
     fun `invalid dex entries and classes fall back without aborting declaration loading`() {
         val resources = dexResources("classes.dex" to "not a dex".toByteArray())
 
@@ -156,6 +161,20 @@ class DexClassDeclarationsTest {
             "classes10.dex" to tenth,
             "classes.dex" to primary,
             "classes2.dex" to second
+        ), setOf("fixture.Duplicate"))
+
+        assertEquals("Ljava/util/List<Ljava/lang/Integer;>;", declarations.getValue("fixture.Duplicate").signature)
+    }
+
+    @Test
+    fun `resource fallback accepts classes1 and nonstandard dex entry names by magic`() {
+        val first = dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;"))
+        val unusual = dex(classDefinition("Ljava/util/List<Ljava/lang/Integer;>;"))
+
+        val declarations = DexClassDeclarations.read(dexResources(
+            "classes1.dex" to first,
+            "payload.bin" to unusual,
+            "not-dex.dat" to "dex\\n039\\u0000broken".toByteArray()
         ), setOf("fixture.Duplicate"))
 
         assertEquals("Ljava/util/List<Ljava/lang/Integer;>;", declarations.getValue("fixture.Duplicate").signature)

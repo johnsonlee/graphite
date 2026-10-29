@@ -86,34 +86,18 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val classes = linkedMapOf<String, ClassTypes>()
         val acceptedEnvironments = hashMapOf<String, Map<String, String>>()
         val unresolvedEnvironments = hashSetOf<String>()
+        val rejectedMethodSignatures = hashSetOf<MemberTypeKey>()
         val orderedDeclarations = orderedDeclarations()
         orderedDeclarations.forEach { declaration ->
             val scope = classScope(declaration.name)
             val inheritedEnv = acceptedEnvironment(declaration, acceptedEnvironments, methods)
             val classEnv = inheritedEnv + formalNames(declaration.signature).associateWith { scope }
-            val allowUnresolvedVariables = hasIncompleteEnclosingEnvironment(declaration, unresolvedEnvironments)
-            val classTypes = optional(declaration.signature) {
-                val parser = Parser(it, scope, classEnv, allowUnresolvedVariables)
-                val parameters = parser.formals()
-                val superType = parser.type()
-                val interfaces = mutableListOf<Int>()
-                while (parser.hasNext()) interfaces.add(parser.type())
-                val result = ClassTypes(parameters, superType, interfaces)
-                val localBounds = parameters.associate { parameter ->
-                    (parameter.scope to parameter.name) to parameter.bounds
-                }
-                require(declaration.superName != null && erasesTo(
-                    superType,
-                    classDescriptor(declaration.superName),
-                    boundsByVariable,
-                    localBounds
-                ))
-                require(interfaces.size == declaration.interfaces.size)
-                interfaces.zip(declaration.interfaces).forEach { (type, name) ->
-                    require(erasesTo(type, classDescriptor(name), boundsByVariable, localBounds))
-                }
-                result
-            } ?: ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
+            val allowUnresolvedVariables = hasIncompleteEnclosingEnvironment(
+                declaration,
+                unresolvedEnvironments,
+                rejectedMethodSignatures
+            )
+            val classTypes = parseClassTypes(declaration, scope, classEnv, allowUnresolvedVariables)
             classes[declaration.name] = classTypes
             classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             val env = inheritedEnv + classTypes.typeParameters.associate { it.name to it.scope }
@@ -136,7 +120,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val methodScope = methodScope(key)
                 val methodEnv = env + formalNames(method.signature).associateWith { methodScope }
                 val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
-                val methodTypes = optional(method.signature) {
+                val genericMethodTypes = optional(method.signature) {
                     val generic = Parser(it, methodScope, methodEnv, allowUnresolvedVariables).method()
                     // Constructors may omit synthetic enclosing-instance/enum arguments in Signature.
                     val missing = descriptor.parameterTypes.size - generic.parameterTypes.size
@@ -165,7 +149,11 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                             allowUnresolvedVariables
                         ))
                     }
-                } ?: descriptor
+                }
+                if (genericMethodTypes == null && formalNames(method.signature).isNotEmpty()) {
+                    rejectedMethodSignatures.add(key)
+                }
+                val methodTypes = genericMethodTypes ?: descriptor
                 methods[key] = methodTypes
                 methodTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             }
@@ -175,6 +163,61 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             declaration.fields.forEach { field -> Parser(field.descriptor, classScope(declaration.name), emptyMap()).completeType() }
         }
         return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
+    }
+
+    /** Preserve valid formals when only the signed hierarchy disagrees with the erased class metadata. */
+    @Suppress("ReturnCount", "ThrowsCount", "TooGenericExceptionCaught")
+    private fun parseClassTypes(
+        declaration: ClassDeclarations,
+        scope: String,
+        env: Map<String, String>,
+        allowUnresolvedVariables: Boolean
+    ): ClassTypes {
+        val raw = {
+            ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
+        }
+        val signature = declaration.signature ?: return raw()
+        val checkpoint = types.size
+        val parser = Parser(signature, scope, env, allowUnresolvedVariables)
+        val parameters = try {
+            parser.formals()
+        } catch (failure: RuntimeException) {
+            if (!failure.isRejectedSignatureFailure()) throw failure
+            rollback(checkpoint)
+            return raw()
+        }
+        val hierarchyCheckpoint = types.size
+        val hierarchy = try {
+            val superType = parser.type()
+            val interfaces = mutableListOf<Int>()
+            while (parser.hasNext()) interfaces.add(parser.type())
+            superType to interfaces
+        } catch (failure: RuntimeException) {
+            if (!failure.isRejectedSignatureFailure()) throw failure
+            rollback(checkpoint)
+            return raw()
+        }
+        return try {
+            val (superType, interfaces) = hierarchy
+            val localBounds = parameters.associate { parameter ->
+                (parameter.scope to parameter.name) to parameter.bounds
+            }
+            require(declaration.superName != null && erasesTo(
+                superType,
+                classDescriptor(declaration.superName),
+                boundsByVariable,
+                localBounds
+            ))
+            require(interfaces.size == declaration.interfaces.size)
+            interfaces.zip(declaration.interfaces).forEach { (type, name) ->
+                require(erasesTo(type, classDescriptor(name), boundsByVariable, localBounds))
+            }
+            ClassTypes(parameters, superType, interfaces)
+        } catch (failure: RuntimeException) {
+            if (!failure.isRejectedSignatureFailure()) throw failure
+            rollback(hierarchyCheckpoint)
+            ClassTypes(parameters, declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
+        }
     }
 
     /** Never confuse an explicit enclosing-class argument with the synthetic outer instance. */
@@ -211,16 +254,19 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
 
     private fun hasIncompleteEnclosingEnvironment(
         declaration: ClassDeclarations,
-        unresolvedEnvironments: Set<String>
+        unresolvedEnvironments: Set<String>,
+        rejectedMethodSignatures: Set<MemberTypeKey>
     ): Boolean {
         val owner = declaration.enclosingClass ?: declaration.enclosingMethod?.owner
         val method = declaration.enclosingMethod
-        val methodSignatureMissing = method != null && declarations[method.owner]?.methods
+        val methodSignatureIncomplete = method != null && (method in rejectedMethodSignatures ||
+            declarations[method.owner]?.methods
                 ?.firstOrNull { it.name == method.name && it.descriptor == method.descriptor }
-                ?.signature == null
+                ?.signature == null)
         // Synthetic lambda/initializer owners commonly have no Signature even though their
         // local classes legally capture a type variable declared by the source method.
-        return owner != null && (owner !in declarations || owner in unresolvedEnvironments || methodSignatureMissing)
+        return owner == null && '$' in declaration.name || owner != null &&
+            (owner !in declarations || owner in unresolvedEnvironments || methodSignatureIncomplete)
     }
 
     @Suppress("NestedBlockDepth", "LoopWithTooManyJumpStatements") // Explicit DFS avoids untrusted enclosure recursion.
@@ -366,6 +412,9 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             null
         }
     }
+
+    private fun RuntimeException.isRejectedSignatureFailure(): Boolean =
+        this is IllegalArgumentException || this is IndexOutOfBoundsException
 
     /** A rejected declaration must not leave unreachable expressions in the shared table. */
     private fun rollback(checkpoint: Int) {

@@ -1,3 +1,4 @@
+import org.gradle.api.component.AdhocComponentWithVariants
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmProjectExtension
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
@@ -8,6 +9,12 @@ plugins {
     id("java-test-fixtures")
     id("org.jetbrains.kotlinx.kover") version "0.9.1"
     id("me.champeau.jmh")
+}
+
+// Test fixtures are shared inside this build but are not part of the published SootUp API.
+(components["java"] as AdhocComponentWithVariants).apply {
+    withVariantsFromConfiguration(configurations["testFixturesApiElements"]) { skip() }
+    withVariantsFromConfiguration(configurations["testFixturesRuntimeElements"]) { skip() }
 }
 
 kover {
