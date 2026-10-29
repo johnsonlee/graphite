@@ -24,6 +24,7 @@ import org.jf.dexlib2.immutable.ImmutableDexFile
 import org.jf.dexlib2.immutable.value.ImmutableArrayEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableIntEncodedValue
 import org.jf.dexlib2.immutable.value.ImmutableStringEncodedValue
+import org.jf.dexlib2.immutable.value.ImmutableTypeEncodedValue
 import org.jf.dexlib2.writer.io.MemoryDataStore
 import org.jf.dexlib2.writer.pool.DexPool
 import org.jf.util.ExceptionWithContext
@@ -120,6 +121,95 @@ class DexClassDeclarationsTest {
         val dex = DexBackedDexFile.fromInputStream(null, ByteArrayInputStream(store.data))
 
         assertNull(DexClassDeclarations.readSignature(dex.classes.single()))
+    }
+
+    @Test
+    fun `invalid dex entries and classes fall back without aborting declaration loading`() {
+        val resources = dexResources("classes.dex" to "not a dex".toByteArray())
+
+        assertEquals(emptyMap(), DexClassDeclarations.read(resources))
+    }
+
+    @Test
+    fun `resource fallback uses the same duplicate precedence as SootUp`() {
+        val primary = dex(classDefinition("Ljava/lang/Object;"))
+        val second = dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;"))
+        val tenth = dex(classDefinition("Ljava/util/List<Ljava/lang/Integer;>;"))
+
+        val declarations = DexClassDeclarations.read(dexResources(
+            "classes10.dex" to tenth,
+            "classes.dex" to primary,
+            "classes2.dex" to second
+        ))
+
+        assertEquals("Ljava/util/List<Ljava/lang/Integer;>;", declarations.getValue("fixture.Duplicate").signature)
+    }
+
+    @Test
+    fun `initializer enclosure without an outer field remains unknown`() {
+        val annotations = listOf(
+            ImmutableAnnotation(
+                AnnotationVisibility.SYSTEM,
+                "Ldalvik/annotation/EnclosingClass;",
+                listOf(ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")))
+            ),
+            ImmutableAnnotation(
+                AnnotationVisibility.SYSTEM,
+                "Ldalvik/annotation/InnerClass;",
+                listOf(ImmutableAnnotationElement("accessFlags", ImmutableIntEncodedValue(0)))
+            )
+        )
+        val definition = ImmutableClassDef(
+            "Lfixture/InitializerLocal;",
+            AccessFlags.PUBLIC.value,
+            "Ljava/lang/Object;",
+            emptyList(),
+            null,
+            annotations,
+            emptyList(),
+            emptyList()
+        )
+
+        val declaration = DexClassDeclarations.read(dexResources("classes.dex" to dex(definition)))
+            .getValue("fixture.InitializerLocal")
+
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertNull(declaration.enclosingInstance)
+    }
+
+    private fun classDefinition(signature: String): ImmutableClassDef {
+        val annotation = ImmutableAnnotation(
+            AnnotationVisibility.SYSTEM,
+            "Ldalvik/annotation/Signature;",
+            listOf(ImmutableAnnotationElement(
+                "value",
+                ImmutableArrayEncodedValue(listOf(ImmutableStringEncodedValue(signature)))
+            ))
+        )
+        return ImmutableClassDef(
+            "Lfixture/Duplicate;",
+            AccessFlags.PUBLIC.value,
+            "Ljava/lang/Object;",
+            emptyList(),
+            null,
+            listOf(annotation),
+            emptyList(),
+            emptyList()
+        )
+    }
+
+    private fun dex(definition: ImmutableClassDef): ByteArray {
+        val store = MemoryDataStore()
+        DexPool.writeTo(store, ImmutableDexFile(Opcodes.getDefault(), listOf(definition)))
+        return store.data
+    }
+
+    private fun dexResources(vararg entries: Pair<String, ByteArray>): ResourceAccessor {
+        val content = entries.toMap()
+        return object : ResourceAccessor {
+            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun open(path: String) = ByteArrayInputStream(content.getValue(path))
+        }
     }
 
     private fun signature(vararg fragments: String): Annotatable = annotatable(

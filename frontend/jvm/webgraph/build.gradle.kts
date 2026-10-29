@@ -225,6 +225,7 @@ tasks.test {
     // The Android fixture must prove the 4 GiB gate without inheriting heap from prior tests.
     forkEvery = 1
     exclude("**/*CorpusPerformanceGateTest.class")
+    inputs.files(androidDeclaredTypesFixture).withPropertyName("androidDeclaredTypesFixture")
     doFirst {
         systemProperty(
             "android.declared.types.fixture",

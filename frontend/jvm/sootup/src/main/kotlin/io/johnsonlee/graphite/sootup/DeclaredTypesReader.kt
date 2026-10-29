@@ -85,12 +85,13 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val methods = linkedMapOf<MemberTypeKey, MethodTypes>()
         val classes = linkedMapOf<String, ClassTypes>()
         val acceptedEnvironments = hashMapOf<String, Map<String, String>>()
+        val unresolvedEnvironments = hashSetOf<String>()
         val orderedDeclarations = orderedDeclarations()
         orderedDeclarations.forEach { declaration ->
             val scope = classScope(declaration.name)
             val inheritedEnv = acceptedEnvironment(declaration, acceptedEnvironments, methods)
             val classEnv = inheritedEnv + formalNames(declaration.signature).associateWith { scope }
-            val allowUnresolvedVariables = hasMissingEnclosingDeclaration(declaration)
+            val allowUnresolvedVariables = hasIncompleteEnclosingEnvironment(declaration, unresolvedEnvironments)
             val classTypes = optional(declaration.signature) {
                 val parser = Parser(it, scope, classEnv, allowUnresolvedVariables)
                 val parameters = parser.formals()
@@ -98,13 +99,18 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 val interfaces = mutableListOf<Int>()
                 while (parser.hasNext()) interfaces.add(parser.type())
                 val result = ClassTypes(parameters, superType, interfaces)
-                val bounds = boundsByVariable + parameters.associate { parameter ->
+                val localBounds = parameters.associate { parameter ->
                     (parameter.scope to parameter.name) to parameter.bounds
                 }
-                require(declaration.superName != null && erasesTo(superType, classDescriptor(declaration.superName), bounds))
+                require(declaration.superName != null && erasesTo(
+                    superType,
+                    classDescriptor(declaration.superName),
+                    boundsByVariable,
+                    localBounds
+                ))
                 require(interfaces.size == declaration.interfaces.size)
                 interfaces.zip(declaration.interfaces).forEach { (type, name) ->
-                    require(erasesTo(type, classDescriptor(name), bounds))
+                    require(erasesTo(type, classDescriptor(name), boundsByVariable, localBounds))
                 }
                 result
             } ?: ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
@@ -112,10 +118,16 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             val env = inheritedEnv + classTypes.typeParameters.associate { it.name to it.scope }
             acceptedEnvironments[declaration.name] = env
+            if (allowUnresolvedVariables) unresolvedEnvironments.add(declaration.name)
             declaration.fields.forEach { field ->
                 fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = optional(field.signature) {
                     Parser(it, scope, env, allowUnresolvedVariables).completeType().also { type ->
-                        require(erasesTo(type, field.descriptor, boundsByVariable, allowUnresolvedVariables))
+                        require(erasesTo(
+                            type,
+                            field.descriptor,
+                            boundsByVariable,
+                            allowUnknown = allowUnresolvedVariables
+                        ))
                     }
                 } ?: Parser(field.descriptor, scope, emptyMap()).completeType()
             }
@@ -133,14 +145,25 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                     require(prefix <= missing)
                     generic.copy(parameterTypes = descriptor.parameterTypes.take(prefix) + generic.parameterTypes +
                         descriptor.parameterTypes.drop(prefix + generic.parameterTypes.size)).also { result ->
-                        val bounds = boundsByVariable + result.typeParameters.associate { parameter ->
+                        val localBounds = result.typeParameters.associate { parameter ->
                             (parameter.scope to parameter.name) to parameter.bounds
                         }
-                        require(result.parameterTypes.size == descriptor.parameterTypes.size)
                         result.parameterTypes.zip(descriptor.parameterTypes).forEach { (declared, erased) ->
-                            require(erasesTo(declared, erased, bounds, allowUnresolvedVariables))
+                            require(erasesTo(
+                                declared,
+                                erased,
+                                boundsByVariable,
+                                localBounds,
+                                allowUnresolvedVariables
+                            ))
                         }
-                        require(erasesTo(result.returnType, descriptor.returnType, bounds, allowUnresolvedVariables))
+                        require(erasesTo(
+                            result.returnType,
+                            descriptor.returnType,
+                            boundsByVariable,
+                            localBounds,
+                            allowUnresolvedVariables
+                        ))
                     }
                 } ?: descriptor
                 methods[key] = methodTypes
@@ -186,11 +209,18 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         return inherited
     }
 
-    private fun hasMissingEnclosingDeclaration(declaration: ClassDeclarations): Boolean {
-        val missingClass = declaration.enclosingClass != null && declaration.enclosingClass !in declarations
+    private fun hasIncompleteEnclosingEnvironment(
+        declaration: ClassDeclarations,
+        unresolvedEnvironments: Set<String>
+    ): Boolean {
+        val owner = declaration.enclosingClass ?: declaration.enclosingMethod?.owner
         val method = declaration.enclosingMethod
-        val missingMethodOwner = method != null && method.owner !in declarations
-        return missingClass || missingMethodOwner
+        val methodSignatureMissing = method != null && declarations[method.owner]?.methods
+                ?.firstOrNull { it.name == method.name && it.descriptor == method.descriptor }
+                ?.signature == null
+        // Synthetic lambda/initializer owners commonly have no Signature even though their
+        // local classes legally capture a type variable declared by the source method.
+        return owner != null && (owner !in declarations || owner in unresolvedEnvironments || methodSignatureMissing)
     }
 
     @Suppress("NestedBlockDepth", "LoopWithTooManyJumpStatements") // Explicit DFS avoids untrusted enclosure recursion.
@@ -280,34 +310,44 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         id: Int,
         descriptor: String,
         bounds: Map<Pair<String, String>, List<Int>>,
+        localBounds: Map<Pair<String, String>, List<Int>> = emptyMap(),
         allowUnknown: Boolean = false
-    ): Boolean = erasureDescriptor(id, bounds)?.let { it == descriptor } ?: allowUnknown
+    ): Boolean = erasureDescriptor(id, bounds, localBounds)?.let { it == descriptor } ?: allowUnknown
 
     private fun erasesTo(
         id: Int,
         erasedId: Int,
         bounds: Map<Pair<String, String>, List<Int>>,
+        localBounds: Map<Pair<String, String>, List<Int>> = emptyMap(),
         allowUnknown: Boolean = false
     ): Boolean {
-        val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap()))
-        return erasesTo(id, expected, bounds, allowUnknown)
+        val expected = requireNotNull(erasureDescriptor(erasedId, emptyMap(), emptyMap()))
+        return erasesTo(id, expected, bounds, localBounds, allowUnknown)
     }
 
     private fun erasureDescriptor(
         id: Int,
         bounds: Map<Pair<String, String>, List<Int>>,
+        localBounds: Map<Pair<String, String>, List<Int>>,
         visiting: Set<Pair<String, String>> = emptySet()
     ): String? {
         val type = types[id]
         return when (type.kind) {
             CLASS_TYPE_KIND -> classDescriptor(type.name)
             PRIMITIVE_TYPE_KIND -> primitiveDescriptors[type.name]
-            "array" -> erasureDescriptor(requireNotNull(type.component), bounds, visiting)?.let { "[$it" }
+            "array" -> erasureDescriptor(requireNotNull(type.component), bounds, localBounds, visiting)?.let { "[$it" }
             "variable" -> {
                 val key = type.scope to type.name
-                if (key in visiting) null else bounds[key]?.firstOrNull()
-                    ?.let { erasureDescriptor(it, bounds, visiting + key) }
-                    ?: if (bounds.containsKey(key)) "Ljava/lang/Object;" else null
+                val variableBounds = when {
+                    key in visiting -> null
+                    key in localBounds -> localBounds.getValue(key)
+                    else -> bounds[key]
+                }
+                when {
+                    variableBounds == null -> null
+                    variableBounds.isEmpty() -> "Ljava/lang/Object;"
+                    else -> erasureDescriptor(variableBounds.first(), bounds, localBounds, visiting + key)
+                }
             }
             else -> null
         }

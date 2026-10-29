@@ -54,7 +54,9 @@ private data class InputLocations(
  */
 fun androidPlatformJar(input: Path, config: LoaderConfig): Path? {
     if (!config.includeLibraries || input.extension.lowercase() != APK_EXTENSION_NAME) return null
-    return resolveAndroidJar(input, resolveAndroidPlatformsPath(config))
+    val platforms = resolveAndroidPlatformsPath(config)
+    val api = AndroidVersionInfo(input, platforms.toString()).api_version
+    return resolveAndroidJar(api, platforms)
 }
 
 private fun createApkInputLocations(
@@ -91,7 +93,7 @@ private fun createApkInputLocations(
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
 
     if (config.includeLibraries) {
-        val androidJar = resolveAndroidJar(path, platforms)
+        val androidJar = resolveAndroidJar(androidVersion.api_version, platforms)
         val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
         val androidJarLocation = folding?.let {
             JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library, bytecodeInterceptors(it))
@@ -242,9 +244,7 @@ private fun containsAndroidPlatformJar(path: Path): Boolean {
     }
 }
 
-private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path {
-    val versionInfo = AndroidVersionInfo(apkPath, platforms.toString())
-    val api = versionInfo.getApi_version()
+private fun resolveAndroidJar(api: Int, platforms: Path): Path {
     val androidJar = platforms.resolve("$ANDROID_PLATFORM_PREFIX$api").resolve(ANDROID_JAR_NAME)
     require(Files.isRegularFile(androidJar)) {
         "Android platform android.jar not found for API $api: $androidJar"

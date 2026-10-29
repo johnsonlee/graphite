@@ -255,6 +255,44 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `local declaration behind a signatureless enclosing method remains unresolved`() {
+        val method = MemberTypeKey("example.Outer", "lambda\$make\$0", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, null)), null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$1", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("values", "Ljava/util/List;", "Ljava/util/List<TT;>;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val field = table.fields.getValue(MemberTypeKey(local.name, "values", "Ljava/util/List;"))
+        val variable = table.types[table.types[field].arguments.single()]
+
+        assertEquals("T", variable.name)
+        assertEquals("unresolved:class:${local.name}", variable.scope)
+    }
+
+    @Test
+    fun `unknown erasure through an unresolved first bound does not discard a valid signature`() {
+        val declaration = ClassDeclarations(
+            "example.Outer\$Inner", "<T:TU;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Number;", "TT;")), emptyList(),
+            "example.MissingOuter", null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+        val field = table.fields.getValue(MemberTypeKey(declaration.name, "value", "Ljava/lang/Number;"))
+        val parameter = table.classes.getValue(declaration.name).typeParameters.single()
+
+        assertEquals("T", table.render(field))
+        assertEquals(listOf("U"), parameter.bounds.map(table::render))
+        assertEquals("unresolved:class:${declaration.name}", table.types[parameter.bounds.single()].scope)
+    }
+
+    @Test
     fun `excessively nested signatures fall back to descriptors without recursive overflow`() {
         val deep = "Ljava/util/List<".repeat(2_000) + "Ljava/lang/String;" + ">;".repeat(2_000)
         val declaration = ClassDeclarations(
@@ -388,10 +426,12 @@ class DeclaredTypesReaderTest {
                 MemberTypeKey(owner, "value", "Ljava/util/List;")
             )))
         }
-        assertEquals("java.lang.String", table.render(table.fields.getValue(
+        val unresolved = table.fields.getValue(
             MemberTypeKey(missingMethod.name, "value", "Ljava/lang/String;")
-        )))
-        assertTrue(table.types.none { it.kind == "variable" })
+        )
+        assertEquals("X", table.render(unresolved))
+        assertEquals("unresolved:class:${missingMethod.name}", table.types[unresolved].scope)
+        assertEquals(listOf("X"), table.types.filter { it.kind == "variable" }.map { it.name })
     }
 
 }

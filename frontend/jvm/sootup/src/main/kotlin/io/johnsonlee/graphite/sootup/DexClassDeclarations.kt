@@ -3,10 +3,12 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.graph.MemberTypeKey
 import io.johnsonlee.graphite.graph.DeclaredTypeExpansionBudget
 import io.johnsonlee.graphite.input.ResourceAccessor
+import io.johnsonlee.graphite.input.ResourceEntry
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.AnnotationVisibility
 import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.dexbacked.value.DexBackedStringEncodedValue
+import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.iface.Annotatable
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.Method
@@ -32,10 +34,12 @@ internal object DexClassDeclarations {
 
     fun read(resources: ResourceAccessor): Map<String, ClassDeclarations> {
         if (resources is ArchiveResourceAccessor && resources.sourcePath != null && resources.dexApi != null) {
-            val classes = DexFileProvider.getInstance()
-                .getDexFromSource(resources.sourcePath.toFile(), resources.dexApi)
-                .asSequence()
-                .flatMap { it.base.dexFile.classes.sortedBy { definition -> definition.type } }
+            val dexFiles = try {
+                DexFileProvider.getInstance().getDexFromSource(resources.sourcePath.toFile(), resources.dexApi)
+            } catch (_: Exception) {
+                emptyList()
+            }
+            val classes = dexFiles.asSequence().flatMap { safeClasses(it.base.dexFile) }
             return read(classes)
         }
         return read(resourceClasses(resources))
@@ -52,18 +56,41 @@ internal object DexClassDeclarations {
     private fun resourceClasses(resources: ResourceAccessor): Sequence<ClassDef> = sequence {
         resources.list("classes*.dex")
             .filter { dexName.matches(it.path) }
-            .sortedWith(compareBy({ dexOrdinal(it.path).length }, { dexOrdinal(it.path) }))
+            // Match DexFileProvider's order: primary first, then reverse lexical. Its class
+            // index is last-wins, so declarations must visit duplicate definitions identically.
+            .sortedWith(compareBy<ResourceEntry> { it.path != "classes.dex" }.thenByDescending { it.path })
             .forEach { entry ->
-                resources.open(entry.path).use { input ->
-                    yieldAll(DexBackedDexFile.fromInputStream(null, BufferedInputStream(input)).classes.sortedBy { it.type })
+                val classes = try {
+                    resources.open(entry.path).use { input ->
+                        safeClasses(DexBackedDexFile.fromInputStream(null, BufferedInputStream(input)))
+                    }
+                } catch (_: Exception) {
+                    emptyList()
                 }
+                yieldAll(classes)
             }
+    }
+
+    private fun safeClasses(dexFile: DexFile): List<ClassDef> = try {
+        dexFile.classes.mapNotNull { definition ->
+            try {
+                definition.type to definition
+            } catch (_: Exception) {
+                null
+            }
+        }.sortedBy { it.first }.map { it.second }
+    } catch (_: Exception) {
+        emptyList()
     }
 
     private fun read(classes: Sequence<ClassDef>): Map<String, ClassDeclarations> {
         val declarations = linkedMapOf<String, ClassDeclarations>()
         classes.forEach { definition ->
-            val declaration = from(definition)
+            val declaration = try {
+                from(definition)
+            } catch (_: Exception) {
+                return@forEach
+            }
             // Android rejects duplicate definitions, but SootUp's multidex index uses the last
             // entry when a malformed archive contains one.
             declarations[declaration.name] = declaration
@@ -97,8 +124,8 @@ internal object DexClassDeclarations {
             isEnum = AccessFlags.ENUM.isSet(definition.accessFlags),
             enclosingInstance = when {
                 enclosingClass == null -> false
-                enclosingMethod != null -> if (hasEnclosingField) true else null
-                else -> true // Only a non-static member class retains EnclosingClass above.
+                hasEnclosingField -> true
+                else -> null
             }
         )
     }
@@ -203,18 +230,16 @@ internal object DexClassDeclarations {
                 else -> 3
             }
             bytes = DeclaredTypeExpansionBudget.addBytes(bytes, encoded)
-            try {
-                DeclaredTypeExpansionBudget.validate(0, bytes)
-            } catch (_: IllegalArgumentException) {
-                return null
-            }
+        }
+        try {
+            // This is the standard UTF-8 size of the projected text, not DEX's MUTF-8 storage.
+            DeclaredTypeExpansionBudget.validate(0, bytes)
+        } catch (_: IllegalArgumentException) {
+            return null
         }
         target.append(this)
         return bytes
     }
-
-    private fun dexOrdinal(path: String): String = dexName.matchEntire(path)?.groupValues?.get(1)
-        ?.takeIf(String::isNotEmpty) ?: "1"
 
     private const val MAX_SIGNATURE_FRAGMENTS = 100_000
     // The pinned dexlib version exposes raw string-section APIs but not this encoded-value index.

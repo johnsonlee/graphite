@@ -434,7 +434,6 @@ class SootUpAdapter(
     private var activeLocalKeysByName = mutableMapOf<String, LocalKey>()
     private var activeMethodParameters = mutableListOf<ParameterBinding>()
     private var activeParameterBindingsByIndex = mutableMapOf<Int, ParameterBinding>()
-    private val dexDeclarations by lazy { DexClassDeclarations.read(resourceAccessor) }
     private fun persistedClassOrigins(): Map<String, String> {
         if (classOriginSourceCounts.size <= 1) {
             return emptyMap()
@@ -444,6 +443,7 @@ class SootUpAdapter(
 
     /** Declaration snapshots are needed only while building the type table. */
     private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
+        val dexDeclarations = DexClassDeclarations.read(resourceAccessor)
         val declarations = classes.mapNotNull { sootClass ->
             val name = sootClass.type.fullyQualifiedName
             sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)
