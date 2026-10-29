@@ -54,9 +54,7 @@ private data class InputLocations(
  */
 fun androidPlatformJar(input: Path, config: LoaderConfig): Path? {
     if (!config.includeLibraries || input.extension.lowercase() != APK_EXTENSION_NAME) return null
-    val platforms = resolveAndroidPlatformsPath(config)
-    val api = AndroidVersionInfo(input, platforms.toString()).api_version
-    return resolveAndroidJar(api, platforms)
+    return resolveAndroidJar(input, resolveAndroidPlatformsPath(config))
 }
 
 private fun createApkInputLocations(
@@ -251,6 +249,9 @@ private fun resolveAndroidJar(api: Int, platforms: Path): Path {
     }
     return androidJar
 }
+
+private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path =
+    resolveAndroidJar(AndroidVersionInfo(apkPath, platforms.toString()).api_version, platforms)
 
 /**
  * SootUp-based loader for Java projects.
