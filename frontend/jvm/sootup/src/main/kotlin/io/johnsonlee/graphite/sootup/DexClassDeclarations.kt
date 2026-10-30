@@ -22,6 +22,7 @@ import org.jf.util.ExceptionWithContext
 import java.io.BufferedInputStream
 import java.lang.reflect.Field
 import sootup.apk.frontend.dexpler.DexFileProvider
+import kotlin.io.path.extension
 
 /** Reads the declaration metadata that Android stores in system annotations in every DEX file. */
 internal object DexClassDeclarations {
@@ -53,8 +54,11 @@ internal object DexClassDeclarations {
             return read(classes, classNames, warning)
         }
         // JAR and directory builds have no DEX classes and must not scan every resource entry.
-        return if (resources is ArchiveResourceAccessor) emptyMap()
-        else read(resourceClasses(resources, false, warning), classNames, warning)
+        if (resources is ArchiveResourceAccessor) {
+            if (!resources.sourcePath?.extension.equals("apk", ignoreCase = true)) return emptyMap()
+            warning("APK resource accessor has no DEX API; scanning named DEX entries instead")
+        }
+        return read(resourceClasses(resources, false, warning), classNames, warning)
     }
 
     @Suppress("TooGenericExceptionCaught") // Untrusted dexlib implementations may throw arbitrary runtime failures.
@@ -111,6 +115,9 @@ internal object DexClassDeclarations {
             }.thenBy {
                 !it.path.substringAfterLast('/').startsWith("classes")
             }.thenByDescending { it.path.substringAfterLast('/') })
+            // DexFileProvider indexes container entries by basename. Keep the first entry
+            // with each basename so fallback declarations match SootUp's selected DEX body.
+            .distinctBy { it.path.substringAfterLast('/') }
             .forEach { entry ->
                 val classes = try {
                     resources.open(entry.path).use { input ->
@@ -175,25 +182,17 @@ internal object DexClassDeclarations {
             MemberDeclaration(method.name, descriptor, method.signature(stringIndexField), method.accessFlags)
         }
         val enclosingMethod = definition.enclosingMethod()
-        val hasInnerClassMetadata = try {
-            definition.systemAnnotation(INNER_CLASS) != null
-        } catch (_: ExceptionWithContext) {
-            false
-        } catch (_: IllegalArgumentException) {
-            false
-        } catch (_: IndexOutOfBoundsException) {
-            false
-        }
+        val hasInnerClassMetadata = dexTolerant { definition.systemAnnotation(INNER_CLASS) != null } ?: false
         val innerAccess = definition.intAnnotation(INNER_CLASS, "accessFlags")
         val innerName = definition.stringAnnotation(INNER_CLASS, "name")
         val encodedEnclosingClass = definition.typeAnnotation(ENCLOSING_CLASS)?.dexClassName()
         val enclosingClass = enclosingMethod?.owner ?: encodedEnclosingClass?.takeIf {
             !hasInnerClassMetadata || innerName == null ||
-                innerAccess != null && !AccessFlags.STATIC.isSet(innerAccess)
+                innerAccess == null || !AccessFlags.STATIC.isSet(innerAccess)
         }
         val hasEnclosingField = enclosingClass != null && fields.any { field ->
             AccessFlags.SYNTHETIC.isSet(field.access) && field.name.startsWith("this\$") &&
-                field.descriptor == "L${enclosingClass.replace('.', '/')};"
+                field.descriptor == classDescriptor(enclosingClass)
         }
         return ClassDeclarations(
             name = name,
@@ -215,14 +214,8 @@ internal object DexClassDeclarations {
         )
     }
 
-    private fun Annotatable.signature(stringIndexField: Field?): String? = try {
+    private fun Annotatable.signature(stringIndexField: Field?): String? = dexTolerant {
         signatureValue(stringIndexField)
-    } catch (_: ExceptionWithContext) {
-        null
-    } catch (_: IllegalArgumentException) {
-        null
-    } catch (_: IndexOutOfBoundsException) {
-        null
     }
 
     @Suppress("ReturnCount") // Every invalid system-annotation shape falls back independently.
@@ -267,19 +260,13 @@ internal object DexClassDeclarations {
         type: String,
         name: String,
         decode: (EncodedValue) -> T?
-    ): T? = try {
+    ): T? = dexTolerant {
         systemAnnotation(type)
             ?.elements
             ?.filter { it.name == name }
             ?.singleOrNull()
             ?.value
             ?.let(decode)
-    } catch (_: ExceptionWithContext) {
-        null
-    } catch (_: IllegalArgumentException) {
-        null
-    } catch (_: IndexOutOfBoundsException) {
-        null
     }
 
     private fun MethodReference.descriptor(): String =
@@ -355,6 +342,16 @@ internal object DexClassDeclarations {
     private const val DEX_MAGIC_SIZE = 8
 
     private fun Exception.summary(): String = message?.takeIf(String::isNotBlank) ?: javaClass.simpleName
+}
+
+private inline fun <T> dexTolerant(block: () -> T?): T? = try {
+    block()
+} catch (_: ExceptionWithContext) {
+    null
+} catch (_: IllegalArgumentException) {
+    null
+} catch (_: IndexOutOfBoundsException) {
+    null
 }
 
 private fun String.dexClassName(): String {

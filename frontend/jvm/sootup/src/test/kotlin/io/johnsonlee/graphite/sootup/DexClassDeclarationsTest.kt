@@ -3,8 +3,11 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.input.ResourceAccessor
 import io.johnsonlee.graphite.input.ResourceEntry
 import java.io.ByteArrayInputStream
+import java.nio.file.Files
 import java.nio.file.Path
+import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
+import java.util.zip.ZipOutputStream
 import org.jf.dexlib2.AccessFlags
 import org.jf.dexlib2.AnnotationVisibility
 import org.jf.dexlib2.Opcodes
@@ -222,6 +225,49 @@ class DexClassDeclarationsTest {
     }
 
     @Test
+    fun `APK archive without a dex API falls back to named dex entries`() {
+        val apk = Files.createTempFile("declared-types", ".apk")
+        ZipOutputStream(Files.newOutputStream(apk)).use { output ->
+            output.putNextEntry(ZipEntry("classes.dex"))
+            output.write(dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;")))
+            output.closeEntry()
+        }
+        val warnings = mutableListOf<String>()
+
+        try {
+            val declarations = ArchiveResourceAccessor.create(apk).use { resources ->
+                DexClassDeclarations.read(resources, setOf("fixture.Duplicate"), warnings::add)
+            }
+
+            assertEquals(
+                "Ljava/util/List<Ljava/lang/String;>;",
+                declarations.getValue("fixture.Duplicate").signature
+            )
+            assertEquals(1, warnings.size)
+            assertTrue(warnings.single().contains("no DEX API"))
+        } finally {
+            Files.deleteIfExists(apk)
+        }
+    }
+
+    @Test
+    fun `resource fallback deduplicates nested dex basenames like SootUp`() {
+        val first = dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;"))
+        val nested = dex(classDefinition("Ljava/util/List<Ljava/lang/Integer;>;"))
+        val opened = mutableListOf<String>()
+        val content = linkedMapOf("classes2.dex" to first, "assets/classes2.dex" to nested)
+        val resources = object : ResourceAccessor {
+            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun open(path: String) = ByteArrayInputStream(content.getValue(path)).also { opened.add(path) }
+        }
+
+        val declarations = DexClassDeclarations.read(resources, setOf("fixture.Duplicate"))
+
+        assertEquals("Ljava/util/List<Ljava/lang/String;>;", declarations.getValue("fixture.Duplicate").signature)
+        assertEquals(listOf("classes2.dex"), opened)
+    }
+
+    @Test
     fun `initializer enclosure without an outer field remains unknown`() {
         val annotations = listOf(
             ImmutableAnnotation(
@@ -319,6 +365,26 @@ class DexClassDeclarationsTest {
             ),
             annotation(
                 ImmutableAnnotationElement("accessFlags", ImmutableIntEncodedValue(0)),
+                ImmutableAnnotationElement("name", ImmutableStringEncodedValue("Member")),
+                type = "Ldalvik/annotation/InnerClass;"
+            )
+        )
+
+        val declaration = read(testDefinition(type = "Lfixture/Outer\$Member;", annotations = annotations))
+
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertTrue(declaration.enclosingInstance == true)
+        assertTrue(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
+    fun `named member with missing inner access flags retains its enclosing class`() {
+        val annotations = listOf(
+            annotation(
+                ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+                type = "Ldalvik/annotation/EnclosingClass;"
+            ),
+            annotation(
                 ImmutableAnnotationElement("name", ImmutableStringEncodedValue("Member")),
                 type = "Ldalvik/annotation/InnerClass;"
             )

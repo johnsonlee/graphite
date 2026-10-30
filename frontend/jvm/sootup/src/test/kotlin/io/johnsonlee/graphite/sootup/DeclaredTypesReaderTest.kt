@@ -271,6 +271,24 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `obfuscated class with stripped enclosure metadata keeps hierarchy variables unresolved`() {
+        val nested = ClassDeclarations(
+            "example.c", "Lexample/Base<TT;>;", "example.Base", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val superType = requireNotNull(table.classes.getValue(nested.name).superType)
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("example.Base<T>", table.render(superType))
+        assertEquals("unresolved:class:${nested.name}", table.types[table.types[superType].arguments.single()].scope)
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${nested.name}", table.types[value].scope)
+    }
+
+    @Test
     fun `named nested class metadata does not make undeclared variables unresolved`() {
         val nested = ClassDeclarations(
             "example.Outer\$Companion", null, "java.lang.Object", emptyList(),
@@ -399,6 +417,7 @@ class DeclaredTypesReaderTest {
         assertEquals(listOf("java.lang.Object", "java.util.List", "java.lang.String", "java.util.List"),
             table.types.map { it.name })
         assertEquals(listOf(emptyList(), emptyList(), emptyList(), listOf(2)), table.types.map { it.arguments })
+        assertEquals(emptyList(), table.classes.getValue(declaration.name).typeParameters)
         assertEquals("java.util.List", table.render(table.fields.getValue(MemberTypeKey("example.Bad", "bad", "Ljava/util/List;"))))
         assertEquals("java.util.List<java.lang.String>",
             table.render(table.fields.getValue(MemberTypeKey("example.Bad", "good", "Ljava/util/List;"))))
@@ -484,7 +503,7 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
-    fun `rejected outer formals are not inherited and rejected method formals remain unresolved`() {
+    fun `rejected outer and method formals remain unresolved in nested declarations`() {
         val methodKey = MemberTypeKey("example.Outer", "bad", "()V")
         val outer = ClassDeclarations(
             "example.Outer", "<T:Ljava/lang/Object;>Ljava/lang/Object;X", "java.lang.Object", emptyList(),
@@ -512,9 +531,9 @@ class DeclaredTypesReaderTest {
 
         assertEquals(emptyList(), table.classes.getValue(outer.name).typeParameters)
         assertEquals(emptyList(), table.methods.getValue(methodKey).typeParameters)
-        assertEquals("java.util.List", table.render(table.fields.getValue(
-            MemberTypeKey(inner.name, "value", "Ljava/util/List;")
-        )))
+        val innerValue = table.fields.getValue(MemberTypeKey(inner.name, "value", "Ljava/util/List;"))
+        assertEquals("java.util.List<T>", table.render(innerValue))
+        assertEquals("unresolved:class:${inner.name}", table.types[table.types[innerValue].arguments.single()].scope)
         val localValue = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/util/List;"))
         assertEquals("java.util.List<U>", table.render(localValue))
         val localVariable = table.types[localValue].arguments.single()
@@ -524,7 +543,30 @@ class DeclaredTypesReaderTest {
         )
         assertEquals("X", table.render(unresolved))
         assertEquals("unresolved:class:${missingMethod.name}", table.types[unresolved].scope)
-        assertEquals(listOf("U", "X"), table.types.filter { it.kind == "variable" }.map { it.name })
+        assertEquals(listOf("T", "U", "X"), table.types.filter { it.kind == "variable" }.map { it.name })
+    }
+
+    @Test
+    fun `rejected outer formals leave owner and nested member variables unresolved`() {
+        val outer = ClassDeclarations(
+            "example.Outer", "<T:Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")), emptyList(),
+            null, null, false
+        )
+        val inner = ClassDeclarations(
+            "example.Outer\$Inner", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")), emptyList(),
+            outer.name, null, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(inner.name to inner, outer.name to outer)).build()
+        val outerValue = table.fields.getValue(MemberTypeKey(outer.name, "value", "Ljava/lang/Object;"))
+        val innerValue = table.fields.getValue(MemberTypeKey(inner.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(outerValue))
+        assertEquals("unresolved:class:${outer.name}", table.types[outerValue].scope)
+        assertEquals("T", table.render(innerValue))
+        assertEquals("unresolved:class:${inner.name}", table.types[innerValue].scope)
     }
 
 }
