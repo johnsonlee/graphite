@@ -22187,3 +22187,34 @@ has uncontrolled OS page-cache state and makes no confidence-interval, construct
 loading, JVM-query or pre-regression claim. Decision: retain the response-identical,
 resource-compliant multi-graph improvement; the hosted `benchmark-regression-gate`
 remains the final merge gate.
+
+### Attempt153 — decode each requested DEX class annotation set once
+
+Review of PR #191 found that `DexClassDeclarations.from` independently traversed a requested
+class's dexlib annotation set for its class signature, enclosing method, `InnerClass` presence,
+inner access flags, inner name and enclosing class. `DexBackedClassDef.getAnnotations()` rebuilds
+the set and resolves every annotation type on each call, so the hypothesis was that one bounded
+system-annotation index per requested class removes five redundant decodes without changing
+declaration semantics. The exact parent is `ca4144f3fab8fc2da77f94052c4d0baed2da3d81` and the
+candidate is `211c2a9c1914e8eedda67bf7804e8d71e1f12f34`.
+
+The candidate reads `definition.annotations` once, keeps only system-visible annotations,
+retains the existing `singleOrNull` behavior for duplicate annotation types, and resolves all
+class-level metadata from that map. Field and method signatures still read their own annotation
+sets once. A regression test supplies signature, `EnclosingClass` and `InnerClass` annotations
+through a counting `ClassDef`; all values are preserved and the class annotation getter is called
+once rather than six times. The full sootup suite passes 652 tests with 98.0656% line coverage;
+sootup/webgraph detekt and tests, publication metadata generation, and both exact-head local
+real64 correctness/stability rounds pass.
+
+No representative real persisted multi-graph APK fixture is available. That makes APK
+construction latency, CPU and peak RSS evidence unavailable for both the parent and candidate;
+the optimization is not assigned a performance PASS. The cumulative release-versus-candidate
+real64 JAR guard uses 64 persisted JAR graphs and therefore does not execute this DEX path. It
+measured usable build/save at 260,508.156 ms versus 258,473.927 ms (-2,034.228 ms, -0.78%, both
+orders), but this is retained only as a cumulative no-regression observation and is not attributed
+to the annotation cache. Per-revision CPU/RSS attribution is also unavailable.
+
+Decision: retain the mechanically verified six-to-one class-annotation traversal reduction, with
+no APK latency or resource claim. Representative persisted multi-graph APK performance evidence
+remains required before the PR's DEX-path performance acceptance can be established.
