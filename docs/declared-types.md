@@ -1,4 +1,4 @@
-# Declared JVM types
+# Declared JVM and Android types
 
 JVM graphs store declaration types in a separate, structurally deduplicated table.
 Fields, method parameters and method returns reference that table. Class and method
@@ -6,6 +6,11 @@ type parameters retain their scope and bounds; expression rows represent classes
 primitives, arrays, variables and wildcards, including generic enclosing classes.
 Erased member identity remains separate from the declared generic type; version 5
 represents its descriptors with references to raw type rows and signature rows.
+
+For class files, declarations come from the JVM `Signature` attribute. For Android
+APK inputs, Graphite reads the equivalent `dalvik.annotation.Signature` system
+annotations from every `classes*.dex` entry, including multidex archives. Both
+frontends use the same table, scopes, query properties and persistence format.
 
 ## Query properties
 
@@ -75,7 +80,7 @@ counts. Graph-local type IDs are internal and are expanded for query results.
 
 `graph.types` is an optional binary table with its own version. It does not change
 the main node/edge format. Old graphs load without it; rebuild from the original
-JAR to obtain declaration metadata. New saves preserve the table, or remove an
+JAR or APK to obtain declaration metadata. New saves preserve the table, or remove an
 obsolete table when the source graph has no declaration metadata. Native container
 packing includes the file. The authoritative `forward.properties` file contains
 `graphite.declaredTypes.sha256`, the SHA-256 digest of the complete `graph.types` file, and

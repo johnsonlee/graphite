@@ -19,6 +19,7 @@ import kotlin.test.assertNotEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 import org.objectweb.asm.ClassReader
+import org.objectweb.asm.Opcodes
 import org.objectweb.asm.tree.ClassNode
 
 class DeclaredTypesReaderTest {
@@ -255,6 +256,208 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `stripped enclosure metadata keeps nested free variables unresolved`() {
+        val nested = ClassDeclarations(
+            "example.Outer\$Nested", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${nested.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `obfuscated class with stripped enclosure metadata keeps hierarchy variables unresolved`() {
+        val nested = ClassDeclarations(
+            "example.c", "Lexample/Base<TT;>;", "example.Base", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val superType = requireNotNull(table.classes.getValue(nested.name).superType)
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("example.Base<T>", table.render(superType))
+        assertEquals("unresolved:class:${nested.name}", table.types[table.types[superType].arguments.single()].scope)
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${nested.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `stripped enclosure variables in formal bounds are retried as unresolved`() {
+        val nested = ClassDeclarations(
+            "example.c", "<T:TU;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val parameter = table.classes.getValue(nested.name).typeParameters.single()
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals(listOf("U"), parameter.bounds.map(table::render))
+        assertEquals("unresolved:class:${nested.name}", table.types[parameter.bounds.single()].scope)
+        assertEquals("T", table.render(value))
+        assertEquals("class:${nested.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `undeclared variable retry signal does not capture a stack trace`() {
+        val signalClass = DeclaredTypesReader::class.java.declaredClasses.single {
+            it.simpleName == "UndeclaredTypeVariableException"
+        }
+        val constructor = signalClass.getDeclaredConstructor(String::class.java)
+        constructor.isAccessible = true
+
+        val signal = constructor.newInstance("T") as Throwable
+
+        assertEquals("Undeclared type variable: T", signal.message)
+        assertTrue(signal.stackTrace.isEmpty())
+    }
+
+    @Test
+    fun `obfuscated class keeps captured variables that survive only in member signatures`() {
+        val nested = ClassDeclarations(
+            "example.c", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            listOf(MemberDeclaration("value", "()Ljava/lang/Object;", "()TT;")),
+            null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val field = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+        val method = table.methods.getValue(MemberTypeKey(nested.name, "value", "()Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(field))
+        assertEquals("unresolved:class:${nested.name}", table.types[field].scope)
+        assertEquals("T", table.render(method.returnType))
+        assertEquals(
+            "unresolved:method:${nested.name}#value()Ljava/lang/Object;",
+            table.types[method.returnType].scope
+        )
+    }
+
+    @Test
+    fun `named nested class metadata does not make undeclared variables unresolved`() {
+        val nested = ClassDeclarations(
+            "example.Outer\$Companion", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TT;")),
+            emptyList(), null, null, false, hasInnerClassMetadata = true
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/String;"))
+
+        assertEquals("java.lang.String", table.render(value))
+        assertTrue(table.types.none { it.kind == "variable" })
+    }
+
+    @Test
+    fun `local declaration behind a signatureless enclosing method remains unresolved`() {
+        val method = MemberTypeKey("example.Outer", "lambda\$make\$0", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, null, Opcodes.ACC_SYNTHETIC)), null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$1", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("values", "Ljava/util/List;", "Ljava/util/List<TT;>;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val field = table.fields.getValue(MemberTypeKey(local.name, "values", "Ljava/util/List;"))
+        val variable = table.types[table.types[field].arguments.single()]
+
+        assertEquals("T", variable.name)
+        assertEquals("unresolved:class:${local.name}", variable.scope)
+    }
+
+    @Test
+    fun `ordinary signatureless enclosing method does not allow undeclared variables`() {
+        val method = MemberTypeKey("example.Outer", "make", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, null)), null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TT;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val value = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/lang/String;"))
+
+        assertEquals("java.lang.String", table.render(value))
+        assertTrue(table.types.none { it.kind == "variable" })
+    }
+
+    @Test
+    fun `local declaration behind a rejected enclosing method remains unresolved`() {
+        val method = MemberTypeKey("example.Outer", "make", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, "<T:Ljava/lang/Object;>()V^")),
+            null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val value = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${local.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `malformed enclosing method formals still mark the local environment incomplete`() {
+        val method = MemberTypeKey("example.Outer", "make", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, "<T:Ljava/lang/Object>()V")),
+            null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val value = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${local.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `unknown erasure through an unresolved first bound does not discard a valid signature`() {
+        val declaration = ClassDeclarations(
+            "example.Outer\$Inner", "<T:TU;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Number;", "TT;")), emptyList(),
+            "example.MissingOuter", null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+        val field = table.fields.getValue(MemberTypeKey(declaration.name, "value", "Ljava/lang/Number;"))
+        val parameter = table.classes.getValue(declaration.name).typeParameters.single()
+
+        assertEquals("T", table.render(field))
+        assertEquals(listOf("U"), parameter.bounds.map(table::render))
+        assertEquals("unresolved:class:${declaration.name}", table.types[parameter.bounds.single()].scope)
+    }
+
+    @Test
     fun `excessively nested signatures fall back to descriptors without recursive overflow`() {
         val deep = "Ljava/util/List<".repeat(2_000) + "Ljava/lang/String;" + ">;".repeat(2_000)
         val declaration = ClassDeclarations(
@@ -289,6 +492,7 @@ class DeclaredTypesReaderTest {
         assertEquals(listOf("java.lang.Object", "java.util.List", "java.lang.String", "java.util.List"),
             table.types.map { it.name })
         assertEquals(listOf(emptyList(), emptyList(), emptyList(), listOf(2)), table.types.map { it.arguments })
+        assertEquals(emptyList(), table.classes.getValue(declaration.name).typeParameters)
         assertEquals("java.util.List", table.render(table.fields.getValue(MemberTypeKey("example.Bad", "bad", "Ljava/util/List;"))))
         assertEquals("java.util.List<java.lang.String>",
             table.render(table.fields.getValue(MemberTypeKey("example.Bad", "good", "Ljava/util/List;"))))
@@ -296,22 +500,150 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
-    fun `field erasures are appended without changing existing generic IDs`() {
+    fun `mismatched erasures fall back without changing following generic IDs`() {
         val declaration = ClassDeclarations(
             "example.RawFields", "<T:Lexample/Bound;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
             listOf(MemberDeclaration("value", "Ljava/lang/Number;", "TT;"),
                 MemberDeclaration("items", "Ljava/util/List;", "Ljava/util/List<Ljava/lang/String;>;")),
-            emptyList(), null, null, false
+            listOf(MemberDeclaration("wrong", "()Ljava/lang/Number;", "()Ljava/lang/String;")),
+            null, null, false
         )
         val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
         assertEquals(listOf(
             DeclaredType("class", "example.Bound"), DeclaredType("class", "java.lang.Object"),
-            DeclaredType("variable", "T", "class:example.RawFields"), DeclaredType("class", "java.lang.String"),
-            DeclaredType("class", "java.util.List", arguments = listOf(3)),
-            DeclaredType("class", "java.lang.Number"), DeclaredType("class", "java.util.List")
+            DeclaredType("class", "java.lang.Number"), DeclaredType("class", "java.lang.String"),
+            DeclaredType("class", "java.util.List", arguments = listOf(3)), DeclaredType("class", "java.util.List")
         ), table.types)
         assertEquals(2, table.fields[MemberTypeKey(declaration.name, "value", "Ljava/lang/Number;")])
         assertEquals(4, table.fields[MemberTypeKey(declaration.name, "items", "Ljava/util/List;")])
+        assertEquals(2, table.methods[MemberTypeKey(declaration.name, "wrong", "()Ljava/lang/Number;")]?.returnType)
+    }
+
+    @Test
+    fun `mismatched class signature falls back to raw hierarchy`() {
+        val declaration = ClassDeclarations(
+            "example.Child", "Ljava/lang/String;", "java.lang.Object", emptyList(),
+            emptyList(), emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+
+        val type = table.classes.getValue(declaration.name)
+        assertEquals("java.lang.Object", table.render(requireNotNull(type.superType)))
+        assertEquals(emptyList(), type.typeParameters)
+    }
+
+    @Test
+    fun `mismatched signed hierarchy retains valid class formals for members`() {
+        val declaration = ClassDeclarations(
+            "example.Enhanced", "<T:Ljava/lang/Object;>Ljava/lang/Object;", "java.lang.Object",
+            listOf("example.AddedInterface"),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+        val classTypes = table.classes.getValue(declaration.name)
+        val value = table.fields.getValue(MemberTypeKey(declaration.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals(listOf("T"), classTypes.typeParameters.map { it.name })
+        assertEquals(listOf("example.AddedInterface"), classTypes.interfaces.map(table::render))
+        assertEquals("T", table.render(value))
+        assertEquals("class:${declaration.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `undeclared variables remain unresolved while primitive generic arguments fall back`() {
+        val declaration = ClassDeclarations(
+            "example.Malformed", null, "java.lang.Object", emptyList(),
+            listOf(
+                MemberDeclaration("variable", "Ljava/lang/String;", "TX;"),
+                MemberDeclaration("primitive", "Ljava/util/List;", "Ljava/util/List<I>;"),
+                MemberDeclaration("void", "Ljava/util/List;", "Ljava/util/List<V>;")
+            ),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
+
+        val variable = table.fields.getValue(
+            MemberTypeKey(declaration.name, "variable", "Ljava/lang/String;")
+        )
+        assertEquals("X", table.render(variable))
+        assertEquals("unresolved:class:${declaration.name}", table.types[variable].scope)
+        for (name in listOf("primitive", "void")) {
+            assertEquals("java.util.List", table.render(table.fields.getValue(
+                MemberTypeKey(declaration.name, name, "Ljava/util/List;")
+            )))
+        }
+        assertTrue(table.types.none { it.kind == "primitive" })
+    }
+
+    @Test
+    fun `rejected outer and method formals remain unresolved in nested declarations`() {
+        val methodKey = MemberTypeKey("example.Outer", "bad", "()V")
+        val outer = ClassDeclarations(
+            "example.Outer", "<T:Ljava/lang/Object;>Ljava/lang/Object;X", "java.lang.Object", emptyList(),
+            emptyList(), listOf(MemberDeclaration("bad", methodKey.descriptor, "<U:Ljava/lang/Object;>()V^")),
+            null, null, false
+        )
+        val inner = ClassDeclarations(
+            "example.Outer\$Inner", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/util/List;", "Ljava/util/List<TT;>;")), emptyList(),
+            outer.name, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Outer\$Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/util/List;", "Ljava/util/List<TU;>;")), emptyList(),
+            outer.name, methodKey, false
+        )
+        val missingMethod = ClassDeclarations(
+            "example.Outer\$MissingMethod", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/String;", "TX;")), emptyList(),
+            outer.name, MemberTypeKey(outer.name, "missing", "()V"), false
+        )
+        val table = DeclaredTypesReader(linkedMapOf(
+            inner.name to inner, local.name to local, missingMethod.name to missingMethod, outer.name to outer
+        )).build()
+
+        assertEquals(emptyList(), table.classes.getValue(outer.name).typeParameters)
+        assertEquals(emptyList(), table.methods.getValue(methodKey).typeParameters)
+        val innerValue = table.fields.getValue(MemberTypeKey(inner.name, "value", "Ljava/util/List;"))
+        assertEquals("java.util.List<T>", table.render(innerValue))
+        assertEquals("unresolved:class:${inner.name}", table.types[table.types[innerValue].arguments.single()].scope)
+        val localValue = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/util/List;"))
+        assertEquals("java.util.List<U>", table.render(localValue))
+        val localVariable = table.types[localValue].arguments.single()
+        assertEquals("unresolved:class:${local.name}", table.types[localVariable].scope)
+        val unresolved = table.fields.getValue(
+            MemberTypeKey(missingMethod.name, "value", "Ljava/lang/String;")
+        )
+        assertEquals("X", table.render(unresolved))
+        assertEquals("unresolved:class:${missingMethod.name}", table.types[unresolved].scope)
+        assertEquals(listOf("T", "U", "X"), table.types.filter { it.kind == "variable" }.map { it.name })
+    }
+
+    @Test
+    fun `rejected outer formals leave owner and nested member variables unresolved`() {
+        val outer = ClassDeclarations(
+            "example.Outer", "<T:Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")), emptyList(),
+            null, null, false
+        )
+        val inner = ClassDeclarations(
+            "example.Outer\$Inner", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")), emptyList(),
+            outer.name, null, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(inner.name to inner, outer.name to outer)).build()
+        val outerValue = table.fields.getValue(MemberTypeKey(outer.name, "value", "Ljava/lang/Object;"))
+        val innerValue = table.fields.getValue(MemberTypeKey(inner.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(outerValue))
+        assertEquals("unresolved:class:${outer.name}", table.types[outerValue].scope)
+        assertEquals("T", table.render(innerValue))
+        assertEquals("unresolved:class:${inner.name}", table.types[innerValue].scope)
     }
 
 }

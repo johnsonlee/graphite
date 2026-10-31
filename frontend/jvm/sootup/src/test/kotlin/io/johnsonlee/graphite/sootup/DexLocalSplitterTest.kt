@@ -3,9 +3,8 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig
-import java.nio.file.Files
+import io.johnsonlee.graphite.sootup.testfixture.minimalAndroidSdk
 import java.nio.file.Path
-import java.util.jar.JarOutputStream
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -28,10 +27,8 @@ class DexLocalSplitterTest {
     @Test
     fun `loader reports method fallbacks keeps the class and resets the count on its next load`() {
         val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
-        val sdk = Files.createTempDirectory("dex-interceptor-fallback-sdk")
+        val sdk = minimalAndroidSdk("dex-interceptor-fallback-sdk", apiLevel = 21)
         try {
-            val platform = Files.createDirectories(sdk.resolve("platforms/android-21"))
-            JarOutputStream(Files.newOutputStream(platform.resolve("android.jar"))).use { }
             val messages = mutableListOf<String>()
             val loader = JavaProjectLoader(LoaderConfig(
                 androidSdk = sdk, buildCallGraph = false
@@ -87,11 +84,9 @@ class DexLocalSplitterTest {
     @Test
     fun `APK calls on reused registers resolve only their own lambda beyond the target cap`() {
         val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
-        val sdk = Files.createTempDirectory("dex-local-splitter-sdk")
+        val sdk = minimalAndroidSdk("dex-local-splitter-sdk", apiLevel = 21)
         try {
             val platforms = sdk.resolve("platforms")
-            val platform = Files.createDirectories(platforms.resolve("android-21"))
-            JarOutputStream(Files.newOutputStream(platform.resolve("android.jar"))).use { }
             // Verify the fixture really exercises register reuse in the old APK chain.
             val original = JavaView(ApkAnalysisInputLocation(
                 apk, AndroidVersionInfo(apk, platforms.toString()), DexBodyInterceptors.Default.bodyInterceptors()
