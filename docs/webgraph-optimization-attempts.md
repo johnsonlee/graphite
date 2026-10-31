@@ -22328,3 +22328,75 @@ Decision: retain the structurally verified allocation and stack-walk removal wit
 correctness coverage. Do not claim performance recovery or merge readiness: the current pair has
 unresolved order-by p50/p95 regressions, independent CPU/RSS evidence is missing, and APK-path
 performance acceptance remains unavailable.
+
+### Attempt156 — attribute operation resources and exercise the real APK/DEX construction path
+
+The two remaining evidence gaps in Attempt155 were measured without changing production code.
+The release is `5f1fd66543d617eb23a2258f3c14141383a33cc9`, the product candidate is
+`296b0513e24bdc1411e7b5fbf731cde9de25e485`, and the then-current final PR head
+`db39850b65388916ab57cb38cd69f5372e7ff4d9` differed only by this optimization-history
+documentation. All runs used the same local Apple M3 Max / 64 GiB / macOS 14.3 / OpenJDK
+17.0.20.1 host. Resources were measured per revision and per operation rather than around a
+controller enclosing both revisions.
+
+The real64 construction resource run used fresh outputs and only
+`Fixture64BuildBenchmark.buildAndSaveDistinctRealGraphs`: one JMH SingleShot fork, no warmup,
+G1 `-Xmx4g`, 64 distinct real JAR shards, complete usable save and mapped readback. The directly
+timed fork supplied CPU and maximum RSS, and all six inherited JVM receipts in every cell recorded
+an effective 4 GiB heap and clean shutdown. The native resource run reused the already verified
+exact-product-head persisted graphs and binaries, but reran the complete 73-case workload in both
+AB and BA orders. One first-use oracle, two warmups, 20 four-worker pressure requests per case,
+the fixed isolated tail workload and scope assertions all completed. Loading resources cover
+server launch through successful 64-graph registry readiness; query resources begin after that
+boundary and end after all query/scope work. A 100 ms sampler retained every production-server
+RSS and cumulative CPU observation; the separate capacity correctness process is outside the
+resource window.
+
+| Operation/order | CPU release | CPU candidate | Delta | Peak RSS release | Peak RSS candidate | Delta |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| real64 construction AB | 375.430 s | 381.750 s | +1.68% | 3.043 GB | 3.238 GB | +6.38% |
+| real64 construction BA | 381.830 s | 383.650 s | +0.48% | 2.925 GB | 3.059 GB | +4.58% |
+| real64 construction balanced | 378.630 s | 382.700 s | +1.07% | 2.984 GB | 3.148 GB | +5.50% |
+| native loading AB | 20.940 s | 21.330 s | +1.86% | 6.716 GB | 6.930 GB | +3.19% |
+| native loading BA | 20.890 s | 20.650 s | -1.15% | 6.797 GB | 6.752 GB | -0.67% |
+| native query AB | 301.920 s | 291.460 s | -3.46% | 17.433 GB | 17.371 GB | -0.36% |
+| native query BA | 291.870 s | 294.990 s | +1.07% | 16.232 GB | 16.298 GB | +0.41% |
+
+Native loading and query CPU/RSS pass the independent 5% limits in both orders. Construction CPU
+also passes, but construction peak RSS does not: AB is +6.38% and the balanced increase is +5.50%.
+The matching construction wall observation is 252.699 s release versus 253.534 s candidate
+(+0.834 s, +0.33%). This new resource failure replaces the earlier “unavailable” result; it is
+not offset by lower CPU or by the native operations.
+
+The APK performance workload uses four distinct real production APKs and produces four persisted
+graphs: Chrome 106, Netflix 8.89, GoTV and TVBox. Together they contain 337,863,258 input bytes
+and 19 DEX containers; 11 containers expose the `dalvik.annotation.Signature` type string. Each
+cell is a fresh G1 `-Xmx8g` JVM per APK, and the cohort reports sequential aggregate wall/CPU and
+the maximum RSS across its four processes. Post-build native queries, outside the timing window,
+verified usable persisted graphs, identical release/candidate node counts, and stable candidate
+generic-node counts in both orders: 17, 47,361, 19,262 and 7,507 respectively. Release returns
+zero because it has no DEX declaration source.
+
+| APK cohort/order | Wall release | Wall candidate | Delta | CPU release | CPU candidate | Delta | Peak RSS release | Peak RSS candidate | Delta |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| AB | 79.980 s | 84.640 s | +5.83% | 209.040 s | 227.840 s | +8.99% | 6.343 GB | 6.525 GB | +2.87% |
+| BA | 81.770 s | 83.380 s | +1.97% | 217.630 s | 229.790 s | +5.59% | 6.266 GB | 6.592 GB | +5.20% |
+| balanced | 80.875 s | 84.010 s | +3.88% | 213.335 s | 228.815 s | +7.26% | 6.304 GB | 6.558 GB | +4.03% |
+
+APK CPU fails the 5% limit in both orders; BA peak RSS also fails at +5.20%. The initially declared
+larger cohort stopped at its first release preflight: the real 185,686,651-byte, 25-DEX Coupang
+APK (`892cf8b57498196dfb453557ff92337f4e5fc82838821c5509f304015878a139`) ran 101.130 s,
+used 455.970 CPU-s and reached 9.462 GB maximum RSS, then exited without a usable graph or shutdown
+receipt under the fixed 8 GiB heap. It was not retried with a larger heap. That failure is retained
+separately and is not replaced by the bounded cohort.
+
+The immutable report, analysis JSON, raw resource samples, JMH results, time/heap receipts,
+manifests, APK query outputs and exact measurement scripts are in gist revision
+`7346d276dca72c5732322d9b8498147c700b14d2`. The resource archive SHA-256 is
+`60805d6be625a554568a6a06017ec771548149d377386ad869b2bd6f6d31d6c0`; the independently
+downloaded gist archive, report and analysis compare byte-for-byte with the local files.
+
+Decision: the two missing evidence categories are now measured, but the candidate remains not
+merge-ready. Native loading/query resources pass; real64 construction RSS fails, APK construction
+CPU fails in both orders, APK BA RSS fails, the large APK baseline preflight cannot complete under
+the fixed heap, and the previously reported order-by latency regressions remain unresolved.
