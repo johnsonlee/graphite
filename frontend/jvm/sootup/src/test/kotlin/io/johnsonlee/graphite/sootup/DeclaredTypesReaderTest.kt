@@ -289,6 +289,24 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `stripped enclosure variables in formal bounds are retried as unresolved`() {
+        val nested = ClassDeclarations(
+            "example.c", "<T:TU;>Ljava/lang/Object;", "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val parameter = table.classes.getValue(nested.name).typeParameters.single()
+        val value = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals(listOf("U"), parameter.bounds.map(table::render))
+        assertEquals("unresolved:class:${nested.name}", table.types[parameter.bounds.single()].scope)
+        assertEquals("T", table.render(value))
+        assertEquals("class:${nested.name}", table.types[value].scope)
+    }
+
+    @Test
     fun `obfuscated class keeps captured variables that survive only in member signatures`() {
         val nested = ClassDeclarations(
             "example.c", null, "java.lang.Object", emptyList(),
@@ -372,6 +390,27 @@ class DeclaredTypesReaderTest {
         val outer = ClassDeclarations(
             method.owner, null, "java.lang.Object", emptyList(), emptyList(),
             listOf(MemberDeclaration(method.name, method.descriptor, "<T:Ljava/lang/Object;>()V^")),
+            null, null, false
+        )
+        val local = ClassDeclarations(
+            "example.Local", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            emptyList(), null, method, false
+        )
+
+        val table = DeclaredTypesReader(linkedMapOf(outer.name to outer, local.name to local)).build()
+        val value = table.fields.getValue(MemberTypeKey(local.name, "value", "Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(value))
+        assertEquals("unresolved:class:${local.name}", table.types[value].scope)
+    }
+
+    @Test
+    fun `malformed enclosing method formals still mark the local environment incomplete`() {
+        val method = MemberTypeKey("example.Outer", "make", "()V")
+        val outer = ClassDeclarations(
+            method.owner, null, "java.lang.Object", emptyList(), emptyList(),
+            listOf(MemberDeclaration(method.name, method.descriptor, "<T:Ljava/lang/Object>()V")),
             null, null, false
         )
         val local = ClassDeclarations(

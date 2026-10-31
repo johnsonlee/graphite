@@ -26,6 +26,7 @@ import sootup.apk.frontend.dexpler.DexFileProvider
 import kotlin.io.path.extension
 
 /** Reads the declaration metadata that Android stores in system annotations in every DEX file. */
+@Suppress("TooManyFunctions") // DEX decoding policies stay centralized at this untrusted-input boundary.
 internal object DexClassDeclarations {
     private const val SIGNATURE = "Ldalvik/annotation/Signature;"
     private const val ENCLOSING_CLASS = "Ldalvik/annotation/EnclosingClass;"
@@ -206,8 +207,8 @@ internal object DexClassDeclarations {
             isEnum = AccessFlags.ENUM.isSet(definition.accessFlags),
             enclosingInstance = when {
                 enclosingClass == null -> false
-                enclosingMethod == null && innerName != null -> true
                 hasEnclosingField -> true
+                enclosingMethod == null && innerName != null && innerAccess != null -> true
                 else -> null
             },
             hasInnerClassMetadata = hasInnerClassMetadata
@@ -215,27 +216,38 @@ internal object DexClassDeclarations {
     }
 
     private fun Annotatable.signature(stringIndexField: Field?): String? = dexTolerant {
-        systemAnnotations().signature(stringIndexField)
+        val source = annotations
+        if (source.isEmpty()) return@dexTolerant null
+        var signature: Annotation? = null
+        for (annotation in source) {
+            if (annotation.visibility != AnnotationVisibility.SYSTEM || annotation.type != SIGNATURE) continue
+            if (signature != null) return@dexTolerant null
+            signature = annotation
+        }
+        signature?.signature(stringIndexField)
     }
 
     private fun Map<String, Annotation>.signature(stringIndexField: Field?): String? = dexTolerant {
-        val annotation = this[SIGNATURE] ?: return@dexTolerant null
-        if (annotation.elements.size != 1) return@dexTolerant null
-        val value = annotation.elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue
-            ?: return@dexTolerant null
-        if (value.value.size > MAX_SIGNATURE_FRAGMENTS) return@dexTolerant null
+        this[SIGNATURE]?.signature(stringIndexField)
+    }
+
+    @Suppress("ReturnCount") // Reject malformed or over-budget fragments before materializing the signature.
+    private fun Annotation.signature(stringIndexField: Field?): String? {
+        if (elements.size != 1) return null
+        val value = elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue ?: return null
+        if (value.value.size > MAX_SIGNATURE_FRAGMENTS) return null
         val signature = StringBuilder()
         var bytes = 0
         for (encoded in value.value) {
-            val string = encoded as? StringEncodedValue ?: return@dexTolerant null
+            val string = encoded as? StringEncodedValue ?: return null
             // dexlib decodes on getValue(). Bound its temporary String before materializing it.
             if (string is DexBackedStringEncodedValue && stringIndexField != null &&
                 !string.rawLengthWithinBudget(stringIndexField)
-            ) return@dexTolerant null
+            ) return null
             val fragment = string.value
-            bytes = fragment.appendValidated(signature, bytes) ?: return@dexTolerant null
+            bytes = fragment.appendValidated(signature, bytes) ?: return null
         }
-        signature.toString()
+        return signature.toString()
     }
 
     private fun Map<String, Annotation>.typeAnnotation(type: String): String? = decodedAnnotationValue(type, VALUE) {

@@ -394,6 +394,30 @@ class DexClassDeclarationsTest {
     }
 
     @Test
+    fun `member signature lookup scans annotations once without building a system annotation map`() {
+        val signature = annotation(ImmutableAnnotationElement(
+            "value",
+            ImmutableArrayEncodedValue(listOf(ImmutableStringEncodedValue("TT;")))
+        ))
+        val base = ImmutableField(
+            "Lfixture/Members;", "value", "Ljava/lang/Object;", AccessFlags.PUBLIC.value,
+            null, listOf(signature), emptySet()
+        )
+        var annotationReads = 0
+        val field = object : org.jf.dexlib2.iface.Field by base {
+            override fun getAnnotations(): Set<Annotation> {
+                annotationReads++
+                return base.annotations
+            }
+        }
+
+        val declaration = read(testDefinition(type = "Lfixture/Members;", fields = listOf(field)))
+
+        assertEquals("TT;", declaration.fields.single().signature)
+        assertEquals(1, annotationReads)
+    }
+
+    @Test
     fun `malformed member descriptors drop only their class declarations`() {
         val invalidField = ImmutableField(
             "Lfixture/InvalidField;",
@@ -463,7 +487,7 @@ class DexClassDeclarationsTest {
         val declaration = read(testDefinition(type = "Lfixture/Outer\$Member;", annotations = annotations))
 
         assertEquals("fixture.Outer", declaration.enclosingClass)
-        assertTrue(declaration.enclosingInstance == true)
+        assertNull(declaration.enclosingInstance)
         assertTrue(declaration.hasInnerClassMetadata)
     }
 

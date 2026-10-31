@@ -149,9 +149,10 @@ class SootUpAdapterCoverageRegressionTest {
             config = LoaderConfig(buildCallGraph = false),
             extensions = emptyList(),
             resourceAccessor = resources,
+            declarationWarning = warnings::add,
             inputLocationSources = emptyMap(),
             graphBuilder = DefaultGraph.Builder()
-        ).also { it.declarationWarning = warnings::add }
+        )
 
         adapter.buildGraph()
 

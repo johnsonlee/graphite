@@ -256,19 +256,20 @@ private class ControlFlowIndex(private val stmtGraph: ControlFlowGraph<*>, state
  * This is the bridge between SootUp's analysis infrastructure and
  * Graphite's unified graph representation.
  */
+@Suppress("LongParameterList") // Adapter dependencies are explicit constructor seams for independent loaders/tests.
 class SootUpAdapter(
     private val view: View,
     private val config: LoaderConfig,
     private val signatureReader: BytecodeSignatureReader? = null,
     private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
+    private val declarationWarning: (String) -> Unit = {},
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
     private val singleArtifactSource: String? = null,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
 ) {
-    internal var declarationWarning: (String) -> Unit = {}
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
     /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */
