@@ -148,18 +148,27 @@ class DexClassDeclarationsTest {
     }
 
     @Test
-    fun `missing raw string index reports disabled dex generic signatures`() {
+    fun `missing raw string index falls back to the post-decode budget`() {
         val warnings = mutableListOf<String>()
+        val store = MemoryDataStore()
+        DexPool.writeTo(store, ImmutableDexFile(Opcodes.getDefault(), listOf(classDefinition(
+            "Ljava/util/List<Ljava/lang/String;>;"
+        ))))
+        val dex = DexBackedDexFile.fromInputStream(null, ByteArrayInputStream(store.data))
 
-        DexClassDeclarations.read(
-            sequenceOf(testDefinition()),
-            setOf("fixture.Test"),
+        val declarations = DexClassDeclarations.read(
+            dex.classes.asSequence(),
+            setOf("fixture.Duplicate"),
             warnings::add,
             stringIndexField = null
         )
 
+        assertEquals(
+            "Ljava/util/List<Ljava/lang/String;>;",
+            declarations.getValue("fixture.Duplicate").signature
+        )
         assertEquals(1, warnings.size)
-        assertTrue(warnings.single().contains("raw string index"))
+        assertTrue(warnings.single().contains("post-decode signature budget"))
     }
 
     @Test
@@ -214,7 +223,9 @@ class DexClassDeclarationsTest {
             "not-dex.dat" to "dex\\n039\\u0000broken".toByteArray()
         )
         val resources = object : ResourceAccessor {
-            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun list(pattern: String) = content.keys.asSequence()
+                .filter { it.endsWith(".dex") }
+                .map { ResourceEntry(it, "fixture") }
             override fun open(path: String) = ByteArrayInputStream(content.getValue(path)).also { opened.add(path) }
         }
 
@@ -265,6 +276,31 @@ class DexClassDeclarationsTest {
 
         assertEquals("Ljava/util/List<Ljava/lang/String;>;", declarations.getValue("fixture.Duplicate").signature)
         assertEquals(listOf("classes2.dex"), opened)
+    }
+
+    @Test
+    fun `SootUp failure fallback filters dex magic before basename deduplication`() {
+        val valid = dex(classDefinition("Ljava/util/List<Ljava/lang/String;>;"))
+        val opened = mutableListOf<String>()
+        val content = linkedMapOf(
+            "lib/x.bin" to "not a dex".toByteArray(),
+            "assets/x.bin" to valid
+        )
+        val resources = object : ResourceAccessor {
+            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun open(path: String) = ByteArrayInputStream(content.getValue(path)).also { opened.add(path) }
+        }
+
+        val declarations = DexClassDeclarations.read(
+            DexClassDeclarations.resourceClasses(resources, includeNonDexNames = true) {},
+            setOf("fixture.Duplicate")
+        )
+
+        assertEquals(
+            "Ljava/util/List<Ljava/lang/String;>;",
+            declarations.getValue("fixture.Duplicate").signature
+        )
+        assertEquals(listOf("lib/x.bin", "assets/x.bin"), opened)
     }
 
     @Test
@@ -503,7 +539,9 @@ class DexClassDeclarationsTest {
     private fun dexResources(vararg entries: Pair<String, ByteArray>): ResourceAccessor {
         val content = entries.toMap()
         return object : ResourceAccessor {
-            override fun list(pattern: String) = content.keys.asSequence().map { ResourceEntry(it, "fixture") }
+            override fun list(pattern: String) = content.keys.asSequence()
+                .filter { pattern == "**" || it.endsWith(".dex") }
+                .map { ResourceEntry(it, "fixture") }
             override fun open(path: String) = ByteArrayInputStream(content.getValue(path))
         }
     }

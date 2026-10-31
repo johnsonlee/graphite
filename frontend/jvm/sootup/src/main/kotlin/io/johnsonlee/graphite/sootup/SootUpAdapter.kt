@@ -268,6 +268,7 @@ class SootUpAdapter(
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
 ) {
+    internal var declarationWarning: (String) -> Unit = {}
     private val trackCrossMethodFunctionalDispatch = config.trackCrossMethodFunctionalDispatch
     private val extractAnnotationsEnabled = config.extractAnnotations
     /** The call-to-body edges of `LoaderConfig.interproceduralDataflow`, collected only when it is on. */
@@ -444,7 +445,7 @@ class SootUpAdapter(
     /** Declaration snapshots are needed only while building the type table. */
     private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
         val classNames = classes.mapTo(HashSet(classes.size)) { it.type.fullyQualifiedName }
-        val dexDeclarations = DexClassDeclarations.read(resourceAccessor, classNames, ::log)
+        val dexDeclarations = DexClassDeclarations.read(resourceAccessor, classNames, declarationWarning)
         val declarations = classes.mapNotNull { sootClass ->
             val name = sootClass.type.fullyQualifiedName
             sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)

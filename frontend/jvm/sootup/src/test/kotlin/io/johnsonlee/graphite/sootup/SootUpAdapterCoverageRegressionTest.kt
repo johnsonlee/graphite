@@ -137,6 +137,28 @@ class SootUpAdapterCoverageRegressionTest {
         assertTrue(logs.any { it.contains("Failed to extract artifact dependencies from lib.jar!/lib/Unreadable.class") })
     }
 
+    @Test
+    fun `DEX declaration failures use the warning callback`() {
+        val warnings = mutableListOf<String>()
+        val resources = object : ResourceAccessor {
+            override fun list(pattern: String) = sequenceOf(ResourceEntry("classes.dex", "fixture"))
+            override fun open(path: String) = error("unreadable DEX")
+        }
+        val adapter = SootUpAdapter(
+            view = JavaView(emptyList()),
+            config = LoaderConfig(buildCallGraph = false),
+            extensions = emptyList(),
+            resourceAccessor = resources,
+            inputLocationSources = emptyMap(),
+            graphBuilder = DefaultGraph.Builder()
+        ).also { it.declarationWarning = warnings::add }
+
+        adapter.buildGraph()
+
+        assertEquals(1, warnings.size)
+        assertTrue(warnings.single().contains("Failed to read DEX declarations from classes.dex"))
+    }
+
     private fun createAdapter(): SootUpAdapter {
         val testClassesDir = findTestClassesDir()
         val location = PathBasedAnalysisInputLocation.create(testClassesDir, SourceType.Application)

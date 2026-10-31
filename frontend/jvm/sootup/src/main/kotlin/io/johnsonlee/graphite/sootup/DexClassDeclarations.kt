@@ -69,7 +69,7 @@ internal object DexClassDeclarations {
         stringIndexField: Field? = dexStringIndexField
     ): Map<String, ClassDeclarations> {
         if (stringIndexField == null) {
-            warning("DEX generic signatures are disabled because dexlib's raw string index is unavailable")
+            warning("DEX raw string allocation guard is unavailable; using the post-decode signature budget")
         }
         val definitions = linkedMapOf<String, ClassDef>()
         classes.forEach { definition ->
@@ -95,17 +95,13 @@ internal object DexClassDeclarations {
     }
 
     @Suppress("TooGenericExceptionCaught") // Resource providers and dexlib surface implementation-specific failures.
-    private fun resourceClasses(
+    internal fun resourceClasses(
         resources: ResourceAccessor,
         includeNonDexNames: Boolean,
         warning: (String) -> Unit
     ): Sequence<ClassDef> = sequence {
-        val entries = if (includeNonDexNames) resources.list("**") else {
-            sequenceOf(resources.list("*.dex"), resources.list("**/*.dex"))
-                .flatten()
-                .filter { it.path.endsWith(".dex", ignoreCase = true) }
-                .distinctBy(ResourceEntry::path)
-        }
+        val entries = if (includeNonDexNames) resources.list("**") else resources.list("**/*.dex")
+        val selectedBasenames = hashSetOf<String>()
         entries
             // An exceptional SootUp-provider fallback accepts any entry with DEX magic.
             // Generic accessors are limited to .dex names. Preserve SootUp's primary/classes-first
@@ -115,18 +111,20 @@ internal object DexClassDeclarations {
             }.thenBy {
                 !it.path.substringAfterLast('/').startsWith("classes")
             }.thenByDescending { it.path.substringAfterLast('/') })
-            // DexFileProvider indexes container entries by basename. Keep the first entry
-            // with each basename so fallback declarations match SootUp's selected DEX body.
-            .distinctBy { it.path.substringAfterLast('/') }
             .forEach { entry ->
-                val classes = try {
+                val basename = entry.path.substringAfterLast('/')
+                val classes = if (basename in selectedBasenames) emptySequence() else try {
                     resources.open(entry.path).use { input ->
                         val buffered = BufferedInputStream(input)
                         buffered.mark(DEX_MAGIC_SIZE)
                         val magic = ByteArray(DEX_MAGIC_SIZE)
                         val read = buffered.read(magic)
                         buffered.reset()
-                        if (read != DEX_MAGIC_SIZE || !magic.isDexMagic()) emptySequence() else {
+                        // DexFileProvider indexes only valid DEX entries by basename. Deduplicate
+                        // after the magic check so an arbitrary resource cannot shadow a DEX body.
+                        if (read != DEX_MAGIC_SIZE || !magic.isDexMagic() ||
+                            !selectedBasenames.add(basename)
+                        ) emptySequence() else {
                             safeClasses(DexBackedDexFile.fromInputStream(null, buffered), entry.path, warning)
                         }
                     }
@@ -229,7 +227,9 @@ internal object DexClassDeclarations {
         for (encoded in value.value) {
             val string = encoded as? StringEncodedValue ?: return null
             // dexlib decodes on getValue(). Bound its temporary String before materializing it.
-            if (string is DexBackedStringEncodedValue && !string.rawLengthWithinBudget(stringIndexField)) return null
+            if (string is DexBackedStringEncodedValue && stringIndexField != null &&
+                !string.rawLengthWithinBudget(stringIndexField)
+            ) return null
             val fragment = string.value
             bytes = fragment.appendValidated(signature, bytes) ?: return null
         }
@@ -312,8 +312,8 @@ internal object DexClassDeclarations {
         }
     }
 
-    private fun dexStringUtf16Length(string: DexBackedStringEncodedValue, stringIndexField: Field?): Int? = try {
-        val stringIndex = stringIndexField?.getInt(string) ?: return null
+    private fun dexStringUtf16Length(string: DexBackedStringEncodedValue, stringIndexField: Field): Int? = try {
+        val stringIndex = stringIndexField.getInt(string)
         val stringIdOffset = string.dexFile.stringSection.getOffset(stringIndex)
         val stringDataOffset = string.dexFile.buffer.readSmallUint(stringIdOffset)
         string.dexFile.dataBuffer.readerAt(stringDataOffset).readSmallUleb128()
@@ -321,7 +321,7 @@ internal object DexClassDeclarations {
         null
     }
 
-    private fun DexBackedStringEncodedValue.rawLengthWithinBudget(stringIndexField: Field?): Boolean {
+    private fun DexBackedStringEncodedValue.rawLengthWithinBudget(stringIndexField: Field): Boolean {
         // Fail closed if the pinned dexlib representation changes; never decode before bounding.
         val utf16Length = dexStringUtf16Length(this, stringIndexField) ?: return false
         return try {

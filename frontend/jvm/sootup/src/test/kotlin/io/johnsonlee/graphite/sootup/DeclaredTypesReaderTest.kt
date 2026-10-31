@@ -289,6 +289,28 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `obfuscated class keeps captured variables that survive only in member signatures`() {
+        val nested = ClassDeclarations(
+            "example.c", null, "java.lang.Object", emptyList(),
+            listOf(MemberDeclaration("value", "Ljava/lang/Object;", "TT;")),
+            listOf(MemberDeclaration("value", "()Ljava/lang/Object;", "()TT;")),
+            null, null, false
+        )
+
+        val table = DeclaredTypesReader(mapOf(nested.name to nested)).build()
+        val field = table.fields.getValue(MemberTypeKey(nested.name, "value", "Ljava/lang/Object;"))
+        val method = table.methods.getValue(MemberTypeKey(nested.name, "value", "()Ljava/lang/Object;"))
+
+        assertEquals("T", table.render(field))
+        assertEquals("unresolved:class:${nested.name}", table.types[field].scope)
+        assertEquals("T", table.render(method.returnType))
+        assertEquals(
+            "unresolved:method:${nested.name}#value()Ljava/lang/Object;",
+            table.types[method.returnType].scope
+        )
+    }
+
+    @Test
     fun `named nested class metadata does not make undeclared variables unresolved`() {
         val nested = ClassDeclarations(
             "example.Outer\$Companion", null, "java.lang.Object", emptyList(),
@@ -478,7 +500,7 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
-    fun `undeclared variables and primitive generic arguments fall back to descriptors`() {
+    fun `undeclared variables remain unresolved while primitive generic arguments fall back`() {
         val declaration = ClassDeclarations(
             "example.Malformed", null, "java.lang.Object", emptyList(),
             listOf(
@@ -491,15 +513,17 @@ class DeclaredTypesReaderTest {
 
         val table = DeclaredTypesReader(mapOf(declaration.name to declaration)).build()
 
-        assertEquals("java.lang.String", table.render(table.fields.getValue(
+        val variable = table.fields.getValue(
             MemberTypeKey(declaration.name, "variable", "Ljava/lang/String;")
-        )))
+        )
+        assertEquals("X", table.render(variable))
+        assertEquals("unresolved:class:${declaration.name}", table.types[variable].scope)
         for (name in listOf("primitive", "void")) {
             assertEquals("java.util.List", table.render(table.fields.getValue(
                 MemberTypeKey(declaration.name, name, "Ljava/util/List;")
             )))
         }
-        assertTrue(table.types.none { it.kind == "variable" || it.kind == "primitive" })
+        assertTrue(table.types.none { it.kind == "primitive" })
     }
 
     @Test

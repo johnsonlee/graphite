@@ -318,7 +318,7 @@ class JavaProjectLoader(
             singleArtifactSource = singleArtifactSource(path),
             graphBuilder = graphBuilderFactory(),
             preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
-        )
+        ).also { it.declarationWarning = ::warn }
         val graph = adapter.buildGraph()
         if (bodyInterceptionFallbackCount > 0) {
             warn("Recovered $bodyInterceptionFallbackCount APK method body/bodies after interceptor failures")

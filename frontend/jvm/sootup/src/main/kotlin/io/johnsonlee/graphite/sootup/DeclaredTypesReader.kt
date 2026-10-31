@@ -276,12 +276,20 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         // Synthetic lambda/initializer owners commonly have no Signature even though their
         // local classes legally capture a type variable declared by the source method.
         val strippedEnclosure = owner == null && !declaration.hasInnerClassMetadata &&
-            ('$' in declaration.name || declaration.signature.hasFreeTypeVariable(formalNames))
+            ('$' in declaration.name || declaration.hasFreeTypeVariable(formalNames))
         return strippedEnclosure || owner != null &&
             (owner !in declarations || owner in unresolvedEnvironments || methodSignatureIncomplete)
     }
 
-    /** Detect free variables in a class hierarchy without mistaking class-name text for a `Tname;` token. */
+    /** Include captured variables that survive only in member signatures after obfuscation. */
+    private fun ClassDeclarations.hasFreeTypeVariable(classFormalNames: Collection<String>): Boolean =
+        signature.hasFreeTypeVariable(classFormalNames) ||
+            fields.any { it.signature.hasFreeTypeVariable(classFormalNames) } ||
+            methods.any { method ->
+                method.signature.hasFreeTypeVariable(classFormalNames + formalNames(method.signature))
+            }
+
+    /** Detect free variables in a signature without mistaking class-name text for a `Tname;` token. */
     @Suppress("ReturnCount") // Null, malformed, and first-free-variable exits keep the bounded scanner explicit.
     private fun String?.hasFreeTypeVariable(formalNames: Collection<String>): Boolean {
         val signature = this ?: return false
