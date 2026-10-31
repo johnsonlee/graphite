@@ -360,6 +360,40 @@ class DexClassDeclarationsTest {
     }
 
     @Test
+    fun `requested class annotations are decoded once`() {
+        val annotations = listOf(
+            annotation(ImmutableAnnotationElement(
+                "value",
+                ImmutableArrayEncodedValue(listOf(ImmutableStringEncodedValue("Ljava/lang/Object;")))
+            )),
+            annotation(
+                ImmutableAnnotationElement("value", ImmutableTypeEncodedValue("Lfixture/Outer;")),
+                type = "Ldalvik/annotation/EnclosingClass;"
+            ),
+            annotation(
+                ImmutableAnnotationElement("accessFlags", ImmutableIntEncodedValue(0)),
+                ImmutableAnnotationElement("name", ImmutableStringEncodedValue("Member")),
+                type = "Ldalvik/annotation/InnerClass;"
+            )
+        )
+        val base = testDefinition(type = "Lfixture/Outer\$Member;", annotations = annotations)
+        var annotationReads = 0
+        val requested = object : ClassDef by base {
+            override fun getAnnotations(): Set<Annotation> {
+                annotationReads++
+                return base.annotations
+            }
+        }
+
+        val declaration = read(requested)
+
+        assertEquals(1, annotationReads)
+        assertEquals("Ljava/lang/Object;", declaration.signature)
+        assertEquals("fixture.Outer", declaration.enclosingClass)
+        assertTrue(declaration.hasInnerClassMetadata)
+    }
+
+    @Test
     fun `malformed member descriptors drop only their class declarations`() {
         val invalidField = ImmutableField(
             "Lfixture/InvalidField;",

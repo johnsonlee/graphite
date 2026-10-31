@@ -10,6 +10,7 @@ import org.jf.dexlib2.dexbacked.DexBackedDexFile
 import org.jf.dexlib2.dexbacked.value.DexBackedStringEncodedValue
 import org.jf.dexlib2.iface.DexFile
 import org.jf.dexlib2.iface.Annotatable
+import org.jf.dexlib2.iface.Annotation
 import org.jf.dexlib2.iface.ClassDef
 import org.jf.dexlib2.iface.reference.MethodReference
 import org.jf.dexlib2.iface.value.EncodedValue
@@ -170,6 +171,7 @@ internal object DexClassDeclarations {
         val name = definition.type.dexClassName()
         val superName = definition.superclass?.dexClassName()
         val interfaces = definition.interfaces.map { it.dexClassName() }
+        val annotations = definition.systemAnnotations()
         val fields = definition.fields.map { field ->
             field.type.requireDexFieldDescriptor()
             MemberDeclaration(field.name, field.type, field.signature(stringIndexField), field.accessFlags)
@@ -179,11 +181,11 @@ internal object DexClassDeclarations {
             descriptor.requireDexMethodDescriptor()
             MemberDeclaration(method.name, descriptor, method.signature(stringIndexField), method.accessFlags)
         }
-        val enclosingMethod = definition.enclosingMethod()
-        val hasInnerClassMetadata = dexTolerant { definition.systemAnnotation(INNER_CLASS) != null } ?: false
-        val innerAccess = definition.intAnnotation(INNER_CLASS, "accessFlags")
-        val innerName = definition.stringAnnotation(INNER_CLASS, "name")
-        val encodedEnclosingClass = definition.typeAnnotation(ENCLOSING_CLASS)?.dexClassName()
+        val enclosingMethod = annotations.enclosingMethod()
+        val hasInnerClassMetadata = INNER_CLASS in annotations
+        val innerAccess = annotations.intAnnotation(INNER_CLASS, "accessFlags")
+        val innerName = annotations.stringAnnotation(INNER_CLASS, "name")
+        val encodedEnclosingClass = annotations.typeAnnotation(ENCLOSING_CLASS)?.dexClassName()
         val enclosingClass = enclosingMethod?.owner ?: encodedEnclosingClass?.takeIf {
             !hasInnerClassMetadata || innerName == null ||
                 innerAccess == null || !AccessFlags.STATIC.isSet(innerAccess)
@@ -194,7 +196,7 @@ internal object DexClassDeclarations {
         }
         return ClassDeclarations(
             name = name,
-            signature = definition.signature(stringIndexField),
+            signature = annotations.signature(stringIndexField),
             superName = superName,
             interfaces = interfaces,
             fields = fields,
@@ -213,55 +215,61 @@ internal object DexClassDeclarations {
     }
 
     private fun Annotatable.signature(stringIndexField: Field?): String? = dexTolerant {
-        signatureValue(stringIndexField)
+        systemAnnotations().signature(stringIndexField)
     }
 
-    @Suppress("ReturnCount") // Every invalid system-annotation shape falls back independently.
-    private fun Annotatable.signatureValue(stringIndexField: Field?): String? {
-        val annotation = systemAnnotation(SIGNATURE) ?: return null
-        if (annotation.elements.size != 1) return null
-        val value = annotation.elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue ?: return null
-        if (value.value.size > MAX_SIGNATURE_FRAGMENTS) return null
+    private fun Map<String, Annotation>.signature(stringIndexField: Field?): String? = dexTolerant {
+        val annotation = this[SIGNATURE] ?: return@dexTolerant null
+        if (annotation.elements.size != 1) return@dexTolerant null
+        val value = annotation.elements.single().takeIf { it.name == VALUE }?.value as? ArrayEncodedValue
+            ?: return@dexTolerant null
+        if (value.value.size > MAX_SIGNATURE_FRAGMENTS) return@dexTolerant null
         val signature = StringBuilder()
         var bytes = 0
         for (encoded in value.value) {
-            val string = encoded as? StringEncodedValue ?: return null
+            val string = encoded as? StringEncodedValue ?: return@dexTolerant null
             // dexlib decodes on getValue(). Bound its temporary String before materializing it.
             if (string is DexBackedStringEncodedValue && stringIndexField != null &&
                 !string.rawLengthWithinBudget(stringIndexField)
-            ) return null
+            ) return@dexTolerant null
             val fragment = string.value
-            bytes = fragment.appendValidated(signature, bytes) ?: return null
+            bytes = fragment.appendValidated(signature, bytes) ?: return@dexTolerant null
         }
-        return signature.toString()
+        signature.toString()
     }
 
-    private fun Annotatable.typeAnnotation(type: String): String? = decodedAnnotationValue(type, VALUE) {
+    private fun Map<String, Annotation>.typeAnnotation(type: String): String? = decodedAnnotationValue(type, VALUE) {
         (it as? TypeEncodedValue)?.value
     }
 
-    private fun Annotatable.intAnnotation(type: String, name: String): Int? = decodedAnnotationValue(type, name) {
-        (it as? IntEncodedValue)?.value
-    }
+    private fun Map<String, Annotation>.intAnnotation(type: String, name: String): Int? =
+        decodedAnnotationValue(type, name) {
+            (it as? IntEncodedValue)?.value
+        }
 
-    private fun Annotatable.stringAnnotation(type: String, name: String): String? =
+    private fun Map<String, Annotation>.stringAnnotation(type: String, name: String): String? =
         decodedAnnotationValue(type, name) { (it as? StringEncodedValue)?.value }
 
-    private fun Annotatable.enclosingMethod(): MemberTypeKey? = decodedAnnotationValue(ENCLOSING_METHOD, VALUE) { value ->
-        val reference = (value as? MethodEncodedValue)?.value ?: return@decodedAnnotationValue null
-        MemberTypeKey(reference.definingClass.dexClassName(), reference.name, reference.descriptor())
-    }
+    private fun Map<String, Annotation>.enclosingMethod(): MemberTypeKey? =
+        decodedAnnotationValue(ENCLOSING_METHOD, VALUE) { value ->
+            val reference = (value as? MethodEncodedValue)?.value ?: return@decodedAnnotationValue null
+            MemberTypeKey(reference.definingClass.dexClassName(), reference.name, reference.descriptor())
+        }
 
-    private fun Annotatable.systemAnnotation(type: String) = annotations
-        .filter { it.type == type && it.visibility == AnnotationVisibility.SYSTEM }
-        .singleOrNull()
+    private fun Annotatable.systemAnnotations(): Map<String, Annotation> = dexTolerant {
+        annotations.asSequence()
+            .filter { it.visibility == AnnotationVisibility.SYSTEM }
+            .groupBy(Annotation::getType)
+            .mapNotNull { (type, matches) -> matches.singleOrNull()?.let { type to it } }
+            .toMap()
+    }.orEmpty()
 
-    private inline fun <T> Annotatable.decodedAnnotationValue(
+    private inline fun <T> Map<String, Annotation>.decodedAnnotationValue(
         type: String,
         name: String,
         decode: (EncodedValue) -> T?
     ): T? = dexTolerant {
-        systemAnnotation(type)
+        this[type]
             ?.elements
             ?.filter { it.name == name }
             ?.singleOrNull()
