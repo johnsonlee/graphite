@@ -22273,3 +22273,58 @@ Decision: retain the correctness fixes and the mechanically verified removal of 
 and collection pipeline. Do not claim performance recovery or merge readiness: the current pair
 has an unresolved slow-query p50/p95 regression, independent CPU/RSS evidence is missing, and the
 APK path still lacks its representative performance workload.
+
+### Attempt155 — remove retry-path stack traces and per-member outcome allocations
+
+Review of the strict-to-lenient generic parser found that its control-flow exception captured a
+full stack for every retried declaration, and that each field and method allocated a local retry
+lambda plus an `OptionalParse` result object on the common no-retry path. `ClassParseAttempt` also
+double-wrapped the same class outcome already represented by `ParsedClassTypes`. The exact parent
+is `4aefaac126d5bb44770a2334e913642a5baa34d3` and the product candidate is
+`296b0513e24bdc1411e7b5fbf731cde9de25e485`.
+
+The candidate makes the undeclared-variable signal a stackless four-argument `RuntimeException`,
+uses direct `parseField` and `parseMethod` functions with inline rollback/retry helpers, returns
+nullable parse values without `OptionalParse`, and folds the undeclared flag into
+`ParsedClassTypes`. One mutable retry mode is allocated per class rather than lambdas and outcome
+objects per member. Compiled bytecode contains no `OptionalParse` or `ClassParseAttempt` classes,
+and field/method calls inline the retry helper. A regression test reflects the private signal and
+asserts both its message and empty stack trace. The full `sootup` suite passes 656 tests with
+98.0954% line coverage (4,687 covered, 91 missed), and detekt passes.
+
+The local cumulative guard used 64 distinct persisted JAR shards, 16 each from Android-all,
+Tika, Hive and the Kotlin compiler. All 73 measured query cases actually target multiple graphs.
+Fresh-output AB and BA rounds used four concurrent workers, one first-use oracle, two warmups and
+20 pressure requests per revision and case; p50/p95 are nearest-rank per case through complete
+HTTP-body consumption. Both rounds passed correctness and stability: all 5,840 pressure requests,
+10,560 selected isolated diagnostic requests and 28 G1 `-Xmx4g` receipts completed without a
+failure, timeout, crash or process OOM.
+
+Usable build/save was 263,701.894 ms for release versus 258,574.266 ms for the candidate,
+-5,127.628 ms (-1.94%), with both order-specific deltas improving
+[-8,369.213, -1,886.044] ms. Registry-ready loading was 21,508.029 versus 21,077.303 ms,
+-430.725 ms (-2.00%), range [-704.690, -156.761] ms; startup through first use was
+24,745.694 versus 24,228.555 ms, -517.139 ms (-2.09%), range
+[-991.788, -42.489] ms. All three improve in both orders, but each cell is one observation per
+revision/order and does not establish variance.
+
+Query p50 improved/regressed in 29/44 cases and p95 in 31/42. The cumulative pair has material,
+direction-consistent order-by regressions: `shape-order-by` p50 +17.667 ms (+0.73%), range
+[+3.764, +31.569] ms, and p95 +52.911 ms (+2.13%), range [+40.197, +65.626] ms;
+`shape-order-by-desc` p50 +17.803 ms (+0.71%), range [+9.195, +26.410] ms, and p95
++44.324 ms (+1.74%), range [+12.565, +76.082] ms. These native query paths are unchanged by
+the Kotlin refactor. The immediately preceding exact-product pair had both cases improving in both
+orders, so the reversal demonstrates temporal variability but does not cancel the current pair or
+permit selecting the favorable run. The prior `shape-with-filter` regression also does not
+reproduce: p50 improves in both orders while p95 reverses direction.
+
+Independent per-revision/per-operation CPU and peak RSS remain unavailable because the trusted
+controller does not attribute them. Outer whole-controller diagnostics were 2,098.96/2,038.16
+CPU-s and 19.059/18.787 GB maximum RSS for AB/BA; they combine both revisions and every stage.
+The JAR fixture exercises the changed parser but not the DEX member-annotation path, and no
+representative persisted multi-graph APK fixture is available.
+
+Decision: retain the structurally verified allocation and stack-walk removal with its complete
+correctness coverage. Do not claim performance recovery or merge readiness: the current pair has
+unresolved order-by p50/p95 regressions, independent CPU/RSS evidence is missing, and APK-path
+performance acceptance remains unavailable.
