@@ -307,6 +307,20 @@ class DeclaredTypesReaderTest {
     }
 
     @Test
+    fun `undeclared variable retry signal does not capture a stack trace`() {
+        val signalClass = DeclaredTypesReader::class.java.declaredClasses.single {
+            it.simpleName == "UndeclaredTypeVariableException"
+        }
+        val constructor = signalClass.getDeclaredConstructor(String::class.java)
+        constructor.isAccessible = true
+
+        val signal = constructor.newInstance("T") as Throwable
+
+        assertEquals("Undeclared type variable: T", signal.message)
+        assertTrue(signal.stackTrace.isEmpty())
+    }
+
+    @Test
     fun `obfuscated class keeps captured variables that survive only in member signatures`() {
         val nested = ClassDeclarations(
             "example.c", null, "java.lang.Object", emptyList(),

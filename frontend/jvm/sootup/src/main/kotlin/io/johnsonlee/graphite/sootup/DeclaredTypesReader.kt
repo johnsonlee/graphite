@@ -92,9 +92,15 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         }
         .toMap()
 
-    private data class ParsedClassTypes(val types: ClassTypes, val environmentIncomplete: Boolean = false)
-    private data class ClassParseAttempt(val parsed: ParsedClassTypes, val undeclaredVariable: Boolean = false)
-    private data class OptionalParse<T>(val value: T? = null, val undeclaredVariable: Boolean = false)
+    private data class ParsedClassTypes(
+        val types: ClassTypes,
+        val environmentIncomplete: Boolean = false,
+        val undeclaredVariable: Boolean = false
+    )
+    private class MemberParseMode(
+        var allowUnresolvedVariables: Boolean,
+        val retryUndeclaredVariables: Boolean
+    )
 
     @Suppress("CyclomaticComplexMethod") // Class, field and method declarations share one rollback-safe table.
     fun build(): DeclaredTypeTable {
@@ -106,7 +112,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         val rejectedMethodSignatures = hashSetOf<MemberTypeKey>()
         val orderedDeclarations = orderedDeclarations()
         orderedDeclarations.forEach { declaration ->
-            val scope = classScope(declaration.name)
+            val scope = "class:${declaration.name}"
             val inheritedEnv = acceptedEnvironment(declaration, acceptedEnvironments, methods)
             val classFormalNames = formalNames(declaration.signature)
             val classEnv = inheritedEnv + classFormalNames.associateWith { scope }
@@ -125,72 +131,30 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 retryUndeclaredVariables
             )
             val classTypes = parsedClassTypes.types
-            var allowUnresolvedMembers = allowUnresolvedVariables || parsedClassTypes.environmentIncomplete
+            val memberMode = MemberParseMode(
+                allowUnresolvedVariables || parsedClassTypes.environmentIncomplete,
+                retryUndeclaredVariables
+            )
             classes[declaration.name] = classTypes
             classTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             val env = inheritedEnv + classTypes.typeParameters.associate { it.name to it.scope }
             acceptedEnvironments[declaration.name] = env
             declaration.fields.forEach { field ->
-                val parseField = { allowUnresolved: Boolean -> optionalParse(field.signature) {
-                    Parser(it, scope, env, allowUnresolved).completeType().also { type ->
-                        require(erasesTo(
-                            type,
-                            field.descriptor,
-                            boundsByVariable,
-                            allowUnknown = allowUnresolved
-                        ))
-                    }
-                } }
-                var genericField = parseField(allowUnresolvedMembers)
-                if (genericField.undeclaredVariable && retryUndeclaredVariables && !allowUnresolvedMembers) {
-                    allowUnresolvedMembers = true
-                    genericField = parseField(true)
+                val genericField = retryUndeclared(memberMode) { allowUnresolved ->
+                    parseField(field, scope, env, allowUnresolved)
                 }
-                fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = genericField.value
+                fields[MemberTypeKey(declaration.name, field.name, field.descriptor)] = genericField
                     ?: Parser(field.descriptor, scope, emptyMap()).completeType()
             }
             declaration.methods.forEach { method ->
                 val key = MemberTypeKey(declaration.name, method.name, method.descriptor)
-                val methodScope = methodScope(key)
+                val methodScope = "method:${key.owner}#${key.name}${key.descriptor}"
                 val methodFormalNames = formalNames(method.signature)
                 val methodEnv = env + methodFormalNames.associateWith { methodScope }
                 val descriptor = Parser(method.descriptor, methodScope, emptyMap()).method()
-                val parseMethod = { allowUnresolved: Boolean -> optionalParse(method.signature) {
-                    val generic = Parser(it, methodScope, methodEnv, allowUnresolved).method()
-                    // Constructors may omit synthetic enclosing-instance/enum arguments in Signature.
-                    val missing = descriptor.parameterTypes.size - generic.parameterTypes.size
-                    require(missing == 0 || method.name == "<init>" && missing > 0)
-                    val prefix = if (missing == 0) 0 else constructorPrefix(declaration, descriptor)
-                    require(prefix <= missing)
-                    generic.copy(parameterTypes = descriptor.parameterTypes.take(prefix) + generic.parameterTypes +
-                        descriptor.parameterTypes.drop(prefix + generic.parameterTypes.size)).also { result ->
-                        val localBounds = result.typeParameters.associate { parameter ->
-                            (parameter.scope to parameter.name) to parameter.bounds
-                        }
-                        result.parameterTypes.zip(descriptor.parameterTypes).forEach { (declared, erased) ->
-                            require(erasesTo(
-                                declared,
-                                erased,
-                                boundsByVariable,
-                                localBounds,
-                                allowUnresolved
-                            ))
-                        }
-                        require(erasesTo(
-                            result.returnType,
-                            descriptor.returnType,
-                            boundsByVariable,
-                            localBounds,
-                            allowUnresolved
-                        ))
-                    }
-                } }
-                var genericMethod = parseMethod(allowUnresolvedMembers)
-                if (genericMethod.undeclaredVariable && retryUndeclaredVariables && !allowUnresolvedMembers) {
-                    allowUnresolvedMembers = true
-                    genericMethod = parseMethod(true)
+                val genericMethodTypes = retryUndeclared(memberMode) { allowUnresolved ->
+                    parseMethod(declaration, method, methodScope, methodEnv, descriptor, allowUnresolved)
                 }
-                val genericMethodTypes = genericMethod.value
                 if (genericMethodTypes == null && method.signature != null) {
                     rejectedMethodSignatures.add(key)
                 }
@@ -198,11 +162,12 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
                 methods[key] = methodTypes
                 methodTypes.typeParameters.forEach { boundsByVariable[it.scope to it.name] = it.bounds }
             }
-            if (allowUnresolvedMembers) unresolvedEnvironments.add(declaration.name)
+            if (memberMode.allowUnresolvedVariables) unresolvedEnvironments.add(declaration.name)
         }
         // Preserve previously assigned generic IDs; key erasures are appended only after declaration parsing.
         orderedDeclarations.forEach { declaration ->
-            declaration.fields.forEach { field -> Parser(field.descriptor, classScope(declaration.name), emptyMap()).completeType() }
+            val scope = "class:${declaration.name}"
+            declaration.fields.forEach { field -> Parser(field.descriptor, scope, emptyMap()).completeType() }
         }
         return DeclaredTypeTable(types.toList(), fields, methods, classes).also { it.validate() }
     }
@@ -218,9 +183,9 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     ): ParsedClassTypes {
         val checkpoint = types.size
         val first = parseClassTypesOnce(declaration, scope, env, allowUnresolvedVariables)
-        if (!first.undeclaredVariable || allowUnresolvedVariables || !retryUndeclaredVariables) return first.parsed
+        if (!first.undeclaredVariable || allowUnresolvedVariables || !retryUndeclaredVariables) return first
         rollback(checkpoint)
-        return parseClassTypesOnce(declaration, scope, env, true).parsed.copy(environmentIncomplete = true)
+        return parseClassTypesOnce(declaration, scope, env, true).copy(environmentIncomplete = true)
     }
 
     @Suppress("ReturnCount") // Each rejected phase must preserve its own rollback boundary.
@@ -229,29 +194,29 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         scope: String,
         env: Map<String, String>,
         allowUnresolvedVariables: Boolean
-    ): ClassParseAttempt {
+    ): ParsedClassTypes {
         val raw = {
             ClassTypes(emptyList(), declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
         }
-        val signature = declaration.signature ?: return ClassParseAttempt(ParsedClassTypes(raw()))
+        val signature = declaration.signature ?: return ParsedClassTypes(raw())
         val checkpoint = types.size
         val parser = Parser(signature, scope, env, allowUnresolvedVariables)
-        val parameterAttempt = optionalParse(signature, checkpoint) { parser.formals() }
-        val parameters = parameterAttempt.value ?: return ClassParseAttempt(
-            ParsedClassTypes(raw(), environmentIncomplete = true),
-            parameterAttempt.undeclaredVariable
-        )
+        val parameters = try {
+            optional(signature, checkpoint) { parser.formals() }
+        } catch (_: UndeclaredTypeVariableException) {
+            return ParsedClassTypes(raw(), environmentIncomplete = true, undeclaredVariable = true)
+        } ?: return ParsedClassTypes(raw(), environmentIncomplete = true)
         val hierarchyCheckpoint = types.size
-        val hierarchyAttempt = optionalParse(signature, checkpoint) {
-            val superType = parser.type()
-            val interfaces = mutableListOf<Int>()
-            while (parser.hasNext()) interfaces.add(parser.type())
-            superType to interfaces
-        }
-        val hierarchy = hierarchyAttempt.value ?: return ClassParseAttempt(
-            ParsedClassTypes(raw(), environmentIncomplete = true),
-            hierarchyAttempt.undeclaredVariable
-        )
+        val hierarchy = try {
+            optional(signature, checkpoint) {
+                val superType = parser.type()
+                val interfaces = mutableListOf<Int>()
+                while (parser.hasNext()) interfaces.add(parser.type())
+                superType to interfaces
+            }
+        } catch (_: UndeclaredTypeVariableException) {
+            return ParsedClassTypes(raw(), environmentIncomplete = true, undeclaredVariable = true)
+        } ?: return ParsedClassTypes(raw(), environmentIncomplete = true)
         val parsed = optional(signature, hierarchyCheckpoint) {
             val (superType, interfaces) = hierarchy
             val localBounds = parameters.associate { parameter ->
@@ -269,7 +234,72 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
             }
             ClassTypes(parameters, superType, interfaces)
         } ?: ClassTypes(parameters, declaration.superName?.let(::classType), declaration.interfaces.map(::classType))
-        return ClassParseAttempt(ParsedClassTypes(parsed))
+        return ParsedClassTypes(parsed)
+    }
+
+    private fun parseField(
+        field: MemberDeclaration,
+        scope: String,
+        env: Map<String, String>,
+        allowUnresolvedVariables: Boolean
+    ): Int? = optional(field.signature) {
+        Parser(it, scope, env, allowUnresolvedVariables).completeType().also { type ->
+            require(erasesTo(
+                type,
+                field.descriptor,
+                boundsByVariable,
+                allowUnknown = allowUnresolvedVariables
+            ))
+        }
+    }
+
+    private fun parseMethod(
+        declaration: ClassDeclarations,
+        method: MemberDeclaration,
+        scope: String,
+        env: Map<String, String>,
+        descriptor: MethodTypes,
+        allowUnresolvedVariables: Boolean
+    ): MethodTypes? = optional(method.signature) {
+        val generic = Parser(it, scope, env, allowUnresolvedVariables).method()
+        // Constructors may omit synthetic enclosing-instance/enum arguments in Signature.
+        val missing = descriptor.parameterTypes.size - generic.parameterTypes.size
+        require(missing == 0 || method.name == "<init>" && missing > 0)
+        val prefix = if (missing == 0) 0 else constructorPrefix(declaration, descriptor)
+        require(prefix <= missing)
+        generic.copy(parameterTypes = descriptor.parameterTypes.take(prefix) + generic.parameterTypes +
+            descriptor.parameterTypes.drop(prefix + generic.parameterTypes.size)).also { result ->
+            val localBounds = result.typeParameters.associate { parameter ->
+                (parameter.scope to parameter.name) to parameter.bounds
+            }
+            result.parameterTypes.zip(descriptor.parameterTypes).forEach { (declared, erased) ->
+                require(erasesTo(
+                    declared,
+                    erased,
+                    boundsByVariable,
+                    localBounds,
+                    allowUnresolvedVariables
+                ))
+            }
+            require(erasesTo(
+                result.returnType,
+                descriptor.returnType,
+                boundsByVariable,
+                localBounds,
+                allowUnresolvedVariables
+            ))
+        }
+    }
+
+    private inline fun <T> retryUndeclared(mode: MemberParseMode, parse: (Boolean) -> T?): T? = try {
+        parse(mode.allowUnresolvedVariables)
+    } catch (_: UndeclaredTypeVariableException) {
+        if (!mode.retryUndeclaredVariables || mode.allowUnresolvedVariables) {
+            null
+        } else {
+            mode.allowUnresolvedVariables = true
+            parse(true)
+        }
     }
 
     /** Never confuse an explicit enclosing-class argument with the synthetic outer instance. */
@@ -380,8 +410,6 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         }
     }
 
-    private fun classScope(name: String) = "class:$name"
-    private fun methodScope(key: MemberTypeKey) = "method:${key.owner}#${key.name}${key.descriptor}"
     private fun intern(type: DeclaredType): Int = ids.getOrPut(type) {
         val children = type.arguments + listOfNotNull(type.owner, type.component)
         val height = 1 + (children.maxOfOrNull { heights[it] } ?: 0)
@@ -448,27 +476,23 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
         }
     }
 
-    private fun <T> optional(signature: String?, checkpoint: Int = types.size, parse: (String) -> T): T? {
-        return optionalParse(signature, checkpoint, parse).value
-    }
-
-    private fun <T> optionalParse(
+    private inline fun <T> optional(
         signature: String?,
         checkpoint: Int = types.size,
         parse: (String) -> T
-    ): OptionalParse<T> {
-        if (signature == null) return OptionalParse()
+    ): T? {
+        if (signature == null) return null
         return try {
-            OptionalParse(parse(signature))
-        } catch (_: UndeclaredTypeVariableException) {
+            parse(signature)
+        } catch (error: UndeclaredTypeVariableException) {
             rollback(checkpoint)
-            OptionalParse(undeclaredVariable = true)
+            throw error
         } catch (_: IllegalArgumentException) {
             rollback(checkpoint)
-            OptionalParse()
+            null
         } catch (_: IndexOutOfBoundsException) {
             rollback(checkpoint)
-            OptionalParse()
+            null
         }
     }
 
@@ -488,7 +512,7 @@ internal class DeclaredTypesReader(private val declarations: Map<String, ClassDe
     )
 
     private class UndeclaredTypeVariableException(name: String) :
-        IllegalArgumentException("Undeclared type variable: $name")
+        RuntimeException("Undeclared type variable: $name", null, false, false)
 
     private inner class Parser(
         private val text: String,
