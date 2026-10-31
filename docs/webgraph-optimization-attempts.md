@@ -22218,3 +22218,58 @@ to the annotation cache. Per-revision CPU/RSS attribution is also unavailable.
 Decision: retain the mechanically verified six-to-one class-annotation traversal reduction, with
 no APK latency or resource claim. Representative persisted multi-graph APK performance evidence
 remains required before the PR's DEX-path performance acceptance can be established.
+
+### Attempt154 — remove eager generic-signature scans and per-member annotation collections
+
+The next review batch found two avoidable costs in the declared-type construction path. First,
+the stripped-enclosure fallback scanned every class, field and method signature before the real
+parser scanned the same text; this paid a second full pass for the common ownerless class even
+though an undeclared captured variable is rare. Second, each DEX field and method materialized
+and grouped its complete annotation set to retrieve one system `Signature` annotation. The exact
+parent is `f2557a8f383f3900d72e077bdadc1edc28c1bf6d` (production code identical to
+`211c2a9c1914e8eedda67bf7804e8d71e1f12f34`) and the cumulative review-fix candidate is
+`10b829ec159971ca5a82bb31c48144b5da14413c`.
+
+The candidate parses strictly first and retries only the failed declaration after the parser
+reports an undeclared type variable in an ownerless class without enclosure metadata. The retry
+rolls back types appended by the failed attempt. DEX member signature lookup now exits immediately
+for an empty annotation set and otherwise scans directly for the single system `Signature`
+annotation. The same review commit also fixes missing `InnerClass.accessFlags`, records malformed
+method formals as an incomplete enclosing environment, makes the warning sink an immutable adapter
+dependency and removes a redundant descriptor conversion. Regression tests cover each finding.
+The full `sootup` suite passes 655 tests with 98.0528% line coverage (4,683 covered, 93 missed),
+the full `webgraph` suite passes 397 tests, and both modules pass detekt. Publication metadata still
+contains only the API and runtime variants.
+
+The local cumulative guard used 64 distinct persisted JAR shards, 16 each from Android-all,
+Tika, Hive and the Kotlin compiler. All 73 measured query cases actually target multiple graphs.
+Fresh-output AB and BA rounds used four concurrent workers, one first-use oracle, two warmups and
+20 pressure requests per revision and case; p50/p95 are nearest-rank per case through complete
+HTTP-body consumption. Both rounds passed correctness and stability: all 5,840 pressure requests,
+10,560 selected isolated diagnostic requests and 28 G1 `-Xmx4g` receipts completed without a
+failure, timeout, crash or process OOM.
+
+Usable build/save was 275,300.205 ms for release versus 264,608.363 ms for the candidate,
+-10,691.841 ms (-3.88%), with both order-specific deltas improving
+[-18,669.756, -2,713.926] ms. This is one observation per revision per order, so it does not
+establish variance. Registry-ready loading was 21,835.946 versus 21,801.092 ms (-34.854 ms,
+-0.16%) and startup through first use was 25,107.459 versus 25,050.971 ms (-56.488 ms,
+-0.22%); both reverse direction across AB/BA and show no demonstrated loading change.
+
+Query p50 improved/regressed in 31/42 cases and p95 in 16/57. The cumulative pair has a material,
+direction-consistent `shape-with-filter` regression: p50 2,658.500 -> 2,730.534 ms
+(+72.034 ms, +2.71%; per-order range [+57.128, +86.940] ms) and p95
+2,913.857 -> 2,948.267 ms (+34.410 ms, +1.18%; [+22.729, +46.091] ms). The Kotlin
+declaration reader is not on the native query request path, so this pair does not attribute that
+query observation to the review fixes; it nevertheless fails cumulative query acceptance and is
+not offset by improvements in other cases.
+
+Independent per-revision/per-operation CPU and peak RSS remain unavailable because the trusted
+controller does not attribute them. The JAR fixture exercises the strict JVM declaration parser
+but not the changed DEX member-annotation path; no representative persisted multi-graph APK
+fixture is available, so APK construction latency and resource acceptance are also unavailable.
+
+Decision: retain the correctness fixes and the mechanically verified removal of the eager scan
+and collection pipeline. Do not claim performance recovery or merge readiness: the current pair
+has an unresolved slow-query p50/p95 regression, independent CPU/RSS evidence is missing, and the
+APK path still lacks its representative performance workload.
