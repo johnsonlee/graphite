@@ -6,6 +6,9 @@ import io.johnsonlee.graphite.core.DataFlowKind
 import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ParameterNode
+import io.johnsonlee.graphite.core.ResourceEdge
+import io.johnsonlee.graphite.core.ResourceFileNode
+import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
@@ -73,6 +76,7 @@ class DependencyCompletenessTest {
                 }
                 public String viaHelper() { return sample.scope.dep.Reader.read("messages", "old"); }
                 public String viaSource(sample.scope.dep.Source source) { return source.fetch("old"); }
+                public String viaCallback() { return sample.scope.dep.Reader.via(() -> "old"); }
             }
         """.trimIndent(),
         "Ab.java" to """
@@ -100,6 +104,8 @@ class DependencyCompletenessTest {
                     return java.util.ResourceBundle.getBundle(bundleName).getString(key);
                 }
                 public static native int nativeSize();
+                public static String fixed() { return java.util.ResourceBundle.getBundle("messages").getString("old"); }
+                public static String via(java.util.function.Supplier<String> supplier) { return supplier.get(); }
             }
         """.trimIndent(),
         "Source.java" to """
@@ -211,6 +217,19 @@ class DependencyCompletenessTest {
             "the helper's return reaches the call's result: ${graph.outgoing(returned.id).toList()}"
         )
         assertNotNull(helperCall)
+
+        // A reader hard-coded inside the dependency is discovered although no application argument names it.
+        val fixedRead = graph.nodes<CallSiteNode>().single { it.caller.name == "fixed" && it.callee.name == "getString" }
+        val messagesFile = graph.nodes<ResourceFileNode>().single { it.path.endsWith("messages.properties") }
+        assertTrue(
+            graph.outgoing(messagesFile.id).any { it is ResourceEdge && it.kind == ResourceRelation.LOOKUP && it.to == fixedRead.id },
+            "the bundle file links to the read in the dependency's body"
+        )
+        // An application lambda invoked through the dependency dispatches to the lambda's body.
+        val callback = graph.nodes<CallSiteNode>()
+            .filter { it.caller.name == "via" && it.callee.name.startsWith("lambda\$viaCallback") }.toList()
+        assertEquals(1, callback.size, "supplier.get() in the dependency resolves to the application's lambda")
+        assertEquals(example, callback.single().callee.declaringClass.className)
     }
 
     @Test
