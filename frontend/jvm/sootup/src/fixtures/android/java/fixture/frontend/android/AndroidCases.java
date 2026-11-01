@@ -161,4 +161,17 @@ public final class AndroidCases {
             this.value = value;
         }
     }
+
+    static final class GenericPair<A, B> {
+        A first;
+        B second;
+    }
+
+    static final class GenericBox<T extends Comparable<T>> {
+        GenericPair<String, ? extends T[]> field;
+
+        <R extends CharSequence> GenericPair<T, ? super R[]> convert(GenericPair<? extends T, R> input) {
+            return null;
+        }
+    }
 }

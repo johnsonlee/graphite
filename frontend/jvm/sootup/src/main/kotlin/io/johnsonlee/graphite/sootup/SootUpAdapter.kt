@@ -256,12 +256,14 @@ private class ControlFlowIndex(private val stmtGraph: ControlFlowGraph<*>, state
  * This is the bridge between SootUp's analysis infrastructure and
  * Graphite's unified graph representation.
  */
+@Suppress("LongParameterList") // Adapter dependencies are explicit constructor seams for independent loaders/tests.
 class SootUpAdapter(
     private val view: View,
     private val config: LoaderConfig,
     private val signatureReader: BytecodeSignatureReader? = null,
     private val extensions: List<GraphiteExtension> = ServiceLoader.load(GraphiteExtension::class.java).toList(),
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
+    private val declarationWarning: (String) -> Unit = {},
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
     private val singleArtifactSource: String? = null,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
@@ -443,9 +445,12 @@ class SootUpAdapter(
 
     /** Declaration snapshots are needed only while building the type table. */
     private fun buildDeclaredTypes(classes: List<SootClass>): DeclaredTypeTable {
+        val classNames = classes.mapTo(HashSet(classes.size)) { it.type.fullyQualifiedName }
+        val dexDeclarations = DexClassDeclarations.read(resourceAccessor, classNames, declarationWarning)
         val declarations = classes.mapNotNull { sootClass ->
             val name = sootClass.type.fullyQualifiedName
             sootClass.classSource.parsedDeclarationNode()?.let(ClassDeclarations::from)
+                ?: dexDeclarations[name]
                 ?: loadClassNodeFromResource(name)?.let(ClassDeclarations::from)
         }.associateBy { it.name }
         val table = DeclaredTypesReader(declarations).build()

@@ -1,5 +1,6 @@
 [versions]
 sootup = "3.0.1"
+dexlib2 = "2.5.2"
 ff4j = "1.8.1"
 spring = "6.1.0"
 picocli = "4.7.6"
@@ -35,6 +36,7 @@ sootup-java-bytecode-frontend = { module = "org.soot-oss:sootup.java.bytecode.fr
 sootup-jimple-frontend = { module = "org.soot-oss:sootup.jimple.frontend", version.ref = "sootup" }
 sootup-apk-frontend = { module = "org.soot-oss:sootup.apk.frontend", version.ref = "sootup" }
 sootup-callgraph = { module = "org.soot-oss:sootup.callgraph", version.ref = "sootup" }
+dexlib2 = { module = "org.smali:dexlib2", version.ref = "dexlib2" }
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 snakeyaml = { module = "org.yaml:snakeyaml", version.ref = "snakeyaml" }

@@ -25,7 +25,9 @@ private const val GLOBSTAR_LENGTH = 2
 class ArchiveResourceAccessor private constructor(
     private val sources: List<ResourceSource>,
     private val closers: List<Closeable> = emptyList(),
-    private val tempDirs: List<Path> = emptyList()
+    private val tempDirs: List<Path> = emptyList(),
+    internal val sourcePath: Path? = null,
+    internal val dexApi: Int? = null
 ) : ResourceAccessor, Closeable {
 
     override fun close() {
@@ -73,7 +75,7 @@ class ArchiveResourceAccessor private constructor(
          * The returned accessor should be [closed][close] when no longer needed
          * to clean up any temporary files extracted from nested JARs.
          */
-        fun create(path: Path): ArchiveResourceAccessor {
+        fun create(path: Path, dexApi: Int? = null): ArchiveResourceAccessor {
             val sources = mutableListOf<ResourceSource>()
             val closers = mutableListOf<Closeable>()
             val tempDirs = mutableListOf<Path>()
@@ -107,7 +109,7 @@ class ArchiveResourceAccessor private constructor(
                     collectNestedJars(zip, JavaArchiveLayout.WEB_INF_LIB).appendTo(sources, closers, tempDirs)
                 }
             }
-            return ArchiveResourceAccessor(sources, closers, tempDirs)
+            return ArchiveResourceAccessor(sources, closers, tempDirs, path, dexApi)
         }
 
         private data class ArchiveSourceBundle(

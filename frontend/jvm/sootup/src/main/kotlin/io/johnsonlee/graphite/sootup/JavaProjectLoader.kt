@@ -43,7 +43,8 @@ private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
 
 private data class InputLocations(
     val locations: List<AnalysisInputLocation>,
-    val sources: Map<AnalysisInputLocation, String>
+    val sources: Map<AnalysisInputLocation, String>,
+    val dexApi: Int? = null
 )
 
 /**
@@ -80,16 +81,17 @@ private fun createApkInputLocations(
         recoveries.map { it.copy(interceptors = interceptorFactory(it.interceptors)) },
         { retained, _, view, reason -> folding?.discard(retained, retained, view, reason) }
     )
+    val androidVersion = AndroidVersionInfo(path, platforms.toString())
     val apkLocation = ApkAnalysisInputLocation(
         path,
-        AndroidVersionInfo(path, platforms.toString()),
+        androidVersion,
         listOf(guarded)
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
 
     if (config.includeLibraries) {
-        val androidJar = resolveAndroidJar(path, platforms)
+        val androidJar = resolveAndroidJar(androidVersion.api_version, platforms)
         val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
         val androidJarLocation = folding?.let {
             JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library, bytecodeInterceptors(it))
@@ -99,7 +101,7 @@ private fun createApkInputLocations(
         log("  + Loading Android platform: $sourceName")
     }
 
-    return InputLocations(locations, sources)
+    return InputLocations(locations, sources, androidVersion.api_version)
 }
 
 /**
@@ -240,15 +242,16 @@ private fun containsAndroidPlatformJar(path: Path): Boolean {
     }
 }
 
-private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path {
-    val versionInfo = AndroidVersionInfo(apkPath, platforms.toString())
-    val api = versionInfo.getApi_version()
+private fun resolveAndroidJar(api: Int, platforms: Path): Path {
     val androidJar = platforms.resolve("$ANDROID_PLATFORM_PREFIX$api").resolve(ANDROID_JAR_NAME)
     require(Files.isRegularFile(androidJar)) {
         "Android platform android.jar not found for API $api: $androidJar"
     }
     return androidJar
 }
+
+private fun resolveAndroidJar(apkPath: Path, platforms: Path): Path =
+    resolveAndroidJar(AndroidVersionInfo(apkPath, platforms.toString()).api_version, platforms)
 
 /**
  * SootUp-based loader for Java projects.
@@ -307,10 +310,11 @@ class JavaProjectLoader(
         val inputLocations = createInputLocations(path, folding)
         val view = createJavaView(inputLocations.locations)
 
-        val resourceAccessor = ArchiveResourceAccessor.create(path)
+        val resourceAccessor = ArchiveResourceAccessor.create(path, inputLocations.dexApi)
         val adapter = SootUpAdapter(
             view, config,
             resourceAccessor = resourceAccessor,
+            declarationWarning = ::warn,
             inputLocationSources = inputLocations.sources,
             singleArtifactSource = singleArtifactSource(path),
             graphBuilder = graphBuilderFactory(),
