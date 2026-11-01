@@ -88,12 +88,15 @@ sealed interface DependencyBodyScope {
             }
         }
 
+        /** Compiled once: `covers` runs for every library class of the view. */
+        private val artifactPatterns: List<Regex> = artifacts.map(GlobPatterns::toRegex)
+
         override fun covers(className: String, artifact: String?): Boolean =
             (artifact != null && coversArtifact(artifact)) || packages.any { className.startsWith(it) }
 
         override fun coversArtifact(artifact: String): Boolean {
             val fileName = artifact.substringAfterLast('/')
-            return artifacts.any { GlobPatterns.matches(fileName, it) }
+            return artifactPatterns.any { it.matches(fileName) }
         }
     }
 }

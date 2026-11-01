@@ -67,9 +67,8 @@ class FoldPlanCommand : Callable<Int> {
 
     @Option(
         names = ["--dependency-reachable"],
-        description = ["The build's class budget for library classes reached from the application"],
-        arity = "0..1",
-        fallbackValue = "50000"
+        paramLabel = "N",
+        description = ["The build's class budget for library classes reached from the application"]
     )
     var dependencyReachable: Int? = null
 

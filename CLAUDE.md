@@ -804,9 +804,11 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   loaded, pass 2 reads the application, then a worklist reads the class of every noted callee
   (declared callee, CHA overrides of a virtual one, the class a `new` names) until nothing new is
   reached or the budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
-  noted at call-site creation only under that scope (two parallel lists, no per-call cost
-  otherwise), and the expansion runs before the dispatch fixpoint, so a function-object class the
-  application allocates is read through its constructor call and its body is a dispatch target.
+  noted at call-site creation only under that scope (once per callee, by identity: descriptors
+  are canonical per signature), and the expansion runs before the dispatch fixpoint, so a
+  function-object class the application allocates is read through its constructor call and its
+  body is a dispatch target; it runs once more after the fixpoint for bodies reached only through
+  a resolved function value. Only library classes are reached: `--exclude` keeps excluding.
 - A call on a function value that resolves to nothing is a gap, not a call with no effect:
   after the fixpoint, every pending dispatch whose holder saturated (`SATURATED_TARGETS`, by
   identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). A reached

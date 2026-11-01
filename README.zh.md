@@ -314,7 +314,7 @@ Warning: no fold rule folded any call; the graph is the same as a build without 
 
 `--fold-strict` 会使未匹配到任何调用的规则导致构建失败。输出目录中的 `graph.folds.json` 按原文件的结构保留所有规则，并为每条规则补充预览查询、已折叠的调用、调用方方法及其折叠前后的语句数、匹配到但无法折叠的调用及其原因，以及接近但未匹配的调用。它本身也可以作为折叠规则文件使用：`--fold graph.folds.json` 读取其中的规则，忽略附加信息。没有被规则触及的方法仍按前端默认流程处理，因此折叠只会改变调用了被折叠方法的那些方法。各处理阶段的详细行为见 `docs/constant-folding.md`。
 
-`--dependency-artifacts` 与 `--dependency-packages`（需配合 `--include-libs`）指定哪些依赖 jar 和包的方法体也要进入图中，同时不把它们当作应用代码：被指定的嵌套 jar 即使不含应用包也会被加载。`--dependency-reachable[=N]` 则加载全部依赖，只读取应用调用可达的类以及这些类再可达的类，最多 N 个；超出预算的类标为 `NOT_EXPANDED`。每次构建都会把每个类和方法的处理结果记录为 `graph.completeness`，通过 `Graph.analysisCompleteness()` 和 `Graph.analysisStatus(callee)` 读回：被调用方法的状态是 `ANALYZED`、`ABSTRACT`、`NATIVE`、`INCOMPLETE`、`EXCLUDED_BY_SCOPE`、`EXTERNAL` 等，因此基于图的证明可以区分“方法体没有副作用”和“方法体根本没被读取”。详见 [docs/analysis-completeness.md](docs/analysis-completeness.md)。
+`--dependency-artifacts` 与 `--dependency-packages`（需配合 `--include-libs`）指定哪些依赖 jar 和包的方法体也要进入图中，同时不把它们当作应用代码：被指定的嵌套 jar 即使不含应用包也会被加载。`--dependency-reachable N` 则加载全部依赖，只读取应用调用可达的类以及这些类再可达的类，最多 N 个；超出预算的类标为 `NOT_EXPANDED`。每次构建都会把每个类和方法的处理结果记录为 `graph.completeness`，通过 `Graph.analysisCompleteness()` 和 `Graph.analysisStatus(callee)` 读回：被调用方法的状态是 `ANALYZED`、`ABSTRACT`、`NATIVE`、`INCOMPLETE`、`EXCLUDED_BY_SCOPE`、`EXTERNAL` 等，因此基于图的证明可以区分“方法体没有副作用”和“方法体根本没被读取”。详见 [docs/analysis-completeness.md](docs/analysis-completeness.md)。
 
 ## Kotlin API
 

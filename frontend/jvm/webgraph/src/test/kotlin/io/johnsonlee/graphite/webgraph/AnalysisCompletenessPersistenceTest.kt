@@ -117,7 +117,8 @@ class AnalysisCompletenessPersistenceTest {
             assertEquals(CallSiteGap.DISPATCH_SATURATED, graph.analysisCompleteness()!!.callSiteGaps.getValue(3))
         }
         val reachable = completeness.copy(
-            scope = AnalysisIdentity(includeLibraries = true, dependencyReachable = 1234), callSiteGaps = emptyMap()
+            scope = AnalysisIdentity(includeLibraries = true, dependencyReachable = 1234, dependencyRoots = listOf("a.web", "a.jobs")),
+            callSiteGaps = emptyMap()
         )
         GraphStore.save(graph(reachable), dir)
         loaded(dir) { graph -> assertEquals(reachable, graph.analysisCompleteness()) }
@@ -163,10 +164,17 @@ class AnalysisCompletenessPersistenceTest {
         )
         loaded(first) { graph -> assertFailsWith<IllegalStateException> { graph.analysisCompleteness() } }
 
+        // What an interrupted or foreign write leaves is not "no evidence".
         Files.write(file, bytes.copyOf(20))
-        assertNull(AnalysisCompletenessStore.load(first), "too short to be this format")
+        assertEquals(
+            "${AnalysisCompletenessStore.FILE_NAME} is not a completeness sidecar",
+            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(first) }.message
+        )
         Files.write(file, ByteArray(100))
-        assertNull(AnalysisCompletenessStore.load(first), "not this format")
+        assertEquals(
+            "${AnalysisCompletenessStore.FILE_NAME} is not a completeness sidecar",
+            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(first) }.message
+        )
         Files.delete(file)
         assertNull(AnalysisCompletenessStore.load(first))
 

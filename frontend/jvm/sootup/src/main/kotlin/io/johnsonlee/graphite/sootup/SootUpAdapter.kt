@@ -59,6 +59,7 @@ import it.unimi.dsi.fastutil.ints.IntArrayList
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap
 import java.util.BitSet
+import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.Locale
 import java.util.ResourceBundle
@@ -421,8 +422,16 @@ class SootUpAdapter(
     private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
     private val reachedCallees = ArrayList<MethodDescriptor>()
     private val reachedVirtually = ArrayList<Boolean>()
+    /** The callees noted so far, by identity: descriptors are canonical per signature, and a callee is followed once. */
+    private val notedCallees: MutableSet<MethodDescriptor> = Collections.newSetFromMap(IdentityHashMap())
+    private val reachableFrontier = ReachableFrontier()
+    private var reachableBudget = reachableExpansion?.maxClasses ?: 0
+    private var reachableRead = 0
+    private var reachablePastBudget = 0
     /** Whether the pass-2 class being read seeds the reachable expansion: a library class always, an application class as a root. */
     private var activeClassSeeds = true
+    /** Calls on function values that no slot tracks (cross-method tracking off): their gaps are read from here. */
+    private val untrackedDispatches = ArrayList<PendingDispatch>()
     /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
     private var activeControlFlowTruncated = false
     /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
@@ -545,7 +554,7 @@ class SootUpAdapter(
             val className = sootClass.type.fullyQualifiedName
             val origin = classOriginsByName[className] ?: singleArtifactSource
             val application = shouldIncludeClass(sootClass)
-            if (!application && !config.dependencyBodies.covers(className, origin)) {
+            if (!application && !(isLibraryOrigin(origin) && config.dependencyBodies.covers(className, origin))) {
                 classEvidence[className] = ClassEvidence(origin, AnalysisStatus.EXCLUDED_BY_SCOPE)
                 return@forEach
             }
@@ -568,6 +577,9 @@ class SootUpAdapter(
         if (trackCrossMethodFunctionalDispatch) {
             resolveFunctionalDispatch()
         }
+        // A library body reached only through a resolved function value is read now; what it
+        // passes on as a function value is not resolved further, and reads as a gap.
+        reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
         collectDispatchGaps()
 
         interprocedural?.let { calls ->
@@ -614,27 +626,27 @@ class SootUpAdapter(
      * the class of each call's declared callee, of each override the view knows for a virtual
      * callee, and so on through the calls those bodies make, until nothing new is reached or
      * [scope]'s budget is spent; the classes reached past it are [AnalysisStatus.NOT_EXPANDED].
-     * Each class is read once, so the expansion terminates on any call graph.
+     * Only library classes are reached: an application class the configuration excluded stays
+     * excluded. Each class is read once, so the expansion terminates on any call graph; the
+     * budget and the frontier persist across calls, so the pass after the dispatch fixpoint
+     * continues where this one stopped.
      */
     private fun expandReachableClasses(scope: DependencyBodyScope.Reachable, extensionContext: GraphiteContext) {
-        val frontier = ReachableFrontier()
-        var budget = scope.maxClasses
-        var expanded = 0
+        val frontier = reachableFrontier
         while (true) {
             drainReachedCallees(frontier)
             val className = frontier.queue.removeFirstOrNull() ?: break
             val sootClass = classesByNameCache?.get(className) ?: continue
-            if (budget == 0) {
+            if (reachableBudget == 0) {
                 classEvidence[className] = ClassEvidence(classEvidence[className]?.origin, AnalysisStatus.NOT_EXPANDED)
+                reachablePastBudget++
                 continue
             }
-            budget--
-            expanded++
+            reachableBudget--
+            reachableRead++
             processDependencyOrApplicationClass(sootClass, extensionContext, application = false)
         }
-        reachedCallees.clear()
-        reachedVirtually.clear()
-        log { "Reachable expansion read $expanded dependency class(es), ${frontier.queue.size} past the budget of ${scope.maxClasses}" }
+        log { "Reachable expansion read $reachableRead dependency class(es), $reachablePastBudget past the budget of ${scope.maxClasses}" }
     }
 
     /** The classes the expansion has reached and not yet read, each queued once. */
@@ -646,11 +658,14 @@ class SootUpAdapter(
 
     /**
      * Queue the classes of the callees noted since the last drain: the declared callee's and,
-     * for a virtual callee, its overrides'.
+     * for a virtual callee, its overrides'. A class is reached when it is a library class the
+     * scope left out; an application class excluded by configuration is never reached.
      */
     private fun drainReachedCallees(frontier: ReachableFrontier) {
         fun reach(className: String) {
-            if (classEvidence[className]?.status == AnalysisStatus.EXCLUDED_BY_SCOPE && frontier.reached.add(className)) {
+            val evidence = classEvidence[className] ?: return
+            val reachable = evidence.status == AnalysisStatus.EXCLUDED_BY_SCOPE && isLibraryOrigin(evidence.origin)
+            if (reachable && frontier.reached.add(className)) {
                 frontier.queue += className
             }
         }
@@ -662,9 +677,13 @@ class SootUpAdapter(
         }
     }
 
-    /** Under a reachable scope, note a call's callee for the expansion to follow. */
+    /** Whether a class read from [origin] is a library's (or the platform's), not the application's. */
+    private fun isLibraryOrigin(origin: String?): Boolean =
+        origin != null && (artifactRoles[origin] ?: ArtifactRole.APPLICATION) != ArtifactRole.APPLICATION
+
+    /** Under a reachable scope, note a call's callee for the expansion to follow, once per callee. */
     private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean) {
-        if (reachableExpansion != null && activeClassSeeds) {
+        if (reachableExpansion != null && activeClassSeeds && notedCallees.add(callee)) {
             reachedCallees += callee
             reachedVirtually += virtual
         }
@@ -686,6 +705,10 @@ class SootUpAdapter(
                 callSiteGaps[pending.callSite.id.value] = gap
             }
         }
+        for (pending in untrackedDispatches) {
+            if (pending.resolved.isEmpty()) callSiteGaps[pending.callSite.id.value] = CallSiteGap.DISPATCH_UNRESOLVED
+        }
+        untrackedDispatches.clear()
     }
 
     /**
@@ -1449,8 +1472,12 @@ class SootUpAdapter(
             dynamicTargets[localKey(caller, receiverLocal.name)].orEmpty()
                 .filter(pending.resolved::add)
                 .forEach { emitResolvedDispatch(pending, it) }
-            if (trackCrossMethodFunctionalDispatch && mayHoldFunction(receiverNode.type)) {
-                callsOn(slotId(slotOf(caller, receiverLocal))).add(pending)
+            if (mayHoldFunction(receiverNode.type)) {
+                if (trackCrossMethodFunctionalDispatch) {
+                    callsOn(slotId(slotOf(caller, receiverLocal))).add(pending)
+                } else {
+                    untrackedDispatches += pending
+                }
             }
         }
         if (invokeExpr is JSpecialInvokeExpr && callee.name == INIT_METHOD && caller.name == INIT_METHOD) {
@@ -2284,6 +2311,7 @@ class SootUpAdapter(
         )
         graphBuilder.addNode(resolvedCallSite)
         interprocedural?.call(resolved.method, false, resolved.arguments, result)
+        noteReachedCallee(resolved.method, virtual = false)
         // Both the call on the function value and the resolved call are dynamic dispatch
         graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
         graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))

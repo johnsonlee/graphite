@@ -73,13 +73,12 @@ class BuildCommand : Callable<Int> {
 
     @Option(
         names = ["--dependency-reachable"],
+        paramLabel = "N",
         description = [
-            "Analyse the library classes the application's calls reach, and the classes those reach, up to this",
-            "many classes (needs --include-libs; not with --dependency-artifacts/--dependency-packages). A class",
+            "Analyse the library classes the application's calls reach, and the classes those reach, up to N",
+            "classes (needs --include-libs; not with --dependency-artifacts/--dependency-packages). A class",
             "reached past the budget is NOT_EXPANDED in the completeness evidence."
-        ],
-        arity = "0..1",
-        fallbackValue = "50000"
+        ]
     )
     var dependencyReachable: Int? = null
 

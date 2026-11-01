@@ -444,7 +444,7 @@ the methods that call a folded method. See `docs/constant-folding.md` for what t
 `--dependency-artifacts` and `--dependency-packages` (with `--include-libs`) name the library
 jars and packages whose method bodies the graph holds beside the application's, without making
 them application code; a nested jar the scope names is loaded even when no application package
-is in it. `--dependency-reachable[=N]` instead loads every library and reads only the classes the
+is in it. `--dependency-reachable N` instead loads every library and reads only the classes the
 application's calls reach, and the classes those reach, up to N classes; a class reached past the
 budget is `NOT_EXPANDED`. Every build records what it did with each class and method as `graph.completeness`,
 read back through `Graph.analysisCompleteness()` and `Graph.analysisStatus(callee)`: a callee is

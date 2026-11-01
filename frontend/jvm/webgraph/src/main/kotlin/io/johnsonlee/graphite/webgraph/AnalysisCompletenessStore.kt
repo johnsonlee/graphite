@@ -35,8 +35,8 @@ import java.util.zip.ZipException
  * The evidence names classes and methods by name, not by node id, so it needs no
  * node layout to read; the binding is what ties the file to this save of this graph rather than
  * to a file an earlier writer left beside a rewritten graph. A file bound to another save reads
- * as absent; a file that is bound but no longer hashes, or does not parse, is corruption after
- * binding and throws rather than answers.
+ * as absent; a file that is bound but no longer hashes, or does not parse, and a file too short
+ * or of another format to carry a binding at all, is corruption and throws rather than answers.
  */
 internal object AnalysisCompletenessStore {
     const val FILE_NAME = "graph.completeness"
@@ -67,7 +67,17 @@ internal object AnalysisCompletenessStore {
      */
     fun load(dir: Path): AnalysisCompleteness? {
         val layout = ForwardProperties.read(dir, ForwardProperties.NODE_LAYOUT_KEY)
-        val bytes = layout?.let { fileBytes(dir.resolve(FILE_NAME)) }?.takeIf { bound(it, layout) } ?: return null
+        val bytes = layout?.let { fileBytes(dir.resolve(FILE_NAME)) } ?: return null
+        // A file too short to carry a binding, or of another format, is not another save's: it is
+        // what an interrupted or foreign write left, and a proof must not read it as "no evidence".
+        check(bytes.size >= MIN_BYTES && DataInputStream(ByteArrayInputStream(bytes)).readInt() == MAGIC or VERSION) {
+            "$FILE_NAME is not a completeness sidecar"
+        }
+        val bound = HexFormat.of().formatHex(bytes, Int.SIZE_BYTES, HEADER_BYTES).equals(layout, ignoreCase = true)
+        return if (bound) readBound(bytes) else null
+    }
+
+    private fun readBound(bytes: ByteArray): AnalysisCompleteness {
         val payload = bytes.size - DIGEST_BYTES
         val expected = bytes.copyOfRange(payload, bytes.size)
         val actual = MessageDigest.getInstance("SHA-256").also { it.update(bytes, 0, payload) }.digest()
@@ -83,12 +93,6 @@ internal object AnalysisCompletenessStore {
 
     private fun fileBytes(path: Path): ByteArray? = if (Files.isRegularFile(path)) Files.readAllBytes(path) else null
 
-    /** Whether [bytes] is this format and names the node layout [layout] (a hex SHA-256) does. */
-    private fun bound(bytes: ByteArray, layout: String): Boolean =
-        bytes.size >= MIN_BYTES &&
-            DataInputStream(ByteArrayInputStream(bytes)).readInt() == MAGIC or VERSION &&
-            HexFormat.of().formatHex(bytes, Int.SIZE_BYTES, HEADER_BYTES).equals(layout, ignoreCase = true)
-
     internal fun write(out: DataOutputStream, completeness: AnalysisCompleteness) {
         val scope = completeness.scope
         out.writeStrings(scope.includePackages)
@@ -99,6 +103,7 @@ internal object AnalysisCompletenessStore {
         out.writeStrings(scope.dependencyArtifacts)
         out.writeStrings(scope.dependencyPackages)
         out.writeInt(scope.dependencyReachable ?: NO_BUDGET)
+        out.writeStrings(scope.dependencyRoots)
         // The codes index these names, so a value added or reordered later still reads as itself.
         out.writeStrings(AnalysisStatus.entries.map { it.name })
         out.writeStrings(ArtifactRole.entries.map { it.name })
@@ -142,7 +147,8 @@ internal object AnalysisCompletenessStore {
             androidPlatformSha256 = input.readOptional(),
             dependencyArtifacts = input.readStrings(),
             dependencyPackages = input.readStrings(),
-            dependencyReachable = input.readInt().takeIf { it != NO_BUDGET }
+            dependencyReachable = input.readInt().takeIf { it != NO_BUDGET },
+            dependencyRoots = input.readStrings()
         )
         val statuses = input.readStrings().map { named(it, AnalysisStatus.entries, "status") }
         val roles = input.readStrings().map { named(it, ArtifactRole.entries, "role") }

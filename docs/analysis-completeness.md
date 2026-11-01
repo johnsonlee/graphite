@@ -41,7 +41,7 @@ graphite build app.jar -o /data/app --include com.acme.app --include-libs \
 ```
 
 ```bash
-graphite build app.jar -o /data/app --include com.acme.app --include-libs --dependency-reachable=20000 \
+graphite build app.jar -o /data/app --include com.acme.app --include-libs --dependency-reachable 20000 \
   --dependency-roots com.acme.app.web,com.acme.app.jobs
 ```
 
@@ -62,8 +62,12 @@ read once, so the expansion terminates on any call graph, cycles included. Readi
 proof must treat as unread, never as a class with no effect, and a library class nothing reaches
 stays `EXCLUDED_BY_SCOPE`. Expansion follows calls, so a body reached only through a function
 value resolved in the dispatch fixpoint is read when the class that holds it was reached by
-other means (its allocation is a call to its constructor); an entry a framework discovers by
-reflection or configuration is not reached, as the issue's contract expects. `roots` names the
+other means (its allocation is a call to its constructor), and a library body reached only
+through a function value the dispatch fixpoint resolved is read after the fixpoint, so its own
+calls and fields are in the graph while a function value it passes on is not resolved further
+and reads as a gap; an entry a framework discovers by reflection or configuration is not
+reached, as the issue's contract expects. Only library classes are reached: an application
+class `excludePackages` names stays excluded. `roots` names the
 application classes (by prefix) whose calls seed the expansion; the other application classes
 are still read, being the application, but what only they call is not followed into the
 libraries. The roots are part of the fold provenance (`dependency_roots`).

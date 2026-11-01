@@ -387,16 +387,16 @@ class BuildFoldCommandTest {
                 "it cannot be combined with --dependency-artifacts or --dependency-packages",
             assertFailsWith<IllegalArgumentException> { dependencyBodyScope(listOf("a-*.jar"), emptyList(), 700) }.message
         )
-        val bare = FoldPlanCommand()
-        CommandLine(bare).parseArgs("folds.yml", "--dependency-reachable", "--input", "app.jar")
-        assertEquals(50_000, bare.dependencyReachable, "the bare flag takes the default budget")
+        val planned = FoldPlanCommand()
+        CommandLine(planned).parseArgs("folds.yml", "--dependency-reachable", "50000", "--input", "app.jar")
+        assertEquals(50_000, planned.dependencyReachable)
         val budgeted = BuildCommand()
         CommandLine(budgeted).parseArgs("app.jar", "-o", "out", "--include-libs", "--dependency-reachable=2500")
         assertEquals(2500, budgeted.dependencyReachable)
         val scope = dependencyBodyScope(budgeted.dependencyArtifacts, budgeted.dependencyPackages, budgeted.dependencyReachable)
         assertEquals(DependencyBodyScope.Reachable(2500), scope)
         CommandLine(budgeted).parseArgs(
-            "app.jar", "-o", "out", "--include-libs", "--dependency-reachable", "--dependency-roots", "a.web,a.jobs"
+            "app.jar", "-o", "out", "--include-libs", "--dependency-reachable", "50000", "--dependency-roots", "a.web,a.jobs"
         )
         assertEquals(listOf("a.web", "a.jobs"), budgeted.dependencyRoots)
         assertEquals(

@@ -67,7 +67,7 @@ impl Selected {
 }
 
 /// Options of `graphite.jar build` that take a value, to tell the input apart from them.
-const VALUE_OPTIONS: [&str; 10] = [
+const VALUE_OPTIONS: [&str; 11] = [
     "-o",
     "--output",
     "--include",
@@ -76,29 +76,27 @@ const VALUE_OPTIONS: [&str; 10] = [
     "--lib-filter",
     "--dependency-artifacts",
     "--dependency-packages",
+    "--dependency-reachable",
     "--dependency-roots",
     "--fold",
 ];
-
-/// `--dependency-reachable` takes an optional budget: `--dependency-reachable=5000` or the
-/// bare flag, never a separate argument, so the input is never mistaken for its value.
-const OPTIONAL_VALUE_FLAGS: [&str; 1] = ["--dependency-reachable"];
 
 /// The option that links calls to their callees' bodies, which the staging build adds.
 pub const INTERPROCEDURAL: &str = "--interprocedural";
 
 /// The options that decide which classes a build reads, and so which calls its graph has:
 /// `fold plan` takes the same ones, so the plan's provenance names the build the keys are for.
-const ANALYSIS_VALUE_OPTIONS: [&str; 7] = [
+const ANALYSIS_VALUE_OPTIONS: [&str; 8] = [
     "--include",
     "--exclude",
     "--lib-filter",
     "--android-sdk",
     "--dependency-artifacts",
     "--dependency-packages",
+    "--dependency-reachable",
     "--dependency-roots",
 ];
-const ANALYSIS_FLAGS: [&str; 2] = ["--include-libs", "--dependency-reachable"];
+const ANALYSIS_FLAGS: [&str; 1] = ["--include-libs"];
 
 /// The analysis options of a build command line, as given (`--include a,b`, `--include=a,b`
 /// and `--include-libs` alike), in order.
@@ -116,7 +114,6 @@ pub fn analysis_options(args: &[OsString]) -> Vec<OsString> {
             }
         } else if ANALYSIS_VALUE_OPTIONS
             .iter()
-            .chain(OPTIONAL_VALUE_FLAGS.iter())
             .any(|option| text.starts_with(option) && text[option.len()..].starts_with('='))
         {
             out.push(arg.clone());
@@ -755,18 +752,19 @@ mod tests {
             "a scope option takes a value"
         );
         assert_eq!(
-            input_of(&os(&["--dependency-reachable", "app.jar"])),
+            input_of(&os(&["--dependency-reachable", "5000", "app.jar"])),
             Some(PathBuf::from("app.jar")),
-            "the bare reachable flag takes no separate value"
+            "the budget is the flag's value, not the input"
         );
         assert_eq!(
             text(&analysis_options(&os(&[
                 "--dependency-reachable",
+                "5000",
                 "app.jar",
                 "-o",
                 "g"
             ]))),
-            ["--dependency-reachable"]
+            ["--dependency-reachable", "5000"]
         );
         assert_eq!(input_of(&os(&["-o", "/g"])), None);
         let staged = staging_args(

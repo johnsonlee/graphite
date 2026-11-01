@@ -340,6 +340,39 @@ class DependencyCompletenessTest {
     }
 
     @Test
+    fun `a reachable scope never reads an application class the configuration excluded`() {
+        val input = bootJar()
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            excludePackages = listOf(ab),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable()
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(ab), "called by Example, excluded all the same")
+        assertFalse(graph.hasMethod(method(ab, "enabled", "java.lang.String", returns = "boolean")))
+        assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(readMethod), "the libraries are still reached")
+    }
+
+    @Test
+    fun `a call on a function value is a gap when cross-method dispatch is not tracked`() {
+        val appClasses = compile(appSources, "untracked", classpath = listOf(depJar(), stdlibJar()))
+        val root = Files.createTempDirectory("scope-untracked").also(temporaryRoots::add)
+        val single = jar(root.resolve("app.jar"), appClasses, "sample/scope/app/")
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            buildCallGraph = false,
+            trackCrossMethodFunctionalDispatch = false
+        )
+        val graph = load(single, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val unknown = graph.nodes<CallSiteNode>().single { it.caller.name == "viaUnknown" && it.callee.name == "get" }
+        assertEquals(CallSiteGap.DISPATCH_UNRESOLVED, completeness.callSiteGaps[unknown.id.value], "nothing resolves it in its own method")
+    }
+
+    @Test
     fun `a reachable scope stops at its budget and marks what it reached past it`() {
         val input = bootJar()
         val config = LoaderConfig(
