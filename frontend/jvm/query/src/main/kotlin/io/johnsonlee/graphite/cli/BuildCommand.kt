@@ -72,6 +72,18 @@ class BuildCommand : Callable<Int> {
     var dependencyPackages: List<String> = emptyList()
 
     @Option(
+        names = ["--dependency-reachable"],
+        description = [
+            "Analyse the library classes the application's calls reach, and the classes those reach, up to this",
+            "many classes (needs --include-libs; not with --dependency-artifacts/--dependency-packages). A class",
+            "reached past the budget is NOT_EXPANDED in the completeness evidence."
+        ],
+        arity = "0..1",
+        fallbackValue = "50000"
+    )
+    var dependencyReachable: Int? = null
+
+    @Option(
         names = ["--fold"],
         description = [
             "JSON or YAML file of call-site patterns to fold to constants while the graph is built",
@@ -118,7 +130,7 @@ class BuildCommand : Callable<Int> {
                 libraryFilters = libFilters,
                 androidSdk = androidSdk,
                 interproceduralDataflow = interprocedural,
-                dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages),
+                dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages, dependencyReachable),
                 folding = folds.takeIf { it.isNotEmpty() }?.let { FoldPlan(it) { report -> foldReport = report } },
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )

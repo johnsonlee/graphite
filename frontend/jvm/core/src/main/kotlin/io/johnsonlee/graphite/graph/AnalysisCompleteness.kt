@@ -9,8 +9,8 @@ import io.johnsonlee.graphite.input.AnalysisIdentity
  * and a body the build could not read leaves the same graph as a body with no effect.
  *
  * The codes a method can carry are the first seven; a class carries [ANALYZED],
- * [EXCLUDED_BY_SCOPE] or [RESOLUTION_FAILED]; [AnalysisCompleteness.statusOf] adds the last two
- * for a callee the graph has no record of.
+ * [EXCLUDED_BY_SCOPE], [NOT_EXPANDED] or [RESOLUTION_FAILED]; [AnalysisCompleteness.statusOf]
+ * adds [EXTERNAL] and [UNKNOWN_MEMBER] for a callee the graph has no record of.
  */
 enum class AnalysisStatus {
     /** The body was read and every node and edge it produces is in the graph. */
@@ -39,6 +39,13 @@ enum class AnalysisStatus {
 
     /** The class was loaded for type resolution only: the configuration left its bodies out. */
     EXCLUDED_BY_SCOPE,
+
+    /**
+     * The class was reached from the application under a reachable scope, and left unread
+     * because the scope's class budget ran out first: an incomplete expansion, never a class
+     * with no effect.
+     */
+    NOT_EXPANDED,
 
     /** The class was not loaded at all: the JDK, a jar the build did not read, or a class no input holds. */
     EXTERNAL,
@@ -73,11 +80,13 @@ data class ArtifactEvidence(val role: ArtifactRole, val multiRelease: Boolean = 
 /** A class the build loaded: the artifact it was read from, when known, and what the build did with it. */
 data class ClassEvidence(val origin: String?, val status: AnalysisStatus) {
     init {
-        require(status in CLASS_STATUSES) { "a class is ANALYZED, EXCLUDED_BY_SCOPE or RESOLUTION_FAILED, not $status" }
+        require(status in CLASS_STATUSES) { "a class is ANALYZED, EXCLUDED_BY_SCOPE, NOT_EXPANDED or RESOLUTION_FAILED, not $status" }
     }
 
     private companion object {
-        val CLASS_STATUSES = setOf(AnalysisStatus.ANALYZED, AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.RESOLUTION_FAILED)
+        val CLASS_STATUSES = setOf(
+            AnalysisStatus.ANALYZED, AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.RESOLUTION_FAILED
+        )
     }
 }
 
@@ -88,8 +97,24 @@ data class MethodEvidence(val status: AnalysisStatus, val message: String? = nul
     }
 
     private companion object {
-        val NEVER_A_METHODS = setOf(AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.EXTERNAL, AnalysisStatus.UNKNOWN_MEMBER)
+        val NEVER_A_METHODS = setOf(
+            AnalysisStatus.EXCLUDED_BY_SCOPE, AnalysisStatus.NOT_EXPANDED, AnalysisStatus.EXTERNAL, AnalysisStatus.UNKNOWN_MEMBER
+        )
     }
+}
+
+/**
+ * What a call on a function value (`fn.apply(x)`, `supplier.get()`, Kotlin's `fn(x)`) could not
+ * be resolved to. The call site itself is in the graph, with its interface callee; the graph has
+ * no derived call site for the body it runs, and this says why, so that the absence is not read
+ * as "calls nothing".
+ */
+enum class CallSiteGap {
+    /** No function value is known to reach the receiver: from outside the analysed scope, or along a flow the adapter does not track. */
+    DISPATCH_UNRESOLVED,
+
+    /** More function values reach the receiver than the adapter follows (64), so it resolved none. */
+    DISPATCH_SATURATED
 }
 
 /**
@@ -105,13 +130,18 @@ data class MethodEvidence(val status: AnalysisStatus, val message: String? = nul
  *
  * [duplicateClasses] maps a class name to every artifact that defines it, in class-path order,
  * when more than one does; the graph holds the first one's definition.
+ *
+ * [callSiteGaps] maps the node id of a call on a function value to the reason it dispatches to
+ * no body, see [CallSiteGap]; a call on a function value absent here resolved to every body it
+ * runs that the analysed scope holds.
  */
 data class AnalysisCompleteness(
     val scope: AnalysisIdentity,
     val artifacts: Map<String, ArtifactEvidence>,
     val classes: Map<String, ClassEvidence>,
     val methods: Map<String, MethodEvidence>,
-    val duplicateClasses: Map<String, List<String>> = emptyMap()
+    val duplicateClasses: Map<String, List<String>> = emptyMap(),
+    val callSiteGaps: Map<Int, CallSiteGap> = emptyMap()
 ) {
     /** The status of the class [className]: [AnalysisStatus.EXTERNAL] when the build never loaded it. */
     fun classStatus(className: String): AnalysisStatus = classes[className]?.status ?: AnalysisStatus.EXTERNAL

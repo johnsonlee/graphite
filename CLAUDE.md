@@ -800,9 +800,20 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   the base version as SootUp does. The existing bogus `META-INF.versions.9.x.Y` origins the
   listing produces for unloaded jars were left as they were: changing `classOrigins()` of
   multi-artifact graphs is a separate change.
-- What is not done, and should be done next in this order: selective expansion from roots over
-  the folded call sites (the frontier the evidence marks `EXCLUDED_BY_SCOPE`), per-call-site gap
-  records (saturated dispatch, unresolved `invokedynamic`), and a Rust reader of the sidecar.
+- `DependencyBodyScope.Reachable(maxClasses)` is the selective expansion: every library jar is
+  loaded, pass 2 reads the application, then a worklist reads the class of every noted callee
+  (declared callee, CHA overrides of a virtual one, the class a `new` names) until nothing new is
+  reached or the budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
+  noted at call-site creation only under that scope (two parallel lists, no per-call cost
+  otherwise), and the expansion runs before the dispatch fixpoint, so a function-object class the
+  application allocates is read through its constructor call and its body is a dispatch target.
+- A call on a function value that resolves to nothing is a gap, not a call with no effect:
+  after the fixpoint, every pending dispatch whose holder saturated (`SATURATED_TARGETS`, by
+  identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). A reached
+  stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
+  which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
+- Not done: consumer-supplied roots (the roots are the application's classes), a Rust reader of
+  the sidecar, and class-path precedence beyond listing order.
 
 ### Why `buildGraph()` Is Not Parallelized
 

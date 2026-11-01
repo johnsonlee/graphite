@@ -65,6 +65,14 @@ class FoldPlanCommand : Callable<Int> {
     )
     var dependencyPackages: List<String> = emptyList()
 
+    @Option(
+        names = ["--dependency-reachable"],
+        description = ["The build's class budget for library classes reached from the application"],
+        arity = "0..1",
+        fallbackValue = "50000"
+    )
+    var dependencyReachable: Int? = null
+
     override fun call(): Int = try {
         val config = LoaderConfig(
             includePackages = includePackages,
@@ -72,7 +80,7 @@ class FoldPlanCommand : Callable<Int> {
             includeLibraries = includeLibs,
             libraryFilters = libFilters,
             androidSdk = androidSdk,
-            dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages)
+            dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages, dependencyReachable)
         )
         println(FoldConfig.plan(file, input, config))
         0

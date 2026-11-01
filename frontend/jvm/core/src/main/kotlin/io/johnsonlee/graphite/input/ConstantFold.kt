@@ -326,11 +326,16 @@ data class AnalysisIdentity(
     /** The artifact patterns of [LoaderConfig.dependencyBodies]: a scope that builds more bodies holds more calls. */
     val dependencyArtifacts: List<String> = emptyList(),
     /** The package prefixes of [LoaderConfig.dependencyBodies]. */
-    val dependencyPackages: List<String> = emptyList()
+    val dependencyPackages: List<String> = emptyList(),
+    /** The class budget of a [DependencyBodyScope.Reachable] scope, null for any other scope. */
+    val dependencyReachable: Int? = null
 ) {
     init {
         require(androidPlatformSha256 == null || FoldProvenance.isSha256(androidPlatformSha256)) {
             "$ANDROID_PLATFORM_SHA256 must be 64 lowercase hexadecimal digits, got '$androidPlatformSha256'"
+        }
+        require(dependencyReachable == null || dependencyReachable > 0) {
+            "$DEPENDENCY_REACHABLE must be positive, got $dependencyReachable"
         }
     }
 
@@ -344,6 +349,7 @@ data class AnalysisIdentity(
         androidPlatformSha256?.let { document[ANDROID_PLATFORM_SHA256] = it }
         if (dependencyArtifacts.isNotEmpty()) document[DEPENDENCY_ARTIFACTS] = dependencyArtifacts.sorted()
         if (dependencyPackages.isNotEmpty()) document[DEPENDENCY_PACKAGES] = dependencyPackages.sorted()
+        dependencyReachable?.let { document[DEPENDENCY_REACHABLE] = it }
     }
 
     /** The names of the options on which this identity and [other] differ, with both values. */
@@ -360,6 +366,9 @@ data class AnalysisIdentity(
         }
         lists(DEPENDENCY_ARTIFACTS, dependencyArtifacts, other.dependencyArtifacts)
         lists(DEPENDENCY_PACKAGES, dependencyPackages, other.dependencyPackages)
+        if (dependencyReachable != other.dependencyReachable) {
+            add("$DEPENDENCY_REACHABLE ${dependencyReachable ?: "none"} vs ${other.dependencyReachable ?: "none"}")
+        }
     }
 
     override fun equals(other: Any?): Boolean = other is AnalysisIdentity && differences(other).isEmpty()
@@ -374,8 +383,10 @@ data class AnalysisIdentity(
         const val ANDROID_PLATFORM_SHA256 = "android_platform_sha256"
         const val DEPENDENCY_ARTIFACTS = "dependency_artifacts"
         const val DEPENDENCY_PACKAGES = "dependency_packages"
+        const val DEPENDENCY_REACHABLE = "dependency_reachable"
         private val KEYS = listOf(
-            INCLUDE, EXCLUDE, INCLUDE_LIBS, LIB_FILTER, ANDROID_PLATFORM_SHA256, DEPENDENCY_ARTIFACTS, DEPENDENCY_PACKAGES
+            INCLUDE, EXCLUDE, INCLUDE_LIBS, LIB_FILTER, ANDROID_PLATFORM_SHA256, DEPENDENCY_ARTIFACTS, DEPENDENCY_PACKAGES,
+            DEPENDENCY_REACHABLE
         )
 
         /**
@@ -389,7 +400,8 @@ data class AnalysisIdentity(
             libraryFilters = config.libraryFilters.sorted(),
             androidPlatformSha256 = androidPlatformSha256,
             dependencyArtifacts = config.dependencyBodies.artifacts.sorted(),
-            dependencyPackages = config.dependencyBodies.packages.sorted()
+            dependencyPackages = config.dependencyBodies.packages.sorted(),
+            dependencyReachable = (config.dependencyBodies as? DependencyBodyScope.Reachable)?.maxClasses
         )
 
         fun parse(document: Any?, at: String): AnalysisIdentity {
@@ -406,8 +418,15 @@ data class AnalysisIdentity(
             val filters = strings(map[LIB_FILTER], "$at.$LIB_FILTER")
             val dependencyArtifacts = strings(map[DEPENDENCY_ARTIFACTS], "$at.$DEPENDENCY_ARTIFACTS")
             val dependencyPackages = strings(map[DEPENDENCY_PACKAGES], "$at.$DEPENDENCY_PACKAGES")
+            val reachable = map[DEPENDENCY_REACHABLE]
+            require(reachable == null || reachable is Number && reachable.toDouble() == reachable.toInt().toDouble()) {
+                "$at.$DEPENDENCY_REACHABLE must be an integer, got ${Suggest.kind(reachable)}"
+            }
             return try {
-                AnalysisIdentity(include, exclude, libs, filters, sha as String?, dependencyArtifacts, dependencyPackages)
+                AnalysisIdentity(
+                    include, exclude, libs, filters, sha as String?, dependencyArtifacts, dependencyPackages,
+                    (reachable as Number?)?.toInt()
+                )
             } catch (e: IllegalArgumentException) {
                 throw IllegalArgumentException("$at.${e.message}", e)
             }

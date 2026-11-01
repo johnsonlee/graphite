@@ -273,12 +273,12 @@ both methods, rather than folding the calls of both. The query runs where the gr
    as it does from `build --fold`. The plan carries the build's `provenance`: the SHA-256 of
    the input (the jar, or the class directory's files), the frontend's version, and the
    `analysis` identity of the build (`include`, `exclude`, `include_libs`, `lib_filter`,
-   `dependency_artifacts` and `dependency_packages`, each sorted, and
-   `android_platform_sha256`, the content of the platform jar an APK build reads as a
-   library), since those decide which classes and bodies the graph has and so which calls a
-   query can select; `fold plan` takes the same options as `build` and the CLI passes them on.
-   The two dependency keys are written only when the scope is given, so a plan written before
-   they existed reads the same. A
+   `dependency_artifacts` and `dependency_packages`, each sorted, `dependency_reachable`, the
+   class budget of a reachable scope, and `android_platform_sha256`, the content of the
+   platform jar an APK build reads as a library), since those decide which classes and bodies
+   the graph has and so which calls a query can select; `fold plan` takes the same options as
+   `build` and the CLI passes them on. The dependency keys are written only when the scope is
+   given, so a plan written before they existed reads the same. A
    `select` rule whose `selected` keys carry another provenance, or none, comes back
    unresolved, with a line naming what differs;
 2. when a rule has `select` and no `selected`, builds the graph without rules into a staging

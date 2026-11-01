@@ -93,9 +93,22 @@ class AnalysisCompletenessTest {
     @Test
     fun `a class or method record carries only the statuses that can apply to it`() {
         assertEquals(
-            "a class is ANALYZED, EXCLUDED_BY_SCOPE or RESOLUTION_FAILED, not ABSTRACT",
+            "a class is ANALYZED, EXCLUDED_BY_SCOPE, NOT_EXPANDED or RESOLUTION_FAILED, not ABSTRACT",
             assertFailsWith<IllegalArgumentException> { ClassEvidence("a.jar", AnalysisStatus.ABSTRACT) }.message
         )
+        assertEquals(AnalysisStatus.NOT_EXPANDED, ClassEvidence("a.jar", AnalysisStatus.NOT_EXPANDED).status)
+        assertEquals(
+            "a method's own status is never NOT_EXPANDED",
+            assertFailsWith<IllegalArgumentException> { MethodEvidence(AnalysisStatus.NOT_EXPANDED) }.message
+        )
+        assertFalse(AnalysisStatus.NOT_EXPANDED.bodyComplete)
+        val gaps = completeness.copy(
+            classes = completeness.classes + ("lib.Far" to ClassEvidence("lib.jar", AnalysisStatus.NOT_EXPANDED)),
+            callSiteGaps = mapOf(7 to CallSiteGap.DISPATCH_UNRESOLVED, 9 to CallSiteGap.DISPATCH_SATURATED)
+        )
+        assertEquals(AnalysisStatus.NOT_EXPANDED, gaps.statusOf(method("lib.Far", "any"), inGraph = false), "reached, not read")
+        assertEquals(CallSiteGap.DISPATCH_SATURATED, gaps.callSiteGaps.getValue(9))
+        assertTrue(completeness.callSiteGaps.isEmpty())
         assertEquals(
             "a method's own status is never EXTERNAL",
             assertFailsWith<IllegalArgumentException> { MethodEvidence(AnalysisStatus.EXTERNAL) }.message

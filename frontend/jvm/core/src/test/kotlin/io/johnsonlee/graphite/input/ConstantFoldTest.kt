@@ -379,10 +379,36 @@ class ConstantFoldTest {
             AnalysisIdentity.of(config, "ab".repeat(32))
         )
         assertEquals(AnalysisIdentity(), AnalysisIdentity.of(LoaderConfig()))
+
+        // A reachable scope is identified by its class budget: another budget may read other bodies.
+        val reachable = AnalysisIdentity.of(
+            LoaderConfig(includeLibraries = true, dependencyBodies = DependencyBodyScope.Reachable(500))
+        )
+        assertEquals(500, reachable.dependencyReachable)
+        assertEquals(
+            mapOf("include_libs" to true, "dependency_reachable" to 500),
+            reachable.toDocument() - setOf("include", "exclude", "lib_filter")
+        )
+        assertEquals(reachable, AnalysisIdentity.parse(reachable.toDocument(), "p"), "round trip")
+        val fromJson = AnalysisIdentity.parse(mapOf("include_libs" to true, "dependency_reachable" to 500.0), "p")
+        assertEquals(reachable, fromJson, "a JSON number")
+        assertEquals(listOf("dependency_reachable none vs 500"), AnalysisIdentity(includeLibraries = true).differences(reachable))
+        assertEquals(
+            "p.dependency_reachable must be an integer, got string '5'",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to "5"), "p") }.message
+        )
+        assertEquals(
+            "p.dependency_reachable must be an integer, got number 5.5",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to 5.5), "p") }.message
+        )
+        assertEquals(
+            "p.dependency_reachable must be positive, got 0",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to 0), "p") }.message
+        )
         fun malformed(document: Any?) = assertFailsWith<IllegalArgumentException> { FoldProvenance.parse(document, "p") }.message
         assertEquals(
             "p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256, " +
-                "dependency_artifacts, dependency_packages}",
+                "dependency_artifacts, dependency_packages, dependency_reachable}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("inclde" to listOf("a")))))
         assertEquals("p.analysis.include must be a list of strings, got string 'a'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include" to "a"))))
@@ -392,7 +418,7 @@ class ConstantFoldTest {
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("android_platform_sha256" to "x"))))
         assertEquals(
             "p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256, dependency_artifacts, " +
-                "dependency_packages}, got integer 1",
+                "dependency_packages, dependency_reachable}, got integer 1",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to 1)))
         assertEquals("p has no key 'x'; it is {input_sha256, frontend_version, analysis}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "x" to 1)))

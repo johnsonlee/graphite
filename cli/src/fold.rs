@@ -79,6 +79,10 @@ const VALUE_OPTIONS: [&str; 9] = [
     "--fold",
 ];
 
+/// `--dependency-reachable` takes an optional budget: `--dependency-reachable=5000` or the
+/// bare flag, never a separate argument, so the input is never mistaken for its value.
+const OPTIONAL_VALUE_FLAGS: [&str; 1] = ["--dependency-reachable"];
+
 /// The option that links calls to their callees' bodies, which the staging build adds.
 pub const INTERPROCEDURAL: &str = "--interprocedural";
 
@@ -92,7 +96,7 @@ const ANALYSIS_VALUE_OPTIONS: [&str; 6] = [
     "--dependency-artifacts",
     "--dependency-packages",
 ];
-const ANALYSIS_FLAGS: [&str; 1] = ["--include-libs"];
+const ANALYSIS_FLAGS: [&str; 2] = ["--include-libs", "--dependency-reachable"];
 
 /// The analysis options of a build command line, as given (`--include a,b`, `--include=a,b`
 /// and `--include-libs` alike), in order.
@@ -110,6 +114,7 @@ pub fn analysis_options(args: &[OsString]) -> Vec<OsString> {
             }
         } else if ANALYSIS_VALUE_OPTIONS
             .iter()
+            .chain(OPTIONAL_VALUE_FLAGS.iter())
             .any(|option| text.starts_with(option) && text[option.len()..].starts_with('='))
         {
             out.push(arg.clone());
@@ -747,6 +752,20 @@ mod tests {
             Some(PathBuf::from("app.jar")),
             "a scope option takes a value"
         );
+        assert_eq!(
+            input_of(&os(&["--dependency-reachable", "app.jar"])),
+            Some(PathBuf::from("app.jar")),
+            "the bare reachable flag takes no separate value"
+        );
+        assert_eq!(
+            text(&analysis_options(&os(&[
+                "--dependency-reachable",
+                "app.jar",
+                "-o",
+                "g"
+            ]))),
+            ["--dependency-reachable"]
+        );
         assert_eq!(input_of(&os(&["-o", "/g"])), None);
         let staged = staging_args(
             &os(&["a.jar", "-o", "/g", "--fold", "f.yml", "--fold-strict"]),
@@ -863,6 +882,7 @@ mod tests {
             "--dependency-artifacts",
             "dep-*.jar",
             "--dependency-packages=kotlin.text.",
+            "--dependency-reachable=5000",
             "--interprocedural",
         ]
         .iter()
@@ -900,7 +920,8 @@ mod tests {
                 "/sdk",
                 "--dependency-artifacts",
                 "dep-*.jar",
-                "--dependency-packages=kotlin.text."
+                "--dependency-packages=kotlin.text.",
+                "--dependency-reachable=5000"
             ]
         );
         // Without an input there is no build to describe.

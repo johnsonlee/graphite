@@ -4,6 +4,7 @@ import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactEvidence
 import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.AnalysisIdentity
@@ -43,6 +44,7 @@ internal object AnalysisCompletenessStore {
     internal const val VERSION = 1
     private const val DIGEST_BYTES = 32
     private const val HEADER_BYTES = Int.SIZE_BYTES + DIGEST_BYTES
+    private const val NO_BUDGET = -1
     private const val MIN_BYTES = HEADER_BYTES + DIGEST_BYTES
 
     /** Write [completeness] beside the graph in [dir], bound to the node layout digest the save computed. */
@@ -96,11 +98,11 @@ internal object AnalysisCompletenessStore {
         out.writeOptional(scope.androidPlatformSha256)
         out.writeStrings(scope.dependencyArtifacts)
         out.writeStrings(scope.dependencyPackages)
+        out.writeInt(scope.dependencyReachable ?: NO_BUDGET)
         // The codes index these names, so a value added or reordered later still reads as itself.
-        val statuses = AnalysisStatus.entries.map { it.name }
-        val roles = ArtifactRole.entries.map { it.name }
-        out.writeStrings(statuses)
-        out.writeStrings(roles)
+        out.writeStrings(AnalysisStatus.entries.map { it.name })
+        out.writeStrings(ArtifactRole.entries.map { it.name })
+        out.writeStrings(CallSiteGap.entries.map { it.name })
         out.writeInt(completeness.artifacts.size)
         for ((name, artifact) in completeness.artifacts) {
             out.writeUTF(name)
@@ -124,6 +126,11 @@ internal object AnalysisCompletenessStore {
             out.writeUTF(name)
             out.writeStrings(sources)
         }
+        out.writeInt(completeness.callSiteGaps.size)
+        for ((id, gap) in completeness.callSiteGaps) {
+            out.writeInt(id)
+            out.writeByte(gap.ordinal)
+        }
     }
 
     private fun read(input: DataInputStream): AnalysisCompleteness {
@@ -134,10 +141,12 @@ internal object AnalysisCompletenessStore {
             libraryFilters = input.readStrings(),
             androidPlatformSha256 = input.readOptional(),
             dependencyArtifacts = input.readStrings(),
-            dependencyPackages = input.readStrings()
+            dependencyPackages = input.readStrings(),
+            dependencyReachable = input.readInt().takeIf { it != NO_BUDGET }
         )
-        val statuses = input.readStrings().map(::statusNamed)
-        val roles = input.readStrings().map(::roleNamed)
+        val statuses = input.readStrings().map { named(it, AnalysisStatus.entries, "status") }
+        val roles = input.readStrings().map { named(it, ArtifactRole.entries, "role") }
+        val gaps = input.readStrings().map { named(it, CallSiteGap.entries, "gap") }
         fun DataInputStream.code(names: List<*>): Int = readUnsignedByte().also {
             check(it < names.size) { "$FILE_NAME names code $it among ${names.size}" }
         }
@@ -157,15 +166,16 @@ internal object AnalysisCompletenessStore {
         repeat(input.readCount()) {
             duplicates[input.readUTF()] = input.readStrings()
         }
+        val callSiteGaps = HashMap<Int, CallSiteGap>()
+        repeat(input.readCount()) {
+            callSiteGaps[input.readInt()] = gaps[input.code(gaps)]
+        }
         check(input.read() < 0) { "$FILE_NAME has bytes after its last entry" }
-        return AnalysisCompleteness(scope, artifacts, classes, methods, duplicates)
+        return AnalysisCompleteness(scope, artifacts, classes, methods, duplicates, callSiteGaps)
     }
 
-    private fun statusNamed(name: String): AnalysisStatus = AnalysisStatus.entries.firstOrNull { it.name == name }
-        ?: error("$FILE_NAME names a status '$name' this reader does not know")
-
-    private fun roleNamed(name: String): ArtifactRole = ArtifactRole.entries.firstOrNull { it.name == name }
-        ?: error("$FILE_NAME names a role '$name' this reader does not know")
+    private fun <E : Enum<E>> named(name: String, entries: List<E>, kind: String): E =
+        entries.firstOrNull { it.name == name } ?: error("$FILE_NAME names a $kind '$name' this reader does not know")
 
     private fun DataOutputStream.writeStrings(values: List<String>) {
         writeInt(values.size)

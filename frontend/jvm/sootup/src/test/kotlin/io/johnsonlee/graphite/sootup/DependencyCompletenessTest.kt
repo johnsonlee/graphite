@@ -15,6 +15,7 @@ import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.analysisStatus
 import io.johnsonlee.graphite.graph.nodes
@@ -76,7 +77,13 @@ class DependencyCompletenessTest {
                 }
                 public String viaHelper() { return sample.scope.dep.Reader.read("messages", "old"); }
                 public String viaSource(sample.scope.dep.Source source) { return source.fetch("old"); }
-                public String viaCallback() { return sample.scope.dep.Reader.via(() -> "old"); }
+                public String viaCallback() { return sample.scope.dep.Reader.once(() -> "old"); }
+                public String viaUnknown(java.util.function.Supplier<String> s) { return s.get(); }
+                public int viaMany() {
+                    int n = 0;
+            ${(1..65).joinToString("\n") { "        n += sample.scope.dep.Reader.via(() -> \"v$it\").length();" }}
+                    return n;
+                }
             }
         """.trimIndent(),
         "Ab.java" to """
@@ -106,6 +113,7 @@ class DependencyCompletenessTest {
                 public static native int nativeSize();
                 public static String fixed() { return java.util.ResourceBundle.getBundle("messages").getString("old"); }
                 public static String via(java.util.function.Supplier<String> supplier) { return supplier.get(); }
+                public static String once(java.util.function.Supplier<String> supplier) { return supplier.get(); }
             }
         """.trimIndent(),
         "Source.java" to """
@@ -227,9 +235,81 @@ class DependencyCompletenessTest {
         )
         // An application lambda invoked through the dependency dispatches to the lambda's body.
         val callback = graph.nodes<CallSiteNode>()
-            .filter { it.caller.name == "via" && it.callee.name.startsWith("lambda\$viaCallback") }.toList()
+            .filter { it.caller.name == "once" && it.callee.name.startsWith("lambda\$viaCallback") }.toList()
         assertEquals(1, callback.size, "supplier.get() in the dependency resolves to the application's lambda")
         assertEquals(example, callback.single().callee.declaringClass.className)
+        // Past 64 function values the holder saturates: the call resolves to none, and says so.
+        val saturated = graph.nodes<CallSiteNode>().single { it.caller.name == "via" && it.callee.name == "get" }
+        assertEquals(CallSiteGap.DISPATCH_SATURATED, completeness.callSiteGaps[saturated.id.value])
+        assertTrue(graph.nodes<CallSiteNode>().none { it.caller.name == "via" && it.callee.name.startsWith("lambda\$") })
+    }
+
+    @Test
+    fun `a reachable scope reads the library classes the application reaches and names the rest`() {
+        val input = bootJar()
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable()
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+
+        // Every library archive is loaded, so an unreached class is excluded, not external.
+        assertEquals(setOf(ArtifactRole.APPLICATION, ArtifactRole.LIBRARY), completeness.roles().values.toSet())
+        assertTrue(completeness.artifacts.containsKey("other-1.0.jar"), "loaded although nothing of it is in scope")
+        val stdlib = completeness.artifacts.keys.single { it.startsWith("kotlin-stdlib") }
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("sample.scope.other.Util"))
+        assertEquals(DependencyBodyScope.Reachable.DEFAULT_MAX_CLASSES, completeness.scope.dependencyReachable)
+
+        // Reached through calls: the helper, the interface the application calls through, the stdlib part.
+        assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(readMethod))
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$depPackage.Source"))
+        val trim = graph.nodes<CallSiteNode>().single { it.caller.name == "value" && it.callee.name == "trim" }.callee
+        assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(trim))
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("kotlin.collections.CollectionsKt"), "unreached")
+        assertTrue(
+            graph.nodes<CallSiteNode>().any { it.caller == readMethod && it.callee.name == "getBundle" },
+            "the reached helper's body is in the graph"
+        )
+        val stdlibClasses = completeness.classes.filterValues { it.origin == stdlib }
+        val unreached = stdlibClasses.count { it.value.status == AnalysisStatus.EXCLUDED_BY_SCOPE }
+        assertTrue(
+            unreached > 0 && unreached < stdlibClasses.size,
+            "the stdlib is read where reached: ${stdlibClasses.size - unreached} of ${stdlibClasses.size}"
+        )
+
+        // Calls on function values that resolve to nothing are gaps, not calls with no effect.
+        val unknown = graph.nodes<CallSiteNode>().single { it.caller.name == "viaUnknown" && it.callee.name == "get" }
+        assertEquals(CallSiteGap.DISPATCH_UNRESOLVED, completeness.callSiteGaps[unknown.id.value], "no caller passes a supplier")
+        val saturated = graph.nodes<CallSiteNode>().single { it.caller.name == "via" && it.callee.name == "get" }
+        assertEquals(CallSiteGap.DISPATCH_SATURATED, completeness.callSiteGaps[saturated.id.value], "66 lambdas reach the parameter")
+        // The reached stdlib bodies call function values of their own; every gap names a call site in the graph.
+        val gapped = completeness.callSiteGaps.keys.map { NodeId(it) }
+        assertTrue(gapped.all { graph.node(it) is CallSiteNode }, "a gap is a call site")
+        assertTrue(gapped.size > 2, "the stdlib's own calls on function values are gaps too: ${gapped.size}")
+    }
+
+    @Test
+    fun `a reachable scope stops at its budget and marks what it reached past it`() {
+        val input = bootJar()
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(1)
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val reached = completeness.classes.filterValues { it.status == AnalysisStatus.NOT_EXPANDED }.keys
+        val read = completeness.classes
+            .filterValues { it.status == AnalysisStatus.ANALYZED && it.origin != JavaArchiveLayout.BOOT_INF_CLASSES }.keys
+        assertEquals(1, read.size, "one dependency class within the budget: $read")
+        assertTrue(reached.isNotEmpty(), "the rest of the frontier is reached, not read")
+        assertTrue(reader in read || reader in reached)
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("kotlin.collections.CollectionsKt"), "never reached at all")
+        assertEquals(1, completeness.scope.dependencyReachable)
     }
 
     @Test

@@ -9,6 +9,7 @@ import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactEvidence
 import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.Graph
@@ -63,14 +64,16 @@ class AnalysisCompletenessPersistenceTest {
             "lib.Reader" to ClassEvidence("lib-1.0.jar", AnalysisStatus.ANALYZED),
             "lib.Impl" to ClassEvidence(null, AnalysisStatus.ANALYZED),
             "lib.Broken" to ClassEvidence("lib-1.0.jar", AnalysisStatus.RESOLUTION_FAILED),
-            "other.Util" to ClassEvidence("other.jar", AnalysisStatus.EXCLUDED_BY_SCOPE)
+            "other.Util" to ClassEvidence("other.jar", AnalysisStatus.EXCLUDED_BY_SCOPE),
+            "lib.Far" to ClassEvidence("lib-1.0.jar", AnalysisStatus.NOT_EXPANDED)
         ),
         methods = mapOf(
             abstract.identity to MethodEvidence(AnalysisStatus.ABSTRACT),
             oom.identity to MethodEvidence(AnalysisStatus.INCOMPLETE, "Java heap space"),
             method("lib.Impl", "broken").identity to MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, "bad frame")
         ),
-        duplicateClasses = linkedMapOf("lib.Reader" to listOf("lib-1.0.jar", "other.jar"))
+        duplicateClasses = linkedMapOf("lib.Reader" to listOf("lib-1.0.jar", "other.jar")),
+        callSiteGaps = mapOf(1 to CallSiteGap.DISPATCH_UNRESOLVED, 3 to CallSiteGap.DISPATCH_SATURATED)
     )
 
     private fun graph(evidence: AnalysisCompleteness? = completeness): Graph = DefaultGraph.Builder().apply {
@@ -110,7 +113,14 @@ class AnalysisCompletenessPersistenceTest {
             assertEquals(AnalysisStatus.EXTERNAL, graph.analysisStatus(external))
             assertEquals(AnalysisStatus.UNKNOWN_MEMBER, graph.analysisStatus(method("app.Service", "missing")))
             assertEquals(AnalysisStatus.RESOLUTION_FAILED, graph.analysisStatus(method("lib.Broken", "any")))
+            assertEquals(AnalysisStatus.NOT_EXPANDED, graph.analysisStatus(method("lib.Far", "any")))
+            assertEquals(CallSiteGap.DISPATCH_SATURATED, graph.analysisCompleteness()!!.callSiteGaps.getValue(3))
         }
+        val reachable = completeness.copy(
+            scope = AnalysisIdentity(includeLibraries = true, dependencyReachable = 1234), callSiteGaps = emptyMap()
+        )
+        GraphStore.save(graph(reachable), dir)
+        loaded(dir) { graph -> assertEquals(reachable, graph.analysisCompleteness()) }
     }
 
     @Test
@@ -209,6 +219,10 @@ class AnalysisCompletenessPersistenceTest {
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} names a role 'PLATFORN' this reader does not know",
             refused(rewritten { it.replaceFirst("PLATFORM", "PLATFORN") })
+        )
+        assertEquals(
+            "${AnalysisCompletenessStore.FILE_NAME} names a gap 'DISPATCH_SATURATEX' this reader does not know",
+            refused(rewritten { it.replaceFirst("DISPATCH_SATURATED", "DISPATCH_SATURATEX") })
         )
         val text = String(whole, Charsets.ISO_8859_1)
         val roleAt = text.indexOf("app.jar") + "app.jar".length

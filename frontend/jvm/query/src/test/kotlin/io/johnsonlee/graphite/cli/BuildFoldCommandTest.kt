@@ -17,6 +17,7 @@ import javax.tools.ToolProvider
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import picocli.CommandLine
@@ -380,6 +381,20 @@ class BuildFoldCommandTest {
         )
         assertEquals(DependencyBodyScope.None, dependencyBodyScope(emptyList(), emptyList()))
         assertEquals(DependencyBodyScope.Declared(packages = listOf("a")), dependencyBodyScope(emptyList(), listOf("a")))
+        assertEquals(DependencyBodyScope.Reachable(700), dependencyBodyScope(emptyList(), emptyList(), 700))
+        assertEquals(
+            "--dependency-reachable reads the library classes the application reaches; " +
+                "it cannot be combined with --dependency-artifacts or --dependency-packages",
+            assertFailsWith<IllegalArgumentException> { dependencyBodyScope(listOf("a-*.jar"), emptyList(), 700) }.message
+        )
+        val bare = FoldPlanCommand()
+        CommandLine(bare).parseArgs("folds.yml", "--dependency-reachable", "--input", "app.jar")
+        assertEquals(50_000, bare.dependencyReachable, "the bare flag takes the default budget")
+        val budgeted = BuildCommand()
+        CommandLine(budgeted).parseArgs("app.jar", "-o", "out", "--include-libs", "--dependency-reachable=2500")
+        assertEquals(2500, budgeted.dependencyReachable)
+        val scope = dependencyBodyScope(budgeted.dependencyArtifacts, budgeted.dependencyPackages, budgeted.dependencyReachable)
+        assertEquals(DependencyBodyScope.Reachable(2500), scope)
     }
 
     @Test

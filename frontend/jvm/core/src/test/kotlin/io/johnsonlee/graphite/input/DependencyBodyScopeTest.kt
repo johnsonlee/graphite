@@ -53,6 +53,21 @@ class DependencyBodyScopeTest {
     }
 
     @Test
+    fun `a reachable scope loads every archive and covers no class up front`() {
+        val scope: DependencyBodyScope = DependencyBodyScope.Reachable(maxClasses = 10)
+        assertTrue(scope.coversArtifact("anything-1.0.jar"), "every library is loaded so its classes can be reached")
+        assertFalse(scope.covers("kotlin.text.StringsKt", "kotlin-stdlib-2.1.0.jar"), "a class is read when reached, not up front")
+        assertEquals(emptyList(), scope.artifacts)
+        assertEquals(emptyList(), scope.packages)
+        assertEquals("reachable(maxClasses=10)", scope.toString())
+        assertEquals(50_000, DependencyBodyScope.Reachable().maxClasses)
+        assertEquals(
+            "a reachable dependency body scope reads at least one class",
+            assertFailsWith<IllegalArgumentException> { DependencyBodyScope.Reachable(0) }.message
+        )
+    }
+
+    @Test
     fun `the glob dialect is the library filter's`() {
         assertTrue(GlobPatterns.matches("modular-core.jar", "modular-*"))
         assertTrue(GlobPatterns.matches("business-x.jar", "business-*.jar"))

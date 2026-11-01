@@ -19,6 +19,7 @@ Spring Boot or WAR build did not even load a nested jar that held no application
 |---|---|---|
 | `None` (default) | as before: when it holds an application package | none; a library class resolves types and overrides only |
 | `Declared(artifacts, packages)` | as before, or when its file name matches an artifact pattern, or it holds a class of one of the packages | every class of a matching artifact, every class under one of the packages |
+| `Reachable(maxClasses)` | every library jar | the classes the application's calls reach, and the classes those bodies' calls reach, up to the budget |
 
 ```kotlin
 val graph = JavaProjectLoader(
@@ -39,6 +40,10 @@ graphite build app.jar -o /data/app --include com.acme.app --include-libs \
   --dependency-artifacts 'acme-helpers-*.jar' --dependency-packages kotlin.text. --interprocedural
 ```
 
+```bash
+graphite build app.jar -o /data/app --include com.acme.app --include-libs --dependency-reachable=20000
+```
+
 A library class the scope covers is processed as an application class is: its methods, their
 bodies, their annotations and its fields. It does not become application code. It registers no
 endpoint and runs no `GraphiteExtension`, its artifact keeps the `LIBRARY` role, and the
@@ -46,6 +51,18 @@ evidence tells it apart from a class the scope left out. The artifact patterns a
 dialect of `--lib-filter` (`*` matches any text) and match the jar's file name, whatever
 directory a directory input keeps it in (`lib/acme-helpers-1.0.jar` matches `acme-helpers-*.jar`).
 A declared scope needs `includeLibraries`; `LoaderConfig` refuses the combination otherwise.
+
+`Reachable` is the selective expansion: after the application's bodies are read, the build
+reads the class of every call's declared callee, every override the view knows for a virtual
+callee (class hierarchy analysis), and the class every `new` names, including the function-object
+classes the application allocates; then the classes those bodies reach, and so on. Each class is
+read once, so the expansion terminates on any call graph, cycles included. Reading stops at
+`maxClasses` (50,000 by default); a class reached past the budget is `NOT_EXPANDED`, which a
+proof must treat as unread, never as a class with no effect, and a library class nothing reaches
+stays `EXCLUDED_BY_SCOPE`. Expansion follows calls, so a body reached only through a function
+value resolved in the dispatch fixpoint is read when the class that holds it was reached by
+other means (its allocation is a call to its constructor); an entry a framework discovers by
+reflection or configuration is not reached, as the issue's contract expects.
 
 With `interproceduralDataflow`, an argument of an application call reaches the parameter node
 of the helper's body and the helper's return reaches the call's result, so a query can follow a
@@ -70,7 +87,7 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
 `AnalysisCompleteness` holds:
 
 - `scope`: the `AnalysisIdentity` of the build (package filters, libraries, library filters, the
-  dependency scope). The evidence is relative to it and claims nothing outside it. The Android
+  dependency scope: its artifact patterns and packages, or its reachable class budget). The evidence is relative to it and claims nothing outside it. The Android
   platform jar an APK build reads is named by its SDK root here; its content digest is the fold
   provenance's, which the CLI computes.
 - `artifacts`: every source the build read classes from, in class-path order, with its
@@ -88,6 +105,13 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
 - `duplicateClasses`: a class name defined by more than one archive of the input, with every
   archive in the order the input lists them, loaded or not. The graph holds the first
   definition. A Spring Boot jar's runtime order (`BOOT-INF/classpath.idx`) is not consulted.
+- `callSiteGaps`: the node id of every call on a function value (`fn.apply(x)`,
+  `supplier.get()`, Kotlin's `fn(x)`) that the dispatch fixpoint resolved to no body, with why:
+  `DISPATCH_UNRESOLVED` (no function value is known to reach the receiver: it comes from
+  outside the analysed scope, or along a flow the adapter does not track) or
+  `DISPATCH_SATURATED` (more than 64 function values reach it, so the adapter resolved none).
+  The call site itself is in the graph with its interface callee; a call on a function value
+  absent from this map resolved to every body it runs that the scope holds.
 
 | `AnalysisStatus` | Meaning | Body complete |
 |---|---|---|
@@ -99,6 +123,7 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
 | `INCOMPLETE` | processing stopped part way (out of memory); the nodes created before are in the graph, the rest is not | no |
 | `RESOLUTION_FAILED` | the frontend could not read the body, or the class's methods; nothing of it is in the graph | no |
 | `EXCLUDED_BY_SCOPE` | the class was loaded for type resolution only | no |
+| `NOT_EXPANDED` | the class was reached under a `Reachable` scope and left unread because the class budget ran out | no |
 | `EXTERNAL` | the class was never loaded: the JDK, a jar the build did not read, a class no input holds | no |
 | `UNKNOWN_MEMBER` | the class was analysed and declares no such method | no |
 
@@ -131,15 +156,16 @@ as itself.
 
 ## What this delivery does not do
 
-- No selective expansion from roots. A declared scope is processed eagerly, every body of every
-  class it covers. Processing only the bodies a surviving call reaches is the next step the
-  issue names; the evidence this delivery records (`EXCLUDED_BY_SCOPE` at the frontier) is what
-  such an expansion would turn into `ANALYZED`, and the scope it would need is already
-  separate from the application identity.
-- No per-call-site gap record. A virtual call's unresolved targets, a function value whose
-  holder saturated (`MAX_TARGETS`), and an `invokedynamic` the adapter did not resolve are not
-  recorded against the call site; the method-level statuses and `Graph.hasMethod` are what a
-  consumer has.
+- The roots of a `Reachable` expansion are the application's classes as `includePackages`
+  names them, not a consumer-supplied list of entry methods, and the expansion runs on the
+  folded bodies of the build it is part of: a `select` fold rule's staging build expands on the
+  unfolded bodies, the final build on the folded ones.
+- The expansion follows the view's class hierarchy for virtual calls (every override the view
+  knows), not a points-to analysis: it reads more classes than run, never fewer, within the
+  budget.
+- A gap is recorded for calls on function values only. A virtual call whose receiver class is
+  unknown has every override the view knows linked by `interproceduralDataflow`; one whose
+  implementation lives outside the view is `EXTERNAL` by its class.
 - No class-path precedence beyond listing order, and no multi-release selection: both are
   reported, not resolved.
 - No reading of the evidence by the Rust server; `graphite query` and `serve` ignore the file.

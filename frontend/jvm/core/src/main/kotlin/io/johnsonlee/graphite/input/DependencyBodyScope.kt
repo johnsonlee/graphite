@@ -40,6 +40,30 @@ sealed interface DependencyBodyScope {
         override fun toString(): String = "none"
     }
 
+    /**
+     * The library classes the application reaches: every library archive is loaded, and after
+     * the application's bodies are read, the classes their calls name are read too, then the
+     * classes those calls name, and so on: the declared callee of each call, the overrides of a
+     * virtual callee the view knows, and the class a `new` names. At most [maxClasses] classes
+     * are read this way; a class reached past the budget is `NOT_EXPANDED` in the evidence, which
+     * is not a class with no effect. A library class nothing reaches stays `EXCLUDED_BY_SCOPE`.
+     */
+    data class Reachable(val maxClasses: Int = DEFAULT_MAX_CLASSES) : DependencyBodyScope {
+        init {
+            require(maxClasses > 0) { "a reachable dependency body scope reads at least one class" }
+        }
+
+        override val artifacts: List<String> get() = emptyList()
+        override val packages: List<String> get() = emptyList()
+        override fun covers(className: String, artifact: String?): Boolean = false
+        override fun coversArtifact(artifact: String): Boolean = true
+        override fun toString(): String = "reachable(maxClasses=$maxClasses)"
+
+        companion object {
+            const val DEFAULT_MAX_CLASSES = 50_000
+        }
+    }
+
     /** The library classes of the named [artifacts] and [packages]; at least one of the two is given. */
     data class Declared(
         override val artifacts: List<String> = emptyList(),

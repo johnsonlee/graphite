@@ -38,6 +38,7 @@ import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactEvidence
 import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.MethodEvidence
@@ -46,6 +47,7 @@ import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.input.AnalysisIdentity
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
+import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -412,6 +414,11 @@ class SootUpAdapter(
     private val multiReleaseArtifacts = HashSet<String>()
     private var classEntrySources = HashMap<String, String>()
     private var resolutionFailures = 0
+    private val callSiteGaps = HashMap<Int, CallSiteGap>()
+    /** Under a reachable scope, the callees of every call site read so far, drained by the expansion. */
+    private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
+    private val reachedCallees = ArrayList<MethodDescriptor>()
+    private val reachedVirtually = ArrayList<Boolean>()
     /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
     private var activeControlFlowTruncated = false
     /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
@@ -542,11 +549,9 @@ class SootUpAdapter(
             if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
                 log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
             }
-            activeClassResolutionFailed = false
-            processClassWithMethodCache(sootClass, extensionContext, application)
-            val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
-            classEvidence[className] = ClassEvidence(origin, status)
+            processDependencyOrApplicationClass(sootClass, extensionContext, application)
         }
+        reachableExpansion?.let { expandReachableClasses(it, extensionContext) }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
             graphBuilder.addSyntheticIdentity(member, fingerprint)
@@ -559,6 +564,7 @@ class SootUpAdapter(
         if (trackCrossMethodFunctionalDispatch) {
             resolveFunctionalDispatch()
         }
+        collectDispatchGaps()
 
         interprocedural?.let { calls ->
             val edges = calls.link(::overridesOf) { graphBuilder.addEdge(it) }
@@ -589,6 +595,94 @@ class SootUpAdapter(
         }
     }
 
+    /** Read a pass-2 class and record what the build did with it. */
+    private fun processDependencyOrApplicationClass(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
+        val className = sootClass.type.fullyQualifiedName
+        activeClassResolutionFailed = false
+        processClassWithMethodCache(sootClass, extensionContext, application)
+        val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
+        classEvidence[className] = ClassEvidence(classOriginsByName[className] ?: singleArtifactSource, status)
+    }
+
+    /**
+     * Read the library classes the application reaches, see [DependencyBodyScope.Reachable]:
+     * the class of each call's declared callee, of each override the view knows for a virtual
+     * callee, and so on through the calls those bodies make, until nothing new is reached or
+     * [scope]'s budget is spent; the classes reached past it are [AnalysisStatus.NOT_EXPANDED].
+     * Each class is read once, so the expansion terminates on any call graph.
+     */
+    private fun expandReachableClasses(scope: DependencyBodyScope.Reachable, extensionContext: GraphiteContext) {
+        val frontier = ReachableFrontier()
+        var budget = scope.maxClasses
+        var expanded = 0
+        while (true) {
+            drainReachedCallees(frontier)
+            val className = frontier.queue.removeFirstOrNull() ?: break
+            val sootClass = classesByNameCache?.get(className) ?: continue
+            if (budget == 0) {
+                classEvidence[className] = ClassEvidence(classEvidence[className]?.origin, AnalysisStatus.NOT_EXPANDED)
+                continue
+            }
+            budget--
+            expanded++
+            processDependencyOrApplicationClass(sootClass, extensionContext, application = false)
+        }
+        reachedCallees.clear()
+        reachedVirtually.clear()
+        log { "Reachable expansion read $expanded dependency class(es), ${frontier.queue.size} past the budget of ${scope.maxClasses}" }
+    }
+
+    /** The classes the expansion has reached and not yet read, each queued once. */
+    private class ReachableFrontier {
+        val queue = ArrayDeque<String>()
+        val reached = HashSet<String>()
+        var drained = 0
+    }
+
+    /**
+     * Queue the classes of the callees noted since the last drain: the declared callee's and,
+     * for a virtual callee, its overrides'.
+     */
+    private fun drainReachedCallees(frontier: ReachableFrontier) {
+        fun reach(className: String) {
+            if (classEvidence[className]?.status == AnalysisStatus.EXCLUDED_BY_SCOPE && frontier.reached.add(className)) {
+                frontier.queue += className
+            }
+        }
+        while (frontier.drained < reachedCallees.size) {
+            val callee = reachedCallees[frontier.drained]
+            reach(callee.declaringClass.className)
+            if (reachedVirtually[frontier.drained]) overridesOf(callee).forEach { reach(it.declaringClass.className) }
+            frontier.drained++
+        }
+    }
+
+    /** Under a reachable scope, note a call's callee for the expansion to follow. */
+    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean) {
+        if (reachableExpansion != null) {
+            reachedCallees += callee
+            reachedVirtually += virtual
+        }
+    }
+
+    /**
+     * After the dispatch fixpoint, every call on a function value that resolved to no body, with
+     * the reason: the receiver's holder saturated, or nothing is known to reach it.
+     */
+    private fun collectDispatchGaps() {
+        for (entry in slotCalls.int2ObjectEntrySet()) {
+            val targets = slotTargets[entry.intKey]
+            for (pending in entry.value) {
+                val gap = when {
+                    targets === SATURATED_TARGETS -> CallSiteGap.DISPATCH_SATURATED
+                    pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_UNRESOLVED
+                    else -> continue
+                }
+                callSiteGaps[pending.callSite.id.value] = gap
+            }
+        }
+    }
+
     /**
      * The evidence of this build: every source in its role, every class of the view with what
      * the build did with it, the methods not analysed completely, and the duplicate definitions.
@@ -602,7 +696,7 @@ class SootUpAdapter(
             val role = artifactRoles[name] ?: if (name == singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
             ArtifactEvidence(role, name in multiReleaseArtifacts)
         }
-        return AnalysisCompleteness(AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, duplicateClasses)
+        return AnalysisCompleteness(AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, duplicateClasses, callSiteGaps)
     }
 
     /**
@@ -1311,6 +1405,7 @@ class SootUpAdapter(
         }
         val virtual = invokeExpr is AbstractInstanceInvokeExpr && invokeExpr !is JSpecialInvokeExpr
         interprocedural?.call(callee, virtual, argNodeIds, resultNode?.id)
+        noteReachedCallee(callee, virtual)
         val resourceRelevantCall = isResourceRelevantCall(calleeSignature)
         if (resourceRelevantCall) {
             linkResourceReads(callSite, calleeSignature, invokeExpr)
@@ -1457,6 +1552,7 @@ class SootUpAdapter(
             if (stmt != null) {
                 recordStmtNode(stmt, callSite.id)
             }
+            noteReachedCallee(target, virtual = false)
 
             // Add call edge (marked as dynamic)
             graphBuilder.addEdge(
