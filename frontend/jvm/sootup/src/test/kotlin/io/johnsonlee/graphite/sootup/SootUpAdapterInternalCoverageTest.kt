@@ -2,7 +2,9 @@
 
 package io.johnsonlee.graphite.sootup
 
+import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ResourceAccessor
@@ -401,6 +403,31 @@ class SootUpAdapterInternalCoverageTest {
             override fun hasBody(): Boolean = throw OutOfMemoryError("boom")
         }
         invokePrivate<Unit>(adapter, "processMethod", arrayOf(SootMethod::class.java), throwingMethod)
+
+        // What each fallback leaves in the completeness evidence: a method the build gave up on
+        // part way is INCOMPLETE with the failure's message, a body-less method says why it has
+        // none, and a class whose methods could not be resolved is noted while it is the pass-2 class.
+        val evidence = readField<Map<String, MethodEvidence>>(adapter, "methodEvidence")
+        assertEquals(MethodEvidence(AnalysisStatus.INCOMPLETE, "boom"), evidence["sample.fake.Owner.boom()V"])
+        for ((name, modifiers, status) in listOf(
+            Triple("abstractOne", listOf(MethodModifier.ABSTRACT), AnalysisStatus.ABSTRACT),
+            Triple("nativeOne", listOf(MethodModifier.NATIVE), AnalysisStatus.NATIVE),
+            Triple("stub", emptyList(), AnalysisStatus.NO_BODY)
+        )) {
+            val bodyless = object : FakeSootMethod(
+                identifierFactory.getMethodSignature("sample.fake.Owner", name, "void", emptyList()), modifiers
+            ) {
+                override fun hasBody(): Boolean = false
+            }
+            invokePrivate<Unit>(adapter, "processMethod", arrayOf(SootMethod::class.java), bodyless)
+            assertEquals(MethodEvidence(status), evidence["sample.fake.Owner.$name()V"], name)
+        }
+        assertFalse(readField<Boolean>(adapter, "activeClassResolutionFailed"), "a failure outside pass 2 is not the pass-2 class's")
+        val failing = FakeSootClass(identifierFactory.getClassType("sample.fake.Oom"), failure = OutOfMemoryError("boom"))
+        writeField(adapter, "methodCacheOwner", failing)
+        assertTrue(invokePrivate<Set<SootMethod>>(adapter, "resolveMethodsOrEmpty", arrayOf(SootClass::class.java), failing).isEmpty())
+        assertTrue(readField<Boolean>(adapter, "activeClassResolutionFailed"))
+        writeField(adapter, "methodCacheOwner", null)
     }
 
     @Test

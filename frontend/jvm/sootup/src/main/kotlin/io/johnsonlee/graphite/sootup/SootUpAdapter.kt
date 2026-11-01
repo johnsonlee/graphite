@@ -34,10 +34,17 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.TypeRelation
 import io.johnsonlee.graphite.core.ValueNode
+import io.johnsonlee.graphite.graph.AnalysisCompleteness
+import io.johnsonlee.graphite.graph.AnalysisStatus
+import io.johnsonlee.graphite.graph.ArtifactEvidence
+import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.ClassEvidence
 import io.johnsonlee.graphite.graph.DefaultGraph
+import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
+import io.johnsonlee.graphite.input.AnalysisIdentity
 import io.johnsonlee.graphite.input.CallGraphAlgorithm
 import io.johnsonlee.graphite.input.EmptyResourceAccessor
 import io.johnsonlee.graphite.input.LoaderConfig
@@ -146,6 +153,7 @@ private const val JAVA_LANG_OBJECT = "java.lang.Object"
 private const val CALLABLE_REFERENCE_RECEIVER_FIELD = "receiver"
 private const val VALUE_OF_METHOD = "valueOf"
 private const val CLASS_FILE_SUFFIX = ".class"
+private const val MULTI_RELEASE_PREFIX = "META-INF/versions/"
 private const val PROPERTIES_FILE_SUFFIX = ".properties"
 private const val CONST_NODE_PREFIX = "const"
 private const val RESOURCE_SOURCE = "resource"
@@ -265,6 +273,8 @@ class SootUpAdapter(
     private val resourceAccessor: ResourceAccessor = EmptyResourceAccessor,
     private val declarationWarning: (String) -> Unit = {},
     private val inputLocationSources: Map<AnalysisInputLocation, String>,
+    /** The role of each source of [inputLocationSources], by name; a source without one is the application's. */
+    private val artifactRoles: Map<String, ArtifactRole> = emptyMap(),
     private val singleArtifactSource: String? = null,
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
@@ -392,6 +402,20 @@ class SootUpAdapter(
     private val fieldGenericTypesByClass = mutableMapOf<String, Map<String, TypeDescriptor>>()
     private val classOriginsByName = mutableMapOf<String, String>()
     private val classOriginSourceCounts = mutableMapOf<String, Int>()
+
+    // The completeness evidence (Graph.analysisCompleteness): what the build did with every class
+    // of the view and with every method it did not analyse completely, the duplicate class
+    // definitions of a multi-artifact input, and the archives that carry versioned class copies.
+    private val classEvidence = HashMap<String, ClassEvidence>()
+    private val methodEvidence = HashMap<String, MethodEvidence>()
+    private val duplicateClasses = LinkedHashMap<String, MutableList<String>>()
+    private val multiReleaseArtifacts = HashSet<String>()
+    private var classEntrySources = HashMap<String, String>()
+    private var resolutionFailures = 0
+    /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
+    private var activeControlFlowTruncated = false
+    /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
+    private var activeClassResolutionFailed = false
     private val artifactDependenciesByArtifact = mutableMapOf<String, MutableMap<String, Int>>()
     private val resourceFilesByPath = mutableMapOf<String, MutableList<ResourceFileNode>>()
     private val configurationResourcePaths = linkedSetOf<String>()
@@ -506,15 +530,23 @@ class SootUpAdapter(
             logger = ::log,
             resources = resourceAccessor
         )
-        classes.asSequence()
-            .filter { shouldIncludeClass(it) }
-            .forEach { sootClass ->
-                pass2Count++
-                if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
-                    log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
-                }
-                processClassWithMethodCache(sootClass, extensionContext)
+        classes.forEach { sootClass ->
+            val className = sootClass.type.fullyQualifiedName
+            val origin = classOriginsByName[className] ?: singleArtifactSource
+            val application = shouldIncludeClass(sootClass)
+            if (!application && !config.dependencyBodies.covers(className, origin)) {
+                classEvidence[className] = ClassEvidence(origin, AnalysisStatus.EXCLUDED_BY_SCOPE)
+                return@forEach
             }
+            pass2Count++
+            if (pass2Count % PASS2_PROGRESS_INTERVAL == 0) {
+                log { "Pass 2 processed $pass2Count classes; current=${sootClass.type}" }
+            }
+            activeClassResolutionFailed = false
+            processClassWithMethodCache(sootClass, extensionContext, application)
+            val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
+            classEvidence[className] = ClassEvidence(origin, status)
+        }
 
         syntheticIdentities.resolve().forEach { (member, fingerprint) ->
             graphBuilder.addSyntheticIdentity(member, fingerprint)
@@ -551,12 +583,64 @@ class SootUpAdapter(
         log("Starting graphBuilder.build()")
         graphBuilder.setDeclaredTypes(buildDeclaredTypes(classes))
         graphBuilder.setResources(resourceAccessor)
+        graphBuilder.setAnalysisCompleteness(analysisCompleteness())
         return graphBuilder.build().also {
             log("Finished graphBuilder.build()")
         }
     }
 
-    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext) {
+    /**
+     * The evidence of this build: every source in its role, every class of the view with what
+     * the build did with it, the methods not analysed completely, and the duplicate definitions.
+     * The scope is the config's; the platform jar an APK build reads is named by its SDK root
+     * only, so its digest is not part of it (the CLI's fold provenance carries that).
+     */
+    private fun analysisCompleteness(): AnalysisCompleteness {
+        val names = LinkedHashSet(inputLocationSources.values)
+        singleArtifactSource?.let(names::add)
+        val artifacts = names.associateWith { name ->
+            val role = artifactRoles[name] ?: if (name == singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
+            ArtifactEvidence(role, name in multiReleaseArtifacts)
+        }
+        return AnalysisCompleteness(AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, duplicateClasses)
+    }
+
+    /**
+     * Record [status] for [method]: a method the build analysed completely has no record, so
+     * the evidence holds only the exceptions; a record an earlier resolution of the same method
+     * left (a `<clinit>` the enum pass could not read) is dropped when the method pass reads it.
+     */
+    private fun recordMethodEvidence(method: MethodDescriptor, status: AnalysisStatus, message: String? = null) {
+        when (status) {
+            // Only a resolution failure can precede a later, successful read of the same method,
+            // so only then is an identity spelled on the hot path.
+            AnalysisStatus.ANALYZED -> if (resolutionFailures > 0) methodEvidence.remove(method.identity)
+            AnalysisStatus.RESOLUTION_FAILED -> {
+                resolutionFailures++
+                methodEvidence[method.identity] = MethodEvidence(status, message)
+            }
+            else -> methodEvidence[method.identity] = MethodEvidence(status, message)
+        }
+    }
+
+    /** A method whose body the frontend could not resolve, named by its class, name and JVM descriptor. */
+    private fun recordResolutionFailure(declaringClass: ClassType, name: String, desc: String, message: String?) {
+        val factory = view.identifierFactory
+        val signature = factory.getMethodSignature(
+            declaringClass,
+            name,
+            factory.getType(AsmType.getReturnType(desc).className),
+            AsmType.getArgumentTypes(desc).map { factory.getType(it.className) }
+        )
+        recordMethodEvidence(toMethodDescriptor(signature), AnalysisStatus.RESOLUTION_FAILED, message)
+    }
+
+    /**
+     * Process a class of pass 2: its methods, their bodies and annotations, its fields, and, for
+     * an [application] class, the extensions (endpoints and the like). A library class the
+     * dependency body scope covers gets its bodies and nothing that would make it an entry point.
+     */
+    private fun processClassWithMethodCache(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
         methodCacheOwner = sootClass as? JavaSootClass
         try {
             if (extractAnnotationsEnabled && sootClass is JavaSootClass) {
@@ -579,7 +663,7 @@ class SootUpAdapter(
             }
 
             visitFieldsForClass(sootClass)
-            extensions.forEach { it.visit(sootClass, extensionContext) }
+            if (application) extensions.forEach { it.visit(sootClass, extensionContext) }
         } finally {
             bytecodeMethodsCache.clear()
             streamingSourcesCache.clear()
@@ -847,11 +931,21 @@ class SootUpAdapter(
         activeLocalKeysByName = mutableMapOf()
         activeMethodParameters = mutableListOf()
         activeParameterBindingsByIndex = mutableMapOf()
+        activeControlFlowTruncated = false
+        var status = AnalysisStatus.ANALYZED
+        var failure: String? = null
 
         try {
             // Process method body if available
             if (method.hasBody()) {
                 processMethodBody(method, methodDescriptor)
+                if (activeControlFlowTruncated) status = AnalysisStatus.ANALYZED_WITHOUT_CONTROL_FLOW
+            } else {
+                status = when {
+                    method.isAbstract -> AnalysisStatus.ABSTRACT
+                    method.isNative -> AnalysisStatus.NATIVE
+                    else -> AnalysisStatus.NO_BODY
+                }
             }
             // Rendered here, while the body is materialised, rather than in a pass of its own:
             // streamed methods are rebuilt on every enumeration.
@@ -862,10 +956,14 @@ class SootUpAdapter(
         } catch (oom: OutOfMemoryError) {
             // Android/large corpus can contain a few pathological methods whose CFG
             // materialization explodes heap. Skip the offending method so graph build
-            // can continue instead of failing the entire load.
+            // can continue instead of failing the entire load; the method's nodes exist, so
+            // the evidence says its body is incomplete.
             log { "Skipping method due to OOM while building ${methodDescriptor.signature}: ${oom.message}" }
+            status = AnalysisStatus.INCOMPLETE
+            failure = oom.message ?: oom.javaClass.name
             System.gc()
         } finally {
+            recordMethodEvidence(methodDescriptor, status, failure)
             clearMethodState(methodDescriptor)
             releaseConversionState(method)
         }
@@ -909,6 +1007,7 @@ class SootUpAdapter(
         if (stmtCount <= MAX_CONTROL_FLOW_STATEMENTS) {
             processControlFlow(branchStatements ?: emptyList(), stmtGraph, statements, methodDescriptor)
         } else {
+            activeControlFlowTruncated = true
             log {
                 "Skipping control-flow extraction for ${methodDescriptor.signature}: " +
                     "$stmtCount statements exceed $MAX_CONTROL_FLOW_STATEMENTS"
@@ -2658,10 +2757,12 @@ class SootUpAdapter(
                 }
             } catch (oom: OutOfMemoryError) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
                 System.gc()
                 null
             } catch (e: Exception) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, e.message ?: e.javaClass.name)
                 null
             } finally {
                 // Run even for non-matches, and before a caller can stop after its first match.
@@ -2680,9 +2781,11 @@ class SootUpAdapter(
                     yield(detached(method))
                 } catch (oom: OutOfMemoryError) {
                     log { "Skipping method ${method.signature}: OOM during streaming resolution" }
+                    recordMethodEvidence(toMethodDescriptor(method), AnalysisStatus.RESOLUTION_FAILED, oom.message ?: oom.javaClass.name)
                     System.gc()
                 } catch (e: Exception) {
                     log { "Skipping method ${method.signature}: ${e.message}" }
+                    recordMethodEvidence(toMethodDescriptor(method), AnalysisStatus.RESOLUTION_FAILED, e.message ?: e.javaClass.name)
                 } finally {
                     releaseConversionState(method.bodySource)
                 }
@@ -2709,9 +2812,11 @@ class SootUpAdapter(
                 yield(source.asStreamingMethod(sootClass.type))
             } catch (oom: OutOfMemoryError) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: OOM during streaming resolution" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, oom.message ?: oom.javaClass.name)
                 System.gc()
             } catch (e: Exception) {
                 log { "Skipping method ${sootClass.type}.${source.name}${source.desc}: ${e.message}" }
+                recordResolutionFailure(sootClass.type, source.name, source.desc, e.message ?: e.javaClass.name)
             } finally {
                 releaseConversionState(source)
             }
@@ -2829,6 +2934,7 @@ class SootUpAdapter(
     private fun resolveMethodsOrEmpty(sootClass: SootClass): Set<SootMethod> = try {
         sootClass.methods
     } catch (failure: Throwable) {
+        if (sootClass === methodCacheOwner) activeClassResolutionFailed = true
         when (failure) {
             is OutOfMemoryError -> {
                 log { "Skipping methods for ${sootClass.type}: OOM during method resolution" }
@@ -2988,8 +3094,10 @@ class SootUpAdapter(
 
     private fun indexResourceValues(loadedClassSources: Set<String>): List<ResourceEntry> {
         val classEntries = mutableListOf<ResourceEntry>()
+        classEntrySources = HashMap()
         resourceAccessor.list("**").forEach { entry ->
             if (entry.path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) {
+                noteClassEntry(entry)
                 if (entry.source in loadedClassSources) {
                     return@forEach
                 }
@@ -3015,6 +3123,7 @@ class SootUpAdapter(
                 configurationResourcePaths += entry.path
             }
         }
+        classEntrySources = HashMap()
         return classEntries
     }
 
@@ -3142,6 +3251,30 @@ class SootUpAdapter(
 
     private fun artifactKey(origin: String): String? =
         origin.trim().trimEnd('/').substringAfterLast('/').removeSuffix(".jar").takeIf { it.isNotBlank() }
+
+    /**
+     * What a class entry tells the evidence: a copy under `META-INF/versions/` marks its archive
+     * multi-release (this frontend reads the base version, as SootUp does); any other entry of a
+     * multi-artifact input is a definition of its class, duplicate or not.
+     */
+    private fun noteClassEntry(entry: ResourceEntry) {
+        if (entry.path.startsWith(MULTI_RELEASE_PREFIX)) {
+            multiReleaseArtifacts += entry.source
+        } else if (singleArtifactSource == null) {
+            classResourcePathToName(entry.path)?.let { recordClassEntry(it, entry.source) }
+        }
+    }
+
+    /**
+     * Note that [source] defines [className]; the second and later sources that do are the class's
+     * duplicate definitions, in the order the input lists them. The view holds the first one's.
+     */
+    private fun recordClassEntry(className: String, source: String) {
+        val first = classEntrySources.putIfAbsent(className, source) ?: return
+        if (first == source) return
+        val sources = duplicateClasses.getOrPut(className) { mutableListOf(first) }
+        if (source !in sources) sources += source
+    }
 
     private fun classResourcePathToName(path: String): String? {
         if (!path.endsWith(CLASS_FILE_SUFFIX, ignoreCase = true)) return null

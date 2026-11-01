@@ -1,5 +1,7 @@
 package sootup.java.bytecode.frontend.conversion
 
+import io.johnsonlee.graphite.graph.AnalysisStatus
+import io.johnsonlee.graphite.graph.MethodEvidence
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.sootup.ParsedClassLocation
 import io.johnsonlee.graphite.sootup.SootUpAdapter
@@ -55,6 +57,12 @@ class StreamingMethodSelectionTest {
                 }
                 assertEquals(0, unrelatedReads, "raw non-matches must not convert any annotation metadata")
                 assertTrue(logs.any { it.contains("Skipping method fixture.Streamed.main(I)V:") })
+                // The skipped method is in the completeness evidence, named as the graph names methods.
+                val evidence = SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }
+                    .get(adapter) as Map<*, *>
+                val skipped = assertIs<MethodEvidence>(evidence["fixture.Streamed.main(I)V"])
+                assertEquals(AnalysisStatus.RESOLUTION_FAILED, skipped.status)
+                assertTrue(skipped.message!!.isNotBlank())
                 assertScratchReleased(sources)
                 for (field in listOf("streamingSourcesCache", "bytecodeMethodsCache")) {
                     assertEquals(emptyMap<Any, Any>(), SootUpAdapter::class.java.getDeclaredField(field).apply {

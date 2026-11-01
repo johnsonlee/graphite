@@ -24,6 +24,7 @@ graph-dir/
 ├── graph.callsite-ordinals Optional call-site ordinals/origins, bound to graph.metadata
 ├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
 ├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
+├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound to the node layout
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
@@ -225,6 +226,16 @@ id capacity and the method count of the graph it is read beside, and a bound fil
 hashes or does not is a load error for the presence question, never a different answer. The
 ordinal index also contains hashes for its entry blocks; the diagram shows the file-level binding
 rather than those internal blocks.
+
+`graph.completeness` (JVM reader) is the build's completeness evidence, see
+[Dependency Bodies and Completeness Evidence](analysis-completeness.md): the analysis scope,
+every artifact with its role, every class of the view with its status, every method not analysed
+completely, and the duplicate class definitions. It names classes and methods, never node ids,
+so it carries only the node-layout binding, which ties it to the save that wrote it, and its own
+SHA-256 trailer. A file bound to another save reads as absent; a bound file that does not hash or
+parse is a load error for the evidence, never an answer. Status and role codes index a name table
+in the file, so a value added by a later writer still reads as itself. It is read on the first
+`Graph.analysisCompleteness()` call and never before; the Rust reader ignores it.
 
 ## Binary Format
 

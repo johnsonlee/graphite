@@ -4,8 +4,10 @@ import io.johnsonlee.graphite.graph.DefaultGraph
 import io.johnsonlee.graphite.graph.FullGraphBuilder
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.MmapGraphBuilder
-import io.johnsonlee.graphite.input.LoaderConfig
+import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.input.GlobPatterns
 import io.johnsonlee.graphite.input.JavaArchiveLayout
+import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ProjectLoader
 import sootup.apk.frontend.ApkAnalysisInputLocation
 import sootup.apk.frontend.DexBodyInterceptors
@@ -44,8 +46,20 @@ private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
 private data class InputLocations(
     val locations: List<AnalysisInputLocation>,
     val sources: Map<AnalysisInputLocation, String>,
-    val dexApi: Int? = null
-)
+    val dexApi: Int? = null,
+    /** The source name of the Android platform jar, whose role is [ArtifactRole.PLATFORM]. */
+    val platformSource: String? = null
+) {
+    /** The role of every source, by its location's source type, see [ArtifactRole]. */
+    val roles: Map<String, ArtifactRole>
+        get() = sources.entries.associate { (location, name) ->
+            name to when {
+                name == platformSource -> ArtifactRole.PLATFORM
+                location.sourceType == SourceType.Library -> ArtifactRole.LIBRARY
+                else -> ArtifactRole.APPLICATION
+            }
+        }
+}
 
 /**
  * The Android platform jar a build of [input] with [config] reads as a library (`includeLibraries`),
@@ -89,6 +103,7 @@ private fun createApkInputLocations(
     )
     val locations = mutableListOf<AnalysisInputLocation>(apkLocation)
     val sources = mutableMapOf<AnalysisInputLocation, String>(apkLocation to path.fileName.toString())
+    var platformSource: String? = null
 
     if (config.includeLibraries) {
         val androidJar = resolveAndroidJar(androidVersion.api_version, platforms)
@@ -98,10 +113,11 @@ private fun createApkInputLocations(
         } ?: JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
         locations.add(androidJarLocation)
         sources[androidJarLocation] = sourceName
+        platformSource = sourceName
         log("  + Loading Android platform: $sourceName")
     }
 
-    return InputLocations(locations, sources, androidVersion.api_version)
+    return InputLocations(locations, sources, androidVersion.api_version, platformSource)
 }
 
 /**
@@ -316,6 +332,7 @@ class JavaProjectLoader(
             resourceAccessor = resourceAccessor,
             declarationWarning = ::warn,
             inputLocationSources = inputLocations.sources,
+            artifactRoles = inputLocations.roles,
             singleArtifactSource = singleArtifactSource(path),
             graphBuilder = graphBuilderFactory(),
             preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
@@ -484,8 +501,8 @@ class JavaProjectLoader(
                             zip.getInputStream(entry).use { input ->
                                 Files.copy(input, targetFile)
                             }
-                            // Only add JAR if it contains classes from included packages
-                            if (jarContainsIncludedPackages(targetFile)) {
+                            // Only add JAR if it holds classes the build analyses.
+                            if (jarInScope(targetFile, jarName)) {
                                 locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                             }
                         }
@@ -562,8 +579,8 @@ class JavaProjectLoader(
                             Files.copy(input, targetFile)
                         }
 
-                        // Only add JAR if it contains classes from included packages
-                        if (jarContainsIncludedPackages(targetFile)) {
+                        // Only add JAR if it holds classes the build analyses.
+                        if (jarInScope(targetFile, jarName)) {
                             locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
                             loadedJarCount++
                             log("  + Loading JAR: $jarName")
@@ -632,31 +649,36 @@ class JavaProjectLoader(
         if (config.includePackages.isEmpty()) {
             return true // No filter, include all
         }
+        return jarContainsPackages(jarPath, config.includePackages)
+    }
 
-        return try {
-            ZipFile(jarPath.toFile()).use { jar ->
-                jar.entries().asSequence()
-                    .filter { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
-                    .any { entry ->
-                        val className = entry.name
-                            .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
-                            .replace('/', '.')
-                        config.includePackages.any { pkg ->
-                            className.startsWith(pkg)
-                        }
+    /**
+     * Whether a library jar named [jarName] holds something the build analyses: a class of the
+     * included packages, or what the dependency body scope names (the jar by its name, or a class
+     * of one of its packages). A jar that holds neither is not loaded.
+     */
+    private fun jarInScope(jarPath: Path, jarName: String): Boolean {
+        if (jarContainsIncludedPackages(jarPath)) return true
+        val scope = config.dependencyBodies
+        return scope.coversArtifact(jarName) || (scope.packages.isNotEmpty() && jarContainsPackages(jarPath, scope.packages))
+    }
+
+    private fun jarContainsPackages(jarPath: Path, packages: List<String>): Boolean = try {
+        ZipFile(jarPath.toFile()).use { jar ->
+            jar.entries().asSequence()
+                .filter { it.name.endsWith(JavaArchiveLayout.CLASS_EXTENSION) }
+                .any { entry ->
+                    val className = entry.name
+                        .removeSuffix(JavaArchiveLayout.CLASS_EXTENSION)
+                        .replace('/', '.')
+                    packages.any { pkg ->
+                        className.startsWith(pkg)
                     }
-            }
-        } catch (e: Exception) {
-            true // On error, include to be safe
+                }
         }
+    } catch (e: Exception) {
+        true // On error, include to be safe
     }
 
-    private fun matchesGlobPattern(name: String, pattern: String): Boolean {
-        val regex = pattern
-            .replace(".", "\\.")
-            .replace("*", ".*")
-            .let { "^$it$" }
-            .toRegex()
-        return regex.matches(name)
-    }
+    private fun matchesGlobPattern(name: String, pattern: String): Boolean = GlobPatterns.matches(name, pattern)
 }

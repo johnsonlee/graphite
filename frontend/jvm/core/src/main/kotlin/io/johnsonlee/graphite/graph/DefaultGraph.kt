@@ -47,9 +47,14 @@ class DefaultGraph private constructor(
     /** Pre-computed index: concrete node class -> list of nodes of that class. */
     private val nodesByType: Map<Class<out Node>, List<Node>>,
     private val edgeCount: Long,
-    private val declaredTypeTable: DeclaredTypeTable
+    private val declaredTypeTable: DeclaredTypeTable,
+    private val analysisCompleteness: AnalysisCompleteness? = null
 ) : Graph, PackedBranchMetadataSource {
     override fun declaredTypes(): DeclaredTypeTable = declaredTypeTable
+
+    override fun analysisCompleteness(): AnalysisCompleteness? = analysisCompleteness
+
+    override fun hasMethod(method: MethodDescriptor): Boolean = methodIndex.containsKey(method.identity)
 
 
     /**
@@ -209,9 +214,15 @@ class DefaultGraph private constructor(
         private val localDefinitions = Int2ObjectOpenHashMap<IntArray>()
         private var resourceAccessor: ResourceAccessor = EmptyResourceAccessor
         private var declaredTypeTable: DeclaredTypeTable = DeclaredTypeTable.EMPTY
+        private var analysisCompleteness: AnalysisCompleteness? = null
 
         override fun setDeclaredTypes(table: DeclaredTypeTable): FullGraphBuilder {
             declaredTypeTable = table
+            return this
+        }
+
+        override fun setAnalysisCompleteness(completeness: AnalysisCompleteness): FullGraphBuilder {
+            analysisCompleteness = completeness
             return this
         }
 
@@ -332,7 +343,8 @@ class DefaultGraph private constructor(
                 resources = resourceAccessor,
                 declaredTypeTable = declaredTypeTable,
                 nodesByType = nodesByType,
-                edgeCount = edgeCount
+                edgeCount = edgeCount,
+                analysisCompleteness = analysisCompleteness
             )
         }
     }

@@ -569,6 +569,25 @@ interface Graph {
      */
     fun classOverview(limit: Int): ClassOverview? = null
 
+    /**
+     * Whether this graph holds [method] (by [MethodDescriptor.identity]: class, name, parameter
+     * and return types). Implementations answer from their method index; the default scans.
+     */
+    fun hasMethod(method: MethodDescriptor): Boolean = methods(
+        MethodPattern(
+            declaringClass = method.declaringClass.className,
+            name = method.name,
+            parameterTypes = method.parameterTypes.map { it.className },
+            returnType = method.returnType.className
+        )
+    ).any()
+
+    /**
+     * The completeness evidence of the build that produced this graph, see
+     * [AnalysisCompleteness], or `null` when the graph carries none.
+     */
+    fun analysisCompleteness(): AnalysisCompleteness? = null
+
 }
 
 /**

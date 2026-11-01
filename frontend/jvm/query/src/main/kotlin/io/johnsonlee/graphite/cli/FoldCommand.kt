@@ -51,13 +51,28 @@ class FoldPlanCommand : Callable<Int> {
     @Option(names = ["--lib-filter"], description = ["The build's library JAR patterns (comma-separated)"], split = ",")
     var libFilters: List<String> = emptyList()
 
+    @Option(
+        names = ["--dependency-artifacts"],
+        description = ["The build's library JARs whose bodies are analysed (comma-separated)"],
+        split = ","
+    )
+    var dependencyArtifacts: List<String> = emptyList()
+
+    @Option(
+        names = ["--dependency-packages"],
+        description = ["The build's library packages whose bodies are analysed (comma-separated)"],
+        split = ","
+    )
+    var dependencyPackages: List<String> = emptyList()
+
     override fun call(): Int = try {
         val config = LoaderConfig(
             includePackages = includePackages,
             excludePackages = excludePackages,
             includeLibraries = includeLibs,
             libraryFilters = libFilters,
-            androidSdk = androidSdk
+            androidSdk = androidSdk,
+            dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages)
         )
         println(FoldConfig.plan(file, input, config))
         0

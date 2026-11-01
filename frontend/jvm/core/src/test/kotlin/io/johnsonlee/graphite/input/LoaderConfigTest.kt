@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.input
 import java.nio.file.Path
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -22,7 +23,18 @@ class LoaderConfigTest {
         assertEquals(CallGraphAlgorithm.CHA, config.callGraphAlgorithm)
         assertNull(config.androidSdk)
         assertFalse(config.interproceduralDataflow)
+        assertEquals(DependencyBodyScope.None, config.dependencyBodies)
         assertNull(config.verbose)
+    }
+
+    @Test
+    fun `a dependency body scope needs the libraries loaded`() {
+        val scope = DependencyBodyScope.Declared(packages = listOf("kotlin."))
+        assertEquals(scope, LoaderConfig(includeLibraries = true, dependencyBodies = scope).dependencyBodies)
+        assertEquals(
+            "dependencyBodies needs includeLibraries: a library's bodies are analysed only once its classes are loaded",
+            assertFailsWith<IllegalArgumentException> { LoaderConfig(dependencyBodies = scope) }.message
+        )
     }
 
     @Test

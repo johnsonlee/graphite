@@ -6,6 +6,7 @@ import io.johnsonlee.graphite.cypher.CypherExecutor
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.LoaderConfig
 import io.johnsonlee.graphite.input.ConstantFold
+import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.webgraph.GraphStore
 import java.io.ByteArrayOutputStream
 import java.io.PrintStream
@@ -348,7 +349,8 @@ class BuildFoldCommandTest {
         val command = FoldPlanCommand()
         CommandLine(command).parseArgs(
             "folds.yml", "--input", "app.jar", "--include", "a,b", "--exclude", "a.x", "--include-libs",
-            "--lib-filter", "*.jar", "--android-sdk", "/sdk"
+            "--lib-filter", "*.jar", "--android-sdk", "/sdk", "--dependency-artifacts", "dep-*.jar,util-*.jar",
+            "--dependency-packages", "kotlin.text."
         )
         assertEquals(Path.of("folds.yml"), command.file)
         assertEquals(Path.of("app.jar"), command.input)
@@ -357,6 +359,27 @@ class BuildFoldCommandTest {
         assertTrue(command.includeLibs)
         assertEquals(listOf("*.jar"), command.libFilters)
         assertEquals(Path.of("/sdk"), command.androidSdk)
+        assertEquals(listOf("dep-*.jar", "util-*.jar"), command.dependencyArtifacts)
+        assertEquals(listOf("kotlin.text."), command.dependencyPackages)
+    }
+
+    @Test
+    fun `the dependency body scope is part of a plan's provenance`() {
+        compileFixture()
+        val scoped = LoaderConfig(
+            includePackages = listOf("sample.gate"), includeLibraries = true,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar"), packages = listOf("kotlin.text."))
+        )
+        val provenance = FoldConfig.provenance(classes, scoped)
+        assertEquals(listOf("dep-*.jar"), provenance.analysis.dependencyArtifacts)
+        assertEquals(listOf("kotlin.text."), provenance.analysis.dependencyPackages)
+        assertEquals(
+            listOf("include_libs false vs true", "dependency_artifacts [] vs [dep-*.jar]", "dependency_packages [] vs [kotlin.text.]"),
+            FoldConfig.provenance(classes, LoaderConfig(includePackages = listOf("sample.gate"))).differences(provenance),
+            "a key selected with other bodies in the graph names, perhaps, another call"
+        )
+        assertEquals(DependencyBodyScope.None, dependencyBodyScope(emptyList(), emptyList()))
+        assertEquals(DependencyBodyScope.Declared(packages = listOf("a")), dependencyBodyScope(emptyList(), listOf("a")))
     }
 
     @Test

@@ -67,13 +67,15 @@ impl Selected {
 }
 
 /// Options of `graphite.jar build` that take a value, to tell the input apart from them.
-const VALUE_OPTIONS: [&str; 7] = [
+const VALUE_OPTIONS: [&str; 9] = [
     "-o",
     "--output",
     "--include",
     "--exclude",
     "--android-sdk",
     "--lib-filter",
+    "--dependency-artifacts",
+    "--dependency-packages",
     "--fold",
 ];
 
@@ -82,8 +84,14 @@ pub const INTERPROCEDURAL: &str = "--interprocedural";
 
 /// The options that decide which classes a build reads, and so which calls its graph has:
 /// `fold plan` takes the same ones, so the plan's provenance names the build the keys are for.
-const ANALYSIS_VALUE_OPTIONS: [&str; 4] =
-    ["--include", "--exclude", "--lib-filter", "--android-sdk"];
+const ANALYSIS_VALUE_OPTIONS: [&str; 6] = [
+    "--include",
+    "--exclude",
+    "--lib-filter",
+    "--android-sdk",
+    "--dependency-artifacts",
+    "--dependency-packages",
+];
 const ANALYSIS_FLAGS: [&str; 1] = ["--include-libs"];
 
 /// The analysis options of a build command line, as given (`--include a,b`, `--include=a,b`
@@ -734,6 +742,11 @@ mod tests {
             input_of(&os(&["--output=/g", "-v", "--include-libs", "classes"])),
             Some(PathBuf::from("classes"))
         );
+        assert_eq!(
+            input_of(&os(&["--dependency-artifacts", "dep-*.jar", "app.jar"])),
+            Some(PathBuf::from("app.jar")),
+            "a scope option takes a value"
+        );
         assert_eq!(input_of(&os(&["-o", "/g"])), None);
         let staged = staging_args(
             &os(&["a.jar", "-o", "/g", "--fold", "f.yml", "--fold-strict"]),
@@ -847,6 +860,9 @@ mod tests {
             "*.jar",
             "--android-sdk",
             "/sdk",
+            "--dependency-artifacts",
+            "dep-*.jar",
+            "--dependency-packages=kotlin.text.",
             "--interprocedural",
         ]
         .iter()
@@ -881,7 +897,10 @@ mod tests {
                 "--lib-filter",
                 "*.jar",
                 "--android-sdk",
-                "/sdk"
+                "/sdk",
+                "--dependency-artifacts",
+                "dep-*.jar",
+                "--dependency-packages=kotlin.text."
             ]
         );
         // Without an input there is no build to describe.

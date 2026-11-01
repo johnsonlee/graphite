@@ -759,6 +759,51 @@ one of those assumptions failed in turn, one CI hour apart. Lessons:
   and record the host's memory counters and the anon/file split of each sample beside the
   verdict, so a pressure one cell saw is visible in its record rather than inferred.
 
+### Application Identity and Body Scope Are Two Settings, and a Node Is Not a Status
+
+`includePackages` said two things at once: what the application is, and which bodies are built.
+A build that named its application packages therefore built no body of any library, and a Spring
+Boot or WAR build did not even load a nested jar that held no application package (issue #192:
+`kotlin-stdlib` beside the application turned a valid resource proof into a failure, because the
+graph stopped at the stdlib call). `LoaderConfig.dependencyBodies` (`DependencyBodyScope`) is the
+second setting: a library class it covers is processed as an application class is, its bodies and
+fields, but registers no endpoint and runs no extension, and its artifact keeps the `LIBRARY`
+role. The loader keeps a nested jar the scope names, or one that holds a class of a scope
+package, whatever `includePackages` says (`jarInScope`). Lessons:
+
+- A proof cannot read completeness off the graph: `processMethod` creates the method and its
+  `ReturnNode` before the body is read, an out-of-memory body is skipped and the build goes on,
+  a streaming resolution failure is a log line, and a method with no outgoing call looks exactly
+  like one whose calls were never read. `Graph.analysisCompleteness()` records, per class, whether
+  it was analysed, excluded by scope or failed to resolve, and per method every status other than
+  `ANALYZED` (`ABSTRACT`, `NATIVE`, `NO_BODY`, `INCOMPLETE`, `RESOLUTION_FAILED`,
+  `ANALYZED_WITHOUT_CONTROL_FLOW`), keyed by the full identity; `Graph.analysisStatus(callee)`
+  adds `EXTERNAL` (never loaded) and `UNKNOWN_MEMBER` (analysed class, no such method), and
+  answers `null` on a graph built before the evidence existed. Record the exceptions, not the
+  corpus: a map of every analysed method would have cost a string per method on every build.
+- A call site's `callee` is the declaring method as the adapter resolves it, not the class the
+  bytecode spells: `kotlin.text.StringsKt.trim` is `StringsKt__StringsKt.trim` in the graph, and
+  asking about the facade answers `UNKNOWN_MEMBER`. Ask about what the `CallSite` holds.
+- `Graph.hasMethod` is an index lookup on every implementation; the mapped graph answers through
+  the method index's class range, never a scan per callee, because a proof asks it once per call.
+- The evidence is a sidecar (`graph.completeness`) bound to the node layout digest and its own
+  trailer, read on first use, like the other sidecars and for the same reasons: a record-format
+  bump fails the base revision's reader across every gate, a file the base never opens costs
+  nothing, and a file left beside a rewritten graph must read as absent. It names classes and
+  methods, not node ids, so it needs no layout to read, only a binding to the save that wrote it.
+- The scope is part of the fold provenance (`dependency_artifacts`, `dependency_packages`): a
+  build with more bodies holds more calls, and a key selected on one scope may name another call
+  on another. New identity keys are written only when set, so earlier plans read unchanged.
+- Duplicate class definitions are detected from the archive listing, not the view (the view holds
+  one class per name), across every nested jar whether loaded or not; a `META-INF/versions/`
+  entry marks its archive multi-release rather than defining a class, since this frontend reads
+  the base version as SootUp does. The existing bogus `META-INF.versions.9.x.Y` origins the
+  listing produces for unloaded jars were left as they were: changing `classOrigins()` of
+  multi-artifact graphs is a separate change.
+- What is not done, and should be done next in this order: selective expansion from roots over
+  the folded call sites (the frontier the evidence marks `EXCLUDED_BY_SCOPE`), per-call-site gap
+  records (saturated dispatch, unresolved `invokedynamic`), and a Rust reader of the sidecar.
+
 ### Why `buildGraph()` Is Not Parallelized
 
 After reducing `SootUpAdapter.buildGraph()` from 6 passes to 2, parallel processing of classes within each pass was evaluated and rejected.

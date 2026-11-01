@@ -322,7 +322,11 @@ data class AnalysisIdentity(
     val excludePackages: List<String> = emptyList(),
     val includeLibraries: Boolean = false,
     val libraryFilters: List<String> = emptyList(),
-    val androidPlatformSha256: String? = null
+    val androidPlatformSha256: String? = null,
+    /** The artifact patterns of [LoaderConfig.dependencyBodies]: a scope that builds more bodies holds more calls. */
+    val dependencyArtifacts: List<String> = emptyList(),
+    /** The package prefixes of [LoaderConfig.dependencyBodies]. */
+    val dependencyPackages: List<String> = emptyList()
 ) {
     init {
         require(androidPlatformSha256 == null || FoldProvenance.isSha256(androidPlatformSha256)) {
@@ -330,12 +334,17 @@ data class AnalysisIdentity(
         }
     }
 
+    /** The document form; the keys of options at their default are left out, so a plan written before they existed reads the same. */
     fun toDocument(): Map<String, Any> = linkedMapOf<String, Any>(
         INCLUDE to includePackages.sorted(),
         EXCLUDE to excludePackages.sorted(),
         INCLUDE_LIBS to includeLibraries,
         LIB_FILTER to libraryFilters.sorted()
-    ).also { document -> androidPlatformSha256?.let { document[ANDROID_PLATFORM_SHA256] = it } }
+    ).also { document ->
+        androidPlatformSha256?.let { document[ANDROID_PLATFORM_SHA256] = it }
+        if (dependencyArtifacts.isNotEmpty()) document[DEPENDENCY_ARTIFACTS] = dependencyArtifacts.sorted()
+        if (dependencyPackages.isNotEmpty()) document[DEPENDENCY_PACKAGES] = dependencyPackages.sorted()
+    }
 
     /** The names of the options on which this identity and [other] differ, with both values. */
     fun differences(other: AnalysisIdentity): List<String> = buildList {
@@ -349,6 +358,8 @@ data class AnalysisIdentity(
         if (androidPlatformSha256 != other.androidPlatformSha256) {
             add("$ANDROID_PLATFORM_SHA256 ${androidPlatformSha256 ?: "none"} vs ${other.androidPlatformSha256 ?: "none"}")
         }
+        lists(DEPENDENCY_ARTIFACTS, dependencyArtifacts, other.dependencyArtifacts)
+        lists(DEPENDENCY_PACKAGES, dependencyPackages, other.dependencyPackages)
     }
 
     override fun equals(other: Any?): Boolean = other is AnalysisIdentity && differences(other).isEmpty()
@@ -361,7 +372,25 @@ data class AnalysisIdentity(
         const val INCLUDE_LIBS = "include_libs"
         const val LIB_FILTER = "lib_filter"
         const val ANDROID_PLATFORM_SHA256 = "android_platform_sha256"
-        private val KEYS = listOf(INCLUDE, EXCLUDE, INCLUDE_LIBS, LIB_FILTER, ANDROID_PLATFORM_SHA256)
+        const val DEPENDENCY_ARTIFACTS = "dependency_artifacts"
+        const val DEPENDENCY_PACKAGES = "dependency_packages"
+        private val KEYS = listOf(
+            INCLUDE, EXCLUDE, INCLUDE_LIBS, LIB_FILTER, ANDROID_PLATFORM_SHA256, DEPENDENCY_ARTIFACTS, DEPENDENCY_PACKAGES
+        )
+
+        /**
+         * The identity of a build of [config]; [androidPlatformSha256] is the content of the
+         * platform jar an APK build reads, which the config names only by its SDK root.
+         */
+        fun of(config: LoaderConfig, androidPlatformSha256: String? = null): AnalysisIdentity = AnalysisIdentity(
+            includePackages = config.includePackages.sorted(),
+            excludePackages = config.excludePackages.sorted(),
+            includeLibraries = config.includeLibraries,
+            libraryFilters = config.libraryFilters.sorted(),
+            androidPlatformSha256 = androidPlatformSha256,
+            dependencyArtifacts = config.dependencyBodies.artifacts.sorted(),
+            dependencyPackages = config.dependencyBodies.packages.sorted()
+        )
 
         fun parse(document: Any?, at: String): AnalysisIdentity {
             val map = document as? Map<*, *>
@@ -375,8 +404,10 @@ data class AnalysisIdentity(
             val include = strings(map[INCLUDE], "$at.$INCLUDE")
             val exclude = strings(map[EXCLUDE], "$at.$EXCLUDE")
             val filters = strings(map[LIB_FILTER], "$at.$LIB_FILTER")
+            val dependencyArtifacts = strings(map[DEPENDENCY_ARTIFACTS], "$at.$DEPENDENCY_ARTIFACTS")
+            val dependencyPackages = strings(map[DEPENDENCY_PACKAGES], "$at.$DEPENDENCY_PACKAGES")
             return try {
-                AnalysisIdentity(include, exclude, libs, filters, sha as String?)
+                AnalysisIdentity(include, exclude, libs, filters, sha as String?, dependencyArtifacts, dependencyPackages)
             } catch (e: IllegalArgumentException) {
                 throw IllegalArgumentException("$at.${e.message}", e)
             }

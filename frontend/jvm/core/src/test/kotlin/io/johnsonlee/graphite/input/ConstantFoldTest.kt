@@ -345,8 +345,44 @@ class ConstantFoldTest {
         )
         assertEquals(listOf("frontend 1.2.3 vs 2.0.0"), plain.differences(FoldProvenance(sha, "2.0.0")))
         assertEquals(emptyList(), filtered.differences(filtered))
+
+        // The dependency body scope decides which bodies, and so which calls, a build holds.
+        val scoped = AnalysisIdentity(
+            dependencyArtifacts = listOf("kotlin-stdlib-*.jar", "acme-*.jar"), dependencyPackages = listOf("kotlin.")
+        )
+        assertEquals(
+            mapOf(
+                "include" to emptyList<String>(), "exclude" to emptyList<String>(), "include_libs" to false,
+                "lib_filter" to emptyList<String>(), "dependency_artifacts" to listOf("acme-*.jar", "kotlin-stdlib-*.jar"),
+                "dependency_packages" to listOf("kotlin.")
+            ),
+            scoped.toDocument(),
+            "the scope keys appear only when given, so a plan written before they existed reads the same"
+        )
+        assertEquals(scoped, AnalysisIdentity.parse(scoped.toDocument(), "p"), "round trip")
+        assertEquals(
+            listOf("dependency_artifacts [] vs [acme-*.jar, kotlin-stdlib-*.jar]", "dependency_packages [] vs [kotlin.]"),
+            AnalysisIdentity().differences(scoped)
+        )
+        assertEquals(
+            "p.dependency_artifacts must be a list of strings, got integer 1",
+            assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_artifacts" to 1), "p") }.message
+        )
+        val config = LoaderConfig(
+            includePackages = listOf("b", "a"), excludePackages = listOf("a.x"), includeLibraries = true, libraryFilters = listOf("*.jar"),
+            dependencyBodies = DependencyBodyScope.Declared(listOf("kotlin-stdlib-*.jar"), listOf("kotlin."))
+        )
+        assertEquals(
+            AnalysisIdentity(
+                listOf("a", "b"), listOf("a.x"), true, listOf("*.jar"), "ab".repeat(32), listOf("kotlin-stdlib-*.jar"), listOf("kotlin.")
+            ),
+            AnalysisIdentity.of(config, "ab".repeat(32))
+        )
+        assertEquals(AnalysisIdentity(), AnalysisIdentity.of(LoaderConfig()))
         fun malformed(document: Any?) = assertFailsWith<IllegalArgumentException> { FoldProvenance.parse(document, "p") }.message
-        assertEquals("p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256}",
+        assertEquals(
+            "p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256, " +
+                "dependency_artifacts, dependency_packages}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("inclde" to listOf("a")))))
         assertEquals("p.analysis.include must be a list of strings, got string 'a'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include" to "a"))))
@@ -354,7 +390,9 @@ class ConstantFoldTest {
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include_libs" to "yes"))))
         assertEquals("p.analysis.android_platform_sha256 must be 64 lowercase hexadecimal digits, got 'x'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("android_platform_sha256" to "x"))))
-        assertEquals("p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256}, got integer 1",
+        assertEquals(
+            "p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256, dependency_artifacts, " +
+                "dependency_packages}, got integer 1",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to 1)))
         assertEquals("p has no key 'x'; it is {input_sha256, frontend_version, analysis}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "x" to 1)))

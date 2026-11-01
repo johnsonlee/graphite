@@ -632,6 +632,7 @@ object GraphStore {
         Files.deleteIfExists(dir.resolve(CALL_SITE_ORDINALS_FILE))
         Files.deleteIfExists(dir.resolve(DeclaredKeySummaryBuilder.FILE_NAME))
         Files.deleteIfExists(dir.resolve(DeclaredPresence.FILE_NAME))
+        Files.deleteIfExists(dir.resolve(AnalysisCompletenessStore.FILE_NAME))
 
         // 1. Stream nodes: find maxNodeId, count nodes, collect strings
         var maxNodeId = 0
@@ -723,6 +724,7 @@ object GraphStore {
         )
         // The node layout identity: which node sits at which id. Sidecars indexed by node id carry it.
         ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to HexFormat.of().formatHex(layoutDigest)))
+        writeAnalysisCompleteness(graph, dir, layoutDigest)
 
         // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
         //    the binding of the call-site ordinal sidecar, then the two sidecars.
@@ -761,6 +763,11 @@ object GraphStore {
         if (prepareCallSiteIndex) {
             persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
         }
+    }
+
+    /** The build's completeness evidence, when the graph carries one, bound to this save of the graph. */
+    private fun writeAnalysisCompleteness(graph: Graph, dir: Path, layoutDigest: ByteArray) {
+        graph.analysisCompleteness()?.let { AnalysisCompletenessStore.save(dir, it, layoutDigest) }
     }
 
     /**
@@ -984,7 +991,8 @@ object GraphStore {
             classOverview,
             PersistedResourceStore.load(dir),
             lazy { loadBranchDefinitions(dir, metadata, nodeCount, eagerNodeTagLookup(nodesById)) },
-            lazy { DeclaredTypeStore.load(dir, stringTable) }
+            lazy { DeclaredTypeStore.load(dir, stringTable) },
+            lazy { AnalysisCompletenessStore.load(dir) }
         )
     }
 
@@ -1070,7 +1078,8 @@ object GraphStore {
             // The table is query-only state. Reading, binding and validating it before readiness
             // charged every graph's load for declarations no request had asked for yet.
             declaredTypeTable = lazy { DeclaredTypeStore.load(dir, stringTable) },
-            declaredPresence = lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) }
+            declaredPresence = lazy { DeclaredPresence.load(dir, nodeIndex.nodeOffsets.size, methodCount.toInt()) },
+            analysisCompleteness = lazy { AnalysisCompletenessStore.load(dir) }
         )
         if (prepareCallSiteStringIndex) {
             try {
