@@ -74,6 +74,32 @@ class StreamingMethodSelectionTest {
     }
 
     @Test
+    fun `an out of memory during streaming resolution is a resolution failure of that method alone`() {
+        withClasses(selectionClassBytes()) { optimized, _ ->
+            val sources = assertNotNull(optimized.classSource.streamingMethodSources())
+            val broken = sources.single { it.name == "main" && it.desc == "(I)V" }
+            broken.visibleAnnotations = object : java.util.AbstractList<AnnotationNode>() {
+                override val size: Int get() = 1
+                override fun get(index: Int): AnnotationNode = throw OutOfMemoryError("boom")
+            }
+            val logs = mutableListOf<String>()
+            val adapter = selectionAdapter(optimized, logs)
+            val find = SootUpAdapter::class.java.getDeclaredMethod("findEntryPoints").apply { isAccessible = true }
+            val entries = assertIs<List<*>>(find.invoke(adapter)).map { assertIs<MethodSignature>(it).toString() }
+            assertEquals(listOf("<fixture.Streamed: void main()>", "<fixture.Streamed: void main(java.lang.String[])>"), entries)
+            val stream = SootUpAdapter::class.java.getDeclaredMethod("streamMethodsOrNull", SootClass::class.java)
+                .apply { isAccessible = true }
+            val streamed = assertIs<Sequence<*>>(stream.invoke(adapter, optimized)).map { assertIs<JavaSootMethod>(it).name }.toList()
+            assertEquals(sources.size - 1, streamed.size, "every other method streams")
+            assertEquals(2, logs.count { it.contains("Skipping method fixture.Streamed.main(I)V: OOM during streaming resolution") })
+            val evidence = SootUpAdapter::class.java.getDeclaredField("methodEvidence").apply { isAccessible = true }
+                .get(adapter) as Map<*, *>
+            assertEquals(MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, "boom"), evidence["fixture.Streamed.main(I)V"])
+            assertEquals(1, evidence.size)
+        }
+    }
+
+    @Test
     fun `static initializer selection keeps full metadata and independent bodies with immediate cleanup`() {
         withClasses(selectionClassBytes()) { optimized, stock ->
             val sources = assertNotNull(optimized.classSource.streamingMethodSources())

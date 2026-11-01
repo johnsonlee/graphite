@@ -610,7 +610,7 @@ class SootUpAdapter(
      * the evidence holds only the exceptions; a record an earlier resolution of the same method
      * left (a `<clinit>` the enum pass could not read) is dropped when the method pass reads it.
      */
-    private fun recordMethodEvidence(method: MethodDescriptor, status: AnalysisStatus, message: String? = null) {
+    private fun recordMethodEvidence(method: MethodDescriptor, status: AnalysisStatus, message: String?) {
         when (status) {
             // Only a resolution failure can precede a later, successful read of the same method,
             // so only then is an identity spelled on the hot path.
