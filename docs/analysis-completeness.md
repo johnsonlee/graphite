@@ -121,7 +121,8 @@ this evidence existed has none, and every answer is `null`: unknown, not analyse
 file an earlier save left when the graph carries none. The file names classes and methods, not
 node ids, so it needs no node layout to read; it is bound to the save all the same, by the
 SHA-256 of `graph.nodedata` that `forward.properties` records (`graphite.nodeLayout.sha256`),
-and ends with the SHA-256 of its own bytes. A file bound to another save reads as absent. A
+and ends with the SHA-256 of its own bytes; the payload between is gzip-compressed, since it is
+mostly class names (uncompressed it added 2.5% to a persisted Tika graph). A file bound to another save reads as absent. A
 bound file that no longer hashes, is cut short, has bytes after its last entry, or names a
 status this reader does not know is corruption after binding and throws rather than answers.
 Both JVM loads read it on the first call for it and never before; the Rust reader does not read

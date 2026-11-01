@@ -232,7 +232,8 @@ rather than those internal blocks.
 every artifact with its role, every class of the view with its status, every method not analysed
 completely, and the duplicate class definitions. It names classes and methods, never node ids,
 so it carries only the node-layout binding, which ties it to the save that wrote it, and its own
-SHA-256 trailer. A file bound to another save reads as absent; a bound file that does not hash or
+SHA-256 trailer; the payload between them is gzip-compressed, since it is mostly class names.
+A file bound to another save reads as absent; a bound file that does not hash, inflate or
 parse is a load error for the evidence, never an answer. Status and role codes index a name table
 in the file, so a value added by a later writer still reads as itself. It is read on the first
 `Graph.analysisCompleteness()` call and never before; the Rust reader ignores it.

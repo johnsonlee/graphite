@@ -166,7 +166,7 @@ class AnalysisCompletenessPersistenceTest {
     }
 
     @Test
-    fun `a payload that was cut or padded after binding is refused`() {
+    fun `a payload that was cut, padded or rewritten after binding is refused`() {
         val dir = directory("completeness-shape")
         val layout = ByteArray(32) { it.toByte() }
         ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to layout.joinToString("") { "%02x".format(it) }))
@@ -174,68 +174,52 @@ class AnalysisCompletenessPersistenceTest {
         assertEquals(completeness, AnalysisCompletenessStore.load(dir))
 
         val file = dir.resolve(AnalysisCompletenessStore.FILE_NAME)
-        val bytes = Files.readAllBytes(file)
+        val header = Files.readAllBytes(file).copyOf(36)
         fun rebound(payload: ByteArray): ByteArray =
-            payload + java.security.MessageDigest.getInstance("SHA-256").digest(payload)
-        Files.write(file, rebound(bytes.copyOf(bytes.size - 32 - 10)))
-        assertEquals(
-            "${AnalysisCompletenessStore.FILE_NAME} is truncated",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
-        )
-        Files.write(file, rebound(bytes.copyOf(bytes.size - 32) + byteArrayOf(0)))
+            (header + payload).let { it + java.security.MessageDigest.getInstance("SHA-256").digest(it) }
+        fun gzipped(block: (java.io.DataOutputStream) -> Unit): ByteArray {
+            val out = java.io.ByteArrayOutputStream()
+            java.io.DataOutputStream(java.util.zip.GZIPOutputStream(out)).use(block)
+            return out.toByteArray()
+        }
+        fun refused(payload: ByteArray): String =
+            assertFailsWith<IllegalStateException> { Files.write(file, rebound(payload)); AnalysisCompletenessStore.load(dir) }.message!!
+
+        assertEquals("${AnalysisCompletenessStore.FILE_NAME} is not a gzip payload", refused(ByteArray(10)))
+        assertEquals("${AnalysisCompletenessStore.FILE_NAME} is truncated", refused(gzipped { it.writeInt(0); it.writeInt(0) }))
+        val whole = java.io.ByteArrayOutputStream().also { out ->
+            java.io.DataOutputStream(out).use { AnalysisCompletenessStore.write(it, completeness) }
+        }.toByteArray()
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} has bytes after its last entry",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
+            refused(gzipped { it.write(whole); it.write(0) })
         )
         assertEquals(
             "Expected a SHA-256 digest, got 3 bytes",
             assertFailsWith<IllegalArgumentException> { AnalysisCompletenessStore.save(dir, completeness, ByteArray(3)) }.message
         )
-    }
 
-    @Test
-    fun `a status or role this reader does not know is refused by name, and a code past the table too`() {
-        val dir = directory("completeness-names")
-        val layout = ByteArray(32)
-        ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to "00".repeat(32)))
-        AnalysisCompletenessStore.save(dir, completeness, layout)
-        val file = dir.resolve(AnalysisCompletenessStore.FILE_NAME)
-        val original = Files.readAllBytes(file)
-        fun rebound(payload: ByteArray): ByteArray =
-            payload + java.security.MessageDigest.getInstance("SHA-256").digest(payload)
-        fun replaced(from: String, to: String): ByteArray {
-            val text = String(original.copyOf(original.size - 32), Charsets.ISO_8859_1)
-            val at = text.indexOf(from)
-            assertTrue(at > 0, from)
-            return rebound(text.replaceRange(at, at + from.length, to).toByteArray(Charsets.ISO_8859_1))
-        }
-        Files.write(file, replaced("ANALYZED", "ANALYSED"))
+        // A status or role this reader does not know is refused by name, a code past the table too.
+        fun rewritten(edit: (String) -> String): ByteArray =
+            gzipped { it.write(edit(String(whole, Charsets.ISO_8859_1)).toByteArray(Charsets.ISO_8859_1)) }
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} names a status 'ANALYSED' this reader does not know",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
+            refused(rewritten { it.replaceFirst("ANALYZED", "ANALYSED") })
         )
-        Files.write(file, replaced("PLATFORM", "PLATFORN"))
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} names a role 'PLATFORN' this reader does not know",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
+            refused(rewritten { it.replaceFirst("PLATFORM", "PLATFORN") })
         )
-        // The first artifact's role byte follows its name; a code past the role table is refused.
-        val payload = original.copyOf(original.size - 32)
-        val text = String(payload, Charsets.ISO_8859_1)
+        val text = String(whole, Charsets.ISO_8859_1)
         val roleAt = text.indexOf("app.jar") + "app.jar".length
-        payload[roleAt] = 9
-        Files.write(file, rebound(payload))
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} names code 9 among ${ArtifactRole.entries.size}",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
+            refused(gzipped { it.write(whole.copyOf().also { bytes -> bytes[roleAt] = 9 }) })
         )
         val countAt = text.indexOf("app.jar") - 2 - Int.SIZE_BYTES
-        payload[roleAt] = ArtifactRole.APPLICATION.ordinal.toByte()
-        payload[countAt] = 0xFF.toByte()
-        Files.write(file, rebound(payload))
         assertEquals(
             "${AnalysisCompletenessStore.FILE_NAME} holds a negative count",
-            assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message
+            refused(gzipped { it.write(whole.copyOf().also { bytes -> bytes[countAt] = 0xFF.toByte() }) })
         )
     }
 }

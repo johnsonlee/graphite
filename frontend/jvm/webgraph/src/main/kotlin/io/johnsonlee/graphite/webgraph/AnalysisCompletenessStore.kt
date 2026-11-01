@@ -16,6 +16,9 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.MessageDigest
 import java.util.HexFormat
+import java.util.zip.GZIPInputStream
+import java.util.zip.GZIPOutputStream
+import java.util.zip.ZipException
 
 /**
  * The `graph.completeness` sidecar: the build's [AnalysisCompleteness], read on the first call
@@ -25,8 +28,10 @@ import java.util.HexFormat
  * Layout, big-endian: `int32 header = MAGIC | VERSION`, the 32-byte SHA-256 of `graph.nodedata`
  * that `forward.properties` binds ([ForwardProperties.NODE_LAYOUT_KEY]), then the payload
  * ([write]: the scope, the status and role names the codes index, the artifacts, classes,
- * methods and duplicate definitions, each as a count and its entries), then the SHA-256 of every
- * byte before it. The evidence names classes and methods by name, not by node id, so it needs no
+ * methods and duplicate definitions, each as a count and its entries) gzip-compressed, then the
+ * SHA-256 of every byte before it. The payload is mostly class names, which compress five to
+ * eight times; uncompressed it added 2.5% to a persisted graph for a file no query reads.
+ * The evidence names classes and methods by name, not by node id, so it needs no
  * node layout to read; the binding is what ties the file to this save of this graph rather than
  * to a file an earlier writer left beside a rewritten graph. A file bound to another save reads
  * as absent; a file that is bound but no longer hashes, or does not parse, is corruption after
@@ -47,7 +52,8 @@ internal object AnalysisCompletenessStore {
         DataOutputStream(body).use { out ->
             out.writeInt(MAGIC or VERSION)
             out.write(layoutDigest)
-            write(out, completeness)
+            out.flush()
+            DataOutputStream(GZIPOutputStream(body)).use { payload -> write(payload, completeness) }
         }
         val digest = MessageDigest.getInstance("SHA-256").digest(body.toByteArray())
         Files.write(dir.resolve(FILE_NAME), body.toByteArray() + digest)
@@ -65,9 +71,11 @@ internal object AnalysisCompletenessStore {
         val actual = MessageDigest.getInstance("SHA-256").also { it.update(bytes, 0, payload) }.digest()
         check(MessageDigest.isEqual(expected, actual)) { "$FILE_NAME does not match its digest" }
         return try {
-            DataInputStream(ByteArrayInputStream(bytes, HEADER_BYTES, payload - HEADER_BYTES)).use(::read)
+            DataInputStream(GZIPInputStream(ByteArrayInputStream(bytes, HEADER_BYTES, payload - HEADER_BYTES))).use(::read)
         } catch (e: EOFException) {
             throw IllegalStateException("$FILE_NAME is truncated", e)
+        } catch (e: ZipException) {
+            throw IllegalStateException("$FILE_NAME is not a gzip payload", e)
         }
     }
 
@@ -79,7 +87,7 @@ internal object AnalysisCompletenessStore {
             DataInputStream(ByteArrayInputStream(bytes)).readInt() == MAGIC or VERSION &&
             HexFormat.of().formatHex(bytes, Int.SIZE_BYTES, HEADER_BYTES).equals(layout, ignoreCase = true)
 
-    private fun write(out: DataOutputStream, completeness: AnalysisCompleteness) {
+    internal fun write(out: DataOutputStream, completeness: AnalysisCompleteness) {
         val scope = completeness.scope
         out.writeStrings(scope.includePackages)
         out.writeStrings(scope.excludePackages)
