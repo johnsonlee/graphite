@@ -423,7 +423,8 @@ class SootUpAdapter(
     private val reachedCallees = ArrayList<MethodDescriptor>()
     private val reachedVirtually = ArrayList<Boolean>()
     /** The callees noted so far, by identity: descriptors are canonical per signature, and a callee is followed once. */
-    private val notedCallees: MutableSet<MethodDescriptor> = Collections.newSetFromMap(IdentityHashMap())
+    /** Every callee noted for the expansion, by identity, and whether a virtual call on it was noted. */
+    private val notedCallees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
     private val reachableFrontier = ReachableFrontier()
     private var reachableBudget = reachableExpansion?.maxClasses ?: 0
     private var reachableRead = 0
@@ -681,9 +682,17 @@ class SootUpAdapter(
     private fun isLibraryOrigin(origin: String?): Boolean =
         origin != null && (artifactRoles[origin] ?: ArtifactRole.APPLICATION) != ArtifactRole.APPLICATION
 
-    /** Under a reachable scope, note a call's callee for the expansion to follow, once per callee. */
+    /**
+     * Under a reachable scope, note a call's callee for the expansion to follow: once per callee,
+     * and once more when a virtual call follows a non-virtual one on the same callee
+     * (`super.value()` before `receiver.value()`), since only the virtual call reaches the
+     * overrides and the first note may already have been drained.
+     */
     private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean) {
-        if (reachableExpansion != null && activeClassSeeds && notedCallees.add(callee)) {
+        if (reachableExpansion == null || !activeClassSeeds) return
+        val noted = notedCallees[callee]
+        if (noted == null || (virtual && !noted)) {
+            notedCallees[callee] = virtual || noted == true
             reachedCallees += callee
             reachedVirtually += virtual
         }
@@ -730,14 +739,17 @@ class SootUpAdapter(
     }
 
     /**
-     * The duplicate definitions with their sources in the runtime's order where the input
-     * declares one ([artifactOrder]), sources it does not name last in listing order. The
-     * first source is the one the runtime would load; the view's choice is the class's origin.
+     * The duplicate definitions with their sources in the runtime's order: the application's
+     * own sources first, as the loader places them, then the libraries in the order the input
+     * declares ([artifactOrder], which names the libraries only), then the libraries it does not
+     * name in listing order. The first source is the one the runtime would load; the view's
+     * choice is the class's origin.
      */
     private fun orderedDuplicates(): Map<String, List<String>> {
         if (artifactOrder.isEmpty()) return duplicateClasses
         val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
-        return duplicateClasses.mapValues { (_, sources) -> sources.sortedBy { rank[it] ?: Int.MAX_VALUE } }
+        fun precedence(source: String): Int = if (isLibraryOrigin(source)) rank[source] ?: Int.MAX_VALUE else -1
+        return duplicateClasses.mapValues { (_, sources) -> sources.sortedBy(::precedence) }
     }
 
     /**

@@ -24,7 +24,7 @@ graph-dir/
 ├── graph.callsite-ordinals Optional call-site ordinals/origins, bound to graph.metadata
 ├── graph.declared-keys Optional declared-key summary per node kind, bound to graph.types and to the node layout
 ├── graph.declared-presence Optional per-node presence bits and per-method shape bytes, bound to graph.types and to the node layout
-├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound to the node layout
+├── graph.completeness Optional build completeness evidence (artifact roles, class and method statuses), bound through forward.properties
 └── graph.comparisons  BranchComparison data for ControlFlowEdges
 ```
 
@@ -231,9 +231,10 @@ rather than those internal blocks.
 [Dependency Bodies and Completeness Evidence](analysis-completeness.md): the analysis scope,
 every artifact with its role, every class of the view with its status, every method not analysed
 completely, and the duplicate class definitions. It names classes and methods, never node ids,
-so it carries only the node-layout binding, which ties it to the save that wrote it, and its own
-SHA-256 trailer; the payload between them is gzip-compressed, since it is mostly class names.
-A file bound to another save reads as absent; a bound file that does not hash, inflate or
+so it carries the node-layout binding and its own SHA-256 trailer, which the save records in
+`forward.properties` (`graphite.completeness.sha256`) to tie the evidence itself to the save that
+wrote it; the payload between them is gzip-compressed, since it is mostly class names.
+A file whose trailer is not the one recorded, or that carries another node layout, reads as absent; a bound file that does not hash, inflate or
 parse is a load error for the evidence, never an answer. Status and role codes index a name table
 in the file, so a value added by a later writer still reads as itself. It is read on the first
 `Graph.analysisCompleteness()` call and never before; the Rust reader ignores it.

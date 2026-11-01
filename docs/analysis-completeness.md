@@ -155,12 +155,18 @@ this evidence existed has none, and every answer is `null`: unknown, not analyse
 
 `GraphStore.save` writes the evidence as `graph.completeness` beside the graph and removes the
 file an earlier save left when the graph carries none. The file names classes and methods, not
-node ids, so it needs no node layout to read; it is bound to the save all the same, by the
-SHA-256 of `graph.nodedata` that `forward.properties` records (`graphite.nodeLayout.sha256`),
-and ends with the SHA-256 of its own bytes; the payload between is gzip-compressed, since it is
-mostly class names (uncompressed it added 2.5% to a persisted Tika graph). A file bound to another save reads as absent. A
-bound file that no longer hashes, is cut short, has bytes after its last entry, or names a
-status this reader does not know is corruption after binding and throws rather than answers.
+node ids, so it needs no node layout to read; it is bound to the save all the same: it carries
+the SHA-256 of `graph.nodedata` that `forward.properties` records (`graphite.nodeLayout.sha256`)
+and ends with the SHA-256 of its own bytes, which the save records in `forward.properties` too
+(`graphite.completeness.sha256`). The node layout alone would not do: two saves of the same
+nodes under different scopes write the same layout and different evidence, and the evidence of
+the one must not read as the other's. The payload between header and trailer is gzip-compressed,
+since it is mostly class names (uncompressed it added 2.5% to a persisted Tika graph). A file
+whose trailer is not the one the directory recorded, or that carries another node layout, is
+another save's and reads as absent. A bound file that no longer hashes, is cut short, has bytes
+after its last entry, or names a status this reader does not know is corruption after binding
+and throws rather than answers. A loaded graph that has not read its evidence yet reads it before
+a save into its own directory removes the file.
 Both JVM loads read it on the first call for it and never before; the Rust reader does not read
 it. Status and role codes index a name table the file carries, so a value added later still reads
 as itself.

@@ -786,8 +786,9 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   asking about the facade answers `UNKNOWN_MEMBER`. Ask about what the `CallSite` holds.
 - `Graph.hasMethod` is an index lookup on every implementation; the mapped graph answers through
   the method index's class range, never a scan per callee, because a proof asks it once per call.
-- The evidence is a sidecar (`graph.completeness`) bound to the node layout digest and its own
-  trailer, read on first use, like the other sidecars and for the same reasons: a record-format
+- The evidence is a sidecar (`graph.completeness`) whose own trailer digest the save records in
+  `forward.properties` beside the node layout digest it carries, read on first use, like the
+  other sidecars and for the same reasons: a record-format
   bump fails the base revision's reader across every gate, a file the base never opens costs
   nothing, and a file left beside a rewritten graph must read as absent. It names classes and
   methods, not node ids, so it needs no layout to read, only a binding to the save that wrote it.

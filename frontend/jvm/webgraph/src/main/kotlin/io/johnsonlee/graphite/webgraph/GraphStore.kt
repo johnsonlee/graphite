@@ -626,6 +626,9 @@ object GraphStore {
     private fun saveGraph(
         graph: Graph, dir: Path, compressionThreads: Int, prepareCallSiteStringIndex: Boolean, declaredTypeVersion: Int
     ) {
+        // A loaded graph reads its evidence on first use, from the directory this save may be
+        // rewriting: materialise it before any file of that directory is removed.
+        val completeness = graph.analysisCompleteness()
         Files.createDirectories(dir)
         Files.deleteIfExists(dir.resolve(CALL_SITE_STRING_INDEX_FILE))
         Files.deleteIfExists(dir.resolve(BRANCH_DEFINITIONS_FILE))
@@ -724,7 +727,8 @@ object GraphStore {
         )
         // The node layout identity: which node sits at which id. Sidecars indexed by node id carry it.
         ForwardProperties.write(dir, mapOf(ForwardProperties.NODE_LAYOUT_KEY to HexFormat.of().formatHex(layoutDigest)))
-        writeAnalysisCompleteness(graph, dir, layoutDigest)
+        // The build's evidence, when the graph carries one, bound to this save of the graph.
+        AnalysisCompletenessStore.save(dir, completeness, layoutDigest)
 
         // 7. Save metadata with the trailer that binds it to the branch-definition sidecar and, last,
         //    the binding of the call-site ordinal sidecar, then the two sidecars.
@@ -763,11 +767,6 @@ object GraphStore {
         if (prepareCallSiteIndex) {
             persistCallSiteStringIndex(checkNotNull(callSiteIndexInput), stringTable, dir)
         }
-    }
-
-    /** The build's completeness evidence, when the graph carries one, bound to this save of the graph. */
-    private fun writeAnalysisCompleteness(graph: Graph, dir: Path, layoutDigest: ByteArray) {
-        graph.analysisCompleteness()?.let { AnalysisCompletenessStore.save(dir, it, layoutDigest) }
     }
 
     /**

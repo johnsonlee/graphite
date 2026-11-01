@@ -15,11 +15,15 @@ import java.util.Properties
  * the key summary) carries a copy and is read only when it names this directory's; two graphs with
  * one type table and different node layouts never accept each other's. No reader hashes the node
  * data to check it: the value is compared, as the save that wrote both files recorded it.
+ * [COMPLETENESS_KEY] is the SHA-256 trailer of `graph.completeness` as the save wrote it: the
+ * evidence itself is bound, not only the nodes it describes, since one node layout can be saved
+ * with different evidence.
  */
 internal object ForwardProperties {
     const val FILE_NAME = "forward.properties"
     const val DECLARED_TYPES_KEY = "graphite.declaredTypes.sha256"
     const val NODE_LAYOUT_KEY = "graphite.nodeLayout.sha256"
+    const val COMPLETENESS_KEY = "graphite.completeness.sha256"
 
     fun read(dir: Path, key: String): String? {
         val path = dir.resolve(FILE_NAME)

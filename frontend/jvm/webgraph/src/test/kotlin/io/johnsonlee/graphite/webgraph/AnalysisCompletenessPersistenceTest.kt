@@ -129,12 +129,45 @@ class AnalysisCompletenessPersistenceTest {
         val dir = directory("completeness-none")
         GraphStore.save(graph(), dir)
         assertTrue(Files.isRegularFile(dir.resolve(AnalysisCompletenessStore.FILE_NAME)))
+        val earlier = Files.readAllBytes(dir.resolve(AnalysisCompletenessStore.FILE_NAME))
         GraphStore.save(graph(evidence = null), dir)
         assertFalse(Files.exists(dir.resolve(AnalysisCompletenessStore.FILE_NAME)), "a stale sidecar would describe another build")
+        assertNull(ForwardProperties.read(dir, ForwardProperties.COMPLETENESS_KEY), "and the binding went with it")
         loaded(dir) { graph ->
             assertNull(graph.analysisCompleteness())
             assertNull(graph.analysisStatus(analysed), "no evidence is unknown, not analysed")
         }
+        // The same nodes were saved, so the earlier file carries this directory's node layout;
+        // without the binding of a save that wrote it, it is still not this save's evidence.
+        Files.write(dir.resolve(AnalysisCompletenessStore.FILE_NAME), earlier)
+        loaded(dir) { graph -> assertNull(graph.analysisCompleteness()) }
+    }
+
+    @Test
+    fun `the evidence of another save of the same nodes reads as absent`() {
+        val first = directory("completeness-same-nodes-first")
+        val second = directory("completeness-same-nodes-second")
+        GraphStore.save(graph(), first)
+        val far = "lib.Far" to ClassEvidence("lib-1.0.jar", AnalysisStatus.ANALYZED)
+        GraphStore.save(graph(completeness.copy(classes = completeness.classes + far)), second)
+        assertEquals(
+            ForwardProperties.read(first, ForwardProperties.NODE_LAYOUT_KEY),
+            ForwardProperties.read(second, ForwardProperties.NODE_LAYOUT_KEY),
+            "one node layout, two evidences"
+        )
+        val file = AnalysisCompletenessStore.FILE_NAME
+        Files.copy(second.resolve(file), first.resolve(file), StandardCopyOption.REPLACE_EXISTING)
+        assertNull(AnalysisCompletenessStore.load(first), "the node layout alone does not identify the evidence")
+        loaded(first) { graph -> assertNull(graph.analysisCompleteness()) }
+    }
+
+    @Test
+    fun `saving a loaded graph over its own directory keeps the evidence it had not read yet`() {
+        val dir = directory("completeness-resave")
+        GraphStore.save(graph(), dir)
+        GraphStore.save(GraphStore.load(dir), dir)
+        assertTrue(Files.isRegularFile(dir.resolve(AnalysisCompletenessStore.FILE_NAME)))
+        loaded(dir) { graph -> assertEquals(completeness, graph.analysisCompleteness()) }
     }
 
     @Test
@@ -200,8 +233,13 @@ class AnalysisCompletenessPersistenceTest {
             java.io.DataOutputStream(java.util.zip.GZIPOutputStream(out)).use(block)
             return out.toByteArray()
         }
-        fun refused(payload: ByteArray): String =
-            assertFailsWith<IllegalStateException> { Files.write(file, rebound(payload)); AnalysisCompletenessStore.load(dir) }.message!!
+        fun refused(payload: ByteArray): String {
+            val bytes = rebound(payload)
+            Files.write(file, bytes)
+            val trailer = bytes.copyOfRange(bytes.size - 32, bytes.size).joinToString("") { "%02x".format(it) }
+            ForwardProperties.write(dir, mapOf(ForwardProperties.COMPLETENESS_KEY to trailer))
+            return assertFailsWith<IllegalStateException> { AnalysisCompletenessStore.load(dir) }.message!!
+        }
 
         assertEquals("${AnalysisCompletenessStore.FILE_NAME} is not a gzip payload", refused(ByteArray(10)))
         assertEquals("${AnalysisCompletenessStore.FILE_NAME} is truncated", refused(gzipped { it.writeInt(0); it.writeInt(0) }))

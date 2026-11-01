@@ -119,8 +119,25 @@ class DependencyCompletenessTest {
         "Source.java" to """
             package sample.scope.dep;
             public interface Source { String fetch(String key); }
+        """.trimIndent(),
+        "Base.java" to """
+            package sample.scope.dep;
+            public class Base { public String value() { return "base"; } }
+        """.trimIndent(),
+        "Sub.java" to """
+            package sample.scope.dep;
+            public class Sub extends Base { @Override public String value() { return "sub"; } }
         """.trimIndent()
     )
+
+    /** An application subclass whose `super.value()` is processed before any virtual call on `Base.value`. */
+    private val childSource = "Child.java" to """
+        package sample.scope.app;
+        public class Child extends sample.scope.dep.Base {
+            public String apply() { return super.value() + "!"; }
+            public String zone(sample.scope.dep.Base base) { return base.value(); }
+        }
+    """.trimIndent()
 
     private val otherSources = mapOf(
         "Util.java" to """
@@ -340,6 +357,47 @@ class DependencyCompletenessTest {
     }
 
     @Test
+    fun `a virtual call noted after a non-virtual one on the same callee still reaches the overrides`() {
+        val input = bootJar(extraAppSources = mapOf(childSource))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Child"))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val base = "$depPackage.Base"
+        val calls = graph.nodes<CallSiteNode>().filter { it.callee.name == "value" && it.callee.declaringClass.className == base }
+        assertEquals(listOf("apply", "zone"), calls.map { it.caller.name }.sorted().toList(), "both calls name Base.value")
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus(base), "the declared callee")
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$depPackage.Sub"), "the override the virtual call reaches")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "unreached from that root")
+    }
+
+    @Test
+    fun `an application definition keeps its precedence over an indexed library's in the duplicate evidence`() {
+        val input = bootJar(classpathIndex = listOf("other-1.0.jar", "dep-1.0.jar"), duplicateInOther = listOf(ab))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar", "other-*.jar"))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(JavaArchiveLayout.BOOT_INF_CLASSES, completeness.classes.getValue(ab).origin, "the view holds the application's")
+        assertEquals(
+            mapOf(
+                ab to listOf(JavaArchiveLayout.BOOT_INF_CLASSES, "other-1.0.jar"),
+                "$depPackage.Source" to listOf("other-1.0.jar", "dep-1.0.jar")
+            ),
+            completeness.duplicateClasses,
+            "the index orders the libraries behind the application, which it does not list"
+        )
+    }
+
+    @Test
     fun `a reachable scope never reads an application class the configuration excluded`() {
         val input = bootJar()
         val config = LoaderConfig(
@@ -471,20 +529,34 @@ class DependencyCompletenessTest {
         ).also { depJar = it }
     }
 
-    /** A jar of an unrelated package that also defines the helper's `Source` interface. */
-    private fun otherJar(): Path {
+    /** A jar of an unrelated package that also defines the helper's `Source` interface, and [extra]. */
+    private fun otherJar(extra: Map<String, ByteArray> = emptyMap()): Path {
         val classes = compile(otherSources, "other")
         val source = compile(depSources, "dep-copy").resolve("sample/scope/dep/Source.class")
         return jar(
             Files.createTempDirectory("scope-other").also(temporaryRoots::add).resolve("other-1.0.jar"),
             classes,
             "sample/scope/other/",
-            extra = mapOf("sample/scope/dep/Source.class" to Files.readAllBytes(source))
+            extra = mapOf("sample/scope/dep/Source.class" to Files.readAllBytes(source)) + extra
         )
     }
 
-    private fun bootJar(classpathIndex: List<String>? = null): Path {
-        val appClasses = compile(appSources, "app", classpath = listOf(depJar(), stdlibJar()))
+    /**
+     * The Spring Boot jar: the application classes (and [extraAppSources]) under `BOOT-INF/classes/`,
+     * the helper, the unrelated jar (also defining the application classes [duplicateInOther] names)
+     * and the stdlib under `BOOT-INF/lib/`, and the launcher's [classpathIndex] when given.
+     */
+    private fun bootJar(
+        classpathIndex: List<String>? = null,
+        extraAppSources: Map<String, String> = emptyMap(),
+        duplicateInOther: List<String> = emptyList()
+    ): Path {
+        val appClasses = compile(appSources + extraAppSources, "app", classpath = listOf(depJar(), stdlibJar()))
+        val otherExtra = duplicateInOther.associate { className ->
+            val entry = className.replace('.', '/') + ".class"
+            entry to Files.readAllBytes(appClasses.resolve(entry))
+        }
+        val otherJar = otherJar(otherExtra)
         val jarPath = Files.createTempDirectory("scope-boot").also(temporaryRoots::add).resolve("app.jar")
         JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
             mainAttributes.putValue("Manifest-Version", "1.0")
@@ -509,7 +581,7 @@ class DependencyCompletenessTest {
             }
             jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_LIB))
             jos.closeEntry()
-            for (lib in listOf(depJar(), otherJar(), stdlibJar())) {
+            for (lib in listOf(depJar(), otherJar, stdlibJar())) {
                 jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfLibEntry(lib.name)))
                 Files.newInputStream(lib).use { it.copyTo(jos) }
                 jos.closeEntry()

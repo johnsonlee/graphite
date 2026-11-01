@@ -33,10 +33,14 @@ import java.util.zip.ZipException
  * SHA-256 of every byte before it. The payload is mostly class names, which compress five to
  * eight times; uncompressed it added 2.5% to a persisted graph for a file no query reads.
  * The evidence names classes and methods by name, not by node id, so it needs no
- * node layout to read; the binding is what ties the file to this save of this graph rather than
- * to a file an earlier writer left beside a rewritten graph. A file bound to another save reads
- * as absent; a file that is bound but no longer hashes, or does not parse, and a file too short
- * or of another format to carry a binding at all, is corruption and throws rather than answers.
+ * node layout to read. The save records the file's own trailer digest in `forward.properties`
+ * ([ForwardProperties.COMPLETENESS_KEY]): that is what ties the file to this save of this graph.
+ * The node layout alone cannot, since two saves of the same nodes under different scopes write
+ * the same layout and different evidence, and a sidecar copied from the one would read as the
+ * other's. A file whose trailer is not the one the directory recorded is another save's and
+ * reads as absent; a file that is bound but no longer hashes, or does not parse, and a file too
+ * short or of another format to carry a binding at all, is corruption and throws rather than
+ * answers.
  */
 internal object AnalysisCompletenessStore {
     const val FILE_NAME = "graph.completeness"
@@ -47,9 +51,18 @@ internal object AnalysisCompletenessStore {
     private const val NO_BUDGET = -1
     private const val MIN_BYTES = HEADER_BYTES + DIGEST_BYTES
 
-    /** Write [completeness] beside the graph in [dir], bound to the node layout digest the save computed. */
-    fun save(dir: Path, completeness: AnalysisCompleteness, layoutDigest: ByteArray) {
+    /**
+     * Write [completeness] beside the graph in [dir], carrying the node layout digest the save
+     * computed, and record the file's trailer digest in `forward.properties` as the binding the
+     * load checks. Without evidence, the file and the binding an earlier save left are removed.
+     */
+    fun save(dir: Path, completeness: AnalysisCompleteness?, layoutDigest: ByteArray) {
         require(layoutDigest.size == DIGEST_BYTES) { "Expected a SHA-256 digest, got ${layoutDigest.size} bytes" }
+        if (completeness == null) {
+            Files.deleteIfExists(dir.resolve(FILE_NAME))
+            ForwardProperties.write(dir, mapOf(ForwardProperties.COMPLETENESS_KEY to null))
+            return
+        }
         val body = ByteArrayOutputStream()
         DataOutputStream(body).use { out ->
             out.writeInt(MAGIC or VERSION)
@@ -59,22 +72,31 @@ internal object AnalysisCompletenessStore {
         }
         val digest = MessageDigest.getInstance("SHA-256").digest(body.toByteArray())
         Files.write(dir.resolve(FILE_NAME), body.toByteArray() + digest)
+        ForwardProperties.write(dir, mapOf(ForwardProperties.COMPLETENESS_KEY to HexFormat.of().formatHex(digest)))
     }
 
     /**
-     * The evidence bound to the node layout `forward.properties` names in [dir], or null when
-     * there is no file, the directory names no layout, or the file is another save's.
+     * The evidence `forward.properties` binds in [dir], or null when there is no file, the
+     * directory records no binding or no node layout, or the file is another save's: its trailer
+     * is not the digest the directory recorded, or it carries another node layout.
      */
     fun load(dir: Path): AnalysisCompleteness? {
         val layout = ForwardProperties.read(dir, ForwardProperties.NODE_LAYOUT_KEY)
-        val bytes = layout?.let { fileBytes(dir.resolve(FILE_NAME)) } ?: return null
+        val binding = ForwardProperties.read(dir, ForwardProperties.COMPLETENESS_KEY)
+        val bytes = if (layout != null && binding != null) fileBytes(dir.resolve(FILE_NAME)) else null
+        return bytes?.takeIf { boundTo(it, layout!!, binding!!) }?.let(::readBound)
+    }
+
+    /** Whether [bytes] is the sidecar the directory recorded: its trailer is [binding] and it carries [layout]. */
+    private fun boundTo(bytes: ByteArray, layout: String, binding: String): Boolean {
         // A file too short to carry a binding, or of another format, is not another save's: it is
         // what an interrupted or foreign write left, and a proof must not read it as "no evidence".
         check(bytes.size >= MIN_BYTES && DataInputStream(ByteArrayInputStream(bytes)).readInt() == MAGIC or VERSION) {
             "$FILE_NAME is not a completeness sidecar"
         }
-        val bound = HexFormat.of().formatHex(bytes, Int.SIZE_BYTES, HEADER_BYTES).equals(layout, ignoreCase = true)
-        return if (bound) readBound(bytes) else null
+        val hex = HexFormat.of()
+        return hex.formatHex(bytes, bytes.size - DIGEST_BYTES, bytes.size).equals(binding, ignoreCase = true) &&
+            hex.formatHex(bytes, Int.SIZE_BYTES, HEADER_BYTES).equals(layout, ignoreCase = true)
     }
 
     private fun readBound(bytes: ByteArray): AnalysisCompleteness {
