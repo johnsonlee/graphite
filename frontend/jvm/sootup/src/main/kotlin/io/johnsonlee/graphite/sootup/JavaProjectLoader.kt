@@ -513,20 +513,26 @@ class JavaProjectLoader(
                     val libDir = tempDir.resolve("lib")
                     Files.createDirectories(libDir)
 
-                    zip.entries().asSequence()
+                    val nested = zip.entries().asSequence()
                         .filter { it.name.startsWith(JavaArchiveLayout.BOOT_INF_LIB) && it.name.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
                         .filter { entry -> matchesLibraryFilter(entry.name.substringAfterLast("/")) }
-                        .forEach { entry ->
+                        .mapNotNull { entry ->
                             val jarName = entry.name.substringAfterLast("/")
                             val targetFile = libDir.resolve(jarName)
                             zip.getInputStream(entry).use { input ->
                                 Files.copy(input, targetFile)
                             }
                             // Only add JAR if it holds classes the build analyses.
-                            if (jarInScope(targetFile, jarName)) {
-                                locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
-                            }
+                            (jarName to targetFile).takeIf { jarInScope(targetFile, jarName) }
                         }
+                        .toList()
+                    // The view resolves a class from the first location that defines it: the
+                    // launcher's order, where the archive declares one, so a duplicate class is
+                    // the definition that runs; the listing order otherwise.
+                    val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
+                    nested.sortedBy { (jarName, _) -> rank[jarName] ?: Int.MAX_VALUE }.forEach { (jarName, targetFile) ->
+                        locations.addInputLocation(jarName, sources, targetFile, SourceType.Library)
+                    }
                 }
             }
         } catch (e: Exception) {

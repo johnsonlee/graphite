@@ -204,6 +204,7 @@ class DependencyCompletenessTest {
         assertEquals("dep-1.0.jar", completeness.classes.getValue(reader).origin)
         assertEquals(JavaArchiveLayout.BOOT_INF_CLASSES, completeness.classes.getValue(example).origin)
         assertEquals(mapOf("$depPackage.Source" to listOf("dep-1.0.jar", "other-1.0.jar")), completeness.duplicateClasses)
+        assertEquals("dep-1.0.jar", completeness.classes.getValue("$depPackage.Source").origin, "listing order without an index")
 
         // The fold removed the only reader of the new key; the surviving read is of the old one.
         val reads = graph.nodes<CallSiteNode>().filter { it.caller.name == "value" && it.callee.name == "getString" }.toList()
@@ -317,12 +318,24 @@ class DependencyCompletenessTest {
     @Test
     fun `a Spring Boot class-path index orders duplicate definitions as the runtime loads them`() {
         val input = bootJar(classpathIndex = listOf("other-1.0.jar", "dep-1.0.jar"))
-        val graph = load(input, LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true, buildCallGraph = false))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar", "other-*.jar"))
+        )
+        val graph = load(input, config)
         val completeness = assertNotNull(graph.analysisCompleteness())
         assertEquals(
             mapOf("$depPackage.Source" to listOf("other-1.0.jar", "dep-1.0.jar")),
             completeness.duplicateClasses,
             "the archive's own order, not the listing order, says which definition runs"
+        )
+        assertEquals("other-1.0.jar", completeness.classes.getValue("$depPackage.Source").origin, "and the view holds that definition")
+        assertEquals(
+            listOf(JavaArchiveLayout.BOOT_INF_CLASSES, "other-1.0.jar", "dep-1.0.jar"),
+            completeness.artifacts.keys.toList(),
+            "the sources are read in the launcher's order"
         )
     }
 

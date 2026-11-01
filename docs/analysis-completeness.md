@@ -109,8 +109,9 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
 - `duplicateClasses`: a class name defined by more than one archive of the input, with every
   archive, loaded or not, in the order the runtime loads them where the archive declares it
   (a Spring Boot jar's `BOOT-INF/classpath.idx`) and in the input's listing order otherwise;
-  the first is the definition that runs. The class's own `origin` says which definition the
-  graph holds, which the view chose and which may differ.
+  the first is the definition that runs. A Spring Boot jar's nested libraries are also read by
+  the view in that order, so the class's own `origin`, the definition the graph holds, is the
+  one the launcher loads; for other layouts it is the first the input lists.
 - `callSiteGaps`: the node id of every call on a function value (`fn.apply(x)`,
   `supplier.get()`, Kotlin's `fn(x)`) that the dispatch fixpoint resolved to no body, with why:
   `DISPATCH_UNRESOLVED` (no function value is known to reach the receiver: it comes from
@@ -172,6 +173,6 @@ as itself.
   unknown has every override the view knows linked by `interproceduralDataflow`; one whose
   implementation lives outside the view is `EXTERNAL` by its class.
 - No multi-release selection: the archive is reported as multi-release, every class is read at
-  its base version. Class-path precedence is reported (the runtime's order for a Spring Boot
-  jar, the listing order otherwise), not applied: the view keeps the first definition it loads.
+  its base version. Class-path precedence outside a Spring Boot jar is the input's listing
+  order, reported and applied alike.
 - No reading of the evidence by the Rust server; `graphite query` and `serve` ignore the file.
