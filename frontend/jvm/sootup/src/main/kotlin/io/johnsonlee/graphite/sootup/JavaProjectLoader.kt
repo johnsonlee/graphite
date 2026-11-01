@@ -43,12 +43,30 @@ private const val ANDROID_DIR_NAME = "Android"
 private const val ANDROID_SDK_DIR_NAME = "Sdk"
 private val ANDROID_TOOL_NAMES = listOf("adb", "emulator", "sdkmanager")
 
+/**
+ * The nested jars of a Spring Boot archive in the order its runtime loads them, from
+ * `BOOT-INF/classpath.idx` (one `- "BOOT-INF/lib/name.jar"` line per jar), by jar name;
+ * empty when the archive carries no index. The duplicate-class evidence lists sources in
+ * this order, since the first is the definition that runs.
+ */
+private fun springBootClasspathOrder(zip: ZipFile): List<String> {
+    val entry = zip.getEntry(JavaArchiveLayout.BOOT_INF_CLASSPATH_INDEX) ?: return emptyList()
+    return zip.getInputStream(entry).bufferedReader().useLines { lines ->
+        lines.map { it.trim().removePrefix("-").trim().trim('"') }
+            .filter { it.endsWith(JavaArchiveLayout.JAR_EXTENSION) }
+            .map { it.substringAfterLast('/') }
+            .toList()
+    }
+}
+
 private data class InputLocations(
     val locations: List<AnalysisInputLocation>,
     val sources: Map<AnalysisInputLocation, String>,
     val dexApi: Int? = null,
     /** The source name of the Android platform jar, whose role is [ArtifactRole.PLATFORM]. */
-    val platformSource: String? = null
+    val platformSource: String? = null,
+    /** The nested jars in the order the runtime loads them, when the archive declares it (`BOOT-INF/classpath.idx`). */
+    val artifactOrder: List<String> = emptyList()
 ) {
     /** The role of every source, by its location's source type, see [ArtifactRole]. */
     val roles: Map<String, ArtifactRole>
@@ -334,6 +352,7 @@ class JavaProjectLoader(
             inputLocationSources = inputLocations.sources,
             artifactRoles = inputLocations.roles,
             singleArtifactSource = singleArtifactSource(path),
+            artifactOrder = inputLocations.artifactOrder,
             graphBuilder = graphBuilderFactory(),
             preFoldOrdinals = folding?.let { it::ordinalsBeforeFolding } ?: { null }
         )
@@ -467,9 +486,11 @@ class JavaProjectLoader(
         val locations = mutableListOf<AnalysisInputLocation>()
         val sources = mutableMapOf<AnalysisInputLocation, String>()
         val tempDir = Files.createTempDirectory("graphite-springboot")
+        var artifactOrder: List<String> = emptyList()
 
         try {
             ZipFile(path.toFile()).use { zip ->
+                artifactOrder = springBootClasspathOrder(zip)
                 // Extract Spring Boot application classes.
                 val classesDir = tempDir.resolve("classes")
                 Files.createDirectories(classesDir)
@@ -514,7 +535,7 @@ class JavaProjectLoader(
             throw e
         }
 
-        return InputLocations(locations, sources)
+        return InputLocations(locations, sources, artifactOrder = artifactOrder)
     }
 
     /**

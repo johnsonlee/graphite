@@ -19,7 +19,7 @@ Spring Boot or WAR build did not even load a nested jar that held no application
 |---|---|---|
 | `None` (default) | as before: when it holds an application package | none; a library class resolves types and overrides only |
 | `Declared(artifacts, packages)` | as before, or when its file name matches an artifact pattern, or it holds a class of one of the packages | every class of a matching artifact, every class under one of the packages |
-| `Reachable(maxClasses)` | every library jar | the classes the application's calls reach, and the classes those bodies' calls reach, up to the budget |
+| `Reachable(maxClasses, roots)` | every library jar | the classes the application's calls reach (from the root classes only, when roots are named), and the classes those bodies' calls reach, up to the budget |
 
 ```kotlin
 val graph = JavaProjectLoader(
@@ -41,7 +41,8 @@ graphite build app.jar -o /data/app --include com.acme.app --include-libs \
 ```
 
 ```bash
-graphite build app.jar -o /data/app --include com.acme.app --include-libs --dependency-reachable=20000
+graphite build app.jar -o /data/app --include com.acme.app --include-libs --dependency-reachable=20000 \
+  --dependency-roots com.acme.app.web,com.acme.app.jobs
 ```
 
 A library class the scope covers is processed as an application class is: its methods, their
@@ -62,7 +63,10 @@ proof must treat as unread, never as a class with no effect, and a library class
 stays `EXCLUDED_BY_SCOPE`. Expansion follows calls, so a body reached only through a function
 value resolved in the dispatch fixpoint is read when the class that holds it was reached by
 other means (its allocation is a call to its constructor); an entry a framework discovers by
-reflection or configuration is not reached, as the issue's contract expects.
+reflection or configuration is not reached, as the issue's contract expects. `roots` names the
+application classes (by prefix) whose calls seed the expansion; the other application classes
+are still read, being the application, but what only they call is not followed into the
+libraries. The roots are part of the fold provenance (`dependency_roots`).
 
 With `interproceduralDataflow`, an argument of an application call reaches the parameter node
 of the helper's body and the helper's return reaches the call's result, so a query can follow a
@@ -103,8 +107,10 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
   entries). A method of an analysed class that the graph holds and this map does not is
   analysed; that keeps the evidence proportional to the exceptions, not to the corpus.
 - `duplicateClasses`: a class name defined by more than one archive of the input, with every
-  archive in the order the input lists them, loaded or not. The graph holds the first
-  definition. A Spring Boot jar's runtime order (`BOOT-INF/classpath.idx`) is not consulted.
+  archive, loaded or not, in the order the runtime loads them where the archive declares it
+  (a Spring Boot jar's `BOOT-INF/classpath.idx`) and in the input's listing order otherwise;
+  the first is the definition that runs. The class's own `origin` says which definition the
+  graph holds, which the view chose and which may differ.
 - `callSiteGaps`: the node id of every call on a function value (`fn.apply(x)`,
   `supplier.get()`, Kotlin's `fn(x)`) that the dispatch fixpoint resolved to no body, with why:
   `DISPATCH_UNRESOLVED` (no function value is known to reach the receiver: it comes from
@@ -156,16 +162,16 @@ as itself.
 
 ## What this delivery does not do
 
-- The roots of a `Reachable` expansion are the application's classes as `includePackages`
-  names them, not a consumer-supplied list of entry methods, and the expansion runs on the
-  folded bodies of the build it is part of: a `select` fold rule's staging build expands on the
-  unfolded bodies, the final build on the folded ones.
+- The roots of a `Reachable` expansion are application classes, by name prefix, not entry
+  methods, and the expansion runs on the folded bodies of the build it is part of: a `select`
+  fold rule's staging build expands on the unfolded bodies, the final build on the folded ones.
 - The expansion follows the view's class hierarchy for virtual calls (every override the view
   knows), not a points-to analysis: it reads more classes than run, never fewer, within the
   budget.
 - A gap is recorded for calls on function values only. A virtual call whose receiver class is
   unknown has every override the view knows linked by `interproceduralDataflow`; one whose
   implementation lives outside the view is `EXTERNAL` by its class.
-- No class-path precedence beyond listing order, and no multi-release selection: both are
-  reported, not resolved.
+- No multi-release selection: the archive is reported as multi-release, every class is read at
+  its base version. Class-path precedence is reported (the runtime's order for a Spring Boot
+  jar, the listing order otherwise), not applied: the view keeps the first definition it loads.
 - No reading of the evidence by the Rust server; `graphite query` and `serve` ignore the file.

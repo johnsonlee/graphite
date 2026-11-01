@@ -278,6 +278,8 @@ class SootUpAdapter(
     /** The role of each source of [inputLocationSources], by name; a source without one is the application's. */
     private val artifactRoles: Map<String, ArtifactRole> = emptyMap(),
     private val singleArtifactSource: String? = null,
+    /** The sources in the order the runtime loads them (`BOOT-INF/classpath.idx`), when the input says; the listing order otherwise. */
+    private val artifactOrder: List<String> = emptyList(),
     private val graphBuilder: FullGraphBuilder = DefaultGraph.Builder(),
     /** A body's invoke numbering from before the fold pass changed it, when a rule folded there. */
     private val preFoldOrdinals: (MethodSignature) -> Map<Stmt, Int>? = { null }
@@ -419,6 +421,8 @@ class SootUpAdapter(
     private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
     private val reachedCallees = ArrayList<MethodDescriptor>()
     private val reachedVirtually = ArrayList<Boolean>()
+    /** Whether the pass-2 class being read seeds the reachable expansion: a library class always, an application class as a root. */
+    private var activeClassSeeds = true
     /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
     private var activeControlFlowTruncated = false
     /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
@@ -599,6 +603,7 @@ class SootUpAdapter(
     private fun processDependencyOrApplicationClass(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
         val className = sootClass.type.fullyQualifiedName
         activeClassResolutionFailed = false
+        activeClassSeeds = !application || reachableExpansion?.seeds(className) != false
         processClassWithMethodCache(sootClass, extensionContext, application)
         val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
         classEvidence[className] = ClassEvidence(classOriginsByName[className] ?: singleArtifactSource, status)
@@ -659,7 +664,7 @@ class SootUpAdapter(
 
     /** Under a reachable scope, note a call's callee for the expansion to follow. */
     private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean) {
-        if (reachableExpansion != null) {
+        if (reachableExpansion != null && activeClassSeeds) {
             reachedCallees += callee
             reachedVirtually += virtual
         }
@@ -696,7 +701,20 @@ class SootUpAdapter(
             val role = artifactRoles[name] ?: if (name == singleArtifactSource) ArtifactRole.APPLICATION else ArtifactRole.LIBRARY
             ArtifactEvidence(role, name in multiReleaseArtifacts)
         }
-        return AnalysisCompleteness(AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, duplicateClasses, callSiteGaps)
+        return AnalysisCompleteness(
+            AnalysisIdentity.of(config), artifacts, classEvidence, methodEvidence, orderedDuplicates(), callSiteGaps
+        )
+    }
+
+    /**
+     * The duplicate definitions with their sources in the runtime's order where the input
+     * declares one ([artifactOrder]), sources it does not name last in listing order. The
+     * first source is the one the runtime would load; the view's choice is the class's origin.
+     */
+    private fun orderedDuplicates(): Map<String, List<String>> {
+        if (artifactOrder.isEmpty()) return duplicateClasses
+        val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
+        return duplicateClasses.mapValues { (_, sources) -> sources.sortedBy { rank[it] ?: Int.MAX_VALUE } }
     }
 
     /**

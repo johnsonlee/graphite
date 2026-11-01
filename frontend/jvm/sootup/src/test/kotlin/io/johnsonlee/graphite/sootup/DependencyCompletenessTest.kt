@@ -292,6 +292,41 @@ class DependencyCompletenessTest {
     }
 
     @Test
+    fun `a reachable scope expands from the roots the consumer names`() {
+        val input = bootJar()
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf(ab))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(listOf(ab), completeness.scope.dependencyRoots)
+        // Ab.enabled calls String.length only, on the JDK: nothing in a library is reached from that root.
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, graph.analysisStatus(readMethod), "reached from Example, which is not a root")
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus(example), "an application class outside the roots is still read")
+        assertTrue(completeness.classes.values.none { it.status == AnalysisStatus.NOT_EXPANDED })
+        assertEquals(
+            completeness.classes.count { it.value.origin == JavaArchiveLayout.BOOT_INF_CLASSES },
+            completeness.classes.count { it.value.status == AnalysisStatus.ANALYZED },
+            "only the application's own classes were read"
+        )
+    }
+
+    @Test
+    fun `a Spring Boot class-path index orders duplicate definitions as the runtime loads them`() {
+        val input = bootJar(classpathIndex = listOf("other-1.0.jar", "dep-1.0.jar"))
+        val graph = load(input, LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true, buildCallGraph = false))
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(
+            mapOf("$depPackage.Source" to listOf("other-1.0.jar", "dep-1.0.jar")),
+            completeness.duplicateClasses,
+            "the archive's own order, not the listing order, says which definition runs"
+        )
+    }
+
+    @Test
     fun `a reachable scope stops at its budget and marks what it reached past it`() {
         val input = bootJar()
         val config = LoaderConfig(
@@ -402,7 +437,7 @@ class DependencyCompletenessTest {
         )
     }
 
-    private fun bootJar(): Path {
+    private fun bootJar(classpathIndex: List<String>? = null): Path {
         val appClasses = compile(appSources, "app", classpath = listOf(depJar(), stdlibJar()))
         val jarPath = Files.createTempDirectory("scope-boot").also(temporaryRoots::add).resolve("app.jar")
         JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
@@ -421,6 +456,11 @@ class DependencyCompletenessTest {
             jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfClassEntry("messages.properties")))
             jos.write("old=Hello\nnew=Bonjour\n".toByteArray())
             jos.closeEntry()
+            if (classpathIndex != null) {
+                jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_CLASSPATH_INDEX))
+                jos.write(classpathIndex.joinToString("") { "- \"${JavaArchiveLayout.BOOT_INF_LIB}$it\"\n" }.toByteArray())
+                jos.closeEntry()
+            }
             jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_LIB))
             jos.closeEntry()
             for (lib in listOf(depJar(), otherJar(), stdlibJar())) {

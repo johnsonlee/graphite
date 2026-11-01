@@ -67,7 +67,7 @@ impl Selected {
 }
 
 /// Options of `graphite.jar build` that take a value, to tell the input apart from them.
-const VALUE_OPTIONS: [&str; 9] = [
+const VALUE_OPTIONS: [&str; 10] = [
     "-o",
     "--output",
     "--include",
@@ -76,6 +76,7 @@ const VALUE_OPTIONS: [&str; 9] = [
     "--lib-filter",
     "--dependency-artifacts",
     "--dependency-packages",
+    "--dependency-roots",
     "--fold",
 ];
 
@@ -88,13 +89,14 @@ pub const INTERPROCEDURAL: &str = "--interprocedural";
 
 /// The options that decide which classes a build reads, and so which calls its graph has:
 /// `fold plan` takes the same ones, so the plan's provenance names the build the keys are for.
-const ANALYSIS_VALUE_OPTIONS: [&str; 6] = [
+const ANALYSIS_VALUE_OPTIONS: [&str; 7] = [
     "--include",
     "--exclude",
     "--lib-filter",
     "--android-sdk",
     "--dependency-artifacts",
     "--dependency-packages",
+    "--dependency-roots",
 ];
 const ANALYSIS_FLAGS: [&str; 2] = ["--include-libs", "--dependency-reachable"];
 
@@ -883,6 +885,8 @@ mod tests {
             "dep-*.jar",
             "--dependency-packages=kotlin.text.",
             "--dependency-reachable=5000",
+            "--dependency-roots",
+            "com.acme.web",
             "--interprocedural",
         ]
         .iter()
@@ -921,7 +925,9 @@ mod tests {
                 "--dependency-artifacts",
                 "dep-*.jar",
                 "--dependency-packages=kotlin.text.",
-                "--dependency-reachable=5000"
+                "--dependency-reachable=5000",
+                "--dependency-roots",
+                "com.acme.web"
             ]
         );
         // Without an input there is no build to describe.

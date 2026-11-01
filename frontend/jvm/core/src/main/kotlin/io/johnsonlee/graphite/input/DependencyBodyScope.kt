@@ -47,17 +47,27 @@ sealed interface DependencyBodyScope {
      * virtual callee the view knows, and the class a `new` names. At most [maxClasses] classes
      * are read this way; a class reached past the budget is `NOT_EXPANDED` in the evidence, which
      * is not a class with no effect. A library class nothing reaches stays `EXCLUDED_BY_SCOPE`.
+     *
+     * [roots] names the application classes whose calls seed the expansion, by class name
+     * prefix; empty means every application class. The other application classes are still
+     * read (they are the application), but what only they call is not followed into the
+     * libraries, so a consumer can expand from the entries it declares.
      */
-    data class Reachable(val maxClasses: Int = DEFAULT_MAX_CLASSES) : DependencyBodyScope {
+    data class Reachable(val maxClasses: Int = DEFAULT_MAX_CLASSES, val roots: List<String> = emptyList()) : DependencyBodyScope {
         init {
             require(maxClasses > 0) { "a reachable dependency body scope reads at least one class" }
+            require(roots.none { it.isBlank() }) { "a reachable dependency body scope names no blank root" }
         }
+
+        /** Whether the calls of the application class [className] seed the expansion. */
+        fun seeds(className: String): Boolean = roots.isEmpty() || roots.any { className.startsWith(it) }
 
         override val artifacts: List<String> get() = emptyList()
         override val packages: List<String> get() = emptyList()
         override fun covers(className: String, artifact: String?): Boolean = false
         override fun coversArtifact(artifact: String): Boolean = true
-        override fun toString(): String = "reachable(maxClasses=$maxClasses)"
+        override fun toString(): String =
+            if (roots.isEmpty()) "reachable(maxClasses=$maxClasses)" else "reachable(maxClasses=$maxClasses, roots=$roots)"
 
         companion object {
             const val DEFAULT_MAX_CLASSES = 50_000

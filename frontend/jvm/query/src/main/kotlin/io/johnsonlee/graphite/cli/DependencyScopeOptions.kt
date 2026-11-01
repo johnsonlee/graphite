@@ -8,14 +8,20 @@ import io.johnsonlee.graphite.input.DependencyBodyScope
  * declared scope for the first two, the reachable scope for the third; naming both kinds is an
  * error, since a build reads its library bodies one way.
  */
-internal fun dependencyBodyScope(artifacts: List<String>, packages: List<String>, reachable: Int? = null): DependencyBodyScope {
+internal fun dependencyBodyScope(
+    artifacts: List<String>,
+    packages: List<String>,
+    reachable: Int? = null,
+    roots: List<String> = emptyList()
+): DependencyBodyScope {
     val declared = artifacts.isNotEmpty() || packages.isNotEmpty()
     require(reachable == null || !declared) {
         "--dependency-reachable reads the library classes the application reaches; " +
             "it cannot be combined with --dependency-artifacts or --dependency-packages"
     }
+    require(roots.isEmpty() || reachable != null) { "--dependency-roots names the roots of --dependency-reachable; give both" }
     return when {
-        reachable != null -> DependencyBodyScope.Reachable(reachable)
+        reachable != null -> DependencyBodyScope.Reachable(reachable, roots)
         declared -> DependencyBodyScope.Declared(artifacts, packages)
         else -> DependencyBodyScope.None
     }

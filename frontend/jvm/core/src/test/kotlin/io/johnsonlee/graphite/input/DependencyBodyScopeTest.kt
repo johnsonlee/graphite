@@ -65,6 +65,16 @@ class DependencyBodyScopeTest {
             "a reachable dependency body scope reads at least one class",
             assertFailsWith<IllegalArgumentException> { DependencyBodyScope.Reachable(0) }.message
         )
+        val rooted = DependencyBodyScope.Reachable(10, roots = listOf("com.acme.web", "com.acme.jobs."))
+        assertTrue(rooted.seeds("com.acme.web.Controller"))
+        assertTrue(rooted.seeds("com.acme.jobs.Nightly"))
+        assertFalse(rooted.seeds("com.acme.model.Order"), "an application class outside the roots does not seed the expansion")
+        assertTrue(DependencyBodyScope.Reachable().seeds("com.acme.model.Order"), "no roots: every application class seeds")
+        assertEquals("reachable(maxClasses=10, roots=[com.acme.web, com.acme.jobs.])", rooted.toString())
+        assertEquals(
+            "a reachable dependency body scope names no blank root",
+            assertFailsWith<IllegalArgumentException> { DependencyBodyScope.Reachable(roots = listOf("")) }.message
+        )
     }
 
     @Test

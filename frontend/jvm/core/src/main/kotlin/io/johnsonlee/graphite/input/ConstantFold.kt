@@ -328,7 +328,9 @@ data class AnalysisIdentity(
     /** The package prefixes of [LoaderConfig.dependencyBodies]. */
     val dependencyPackages: List<String> = emptyList(),
     /** The class budget of a [DependencyBodyScope.Reachable] scope, null for any other scope. */
-    val dependencyReachable: Int? = null
+    val dependencyReachable: Int? = null,
+    /** The roots of a [DependencyBodyScope.Reachable] scope. */
+    val dependencyRoots: List<String> = emptyList()
 ) {
     init {
         require(androidPlatformSha256 == null || FoldProvenance.isSha256(androidPlatformSha256)) {
@@ -350,6 +352,7 @@ data class AnalysisIdentity(
         if (dependencyArtifacts.isNotEmpty()) document[DEPENDENCY_ARTIFACTS] = dependencyArtifacts.sorted()
         if (dependencyPackages.isNotEmpty()) document[DEPENDENCY_PACKAGES] = dependencyPackages.sorted()
         dependencyReachable?.let { document[DEPENDENCY_REACHABLE] = it }
+        if (dependencyRoots.isNotEmpty()) document[DEPENDENCY_ROOTS] = dependencyRoots.sorted()
     }
 
     /** The names of the options on which this identity and [other] differ, with both values. */
@@ -369,6 +372,7 @@ data class AnalysisIdentity(
         if (dependencyReachable != other.dependencyReachable) {
             add("$DEPENDENCY_REACHABLE ${dependencyReachable ?: "none"} vs ${other.dependencyReachable ?: "none"}")
         }
+        lists(DEPENDENCY_ROOTS, dependencyRoots, other.dependencyRoots)
     }
 
     override fun equals(other: Any?): Boolean = other is AnalysisIdentity && differences(other).isEmpty()
@@ -384,9 +388,10 @@ data class AnalysisIdentity(
         const val DEPENDENCY_ARTIFACTS = "dependency_artifacts"
         const val DEPENDENCY_PACKAGES = "dependency_packages"
         const val DEPENDENCY_REACHABLE = "dependency_reachable"
+        const val DEPENDENCY_ROOTS = "dependency_roots"
         private val KEYS = listOf(
             INCLUDE, EXCLUDE, INCLUDE_LIBS, LIB_FILTER, ANDROID_PLATFORM_SHA256, DEPENDENCY_ARTIFACTS, DEPENDENCY_PACKAGES,
-            DEPENDENCY_REACHABLE
+            DEPENDENCY_REACHABLE, DEPENDENCY_ROOTS
         )
 
         /**
@@ -401,7 +406,8 @@ data class AnalysisIdentity(
             androidPlatformSha256 = androidPlatformSha256,
             dependencyArtifacts = config.dependencyBodies.artifacts.sorted(),
             dependencyPackages = config.dependencyBodies.packages.sorted(),
-            dependencyReachable = (config.dependencyBodies as? DependencyBodyScope.Reachable)?.maxClasses
+            dependencyReachable = (config.dependencyBodies as? DependencyBodyScope.Reachable)?.maxClasses,
+            dependencyRoots = (config.dependencyBodies as? DependencyBodyScope.Reachable)?.roots?.sorted().orEmpty()
         )
 
         fun parse(document: Any?, at: String): AnalysisIdentity {
@@ -422,10 +428,11 @@ data class AnalysisIdentity(
             require(reachable == null || reachable is Number && reachable.toDouble() == reachable.toInt().toDouble()) {
                 "$at.$DEPENDENCY_REACHABLE must be an integer, got ${Suggest.kind(reachable)}"
             }
+            val roots = strings(map[DEPENDENCY_ROOTS], "$at.$DEPENDENCY_ROOTS")
             return try {
                 AnalysisIdentity(
                     include, exclude, libs, filters, sha as String?, dependencyArtifacts, dependencyPackages,
-                    (reachable as Number?)?.toInt()
+                    (reachable as Number?)?.toInt(), roots
                 )
             } catch (e: IllegalArgumentException) {
                 throw IllegalArgumentException("$at.${e.message}", e)

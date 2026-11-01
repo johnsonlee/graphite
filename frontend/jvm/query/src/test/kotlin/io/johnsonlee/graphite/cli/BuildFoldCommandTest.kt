@@ -395,6 +395,18 @@ class BuildFoldCommandTest {
         assertEquals(2500, budgeted.dependencyReachable)
         val scope = dependencyBodyScope(budgeted.dependencyArtifacts, budgeted.dependencyPackages, budgeted.dependencyReachable)
         assertEquals(DependencyBodyScope.Reachable(2500), scope)
+        CommandLine(budgeted).parseArgs(
+            "app.jar", "-o", "out", "--include-libs", "--dependency-reachable", "--dependency-roots", "a.web,a.jobs"
+        )
+        assertEquals(listOf("a.web", "a.jobs"), budgeted.dependencyRoots)
+        assertEquals(
+            DependencyBodyScope.Reachable(50_000, listOf("a.web", "a.jobs")),
+            dependencyBodyScope(emptyList(), emptyList(), budgeted.dependencyReachable, budgeted.dependencyRoots)
+        )
+        assertEquals(
+            "--dependency-roots names the roots of --dependency-reachable; give both",
+            assertFailsWith<IllegalArgumentException> { dependencyBodyScope(emptyList(), emptyList(), null, listOf("a")) }.message
+        )
     }
 
     @Test

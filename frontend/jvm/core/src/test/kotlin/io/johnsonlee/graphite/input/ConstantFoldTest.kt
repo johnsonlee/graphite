@@ -405,10 +405,17 @@ class ConstantFoldTest {
             "p.dependency_reachable must be positive, got 0",
             assertFailsWith<IllegalArgumentException> { AnalysisIdentity.parse(mapOf("dependency_reachable" to 0), "p") }.message
         )
+        val rooted = AnalysisIdentity.of(
+            LoaderConfig(includeLibraries = true, dependencyBodies = DependencyBodyScope.Reachable(500, listOf("b.", "a.")))
+        )
+        assertEquals(listOf("a.", "b."), rooted.dependencyRoots)
+        assertEquals(listOf("a.", "b."), rooted.toDocument()["dependency_roots"])
+        assertEquals(rooted, AnalysisIdentity.parse(rooted.toDocument(), "p"), "round trip")
+        assertEquals(listOf("dependency_roots [] vs [a., b.]"), reachable.differences(rooted))
         fun malformed(document: Any?) = assertFailsWith<IllegalArgumentException> { FoldProvenance.parse(document, "p") }.message
         assertEquals(
             "p.analysis has no key 'inclde'; it is {include, exclude, include_libs, lib_filter, android_platform_sha256, " +
-                "dependency_artifacts, dependency_packages, dependency_reachable}",
+                "dependency_artifacts, dependency_packages, dependency_reachable, dependency_roots}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("inclde" to listOf("a")))))
         assertEquals("p.analysis.include must be a list of strings, got string 'a'",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("include" to "a"))))
@@ -418,7 +425,7 @@ class ConstantFoldTest {
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to mapOf("android_platform_sha256" to "x"))))
         assertEquals(
             "p.analysis must be a map {include, exclude, include_libs, lib_filter, android_platform_sha256, dependency_artifacts, " +
-                "dependency_packages, dependency_reachable}, got integer 1",
+                "dependency_packages, dependency_reachable, dependency_roots}, got integer 1",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "analysis" to 1)))
         assertEquals("p has no key 'x'; it is {input_sha256, frontend_version, analysis}",
             malformed(mapOf("input_sha256" to sha, "frontend_version" to "1", "x" to 1)))

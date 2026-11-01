@@ -84,6 +84,13 @@ class BuildCommand : Callable<Int> {
     var dependencyReachable: Int? = null
 
     @Option(
+        names = ["--dependency-roots"],
+        description = ["Application class prefixes (comma-separated) whose calls seed --dependency-reachable; all of them when omitted"],
+        split = ","
+    )
+    var dependencyRoots: List<String> = emptyList()
+
+    @Option(
         names = ["--fold"],
         description = [
             "JSON or YAML file of call-site patterns to fold to constants while the graph is built",
@@ -130,7 +137,7 @@ class BuildCommand : Callable<Int> {
                 libraryFilters = libFilters,
                 androidSdk = androidSdk,
                 interproceduralDataflow = interprocedural,
-                dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages, dependencyReachable),
+                dependencyBodies = dependencyBodyScope(dependencyArtifacts, dependencyPackages, dependencyReachable, dependencyRoots),
                 folding = folds.takeIf { it.isNotEmpty() }?.let { FoldPlan(it) { report -> foldReport = report } },
                 verbose = if (verbose) { msg -> System.err.println(msg) } else null
             )

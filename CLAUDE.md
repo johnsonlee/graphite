@@ -812,8 +812,11 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). A reached
   stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
   which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
-- Not done: consumer-supplied roots (the roots are the application's classes), a Rust reader of
-  the sidecar, and class-path precedence beyond listing order.
+- `Reachable.roots` restricts which application classes seed the expansion (the others are
+  still read; they are the application); `BOOT-INF/classpath.idx` orders a Spring Boot jar's
+  duplicate definitions as the runtime loads them, the listing order otherwise. Not done: a
+  Rust reader of the sidecar (no consumer; the Rust server reads no new file), and applying
+  class-path precedence to which definition the view loads.
 
 ### Why `buildGraph()` Is Not Parallelized
 
