@@ -8,6 +8,7 @@ This is correctness evidence, never a performance benchmark.
 """
 
 import argparse
+from collections import Counter
 import hashlib
 import io
 import json
@@ -78,11 +79,16 @@ function walk(dir) {
       function visit(n) {
         if(ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
           const callee = n.expression.name.text;
+          // Count calls, not argument positions: f('x', 'x') is one occurrence.
+          const seen = new Set();
           for(const arg of n.arguments) if(ts.isStringLiteralLike(arg) || ts.isNumericLiteral(arg)) {
             const value = ts.isNumericLiteral(arg) ? Number(arg.text) : arg.text;
             const check = result.find(c=>c.callee===callee && c.value===value);
-            if(check) check.locations.push({file:path.relative(root,file).split(path.sep).join('/'),
-              line:ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1});
+            if(check && !seen.has(check)) {
+              seen.add(check);
+              check.locations.push({file:path.relative(root,file).split(path.sep).join('/'),
+                line:ast.getLineAndCharacterOfPosition(n.getStart(ast)).line+1});
+            }
           }
         }
         ts.forEachChild(n,visit);
@@ -99,6 +105,36 @@ console.log(JSON.stringify(result));
 
 def digest(data):
     return hashlib.sha256(data).hexdigest()
+
+
+def check_operation_occurrences(operation, rows):
+    """Require exact direct-literal call multiplicity, including same-line calls.
+
+    These selected operations have no approved normalization clones. Extra rows
+    fail too; a future exception needs evidence identifying the added calls.
+    Counts are per call, not per equal argument within a call, matching graph
+    constant-to-call relationships. Values retain their JSON type in the key.
+    """
+    def key(file, line, callee, value):
+        return file, line, callee, json.dumps(value, ensure_ascii=True, sort_keys=True)
+
+    expected = Counter(key(loc["file"], loc["line"], operation["callee"], operation["value"])
+                       for loc in operation["locations"])
+    if not expected:
+        raise AssertionError(f"Empty compiled operation oracle: {operation}")
+    files = {loc["file"] for loc in operation["locations"]}
+    actual = Counter()
+    for row in rows:
+        owner = row["caller_class"]
+        matches = [file for file in files if owner == file
+                   or owner.startswith(file + "#") or owner.startswith(file + ".")]
+        if len(matches) != 1:
+            raise AssertionError(f"Unmatched or ambiguous compiled operation file: {row}")
+        actual[key(matches[0], row["line"], row["callee"], row["value"])] += 1
+    missing, extra = expected - actual, actual - expected
+    if missing or extra:
+        raise AssertionError(f"Compiled operation occurrence mismatch: missing={dict(missing)}, extra={dict(extra)}")
+    return sum(expected.values())
 
 
 def js_inventory(app):
@@ -273,14 +309,7 @@ class Harness:
                      "RETURN s.value AS value, cs.caller_class AS caller_class, cs.callee_name AS callee, cs.line AS line "
                      "ORDER BY caller_class, callee, line")
             rows = self.query(graph, query)
-            assert rows, f"{side}: missing compiled operation {operation}"
-            for location in operation["locations"]:
-                assert any(row["value"] == operation["value"] and row["callee"] == operation["callee"]
-                           and row["line"] == location["line"]
-                           and (row["caller_class"] == location["file"]
-                                or row["caller_class"].startswith(location["file"] + "#")
-                                or row["caller_class"].startswith(location["file"] + "."))
-                           for row in rows), (side, operation, location, rows)
+            check_operation_occurrences(operation, rows)
             checks.append({"query": query, "rows": rows})
         for query in FULL_QUERIES:
             rows = self.query(graph, query)
