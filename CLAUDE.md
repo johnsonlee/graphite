@@ -819,8 +819,13 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   still read; they are the application); `BOOT-INF/classpath.idx` orders a Spring Boot jar's
   nested libraries as the launcher loads them, for the view's input locations and for the
   duplicate-definition evidence alike, so the definition the graph holds is the one that runs;
-  other layouts keep the listing order. Not done: a Rust reader of the sidecar (no consumer, and
-  it would be a new gzip dependency for a file the Rust server never opens).
+  other layouts keep the listing order. A root decision is the caller's: a call on a function
+  value is resolved after every class was processed, so a flag left by the last class is the
+  wrong class's (review of #193); the resolved call seeds by `callSite.caller`. An APK beside its
+  platform jar is a single-artifact input for the graph's origin index, which stays empty, but
+  the evidence names the input location each class was read from, or the platform's classes read
+  as the APK's and no scope could name them. Not done: a Rust reader of the sidecar (no consumer,
+  and it would be a new gzip dependency for a file the Rust server never opens).
 
 ### Why `buildGraph()` Is Not Parallelized
 

@@ -17,7 +17,7 @@ import sootup.core.model.SourceType
 import sootup.core.interceptor.BodyInterceptor
 import sootup.interceptors.BytecodeBodyInterceptors
 import sootup.interceptors.LocalSplitter
-import sootup.java.bytecode.frontend.inputlocation.JavaClassPathAnalysisInputLocation
+import sootup.java.bytecode.frontend.inputlocation.PathBasedAnalysisInputLocation
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -126,9 +126,14 @@ private fun createApkInputLocations(
     if (config.includeLibraries) {
         val androidJar = resolveAndroidJar(androidVersion.api_version, platforms)
         val sourceName = platforms.relativize(androidJar).toString().replace('\\', '/')
-        val androidJarLocation = folding?.let {
-            JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library, bytecodeInterceptors(it))
-        } ?: JavaClassPathAnalysisInputLocation(androidJar.toString(), SourceType.Library)
+        // The jar's own location, not a class-path wrapper around it: a class source names the
+        // location it was read from, and the adapter's source map must find the platform by it.
+        // The chain is the one `JavaClassPathAnalysisInputLocation` installs.
+        val androidJarLocation = PathBasedAnalysisInputLocation.create(
+            androidJar,
+            SourceType.Library,
+            folding?.let(::bytecodeInterceptors) ?: BytecodeBodyInterceptors.Default.bodyInterceptors
+        )
         locations.add(androidJarLocation)
         sources[androidJarLocation] = sourceName
         platformSource = sourceName
@@ -140,8 +145,9 @@ private fun createApkInputLocations(
 
 /**
  * SootUp's default bytecode interceptors with the fold passes, for the Android platform jar:
- * `JavaClassPathAnalysisInputLocation(path, type)` installs `BytecodeBodyInterceptors.Default`
- * when given no chain, so the fold chain builds on the same one.
+ * the platform was read through `JavaClassPathAnalysisInputLocation(path, type)`, which
+ * installs `BytecodeBodyInterceptors.Default` when given no chain, and its own location keeps
+ * that chain, so the fold chain builds on the same one.
  */
 private fun bytecodeInterceptors(folding: ConstantFolding): List<BodyInterceptor> =
     folding.bodyInterceptors(BytecodeBodyInterceptors.Default.bodyInterceptors)

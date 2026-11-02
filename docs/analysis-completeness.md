@@ -70,7 +70,8 @@ reached, as the issue's contract expects. Only library classes are reached: an a
 class `excludePackages` names stays excluded. `roots` names the
 application classes (by prefix) whose calls seed the expansion; the other application classes
 are still read, being the application, but what only they call is not followed into the
-libraries. The roots are part of the fold provenance (`dependency_roots`).
+libraries; a call on a function value resolved after the classes were read seeds by its own
+caller's class. The roots are part of the fold provenance (`dependency_roots`).
 
 With `interproceduralDataflow`, an argument of an application call reaches the parameter node
 of the helper's body and the helper's return reaches the call's result, so a query can follow a
@@ -103,7 +104,8 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
   `META-INF/versions/` class entries. This frontend does not select versioned copies: every
   class is read at its base version, as SootUp reads it, so a consumer whose runtime is a newer
   JDK knows the bodies may differ from the ones that run.
-- `classes`: every class of the view, with the artifact it was read from and `ANALYZED`,
+- `classes`: every class of the view, with the artifact it was read from (an APK build's
+  platform classes name the platform jar, `android-21/android.jar`, not the APK) and `ANALYZED`,
   `EXCLUDED_BY_SCOPE` (loaded for its types only) or `RESOLUTION_FAILED` (its methods could not be
   resolved at all).
 - `methods`: every method whose status is not `ANALYZED`, keyed by `MethodDescriptor.identity`

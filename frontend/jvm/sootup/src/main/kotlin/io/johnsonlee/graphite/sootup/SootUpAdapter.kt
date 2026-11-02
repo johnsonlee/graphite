@@ -553,7 +553,7 @@ class SootUpAdapter(
         )
         classes.forEach { sootClass ->
             val className = sootClass.type.fullyQualifiedName
-            val origin = classOriginsByName[className] ?: singleArtifactSource
+            val origin = evidenceOrigin(sootClass)
             val application = shouldIncludeClass(sootClass)
             if (!application && !(isLibraryOrigin(origin) && config.dependencyBodies.covers(className, origin))) {
                 classEvidence[className] = ClassEvidence(origin, AnalysisStatus.EXCLUDED_BY_SCOPE)
@@ -619,8 +619,19 @@ class SootUpAdapter(
         activeClassSeeds = !application || reachableExpansion?.seeds(className) != false
         processClassWithMethodCache(sootClass, extensionContext, application)
         val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
-        classEvidence[className] = ClassEvidence(classOriginsByName[className] ?: singleArtifactSource, status)
+        classEvidence[className] = ClassEvidence(evidenceOrigin(sootClass), status)
     }
+
+    /**
+     * The source the evidence names for [sootClass]: the indexed origin for a multi-artifact
+     * input; for a single-artifact input, the input location the class was read from when the
+     * view holds more than one (an APK beside its platform jar: the platform's classes are the
+     * platform's, not the APK's, whatever the graph's own origin index says), else the artifact.
+     */
+    private fun evidenceOrigin(sootClass: SootClass): String? =
+        classOriginsByName[sootClass.type.fullyQualifiedName]
+            ?: (sootClass as? JavaSootClass)?.let(::sourceForClass)
+            ?: singleArtifactSource
 
     /**
      * Read the library classes the application reaches, see [DependencyBodyScope.Reachable]:
@@ -688,14 +699,26 @@ class SootUpAdapter(
      * (`super.value()` before `receiver.value()`), since only the virtual call reaches the
      * overrides and the first note may already have been drained.
      */
-    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean) {
-        if (reachableExpansion == null || !activeClassSeeds) return
+    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean, seeded: Boolean = activeClassSeeds) {
+        if (reachableExpansion == null || !seeded) return
         val noted = notedCallees[callee]
         if (noted == null || (virtual && !noted)) {
             notedCallees[callee] = virtual || noted == true
             reachedCallees += callee
             reachedVirtually += virtual
         }
+    }
+
+    /**
+     * Whether a call made by [caller] seeds the expansion: its class is a library's the scope
+     * read, or an application class the roots name. A call resolved after class processing
+     * (a call on a function value) is attributed to its own caller, never to the class that
+     * happened to be processed last.
+     */
+    private fun seededCaller(caller: MethodDescriptor): Boolean {
+        val className = caller.declaringClass.className
+        val origin = classEvidence[className]?.origin
+        return (origin != null && isLibraryOrigin(origin)) || reachableExpansion?.seeds(className) != false
     }
 
     /**
@@ -2323,7 +2346,7 @@ class SootUpAdapter(
         )
         graphBuilder.addNode(resolvedCallSite)
         interprocedural?.call(resolved.method, false, resolved.arguments, result)
-        noteReachedCallee(resolved.method, virtual = false)
+        noteReachedCallee(resolved.method, virtual = false, seeded = seededCaller(callSite.caller))
         // Both the call on the function value and the resolved call are dynamic dispatch
         graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
         graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))

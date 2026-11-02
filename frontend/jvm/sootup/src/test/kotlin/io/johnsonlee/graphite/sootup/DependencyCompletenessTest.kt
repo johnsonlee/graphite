@@ -130,6 +130,29 @@ class DependencyCompletenessTest {
         """.trimIndent()
     )
 
+    /**
+     * A root whose call on a function value resolves, after class processing, to a helper body a
+     * non-root produced; the non-root `Zzz` is processed last and seeds nothing.
+     */
+    private val deferredDispatchSources = mapOf(
+        "Root.java" to """
+            package sample.scope.app;
+            public class Root {
+                public String run() { return new Factory().make().get(); }
+            }
+        """.trimIndent(),
+        "Factory.java" to """
+            package sample.scope.app;
+            public class Factory {
+                public java.util.function.Supplier<String> make() { return sample.scope.dep.Reader::fixed; }
+            }
+        """.trimIndent(),
+        "Zzz.java" to """
+            package sample.scope.app;
+            public class Zzz { public int size() { return "zzz".length(); } }
+        """.trimIndent()
+    )
+
     /** An application subclass whose `super.value()` is processed before any virtual call on `Base.value`. */
     private val childSource = "Child.java" to """
         package sample.scope.app;
@@ -373,6 +396,54 @@ class DependencyCompletenessTest {
         assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus(base), "the declared callee")
         assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$depPackage.Sub"), "the override the virtual call reaches")
         assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "unreached from that root")
+    }
+
+    @Test
+    fun `a call on a function value resolved after processing seeds the expansion by its own caller`() {
+        val input = bootJar(extraAppSources = deferredDispatchSources)
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Root"))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val resolved = graph.nodes<CallSiteNode>().filter { it.caller.name == "run" && it.callee.name == "fixed" }.toList()
+        assertEquals(1, resolved.size, "Root.run reaches Reader.fixed through the supplier Factory made")
+        assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(resolved.single().callee), "reached from the root's call")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("$depPackage.Source"), "nothing else is reached")
+    }
+
+    @Test
+    fun `an APK's platform classes carry the platform jar's origin, and a declared scope reads them`() {
+        val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
+        val sdk = Files.createTempDirectory("scope-sdk").also(temporaryRoots::add)
+        val platform = Files.createDirectories(sdk.resolve("platforms/android-21"))
+        val probe = compile(
+            mapOf("Probe.java" to "package android.review; public class Probe { public static int size() { return 1; } }"),
+            "probe"
+        )
+        jar(platform.resolve("android.jar"), probe, "android/review/")
+        val config = LoaderConfig(
+            includePackages = listOf("fixture.frontend.android"),
+            includeLibraries = true,
+            buildCallGraph = false,
+            androidSdk = sdk,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("android.jar"))
+        )
+        val graph = load(apk, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val platformSource = "android-21/android.jar"
+        assertEquals(
+            mapOf(apk.fileName.toString() to ArtifactRole.APPLICATION, platformSource to ArtifactRole.PLATFORM),
+            completeness.roles()
+        )
+        val probeEvidence = completeness.classes.getValue("android.review.Probe")
+        assertEquals(platformSource, probeEvidence.origin, "a platform class is the platform's, not the APK's")
+        assertEquals(AnalysisStatus.ANALYZED, probeEvidence.status, "the declared scope names the platform jar")
+        assertEquals(apk.fileName.toString(), completeness.classes.getValue("fixture.frontend.android.AndroidCases").origin)
+        assertEquals(emptyMap(), graph.classOrigins(), "the graph's own origin index of a single-artifact input is unchanged")
     }
 
     @Test
