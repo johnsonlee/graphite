@@ -447,6 +447,25 @@ class DependencyCompletenessTest {
     }
 
     @Test
+    fun `a zip input is listed like a jar, so its multi-release copies are reported`() {
+        val classes = compile(otherSources, "zip")
+        val util = classes.resolve("sample/scope/other/Util.class")
+        val root = Files.createTempDirectory("scope-zip").also(temporaryRoots::add)
+        val input = jar(
+            root.resolve("other.zip"),
+            classes,
+            "sample/scope/other/",
+            extra = mapOf("META-INF/versions/9/sample/scope/other/Util.class" to Files.readAllBytes(util)),
+            multiRelease = true
+        )
+        val graph = load(input, LoaderConfig(includePackages = listOf("sample.scope.other"), buildCallGraph = false))
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(mapOf("other.zip" to ArtifactRole.APPLICATION), completeness.roles())
+        assertTrue(completeness.artifacts.getValue("other.zip").multiRelease, "the Java 9 copy is reported")
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("sample.scope.other.Util"))
+    }
+
+    @Test
     fun `an application definition keeps its precedence over an indexed library's in the duplicate evidence`() {
         val input = bootJar(classpathIndex = listOf("other-1.0.jar", "dep-1.0.jar"), duplicateInOther = listOf(ab))
         val config = LoaderConfig(
@@ -672,8 +691,18 @@ class DependencyCompletenessTest {
         return classesDir
     }
 
-    private fun jar(path: Path, classes: Path, prefix: String, extra: Map<String, ByteArray> = emptyMap()): Path {
-        JarOutputStream(Files.newOutputStream(path), Manifest().apply { mainAttributes.putValue("Manifest-Version", "1.0") }).use { jos ->
+    private fun jar(
+        path: Path,
+        classes: Path,
+        prefix: String,
+        extra: Map<String, ByteArray> = emptyMap(),
+        multiRelease: Boolean = false
+    ): Path {
+        val manifest = Manifest().apply {
+            mainAttributes.putValue("Manifest-Version", "1.0")
+            if (multiRelease) mainAttributes.putValue("Multi-Release", "true")
+        }
+        JarOutputStream(Files.newOutputStream(path), manifest).use { jos ->
             File(classes.toFile(), prefix).walk().filter { it.isFile && it.name.endsWith(".class") }.forEach { classFile ->
                 jos.putNextEntry(JarEntry(classFile.relativeTo(classes.toFile()).path.replace(File.separatorChar, '/')))
                 classFile.inputStream().use { it.copyTo(jos) }

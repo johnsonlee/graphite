@@ -124,6 +124,22 @@ class ArchiveResourceAccessorTest {
     }
 
     @Test
+    fun `create from a zip input lists its entries under the file name`() {
+        val zipFile = createTempJar(mapOf("config/settings.json" to "{}", "META-INF/versions/9/a/B.class" to ""))
+        val zipPath = zipFile.toPath().resolveSibling("bundle.zip")
+        try {
+            Files.move(zipFile.toPath(), zipPath)
+            ArchiveResourceAccessor.create(zipPath).use { accessor ->
+                val entries = accessor.list("**").toList()
+                assertEquals(setOf("bundle.zip"), entries.map { it.source }.toSet())
+                assertTrue(entries.any { it.path == "META-INF/versions/9/a/B.class" }, "class entries are listed too")
+            }
+        } finally {
+            Files.deleteIfExists(zipPath)
+        }
+    }
+
+    @Test
     fun `create from directory includes nested zip entries`() {
         val dir = Files.createTempDirectory("test-resource-layout")
         val zipFile = createTempJar(mapOf("config/settings.json" to "{}"))
