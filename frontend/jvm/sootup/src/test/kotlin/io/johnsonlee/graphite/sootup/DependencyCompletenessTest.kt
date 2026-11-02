@@ -153,6 +153,29 @@ class DependencyCompletenessTest {
         """.trimIndent()
     )
 
+    /**
+     * Application-package classes shipped in a nested library jar: a non-root whose call on a
+     * function value resolves to a helper body, beside a root that calls no library at all.
+     */
+    private val nestedAppSources = mapOf(
+        "NonRoot.java" to """
+            package sample.scope.app;
+            public class NonRoot {
+                public String go() { return new Factory().make().get(); }
+            }
+        """.trimIndent(),
+        "Factory.java" to """
+            package sample.scope.app;
+            public class Factory {
+                public java.util.function.Supplier<String> make() { return sample.scope.dep.Reader::fixed; }
+            }
+        """.trimIndent()
+    )
+    private val quietRootSource = "Root.java" to """
+        package sample.scope.app;
+        public class Root { public int run() { return 1; } }
+    """.trimIndent()
+
     /** An application subclass whose `super.value()` is processed before any virtual call on `Base.value`. */
     private val childSource = "Child.java" to """
         package sample.scope.app;
@@ -416,6 +439,34 @@ class DependencyCompletenessTest {
     }
 
     @Test
+    fun `roots restrict an application-package class a nested library jar holds, at a deferred dispatch too`() {
+        val nestedClasses = compile(nestedAppSources, "nested", classpath = listOf(depJar()))
+        val nested = jar(
+            Files.createTempDirectory("scope-nested").also(temporaryRoots::add).resolve("appext-1.0.jar"),
+            nestedClasses,
+            "sample/scope/app/"
+        )
+        val input = bootJar(extraAppSources = mapOf(quietRootSource), extraLibs = listOf(nested))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Root"))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals("appext-1.0.jar", completeness.classes.getValue("$appPackage.NonRoot").origin)
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$appPackage.NonRoot"), "the application, wherever it ships")
+        assertTrue(
+            graph.nodes<CallSiteNode>().any { it.caller.name == "go" && it.callee.name == "fixed" },
+            "NonRoot.go reaches Reader.fixed through the supplier"
+        )
+        val fixed = readMethod.copy(name = "fixed", parameterTypes = emptyList())
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, graph.analysisStatus(fixed), "not a root's call")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "no root reaches the helper")
+    }
+
+    @Test
     fun `an APK's platform classes carry the platform jar's origin, and a declared scope reads them`() {
         val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
         val sdk = Files.createTempDirectory("scope-sdk").also(temporaryRoots::add)
@@ -639,7 +690,8 @@ class DependencyCompletenessTest {
     private fun bootJar(
         classpathIndex: List<String>? = null,
         extraAppSources: Map<String, String> = emptyMap(),
-        duplicateInOther: List<String> = emptyList()
+        duplicateInOther: List<String> = emptyList(),
+        extraLibs: List<Path> = emptyList()
     ): Path {
         val appClasses = compile(appSources + extraAppSources, "app", classpath = listOf(depJar(), stdlibJar()))
         val otherExtra = duplicateInOther.associate { className ->
@@ -671,7 +723,7 @@ class DependencyCompletenessTest {
             }
             jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_LIB))
             jos.closeEntry()
-            for (lib in listOf(depJar(), otherJar, stdlibJar())) {
+            for (lib in listOf(depJar(), otherJar, stdlibJar()) + extraLibs) {
                 jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfLibEntry(lib.name)))
                 Files.newInputStream(lib).use { it.copyTo(jos) }
                 jos.closeEntry()

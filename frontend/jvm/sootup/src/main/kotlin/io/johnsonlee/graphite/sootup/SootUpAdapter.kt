@@ -431,6 +431,9 @@ class SootUpAdapter(
     private var reachablePastBudget = 0
     /** Whether the pass-2 class being read seeds the reachable expansion: a library class always, an application class as a root. */
     private var activeClassSeeds = true
+
+    /** The classes pass 2 read as the application's (by package, whatever artifact holds them). */
+    private val applicationClasses = HashSet<String>()
     /** Calls on function values that no slot tracks (cross-method tracking off): their gaps are read from here. */
     private val untrackedDispatches = ArrayList<PendingDispatch>()
     /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
@@ -616,6 +619,7 @@ class SootUpAdapter(
     private fun processDependencyOrApplicationClass(sootClass: SootClass, extensionContext: GraphiteContext, application: Boolean) {
         val className = sootClass.type.fullyQualifiedName
         activeClassResolutionFailed = false
+        if (application) applicationClasses += className
         activeClassSeeds = !application || reachableExpansion?.seeds(className) != false
         processClassWithMethodCache(sootClass, extensionContext, application)
         val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
@@ -710,15 +714,15 @@ class SootUpAdapter(
     }
 
     /**
-     * Whether a call made by [caller] seeds the expansion: its class is a library's the scope
-     * read, or an application class the roots name. A call resolved after class processing
-     * (a call on a function value) is attributed to its own caller, never to the class that
-     * happened to be processed last.
+     * Whether a call made by [caller] seeds the expansion, by the classification pass 2 gave
+     * the caller's class: a library class the scope read seeds, an application class (by
+     * package, whatever artifact holds it) seeds when the roots name it. A call resolved after
+     * class processing (a call on a function value) is attributed to its own caller, never to
+     * the class that happened to be processed last.
      */
     private fun seededCaller(caller: MethodDescriptor): Boolean {
         val className = caller.declaringClass.className
-        val origin = classEvidence[className]?.origin
-        return (origin != null && isLibraryOrigin(origin)) || reachableExpansion?.seeds(className) != false
+        return className !in applicationClasses || reachableExpansion?.seeds(className) != false
     }
 
     /**
