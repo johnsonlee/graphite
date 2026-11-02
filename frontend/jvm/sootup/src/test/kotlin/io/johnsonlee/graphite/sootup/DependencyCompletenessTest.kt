@@ -3,7 +3,6 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.core.DataFlowEdge
 import io.johnsonlee.graphite.core.DataFlowKind
-import io.johnsonlee.graphite.core.MethodDescriptor
 import io.johnsonlee.graphite.core.NodeId
 import io.johnsonlee.graphite.core.ParameterNode
 import io.johnsonlee.graphite.core.ResourceEdge
@@ -11,35 +10,23 @@ import io.johnsonlee.graphite.core.ResourceFileNode
 import io.johnsonlee.graphite.core.ResourceRelation
 import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.core.StringConstant
-import io.johnsonlee.graphite.core.TypeDescriptor
-import io.johnsonlee.graphite.graph.AnalysisCompleteness
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.graph.CallSiteGap
-import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.analysisStatus
 import io.johnsonlee.graphite.graph.nodes
-import io.johnsonlee.graphite.input.ConstantFold
 import io.johnsonlee.graphite.input.DependencyBodyScope
 import io.johnsonlee.graphite.input.FoldPlan
 import io.johnsonlee.graphite.input.JavaArchiveLayout
 import io.johnsonlee.graphite.input.LoaderConfig
-import java.io.File
 import java.nio.file.Files
-import java.nio.file.Path
-import java.util.jar.JarEntry
-import java.util.jar.JarOutputStream
-import java.util.jar.Manifest
-import javax.tools.ToolProvider
 import kotlin.io.path.name
-import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
-
 /**
  * The dependency body scope and the completeness evidence, on the shape of GraphFold's proof
  * (issue #192): an application whose only reader of a new resource key sits behind a gate the
@@ -47,150 +34,7 @@ import kotlin.test.assertTrue
  * them. The scope decides which library bodies the graph holds; the evidence says, for every
  * callee, whether its body is in the graph, and if not, why.
  */
-class DependencyCompletenessTest {
-
-    private val temporaryRoots = mutableListOf<Path>()
-
-    @AfterTest
-    fun cleanUp() {
-        temporaryRoots.forEach { it.toFile().deleteRecursively() }
-        File(System.getProperty("java.io.tmpdir")).listFiles()
-            ?.filter { it.name.startsWith("graphite-springboot") }
-            ?.forEach { it.deleteRecursively() }
-    }
-
-    private val appPackage = "sample.scope.app"
-    private val depPackage = "sample.scope.dep"
-    private val example = "$appPackage.Example"
-    private val ab = "$appPackage.Ab"
-    private val reader = "$depPackage.Reader"
-
-    private val appSources = mapOf(
-        "Example.java" to """
-            package sample.scope.app;
-            import java.util.ResourceBundle;
-            public class Example {
-                public String value() {
-                    ResourceBundle bundle = ResourceBundle.getBundle("messages");
-                    if (Ab.enabled("feature")) return bundle.getString("new");
-                    return kotlin.text.StringsKt.trim((CharSequence) bundle.getString("old")).toString() + "!";
-                }
-                public String viaHelper() { return sample.scope.dep.Reader.read("messages", "old"); }
-                public String viaSource(sample.scope.dep.Source source) { return source.fetch("old"); }
-                public String viaCallback() { return sample.scope.dep.Reader.once(() -> "old"); }
-                public String viaUnknown(java.util.function.Supplier<String> s) { return s.get(); }
-                public int viaMany() {
-                    int n = 0;
-            ${(1..65).joinToString("\n") { "        n += sample.scope.dep.Reader.via(() -> \"v$it\").length();" }}
-                    return n;
-                }
-            }
-        """.trimIndent(),
-        "Ab.java" to """
-            package sample.scope.app;
-            public class Ab {
-                public static boolean enabled(String key) { return key.length() > 3; }
-            }
-        """.trimIndent(),
-        "Huge.java" to """
-            package sample.scope.app;
-            public class Huge {
-                public int count(int n) {
-            ${(1..1100).joinToString("\n") { "        if (n == $it) { n = n + 1; }" }}
-                    return n;
-                }
-            }
-        """.trimIndent()
-    )
-
-    private val depSources = mapOf(
-        "Reader.java" to """
-            package sample.scope.dep;
-            public class Reader {
-                public static String read(String bundleName, String key) {
-                    return java.util.ResourceBundle.getBundle(bundleName).getString(key);
-                }
-                public static native int nativeSize();
-                public static String fixed() { return java.util.ResourceBundle.getBundle("messages").getString("old"); }
-                public static String via(java.util.function.Supplier<String> supplier) { return supplier.get(); }
-                public static String once(java.util.function.Supplier<String> supplier) { return supplier.get(); }
-            }
-        """.trimIndent(),
-        "Source.java" to """
-            package sample.scope.dep;
-            public interface Source { String fetch(String key); }
-        """.trimIndent(),
-        "Base.java" to """
-            package sample.scope.dep;
-            public class Base { public String value() { return "base"; } }
-        """.trimIndent(),
-        "Sub.java" to """
-            package sample.scope.dep;
-            public class Sub extends Base { @Override public String value() { return "sub"; } }
-        """.trimIndent()
-    )
-
-    /**
-     * A root whose call on a function value resolves, after class processing, to a helper body a
-     * non-root produced; the non-root `Zzz` is processed last and seeds nothing.
-     */
-    private val deferredDispatchSources = mapOf(
-        "Root.java" to """
-            package sample.scope.app;
-            public class Root {
-                public String run() { return new Factory().make().get(); }
-            }
-        """.trimIndent(),
-        "Factory.java" to """
-            package sample.scope.app;
-            public class Factory {
-                public java.util.function.Supplier<String> make() { return sample.scope.dep.Reader::fixed; }
-            }
-        """.trimIndent(),
-        "Zzz.java" to """
-            package sample.scope.app;
-            public class Zzz { public int size() { return "zzz".length(); } }
-        """.trimIndent()
-    )
-
-    /**
-     * Application-package classes shipped in a nested library jar: a non-root whose call on a
-     * function value resolves to a helper body, beside a root that calls no library at all.
-     */
-    private val nestedAppSources = mapOf(
-        "NonRoot.java" to """
-            package sample.scope.app;
-            public class NonRoot {
-                public String go() { return new Factory().make().get(); }
-            }
-        """.trimIndent(),
-        "Factory.java" to """
-            package sample.scope.app;
-            public class Factory {
-                public java.util.function.Supplier<String> make() { return sample.scope.dep.Reader::fixed; }
-            }
-        """.trimIndent()
-    )
-    private val quietRootSource = "Root.java" to """
-        package sample.scope.app;
-        public class Root { public int run() { return 1; } }
-    """.trimIndent()
-
-    /** An application subclass whose `super.value()` is processed before any virtual call on `Base.value`. */
-    private val childSource = "Child.java" to """
-        package sample.scope.app;
-        public class Child extends sample.scope.dep.Base {
-            public String apply() { return super.value() + "!"; }
-            public String zone(sample.scope.dep.Base base) { return base.value(); }
-        }
-    """.trimIndent()
-
-    private val otherSources = mapOf(
-        "Util.java" to """
-            package sample.scope.other;
-            public class Util { public static int size() { return 1; } }
-        """.trimIndent()
-    )
+class DependencyCompletenessTest : DependencyScopeFixture() {
 
     @Test
     fun `without a dependency scope the helper and the stdlib are external and the application proof stands`() {
@@ -403,142 +247,6 @@ class DependencyCompletenessTest {
     }
 
     @Test
-    fun `a virtual call noted after a non-virtual one on the same callee still reaches the overrides`() {
-        val input = bootJar(extraAppSources = mapOf(childSource))
-        val config = LoaderConfig(
-            includePackages = listOf(appPackage),
-            includeLibraries = true,
-            buildCallGraph = false,
-            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Child"))
-        )
-        val graph = load(input, config)
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        val base = "$depPackage.Base"
-        val calls = graph.nodes<CallSiteNode>().filter { it.callee.name == "value" && it.callee.declaringClass.className == base }
-        assertEquals(listOf("apply", "zone"), calls.map { it.caller.name }.sorted().toList(), "both calls name Base.value")
-        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus(base), "the declared callee")
-        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$depPackage.Sub"), "the override the virtual call reaches")
-        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "unreached from that root")
-    }
-
-    @Test
-    fun `a call on a function value resolved after processing seeds the expansion by its own caller`() {
-        val input = bootJar(extraAppSources = deferredDispatchSources)
-        val config = LoaderConfig(
-            includePackages = listOf(appPackage),
-            includeLibraries = true,
-            buildCallGraph = false,
-            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Root"))
-        )
-        val graph = load(input, config)
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        val resolved = graph.nodes<CallSiteNode>().filter { it.caller.name == "run" && it.callee.name == "fixed" }.toList()
-        assertEquals(1, resolved.size, "Root.run reaches Reader.fixed through the supplier Factory made")
-        assertEquals(AnalysisStatus.ANALYZED, graph.analysisStatus(resolved.single().callee), "reached from the root's call")
-        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("$depPackage.Source"), "nothing else is reached")
-    }
-
-    @Test
-    fun `roots restrict an application-package class a nested library jar holds, at a deferred dispatch too`() {
-        val nestedClasses = compile(nestedAppSources, "nested", classpath = listOf(depJar()))
-        val nested = jar(
-            Files.createTempDirectory("scope-nested").also(temporaryRoots::add).resolve("appext-1.0.jar"),
-            nestedClasses,
-            "sample/scope/app/"
-        )
-        val input = bootJar(extraAppSources = mapOf(quietRootSource), extraLibs = listOf(nested))
-        val config = LoaderConfig(
-            includePackages = listOf(appPackage),
-            includeLibraries = true,
-            buildCallGraph = false,
-            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Root"))
-        )
-        val graph = load(input, config)
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        assertEquals("appext-1.0.jar", completeness.classes.getValue("$appPackage.NonRoot").origin)
-        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$appPackage.NonRoot"), "the application, wherever it ships")
-        assertTrue(
-            graph.nodes<CallSiteNode>().any { it.caller.name == "go" && it.callee.name == "fixed" },
-            "NonRoot.go reaches Reader.fixed through the supplier"
-        )
-        val fixed = readMethod.copy(name = "fixed", parameterTypes = emptyList())
-        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, graph.analysisStatus(fixed), "not a root's call")
-        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "no root reaches the helper")
-    }
-
-    @Test
-    fun `an APK's platform classes carry the platform jar's origin, and a declared scope reads them`() {
-        val apk = Path.of(requireNotNull(System.getProperty("frontend.correctness.android")))
-        val sdk = Files.createTempDirectory("scope-sdk").also(temporaryRoots::add)
-        val platform = Files.createDirectories(sdk.resolve("platforms/android-21"))
-        val probe = compile(
-            mapOf("Probe.java" to "package android.review; public class Probe { public static int size() { return 1; } }"),
-            "probe"
-        )
-        jar(platform.resolve("android.jar"), probe, "android/review/")
-        val config = LoaderConfig(
-            includePackages = listOf("fixture.frontend.android"),
-            includeLibraries = true,
-            buildCallGraph = false,
-            androidSdk = sdk,
-            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("android.jar"))
-        )
-        val graph = load(apk, config)
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        val platformSource = "android-21/android.jar"
-        assertEquals(
-            mapOf(apk.fileName.toString() to ArtifactRole.APPLICATION, platformSource to ArtifactRole.PLATFORM),
-            completeness.roles()
-        )
-        val probeEvidence = completeness.classes.getValue("android.review.Probe")
-        assertEquals(platformSource, probeEvidence.origin, "a platform class is the platform's, not the APK's")
-        assertEquals(AnalysisStatus.ANALYZED, probeEvidence.status, "the declared scope names the platform jar")
-        assertEquals(apk.fileName.toString(), completeness.classes.getValue("fixture.frontend.android.AndroidCases").origin)
-        assertEquals(emptyMap(), graph.classOrigins(), "the graph's own origin index of a single-artifact input is unchanged")
-    }
-
-    @Test
-    fun `a zip input is listed like a jar, so its multi-release copies are reported`() {
-        val classes = compile(otherSources, "zip")
-        val util = classes.resolve("sample/scope/other/Util.class")
-        val root = Files.createTempDirectory("scope-zip").also(temporaryRoots::add)
-        val input = jar(
-            root.resolve("other.zip"),
-            classes,
-            "sample/scope/other/",
-            extra = mapOf("META-INF/versions/9/sample/scope/other/Util.class" to Files.readAllBytes(util)),
-            multiRelease = true
-        )
-        val graph = load(input, LoaderConfig(includePackages = listOf("sample.scope.other"), buildCallGraph = false))
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        assertEquals(mapOf("other.zip" to ArtifactRole.APPLICATION), completeness.roles())
-        assertTrue(completeness.artifacts.getValue("other.zip").multiRelease, "the Java 9 copy is reported")
-        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("sample.scope.other.Util"))
-    }
-
-    @Test
-    fun `an application definition keeps its precedence over an indexed library's in the duplicate evidence`() {
-        val input = bootJar(classpathIndex = listOf("other-1.0.jar", "dep-1.0.jar"), duplicateInOther = listOf(ab))
-        val config = LoaderConfig(
-            includePackages = listOf(appPackage),
-            includeLibraries = true,
-            buildCallGraph = false,
-            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar", "other-*.jar"))
-        )
-        val graph = load(input, config)
-        val completeness = assertNotNull(graph.analysisCompleteness())
-        assertEquals(JavaArchiveLayout.BOOT_INF_CLASSES, completeness.classes.getValue(ab).origin, "the view holds the application's")
-        assertEquals(
-            mapOf(
-                ab to listOf(JavaArchiveLayout.BOOT_INF_CLASSES, "other-1.0.jar"),
-                "$depPackage.Source" to listOf("other-1.0.jar", "dep-1.0.jar")
-            ),
-            completeness.duplicateClasses,
-            "the index orders the libraries behind the application, which it does not list"
-        )
-    }
-
-    @Test
     fun `a reachable scope never reads an application class the configuration excluded`() {
         val input = bootJar()
         val config = LoaderConfig(
@@ -626,146 +334,5 @@ class DependencyCompletenessTest {
         assertEquals("app-1.0.jar", completeness.classes.getValue(ab).origin)
         assertTrue(completeness.duplicateClasses.isEmpty())
         assertNull(graph.analysisStatus(readMethod).takeIf { it != AnalysisStatus.EXTERNAL })
-    }
-
-    private val gateOff: ConstantFold = ConstantFold.parse(
-        mapOf("match" to mapOf("CallSite" to mapOf("callee_class" to ab, "callee_name" to "enabled")), "value" to false)
-    )
-
-    private val readMethod = method(reader, "read", "java.lang.String", "java.lang.String", returns = "java.lang.String")
-    private val trimMethod = method("kotlin.text.StringsKt", "trim", "java.lang.CharSequence", returns = "java.lang.CharSequence")
-    private val getBundleMethod = method("java.util.ResourceBundle", "getBundle", "java.lang.String", returns = "java.util.ResourceBundle")
-
-    private fun method(className: String, name: String, vararg parameters: String, returns: String = "void") =
-        MethodDescriptor(TypeDescriptor(className), name, parameters.map(::TypeDescriptor), TypeDescriptor(returns))
-
-    private fun AnalysisCompleteness.roles(): Map<String, ArtifactRole> = artifacts.mapValues { it.value.role }
-
-    /** Whether [to] is [from] or reachable from it over dataflow edges within a few hops. */
-    private fun reaches(graph: Graph, from: NodeId, to: NodeId): Boolean {
-        var frontier = setOf(from)
-        repeat(4) {
-            if (to in frontier) return true
-            frontier = frontier.flatMap { id -> graph.outgoing(id).filterIsInstance<DataFlowEdge>().map { it.to } }.toSet()
-        }
-        return to in frontier
-    }
-
-    private fun load(input: Path, config: LoaderConfig): Graph = JavaProjectLoader(config).load(input)
-
-    private fun stdlibJar(): Path = System.getProperty("java.class.path").split(File.pathSeparator).map(Path::of)
-        .single { it.name.startsWith("kotlin-stdlib-") && it.name.endsWith(".jar") && !it.name.contains("jdk") }
-
-    private var depJar: Path? = null
-
-    /** The helper jar: its two classes, and a multi-release copy of one of them SootUp does not select. */
-    private fun depJar(): Path = depJar ?: run {
-        val classes = compile(depSources, "dep")
-        val readerClass = classes.resolve("sample/scope/dep/Reader.class")
-        jar(
-            Files.createTempDirectory("scope-dep").also(temporaryRoots::add).resolve("dep-1.0.jar"),
-            classes,
-            "sample/scope/dep/",
-            extra = mapOf("META-INF/versions/9/sample/scope/dep/Reader.class" to Files.readAllBytes(readerClass))
-        ).also { depJar = it }
-    }
-
-    /** A jar of an unrelated package that also defines the helper's `Source` interface, and [extra]. */
-    private fun otherJar(extra: Map<String, ByteArray> = emptyMap()): Path {
-        val classes = compile(otherSources, "other")
-        val source = compile(depSources, "dep-copy").resolve("sample/scope/dep/Source.class")
-        return jar(
-            Files.createTempDirectory("scope-other").also(temporaryRoots::add).resolve("other-1.0.jar"),
-            classes,
-            "sample/scope/other/",
-            extra = mapOf("sample/scope/dep/Source.class" to Files.readAllBytes(source)) + extra
-        )
-    }
-
-    /**
-     * The Spring Boot jar: the application classes (and [extraAppSources]) under `BOOT-INF/classes/`,
-     * the helper, the unrelated jar (also defining the application classes [duplicateInOther] names)
-     * and the stdlib under `BOOT-INF/lib/`, and the launcher's [classpathIndex] when given.
-     */
-    private fun bootJar(
-        classpathIndex: List<String>? = null,
-        extraAppSources: Map<String, String> = emptyMap(),
-        duplicateInOther: List<String> = emptyList(),
-        extraLibs: List<Path> = emptyList()
-    ): Path {
-        val appClasses = compile(appSources + extraAppSources, "app", classpath = listOf(depJar(), stdlibJar()))
-        val otherExtra = duplicateInOther.associate { className ->
-            val entry = className.replace('.', '/') + ".class"
-            entry to Files.readAllBytes(appClasses.resolve(entry))
-        }
-        val otherJar = otherJar(otherExtra)
-        val jarPath = Files.createTempDirectory("scope-boot").also(temporaryRoots::add).resolve("app.jar")
-        JarOutputStream(Files.newOutputStream(jarPath), Manifest().apply {
-            mainAttributes.putValue("Manifest-Version", "1.0")
-            mainAttributes.putValue(JavaArchiveLayout.SPRING_BOOT_CLASSES_ATTRIBUTE, JavaArchiveLayout.BOOT_INF_CLASSES)
-            mainAttributes.putValue(JavaArchiveLayout.SPRING_BOOT_LIB_ATTRIBUTE, JavaArchiveLayout.BOOT_INF_LIB)
-        }).use { jos ->
-            jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_CLASSES))
-            jos.closeEntry()
-            appClasses.toFile().walk().filter { it.isFile && it.name.endsWith(".class") }.forEach { classFile ->
-                val relative = classFile.relativeTo(appClasses.toFile()).path.replace(File.separatorChar, '/')
-                jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfClassEntry(relative)))
-                classFile.inputStream().use { it.copyTo(jos) }
-                jos.closeEntry()
-            }
-            jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfClassEntry("messages.properties")))
-            jos.write("old=Hello\nnew=Bonjour\n".toByteArray())
-            jos.closeEntry()
-            if (classpathIndex != null) {
-                jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_CLASSPATH_INDEX))
-                jos.write(classpathIndex.joinToString("") { "- \"${JavaArchiveLayout.BOOT_INF_LIB}$it\"\n" }.toByteArray())
-                jos.closeEntry()
-            }
-            jos.putNextEntry(JarEntry(JavaArchiveLayout.BOOT_INF_LIB))
-            jos.closeEntry()
-            for (lib in listOf(depJar(), otherJar, stdlibJar()) + extraLibs) {
-                jos.putNextEntry(JarEntry(JavaArchiveLayout.bootInfLibEntry(lib.name)))
-                Files.newInputStream(lib).use { it.copyTo(jos) }
-                jos.closeEntry()
-            }
-        }
-        return jarPath
-    }
-
-    private fun compile(sources: Map<String, String>, label: String, classpath: List<Path> = emptyList()): Path {
-        val root = Files.createTempDirectory("scope-$label").also(temporaryRoots::add)
-        val sourceDir = Files.createDirectories(root.resolve("src"))
-        val classesDir = Files.createDirectories(root.resolve("classes"))
-        val files = sources.map { (name, text) -> sourceDir.resolve(name).also { Files.writeString(it, text) }.toString() }
-        val options = listOf("-d", classesDir.toString(), "-cp", classpath.joinToString(File.pathSeparator))
-        val result = ToolProvider.getSystemJavaCompiler().run(null, null, null, *options.toTypedArray(), *files.toTypedArray())
-        assertEquals(0, result, "$label compiles")
-        return classesDir
-    }
-
-    private fun jar(
-        path: Path,
-        classes: Path,
-        prefix: String,
-        extra: Map<String, ByteArray> = emptyMap(),
-        multiRelease: Boolean = false
-    ): Path {
-        val manifest = Manifest().apply {
-            mainAttributes.putValue("Manifest-Version", "1.0")
-            if (multiRelease) mainAttributes.putValue("Multi-Release", "true")
-        }
-        JarOutputStream(Files.newOutputStream(path), manifest).use { jos ->
-            File(classes.toFile(), prefix).walk().filter { it.isFile && it.name.endsWith(".class") }.forEach { classFile ->
-                jos.putNextEntry(JarEntry(classFile.relativeTo(classes.toFile()).path.replace(File.separatorChar, '/')))
-                classFile.inputStream().use { it.copyTo(jos) }
-                jos.closeEntry()
-            }
-            extra.forEach { (name, bytes) ->
-                jos.putNextEntry(JarEntry(name))
-                jos.write(bytes)
-                jos.closeEntry()
-            }
-        }
-        return path
     }
 }
