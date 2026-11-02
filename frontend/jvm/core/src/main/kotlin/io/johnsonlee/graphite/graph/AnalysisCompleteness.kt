@@ -114,7 +114,15 @@ enum class CallSiteGap {
     DISPATCH_UNRESOLVED,
 
     /** More function values reach the receiver than the adapter follows (64), so it resolved none. */
-    DISPATCH_SATURATED
+    DISPATCH_SATURATED,
+
+    /**
+     * The call resolved to bodies the graph holds, and a value with no known origin in the
+     * analysed scope reaches the receiver as well (a parameter no known caller passes a value
+     * to, the result of a method outside the scope, a field nothing in the scope assigns), so an
+     * alternative the scope cannot name may run too.
+     */
+    DISPATCH_PARTIAL
 }
 
 /**
@@ -131,9 +139,10 @@ enum class CallSiteGap {
  * [duplicateClasses] maps a class name to every artifact that defines it, in class-path order,
  * when more than one does; the graph holds the first one's definition.
  *
- * [callSiteGaps] maps the node id of a call on a function value to the reason it dispatches to
- * no body, see [CallSiteGap]; a call on a function value absent here resolved to every body it
- * runs that the analysed scope holds.
+ * [callSiteGaps] maps the node id of a call on a function value to the reason its dispatch is not
+ * complete, see [CallSiteGap]: it dispatches to no body, or to bodies beside an alternative the
+ * scope cannot name; a call on a function value absent here resolved to every body it runs that
+ * the analysed scope holds.
  */
 data class AnalysisCompleteness(
     val scope: AnalysisIdentity,

@@ -73,7 +73,7 @@ class AnalysisCompletenessPersistenceTest {
             method("lib.Impl", "broken").identity to MethodEvidence(AnalysisStatus.RESOLUTION_FAILED, "bad frame")
         ),
         duplicateClasses = linkedMapOf("lib.Reader" to listOf("lib-1.0.jar", "other.jar")),
-        callSiteGaps = mapOf(1 to CallSiteGap.DISPATCH_UNRESOLVED, 3 to CallSiteGap.DISPATCH_SATURATED)
+        callSiteGaps = mapOf(1 to CallSiteGap.DISPATCH_UNRESOLVED, 3 to CallSiteGap.DISPATCH_SATURATED, 5 to CallSiteGap.DISPATCH_PARTIAL)
     )
 
     private fun graph(evidence: AnalysisCompleteness? = completeness): Graph = DefaultGraph.Builder().apply {
@@ -115,6 +115,7 @@ class AnalysisCompletenessPersistenceTest {
             assertEquals(AnalysisStatus.RESOLUTION_FAILED, graph.analysisStatus(method("lib.Broken", "any")))
             assertEquals(AnalysisStatus.NOT_EXPANDED, graph.analysisStatus(method("lib.Far", "any")))
             assertEquals(CallSiteGap.DISPATCH_SATURATED, graph.analysisCompleteness()!!.callSiteGaps.getValue(3))
+            assertEquals(CallSiteGap.DISPATCH_PARTIAL, graph.analysisCompleteness()!!.callSiteGaps.getValue(5))
         }
         val reachable = completeness.copy(
             scope = AnalysisIdentity(includeLibraries = true, dependencyReachable = 1234, dependencyRoots = listOf("a.web", "a.jobs")),

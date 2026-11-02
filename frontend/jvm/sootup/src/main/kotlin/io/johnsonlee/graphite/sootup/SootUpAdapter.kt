@@ -357,6 +357,8 @@ class SootUpAdapter(
     private val flowTo = IntArrayList()
     private val slotAdapters = Int2ObjectOpenHashMap<MutableList<SlotAdapter>>()
     private val slotCalls = Int2ObjectLinkedOpenHashMap<MutableList<PendingDispatch>>()
+    /** After the fixpoint, the slots a value with no known origin in the scope may reach, see [computeOpenSlots]. */
+    private var openSlots: BitSet? = null
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -422,6 +424,9 @@ class SootUpAdapter(
     private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
     private val reachedCallees = ArrayList<MethodDescriptor>()
     private val reachedVirtually = ArrayList<Boolean>()
+    /** Under a reachable scope, the classes static field accesses name, which the JVM initialises on first access. */
+    private val reachedClasses = ArrayList<String>()
+    private val notedClasses = HashSet<String>()
     /** The callees noted so far, by identity: descriptors are canonical per signature, and a callee is followed once. */
     /** Every callee noted for the expansion, by identity, and whether a virtual call on it was noted. */
     private val notedCallees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
@@ -670,12 +675,15 @@ class SootUpAdapter(
         val queue = ArrayDeque<String>()
         val reached = HashSet<String>()
         var drained = 0
+        var drainedClasses = 0
     }
 
     /**
-     * Queue the classes of the callees noted since the last drain: the declared callee's and,
-     * for a virtual callee, its overrides'. A class is reached when it is a library class the
-     * scope left out; an application class excluded by configuration is never reached.
+     * Queue the classes of the callees noted since the last drain (the declared callee's and,
+     * for a virtual callee, its overrides') and the classes static field accesses named, whose
+     * initialisers run on first access without any call. A class is reached when it is a
+     * library class the scope left out; an application class excluded by configuration is
+     * never reached.
      */
     private fun drainReachedCallees(frontier: ReachableFrontier) {
         fun reach(className: String) {
@@ -691,6 +699,37 @@ class SootUpAdapter(
             if (reachedVirtually[frontier.drained]) overridesOf(callee).forEach { reach(it.declaringClass.className) }
             frontier.drained++
         }
+        while (frontier.drainedClasses < reachedClasses.size) {
+            reach(reachedClasses[frontier.drainedClasses++])
+        }
+    }
+
+    /**
+     * Under a reachable scope, note that [className] is initialised by a static field access
+     * the pass-2 class being read makes: the class the access names and, when that class
+     * inherits the field, the class that declares it (the JVM initialises both, the declaring
+     * class first). Once per class.
+     */
+    private fun noteStaticFieldAccess(className: String, fieldName: String) {
+        if (reachableExpansion == null || !activeClassSeeds || !notedClasses.add(className)) return
+        reachedClasses += className
+        val declaring = declaringClassOfField(className, fieldName)
+        if (declaring != className && notedClasses.add(declaring)) reachedClasses += declaring
+    }
+
+    /** The class that declares the field [fieldName] of [className], up the superclass chain; [className] when unresolved. */
+    private fun declaringClassOfField(className: String, fieldName: String): String {
+        var current: String? = className
+        var declaring: String? = null
+        while (current != null && declaring == null) {
+            val sootClass = resolveClassByName(current)
+            when {
+                sootClass == null -> current = null
+                sootClass.fields.any { it.name == fieldName } -> declaring = current
+                else -> current = sootClass.superclass.orElse(null)?.fullyQualifiedName
+            }
+        }
+        return declaring ?: className
     }
 
     /** Whether a class read from [origin] is a library's (or the platform's), not the application's. */
@@ -736,6 +775,7 @@ class SootUpAdapter(
                 val gap = when {
                     targets === SATURATED_TARGETS -> CallSiteGap.DISPATCH_SATURATED
                     pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_UNRESOLVED
+                    openSlots?.get(entry.intKey) == true -> CallSiteGap.DISPATCH_PARTIAL
                     else -> continue
                 }
                 callSiteGaps[pending.callSite.id.value] = gap
@@ -769,13 +809,16 @@ class SootUpAdapter(
      * The duplicate definitions with their sources in the runtime's order: the application's
      * own sources first, as the loader places them, then the libraries in the order the input
      * declares ([artifactOrder], which names the libraries only), then the libraries it does not
-     * name in listing order. The first source is the one the runtime would load; the view's
-     * choice is the class's origin.
+     * name in listing order. Every listed archive is ranked, loaded or not: an archive the build
+     * did not load has no role, and is a library all the same (the application's sources are
+     * always loaded). The first source is the one the runtime would load; the view's choice is
+     * the class's origin.
      */
     private fun orderedDuplicates(): Map<String, List<String>> {
         if (artifactOrder.isEmpty()) return duplicateClasses
         val rank = artifactOrder.withIndex().associate { (index, name) -> name to index }
-        fun precedence(source: String): Int = if (isLibraryOrigin(source)) rank[source] ?: Int.MAX_VALUE else -1
+        fun precedence(source: String): Int =
+            if (artifactRoles[source] == ArtifactRole.APPLICATION) -1 else rank[source] ?: Int.MAX_VALUE
         return duplicateClasses.mapValues { (_, sources) -> sources.sortedBy(::precedence) }
     }
 
@@ -1343,7 +1386,7 @@ class SootUpAdapter(
             is JArrayRef -> {
                 val arrayKey = localKey(method, rightOp.base.name)
                 arrayDynamicTargets[arrayKey]?.let { targets -> mergeLocalTargets(method, leftOp, targets) }
-                trackSlotFlow(slotOf(method, rightOp.base), method, leftOp)
+                trackSlotFlow(seededSlotOf(method, rightOp.base), method, leftOp)
             }
             // Field loads: `fn = this.callback`, including Kotlin's `Lambda.INSTANCE` singletons
             is JFieldRef -> {
@@ -1513,7 +1556,7 @@ class SootUpAdapter(
                 .forEach { emitResolvedDispatch(pending, it) }
             if (mayHoldFunction(receiverNode.type)) {
                 if (trackCrossMethodFunctionalDispatch) {
-                    callsOn(slotId(slotOf(caller, receiverLocal))).add(pending)
+                    callsOn(slotId(seededSlotOf(caller, receiverLocal))).add(pending)
                 } else {
                     untrackedDispatches += pending
                 }
@@ -2238,7 +2281,48 @@ class SootUpAdapter(
         do {
             propagateSlotTargets(propagation)
         } while (emitPendingDispatches())
+        openSlots = computeOpenSlots(propagation)
         this.propagation = null
+    }
+
+    /**
+     * The slots a value with no known origin in the analysed scope may reach: a slot nothing
+     * flows into and nothing seeds (a parameter no known caller passes a value to, the result
+     * of a method outside the scope, a field nothing in the scope assigns) holds such a value,
+     * and so does every slot it flows into, through the flows recorded while methods were read,
+     * the flows resolution added and the adapters. A call on such a slot that also resolved to
+     * bodies is partial: the bodies are in the graph, and an alternative the scope cannot name
+     * may run too. A saturated slot is not open; its own gap says what it is. One pass over the
+     * final flow graph, after the fixpoint.
+     */
+    private fun computeOpenSlots(propagation: SlotPropagation): BitSet {
+        val count = slots.size
+        val hasIncoming = BitSet(count)
+        for (id in 0 until count) {
+            propagation.forEachFlow(id) { next -> hasIncoming.set(next) }
+            slotAdapters.get(id)?.forEach { hasIncoming.set(slotId(it.sink)) }
+        }
+        val open = BitSet(count)
+        val queue = IntArrayList()
+        for (id in 0 until count) {
+            val targets = slotTargets[id]
+            if (!hasIncoming.get(id) && targets !== SATURATED_TARGETS && targets.isNullOrEmpty()) {
+                open.set(id)
+                queue.add(id)
+            }
+        }
+        fun mark(next: Int) {
+            if (!open.get(next)) {
+                open.set(next)
+                queue.add(next)
+            }
+        }
+        while (!queue.isEmpty) {
+            val id = queue.popInt()
+            propagation.forEachFlow(id, ::mark)
+            slotAdapters.get(id)?.forEach { mark(slotId(it.sink)) }
+        }
+        return open
     }
 
     /**
@@ -2749,7 +2833,7 @@ class SootUpAdapter(
         arrayDynamicTargets[sourceKey]?.let { arrayDynamicTargets[targetKey] = mergeTargets(arrayDynamicTargets[targetKey], it) }
         if (trackCrossMethodFunctionalDispatch) {
             localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
-            trackSlotFlow(slotOf(method, source), method, target)
+            trackSlotFlow(seededSlotOf(method, source), method, target)
         }
     }
 
@@ -2772,7 +2856,7 @@ class SootUpAdapter(
         val key = localKey(method, local.name)
         (dynamicTargets[key] ?: arrayDynamicTargets[key])?.let { seedSlot(sink, it) }
         if (mayHoldFunction(toTypeDescriptor(local.type))) {
-            flowSlot(slotOf(method, local), sink)
+            flowSlot(seededSlotOf(method, local), sink)
         }
     }
 
@@ -2781,6 +2865,23 @@ class SootUpAdapter(
         if (trackCrossMethodFunctionalDispatch && mayHoldFunction(toTypeDescriptor(target.type))) {
             flowSlot(source, DispatchSlot.Local(method, target.name))
         }
+    }
+
+    /**
+     * [slotOf] [local], holding the function values this method knows [local] holds when the
+     * slot is the local's own: a slot a flow leaves, or a call dispatches on, must carry what
+     * its local carries, or it reads as a value from nowhere (see [computeOpenSlots]) although
+     * the local was assigned a lambda two statements earlier. A local that aliases a parameter
+     * is not seeded: the parameter's slot is every caller's, and what this method assigned the
+     * local is not what the callers pass.
+     */
+    private fun seededSlotOf(method: MethodDescriptor, local: Local): DispatchSlot {
+        val slot = slotOf(method, local)
+        if (slot is DispatchSlot.Local) {
+            val key = localKey(method, local.name)
+            (dynamicTargets[key] ?: arrayDynamicTargets[key])?.let { seedSlot(slot, it) }
+        }
+        return slot
     }
 
     private fun seedSlot(slot: DispatchSlot, targets: Collection<DispatchTarget>) {
@@ -3217,6 +3318,7 @@ class SootUpAdapter(
 
     private fun getOrCreateField(fieldRef: JFieldRef): FieldNode {
         val fieldSig = fieldRef.fieldSignature
+        if (fieldRef is JStaticFieldRef) noteStaticFieldAccess(fieldSig.declClassType.fullyQualifiedName, fieldSig.name)
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
             val declaringClassName = fieldSig.declClassType.fullyQualifiedName

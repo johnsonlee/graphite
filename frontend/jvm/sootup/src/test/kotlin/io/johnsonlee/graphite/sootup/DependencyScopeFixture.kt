@@ -108,6 +108,12 @@ abstract class DependencyScopeFixture {
         "Sub.java" to """
             package sample.scope.dep;
             public class Sub extends Base { @Override public String value() { return "sub"; } }
+        """.trimIndent(),
+        "Config.java" to """
+            package sample.scope.dep;
+            public class Config {
+                public static final String value = java.util.ResourceBundle.getBundle("messages").getString("live");
+            }
         """.trimIndent()
     )
 

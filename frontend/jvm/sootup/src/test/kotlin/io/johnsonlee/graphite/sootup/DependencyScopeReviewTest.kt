@@ -3,6 +3,7 @@ package io.johnsonlee.graphite.sootup
 import io.johnsonlee.graphite.core.CallSiteNode
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactRole
+import io.johnsonlee.graphite.graph.CallSiteGap
 import io.johnsonlee.graphite.graph.analysisStatus
 import io.johnsonlee.graphite.graph.nodes
 import io.johnsonlee.graphite.input.DependencyBodyScope
@@ -13,7 +14,9 @@ import java.nio.file.Path
 import kotlin.io.path.name
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 /**
  * The dependency-scope behaviours the reviews of this feature pinned, each on the shape that
@@ -23,6 +26,83 @@ import kotlin.test.assertTrue
  * an indexed library's.
  */
 class DependencyScopeReviewTest : DependencyScopeFixture() {
+
+    /** A root whose only dependency access is a static field read: `getstatic` runs the class initialiser. */
+    private val staticAccessSource = "Init.java" to """
+        package sample.scope.app;
+        public class Init { public String viaStatic() { return sample.scope.dep.Config.value; } }
+    """.trimIndent()
+
+    /** A receiver that merges a lambda with a value the scope cannot name, beside a known-only control. */
+    private val mixedDispatchSource = "Mixed.java" to """
+        package sample.scope.app;
+        import java.util.function.Supplier;
+        public class Mixed {
+            public String viaMixed(Supplier<String> s, boolean flag) {
+                Supplier<String> selected = flag ? () -> "k" : s;
+                return selected.get();
+            }
+            public String viaKnown(boolean flag) {
+                Supplier<String> selected = flag ? () -> "a" : () -> "b";
+                return selected.get();
+            }
+        }
+    """.trimIndent()
+
+    @Test
+    fun `an unloaded library keeps its indexed place in the duplicate evidence`() {
+        val input = bootJar(classpathIndex = listOf("dep-1.0.jar", "other-1.0.jar"))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Declared(artifacts = listOf("dep-*.jar"))
+        )
+        val completeness = assertNotNull(load(input, config).analysisCompleteness())
+        assertFalse(completeness.artifacts.containsKey("other-1.0.jar"), "not loaded: no application package, not named")
+        assertEquals("dep-1.0.jar", completeness.classes.getValue("$depPackage.Source").origin)
+        assertEquals(
+            listOf("dep-1.0.jar", "other-1.0.jar"),
+            completeness.duplicateClasses.getValue("$depPackage.Source"),
+            "the index ranks an archive the build never loaded as the library it is"
+        )
+    }
+
+    @Test
+    fun `a static field access reaches the class whose initialiser it runs`() {
+        val input = bootJar(extraAppSources = mapOf(staticAccessSource))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.Init"))
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$depPackage.Config"), "initialised by the read")
+        assertTrue(
+            graph.nodes<CallSiteNode>().any {
+                it.caller.declaringClass.className == "$depPackage.Config" && it.caller.name == "<clinit>" && it.callee.name == "getBundle"
+            },
+            "the initialiser's resource read is in the graph"
+        )
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus(reader), "nothing else is reached from the root")
+    }
+
+    @Test
+    fun `a call whose receiver may hold a value the scope cannot name is a partial gap`() {
+        val input = bootJar(extraAppSources = mapOf(mixedDispatchSource))
+        val graph = load(input, LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true, buildCallGraph = false))
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val calls = graph.nodes<CallSiteNode>().toList()
+        fun get(caller: String) = calls.single { it.caller.name == caller && it.callee.name == "get" }
+        fun bodies(caller: String) = calls.count { it.origin == get(caller).id }
+        assertEquals(1, bodies("viaMixed"), "the known lambda is dispatched")
+        assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[get("viaMixed").id.value], "and the parameter is not")
+        assertEquals(2, bodies("viaKnown"))
+        assertNull(completeness.callSiteGaps[get("viaKnown").id.value], "every alternative is a known body")
+        assertEquals(CallSiteGap.DISPATCH_UNRESOLVED, completeness.callSiteGaps[get("viaUnknown").id.value], "no body at all")
+    }
 
     @Test
     fun `a virtual call noted after a non-virtual one on the same callee still reaches the overrides`() {

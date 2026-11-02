@@ -55,8 +55,10 @@ A declared scope needs `includeLibraries`; `LoaderConfig` refuses the combinatio
 
 `Reachable` is the selective expansion: after the application's bodies are read, the build
 reads the class of every call's declared callee, every override the view knows for a virtual
-callee (class hierarchy analysis), and the class every `new` names, including the function-object
-classes the application allocates; then the classes those bodies reach, and so on. Each class is
+callee (class hierarchy analysis), the class every `new` names, including the function-object
+classes the application allocates, and the class every static field access names (and the
+class that declares the field, when inherited), since `getstatic` runs that class's initialiser
+without any call; then the classes those bodies reach, and so on. Each class is
 read once, so the expansion terminates on any call graph, cycles included. Reading stops at
 `maxClasses` (50,000 by default); a class reached past the budget is `NOT_EXPANDED`, which a
 proof must treat as unread, never as a class with no effect, and a library class nothing reaches
@@ -122,9 +124,14 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
   `supplier.get()`, Kotlin's `fn(x)`) that the dispatch fixpoint resolved to no body, with why:
   `DISPATCH_UNRESOLVED` (no function value is known to reach the receiver: it comes from
   outside the analysed scope, or along a flow the adapter does not track) or
-  `DISPATCH_SATURATED` (more than 64 function values reach it, so the adapter resolved none).
-  The call site itself is in the graph with its interface callee; a call on a function value
-  absent from this map resolved to every body it runs that the scope holds.
+  `DISPATCH_SATURATED` (more than 64 function values reach it, so the adapter resolved none) or
+  `DISPATCH_PARTIAL` (bodies were resolved and are in the graph, and a value with no known
+  origin in the scope reaches the receiver as well: a parameter no known caller passes a value
+  to, the result of a method outside the scope, a field nothing in the scope assigns, so an
+  alternative the scope cannot name may run too). The call site itself is in the graph with its
+  interface callee; a call on a function value absent from this map resolved to every body it
+  runs that the scope holds. A value is "known" relative to the scope: a caller outside it that
+  passes a value to a parameter known callers also pass values to is not represented.
 
 | `AnalysisStatus` | Meaning | Body complete |
 |---|---|---|
@@ -181,7 +188,9 @@ as itself.
 - The expansion follows the view's class hierarchy for virtual calls (every override the view
   knows), not a points-to analysis: it reads more classes than run, never fewer, within the
   budget.
-- A gap is recorded for calls on function values only. A virtual call whose receiver class is
+- A gap is recorded for calls on function values only, and openness is relative to the scope:
+  a method's parameter that known callers pass function values to is treated as closed even
+  where a caller outside the scope could pass another. A virtual call whose receiver class is
   unknown has every override the view knows linked by `interproceduralDataflow`; one whose
   implementation lives outside the view is `EXTERNAL` by its class.
 - No multi-release selection: the archive is reported as multi-release, every class is read at

@@ -803,8 +803,10 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   multi-artifact graphs is a separate change.
 - `DependencyBodyScope.Reachable(maxClasses)` is the selective expansion: every library jar is
   loaded, pass 2 reads the application, then a worklist reads the class of every noted callee
-  (declared callee, CHA overrides of a virtual one, the class a `new` names) until nothing new is
-  reached or the budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
+  (declared callee, CHA overrides of a virtual one, the class a `new` names) and the class every
+  static field access names (`getstatic` runs its initialiser with no call in sight, review of
+  #193; the declaring class too when the field is inherited) until nothing new is reached or the
+  budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
   noted at call-site creation only under that scope (once per callee, by identity: descriptors
   are canonical per signature), and the expansion runs before the dispatch fixpoint, so a
   function-object class the application allocates is read through its constructor call and its
@@ -812,14 +814,21 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   a resolved function value. Only library classes are reached: `--exclude` keeps excluding.
 - A call on a function value that resolves to nothing is a gap, not a call with no effect:
   after the fixpoint, every pending dispatch whose holder saturated (`SATURATED_TARGETS`, by
-  identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). A reached
+  identity) or resolved no target is recorded by call-site node id (`CallSiteGap`). Resolving
+  some bodies does not close a call either (review of #193): a receiver that merges a lambda
+  with a parameter no known caller fills ran the lambda in the graph and nothing for the other
+  branch. A slot nothing flows into and nothing seeds holds a value the scope cannot name, and
+  so does everything it flows into; one pass over the final flow graph marks them
+  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. A reached
   stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
   which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
 - `Reachable.roots` restricts which application classes seed the expansion (the others are
   still read; they are the application); `BOOT-INF/classpath.idx` orders a Spring Boot jar's
   nested libraries as the launcher loads them, for the view's input locations and for the
   duplicate-definition evidence alike, so the definition the graph holds is the one that runs;
-  other layouts keep the listing order. A root decision is the caller's: a call on a function
+  other layouts keep the listing order; every archive the listing names is ranked, loaded or
+  not, since an archive without a role is a library, never the application. A root decision is
+  the caller's: a call on a function
   value is resolved after every class was processed, so a flag left by the last class is the
   wrong class's (review of #193); the resolved call seeds by `callSite.caller`. An APK beside its
   platform jar is a single-artifact input for the graph's origin index, which stays empty, but
