@@ -1,6 +1,7 @@
 import ts from 'typescript';
 import path from 'node:path';
 import fs from 'node:fs';
+import { encodeArtifactString } from './strings.js';
 
 export interface Method {
   declaringClass: string;
@@ -28,50 +29,47 @@ export interface SourceGraph {
   classOrigins: { className: string; origin: string }[];
 }
 type FunctionBody = ts.FunctionLikeDeclaration & { body: ts.ConciseBody };
-interface Context { method: Method; parameters: number[]; returned?: number; body: ts.Node; declaration?: FunctionBody }
+interface Context { method: Method; parameters: number[]; returned?: number; body: ts.Node; declaration?: FunctionBody; defaults?: Map<number, ts.Expression> }
 const isBody = (n: ts.Node): n is FunctionBody => ts.isFunctionLike(n) && 'body' in n && !!n.body;
-const sourceExtension = /\.(?:[cm]?[jt]sx?)$/i;
-const declarationExtension = /\.d\.[cm]?ts$/i;
+const artifactExtension = /\.(?:[cm]?js)$/i;
 const formatDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => ts.formatDiagnostics(diagnostics, {
   getCanonicalFileName: f => f,
   getCurrentDirectory: () => process.cwd(),
   getNewLine: () => '\n',
 });
 
-/** Read tsconfig through TypeScript itself: includes, excludes, extends and path aliases apply. */
+/** Read emitted JavaScript only. Compilation is deliberately an explicit upstream step. */
 export function project(input: string): { program: ts.Program; root: string } {
   const absolute = path.resolve(input);
   const stat = fs.statSync(absolute);
-  const config = stat.isDirectory()
-    ? (fs.existsSync(path.join(absolute, 'tsconfig.json')) ? path.join(absolute, 'tsconfig.json') : undefined)
-    : absolute.endsWith('.json') ? absolute : undefined;
-  let root = stat.isDirectory() ? absolute : path.dirname(absolute);
-  let files: string[];
-  let options: ts.CompilerOptions = {
-    target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.NodeNext,
-    moduleResolution: ts.ModuleResolutionKind.NodeNext, allowJs: true, noEmit: true,
-  };
-  if (config) {
-    root = path.dirname(config);
-    const read = ts.readConfigFile(config, ts.sys.readFile);
-    if (read.error) throw new Error(formatDiagnostics([read.error]));
-    const parsed = ts.parseJsonConfigFileContent(read.config, ts.sys, root, undefined, config);
-    if (parsed.errors.length) throw new Error(formatDiagnostics(parsed.errors));
-    if (parsed.projectReferences?.length) {
-      throw new Error('Project references are not supported yet; build each referenced tsconfig separately.');
+  const root = stat.isDirectory() ? absolute : path.dirname(absolute);
+  const files: string[] = [];
+  const collect = (directory: string): void => {
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name, 'en'))) {
+      const file = path.join(directory, entry.name);
+      // Do not traverse symlinks, dependencies or Next's compiler cache. Include .next,
+      // dist and build: these are precisely the directories this frontend consumes.
+      if (entry.isDirectory() && !['node_modules', '.git', 'cache'].includes(entry.name)) collect(file);
+      else if (entry.isFile() && artifactExtension.test(entry.name)) files.push(file);
     }
-    files = parsed.fileNames;
-    options = { ...parsed.options, noEmit: true };
-  } else if (stat.isDirectory()) {
-    files = ts.sys.readDirectory(root, ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs'],
-      ['**/node_modules/**', '**/.git/**', '**/dist/**', '**/build/**']);
-  } else {
-    if (!sourceExtension.test(absolute)) throw new Error(`Unsupported TypeScript/JavaScript input: ${input}`);
-    files = [absolute];
-  }
-  files = files.filter(f => !declarationExtension.test(f)).sort();
-  if (!files.length) throw new Error(`No TypeScript/JavaScript implementation files found in ${input}`);
-  const program = ts.createProgram(files, options);
+  };
+  if (stat.isDirectory()) collect(absolute);
+  else if (artifactExtension.test(absolute)) files.push(absolute);
+  else throw new Error(`Expected compiled JavaScript (.js/.mjs/.cjs), not ${input}. Compile the JS/TS project first and pass its output directory.`);
+  if (!files.length) throw new Error(`No compiled JavaScript artifacts found in ${input}. Compile the project first.`);
+  const options: ts.CompilerOptions = {
+    target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.NodeNext,
+    moduleResolution: ts.ModuleResolutionKind.NodeNext, allowJs: true, noEmit: true, types: [], strictNullChecks: true,
+    moduleDetection: ts.ModuleDetectionKind.Force,
+  };
+  const host = ts.createCompilerHost(options);
+  const selected = new Set(files);
+  host.resolveModuleNames = (names, containingFile) => names.map(name => {
+    const resolved = ts.resolveModuleName(name, containingFile, options, host).resolvedModule;
+    // Never silently pull original TS source or installed dependencies into an artifact graph.
+    return resolved && selected.has(resolved.resolvedFileName) ? resolved : undefined;
+  });
+  const program = ts.createProgram(files, options, host);
   const optionErrors = program.getOptionsDiagnostics();
   if (optionErrors.length) throw new Error(formatDiagnostics(optionErrors));
   const syntactic = program.getSyntacticDiagnostics();
@@ -79,12 +77,19 @@ export function project(input: string): { program: ts.Program; root: string } {
   return { program, root };
 }
 
-/** A source-level, flow-insensitive value graph. No user code or build scripts are executed. */
+/** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
 export function analyze(input: string, warn: (message: string) => void = () => {}): SourceGraph {
   const { program, root } = project(input);
   const diagnostics = program.getSemanticDiagnostics();
   if (diagnostics.length) warn(`${diagnostics.length} TypeScript semantic diagnostic(s); unresolved targets remain dynamic.\n${formatDiagnostics(diagnostics.slice(0, 5))}`);
-  return new Analyzer(program, root).run();
+  const graph = new Analyzer(program, root).run();
+  // Type inference can also produce ill-formed UTF-16 in literal type names.
+  // Encode every textual payload once at the protocol boundary, consistently
+  // across method definitions and references, without changing numeric values.
+  const text = (value: unknown): unknown => typeof value === 'string' ? encodeArtifactString(value) :
+    Array.isArray(value) ? value.map(text) : value && typeof value === 'object'
+      ? Object.fromEntries(Object.entries(value).map(([key, field]) => [key, text(field)])) : value;
+  return text(graph) as SourceGraph;
 }
 
 class Analyzer {
@@ -95,14 +100,20 @@ class Analyzer {
   private values = new Map<ts.Node, number>();
   private symbols = new Map<ts.Symbol, number>();
   private constants = new Map<string, number>();
-  private edgePairs = new Set<string>();
+  private properties = new Map<string, number>();
+  private edgePairs = new Map<string, GraphEdge>();
+  private argumentBindings = new Map<ts.Symbol, number>();
+  private activeDefaults = new Set<ts.ParameterDeclaration>();
+  private evaluatedDefaults = new Set<ts.ParameterDeclaration>();
+  private normalizedGuards = new Set<ts.Node>();
+  private normalizedAssignments = new Set<ts.Node>();
   private origins = new Set<string>();
   private methodKeys = new Set<string>();
   private sources: ts.SourceFile[];
   constructor(private program: ts.Program, private root: string) {
     this.checker = program.getTypeChecker();
-    this.sources = program.getSourceFiles().filter(s => !s.isDeclarationFile &&
-      !program.isSourceFileFromExternalLibrary(s) && sourceExtension.test(s.fileName))
+    const selected = new Set(program.getRootFileNames());
+    this.sources = program.getSourceFiles().filter(s => selected.has(s.fileName))
       .sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
   }
   private module(n: ts.Node): string {
@@ -130,12 +141,15 @@ class Analyzer {
     this.graph.nodes.push({ id, kind, ...fields });
     return id;
   }
-  private edge(from: number, to: number, kind: string, extra = {}): void {
+  private edge(from: number, to: number, kind: string, extra: Pick<GraphEdge, 'isVirtual' | 'isDynamic'> = {}): void {
     const key = `${from}:${to}`;
-    if (!this.edgePairs.has(key)) {
-      this.edgePairs.add(key);
-      this.graph.edges.push({ from, to, kind, ...extra });
-    }
+    const previous = this.edgePairs.get(key);
+    if (previous && (previous.kind !== kind || !!previous.isVirtual !== !!extra.isVirtual || !!previous.isDynamic !== !!extra.isDynamic))
+      throw new Error(`Conflicting relations ${previous.kind} and ${kind} for nodes ${from} (${this.graph.nodes[from]?.kind}:${this.graph.nodes[from]?.name ?? this.graph.nodes[from]?.value}) -> ${to} (${this.graph.nodes[to]?.kind}:${this.graph.nodes[to]?.name ?? JSON.stringify(this.graph.nodes[to]?.method)}); graph was not saved.`);
+    if (previous) return;
+    const edge = { from, to, kind, ...extra };
+    this.edgePairs.set(key, edge);
+    this.graph.edges.push(edge);
   }
   private addMethod(method: Method, origin: string): void {
     this.graph.methods.push(method);
@@ -179,6 +193,38 @@ class Analyzer {
       returnType: signature ? this.checker.typeToString(signature.getReturnType()) : 'unknown',
     };
   }
+  private defaults(n: FunctionBody): Map<number, ts.Expression> {
+    const result = new Map<number, ts.Expression>();
+    n.parameters.forEach((p, i) => { if (p.initializer) result.set(i, p.initializer); });
+    if (!ts.isBlock(n.body)) return result;
+    // TypeScript's ES5 lowering preserves defaults as leading strict undefined
+    // guards. Lift only this exact form, in parameter order, without an else.
+    const undefinedLiteral = (node: ts.Expression): boolean => ts.isParenthesizedExpression(node) ? undefinedLiteral(node.expression) :
+      ts.isVoidExpression(node) && ts.isNumericLiteral(node.expression) && Number(node.expression.text) === 0 ||
+      ts.isIdentifier(node) && node.text === 'undefined' && !this.symbol(node)?.declarations?.length;
+    let previous = -1;
+    for (const statement of n.body.statements) {
+      if (ts.isExpressionStatement(statement) && ts.isStringLiteral(statement.expression)) continue;
+      if (!ts.isIfStatement(statement) || statement.elseStatement || !ts.isBinaryExpression(statement.expression) ||
+          statement.expression.operatorToken.kind !== ts.SyntaxKind.EqualsEqualsEqualsToken) break;
+      const condition = statement.expression;
+      const name = ts.isIdentifier(condition.left) && undefinedLiteral(condition.right) ? condition.left :
+        ts.isIdentifier(condition.right) && undefinedLiteral(condition.left) ? condition.right : undefined;
+      if (!name) break;
+      const index = n.parameters.findIndex(p => ts.isIdentifier(p.name) && this.symbol(p.name) === this.symbol(name));
+      if (index < 0 || index <= previous || result.has(index)) break;
+      const body = ts.isBlock(statement.thenStatement) && statement.thenStatement.statements.length === 1
+        ? statement.thenStatement.statements[0]! : statement.thenStatement;
+      if (!ts.isExpressionStatement(body) || !ts.isBinaryExpression(body.expression) ||
+          body.expression.operatorToken.kind !== ts.SyntaxKind.EqualsToken || !ts.isIdentifier(body.expression.left) ||
+          this.symbol(body.expression.left) !== this.symbol(name)) break;
+      result.set(index, body.expression.right);
+      this.normalizedGuards.add(statement);
+      this.normalizedAssignments.add(body.expression);
+      previous = index;
+    }
+    return result;
+  }
   private register(n: ts.Node, parent: Context): void {
     let context = parent;
     if (isBody(n)) {
@@ -186,7 +232,7 @@ class Analyzer {
       const key = JSON.stringify([method.declaringClass, method.name, method.parameterTypes]);
       if (this.methodKeys.has(key)) method.declaringClass += `#declaration@${this.position(n)}`;
       this.methodKeys.add(JSON.stringify([method.declaringClass, method.name, method.parameterTypes]));
-      context = { method, parameters: [], body: n.body, declaration: n };
+      context = { method, parameters: [], body: n.body, declaration: n, defaults: this.defaults(n) };
       this.contexts.set(n, context);
       this.functions.push(context);
       this.addMethod(method, this.module(n));
@@ -209,6 +255,21 @@ class Analyzer {
         this.symbols.set(symbol, id);
       }
     }
+    const assigned = ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment ? n.left :
+      (ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) &&
+      (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) ? n.operand : undefined;
+    if (assigned && ts.isIdentifier(assigned) && !this.normalizedAssignments.has(n)) {
+      const symbol = this.symbol(assigned);
+      const previous = symbol && this.symbols.get(symbol);
+      const formal = previous === undefined ? undefined : this.graph.nodes[previous];
+      if (symbol && formal?.kind === 'Parameter') {
+        // A formal denotes the incoming argument, whereas reassignment writes to
+        // its mutable binding. Keep these distinct instead of relabelling an edge.
+        const binding = this.node('LocalVariable', { name: `@binding:${assigned.text}`, varType: formal.paramType, method: formal.method });
+        this.edge(formal.id, binding, 'ASSIGN');
+        this.symbols.set(symbol, binding);
+      }
+    }
     ts.forEachChild(n, child => this.register(child, context));
   }
   private bind(name: ts.BindingName, source: number, context: Context): void {
@@ -226,16 +287,43 @@ class Analyzer {
   }
   private local(n: ts.Node, context: Context): number {
     const symbol = this.symbol(n);
+    if (symbol && this.argumentBindings.has(symbol)) return this.argumentBindings.get(symbol)!;
     if (symbol && this.symbols.has(symbol)) return this.symbols.get(symbol)!;
     const id = this.node('LocalVariable', { name: n.getText(), varType: this.type(n), method: context.method });
     if (symbol) this.symbols.set(symbol, id);
     return id;
   }
   private constant(kind: string, value?: unknown): number {
-    const key = JSON.stringify([kind, value]);
+    const key = JSON.stringify([kind, Object.is(value, -0) ? '-0' : value]);
     let id = this.constants.get(key);
     if (id === undefined) { id = this.node(kind, value === undefined ? {} : { value }); this.constants.set(key, id); }
     return id;
+  }
+  private property(n: ts.PropertyAccessExpression | ts.ElementAccessExpression, context: Context): { slot: number; receiver: number } {
+    const receiver = this.value(n.expression, context);
+    const symbol = ts.isPropertyAccessExpression(n) ? this.symbol(n.name) : undefined;
+    const declared = symbol && this.symbols.get(symbol);
+    if (declared !== undefined) return { slot: declared, receiver };
+    const name = ts.isPropertyAccessExpression(n) ? n.name.text :
+      ts.isStringLiteralLike(n.argumentExpression) || ts.isNumericLiteral(n.argumentExpression)
+        ? n.argumentExpression.text : `@computed:${this.value(n.argumentExpression, context)}`;
+    const key = JSON.stringify([receiver, name]);
+    let slot = this.properties.get(key);
+    if (slot === undefined) {
+      slot = this.node('LocalVariable', { name: `@property:${receiver}:${name}`, varType: this.type(n), method: context.method });
+      this.properties.set(key, slot);
+    }
+    return { slot, receiver };
+  }
+  private assigned(n: ts.Expression, context: Context): number {
+    return ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? this.property(n, context).slot : this.value(n, context);
+  }
+  private assign(n: ts.Expression, value: number, context: Context): void {
+    const symbol = ts.isIdentifier(n) ? this.symbol(n) : undefined;
+    if (symbol && this.argumentBindings.has(symbol)) {
+      this.argumentBindings.set(symbol, value);
+      this.values.delete(n);
+    } else this.edge(value, this.assigned(n, context), ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? 'FIELD_STORE' : 'ASSIGN');
   }
   private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context } {
     let declaration = this.checker.getResolvedSignature(n)?.declaration;
@@ -253,6 +341,100 @@ class Analyzer {
       parameterTypes: (n.arguments ?? []).map(a => this.type(a)), returnType: this.type(n),
     } };
   }
+  private undefinedState(n: ts.Expression | undefined, value?: number): 'always' | 'never' | 'maybe' {
+    if (!n || ts.isVoidExpression(n) || ts.isOmittedExpression(n)) return 'always';
+    if (ts.isParenthesizedExpression(n)) return this.undefinedState(n.expression, value);
+    if (ts.isIdentifier(n) && n.text === 'undefined' && !this.symbol(n)?.declarations?.length) return 'always';
+    if (value !== undefined) {
+      const node = this.graph.nodes[value]!;
+      if (node.kind.endsWith('Constant')) return 'never';
+      if (node.varType === 'undefined') return 'always';
+    }
+    const type = this.checker.getTypeAtLocation(n);
+    const members = type.isUnion() ? type.types : [type];
+    if (members.every(t => !!(t.flags & ts.TypeFlags.Undefined))) return 'always';
+    if (members.some(t => !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)))) return 'maybe';
+    return 'never';
+  }
+  private defaultValue(parameter: ts.ParameterDeclaration, initializer: ts.Expression, target: Context, bindings: Map<ts.Symbol, number>): number {
+    this.evaluatedDefaults.add(parameter);
+    if (this.activeDefaults.has(parameter)) {
+      // Recursive default evaluation has no finite expansion. Keep its result unknown;
+      // the enclosing call still records the recursive target and parameter flow.
+      return this.node('LocalVariable', { name: `@recursive-default:${this.position(parameter)}`, varType: 'unknown', method: target.method });
+    }
+    const savedValues = this.values;
+    const savedBindings = this.argumentBindings;
+    this.values = new Map();
+    this.argumentBindings = bindings;
+    this.activeDefaults.add(parameter);
+    try {
+      const result = this.value(initializer, target);
+      this.walk(initializer, target);
+      return result;
+    } finally {
+      this.activeDefaults.delete(parameter);
+      this.values = savedValues;
+      this.argumentBindings = savedBindings;
+    }
+  }
+  private arguments(n: ts.CallExpression | ts.NewExpression, caller: Context, target?: Context): number[] {
+    const expressions = [...(n.arguments ?? [])];
+    // A fixed literal spread has a known arity; an unknown spread is kept as a
+    // value dependency and is not mistaken for a single ordinary actual argument.
+    const expanded: ts.Expression[] = [];
+    let unknownSpread = -1;
+    for (const expression of expressions) {
+      if (ts.isSpreadElement(expression) && ts.isArrayLiteralExpression(expression.expression) &&
+          expression.expression.elements.every(e => !ts.isSpreadElement(e))) {
+        expanded.push(...expression.expression.elements);
+      } else {
+        if (ts.isSpreadElement(expression) && unknownSpread < 0) unknownSpread = expanded.length;
+        expanded.push(expression);
+      }
+    }
+    const args = expanded.map(a => this.value(a, caller));
+    const supplied = [...args];
+    if (!target?.declaration) return args;
+    const bindings = new Map(this.argumentBindings);
+    for (const [index, parameter] of target.declaration.parameters.entries()) {
+      if (parameter.dotDotDotToken && unknownSpread < 0) break;
+      let actual = args[index];
+      const uncertain = unknownSpread >= 0 && index >= unknownSpread;
+      const state = uncertain ? 'maybe' : this.undefinedState(expanded[index], actual);
+      const initializer = target.defaults?.get(index);
+      if (uncertain) {
+        actual = this.node('LocalVariable', { name: `@spread-argument:${index}@${this.position(n)}`, varType: 'unknown', method: caller.method });
+        supplied.slice(unknownSpread).forEach(value => this.edge(value, actual!, 'ASSIGN'));
+      }
+      if (initializer && state !== 'never') {
+        const fallback = this.defaultValue(parameter, initializer, target, bindings);
+        if (state === 'always') actual = fallback;
+        else {
+          const joined = this.node('LocalVariable', {
+            name: `@argument:${index}:undefined-select@${this.position(n)}`, varType: 'unknown', method: caller.method,
+          });
+          if (actual !== undefined) this.edge(actual, joined, 'ASSIGN');
+          this.edge(fallback, joined, 'ASSIGN');
+          actual = joined;
+        }
+      } else if (actual === undefined) {
+        actual = this.node('LocalVariable', { name: `undefined@argument:${index}@${this.position(n)}`, varType: 'undefined', method: caller.method });
+      }
+      args[index] = actual!;
+      if (ts.isIdentifier(parameter.name)) {
+        const symbol = this.symbol(parameter.name);
+        if (symbol) bindings.set(symbol, actual!);
+      }
+    }
+    // A later default can assign an earlier parameter. These are the effective
+    // explicit arguments entering the body after the parameter prologue runs.
+    target.declaration.parameters.forEach((parameter, index) => {
+      const symbol = ts.isIdentifier(parameter.name) ? this.symbol(parameter.name) : undefined;
+      if (symbol && bindings.has(symbol)) args[index] = bindings.get(symbol)!;
+    });
+    return args;
+  }
   private value(n: ts.Expression, context: Context): number {
     const cached = this.values.get(n);
     if (cached !== undefined) return cached;
@@ -261,14 +443,21 @@ class Analyzer {
     else if (ts.isNumericLiteral(n) || (ts.isPrefixUnaryExpression(n) && ts.isNumericLiteral(n.operand) && (n.operator === ts.SyntaxKind.MinusToken || n.operator === ts.SyntaxKind.PlusToken))) {
       const value = ts.isNumericLiteral(n) ? Number(n.text) : Number(n.operand.getText()) * (n.operator === ts.SyntaxKind.MinusToken ? -1 : 1);
       if (!Number.isFinite(value)) throw new Error(`Non-finite numeric literal at ${this.module(n)}:${this.position(n)}`);
-      id = this.constant(Number.isInteger(value) && value >= -2147483648 && value <= 2147483647 ? 'IntConstant' : 'DoubleConstant', value);
+      id = this.constant(!Object.is(value, -0) && Number.isInteger(value) && value >= -2147483648 && value <= 2147483647 ? 'IntConstant' : 'DoubleConstant', value);
     } else if (n.kind === ts.SyntaxKind.TrueKeyword || n.kind === ts.SyntaxKind.FalseKeyword) id = this.constant('BooleanConstant', n.kind === ts.SyntaxKind.TrueKeyword);
     else if (n.kind === ts.SyntaxKind.NullKeyword) id = this.constant('NullConstant');
     else if (ts.isIdentifier(n)) id = this.local(n, context);
     else if (ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isTypeAssertionExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n)) id = this.value(n.expression, context);
+    else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+      id = this.value(n.right, context);
+      this.assign(n.left, id, context);
+    } else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.CommaToken) {
+      this.value(n.left, context);
+      id = this.value(n.right, context);
+    }
     else if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
       const target = this.target(n);
-      const args = (n.arguments ?? []).map(a => this.value(a, context));
+      const args = this.arguments(n, context, target.context);
       const receiver = ts.isPropertyAccessExpression(n.expression) || ts.isElementAccessExpression(n.expression)
         ? this.value(n.expression.expression, context) : undefined;
       // Evaluating an immediately invoked expression also records any calls producing its target.
@@ -285,12 +474,13 @@ class Analyzer {
         if (parameter !== undefined) this.edge(argument, parameter, 'PARAMETER_PASS');
       });
       if (target.context?.returned !== undefined) this.edge(target.context.returned, id, 'RETURN_VALUE');
-    } else if (ts.isPropertyAccessExpression(n)) {
-      const symbol = this.symbol(n.name);
-      const field = symbol && this.symbols.get(symbol);
-      id = field ?? this.node('LocalVariable', { name: n.getText(), varType: this.type(n), method: context.method });
-      const receiver = this.value(n.expression, context);
-      if (field === undefined) this.edge(receiver, id, 'FIELD_LOAD');
+    } else if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
+      const { slot, receiver } = this.property(n, context);
+      // A location and a read from that location are different values. In x.p=x,
+      // loading x.p must not share endpoints with storing x into the property.
+      id = this.node('LocalVariable', { name: `@read:${n.getText()}@${this.position(n)}`, varType: this.type(n), method: context.method });
+      this.edge(slot, id, 'FIELD_LOAD');
+      this.edge(receiver, id, 'FIELD_LOAD');
     } else {
       // Keep computed values distinct from operands. This records dependencies, never claims a fold.
       id = this.node('LocalVariable', { name: `@${this.position(n)}`, varType: this.type(n), method: context.method });
@@ -306,6 +496,7 @@ class Analyzer {
     return id;
   }
   private walk(n: ts.Node, context: Context): void {
+    if (this.normalizedGuards.has(n)) return;
     if (isBody(n)) return; // Each body is analyzed exactly once in its own lexical scope.
     if (ts.isTypeNode(n) || ts.isImportDeclaration(n) || ts.isExportDeclaration(n)) return;
     if (ts.isForOfStatement(n)) {
@@ -328,7 +519,7 @@ class Analyzer {
       this.edge(this.value(n.expression, context), context.returned, 'RETURN_VALUE');
     } else if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
       const assigned = n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? this.value(n.right, context) : this.value(n, context);
-      this.edge(assigned, this.value(n.left, context), ts.isPropertyAccessExpression(n.left) ? 'FIELD_STORE' : 'ASSIGN');
+      this.assign(n.left, assigned, context);
     } else if (ts.isCallExpression(n) || ts.isNewExpression(n)) this.value(n, context);
     ts.forEachChild(n, child => this.walk(child, context));
   }
@@ -343,16 +534,32 @@ class Analyzer {
       this.register(source, context);
     }
     for (const context of this.functions) {
-      context.declaration?.parameters.forEach((parameter, index) => {
-        if (parameter.initializer) {
-          this.edge(this.value(parameter.initializer, context), context.parameters[index]!, 'ASSIGN');
-          this.walk(parameter.initializer, context);
-        }
-      });
       if (ts.isExpression(context.body)) {
         if (context.returned !== undefined) this.edge(this.value(context.body, context), context.returned, 'RETURN_VALUE');
       }
       this.walk(context.body, context);
+    }
+    // Exported functions and callbacks can be entered by code outside this graph.
+    // Keep unevaluated default-expression code and its possible argument flow,
+    // without inventing a source call site or an unconditional assignment edge.
+    for (const context of this.functions) {
+      const bindings = new Map<ts.Symbol, number>();
+      context.declaration?.parameters.forEach((parameter, index) => {
+        const initializer = context.defaults?.get(index);
+        if (initializer && !this.evaluatedDefaults.has(parameter)) {
+          const fallback = this.defaultValue(parameter, initializer, context, bindings);
+          this.edge(fallback, context.parameters[index]!, 'PARAMETER_PASS');
+        }
+        if (ts.isIdentifier(parameter.name)) {
+          const symbol = this.symbol(parameter.name);
+          if (symbol) bindings.set(symbol, context.parameters[index]!);
+        }
+      });
+      context.declaration?.parameters.forEach((parameter, index) => {
+        const symbol = ts.isIdentifier(parameter.name) ? this.symbol(parameter.name) : undefined;
+        const updated = symbol && bindings.get(symbol);
+        if (updated !== undefined && updated !== context.parameters[index]) this.edge(updated, context.parameters[index]!, 'PARAMETER_PASS');
+      });
     }
     return this.graph;
   }

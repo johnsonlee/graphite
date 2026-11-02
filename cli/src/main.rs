@@ -57,7 +57,7 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build and save a JVM graph, or use --lang ts for TypeScript/JavaScript
+    /// Build and save a JVM graph, or use --lang js (alias ts) for compiled JavaScript
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
@@ -101,12 +101,12 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm or ts
+        /// Frontend language: jvm or js (ts is an alias)
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm or ts
+        /// Frontend language: jvm or js (ts is an alias)
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
@@ -181,15 +181,15 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                 }
                 None => println!("jvm\tnot installed\t-\t(graphite frontend install jvm)"),
             }
-            match frontend::locate_ts(env) {
+            match frontend::locate_js(env) {
                 Some(fe) => println!(
-                    "ts\t{}\t{}\t(via {})",
+                    "js\t{}\t{}\t(via {}; alias: ts)",
                     frontend_version(env, &fe).unwrap_or_else(|| "unknown".into()),
                     fe.path().display(),
                     fe.found_via
                 ),
                 None => println!(
-                    "ts\tnot installed\t-\t(set GRAPHITE_FRONTEND_TS to frontend/web/dist/cli.js)"
+                    "js\tnot installed\t-\t(set GRAPHITE_FRONTEND_JS to frontend/web/dist/cli.js; alias: ts)"
                 ),
             }
             Ok(())
@@ -197,10 +197,14 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
         FrontendCommand::Describe { lang } => {
             let fe = match lang.as_str() {
                 "jvm" => frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?,
-                "ts" | "typescript" => {
-                    frontend::locate_ts(env).ok_or_else(frontend::missing_ts_message)?
+                "js" | "javascript" | "ts" | "typescript" => {
+                    frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?
                 }
-                _ => return Err(format!("unknown frontend '{lang}'; available: jvm, ts")),
+                _ => {
+                    return Err(format!(
+                        "unknown frontend '{lang}'; available: jvm, js (alias: ts)"
+                    ))
+                }
             };
             let version = frontend_version(env, &fe);
             let text = serde_json::to_string_pretty(&frontend::describe(&fe, version))
@@ -213,8 +217,8 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            if lang == "ts" || lang == "typescript" {
-                return Err(frontend::missing_ts_message());
+            if matches!(lang.as_str(), "js" | "javascript" | "ts" | "typescript") {
+                return Err(frontend::missing_js_message());
             }
             require_jvm_lang(&lang)?;
             let version = match version {
@@ -236,7 +240,9 @@ fn require_jvm_lang(lang: &str) -> Result<(), String> {
     if lang == "jvm" {
         Ok(())
     } else {
-        Err(format!("unknown frontend '{lang}'; available: jvm, ts"))
+        Err(format!(
+            "unknown frontend '{lang}'; available: jvm, js (alias: ts)"
+        ))
     }
 }
 
@@ -414,7 +420,7 @@ mod cli_tests {
         assert_eq!(args.args, ["--lang", "ts", "--help"].map(OsString::from));
         assert_eq!(
             build_ts::select_language(&args.args).unwrap(),
-            ("ts", vec![OsString::from("--help")])
+            ("js", vec![OsString::from("--help")])
         );
     }
 }

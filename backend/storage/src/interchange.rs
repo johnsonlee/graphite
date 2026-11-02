@@ -2,11 +2,14 @@
 //!
 //! Import is intentionally separate from graph loading: existing readers and graph
 //! files retain their format. Nodes use dense IDs and at most one edge per pair,
-//! matching the simple directed WebGraph representation.
+//! matching the simple directed WebGraph representation. Both repeated relationships
+//! and conflicting labels/flags on one endpoint pair are rejected before writing;
+//! this importer never chooses one relation and discards another. Declaration
+//! generic types are not emitted for dynamically typed JavaScript artifacts.
 use crate::graph::{CONTROL_FLOW_KINDS, DATAFLOW_KINDS, TYPE_KINDS};
 use crate::io::*;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::io::Read;
 use std::path::Path;
 
@@ -178,17 +181,38 @@ fn validate(g: &InputGraph) -> Result<(), ImportError> {
             _ => {}
         }
     }
-    let mut pairs = HashSet::new();
-    for e in &g.edges {
+    let mut pairs = HashMap::new();
+    for (index, e) in g.edges.iter().enumerate() {
         if !valid_id(e.from) || !valid_id(e.to) {
-            return Err(invalid("edge refers to missing node"));
+            return Err(invalid(format!(
+                "edge[{index}] {} -> {} refers to a missing node",
+                e.from, e.to
+            )));
         }
-        if !pairs.insert((e.from, e.to)) {
-            return Err(invalid("duplicate edge endpoints"));
+        let label = edge_label(e)?;
+        if let Some((previous_index, previous, previous_label)) =
+            pairs.insert((e.from, e.to), (index, e, label))
+        {
+            let reason = if label == previous_label {
+                "duplicate relationship"
+            } else {
+                "conflicting relationships"
+            };
+            return Err(invalid(format!(
+                "{reason} at {} -> {}: edge[{previous_index}] {} and edge[{index}] {}; persisted v3 stores only one relationship per endpoint pair",
+                e.from, e.to, edge_description(previous), edge_description(e)
+            )));
         }
-        edge_label(e)?;
     }
     Ok(())
+}
+
+fn edge_description(e: &InputEdge) -> String {
+    if e.kind == "CALL" {
+        format!("CALL(virtual={}, dynamic={})", e.is_virtual, e.is_dynamic)
+    } else {
+        e.kind.clone()
+    }
 }
 
 fn edge_label(e: &InputEdge) -> Result<u8, ImportError> {
@@ -568,14 +592,14 @@ mod tests {
         }
     }
     fn fixture() -> serde_json::Value {
-        let method = json!({"declaringClass":"src/测试.ts", "name":"emit", "parameterTypes":["string"], "returnType":"string"});
-        json!({"version":1,"methods":[method],"classOrigins":[{"className":"src/测试.ts","origin":"example"}],"nodes":[
+        let method = json!({"declaringClass":"src/测试.js", "name":"emit", "parameterTypes":["string"], "returnType":"string"});
+        json!({"version":1,"methods":[method],"classOrigins":[{"className":"src/测试.js","origin":"example"}],"nodes":[
             {"id":0,"kind":"StringConstant","value":"hello 🌍\u{0000}"},
             {"id":1,"kind":"Parameter","index":0,"paramType":"string","method":method},
             {"id":2,"kind":"Return","method":method,"actualType":"string"},
             {"id":3,"kind":"CallSite","caller":method,"callee":method,"line":17,"receiver":null,"arguments":[0]},
             {"id":4,"kind":"LocalVariable","name":"message","varType":"string","method":method},
-            {"id":5,"kind":"Field","declaringClass":"src/测试.ts","name":"field","fieldType":"boolean","isStatic":true},
+            {"id":5,"kind":"Field","declaringClass":"src/测试.js","name":"field","fieldType":"boolean","isStatic":true},
             {"id":6,"kind":"IntConstant","value":-42},
             {"id":7,"kind":"DoubleConstant","value":1.25},
             {"id":8,"kind":"BooleanConstant","value":true},
@@ -589,6 +613,9 @@ mod tests {
     }
     fn assert_graph(g: &Graph) {
         assert_eq!(g.node_count(), 10);
+        assert_eq!(g.node_version(), 3);
+        assert!(g.declared_types().is_none());
+        assert!(g.declared_types_error().is_none());
         assert_eq!(g.forward.neighbors(3), (&[0, 3, 4][..], &[0, 17, 0][..]));
         assert_eq!(g.backward.neighbors(3), (&[2, 3][..], &[16, 17][..]));
         let NodeKind::StringConstant(s) = g.node(0).unwrap().kind else {
@@ -605,7 +632,11 @@ mod tests {
         };
         assert_eq!(index, 0);
         assert_eq!(g.str(param_type), "string");
-        assert_eq!(method.signature(&g.strings), "src/测试.ts.emit(string)");
+        assert_eq!(method.signature(g.strings()), "src/测试.js.emit(string)");
+        assert_eq!(
+            method.identity(g.strings()),
+            "src/测试.js.emit(Lstring;)Lstring;"
+        );
         let NodeKind::CallSite {
             caller,
             callee,
@@ -623,13 +654,13 @@ mod tests {
         assert_eq!(arguments, vec![0]);
         assert_eq!(ordinal, None);
         assert_eq!(
-            g.strings.index_of("src/测试.ts"),
+            g.strings().index_of("src/测试.js"),
             Some(caller.declaring_class as usize)
         );
         assert_eq!(g.ids_by_tag(12), &[3]);
         assert_eq!(g.metadata.methods, vec![caller]);
         let (class, origin) = g.metadata.class_origins[0];
-        assert_eq!(g.str(class), "src/测试.ts");
+        assert_eq!(g.str(class), "src/测试.js");
         assert_eq!(g.str(origin), "example");
         let NodeKind::Return {
             method: returned,
@@ -666,7 +697,7 @@ mod tests {
                 g.str(field_type),
                 is_static
             ),
-            ("src/测试.ts", "field", "boolean", true)
+            ("src/测试.js", "field", "boolean", true)
         );
         assert_eq!(g.node(6).unwrap().kind, NodeKind::IntConstant(-42));
         assert_eq!(g.node(7).unwrap().kind, NodeKind::DoubleConstant(1.25));
@@ -723,6 +754,96 @@ mod tests {
         assert!(import_json(fixture().to_string().as_bytes(), &out).is_err());
         assert_eq!(std::fs::read(out.join("sentinel")).unwrap(), b"keep");
     }
+    #[test]
+    fn duplicate_and_conflicting_relations_report_the_exact_loss_without_writing() {
+        let tmp = Temp::new();
+        for (relation, expected) in [
+            (json!({"from":0,"to":1,"kind":"PARAMETER_PASS"}), "duplicate relationship at 0 -> 1: edge[0] PARAMETER_PASS and edge[6] PARAMETER_PASS"),
+            (json!({"from":0,"to":1,"kind":"ASSIGN"}), "conflicting relationships at 0 -> 1: edge[0] PARAMETER_PASS and edge[6] ASSIGN"),
+            (json!({"from":3,"to":3,"kind":"CALL","isVirtual":true}), "conflicting relationships at 3 -> 3: edge[3] CALL(virtual=false, dynamic=true) and edge[6] CALL(virtual=true, dynamic=false)"),
+        ] {
+            let mut g = fixture();
+            g["edges"].as_array_mut().unwrap().push(relation);
+            let dir = tmp.0.join("rejected");
+            let error = import_json(g.to_string().as_bytes(), &dir).unwrap_err().to_string();
+            assert!(error.contains(expected), "{error}");
+            assert!(error.contains("persisted v3 stores only one relationship per endpoint pair"), "{error}");
+            assert!(!dir.exists());
+        }
+    }
+
+    #[test]
+    fn finite_binary64_values_preserve_bits_and_out_of_range_numbers_are_rejected() {
+        let tmp = Temp::new();
+        let mut values = vec![
+            0.0,
+            -0.0,
+            1.25,
+            1.0000000000000002,
+            f64::MIN_POSITIVE,
+            f64::from_bits(1),
+            f64::MAX,
+            9_007_199_254_740_992.0,
+        ];
+        // Fixed bit patterns span exponents/mantissas that a decimal JSON
+        // parser must round back to the original JavaScript binary64 value.
+        let mut bits = 0x1234_5678_9abc_def0u64;
+        for _ in 0..256 {
+            bits = bits.wrapping_mul(6364136223846793005).wrapping_add(1);
+            let value = f64::from_bits(bits);
+            if value.is_finite() {
+                values.push(value);
+            }
+        }
+        let nodes: Vec<_> = values
+            .iter()
+            .enumerate()
+            .map(|(id, value)| json!({"id":id,"kind":"DoubleConstant","value":value}))
+            .collect();
+        let input = json!({"version":1,"methods":[],"nodes":nodes,"edges":[]});
+        let dir = tmp.0.join("numbers");
+        import_json(input.to_string().as_bytes(), &dir).unwrap();
+        let graph = Graph::load(&dir).unwrap();
+        for (id, expected) in values.into_iter().enumerate() {
+            let NodeKind::DoubleConstant(actual) = graph.node(id as u32).unwrap().kind else {
+                panic!("DoubleConstant expected")
+            };
+            assert_eq!(actual.to_bits(), expected.to_bits(), "number at node {id}");
+        }
+        let negative_zero = tmp.0.join("negative-zero-token");
+        import_json(br#"{"version":1,"methods":[],"nodes":[{"id":0,"kind":"DoubleConstant","value":-0}],"edges":[]}"#.as_slice(), &negative_zero).unwrap();
+        let NodeKind::DoubleConstant(value) =
+            Graph::load(&negative_zero).unwrap().node(0).unwrap().kind
+        else {
+            panic!("DoubleConstant expected")
+        };
+        assert_eq!(value.to_bits(), (-0.0f64).to_bits());
+        for value in ["1e400", "NaN", "Infinity"] {
+            let input = format!(
+                r#"{{"version":1,"methods":[],"nodes":[{{"id":0,"kind":"DoubleConstant","value":{value}}}],"edges":[]}}"#
+            );
+            let out = tmp.0.join("invalid");
+            assert!(import_json(input.as_bytes(), &out).is_err());
+            assert!(!out.exists());
+        }
+    }
+
+    #[test]
+    fn unknown_node_kinds_fields_and_int32_overflow_are_not_silently_coerced() {
+        let tmp = Temp::new();
+        for node in [
+            json!({"id":0,"kind":"UndefinedConstant"}),
+            json!({"id":0,"kind":"StringConstant","value":"x","unknownField":"lost"}),
+            json!({"id":0,"kind":"IntConstant","value":2147483648_i64}),
+            json!({"id":0,"kind":"IntConstant","value":1.25}),
+        ] {
+            let input = json!({"version":1,"methods":[],"nodes":[node],"edges":[]});
+            let out = tmp.0.join("invalid");
+            assert!(import_json(input.to_string().as_bytes(), &out).is_err());
+            assert!(!out.exists());
+        }
+    }
+
     #[test]
     fn every_edge_kind_round_trips_through_the_existing_decoder() {
         use crate::{Edge, EdgeFamily};

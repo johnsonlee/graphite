@@ -121,7 +121,9 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                 pack,
             })
         }
-        Launch::Node(_) => Err("TypeScript builds use the graph interchange adapter".into()),
+        Launch::Node(_) => {
+            Err("JavaScript artifact builds use the graph interchange adapter".into())
+        }
         Launch::Jar(jar) => {
             let java = frontend::locate_java(env)?;
             let mut argv = Vec::new();
@@ -165,7 +167,7 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
             return 2;
         }
     };
-    if lang == "ts" {
+    if lang == "js" {
         return crate::build_ts::run(env, &args);
     }
     run_jvm(env, &args)

@@ -1,7 +1,7 @@
 //! Locating and describing frontends.
 //!
-//! Frontends turn compiled artifacts or source projects into graphs. The JVM frontend
-//! runs SootUp; the TypeScript frontend runs the TypeScript compiler under Node.js.
+//! Frontends turn compiled artifacts into graphs. The JVM frontend runs SootUp;
+//! the JavaScript frontend analyzes emitted JS under Node.js using the TypeScript API.
 //! This module locates their launchers and runtimes and reports what it found. Nothing here touches the real environment directly: every lookup goes through
 //! [`Env`], so the search order is unit-tested against fake homes and PATHs.
 
@@ -105,39 +105,47 @@ pub const JVM_FRONTEND_JAR: &str = "graphite-frontend-jvm.jar";
 /// The asset name on a GitHub release.
 pub const JVM_RELEASE_ASSET: &str = "graphite.jar";
 
-/// Pin the TypeScript frontend JavaScript entry point or executable launcher.
+/// Pin the emitted-JavaScript frontend entry point or executable launcher.
+pub const JS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_JS";
+/// Compatibility alias for the same JavaScript frontend.
 pub const TS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_TS";
 /// Pin the Node.js runtime used for a JavaScript entry point.
 pub const NODE_VAR: &str = "GRAPHITE_NODE";
 
-/// TypeScript is opt-in: a pinned entry point, then an installed launcher on PATH.
-pub fn locate_ts(env: &Env) -> Option<Frontend> {
-    if let Some(path) = env.var_path(TS_FRONTEND_VAR) {
-        let launch = match path.extension().and_then(|e| e.to_str()) {
-            Some("js" | "mjs" | "cjs") => Launch::Node(path),
-            _ => Launch::Executable(path),
-        };
-        return Some(Frontend {
-            lang: "ts",
-            launch,
-            found_via: TS_FRONTEND_VAR,
-        });
+/// Emitted-JavaScript analysis is opt-in. Prefer the JS name, retaining TS aliases.
+pub fn locate_js(env: &Env) -> Option<Frontend> {
+    for variable in [JS_FRONTEND_VAR, TS_FRONTEND_VAR] {
+        if let Some(path) = env.var_path(variable) {
+            let launch = match path.extension().and_then(|e| e.to_str()) {
+                Some("js" | "mjs" | "cjs") => Launch::Node(path),
+                _ => Launch::Executable(path),
+            };
+            return Some(Frontend {
+                lang: "js",
+                launch,
+                found_via: variable,
+            });
+        }
     }
-    env.which("graphite-frontend-ts").map(|path| Frontend {
-        lang: "ts",
-        launch: Launch::Executable(path),
-        found_via: "PATH",
-    })
+    ["graphite-frontend-js", "graphite-frontend-ts"]
+        .iter()
+        .find_map(|name| {
+            env.which(name).map(|path| Frontend {
+                lang: "js",
+                launch: Launch::Executable(path),
+                found_via: "PATH",
+            })
+        })
 }
 
 pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
     env.var_path(NODE_VAR).or_else(|| env.which("node")).ok_or_else(|| {
-        format!("node not found. The TypeScript frontend needs Node.js: put node on PATH or set {NODE_VAR}.")
+        format!("node not found. The JavaScript artifact frontend needs Node.js: put node on PATH or set {NODE_VAR}.")
     })
 }
 
-pub fn missing_ts_message() -> String {
-    format!("No TypeScript frontend found. Build frontend/web with `npm ci && npm run build`, then set {TS_FRONTEND_VAR} to its absolute dist/cli.js path; or put graphite-frontend-ts on PATH.")
+pub fn missing_js_message() -> String {
+    format!("No JavaScript artifact frontend found. Build frontend/web with `npm ci && npm run build`, then set {JS_FRONTEND_VAR} to its absolute dist/cli.js path; or put graphite-frontend-js on PATH. GRAPHITE_FRONTEND_TS and graphite-frontend-ts are supported aliases.")
 }
 
 /// Find the JVM frontend. The order, first match wins:
@@ -314,17 +322,19 @@ pub fn describe(frontend: &Frontend, version: Option<String>) -> Value {
     m.insert("version".into(), json!(version));
     m.insert(
         "inputs".into(),
-        if frontend.lang == "ts" {
+        if frontend.lang == "js" {
             json!([
-                "tsconfig.json",
-                "TypeScript/JavaScript source",
-                "source directory"
+                ".js",
+                ".mjs",
+                ".cjs",
+                "compiled artifact directory (.next, dist, build)"
             ])
         } else {
             json!(["jar", "war", "apk", "aar", "dex", "class directory"])
         },
     );
-    if frontend.lang == "ts" {
+    if frontend.lang == "js" {
+        m.insert("aliases".into(), json!(["javascript", "ts", "typescript"]));
         m.insert("ir_schema".into(), json!(["graphite-graph-v1"]));
         m.insert("writes".into(), json!("graph-json"));
     } else {
@@ -579,32 +589,45 @@ mod tests {
     }
 
     #[test]
-    fn typescript_discovery_prefers_pinned_script_then_path_launcher() {
+    fn javascript_discovery_preserves_ts_alias_and_prefers_explicit_js_names() {
         let root = temp_dir("ts");
         let launcher = root.join("graphite-frontend-ts");
         touch(&launcher);
         let mut env = env_with(&[("PATH", &root)]);
         assert_eq!(
-            locate_ts(&env).unwrap().launch,
+            locate_js(&env).unwrap().launch,
             Launch::Executable(launcher)
         );
         for extension in ["js", "mjs", "cjs"] {
             let entry = root.join(format!("cli.{extension}"));
             env.vars
                 .insert(TS_FRONTEND_VAR.into(), entry.clone().into_os_string());
-            let frontend = locate_ts(&env).unwrap();
+            let frontend = locate_js(&env).unwrap();
             assert_eq!(frontend.launch, Launch::Node(entry));
             let descriptor = describe(&frontend, Some("1.0.0".into()));
-            assert_eq!(descriptor["name"], "ts");
+            assert_eq!(descriptor["name"], "js");
             assert_eq!(descriptor["kind"], "node");
             assert_eq!(descriptor["writes"], "graph-json");
-            assert_eq!(descriptor["inputs"][0], "tsconfig.json");
+            assert_eq!(descriptor["inputs"][0], ".js");
         }
         env.vars
             .insert(TS_FRONTEND_VAR.into(), "/custom/launcher".into());
         assert_eq!(
-            locate_ts(&env).unwrap().launch,
+            locate_js(&env).unwrap().launch,
             Launch::Executable("/custom/launcher".into())
+        );
+        env.vars
+            .insert(JS_FRONTEND_VAR.into(), "/preferred/cli.js".into());
+        let preferred = locate_js(&env).unwrap();
+        assert_eq!(preferred.launch, Launch::Node("/preferred/cli.js".into()));
+        assert_eq!(preferred.found_via, JS_FRONTEND_VAR);
+        env.vars.remove(JS_FRONTEND_VAR);
+        env.vars.remove(TS_FRONTEND_VAR);
+        let js_launcher = root.join("graphite-frontend-js");
+        touch(&js_launcher);
+        assert_eq!(
+            locate_js(&env).unwrap().launch,
+            Launch::Executable(js_launcher)
         );
         assert!(locate_node(&env).is_err());
         env.vars.insert(NODE_VAR.into(), "/custom/node".into());

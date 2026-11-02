@@ -1,115 +1,196 @@
-# TypeScript source frontend
+# JavaScript artifact frontend
 
-The TypeScript frontend analyzes source using the TypeScript compiler API and
-writes a graph that the Rust CLI can save, query and serve. It accepts a
-`tsconfig.json`, a source directory, or a TypeScript/JavaScript source file.
-Node.js 20 or newer is required for building the graph. Reading a saved graph
-requires only the Rust binary.
+The JavaScript frontend analyzes compiled output from JavaScript and TypeScript
+projects. It accepts emitted `.js`, `.mjs` and `.cjs` files, or an artifact
+directory such as `.next`, `dist` or `build`. Node.js 20 or newer runs the
+frontend; reading a saved graph requires only the Rust binary.
+
+Compile the target project first using its own build tool. Graphite neither
+runs project build scripts nor installs target dependencies. Source `.ts`,
+`.tsx`, `.mts`, `.cts`, `.jsx` files and `tsconfig.json` are rejected with a
+compile-first message. The `ts` selector is an alias for artifact analysis,
+not a request to parse TypeScript source.
 
 ## Build and query
 
-From a Graphite source checkout:
+Prepare Graphite's frontend and CLI from a source checkout:
 
 ```bash
 npm ci --prefix frontend/web
 npm test --prefix frontend/web
 cargo build --release --locked -p graphite-cli
-export GRAPHITE_FRONTEND_TS="$PWD/frontend/web/dist/cli.js"
+export GRAPHITE_FRONTEND_JS="$PWD/frontend/web/dist/cli.js"
 
-./target/release/graphite frontend describe ts
-./target/release/graphite build --lang ts /path/to/project/tsconfig.json -o /tmp/project-graph
-./target/release/graphite query /tmp/project-graph \
-  "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
-  --format json
-
-# A single-file container has the same query interface.
-./target/release/graphite pack /tmp/project-graph -o /tmp/project.graphite
+./target/release/graphite frontend describe js
+./target/release/graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
 ./target/release/graphite verify /tmp/project.graphite
 ./target/release/graphite query /tmp/project.graphite \
-  "MATCH (cs:CallSite) RETURN count(cs) AS calls" --format json
+  "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
+  --format json
 ./target/release/graphite serve --graph project:/tmp/project.graphite
 ```
 
-You can also build directly to `-o /tmp/project.graphite`. The frontend is found
-through `GRAPHITE_FRONTEND_TS` or a `graphite-frontend-ts` launcher on `PATH`.
-`GRAPHITE_NODE` selects the Node.js executable when a JavaScript entry point is
-used. The JVM frontend and its existing default remain available; use `--lang ts`
-to select source analysis explicitly. The TypeScript frontend is built from this
-checkout; the JVM Homebrew installation and `frontend install jvm` do not install
-it.
+Place `--lang` immediately after `build`. `js`, `javascript`, `ts` and
+`typescript` select the same frontend. With no selector, the existing JVM build
+path is preserved. Discovery uses `GRAPHITE_FRONTEND_JS`, then its compatibility
+alias `GRAPHITE_FRONTEND_TS`, then `graphite-frontend-js` or
+`graphite-frontend-ts` on `PATH`. `GRAPHITE_NODE` selects the Node executable for
+a JavaScript entry point. The npm package provides both launcher names.
+`frontend install jvm` and the JVM Homebrew installation do not install this
+frontend; use the source-checkout setup above.
 
-## What the graph represents
+An output without `.graphite` is a saved directory. You can subsequently use
+`graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
+graphs. Existing outputs are refused. Analysis and import occur in a temporary
+sibling directory; frontend failures and invalid graph output leave no saved
+graph. Packed graphs use the existing entry manifest and SHA-256 verification,
+including the adjacent `.graphite.sha256` file written by the packer.
 
-Call sites retain their containing function, target and source line.
-Top-level functions use the source path as their `caller_class`/`callee_class`;
-class methods append the class name, and nested functions/object methods include
-the containing function scope. Names are relative to the selected source
-root, so selecting `src` and selecting its parent project produce different path
-prefixes. Cross-file import aliases resolve through TypeScript symbols. Literal
-arguments flow into their call sites and are available as `StringConstant`,
-numeric and boolean nodes.
+For an already-built Next.js application, select emitted server and browser
+artifacts separately when useful:
 
-For example, a call to `all.get('*')` inside an `emit` method can be found with:
-
-```cypher
-MATCH (s:StringConstant {value: '*'})-->(cs:CallSite {caller_name: 'emit', callee_name: 'get'})
-RETURN s.value AS event, cs.caller_class AS source, cs.line AS line
+```bash
+graphite build --lang js /path/to/app/.next/server -o /tmp/app-server.graphite
+graphite build --lang ts /path/to/app/.next/static/chunks -o /tmp/app-client.graphite
+graphite serve --graph server:/tmp/app-server.graphite --graph client:/tmp/app-client.graphite
 ```
 
-A project config controls file inclusion and compiler resolution. A directory
-uses its own `tsconfig.json` when present; otherwise its source files are scanned.
-Analyzing a project does not invoke its build scripts or install its dependencies.
-Missing dependency types and other semantic diagnostics are reported, and analysis
-continues with the information available. Install dependencies yourself before
-analysis when their declarations are needed for target resolution. Invalid config
-and syntax errors fail the build. Project-reference configs are rejected explicitly;
-build each referenced project separately.
+Artifact discovery includes hidden `.next` directories and does not skip output
+because it lives under `dist` or `build`. Supplying an artifact root keeps the
+analysis boundary explicit; unrelated source and configuration files are not
+compiled by Graphite. The server's `/api/cypher` endpoint queries both loaded
+graphs; per-graph endpoints select just one.
 
-This is conservative, flow-insensitive and context-insensitive static source
-analysis: values from different assignments and calls can share graph paths. It
-does not model control-flow graphs or branch reachability. Call-site ordinals are
-not available; use source lines to locate calls. Dynamic property lookup, runtime monkey patching,
-and calls through values whose implementation cannot be resolved are not a proof
-of a complete runtime call graph. TypeScript source analysis does not provide the
-JVM frontend's bytecode optimization, folding or Android/resource behavior.
+## Artifact graph semantics
 
-## Reproducible open-source correctness checks
+Call sites retain their containing function, target and emitted-file line.
+Module paths are relative to the selected artifact root. Class methods include
+the class owner; nested functions and object methods retain lexical ownership.
+Changing the selected root changes path prefixes. Import aliases resolve through
+the TypeScript checker where the emitted code retains resolvable imports.
+Literal arguments appear as constant nodes and flow into call sites.
 
-The verification harness downloads immutable source archives, verifies their
-SHA-256 digests, and analyzes the actual source without executing project scripts
-or installing project dependencies:
+For example, an emitted `all.get('*')` call can be inspected with:
 
-| Project | Pinned release and commit | Input | Concrete checks |
-|---|---|---|---|
-| [mitt](https://github.com/developit/mitt/tree/b240473b5707857ba2c6a8e6d707c28d1e39da49) | 3.0.1 · `b240473b5707857ba2c6a8e6d707c28d1e39da49` | `src/` | `on → get/set`, `off → splice/indexOf`, `emit → get`, wildcard `'*'` argument flow |
-| [Zod](https://github.com/colinhacks/zod/tree/e30870369d5b8f31ff4d0130d4439fd997deb523) | v3.24.2 · `e30870369d5b8f31ff4d0130d4439fd997deb523` | Original `tsconfig.json`, including its inherited file selection | `addIssueToContext → getErrorMap/makeIssue`, `ParseStatus.mergeObjectAsync → mergeObjectSync`, `mergeArray → dirty`, `'aborted'` string |
+```cypher
+MATCH (s:StringConstant {value: '*'})-->(cs:CallSite {callee_name: 'get'})
+RETURN s.value AS argument, cs.caller_class AS artifact, cs.line AS line
+```
+
+Default parameters are normalized into explicit argument flow when the call
+can be resolved. Missing arguments and known `undefined` values (including
+`void` expressions and expanded literal-array spreads) select the default;
+`null` remains an explicit argument. Earlier parameter references and writes by
+later defaults are reflected in this normalization. Unknown values retain both
+possible supplied-value and default flows. The analyzer also recognizes the
+exact leading default-parameter guard emitted by TypeScript for ES5; arbitrary
+conditional code is not assumed to be an equivalent default.
+Default expressions not reached by a resolved call remain visible as possible
+argument flow for external entry points and callbacks; no source invocation is
+invented for them.
+
+A reassigned formal parameter has a separate mutable binding, so writes do not
+replace its incoming argument identity. Property locations and values read from
+those locations are separate nodes. These distinctions preserve dataflow without
+changing the existing persisted graph schema; they do not establish branch
+reachability or eliminate unresolved dynamic call targets.
+
+JavaScript strings can contain unpaired UTF-16 surrogates, which the existing
+UTF-8 string table cannot directly represent. Such strings are stored in
+textual fields, including `StringConstant.value` and inferred literal type names,
+as the reserved prefix `\0js:utf16:` (a NUL character,
+then `js:utf16:`), followed by four lowercase hexadecimal digits per UTF-16 code
+unit. Original strings beginning with that prefix are encoded in the same way
+to avoid collisions. All other valid Unicode strings remain unchanged. For
+example, the one-unit JavaScript string `"\uD800"` is stored as
+`"\u0000js:utf16:d800"` in JSON. This encoding is reversible, but Cypher returns
+the stored representation: it does not transparently decode it. Clients must
+encode these exceptional originals in value predicates and explicitly decode
+returned values when needed; `frontend/web/src/strings.ts` defines both
+operations. The graph interchange also preserves numeric negative zero (`-0`).
+
+Analysis is flow-insensitive and context-insensitive: values from different
+assignments or calls can share graph paths. It does not prove branch reachability
+or produce a complete runtime call graph. Dynamic property lookup, callback
+registration, runtime module resolution and monkey patching can remain unresolved.
+Compiled output may rename or inline functions, remove code, introduce helpers,
+and lower JSX to runtime calls; the graph describes that emitted code. It does
+not reconstruct original TS types, original source locations, React component
+lifecycles or Next.js route semantics. Source-map reconstruction and framework
+adapters are separate features.
+
+The TypeScript compiler API is used as a parser/checker, not as a project build
+step. Syntax errors fail analysis; semantic diagnostics are reported while
+analysis uses the information available. The artifact frontend does not provide
+the JVM frontend's bytecode folding, Android behavior or resource extraction.
+
+## Validation
+
+Frontend unit tests verify graph identities, concrete call arguments and dataflow.
+The end-to-end harness builds target projects explicitly, then runs Graphite
+over their emitted client/server JavaScript. Build inputs, dependency locks and
+artifact hashes are retained with command/query results so a saved graph can be
+traced to the exact compiled output. Directory and `.graphite` round trips must
+preserve complete queried graph contents.
+
+The primary open-source fixture is the MIT-licensed
+[cornflourblue/next-js-10-crud-example](https://github.com/cornflourblue/next-js-10-crud-example/tree/bf0046d35e80bbede589cd6f5435be16d70b6348)
+at commit `bf0046d35e80bbede589cd6f5435be16d70b6348`. It includes React user
+forms and Next API routes that persist users to a file. The harness checks its
+license and archive hashes, and keeps its upstream configuration and dependency
+lock unchanged. This historical Next 10 build requires the official Node.js
+14.17.0 executable, passed with `--legacy-build-node`; that executable is used
+only to prepare the fixture. Graphite analysis still uses Node.js 20 or newer.
+
+The supplementary modern fixture is the public
+[nextjs/async-react-demo Taskboard](https://github.com/nextjs/async-react-demo/tree/ec5b60f6362e956fea5a91fddfc0527c48d2a36f)
+at commit `ec5b60f6362e956fea5a91fddfc0527c48d2a36f`, with React client actions
+and a SQLite backend. That revision has no license and is not presented as an
+open-source fixture. Its pinned dependency lock is preserved; the recorded
+`experimental.cpus = 1` configuration override serializes SQLite initialization
+during its Next 16 build.
+
+Both fixtures use only `.next/server` and `.next/static` as graph inputs. The
+harness records preparation and Graphite commands separately; analysis itself
+still runs no target build scripts. Select `--project crud` (the default) or
+`--project taskboard`, using separate output directories:
 
 ```bash
 python3 .github/scripts/check-typescript-e2e.py \
+  --project crud --legacy-build-node /path/to/node-v14.17.0/bin/node \
   --cli ./target/release/graphite \
   --frontend ./frontend/web/dist/cli.js \
-  --output /tmp/graphite-typescript-e2e
+  --output /tmp/graphite-js-crud-e2e
+
+python3 .github/scripts/check-typescript-e2e.py \
+  --project taskboard \
+  --cli ./target/release/graphite \
+  --frontend ./frontend/web/dist/cli.js \
+  --output /tmp/graphite-js-taskboard-e2e
 ```
 
-Use Python 3.12 or newer and an empty output directory for a fresh run. The
-harness preserves every command's stdout, stderr and exit status, and writes
-per-project query results and `summary.json`. Downloaded archives and extracted
-sources remain available for inspection. Each project is checked as a saved
-directory, a packed container, an unpacked directory and a directly built
-container. Complete ordered node and edge query results must match across all
-four forms, as must the concrete source assertions. This verifies actual graph
-content through fresh CLI processes, including source locations and resolved
-cross-file targets, rather than relying only on nonzero counts.
+Use `--prepare-only` to prepare the compiled application before the Graphite
+binary is ready; `--prepared-app <path>` reuses that application for subsequent
+checks. Select the matching `--project` when reusing a prepared application.
+Each run validates the prepared revision and artifact checksums. Pass/fail
+claims belong to the generated report for the exact revisions under test; the
+older source-prototype results below are not artifact validation.
 
-The `typescript-build-save-query` CI job runs the same checks after frontend tests
-and a release CLI build and uploads command/query evidence even on failure.
-Existing Rust, JVM, differential and benchmark regression checks remain separate
-requirements. These single-project checks establish correctness only; they make
-no latency, throughput, CPU, RSS or performance regression claim.
+These checks establish correctness. Performance acceptance requires matched,
+representative multi-graph load tests whose requests actually target multiple
+graphs, following [CONVENTIONS.md](../CONVENTIONS.md) and the
+[benchmark protocol](../benchmark/README.md). Single-graph correctness runs and
+hosted timing observations do not establish performance acceptance.
 
-### Verified source snapshot
+## Historical source-prototype evidence
 
-On 2026-10-08, the pinned sources above passed on macOS ARM64 with Node.js
+The previous source-analysis prototype used mitt 3.0.1 at
+`b240473b5707857ba2c6a8e6d707c28d1e39da49` and Zod v3.24.2 at
+`e30870369d5b8f31ff4d0130d4439fd997deb523`. It accepted TS source inputs,
+which the artifact frontend now rejects. The record below is historical
+correctness evidence only; it does not validate the current artifact analyzer.
+
+On 2026-10-08, those pinned sources passed on macOS ARM64 with Node.js
 20.19.6, TypeScript 5.9.3 and Python 3.14.7, using the debug CLI:
 
 ```bash
@@ -140,4 +221,4 @@ reader and Rust packed reader returned identical complete JSON for four queries:
 node count (214,212), `Preconditions.checkNotNull` calls (1,299), concrete caller
 class/name rows, and `DATAFLOW` edge count (195,710). This is compatibility
 evidence; method-level and end-to-end performance acceptance still belongs to
-the required PR benchmark regression gate.
+the applicable benchmark acceptance protocol.

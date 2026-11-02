@@ -1,4 +1,4 @@
-//! Explicit TypeScript dispatch and conversion from the frontend JSON interchange.
+//! Explicit JavaScript artifact dispatch and conversion from the frontend JSON interchange.
 
 use crate::frontend::{self, Env, Launch};
 use std::ffi::OsString;
@@ -16,7 +16,7 @@ pub fn select_language(args: &[OsString]) -> Result<(&'static str, Vec<OsString>
         (
             args.get(1)
                 .and_then(|s| s.to_str())
-                .ok_or("--lang requires jvm or ts")?,
+                .ok_or("--lang requires jvm, js or ts")?,
             2,
         )
     } else if let Some(value) = first.to_str().and_then(|s| s.strip_prefix("--lang=")) {
@@ -26,8 +26,12 @@ pub fn select_language(args: &[OsString]) -> Result<(&'static str, Vec<OsString>
     };
     let lang = match value {
         "jvm" => "jvm",
-        "ts" | "typescript" => "ts",
-        _ => return Err(format!("unknown frontend '{value}'; available: jvm, ts")),
+        "js" | "javascript" | "ts" | "typescript" => "js",
+        _ => {
+            return Err(format!(
+                "unknown frontend '{value}'; available: jvm, js (alias: ts)"
+            ))
+        }
     };
     Ok((lang, args[consumed..].to_vec()))
 }
@@ -65,13 +69,42 @@ fn output_args(args: &[OsString]) -> Result<(PathBuf, Vec<OsString>), String> {
         }
     }
     Ok((
-        output.ok_or("TypeScript builds require -o <directory-or-file.graphite>")?,
+        output.ok_or("JavaScript artifact builds require -o <directory-or-file.graphite>")?,
         forwarded,
     ))
 }
 
+/// Refuse source/config input before creating output or invoking a project launcher.
+/// Directory discovery and syntax validation belong to the frontend.
+fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
+    let mut positional = false;
+    for arg in args {
+        if !positional && arg == "--" {
+            positional = true;
+            continue;
+        }
+        if !positional && arg.to_string_lossy().starts_with('-') {
+            continue;
+        }
+        let path = Path::new(arg);
+        if path.is_dir() {
+            return Ok(());
+        }
+        if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
+            if matches!(
+                extension.to_ascii_lowercase().as_str(),
+                "ts" | "tsx" | "mts" | "cts" | "jsx" | "json"
+            ) {
+                return Err(format!("{} is source or configuration input. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.", path.display()));
+            }
+        }
+        return Ok(());
+    }
+    Ok(())
+}
+
 fn command(env: &Env) -> Result<Command, String> {
-    let frontend = frontend::locate_ts(env).ok_or_else(frontend::missing_ts_message)?;
+    let frontend = frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?;
     let mut command = match frontend.launch {
         Launch::Node(script) => {
             let mut command = Command::new(frontend::locate_node(env)?);
@@ -79,7 +112,9 @@ fn command(env: &Env) -> Result<Command, String> {
             command
         }
         Launch::Executable(exe) => Command::new(exe),
-        Launch::Jar(_) => return Err("TypeScript requires a Node.js frontend".into()),
+        Launch::Jar(_) => {
+            return Err("JavaScript artifact analysis requires a Node.js frontend".into())
+        }
     };
     command.arg("build");
     Ok(command)
@@ -107,6 +142,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
             .map_err(|e| e.to_string());
     }
     let (output, args) = output_args(args)?;
+    validate_artifact_input(&args)?;
     if output.exists() {
         return Err(format!("output already exists: {}", output.display()));
     }
@@ -119,7 +155,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
         .arg(&json)
         .args(args)
         .status()
-        .map_err(|e| format!("could not start TypeScript frontend: {e}"))?;
+        .map_err(|e| format!("could not start JavaScript artifact frontend: {e}"))?;
     if !status.success() {
         return Ok(status.code().unwrap_or(1));
     }
@@ -137,7 +173,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     } else {
         std::fs::rename(&graph, &output).map_err(|e| format!("could not save graph: {e}"))?;
     }
-    println!("Saved TypeScript graph to {}", output.display());
+    println!("Saved JavaScript artifact graph to {}", output.display());
     Ok(0)
 }
 
@@ -186,11 +222,16 @@ mod tests {
             select_language(&os(&["--", "--lang", "ts"])).unwrap().0,
             "jvm"
         );
-        for selector in [os(&["--lang", "ts"]), os(&["--lang=typescript"])] {
+        for selector in [
+            os(&["--lang", "js"]),
+            os(&["--lang=javascript"]),
+            os(&["--lang", "ts"]),
+            os(&["--lang=typescript"]),
+        ] {
             let args = [selector, os(&["src", "-o", "graph"])].concat();
             assert_eq!(
                 select_language(&args).unwrap(),
-                ("ts", os(&["src", "-o", "graph"]))
+                ("js", os(&["src", "-o", "graph"]))
             );
         }
         assert!(select_language(&os(&["--lang"])).is_err());
@@ -221,6 +262,36 @@ mod tests {
     }
 
     #[test]
+    fn source_and_configuration_inputs_require_explicit_compilation() {
+        for input in [
+            "app.ts",
+            "app.tsx",
+            "app.mts",
+            "app.cts",
+            "app.jsx",
+            "tsconfig.json",
+            "project/tsconfig.production.json",
+        ] {
+            for args in [os(&[input]), os(&["--", input])] {
+                let message = validate_artifact_input(&args).unwrap_err();
+                assert!(message.contains("Compile the project first"), "{message}");
+                assert!(message.contains(".next/dist/build"), "{message}");
+            }
+        }
+        for input in [
+            "app.js",
+            "app.mjs",
+            "app.cjs",
+            ".next",
+            "dist",
+            "build",
+            "out/.next/server/app/page.js",
+        ] {
+            assert!(validate_artifact_input(&os(&[input])).is_ok(), "{input}");
+        }
+    }
+
+    #[test]
     fn javascript_entry_point_uses_the_selected_node_runtime() {
         let mut env = Env::default();
         env.vars
@@ -246,6 +317,29 @@ mod tests {
         env.vars
             .insert(frontend::TS_FRONTEND_VAR.into(), script.into_os_string());
         env
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn source_rejection_does_not_start_the_frontend_or_create_output() {
+        let root = std::env::temp_dir().join(format!(
+            "graphite-js-source-rejection-{}",
+            std::process::id()
+        ));
+        let _ = std::fs::remove_dir_all(&root);
+        let env = fake_frontend(&root, "exit 37");
+        let output = root.join("saved.graphite");
+        let args = vec![
+            OsString::from("app.tsx"),
+            OsString::from("-o"),
+            output.clone().into_os_string(),
+        ];
+        assert!(execute(&env, &args)
+            .unwrap_err()
+            .contains("Compile the project first"));
+        assert!(!output.exists());
+        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        std::fs::remove_dir_all(root).unwrap();
     }
 
     #[cfg(unix)]

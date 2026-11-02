@@ -1,4 +1,4 @@
-name: TypeScript frontend
+name: JavaScript artifact frontend
 
 on:
   push:
@@ -11,19 +11,25 @@ permissions:
 
 jobs:
   typescript:
-    name: typescript-build-save-query
+    name: javascript-artifact-build-save-query
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
     - name: Checkout
       uses: actions/checkout@v7
+    - name: Setup historical runtime for pinned Next 10 fixture
+      uses: actions/setup-node@v6
+      with:
+        node-version: '14.17.0'
+    - name: Preserve fixture runtime path
+      run: echo "GRAPHITE_FIXTURE_NODE=$(command -v node)" >> "$GITHUB_ENV"
     - name: Setup Node
       uses: actions/setup-node@v6
       with:
         node-version: '22'
         cache: npm
         cache-dependency-path: frontend/web/package-lock.json
-    - name: Install and test TypeScript frontend
+    - name: Install and test JavaScript artifact frontend
       working-directory: frontend/web
       run: |
         npm ci
@@ -34,18 +40,28 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build CLI
       run: cargo build --release --locked -p graphite-cli
-    - name: Real open-source build, save and query checks
-      run: >-
-        python3 .github/scripts/check-typescript-e2e.py
-        --output "${RUNNER_TEMP}/typescript-e2e"
+    - name: Build real Next/React app and verify client/server artifact graphs
+      run: |
+        python3 .github/scripts/check-typescript-e2e.py \
+          --project crud --legacy-build-node "$GRAPHITE_FIXTURE_NODE" \
+          --output "${RUNNER_TEMP}/javascript-artifact-e2e/crud"
+        python3 .github/scripts/check-typescript-e2e.py \
+          --project taskboard \
+          --output "${RUNNER_TEMP}/javascript-artifact-e2e/taskboard"
     - name: Preserve complete correctness evidence
       if: always()
       uses: actions/upload-artifact@v7
       with:
-        name: typescript-e2e
+        name: javascript-artifact-e2e
         path: |
-          ${{ runner.temp }}/typescript-e2e/*.json
-          ${{ runner.temp }}/typescript-e2e/*.stdout
-          ${{ runner.temp }}/typescript-e2e/*.stderr
+          ${{ runner.temp }}/javascript-artifact-e2e/*/*.json
+          ${{ runner.temp }}/javascript-artifact-e2e/*/*.stdout
+          ${{ runner.temp }}/javascript-artifact-e2e/*/*.stderr
+          ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/dist/*.js
+          ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/src/*.ts
+          ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/package*.json
+          ${{ runner.temp }}/javascript-artifact-e2e/*/sources/*/.next/server/**/*.js
+          ${{ runner.temp }}/javascript-artifact-e2e/*/sources/*/.next/static/**/*.js
+        include-hidden-files: true
         if-no-files-found: warn
         retention-days: 14
