@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 mod directory;
+mod replace;
 
 pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
     match std::fs::symlink_metadata(path) {
@@ -34,34 +35,43 @@ fn publish_with(
     output: &Path,
     hard_link: impl Fn(&Path, &Path) -> std::io::Result<()>,
 ) -> Result<(), String> {
-    let publish = |from: &Path, to: &Path| {
-        let exists = || format!("output already exists: {}", to.display());
-        match hard_link(from, to) {
-            Ok(()) => Ok(()),
-            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Err(exists()),
-            Err(link_error) => {
-                // Same-filesystem staging allows an exclusive native rename on
-                // macOS, Linux, and Windows even where hard links are disabled.
-                let staged = tempfile::TempPath::try_from_path(from)
-                    .map_err(|e| format!("could not access {}: {e}", from.display()))?;
-                staged.persist_noclobber(to).map_err(|e| {
-                    if e.error.kind() == std::io::ErrorKind::AlreadyExists {
-                        exists()
-                    } else {
-                        format!("could not publish {}: {link_error} (hard link); {} (no-clobber persist)", to.display(), e.error)
-                    }
-                })
-            }
-        }
-    };
     let digest = graphite_storage::container::digest_path(output);
-    publish(staged_digest, &digest)?;
-    if let Err(error) = publish(staged, output) {
+    publish_new_file(staged_digest, &digest, &hard_link)?;
+    if let Err(error) = publish_new_file(staged, output, &hard_link) {
         std::fs::remove_file(&digest)
             .map_err(|e| format!("{error}; could not remove {}: {e}", digest.display()))?;
         return Err(error);
     }
     Ok(())
+}
+
+fn publish_new_file(
+    from: &Path,
+    to: &Path,
+    hard_link: &impl Fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<(), String> {
+    let exists = || format!("output already exists: {}", to.display());
+    match hard_link(from, to) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Err(exists()),
+        Err(link_error) => {
+            // Same-filesystem staging allows an exclusive native rename on
+            // macOS, Linux, and Windows even where hard links are disabled.
+            let staged = tempfile::TempPath::try_from_path(from)
+                .map_err(|e| format!("could not access {}: {e}", from.display()))?;
+            staged.persist_noclobber(to).map_err(|e| {
+                if e.error.kind() == std::io::ErrorKind::AlreadyExists {
+                    exists()
+                } else {
+                    format!(
+                        "could not publish {}: {link_error} (hard link); {} (no-clobber persist)",
+                        to.display(),
+                        e.error
+                    )
+                }
+            })
+        }
+    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -84,14 +94,13 @@ impl Stage {
         let report = graphite_storage::container::pack(&self.graph(), &destination)
             .map_err(|e| format!("could not pack {}: {e}", output.display()))?;
         create_output_parent(output)?;
+        let mut claim = replace::Claim::new(output)?;
         match publication {
             Publication::CreateNew => publish_container(&destination, &report.digest_file, output)?,
             Publication::Replace => {
-                std::fs::rename(&destination, output)
-                    .map_err(|e| format!("could not publish {}: {e}", output.display()))?;
-                let digest = graphite_storage::container::digest_path(output);
-                std::fs::rename(&report.digest_file, &digest)
-                    .map_err(|e| format!("could not publish {}: {e}", digest.display()))?;
+                claim.replace(&destination, &report.digest_file, output, |a, b| {
+                    std::fs::rename(a, b)
+                })?
             }
         }
         crate::pack::print_report(&report, output);
