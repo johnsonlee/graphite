@@ -441,7 +441,7 @@ class Analyzer {
     let id: number;
     if (ts.isStringLiteralLike(n)) id = this.constant('StringConstant', n.text);
     else if (ts.isNumericLiteral(n) || (ts.isPrefixUnaryExpression(n) && ts.isNumericLiteral(n.operand) && (n.operator === ts.SyntaxKind.MinusToken || n.operator === ts.SyntaxKind.PlusToken))) {
-      const value = ts.isNumericLiteral(n) ? Number(n.text) : Number(n.operand.getText()) * (n.operator === ts.SyntaxKind.MinusToken ? -1 : 1);
+      const value = ts.isNumericLiteral(n) ? Number(n.text) : Number((n.operand as ts.NumericLiteral).text) * (n.operator === ts.SyntaxKind.MinusToken ? -1 : 1);
       if (!Number.isFinite(value)) throw new Error(`Non-finite numeric literal at ${this.module(n)}:${this.position(n)}`);
       id = this.constant(!Object.is(value, -0) && Number.isInteger(value) && value >= -2147483648 && value <= 2147483647 ? 'IntConstant' : 'DoubleConstant', value);
     } else if (n.kind === ts.SyntaxKind.TrueKeyword || n.kind === ts.SyntaxKind.FalseKeyword) id = this.constant('BooleanConstant', n.kind === ts.SyntaxKind.TrueKeyword);

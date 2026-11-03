@@ -265,6 +265,20 @@ test('property reads and writes, and formal versus reassigned binding, have dist
   assert.ok(edge(g, slot.id, read.id, 'FIELD_LOAD'));
 });
 
+test('signed numeric separators preserve concrete normalized default arguments', t => {
+  const g = analyze(fixture(t, { 'main.mjs': `
+    function send(decimal = -1_000, hex = +0xAB_CD) { return decimal + hex; }
+    send();
+  ` }));
+  const call = calls(g).find(c => c.callee.name === 'send');
+  const args = argumentsOf(g, call);
+  assert.deepEqual(args.map(n => [n.kind, n.value]), [['IntConstant', -1000], ['IntConstant', 43981]]);
+  for (const [i, arg] of args.entries()) {
+    assert.ok(edge(g, arg.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, arg.id, formal(g, 'send', i).id, 'PARAMETER_PASS'));
+  }
+});
+
 test('negative zero survives the frontend JSON protocol distinctly from zero', t => {
   const root = fixture(t, { 'main.js': 'sink(-0, 0);' });
   const output = path.join(root, 'graph.json');
