@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 import ts from 'typescript';
 import { analyze } from '../dist/analyzer.js';
 
@@ -147,6 +148,229 @@ forward(unknown()); shadow("provided");
     assert.ok(edge(g, fallback.id, join.id, 'ASSIGN'));
     assert.ok(edge(g, join.id, formal(g, 'identity').id, 'PARAMETER_PASS'));
   }
+});
+
+test('reads of reassigned bindings retain supported actual and default flows in both directions', t => {
+  const g = analyze(fixture(t, { 'main.js': `
+function f(a=42) { return a; }
+function fromVoid() { let x=void 0; x=5; return f(x); }
+function fromUndefined() { let x=undefined; x=5; return f(x); }
+function toVoid() { let x=5; x=void 0; return f(x); }
+function toUndefined() { let x=5; x=undefined; return f(x); }
+` }));
+  const five = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 5);
+  const fallback = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 42);
+  for (const name of ['fromVoid', 'fromUndefined', 'toVoid', 'toUndefined']) {
+    const call = calls(g).find(n => n.caller.name === name && n.callee.name === 'f');
+    const binding = g.nodes.find(n => n.name === 'x' && n.method.name === name);
+    const [actual] = argumentsOf(g, call);
+    assert.ok(edge(g, five.id, binding.id, 'ASSIGN'));
+    if (name === 'fromUndefined') {
+      // Use-site number agrees with the write of 5; no default is needed.
+      assert.equal(actual.id, binding.id);
+    } else {
+      // The checker retains the initializer type at the use despite an incompatible write.
+      assert.ok(edge(g, binding.id, actual.id, 'ASSIGN'));
+      assert.ok(edge(g, fallback.id, actual.id, 'ASSIGN'));
+    }
+    assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'f').id, 'PARAMETER_PASS'));
+  }
+});
+
+test('a declaration alias retains conflicting writes to the underlying binding', t => {
+  const g = analyze(fixture(t, { 'main.js': `
+function f(a=42) { return a; }
+function fromVoid() { let x=void 0; x=5; const y=x; return f(y); }
+function toVoid() { let x=5; x=void 0; const y=x; return f(y); }
+` }));
+  const five = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 5);
+  const fallback = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 42);
+  for (const name of ['fromVoid', 'toVoid']) {
+    const binding = id => g.nodes.find(n => n.name === id && n.method.name === name);
+    const call = calls(g).find(n => n.caller.name === name && n.callee.name === 'f');
+    const [actual] = argumentsOf(g, call);
+    assert.ok(edge(g, five.id, binding('x').id, 'ASSIGN'));
+    assert.ok(edge(g, binding('x').id, binding('y').id, 'ASSIGN'));
+    assert.ok(edge(g, binding('y').id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, fallback.id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'f').id, 'PARAMETER_PASS'));
+  }
+});
+
+test('parenthesized, destructuring and iteration writes reach the supplied argument and its formal', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function f(a=42) { return a; }
+function parens() { let x=void 0; (x)=5; return f(x); }
+function array() { let x=void 0; [x]=[5]; return f(x); }
+function object() { let x=void 0; ({v:x}={v:5}); return f(x); }
+function shorthand() { let x=void 0; ({x}={x:5}); return f(x); }
+function values() { let x=void 0; for (x of [5]) return f(x); }
+function keys() { let x=void 0; for (x in {key:5}) return f(x); }
+export const outputs=[parens(),array(),object(),shorthand(),values(),keys()];
+` });
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual(runtime.outputs, [5,5,5,5,5,'key']);
+  const g = analyze(root);
+  const five = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 5);
+  for (const name of ['parens', 'array', 'object', 'shorthand', 'values', 'keys']) {
+    const binding = g.nodes.find(n => n.name === 'x' && n.method.name === name);
+    const call = calls(g).find(n => n.caller.name === name && n.callee.name === 'f');
+    const [actual] = argumentsOf(g, call);
+    const incoming = g.edges.filter(e => e.to === binding.id && ['ASSIGN','ARRAY_LOAD'].includes(e.kind));
+    if (name === 'parens') assert.ok(edge(g, five.id, binding.id, 'ASSIGN'));
+    else {
+      // The aggregate/iterable is a dependency of the binding, not necessarily the item itself.
+      assert.ok(incoming.some(e => g.nodes[e.from].name?.startsWith('@') && edge(g, five.id, e.from, 'ASSIGN')));
+    }
+    assert.ok(actual.id === binding.id || edge(g, binding.id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'f').id, 'PARAMETER_PASS'));
+  }
+});
+
+test('nested defaults use per-call argument state, including a later write to an earlier argument', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function pick(x=42) { return x; }
+/** @param {number} a */
+function relay(a,b=pick(a)) { return b; }
+function update(a,b=(a=void 0),c=pick(a)) { return c; }
+const u=void 0; export const results=[relay(u),relay(7),update(5)];
+` });
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual(runtime.results, [42,7,42]);
+  const g = analyze(root);
+  const nested = calls(g).filter(n => n.callee.name === 'pick');
+  assert.deepEqual(nested.map(n => [n.caller.name, argumentsOf(g, n)[0].value]), [['relay',42],['relay',7],['update',42]]);
+  for (const n of nested) {
+    const [value] = argumentsOf(g, n);
+    assert.ok(edge(g, value.id, n.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, value.id, formal(g, 'pick').id, 'PARAMETER_PASS'));
+  }
+});
+
+// Trace concrete incoming data only; procedure return/call edges cannot manufacture an argument dependency.
+function flowsTo(g, from, to) {
+  const seen = new Set([from]);
+  for (const id of seen) {
+    if (id === to) return true;
+    for (const e of g.edges) if (e.from === id && ['ASSIGN','FIELD_STORE','FIELD_LOAD','ARRAY_LOAD','PARAMETER_PASS'].includes(e.kind)) seen.add(e.to);
+  }
+  return false;
+}
+
+test('an explicitly written property and its alias retain supplied and default alternatives', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function pick(a=42) { return a; }
+function a() { const o={x:5}; o.x=void 0; return pick(o.x); }
+function b() { const o={x:void 0}; o.x=5; return pick(o.x); }
+function c() { const o={x:5}; o.x=void 0; const y=o.x; return pick(y); }
+function d() { const o={x:void 0}; o.x=5; const y=o.x; return pick(y); }
+export const results=[a(),b(),c(),d()];
+` });
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual(runtime.results, [42,5,42,5]);
+  const g = analyze(root);
+  const fallback = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 42);
+  const writes = calls(g).filter(n => n.callee.name === 'pick');
+  assert.equal(writes.length, 4);
+  for (const call of writes) {
+    const [actual] = argumentsOf(g, call);
+    const read = g.nodes.find(n => n.method?.name === call.caller.name && n.name?.startsWith('@read:o.x'));
+    assert.ok(flowsTo(g, read.id, actual.id));
+    assert.ok(edge(g, fallback.id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'pick').id, 'PARAMETER_PASS'));
+  }
+});
+
+test('a conditional default preserves both states of every earlier argument it can write', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function pick(x=42) { return x; }
+function relay(a,b=(a=void 0),c=pick(a)) { return c; }
+function outer(maybe) { return relay(7,maybe); }
+function replaced(a,b=(a=7),c=a) { return [a,c]; }
+function nested(maybe) { return replaced(1,maybe); }
+export const results=[outer(1),outer(undefined),nested(8),nested(undefined)];
+` });
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual(runtime.results, [7,42,[1,1],[7,7]]);
+  const g = analyze(root);
+  const literal = n => g.nodes.find(v => v.kind === 'IntConstant' && v.value === n).id;
+  const relay = calls(g).find(n => n.callee.name === 'relay');
+  const pick = calls(g).find(n => n.callee.name === 'pick');
+  const undef = g.nodes.find(n => n.method?.name === 'relay' && n.varType === 'undefined' && n.name?.startsWith('@'));
+  assert.ok(flowsTo(g, undef.id, relay.arguments[0]) && flowsTo(g, literal(7), relay.arguments[0]));
+  assert.ok(flowsTo(g, literal(7), pick.arguments[0]) && flowsTo(g, literal(42), pick.arguments[0]));
+  assert.ok(edge(g, pick.arguments[0], formal(g, 'pick').id, 'PARAMETER_PASS'));
+  const replaced = calls(g).find(n => n.callee.name === 'replaced');
+  assert.equal(replaced.arguments[0], replaced.arguments[2]);
+  for (const slot of [0,2]) {
+    const actual = replaced.arguments[slot];
+    assert.ok(flowsTo(g, literal(1), actual) && flowsTo(g, literal(7), actual));
+    assert.ok(edge(g, actual, replaced.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual, formal(g, 'replaced', slot).id, 'PARAMETER_PASS'));
+  }
+});
+
+test('argument snapshots, assignment results and pattern defaults retain earlier reads', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function pick(x=42) { return x; }
+/** @param {number} a */
+function snapshot(a,b=pick(a,a=5)) { return b; }
+/** @param {number} a */
+function assigned(a,b=(a=a),c=pick(b)) { return c; }
+/** @param {number} a */
+function comma(a,b=(0,a),c=pick(b)) { return c; }
+function unpack(a,b=([a=42]=[7]),c=pick(a)) { return c; }
+function short(a,b=({a=7}={}),c=pick(a)) { return c; }
+const u=void 0; export const results=[snapshot(u),assigned(u),comma(u),unpack(0),short(0)];
+` });
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual(runtime.results, [42,42,42,7,7]);
+  const g = analyze(root);
+  for (const name of ['snapshot','assigned','comma','unpack','short']) {
+    const call = calls(g).find(n => n.caller.name === name && n.callee.name === 'pick');
+    const [actual] = argumentsOf(g, call);
+    if (['unpack','short'].includes(name)) {
+      const seven = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 7);
+      assert.ok(flowsTo(g, seven.id, actual.id));
+    } else assert.equal(actual.value, 42);
+    assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'pick').id, 'PARAMETER_PASS'));
+  }
+});
+
+test('void-typed calls keep both possible inputs; known earlier arguments keep their precision', async t => {
+  const root = fixture(t, { 'main.mjs': `
+function f(a=42) { return a; }
+function noop() {}
+/** @type {() => void} */ const opaque = () => 7;
+export const absent = f(noop());
+export const supplied = f(opaque());
+function bridge(a, b=f(a)) { return b; }
+bridge(); bridge(void 0); bridge(7);
+` });
+  // Execute only this fixed test module to independently verify both runtime outcomes.
+  const runtime = await import(pathToFileURL(path.join(root, 'main.mjs')).href);
+  assert.deepEqual([runtime.absent, runtime.supplied], [42, 7]);
+  const g = analyze(root);
+  const fallback = g.nodes.find(n => n.kind === 'IntConstant' && n.value === 42);
+  const top = calls(g).filter(n => n.caller.name === '<module>' && n.callee.name === 'f');
+  assert.equal(top.length, 2);
+  for (const outer of top) {
+    const nested = calls(g).filter(n => n.line === outer.line && n.id !== outer.id);
+    assert.equal(nested.length, 1);
+    const [supplied] = nested;
+    const [actual] = argumentsOf(g, outer);
+    assert.ok(edge(g, supplied.id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, fallback.id, actual.id, 'ASSIGN'));
+    assert.ok(edge(g, actual.id, outer.id, 'PARAMETER_PASS'));
+    assert.ok(edge(g, actual.id, formal(g, 'f').id, 'PARAMETER_PASS'));
+  }
+  const nested = calls(g).filter(n => n.caller.name === 'bridge' && n.callee.name === 'f');
+  assert.deepEqual(nested.map(c => argumentsOf(g, c)[0].value), [42, 42, 7]);
 });
 
 test('void expressions keep effects even when their value triggers a default', t => {

@@ -28,6 +28,8 @@ export interface SourceGraph {
   edges: GraphEdge[];
   classOrigins: { className: string; origin: string }[];
 }
+type UndefinedState = 'always' | 'never' | 'maybe';
+interface ArgumentValue { id: number; state: UndefinedState }
 type FunctionBody = ts.FunctionLikeDeclaration & { body: ts.ConciseBody };
 interface Context { method: Method; parameters: number[]; returned?: number; body: ts.Node; declaration?: FunctionBody; defaults?: Map<number, ts.Expression> }
 const isBody = (n: ts.Node): n is FunctionBody => ts.isFunctionLike(n) && 'body' in n && !!n.body;
@@ -102,7 +104,12 @@ class Analyzer {
   private constants = new Map<string, number>();
   private properties = new Map<string, number>();
   private edgePairs = new Map<string, GraphEdge>();
-  private argumentBindings = new Map<ts.Symbol, number>();
+  private writes = new Map<ts.Symbol, UndefinedState>();
+  private patternDefaults = new Set<ts.BinaryExpression>();
+  private handledFallbacks = new Set<ts.Expression>();
+  private writeCache = new Map<ts.Symbol, UndefinedState | undefined>();
+  private undefinedValues = new Set<number>();
+  private argumentBindings = new Map<ts.Symbol, ArgumentValue>();
   private activeDefaults = new Set<ts.ParameterDeclaration>();
   private evaluatedDefaults = new Set<ts.ParameterDeclaration>();
   private normalizedGuards = new Set<ts.Node>();
@@ -225,6 +232,23 @@ class Analyzer {
     }
     return result;
   }
+  // Only assignment targets are written. Object keys, computed names and
+  // property receivers are reads; never classify them as reassigned variables.
+  private *targets(n: ts.Expression, defaults: readonly ts.Expression[] = []): Generator<{ target: ts.Expression; defaults: readonly ts.Expression[] }> {
+    if (ts.isParenthesizedExpression(n) || ts.isSpreadElement(n)) yield* this.targets(n.expression, defaults);
+    else if (ts.isArrayLiteralExpression(n)) {
+      for (const e of n.elements) if (!ts.isOmittedExpression(e)) yield* this.targets(e, defaults);
+    } else if (ts.isObjectLiteralExpression(n)) {
+      for (const p of n.properties) {
+        if (ts.isShorthandPropertyAssignment(p)) yield { target: p.name, defaults: p.objectAssignmentInitializer ? [...defaults, p.objectAssignmentInitializer] : defaults };
+        else if (ts.isPropertyAssignment(p)) yield* this.targets(p.initializer, defaults);
+        else if (ts.isSpreadAssignment(p)) yield* this.targets(p.expression, defaults);
+      }
+    } else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
+      this.patternDefaults.add(n);
+      yield* this.targets(n.left, [...defaults, n.right]);
+    } else yield { target: n, defaults };
+  }
   private register(n: ts.Node, parent: Context): void {
     let context = parent;
     if (isBody(n)) {
@@ -258,14 +282,23 @@ class Analyzer {
     const assigned = ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment ? n.left :
       (ts.isPrefixUnaryExpression(n) || ts.isPostfixUnaryExpression(n)) &&
       (n.operator === ts.SyntaxKind.PlusPlusToken || n.operator === ts.SyntaxKind.MinusMinusToken) ? n.operand : undefined;
-    if (assigned && ts.isIdentifier(assigned) && !this.normalizedAssignments.has(n)) {
-      const symbol = this.symbol(assigned);
-      const previous = symbol && this.symbols.get(symbol);
+    const loop = ts.isForOfStatement(n) || ts.isForInStatement(n) ? n : undefined;
+    const lhs = assigned ?? (loop && !ts.isVariableDeclarationList(loop.initializer) ? loop.initializer : undefined);
+    if (lhs && !this.normalizedAssignments.has(n)) for (const { target } of this.targets(lhs)) {
+      const symbol = ts.isIdentifier(target) ? this.assignmentSymbol(target) : this.referenceSymbol(target);
+      if (!symbol) continue;
+      const rhs = ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? n.right : undefined;
+      let unwrapped = lhs;
+      while (ts.isParenthesizedExpression(unwrapped)) unwrapped = unwrapped.expression;
+      const write = ts.isForInStatement(n) ? 'never' :
+        rhs && ts.isIdentifier(unwrapped) ? this.literalUndefined(rhs) ?? 'maybe' : 'maybe';
+      const prior = this.writes.get(symbol);
+      this.writes.set(symbol, prior && prior !== write ? 'maybe' : write);
+      const previous = this.symbols.get(symbol);
       const formal = previous === undefined ? undefined : this.graph.nodes[previous];
-      if (symbol && formal?.kind === 'Parameter') {
-        // A formal denotes the incoming argument, whereas reassignment writes to
-        // its mutable binding. Keep these distinct instead of relabelling an edge.
-        const binding = this.node('LocalVariable', { name: `@binding:${assigned.text}`, varType: formal.paramType, method: formal.method });
+      if (formal?.kind === 'Parameter' && ts.isIdentifier(target)) {
+        // A formal denotes the incoming argument; a reassignment writes its binding.
+        const binding = this.node('LocalVariable', { name: `@binding:${target.text}`, varType: formal.paramType, method: formal.method });
         this.edge(formal.id, binding, 'ASSIGN');
         this.symbols.set(symbol, binding);
       }
@@ -287,7 +320,7 @@ class Analyzer {
   }
   private local(n: ts.Node, context: Context): number {
     const symbol = this.symbol(n);
-    if (symbol && this.argumentBindings.has(symbol)) return this.argumentBindings.get(symbol)!;
+    if (symbol && this.argumentBindings.has(symbol)) return this.argumentBindings.get(symbol)!.id;
     if (symbol && this.symbols.has(symbol)) return this.symbols.get(symbol)!;
     const id = this.node('LocalVariable', { name: n.getText(), varType: this.type(n), method: context.method });
     if (symbol) this.symbols.set(symbol, id);
@@ -318,12 +351,35 @@ class Analyzer {
   private assigned(n: ts.Expression, context: Context): number {
     return ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? this.property(n, context).slot : this.value(n, context);
   }
-  private assign(n: ts.Expression, value: number, context: Context): void {
-    const symbol = ts.isIdentifier(n) ? this.symbol(n) : undefined;
-    if (symbol && this.argumentBindings.has(symbol)) {
-      this.argumentBindings.set(symbol, value);
-      this.values.delete(n);
-    } else this.edge(value, this.assigned(n, context), ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? 'FIELD_STORE' : 'ASSIGN');
+  private assignmentSymbol(n: ts.Identifier): ts.Symbol | undefined {
+    return (ts.isShorthandPropertyAssignment(n.parent) && this.checker.getShorthandAssignmentValueSymbol(n.parent)) || this.symbol(n);
+  }
+  private assign(n: ts.Expression, value: number, context: Context, rhs?: ts.Expression, kind = 'ASSIGN'): void {
+    while (ts.isParenthesizedExpression(n)) n = n.expression;
+    for (const { target, defaults } of this.targets(n)) {
+      const symbol = ts.isIdentifier(target) ? this.assignmentSymbol(target) : undefined;
+      const unpacked = target !== n || kind !== 'ASSIGN';
+      let incoming = value;
+      if (defaults.length || (unpacked && symbol && this.argumentBindings.has(symbol))) {
+        // An unpacked item's exact position/value is unknown; keep its container
+        // and any pattern default as possible inputs, without overwriting the binding.
+        incoming = this.node('LocalVariable', { name: `@item:${this.position(target)}`, varType: 'unknown', method: context.method });
+        this.edge(value, incoming, kind);
+        for (const init of defaults) {
+          const fallback = this.possibleBindingEffects(this.argumentBindings, context, init, () => this.value(init, context));
+          this.edge(fallback, incoming, 'ASSIGN');
+          this.handledFallbacks.add(init);
+        }
+      }
+      if (symbol && this.argumentBindings.has(symbol)) {
+        this.argumentBindings.set(symbol, { id: incoming, state: !unpacked && rhs ? this.undefinedState(rhs, incoming) : 'maybe' });
+        this.values.delete(target);
+      } else {
+        const location = symbol && this.symbols.get(symbol);
+        this.edge(incoming, location ?? this.assigned(target, context),
+          ts.isPropertyAccessExpression(target) || ts.isElementAccessExpression(target) ? 'FIELD_STORE' : kind);
+      }
+    }
   }
   private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context } {
     let declaration = this.checker.getResolvedSignature(n)?.declaration;
@@ -341,27 +397,89 @@ class Analyzer {
       parameterTypes: (n.arguments ?? []).map(a => this.type(a)), returnType: this.type(n),
     } };
   }
-  private undefinedState(n: ts.Expression | undefined, value?: number): 'always' | 'never' | 'maybe' {
-    if (!n || ts.isVoidExpression(n) || ts.isOmittedExpression(n)) return 'always';
-    if (ts.isParenthesizedExpression(n)) return this.undefinedState(n.expression, value);
-    if (ts.isIdentifier(n) && n.text === 'undefined' && !this.symbol(n)?.declarations?.length) return 'always';
-    if (value !== undefined) {
-      const node = this.graph.nodes[value]!;
-      if (node.kind.endsWith('Constant')) return 'never';
-      if (node.varType === 'undefined') return 'always';
+  private referenceSymbol(n: ts.Expression): ts.Symbol | undefined {
+    if (ts.isIdentifier(n)) return this.symbol(n);
+    if (ts.isPropertyAccessExpression(n)) return this.symbol(n.name);
+    if (ts.isElementAccessExpression(n) && ts.isStringLiteralLike(n.argumentExpression))
+      return this.checker.getPropertyOfType(this.checker.getTypeAtLocation(n.expression), n.argumentExpression.text);
+    return undefined;
+  }
+  // Follow simple declaration aliases to their writes, without assuming any
+  // execution order. A cycle has no independent known value.
+  private writeEvidence(symbol: ts.Symbol): UndefinedState | undefined {
+    const path = new Set<ts.Symbol>();
+    let current: ts.Symbol | undefined = symbol;
+    while (current && !this.writeCache.has(current) && !path.has(current)) {
+      path.add(current);
+      const declaration: ts.Declaration | undefined = current.valueDeclaration;
+      let init: ts.Expression | undefined = declaration && ts.isVariableDeclaration(declaration) ? declaration.initializer : undefined;
+      while (init && ts.isParenthesizedExpression(init)) init = init.expression;
+      current = init && this.referenceSymbol(init);
     }
+    let state = current && (path.has(current) ? 'maybe' as const : this.writeCache.get(current));
+    for (const entry of [...path].reverse()) {
+      const write = this.writes.get(entry);
+      if (write) state = state && state !== write ? 'maybe' : write;
+      this.writeCache.set(entry, state);
+    }
+    return state;
+  }
+  private literalUndefined(n: ts.Expression): UndefinedState | undefined {
+    if (ts.isParenthesizedExpression(n)) return this.literalUndefined(n.expression);
+    if (ts.isVoidExpression(n) || ts.isOmittedExpression(n) ||
+        ts.isIdentifier(n) && n.text === 'undefined' && !this.symbol(n)?.declarations?.length) return 'always';
+    if (ts.isLiteralExpression(n) || n.kind === ts.SyntaxKind.NullKeyword ||
+        n.kind === ts.SyntaxKind.TrueKeyword || n.kind === ts.SyntaxKind.FalseKeyword) return 'never';
+    return undefined;
+  }
+  private undefinedState(n: ts.Expression | undefined, value?: number): UndefinedState {
+    if (!n) return 'always';
+    if (ts.isParenthesizedExpression(n)) return this.undefinedState(n.expression, value);
+    if (ts.isBinaryExpression(n) && (n.operatorToken.kind === ts.SyntaxKind.EqualsToken || n.operatorToken.kind === ts.SyntaxKind.CommaToken)) return this.undefinedState(n.right, value);
+    const literal = this.literalUndefined(n);
+    if (literal) return literal;
+    if (value !== undefined) {
+      if (this.undefinedValues.has(value)) return 'always';
+      if (this.graph.nodes[value]!.kind.endsWith('Constant')) return 'never';
+    }
+    const symbol = this.referenceSymbol(n);
+    const bound = symbol && this.argumentBindings.get(symbol);
+    if (bound && bound.id === value) return bound.state;
     const type = this.checker.getTypeAtLocation(n);
     const members = type.isUnion() ? type.types : [type];
-    if (members.every(t => !!(t.flags & ts.TypeFlags.Undefined))) return 'always';
-    if (members.some(t => !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter)))) return 'maybe';
-    return 'never';
+    const state: UndefinedState = members.every(t => !!(t.flags & ts.TypeFlags.Undefined)) ? 'always' :
+      members.some(t => !!(t.flags & (ts.TypeFlags.Undefined | ts.TypeFlags.Void | ts.TypeFlags.Any | ts.TypeFlags.Unknown | ts.TypeFlags.TypeParameter))) ? 'maybe' : 'never';
+    // In emitted JS the checker can retain a binding's initializer type even at
+    // a read after an incompatible write. A binding represents all its writes.
+    const write = symbol && this.writeEvidence(symbol);
+    return write && write !== state ? 'maybe' : state;
   }
-  private defaultValue(parameter: ts.ParameterDeclaration, initializer: ts.Expression, target: Context, bindings: Map<ts.Symbol, number>): number {
+  private possibleBindingEffects<T>(bindings: Map<ts.Symbol, ArgumentValue>, context: Context, n: ts.Node, evaluate: () => T): T {
+    const prior = this.argumentBindings;
+    const branch = new Map(bindings);
+    this.argumentBindings = branch;
+    try {
+      const result = evaluate();
+      for (const [symbol, possible] of branch) {
+        const before = bindings.get(symbol);
+        if (!before || before === possible) continue;
+        let id = before.id;
+        if (id !== possible.id) {
+          id = this.node('LocalVariable', { name: `@default-write:${symbol.name}@${this.position(n)}`, varType: 'unknown', method: context.method });
+          this.edge(before.id, id, 'ASSIGN');
+          this.edge(possible.id, id, 'ASSIGN');
+        }
+        bindings.set(symbol, { id, state: before.state === possible.state ? before.state : 'maybe' });
+      }
+      return result;
+    } finally { this.argumentBindings = prior; }
+  }
+  private defaultValue(parameter: ts.ParameterDeclaration, initializer: ts.Expression, target: Context, bindings: Map<ts.Symbol, ArgumentValue>): ArgumentValue {
     this.evaluatedDefaults.add(parameter);
     if (this.activeDefaults.has(parameter)) {
       // Recursive default evaluation has no finite expansion. Keep its result unknown;
       // the enclosing call still records the recursive target and parameter flow.
-      return this.node('LocalVariable', { name: `@recursive-default:${this.position(parameter)}`, varType: 'unknown', method: target.method });
+      return { id: this.node('LocalVariable', { name: `@recursive-default:${this.position(parameter)}`, varType: 'unknown', method: target.method }), state: 'maybe' };
     }
     const savedValues = this.values;
     const savedBindings = this.argumentBindings;
@@ -371,7 +489,7 @@ class Analyzer {
     try {
       const result = this.value(initializer, target);
       this.walk(initializer, target);
-      return result;
+      return { id: result, state: this.undefinedState(initializer, result) };
     } finally {
       this.activeDefaults.delete(parameter);
       this.values = savedValues;
@@ -393,7 +511,13 @@ class Analyzer {
         expanded.push(expression);
       }
     }
-    const args = expanded.map(a => this.value(a, caller));
+    // A later argument may write a binding read by an earlier argument.
+    const states: UndefinedState[] = [];
+    const args = expanded.map(a => {
+      const id = this.value(a, caller);
+      if (target?.declaration) states.push(this.undefinedState(a, id));
+      return id;
+    });
     const supplied = [...args];
     if (!target?.declaration) return args;
     const bindings = new Map(this.argumentBindings);
@@ -401,37 +525,41 @@ class Analyzer {
       if (parameter.dotDotDotToken && unknownSpread < 0) break;
       let actual = args[index];
       const uncertain = unknownSpread >= 0 && index >= unknownSpread;
-      const state = uncertain ? 'maybe' : this.undefinedState(expanded[index], actual);
       const initializer = target.defaults?.get(index);
+      let state: UndefinedState = uncertain ? 'maybe' : states[index] ?? 'always';
       if (uncertain) {
         actual = this.node('LocalVariable', { name: `@spread-argument:${index}@${this.position(n)}`, varType: 'unknown', method: caller.method });
         supplied.slice(unknownSpread).forEach(value => this.edge(value, actual!, 'ASSIGN'));
       }
       if (initializer && state !== 'never') {
-        const fallback = this.defaultValue(parameter, initializer, target, bindings);
-        if (state === 'always') actual = fallback;
+        const fallback = state === 'always' ? this.defaultValue(parameter, initializer, target, bindings) :
+          this.possibleBindingEffects(bindings, target, initializer, () => this.defaultValue(parameter, initializer, target, this.argumentBindings));
+        if (state === 'always') { actual = fallback.id; state = fallback.state; }
         else {
           const joined = this.node('LocalVariable', {
             name: `@argument:${index}:undefined-select@${this.position(n)}`, varType: 'unknown', method: caller.method,
           });
           if (actual !== undefined) this.edge(actual, joined, 'ASSIGN');
-          this.edge(fallback, joined, 'ASSIGN');
+          this.edge(fallback.id, joined, 'ASSIGN');
           actual = joined;
+          // The supplied branch of the selection is necessarily defined.
+          state = fallback.state === 'never' ? 'never' : 'maybe';
         }
       } else if (actual === undefined) {
         actual = this.node('LocalVariable', { name: `undefined@argument:${index}@${this.position(n)}`, varType: 'undefined', method: caller.method });
+        this.undefinedValues.add(actual);
       }
       args[index] = actual!;
       if (ts.isIdentifier(parameter.name)) {
         const symbol = this.symbol(parameter.name);
-        if (symbol) bindings.set(symbol, actual!);
+        if (symbol) bindings.set(symbol, { id: actual!, state });
       }
     }
     // A later default can assign an earlier parameter. These are the effective
     // explicit arguments entering the body after the parameter prologue runs.
     target.declaration.parameters.forEach((parameter, index) => {
       const symbol = ts.isIdentifier(parameter.name) ? this.symbol(parameter.name) : undefined;
-      if (symbol && bindings.has(symbol)) args[index] = bindings.get(symbol)!;
+      if (symbol && bindings.has(symbol)) args[index] = bindings.get(symbol)!.id;
     });
     return args;
   }
@@ -450,7 +578,7 @@ class Analyzer {
     else if (ts.isParenthesizedExpression(n) || ts.isAsExpression(n) || ts.isTypeAssertionExpression(n) || ts.isNonNullExpression(n) || ts.isSatisfiesExpression(n)) id = this.value(n.expression, context);
     else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
       id = this.value(n.right, context);
-      this.assign(n.left, id, context);
+      this.assign(n.left, id, context, n.right);
     } else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.CommaToken) {
       this.value(n.left, context);
       id = this.value(n.right, context);
@@ -492,21 +620,23 @@ class Analyzer {
         else if (ts.isTemplateSpan(child)) this.edge(this.value(child.expression, context), id, 'ASSIGN');
       });
     }
+    if (this.literalUndefined(n) === 'always') this.undefinedValues.add(id);
     this.values.set(n, id);
     return id;
   }
   private walk(n: ts.Node, context: Context): void {
-    if (this.normalizedGuards.has(n)) return;
+    if (this.normalizedGuards.has(n) || ts.isBinaryExpression(n) && this.patternDefaults.has(n) || ts.isExpression(n) && this.handledFallbacks.has(n)) return;
     if (isBody(n)) return; // Each body is analyzed exactly once in its own lexical scope.
     if (ts.isTypeNode(n) || ts.isImportDeclaration(n) || ts.isExportDeclaration(n)) return;
-    if (ts.isForOfStatement(n)) {
+    if (ts.isForOfStatement(n) || ts.isForInStatement(n)) {
+      const kind = ts.isForOfStatement(n) ? 'ARRAY_LOAD' : 'ASSIGN';
       const iterable = this.value(n.expression, context);
       if (ts.isVariableDeclarationList(n.initializer)) {
         n.initializer.declarations.forEach(declaration => {
-          if (ts.isIdentifier(declaration.name)) this.edge(iterable, this.local(declaration.name, context), 'ARRAY_LOAD');
+          if (ts.isIdentifier(declaration.name)) this.edge(iterable, this.local(declaration.name, context), kind);
           else this.bind(declaration.name, iterable, context);
         });
-      } else this.edge(iterable, this.value(n.initializer, context), 'ARRAY_LOAD');
+      } else this.assign(n.initializer, iterable, context, undefined, kind);
     } else if (ts.isVariableDeclaration(n) && n.initializer) {
       const value = this.value(n.initializer, context);
       if (ts.isIdentifier(n.name)) this.edge(value, this.local(n.name, context), 'ASSIGN');
@@ -518,8 +648,8 @@ class Analyzer {
     } else if (ts.isReturnStatement(n) && n.expression && context.returned !== undefined) {
       this.edge(this.value(n.expression, context), context.returned, 'RETURN_VALUE');
     } else if (ts.isBinaryExpression(n) && n.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && n.operatorToken.kind <= ts.SyntaxKind.LastAssignment) {
-      const assigned = n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? this.value(n.right, context) : this.value(n, context);
-      this.assign(n.left, assigned, context);
+      const assigned = this.value(n, context); // '=' already stored its RHS exactly once, including pattern defaults.
+      if (n.operatorToken.kind !== ts.SyntaxKind.EqualsToken) this.assign(n.left, assigned, context);
     } else if (ts.isCallExpression(n) || ts.isNewExpression(n)) this.value(n, context);
     ts.forEachChild(n, child => this.walk(child, context));
   }
@@ -543,21 +673,21 @@ class Analyzer {
     // Keep unevaluated default-expression code and its possible argument flow,
     // without inventing a source call site or an unconditional assignment edge.
     for (const context of this.functions) {
-      const bindings = new Map<ts.Symbol, number>();
+      const bindings = new Map<ts.Symbol, ArgumentValue>();
       context.declaration?.parameters.forEach((parameter, index) => {
         const initializer = context.defaults?.get(index);
         if (initializer && !this.evaluatedDefaults.has(parameter)) {
           const fallback = this.defaultValue(parameter, initializer, context, bindings);
-          this.edge(fallback, context.parameters[index]!, 'PARAMETER_PASS');
+          this.edge(fallback.id, context.parameters[index]!, 'PARAMETER_PASS');
         }
         if (ts.isIdentifier(parameter.name)) {
           const symbol = this.symbol(parameter.name);
-          if (symbol) bindings.set(symbol, context.parameters[index]!);
+          if (symbol) bindings.set(symbol, { id: context.parameters[index]!, state: 'maybe' });
         }
       });
       context.declaration?.parameters.forEach((parameter, index) => {
         const symbol = ts.isIdentifier(parameter.name) ? this.symbol(parameter.name) : undefined;
-        const updated = symbol && bindings.get(symbol);
+        const updated = symbol && bindings.get(symbol)?.id;
         if (updated !== undefined && updated !== context.parameters[index]) this.edge(updated, context.parameters[index]!, 'PARAMETER_PASS');
       });
     }
