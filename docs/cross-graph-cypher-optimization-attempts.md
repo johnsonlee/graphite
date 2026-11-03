@@ -3015,3 +3015,35 @@ mixed-query workload in each pair. No single-graph performance measurements.
 **Decision before measurement:** experimental candidate. Eliminating confirmed
 copies does not establish a latency or RSS gain; final exact-head correctness
 and the full trusted Linux/CI gate are separate requirements.
+
+**Measured result (`5a608699`):** The clean Linux CLI SHA-256 is
+`413154b24907230d46c10ff6c677a83bd0feffddbc591f389ff7866a86c3603f`.
+Both real applications passed build/save/query in all four forms. A separate
+replay compared 28 complete aggregate HTTP responses with 049 and with the
+saved node records; list order, DISTINCT, null/empty results, per-graph counts
+and provenance matched. The 64-graph comparison passed all 10,074 complete
+response checks. Raw samples and all adverse cases are retained in
+`/private/tmp/graphite-js-linux-acceptance/attempt050-resource/` (plan
+`cf3f56a2b3cf71c98ea23182559e469d0b65c37031c1d8649d4cc54f7bca3cee`).
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 25.686 → 25.584 | 6,221.30 → 6,211.59 | 260.672 → 188.957 | 12,858.19 → 9,002.83 |
+| BA | 24.518 → 25.509 | 6,211.27 → 6,209.81 | 260.221 → 190.007 | 11,991.39 → 8,896.49 |
+| AB | **26.283 → 27.793** | 6,222.02 → 6,212.16 | 262.441 → 196.643 | 11,900.53 → 8,861.71 |
+
+Collect p95 decreased by 29.23–169.52 ms in all three pairs (median decrease
+57.61 ms); p50 decreased by 13.27–43.52 ms. The filter and both edge scans
+retained their p50/p95 improvements on main in every pair. Sort p50 was higher
+in every pair: median +12.82 ms ascending (range +4.80 to +47.74), +43.16 ms
+descending (+34.14 to +81.48). Ascending p95 decreased by 20.39–51.70 ms;
+descending p95 remained mixed (median +9.75 ms). Group-count p95 increased by
+4.02–18.72 ms. No query or pair is pooled or discarded.
+
+**Decision:** retain the ownership change as a positive increment; do not accept
+the cumulative candidate. In the last pair loading CPU increased by 1.510 s
+(+5.745%), above the independent 5% ceiling. Neither lower query resources nor
+other pairs offset this. The loader source did not change in this attempt;
+the measurement alone does not establish a cause. Two concrete remaining
+opportunities are the reverse-CSR builder's full-size cursor copy/empty-ID scans
+and the ordered projection's repeated evaluation of the same scalar property.
