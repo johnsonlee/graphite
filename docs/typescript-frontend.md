@@ -82,7 +82,14 @@ can be resolved. Missing arguments and known `undefined` values (including
 `void` expressions and expanded literal-array spreads) select the default;
 `null` remains an explicit argument. Earlier parameter references and writes by
 later defaults are reflected in this normalization. Unknown values retain both
-possible supplied-value and default flows. The analyzer also recognizes the
+possible supplied-value and default flows. In particular, an initial `undefined`
+type on a mutable binding cannot erase a later supplied value. For example,
+`let x = void 0; x = 5; f(x)` must keep the flow from `5` to the argument.
+The graph does not claim a precise execution order for all writes. Nested
+defaults use the actual binding for that call; if a default might write an
+earlier parameter, both its previous value and the possible write are retained.
+An opaque `void` return type alone does not prove a runtime value is `undefined`.
+The analyzer also recognizes the
 exact leading default-parameter guard emitted by TypeScript for ES5; arbitrary
 conditional code is not assumed to be an equivalent default.
 Default expressions not reached by a resolved call remain visible as possible
@@ -191,24 +198,31 @@ hosted timing observations do not establish performance acceptance.
 
 ### Local artifact validation, 2026-11-03
 
-Production code at `3a127f70` passed 30 frontend tests and 589 Rust workspace
-tests (one existing test ignored), strict workspace Clippy and formatting checks.
-The pinned application revisions above produced these saved graphs:
+The frontend at `7f5b40a6` passed 39 frontend tests. For each pinned application,
+the harness verified the client and server bundle hashes, then built, saved and
+queried fresh graphs with the revised producer:
 
 | Application | Side | Nodes | Edges |
 |---|---|---:|---:|
-| MIT Next 10 CRUD example | Client | 46,676 | 69,136 |
-| MIT Next 10 CRUD example | Server | 12,343 | 16,140 |
-| Supplementary Taskboard | Client | 84,984 | 131,731 |
-| Supplementary Taskboard | Server | 125,758 | 183,841 |
+| MIT Next 10 CRUD example | Client | 46,701 | 69,225 |
+| MIT Next 10 CRUD example | Server | 12,333 | 16,156 |
+| Supplementary Taskboard | Client | 85,006 | 131,957 |
+| Supplementary Taskboard | Server | 125,781 | 184,134 |
 
 Complete node and relationship query results matched across saved directories,
 packed containers, unpacked directories and directly built containers. Twenty
 selected application call occurrences matched the independent emitted-code
-oracle in all four forms. Subsequent harness checks require exact occurrence
+oracle in all four forms. The harness requires exact occurrence
 counts, including multiple calls on one minified line. HTTP queries loaded both
 client and server graphs and matched the per-graph results. Saved default-value
 fixtures preserved the effective arguments `shared`, `shared` and `null`.
+
+The earlier producer (`3a127f70`, 30 frontend tests and 589 Rust workspace
+passes) produced 46,676/69,136 and 12,343/16,140 nodes/edges for the two CRUD
+sides, and 84,984/131,731 and 125,758/183,841 for Taskboard. The revised
+graphs differ in binding and value dependencies. No visible call site was
+added or lost. In each Taskboard graph, for example, a recursive call now
+retains paths from both the reassigned binding and its default object.
 
 At `42031d8d`, all 31 frontend tests and six independent harness tests passed.
 Both applications' verified `.next` outputs were analyzed and saved again with
@@ -224,7 +238,7 @@ query cases produced identical complete responses for all 8,638 requests across
 the two versions; the 1,408 input files remained unchanged. This establishes
 loading/query compatibility, not current JVM build/save coverage.
 
-Performance acceptance remains unresolved. At concurrency four with 20 pressure
+That earlier comparison did not establish performance acceptance. At concurrency four with 20 pressure
 samples per case, the filtered query's p95 increased from 3426.559 ms to
 3494.756 ms (+68.196 ms), while other major slow queries improved in that run.
 CPU/RSS samples were within the resource allowances, but sampling cannot prove
