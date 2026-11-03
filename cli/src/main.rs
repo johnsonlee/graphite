@@ -59,11 +59,10 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build a JVM graph (--profile) or compiled JavaScript (--lang js, alias ts). Put these options before --
+    /// Build a JVM or compiled JavaScript graph. Run `graphite help build` for shell options
     #[command(
-        disable_help_flag = true,
-        disable_version_flag = true,
-        after_help = "Place --profile before the -- separator to profile the JVM frontend.\n\n  graphite build --profile -o app.graphite -- app.jar\n\nThe shell forwards arguments after -- as positional inputs."
+        override_usage = "graphite build [--lang <jvm|js|ts>] [FRONTEND_ARGS]...",
+        after_help = "Use --lang js (or ts) for compiled JavaScript artifacts. The JVM frontend is the default. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
     )]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
@@ -97,7 +96,7 @@ struct McpArgs {
 /// --lang selects a frontend anywhere before the -- separator; other arguments belong to it.
 #[derive(Parser, Debug)]
 struct BuildArgs {
-    #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
+    #[arg(last = true, value_name = "FRONTEND_ARGS")]
     args: Vec<OsString>,
 }
 
@@ -140,15 +139,11 @@ struct QueryArgs {
     verbose: bool,
 }
 
-/// `build` forwards native argv. In particular a leading `--` belongs to the
-/// frontend, whereas clap would consume it as the trailing positional's delimiter.
-fn parse_cli(argv: Vec<OsString>) -> Result<Cli, clap::Error> {
+/// Clap owns the shell's build help. Give its last positional the original
+/// frontend argv, including any frontend `--`, as opaque OS strings.
+fn parse_cli(mut argv: Vec<OsString>) -> Result<Cli, clap::Error> {
     if argv.get(1).is_some_and(|s| s == "build") {
-        return Ok(Cli {
-            command: Some(Command::Build(BuildArgs {
-                args: argv.into_iter().skip(2).collect(),
-            })),
-        });
+        argv.insert(2, "--".into());
     }
     Cli::try_parse_from(argv)
 }
@@ -444,6 +439,47 @@ mod cli_tests {
         }
     }
 
+    #[test]
+    fn shell_help_describes_both_frontends_and_build_help_still_delegates() {
+        let help = parse_cli(["graphite", "help", "build"].map(OsString::from).into()).unwrap_err();
+        assert_eq!(help.kind(), clap::error::ErrorKind::DisplayHelp);
+        let text = help.to_string();
+        for expected in [
+            "--lang",
+            "--profile",
+            "graphite build --help (JVM)",
+            "graphite build --lang js --help",
+            "after --",
+        ] {
+            assert!(text.contains(expected), "{text}");
+        }
+
+        for flag in ["-h", "--help"] {
+            let cli = parse_cli(["graphite", "build", flag].map(OsString::from).into()).unwrap();
+            let Some(Command::Build(build)) = cli.command else {
+                panic!("expected build")
+            };
+            assert_eq!(build.args, [OsString::from(flag)]);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn build_parser_retains_a_non_unicode_frontend_option_value() {
+        use std::os::unix::ffi::OsStringExt;
+        let path = OsString::from_vec(vec![0xff]);
+        let cli = parse_cli(vec![
+            "graphite".into(),
+            "build".into(),
+            "-o".into(),
+            path.clone(),
+        ])
+        .unwrap();
+        let Some(Command::Build(build)) = cli.command else {
+            panic!("expected build")
+        };
+        assert_eq!(build.args, [OsString::from("-o"), path]);
+    }
     #[test]
     fn build_parser_preserves_the_language_selector_and_frontend_help() {
         let cli = parse_cli(
