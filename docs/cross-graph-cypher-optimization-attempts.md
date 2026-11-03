@@ -2867,3 +2867,59 @@ stopped in preparation and supplied no timing samples.
 this exact candidate passes correctness and the measured mixed-load resource
 limits. The two repeatable latency regressions still preclude cumulative
 acceptance. Removing work in their shared edge scan is the next hypothesis.
+
+### 2026-11-03 - Attempt 049: Skip the empty prefix of the hop target-tag table
+
+**Trigger and hypothesis:** Traversal count and the relationship histogram both
+partition one-hop matches by source tag, raw edge label and target tag. The
+sweep builds a byte table indexed by target node ID. With sparse global IDs,
+it writes `NO_TAG` over all positions below the first possible target before
+examining any edges. This work is present on both main and 048; identifying it
+is not evidence that 048 caused the observed latency differences.
+
+On the actual 64 Java shards from the Linux run, the sum of node capacities is
+679,587,444, while the populated intervals contain exactly 19,438,199 IDs.
+All tag lists are strictly increasing, and the last populated ID in each shard
+is its capacity minus one. Thus trimming just the leading gap eliminates
+660,149,245 bytes (97.14%) of logical scratch initialization for a full sweep.
+This is a property of the input data, not a measured RSS or latency delta.
+For example, the last Kotlin shard has capacity 19,438,200 but its first node
+ID is 19,235,118. The manifest and unmodified graph-file inventory are the same
+as in the measured 048 comparison.
+
+**Change:** Start the temporary table at the lowest first ID among the target
+lists when their persisted order is known to be nondecreasing. A lower ID
+cannot match. Any unsorted target list retains the original zero-based range.
+The upper bound, assignment order for overlapping/duplicate IDs, gaps,
+relationship bits, traversal direction, representative-edge selection,
+provenance, weights and cancellation checks remain unchanged. The table is
+still per query; there is no persistent cache or loading work.
+
+**Identity and protocol:** Parent `f5e241a7` retains the 048 native implementation
+and the separate JavaScript numeric literal fix `42031d8d`. Main/trusted baseline
+is `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. The experimental candidate is the
+commit containing this record. Freeze its exact commit/tree/binary identity
+before measuring. Use the same locked Linux environment, 64 main-produced
+filesets, fixed 73-case oracle and complete responses, concurrency four, and
+fresh-process AB / BA / AB pairs against main with verified file residency.
+Retain every sample, failure and adverse metric. Compare count-traversal and
+relationship-histogram first, then report every case separately, including the
+other slow cases. Check loading and mixed-query CPU and kernel-accounted process
+RSS independently in each pair. The native suite and full JVM correctness/OOM
+controller remain separate; no single-graph performance measurements.
+
+**Decision before measurement:** candidate only. Reduced logical initialization
+is verified from the inputs; its practical benefit and final acceptance are open.
+
+**Correctness before measurement:** 598 default workspace tests passed, one
+existing test was ignored, and strict workspace Clippy/formatting checks passed.
+All 30 partition tests passed with the CI core-JAR graph (27,904 nodes, 1,671
+annotations). They exercise the generic oracle, reversed type-index order,
+representative edge positions, counts and provenance across two graphs. The new
+tests also cover gaps, overlapping/duplicate IDs, empty lists, malformed upper
+bounds and the zero-based fallback for unsorted indices. A prior test build had
+a test-only comparison type error, corrected before execution. A run with the
+CRUD graph passed the new tests but failed two pre-existing assertions requiring
+annotation nodes; that graph contains none. The failure is retained and the
+fixture-enabled result above uses the intended JVM graph, without weakening
+those assertions. These tests are correctness evidence only.

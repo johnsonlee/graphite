@@ -1493,6 +1493,47 @@ struct EdgeSlot {
     first: (u32, u32),
 }
 
+const NO_TAG: u8 = u8::MAX;
+
+/// Tags for the node IDs a hop can reach. A sorted type index tells us which
+/// leading IDs cannot match, without walking the list just to find its minimum.
+struct TargetTags {
+    start: usize,
+    tags: Vec<u8>,
+}
+
+impl TargetTags {
+    fn new<'a>(
+        capacity: usize,
+        lists: impl Iterator<Item = (u8, &'a [u32], bool)> + Clone,
+    ) -> Self {
+        let mut start = capacity;
+        for (_, ids, sorted) in lists.clone() {
+            if !sorted {
+                start = 0;
+                break;
+            }
+            if let Some(&first) = ids.first() {
+                start = start.min(first as usize);
+            }
+        }
+        let mut tags = vec![NO_TAG; capacity - start];
+        for (tag, ids, _) in lists {
+            for &id in ids {
+                tags[id as usize - start] = tag;
+            }
+        }
+        Self { start, tags }
+    }
+
+    fn get(&self, id: u32) -> u8 {
+        match (id as usize).checked_sub(self.start) {
+            Some(i) => self.tags[i], // Keep the original upper bound at node_capacity.
+            None => NO_TAG,
+        }
+    }
+}
+
 /// Count one graph's edges by (source tag, label byte, target tag) in a flat table
 /// of 16 x 256 x 16 slots, keeping each slot's earliest (node, position) so the
 /// partitions can be met in the order the pipeline meets them. Whether a label
@@ -1525,16 +1566,12 @@ fn sweep_edges(
     let mut counts: Vec<i64> = vec![0; SLOTS];
     let mut firsts: Vec<u64> = vec![0; SLOTS];
     let mut met: Vec<usize> = Vec::new();
-    // A target's tag, for the targets the pattern admits, in one byte per node id:
-    // the type index is read once, in order, instead of two dependent reads of the
-    // node table per edge.
-    const NO_TAG: u8 = u8::MAX;
-    let mut tag_of = vec![NO_TAG; graph.node_capacity()];
-    for &tag_b in tags_b {
-        for &id in graph.ids_by_tag(tag_b) {
-            tag_of[id as usize] = tag_b;
-        }
-    }
+    let tag_of = TargetTags::new(
+        graph.node_capacity(),
+        tags_b
+            .iter()
+            .map(|&tag| (tag, graph.ids_by_tag(tag), graph.ids_by_tag_sorted(tag))),
+    );
     let mut polled = 0u32;
     for &tag_a in tags_a {
         for &id in graph.ids_by_tag(tag_a) {
@@ -1561,7 +1598,7 @@ fn sweep_edges(
                 if *ok == 2 {
                     continue;
                 }
-                let tag_b = tag_of[other as usize];
+                let tag_b = tag_of.get(other);
                 if tag_b == NO_TAG {
                     continue;
                 }
@@ -1595,6 +1632,43 @@ mod tests {
     use crate::engine::{QueryResult, Source};
     use graphite_storage::node::{TAG_CALL_SITE_NODE, TAG_LOCAL_VARIABLE};
     use std::sync::Arc;
+
+    #[test]
+    fn target_tags_skip_only_the_proven_empty_prefix() {
+        let table = TargetTags::new(
+            12,
+            [(4, &[8, 8, 10][..], true), (3, &[10, 11], true)].into_iter(),
+        );
+        assert_eq!(table.tags.len(), 4);
+        assert_eq!(
+            (0..12).map(|id| table.get(id)).collect::<Vec<_>>(),
+            [NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, 4, NO_TAG, 3, 3]
+        );
+        let empty = TargetTags::new(12, [(7, &[][..], true)].into_iter());
+        assert!(empty.tags.is_empty());
+        assert_eq!(empty.get(11), NO_TAG);
+        let unsorted = TargetTags::new(
+            12,
+            [(3, &[10, 11][..], true), (4, &[8, 1], false)].into_iter(),
+        );
+        assert_eq!(unsorted.tags.len(), 12);
+        assert_eq!(
+            (unsorted.get(0), unsorted.get(1), unsorted.get(8)),
+            (NO_TAG, 4, 4)
+        );
+    }
+
+    #[test]
+    fn target_tags_keep_the_capacity_bound_for_indices_and_edges() {
+        assert!(
+            std::panic::catch_unwind(|| TargetTags::new(4, [(3, &[9][..], true)].into_iter()))
+                .is_err()
+        );
+        let shifted = TargetTags::new(4, [(3, &[2][..], true)].into_iter());
+        assert!(std::panic::catch_unwind(|| shifted.get(4)).is_err());
+        let empty = TargetTags::new(4, [(3, &[][..], true)].into_iter());
+        assert!(std::panic::catch_unwind(|| empty.get(4)).is_err());
+    }
 
     fn expr(text: &str) -> Expr {
         let clauses = crate::parser::parse(&format!("RETURN {text}")).unwrap();
@@ -2287,6 +2361,60 @@ mod tests {
             }
         }
         std::fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
+    fn shifted_target_tags_preserve_hop_representatives_counts_and_provenance() {
+        use graphite_storage::node::{TAG_COUNT, TAG_STRING_CONSTANT};
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-hop-targets-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let data = br#"{"version":1,"methods":[],"nodes":[
+            {"id":0,"kind":"IntConstant","value":0},{"id":1,"kind":"IntConstant","value":1},
+            {"id":2,"kind":"StringConstant","value":"left"},{"id":3,"kind":"NullConstant"},
+            {"id":4,"kind":"StringConstant","value":"right"}],"edges":[
+            {"from":0,"to":1,"kind":"ASSIGN"},{"from":0,"to":2,"kind":"ASSIGN"},
+            {"from":0,"to":4,"kind":"ASSIGN"},{"from":1,"to":3,"kind":"ASSIGN"},
+            {"from":3,"to":4,"kind":"RETURN_VALUE"},{"from":4,"to":1,"kind":"ASSIGN"}]}"#;
+        graphite_storage::interchange::import_json(&data[..], &dir).unwrap();
+        let graph = Arc::new(Graph::load(&dir).unwrap());
+        let ex = executor(&graph, &["a", "b"]);
+        let plain = executor(&graph, &["a", "b"]).without_partitioning();
+        let all: Vec<_> = (0..TAG_COUNT as u8).collect();
+        let slots = sweep_edges(
+            &ex,
+            &graph,
+            &all,
+            &[TAG_STRING_CONSTANT],
+            &[],
+            Direction::Outgoing,
+            None,
+        )
+        .unwrap();
+        let mut counts: Vec<_> = slots.into_iter().map(|s| (s.first, s.count)).collect();
+        counts.sort_unstable();
+        // The skipped edge 0→1 still occupies position zero. The matching 0→2
+        // represents two edges in its slot; the null node opens a different slot.
+        assert_eq!(counts, [((0, 1), 2), ((3, 0), 1)]);
+        for (arrow, expected_count) in [("-[r]->", 6), ("<-[r]-", 2)] {
+            let query = format!("MATCH (a){arrow}(b:StringConstant) RETURN count(*) AS n");
+            let clauses = crate::parser::parse(&query).unwrap();
+            assert!(PartitionPlan::build(&ex, &clauses).is_some());
+            let actual = ex.execute(&query, None).unwrap();
+            assert_eq!(
+                render(&actual),
+                render(&plain.execute(&query, None).unwrap())
+            );
+            assert!(matches!(actual.rows[0].get("n"), Some(Value::Int(n)) if *n == expected_count));
+            assert_eq!(QueryResult::graph_ids(&actual.rows[0]), ["a", "b"]);
+        }
+        drop((plain, ex, graph));
+        std::fs::remove_dir_all(dir).unwrap();
     }
 
     /// Across graphs, a type met in every graph is one row weighing them all and
