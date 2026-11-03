@@ -1849,6 +1849,18 @@ fn aggregate_weighted(name: &str, values: &[Value], weights: &[i64]) -> CypherRe
     })
 }
 
+/// Finalizing a group consumes its inputs. `collect` can keep that buffer as its
+/// result; trim the space left by removed nulls or DISTINCT duplicates.
+fn aggregate_owned(name: &str, mut values: Vec<Value>) -> CypherResult<Value> {
+    if name.eq_ignore_ascii_case("collect") {
+        values.retain(|v| !v.is_null());
+        values.shrink_to_fit();
+        Ok(Value::list(values))
+    } else {
+        aggregate(name, &values)
+    }
+}
+
 fn finalize_groups(
     ev: &Evaluator,
     plan: &AggPlan,
@@ -1865,18 +1877,18 @@ fn finalize_groups(
         })
         .collect();
     let mut out = Vec::with_capacity(groups.len());
-    let compute = |acc: GroupAcc| -> CypherResult<Row> {
+    let compute = |mut acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
         for (ai, agg) in plan.aggs.iter().enumerate() {
-            let mut inputs = acc.agg_inputs[ai].clone();
+            let mut inputs = std::mem::take(&mut acc.agg_inputs[ai]);
             let weights = &acc.agg_weights[ai];
             let v = if agg.distinct {
                 // Distinct values: what each row stood for is immaterial.
                 let mut seen = std::collections::HashSet::new();
                 inputs.retain(|v| seen.insert(value_key(v)));
-                aggregate(&agg.name, &inputs)?
+                aggregate_owned(&agg.name, inputs)?
             } else if weights.iter().all(|w| *w == 1) {
-                aggregate(&agg.name, &inputs)?
+                aggregate_owned(&agg.name, inputs)?
             } else {
                 aggregate_weighted(&agg.name, &inputs, weights)?
             };
@@ -3029,6 +3041,91 @@ mod with_prefix_tests {
     use super::*;
     use crate::parser::parse;
 
+    #[test]
+    fn collect_keeps_non_null_values_in_input_order_with_count_and_distinct() {
+        let ex = Executor::new(Vec::new(), false);
+        let result = ex
+            .execute(
+                "UNWIND [2, null, 2, 1] AS x RETURN collect(x) AS xs, \
+             collect(DISTINCT x) AS ds, count(x) AS n, count(*) AS rows",
+                None,
+            )
+            .unwrap();
+        assert_eq!(result.rows.len(), 1);
+        let row = &result.rows[0];
+        assert!(matches!(
+            row["xs"].as_list(),
+            Some([Value::Int(2), Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(
+            row["ds"].as_list(),
+            Some([Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(row["n"], Value::Int(3)));
+        assert!(matches!(row["rows"], Value::Int(4)));
+    }
+
+    #[test]
+    fn weighted_rows_keep_distinct_collect_and_reject_plain_collect() {
+        let ex = Executor::new(Vec::new(), false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        let apply = |query| {
+            let clauses = parse(query).unwrap();
+            let [Clause::Return { items, .. }] = clauses.as_slice() else {
+                panic!("expected one projection");
+            };
+            let rows = [
+                (Value::Int(2), 2),
+                (Value::Null, 9),
+                (Value::Int(2), 4),
+                (Value::Int(1), 3),
+            ]
+            .into_iter()
+            .map(|(value, weight)| {
+                Row::from([
+                    ("x".to_string(), value),
+                    (INTERNAL_WEIGHT_KEY.to_string(), Value::Int(weight)),
+                ])
+            })
+            .collect();
+            project(&ev, rows, items.as_deref(), false, None)
+        };
+        let (_, rows) =
+            apply("RETURN collect(DISTINCT x) AS ds, count(x) AS n, count(*) AS total").unwrap();
+        assert_eq!(rows.len(), 1);
+        assert!(matches!(
+            rows[0]["ds"].as_list(),
+            Some([Value::Int(2), Value::Int(1)])
+        ));
+        assert!(matches!(rows[0]["n"], Value::Int(9)));
+        assert!(matches!(rows[0]["total"], Value::Int(18)));
+        let error = apply("RETURN collect(x)").unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("cannot be applied to weighted rows"));
+    }
+
+    #[test]
+    fn collect_on_empty_input_emits_only_an_ungrouped_row() {
+        let ex = Executor::new(Vec::new(), false);
+        let result = ex
+            .execute(
+                "UNWIND [] AS x RETURN collect(x) AS xs, collect(DISTINCT x) AS ds, count(*) AS n",
+                None,
+            )
+            .unwrap();
+        assert_eq!(result.rows.len(), 1);
+        let row = &result.rows[0];
+        assert!(matches!(row["xs"].as_list(), Some([])));
+        assert!(matches!(row["ds"].as_list(), Some([])));
+        assert!(matches!(row["n"], Value::Int(0)));
+        assert!(ex
+            .execute("UNWIND [] AS x RETURN x AS k, collect(x) AS xs", None)
+            .unwrap()
+            .rows
+            .is_empty());
+    }
+
     fn detect(q: &str) -> Option<(FusedShape, Option<Expr>, usize)> {
         let clauses = parse(q).unwrap();
         FusedShape::detect_with(&clauses).map(|(s, w, n)| (s, w.cloned(), n))
@@ -3131,6 +3228,12 @@ mod with_prefix_tests {
             (
                 "MATCH (n:CallSiteNode)",
                 "WITH n.callee_name AS m, count(*) AS k RETURN m, k ORDER BY k DESC, m LIMIT 5",
+                true,
+            ),
+            // The collected values retain encounter order, including across graphs.
+            (
+                "MATCH (n:CallSiteNode)",
+                "WITH collect(n.callee_name) AS names RETURN names[0..10] AS names",
                 true,
             ),
             // A row-preserving WITH under a LIMIT: the match stops early in scan order.

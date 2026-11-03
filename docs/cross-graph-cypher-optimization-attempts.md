@@ -2971,3 +2971,47 @@ Mixed sort results and the positive median collect p95 delta remain explicit.
 The collect query reads 5,051,914 call sites; its aggregate finalizer copies an
 owned vector and clones surviving values into a second list. That concrete
 work is the next hypothesis, not a claim about the cause of run-to-run variation.
+
+### 2026-11-03 - Attempt 050: Consume completed aggregate input buffers
+
+**Hypothesis:** The `collect` pressure case still had a positive median p95
+delta in 049. Its input includes all 5,051,914 call sites. Each finished group
+owns its vectors, but the finalizer cloned every input `Value` into another
+vector before applying the aggregate. `collect` then filtered nulls into a
+vector of references and cloned the surviving values again. Remove these copies
+at the ownership boundary, without truncating the input, skipping expressions
+or assuming that the final list will only be sliced.
+
+**Change:** Take each per-aggregate vector from the consumed group. The
+unweighted and DISTINCT `collect` paths retain non-null values in encounter
+order and move the resulting vector into the list. Shrinking it avoids holding
+millions of unused slots when null filtering or DISTINCT removed most inputs;
+that operation can reallocate, so net latency/RSS must be measured. DISTINCT
+still deduplicates by the original keys before aggregate evaluation. Other
+aggregates use the existing functions, and weighted non-DISTINCT dispatch,
+including its errors, is unchanged. Input evaluation, row weights, group order,
+provenance and cancellation points are unchanged.
+
+**Verification:** 601 default workspace tests passed (one existing ignored),
+with strict workspace Clippy, formatting and diff checks. All six targeted
+WITH-prefix/aggregation tests passed on the CI JVM core fixture, including the
+real two-source collect slice against the generic path. Literal oracles cover
+`[2, null, 2, 1]` with collect, DISTINCT and counts; empty input with/without a
+group; and weighted DISTINCT/unsupported weighted non-DISTINCT behavior.
+
+**Identity and protocol before measurement:** Parent `5ecf8836`, whose native
+production code is 049's `8f11662d`; accepted main remains `a5c96f71`. Candidate
+is the commit containing this record. Reuse the verified Linux real64 manifest
+and oracle described in 048/049. Freeze exact binaries, source trees and the
+plan before execution. Use AB / BA / AB pairs vs main with fresh processes,
+verified pinned residency around each arm, four workers and all 73 cases
+(first-use, two warmups, twenty pressure samples each). Preserve all raw samples
+and failures. Report per-case p50/p95 and median/range of the three paired
+deltas; do not pool cases. Prioritize collect p95 while retaining both sort
+directions, the earlier filter/edge-scan improvements and all adverse cases.
+Verify the independent 5% CPU/RSS limits separately for loading and the fixed
+mixed-query workload in each pair. No single-graph performance measurements.
+
+**Decision before measurement:** experimental candidate. Eliminating confirmed
+copies does not establish a latency or RSS gain; final exact-head correctness
+and the full trusted Linux/CI gate are separate requirements.
