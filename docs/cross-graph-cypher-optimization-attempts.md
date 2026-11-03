@@ -3269,3 +3269,61 @@ preserving all samples and uncertainties. Prioritize the grouped WITH
 query and retain the prior slow query results. Enforce the +5% CPU and RSS
 limits separately for loading and the fixed query mix in each pair.
 Fresh trusted build/save/readback, OOM and CI verification remain separate.
+
+**Matched Linux results.** All 10,074 responses matched the frozen oracles.
+All six fresh servers completed without an OOM. Each case has twenty
+pressure samples per arm at concurrency four. The table gives the actual
+main/candidate pair whose absolute difference is the median of the three
+paired differences. Brackets contain the full range of paired differences.
+The p50 and p95 are the 10th and 19th nearest ranks respectively.
+
+| Query | p50 ms, main → 054 (median Δ [range]) | p95 ms, main → 054 (median Δ [range]) |
+|---|---:|---:|
+| shape-with-aggregate | 686.44 → 535.28 (-151.16 [-160.48, -144.92]) | 722.66 → 552.82 (-169.85 [-204.13, -141.44]) |
+| shape-order-by | 2338.38 → 1777.67 (-560.72 [-598.80, -513.22]) | 2432.80 → 1863.26 (-569.54 [-611.27, -561.74]) |
+| shape-order-by-desc | 2382.11 → 1797.36 (-584.76 [-647.87, -551.81]) | 2498.06 → 1879.02 (-619.05 [-676.38, -599.43]) |
+| shape-collect | 1736.21 → 1708.80 (-27.42 [-95.93, -19.67]) | 1826.87 → 1744.38 (-82.49 [-128.42, -56.23]) |
+| shape-with-filter | 2763.61 → 0.28 (-2763.33 [-2804.47, -2729.01]) | 2965.98 → 0.96 (-2965.02 [-2972.38, -2921.79]) |
+| shape-count-traversal | 131.51 → 80.92 (-50.60 [-62.69, -42.82]) | 171.32 → 125.64 (-45.68 [-64.51, -41.20]) |
+| schema-relationship-histogram | 131.96 → 86.02 (-45.94 [-51.13, -39.81]) | 151.13 → 117.64 (-33.50 [-56.68, -20.13]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 24.524 → 23.244 | 6213.926 → 3765.176 | 253.445 → 154.288 | 11920.641 → 6350.203 |
+| BA | 23.110 → 20.408 | 6222.168 → 3768.000 | 252.711 → 150.395 | 12604.598 → 6432.793 |
+| AB | 24.372 → 19.980 | 6215.387 → 3768.191 | 252.245 → 151.138 | 12294.352 → 6437.469 |
+
+Readiness improved by 1.230–4.285 s. The complete query mix finished
+26.240–27.536 s sooner. Each phase's CPU and peak RSS fell in all three pairs.
+Loading includes fresh server startup through verified readiness. Query timing
+includes complete consumption of the requested results. CPU and kernel
+high-water RSS use separate frozen process snapshots per phase. The measurements
+cover warm resident graph files. The mixed-query phase does not provide CPU or
+peak RSS for individual queries.
+
+**Decision.** Keep the scalar scan. The grouped WITH query and the other slow
+queries above improved at both percentiles in every pair. Across the full
+catalog 123 of 438 individual p50/p95 comparisons increased. The largest
+positive median p95 change was +2.179 ms for the targeted parameter-as-literal
+query (paired changes +2.179, +2.580, −0.256 ms). The largest positive median
+p50 change was +0.459 ms for SKIP. These observations remain in the record.
+Three matched pairs describe the variation in this workload. They do not give
+a confidence interval or establish a speedup for every request.
+
+The exact candidate `4f08228a` passed 611 Rust workspace tests, with one
+pre-existing ignored test, strict Clippy and formatting. The real CRUD and
+Taskboard apps passed build, all four save forms and dual-graph HTTP queries.
+All 14 grouped-query HTTP checks matched the independent record decoder
+and the previous implementation. The clean Linux CLI SHA-256 was
+`464125b1b72235e05b1b2418194aca16f1b7b221afe2c18c3a05b11b9649bf08`.
+The comparison seal is
+`d32c385fd51424616beebcec5515a31c212d29618f3037efde348da64dd61ae8`.
+The complete result SHA-256 is
+`9b456ae3f9611de2d44cea5d4fd5df89f3fc957ec8a4648f433f1249c7d54713`.
+All per-case and per-request observations and phase snapshots are retained
+under `attempt053-resource/runs/054-4f08228a31e85e1ac8da644addcc9fa66939f7eb`.
+The independent decoded CSVs, hash manifest and adverse samples are in
+`graphite-resource-offline-audit/054-final`. This comparison is acceptance
+evidence for loading and multi-graph query execution. The complete trusted
+pipeline on the final revision separately verifies graph construction,
+readback, response integrity, stability and OOM behavior.
