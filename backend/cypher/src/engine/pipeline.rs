@@ -261,12 +261,22 @@ impl Executor {
                         if let Some((shape, with_where, consumed)) =
                             FusedShape::detect_with(&clauses[i..])
                         {
-                            let budget = compute_early_limit(&clauses[i..]);
-                            let (cols, projected) =
-                                self.run_fused_with(&matcher, &ev, rows, patterns, &shape, budget)?;
+                            let filtered_limit = projected_filter_limit(&clauses[i..], &rows);
+                            let budget =
+                                filtered_limit.or_else(|| compute_early_limit(&clauses[i..]));
+                            let projected_filter = filtered_limit.and(with_where);
+                            let (cols, projected) = self.run_fused_with(
+                                &matcher,
+                                &ev,
+                                rows,
+                                patterns,
+                                &shape,
+                                budget,
+                                projected_filter,
+                            )?;
                             columns = cols;
                             rows = projected;
-                            if let Some(w) = with_where {
+                            if let Some(w) = with_where.filter(|_| projected_filter.is_none()) {
                                 let mut out = Vec::with_capacity(rows.len());
                                 for r in rows {
                                     self.tick()?;
@@ -580,15 +590,18 @@ impl Executor {
             budget,
             aggregated,
             ordered_capacity,
+            None,
         )?;
         finish_fused(ev, columns, out, shape)
     }
 
     /// Fused MATCH [WHERE] WITH: the rows the WITH projects, exactly as `project` would
-    /// build them from the generic match -- order stashes, provenance and all -- so the
-    /// loop can run the WITH's own WHERE and whatever follows over them. `budget`
-    /// bounds the match the way `exec_match`'s early limit does, and is `None` unless
-    /// the segment's LIMIT provably bounds it (see `compute_early_limit`).
+    /// build them from the generic match -- order stashes, provenance and all.
+    /// A proven scalar `projected_filter` runs before counting accepted rows;
+    /// otherwise the loop handles WITH's WHERE after this returns. `budget` is
+    /// present only when compute_early_limit or projected_filter_limit proves it
+    /// bounds the rows emitted here.
+    #[allow(clippy::too_many_arguments)]
     fn run_fused_with(
         &self,
         matcher: &Matcher,
@@ -597,7 +610,13 @@ impl Executor {
         patterns: &[Pattern],
         shape: &FusedShape,
         budget: Option<usize>,
+        projected_filter: Option<&Expr>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        if projected_filter.is_some() && budget == Some(0) {
+            // The admitted projection is total and scalar. No candidate is needed
+            // for a zero limit; HTTP probing rewrites this to one when requested.
+            return Ok((item_names(shape.items.as_deref().unwrap()), Vec::new()));
+        }
         if has_unknown_label(patterns) {
             return project(
                 ev,
@@ -618,7 +637,17 @@ impl Executor {
             None
         };
         self.fused_rows(
-            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
+            matcher,
+            ev,
+            rows,
+            patterns,
+            shape,
+            &scan,
+            &hop,
+            budget,
+            aggregated,
+            None,
+            projected_filter,
         )
     }
 
@@ -638,6 +667,7 @@ impl Executor {
         budget: Option<usize>,
         aggregated: bool,
         ordered_capacity: Option<usize>,
+        projected_filter: Option<&Expr>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
         let items = shape.items.as_deref();
         if aggregated {
@@ -735,6 +765,14 @@ impl Executor {
                 order_before_distinct,
                 &mut columns,
             )?;
+            if let Some(predicate) = projected_filter {
+                // Evaluate the original WITH predicate in its projected scope,
+                // once per candidate. Only accepted rows consume the row limit.
+                self.tick()?;
+                if ev.eval(predicate, &projected)?.as_bool() != Some(true) {
+                    return Ok(true);
+                }
+            }
             if let Some(top) = &mut top {
                 // Project every row first, including every expression and order stash.
                 // Losing rows must still report errors and consume the normal scan work.
@@ -1329,6 +1367,71 @@ fn trim_probe(r: &mut QueryResult, n: usize) -> bool {
             extra
         }
     }
+}
+
+/// A narrow, total scalar WITH/filter pipeline can count accepted rows while
+/// matching. Keep all other shapes on the existing path: early termination must
+/// not hide later expression errors, reorder volatile calls, truncate aggregate
+/// inputs, or lose DISTINCT provenance. This recognizes AST/schema properties,
+/// not a query's spelling or a particular workload.
+fn projected_filter_limit(clauses: &[Clause], seeds: &[Row]) -> Option<usize> {
+    if super::optimizations_disabled() || !matches!(seeds, [seed] if seed.is_empty()) {
+        return None;
+    }
+    let [Clause::Match {
+        patterns,
+        optional: false,
+        where_clause: None,
+    }, Clause::With {
+        distinct: false,
+        items: Some(items),
+        where_clause: Some(Expr::IsNotNull(predicate)),
+    }, Clause::Return {
+        distinct: false,
+        items: Some(returned),
+    }, Clause::Limit(Expr::Literal(Literal::Int(limit)))] = clauses
+    else {
+        return None;
+    };
+    let [pattern] = patterns.as_slice() else {
+        return None;
+    };
+    let [node] = pattern.nodes.as_slice() else {
+        return None;
+    };
+    if !pattern.rels.is_empty()
+        || pattern.path_variable.is_some()
+        || !node.properties.is_empty()
+        || node.labels.len() != 1
+        || !matches!(resolve_node_class(&node.labels), NodeClass::Tags(tags) if tags.as_slice() == [TAG_CALL_SITE_NODE])
+    {
+        return None;
+    }
+    let variable = node.variable.as_ref()?;
+    if items.is_empty()
+        || returned.is_empty()
+        || !items.iter().all(|item| {
+            matches!(&item.expr, Expr::Property { expr, key }
+            if matches!(expr.as_ref(), Expr::Variable(v) if v == variable)
+                && matches!(key.as_str(), "id" | "line" | "ordinal" | "caller_class"
+                    | "caller_name" | "callee_class" | "callee_name"))
+        })
+    {
+        return None;
+    }
+    let names = item_names(items);
+    if names
+        .iter()
+        .any(|name| name == "*" || is_internal_key(name))
+        || names.iter().collect::<std::collections::HashSet<_>>().len() != names.len()
+        || !matches!(predicate.as_ref(), Expr::Variable(name) if names.contains(name))
+        || !returned
+            .iter()
+            .all(|item| matches!(&item.expr, Expr::Variable(name) if names.contains(name)))
+    {
+        return None;
+    }
+    usize::try_from(*limit).ok()
 }
 
 fn compute_early_limit(clauses: &[Clause]) -> Option<usize> {
@@ -2485,6 +2588,7 @@ mod bounded_order_tests {
             None,
             false,
             None,
+            None,
         )?;
         finish_fused(&ev, columns, rows, &shape)
     }
@@ -2629,6 +2733,7 @@ mod bounded_order_tests {
                             Some(3),
                             false,
                             capacity(&query),
+                            None,
                         )
                         .unwrap();
                     assert_eq!(
@@ -2714,6 +2819,7 @@ mod bounded_order_tests {
                     &None,
                     None,
                     false,
+                    None,
                     None,
                 )
                 .unwrap();
@@ -3094,3 +3200,7 @@ mod identity_projection_tests;
 #[cfg(test)]
 #[path = "owned_projection_tests.rs"]
 mod owned_projection_tests;
+
+#[cfg(test)]
+#[path = "pipeline_with_filter_tests.rs"]
+mod projected_filter_tests;

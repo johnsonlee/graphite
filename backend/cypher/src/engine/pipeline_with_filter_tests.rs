@@ -1,0 +1,271 @@
+use super::*;
+use crate::engine::{CancelToken, Source};
+use crate::parser::parse;
+use graphite_storage::Graph;
+use serde_json::json;
+use std::path::PathBuf;
+use std::sync::atomic::{AtomicU64, Ordering};
+
+struct Fixture {
+    root: PathBuf,
+    graphs: Vec<Arc<Graph>>,
+}
+
+impl Fixture {
+    fn new(lines: &[&[Option<u32>]]) -> Self {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let root = std::env::temp_dir().join(format!(
+            "graphite-with-filter-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let method = json!({"declaringClass":"fixture.App", "name":"save", "parameterTypes":[], "returnType":"void"});
+        let graphs = lines
+            .iter()
+            .enumerate()
+            .map(|(index, lines)| {
+                let nodes: Vec<_> = lines
+                    .iter()
+                    .enumerate()
+                    .map(|(id, line)| {
+                        json!({
+                            "id":id,"kind":"CallSite","caller":method,"callee":method,
+                            "line":line,"receiver":null,"arguments":[]
+                        })
+                    })
+                    .collect();
+                let input = json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]});
+                let path = root.join(index.to_string());
+                graphite_storage::interchange::import_json(
+                    serde_json::to_vec(&input).unwrap().as_slice(),
+                    &path,
+                )
+                .unwrap();
+                Arc::new(Graph::load(&path).unwrap())
+            })
+            .collect();
+        Self { root, graphs }
+    }
+
+    fn executor(&self) -> Executor {
+        Executor::new(
+            self.graphs
+                .iter()
+                .enumerate()
+                .map(|(index, graph)| Source {
+                    id: Arc::from(format!("graph-{index}")),
+                    graph: graph.clone(),
+                })
+                .collect(),
+            true,
+        )
+    }
+}
+
+impl Drop for Fixture {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.root);
+    }
+}
+
+fn admitted(query: &str) -> Option<usize> {
+    projected_filter_limit(&parse(query).unwrap(), &[Row::new()])
+}
+
+fn generic(query: &str) -> String {
+    query.replacen(" WITH ", " UNWIND [1] AS oracle_one WITH ", 1)
+}
+
+fn compare(fixture: &Fixture, query: &str, probe: bool, cap: Option<usize>) -> QueryResult {
+    let executor = || {
+        let ex = fixture.executor();
+        if probe {
+            ex.with_probe()
+        } else {
+            ex
+        }
+    };
+    let actual = executor().execute(query, cap).unwrap();
+    let expected = executor().execute(&generic(query), cap).unwrap();
+    assert_eq!(format!("{actual:?}"), format!("{expected:?}"), "{query}");
+    actual
+}
+
+#[test]
+fn only_total_scalar_projection_filter_and_plain_limit_are_admitted() {
+    let target =
+        "MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 200";
+    assert_eq!(admitted(target), Some(200));
+    assert_eq!(admitted("MATCH (site:CallSiteNode) WITH site.line AS position, site.caller_name AS owner WHERE position IS NOT NULL RETURN owner, position LIMIT 0"), Some(0));
+    for query in [
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c ORDER BY c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c SKIP 1 LIMIT 1",
+        "MATCH (n:CallSite) WITH DISTINCT n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN DISTINCT c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN count(c) LIMIT 1",
+        "MATCH (n:CallSite) WITH count(n) AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL WITH c WHERE c > 10 RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT $limit",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT -1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN rand() LIMIT 1",
+        "MATCH (n:CallSite) WITH timestamp() AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE rand() > 0 RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c, n.id AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE n IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.generic_type AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite {line: 1}) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WHERE n.line > 1 WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+    ] {
+        assert_eq!(admitted(query), None, "{query}");
+    }
+    assert!(projected_filter_limit(&parse(target).unwrap(), &[]).is_none());
+    assert!(projected_filter_limit(
+        &parse(target).unwrap(),
+        &[Row::from([("bound".into(), Value::Int(1))])]
+    )
+    .is_none());
+}
+
+#[test]
+fn accepted_rows_keep_order_duplicates_and_cross_graph_provenance() {
+    let fixture = Fixture::new(&[
+        &[None, Some(10), None, Some(10)],
+        &[None, Some(20), Some(30), None],
+    ]);
+    let query =
+        "MATCH (n:CallSite) WITH n.line AS c, n.id AS i WHERE c IS NOT NULL RETURN c, i LIMIT 3";
+    let rows = compare(&fixture, query, false, None).rows;
+    assert_eq!(rows.len(), 3);
+    for (row, (line, id, graph)) in
+        rows.iter()
+            .zip([(10, 1, "graph-0"), (10, 3, "graph-0"), (20, 1, "graph-1")])
+    {
+        assert!(matches!(row["c"], Value::Int(n) if n == line));
+        assert!(matches!(row["i"], Value::Int(n) if n == id));
+        assert_eq!(QueryResult::graph_ids(row), [graph]);
+    }
+    // Scalar aliases are ordinary projected bindings, including shadowing n.
+    compare(
+        &fixture,
+        "MATCH (n:CallSite) WITH n.line AS n WHERE n IS NOT NULL RETURN n LIMIT 3",
+        false,
+        None,
+    );
+}
+
+#[test]
+fn filtered_limits_and_http_probe_count_only_accepted_rows() {
+    let fixture = Fixture::new(&[&[None, Some(10), None], &[Some(20), Some(30), None]]);
+    for limit in 0..=4 {
+        let query = format!(
+            "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT {limit}"
+        );
+        for probe in [false, true] {
+            let result = compare(&fixture, &query, probe, None);
+            assert_eq!(result.rows.len(), limit.min(3));
+            assert_eq!(result.more, probe && limit < 3);
+        }
+    }
+    let capped = compare(
+        &fixture,
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 200",
+        true,
+        Some(2),
+    );
+    assert_eq!(capped.rows.len(), 2);
+    assert!(capped.more);
+    let empty = Fixture::new(&[&[], &[None, None]]);
+    let result = compare(
+        &empty,
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        true,
+        None,
+    );
+    assert_eq!(result.columns, ["c"]);
+    assert!(result.rows.is_empty() && !result.more);
+}
+
+#[test]
+fn ineligible_shapes_preserve_complete_aggregation_order_and_late_errors() {
+    let fixture = Fixture::new(&[&[Some(10), Some(10), None], &[Some(10), Some(20), Some(30)]]);
+    for query in [
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c ORDER BY c DESC LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN DISTINCT c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN count(c) AS total LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c SKIP 1 LIMIT 2",
+    ] {
+        compare(&fixture, query, true, None);
+    }
+    for query in [
+        "MATCH (n:CallSite) WITH n.line AS c, 1 / (n.line - 30) AS d WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE 1 / (c - 30) > 0 RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN 1 / (c - 30) AS d LIMIT 1",
+    ] {
+        assert_eq!(admitted(query), None);
+        let actual = fixture.executor().execute(query, None).unwrap_err();
+        let expected = fixture.executor().execute(&generic(query), None).unwrap_err();
+        assert!(matches!(&actual, CypherError::Runtime(message) if message == "Division by zero"));
+        assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+    }
+}
+
+#[test]
+fn cancellation_and_polling_remain_active_for_rejected_candidates() {
+    let lines = vec![None; 2050];
+    let fixture = Fixture::new(&[&lines]);
+    let query = "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1";
+    for limit in [0, 1] {
+        let checked_query = format!(
+            "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT {limit}"
+        );
+        let token = CancelToken::new();
+        token.cancel();
+        assert!(
+            matches!(
+                fixture
+                    .executor()
+                    .with_cancel(token)
+                    .execute(&checked_query, None),
+                Err(CypherError::Cancelled)
+            ),
+            "LIMIT {limit} must honor prior cancellation"
+        );
+        assert!(
+            matches!(
+                fixture
+                    .executor()
+                    .with_cancel(CancelToken::with_timeout(0))
+                    .execute(&checked_query, None),
+                Err(CypherError::Timeout(0))
+            ),
+            "LIMIT {limit} must honor an expired deadline"
+        );
+    }
+    let ex = fixture.executor();
+    assert!(ex.execute(query, None).unwrap().rows.is_empty());
+    assert!(
+        ex.poll.load(Ordering::Relaxed) >= 4100,
+        "matcher and filter poll every rejected row"
+    );
+}
+
+#[test]
+fn the_row_limit_stops_candidate_access_after_enough_filtered_rows() {
+    let fixture = Fixture::new(&[&vec![Some(10); 64], &vec![Some(20); 64]]);
+    let query = "MATCH (n:CallSite) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 2";
+    let optimized = fixture.executor();
+    let actual = optimized.execute(query, None).unwrap();
+    let plain = fixture.executor();
+    let expected = plain.execute(&generic(query), None).unwrap();
+    assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+    assert!(
+        optimized.poll.load(Ordering::Relaxed) < 16,
+        "the accepted prefix stops the existing matcher"
+    );
+    assert!(
+        plain.poll.load(Ordering::Relaxed) > 128,
+        "the correctness oracle consumes the complete input"
+    );
+}

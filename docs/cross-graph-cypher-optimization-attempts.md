@@ -2575,3 +2575,71 @@ or certify recovery against the accepted pre-regression baseline. No further
 stabilization or optional bitmap/memo optimization is inferred from these numbers.
 Fresh remote CI is required for the new commit; the preceding131b80c4's six green
 checks and complete correctness/OOM artifact do not certify this head.
+
+### 2026-11-03 - Attempt 047: Stop scalar WITH filters after enough accepted rows
+
+**Hypothesis:** the real64 scalar WITH/filter/LIMIT query projects every CallSite
+before filtering and returning 200 rows. For a proven total scalar projection,
+evaluate the original projected predicate during streaming and count only accepted
+rows toward the existing LIMIT/probe budget. Restrict eligibility to a single
+CallSite match, total built-in scalar properties, unique ordinary aliases,
+`alias IS NOT NULL`, plain alias RETURN and a trailing nonnegative literal LIMIT.
+Aggregation, DISTINCT, sorting, extra clauses, volatile/error-capable expressions
+and ambiguous aliases retain their existing execution paths. This is an AST
+optimization, not a query-text or benchmark-case special case.
+
+**Identity:** parent `6d8d7cf1be17ee2aea665351a399186930e8e981`; its production
+Rust sources match `3a127f70cdfdd74754f2ef05f3b0d318f65f038f`, whose frozen release
+binary SHA-256 is
+`e0d1bc183a0e81d1c287e2b1cea2fc2d2b16b7344c326371959db029e097929f`.
+Accepted feature baseline is main `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`,
+binary SHA-256 `d792f4587c357f3b04b48fec16ac7eb72042b10d5d48d831bf61c93a51d7a5b6`.
+Candidate is the commit containing this attempt. Source revision and frozen
+release hash must be recorded before measurement; no performance result is
+inferred from the correctness checks below.
+
+**Protocol:** unchanged trusted a5c96f71 native controller and fixed 73-case
+catalog; each measured request targets all 64 real JAR graphs. Use the exact same
+historical saved graph files in every arm, manifest SHA-256
+`5fe9bc158351962fb46c57083bb0a33788bb34b24fc5b4c8c31defeeb8a8b177`, with
+1,408-file inventory SHA-256
+`e81d726dc213c454da5fca10727f809ff2d12efe5e605e4cca553d0b7658f978`.
+One oracle and two warmups per case, 20 pressure samples at concurrency four;
+the unchanged controller additionally takes 40 isolated samples at concurrency
+one for cases below its 100 ms p50 threshold. Consume complete HTTP responses,
+validate every result and retain all bodies, failures and samples. Compare parent
+then candidate for attribution, and main then candidate for cumulative results.
+Do not pool these different-baseline pairs or select a favorable run.
+
+The external protocol in `/tmp/graphite-js-artifact-validation/attempt047/`
+will freeze commands, binaries and controls before execution. A separately
+verified read-only cache helper must hold the same fixture pages resident for
+all arms; if that fails, report the missing control rather than claiming matched
+warm-cache measurements. No compilation or other validation load overlaps the
+measurements. The controller-only Darwin wait4 observer supplies kernel lifetime
+CPU and peak RSS, with unchanged server children; existing sampled phase
+observations remain explicitly weaker than exact phase measurements. Report
+per-case p50/p95 and absolute millisecond differences before percentages, loading
+readiness and complete request boundaries, and CPU/RSS separately. Keep all prior
+confounded and uncontrolled-cache runs as historical observations, not comparable
+performance baselines for this controlled run.
+
+**Correctness before measurement:** six focused tests verify eligibility,
+hardcoded result order and duplicate values, cross-graph provenance, null rejection,
+zero/exact/over limits, HTTP extra-row probing, injected result caps, empty results,
+late errors and ineligible aggregate/sort/DISTINCT fallbacks. Cancellation and
+expired deadlines are checked at LIMIT zero and one; long rejected prefixes still
+poll cancellation. An independent generic pipeline and deterministic property
+access counts check result equivalence and avoided work without synthetic timings.
+All 595 workspace tests passed (one existing ignored test); workspace/all-target/
+all-feature Clippy with warnings denied, formatting and diff checks passed.
+
+**Tradeoffs/limits:** this is a query-only experiment. Historical fixtures do not
+prove current frontend build/save performance. Darwin lifetime resources do not
+prove independent per-operation bounds or Linux OOM behavior. Twenty concurrent
+samples make p95 the second-largest observation; retain the full distribution
+and do not present this as precise tail estimation or saturation evidence.
+
+**Decision:** candidate pending independent review and real64 measurements.
+Correctness and deterministic work reduction alone do not establish performance
+acceptance. Fresh final-revision correctness/completion/OOM CI remains required.
