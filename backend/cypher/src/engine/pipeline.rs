@@ -638,36 +638,20 @@ impl Executor {
         };
         // Dispatch once per query so ordinary scans and ordered projections
         // do not load or test an absent filter for every projected row.
+        macro_rules! project_rows {
+            ($accepts:expr) => {
+                self.fused_rows(
+                    matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
+                    $accepts,
+                )
+            };
+        }
         match projected_filter {
-            Some(predicate) => self.fused_rows(
-                matcher,
-                ev,
-                rows,
-                patterns,
-                shape,
-                &scan,
-                &hop,
-                budget,
-                aggregated,
-                None,
-                |projected| {
-                    self.tick()?;
-                    Ok(ev.eval(predicate, projected)?.as_bool() == Some(true))
-                },
-            ),
-            None => self.fused_rows(
-                matcher,
-                ev,
-                rows,
-                patterns,
-                shape,
-                &scan,
-                &hop,
-                budget,
-                aggregated,
-                None,
-                keep_projected,
-            ),
+            Some(predicate) => project_rows!(|projected| {
+                self.tick()?;
+                Ok(ev.eval(predicate, projected)?.as_bool() == Some(true))
+            }),
+            None => project_rows!(keep_projected),
         }
     }
 
