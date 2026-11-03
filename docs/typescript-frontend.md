@@ -5,6 +5,14 @@ projects. It accepts emitted `.js`, `.mjs` and `.cjs` files, or an artifact
 directory such as `.next`, `dist` or `build`. Node.js 20 or newer runs the
 frontend; reading a saved graph requires only the Rust binary.
 
+A single-file input uses its parent directory as the artifact root. Starting
+at that file, Graphite follows imports, re-exports and literal module references
+that TypeScript resolves to emitted JavaScript under the root. For example,
+building `app/main.js` includes `app/lib.js` when `main.js` imports it.
+Unrelated siblings, dependencies outside the root, installed packages and
+symlink targets are excluded. Pass a directory to analyze all eligible
+artifacts in it, including files unreachable from an individual entry.
+
 Compile the target project first using its own build tool. Graphite neither
 runs project build scripts nor installs target dependencies. The directory scan
 includes `dist/cache` and `.next/server/app/cache`, and skips `.next/cache`,
@@ -253,7 +261,10 @@ python3 .github/scripts/check-typescript-e2e.py \
 Use `--prepare-only` to prepare the compiled application before the Graphite
 binary is ready; `--prepared-app <path>` reuses that application for subsequent
 checks. Select the matching `--project` when reusing a prepared application.
-Each run validates the prepared revision and artifact checksums. Pass/fail
+CI caches the emitted JavaScript, package lock and fixture manifest for both
+applications. A cache miss rebuilds the pinned projects. Both paths validate
+the pinned revision, lockfile hash and complete JavaScript inventory before
+running the same graph checks. Pass/fail
 claims belong to the generated report for the exact revisions under test; the
 older source-prototype results below are not artifact validation.
 

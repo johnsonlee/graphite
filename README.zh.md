@@ -95,7 +95,7 @@ Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进
 
 当前发布的前端支持读取 JVM 和 Android 产物。构建图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
 
-**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 是同一前端的别名。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。在 Graphite 源码仓库中构建 `frontend/web`，并通过 `GRAPHITE_FRONTEND_JS` 指定其 `dist/cli.js` 入口（兼容 `GRAPHITE_FRONTEND_TS`）。分析需要 Node.js 20 或更新版本；保存的图可直接使用相同的 Rust 查询、服务和 `.graphite` 容器命令：
+**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。在 Graphite 源码仓库中构建 `frontend/web`，并通过 `GRAPHITE_FRONTEND_JS` 指定其 `dist/cli.js` 入口（兼容 `GRAPHITE_FRONTEND_TS`）。分析需要 Node.js 20 或更新版本；保存的图可直接使用相同的 Rust 查询、服务和 `.graphite` 容器命令：
 
 ```bash
 npm ci --prefix frontend/web
@@ -165,7 +165,7 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 ### Homebrew formula 安装的内容
 
-`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。
+`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。运行 `graphite build --help` 或 `graphite build --lang js --help` 可查看对应前端的选项。
 
 未指定 JVM 参数时，`graphite build` 会检查所选 JVM 是否支持以下 G1 配置，并将其用于 jar 形式的 JVM 前端，包括 JAR 和 APK 输入。最大堆仍为 8 GiB：
 

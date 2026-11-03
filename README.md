@@ -145,8 +145,10 @@ can be analyzed without their source checkout.
 
 The **JavaScript artifact frontend** accepts emitted `.js`, `.mjs` and `.cjs`
 files or a compiled artifact directory such as `.next`, `dist` or `build` via
-`graphite build --lang js` (`--lang ts` is an alias). Compile the target project
-first; Graphite does not run its build scripts. Build the frontend from
+`graphite build --lang js` (`--lang ts` is an alias). A single-file entry follows
+resolved JavaScript dependencies under its parent directory. Pass a directory
+to include unrelated entries as well. Compile the target project first with its
+own build tools. Build the frontend from
 `frontend/web` and set `GRAPHITE_FRONTEND_JS` to its `dist/cli.js` entry point.
 It requires Node.js for analysis and uses the same Rust query/server and
 `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
@@ -213,7 +215,8 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 together with `openjdk@17`. Use `JAVA_OPTS` or `JAVA_TOOL_OPTIONS` to configure the JVM heap.
 To profile a JVM build, put `--profile` before the `--` separator, for example
 `graphite build --profile -o app.graphite -- app.jar`. The shell forwards arguments
-after `--` to the frontend as positional inputs. Run `graphite help build` for shell options.
+after `--` to the frontend as positional inputs. Run `graphite help build` for shell options and
+`graphite build --help` or `graphite build --lang js --help` for frontend options.
 
 When no JVM options are supplied, `graphite build` checks whether the selected
 JVM supports the following G1 configuration and uses it for the JAR frontend,
@@ -787,6 +790,13 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 `sha256sum -c` format is written next to the container, so a copy or download is checked
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
+
+When rebuilding `app.graphite`, the JVM frontend claims `app.graphite.lock` while it
+publishes the new SHA-256 sidecar and then the container. If container publication
+fails, it restores the previous sidecar. An unlocked reader can observe the old
+container with the new checksum between the two renames. After an interrupted build,
+wait for publishers to exit, verify the container and its sidecar, and inspect the
+lock directory for `previous.sha256` before clearing it and retrying.
 
 ```bash
 graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256
