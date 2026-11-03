@@ -3160,3 +3160,37 @@ Both sorts and collect improved at p50/p95 in each final pair. Count-traversal, 
 Loading CPU/RSS and mixed-query CPU/RSS decreased in all three final pairs, so all twelve independent 5% checks passed. Observed startup to registry readiness decreased by 1.941, 4.965 and 3.342 s. These are fixed-mix, warm-filesystem Linux observations. no individual-query resource or JVM construction bound follows from them. A final exact-revision full trusted build/save/readback, OOM and CI check remains separate. The repaired JS producer has its own unit and real-application gates.
 
 **Evidence.** The ten-arm suite SHA-256 is `177552ffac39d02beb738a2adf3438a79aa637ed3abb9046d4fda48d144feae6`. The pre-first-request execution seal SHA-256 is `9d0930cbfe20d22dc617ebd7b4423cf3685e76d8b7c696891ad7560dbacb4113`. All 16,790 requests passed the fixed oracles. One holder retained all 2,586,606 pages throughout the three groups and their post-audits, and released all 1,408 locks. The run archive under `attempt052-ten-arm/frozen/results/{attribution-050-051,attribution-051-052,acceptance-main-052}` retains the three unpooled `run-result.json` files, the complete 73-case catalog, every exported request/receipt audit, phase observations, and raw-output volume identities. `graphite-p52-ten-arm-report` contains all per-pair percentile rows, every raw request observation and all upward changes.
+
+### 2026-11-03 - Attempt 053: Store short column keys inline during partition scans
+
+The grouped WITH query in the 73-case catalog counts CallSites by callee class,
+keeps groups with more than five matches, and returns the first 50 groups. In
+052 its concurrent p50 changed by −36.825, +29.267 and +26.827 ms relative to
+main. The partition planner reaches the aggregated WITH and chooses a single
+string column, with no index predicate. On each of 5,051,914 CallSites it
+creates a vector of string IDs to look up the partition. Even a successful
+lookup of a repeated class allocates a one-element vector.
+
+Use a small vector in the existing map key. Its first four string IDs fit
+inline, covering all four CallSite string fields. Longer keys can still grow.
+The tag, all selected column IDs, the key set, the insertion-ordered map and
+the polling and weight rules are unchanged. The direct dependency uses the
+version of smallvec already present in the lockfile. Parent is `d64420ed`,
+which also includes the separately tested JS output-publication fix.
+
+On the CI JVM core fixture, a two-source oracle decodes actual call records
+and verifies plan admission, every representative ID and weight, first-seen
+order, all resulting counts and row provenance. All 31 partition tests passed
+on that fixture. The default cypher suite passed 242 tests and strict cypher
+Clippy passed. The targeted checks are correctness evidence.
+
+The cumulative comparison uses the immutable 64-graph Linux inputs and
+baseline `a5c96f71`. Freeze the clean candidate binary before running three
+AB / BA / AB pairs. Each arm consumes all 1,679 queries, including twenty
+concurrency-four pressure observations per case. Evaluate the grouping query's
+p50 and p95 alongside the two sorts, collect, filter, relationship scans and
+all other cases. Report the median and range of paired absolute changes.
+Retain every failure and adverse sample. Loading and query CPU and peak RSS
+each have an independent +5% ceiling in every pair. Construction/readback,
+stability, OOM, the two real JS apps and the exact-revision trusted gate are
+separate checks. Candidate pending measurement.

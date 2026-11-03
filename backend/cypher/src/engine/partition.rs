@@ -57,6 +57,7 @@ use graphite_storage::node::{
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
 use rayon::prelude::*;
+use smallvec::SmallVec;
 use std::collections::HashMap;
 
 /// Hidden row key carrying how many matches a row stands for. Absent means one.
@@ -1137,7 +1138,7 @@ impl PartitionPlan {
         let mut parts: Vec<Parts> = (0..ex.sources.len()).map(|_| IndexMap::new()).collect();
         let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| {
             let graph: &Graph = &ex.sources[source].graph;
-            let masked = |mask: u8| -> Vec<StrId> {
+            let masked = |mask: u8| -> ColumnIds {
                 let offset = graph.node_offset(id).unwrap_or(0);
                 columns[tag as usize]
                     .iter()
@@ -1147,7 +1148,7 @@ impl PartitionPlan {
                     .collect()
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
-                Strategy::Whole => (Vec::new(), KeySet::Fixed),
+                Strategy::Whole => (ColumnIds::new(), KeySet::Fixed),
                 Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
@@ -1169,7 +1170,7 @@ impl PartitionPlan {
                     },
                 ),
                 // A node of its own: the id keeps it apart.
-                Strategy::Each => (vec![id as StrId], KeySet::Fixed),
+                Strategy::Each => (ColumnIds::from_slice(&[id as StrId]), KeySet::Fixed),
             };
             parts[source]
                 .entry((tag, ids, keys))
@@ -1216,7 +1217,7 @@ impl PartitionPlan {
                         match self.strategies[si][tag as usize] {
                             Strategy::Whole => {
                                 parts[si].insert(
-                                    (tag, Vec::new(), KeySet::Fixed),
+                                    (tag, ColumnIds::new(), KeySet::Fixed),
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
@@ -1240,7 +1241,7 @@ impl PartitionPlan {
                                                 KeySet::Declared
                                             };
                                             parts[si].insert(
-                                                (tag, Vec::new(), key),
+                                                (tag, ColumnIds::new(), key),
                                                 (partition.first, partition.count as i64),
                                             );
                                         }
@@ -1304,9 +1305,13 @@ fn ascending(ids: &[u32]) -> bool {
     ids.windows(2).all(|w| w[0] < w[1])
 }
 
+// A CallSite exposes four partitionable string columns. Keep their IDs in the
+// lookup key itself instead of allocating a Vec for each node that probes the map.
+type ColumnIds = SmallVec<[StrId; 4]>;
+
 /// The partitions of one source: (first id, weight), keyed by (tag, column ids,
 /// property keys).
-type Parts = IndexMap<(u8, Vec<StrId>, KeySet), (u32, i64)>;
+type Parts = IndexMap<(u8, ColumnIds, KeySet), (u32, i64)>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum KeySet {
@@ -2528,6 +2533,67 @@ mod tests {
         // How far the type compresses is the graph's business: a graph whose
         // annotations all differ has one row per annotation, and is right to.
         assert_eq!(rows.len(), distinct.rows.len());
+    }
+
+    #[test]
+    fn grouped_with_counts_match_decoded_calls_in_first_seen_order() {
+        let Some(graph) = fixture() else { return };
+        let ex = executor(&graph, &["a", "b"]);
+        let q = "MATCH (n:CallSite) WITH n.callee_class AS c, count(*) AS k WHERE k > 5 RETURN c, k LIMIT 50";
+        let clauses = crate::parser::parse(q).unwrap();
+        let (plan, consumed) = PartitionPlan::build(&ex, &clauses).unwrap();
+        assert_eq!(consumed, 1);
+        assert!(plan.scan.is_none());
+        for strategy in &plan.strategies {
+            assert!(
+                matches!(strategy[TAG_CALL_SITE_NODE as usize], Strategy::Columns(mask) if mask.count_ones() == 1)
+            );
+        }
+
+        // Derive the oracle from decoded call records, not partition keys or the index.
+        let mut counts = IndexMap::<String, (u32, i64)>::new();
+        for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+            let graphite_storage::NodeKind::CallSite { callee, .. } = graph.node(id).unwrap().kind
+            else {
+                panic!("expected CallSite")
+            };
+            counts
+                .entry(graph.str(callee.declaring_class).to_owned())
+                .or_insert((id, 0))
+                .1 += 1;
+        }
+        let ev = Evaluator::new(&ex, &ex.params);
+        let partitions = plan.rows(&ex, &ev).unwrap();
+        assert_eq!(partitions.len(), 2 * counts.len());
+        assert!(counts.values().any(|&(_, weight)| weight > 1));
+        for (source, rows) in partitions.chunks_exact(counts.len()).enumerate() {
+            for (row, &(first, weight)) in rows.iter().zip(counts.values()) {
+                assert!(
+                    matches!(row.get("n"), Some(Value::Node(n)) if n.source as usize == source && n.id == first)
+                );
+                assert_eq!(row_weight(row), weight);
+                assert_eq!(
+                    QueryResult::graph_ids(row),
+                    [ex.sources[source].id.as_ref()]
+                );
+            }
+        }
+
+        let expected: Vec<_> = counts
+            .into_iter()
+            .map(|(c, (_, k))| (c, 2 * k))
+            .filter(|(_, k)| *k > 5)
+            .take(50)
+            .collect();
+        assert!(!expected.is_empty());
+        let result = ex.execute(q, None).unwrap();
+        assert_eq!(result.columns, ["c", "k"]);
+        assert_eq!(result.rows.len(), expected.len());
+        for (row, (class, count)) in result.rows.iter().zip(expected) {
+            assert!(matches!(row.get("c"), Some(Value::Str(c)) if c.as_ref() == class));
+            assert!(matches!(row.get("k"), Some(Value::Int(k)) if *k == count));
+            assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+        }
     }
 
     /// A column-level segment enumerates one row per distinct tuple of the columns
