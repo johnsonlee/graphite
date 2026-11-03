@@ -69,8 +69,8 @@ fn a_source_file_is_not_an_installed_frontend() {
         .contains("js\tnot installed"));
     let build = run(&["build", "--lang", "js", "main.js", "-o", "graph"]);
     assert!(!build.status.success());
-    assert!(String::from_utf8(build.stderr)
-        .unwrap()
-        .contains("npm ci && npm run build"));
+    let message = String::from_utf8(build.stderr).unwrap();
+    assert!(message.contains("npm ci && npm run build"));
+    assert!(message.contains(&format!("GRAPHITE_FRONTEND_JS={}", source.display())));
     assert!(!root.path().join("graph").exists());
 }

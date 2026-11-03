@@ -163,7 +163,13 @@ pub fn locate_js(env: &Env) -> Option<Frontend> {
             let launch = match path.extension().and_then(|e| e.to_str()) {
                 Some("js" | "mjs" | "cjs") if path.is_file() => Launch::Node(path),
                 _ if is_launcher(&path) => Launch::Executable(path),
-                _ => return None,
+                _ => {
+                    eprintln!(
+                        "Warning: {variable}={} is not a usable JavaScript file or executable launcher; continuing frontend discovery.",
+                        path.display()
+                    );
+                    continue;
+                }
             };
             return Some(Frontend {
                 lang: "js",
@@ -684,7 +690,7 @@ mod tests {
         touch(&source);
         env.vars
             .insert(TS_FRONTEND_VAR.into(), source.into_os_string());
-        assert!(locate_js(&env).is_none());
+        assert_eq!(locate_js(&env).unwrap().found_via, "PATH");
         env.vars
             .insert(TS_FRONTEND_VAR.into(), launcher.clone().into_os_string());
         assert_eq!(
@@ -696,7 +702,7 @@ mod tests {
             JS_FRONTEND_VAR.into(),
             preferred_entry.clone().into_os_string(),
         );
-        assert!(locate_js(&env).is_none());
+        assert_eq!(locate_js(&env).unwrap().found_via, TS_FRONTEND_VAR);
         touch(&preferred_entry);
         let preferred = locate_js(&env).unwrap();
         assert_eq!(preferred.launch, Launch::Node(preferred_entry));
