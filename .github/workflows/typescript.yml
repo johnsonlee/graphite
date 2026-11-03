@@ -59,6 +59,8 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build CLI
       run: cargo build --release --locked -p graphite-cli
+    - name: Check frontend discovery and persisted conflicting-edge policy through the Rust CLI
+      run: node frontend/web/test/cli-integration.mjs target/release/graphite
     - name: Build real Next/React app and verify client/server artifact graphs
       run: |
         python3 .github/scripts/check-typescript-e2e.py \

@@ -6,7 +6,7 @@ import { encodeArtifactString } from './strings.js';
 export interface Method {
   declaringClass: string;
   name: string;
-  parameterTypes: string[];
+  parameterTypes: readonly string[];
   returnType: string;
 }
 export interface GraphNode {
@@ -82,23 +82,37 @@ export function project(input: string): { program: ts.Program; root: string } {
   return { program, root };
 }
 
+/** Preorder traversal with the same child order as forEachChild; a visitor can prune a subtree. */
+function visitTree(root: ts.Node, context: Context, visit: (n: ts.Node, scope: Context) => Context | undefined): void {
+  const nodes = [root], scopes = [context], children: ts.Node[] = [];
+  while (nodes.length) {
+    const n = nodes.pop()!;
+    const next = visit(n, scopes.pop()!);
+    if (!next) continue;
+    children.length = 0;
+    ts.forEachChild(n, child => { children.push(child); });
+    for (let i = children.length - 1; i >= 0; i--) {
+      nodes.push(children[i]!);
+      scopes.push(next);
+    }
+  }
+}
+
 /** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
-export function analyze(input: string): SourceGraph {
+export function analyze(input: string, warn: (message: string) => void = console.warn): SourceGraph {
   const { program, root } = project(input);
-  const graph = new Analyzer(program, root).run();
-  // Type inference can also produce ill-formed UTF-16 in literal type names.
-  // Encode every textual payload once at the protocol boundary, consistently
-  // across method definitions and references, without changing numeric values.
-  const text = (value: unknown): unknown => typeof value === 'string' ? encodeArtifactString(value) :
-    Array.isArray(value) ? value.map(text) : value && typeof value === 'object'
-      ? Object.fromEntries(Object.entries(value).map(([key, field]) => [key, text(field)])) : value;
-  return text(graph) as SourceGraph;
+  return new Analyzer(program, root, warn).run();
 }
 
 class Analyzer {
   private checker: ts.TypeChecker;
   private graph: SourceGraph = { version: 1, methods: [], nodes: [], edges: [], classOrigins: [] };
   private contexts = new Map<ts.Node, Context>();
+  private descriptors = new Map<ts.SignatureDeclaration, Method>();
+  private encodedText = new Map<string, string>();
+  private encodedMethods = new WeakMap<Method, Method>();
+  private conflictingEdges = 0;
+  private firstConflict?: string;
   private functions: Context[] = [];
   private values = new Map<ts.Node, number>();
   private symbols = new Map<ts.Symbol, number>();
@@ -118,7 +132,7 @@ class Analyzer {
   private origins = new Set<string>();
   private methodKeys = new Set<string>();
   private sources: ts.SourceFile[];
-  constructor(private program: ts.Program, private root: string) {
+  constructor(private program: ts.Program, private root: string, private warn: (message: string) => void) {
     this.checker = program.getTypeChecker();
     this.sources = program.getRootFileNames().map(file => {
       const source = program.getSourceFile(file);
@@ -127,8 +141,13 @@ class Analyzer {
     }).sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
   }
   private module(n: ts.Node): string {
-    const file = n.getSourceFile().fileName;
+    const source = n.getSourceFile();
+    const file = source.fileName;
     const normalized = file.split(path.sep).join('/');
+    if (source.isDeclarationFile && this.program.isSourceFileDefaultLibrary(source)) {
+      // Use the npm spelling even when TypeScript is installed globally or vendored.
+      return `external:typescript/lib/${path.posix.basename(normalized)}`;
+    }
     const dependency = normalized.lastIndexOf('/node_modules/');
     if (dependency >= 0) return `external:${normalized.slice(dependency + '/node_modules/'.length)}`;
     return path.relative(this.root, file).split(path.sep).join('/');
@@ -146,32 +165,62 @@ class Analyzer {
     if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = this.checker.getAliasedSymbol(symbol);
     return symbol;
   }
-  private node(kind: string, fields: Record<string, unknown>): number {
+  private text(raw: string): string {
+    let encoded = this.encodedText.get(raw);
+    if (encoded === undefined) {
+      encoded = encodeArtifactString(raw);
+      this.encodedText.set(raw, encoded);
+    }
+    return encoded;
+  }
+  // Contexts keep raw descriptors for name composition and symbol lookup. The
+  // graph shares an immutable, encoded descriptor across definitions and uses.
+  private graphMethod(raw: Method): Method {
+    let method = this.encodedMethods.get(raw);
+    if (!method) {
+      method = Object.freeze({ declaringClass: this.text(raw.declaringClass), name: this.text(raw.name),
+        parameterTypes: Object.freeze(raw.parameterTypes.map(t => this.text(t))), returnType: this.text(raw.returnType) });
+      this.encodedMethods.set(raw, method);
+    }
+    return method;
+  }
+  private node(kind: string, fields: Record<string, string | number | boolean | undefined | Method | number[]>): number {
     const id = this.graph.nodes.length;
+    for (const [key, value] of Object.entries(fields)) {
+      if (typeof value === 'string') fields[key] = this.text(value);
+      else if (typeof value === 'object' && !Array.isArray(value)) fields[key] = this.graphMethod(value);
+    }
     this.graph.nodes.push({ id, kind, ...fields });
     return id;
   }
   private edge(from: number, to: number, kind: string, extra: Pick<GraphEdge, 'isVirtual' | 'isDynamic'> = {}): void {
     const key = `${from}:${to}`;
     const previous = this.edgePairs.get(key);
-    if (previous && (previous.kind !== kind || !!previous.isVirtual !== !!extra.isVirtual || !!previous.isDynamic !== !!extra.isDynamic))
-      throw new Error(`Conflicting relations ${previous.kind} and ${kind} for nodes ${from} (${this.graph.nodes[from]?.kind}:${this.graph.nodes[from]?.name ?? this.graph.nodes[from]?.value}) -> ${to} (${this.graph.nodes[to]?.kind}:${this.graph.nodes[to]?.name ?? JSON.stringify(this.graph.nodes[to]?.method)}); graph was not saved.`);
-    if (previous) return;
+    if (previous) {
+      if (previous.kind !== kind || !!previous.isVirtual !== !!extra.isVirtual || !!previous.isDynamic !== !!extra.isDynamic) {
+        this.conflictingEdges++;
+        this.firstConflict ??= `${from} -> ${to}: kept ${previous.kind}, skipped ${kind}`;
+      }
+      return; // v3 can encode only one relationship per ordered endpoint pair.
+    }
     const edge = { from, to, kind, ...extra };
     this.edgePairs.set(key, edge);
     this.graph.edges.push(edge);
   }
   private addMethod(method: Method, origin: string): void {
-    this.graph.methods.push(method);
+    const encoded = this.graphMethod(method);
+    this.graph.methods.push(encoded);
     if (!this.origins.has(method.declaringClass)) {
       this.origins.add(method.declaringClass);
-      this.graph.classOrigins.push({ className: method.declaringClass, origin });
+      this.graph.classOrigins.push({ className: encoded.declaringClass, origin: this.text(origin) });
     }
   }
   private name(n: ts.Node & { name?: ts.DeclarationName }): string | undefined {
     return n.name?.getText().replace(/^['"]|['"]$/g, '');
   }
   private descriptor(n: ts.SignatureDeclaration): Method {
+    const cached = this.descriptors.get(n);
+    if (cached) return cached;
     let owner = this.module(n);
     let name = ts.isConstructorDeclaration(n) ? 'constructor' : this.name(n);
     if (!name && (ts.isVariableDeclaration(n.parent) || ts.isPropertyAssignment(n.parent) || ts.isPropertyDeclaration(n.parent))) {
@@ -197,11 +246,13 @@ class Analyzer {
       parent = parent.parent;
     }
     const signature = this.checker.getSignatureFromDeclaration(n);
-    return {
+    const method: Method = {
       declaringClass: owner, name,
       parameterTypes: n.parameters.map(p => this.type(p)),
       returnType: signature ? this.checker.typeToString(signature.getReturnType()) : 'unknown',
     };
+    this.descriptors.set(n, method);
+    return method;
   }
   private defaults(n: FunctionBody): Map<number, ts.Expression> {
     const result = new Map<number, ts.Expression>();
@@ -252,7 +303,7 @@ class Analyzer {
       yield* this.targets(n.left, [...defaults, n.right]);
     } else yield { target: n, defaults };
   }
-  private register(n: ts.Node, parent: Context): void {
+  private register(n: ts.Node, parent: Context): Context {
     let context = parent;
     if (isBody(n)) {
       const method = this.descriptor(n);
@@ -302,12 +353,14 @@ class Analyzer {
       const formal = previous === undefined ? undefined : this.graph.nodes[previous];
       if (formal?.kind === 'Parameter' && ts.isIdentifier(target)) {
         // A formal denotes the incoming argument; a reassignment writes its binding.
-        const binding = this.node('LocalVariable', { name: `@binding:${target.text}`, varType: formal.paramType, method: formal.method });
+        const binding = this.node('LocalVariable', { name: `@binding:${target.text}` });
+        // These fields already crossed the encoding boundary on the formal node.
+        Object.assign(this.graph.nodes[binding]!, { varType: formal.paramType, method: formal.method });
         this.edge(formal.id, binding, 'ASSIGN');
         this.symbols.set(symbol, binding);
       }
     }
-    ts.forEachChild(n, child => this.register(child, context));
+    return context;
   }
   private bind(name: ts.BindingName, source: number, context: Context): void {
     if (ts.isIdentifier(name)) {
@@ -330,7 +383,7 @@ class Analyzer {
     if (symbol) this.symbols.set(symbol, id);
     return id;
   }
-  private constant(kind: string, value?: unknown): number {
+  private constant(kind: string, value?: string | number | boolean): number {
     const key = JSON.stringify([kind, Object.is(value, -0) ? '-0' : value]);
     let id = this.constants.get(key);
     if (id === undefined) { id = this.node(kind, value === undefined ? {} : { value }); this.constants.set(key, id); }
@@ -567,6 +620,29 @@ class Analyzer {
     });
     return args;
   }
+  // Minifiers produce long left-associated chains. Allocate ordinary result nodes
+  // in preorder, then evaluate operands left to right, as for a shallow expression.
+  private binaryValue(n: ts.BinaryExpression, context: Context): number {
+    const chain: { node: ts.BinaryExpression; result?: number }[] = [];
+    let left: ts.Expression = n;
+    while (ts.isBinaryExpression(left) && left.operatorToken.kind !== ts.SyntaxKind.EqualsToken && !this.values.has(left)) {
+      const result = left.operatorToken.kind === ts.SyntaxKind.CommaToken ? undefined :
+        this.node('LocalVariable', { name: `@${this.position(left)}`, varType: this.type(left), method: context.method });
+      chain.push({ node: left, result });
+      left = left.left;
+    }
+    let id = this.value(left, context);
+    for (let i = chain.length - 1; i >= 0; i--) {
+      const { node, result } = chain[i]!;
+      if (result !== undefined) this.edge(id, result, 'ASSIGN');
+      const right = this.value(node.right, context);
+      if (result !== undefined) this.edge(right, result, 'ASSIGN');
+      id = result ?? right;
+      this.values.set(node, id);
+    }
+    return id;
+  }
+
   private value(n: ts.Expression, context: Context): number {
     const cached = this.values.get(n);
     if (cached !== undefined) return cached;
@@ -583,10 +659,7 @@ class Analyzer {
     else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken) {
       id = this.value(n.right, context);
       this.assign(n.left, id, context, n.right);
-    } else if (ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.CommaToken) {
-      this.value(n.left, context);
-      id = this.value(n.right, context);
-    }
+    } else if (ts.isBinaryExpression(n)) id = this.binaryValue(n, context);
     else if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
       const target = this.target(n);
       const args = this.arguments(n, context, target.context);
@@ -630,6 +703,10 @@ class Analyzer {
     return id;
   }
   private walk(n: ts.Node, context: Context): void {
+    visitTree(n, context, (node, scope) => this.walkNode(node, scope));
+  }
+
+  private walkNode(n: ts.Node, context: Context): Context | undefined {
     if (this.normalizedGuards.has(n) || ts.isBinaryExpression(n) && this.patternDefaults.has(n) || ts.isExpression(n) && this.handledFallbacks.has(n)) return;
     if (isBody(n)) return; // Each body is analyzed exactly once in its own lexical scope.
     if (ts.isTypeNode(n) || ts.isImportDeclaration(n) || ts.isExportDeclaration(n)) return;
@@ -656,7 +733,7 @@ class Analyzer {
       const assigned = this.value(n, context); // '=' already stored its RHS exactly once, including pattern defaults.
       if (n.operatorToken.kind !== ts.SyntaxKind.EqualsToken) this.assign(n.left, assigned, context);
     } else if (ts.isCallExpression(n) || ts.isNewExpression(n)) this.value(n, context);
-    ts.forEachChild(n, child => this.walk(child, context));
+    return context;
   }
   run(): SourceGraph {
     if (!this.sources.length) throw new Error('No implementation source files were loaded.');
@@ -666,7 +743,7 @@ class Analyzer {
       this.contexts.set(source, context);
       this.addMethod(method, this.module(source));
       this.functions.push(context);
-      this.register(source, context);
+      visitTree(source, context, (n, parent) => this.register(n, parent));
     }
     for (const context of this.functions) {
       if (ts.isExpression(context.body)) {
@@ -696,6 +773,8 @@ class Analyzer {
         if (updated !== undefined && updated !== context.parameters[index]) this.edge(updated, context.parameters[index]!, 'PARAMETER_PASS');
       });
     }
+    if (this.conflictingEdges) this.warn(`Warning: JavaScript graph skipped ${this.conflictingEdges} conflicting relationship occurrence${this.conflictingEdges === 1 ? '' : 's'}; ` +
+      `v3 retains the first relationship per ordered node pair (first conflict: ${this.firstConflict}).`);
     return this.graph;
   }
 }

@@ -612,3 +612,93 @@ test('lone surrogates in inferred literal types are encoded consistently with pr
   visits(g);
   assert.deepEqual(calls(g).map(c => c.callee.parameterTypes[0]), [encodeArtifactString('"\udead"'), encodeArtifactString('"\udf06\ud834"')]);
 });
+
+test('deep emitted concatenation and comma chains keep their operands and later calls', t => {
+  const terms = Array(4500).fill('"x"');
+  const root = fixture(t, { 'app.js': `
+    function sink(value) { return value; }
+    sink("first" + ${terms.join(' + ')} + "last");
+    sink((${terms.join(', ')}, "result"));
+    sink("after");
+  ` });
+  const graph = analyze(root);
+  const sites = calls(graph).filter(site => site.callee.name === 'sink');
+  assert.equal(sites.length, 3);
+  // Walk backwards through the actual ASSIGN edges to both ends of the concatenation.
+  const parents = new Map();
+  for (const { from, to, kind } of graph.edges) if (kind === 'ASSIGN') {
+    if (!parents.has(to)) parents.set(to, []);
+    parents.get(to).push(from);
+  }
+  const pending = [sites[0].arguments[0]], seen = new Set();
+  while (pending.length) {
+    const id = pending.pop();
+    if (seen.has(id)) continue;
+    seen.add(id);
+    pending.push(...(parents.get(id) ?? []));
+  }
+  for (const value of ['first', 'x', 'last']) {
+    assert.ok(seen.has(graph.nodes.find(n => n.kind === 'StringConstant' && n.value === value).id));
+  }
+  assert.equal(graph.nodes[sites[1].arguments[0]].value, 'result');
+  assert.equal(graph.nodes[sites[2].arguments[0]].value, 'after');
+});
+
+test('conflicting relationships keep their first kind and report dropped occurrences once', t => {
+  const root = fixture(t, { 'main.js': `function pick(list) { let cur = list; for (cur of list) {} for (cur of list) {} return cur; } pick([1, 2]);` });
+  const warnings = [];
+  const graph = analyze(root, message => warnings.push(message));
+  const cur = graph.nodes.find(n => n.kind === 'LocalVariable' && n.name === 'cur');
+  const list = formal(graph, 'pick');
+  assert.deepEqual(graph.edges.filter(e => e.from === list.id && e.to === cur.id).map(e => e.kind), ['ASSIGN']);
+  assert.equal(new Set(graph.edges.map(e => `${e.from}:${e.to}`)).size, graph.edges.length);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /skipped 2 conflicting relationship occurrences?.*kept ASSIGN, skipped ARRAY_LOAD/);
+  const again = [];
+  assert.deepEqual(analyze(root, msg => again.push(msg)), graph);
+  assert.deepEqual(again, warnings);
+});
+
+test('default library methods keep npm identities when TypeScript is vendored outside node_modules', async t => {
+  const root = fixture(t, { 'main.mjs': `export function log(s) { console.log(s); console.log(s); return Promise.resolve(s); }` });
+  const expected = analyze(root);
+  const sandbox = fixture(t, { 'frontend/package.json': '{"type":"module"}' });
+  const frontend = path.join(sandbox, 'frontend');
+  const vendored = path.join(sandbox, 'vendor', 'compiler');
+  fs.cpSync(path.dirname(path.dirname(ts.sys.getExecutingFilePath())), vendored, { recursive: true });
+  fs.mkdirSync(path.join(frontend, 'node_modules'));
+  fs.symlinkSync(vendored, path.join(frontend, 'node_modules', 'typescript'), 'junction');
+  fs.cpSync(new URL('../dist/', import.meta.url), path.join(frontend, 'dist'), { recursive: true });
+  const { analyze: relocated } = await import(pathToFileURL(path.join(frontend, 'dist', 'analyzer.js')).href);
+  const actual = relocated(root);
+  assert.deepEqual(actual, expected);
+  const [first, second, promise] = calls(actual);
+  assert.equal(first.callee.declaringClass, 'external:typescript/lib/lib.dom.d.ts.Console');
+  assert.equal(promise.callee.declaringClass, 'external:typescript/lib/lib.es2015.promise.d.ts.PromiseConstructor');
+  assert.strictEqual(first.callee, second.callee, 'repeated calls share one encoded external descriptor');
+  assert.strictEqual(first.caller, actual.methods.find(m => m.name === 'log'), 'definitions and references agree');
+  assert.ok(Object.isFrozen(first.callee) && Object.isFrozen(first.callee.parameterTypes));
+  assert.ok(!JSON.stringify(actual).includes(sandbox));
+});
+
+test('escaped literal parameter types survive a binding reassignment without being re-escaped', async t => {
+  const { encodeArtifactString } = await import('../dist/strings.js');
+  const root = fixture(t, { 'main.js': String.raw`/** @param {'\udead'} x */ function mutate(x) { x = '\udead'; return x; } mutate('\udead');` });
+  const graph = analyze(root);
+  const parameter = formal(graph, 'mutate');
+  const binding = graph.nodes.find(n => n.name === '@binding:x');
+  assert.equal(parameter.paramType, encodeArtifactString('"\udead"'));
+  assert.equal(binding.varType, parameter.paramType);
+  assert.strictEqual(binding.method, parameter.method);
+});
+
+test('CLI recognizes help/version only as options, not as an output or a positional artifact', t => {
+  const root = fixture(t, { '--help/main.js': 'sink("argument");' });
+  const cli = path.resolve('dist/cli.js');
+  const result = spawnSync(process.execPath, [cli, 'build', '-o', '--version', '--', '--help'], { cwd: root, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, '');
+  const graph = JSON.parse(fs.readFileSync(path.join(root, '--version'), 'utf8'));
+  assert.ok(calls(graph).some(n => n.callee.name === 'sink'));
+  assert.match(spawnSync(process.execPath, [cli, 'build', '--help'], { encoding: 'utf8' }).stdout, /Usage: graphite build/);
+});
