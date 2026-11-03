@@ -15,6 +15,7 @@
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
+mod build_args;
 mod build_output;
 mod build_ts;
 mod fold;
@@ -58,7 +59,7 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build and save a JVM graph, or use --lang js (alias ts) for compiled JavaScript
+    /// Build a JVM graph, or select compiled JavaScript with --lang js (alias ts) before the -- separator
     #[command(disable_help_flag = true, disable_version_flag = true)]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
@@ -89,7 +90,7 @@ struct McpArgs {
     graphs: GraphArgs,
 }
 
-/// An optional leading --lang selects a frontend; other arguments belong to it.
+/// --lang selects a frontend anywhere before the -- separator; other arguments belong to it.
 #[derive(Parser, Debug)]
 struct BuildArgs {
     #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
@@ -135,10 +136,26 @@ struct QueryArgs {
     verbose: bool,
 }
 
+/// `build` forwards native argv. In particular a leading `--` belongs to the
+/// frontend, whereas clap would consume it as the trailing positional's delimiter.
+fn parse_cli(argv: Vec<OsString>) -> Result<Cli, clap::Error> {
+    if argv.get(1).is_some_and(|s| s == "build") {
+        return Ok(Cli {
+            command: Some(Command::Build(BuildArgs {
+                args: argv.into_iter().skip(2).collect(),
+            })),
+        });
+    }
+    Cli::try_parse_from(argv)
+}
+
 fn main() -> std::process::ExitCode {
     let env = frontend::Env::from_process();
     // As the Kotlin CLI: no subcommand prints the usage and exits 0.
-    let Some(command) = Cli::parse().command else {
+    let Some(command) = parse_cli(std::env::args_os().collect())
+        .unwrap_or_else(|e| e.exit())
+        .command
+    else {
         use clap::CommandFactory;
         let _ = Cli::command().print_help();
         return std::process::ExitCode::SUCCESS;
@@ -399,8 +416,38 @@ mod cli_tests {
     use super::*;
 
     #[test]
+    fn build_retains_the_separator_for_shell_option_detection() {
+        for argv in [
+            vec!["--", "--lang", "js"],
+            vec!["app.js", "--", "--lang", "js"],
+            vec!["app.js", "--lang", "js", "--", "-o"],
+        ] {
+            let cli = parse_cli(
+                ["graphite", "build"]
+                    .into_iter()
+                    .chain(argv.clone())
+                    .map(OsString::from)
+                    .collect(),
+            )
+            .unwrap();
+            let Some(Command::Build(build)) = cli.command else {
+                panic!("expected build");
+            };
+            assert_eq!(
+                build.args,
+                argv.iter().map(OsString::from).collect::<Vec<_>>()
+            );
+        }
+    }
+
+    #[test]
     fn build_parser_preserves_the_language_selector_and_frontend_help() {
-        let cli = Cli::try_parse_from(["graphite", "build", "--lang", "ts", "--help"]).unwrap();
+        let cli = parse_cli(
+            ["graphite", "build", "--lang", "ts", "--help"]
+                .map(OsString::from)
+                .into(),
+        )
+        .unwrap();
         let Some(Command::Build(args)) = cli.command else {
             panic!("expected build");
         };

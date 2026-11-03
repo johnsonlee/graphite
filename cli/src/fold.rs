@@ -66,17 +66,6 @@ impl Selected {
     }
 }
 
-/// Options of `graphite.jar build` that take a value, to tell the input apart from them.
-const VALUE_OPTIONS: [&str; 7] = [
-    "-o",
-    "--output",
-    "--include",
-    "--exclude",
-    "--android-sdk",
-    "--lib-filter",
-    "--fold",
-];
-
 /// The option that links calls to their callees' bodies, which the staging build adds.
 pub const INTERPROCEDURAL: &str = "--interprocedural";
 
@@ -90,156 +79,77 @@ const ANALYSIS_FLAGS: [&str; 1] = ["--include-libs"];
 /// and `--include-libs` alike), in order.
 pub fn analysis_options(args: &[OsString]) -> Vec<OsString> {
     let mut out = Vec::new();
-    let mut iter = args.iter();
-    while let Some(arg) = iter.next() {
-        let text = arg.to_string_lossy();
-        if ANALYSIS_FLAGS.contains(&text.as_ref()) {
-            out.push(arg.clone());
-        } else if ANALYSIS_VALUE_OPTIONS.contains(&text.as_ref()) {
-            out.push(arg.clone());
-            if let Some(value) = iter.next() {
-                out.push(value.clone());
-            }
-        } else if ANALYSIS_VALUE_OPTIONS
-            .iter()
-            .any(|option| text.starts_with(option) && text[option.len()..].starts_with('='))
+    for arg in crate::build_args::walk(args) {
+        if arg
+            .name
+            .is_some_and(|name| ANALYSIS_VALUE_OPTIONS.contains(&name))
+            || ANALYSIS_FLAGS.iter().any(|flag| arg.flag(flag))
         {
-            out.push(arg.clone());
-        } else if !text.contains('=') && VALUE_OPTIONS.contains(&text.as_ref()) {
-            iter.next();
+            out.extend_from_slice(&args[arg.range]);
         }
     }
     out
 }
 
-/// The input of a build command line: its first argument that is neither an option nor
-/// an option's value.
+/// The first positional argument, including inputs beginning with '-' after the separator.
 pub fn input_of(args: &[OsString]) -> Option<PathBuf> {
-    let mut iter = args.iter();
-    while let Some(arg) = iter.next() {
-        let text = arg.to_string_lossy();
-        if text.starts_with('-') {
-            if !text.contains('=') && VALUE_OPTIONS.contains(&text.as_ref()) {
-                iter.next();
-            }
-            continue;
-        }
-        return Some(PathBuf::from(arg));
-    }
-    None
+    crate::build_args::walk(args)
+        .find(|a| a.positional)
+        .map(|a| a.raw.into())
 }
 
-/// The first build's arguments: no rules, the staging directory as output, and calls
-/// linked to their callees' bodies, so a `select` query can cross a helper.
-pub fn staging_args(args: &[OsString], stage: &Path) -> Vec<OsString> {
-    let mut out = with_output(&without_fold(args), stage);
-    if !out.iter().any(|a| a == INTERPROCEDURAL) {
-        out.push(OsString::from(INTERPROCEDURAL));
+/// The first build has no fold rules, a staging output and interprocedural links.
+pub fn staging_args(args: &[OsString], stage: &Path) -> Result<Vec<OsString>, String> {
+    let mut out = with_output(&without_fold(args), stage)?;
+    if !crate::build_args::walk(&out).any(|a| a.flag(INTERPROCEDURAL)) {
+        let at = out.iter().position(|a| a == "--").unwrap_or(out.len());
+        out.insert(at, INTERPROCEDURAL.into());
     }
-    out
+    Ok(out)
 }
 
-/// The `--fold <file>` or `--fold=<file>` of a build command line, if any.
 pub fn fold_file(args: &[OsString]) -> Option<PathBuf> {
-    let mut iter = args.iter();
-    while let Some(arg) = iter.next() {
-        let text = arg.to_string_lossy();
-        if text == "--fold" {
-            return iter.next().map(PathBuf::from);
-        }
-        if let Some(value) = text.strip_prefix("--fold=") {
-            return Some(PathBuf::from(value));
-        }
-    }
-    None
+    crate::build_args::walk(args)
+        .find(|a| a.name == Some("--fold"))
+        .and_then(|a| a.value)
+        .map(PathBuf::from)
 }
 
-/// The arguments without `--fold <file>`, `--fold=<file>` and `--fold-strict`: the first
-/// build, which must see no rule at all.
 pub fn without_fold(args: &[OsString]) -> Vec<OsString> {
-    let mut out = Vec::with_capacity(args.len());
-    let mut skip_value = false;
-    for arg in args {
-        if skip_value {
-            skip_value = false;
-            continue;
-        }
-        let text = arg.to_string_lossy();
-        if text == "--fold" {
-            skip_value = true;
-            continue;
-        }
-        if text.starts_with("--fold=") || text == "--fold-strict" {
-            continue;
-        }
-        out.push(arg.clone());
+    let mut out = args.to_vec();
+    let ranges = crate::build_args::walk(args)
+        .filter(|a| a.name == Some("--fold") || a.flag("--fold-strict"))
+        .map(|a| a.range)
+        .collect::<Vec<_>>();
+    for range in ranges.into_iter().rev() {
+        out.drain(range);
     }
     out
 }
 
-/// The arguments with the fold file replaced by `file`, in whichever form it was given.
 pub fn with_fold_file(args: &[OsString], file: &Path) -> Vec<OsString> {
-    let mut out = Vec::with_capacity(args.len());
-    let mut replace_next = false;
-    for arg in args {
-        if replace_next {
-            replace_next = false;
-            out.push(file.as_os_str().to_os_string());
-            continue;
-        }
-        let text = arg.to_string_lossy();
-        if text == "--fold" {
-            replace_next = true;
-            out.push(arg.clone());
-        } else if text.starts_with("--fold=") {
-            let mut rewritten = OsString::from("--fold=");
-            rewritten.push(file.as_os_str());
-            out.push(rewritten);
-        } else {
-            out.push(arg.clone());
-        }
+    let mut out = args.to_vec();
+    for opt in
+        crate::build_args::walk(args).filter(|a| a.name == Some("--fold") && a.value.is_some())
+    {
+        let (slot, replacement) = opt.replacement(file);
+        out[slot] = replacement;
     }
     out
 }
 
-/// The value of `-o`, `--output` or `--output=`, if any.
-pub fn output_of(args: &[OsString]) -> Option<PathBuf> {
-    let mut iter = args.iter();
-    while let Some(arg) = iter.next() {
-        let text = arg.to_string_lossy();
-        if text == "-o" || text == "--output" {
-            return iter.next().map(PathBuf::from);
-        }
-        if let Some(value) = text.strip_prefix("--output=") {
-            return Some(PathBuf::from(value));
-        }
-    }
-    None
+/// The output that would be staged, with exactly the same validation as a single-pass build.
+pub fn output_of(args: &[OsString]) -> Result<Option<PathBuf>, String> {
+    Ok(crate::build_args::output_option(args)?.map(|a| a.value.expect("validated output").into()))
 }
 
-/// The arguments with the output replaced by `output`, in whichever form it was given.
-pub fn with_output(args: &[OsString], output: &Path) -> Vec<OsString> {
-    let mut out = Vec::with_capacity(args.len());
-    let mut replace_next = false;
-    for arg in args {
-        if replace_next {
-            replace_next = false;
-            out.push(output.as_os_str().to_os_string());
-            continue;
-        }
-        let text = arg.to_string_lossy();
-        if text == "-o" || text == "--output" {
-            replace_next = true;
-            out.push(arg.clone());
-        } else if text.starts_with("--output=") {
-            let mut rewritten = OsString::from("--output=");
-            rewritten.push(output.as_os_str());
-            out.push(rewritten);
-        } else {
-            out.push(arg.clone());
-        }
+fn with_output(args: &[OsString], output: &Path) -> Result<Vec<OsString>, String> {
+    let mut out = args.to_vec();
+    if let Some(opt) = crate::build_args::output_option(args)? {
+        let (slot, replacement) = opt.replacement(output);
+        out[slot] = replacement;
     }
-    out
+    Ok(out)
 }
 
 /// Where the first build writes the graph built without rules: a sibling of the output,
@@ -653,6 +563,41 @@ mod tests {
     }
 
     #[test]
+    fn folding_preserves_option_values_and_literal_names_after_the_separator() {
+        let args = os(&[
+            "--include",
+            "--output",
+            "--fold=rules",
+            "-o=orig",
+            "--",
+            "--lang",
+            "--fold",
+            "-o",
+            "--interprocedural",
+        ]);
+        assert_eq!(input_of(&args), Some("--lang".into()));
+        assert_eq!(analysis_options(&args), os(&["--include", "--output"]));
+        assert_eq!(fold_file(&args), Some("rules".into()));
+        assert_eq!(output_of(&args).unwrap(), Some("orig".into()));
+        assert_eq!(
+            staging_args(&args, Path::new("stage")).unwrap(),
+            os(&[
+                "--include",
+                "--output",
+                "-o=stage",
+                "--interprocedural",
+                "--",
+                "--lang",
+                "--fold",
+                "-o",
+                "--interprocedural"
+            ])
+        );
+        assert!(output_of(&os(&["-o", "a", "--output=b"])).is_err());
+        assert!(staging_args(&os(&["app", "-o", "a", "--output=b"]), Path::new("stage")).is_err());
+    }
+
+    #[test]
     fn the_fold_file_is_found_in_either_form_and_removed_with_strict() {
         let spaced = os(&[
             "a.jar",
@@ -699,15 +644,15 @@ mod tests {
             os(&["a.jar", "--output", "/out/app"]),
             os(&["a.jar", "--output=/out/app"]),
         ] {
-            assert_eq!(output_of(&form), Some(PathBuf::from("/out/app")));
-            let redirected = with_output(&form, Path::new("/out/app.unfolded-1"));
+            assert_eq!(output_of(&form).unwrap(), Some(PathBuf::from("/out/app")));
+            let redirected = with_output(&form, Path::new("/out/app.unfolded-1")).unwrap();
             assert_eq!(
-                output_of(&redirected),
+                output_of(&redirected).unwrap(),
                 Some(PathBuf::from("/out/app.unfolded-1"))
             );
             assert_eq!(redirected.len(), form.len());
         }
-        assert_eq!(output_of(&os(&["a.jar"])), None);
+        assert_eq!(output_of(&os(&["a.jar"])).unwrap(), None);
         let stage = unfolded_dir_for(Path::new("/out/app.graphite"));
         assert_eq!(stage.parent(), Some(Path::new("/out")));
         assert!(stage
@@ -739,7 +684,8 @@ mod tests {
         let staged = staging_args(
             &os(&["a.jar", "-o", "/g", "--fold", "f.yml", "--fold-strict"]),
             Path::new("/g.unfolded-1"),
-        );
+        )
+        .unwrap();
         assert_eq!(
             text(&staged),
             ["a.jar", "-o", "/g.unfolded-1", "--interprocedural"]
@@ -747,7 +693,8 @@ mod tests {
         let already = staging_args(
             &os(&["a.jar", "--interprocedural", "-o", "/g"]),
             Path::new("/s"),
-        );
+        )
+        .unwrap();
         assert_eq!(text(&already), ["a.jar", "--interprocedural", "-o", "/s"]);
     }
 

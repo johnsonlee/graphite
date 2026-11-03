@@ -430,3 +430,5 @@ jobs:
     # MSVC has no jemalloc; the explorer must still build with the system allocator.
     - name: Check
       run: cargo check --workspace --all-targets --locked
+    - name: Test no-clobber output publication on Windows
+      run: cargo test --locked -p graphite-cli build_output::tests

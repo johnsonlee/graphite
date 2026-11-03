@@ -11,22 +11,43 @@ pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
     }
 }
 
-/// Both files are complete in a sibling staging directory. Linking creates a final
-/// name only if it is absent, even if another build passed the same initial check.
-/// Publish the digest first so that a visible container always has its matching digest.
+/// Both staged files are complete. Claim the digest first so a visible container
+/// always has its matching digest, even when multiple builds race.
 fn publish_container(staged: &Path, staged_digest: &Path, output: &Path) -> Result<(), String> {
-    let link = |from: &Path, to: &Path| {
-        std::fs::hard_link(from, to).map_err(|e| {
-            if e.kind() == std::io::ErrorKind::AlreadyExists {
-                format!("output already exists: {}", to.display())
-            } else {
-                format!("could not publish {}: {e}", to.display())
+    publish_with(staged, staged_digest, output, |from, to| {
+        std::fs::hard_link(from, to)
+    })
+}
+
+fn publish_with(
+    staged: &Path,
+    staged_digest: &Path,
+    output: &Path,
+    hard_link: impl Fn(&Path, &Path) -> std::io::Result<()>,
+) -> Result<(), String> {
+    let publish = |from: &Path, to: &Path| {
+        let exists = || format!("output already exists: {}", to.display());
+        match hard_link(from, to) {
+            Ok(()) => Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Err(exists()),
+            Err(link_error) => {
+                // Same-filesystem staging allows an exclusive native rename on
+                // macOS, Linux, and Windows even where hard links are disabled.
+                let staged = tempfile::TempPath::try_from_path(from)
+                    .map_err(|e| format!("could not access {}: {e}", from.display()))?;
+                staged.persist_noclobber(to).map_err(|e| {
+                    if e.error.kind() == std::io::ErrorKind::AlreadyExists {
+                        exists()
+                    } else {
+                        format!("could not publish {}: {link_error} (hard link); {} (no-clobber persist)", to.display(), e.error)
+                    }
+                })
             }
-        })
+        }
     };
     let digest = graphite_storage::container::digest_path(output);
-    link(staged_digest, &digest)?;
-    if let Err(error) = link(staged, output) {
+    publish(staged_digest, &digest)?;
+    if let Err(error) = publish(staged, output) {
         std::fs::remove_file(&digest)
             .map_err(|e| format!("{error}; could not remove {}: {e}", digest.display()))?;
         return Err(error);
@@ -65,12 +86,34 @@ impl Stage {
     }
 
     pub(crate) fn new(output: &Path) -> std::io::Result<Self> {
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
         let parent = output
             .parent()
             .filter(|p| !p.as_os_str().is_empty())
             .unwrap_or(Path::new("."));
         std::fs::create_dir_all(parent)?;
+        Self::in_directory(parent)
+    }
+
+    /// A failing JVM frontend must not leave a newly created output parent behind.
+    pub(crate) fn for_jvm_output(output: &Path) -> std::io::Result<Self> {
+        let mut parent = output.parent().unwrap_or(Path::new("."));
+        loop {
+            if parent.as_os_str().is_empty() {
+                parent = Path::new(".");
+            }
+            match std::fs::metadata(parent) {
+                Ok(_) => return Self::in_directory(parent),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => match parent.parent() {
+                    Some(next) => parent = next,
+                    None => return Err(e),
+                },
+                Err(e) => return Err(e),
+            }
+        }
+    }
+
+    fn in_directory(parent: &Path) -> std::io::Result<Self> {
+        static COUNTER: AtomicU64 = AtomicU64::new(0);
         loop {
             let name = format!(
                 ".graphite-build-{}-{}",
@@ -100,6 +143,43 @@ impl Drop for Stage {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[cfg(any(target_os = "macos", target_os = "linux", windows))]
+    #[test]
+    fn publishes_complete_files_without_hard_links_and_rolls_back_a_late_collision() {
+        let stage = Stage::new(&std::env::temp_dir().join("publish-test")).unwrap();
+        let data = b"complete container\x00\xff";
+        let output = stage.0.join("output.graphite");
+        let digest = graphite_storage::container::digest_path(&output);
+        let staged = stage.0.join("packed");
+        let checksum = stage.0.join("checksum");
+        let checksum_data =
+            "038a4206e9510a3601784dc6071340a8a0ee4893e552d34599b3d44ff8eac3c8  output.graphite\n";
+        let pack = || {
+            std::fs::write(&staged, data).unwrap();
+            std::fs::write(&checksum, checksum_data).unwrap();
+        };
+        let unsupported = |_: &Path, _: &Path| Err(std::io::ErrorKind::Unsupported.into());
+        pack();
+        publish_with(&staged, &checksum, &output, unsupported).unwrap();
+        assert_eq!(std::fs::read(&output).unwrap(), data);
+        assert_eq!(std::fs::read_to_string(&digest).unwrap(), checksum_data);
+
+        // A competing graph can appear after the initial existence check.
+        std::fs::remove_file(&digest).unwrap();
+        std::fs::write(&output, b"another writer").unwrap();
+        pack();
+        assert!(publish_with(&staged, &checksum, &output, unsupported).is_err());
+        assert_eq!(std::fs::read(&output).unwrap(), b"another writer");
+        assert!(!digest.exists());
+
+        std::fs::remove_file(&output).unwrap();
+        std::fs::write(&digest, b"another digest").unwrap();
+        pack();
+        assert!(publish_with(&staged, &checksum, &output, unsupported).is_err());
+        assert!(!output.exists());
+        assert_eq!(std::fs::read(&digest).unwrap(), b"another digest");
+    }
 
     #[test]
     fn concurrent_publishers_leave_one_complete_unmixed_pair() {
@@ -134,9 +214,13 @@ mod tests {
             format!("digest of {winner}")
         );
         // An output created after initial validation is preserved, and a newly
-        // linked digest is removed when the container cannot be published.
+        // published digest is removed when the container cannot be published.
         std::fs::remove_file(&digest).unwrap();
-        assert!(publish_container(&staged[0].0, &staged[0].1, &output).is_err());
+        let retry_file = root.0.join("retry");
+        let retry_digest = root.0.join("retry.sha256");
+        std::fs::write(&retry_file, b"competing retry").unwrap();
+        std::fs::write(&retry_digest, b"digest of competing retry").unwrap();
+        assert!(publish_container(&retry_file, &retry_digest, &output).is_err());
         assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
         assert!(!digest.exists());
     }

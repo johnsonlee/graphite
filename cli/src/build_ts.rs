@@ -6,63 +6,25 @@ use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Only a leading language selector belongs to the shell. Preserve JVM option values,
-/// positional filenames and the `--` separator byte-for-byte.
+/// Remove a single language selector, preserving every other argument byte-for-byte.
 pub fn select_language(args: &[OsString]) -> Result<(Lang, Vec<OsString>), String> {
-    let Some(first) = args.first() else {
-        return Ok((Lang::Jvm, Vec::new()));
-    };
-    let (value, consumed) = if first == "--lang" {
-        (
-            args.get(1)
-                .and_then(|s| s.to_str())
-                .ok_or("--lang requires jvm, js or ts")?,
-            2,
-        )
-    } else if let Some(value) = first.to_str().and_then(|s| s.strip_prefix("--lang=")) {
-        (value, 1)
-    } else {
+    let Some(opt) = crate::build_args::language_option(args)? else {
         return Ok((Lang::Jvm, args.to_vec()));
     };
-    let lang = Lang::parse(value)?;
-    Ok((lang, args[consumed..].to_vec()))
+    let value = opt
+        .value
+        .and_then(|v| v.to_str())
+        .ok_or("--lang requires jvm, js or ts")?;
+    Ok((Lang::parse(value)?, opt.without(args)))
 }
 
 /// Remove the persisted output option; the frontend receives an interchange path.
 fn output_args(args: &[OsString]) -> Result<(PathBuf, Vec<OsString>), String> {
-    let mut output = None;
-    let mut forwarded = Vec::new();
-    let mut args = args.iter();
-    while let Some(arg) = args.next() {
-        if arg == "--" {
-            forwarded.push(arg.clone());
-            forwarded.extend(args.cloned());
-            break;
-        }
-        let value = if arg == "-o" || arg == "--output" {
-            Some(PathBuf::from(
-                args.next().ok_or("--output requires a path")?,
-            ))
-        } else {
-            arg.to_str()
-                .and_then(|s| s.strip_prefix("--output="))
-                .map(PathBuf::from)
-        };
-        if let Some(path) = value {
-            if output.is_some() {
-                return Err("specify --output only once".into());
-            }
-            if path.as_os_str().is_empty() {
-                return Err("--output requires a path".into());
-            }
-            output = Some(path);
-        } else {
-            forwarded.push(arg.clone());
-        }
-    }
+    let opt = crate::build_args::output_option(args)?
+        .ok_or("JavaScript artifact builds require -o <directory-or-file.graphite>")?;
     Ok((
-        output.ok_or("JavaScript artifact builds require -o <directory-or-file.graphite>")?,
-        forwarded,
+        PathBuf::from(opt.value.expect("validated output")),
+        opt.without(args),
     ))
 }
 
@@ -125,8 +87,7 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
 fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let mut command = command(env)?;
     // Help and version belong to the frontend and need no graph output.
-    if matches!(args, [arg] if arg == "--help" || arg == "-h" || arg == "--version" || arg == "-V")
-    {
+    if crate::build_args::requests_help_or_version(args) {
         return command
             .args(args)
             .status()
@@ -197,6 +158,21 @@ mod tests {
                 (Lang::Js, os(&["src", "-o", "graph"]))
             );
         }
+        for args in [
+            os(&["app/.next/server", "--lang", "js", "-o", "server.graphite"]),
+            os(&["app/.next/server", "-o", "server.graphite", "--lang=ts"]),
+        ] {
+            assert_eq!(
+                select_language(&args).unwrap(),
+                (Lang::Js, os(&["app/.next/server", "-o", "server.graphite"]))
+            );
+        }
+        assert_eq!(
+            select_language(&os(&["-o", "--lang", "app.mjs", "--lang=js"])).unwrap(),
+            (Lang::Js, os(&["-o", "--lang", "app.mjs"]))
+        );
+        assert!(select_language(&os(&["--lang", "js", "app.js", "--lang=ts"])).is_err());
+        assert!(select_language(&os(&["app.js", "--lang", "--", "js"])).is_err());
         assert!(select_language(&os(&["--lang"])).is_err());
         assert!(select_language(&os(&["--lang=python"])).is_err());
     }

@@ -40,45 +40,35 @@ pub struct Invocation {
     pub program: PathBuf,
     pub args: Vec<OsString>,
     pub env: Vec<(String, OsString)>,
-    pub pack: Option<Pack>,
+    frontend_args_start: usize,
 }
 
 /// Rewrite a `.graphite` output in the frontend's arguments to its staging directory.
 /// `-o X`, `--output X` and `--output=X` are the forms picocli accepts for the option.
 fn redirect_output(args: &mut [OsString]) -> Result<Option<Pack>, String> {
-    let mut index = 0;
-    while index < args.len() {
-        let arg = args[index].to_string_lossy().into_owned();
-        let (slot, value, prefix) = if arg == "-o" || arg == "--output" {
-            let Some(value) = args.get(index + 1) else {
-                return Ok(None);
-            };
-            (index + 1, PathBuf::from(value), String::new())
-        } else if let Some(value) = arg.strip_prefix("--output=") {
-            (index, PathBuf::from(value), "--output=".to_string())
-        } else {
-            index += 1;
-            continue;
-        };
-        if value.extension().and_then(|e| e.to_str())
-            != Some(graphite_storage::container::EXTENSION)
-        {
-            return Ok(None);
-        }
-        let stage =
-            Stage::new(&value).map_err(|e| format!("could not stage {}: {e}", value.display()))?;
-        let mut rewritten = OsString::from(prefix);
-        rewritten.push(stage.graph());
-        args[slot] = rewritten;
-        return Ok(Some(Pack {
-            stage,
-            output: value,
-        }));
+    let Some(opt) = crate::build_args::output_option(args)? else {
+        return Ok(None);
+    };
+    let output = PathBuf::from(opt.value.expect("validated output"));
+    if output.extension().and_then(|e| e.to_str()) != Some(graphite_storage::container::EXTENSION) {
+        return Ok(None);
     }
-    Ok(None)
+    let stage = Stage::for_jvm_output(&output)
+        .map_err(|e| format!("could not stage {}: {e}", output.display()))?;
+    let (slot, replacement) = opt.replacement(&stage.graph());
+    args[slot] = replacement;
+    Ok(Some(Pack { stage, output }))
 }
 
 impl Invocation {
+    fn prepare_pack(&mut self) -> Result<Option<Pack>, String> {
+        let args = &mut self.args[self.frontend_args_start..];
+        if crate::build_args::requests_help_or_version(args) {
+            return Ok(None);
+        }
+        redirect_output(args)
+    }
+
     pub fn command(&self) -> Command {
         let mut cmd = Command::new(&self.program);
         cmd.args(&self.args);
@@ -93,14 +83,13 @@ impl Invocation {
 pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
     let mut passthrough = Vec::with_capacity(args.len());
     let mut profile = false;
-    for arg in args {
-        if arg == "--profile" {
-            profile = true;
-        } else {
-            passthrough.push(arg.clone());
-        }
+    let mut start = 0;
+    for option in crate::build_args::walk(args).filter(|option| option.flag("--profile")) {
+        passthrough.extend_from_slice(&args[start..option.range.start]);
+        start = option.range.end;
+        profile = true;
     }
-    let pack = redirect_output(&mut passthrough)?;
+    passthrough.extend_from_slice(&args[start..]);
     match &fe.launch {
         Launch::Executable(exe) => {
             if profile {
@@ -110,12 +99,13 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                 );
             }
             let mut argv = vec![OsString::from("build")];
+            let frontend_args_start = argv.len();
             argv.extend(passthrough);
             Ok(Invocation {
                 program: exe.clone(),
                 args: argv,
                 env: Vec::new(),
-                pack,
+                frontend_args_start,
             })
         }
         Launch::Node(_) => {
@@ -130,6 +120,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
             argv.push(OsString::from("-jar"));
             argv.push(jar.as_os_str().to_os_string());
             argv.push(OsString::from("build"));
+            let frontend_args_start = argv.len();
             argv.extend(passthrough);
             let mut vars = Vec::new();
             if let Some(opts) = frontend::default_java_tool_options(env) {
@@ -139,7 +130,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
                 program: java,
                 args: argv,
                 env: vars,
-                pack,
+                frontend_args_start,
             })
         }
     }
@@ -187,7 +178,17 @@ fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
     let env = build_env.as_ref();
     // A fold file with `select` rules needs a graph to run them on: two builds. An output
     // the frontend would reject anyway (none named) goes straight to it for the message.
-    if let (Some(file), Some(output)) = (fold::fold_file(args), fold::output_of(args)) {
+    if let Some(file) =
+        fold::fold_file(args).filter(|_| !crate::build_args::requests_help_or_version(args))
+    {
+        let output = match fold::output_of(args) {
+            Ok(Some(output)) => output,
+            Ok(None) => return run_frontend(env, &fe, args),
+            Err(message) => {
+                eprintln!("Error: {message}");
+                return 2;
+            }
+        };
         let input = fold::input_of(args);
         let analysis = fold::analysis_options(args);
         let plan = match fold::plan(env, &fe, &file, input.as_deref(), &analysis) {
@@ -204,8 +205,15 @@ fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
 
 /// One frontend build with `args`, packed when the output is a `.graphite` file.
 fn run_frontend(env: &Env, fe: &Frontend, args: &[OsString]) -> i32 {
-    let inv = match invocation(env, fe, args) {
+    let mut inv = match invocation(env, fe, args) {
         Ok(inv) => inv,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 1;
+        }
+    };
+    let pack = match inv.prepare_pack() {
+        Ok(pack) => pack,
         Err(message) => {
             eprintln!("Error: {message}");
             return 1;
@@ -218,7 +226,7 @@ fn run_frontend(env: &Env, fe: &Frontend, args: &[OsString]) -> i32 {
             1
         }
     };
-    match inv.pack {
+    match pack {
         Some(pack) => finish_pack(pack, code),
         None => code,
     }
@@ -260,7 +268,14 @@ fn run_two_passes(
         "Building the graph without rules to resolve {} select rule(s)",
         selects.len()
     );
-    let first = run_frontend(env, fe, &fold::staging_args(args, stage));
+    let staged = match fold::staging_args(args, stage) {
+        Ok(args) => args,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 2;
+        }
+    };
+    let first = run_frontend(env, fe, &staged);
     if first != 0 {
         return first;
     }
@@ -305,6 +320,12 @@ fn resolve(
 fn finish_pack(pack: Pack, code: i32) -> i32 {
     if code != 0 {
         return code;
+    }
+    if let Some(parent) = pack.output.parent().filter(|p| !p.as_os_str().is_empty()) {
+        if let Err(e) = std::fs::create_dir_all(parent) {
+            eprintln!("Error: could not create {}: {e}", parent.display());
+            return 1;
+        }
     }
     match pack.stage.pack(&pack.output, Publication::Replace) {
         Ok(()) => 0,
@@ -389,8 +410,8 @@ mod tests {
             } else {
                 form.push(output.clone().into_os_string());
             }
-            let inv = invocation(&env, &jar_frontend(), &form).unwrap();
-            let pack = inv.pack.as_ref().unwrap();
+            let mut inv = invocation(&env, &jar_frontend(), &form).unwrap();
+            let pack = inv.prepare_pack().unwrap().unwrap();
             assert_eq!(pack.output, output);
             assert_eq!(pack.stage.0.parent(), Some(root.0.as_path()));
             let stage = pack.stage.graph();
@@ -404,15 +425,46 @@ mod tests {
             assert!(!joined.contains("app.graphite "), "{joined}");
         }
         // A directory output, or no output at all, is passed through untouched.
-        let inv = invocation(&env, &jar_frontend(), &os(&["a.jar", "-o", "/tmp/g"])).unwrap();
-        assert_eq!(inv.pack, None);
+        let mut inv = invocation(&env, &jar_frontend(), &os(&["a.jar", "-o", "/tmp/g"])).unwrap();
+        assert_eq!(inv.prepare_pack().unwrap(), None);
         assert!(inv.args.contains(&OsString::from("/tmp/g")));
         assert_eq!(
             invocation(&env, &jar_frontend(), &os(&["a.jar", "-o"]))
                 .unwrap()
-                .pack,
-            None
+                .prepare_pack()
+                .unwrap_err(),
+            "--output requires a path"
         );
+    }
+
+    #[test]
+    fn help_and_failed_frontend_leave_missing_output_parent_absent() {
+        let temp = Stage::new(&std::env::temp_dir().join("jvm-output-test")).unwrap();
+        let parent = temp.0.join("new").join("nested");
+        let output = parent.join("app.graphite");
+        let mut args = os(&["missing.jar", "-o"]);
+        args.push(output.into_os_string());
+        let mut inv = invocation(
+            &env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]),
+            &jar_frontend(),
+            &args,
+        )
+        .unwrap();
+        assert!(!parent.exists());
+        let pack = inv.prepare_pack().unwrap().unwrap();
+        assert_eq!(pack.stage.0.parent(), Some(temp.0.as_path()));
+        assert_eq!(finish_pack(pack, 3), 3);
+        assert!(std::fs::read_dir(&temp.0).unwrap().next().is_none());
+        args.insert(0, "--help".into());
+        let mut help = invocation(
+            &env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]),
+            &jar_frontend(),
+            &args,
+        )
+        .unwrap();
+        assert!(help.prepare_pack().unwrap().is_none());
+        assert_eq!(help.args.last(), args.last());
+        assert!(std::fs::read_dir(&temp.0).unwrap().next().is_none());
     }
 
     #[test]
