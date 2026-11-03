@@ -2808,3 +2808,62 @@ neither047's Darwin timings nor compiler output substitutes for that comparison.
 **Decision:** experimental candidate pending full verification and representative
 multi-graph measurements. Removing confirmed instructions is not a measured
 latency benefit, and existing047 regressions and resource gaps remain open.
+
+**Measured result (`b18d6fd0`):** The unchanged main controller completed on
+Linux arm64. Both arms built, saved and read back all 64 shards and the whole
+Tika, Hive and Kotlin compiler JARs. All 14 heap receipts recorded 4 GiB,
+all OOM counters stayed zero, and all 8,518 complete native responses matched
+across 73 cases. The candidate Linux workspace reported 595 passes and one
+existing ignored test; strict Clippy passed. External fixture-dependent test
+bodies were not counted as newly exercised. The two actual JMH archives had
+identical uncompressed contents for all 31,722 entries; only ZIP timestamps
+differed. Real64 construction was 224,118 → 228,136 ms and registry readiness
+26,099 → 27,204 ms, one fresh-build observation per arm with uncontrolled file
+residency. These are observations, not a resource or causal conclusion.
+
+The supplemental fixed-input comparison used the same main-produced files for
+both releases: 64 graphs, 1,408 files, 10,591,394,466 bytes, manifest SHA-256
+`de82420c4a0f23bfcfc1260b55ecf27804664bfe4ab939c966f33a57d168997f`.
+The main and candidate Linux binary hashes were `f29f5a153598756f7b3b6ee89a6d6b7154282997d5dd883f215c7885f1c27304`
+and `ac97a3456c6ed2da23457740bc745fe55fb5aba5c9dccee8be58dea9c59208c5`.
+One cache holder kept all 2,586,606 pages resident before and after each arm.
+The predeclared order was AB / BA / AB. Each fresh server ran all 73 global
+queries: one oracle, two warmups and twenty pressure requests per case at four
+workers. All 10,074 complete responses matched the trusted baseline. The derived
+resource driver used the trusted request and validation code; it excluded the
+variable-count isolated and separate capacity stages. Those remained covered
+by the original trusted run. This is a warm-filesystem comparison, not a
+measurement of cold disk access or every case's independent resource demand.
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 27.826 → 26.203 | 6,214.28 → 6,211.34 | 264.518 → 194.270 | 12,076.94 → 8,872.56 |
+| BA | 29.704 → 29.448 | 6,216.33 → 6,215.67 | 267.341 → 195.359 | 11,729.80 → 9,155.10 |
+| AB | 29.338 → 29.910 | 6,212.50 → 6,215.28 | 266.884 → 196.768 | 11,963.80 → 9,142.09 |
+
+Each resource comparison was within the 5% limit. CPU is user + system time
+for the exclusive server cgroup; RSS is the kernel-accounted process high-water
+mark. Loading ends after validated readiness and a confirmed freeze, before any
+query. The HWM was reset there and checked again after final result consumption.
+Background work and the boundary gaps are included. The observation process and
+query driver ran outside the measured cgroup. This does not establish exact
+physical page-table peaks or JVM construction CPU/RSS.
+
+For pressure latency, use nearest-rank percentiles of the twenty complete
+requests for each case/arm. Report the median of the three paired deltas with
+their full range; do not pool cases. Filter p95 fell by 3,075.5 ms (reductions
+3,026.3–3,111.3 ms). Ascending sort improved in every pair. Collect p95 had
+mixed deltas: median −10.2 ms, range −27.9 to +46.4 ms. Two adverse results
+repeated: `shape-count-traversal` p95 was 172.7 → 202.6, 173.7 → 205.8 and
+192.2 → 201.8 ms; `schema-relationship-histogram` p50 was 118.5 → 134.5,
+119.5 → 138.7 and 136.2 → 140.9 ms. Do not attribute those differences to the
+removed filter branch: both queries use the partitioned edge scan, which has
+identical source in the two releases. All cases, adverse deltas, raw samples
+and failures are retained under `/private/tmp/graphite-js-linux-acceptance/`
+(`resume01` and `resource-results-b18-01`). The initial user-interrupted run
+stopped in preparation and supplied no timing samples.
+
+**Decision:** retain the specialized consumer and verified filtered-query gain;
+this exact candidate passes correctness and the measured mixed-load resource
+limits. The two repeatable latency regressions still preclude cumulative
+acceptance. Removing work in their shared edge scan is the next hypothesis.
