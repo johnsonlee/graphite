@@ -843,11 +843,22 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   spells an inherited or interface field through the class it is read from (`getstatic
   Leaf.inherited` on a field `Top` declares), and keyed by that spelling the initialiser's
   `FIELD_STORE` ended on `Top.inherited` while the read started on a second node `Leaf.inherited`
-  that nothing wrote (review of #193). Instance field references keep the class they spell:
-  javac spells every inherited instance field through the subclass too, so resolving them is
-  a graph-wide identity change to be measured on the corpora and declared to the gates first.
+  that nothing wrote (review of #193). Instance field references keep the class they spell
+  for the field node: javac spells every inherited instance field through the subclass too, so
+  resolving them is a graph-wide identity change to be measured on the corpora and declared to
+  the gates first. Their dispatch slot is resolved all the same (`Base.install` storing
+  `this::value` into `Base.callback` and `child.callback.get()` reading `Child.callback` are one
+  slot), or the call dispatched to the overwrite alone with no gap (review of #193); the slot
+  of a Kotlin callable reference's `receiver` resolves the same way on both sides.
 - `Reachable.roots` restricts which application classes seed the expansion (the others are
-  still read; they are the application); `BOOT-INF/classpath.idx` orders a Spring Boot jar's
+  still read; they are the application), and a root's reach runs through the application: an
+  application method nothing followed has reached holds its notes (callees, classes its
+  static accesses initialise) with the method, and a followed call, override, resolved function
+  value or class initialisation that reaches the method releases them (review of #193: a root
+  calling `Helper.read()` that calls `lib.Live.read()` left `Live` unread). The walk over the
+  classes the JVM initialises first goes through an analysed application class to the library
+  class it extends (`lib.Owner extends app.Mid extends lib.Base`: `Base` was never reached
+  because `Mid` was already read). `BOOT-INF/classpath.idx` orders a Spring Boot jar's
   nested libraries as the launcher loads them, for the view's input locations and for the
   duplicate-definition evidence alike, so the definition the graph holds is the one that runs;
   other layouts keep the listing order; every archive the listing names is ranked, loaded or

@@ -365,7 +365,7 @@ class SootUpAdapter(
     /** The slots seeded from a saturated holder: the targets never arrived, see [seedSlot]. */
     private val lostSeeds = BitSet()
     /** The signature each static field reference resolved to, see [resolvedFieldSignature]. */
-    private val resolvedStaticFields = HashMap<String, FieldSignature>()
+    private val resolvedFields = HashMap<FieldSignature, FieldSignature>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -427,22 +427,28 @@ class SootUpAdapter(
     private var classEntrySources = HashMap<String, String>()
     private var resolutionFailures = 0
     private val callSiteGaps = HashMap<Int, CallSiteGap>()
-    /** Under a reachable scope, the callees of every call site read so far, drained by the expansion. */
+    /** Under a reachable scope, the callees of every followed call site read so far, drained by the expansion. */
     private val reachableExpansion = config.dependencyBodies as? DependencyBodyScope.Reachable
     private val reachedCallees = ArrayList<MethodDescriptor>()
     private val reachedVirtually = ArrayList<Boolean>()
-    /** Under a reachable scope, the classes static field accesses name, which the JVM initialises on first access. */
+    /** Under a reachable scope, the classes followed static field accesses initialise, which the JVM does on first access. */
     private val reachedClasses = ArrayList<String>()
     private val notedClasses = HashSet<String>()
-    /** The callees noted so far, by identity: descriptors are canonical per signature, and a callee is followed once. */
-    /** Every callee noted for the expansion, by identity, and whether a virtual call on it was noted. */
+    /** Every callee followed by the expansion, by identity (descriptors are canonical per signature), and whether virtually. */
     private val notedCallees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
     private val reachableFrontier = ReachableFrontier()
     private var reachableBudget = reachableExpansion?.maxClasses ?: 0
     private var reachableRead = 0
     private var reachablePastBudget = 0
-    /** Whether the pass-2 class being read seeds the reachable expansion: a library class always, an application class as a root. */
-    private var activeClassSeeds = true
+    /**
+     * Under a reachable scope, the classes every call of which the expansion follows: the roots
+     * (every application class without roots) and the library classes the expansion reads.
+     */
+    private val seededClasses = HashSet<String>()
+    /** The application methods a followed call, override or initialisation reaches, whose own calls are followed too. */
+    private val seededMethods: MutableSet<MethodDescriptor> = Collections.newSetFromMap(IdentityHashMap())
+    /** The notes of the application methods nothing followed has reached yet, released when something does. */
+    private val heldNotes = HashMap<MethodDescriptor, HeldNotes>()
 
     /** The classes pass 2 read as the application's (by package, whatever artifact holds them). */
     private val applicationClasses = HashSet<String>()
@@ -639,8 +645,10 @@ class SootUpAdapter(
         val className = sootClass.type.fullyQualifiedName
         activeClassResolutionFailed = false
         if (application) applicationClasses += className
-        activeClassSeeds = !application || reachableExpansion?.seeds(className) != false
-        initializationPrerequisites(className).forEach(::noteClassInitialized)
+        if (reachableExpansion != null && (!application || reachableExpansion.seeds(className))) {
+            seededClasses += className
+            initializationPrerequisites(className).forEach(::noteFollowedClass)
+        }
         processClassWithMethodCache(sootClass, extensionContext, application)
         val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
         classEvidence[className] = ClassEvidence(evidenceOrigin(sootClass), status)
@@ -694,42 +702,101 @@ class SootUpAdapter(
     }
 
     /**
-     * Queue the classes of the callees noted since the last drain (the declared callee's and,
-     * for a virtual callee, its overrides') and the classes static field accesses named, whose
-     * initialisers run on first access without any call. A class is reached when it is a
-     * library class the scope left out; an application class excluded by configuration is
-     * never reached.
+     * Follow the callees noted since the last drain (the declared callee and, for a virtual
+     * callee, its overrides) and the classes followed static field accesses initialise, whose
+     * initialisers run on first access without any call. Following may seed an application
+     * method, which releases its held notes onto the same lists, so the loop runs until both
+     * are drained.
      */
     private fun drainReachedCallees(frontier: ReachableFrontier) {
-        fun reach(className: String) {
-            val evidence = classEvidence[className] ?: return
-            val reachable = evidence.status == AnalysisStatus.EXCLUDED_BY_SCOPE && isLibraryOrigin(evidence.origin)
-            if (reachable && frontier.reached.add(className)) {
-                // Initialising a class initialises its prerequisites first (JVMS 5.5)
-                initializationPrerequisites(className).forEach(::reach)
-                frontier.queue += className
+        while (frontier.drained < reachedCallees.size || frontier.drainedClasses < reachedClasses.size) {
+            while (frontier.drained < reachedCallees.size) {
+                val index = frontier.drained++
+                follow(frontier, reachedCallees[index], reachedVirtually[index])
             }
-        }
-        while (frontier.drained < reachedCallees.size) {
-            val callee = reachedCallees[frontier.drained]
-            reach(callee.declaringClass.className)
-            if (reachedVirtually[frontier.drained]) overridesOf(callee).forEach { reach(it.declaringClass.className) }
-            frontier.drained++
-        }
-        while (frontier.drainedClasses < reachedClasses.size) {
-            reach(reachedClasses[frontier.drainedClasses++])
+            while (frontier.drainedClasses < reachedClasses.size) {
+                reach(frontier, reachedClasses[frontier.drainedClasses++])
+            }
         }
     }
 
     /**
-     * Under a reachable scope, note that the pass-2 class being read initialises [className]:
-     * the class that declares the field a static field access resolves to (`getstatic
-     * Child.value` on a field `Base` declares initialises `Base`, not `Child`), or the class's
-     * own initialisation prerequisites. Once per class.
+     * Follow a call: the class [callee] initialises, the method itself when it is the
+     * application's, and the overrides a [virtual] call reaches.
      */
-    private fun noteClassInitialized(className: String) {
-        if (reachableExpansion == null || !activeClassSeeds) return
+    private fun follow(frontier: ReachableFrontier, callee: MethodDescriptor, virtual: Boolean) {
+        reach(frontier, callee.declaringClass.className)
+        seedMethod(callee)
+        if (virtual) {
+            overridesOf(callee).forEach { override ->
+                reach(frontier, override.declaringClass.className)
+                seedMethod(override)
+            }
+        }
+    }
+
+    /**
+     * Reach [className], once: the classes the JVM initialises before it first (JVMS 5.5),
+     * whatever their status, then the class itself. A library class the scope left out is
+     * queued to be read; an application class is already read, so its initialiser is seeded
+     * ([seedMethod]) and the walk goes on to its own prerequisites, which may be a library's
+     * again. An application class excluded by configuration is neither.
+     */
+    private fun reach(frontier: ReachableFrontier, className: String) {
+        if (!frontier.reached.add(className)) return
+        initializationPrerequisites(className).forEach { reach(frontier, it) }
+        if (className in applicationClasses) {
+            seedMethod(classInitializerOf(className))
+        } else {
+            val evidence = classEvidence[className] ?: return
+            if (evidence.status == AnalysisStatus.EXCLUDED_BY_SCOPE && isLibraryOrigin(evidence.origin)) frontier.queue += className
+        }
+    }
+
+    /**
+     * Seed an application method a followed call reached: its own calls are followed from now
+     * on, and the notes it held while nothing reached it are released. A root's methods and a
+     * library class's are seeded with their class.
+     */
+    private fun seedMethod(method: MethodDescriptor) {
+        val className = method.declaringClass.className
+        if (className !in applicationClasses || className in seededClasses || !seededMethods.add(method)) return
+        heldNotes.remove(method)?.let { held ->
+            held.callees.forEach { (callee, virtual) -> noteFollowedCallee(callee, virtual) }
+            held.classes.forEach(::noteFollowedClass)
+        }
+    }
+
+    /** The descriptor of [className]'s initialiser, canonical with the one its body was read under. */
+    private fun classInitializerOf(className: String): MethodDescriptor {
+        val factory = view.identifierFactory
+        return toMethodDescriptor(factory.getMethodSignature(factory.getClassType(className), "<clinit>", "void", emptyList()))
+    }
+
+    /** Whether the calls [caller] makes are followed by the expansion: its class is seeded, or it was reached itself. */
+    private fun isSeeded(caller: MethodDescriptor): Boolean =
+        caller.declaringClass.className in seededClasses || caller in seededMethods
+
+    /**
+     * Under a reachable scope, note that [caller] initialises [className]: the class that
+     * declares the field a static field access resolves to (`getstatic Child.value` on a field
+     * `Base` declares initialises `Base`, not `Child`). Followed at once when [caller]'s calls
+     * are followed, held with the caller until something reaches it otherwise.
+     */
+    private fun noteClassInitialized(className: String, caller: MethodDescriptor) {
+        if (reachableExpansion == null) return
+        if (isSeeded(caller)) noteFollowedClass(className) else heldNotes.getOrPut(caller) { HeldNotes() }.classes += className
+    }
+
+    /** Queue [className] for the expansion to reach, once. */
+    private fun noteFollowedClass(className: String) {
         if (notedClasses.add(className)) reachedClasses += className
+    }
+
+    /** Held by an application method nothing followed has reached: its callees (whether virtually) and the classes it initialises. */
+    private class HeldNotes {
+        val callees: MutableMap<MethodDescriptor, Boolean> = IdentityHashMap()
+        val classes = LinkedHashSet<String>()
     }
 
     /**
@@ -758,26 +825,23 @@ class SootUpAdapter(
     }
 
     /**
-     * The signature a static field reference resolves to: the field of the class that declares
-     * it, by the JVM's field resolution ([lookupField]), which is the identity the graph gives
-     * the field, so the store in the declaring class's initialiser and a read spelled through a
-     * subclass or an implementing class (`getstatic Child.value`) meet on one node; the
-     * reference itself when nothing the view holds declares it. An instance field reference
-     * keeps the class it spells. Cached per reference.
+     * The signature a field reference resolves to: the field of the class that declares it, by
+     * the JVM's field resolution ([lookupField]), or the reference itself when nothing the view
+     * holds declares it. For a static field this is the identity the graph gives the field, so
+     * the store in the declaring class's initialiser and a read spelled through a subclass or
+     * an implementing class (`getstatic Child.value`) meet on one node; for an instance field
+     * the graph keeps the class the reference spells (see [getOrCreateField]), and the
+     * resolution keys the dispatch slot only, so the function value `Base.install` stores in
+     * `this.callback` is what `child.callback.get()` dispatches on. Cached per reference.
      */
-    private fun resolvedFieldSignature(fieldRef: JFieldRef): FieldSignature {
-        val fieldSig = fieldRef.fieldSignature
-        return if (fieldRef is JStaticFieldRef) {
-            resolvedStaticFields.getOrPut(fieldSig.toString()) {
-                val declaring = lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
-                if (declaring == null || declaring == fieldSig.declClassType.fullyQualifiedName) {
-                    fieldSig
-                } else {
-                    FieldSignature(view.identifierFactory.getClassType(declaring), fieldSig.subSignature)
-                }
-            }
-        } else {
+    private fun resolvedFieldSignature(fieldRef: JFieldRef): FieldSignature = resolvedFieldSignature(fieldRef.fieldSignature)
+
+    private fun resolvedFieldSignature(fieldSig: FieldSignature): FieldSignature = resolvedFields.getOrPut(fieldSig) {
+        val declaring = lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
+        if (declaring == null || declaring == fieldSig.declClassType.fullyQualifiedName) {
             fieldSig
+        } else {
+            FieldSignature(view.identifierFactory.getClassType(declaring), fieldSig.subSignature)
         }
     }
 
@@ -807,31 +871,35 @@ class SootUpAdapter(
         origin != null && (artifactRoles[origin] ?: ArtifactRole.APPLICATION) != ArtifactRole.APPLICATION
 
     /**
-     * Under a reachable scope, note a call's callee for the expansion to follow: once per callee,
-     * and once more when a virtual call follows a non-virtual one on the same callee
-     * (`super.value()` before `receiver.value()`), since only the virtual call reaches the
-     * overrides and the first note may already have been drained.
+     * Under a reachable scope, note a call [caller] makes on [callee] for the expansion to
+     * follow. Whether it is followed is the caller's: a root's method, a library method the
+     * expansion read, or an application method something followed has reached (by the
+     * classification pass 2 gave the class, whatever artifact holds it; a call resolved after
+     * class processing is attributed to its own caller, never to the class that happened to
+     * be processed last); any other application method holds the note until it is reached.
      */
-    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean, seeded: Boolean = activeClassSeeds) {
-        if (reachableExpansion == null || !seeded) return
+    private fun noteReachedCallee(callee: MethodDescriptor, virtual: Boolean, caller: MethodDescriptor) {
+        if (reachableExpansion == null) return
+        if (isSeeded(caller)) {
+            noteFollowedCallee(callee, virtual)
+        } else {
+            heldNotes.getOrPut(caller) { HeldNotes() }.callees.merge(callee, virtual, Boolean::or)
+        }
+    }
+
+    /**
+     * Queue [callee] for the expansion to follow: once per callee, and once more when a virtual
+     * call follows a non-virtual one on the same callee (`super.value()` before
+     * `receiver.value()`), since only the virtual call reaches the overrides and the first note
+     * may already have been drained.
+     */
+    private fun noteFollowedCallee(callee: MethodDescriptor, virtual: Boolean) {
         val noted = notedCallees[callee]
         if (noted == null || (virtual && !noted)) {
             notedCallees[callee] = virtual || noted == true
             reachedCallees += callee
             reachedVirtually += virtual
         }
-    }
-
-    /**
-     * Whether a call made by [caller] seeds the expansion, by the classification pass 2 gave
-     * the caller's class: a library class the scope read seeds, an application class (by
-     * package, whatever artifact holds it) seeds when the roots name it. A call resolved after
-     * class processing (a call on a function value) is attributed to its own caller, never to
-     * the class that happened to be processed last.
-     */
-    private fun seededCaller(caller: MethodDescriptor): Boolean {
-        val className = caller.declaringClass.className
-        return className !in applicationClasses || reachableExpansion?.seeds(className) != false
     }
 
     /**
@@ -1612,7 +1680,7 @@ class SootUpAdapter(
         }
         val virtual = invokeExpr is AbstractInstanceInvokeExpr && invokeExpr !is JSpecialInvokeExpr
         interprocedural?.call(callee, virtual, argNodeIds, resultNode?.id)
-        noteReachedCallee(callee, virtual)
+        noteReachedCallee(callee, virtual, caller)
         val resourceRelevantCall = isResourceRelevantCall(calleeSignature)
         if (resourceRelevantCall) {
             linkResourceReads(callSite, calleeSignature, invokeExpr)
@@ -1770,7 +1838,7 @@ class SootUpAdapter(
             if (stmt != null) {
                 recordStmtNode(stmt, callSite.id)
             }
-            noteReachedCallee(target, virtual = false)
+            noteReachedCallee(target, virtual = false, caller)
 
             // Add call edge (marked as dynamic)
             graphBuilder.addEdge(
@@ -2338,7 +2406,7 @@ class SootUpAdapter(
         arrayDynamicTargets.clear()
         openLocals.clear()
         lostSeeds.clear()
-        resolvedStaticFields.clear()
+        resolvedFields.clear()
         functionObjectClasses.clear()
         mayHoldFunctionByType.clear()
         transitiveSubtypesByClass.clear()
@@ -2554,7 +2622,7 @@ class SootUpAdapter(
         )
         graphBuilder.addNode(resolvedCallSite)
         interprocedural?.call(resolved.method, false, resolved.arguments, result)
-        noteReachedCallee(resolved.method, virtual = false, seeded = seededCaller(callSite.caller))
+        noteReachedCallee(resolved.method, virtual = false, callSite.caller)
         // Both the call on the function value and the resolved call are dynamic dispatch
         graphBuilder.addEdge(CallEdge(from = callSite.id, to = callSite.id, isVirtual = false, isDynamic = true))
         graphBuilder.addEdge(CallEdge(from = resolvedCallSite.id, to = resolvedCallSite.id, isVirtual = false, isDynamic = true))
@@ -2921,9 +2989,10 @@ class SootUpAdapter(
      * A Kotlin bound callable reference class (`fn::invoke`, `obj::method`) hands its receiver
      * to the stdlib base constructor (`FunctionReferenceImpl(arity, receiver, owner, name,
      * signature, flags)`), which stores it in `CallableReference.receiver`; the reference's
-     * `invoke` reads it back through the subclass's own field reference. The stdlib is outside
-     * the view, so the store is recorded here: every argument that may hold a function value
-     * flows to the subclass's `receiver` field.
+     * `invoke` reads it back through the subclass's own field reference. The stdlib may be
+     * outside the view, so the store is recorded here: every argument that may hold a function
+     * value flows to the slot of the subclass's `receiver` field reference, resolved as the
+     * read's is ([resolvedFieldSignature]).
      */
     private fun trackCallableReferenceReceiver(caller: MethodDescriptor, superInit: MethodDescriptor, args: List<Value>) {
         if (!trackCrossMethodFunctionalDispatch || !isKotlinCallableReferenceBaseClass(superInit.declaringClass.className)) return
@@ -2931,8 +3000,9 @@ class SootUpAdapter(
             CALLABLE_REFERENCE_RECEIVER_FIELD,
             view.identifierFactory.getClassType(caller.declaringClass.className),
             JAVA_LANG_OBJECT
-        ).toString()
-        args.filterIsInstance<Local>().forEach { trackFlow(caller, it, DispatchSlot.Field(receiverField)) }
+        )
+        val slot = DispatchSlot.Field(resolvedFieldSignature(receiverField).toString())
+        args.filterIsInstance<Local>().forEach { trackFlow(caller, it, slot) }
     }
 
     private fun handleKind(handle: MethodHandle): HandleKind = when (handle.kind) {
@@ -3377,7 +3447,7 @@ class SootUpAdapter(
         return when (value) {
             is Local -> getOrCreateLocal(value, method)
             is SootConstant -> getOrCreateConstant(value)
-            is JFieldRef -> getOrCreateField(value)
+            is JFieldRef -> getOrCreateField(value, method)
             is JArrayRef -> {
                 // For array references like $r1[0], return the base array's node
                 // This creates edges from array elements to the array itself,
@@ -3461,9 +3531,15 @@ class SootUpAdapter(
         }
     }
 
-    private fun getOrCreateField(fieldRef: JFieldRef): FieldNode {
-        val fieldSig = resolvedFieldSignature(fieldRef)
-        if (fieldRef is JStaticFieldRef) noteClassInitialized(fieldSig.declClassType.fullyQualifiedName)
+    /**
+     * The node of the field [fieldRef] names, read by [caller]: a static field is the one of the
+     * class that declares it ([resolvedFieldSignature]); an instance field keeps the class the
+     * reference spells, since javac spells every inherited instance field through the subclass
+     * and resolving them is an identity change on a large share of every graph's field nodes.
+     */
+    private fun getOrCreateField(fieldRef: JFieldRef, caller: MethodDescriptor): FieldNode {
+        val fieldSig = if (fieldRef is JStaticFieldRef) resolvedFieldSignature(fieldRef) else fieldRef.fieldSignature
+        if (fieldRef is JStaticFieldRef) noteClassInitialized(fieldSig.declClassType.fullyQualifiedName, caller)
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
             val declaringClassName = fieldSig.declClassType.fullyQualifiedName

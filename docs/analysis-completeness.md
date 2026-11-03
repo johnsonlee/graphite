@@ -19,7 +19,7 @@ Spring Boot or WAR build did not even load a nested jar that held no application
 |---|---|---|
 | `None` (default) | as before: when it holds an application package | none; a library class resolves types and overrides only |
 | `Declared(artifacts, packages)` | as before, or when its file name matches an artifact pattern, or it holds a class of one of the packages | every class of a matching artifact, every class under one of the packages |
-| `Reachable(maxClasses, roots)` | every library jar | the classes the application's calls reach (from the root classes only, when roots are named), and the classes those bodies' calls reach, up to the budget |
+| `Reachable(maxClasses, roots)` | every library jar | the classes the application's calls reach (from the root classes, through the application methods they reach, when roots are named), and the classes those bodies' calls reach, up to the budget |
 
 ```kotlin
 val graph = JavaProjectLoader(
@@ -63,7 +63,9 @@ since `getstatic` runs that class's initialiser without any call; and, before ea
 reads, the classes the JVM initialises first (JVMS 5.5): its superclass and every superinterface,
 direct or indirect, that declares a default method, so an interface initialiser that runs
 without a call in the class's bytecode is read too (one without a default method is not
-initialised and not read); then the classes those bodies reach, and so on. A root's own
+initialised and not read); the walk goes through an application class in that hierarchy to
+the library class it extends, since the application class is already read but what the JVM
+initialises before it may not be; then the classes those bodies reach, and so on. A root's own
 prerequisites are reached as well. Each class is
 read once, so the expansion terminates on any call graph, cycles included. Reading stops at
 `maxClasses` (50,000 by default); a class reached past the budget is `NOT_EXPANDED`, which a
@@ -77,9 +79,13 @@ and reads as a gap; an entry a framework discovers by reflection or configuratio
 reached, as the issue's contract expects. Only library classes are reached: an application
 class `excludePackages` names stays excluded. `roots` names the
 application classes (by prefix) whose calls seed the expansion; the other application classes
-are still read, being the application, but what only they call is not followed into the
-libraries; a call on a function value resolved after the classes were read seeds by its own
-caller's class. The roots are part of the fold provenance (`dependency_roots`).
+are still read, being the application, and a root's calls are followed through them: an
+application method a followed call reaches (directly, through other application methods,
+through an override the view knows, through a function value the dispatch fixpoint resolved,
+or as the initialiser of a class a followed access initialises) has its own calls followed,
+on the folded body, so a call the fold removed leads nowhere; what no root reaches is not
+followed into the libraries. A call on a function value resolved after the classes were read is
+attributed to its own caller. The roots are part of the fold provenance (`dependency_roots`).
 
 With `interproceduralDataflow`, an argument of an application call reaches the parameter node
 of the helper's body and the helper's return reaches the call's result, so a query can follow a

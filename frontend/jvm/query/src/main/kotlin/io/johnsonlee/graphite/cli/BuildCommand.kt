@@ -84,7 +84,10 @@ class BuildCommand : Callable<Int> {
 
     @Option(
         names = ["--dependency-roots"],
-        description = ["Application class prefixes (comma-separated) whose calls seed --dependency-reachable; all of them when omitted"],
+        description = [
+            "Application class prefixes (comma-separated) whose calls seed --dependency-reachable, followed through the",
+            "application methods they reach; all of them when omitted"
+        ],
         split = ","
     )
     var dependencyRoots: List<String> = emptyList()

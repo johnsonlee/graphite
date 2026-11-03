@@ -49,9 +49,13 @@ sealed interface DependencyBodyScope {
      * is not a class with no effect. A library class nothing reaches stays `EXCLUDED_BY_SCOPE`.
      *
      * [roots] names the application classes whose calls seed the expansion, by class name
-     * prefix; empty means every application class. The other application classes are still
-     * read (they are the application), but what only they call is not followed into the
-     * libraries, so a consumer can expand from the entries it declares.
+     * prefix; empty means every application class. Every application class is still read
+     * (they are the application), and a root's call is followed through them: an application
+     * method a followed call reaches, directly, through other application methods, through an
+     * override or a resolved function value, or as the initialiser of a class a followed access
+     * initialises, has its own calls followed. What no root reaches, and a call the fold
+     * removed, is not followed into the libraries, so a consumer can expand from the entries
+     * it declares.
      */
     data class Reachable(val maxClasses: Int = DEFAULT_MAX_CLASSES, val roots: List<String> = emptyList()) : DependencyBodyScope {
         init {
