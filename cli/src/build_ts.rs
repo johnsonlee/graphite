@@ -143,8 +143,12 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     }
     let (output, args) = output_args(args)?;
     validate_artifact_input(&args)?;
-    if output.exists() {
-        return Err(format!("output already exists: {}", output.display()));
+    let packed = output
+        .extension()
+        .is_some_and(|e| e == graphite_storage::container::EXTENSION);
+    require_absent(&output)?;
+    if packed {
+        require_absent(&graphite_storage::container::digest_path(&output))?;
     }
     let stage =
         Stage::new(&output).map_err(|e| format!("could not stage {}: {e}", output.display()))?;
@@ -164,17 +168,53 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let graph = stage.0.join("saved");
     graphite_storage::interchange::import_json(reader, &graph)
         .map_err(|e| format!("invalid frontend graph: {e}"))?;
-    if output
-        .extension()
-        .is_some_and(|e| e == graphite_storage::container::EXTENSION)
-    {
-        graphite_storage::container::pack(&graph, &output)
+    if packed {
+        // Keep the final basename: the sidecar records it for sha256sum verification.
+        let staged = stage.0.join(
+            output
+                .file_name()
+                .expect("a .graphite output has a filename"),
+        );
+        let report = graphite_storage::container::pack(&graph, &staged)
             .map_err(|e| format!("could not pack graph: {e}"))?;
+        publish_container(&staged, &report.digest_file, &output)?;
     } else {
+        require_absent(&output)?;
         std::fs::rename(&graph, &output).map_err(|e| format!("could not save graph: {e}"))?;
     }
     println!("Saved JavaScript artifact graph to {}", output.display());
     Ok(0)
+}
+
+fn require_absent(path: &Path) -> Result<(), String> {
+    match std::fs::symlink_metadata(path) {
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(format!("could not inspect {}: {e}", path.display())),
+        Ok(_) => Err(format!("output already exists: {}", path.display())),
+    }
+}
+
+/// Both files are complete in a sibling staging directory. Linking creates a final
+/// name only if it is absent, even if another build passed the same initial check.
+/// Publish the digest first so that a visible container always has its matching digest.
+fn publish_container(staged: &Path, staged_digest: &Path, output: &Path) -> Result<(), String> {
+    let link = |from: &Path, to: &Path| {
+        std::fs::hard_link(from, to).map_err(|e| {
+            if e.kind() == std::io::ErrorKind::AlreadyExists {
+                format!("output already exists: {}", to.display())
+            } else {
+                format!("could not publish {}: {e}", to.display())
+            }
+        })
+    };
+    let digest = graphite_storage::container::digest_path(output);
+    link(staged_digest, &digest)?;
+    if let Err(error) = link(staged, output) {
+        std::fs::remove_file(&digest)
+            .map_err(|e| format!("{error}; could not remove {}: {e}", digest.display()))?;
+        return Err(error);
+    }
+    Ok(())
 }
 
 struct Stage(PathBuf);
@@ -389,6 +429,81 @@ GRAPH"#,
             .to_string_lossy()
             .starts_with(".graphite-ts-")));
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn existing_sidecars_and_dangling_outputs_are_refused_before_analysis() {
+        use std::os::unix::fs::symlink;
+        let root = Stage::new(&std::env::temp_dir().join("publish-test")).unwrap();
+        let env = fake_frontend(&root.0, "exit 37");
+        let output = root.0.join("saved.graphite");
+        let digest = graphite_storage::container::digest_path(&output);
+        let run = || {
+            execute(
+                &env,
+                &[
+                    "input.js".into(),
+                    "-o".into(),
+                    output.clone().into_os_string(),
+                ],
+            )
+        };
+        std::fs::create_dir(&digest).unwrap();
+        assert!(run().unwrap_err().contains("output already exists"));
+        assert!(digest.is_dir() && !output.exists());
+        std::fs::remove_dir(&digest).unwrap();
+        std::fs::write(&digest, "original").unwrap();
+        assert!(run().unwrap_err().contains("output already exists"));
+        assert_eq!(std::fs::read_to_string(&digest).unwrap(), "original");
+        std::fs::remove_file(&digest).unwrap();
+        for existing in [&digest, &output] {
+            symlink("missing", existing).unwrap();
+            assert!(run().unwrap_err().contains("output already exists"));
+            assert_eq!(std::fs::read_link(existing).unwrap(), Path::new("missing"));
+            std::fs::remove_file(existing).unwrap();
+        }
+        assert!(!output.exists() && !digest.exists());
+    }
+
+    #[test]
+    fn concurrent_publishers_leave_one_complete_unmixed_pair() {
+        let root = Stage::new(&std::env::temp_dir().join("publish-test")).unwrap();
+        let output = root.0.join("saved.graphite");
+        let digest = graphite_storage::container::digest_path(&output);
+        let staged = ["first", "second"].map(|name| {
+            let file = root.0.join(name);
+            let checksum = root.0.join(format!("{name}.sha256"));
+            std::fs::write(&file, name).unwrap();
+            std::fs::write(&checksum, format!("digest of {name}")).unwrap();
+            (file, checksum)
+        });
+        let barrier = std::sync::Barrier::new(2);
+        let publish = |(file, checksum): &(PathBuf, PathBuf)| {
+            barrier.wait();
+            publish_container(file, checksum, &output)
+        };
+        let (first, second) = std::thread::scope(|scope| {
+            let first = scope.spawn(|| publish(&staged[0]));
+            let second = publish(&staged[1]);
+            (first.join().unwrap(), second)
+        });
+        let winner = match (first, second) {
+            (Ok(()), Err(_)) => "first",
+            (Err(_), Ok(())) => "second",
+            other => panic!("expected exactly one success: {other:?}"),
+        };
+        assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
+        assert_eq!(
+            std::fs::read_to_string(&digest).unwrap(),
+            format!("digest of {winner}")
+        );
+        // An output created after initial validation is preserved, and a newly
+        // linked digest is removed when the container cannot be published.
+        std::fs::remove_file(&digest).unwrap();
+        assert!(publish_container(&staged[0].0, &staged[0].1, &output).is_err());
+        assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
+        assert!(!digest.exists());
     }
 
     #[cfg(unix)]

@@ -44,7 +44,10 @@ An output without `.graphite` is a saved directory. You can subsequently use
 graphs. Existing outputs are refused. Analysis and import occur in a temporary
 sibling directory; frontend failures and invalid graph output leave no saved
 graph. Packed graphs use the existing entry manifest and SHA-256 verification,
-including the adjacent `.graphite.sha256` file written by the packer.
+including the adjacent `.graphite.sha256` file. A packed JS build needs a
+filesystem that supports hard links. It publishes the completed digest first,
+then the container, refusing either name if another writer has claimed it.
+If a process is killed between those steps, the digest can remain by itself.
 
 For an already-built Next.js application, select emitted server and browser
 artifacts separately when useful:
