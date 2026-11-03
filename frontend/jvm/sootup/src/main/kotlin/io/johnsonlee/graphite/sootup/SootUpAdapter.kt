@@ -124,6 +124,7 @@ import java.lang.reflect.Modifier
 import sootup.core.model.ClassModifier
 import sootup.core.model.MethodModifier
 import sootup.core.model.SootMethod
+import sootup.core.signatures.FieldSignature
 import sootup.core.signatures.MethodSubSignature
 import sootup.core.signatures.MethodSignature
 import sootup.core.util.Modifiers
@@ -359,6 +360,12 @@ class SootUpAdapter(
     private val slotCalls = Int2ObjectLinkedOpenHashMap<MutableList<PendingDispatch>>()
     /** After the fixpoint, the slots a value with no known origin in the scope may reach, see [computeOpenSlots]. */
     private var openSlots: BitSet? = null
+    /** After the fixpoint, the slots a saturated slot flows into, see [computeOpenSlots]. */
+    private var lostSlots: BitSet? = null
+    /** The slots seeded from a saturated holder: the targets never arrived, see [seedSlot]. */
+    private val lostSeeds = BitSet()
+    /** The declaring class each static field reference resolved to, see [noteStaticFieldAccess]. */
+    private val staticFieldOwners = HashMap<String, String>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -440,7 +447,14 @@ class SootUpAdapter(
     /** The classes pass 2 read as the application's (by package, whatever artifact holds them). */
     private val applicationClasses = HashSet<String>()
     /** Calls on function values that no slot tracks (cross-method tracking off): their gaps are read from here. */
-    private val untrackedDispatches = ArrayList<PendingDispatch>()
+    private val untrackedDispatches = ArrayList<UntrackedDispatch>()
+    /**
+     * With cross-method tracking off, the locals (by [localKey]) holding a value their method
+     * did not produce: a parameter, a field, a call's result, an element of an array one of
+     * those holds, or a copy of such a local. A call on one dispatches to what the method
+     * assigned it, and to a value the method cannot name.
+     */
+    private val openLocals = HashSet<LocalKey>()
     /** Set while a pass-2 class's body is read: its branch scopes were left out for its size. */
     private var activeControlFlowTruncated = false
     /** Set while a pass-2 class is processed: its methods could not be resolved at all. */
@@ -705,31 +719,37 @@ class SootUpAdapter(
     }
 
     /**
-     * Under a reachable scope, note that [className] is initialised by a static field access
-     * the pass-2 class being read makes: the class the access names and, when that class
-     * inherits the field, the class that declares it (the JVM initialises both, the declaring
-     * class first). Once per class.
+     * Under a reachable scope, note the class a static field access the pass-2 class being
+     * read makes initialises: the class that declares the field the reference resolves to
+     * (`getstatic Child.value` on a field `Base` declares initialises `Base`, not `Child`),
+     * found by the JVM's field resolution. Each reference is resolved before the class is
+     * deduplicated, so two fields named through one class reach their two declaring classes.
      */
-    private fun noteStaticFieldAccess(className: String, fieldName: String) {
-        if (reachableExpansion == null || !activeClassSeeds || !notedClasses.add(className)) return
-        reachedClasses += className
-        val declaring = declaringClassOfField(className, fieldName)
-        if (declaring != className && notedClasses.add(declaring)) reachedClasses += declaring
+    private fun noteStaticFieldAccess(fieldSig: FieldSignature) {
+        if (reachableExpansion == null || !activeClassSeeds) return
+        val declaring = staticFieldOwners.getOrPut(fieldSig.toString()) {
+            lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
+                ?: fieldSig.declClassType.fullyQualifiedName
+        }
+        if (notedClasses.add(declaring)) reachedClasses += declaring
     }
 
-    /** The class that declares the field [fieldName] of [className], up the superclass chain; [className] when unresolved. */
-    private fun declaringClassOfField(className: String, fieldName: String): String {
-        var current: String? = className
-        var declaring: String? = null
-        while (current != null && declaring == null) {
-            val sootClass = resolveClassByName(current)
-            when {
-                sootClass == null -> current = null
-                sootClass.fields.any { it.name == fieldName } -> declaring = current
-                else -> current = sootClass.superclass.orElse(null)?.fullyQualifiedName
-            }
+    /**
+     * The class that declares the field [fieldName] of type [type] a reference through
+     * [className] resolves to, by the JVM's field resolution (JVMS 5.4.3.2): the class itself,
+     * then its direct superinterfaces, recursively, then its superclass the same way; null when
+     * nothing the view holds declares it.
+     */
+    private fun lookupField(className: String, fieldName: String, type: Type, visited: MutableSet<String>): String? {
+        val sootClass = if (visited.add(className)) resolveClassByName(className) else null
+        return when {
+            sootClass == null -> null
+            sootClass.fields.any { it.name == fieldName && it.type == type } -> className
+            else -> sootClass.interfaces.asSequence()
+                .map { lookupField(it.fullyQualifiedName, fieldName, type, visited) }
+                .firstOrNull { it != null }
+                ?: sootClass.superclass.orElse(null)?.let { lookupField(it.fullyQualifiedName, fieldName, type, visited) }
         }
-        return declaring ?: className
     }
 
     /** Whether a class read from [origin] is a library's (or the platform's), not the application's. */
@@ -770,21 +790,30 @@ class SootUpAdapter(
      */
     private fun collectDispatchGaps() {
         for (entry in slotCalls.int2ObjectEntrySet()) {
-            val targets = slotTargets[entry.intKey]
+            val lost = slotTargets[entry.intKey] === SATURATED_TARGETS || lostSlots?.get(entry.intKey) == true
             for (pending in entry.value) {
-                val gap = when {
-                    targets === SATURATED_TARGETS -> CallSiteGap.DISPATCH_SATURATED
-                    pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_UNRESOLVED
-                    openSlots?.get(entry.intKey) == true -> CallSiteGap.DISPATCH_PARTIAL
-                    else -> continue
-                }
+                val gap = dispatchGap(pending, lost, open = openSlots?.get(entry.intKey) == true) ?: continue
                 callSiteGaps[pending.callSite.id.value] = gap
             }
         }
-        for (pending in untrackedDispatches) {
-            if (pending.resolved.isEmpty()) callSiteGaps[pending.callSite.id.value] = CallSiteGap.DISPATCH_UNRESOLVED
+        for (untracked in untrackedDispatches) {
+            val gap = dispatchGap(untracked.pending, untracked.lost, untracked.open) ?: continue
+            callSiteGaps[untracked.pending.callSite.id.value] = gap
         }
         untrackedDispatches.clear()
+    }
+
+    /**
+     * The gap of a call on a function value, or null when every alternative resolved: [lost]
+     * when a saturated holder reaches the receiver (its targets were lost: the call is saturated
+     * when nothing resolved, partial when something did), [open] when a value with no known
+     * origin reaches it (partial when something resolved).
+     */
+    private fun dispatchGap(pending: PendingDispatch, lost: Boolean, open: Boolean): CallSiteGap? = when {
+        lost && pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_SATURATED
+        pending.resolved.isEmpty() -> CallSiteGap.DISPATCH_UNRESOLVED
+        lost || open -> CallSiteGap.DISPATCH_PARTIAL
+        else -> null
     }
 
     /**
@@ -1387,10 +1416,12 @@ class SootUpAdapter(
                 val arrayKey = localKey(method, rightOp.base.name)
                 arrayDynamicTargets[arrayKey]?.let { targets -> mergeLocalTargets(method, leftOp, targets) }
                 trackSlotFlow(seededSlotOf(method, rightOp.base), method, leftOp)
+                markOpenLocal(method, leftOp, open = arrayKey in openLocals)
             }
             // Field loads: `fn = this.callback`, including Kotlin's `Lambda.INSTANCE` singletons
             is JFieldRef -> {
                 trackSlotFlow(DispatchSlot.Field(rightOp.fieldSignature.toString()), method, leftOp)
+                markOpenLocal(method, leftOp, open = true)
                 val fieldClass = rightOp.fieldSignature.declClassType.fullyQualifiedName
                 if (rightOp is JStaticFieldRef && toTypeDescriptor(rightOp.type).className == fieldClass) {
                     trackFunctionObject(method, leftOp, fieldClass, targetNode.id, stmt)
@@ -1434,6 +1465,8 @@ class SootUpAdapter(
             if (trackCrossMethodFunctionalDispatch) {
                 val localKey = localKey(method, leftOp.name)
                 localToParamIndex[localKey] = parameterBinding(method, paramIndex)
+            } else {
+                markOpenLocal(method, leftOp, open = true)
             }
         }
     }
@@ -1558,7 +1591,12 @@ class SootUpAdapter(
                 if (trackCrossMethodFunctionalDispatch) {
                     callsOn(slotId(seededSlotOf(caller, receiverLocal))).add(pending)
                 } else {
-                    untrackedDispatches += pending
+                    val receiverKey = localKey(caller, receiverLocal.name)
+                    untrackedDispatches += UntrackedDispatch(
+                        pending,
+                        lost = dynamicTargets[receiverKey] === SATURATED_TARGETS,
+                        open = receiverKey in openLocals
+                    )
                 }
             }
         }
@@ -1619,6 +1657,8 @@ class SootUpAdapter(
             extractBundleControlSpec(caller, calleeSignature, invokeExpr)?.let { bundleControlSpecsByLocal[resultKey] = it }
             if (trackCrossMethodFunctionalDispatch && mayHoldFunction(resultNode.type)) {
                 flowSlot(DispatchSlot.Return(callee), DispatchSlot.Local(caller, resultNode.name))
+            } else if (!trackCrossMethodFunctionalDispatch && mayHoldFunction(resultNode.type)) {
+                openLocals.add(resultKey)
             }
         }
     }
@@ -2245,6 +2285,9 @@ class SootUpAdapter(
         nestedDispatches.clear()
         dynamicTargets.clear()
         arrayDynamicTargets.clear()
+        openLocals.clear()
+        lostSeeds.clear()
+        staticFieldOwners.clear()
         functionObjectClasses.clear()
         mayHoldFunctionByType.clear()
         transitiveSubtypesByClass.clear()
@@ -2281,7 +2324,7 @@ class SootUpAdapter(
         do {
             propagateSlotTargets(propagation)
         } while (emitPendingDispatches())
-        openSlots = computeOpenSlots(propagation)
+        computeOpenSlots(propagation)
         this.propagation = null
     }
 
@@ -2292,10 +2335,12 @@ class SootUpAdapter(
      * and so does every slot it flows into, through the flows recorded while methods were read,
      * the flows resolution added and the adapters. A call on such a slot that also resolved to
      * bodies is partial: the bodies are in the graph, and an alternative the scope cannot name
-     * may run too. A saturated slot is not open; its own gap says what it is. One pass over the
-     * final flow graph, after the fixpoint.
+     * may run too. A saturated slot lost its targets rather than never having any, and so did
+     * every slot it flows into and every slot it seeded ([lostSeeds]): a call on one of those
+     * that resolved bodies is partial as well, and one that resolved none is saturated, not
+     * unresolved. One pass over the final flow graph, after the fixpoint.
      */
-    private fun computeOpenSlots(propagation: SlotPropagation): BitSet {
+    private fun computeOpenSlots(propagation: SlotPropagation) {
         val count = slots.size
         val hasIncoming = BitSet(count)
         for (id in 0 until count) {
@@ -2303,17 +2348,30 @@ class SootUpAdapter(
             slotAdapters.get(id)?.forEach { hasIncoming.set(slotId(it.sink)) }
         }
         val open = BitSet(count)
-        val queue = IntArrayList()
+        val lost = BitSet(count)
+        lost.or(lostSeeds)
         for (id in 0 until count) {
             val targets = slotTargets[id]
-            if (!hasIncoming.get(id) && targets !== SATURATED_TARGETS && targets.isNullOrEmpty()) {
-                open.set(id)
-                queue.add(id)
+            when {
+                targets === SATURATED_TARGETS -> lost.set(id)
+                !hasIncoming.get(id) && targets.isNullOrEmpty() -> open.set(id)
             }
         }
+        openSlots = closeOverFlows(open, propagation)
+        lostSlots = closeOverFlows(lost, propagation)
+    }
+
+    /** [seeds] and every slot one of them flows into, through the recorded flows and the adapters. */
+    private fun closeOverFlows(seeds: BitSet, propagation: SlotPropagation): BitSet {
+        val queue = IntArrayList()
+        var seed = seeds.nextSetBit(0)
+        while (seed >= 0) {
+            queue.add(seed)
+            seed = seeds.nextSetBit(seed + 1)
+        }
         fun mark(next: Int) {
-            if (!open.get(next)) {
-                open.set(next)
+            if (!seeds.get(next)) {
+                seeds.set(next)
                 queue.add(next)
             }
         }
@@ -2322,7 +2380,7 @@ class SootUpAdapter(
             propagation.forEachFlow(id, ::mark)
             slotAdapters.get(id)?.forEach { mark(slotId(it.sink)) }
         }
-        return open
+        return seeds
     }
 
     /**
@@ -2834,6 +2892,15 @@ class SootUpAdapter(
         if (trackCrossMethodFunctionalDispatch) {
             localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
             trackSlotFlow(seededSlotOf(method, source), method, target)
+        } else {
+            markOpenLocal(method, target, open = sourceKey in openLocals)
+        }
+    }
+
+    /** With cross-method tracking off, record that [local] holds a value its method cannot name when [open]. */
+    private fun markOpenLocal(method: MethodDescriptor, local: Local, open: Boolean) {
+        if (!trackCrossMethodFunctionalDispatch && open && mayHoldFunction(toTypeDescriptor(local.type))) {
+            openLocals.add(localKey(method, local.name))
         }
     }
 
@@ -2884,8 +2951,14 @@ class SootUpAdapter(
         return slot
     }
 
+    /**
+     * [slot] holds [targets] as well. A saturated holder ([SATURATED_TARGETS]) has lost what
+     * it held, so [slot] gets nothing from it and is recorded as a slot targets were lost to.
+     */
     private fun seedSlot(slot: DispatchSlot, targets: Collection<DispatchTarget>) {
-        if (targets.isNotEmpty()) {
+        if (targets === SATURATED_TARGETS) {
+            lostSeeds.set(slotId(slot))
+        } else if (targets.isNotEmpty()) {
             addTargets(slotId(slot), targets as? Set<DispatchTarget> ?: LinkedHashSet(targets))
         }
     }
@@ -3318,7 +3391,7 @@ class SootUpAdapter(
 
     private fun getOrCreateField(fieldRef: JFieldRef): FieldNode {
         val fieldSig = fieldRef.fieldSignature
-        if (fieldRef is JStaticFieldRef) noteStaticFieldAccess(fieldSig.declClassType.fullyQualifiedName, fieldSig.name)
+        if (fieldRef is JStaticFieldRef) noteStaticFieldAccess(fieldSig)
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
             val declaringClassName = fieldSig.declClassType.fullyQualifiedName

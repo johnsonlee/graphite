@@ -22,10 +22,64 @@ import kotlin.test.assertTrue
  * The dependency-scope behaviours the reviews of this feature pinned, each on the shape that
  * reproduced the finding: a callee noted non-virtually before virtually, a call on a function
  * value resolved after every class was processed, an application-package class a nested library
- * jar holds, an APK beside its platform jar, a zip input, and an application definition beside
- * an indexed library's.
+ * jar holds, an APK beside its platform jar, a zip input, an application definition beside
+ * an indexed library's, a static field a superinterface or a superclass declares, a receiver a
+ * saturated field flows into, and a mixed receiver with cross-method tracking off.
  */
 class DependencyScopeReviewTest : DependencyScopeFixture() {
+
+    /** Library classes whose static fields are declared by a superinterface or a superclass. */
+    private val fieldOwnerSources = mapOf(
+        "Keys.java" to """
+            package sample.scope.ext;
+            public interface Keys { String VALUE = java.util.ResourceBundle.getBundle("messages").getString("keys"); }
+        """.trimIndent(),
+        "Owner.java" to """
+            package sample.scope.ext;
+            public class Owner implements Keys { }
+        """.trimIndent(),
+        "Top.java" to """
+            package sample.scope.ext;
+            public class Top { public static String inherited = java.util.ResourceBundle.getBundle("messages").getString("top"); }
+        """.trimIndent(),
+        "Leaf.java" to """
+            package sample.scope.ext;
+            public class Leaf extends Top { public static String own = String.valueOf(System.nanoTime()); }
+        """.trimIndent()
+    )
+
+    /** Roots whose only library accesses are static field reads spelled through a subtype. */
+    private val fieldReadSources = mapOf(
+        "ViaOwner.java" to """
+            package sample.scope.app;
+            public class ViaOwner { public String read() { return sample.scope.ext.Owner.VALUE; } }
+        """.trimIndent(),
+        "ViaLeaf.java" to """
+            package sample.scope.app;
+            public class ViaLeaf { public String read() { return sample.scope.ext.Leaf.inherited; } }
+        """.trimIndent(),
+        "ViaBoth.java" to """
+            package sample.scope.app;
+            public class ViaBoth { public String read() { return sample.scope.ext.Leaf.own + sample.scope.ext.Leaf.inherited; } }
+        """.trimIndent()
+    )
+
+    /** A static field more than 64 lambdas reach, read directly and merged with a known lambda. */
+    private val saturatedFieldSource = "Sat.java" to """
+        package sample.scope.app;
+        import java.util.function.Supplier;
+        public class Sat {
+            static Supplier<String> field;
+            public void fill() {
+        ${(1..65).joinToString("\n") { "        Supplier<String> s$it = () -> \"v$it\"; field = s$it;" }}
+            }
+            public String viaField() { return field.get(); }
+            public String viaMixedField(boolean flag) {
+                Supplier<String> selected = flag ? () -> "k" : field;
+                return selected.get();
+            }
+        }
+    """.trimIndent()
 
     /** A root whose only dependency access is a static field read: `getstatic` runs the class initialiser. */
     private val staticAccessSource = "Init.java" to """
@@ -101,6 +155,71 @@ class DependencyScopeReviewTest : DependencyScopeFixture() {
         assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[get("viaMixed").id.value], "and the parameter is not")
         assertEquals(2, bodies("viaKnown"))
         assertNull(completeness.callSiteGaps[get("viaKnown").id.value], "every alternative is a known body")
+        assertEquals(CallSiteGap.DISPATCH_UNRESOLVED, completeness.callSiteGaps[get("viaUnknown").id.value], "no body at all")
+    }
+
+    @Test
+    fun `a static field read resolves to the class that declares it, through superinterfaces and superclasses`() {
+        val extClasses = compile(fieldOwnerSources, "ext")
+        val extJar = jar(extClasses.parent.resolve("ext-1.0.jar"), extClasses, "sample/scope/ext/")
+        val input = bootJar(extraAppSources = fieldReadSources, extraLibs = listOf(extJar))
+        fun completenessFor(root: String, budget: Int = 50_000) = assertNotNull(
+            load(
+                input,
+                LoaderConfig(
+                    includePackages = listOf(appPackage),
+                    includeLibraries = true,
+                    buildCallGraph = false,
+                    dependencyBodies = DependencyBodyScope.Reachable(budget, roots = listOf("$appPackage.$root"))
+                )
+            ).analysisCompleteness()
+        )
+        val viaOwner = completenessFor("ViaOwner")
+        val ext = "sample.scope.ext"
+        assertEquals(AnalysisStatus.ANALYZED, viaOwner.classStatus("$ext.Keys"), "the interface declares the field read through Owner")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, viaOwner.classStatus("$ext.Owner"), "getstatic does not initialise the named class")
+        val viaLeaf = completenessFor("ViaLeaf", budget = 1)
+        assertEquals(AnalysisStatus.ANALYZED, viaLeaf.classStatus("$ext.Top"), "the one slot goes to the declaring class")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, viaLeaf.classStatus("$ext.Leaf"))
+        val viaBoth = completenessFor("ViaBoth")
+        assertEquals(AnalysisStatus.ANALYZED, viaBoth.classStatus("$ext.Leaf"), "its own field initialises it")
+        assertEquals(AnalysisStatus.ANALYZED, viaBoth.classStatus("$ext.Top"), "a second field through the same class resolves on its own")
+    }
+
+    @Test
+    fun `targets lost to saturation upstream keep a gap on the calls downstream`() {
+        val input = bootJar(extraAppSources = mapOf(saturatedFieldSource))
+        val graph = load(input, LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true, buildCallGraph = false))
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val calls = graph.nodes<CallSiteNode>().toList()
+        fun get(caller: String) = calls.single { it.caller.name == caller && it.callee.name == "get" }
+        fun bodies(caller: String) = calls.count { it.origin == get(caller).id }
+        assertEquals(0, bodies("viaField"))
+        assertEquals(CallSiteGap.DISPATCH_SATURATED, completeness.callSiteGaps[get("viaField").id.value], "65 lambdas reach the field")
+        assertEquals(1, bodies("viaMixedField"), "the known lambda is dispatched")
+        val mixed = get("viaMixedField").id.value
+        assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[mixed], "and the field's lost values are not")
+    }
+
+    @Test
+    fun `a mixed receiver is a partial gap with cross-method tracking off too`() {
+        val input = bootJar(extraAppSources = mapOf(mixedDispatchSource))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            trackCrossMethodFunctionalDispatch = false
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val calls = graph.nodes<CallSiteNode>().toList()
+        fun get(caller: String) = calls.single { it.caller.name == caller && it.callee.name == "get" }
+        fun bodies(caller: String) = calls.count { it.origin == get(caller).id }
+        assertEquals(1, bodies("viaMixed"), "the lambda assigned in the method is dispatched")
+        val mixed = get("viaMixed").id.value
+        assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[mixed], "the parameter is a value the method cannot name")
+        assertEquals(2, bodies("viaKnown"))
+        assertNull(completeness.callSiteGaps[get("viaKnown").id.value], "every alternative is assigned in the method")
         assertEquals(CallSiteGap.DISPATCH_UNRESOLVED, completeness.callSiteGaps[get("viaUnknown").id.value], "no body at all")
     }
 

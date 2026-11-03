@@ -89,6 +89,14 @@ internal class PendingDispatch(
 )
 
 /**
+ * A [PendingDispatch] no slot tracks (cross-method tracking off), with what its own method
+ * knew of the receiver when the call was read: [lost] when the receiver's holder had
+ * saturated, [open] when it holds a value the method cannot name (a parameter, a field, a
+ * call's result).
+ */
+internal class UntrackedDispatch(val pending: PendingDispatch, val lost: Boolean, val open: Boolean)
+
+/**
  * A place a function value can be held across method boundaries; dispatch targets propagate
  * between slots until they reach a fixpoint.
  */

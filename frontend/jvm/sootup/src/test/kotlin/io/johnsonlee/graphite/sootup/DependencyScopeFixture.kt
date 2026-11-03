@@ -245,7 +245,7 @@ abstract class DependencyScopeFixture {
         duplicateInOther: List<String> = emptyList(),
         extraLibs: List<Path> = emptyList()
     ): Path {
-        val appClasses = compile(appSources + extraAppSources, "app", classpath = listOf(depJar(), stdlibJar()))
+        val appClasses = compile(appSources + extraAppSources, "app", classpath = listOf(depJar(), stdlibJar()) + extraLibs)
         val otherExtra = duplicateInOther.associate { className ->
             val entry = className.replace('.', '/') + ".class"
             entry to Files.readAllBytes(appClasses.resolve(entry))

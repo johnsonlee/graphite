@@ -803,9 +803,12 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   multi-artifact graphs is a separate change.
 - `DependencyBodyScope.Reachable(maxClasses)` is the selective expansion: every library jar is
   loaded, pass 2 reads the application, then a worklist reads the class of every noted callee
-  (declared callee, CHA overrides of a virtual one, the class a `new` names) and the class every
-  static field access names (`getstatic` runs its initialiser with no call in sight, review of
-  #193; the declaring class too when the field is inherited) until nothing new is reached or the
+  (declared callee, CHA overrides of a virtual one, the class a `new` names) and the class that
+  declares the field every static field access resolves to (`getstatic` runs its initialiser
+  with no call in sight, review of #193; `Child.value` on a field `Base` declares initialises
+  `Base`, not `Child`, and javac spells a superinterface's field through the implementing
+  class, so the lookup is the JVM's: the class, its superinterfaces, then its superclass, per
+  reference and before the class is deduplicated) until nothing new is reached or the
   budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
   noted at call-site creation only under that scope (once per callee, by identity: descriptors
   are canonical per signature), and the expansion runs before the dispatch fixpoint, so a
@@ -819,7 +822,13 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   with a parameter no known caller fills ran the lambda in the graph and nothing for the other
   branch. A slot nothing flows into and nothing seeds holds a value the scope cannot name, and
   so does everything it flows into; one pass over the final flow graph marks them
-  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. A reached
+  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. A saturated
+  holder lost its targets rather than never having any: the loss follows its flows and its
+  seeds (`lostSlots`, `lostSeeds`), so `choose ? lambda : saturatedField` is partial and a call
+  downstream that resolved nothing is saturated, not unresolved. With cross-method tracking
+  off the same question is answered per method: a local assigned from a parameter, a field, a
+  call result, an element of such an array or a copy of such a local is open (`openLocals`),
+  and a call on it that resolved a lambda is partial too. A reached
   stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
   which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
 - `Reachable.roots` restricts which application classes seed the expansion (the others are
