@@ -8,8 +8,8 @@
 //! generic types are not emitted for dynamically typed JavaScript artifacts.
 use crate::graph::{CONTROL_FLOW_KINDS, DATAFLOW_KINDS, TYPE_KINDS};
 use crate::io::*;
-use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use serde::Deserialize;
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 use std::path::Path;
 
@@ -23,7 +23,7 @@ pub enum ImportError {
     Io(#[from] std::io::Error),
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct Method {
     declaring_class: String,
@@ -32,14 +32,14 @@ struct Method {
     return_type: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 struct Record {
     id: u32,
     #[serde(flatten)]
     node: InputNode,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 #[serde(tag = "kind", deny_unknown_fields)]
 enum InputNode {
     IntConstant {
@@ -100,7 +100,7 @@ struct InputEdge {
     is_dynamic: bool,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields, rename_all = "camelCase")]
 struct ClassOrigin {
     class_name: String,
@@ -245,14 +245,68 @@ fn header(magic: i32, count: usize) -> Vec<u8> {
     int(&mut out, count);
     out
 }
-fn strings_in(v: &serde_json::Value, out: &mut Vec<String>) {
-    match v {
-        serde_json::Value::String(s) => out.push(s.clone()),
-        serde_json::Value::Array(a) => a.iter().for_each(|v| strings_in(v, out)),
-        serde_json::Value::Object(o) => o.values().for_each(|v| strings_in(v, out)),
-        _ => {}
-    }
+fn collect_method_strings<'a>(m: &'a Method, strings: &mut HashSet<&'a str>) {
+    strings.extend([m.declaring_class.as_str(), &m.name, &m.return_type]);
+    strings.extend(m.parameter_types.iter().map(String::as_str));
 }
+
+fn graph_strings(g: &InputGraph) -> Vec<&str> {
+    let mut strings = HashSet::new();
+    for record in &g.nodes {
+        match &record.node {
+            InputNode::IntConstant { .. }
+            | InputNode::DoubleConstant { .. }
+            | InputNode::BooleanConstant { .. }
+            | InputNode::NullConstant => {}
+            InputNode::StringConstant { value } => {
+                strings.insert(value.as_str());
+            }
+            InputNode::LocalVariable {
+                name,
+                var_type,
+                method,
+            } => {
+                strings.extend([name.as_str(), var_type]);
+                collect_method_strings(method, &mut strings);
+            }
+            InputNode::Field {
+                declaring_class,
+                name,
+                field_type,
+                ..
+            } => {
+                strings.extend([declaring_class.as_str(), name, field_type]);
+            }
+            InputNode::Parameter {
+                param_type, method, ..
+            } => {
+                strings.insert(param_type.as_str());
+                collect_method_strings(method, &mut strings);
+            }
+            InputNode::Return {
+                method,
+                actual_type,
+            } => {
+                collect_method_strings(method, &mut strings);
+                strings.extend(actual_type.as_deref());
+            }
+            InputNode::CallSite { caller, callee, .. } => {
+                collect_method_strings(caller, &mut strings);
+                collect_method_strings(callee, &mut strings);
+            }
+        }
+    }
+    for m in &g.methods {
+        collect_method_strings(m, &mut strings);
+    }
+    for origin in &g.class_origins {
+        strings.extend([origin.class_name.as_str(), &origin.origin]);
+    }
+    let mut strings: Vec<_> = strings.into_iter().collect();
+    strings.sort_unstable_by(|a, b| a.encode_utf16().cmp(b.encode_utf16()));
+    strings
+}
+
 fn method(out: &mut Vec<u8>, m: &Method, dictionary: &HashMap<&str, usize>) {
     int(out, dictionary[m.declaring_class.as_str()]);
     int(out, dictionary[m.name.as_str()]);
@@ -265,12 +319,7 @@ fn method(out: &mut Vec<u8>, m: &Method, dictionary: &HashMap<&str, usize>) {
 
 type EncodedFiles = Vec<(&'static str, Vec<u8>)>;
 fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
-    let mut strings = Vec::new();
-    strings_in(&serde_json::to_value(&g.nodes)?, &mut strings);
-    strings_in(&serde_json::to_value(&g.methods)?, &mut strings);
-    strings_in(&serde_json::to_value(&g.class_origins)?, &mut strings);
-    strings.sort_by(|a, b| a.encode_utf16().cmp(b.encode_utf16()));
-    strings.dedup();
+    let strings = graph_strings(g);
     if strings.len() > i32::MAX as usize || strings.iter().any(|s| s.len() > i32::MAX as usize) {
         return Err(invalid("string table exceeds format limits"));
     }
@@ -287,11 +336,8 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
     if utf16_units > (1 << 27) || utf8_bytes > u32::MAX as u64 {
         return Err(invalid("string table exceeds single-segment format limit"));
     }
-    let dictionary: HashMap<&str, usize> = strings
-        .iter()
-        .enumerate()
-        .map(|(i, s)| (s.as_str(), i))
-        .collect();
+    let dictionary: HashMap<&str, usize> =
+        strings.iter().enumerate().map(|(i, &s)| (s, i)).collect();
     let sid = |out: &mut Vec<u8>, s: &str| int(out, dictionary[s]);
     let mut data = header(MAGIC_NODEDATA, g.nodes.len());
     let mut offsets = header(MAGIC_NODEOFFSETS, g.nodes.len());
@@ -492,7 +538,7 @@ impl Bits {
 // Java Object Serialization descriptors match dsiutils FrontCodedStringList and
 // fastutil CharArrayFrontCodedList (serialVersionUID 1). Ratio 1 stores complete
 // UTF-16 strings, preserving Java comparison order and supplementary characters.
-fn encode_strings(strings: &[String]) -> Vec<u8> {
+fn encode_strings(strings: &[&str]) -> Vec<u8> {
     fn utf(out: &mut Vec<u8>, text: &str) {
         out.extend((text.len() as u16).to_be_bytes());
         out.extend(text.as_bytes());
@@ -715,6 +761,60 @@ mod tests {
         assert_graph(&Graph::load(&container).unwrap());
     }
     #[test]
+    fn dictionary_contains_exactly_persisted_text_in_java_string_order() {
+        let tmp = Temp::new();
+        let dir = tmp.0.join("dictionary");
+        let mut input = fixture();
+        input["nodes"][0]["value"] = json!("StringConstant"); // An actual literal, also a tag name.
+        input["nodes"][1]["paramType"] = json!("param-type");
+        input["nodes"][1]["method"]["name"] = json!("parameter-method");
+        input["nodes"][2]["actualType"] = json!("actual-type");
+        input["nodes"][2]["method"]["name"] = json!("return-method");
+        input["nodes"][3]["caller"]["name"] = json!("caller");
+        input["nodes"][3]["callee"]["name"] = json!("callee");
+        input["nodes"][4]["varType"] = json!("local-type");
+        input["nodes"][4]["method"]["name"] = json!("local-method");
+        input["nodes"][5]["declaringClass"] = json!("field-class");
+        input["methods"][0] = json!({
+            "declaringClass":"metadata-class", "name":"metadata-method",
+            "parameterTypes":["🌍", "\u{e000}"], "returnType":"metadata-return"
+        });
+        input["classOrigins"][0]["className"] = json!("origin-class");
+        import_json(input.to_string().as_bytes(), &dir).unwrap();
+        let graph = Graph::load(&dir).unwrap();
+        let table = graph.strings();
+        let expected = [
+            "StringConstant",
+            "actual-type",
+            "boolean",
+            "callee",
+            "caller",
+            "example",
+            "field",
+            "field-class",
+            "local-method",
+            "local-type",
+            "message",
+            "metadata-class",
+            "metadata-method",
+            "metadata-return",
+            "origin-class",
+            "param-type",
+            "parameter-method",
+            "return-method",
+            "src/测试.js",
+            "string",
+            "🌍",
+            "\u{e000}",
+        ];
+        assert_eq!(table.len(), expected.len());
+        for (id, text) in expected.into_iter().enumerate() {
+            assert_eq!(table.get(id), text);
+            assert_eq!(table.index_of(text), Some(id));
+        }
+    }
+
+    #[test]
     fn invalid_input_never_publishes_a_graph_or_overwrites_existing_output() {
         let tmp = Temp::new();
         let mut cases = Vec::new();
@@ -902,16 +1002,11 @@ mod tests {
         )
         .unwrap();
         assert_eq!(Graph::load(&empty).unwrap().node_count(), 0);
-        let strings = vec![
-            String::new(),
-            "\0".into(),
-            "a".repeat(40000),
-            "🌍".into(),
-            "\u{e000}".into(),
-        ];
+        let long = "a".repeat(40000);
+        let strings = ["", "\0", &long, "🌍", "\u{e000}"];
         let table =
             crate::strings::StringTable::from_serialized(&encode_strings(&strings)).unwrap();
-        for (i, s) in strings.iter().enumerate() {
+        for (i, &s) in strings.iter().enumerate() {
             assert_eq!(table.get(i), s);
             assert_eq!(table.index_of(s), Some(i));
         }
