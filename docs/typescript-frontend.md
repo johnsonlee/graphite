@@ -47,9 +47,13 @@ graphs. JS builds refuse existing destinations. Analysis and import use a privat
 sibling directory when the output parent exists. For a missing parent, Graphite
 uses system temp only if an empty directory can be renamed from there into the
 nearest existing output ancestor; otherwise it stages in that ancestor. Graphite
-creates the final parent only after the graph is ready. Directory publication
-requires a filesystem that supports atomic rename without replacing an existing
-destination, including an empty directory. Failed
+creates the final parent only after the graph is ready. It publishes a directory
+with an atomic rename that refuses an existing destination. If the filesystem
+does not support that operation, Graphite claims the destination with an exclusive
+directory creation, then links or copies the completed graph files into it. The
+directory can be visible during this fallback. Readers can load the graph only
+after its node-data header is published last. An interrupted fallback can leave
+an incomplete directory; inspect it and remove it before retrying. Failed
 analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
 rename that refuses to replace an existing file. It publishes the completed digest first,

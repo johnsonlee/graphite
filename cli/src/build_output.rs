@@ -2,6 +2,8 @@
 
 use std::path::{Path, PathBuf};
 
+mod directory;
+
 pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
     match std::fs::symlink_metadata(path) {
         Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
@@ -98,7 +100,7 @@ impl Stage {
 
     pub(crate) fn publish_directory(&self, output: &Path) -> Result<(), String> {
         create_output_parent(output)?;
-        rename_directory_exclusive(&self.graph(), output).map_err(|e| {
+        directory::publish(&self.graph(), output, rename_directory_exclusive).map_err(|e| {
             if e.kind() == std::io::ErrorKind::AlreadyExists {
                 format!("output already exists: {}", output.display())
             } else {

@@ -15,6 +15,7 @@ graphite-explore = { path = "../backend/explore" }
 serde_json.workspace = true
 clap.workspace = true
 sha2.workspace = true
+same-file = "1.0"
 tempfile = { version = "3.27", default-features = false }
 
 # jemalloc has no MSVC build; those targets keep the system allocator.
