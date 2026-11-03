@@ -250,7 +250,7 @@ fn collect_method_strings<'a>(m: &'a Method, strings: &mut HashSet<&'a str>) {
     strings.extend(m.parameter_types.iter().map(String::as_str));
 }
 
-fn graph_strings(g: &InputGraph) -> Vec<&str> {
+fn graph_strings(g: &InputGraph) -> HashSet<&str> {
     let mut strings = HashSet::new();
     for record in &g.nodes {
         match &record.node {
@@ -302,8 +302,6 @@ fn graph_strings(g: &InputGraph) -> Vec<&str> {
     for origin in &g.class_origins {
         strings.extend([origin.class_name.as_str(), &origin.origin]);
     }
-    let mut strings: Vec<_> = strings.into_iter().collect();
-    strings.sort_unstable_by(|a, b| a.encode_utf16().cmp(b.encode_utf16()));
     strings
 }
 
@@ -318,26 +316,47 @@ fn method(out: &mut Vec<u8>, m: &Method, dictionary: &HashMap<&str, usize>) {
 }
 
 type EncodedFiles = Vec<(&'static str, Vec<u8>)>;
-fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
-    let strings = graph_strings(g);
+fn encode_dictionary(
+    strings: HashSet<&str>,
+) -> Result<(HashMap<&str, usize>, Vec<u8>), ImportError> {
     if strings.len() > i32::MAX as usize || strings.iter().any(|s| s.len() > i32::MAX as usize) {
         return Err(invalid("string table exceeds format limits"));
     }
-    // The Java big-array serializer below emits one segment. Reject oversized
-    // dictionaries explicitly rather than writing a graph its JVM reader cannot use.
-    let utf16_units: u64 = strings
-        .iter()
-        .map(|s| {
-            let n = s.encode_utf16().count() as u64;
-            n + if n >= 0x8000 { 2 } else { 1 }
-        })
-        .sum();
-    let utf8_bytes: u64 = strings.iter().map(|s| s.len() as u64).sum();
-    if utf16_units > (1 << 27) || utf8_bytes > u32::MAX as u64 {
-        return Err(invalid("string table exceeds single-segment format limit"));
+    // The JVM reader expects one fastutil big-array segment, including length prefixes.
+    const SEGMENT_UNITS: usize = 1 << 27;
+    let too_large = || invalid("string table exceeds single-segment format limit");
+    if strings.len() > SEGMENT_UNITS
+        || strings.iter().map(|s| s.len() as u64).sum::<u64>() > u32::MAX as u64
+    {
+        return Err(too_large());
     }
-    let dictionary: HashMap<&str, usize> =
-        strings.iter().enumerate().map(|(i, &s)| (s, i)).collect();
+    let mut encoded = Vec::with_capacity(strings.len());
+    let mut total = 0;
+    for text in strings {
+        let remaining = SEGMENT_UNITS - total;
+        // UTF-8 bytes bound the UTF-16 length from above. Only scan once more
+        // when a large string might exhaust the segment, before allocating it.
+        if text.len().saturating_add(2) > remaining {
+            let length = text.encode_utf16().count();
+            if length + 1 + usize::from(length >= 0x8000) > remaining {
+                return Err(too_large());
+            }
+        }
+        let units: Vec<_> = text.encode_utf16().collect();
+        total += units.len() + 1 + usize::from(units.len() >= 0x8000);
+        encoded.push((text, units));
+    }
+    encoded.sort_unstable_by(|a, b| a.1.cmp(&b.1));
+    let dictionary = encoded
+        .iter()
+        .enumerate()
+        .map(|(i, (text, _))| (*text, i))
+        .collect();
+    Ok((dictionary, encode_strings(&encoded, total)))
+}
+
+fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
+    let (dictionary, string_file) = encode_dictionary(graph_strings(g))?;
     let sid = |out: &mut Vec<u8>, s: &str| int(out, dictionary[s]);
     let mut data = header(MAGIC_NODEDATA, g.nodes.len());
     let mut offsets = header(MAGIC_NODEOFFSETS, g.nodes.len());
@@ -500,7 +519,7 @@ fn encode(g: &InputGraph) -> Result<EncodedFiles, ImportError> {
         ("graph.nodeindex", index),
         ("graph.typeindex", type_index),
         ("graph.metadata", metadata),
-        ("graph.strings", encode_strings(&strings)),
+        ("graph.strings", string_file),
         ("graph.labels", labels),
         ("forward.graph", bits.bytes),
         ("forward.offsets", offset_bits.bytes),
@@ -538,7 +557,7 @@ impl Bits {
 // Java Object Serialization descriptors match dsiutils FrontCodedStringList and
 // fastutil CharArrayFrontCodedList (serialVersionUID 1). Ratio 1 stores complete
 // UTF-16 strings, preserving Java comparison order and supplementary characters.
-fn encode_strings(strings: &[&str]) -> Vec<u8> {
+fn encode_strings(strings: &[(&str, Vec<u16>)], total_units: usize) -> Vec<u8> {
     fn utf(out: &mut Vec<u8>, text: &str) {
         out.extend((text.len() as u16).to_be_bytes());
         out.extend(text.as_bytes());
@@ -594,21 +613,19 @@ fn encode_strings(strings: &[&str]) -> Vec<u8> {
     out.push(0x75);
     class(&mut out, "[[C", -7479776706070730294, &[]);
     int(&mut out, 1);
-    let mut chars = Vec::new();
-    for s in strings {
-        let units: Vec<_> = s.encode_utf16().collect();
-        let len = units.len();
-        if len >= 0x8000 {
-            chars.push(((len >> 16) as u16) | 0x8000);
-        }
-        chars.push(len as u16);
-        chars.extend(units);
-    }
     out.push(0x75);
     class(&mut out, "[C", -5753798564021173076, &[]);
-    int(&mut out, chars.len());
-    for c in chars {
-        out.extend(c.to_be_bytes());
+    int(&mut out, total_units);
+    out.reserve(total_units * 2);
+    for (_, units) in strings {
+        let len = units.len();
+        if len >= 0x8000 {
+            out.extend((((len >> 16) as u16) | 0x8000).to_be_bytes());
+        }
+        out.extend((len as u16).to_be_bytes());
+        for unit in units {
+            out.extend(unit.to_be_bytes());
+        }
     }
     out
 }
@@ -1004,9 +1021,10 @@ mod tests {
         assert_eq!(Graph::load(&empty).unwrap().node_count(), 0);
         let long = "a".repeat(40000);
         let strings = ["", "\0", &long, "🌍", "\u{e000}"];
-        let table =
-            crate::strings::StringTable::from_serialized(&encode_strings(&strings)).unwrap();
+        let (ids, bytes) = encode_dictionary(strings.iter().copied().collect()).unwrap();
+        let table = crate::strings::StringTable::from_serialized(&bytes).unwrap();
         for (i, &s) in strings.iter().enumerate() {
+            assert_eq!(ids[s], i);
             assert_eq!(table.get(i), s);
             assert_eq!(table.index_of(s), Some(i));
         }
