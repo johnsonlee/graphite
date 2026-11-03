@@ -579,7 +579,7 @@ impl Executor {
         }
 
         let ordered_capacity = bounded_order_capacity(shape, aggregated, patterns, &rows);
-        let (columns, out) = self.fused_rows(
+        let (columns, out) = self.fused_rows::<false>(
             matcher,
             ev,
             rows,
@@ -636,26 +636,34 @@ impl Executor {
         } else {
             None
         };
-        self.fused_rows(
-            matcher,
-            ev,
-            rows,
-            patterns,
-            shape,
-            &scan,
-            &hop,
-            budget,
-            aggregated,
-            None,
-            projected_filter,
-        )
+        // Dispatch once per query so ordinary scans and ordered projections
+        // do not load or test an absent filter for every projected row.
+        if projected_filter.is_some() {
+            self.fused_rows::<true>(
+                matcher,
+                ev,
+                rows,
+                patterns,
+                shape,
+                &scan,
+                &hop,
+                budget,
+                aggregated,
+                None,
+                projected_filter,
+            )
+        } else {
+            self.fused_rows::<false>(
+                matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None, None,
+            )
+        }
     }
 
     /// Stream the match into the projection: a group-by when the items aggregate, a
     /// row per match otherwise, stopping at `budget` rows where the shape allows it.
     /// Returns the columns and the rows before ORDER BY / SKIP / LIMIT are applied.
     #[allow(clippy::too_many_arguments)]
-    fn fused_rows(
+    fn fused_rows<const FILTER_PROJECTED: bool>(
         &self,
         matcher: &Matcher,
         ev: &Evaluator,
@@ -669,6 +677,7 @@ impl Executor {
         ordered_capacity: Option<usize>,
         projected_filter: Option<&Expr>,
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
+        debug_assert_eq!(FILTER_PROJECTED, projected_filter.is_some());
         let items = shape.items.as_deref();
         if aggregated {
             // Streaming group-by.
@@ -765,7 +774,9 @@ impl Executor {
                 order_before_distinct,
                 &mut columns,
             )?;
-            if let Some(predicate) = projected_filter {
+            if FILTER_PROJECTED {
+                let predicate =
+                    projected_filter.expect("filtered specialization requires a predicate");
                 // Evaluate the original WITH predicate in its projected scope,
                 // once per candidate. Only accepted rows consume the row limit.
                 self.tick()?;
@@ -2577,7 +2588,7 @@ mod bounded_order_tests {
         let ev = Evaluator::new(ex, &ex.params);
         let matcher = Matcher { ex, ev: &ev };
         let scan = super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
-        let (columns, rows) = ex.fused_rows(
+        let (columns, rows) = ex.fused_rows::<false>(
             &matcher,
             &ev,
             vec![Row::new()],
@@ -2722,7 +2733,7 @@ mod bounded_order_tests {
                     let scan =
                         super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
                     let (_, retained) = ex
-                        .fused_rows(
+                        .fused_rows::<false>(
                             &matcher,
                             &ev,
                             vec![Row::new()],
@@ -2809,7 +2820,7 @@ mod bounded_order_tests {
             assert!(bounded_order_capacity(&shape, false, &patterns, &[Row::new()]).is_some());
             let scan = super::super::scan::ScanPlan::build(&patterns, shape.where_clause.as_ref());
             let (columns, rows) = ex
-                .fused_rows(
+                .fused_rows::<false>(
                     &matcher,
                     &ev,
                     vec![Row::new()],

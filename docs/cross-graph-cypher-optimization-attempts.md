@@ -2748,3 +2748,63 @@ Do not pool the two pairs, offset adverse metrics, infer causation from one
 ordered comparison or repeat runs to choose a favorable statistic. Per-operation
 resources, current construction/build/save coverage and final Linux CI remain
 unverified. No new PR or no-regression claim follows from this experiment.
+
+### 2026-11-03 - Attempt 048: Specialize filtered and ordinary row consumers
+
+**Hypothesis:** release disassembly of047 confirms that ordinary sorted queries
+still execute two pointer loads and a null branch per projected row, despite
+passing no projected filter. Select a const-generic filtered/unfiltered consumer
+once per query so the ordinary loop has no new per-row filter check. Preserve
+047's eligibility proof, predicate evaluation, accepted-row counting, probing,
+errors and cancellation. This does not change the sort algorithm, aggregation,
+storage schema or loading behavior, and does not presume to explain collect or
+the difference between047's two runs of the same optimized binary.
+
+**Identity:** parent `6b95214980263c509170e9c3f317877bab81b7b6`, whose production
+code is047's `d27e054c`; accepted main remains
+`a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. Candidate is the commit containing
+this record. The precommit release binary SHA-256 is
+`0b1832b411155522da79ce4ac2c11ad1d9dbf85b58347c685d03c5459aeb09f3`;
+final committed-source/binary identity must be verified before measurement.
+
+**Correctness and compiled evidence:** all233 Cypher unit tests and six focused
+filter tests passed, with strict module/all-target/all-feature Clippy, formatting
+and diff checks. The optional Java fixture was unavailable, not newly exercised.
+Independent review checked all six call sites: the sole true specialization is
+guarded by a present predicate; all false callers pass None. The release ordinary
+consumer now branches directly from projection to bounded ordering without the
+filter loads/check/evaluator block. The filtered consumer retains tick and
+predicate evaluation. The ordinary closure shrinks from2216 to2004 bytes, while
+the complete executable grows18208 bytes (+0.190%) and its text segment grows
+16384 bytes. Code-size/cache tradeoffs remain subject to real workload checks.
+Exact symbols, disassembly, binary hashes and call sites are retained under
+`/tmp/graphite-js-artifact-validation/attempt048-disassembly/`.
+
+Full workspace validation reported595 passing tests and one existing ignored
+test; optional external-Java fixture bodies remain unavailable. Strict workspace
+all-target/all-feature Clippy passed. Preserve the first workspace failure:
+`prepare::tests::root_owned_policy_cannot_follow_source_or_trusted_symlink_parents`
+received filesystem `EINVAL` from fixture `create_dir_all`, before the symlink
+assertion. That source is identical to main. The original test executable passed
+both the focused test and the concurrent benchmark module, and the subsequent
+full workspace run passed without edits. This establishes current coverage but
+does not identify or claim to fix the first filesystem failure. The original
+log and subsequent logs remain under `attempt048-workspace-tests*.log` and
+`attempt048-prepare-*.log`; independent Linux coverage is still required.
+
+**Protocol before measurement:** preserve the trusted main controller, all73
+real64 cases, original complete-response checks, concurrency and sampling rules.
+Use the separate Linux environment for the full trusted current-revision JVM
+build/save/readback and native correctness/OOM pipeline, retaining4 GiB JAR heaps
+and every failure. Existing2 GiB VMs cannot host that pipeline; the dedicated
+24 GiB/4CPU environment is separate and does not raise any JVM heap ceiling.
+Freeze exact product/controller identities, input provenance and full commands
+before launch; exercise environment and producer/consumer handoff first. Linux
+correctness evidence does not itself establish performance recovery. Any separate
+parent-relative and accepted-main performance comparison must declare matched
+real persisted inputs, cache state, boundaries and resources before measurement;
+neither047's Darwin timings nor compiler output substitutes for that comparison.
+
+**Decision:** experimental candidate pending full verification and representative
+multi-graph measurements. Removing confirmed instructions is not a measured
+latency benefit, and existing047 regressions and resource gaps remain open.
