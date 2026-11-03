@@ -210,8 +210,10 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 `graphite` is a native binary (Rust). It carries `query` and `serve` itself and runs
 `build` through the JVM frontend, `graphite.jar`, which the formula installs next to it
-together with `openjdk@17`. Every command line written for the jar-based formula works
-unchanged, `--profile` and the `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` heap settings included.
+together with `openjdk@17`. Use `JAVA_OPTS` or `JAVA_TOOL_OPTIONS` to configure the JVM heap.
+To profile a JVM build, put `--profile` before the `--` separator, for example
+`graphite build --profile -o app.graphite -- app.jar`. The shell forwards arguments
+after `--` to the frontend as positional inputs. Run `graphite help build` for shell options.
 
 When no JVM options are supplied, `graphite build` checks whether the selected
 JVM supports the following G1 configuration and uses it for the JAR frontend,

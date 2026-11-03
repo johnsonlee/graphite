@@ -1,9 +1,8 @@
 //! `graphite build`: a shell over the JVM frontend.
 //!
-//! Every argument after `build` goes to the frontend untouched, `--help` included, so the
-//! command line a user has today for `graphite.jar build` keeps working. The one argument
-//! the shell interprets is `--profile`, which the Homebrew wrapper around the jar used to
-//! turn into an async-profiler agent; it does the same here.
+//! The shell forwards frontend options, including `--help`. It consumes `--profile`
+//! before the `--` separator to add the async-profiler agent to the JVM frontend JAR
+//! invocation. Arguments after the separator are forwarded as positional inputs.
 //!
 //! One output form is the shell's too: when `-o` names a `.graphite` file, the frontend
 //! writes a staging directory next to it (the frontend only ever writes directories) and
@@ -564,6 +563,17 @@ mod tests {
             ])[..]
         );
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn profile_after_separator_is_forwarded_as_an_input() {
+        let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java"), ("PATH", "/nonexistent")]);
+        let args = os(&["app.jar", "-o", "g", "--", "--profile"]);
+        let inv = invocation(&env, &jar_frontend(), &args).unwrap();
+        assert_eq!(
+            inv.args,
+            [os(&["-jar", "/opt/graphite/graphite.jar", "build"]), args].concat()
+        );
     }
 
     #[test]

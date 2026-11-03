@@ -59,8 +59,12 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build a JVM graph, or select compiled JavaScript with --lang js (alias ts) before the -- separator
-    #[command(disable_help_flag = true, disable_version_flag = true)]
+    /// Build a JVM graph (--profile) or compiled JavaScript (--lang js, alias ts). Put these options before --
+    #[command(
+        disable_help_flag = true,
+        disable_version_flag = true,
+        after_help = "Place --profile before the -- separator to profile the JVM frontend.\n\n  graphite build --profile -o app.graphite -- app.jar\n\nThe shell forwards arguments after -- as positional inputs."
+    )]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),

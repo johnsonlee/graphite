@@ -165,7 +165,7 @@ curl -X PUT http://localhost:8080/api/graphs/orders \
 
 ### Homebrew formula 安装的内容
 
-`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。原来面向 jar 版 formula 编写的所有命令行均可原样使用，包括 `--profile` 以及 `JAVA_OPTS`/`JAVA_TOOL_OPTIONS` 堆内存设置。
+`graphite` 是原生二进制程序（Rust），自身提供 `query` 和 `serve`，并通过 JVM 前端 `graphite.jar` 执行 `build`。Homebrew formula 会将该 jar 安装在二进制程序旁边，同时安装 `openjdk@17`。可用 `JAVA_OPTS` 或 `JAVA_TOOL_OPTIONS` 设置 JVM 堆大小。要分析 JVM 构建的性能，请将 `--profile` 放在 `--` 分隔符之前，例如 `graphite build --profile -o app.graphite -- app.jar`。分隔符之后的参数会作为位置参数传给前端。运行 `graphite help build` 可查看命令行外壳的选项。
 
 未指定 JVM 参数时，`graphite build` 会检查所选 JVM 是否支持以下 G1 配置，并将其用于 jar 形式的 JVM 前端，包括 JAR 和 APK 输入。最大堆仍为 8 GiB：
 

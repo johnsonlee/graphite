@@ -24,3 +24,15 @@ fn invalid_output_is_a_usage_error_with_or_without_fold() {
         }
     }
 }
+
+#[test]
+fn shell_build_help_explains_profile_placement() {
+    let result = Command::new(env!("CARGO_BIN_EXE_graphite"))
+        .args(["help", "build"])
+        .output()
+        .unwrap();
+    assert!(result.status.success());
+    let help = String::from_utf8(result.stdout).unwrap();
+    assert!(help.contains("--profile before the -- separator"));
+    assert!(help.contains("graphite build --profile -o app.graphite -- app.jar"));
+}
