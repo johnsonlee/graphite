@@ -245,21 +245,22 @@ hosted timing observations do not establish performance acceptance.
 
 ### PR review verification, 2026-11-04
 
-At `0c404165`, the frontend passed 56 tests. Both applications were rebuilt
-from the same pinned JavaScript artifacts and queried across all four save
-forms. The compiled-code oracle still matched all twenty selected call
-occurrences. Per-graph CallSite counts and the resolved/dynamic split matched
-the previous build. Compared with `e33affed`, the four graphs retained
-the same method signatures, call locations and call flags. Stable property
-slots changed node counts and some field store/load edges. Neither app
-emitted a conflict or syntax warning. Dedicated fixtures cover both cases.
+At `a3bc1ff1`, 61 frontend tests passed. Both applications were rebuilt
+from the same pinned JavaScript artifacts and queried in all four saved
+forms. The independent emitted-code oracle matched all 21 selected call
+occurrences, including Taskboard's detached `(0,a.useState)("todo")`.
+Compared with `0c404165`, the number of source calls for every caller and
+line stayed the same. Taskboard's client resolved eight previously dynamic
+calls, and its server resolved twenty. The constructor and call name changes
+are observable in the saved graphs. Neither app produced a syntax or
+relationship-conflict warning.
 
 | Application | Side | Nodes | Edges | Resolved / dynamic CallSites |
 |---|---|---:|---:|---:|
-| MIT Next 10 CRUD example | Client | 46,355 | 69,213 | 3,378 / 5,096 |
-| MIT Next 10 CRUD example | Server | 12,141 | 16,134 | 443 / 2,050 |
-| Supplementary Taskboard | Client | 84,650 | 132,248 | 5,791 / 9,825 |
-| Supplementary Taskboard | Server | 124,641 | 184,991 | 5,246 / 16,383 |
+| MIT Next 10 CRUD example | Client | 46,365 | 69,232 | 3,378 / 5,096 |
+| MIT Next 10 CRUD example | Server | 12,152 | 16,150 | 443 / 2,050 |
+| Supplementary Taskboard | Client | 84,652 | 132,252 | 5,799 / 9,817 |
+| Supplementary Taskboard | Server | 124,645 | 184,999 | 5,266 / 16,363 |
 
 Object and array spread now connect their operands directly to the
 constructed value. This changed assignments and property reads in these
@@ -277,8 +278,8 @@ readback queries were outside the timed interval.
 
 | Application | Input JS files / MB | Paired build/save | Client / server packed MB |
 |---|---:|---:|---:|
-| CRUD | 24 / 0.70 | 3.78 s | 4.65 / 1.28 |
-| Taskboard | 69 / 2.45 | 9.01 s | 9.00 / 13.15 |
+| CRUD | 24 / 0.70 | 3.68 s | 4.65 / 1.28 |
+| Taskboard | 69 / 2.45 | 10.33 s | 8.97 / 13.09 |
 
 Sizes are decimal MB. These are individual local observations for these
 compiled applications. Both pairs were reloaded together and queried after
