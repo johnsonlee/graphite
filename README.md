@@ -791,12 +791,15 @@ deterministic: the manifest's SHA-256 is the graph's fingerprint. A `.sha256` fi
 with standard tools; the fingerprint says what the graph is, the file digest whether these
 are the bytes that were built.
 
-When rebuilding `app.graphite`, the JVM frontend claims `app.graphite.lock` while it
-publishes the new SHA-256 sidecar and then the container. If container publication
+When rebuilding a verified `app.graphite` and matching sidecar, both frontends claim
+`app.graphite.lock`, publish the new SHA-256 sidecar, then replace the container. If container publication
 fails, it restores the previous sidecar. An unlocked reader can observe the old
 container with the new checksum between the two renames. After an interrupted build,
-wait for publishers to exit, verify the container and its sidecar, and inspect the
-lock directory for `previous.sha256` before clearing it and retrying.
+check `app.graphite.lock/owner.pid` if present and confirm all publishers have
+exited. The recorded PID is a hint and may have been reused. If the container
+exists, run `graphite verify app.graphite` and inspect `app.graphite.lock/previous.sha256`
+to restore the matching sidecar if needed. Remove only the confirmed abandoned
+Graphite lock directory, then retry.
 
 ```bash
 graphite verify app.graphite              # CRC-32 per entry, SHA-256 against the manifest and app.graphite.sha256

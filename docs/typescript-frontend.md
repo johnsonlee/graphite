@@ -51,7 +51,7 @@ frontend; use the source-checkout setup above.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
-graphs. JS builds refuse existing destinations. Analysis and import use a private
+graphs. JS builds require a new destination for directory output. Analysis and import use a private
 sibling directory when the output parent exists. For a missing parent, Graphite
 uses system temp only if an empty directory can be renamed from there into the
 nearest existing output ancestor; otherwise it stages in that ancestor. Graphite
@@ -63,14 +63,23 @@ directory can be visible during this fallback. Readers can load the graph only
 after its node-data header is published last. An interrupted fallback can leave
 an incomplete directory; inspect it and remove it before retrying. Failed
 analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
-including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
-rename that refuses to replace an existing file. It publishes the completed digest first,
-then the container, refusing either name if another writer has claimed it.
-If a process is killed between those steps, the digest can remain by itself.
-An abrupt exit can also leave a `.graphite-build-*` directory in system temp
-or under the nearest existing output ancestor. Graphite removes its own staging directory on
-normal exit. After an interrupted build, remove its leftover directory manually
-once the CLI and frontend have both exited; other builds may still use theirs.
+including the adjacent `.graphite.sha256` file. Both JS and JVM builds can rebuild
+an existing `.graphite` output. The publisher verifies its manifest and matching
+sidecar and checks that neither file was replaced during analysis. An unrelated
+file, incomplete pair or mismatched digest stays untouched. A new build claims
+the digest first, then publishes the container. During a rebuild the publisher
+backs up the old digest and restores it if the container rename fails. A reader
+checking the two files between renames can see a transient digest mismatch.
+Use a joined option such as `--output=--sample.graphite` for a filename starting
+with a dash. A separate output flag requires a path.
+An interrupted build can leave a private `.graphite-build-<pid>-*` directory
+beside the output, under its nearest existing ancestor or in system temp. On Linux and macOS, the
+next build that stages in that location removes marked stages only after both
+the recorded CLI and frontend processes have exited in the same boot and
+process namespace. Other systems retain interrupted stages for manual cleanup. A kill during frontend
+startup can leave the worker PID unknown. Inspect such a directory and confirm
+both processes have exited before removing it manually. Older unmarked staging
+directories also require manual cleanup.
 
 For an already-built Next.js application, select emitted server and browser
 artifacts separately when useful:
@@ -145,6 +154,10 @@ runtime behavior are not modeled.
 A reassigned formal parameter has a separate mutable binding. Property stores
 and loads share a location for a resolved receiver binding and key, including
 nested paths such as `obj.cfg.url`. Each load has its own value node.
+Its name records the property key and the key’s emitted line and column, for
+example `@read:url@3:17`. Computed expressions use `<computed>` and literal keys
+longer than 64 UTF-16 code units use `<long-key>` in the read name. The property
+slot retains the full key.
 `obj.x` and `obj["x"]` use the same key. A computed key such as `obj[key]`
 uses the binding of `key`, so a literal property name cannot collide with it.
 
