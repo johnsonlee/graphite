@@ -57,7 +57,6 @@ use graphite_storage::node::{
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
 use rayon::prelude::*;
-use smallvec::SmallVec;
 use std::collections::HashMap;
 
 /// Hidden row key carrying how many matches a row stands for. Absent means one.
@@ -1138,7 +1137,7 @@ impl PartitionPlan {
         let mut parts: Vec<Parts> = (0..ex.sources.len()).map(|_| IndexMap::new()).collect();
         let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| {
             let graph: &Graph = &ex.sources[source].graph;
-            let masked = |mask: u8| -> ColumnIds {
+            let masked = |mask: u8| -> Vec<StrId> {
                 let offset = graph.node_offset(id).unwrap_or(0);
                 columns[tag as usize]
                     .iter()
@@ -1148,7 +1147,7 @@ impl PartitionPlan {
                     .collect()
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
-                Strategy::Whole => (ColumnIds::new(), KeySet::Fixed),
+                Strategy::Whole => (Vec::new(), KeySet::Fixed),
                 Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
@@ -1170,7 +1169,7 @@ impl PartitionPlan {
                     },
                 ),
                 // A node of its own: the id keeps it apart.
-                Strategy::Each => (ColumnIds::from_slice(&[id as StrId]), KeySet::Fixed),
+                Strategy::Each => (vec![id as StrId], KeySet::Fixed),
             };
             parts[source]
                 .entry((tag, ids, keys))
@@ -1217,7 +1216,7 @@ impl PartitionPlan {
                         match self.strategies[si][tag as usize] {
                             Strategy::Whole => {
                                 parts[si].insert(
-                                    (tag, ColumnIds::new(), KeySet::Fixed),
+                                    (tag, Vec::new(), KeySet::Fixed),
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
@@ -1241,7 +1240,7 @@ impl PartitionPlan {
                                                 KeySet::Declared
                                             };
                                             parts[si].insert(
-                                                (tag, ColumnIds::new(), key),
+                                                (tag, Vec::new(), key),
                                                 (partition.first, partition.count as i64),
                                             );
                                         }
@@ -1305,13 +1304,9 @@ fn ascending(ids: &[u32]) -> bool {
     ids.windows(2).all(|w| w[0] < w[1])
 }
 
-// A CallSite exposes four partitionable string columns. Keep their IDs in the
-// lookup key itself instead of allocating a Vec for each node that probes the map.
-type ColumnIds = SmallVec<[StrId; 4]>;
-
 /// The partitions of one source: (first id, weight), keyed by (tag, column ids,
 /// property keys).
-type Parts = IndexMap<(u8, ColumnIds, KeySet), (u32, i64)>;
+type Parts = IndexMap<(u8, Vec<StrId>, KeySet), (u32, i64)>;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash)]
 enum KeySet {

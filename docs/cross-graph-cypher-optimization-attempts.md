@@ -3194,3 +3194,41 @@ Retain every failure and adverse sample. Loading and query CPU and peak RSS
 each have an independent +5% ceiling in every pair. Construction/readback,
 stability, OOM, the two real JS apps and the exact-revision trusted gate are
 separate checks. Candidate pending measurement.
+
+**Measured result and decision.** Clean Linux candidate `3a249350` passed all
+10,074 complete responses on the fixed real64 workload. The two real JS
+applications again passed all four saved forms and the global HTTP checks.
+An independent grouped-query replay checked 14 HTTP responses per binary
+against decoded client and server call records, including source-order
+reversal, the exact count threshold, and pagination. The integrated workspace
+passed 610 tests, with one existing test ignored. Strict Clippy passed.
+
+| Pair | Grouped WITH p50 ms, main → 053 | Grouped WITH p95 ms, main → 053 |
+|---|---:|---:|
+| AB | 717.074 → 744.413 | 758.432 → 783.064 |
+| BA | 757.248 → 740.228 | 829.317 → 786.215 |
+| AB | 721.584 → 778.184 | 778.079 → 865.289 |
+
+The median paired difference was +27.339 ms for p50 and +24.632 ms for
+p95. Both percentiles improved in one pair and regressed in two. Removing
+the transient column-vector allocation did not recover this query. Revert
+the inline key and its direct dependency. Retain the independently decoded
+partition and aggregate regression test. Other cumulative gains have separate
+evidence. The concurrent filter, both sorts, traversal and relationship
+histogram improved at both percentiles in all three pairs. Collect p50 also
+improved in all three. Its p95 changes were −57.970, −156.008 and +109.081 ms.
+
+| Pair | Load CPU s | Load RSS MiB | Query CPU s | Query RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 24.567 → 23.575 | 6213.102 → 3770.512 | 257.730 → 162.545 | 12229.430 → 6308.227 |
+| BA | 24.645 → 21.891 | 6213.316 → 3771.449 | 268.080 → 159.688 | 13256.793 → 6414.418 |
+| AB | 25.666 → 24.503 | 6214.766 → 3776.590 | 258.642 → 170.457 | 12035.262 → 6309.215 |
+
+Every loading and mixed-query CPU and RSS observation remained inside its
+own limit. The comparison seal was
+`be59112341af08ccb23d92ae15d80be007c5742851cf6c3c39cb521cc99b41eb`.
+The immutable `attempt053-resource/runs/053-3a24935017e4c2e106a34056d4559ab5c1862efe`
+archive retains the raw output volume names, per-case sample vectors,
+response audits and phase snapshots. `graphite-attempt053-offline-audit/053-final`
+retains all 73 cases, per-arm values, absolute changes, extrema, boundaries
+and input hashes. The measured candidate did not reach final acceptance.

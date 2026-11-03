@@ -11,5 +11,4 @@ regex.workspace = true
 thiserror.workspace = true
 parking_lot.workspace = true
 rayon.workspace = true
-smallvec = "1"
 serde_json.workspace = true
