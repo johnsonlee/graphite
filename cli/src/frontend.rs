@@ -68,6 +68,10 @@ impl Env {
 
     /// The first executable called `name` on `PATH` (`name.exe` on Windows).
     pub fn which(&self, name: &str) -> Option<PathBuf> {
+        self.which_matching(name, Path::is_file)
+    }
+
+    fn which_matching(&self, name: &str, accept: impl Fn(&Path) -> bool) -> Option<PathBuf> {
         let candidates: Vec<String> = if cfg!(windows) {
             vec![format!("{name}.exe"), name.to_string()]
         } else {
@@ -75,7 +79,7 @@ impl Env {
         };
         self.path_dirs()
             .into_iter()
-            .find_map(|dir| candidates.iter().map(|c| dir.join(c)).find(|p| p.is_file()))
+            .find_map(|dir| candidates.iter().map(|c| dir.join(c)).find(|p| accept(p)))
     }
 
     /// `~/.graphite/frontends`, where `graphite frontend install` puts frontends.
@@ -130,13 +134,36 @@ pub const TS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_TS";
 /// Pin the Node.js runtime used for a JavaScript entry point.
 pub const NODE_VAR: &str = "GRAPHITE_NODE";
 
+fn is_launcher(path: &Path) -> bool {
+    let Ok(meta) = path.metadata() else {
+        return false;
+    };
+    if !meta.is_file() {
+        return false;
+    }
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        meta.permissions().mode() & 0o111 != 0
+    }
+    #[cfg(not(unix))]
+    {
+        path.extension().is_some_and(|ext| {
+            ["exe", "com", "cmd", "bat"]
+                .iter()
+                .any(|suffix| ext.eq_ignore_ascii_case(suffix))
+        })
+    }
+}
+
 /// Emitted-JavaScript analysis is opt-in. Prefer the JS name, retaining TS aliases.
 pub fn locate_js(env: &Env) -> Option<Frontend> {
     for variable in [JS_FRONTEND_VAR, TS_FRONTEND_VAR] {
         if let Some(path) = env.var_path(variable) {
             let launch = match path.extension().and_then(|e| e.to_str()) {
-                Some("js" | "mjs" | "cjs") => Launch::Node(path),
-                _ => Launch::Executable(path),
+                Some("js" | "mjs" | "cjs") if path.is_file() => Launch::Node(path),
+                _ if is_launcher(&path) => Launch::Executable(path),
+                _ => return None,
             };
             return Some(Frontend {
                 lang: "js",
@@ -148,7 +175,7 @@ pub fn locate_js(env: &Env) -> Option<Frontend> {
     ["graphite-frontend-js", "graphite-frontend-ts"]
         .iter()
         .find_map(|name| {
-            env.which(name).map(|path| Frontend {
+            env.which_matching(name, is_launcher).map(|path| Frontend {
                 lang: "js",
                 launch: Launch::Executable(path),
                 found_via: "PATH",
@@ -624,15 +651,25 @@ mod tests {
     #[test]
     fn javascript_discovery_preserves_ts_alias_and_prefers_explicit_js_names() {
         let root = temp_dir("ts");
-        let launcher = root.join("graphite-frontend-ts");
-        touch(&launcher);
+        let make_launcher = |name: &str| {
+            let path = root.join(format!("{name}{}", std::env::consts::EXE_SUFFIX));
+            touch(&path);
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o755)).unwrap();
+            }
+            path
+        };
+        let launcher = make_launcher("graphite-frontend-ts");
         let mut env = env_with(&[("PATH", &root)]);
         assert_eq!(
             locate_js(&env).unwrap().launch,
-            Launch::Executable(launcher)
+            Launch::Executable(launcher.clone())
         );
         for extension in ["js", "mjs", "cjs"] {
             let entry = root.join(format!("cli.{extension}"));
+            touch(&entry);
             env.vars
                 .insert(TS_FRONTEND_VAR.into(), entry.clone().into_os_string());
             let frontend = locate_js(&env).unwrap();
@@ -643,21 +680,30 @@ mod tests {
             assert_eq!(descriptor["writes"], "graph-json");
             assert_eq!(descriptor["inputs"][0], ".js");
         }
+        let source = root.join("cli.ts");
+        touch(&source);
         env.vars
-            .insert(TS_FRONTEND_VAR.into(), "/custom/launcher".into());
+            .insert(TS_FRONTEND_VAR.into(), source.into_os_string());
+        assert!(locate_js(&env).is_none());
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), launcher.clone().into_os_string());
         assert_eq!(
             locate_js(&env).unwrap().launch,
-            Launch::Executable("/custom/launcher".into())
+            Launch::Executable(launcher)
         );
-        env.vars
-            .insert(JS_FRONTEND_VAR.into(), "/preferred/cli.js".into());
+        let preferred_entry = root.join("preferred.js");
+        env.vars.insert(
+            JS_FRONTEND_VAR.into(),
+            preferred_entry.clone().into_os_string(),
+        );
+        assert!(locate_js(&env).is_none());
+        touch(&preferred_entry);
         let preferred = locate_js(&env).unwrap();
-        assert_eq!(preferred.launch, Launch::Node("/preferred/cli.js".into()));
+        assert_eq!(preferred.launch, Launch::Node(preferred_entry));
         assert_eq!(preferred.found_via, JS_FRONTEND_VAR);
         env.vars.remove(JS_FRONTEND_VAR);
         env.vars.remove(TS_FRONTEND_VAR);
-        let js_launcher = root.join("graphite-frontend-js");
-        touch(&js_launcher);
+        let js_launcher = make_launcher("graphite-frontend-js");
         assert_eq!(
             locate_js(&env).unwrap().launch,
             Launch::Executable(js_launcher)

@@ -224,16 +224,21 @@ mod tests {
 
     #[test]
     fn javascript_entry_point_uses_the_selected_node_runtime() {
+        let dir = tempfile::tempdir().unwrap();
+        let script = dir.path().join("cli.js");
+        std::fs::write(&script, "").unwrap();
         let mut env = Env::default();
-        env.vars
-            .insert(frontend::TS_FRONTEND_VAR.into(), "/frontend/cli.js".into());
+        env.vars.insert(
+            frontend::TS_FRONTEND_VAR.into(),
+            script.clone().into_os_string(),
+        );
         env.vars
             .insert(frontend::NODE_VAR.into(), "/runtime/node".into());
         let command = command(&env).unwrap();
         assert_eq!(command.get_program(), "/runtime/node");
         assert_eq!(
             command.get_args().collect::<Vec<_>>(),
-            vec!["/frontend/cli.js", "build"]
+            vec![script.as_os_str(), std::ffi::OsStr::new("build")]
         );
     }
 
