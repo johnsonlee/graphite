@@ -13,18 +13,10 @@ struct Fixture {
 
 impl Fixture {
     fn new(lines: &[&[Option<u32>]]) -> Self {
-        static NEXT: AtomicU64 = AtomicU64::new(0);
-        let root = std::env::temp_dir().join(format!(
-            "graphite-with-filter-{}-{}",
-            std::process::id(),
-            NEXT.fetch_add(1, Ordering::Relaxed)
-        ));
-        std::fs::create_dir(&root).unwrap();
         let method = json!({"declaringClass":"fixture.App", "name":"save", "parameterTypes":[], "returnType":"void"});
-        let graphs = lines
+        let inputs = lines
             .iter()
-            .enumerate()
-            .map(|(index, lines)| {
+            .map(|lines| {
                 let nodes: Vec<_> = lines
                     .iter()
                     .enumerate()
@@ -35,7 +27,24 @@ impl Fixture {
                         })
                     })
                     .collect();
-                let input = json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]});
+                json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]})
+            })
+            .collect();
+        Self::from_inputs(inputs)
+    }
+
+    fn from_inputs(inputs: Vec<serde_json::Value>) -> Self {
+        static NEXT: AtomicU64 = AtomicU64::new(0);
+        let root = std::env::temp_dir().join(format!(
+            "graphite-with-filter-{}-{}",
+            std::process::id(),
+            NEXT.fetch_add(1, Ordering::Relaxed)
+        ));
+        std::fs::create_dir(&root).unwrap();
+        let graphs = inputs
+            .into_iter()
+            .enumerate()
+            .map(|(index, input)| {
                 let path = root.join(index.to_string());
                 graphite_storage::interchange::import_json(
                     serde_json::to_vec(&input).unwrap().as_slice(),
@@ -114,6 +123,12 @@ fn only_total_scalar_projection_filter_and_plain_limit_are_admitted() {
         "MATCH (n:CallSite) WITH n.line AS c, n.id AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
         "MATCH (n:CallSite) WITH n.line AS c WHERE n IS NOT NULL RETURN c LIMIT 1",
         "MATCH (n:CallSite) WITH n.generic_type AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:Field) WITH n.type_info AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:Parameter) WITH n.generic_type AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:Annotation) WITH n.dynamic AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:ResourceValue) WITH n.value AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
+        "MATCH (n:CallSite) WITH n.callee_name AS c WHERE c =~ '[' RETURN c LIMIT 1",
+        "MATCH (n:Constant) WITH n.value AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
         "MATCH (n) WITH n.callee_class AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
         "MATCH (n:CallSite {line: 1}) WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
         "MATCH (n:CallSite) WHERE n.line > 1 WITH n.line AS c WHERE c IS NOT NULL RETURN c LIMIT 1",
@@ -198,16 +213,24 @@ fn ineligible_shapes_preserve_complete_aggregation_order_and_late_errors() {
     ] {
         compare(&fixture, query, true, None);
     }
-    for query in [
-        "MATCH (n:CallSite) WITH n.line AS c, 1 / (n.line - 30) AS d WHERE c IS NOT NULL RETURN c LIMIT 1",
-        "MATCH (n:CallSite) WITH n.line AS c WHERE 1 / (c - 30) > 0 RETURN c LIMIT 1",
-        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN 1 / (c - 30) AS d LIMIT 1",
+    for prefix in [
+        "MATCH (n:CallSite) WITH n.line AS c, 1 / (n.line - 30) AS d WHERE c IS NOT NULL RETURN c",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE 1 / (c - 30) > 0 RETURN c",
+        "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL RETURN 1 / (c - 30) AS d",
     ] {
-        assert_eq!(admitted(query), None);
-        let actual = fixture.executor().execute(query, None).unwrap_err();
-        let expected = fixture.executor().execute(&generic(query), None).unwrap_err();
-        assert!(matches!(&actual, CypherError::Runtime(message) if message == "Division by zero"));
-        assert_eq!(format!("{actual:?}"), format!("{expected:?}"));
+        for limit in [0, 1] {
+            let query = format!("{prefix} LIMIT {limit}");
+            assert_eq!(admitted(&query), None);
+            let actual = fixture.executor().execute(&query, None).unwrap_err();
+            let expected = fixture
+                .executor()
+                .execute(&generic(&query), None)
+                .unwrap_err();
+            assert!(
+                matches!(&actual, CypherError::Runtime(message) if message == "Division by zero")
+            );
+            assert_eq!(actual, expected, "{query}");
+        }
     }
 }
 
@@ -268,4 +291,90 @@ fn the_row_limit_stops_candidate_access_after_enough_filtered_rows() {
         plain.poll.load(Ordering::Relaxed) > 128,
         "the correctness oracle consumes the complete input"
     );
+}
+
+#[test]
+fn schema_scalar_filters_keep_values_order_and_provenance_across_tags() {
+    let method = json!({"declaringClass":"fixture.App","name":"f","parameterTypes":["string"],"returnType":"string"});
+    let fixture = Fixture::from_inputs(["alpha","beta"].map(|name| json!({
+        "version":1, "methods":[method], "edges":[], "nodes":[
+            {"id":0,"kind":"Field","declaringClass":"C","name":"x","fieldType":"string","isStatic":false},
+            {"id":1,"kind":"Field","declaringClass":"C","name":name,"fieldType":"string","isStatic":true},
+            {"id":2,"kind":"Parameter","method":method,"index":0,"paramType":name},
+            {"id":3,"kind":"Return","method":method,"actualType":null},
+            {"id":4,"kind":"Return","method":method,"actualType":name}
+        ]
+    })).to_vec());
+    for query in [
+        "MATCH (n:Field) WITH n.name AS c, n.static AS s WHERE c <> 'x' AND s = true RETURN c LIMIT 2",
+        "MATCH (n:Parameter) WITH n.type AS c, n.index AS i WHERE c IS NOT NULL AND i = 0 RETURN c LIMIT 2",
+        "MATCH (n:ReturnNode) WITH n.actual_type AS c WHERE c IS NOT NULL AND c ENDS WITH 'a' RETURN c LIMIT 2",
+    ] {
+        assert_eq!(admitted(query), Some(2));
+        let result = compare(&fixture, query, true, None);
+        assert_eq!(result.columns, ["c"]);
+        assert!(!result.more);
+        assert_eq!(result.rows.len(), 2);
+        for (row, (value, graph)) in result.rows.iter().zip([("alpha","graph-0"),("beta","graph-1")]) {
+            assert_eq!(row["c"].as_str(), Some(value));
+            assert_eq!(QueryResult::graph_ids(row), [graph]);
+        }
+    }
+    let query = "MATCH (n:ReturnNode) WITH n.actual_type AS c, 'missing' AS label WHERE c IS NULL RETURN label LIMIT 1";
+    assert_eq!(admitted(query), Some(1));
+    let result = compare(&fixture, query, true, None);
+    assert!(result.more);
+    assert_eq!(result.rows[0]["label"].as_str(), Some("missing"));
+    assert_eq!(QueryResult::graph_ids(&result.rows[0]), ["graph-0"]);
+}
+
+#[test]
+fn both_sides_of_a_conjunction_keep_late_errors_visible() {
+    let fixture = Fixture::new(&[&[Some(10)], &[Some(30)]]);
+    let query = "MATCH (n:CallSite) WITH n.line AS c WHERE c IS NOT NULL AND CASE WHEN c = 30 THEN 'x' =~ '[' ELSE true END RETURN c LIMIT 1";
+    assert_eq!(admitted(query), None);
+    let actual = fixture.executor().execute(query, None).unwrap_err();
+    assert!(
+        matches!(&actual, CypherError::Other(message) if message.contains("Unsupported regex"))
+    );
+    assert_eq!(
+        actual,
+        fixture
+            .executor()
+            .execute(&generic(query), None)
+            .unwrap_err()
+    );
+}
+
+#[test]
+fn persisted_jvm_scalar_filters_match_generic_rows_and_probe() {
+    let Some(dir) = std::env::var_os("GRAPHITE_INDEX_FIXTURE") else {
+        return;
+    };
+    let graph = Arc::new(Graph::load(std::path::Path::new(&dir)).unwrap());
+    let executor = || {
+        Executor::new(
+            ["first", "second"]
+                .map(|id| Source {
+                    id: Arc::from(id),
+                    graph: graph.clone(),
+                })
+                .to_vec(),
+            true,
+        )
+        .with_probe()
+    };
+    for query in [
+        "MATCH (n:Field) WITH n.name AS c WHERE c <> 'x' RETURN c LIMIT 3",
+        "MATCH (n:Parameter) WITH n.type AS c, n.index AS i WHERE c IS NOT NULL AND i >= 0 RETURN c, i LIMIT 3",
+        "MATCH (n:ReturnNode) WITH n.id AS i WHERE i IS NOT NULL RETURN i LIMIT 3",
+    ] {
+        assert_eq!(admitted(query), Some(3));
+        let actual = executor().execute(query, None).unwrap();
+        let expected = executor().execute(&generic(query), None).unwrap();
+        assert_eq!(format!("{actual:?}"), format!("{expected:?}"), "{query}");
+        assert_eq!(actual.rows.len(), 3, "{query}");
+        assert!(actual.more, "{query}");
+        assert_eq!(QueryResult::graph_ids(&actual.rows[0]), ["first"]);
+    }
 }

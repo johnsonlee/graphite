@@ -3388,3 +3388,22 @@ The complete result SHA-256 is
 `1624112441c8919bda333bbb6e3b0543c5ee5b813e4296e72094fe537333ec9a`.
 The sealed `attempt053-resource/runs/055-1e96a06481017ef52bf4f2b5d7414fc14a5a03c4`
 archive retains every case, request receipt and phase resource snapshot.
+
+### 2026-11-04 - Attempt 056: stop after enough rows pass a total projected filter
+
+The existing shortcut recognizes one CallSite projection and a single null
+test. The candidate applies the same cutoff to a single-tag scan when the
+projected values have infallible scalar reads, the predicate only uses those
+values and literals, and the final projection preserves them. Ordered,
+aggregated or distinct results and potentially failing expressions retain their
+normal execution path. One row predicate represents the chosen execution mode.
+The ordinary path specializes to an always-true function.
+
+Compare the integrated candidate against main `a5c96f71` using the fixed
+attempt 055 protocol. Run three pairs in AB / BA / AB order, using 64 real
+graphs in every request, all 73 query cases, complete response consumption and
+the frozen result oracle. For each case and arm collect 20 pressure samples at
+concurrency four, reporting nearest-rank p50 and p95 and every paired
+difference. Keep loading and full-mix CPU and peak RSS separate and apply the
+5% limit independently in each pair. The unit tests establish which additional
+query shapes qualify and that late errors remain visible.

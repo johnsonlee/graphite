@@ -380,6 +380,15 @@ loading and the fixed mixed-query workload in three pairs. It also identified
 repeatable traversal-count and relationship-histogram latency increases;
 the resource result does not offset them.
 
+The current Cypher executor can stop after a literal `LIMIT` for a single
+labeled-node scan when its `WITH` projects literals or known scalar properties.
+For example, `MATCH (n:Field) WITH n.name AS c WHERE c <> 'x' RETURN c LIMIT 10`
+counts ten matching names in encounter order. The filter can combine scalar
+comparisons and null checks with `AND`. HTTP pagination probes one additional
+matching row. Expressions that can fail later, including arithmetic, regexes
+and declared-type lookup, keep the full evaluation path so a small limit cannot
+hide their errors. Aggregation, ordering and `DISTINCT` keep their existing plans.
+
 ## Historical source-prototype evidence
 
 The previous source-analysis prototype used mitt 3.0.1 at
