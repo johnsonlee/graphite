@@ -1219,27 +1219,46 @@ fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
 fn build_backward_csr(fwd: &Csr) -> Csr {
     let n = fwd.offsets.len() - 1;
     let m = fwd.targets.len();
-    let mut indeg = vec![0u32; n + 1];
-    for &t in &fwd.targets {
-        indeg[t as usize + 1] += 1;
+    let mut offsets = vec![0u32; n + 1];
+    if m == 0 {
+        return Csr {
+            offsets,
+            targets: Vec::new(),
+            labels: Vec::new(),
+        };
     }
-    for i in 0..n {
-        indeg[i + 1] += indeg[i];
+
+    let (mut first_to, mut last_to) = (n, 0);
+    for &target in &fwd.targets {
+        let to = target as usize;
+        offsets[to + 1] += 1;
+        first_to = first_to.min(to);
+        last_to = last_to.max(to);
     }
-    let offsets = indeg;
-    let mut fill = offsets.clone();
+    // Initially offsets[to + 1] is the start of row `to`. Each write advances
+    // it once, leaving the required end offset without a second cursor array.
+    let mut total = 0;
+    for count in &mut offsets[first_to + 1..=last_to + 1] {
+        let degree = *count;
+        *count = total;
+        total += degree;
+    }
+    offsets[last_to + 2..].fill(total);
     let mut targets = vec![0u32; m];
     let mut labels = vec![0u8; m];
-    // Iterating sources ascending yields ascending predecessor lists.
-    for from in 0..n {
+    // The forward offsets are monotone and end at the actual decoded edge
+    // count. Skip empty prefix/suffix rows, preserving source and edge order.
+    let first_from = fwd.offsets.partition_point(|&off| off == 0) - 1;
+    let end_from = fwd.offsets.partition_point(|&off| (off as usize) < m);
+    for from in first_from..end_from {
         let s = fwd.offsets[from] as usize;
         let e = fwd.offsets[from + 1] as usize;
         for k in s..e {
-            let to = fwd.targets[k] as usize;
-            let p = fill[to] as usize;
+            let cursor = &mut offsets[fwd.targets[k] as usize + 1];
+            let p = *cursor as usize;
             targets[p] = from as u32;
             labels[p] = fwd.labels[k];
-            fill[to] += 1;
+            *cursor += 1;
         }
     }
     Csr {

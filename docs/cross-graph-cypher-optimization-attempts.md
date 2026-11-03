@@ -3047,3 +3047,43 @@ other pairs offset this. The loader source did not change in this attempt;
 the measurement alone does not establish a cause. Two concrete remaining
 opportunities are the reverse-CSR builder's full-size cursor copy/empty-ID scans
 and the ordered projection's repeated evaluation of the same scalar property.
+
+### 2026-11-03 - Attempt 051: Build reverse CSR over occupied ranges
+
+**Trigger and hypothesis:** 050 exceeded main's loading CPU by 5.745% in one
+of three fixed pairs. The measured loader built a complete second copy of the
+reverse offset array to use as write cursors. Across the canonical 64 inputs
+that is 2,718,350,032 bytes copied in aggregate, up to 77,752,804 bytes for one
+graph. These are logical byte counts, not an RSS peak or a timing claim.
+
+**Change:** Count degrees at destination index + 1, using the occupied range
+of destinations in the actual forward CSR. Initialize those offset slots as
+write cursors; advancing each cursor during the ordered fill leaves its final
+exclusive end in place. The untouched leading offsets remain zero and the
+trailing offsets equal the edge count. Use the monotone forward offsets to skip
+empty source prefixes/suffixes, without assuming that a type index describes
+all edges. The result retains the full public offset length, ascending source
+order, repeated/self edges and their raw labels. There is no persisted-format
+change, additional cache or deferred query work.
+
+**Correctness:** 605 default workspace tests passed, one existing ignored;
+strict workspace Clippy and formatting passed. Against the CI core graph all
+134 storage tests passed. An independent stable-sort inversion checked every
+offset, predecessor and label on a late Kotlin compiler shard with 19,438,200
+CSR rows and 223,904 edges. The shard's BV inputs/labels matched the current
+fixture; its `forward.properties` differed only in the declaration binding.
+Small oracles also cover empty graphs, sparse prefix/interior/trailing rows,
+self edges, duplicates, both capacity bounds and invalid inputs. None of these
+single-graph checks supplies performance evidence.
+
+**Protocol:** Parent `75be740f`, native production code `5a608699`; candidate
+is the commit containing this record. Use the same immutable Linux real64 graph
+files and trusted 73-case oracles. Before measurement seal one common holder
+and all comparison identities. One full-mix pair (050 then 051) measures the
+increment; a distinct pair compares 052 and 051; three fresh main/final pairs
+(AB / BA / AB) determine cumulative performance evidence. Every arm consumes
+all 1,679 responses, including twenty concurrent pressure samples per case.
+Verify residency around each arm; retain all samples/failures. Do not pool
+attribution and main acceptance or use parent savings to offset a main overrun.
+The complete trusted exact-head construction/readback, query and Linux OOM
+checks remain a separate gate. Candidate pending measurement.
