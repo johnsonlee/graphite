@@ -265,6 +265,22 @@ hosted timing observations do not establish performance acceptance.
 
 ### PR review verification, 2026-11-04
 
+At `bd228a1a`, both pinned projects passed 170 CLI commands, including
+128 queries across saved directories, packed containers, unpacked copies and
+directly built containers. The independent JavaScript check verified 211
+shorthand value reads in the server bundles and all 21 selected call
+occurrences. The 48,212 CallSites kept their caller, callee, source line,
+argument and receiver records, and call flags. The client containers matched
+the preceding build byte for byte. Removing disconnected shorthand locals
+changed the server graphs as follows. The two removed assignment edges came
+from CRUD objects containing both `err` and `error: err`. Each object now
+reads a single shared parameter.
+
+| Application | Server nodes | Server edges | Server packed bytes |
+|---|---:|---:|---:|
+| MIT Next 10 CRUD example | 11,994 (−158) | 16,148 (−2) | 1,269,516 |
+| Supplementary Taskboard | 124,640 (−5) | 184,999 (unchanged) | 13,078,308 |
+
 At `0d3a1165`, 64 frontend tests passed. Both applications were rebuilt
 from the same pinned JavaScript artifacts and queried in all four saved
 forms. The independent emitted-code oracle matched all 21 selected call
@@ -289,7 +305,7 @@ also differ from those reported during a full TypeScript diagnostics pass,
 including union order and inferred callback return types. The v3 string
 dictionary includes strings actually referenced by records and metadata.
 
-On an Apple M3 Max with 64 GiB RAM, one local release build of each client
+At `0d3a1165`, on an Apple M3 Max with 64 GiB RAM, one local release build of each client
 and server pair produced the following results. Each measurement includes two
 fresh CLI/frontend processes running sequentially on previously compiled JS,
 through publication of both containers and their digests. The JS inputs had

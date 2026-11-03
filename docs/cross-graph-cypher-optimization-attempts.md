@@ -3407,3 +3407,41 @@ concurrency four, reporting nearest-rank p50 and p95 and every paired
 difference. Keep loading and full-mix CPU and peak RSS separate and apply the
 5% limit independently in each pair. The unit tests establish which additional
 query shapes qualify and that late errors remain visible.
+
+**Matched result and decision.** Retain the total-filter cutoff. All 10,074
+responses matched the oracle, including 8,760 pressure requests, and all six
+processes completed with zero OOM events. The table shows main and candidate
+milliseconds for the pair producing the median difference, followed by the
+range of differences across three pairs.
+
+| Query | p50 main → candidate (Δ [range]) | p95 main → candidate (Δ [range]) |
+|---|---:|---:|
+| shape-with-filter | 2805.548 → 0.354 (−2805.194 [−2828.787, −2799.565]) | 2990.572 → 3.195 (−2987.377 [−3046.153, −2958.032]) |
+| shape-order-by | 2367.064 → 1725.534 (−641.529 [−642.226, −630.295]) | 2480.463 → 1826.167 (−654.296 [−690.412, −641.356]) |
+| shape-order-by-desc | 2415.210 → 1753.723 (−661.487 [−696.312, −656.397]) | 2500.244 → 1822.670 (−677.575 [−687.992, −639.662]) |
+| shape-collect | 1793.378 → 1636.041 (−157.337 [−162.980, −134.893]) | 1865.743 → 1727.744 (−137.999 [−216.867, −88.977]) |
+| shape-with-aggregate | 673.969 → 509.657 (−164.313 [−181.208, −163.154]) | 779.099 → 624.658 (−154.441 [−168.588, −85.051]) |
+| shape-count-traversal | 129.140 → 79.744 (−49.396 [−50.102, −38.623]) | 173.282 → 128.120 (−45.162 [−61.119, −39.613]) |
+| schema-relationship-histogram | 123.488 → 86.344 (−37.143 [−42.981, −36.164]) | 136.354 → 114.813 (−21.541 [−64.825, −11.944]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 26.510 → 22.149 | 6223.059 → 3765.305 | 258.207 → 149.459 | 12179.086 → 6276.188 |
+| BA | 25.610 → 20.381 | 6212.898 → 3766.918 | 258.039 → 149.265 | 12221.352 → 6367.730 |
+| AB | 26.887 → 23.865 | 6210.828 → 3772.074 | 256.585 → 149.892 | 11902.461 → 6492.727 |
+
+All twelve loading and mixed-query CPU/RSS comparisons met their 5% limits.
+Load readiness improved by 2.797–5.072 s and the complete query mix by
+28.500–29.552 s. Across the catalog, 97 individual pair-percentile differences
+were positive. The largest positive median differences were 0.119 ms p50 and
+1.900 ms p95. The sample describes warm-cache loading and queries on the
+integrated candidate. It does not isolate how much each review change
+contributed. Tests on two-source fixtures separately checked the newly eligible
+Field, Parameter and Return queries, row provenance, pagination and late errors.
+
+Candidate `bd228a1a` produced binary SHA-256
+`ecd7f324b7b8ecaeff93fa4d3dd5fdfdd31e05f6a6303baf055513ca2fa94420`.
+The seal SHA-256 is
+`39dd017db58af2a0fc157307591d547c8f6173cc9a13ae537aa4dbe4880f04da`.
+The complete result SHA-256 is
+`bad0e43556e1558e099d117f09fad6c9eea5c5390e9bb722be30cd8651374366`.
