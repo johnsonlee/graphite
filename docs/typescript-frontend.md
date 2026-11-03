@@ -261,14 +261,14 @@ hosted timing observations do not establish performance acceptance.
 
 ### PR review verification, 2026-11-04
 
-At `a3bc1ff1`, 61 frontend tests passed. Both applications were rebuilt
+At `0d3a1165`, 64 frontend tests passed. Both applications were rebuilt
 from the same pinned JavaScript artifacts and queried in all four saved
 forms. The independent emitted-code oracle matched all 21 selected call
 occurrences, including Taskboard's detached `(0,a.useState)("todo")`.
-Compared with `0c404165`, the number of source calls for every caller and
-line stayed the same. Taskboard's client resolved eight previously dynamic
-calls, and its server resolved twenty. The constructor and call name changes
-are observable in the saved graphs. Neither app produced a syntax or
+Compared with `a3bc1ff1`, all 48,212 CallSites retained their IDs, callers,
+source lines and flags. The saved graphs show 12,129 calls whose standard
+library owner now uses the stable global symbol and 434 dynamic expression
+names normalized to `<call>`. All node and edge counts stayed the same. Neither app produced a syntax or
 relationship-conflict warning.
 
 | Application | Side | Nodes | Edges | Resolved / dynamic CallSites |
@@ -294,8 +294,8 @@ readback queries were outside the timed interval.
 
 | Application | Input JS files / MB | Paired build/save | Client / server packed MB |
 |---|---:|---:|---:|
-| CRUD | 24 / 0.70 | 3.68 s | 4.65 / 1.28 |
-| Taskboard | 69 / 2.45 | 10.33 s | 8.97 / 13.09 |
+| CRUD | 24 / 0.70 | 3.61 s | 4.64 / 1.27 |
+| Taskboard | 69 / 2.45 | 10.30 s | 8.97 / 13.08 |
 
 Sizes are decimal MB. These are individual local observations for these
 compiled applications. Both pairs were reloaded together and queried after
