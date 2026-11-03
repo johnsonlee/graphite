@@ -20,3 +20,6 @@ tempfile = { version = "3.27", default-features = false }
 # jemalloc has no MSVC build; those targets keep the system allocator.
 [target.'cfg(not(target_env = "msvc"))'.dependencies]
 tikv-jemallocator = "0.5"
+
+[target.'cfg(any(target_vendor = "apple", target_os = "linux", target_os = "android", target_os = "redox"))'.dependencies]
+rustix = { version = "1.1", features = ["fs"] }

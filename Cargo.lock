@@ -458,6 +458,7 @@ dependencies = [
  "graphite-cypher",
  "graphite-explore",
  "graphite-storage",
+ "rustix",
  "serde_json",
  "sha2",
  "tempfile",

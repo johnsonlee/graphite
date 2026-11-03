@@ -63,13 +63,7 @@ fn publish_with(
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) struct Stage(pub(crate) PathBuf, Placement);
-
-#[derive(Debug, PartialEq, Eq)]
-enum Placement {
-    Sibling,
-    SystemTemp,
-}
+pub(crate) struct Stage(pub(crate) PathBuf);
 #[derive(Copy, Clone)]
 pub(crate) enum Publication {
     CreateNew,
@@ -87,16 +81,14 @@ impl Stage {
         let destination = self.0.join(name);
         let report = graphite_storage::container::pack(&self.graph(), &destination)
             .map_err(|e| format!("could not pack {}: {e}", output.display()))?;
-        let local = self.at_output(output, &[&destination, &report.digest_file])?;
-        let container = local.as_ref().unwrap_or(self).0.join(name);
-        let sidecar = graphite_storage::container::digest_path(&container);
+        create_output_parent(output)?;
         match publication {
-            Publication::CreateNew => publish_container(&container, &sidecar, output)?,
+            Publication::CreateNew => publish_container(&destination, &report.digest_file, output)?,
             Publication::Replace => {
-                std::fs::rename(&container, output)
+                std::fs::rename(&destination, output)
                     .map_err(|e| format!("could not publish {}: {e}", output.display()))?;
                 let digest = graphite_storage::container::digest_path(output);
-                std::fs::rename(&sidecar, &digest)
+                std::fs::rename(&report.digest_file, &digest)
                     .map_err(|e| format!("could not publish {}: {e}", digest.display()))?;
             }
         }
@@ -105,27 +97,65 @@ impl Stage {
     }
 
     pub(crate) fn publish_directory(&self, output: &Path) -> Result<(), String> {
-        let local = self.at_output(output, &[&self.graph()])?;
-        require_absent(output)?;
-        std::fs::rename(local.as_ref().unwrap_or(self).graph(), output)
-            .map_err(|e| format!("could not save graph: {e}"))
+        create_output_parent(output)?;
+        rename_directory_exclusive(&self.graph(), output).map_err(|e| {
+            if e.kind() == std::io::ErrorKind::AlreadyExists {
+                format!("output already exists: {}", output.display())
+            } else {
+                format!(
+                    "could not publish directory {} without replacing an existing path: {e}",
+                    output.display()
+                )
+            }
+        })
     }
 
     pub(crate) fn new(output: &Path) -> std::io::Result<Self> {
-        let parent = output
-            .parent()
-            .filter(|p| !p.as_os_str().is_empty())
-            .unwrap_or(Path::new("."));
-        match std::fs::metadata(parent) {
-            Ok(_) => Self::in_directory(parent, Placement::Sibling),
-            Err(e) if e.kind() == std::io::ErrorKind::NotFound => {
-                Self::in_directory(&std::env::temp_dir(), Placement::SystemTemp)
-            }
-            Err(e) => Err(e),
-        }
+        Self::for_output(output, &std::env::temp_dir(), |from, to| {
+            std::fs::rename(from, to)
+        })
     }
 
-    fn in_directory(parent: &Path, placement: Placement) -> std::io::Result<Self> {
+    fn for_output(
+        output: &Path,
+        temp_dir: &Path,
+        rename_probe: impl FnOnce(&Path, &Path) -> std::io::Result<()>,
+    ) -> std::io::Result<Self> {
+        let parent = output.parent().unwrap_or(Path::new("."));
+        for ancestor in parent.ancestors() {
+            let dir = if ancestor.as_os_str().is_empty() {
+                Path::new(".")
+            } else {
+                ancestor
+            };
+            match std::fs::metadata(dir) {
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => continue,
+                Err(e) => return Err(e),
+                Ok(_) => {}
+            }
+            let local = Self::in_directory(dir)?;
+            if ancestor == parent || dir == temp_dir {
+                return Ok(local);
+            }
+            // Even bind mounts with matching device IDs may reject renames. Move
+            // an empty directory before allowing the frontend to write any graph data.
+            if let Ok(temp) = Self::in_directory(temp_dir) {
+                let probe = temp.0.join("probe");
+                if std::fs::create_dir(&probe).is_ok()
+                    && rename_probe(&probe, &local.0.join("probe")).is_ok()
+                {
+                    return Ok(temp);
+                }
+            }
+            return Ok(local);
+        }
+        Err(std::io::Error::new(
+            std::io::ErrorKind::NotFound,
+            "no existing output ancestor",
+        ))
+    }
+
+    fn in_directory(parent: &Path) -> std::io::Result<Self> {
         let mut builder = tempfile::Builder::new();
         builder.prefix(".graphite-build-");
         #[cfg(unix)]
@@ -133,68 +163,41 @@ impl Stage {
             use std::os::unix::fs::PermissionsExt;
             builder.permissions(std::fs::Permissions::from_mode(0o700));
         }
-        Ok(Self(builder.tempdir_in(parent)?.keep(), placement))
-    }
-
-    /// A missing parent is created only after the frontend/import/pack succeeded.
-    /// Transfer just the files being published, excluding intermediate JSON/graphs.
-    fn at_output(&self, output: &Path, payloads: &[&Path]) -> Result<Option<Self>, String> {
-        if self.1 == Placement::Sibling {
-            return Ok(None);
-        }
-        create_output_parent(output)?;
-        let parent = output.parent().ok_or("missing output parent")?;
-        let local = Self::in_directory(parent, Placement::Sibling)
-            .map_err(|e| format!("could not stage publication in {}: {e}", parent.display()))?;
-        for from in payloads {
-            let to = local
-                .0
-                .join(from.file_name().ok_or("missing staged filename")?);
-            move_or_copy(from, &to, |a, b| std::fs::rename(a, b)).map_err(|e| {
-                format!(
-                    "could not transfer {} to {}: {e}",
-                    from.display(),
-                    to.display()
-                )
-            })?;
-        }
-        Ok(Some(local))
+        Ok(Self(builder.tempdir_in(parent)?.keep()))
     }
 }
 
-// JS interchange directories contain only regular files. Copy to a private sibling
-// on EXDEV, so final names never become visible while their data is being written.
-fn move_or_copy(
-    from: &Path,
-    to: &Path,
-    rename: impl FnOnce(&Path, &Path) -> std::io::Result<()>,
-) -> std::io::Result<()> {
-    match rename(from, to) {
-        Err(e) if e.kind() == std::io::ErrorKind::CrossesDevices => {}
-        result => return result,
-    }
-    let ty = std::fs::symlink_metadata(from)?.file_type();
-    if ty.is_dir() {
-        std::fs::create_dir(to)?;
-        for entry in std::fs::read_dir(from)? {
-            let entry = entry?;
-            if !entry.file_type()?.is_file() {
-                return Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "unexpected entry in saved graph",
-                ));
-            }
-            std::fs::copy(entry.path(), to.join(entry.file_name()))?;
-        }
-    } else if ty.is_file() {
-        std::fs::copy(from, to)?;
-    } else {
-        return Err(std::io::Error::new(
-            std::io::ErrorKind::InvalidData,
-            "unexpected staged payload",
-        ));
-    }
-    Ok(())
+#[cfg(any(
+    target_vendor = "apple",
+    target_os = "linux",
+    target_os = "android",
+    target_os = "redox"
+))]
+fn rename_directory_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
+    use rustix::fs::{renameat_with, RenameFlags, CWD};
+    Ok(renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE)?)
+}
+
+#[cfg(windows)]
+fn rename_directory_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
+    // On Windows persist_noclobber uses MoveFileExW without REPLACE_EXISTING or COPY_ALLOWED.
+    tempfile::TempPath::try_from_path(from)?
+        .persist_noclobber(to)
+        .map_err(|e| e.error)
+}
+
+#[cfg(not(any(
+    windows,
+    target_vendor = "apple",
+    target_os = "linux",
+    target_os = "android",
+    target_os = "redox"
+)))]
+fn rename_directory_exclusive(_: &Path, _: &Path) -> std::io::Result<()> {
+    Err(std::io::Error::new(
+        std::io::ErrorKind::Unsupported,
+        "exclusive directory rename is unavailable",
+    ))
 }
 
 impl Drop for Stage {
@@ -235,47 +238,74 @@ mod tests {
     }
 
     #[test]
-    fn cross_volume_transfer_copies_only_complete_payloads_to_private_staging() {
-        let root = tempfile::tempdir().unwrap();
-        let local = Stage::new(&root.path().join("output")).unwrap();
-        let from = root.path().join("saved");
-        std::fs::create_dir(&from).unwrap();
-        std::fs::write(from.join("graph.nodedata"), b"nodes").unwrap();
-        std::fs::write(from.join("graph.strings"), b"strings").unwrap();
-        let different_volume = |_: &Path, _: &Path| Err(std::io::ErrorKind::CrossesDevices.into());
-        move_or_copy(&from, &local.graph(), different_volume).unwrap();
-        assert_eq!(
-            std::fs::read(local.graph().join("graph.nodedata")).unwrap(),
-            b"nodes"
-        );
-        assert_eq!(
-            std::fs::read(local.graph().join("graph.strings")).unwrap(),
-            b"strings"
-        );
-        let packed = root.path().join("container");
-        std::fs::write(&packed, b"packed bytes").unwrap();
-        move_or_copy(&packed, &local.0.join("packed"), different_volume).unwrap();
-        assert_eq!(
-            std::fs::read(local.0.join("packed")).unwrap(),
-            b"packed bytes"
-        );
-        assert!(!root.path().join("output").exists());
+    fn different_volume_or_unavailable_temp_stages_next_to_the_missing_parent() {
+        let disk = tempfile::tempdir().unwrap();
+        let temp = tempfile::tempdir().unwrap();
+        let nearest = disk.path().join("data");
+        std::fs::create_dir(&nearest).unwrap();
+        let output = nearest.join("new/nested/app.graphite");
+        let stage = Stage::for_output(&output, temp.path(), |from, to| {
+            assert!(from.is_dir() && from.starts_with(temp.path()));
+            assert!(to.starts_with(&nearest) && !to.exists());
+            Err(std::io::ErrorKind::CrossesDevices.into())
+        })
+        .unwrap();
+        assert_eq!(stage.0.parent(), Some(nearest.as_path()));
+        assert!(!nearest.join("new").exists());
+        assert_eq!(std::fs::read_dir(temp.path()).unwrap().count(), 0);
+        drop(stage);
+        let stage = Stage::for_output(&output, &temp.path().join("unavailable"), |_, _| {
+            panic!("no temp probe")
+        })
+        .unwrap();
+        assert_eq!(stage.0.parent(), Some(nearest.as_path()));
+        assert!(!nearest.join("new").exists());
+        drop(stage);
+        assert_eq!(std::fs::read_dir(&nearest).unwrap().count(), 0);
+    }
 
-        // Only a cross-device error permits copying; other rename failures are preserved.
-        let to = local.0.join("denied");
+    #[cfg(target_os = "linux")]
+    #[test]
+    fn native_cross_device_probe_uses_the_output_mount() {
+        let disk = tempfile::tempdir().unwrap();
+        let Ok(tmpfs) = tempfile::tempdir_in("/dev/shm") else {
+            return;
+        };
+        let marker = tmpfs.path().join("check");
+        std::fs::create_dir(&marker).unwrap();
+        match std::fs::rename(&marker, disk.path().join("check")) {
+            Ok(()) => return, // Same mount on this host.
+            Err(e) => assert_eq!(e.kind(), std::io::ErrorKind::CrossesDevices),
+        }
+        let output = disk.path().join("not-created/graph");
+        let stage = Stage::for_output(&output, tmpfs.path(), |a, b| std::fs::rename(a, b)).unwrap();
+        assert_eq!(stage.0.parent(), Some(disk.path()));
+        assert!(!output.parent().unwrap().exists());
+    }
+
+    #[cfg(any(target_vendor = "apple", target_os = "linux", windows))]
+    #[test]
+    fn a_directory_created_after_preflight_is_never_replaced() {
+        let root = tempfile::tempdir().unwrap();
+        let output = root.path().join("saved");
+        require_absent(&output).unwrap();
+        let stage = Stage::new(&output).unwrap();
+        std::fs::create_dir(stage.graph()).unwrap();
+        std::fs::write(stage.graph().join("graph.data"), b"complete graph").unwrap();
+        std::fs::create_dir(&output).unwrap(); // A different writer claimed the name.
+        assert!(stage.publish_directory(&output).is_err());
+        assert_eq!(std::fs::read_dir(&output).unwrap().count(), 0);
         assert_eq!(
-            move_or_copy(&packed, &to, |_, _| Err(
-                std::io::ErrorKind::PermissionDenied.into()
-            ))
-            .unwrap_err()
-            .kind(),
-            std::io::ErrorKind::PermissionDenied
+            std::fs::read(stage.graph().join("graph.data")).unwrap(),
+            b"complete graph"
         );
-        assert!(!to.exists());
-        let moved = local.0.join("moved");
-        move_or_copy(&packed, &moved, |a, b| std::fs::rename(a, b)).unwrap();
-        assert_eq!(std::fs::read(moved).unwrap(), b"packed bytes");
-        assert!(!packed.exists());
+        std::fs::remove_dir(&output).unwrap();
+        stage.publish_directory(&output).unwrap();
+        assert_eq!(
+            std::fs::read(output.join("graph.data")).unwrap(),
+            b"complete graph"
+        );
+        assert!(!stage.graph().exists());
     }
 
     #[cfg(any(target_os = "macos", target_os = "linux", windows))]
