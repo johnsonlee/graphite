@@ -31,7 +31,7 @@ export interface SourceGraph {
 type UndefinedState = 'always' | 'never' | 'maybe';
 interface ArgumentValue { id: number; state: UndefinedState }
 type FunctionBody = ts.FunctionLikeDeclaration & { body: ts.ConciseBody };
-interface Context { method: Method; parameters: number[]; returned?: number; body: ts.Node; declaration?: FunctionBody; defaults?: Map<number, ts.Expression> }
+interface Context { method: Method; parameters: number[]; restIndex?: number; returned?: number; body: ts.Node; declaration?: FunctionBody; defaults?: Map<number, ts.Expression> }
 const isBody = (n: ts.Node): n is FunctionBody => ts.isFunctionLike(n) && 'body' in n && !!n.body;
 const artifactExtension = /\.(?:[cm]?js)$/i;
 const formatDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => ts.formatDiagnostics(diagnostics, {
@@ -51,7 +51,8 @@ export function project(input: string): { program: ts.Program; root: string } {
       const file = path.join(directory, entry.name);
       // Do not traverse symlinks, dependencies or Next's compiler cache. Include .next,
       // dist and build: these are precisely the directories this frontend consumes.
-      if (entry.isDirectory() && !['node_modules', '.git', 'cache'].includes(entry.name)) collect(file);
+      if (entry.isDirectory() && !['node_modules', '.git'].includes(entry.name) &&
+          !(entry.name === 'cache' && path.basename(directory) === '.next')) collect(file);
       else if (entry.isFile() && artifactExtension.test(entry.name)) files.push(file);
     }
   };
@@ -65,13 +66,15 @@ export function project(input: string): { program: ts.Program; root: string } {
     moduleDetection: ts.ModuleDetectionKind.Force,
   };
   const host = ts.createCompilerHost(options);
-  const selected = new Set(files);
+  // TypeScript uses forward slashes for source and resolution paths, including on Windows.
+  const roots = files.map(file => ts.sys.resolvePath(file));
+  const selected = new Set(roots.map(file => host.getCanonicalFileName(file)));
   host.resolveModuleNames = (names, containingFile) => names.map(name => {
     const resolved = ts.resolveModuleName(name, containingFile, options, host).resolvedModule;
     // Never silently pull original TS source or installed dependencies into an artifact graph.
-    return resolved && selected.has(resolved.resolvedFileName) ? resolved : undefined;
+    return resolved && selected.has(host.getCanonicalFileName(ts.sys.resolvePath(resolved.resolvedFileName))) ? resolved : undefined;
   });
-  const program = ts.createProgram(files, options, host);
+  const program = ts.createProgram(roots, options, host);
   const optionErrors = program.getOptionsDiagnostics();
   if (optionErrors.length) throw new Error(formatDiagnostics(optionErrors));
   const syntactic = program.getSyntacticDiagnostics();
@@ -80,10 +83,8 @@ export function project(input: string): { program: ts.Program; root: string } {
 }
 
 /** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
-export function analyze(input: string, warn: (message: string) => void = () => {}): SourceGraph {
+export function analyze(input: string): SourceGraph {
   const { program, root } = project(input);
-  const diagnostics = program.getSemanticDiagnostics();
-  if (diagnostics.length) warn(`${diagnostics.length} TypeScript semantic diagnostic(s); unresolved targets remain dynamic.\n${formatDiagnostics(diagnostics.slice(0, 5))}`);
   const graph = new Analyzer(program, root).run();
   // Type inference can also produce ill-formed UTF-16 in literal type names.
   // Encode every textual payload once at the protocol boundary, consistently
@@ -119,9 +120,11 @@ class Analyzer {
   private sources: ts.SourceFile[];
   constructor(private program: ts.Program, private root: string) {
     this.checker = program.getTypeChecker();
-    const selected = new Set(program.getRootFileNames());
-    this.sources = program.getSourceFiles().filter(s => selected.has(s.fileName))
-      .sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
+    this.sources = program.getRootFileNames().map(file => {
+      const source = program.getSourceFile(file);
+      if (!source) throw new Error(`Compiled JavaScript artifact was not loaded: ${file}`);
+      return source;
+    }).sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
   }
   private module(n: ts.Node): string {
     const file = n.getSourceFile().fileName;
@@ -261,6 +264,7 @@ class Analyzer {
       this.functions.push(context);
       this.addMethod(method, this.module(n));
       n.parameters.forEach((parameter, index) => {
+        if (parameter.dotDotDotToken) context.restIndex = index;
         const id = this.node('Parameter', { index, paramType: method.parameterTypes[index], method });
         context.parameters.push(id);
         this.bind(parameter.name, id, context);
@@ -594,10 +598,10 @@ class Analyzer {
         line: n.getSourceFile().getLineAndCharacterOfPosition(n.getStart()).line + 1,
         ...(receiver === undefined ? {} : { receiver }), arguments: args });
       this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: !target.context });
+      const rest = target.context?.restIndex;
       args.forEach((argument, index) => {
         this.edge(argument, id, 'PARAMETER_PASS');
-        const rest = target.context?.declaration?.parameters.findIndex(p => !!p.dotDotDotToken) ?? -1;
-        const parameterIndex = rest >= 0 && index >= rest ? rest : index;
+        const parameterIndex = rest !== undefined && index >= rest ? rest : index;
         const parameter = target.context?.parameters[parameterIndex];
         if (parameter !== undefined) this.edge(argument, parameter, 'PARAMETER_PASS');
       });
@@ -614,7 +618,8 @@ class Analyzer {
       id = this.node('LocalVariable', { name: `@${this.position(n)}`, varType: this.type(n), method: context.method });
       this.values.set(n, id);
       if (!isBody(n)) ts.forEachChild(n, child => {
-        if (ts.isExpression(child)) this.edge(this.value(child, context), id, 'ASSIGN');
+        if (ts.isSpreadAssignment(child) || ts.isSpreadElement(child)) this.edge(this.value(child.expression, context), id, 'ASSIGN');
+        else if (ts.isExpression(child)) this.edge(this.value(child, context), id, 'ASSIGN');
         else if (ts.isPropertyAssignment(child)) this.edge(this.value(child.initializer, context), id, 'ASSIGN');
         else if (ts.isShorthandPropertyAssignment(child)) this.edge(this.value(child.name, context), id, 'ASSIGN');
         else if (ts.isTemplateSpan(child)) this.edge(this.value(child.expression, context), id, 'ASSIGN');

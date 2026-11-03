@@ -27,7 +27,7 @@ try {
       else input = arg;
     }
     if (!input || !output) throw new Error(help);
-    const graph = analyze(input, message => console.error(`Warning: ${message}`));
+    const graph = analyze(input);
     // JSON.stringify(-0) emits 0, which changes JavaScript's observable number
     // semantics (Object.is and division). Preserve the legal JSON -0 token.
     const nodes = graph.nodes.map(node => node.kind === 'DoubleConstant' && Object.is(node.value, -0)

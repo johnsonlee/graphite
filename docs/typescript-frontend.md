@@ -6,7 +6,8 @@ directory such as `.next`, `dist` or `build`. Node.js 20 or newer runs the
 frontend; reading a saved graph requires only the Rust binary.
 
 Compile the target project first using its own build tool. Graphite neither
-runs project build scripts nor installs target dependencies. Source `.ts`,
+runs project build scripts nor installs target dependencies. Emitted modules in directories named `cache` are included;
+only Next’s `.next/cache` compiler output is skipped alongside dependencies. Source `.ts`,
 `.tsx`, `.mts`, `.cts`, `.jsx` files and `tsconfig.json` are rejected with a
 compile-first message. The `ts` selector is an alias for artifact analysis,
 not a request to parse TypeScript source.
@@ -137,8 +138,8 @@ lifecycles or Next.js route semantics. Source-map reconstruction and framework
 adapters are separate features.
 
 The TypeScript compiler API is used as a parser/checker, not as a project build
-step. Syntax errors fail analysis; semantic diagnostics are reported while
-analysis uses the information available. The artifact frontend does not provide
+step. Syntax and compiler-option errors fail analysis. The frontend requests
+symbols and types as it builds the graph, without type-checking the complete program. The artifact frontend does not provide
 the JVM frontend's bytecode folding, Android behavior or resource extraction.
 
 ## Validation
@@ -300,8 +301,8 @@ python3 .github/scripts/check-typescript-e2e.py \
 The source assertions include exact call lines, Zod's cross-file `getErrorMap`
 target, and mitt's returned-object owner `index.ts#object@54:9#mitt@46:1`;
 that object starts on source line 54, column 9, inside `mitt` at line 46.
-Complete node and edge query results also match after each save/load path. Zod
-reported 19 semantic diagnostics because target dependencies were not installed;
+Complete node and edge query results also match after each save/load path. In
+that historical source-frontend run, Zod reported 19 semantic diagnostics because target dependencies were not installed;
 those warnings are retained in the build stderr. This record reports correctness
 and graph contents, not performance measurements.
 

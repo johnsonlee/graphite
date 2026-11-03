@@ -42,20 +42,38 @@ test('emitted ESM imports retain concrete arguments, parameters, returns and art
   assert.deepEqual(g, analyze(root));
 });
 
-test('reads hidden Next server/client outputs, dist and build; never reads source, cache or dependencies', t => {
+test('native paths resolve nested emitted imports without admitting files outside the artifact root', t => {
+  const root = fixture(t, {
+    'emitted/lib/helper.mjs': 'export function helper(value) { return value; }',
+    'emitted/nested/app.mjs': 'import { helper } from "../lib/helper.mjs"; import { outside } from "../../outside.mjs"; helper("inside"); outside();',
+    'outside.mjs': 'export function outside() { return "not selected"; }',
+  });
+  const g = analyze(path.join(root, 'emitted'));
+  const linked = calls(g).find(n => n.callee.name === 'helper');
+  assert.equal(linked.caller.declaringClass, 'nested/app.mjs');
+  assert.equal(linked.callee.declaringClass, 'lib/helper.mjs');
+  assert.ok(edge(g, linked.arguments[0], formal(g, 'helper').id, 'PARAMETER_PASS'));
+  const dynamic = calls(g).find(n => n.callee.name === 'outside');
+  assert.equal(dynamic.callee.declaringClass, '<dynamic>');
+  assert.deepEqual(g.classOrigins.map(n => n.origin).sort(), ['lib/helper.mjs', 'nested/app.mjs']);
+});
+
+test('reads emitted cache routes and modules but skips the Next compiler cache and dependencies', t => {
   const root = fixture(t, {
     'tsconfig.json': '{ invalid config: must not be consulted',
     'src/source.ts': 'invalid source {{{',
     '.next/server/app.js': 'function server() { return database("task"); }',
     '.next/static/chunks/app.js': 'function client() { return fetch("/api/tasks"); }',
     '.next/cache/broken.js': 'invalid cached file {{{',
+    '.next/server/app/cache/page.js': 'function cachePage() { return renderPage(); }',
+    'dist/cache/index.js': 'function cached() { return readCache(); }',
     'dist/lib.cjs': 'function library() { return console.log("built"); }',
     'build/nested/lib.mjs': 'export function nested() { return helper("nested"); }',
     'node_modules/broken.js': 'invalid dependency {{{',
   });
   const g = analyze(root);
-  assert.deepEqual(calls(g).map(c => c.callee.name).sort(), ['database', 'fetch', 'helper', 'log']);
-  assert.deepEqual(g.classOrigins.map(c => c.origin).sort(), ['.next/server/app.js', '.next/static/chunks/app.js', 'build/nested/lib.mjs', 'dist/lib.cjs']);
+  assert.deepEqual(calls(g).map(c => c.callee.name).sort(), ['database', 'fetch', 'helper', 'log', 'readCache', 'renderPage']);
+  assert.deepEqual(g.classOrigins.map(c => c.origin).sort(), ['.next/server/app.js', '.next/server/app/cache/page.js', '.next/static/chunks/app.js', 'build/nested/lib.mjs', 'dist/cache/index.js', 'dist/lib.cjs']);
 });
 
 test('analyzes actual TypeScript/JSX compiler output, not erased declarations or JSX source', t => {
@@ -380,10 +398,23 @@ test('void expressions keep effects even when their value triggers a default', t
   assert.equal(argumentsOf(g, calls(g).find(c => c.callee.name === 'use'))[0].value, 'default');
 });
 
+test('CLI builds emitted JavaScript with type errors and leaves unresolved calls dynamic', t => {
+  const root = fixture(t, { 'main.js': '// @ts-check\n/** @type {number} */ const n = "artifact"; missing(n);' });
+  const output = path.join(root, 'graph.json');
+  const cli = path.resolve('dist/cli.js');
+  const result = spawnSync(process.execPath, [cli, 'build', root, '-o', output], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  assert.doesNotMatch(result.stderr, /semantic diagnostic|error TS2322/);
+  const graph = JSON.parse(fs.readFileSync(output, 'utf8'));
+  const missing = calls(graph).find(n => n.callee.name === 'missing');
+  assert.ok(graph.edges.some(e => e.from === missing.id && e.kind === 'CALL' && e.isDynamic));
+});
+
 test('literal spread defaults and rest arguments retain explicit parameter flow', t => {
   const root = fixture(t, { 'main.js': `
 function identity(value = "shared") { return value; } identity(...[]); identity(...[undefined]);
 function forward(...values) { for (const value of values) console.log(value); } forward('first', 'second');
+function split(head, ...rest) {} split('head', 'tail1', 'tail2');
 ` });
   const g = analyze(root);
   assert.deepEqual(calls(g).filter(c => c.callee.name === 'identity').map(c => argumentsOf(g, c)[0].value), ['shared', 'shared']);
@@ -391,6 +422,9 @@ function forward(...values) { for (const value of values) console.log(value); } 
   assert.ok(edge(g, literal.id, formal(g, 'forward').id, 'PARAMETER_PASS'));
   const sink = calls(g).find(n => n.callee.name === 'log');
   assert.ok(edge(g, formal(g, 'forward').id, sink.arguments[0], 'ARRAY_LOAD'));
+  const split = calls(g).find(n => n.callee.name === 'split');
+  assert.ok(edge(g, split.arguments[0], formal(g, 'split').id, 'PARAMETER_PASS'));
+  for (const tail of split.arguments.slice(1)) assert.ok(edge(g, tail, formal(g, 'split', 1).id, 'PARAMETER_PASS'));
 });
 
 test('object methods, class arrows and sibling blocks retain distinct identities', t => {
@@ -461,6 +495,18 @@ function pair(a,b=(a="updated")) { return a; } pair("initial");
   assert.ok(edge(g, after.id, sink.arguments[0], 'ASSIGN'));
   assert.deepEqual(argumentsOf(g, calls(g).find(c => c.callee.name === 'pair')).map(n => n.value), ['updated', 'updated']);
   assert.ok(g.edges.every(e => !(e.kind === 'ASSIGN' && g.nodes[e.to].kind.endsWith('Constant'))), 'assignments never mutate constant nodes');
+});
+
+test('spread operands flow directly into emitted object and array arguments', t => {
+  const root = fixture(t, { 'main.js': `const defaults = { token: 'object source' }, values = ['array source'];
+observe(defaults, values); send({ ...defaults, retries: 3 }); consume([...values]);` });
+  const g = analyze(root);
+  const observed = calls(g).find(n => n.callee.name === 'observe');
+  for (const [index, sink] of ['send', 'consume'].entries()) {
+    const call = calls(g).find(n => n.callee.name === sink);
+    assert.ok(edge(g, observed.arguments[index], call.arguments[0], 'ASSIGN'), sink);
+    assert.ok(edge(g, call.arguments[0], call.id, 'PARAMETER_PASS'), sink);
+  }
 });
 
 test('unknown spread preserves possible flow to every shifted formal and return', t => {
