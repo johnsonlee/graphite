@@ -210,6 +210,14 @@ counts, including multiple calls on one minified line. HTTP queries loaded both
 client and server graphs and matched the per-graph results. Saved default-value
 fixtures preserved the effective arguments `shared`, `shared` and `null`.
 
+At `42031d8d`, all 31 frontend tests and six independent harness tests passed.
+Both applications' verified `.next` outputs were analyzed and saved again with
+the revised frontend. Every complete node, edge and selected application query
+matched the earlier graph results, including HTTP responses for the two loaded
+sides. For `function send(x = -1_000, y = +0xAB_CD)`, calling `send()`
+produced `IntConstant` values `-1000` and `43981`. Directory and packed queries
+both found the `PARAMETER_PASS` edges to the call and the corresponding formals.
+
 A separate native comparison ran main `a5c96f71` and candidate `3a127f70` over
 the same 64 historical persisted JAR graphs. The trusted main controller's 73
 query cases produced identical complete responses for all 8,638 requests across
@@ -240,6 +248,14 @@ unresolved, including an observed pre-query RSS increase. This is a retained
 positive intermediate result, not no-regression acceptance. The full protocol,
 both comparisons, resource limitations and keep decision are recorded in
 [Attempt 047](cross-graph-cypher-optimization-attempts.md#2026-11-03---attempt-047-stop-scalar-with-filters-after-enough-accepted-rows).
+
+The subsequent [Linux comparison](cross-graph-cypher-optimization-attempts.md#2026-11-03---attempt-048-specialize-filtered-and-ordinary-row-consumers)
+also built, saved and read back 64 real JAR shards and three whole JARs under
+4 GiB heaps. All 8,518 native responses matched, with no OOMs. A separate
+comparison on identical resident files satisfied the CPU and RSS bounds for
+loading and the fixed mixed-query workload in three pairs. It also identified
+repeatable traversal-count and relationship-histogram latency increases;
+the resource result does not offset them.
 
 ## Historical source-prototype evidence
 
