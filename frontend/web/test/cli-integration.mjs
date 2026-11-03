@@ -65,6 +65,22 @@ try {
     [{ cls:'external:typescript/lib.Array', n:'find' },{ cls:'external:typescript/lib.Array', n:'map' },
       { cls:'external:typescript/lib.Intl', n:'getCanonicalLocales' }]);
 
+  const short = path.join(dir, 'shorthand'), shorthand = path.join(dir, 'shorthand.graphite');
+  fs.mkdirSync(short);
+  fs.writeFileSync(path.join(short, 'lib.mjs'), 'export const exported = "imported";');
+  fs.writeFileSync(path.join(short, 'main.mjs'), [
+    'import { exported as data } from "./lib.mjs";',
+    'const secret = "s"; sink({ secret }); importedSink({ data });',
+    'function page() { const data = "inner"; return { props: { data } }; } nestedSink(page());',
+  ].join('\n'));
+  run(['build', '--lang', 'js', short, '-o', shorthand]);
+  run(['verify', shorthand]);
+  const shorthandRows = query => JSON.parse(run(['query', shorthand, query, '--format', 'json']).stdout).rows;
+  assert.deepEqual(shorthandRows("MATCH (s:StringConstant)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(c:CallSite) RETURN s.value AS value, c.callee_name AS sink ORDER BY value"),
+    [{ value:'imported', sink:'importedSink' }, { value:'s', sink:'sink' }]);
+  assert.deepEqual(shorthandRows("MATCH (s:StringConstant)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(:CallSite)-[:DATAFLOW]->(c:CallSite) RETURN s.value AS value, c.callee_name AS sink"),
+    [{ value:'inner', sink:'nestedSink' }]);
+
   const overflow = path.join(dir, 'overflow.mjs'), saved = path.join(dir, 'overflow.graphite');
   fs.writeFileSync(overflow, ['function take(x = -1e400) { return x; }','take(1e400);','take(-1e400);','take();'].join('\n'));
   run(['build', '--lang', 'js', overflow, '-o', saved]);

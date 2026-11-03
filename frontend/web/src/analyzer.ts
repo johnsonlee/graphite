@@ -220,7 +220,10 @@ class Analyzer {
       ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope);
   }
   private symbol(n: ts.Node): ts.Symbol | undefined {
-    let symbol = this.checker.getSymbolAtLocation(n);
+    // A shorthand name denotes both a property and the lexical value it reads.
+    const shorthand = ts.isIdentifier(n) && ts.isShorthandPropertyAssignment(n.parent) && n.parent.name === n
+      ? this.checker.getShorthandAssignmentValueSymbol(n.parent) : undefined;
+    let symbol = shorthand ?? this.checker.getSymbolAtLocation(n);
     if (symbol && symbol.flags & ts.SymbolFlags.Alias) symbol = this.checker.getAliasedSymbol(symbol);
     return symbol;
   }
@@ -411,7 +414,7 @@ class Analyzer {
     const loop = ts.isForOfStatement(n) || ts.isForInStatement(n) ? n : undefined;
     const lhs = assigned ?? (loop && !ts.isVariableDeclarationList(loop.initializer) ? loop.initializer : undefined);
     if (lhs && !this.normalizedAssignments.has(n)) for (const { target } of this.targets(lhs)) {
-      const symbol = ts.isIdentifier(target) ? this.assignmentSymbol(target) : this.referenceSymbol(target);
+      const symbol = this.referenceSymbol(target);
       if (!symbol) continue;
       const rhs = ts.isBinaryExpression(n) && n.operatorToken.kind === ts.SyntaxKind.EqualsToken ? n.right : undefined;
       let unwrapped = lhs;
@@ -540,13 +543,10 @@ class Analyzer {
   private assigned(n: ts.Expression, context: Context): number {
     return ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? this.property(n, context).slot : this.value(n, context);
   }
-  private assignmentSymbol(n: ts.Identifier): ts.Symbol | undefined {
-    return (ts.isShorthandPropertyAssignment(n.parent) && this.checker.getShorthandAssignmentValueSymbol(n.parent)) || this.symbol(n);
-  }
   private assign(n: ts.Expression, value: number, context: Context, rhs?: ts.Expression, kind: EdgeKind = 'ASSIGN'): void {
     while (ts.isParenthesizedExpression(n)) n = n.expression;
     for (const { target, defaults } of this.targets(n)) {
-      const symbol = ts.isIdentifier(target) ? this.assignmentSymbol(target) : undefined;
+      const symbol = ts.isIdentifier(target) ? this.symbol(target) : undefined;
       const unpacked = target !== n || kind !== 'ASSIGN';
       let incoming = value;
       if (defaults.length || (unpacked && symbol && this.argumentBindings.has(symbol))) {

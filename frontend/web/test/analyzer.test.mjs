@@ -928,3 +928,21 @@ test('unknown expression callees share a marker while preserving arguments, rece
   }
   for (const name of ['load','key','named','literal','b']) assert.equal(sites.filter(c => c.callee.name === name).length, 1);
 });
+
+test('object shorthand reads the lexical binding, including imports, shadows and nested returns', t => {
+  const graph = analyze(fixture(t, {
+    'lib.mjs': 'export const original = "imported";',
+    'main.mjs': [
+      'import { original as secret } from "./lib.mjs";',
+      'outerSink({ secret }); explicitSink({ secret: secret });',
+      'function make() { const secret = "inner"; return { props: { secret } }; }',
+      'innerSink(make());',
+    ].join('\n'),
+  }));
+  assert.ok(propertyFlows(graph, 'imported', 'outerSink'));
+  assert.ok(propertyFlows(graph, 'imported', 'explicitSink'));
+  assert.ok(propertyFlows(graph, 'inner', 'innerSink'));
+  assert.equal(propertyFlows(graph, 'inner', 'outerSink'), false);
+  assert.equal(propertyFlows(graph, 'imported', 'innerSink'), false);
+  assert.equal(graph.nodes.filter(n => n.kind === 'LocalVariable' && n.name === 'secret').length, 1);
+});
