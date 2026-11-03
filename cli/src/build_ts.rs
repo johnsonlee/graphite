@@ -124,6 +124,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     if packed {
         stage.pack(&output, Publication::CreateNew)?;
     } else {
+        crate::build_output::create_output_parent(&output)?;
         require_absent(&output)?;
         std::fs::rename(&graph, &output).map_err(|e| format!("could not save graph: {e}"))?;
     }
@@ -294,7 +295,7 @@ cat > "$3" <<'GRAPH'
 {"version":1,"methods":[],"nodes":[{"id":0,"kind":"StringConstant","value":"hello"}],"edges":[]}
 GRAPH"#,
         );
-        for name in ["saved", "saved.graphite"] {
+        for name in ["directory/nested/saved", "packed/nested/saved.graphite"] {
             let output = root.join(name);
             let args = vec![
                 OsString::from("src"),
@@ -316,7 +317,7 @@ GRAPH"#,
                 .contains("output already exists"));
         }
         assert!(
-            graphite_storage::Container::open(&root.join("saved.graphite"))
+            graphite_storage::Container::open(&root.join("packed/nested/saved.graphite"))
                 .unwrap()
                 .verify()
                 .unwrap()
@@ -370,21 +371,26 @@ GRAPH"#,
     fn failed_or_invalid_frontend_output_leaves_no_graph_or_staging_files() {
         let root = std::env::temp_dir().join(format!("graphite-ts-failure-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
-        let output = root.join("saved.graphite");
-        let args = vec![
-            OsString::from("src"),
-            OsString::from("-o"),
-            output.clone().into_os_string(),
-        ];
-        let env = fake_frontend(&root, "exit 37");
-        assert_eq!(execute(&env, &args).unwrap(), 37);
-        assert!(!output.exists());
-        let env = fake_frontend(&root, r#"echo '{"version":99}' > "$3""#);
-        assert!(execute(&env, &args)
-            .unwrap_err()
-            .contains("invalid frontend graph"));
-        assert!(!output.exists());
-        assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        for name in ["saved", "saved.graphite"] {
+            let output = root.join("missing/nested").join(name);
+            let args = vec![
+                OsString::from("src"),
+                OsString::from("-o"),
+                output.into_os_string(),
+            ];
+            let env = fake_frontend(&root, "exit 37");
+            assert_eq!(execute(&env, &args).unwrap(), 37);
+            assert!(!root.join("missing").exists());
+            let env = fake_frontend(
+                &root,
+                r#"echo '{"version":99,"methods":[],"nodes":[],"edges":[]}' > "$3""#,
+            );
+            assert!(execute(&env, &args)
+                .unwrap_err()
+                .contains("unsupported version 99"));
+            assert!(!root.join("missing").exists());
+            assert_eq!(std::fs::read_dir(&root).unwrap().count(), 1);
+        }
         std::fs::remove_dir_all(root).unwrap();
     }
 }

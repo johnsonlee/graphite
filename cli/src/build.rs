@@ -53,8 +53,8 @@ fn redirect_output(args: &mut [OsString]) -> Result<Option<Pack>, String> {
     if output.extension().and_then(|e| e.to_str()) != Some(graphite_storage::container::EXTENSION) {
         return Ok(None);
     }
-    let stage = Stage::for_jvm_output(&output)
-        .map_err(|e| format!("could not stage {}: {e}", output.display()))?;
+    let stage =
+        Stage::new(&output).map_err(|e| format!("could not stage {}: {e}", output.display()))?;
     let (slot, replacement) = opt.replacement(&stage.graph());
     args[slot] = replacement;
     Ok(Some(Pack { stage, output }))
@@ -321,12 +321,6 @@ fn finish_pack(pack: Pack, code: i32) -> i32 {
     if code != 0 {
         return code;
     }
-    if let Some(parent) = pack.output.parent().filter(|p| !p.as_os_str().is_empty()) {
-        if let Err(e) = std::fs::create_dir_all(parent) {
-            eprintln!("Error: could not create {}: {e}", parent.display());
-            return 1;
-        }
-    }
     match pack.stage.pack(&pack.output, Publication::Replace) {
         Ok(()) => 0,
         Err(e) => {
@@ -486,8 +480,9 @@ mod tests {
             3
         );
         assert!(!path.exists());
-        assert!(!output.exists());
+        assert!(!root.exists());
 
+        std::fs::create_dir(&root).unwrap(); // An existing JVM output should be replaced.
         let stage = Stage::new(&output).unwrap();
         let path = stage.0.clone();
         std::fs::create_dir(stage.graph()).unwrap();
@@ -515,21 +510,15 @@ mod tests {
         assert_eq!(v.digest_file, Some(true));
         assert!(root.join("app.graphite.sha256").exists());
 
-        // An empty staging directory cannot be packed: the error is reported, nothing is left.
+        // An invalid saved graph must not create the final parent, even after frontend success.
+        let missing = root.join("missing");
+        let output = missing.join("nested/empty.graphite");
         let stage = Stage::new(&output).unwrap();
         let path = stage.0.clone();
         std::fs::create_dir(stage.graph()).unwrap();
-        assert_eq!(
-            finish_pack(
-                Pack {
-                    stage,
-                    output: root.join("empty.graphite")
-                },
-                0
-            ),
-            1
-        );
+        assert_eq!(finish_pack(Pack { stage, output }, 0), 1);
         assert!(!path.exists());
+        assert!(!missing.exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 

@@ -1,4 +1,4 @@
-//! Sibling staging and packed output publication for frontend builds.
+//! Same-filesystem staging and packed output publication for frontend builds.
 
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
@@ -9,6 +9,14 @@ pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
         Err(e) => Err(format!("could not inspect {}: {e}", path.display())),
         Ok(_) => Err(format!("output already exists: {}", path.display())),
     }
+}
+
+pub(crate) fn create_output_parent(output: &Path) -> Result<(), String> {
+    if let Some(parent) = output.parent().filter(|p| !p.as_os_str().is_empty()) {
+        std::fs::create_dir_all(parent)
+            .map_err(|e| format!("could not create {}: {e}", parent.display()))?;
+    }
+    Ok(())
 }
 
 /// Both staged files are complete. Claim the digest first so a visible container
@@ -70,32 +78,28 @@ impl Stage {
 
     pub(crate) fn pack(&self, output: &Path, publication: Publication) -> Result<(), String> {
         // Packing under the final basename keeps the sidecar valid after publication.
-        let destination = match publication {
-            Publication::CreateNew => self
-                .0
-                .join(output.file_name().ok_or("missing output filename")?),
-            Publication::Replace => output.to_owned(),
-        };
+        let destination = self
+            .0
+            .join(output.file_name().ok_or("missing output filename")?);
         let report = graphite_storage::container::pack(&self.graph(), &destination)
             .map_err(|e| format!("could not pack {}: {e}", output.display()))?;
-        if let Publication::CreateNew = publication {
-            publish_container(&destination, &report.digest_file, output)?;
+        create_output_parent(output)?;
+        match publication {
+            Publication::CreateNew => publish_container(&destination, &report.digest_file, output)?,
+            Publication::Replace => {
+                std::fs::rename(&destination, output)
+                    .map_err(|e| format!("could not publish {}: {e}", output.display()))?;
+                let digest = graphite_storage::container::digest_path(output);
+                std::fs::rename(&report.digest_file, &digest)
+                    .map_err(|e| format!("could not publish {}: {e}", digest.display()))?;
+            }
         }
         crate::pack::print_report(&report, output);
         Ok(())
     }
 
+    /// Use the nearest existing ancestor so a failed build leaves no output parents.
     pub(crate) fn new(output: &Path) -> std::io::Result<Self> {
-        let parent = output
-            .parent()
-            .filter(|p| !p.as_os_str().is_empty())
-            .unwrap_or(Path::new("."));
-        std::fs::create_dir_all(parent)?;
-        Self::in_directory(parent)
-    }
-
-    /// A failing JVM frontend must not leave a newly created output parent behind.
-    pub(crate) fn for_jvm_output(output: &Path) -> std::io::Result<Self> {
         let mut parent = output.parent().unwrap_or(Path::new("."));
         loop {
             if parent.as_os_str().is_empty() {

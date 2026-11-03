@@ -162,8 +162,23 @@ pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
     })
 }
 
+const JS_SETUP: &str = "Build frontend/web with `npm ci && npm run build`, then set GRAPHITE_FRONTEND_JS to its absolute dist/cli.js path; or put graphite-frontend-js on PATH. GRAPHITE_FRONTEND_TS and graphite-frontend-ts are supported aliases.";
+
 pub fn missing_js_message() -> String {
-    format!("No JavaScript artifact frontend found. Build frontend/web with `npm ci && npm run build`, then set {JS_FRONTEND_VAR} to its absolute dist/cli.js path; or put graphite-frontend-js on PATH. GRAPHITE_FRONTEND_TS and graphite-frontend-ts are supported aliases.")
+    format!("No JavaScript artifact frontend found. {JS_SETUP}")
+}
+
+pub(crate) fn js_install_message(env: &Env) -> String {
+    let mut message =
+        String::from("Frontend install cannot download the JavaScript artifact frontend.");
+    if let Some(fe) = locate_js(env) {
+        message.push_str(&format!(
+            " Current frontend path (via {}): {}.",
+            fe.found_via,
+            fe.path().display()
+        ));
+    }
+    format!("{message} {JS_SETUP}")
 }
 
 /// Find the JVM frontend. The order, first match wins:

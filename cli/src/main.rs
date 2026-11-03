@@ -233,7 +233,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             skip_checksum,
         } => {
             if frontend::Lang::parse(&lang)? == frontend::Lang::Js {
-                return Err(frontend::missing_js_message());
+                return Err(frontend::js_install_message(env));
             }
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
