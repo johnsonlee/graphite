@@ -3232,3 +3232,40 @@ archive retains the raw output volume names, per-case sample vectors,
 response audits and phase snapshots. `graphite-attempt053-offline-audit/053-final`
 retains all 73 cases, per-arm values, absolute changes, extrema, boundaries
 and input hashes. The measured candidate did not reach final acceptance.
+
+### 2026-11-03 - Attempt 054: Count partitions from one CallSite column
+
+Attempt 053 retained the per-node lookup of a compound key and did not
+recover the grouped WITH latency. The general partition scan builds and
+hashes a key containing a tag, a list of column IDs and a set of property
+keys. For one CallSite tag and one scalar field, only the string ID varies.
+
+Scan the raw field into a source-local insertion-ordered map keyed by that
+ID. Store the first matching node and increment the weight on every match.
+Only the distinct local groups enter the general partition map. Use the same
+record accessor, order of first occurrence, per-node cancellation polling and
+per-partition work accounting as the original scan. Keep the general path
+for unsorted tag lists, predicates, multiple tags and other key shapes.
+The scan reads recorded values directly, including on graphs with optional
+indexes. No persisted graph format or loading work changes.
+
+On the 64 frozen graphs the independent decoder counted 5,051,914 CallSites,
+372,571 source-local groups and 124,987 distinct classes across sources.
+There were 56,210 groups with counts above five. All 50 output rows,
+their counts, graph provenance, and the pagination probe matched the
+frozen HTTP oracle. The first decoder comparison emitted provenance in
+source encounter order. Sorting the provenance IDs according to the
+existing result contract made its full response equal to the frozen
+response. The original mismatch is retained. On the CI core fixture all
+32 partition tests passed, including the decoded-group oracle, the unsorted
+fallback, cancellation and timeout checks. All 243 default cypher tests and
+strict cypher Clippy passed.
+
+Parent is `a00f9721`. Compare this cumulative candidate with main
+`a5c96f71` using the same three AB / BA / AB pairs, 64 frozen graphs,
+73 cases, concurrency four, twenty pressure requests per case per arm,
+and complete response-body verification. Report p50 and p95 per case,
+preserving all samples and uncertainties. Prioritize the grouped WITH
+query and retain the prior slow query results. Enforce the +5% CPU and RSS
+limits separately for loading and the fixed query mix in each pair.
+Fresh trusted build/save/readback, OOM and CI verification remain separate.

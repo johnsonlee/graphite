@@ -52,7 +52,8 @@ use crate::eval::{is_aggregation_name, Evaluator};
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use crate::CypherResult;
 use graphite_storage::node::{
-    StrId, TAG_ANNOTATION_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE,
+    StrId, TAG_ANNOTATION_NODE, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE,
+    TAG_RETURN_NODE,
 };
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
@@ -1190,6 +1191,22 @@ impl PartitionPlan {
             None => {
                 let mut polled = 0u32;
                 for (si, s) in ex.sources.iter().enumerate() {
+                    if self.where_clause.is_none() && tags == [TAG_CALL_SITE_NODE] {
+                        let strategy = self.strategies[si][TAG_CALL_SITE_NODE as usize];
+                        if let Some(counts) = scalar_call_site_groups(
+                            ex,
+                            &s.graph,
+                            strategy,
+                            &columns[TAG_CALL_SITE_NODE as usize],
+                            &mut polled,
+                        )? {
+                            // Only distinct local string IDs enter the general partition map.
+                            parts[si].extend(counts.into_iter().map(|(sid, part)| {
+                                ((TAG_CALL_SITE_NODE, vec![sid], KeySet::Fixed), part)
+                            }));
+                            continue;
+                        }
+                    }
                     // The walk the matcher makes over the same types, a type
                     // enumerated whole standing in with its first node only: the
                     // nodes after it change nothing the walk would meet first.
@@ -1296,6 +1313,38 @@ impl PartitionPlan {
         }
         Ok(out)
     }
+}
+
+/// Count a single CallSite column by the records' own string IDs. A persisted
+/// posting list can have the right length without describing these records.
+fn scalar_call_site_groups(
+    ex: &Executor,
+    graph: &Graph,
+    strategy: Strategy,
+    columns: &[(&str, StringField)],
+    polled: &mut u32,
+) -> CypherResult<Option<IndexMap<StrId, (u32, i64)>>> {
+    let Strategy::Columns(mask) = strategy else {
+        return Ok(None);
+    };
+    if mask.count_ones() != 1 || !graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE) {
+        return Ok(None);
+    }
+    let Some((_, field @ StringField::CallSite(_))) = columns.get(mask.trailing_zeros() as usize)
+    else {
+        return Ok(None);
+    };
+    let mut counts = IndexMap::new();
+    for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+        *polled = polled.wrapping_add(1);
+        if *polled & 1023 == 0 {
+            ex.cancel.check()?;
+        }
+        let offset = graph.node_offset(id).unwrap_or(0);
+        let sid = read_string_field(graph.nodedata(), offset, *field);
+        counts.entry(sid).or_insert((id, 0)).1 += 1;
+    }
+    Ok(Some(counts))
 }
 
 /// Whether a type's id list is ascending, so the matcher's merged walk over such
@@ -2340,6 +2389,19 @@ mod tests {
             !ascending(graph.ids_by_tag(TAG_LOCAL_VARIABLE)),
             "the copy should be out of id order"
         );
+        assert!(!graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE));
+        let ex = executor(&graph, &["a", "b"]);
+        let mut polled = 0;
+        assert!(scalar_call_site_groups(
+            &ex,
+            &graph,
+            Strategy::Columns(4),
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled
+        )
+        .unwrap()
+        .is_none());
+        assert_eq!(polled, 0);
         let hops = [
             "MATCH (a)<-[r]-(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC",
             "MATCH (a)-[r]->(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC",
@@ -2557,6 +2619,25 @@ mod tests {
                 .or_insert((id, 0))
                 .1 += 1;
         }
+        let mut polled = 17;
+        let scalar = scalar_call_site_groups(
+            &ex,
+            &graph,
+            plan.strategies[0][TAG_CALL_SITE_NODE as usize],
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled,
+        )
+        .unwrap()
+        .expect("the CI fixture must exercise the scalar path");
+        assert_eq!(
+            polled as usize,
+            17 + graph.ids_by_tag(TAG_CALL_SITE_NODE).len()
+        );
+        assert_eq!(scalar.len(), counts.len());
+        for ((sid, part), (class, expected)) in scalar.iter().zip(&counts) {
+            assert_eq!(graph.str(*sid), class);
+            assert_eq!(part, expected);
+        }
         let ev = Evaluator::new(&ex, &ex.params);
         let partitions = plan.rows(&ex, &ev).unwrap();
         assert_eq!(partitions.len(), 2 * counts.len());
@@ -2588,6 +2669,27 @@ mod tests {
             assert!(matches!(row.get("c"), Some(Value::Str(c)) if c.as_ref() == class));
             assert!(matches!(row.get("k"), Some(Value::Int(k)) if *k == count));
             assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+        }
+    }
+
+    #[test]
+    fn scalar_column_sweep_preserves_cancellation_and_deadline_checks() {
+        let Some(graph) = fixture() else { return };
+        let cancelled = crate::engine::CancelToken::new();
+        cancelled.cancel();
+        for token in [cancelled, crate::engine::CancelToken::with_timeout(0)] {
+            let ex = executor(&graph, &["a", "b"]).with_cancel(token.clone());
+            let mut polled = 1023;
+            let actual = scalar_call_site_groups(
+                &ex,
+                &graph,
+                Strategy::Columns(4),
+                &tag_columns(TAG_CALL_SITE_NODE),
+                &mut polled,
+            )
+            .unwrap_err();
+            assert_eq!(actual.to_string(), token.error().unwrap().to_string());
+            assert_eq!(polled, 1024);
         }
     }
 
