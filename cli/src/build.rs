@@ -18,6 +18,7 @@
 #[path = "build_jvm_options.rs"]
 mod jvm_options;
 
+use crate::build_output::{Publication, Stage};
 use crate::fold;
 use crate::frontend::{self, Env, Frontend, Launch};
 use std::ffi::OsString;
@@ -28,7 +29,7 @@ use std::process::Command;
 /// shell packs it into `output` when the frontend succeeds.
 #[derive(Debug, PartialEq, Eq)]
 pub struct Pack {
-    pub stage: PathBuf,
+    pub stage: Stage,
     pub output: PathBuf,
 }
 
@@ -42,21 +43,16 @@ pub struct Invocation {
     pub pack: Option<Pack>,
 }
 
-/// The staging directory for a `.graphite` output: a sibling, so the pack's rename
-/// stays on one filesystem, named after the output and this process.
-pub fn stage_dir_for(output: &Path) -> PathBuf {
-    let name = output.file_name().unwrap_or_default().to_string_lossy();
-    output.with_file_name(format!("{name}.build-{}", std::process::id()))
-}
-
 /// Rewrite a `.graphite` output in the frontend's arguments to its staging directory.
 /// `-o X`, `--output X` and `--output=X` are the forms picocli accepts for the option.
-fn redirect_output(args: &mut [OsString]) -> Option<Pack> {
+fn redirect_output(args: &mut [OsString]) -> Result<Option<Pack>, String> {
     let mut index = 0;
     while index < args.len() {
         let arg = args[index].to_string_lossy().into_owned();
         let (slot, value, prefix) = if arg == "-o" || arg == "--output" {
-            let value = args.get(index + 1)?;
+            let Some(value) = args.get(index + 1) else {
+                return Ok(None);
+            };
             (index + 1, PathBuf::from(value), String::new())
         } else if let Some(value) = arg.strip_prefix("--output=") {
             (index, PathBuf::from(value), "--output=".to_string())
@@ -67,18 +63,19 @@ fn redirect_output(args: &mut [OsString]) -> Option<Pack> {
         if value.extension().and_then(|e| e.to_str())
             != Some(graphite_storage::container::EXTENSION)
         {
-            return None;
+            return Ok(None);
         }
-        let stage = stage_dir_for(&value);
+        let stage =
+            Stage::new(&value).map_err(|e| format!("could not stage {}: {e}", value.display()))?;
         let mut rewritten = OsString::from(prefix);
-        rewritten.push(stage.as_os_str());
+        rewritten.push(stage.graph());
         args[slot] = rewritten;
-        return Some(Pack {
+        return Ok(Some(Pack {
             stage,
             output: value,
-        });
+        }));
     }
-    None
+    Ok(None)
 }
 
 impl Invocation {
@@ -103,7 +100,7 @@ pub fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocat
             passthrough.push(arg.clone());
         }
     }
-    let pack = redirect_output(&mut passthrough);
+    let pack = redirect_output(&mut passthrough)?;
     match &fe.launch {
         Launch::Executable(exe) => {
             if profile {
@@ -167,7 +164,7 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
             return 2;
         }
     };
-    if lang == "js" {
+    if lang == frontend::Lang::Js {
         return crate::build_ts::run(env, &args);
     }
     run_jvm(env, &args)
@@ -306,37 +303,16 @@ fn resolve(
 /// Pack the staging directory into the output once the frontend has succeeded, and
 /// remove the staging directory either way: the file is the only result.
 fn finish_pack(pack: Pack, code: i32) -> i32 {
-    let outcome = if code == 0 {
-        match graphite_storage::container::pack(&pack.stage, &pack.output) {
-            Ok(report) => {
-                println!(
-                    "Packed {} entries ({} bytes) into {}\nfingerprint: {}\nsha256: {} (written to {})",
-                    report.entries,
-                    report.bytes,
-                    pack.output.display(),
-                    report.fingerprint,
-                    report.file_sha256,
-                    report.digest_file.display()
-                );
-                0
-            }
-            Err(e) => {
-                eprintln!("Error: could not pack {}: {e}", pack.output.display());
-                1
-            }
-        }
-    } else {
-        code
-    };
-    if pack.stage.exists() {
-        if let Err(e) = std::fs::remove_dir_all(&pack.stage) {
-            eprintln!(
-                "Warning: could not remove the staging directory {}: {e}",
-                pack.stage.display()
-            );
+    if code != 0 {
+        return code;
+    }
+    match pack.stage.pack(&pack.output, Publication::Replace) {
+        Ok(()) => 0,
+        Err(e) => {
+            eprintln!("Error: {e}");
+            1
         }
     }
-    outcome
 }
 
 #[cfg(test)]
@@ -399,26 +375,25 @@ mod tests {
     #[test]
     fn a_graphite_output_is_staged_in_a_sibling_directory_and_packed() {
         let env = env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]);
-        let stage = stage_dir_for(Path::new("/tmp/out/app.graphite"));
-        assert_eq!(stage.parent(), Some(Path::new("/tmp/out")));
-        assert!(stage
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .starts_with("app.graphite.build-"));
-        for form in [
-            os(&["a.jar", "-o", "/tmp/out/app.graphite"]),
-            os(&["a.jar", "--output", "/tmp/out/app.graphite"]),
-            os(&["a.jar", "--output=/tmp/out/app.graphite"]),
+        let root = Stage::new(&std::env::temp_dir().join("jvm-build-test")).unwrap();
+        let output = root.0.join("app.graphite");
+        for mut form in [
+            os(&["a.jar", "-o"]),
+            os(&["a.jar", "--output"]),
+            os(&["a.jar"]),
         ] {
+            if form.len() == 1 {
+                let mut arg = OsString::from("--output=");
+                arg.push(&output);
+                form.push(arg);
+            } else {
+                form.push(output.clone().into_os_string());
+            }
             let inv = invocation(&env, &jar_frontend(), &form).unwrap();
-            assert_eq!(
-                inv.pack,
-                Some(Pack {
-                    stage: stage.clone(),
-                    output: PathBuf::from("/tmp/out/app.graphite")
-                })
-            );
+            let pack = inv.pack.as_ref().unwrap();
+            assert_eq!(pack.output, output);
+            assert_eq!(pack.stage.0.parent(), Some(root.0.as_path()));
+            let stage = pack.stage.graph();
             let joined = inv
                 .args
                 .iter()
@@ -446,39 +421,40 @@ mod tests {
             std::env::temp_dir().join(format!("graphite-finish-pack-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
         let output = root.join("app.graphite");
-        let stage = stage_dir_for(&output);
-        let write_graph = |stage: &Path| {
-            std::fs::create_dir_all(stage).unwrap();
-            for name in graphite_storage::container::REQUIRED_ENTRIES {
-                std::fs::write(stage.join(name), name.as_bytes()).unwrap();
-            }
-        };
-        write_graph(&stage);
+        let stage = Stage::new(&output).unwrap();
+        let path = stage.0.clone();
         assert_eq!(
             finish_pack(
                 Pack {
-                    stage: stage.clone(),
+                    stage,
                     output: output.clone()
                 },
                 3
             ),
             3
         );
-        assert!(!stage.exists());
+        assert!(!path.exists());
         assert!(!output.exists());
 
-        write_graph(&stage);
+        let stage = Stage::new(&output).unwrap();
+        let path = stage.0.clone();
+        std::fs::create_dir(stage.graph()).unwrap();
+        for name in graphite_storage::container::REQUIRED_ENTRIES {
+            std::fs::write(stage.graph().join(name), name.as_bytes()).unwrap();
+        }
+        // JVM builds historically allow replacing the destination.
+        std::fs::write(&output, b"previous").unwrap();
         assert_eq!(
             finish_pack(
                 Pack {
-                    stage: stage.clone(),
+                    stage,
                     output: output.clone()
                 },
                 0
             ),
             0
         );
-        assert!(!stage.exists());
+        assert!(!path.exists());
         let v = graphite_storage::Container::open(&output)
             .unwrap()
             .verify()
@@ -488,18 +464,20 @@ mod tests {
         assert!(root.join("app.graphite.sha256").exists());
 
         // An empty staging directory cannot be packed: the error is reported, nothing is left.
-        std::fs::create_dir_all(&stage).unwrap();
+        let stage = Stage::new(&output).unwrap();
+        let path = stage.0.clone();
+        std::fs::create_dir(stage.graph()).unwrap();
         assert_eq!(
             finish_pack(
                 Pack {
-                    stage: stage.clone(),
+                    stage,
                     output: root.join("empty.graphite")
                 },
                 0
             ),
             1
         );
-        assert!(!stage.exists());
+        assert!(!path.exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 

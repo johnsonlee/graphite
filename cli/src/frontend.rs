@@ -10,6 +10,24 @@ use std::collections::BTreeMap;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Lang {
+    Jvm,
+    Js,
+}
+
+impl Lang {
+    pub(crate) fn parse(value: &str) -> Result<Self, String> {
+        match value {
+            "jvm" => Ok(Self::Jvm),
+            "js" | "javascript" | "ts" | "typescript" => Ok(Self::Js),
+            _ => Err(format!(
+                "unknown frontend '{value}'; available: jvm, js (alias: ts)"
+            )),
+        }
+    }
+}
+
 /// The environment a lookup runs in: variables, the running executable, the home
 /// directory. Built from the process by [`Env::from_process`], or by hand in tests.
 #[derive(Debug, Clone, Default)]

@@ -15,6 +15,7 @@
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
+mod build_output;
 mod build_ts;
 mod fold;
 mod frontend;
@@ -195,15 +196,12 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             Ok(())
         }
         FrontendCommand::Describe { lang } => {
-            let fe = match lang.as_str() {
-                "jvm" => frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?,
-                "js" | "javascript" | "ts" | "typescript" => {
-                    frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?
+            let fe = match frontend::Lang::parse(&lang)? {
+                frontend::Lang::Jvm => {
+                    frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?
                 }
-                _ => {
-                    return Err(format!(
-                        "unknown frontend '{lang}'; available: jvm, js (alias: ts)"
-                    ))
+                frontend::Lang::Js => {
+                    frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?
                 }
             };
             let version = frontend_version(env, &fe);
@@ -217,10 +215,9 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            if matches!(lang.as_str(), "js" | "javascript" | "ts" | "typescript") {
+            if frontend::Lang::parse(&lang)? == frontend::Lang::Js {
                 return Err(frontend::missing_js_message());
             }
-            require_jvm_lang(&lang)?;
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
                 None if option_env!("GRAPHITE_VERSION").is_some() => VERSION.to_string(),
@@ -233,16 +230,6 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             };
             install::install_jvm(env, &version, skip_checksum).map(|_| ())
         }
-    }
-}
-
-fn require_jvm_lang(lang: &str) -> Result<(), String> {
-    if lang == "jvm" {
-        Ok(())
-    } else {
-        Err(format!(
-            "unknown frontend '{lang}'; available: jvm, js (alias: ts)"
-        ))
     }
 }
 
@@ -420,7 +407,7 @@ mod cli_tests {
         assert_eq!(args.args, ["--lang", "ts", "--help"].map(OsString::from));
         assert_eq!(
             build_ts::select_language(&args.args).unwrap(),
-            ("js", vec![OsString::from("--help")])
+            (frontend::Lang::Js, vec![OsString::from("--help")])
         );
     }
 }

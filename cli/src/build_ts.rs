@@ -1,16 +1,16 @@
 //! Explicit JavaScript artifact dispatch and conversion from the frontend JSON interchange.
 
-use crate::frontend::{self, Env, Launch};
+use crate::build_output::{require_absent, Publication, Stage};
+use crate::frontend::{self, Env, Lang, Launch};
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use std::sync::atomic::{AtomicU64, Ordering};
 
 /// Only a leading language selector belongs to the shell. Preserve JVM option values,
 /// positional filenames and the `--` separator byte-for-byte.
-pub fn select_language(args: &[OsString]) -> Result<(&'static str, Vec<OsString>), String> {
+pub fn select_language(args: &[OsString]) -> Result<(Lang, Vec<OsString>), String> {
     let Some(first) = args.first() else {
-        return Ok(("jvm", Vec::new()));
+        return Ok((Lang::Jvm, Vec::new()));
     };
     let (value, consumed) = if first == "--lang" {
         (
@@ -22,17 +22,9 @@ pub fn select_language(args: &[OsString]) -> Result<(&'static str, Vec<OsString>
     } else if let Some(value) = first.to_str().and_then(|s| s.strip_prefix("--lang=")) {
         (value, 1)
     } else {
-        return Ok(("jvm", args.to_vec()));
+        return Ok((Lang::Jvm, args.to_vec()));
     };
-    let lang = match value {
-        "jvm" => "jvm",
-        "js" | "javascript" | "ts" | "typescript" => "js",
-        _ => {
-            return Err(format!(
-                "unknown frontend '{value}'; available: jvm, js (alias: ts)"
-            ))
-        }
-    };
+    let lang = Lang::parse(value)?;
     Ok((lang, args[consumed..].to_vec()))
 }
 
@@ -165,86 +157,17 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     }
     let reader =
         std::fs::File::open(&json).map_err(|e| format!("could not read frontend graph: {e}"))?;
-    let graph = stage.0.join("saved");
+    let graph = stage.graph();
     graphite_storage::interchange::import_json(std::io::BufReader::new(reader), &graph)
         .map_err(|e| format!("invalid frontend graph: {e}"))?;
     if packed {
-        // Keep the final basename: the sidecar records it for sha256sum verification.
-        let staged = stage.0.join(
-            output
-                .file_name()
-                .expect("a .graphite output has a filename"),
-        );
-        let report = graphite_storage::container::pack(&graph, &staged)
-            .map_err(|e| format!("could not pack graph: {e}"))?;
-        publish_container(&staged, &report.digest_file, &output)?;
+        stage.pack(&output, Publication::CreateNew)?;
     } else {
         require_absent(&output)?;
         std::fs::rename(&graph, &output).map_err(|e| format!("could not save graph: {e}"))?;
     }
     println!("Saved JavaScript artifact graph to {}", output.display());
     Ok(0)
-}
-
-fn require_absent(path: &Path) -> Result<(), String> {
-    match std::fs::symlink_metadata(path) {
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(format!("could not inspect {}: {e}", path.display())),
-        Ok(_) => Err(format!("output already exists: {}", path.display())),
-    }
-}
-
-/// Both files are complete in a sibling staging directory. Linking creates a final
-/// name only if it is absent, even if another build passed the same initial check.
-/// Publish the digest first so that a visible container always has its matching digest.
-fn publish_container(staged: &Path, staged_digest: &Path, output: &Path) -> Result<(), String> {
-    let link = |from: &Path, to: &Path| {
-        std::fs::hard_link(from, to).map_err(|e| {
-            if e.kind() == std::io::ErrorKind::AlreadyExists {
-                format!("output already exists: {}", to.display())
-            } else {
-                format!("could not publish {}: {e}", to.display())
-            }
-        })
-    };
-    let digest = graphite_storage::container::digest_path(output);
-    link(staged_digest, &digest)?;
-    if let Err(error) = link(staged, output) {
-        std::fs::remove_file(&digest)
-            .map_err(|e| format!("{error}; could not remove {}: {e}", digest.display()))?;
-        return Err(error);
-    }
-    Ok(())
-}
-
-struct Stage(PathBuf);
-impl Stage {
-    fn new(output: &Path) -> std::io::Result<Self> {
-        static COUNTER: AtomicU64 = AtomicU64::new(0);
-        let parent = output
-            .parent()
-            .filter(|p| !p.as_os_str().is_empty())
-            .unwrap_or(Path::new("."));
-        std::fs::create_dir_all(parent)?;
-        loop {
-            let name = format!(
-                ".graphite-ts-{}-{}",
-                std::process::id(),
-                COUNTER.fetch_add(1, Ordering::Relaxed)
-            );
-            let path = parent.join(name);
-            match std::fs::create_dir(&path) {
-                Ok(()) => return Ok(Self(path)),
-                Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => continue,
-                Err(e) => return Err(e),
-            }
-        }
-    }
-}
-impl Drop for Stage {
-    fn drop(&mut self) {
-        let _ = std::fs::remove_dir_all(&self.0);
-    }
 }
 
 #[cfg(test)]
@@ -257,10 +180,10 @@ mod tests {
     #[test]
     fn language_dispatch_is_explicit_and_preserves_jvm_arguments() {
         let jvm = os(&["app.jar", "--include", "--lang", "-o", "out"]);
-        assert_eq!(select_language(&jvm).unwrap(), ("jvm", jvm.clone()));
+        assert_eq!(select_language(&jvm).unwrap(), (Lang::Jvm, jvm.clone()));
         assert_eq!(
             select_language(&os(&["--", "--lang", "ts"])).unwrap().0,
-            "jvm"
+            Lang::Jvm
         );
         for selector in [
             os(&["--lang", "js"]),
@@ -271,7 +194,7 @@ mod tests {
             let args = [selector, os(&["src", "-o", "graph"])].concat();
             assert_eq!(
                 select_language(&args).unwrap(),
-                ("js", os(&["src", "-o", "graph"]))
+                (Lang::Js, os(&["src", "-o", "graph"]))
             );
         }
         assert!(select_language(&os(&["--lang"])).is_err());
@@ -427,7 +350,7 @@ GRAPH"#,
             .unwrap()
             .file_name()
             .to_string_lossy()
-            .starts_with(".graphite-ts-")));
+            .starts_with(".graphite-build-")));
         std::fs::remove_dir_all(root).unwrap();
     }
 
@@ -464,46 +387,6 @@ GRAPH"#,
             std::fs::remove_file(existing).unwrap();
         }
         assert!(!output.exists() && !digest.exists());
-    }
-
-    #[test]
-    fn concurrent_publishers_leave_one_complete_unmixed_pair() {
-        let root = Stage::new(&std::env::temp_dir().join("publish-test")).unwrap();
-        let output = root.0.join("saved.graphite");
-        let digest = graphite_storage::container::digest_path(&output);
-        let staged = ["first", "second"].map(|name| {
-            let file = root.0.join(name);
-            let checksum = root.0.join(format!("{name}.sha256"));
-            std::fs::write(&file, name).unwrap();
-            std::fs::write(&checksum, format!("digest of {name}")).unwrap();
-            (file, checksum)
-        });
-        let barrier = std::sync::Barrier::new(2);
-        let publish = |(file, checksum): &(PathBuf, PathBuf)| {
-            barrier.wait();
-            publish_container(file, checksum, &output)
-        };
-        let (first, second) = std::thread::scope(|scope| {
-            let first = scope.spawn(|| publish(&staged[0]));
-            let second = publish(&staged[1]);
-            (first.join().unwrap(), second)
-        });
-        let winner = match (first, second) {
-            (Ok(()), Err(_)) => "first",
-            (Err(_), Ok(())) => "second",
-            other => panic!("expected exactly one success: {other:?}"),
-        };
-        assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
-        assert_eq!(
-            std::fs::read_to_string(&digest).unwrap(),
-            format!("digest of {winner}")
-        );
-        // An output created after initial validation is preserved, and a newly
-        // linked digest is removed when the container cannot be published.
-        std::fs::remove_file(&digest).unwrap();
-        assert!(publish_container(&staged[0].0, &staged[0].1, &output).is_err());
-        assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
-        assert!(!digest.exists());
     }
 
     #[cfg(unix)]

@@ -67,16 +67,20 @@ pub fn pack(args: PackArgs) -> Result<(), String> {
         }
     }
     .map_err(|e| e.to_string())?;
+    print_report(&report, &args.output);
+    Ok(())
+}
+
+pub(crate) fn print_report(report: &container::PackReport, output: &Path) {
     println!(
         "Packed {} entries ({} bytes) into {}\nfingerprint: {}\nsha256: {} (written to {})",
         report.entries,
         report.bytes,
-        args.output.display(),
+        output.display(),
         report.fingerprint,
         report.file_sha256,
-        report.digest_file.display()
+        container::digest_path(output).display()
     );
-    Ok(())
 }
 
 pub fn unpack(args: UnpackArgs) -> Result<(), String> {
