@@ -162,6 +162,18 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
 }
 
 fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
+    // Diagnose shell-owned output options before frontend discovery or any fold pass.
+    let output = if crate::build_args::requests_help_or_version(args) {
+        None
+    } else {
+        match fold::output_of(args) {
+            Ok(output) => output,
+            Err(message) => {
+                eprintln!("Error: {message}");
+                return 2;
+            }
+        }
+    };
     let Some(fe) = frontend::locate_jvm(env) else {
         eprintln!("{}", missing_frontend_message());
         return 2;
@@ -178,17 +190,7 @@ fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
     let env = build_env.as_ref();
     // A fold file with `select` rules needs a graph to run them on: two builds. An output
     // the frontend would reject anyway (none named) goes straight to it for the message.
-    if let Some(file) =
-        fold::fold_file(args).filter(|_| !crate::build_args::requests_help_or_version(args))
-    {
-        let output = match fold::output_of(args) {
-            Ok(Some(output)) => output,
-            Ok(None) => return run_frontend(env, &fe, args),
-            Err(message) => {
-                eprintln!("Error: {message}");
-                return 2;
-            }
-        };
+    if let (Some(file), Some(output)) = (fold::fold_file(args), output) {
         let input = fold::input_of(args);
         let analysis = fold::analysis_options(args);
         let plan = match fold::plan(env, &fe, &file, input.as_deref(), &analysis) {
