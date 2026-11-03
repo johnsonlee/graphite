@@ -2923,3 +2923,51 @@ CRUD graph passed the new tests but failed two pre-existing assertions requiring
 annotation nodes; that graph contains none. The failure is retained and the
 fixture-enabled result above uses the intended JVM graph, without weakening
 those assertions. These tests are correctness evidence only.
+
+**Measured result (`8f11662d`):** The Linux CLI SHA-256 was
+`2e54a43d0458499144644c92f95538d3fddb4a59276da7e0e6c5c314a6fb2d8d`, built from an empty target.
+The initial transport attempts failed before building the candidate (ambiguous
+cached Rust libraries, a stale copied binary, and a missing transitive dependency
+in a direct rustc link). They supplied no performance samples. A clean Cargo
+build with locked dependencies verified the committed identity. The real Next
+client/server build/save/query checks passed again in all four storage forms.
+Another 32 complete HTTP responses matched 048; directed edge counts and histogram
+counts/provenance matched independent reads of the saved data. The CRUD client
+and server had 85,276 edges combined, and Taskboard had 315,572.
+
+Under the predeclared protocol, all 10,074 requests matched the complete trusted
+oracles. The same 2,586,606 pages were resident at every boundary. All samples,
+checks and failures remain in `/private/tmp/graphite-js-linux-acceptance/attempt049-resource/`
+(plan SHA-256 `1a27584aa0eb162eed3d89c3c619e64524752a87e32942e1987b4c931b70d0ff`).
+
+| Pair | Load CPU s: main → candidate | Load RSS MiB: main → candidate | Mixed query CPU s: main → candidate | Mixed query RSS MiB: main → candidate |
+|---|---:|---:|---:|---:|
+| AB | 30.808 → 25.962 | 6,213.84 → 6,213.70 | 265.154 → 191.421 | 12,438.39 → 8,918.95 |
+| BA | 26.066 → 25.223 | 6,212.63 → 6,216.36 | 263.294 → 196.463 | 12,042.28 → 9,262.23 |
+| AB | 26.983 → 26.335 | 6,220.11 → 6,222.61 | 262.885 → 191.449 | 12,284.93 → 9,089.69 |
+
+| Target case | Metric | Pair 1: main → candidate ms | Pair 2: main → candidate ms | Pair 3: main → candidate ms |
+|---|---|---:|---:|---:|
+| Traversal count | p50 | 125.25 → 83.92 | 124.59 → 84.29 | 135.27 → 83.47 |
+| Traversal count | p95 | 159.26 → 130.83 | 183.86 → 128.97 | 170.37 → 129.00 |
+| Relationship histogram | p50 | 127.23 → 82.92 | 127.86 → 90.28 | 126.79 → 89.71 |
+| Relationship histogram | p95 | 152.82 → 109.74 | 151.03 → 99.61 | 146.58 → 98.88 |
+
+All 12 independent resource comparisons satisfied the 5% limit for loading
+and the mixed query workload; both target queries improved on main at p50 and
+p95 in every pair. These measurements do not establish single-case CPU/RSS or
+JVM construction resource bounds. Other slow queries remain mixed: collect
+p95 was 1917.21 → 1976.82, 1932.40 → 2066.05 and 1912.14 → 1859.86 ms;
+its median paired delta was +59.60 ms. Sort p50 median deltas were +7.73 and
++32.74 ms (each range includes an improvement), while both sort p95 medians
+improved. The largest positive median delta among cases adverse in every pair
+was +2.00 ms for the fast dense aliased query's p95 (3.31 → 5.31, 2.91 → 5.51,
+3.22 → 3.36 ms). These observations are retained without pooling cases or
+selecting a favorable run.
+
+**Decision:** keep the verified reduction in scratch space and the repeatable
+latency recovery of the two target cases. This is not blanket acceptance.
+Mixed sort results and the positive median collect p95 delta remain explicit.
+The collect query reads 5,051,914 call sites; its aggregate finalizer copies an
+owned vector and clones surviving values into a second list. That concrete
+work is the next hypothesis, not a claim about the cause of run-to-run variation.
