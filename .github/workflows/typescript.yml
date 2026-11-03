@@ -34,11 +34,19 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v7
+    - name: Restore compiled Next.js fixtures
+      id: fixtures
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/graphite-next-fixtures
+        key: graphite-next-fixtures-v1-${{ hashFiles('.github/scripts/check-typescript-e2e.py') }}
     - name: Setup historical runtime for pinned Next 10 fixture
+      if: steps.fixtures.outputs.cache-hit != 'true'
       uses: actions/setup-node@v6
       with:
         node-version: '14.17.0'
     - name: Preserve fixture runtime path
+      if: steps.fixtures.outputs.cache-hit != 'true'
       run: echo "GRAPHITE_FIXTURE_NODE=$(command -v node)" >> "$GITHUB_ENV"
     - name: Setup Node
       uses: actions/setup-node@v6
@@ -61,14 +69,31 @@ jobs:
       run: cargo build --release --locked -p graphite-cli
     - name: Check frontend discovery and persisted conflicting-edge policy through the Rust CLI
       run: node frontend/web/test/cli-integration.mjs target/release/graphite
-    - name: Build real Next/React app and verify client/server artifact graphs
+    - name: Prepare pinned application fixtures on cache miss
+      if: steps.fixtures.outputs.cache-hit != 'true'
       run: |
-        python3 .github/scripts/check-typescript-e2e.py \
-          --project crud --legacy-build-node "$GRAPHITE_FIXTURE_NODE" \
-          --output "${RUNNER_TEMP}/javascript-artifact-e2e/crud"
-        python3 .github/scripts/check-typescript-e2e.py \
-          --project taskboard \
-          --output "${RUNNER_TEMP}/javascript-artifact-e2e/taskboard"
+        for project in crud taskboard; do
+          extra=()
+          lock=pnpm-lock.yaml
+          if [[ "$project" == crud ]]; then
+            extra=(--legacy-build-node "$GRAPHITE_FIXTURE_NODE")
+            lock=package-lock.json
+          fi
+          source_dir=$(python3 .github/scripts/check-typescript-e2e.py --project "$project" \
+            --prepare-only "${extra[@]}" --output "$RUNNER_TEMP/js-preparation/$project")
+          destination="$RUNNER_TEMP/graphite-next-fixtures/$project"
+          mkdir -p "$destination"
+          (cd "$source_dir" && cp .graphite-fixture.json "$lock" "$destination" &&
+            find .next/server .next/static -type f \( -name '*.js' -o -name '*.cjs' -o -name '*.mjs' \) \
+              -exec cp --parents -t "$destination" {} +)
+        done
+    - name: Verify client/server graph build, save and query from hashed fixtures
+      run: |
+        for project in crud taskboard; do
+          python3 .github/scripts/check-typescript-e2e.py --project "$project" \
+            --prepared-app "$RUNNER_TEMP/graphite-next-fixtures/$project" \
+            --output "$RUNNER_TEMP/javascript-artifact-e2e/$project"
+        done
     - name: Preserve complete correctness evidence
       if: always()
       uses: actions/upload-artifact@v7
@@ -81,8 +106,10 @@ jobs:
           ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/dist/*.js
           ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/src/*.ts
           ${{ runner.temp }}/javascript-artifact-e2e/*/producer/frontend/package*.json
-          ${{ runner.temp }}/javascript-artifact-e2e/*/sources/*/.next/server/**/*.js
-          ${{ runner.temp }}/javascript-artifact-e2e/*/sources/*/.next/static/**/*.js
+          ${{ runner.temp }}/js-preparation/*/*.json
+          ${{ runner.temp }}/js-preparation/*/*.stdout
+          ${{ runner.temp }}/js-preparation/*/*.stderr
+          ${{ runner.temp }}/graphite-next-fixtures
         include-hidden-files: true
         if-no-files-found: warn
         retention-days: 14
