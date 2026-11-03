@@ -51,7 +51,7 @@ const formatDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => ts.formatDi
 });
 
 /** Read emitted JavaScript only. Compilation is deliberately an explicit upstream step. */
-export function project(input: string, warn: (message: string) => void = console.error): { program: ts.Program; root: string } {
+export function project(input: string, warn: (message: string) => void = console.error) {
   const absolute = path.resolve(input);
   const stat = fs.statSync(absolute);
   const root = stat.isDirectory() ? absolute : path.dirname(absolute);
@@ -78,19 +78,47 @@ export function project(input: string, warn: (message: string) => void = console
   const host = ts.createCompilerHost(options);
   // TypeScript uses forward slashes for source and resolution paths, including on Windows.
   const roots = files.map(file => ts.sys.resolvePath(file));
-  const selected = new Set(roots.map(file => host.getCanonicalFileName(file)));
+  const key = (file: string) => host.getCanonicalFileName(ts.sys.resolvePath(file));
+  const selected = new Set(roots.map(key));
+  const skipped = new Map<string, ts.Diagnostic[]>();
+  const realRoot = fs.realpathSync(root);
+  const libraryDir = key(path.dirname(host.getDefaultLibFileName(options)));
+  const permitted = (file: string): boolean => {
+    if (skipped.has(key(file))) return false;
+    if (selected.has(key(file))) return true;
+    if (stat.isDirectory() || !artifactExtension.test(file)) return false;
+    const relative = path.relative(root, file);
+    const parts = relative.split(path.sep);
+    if (path.isAbsolute(relative) || parts[0] === '..' || parts.includes('node_modules') || parts.includes('.git') ||
+        parts.some((part, i) => part === 'cache' && (i ? parts[i - 1] : path.basename(root)) === '.next')) return false;
+    return host.fileExists(file) && host.getCanonicalFileName(path.relative(realRoot, fs.realpathSync(file))) === host.getCanonicalFileName(relative);
+  };
+  // TypeScript normally tries original TS or declaration files before the
+  // emitted JS named by an import. Only artifact files are resolution targets.
+  const resolver = { ...host, fileExists: (file: string) =>
+    host.fileExists(file) && (path.basename(file) === 'package.json' || permitted(file)) };
   host.resolveModuleNames = (names, containingFile) => names.map(name => {
-    const resolved = ts.resolveModuleName(name, containingFile, options, host).resolvedModule;
-    // Never silently pull original TS source or installed dependencies into an artifact graph.
-    return resolved && selected.has(host.getCanonicalFileName(ts.sys.resolvePath(resolved.resolvedFileName))) ? resolved : undefined;
+    const resolved = ts.resolveModuleName(name, containingFile, options, resolver).resolvedModule;
+    if (!resolved || !permitted(resolved.resolvedFileName)) return undefined;
+    selected.add(key(resolved.resolvedFileName));
+    return resolved;
+  });
+  // Triple-slash references bypass module resolution. Permit only selected
+  // artifacts and TypeScript's own library declarations to enter the program.
+  const read = host.getSourceFile.bind(host);
+  host.getSourceFile = (file, ...args) => {
+    const allowed = selected.has(key(file)) || (key(path.dirname(file)) === libraryDir && /^lib(?:\..+)?\.d\.ts$/i.test(path.basename(file)));
+    return allowed && !skipped.has(key(file)) ? read(file, ...args) : undefined;
+  };
+  const result = (program: ts.Program) => ({
+    program, root, sources: program.getSourceFiles().filter(file => selected.has(key(file.fileName))),
   });
   const program = ts.createProgram(roots, options, host);
   const optionErrors = program.getOptionsDiagnostics();
   if (optionErrors.length) throw new Error(formatDiagnostics(optionErrors));
   const syntactic = program.getSyntacticDiagnostics();
-  if (!syntactic.length) return { program, root };
+  if (!syntactic.length) return result(program);
 
-  const skipped = new Map<string, ts.Diagnostic[]>();
   for (const diagnostic of syntactic) {
     const key = diagnostic.file && host.getCanonicalFileName(ts.sys.resolvePath(diagnostic.file.fileName));
     if (!key || !selected.has(key)) throw new Error(formatDiagnostics(syntactic));
@@ -101,16 +129,12 @@ export function project(input: string, warn: (message: string) => void = console
   const valid = roots.filter(file => !skipped.has(host.getCanonicalFileName(file)));
   if (!valid.length) throw new Error(`No parseable JavaScript artifacts remain.
 ${formatDiagnostics(syntactic)}`);
-  warn(`Warning: skipped ${skipped.size} unparsable JavaScript artifact(s) out of ${roots.length}.`);
+  warn(`Warning: skipped ${skipped.size} unparsable JavaScript artifact(s) out of ${selected.size}.`);
   for (const [key, errors] of skipped) {
     selected.delete(key);
     warn(formatDiagnostics(errors.slice(0, 1)).trimEnd());
   }
-  // Rebuild only on this recovery path. Exclude the bad files both as roots and
-  // as dependencies, including direct reference directives as well as imports.
-  const read = host.getSourceFile.bind(host);
-  host.getSourceFile = (file, ...args) => skipped.has(host.getCanonicalFileName(ts.sys.resolvePath(file))) ? undefined : read(file, ...args);
-  return { program: ts.createProgram(valid, options, host), root };
+  return result(ts.createProgram(valid, options, host));
 }
 
 // Bundlers emit (0, module.fn)(...) to call fn without binding module as `this`.
@@ -144,8 +168,8 @@ function visitTree(root: ts.Node, context: Context, visit: (n: ts.Node, scope: C
 
 /** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
 export function analyze(input: string, warn: (message: string) => void = console.warn): SourceGraph {
-  const { program, root } = project(input, warn);
-  return new Analyzer(program, root, warn).run();
+  const { program, root, sources } = project(input, warn);
+  return new Analyzer(program, root, sources, warn).run();
 }
 
 class Analyzer {
@@ -180,13 +204,9 @@ class Analyzer {
   private origins = new Set<string>();
   private methodKeys = new Set<string>();
   private sources: ts.SourceFile[];
-  constructor(private program: ts.Program, private root: string, private warn: (message: string) => void) {
+  constructor(private program: ts.Program, private root: string, sources: ts.SourceFile[], private warn: (message: string) => void) {
     this.checker = program.getTypeChecker();
-    this.sources = program.getRootFileNames().map(file => {
-      const source = program.getSourceFile(file);
-      if (!source) throw new Error(`Compiled JavaScript artifact was not loaded: ${file}`);
-      return source;
-    }).sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
+    this.sources = sources.sort((a, b) => a.fileName.localeCompare(b.fileName, 'en'));
   }
   private module(n: ts.Node): string {
     const source = n.getSourceFile();
@@ -205,11 +225,7 @@ class Analyzer {
       }
       return ['external:typescript/lib', ...names.reverse()].join('.');
     }
-    const file = source.fileName;
-    const normalized = file.split(path.sep).join('/');
-    const dependency = normalized.lastIndexOf('/node_modules/');
-    if (dependency >= 0) return `external:${normalized.slice(dependency + '/node_modules/'.length)}`;
-    return path.relative(this.root, file).split(path.sep).join('/');
+    return path.relative(this.root, source.fileName).split(path.sep).join('/');
   }
   private position(n: ts.Node): string {
     const p = n.getSourceFile().getLineAndCharacterOfPosition(n.getStart());

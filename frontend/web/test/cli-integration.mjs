@@ -81,6 +81,18 @@ try {
   assert.deepEqual(shorthandRows("MATCH (s:StringConstant)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(:CallSite)-[:DATAFLOW]->(c:CallSite) RETURN s.value AS value, c.callee_name AS sink"),
     [{ value:'inner', sink:'nestedSink' }]);
 
+  const app = path.join(dir, 'entry-app'), entry = path.join(app,'main.js');
+  const entryGraph = path.join(dir,'entry.graphite');
+  fs.mkdirSync(app);
+  fs.writeFileSync(entry, 'import {save} from "./lib.js"; save("secret");');
+  fs.writeFileSync(path.join(app,'lib.js'), 'export function save(value) { return value; }');
+  fs.writeFileSync(path.join(app,'unused.js'), 'function broken( {');
+  const single = run(['build','--lang','js',entry,'-o',entryGraph]);
+  assert.doesNotMatch(single.stderr, /unused.js|unparsable/);
+  run(['verify',entryGraph]);
+  const flow = run(['query', entryGraph, "MATCH (s:StringConstant {value:'secret'})-[r:DATAFLOW]->(p:Parameter) WHERE r.kind='PARAMETER_PASS' RETURN p.method AS method, p.index AS i", '--format','json']);
+  assert.deepEqual(JSON.parse(flow.stdout).rows, [{ method:'lib.js.save(any)', i:0 }]);
+
   const overflow = path.join(dir, 'overflow.mjs'), saved = path.join(dir, 'overflow.graphite');
   fs.writeFileSync(overflow, ['function take(x = -1e400) { return x; }','take(1e400);','take(-1e400);','take();'].join('\n'));
   run(['build', '--lang', 'js', overflow, '-o', saved]);

@@ -946,3 +946,54 @@ test('object shorthand reads the lexical binding, including imports, shadows and
   assert.equal(propertyFlows(graph, 'imported', 'innerSink'), false);
   assert.equal(graph.nodes.filter(n => n.kind === 'LocalVariable' && n.name === 'secret').length, 1);
 });
+
+test('single JS entry follows local re-exports and cycles without scanning unrelated siblings', t => {
+  const root = fixture(t, {
+    'app/entry.mjs': 'import { save } from "./bridge.mjs"; export const entry = 1; save("secret");',
+    'app/bridge.mjs': 'export { save } from "./nested/store.js";',
+    'app/nested/store.js': 'import "../entry.mjs"; export function save(value) { return value; }',
+    'app/nested/store.ts': 'this original TS source is invalid {{{',
+    'app/unrelated.js': 'this unused file is deliberately invalid {{{',
+  });
+  const warnings = [];
+  const graph = analyze(path.join(root, 'app/entry.mjs'), warning => warnings.push(warning));
+  assert.deepEqual(warnings, []);
+  assert.deepEqual(graph.classOrigins.map(o => o.origin).sort(), ['bridge.mjs','entry.mjs','nested/store.js']);
+  const call = calls(graph).find(c => c.callee.name === 'save');
+  assert.equal(call.callee.declaringClass, 'nested/store.js');
+  assert.ok(edge(graph, call.arguments[0], formal(graph, 'save').id, 'PARAMETER_PASS'));
+  assert.equal(graph.nodes[call.arguments[0]].value, 'secret');
+});
+
+test('single JS entry excludes package, cache, original-source and out-of-root dependencies', t => {
+  const root = fixture(t, {
+    'app/entry.cjs': [
+      '/// <reference path="../outside.ts" />',
+      'const {local} = require("./local.cjs"); local("yes");',
+      'require("../escape.cjs"); require("./link/escape.cjs"); require("dep");',
+      'require("./.git/hidden.cjs"); require("./.next/cache/hidden.cjs"); require("./source.ts");',
+    ].join('\n'),
+    'app/local.cjs': 'exports.local = function local(s) { return s; };',
+    'app/node_modules/dep/index.js': 'packageTrap();', 'app/.git/hidden.cjs':'gitTrap();',
+    'app/.next/cache/hidden.cjs':'cacheTrap();','app/source.ts':'sourceTrap();',
+    'escape.cjs':'outsideTrap();', 'external/escape.cjs':'symlinkTrap();', 'outside.ts':'function invalid( {',
+  });
+  fs.symlinkSync(path.join(root,'external'), path.join(root,'app/link'), 'junction');
+  const graph = analyze(path.join(root,'app/entry.cjs'));
+  assert.deepEqual(graph.classOrigins.map(o => o.origin).sort(), ['entry.cjs','local.cjs']);
+  assert.ok(calls(graph).some(c => c.callee.declaringClass === 'local.cjs' && c.callee.name === 'local'));
+  assert.ok(!calls(graph).some(c => c.callee.name.endsWith('Trap')));
+});
+
+test('invalid imported JS is skipped without pulling in modules reachable only from that file', t => {
+  const root = fixture(t, {
+    'entry.mjs': 'import "./broken.mjs"; import {ok} from "./good.mjs"; ok(1);',
+    'broken.mjs':'import "./orphan.mjs"; function broken( {',
+    'good.mjs':'export function ok(x) { return x; }',
+    'orphan.mjs':'orphan();',
+  });
+  const warnings=[];
+  const graph=analyze(path.join(root,'entry.mjs'), text=>warnings.push(text));
+  assert.ok(warnings.some(text=>text.includes('broken.mjs')));
+  assert.deepEqual(graph.classOrigins.map(o=>o.origin).sort(), ['entry.mjs','good.mjs']);
+});
