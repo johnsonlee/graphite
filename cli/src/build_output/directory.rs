@@ -10,19 +10,58 @@ const READY: &str = "graph.nodedata";
 pub(super) fn publish(
     from: &Path,
     to: &Path,
-    rename: impl FnOnce(&Path, &Path) -> io::Result<()>,
+    rename: impl Fn(&Path, &Path) -> io::Result<()>,
 ) -> io::Result<()> {
-    match rename(from, to) {
-        Err(e) if rename_unsupported(&e) => publish_claimed(from, to, |a, b| fs::hard_link(a, b)),
-        result => result,
+    let Err(error) = rename(from, to) else {
+        return Ok(());
+    };
+    let ambiguous = error.kind() == io::ErrorKind::InvalidInput;
+    if !ambiguous && !rename_unsupported(&error) {
+        return Err(error);
     }
+
+    let parent = to
+        .parent()
+        .filter(|p| !p.as_os_str().is_empty())
+        .unwrap_or(Path::new("."));
+    // A directory cannot be moved into itself or a descendant, including
+    // through a symlink. The fallback must respect that native restriction.
+    let (Ok(source), Ok(destination_parent), Some(name)) =
+        (from.canonicalize(), parent.canonicalize(), to.file_name())
+    else {
+        return Err(error);
+    };
+    if destination_parent.starts_with(&source) || destination_parent.join(name) == source {
+        return Err(error);
+    }
+    if ambiguous && !probe_unsupported(parent, &rename).unwrap_or(false) {
+        return Err(error);
+    }
+    publish_claimed(from, to, |a, b| fs::hard_link(a, b))
+}
+
+fn probe_unsupported(
+    parent: &Path,
+    rename: &impl Fn(&Path, &Path) -> io::Result<()>,
+) -> io::Result<bool> {
+    // EINVAL also describes invalid path layouts. Distinguish flag support
+    // using a valid exclusive rename of an empty directory on this filesystem.
+    let mut builder = tempfile::Builder::new();
+    builder.prefix(".graphite-build-probe-");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+        builder.permissions(fs::Permissions::from_mode(0o700));
+    }
+    let scratch = builder.tempdir_in(parent)?;
+    let source = scratch.path().join("source");
+    fs::create_dir(&source)?;
+    Ok(rename(&source, &scratch.path().join("destination"))
+        .is_err_and(|e| e.kind() == io::ErrorKind::InvalidInput || rename_unsupported(&e)))
 }
 
 fn rename_unsupported(e: &io::Error) -> bool {
-    if matches!(
-        e.kind(),
-        io::ErrorKind::Unsupported | io::ErrorKind::InvalidInput
-    ) {
+    if e.kind() == io::ErrorKind::Unsupported {
         return true;
     }
     // Darwin ENOTSUP and EOPNOTSUPP are distinct; std's ErrorKind needn't map both.
@@ -207,6 +246,52 @@ mod tests {
         .unwrap_err();
         assert_eq!(error.kind(), io::ErrorKind::PermissionDenied);
         assert!(!denied.exists());
+    }
+
+    #[test]
+    fn invalid_publish_is_not_retried_when_the_probe_supports_exclusive_rename() {
+        let root = tempfile::tempdir().unwrap();
+        let from = saved(root.path());
+        let to = root.path().join("output");
+        let probes = std::cell::Cell::new(0);
+        let invalid = publish(&from, &to, |a, b| {
+            if a == from {
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "actual invalid rename",
+                ));
+            }
+            assert!(a.is_dir() && !b.exists() && b.starts_with(root.path()));
+            probes.set(probes.get() + 1);
+            fs::rename(a, b)
+        })
+        .unwrap_err();
+        assert_eq!(invalid.to_string(), "actual invalid rename");
+        assert_eq!(probes.get(), 1);
+        assert!(!to.exists());
+        assert_complete(&from);
+        assert_eq!(fs::read_dir(root.path()).unwrap().count(), 1);
+    }
+
+    #[test]
+    fn an_unsupported_volume_still_rejects_a_destination_nested_in_the_source() {
+        let root = tempfile::tempdir().unwrap();
+        let from = saved(root.path());
+        let to = from.join("nested");
+        for kind in [io::ErrorKind::Unsupported, io::ErrorKind::InvalidInput] {
+            let err = publish(&from, &to, |a, b| {
+                assert_eq!(
+                    (a, b),
+                    (from.as_path(), to.as_path()),
+                    "invalid layout must not be probed"
+                );
+                Err(kind.into())
+            })
+            .unwrap_err();
+            assert_eq!(err.kind(), kind);
+            assert!(!to.exists());
+        }
+        assert_complete(&from);
     }
 
     #[cfg(target_vendor = "apple")]

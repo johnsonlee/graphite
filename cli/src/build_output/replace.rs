@@ -3,12 +3,13 @@
 use super::publish_new_file;
 use same_file::Handle;
 use std::fs::{self, File};
-use std::io;
+use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 pub(super) struct Claim {
     dir: PathBuf,
     id: Handle,
+    owner: Option<Handle>,
     backup: Option<Handle>,
     retain: bool,
 }
@@ -25,6 +26,14 @@ fn regular(path: &Path) -> io::Result<Option<Handle>> {
     }
 }
 
+fn occupied_message(output: &Path, dir: &Path) -> String {
+    if fs::symlink_metadata(dir).is_ok_and(|m| !m.is_dir()) {
+        return format!("could not claim {} for publication: an unrelated file or link occupies the path; preserve it and choose a different output", dir.display());
+    }
+    format!("could not claim {} for publication: another publisher may be active or may have been interrupted. Check {} if present and confirm all publishers have exited. If {} exists, run graphite verify on it and inspect {} for the previous digest. Restore the matching sidecar if needed, remove only the confirmed abandoned Graphite lock directory {}, then retry.",
+        dir.display(), dir.join("owner.pid").display(), output.display(), dir.join("previous.sha256").display(), dir.display())
+}
+
 impl Claim {
     pub(super) fn new(output: &Path) -> Result<Self, String> {
         let dir = output.with_added_extension("lock");
@@ -34,9 +43,13 @@ impl Claim {
             use std::os::unix::fs::DirBuilderExt;
             builder.mode(0o700);
         }
-        builder
-            .create(&dir)
-            .map_err(|e| format!("could not claim {} for publication: {e}", dir.display()))?;
+        builder.create(&dir).map_err(|e| {
+            if e.kind() == io::ErrorKind::AlreadyExists {
+                occupied_message(output, &dir)
+            } else {
+                format!("could not claim {} for publication: {e}", dir.display())
+            }
+        })?;
         let id = Handle::from_path(&dir).map_err(|e| {
             let cleanup = fs::remove_dir(&dir).err();
             format!(
@@ -47,12 +60,21 @@ impl Claim {
                     .unwrap_or_default()
             )
         })?;
-        Ok(Self {
+        let mut claim = Self {
             dir,
             id,
+            owner: None,
             backup: None,
             retain: false,
-        })
+        };
+        let owner = claim.dir.join("owner.pid");
+        (|| -> io::Result<()> {
+            let mut file = File::create_new(&owner)?;
+            claim.owner = Some(Handle::from_file(file.try_clone()?)?);
+            writeln!(file, "{}", std::process::id())
+        })()
+        .map_err(|e| format!("could not record publisher in {}: {e}", owner.display()))?;
+        Ok(claim)
     }
 
     fn owns_dir(&self) -> io::Result<bool> {
@@ -153,10 +175,15 @@ impl Drop for Claim {
             if !self.owns_dir()? {
                 return Ok(());
             }
-            if let Some(id) = &self.backup {
-                let file = self.dir.join("previous.sha256");
-                if regular(&file)?.as_ref() == Some(id) {
-                    fs::remove_file(file)?;
+            for (name, id) in [
+                ("owner.pid", &self.owner),
+                ("previous.sha256", &self.backup),
+            ] {
+                if let Some(id) = id {
+                    let file = self.dir.join(name);
+                    if regular(&file)?.as_ref() == Some(id) {
+                        fs::remove_file(file)?;
+                    }
                 }
             }
             fs::remove_dir(&self.dir)
@@ -296,6 +323,80 @@ mod tests {
             )
             .unwrap();
         verify(&output, "new");
+    }
+
+    #[test]
+    fn killed_publisher_claim_identifies_its_owner_and_explains_manual_recovery() {
+        use std::io::Read;
+        use std::process::{Command, Stdio};
+        use std::time::{Duration, Instant};
+        const CHILD_OUTPUT: &str = "GRAPHITE_TEST_KILLED_PUBLISHER_OUTPUT";
+        if let Some(path) = std::env::var_os(CHILD_OUTPUT) {
+            let path = PathBuf::from(path);
+            let mut claim = Claim::new(&path).unwrap();
+            let digest = container::digest_path(&path);
+            claim
+                .backup_digest(&digest, &regular(&digest).unwrap().unwrap())
+                .unwrap();
+            fs::write(path.with_added_extension("ready"), b"claimed").unwrap();
+            // The parent kills this process. If the parent itself exits early,
+            // EOF releases this child instead of leaving a process behind.
+            io::stdin().read_to_end(&mut Vec::new()).unwrap();
+            return;
+        }
+        let root = tempfile::tempdir().unwrap();
+        let output = packed(root.path(), "previous");
+        let lock = output.with_added_extension("lock");
+        let mut child = Command::new(std::env::current_exe().unwrap())
+            .args(["--exact", "build_output::replace::tests::killed_publisher_claim_identifies_its_owner_and_explains_manual_recovery"])
+            .env(CHILD_OUTPUT, &output)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .spawn().unwrap();
+        let deadline = Instant::now() + Duration::from_secs(15);
+        while !output.with_added_extension("ready").exists() {
+            assert!(
+                child.try_wait().unwrap().is_none() && Instant::now() < deadline,
+                "child did not hold a claim"
+            );
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        let pid = child.id().to_string();
+        assert_eq!(
+            fs::read_to_string(lock.join("owner.pid")).unwrap().trim(),
+            pid
+        );
+        child.kill().unwrap();
+        assert!(!child.wait().unwrap().success());
+
+        let err = Claim::new(&output)
+            .err()
+            .expect("a killed publisher leaves the claim occupied");
+        for hint in [
+            "may have been interrupted",
+            "confirm all publishers have exited",
+            "graphite verify",
+            "previous.sha256",
+            "remove only the confirmed abandoned Graphite lock directory",
+            "then retry",
+        ] {
+            assert!(err.contains(hint), "{err}");
+        }
+        assert!(err.contains(&lock.display().to_string()));
+        verify(&output, "previous");
+        assert_eq!(
+            fs::read(lock.join("previous.sha256")).unwrap(),
+            fs::read(container::digest_path(&output)).unwrap()
+        );
+        assert_eq!(
+            fs::read_to_string(lock.join("owner.pid")).unwrap().trim(),
+            pid
+        );
+        fs::remove_file(lock.join("previous.sha256")).unwrap();
+        fs::remove_file(lock.join("owner.pid")).unwrap();
+        fs::remove_dir(&lock).unwrap();
+        drop(Claim::new(&output).unwrap());
+        assert!(!lock.exists());
     }
 
     #[test]
