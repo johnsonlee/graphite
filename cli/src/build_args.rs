@@ -75,7 +75,12 @@ pub(crate) fn walk(args: &[OsString]) -> impl Iterator<Item = Arg<'_>> {
         } else if let Some(name) = VALUE_OPTIONS.iter().copied().find(|n| raw == *n) {
             let value = args
                 .get(i)
-                .filter(|next| *next != "--")
+                .filter(|next| {
+                    *next != "--"
+                        && !(matches!(name, "-o" | "--output")
+                            && next.as_encoded_bytes().starts_with(b"-")
+                            && next.len() > 1)
+                })
                 .map(OsString::as_os_str);
             i += usize::from(value.is_some());
             (Some(name), value)
@@ -187,7 +192,17 @@ mod tests {
             rewritten[i] = arg;
             assert_eq!(rewritten, expected);
         }
+        for joined in ["-o=--help", "--output=--help"] {
+            let args = os(&["input", joined]);
+            assert_eq!(
+                output_option(&args).unwrap().unwrap().value,
+                Some(OsStr::new("--help"))
+            );
+            assert!(!requests_help_or_version(&args));
+        }
         for a in [
+            os(&["app", "-o", "--help"]),
+            os(&["app", "--output", "-V"]),
             os(&["app", "-o"]),
             os(&["--output", "--", "a"]),
             os(&["--output="]),

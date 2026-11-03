@@ -14,7 +14,7 @@ pub(super) struct Claim {
     retain: bool,
 }
 
-fn regular(path: &Path) -> io::Result<Option<Handle>> {
+pub(super) fn regular(path: &Path) -> io::Result<Option<Handle>> {
     match fs::symlink_metadata(path) {
         Ok(m) if m.is_file() => Handle::from_path(path).map(Some),
         Ok(_) => Err(io::Error::new(

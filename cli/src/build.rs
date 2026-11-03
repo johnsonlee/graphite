@@ -30,6 +30,7 @@ use std::process::Command;
 pub struct Pack {
     pub stage: Stage,
     pub output: PathBuf,
+    publication: Publication,
 }
 
 /// A fully resolved frontend invocation: program, arguments and the environment
@@ -52,11 +53,16 @@ fn redirect_output(args: &mut [OsString]) -> Result<Option<Pack>, String> {
     if output.extension().and_then(|e| e.to_str()) != Some(graphite_storage::container::EXTENSION) {
         return Ok(None);
     }
+    let publication = Publication::inspect(&output)?;
     let stage =
         Stage::new(&output).map_err(|e| format!("could not stage {}: {e}", output.display()))?;
     let (slot, replacement) = opt.replacement(&stage.graph());
     args[slot] = replacement;
-    Ok(Some(Pack { stage, output }))
+    Ok(Some(Pack {
+        stage,
+        output,
+        publication,
+    }))
 }
 
 impl Invocation {
@@ -147,6 +153,15 @@ pub fn missing_frontend_message() -> String {
 
 /// Run `graphite build` and return the exit code to use.
 pub fn run(env: &Env, args: &[OsString]) -> i32 {
+    // Validate the shell's output before interpreting any flag that follows it
+    // or attempting frontend discovery. Joined values can start with a dash.
+    let output = match fold::output_of(args) {
+        Ok(output) => output,
+        Err(message) => {
+            eprintln!("Error: {message}");
+            return 2;
+        }
+    };
     let (lang, args) = match crate::build_ts::select_language(args) {
         Ok(selected) => selected,
         Err(message) => {
@@ -157,22 +172,11 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
     if lang == frontend::Lang::Js {
         return crate::build_ts::run(env, &args);
     }
-    run_jvm(env, &args)
+    run_jvm(env, &args, output)
 }
 
-fn run_jvm(env: &Env, args: &[OsString]) -> i32 {
-    // Diagnose shell-owned output options before frontend discovery or any fold pass.
-    let output = if crate::build_args::requests_help_or_version(args) {
-        None
-    } else {
-        match fold::output_of(args) {
-            Ok(output) => output,
-            Err(message) => {
-                eprintln!("Error: {message}");
-                return 2;
-            }
-        }
-    };
+fn run_jvm(env: &Env, args: &[OsString], output: Option<PathBuf>) -> i32 {
+    let output = output.filter(|_| !crate::build_args::requests_help_or_version(args));
     let Some(fe) = frontend::locate_jvm(env) else {
         eprintln!("{}", missing_frontend_message());
         return 2;
@@ -220,7 +224,12 @@ fn run_frontend(env: &Env, fe: &Frontend, args: &[OsString]) -> i32 {
             return 1;
         }
     };
-    let code = match inv.command().status() {
+    let mut command = inv.command();
+    let status = match &pack {
+        Some(pack) => pack.stage.run(&mut command),
+        None => command.status(),
+    };
+    let code = match status {
         Ok(status) => status.code().unwrap_or(1),
         Err(e) => {
             eprintln!("Error: could not run {}: {e}", inv.program.display());
@@ -322,7 +331,7 @@ fn finish_pack(pack: Pack, code: i32) -> i32 {
     if code != 0 {
         return code;
     }
-    match pack.stage.pack(&pack.output, Publication::Replace) {
+    match pack.stage.pack(&pack.output, pack.publication) {
         Ok(()) => 0,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -434,8 +443,8 @@ mod tests {
 
     #[test]
     fn help_and_failed_frontend_leave_missing_output_parent_absent() {
-        let temp = Stage::new(&std::env::temp_dir().join("jvm-output-test")).unwrap();
-        let parent = temp.0.join("new").join("nested");
+        let temp = tempfile::tempdir().unwrap();
+        let parent = temp.path().join("new").join("nested");
         let output = parent.join("app.graphite");
         let mut args = os(&["missing.jar", "-o"]);
         args.push(output.into_os_string());
@@ -449,7 +458,7 @@ mod tests {
         let pack = inv.prepare_pack().unwrap().unwrap();
         assert_eq!(pack.stage.0.parent(), Some(std::env::temp_dir().as_path()));
         assert_eq!(finish_pack(pack, 3), 3);
-        assert!(std::fs::read_dir(&temp.0).unwrap().next().is_none());
+        assert!(std::fs::read_dir(temp.path()).unwrap().next().is_none());
         args.insert(0, "--help".into());
         let mut help = invocation(
             &env_with(&[("GRAPHITE_JAVA", "/usr/bin/java")]),
@@ -459,7 +468,7 @@ mod tests {
         .unwrap();
         assert!(help.prepare_pack().unwrap().is_none());
         assert_eq!(help.args.last(), args.last());
-        assert!(std::fs::read_dir(&temp.0).unwrap().next().is_none());
+        assert!(std::fs::read_dir(temp.path()).unwrap().next().is_none());
     }
 
     #[test]
@@ -474,6 +483,7 @@ mod tests {
             finish_pack(
                 Pack {
                     stage,
+                    publication: Publication::inspect(&output).unwrap(),
                     output: output.clone()
                 },
                 3
@@ -486,16 +496,17 @@ mod tests {
         std::fs::create_dir(&root).unwrap(); // An existing JVM output should be replaced.
         let stage = Stage::new(&output).unwrap();
         let path = stage.0.clone();
-        std::fs::create_dir(stage.graph()).unwrap();
-        for name in graphite_storage::container::REQUIRED_ENTRIES {
-            std::fs::write(stage.graph().join(name), name.as_bytes()).unwrap();
-        }
-        // JVM builds historically allow replacing the destination.
-        std::fs::write(&output, b"previous").unwrap();
+        let input = br#"{"version":1,"methods":[],"nodes":[{"id":0,"kind":"StringConstant","value":"published"}],"edges":[]}"#;
+        graphite_storage::interchange::import_json(input.as_slice(), &stage.graph()).unwrap();
+        let previous = root.join("previous");
+        let old = br#"{"version":1,"methods":[],"nodes":[{"id":0,"kind":"StringConstant","value":"previous"}],"edges":[]}"#;
+        graphite_storage::interchange::import_json(old.as_slice(), &previous).unwrap();
+        graphite_storage::container::pack(&previous, &output).unwrap();
         assert_eq!(
             finish_pack(
                 Pack {
                     stage,
+                    publication: Publication::inspect(&output).unwrap(),
                     output: output.clone()
                 },
                 0
@@ -510,6 +521,11 @@ mod tests {
         assert!(v.ok());
         assert_eq!(v.digest_file, Some(true));
         assert!(root.join("app.graphite.sha256").exists());
+        let graph = graphite_storage::Graph::load(&output).unwrap();
+        let graphite_storage::NodeKind::StringConstant(value) = graph.node(0).unwrap().kind else {
+            panic!("string expected")
+        };
+        assert_eq!(graph.str(value), "published");
 
         // An invalid saved graph must not create the final parent, even after frontend success.
         let missing = root.join("missing");
@@ -517,7 +533,17 @@ mod tests {
         let stage = Stage::new(&output).unwrap();
         let path = stage.0.clone();
         std::fs::create_dir(stage.graph()).unwrap();
-        assert_eq!(finish_pack(Pack { stage, output }, 0), 1);
+        assert_eq!(
+            finish_pack(
+                Pack {
+                    stage,
+                    publication: Publication::inspect(&output).unwrap(),
+                    output
+                },
+                0
+            ),
+            1
+        );
         assert!(!path.exists());
         assert!(!missing.exists());
         std::fs::remove_dir_all(root).unwrap();

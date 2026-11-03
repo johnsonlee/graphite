@@ -92,19 +92,18 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let packed = output
         .extension()
         .is_some_and(|e| e == graphite_storage::container::EXTENSION);
-    require_absent(&output)?;
-    if packed {
-        require_absent(&graphite_storage::container::digest_path(&output))?;
-    }
+    let publication = if packed {
+        Some(Publication::inspect(&output)?)
+    } else {
+        require_absent(&output)?;
+        None
+    };
     let stage =
         Stage::new(&output).map_err(|e| format!("could not stage {}: {e}", output.display()))?;
     let json = stage.0.join("graph.json");
     // Place our output before `--`, so a positional source beginning with '-' works.
-    let status = command
-        .arg("--output")
-        .arg(&json)
-        .args(args)
-        .status()
+    let status = stage
+        .run(command.arg("--output").arg(&json).args(args))
         .map_err(|e| format!("could not start JavaScript artifact frontend: {e}"))?;
     if !status.success() {
         return Ok(status.code().unwrap_or(1));
@@ -114,8 +113,8 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let graph = stage.graph();
     graphite_storage::interchange::import_json(std::io::BufReader::new(reader), &graph)
         .map_err(|e| format!("invalid frontend graph: {e}"))?;
-    if packed {
-        stage.pack(&output, Publication::CreateNew)?;
+    if let Some(publication) = publication {
+        stage.pack(&output, publication)?;
     } else {
         stage.publish_directory(&output)?;
     }
@@ -160,8 +159,8 @@ mod tests {
             );
         }
         assert_eq!(
-            select_language(&os(&["-o", "--lang", "app.mjs", "--lang=js"])).unwrap(),
-            (Lang::Js, os(&["-o", "--lang", "app.mjs"]))
+            select_language(&os(&["--output=--lang", "app.mjs", "--lang=js"])).unwrap(),
+            (Lang::Js, os(&["--output=--lang", "app.mjs"]))
         );
         assert!(select_language(&os(&["--lang", "js", "app.js", "--lang=ts"])).is_err());
         assert!(select_language(&os(&["app.js", "--lang", "--", "js"])).is_err());
@@ -300,13 +299,27 @@ mod tests {
         let root =
             std::env::temp_dir().join(format!("graphite-ts-roundtrip-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&root);
-        let env = fake_frontend(
-            &root,
-            r#"[ "$1" = build ] && [ "$2" = --output ] || exit 31
+        let frontend = |value: &str| {
+            fake_frontend(
+                &root,
+                &format!(
+                    r#"[ "$1" = build ] && [ "$2" = --output ] || exit 31
 cat > "$3" <<'GRAPH'
-{"version":1,"methods":[],"nodes":[{"id":0,"kind":"StringConstant","value":"hello"}],"edges":[]}
-GRAPH"#,
-        );
+{{"version":1,"methods":[],"nodes":[{{"id":0,"kind":"StringConstant","value":"{value}"}}],"edges":[]}}
+GRAPH"#
+                ),
+            )
+        };
+        let assert_value = |output: &Path, expected: &str| {
+            let graph = graphite_storage::Graph::load(output).unwrap();
+            let executor =
+                graphite_cypher::engine::Executor::single("js", std::sync::Arc::new(graph));
+            let result = executor
+                .execute("MATCH (n:StringConstant) RETURN n.value AS value", None)
+                .unwrap();
+            assert_eq!(result.rows.len(), 1);
+            assert_eq!(result.rows[0]["value"].as_str(), Some(expected));
+        };
         for name in ["directory/nested/saved", "packed/nested/saved.graphite"] {
             let output = root.join(name);
             let args = vec![
@@ -314,19 +327,36 @@ GRAPH"#,
                 OsString::from("-o"),
                 output.clone().into_os_string(),
             ];
-            assert_eq!(execute(&env, &args).unwrap(), 0);
-            let graph = graphite_storage::Graph::load(&output).unwrap();
-            let executor =
-                graphite_cypher::engine::Executor::single("ts", std::sync::Arc::new(graph));
-            let result = executor
-                .execute("MATCH (n:StringConstant) RETURN n.value AS value", None)
-                .unwrap();
-            assert_eq!(result.rows.len(), 1);
-            assert_eq!(result.rows[0]["value"].as_str(), Some("hello"));
-            // An accidental retry must leave the previous complete graph intact.
-            assert!(execute(&env, &args)
+            assert_eq!(execute(&frontend("hello"), &args).unwrap(), 0);
+            assert_value(&output, "hello");
+            if output.is_dir() {
+                assert!(execute(&frontend("ignored"), &args)
+                    .unwrap_err()
+                    .contains("output already exists"));
+                assert_value(&output, "hello");
+                continue;
+            }
+            assert_eq!(execute(&frontend("updated"), &args).unwrap(), 0);
+            assert_value(&output, "updated");
+            let digest = graphite_storage::container::digest_path(&output);
+            let bytes = || {
+                (
+                    std::fs::read(&output).unwrap(),
+                    std::fs::read(&digest).unwrap(),
+                )
+            };
+            let previous = bytes();
+            assert_eq!(
+                execute(&fake_frontend(&root, "exit 37"), &args).unwrap(),
+                37
+            );
+            assert_eq!(bytes(), previous);
+            let bad = fake_frontend(&root, r#"echo '{}' > "$3""#);
+            assert!(execute(&bad, &args)
                 .unwrap_err()
-                .contains("output already exists"));
+                .contains("invalid frontend graph"));
+            assert_eq!(bytes(), previous);
+            assert_value(&output, "updated");
         }
         assert!(
             graphite_storage::Container::open(&root.join("packed/nested/saved.graphite"))
@@ -362,7 +392,7 @@ GRAPH"#,
             )
         };
         std::fs::create_dir(&digest).unwrap();
-        assert!(run().unwrap_err().contains("output already exists"));
+        assert!(run().unwrap_err().contains("not a regular file"));
         assert!(digest.is_dir() && !output.exists());
         std::fs::remove_dir(&digest).unwrap();
         std::fs::write(&digest, "original").unwrap();
@@ -371,7 +401,7 @@ GRAPH"#,
         std::fs::remove_file(&digest).unwrap();
         for existing in [&digest, &output] {
             symlink("missing", existing).unwrap();
-            assert!(run().unwrap_err().contains("output already exists"));
+            assert!(run().unwrap_err().contains("not a regular file"));
             assert_eq!(std::fs::read_link(existing).unwrap(), Path::new("missing"));
             std::fs::remove_file(existing).unwrap();
         }

@@ -26,6 +26,23 @@ fn invalid_output_is_a_usage_error_with_or_without_fold() {
 }
 
 #[test]
+fn a_separate_output_value_cannot_consume_another_option() {
+    for lang in ["js", "jvm"] {
+        for flag in ["--help", "-h", "--version", "--unknown"] {
+            let output = Command::new(env!("CARGO_BIN_EXE_graphite"))
+                .args(["build", "--lang", lang, "input", "-o", flag])
+                .output()
+                .unwrap();
+            assert_eq!(output.status.code(), Some(2));
+            assert_eq!(
+                String::from_utf8(output.stderr).unwrap().trim(),
+                "Error: --output requires a path"
+            );
+        }
+    }
+}
+
+#[test]
 fn shell_build_help_explains_profile_placement() {
     let result = Command::new(env!("CARGO_BIN_EXE_graphite"))
         .args(["help", "build"])

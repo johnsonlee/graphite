@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 
 mod directory;
 mod replace;
+mod stale;
 
 pub(crate) fn require_absent(path: &Path) -> Result<(), String> {
     match std::fs::symlink_metadata(path) {
@@ -76,10 +77,60 @@ fn publish_new_file(
 
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct Stage(pub(crate) PathBuf);
-#[derive(Copy, Clone)]
+#[derive(Debug, PartialEq, Eq)]
 pub(crate) enum Publication {
     CreateNew,
-    Replace,
+    Rebuild {
+        container: same_file::Handle,
+        digest: same_file::Handle,
+    },
+}
+
+impl Publication {
+    /// Remember the pair we intend to rebuild. A competing publisher that finishes
+    /// during analysis must never turn a new build into an overwrite.
+    pub(crate) fn inspect(output: &Path) -> Result<Self, String> {
+        let digest = graphite_storage::container::digest_path(output);
+        let regular = |p: &Path| {
+            replace::regular(p).map_err(|e| format!("could not inspect {}: {e}", p.display()))
+        };
+        match (regular(output)?, regular(&digest)?) {
+            (None, None) => Ok(Self::CreateNew),
+            (Some(container), Some(digest)) => Ok(Self::Rebuild { container, digest }),
+            _ => Err(format!(
+                "output already exists without a complete graph and digest pair: {}",
+                output.display()
+            )),
+        }
+    }
+
+    fn verify_rebuild(&self, output: &Path) -> Result<(), String> {
+        if Self::inspect(output)? != *self {
+            return Err(format!(
+                "output changed during this build: {}",
+                output.display()
+            ));
+        }
+        let verify = || -> Result<(), String> {
+            let container = graphite_storage::Container::open(output).map_err(|e| e.to_string())?;
+            use graphite_storage::io::{check_header, read_i32_at, MAGIC_NODEDATA};
+            if !container.bytes("graph.nodedata").is_some_and(|bytes| {
+                bytes.len() >= 8
+                    && matches!(
+                        check_header(read_i32_at(&bytes, 0), MAGIC_NODEDATA),
+                        Some(1..=3)
+                    )
+            }) {
+                return Err("missing or unsupported Graphite node-data header".into());
+            }
+            let report = container.verify().map_err(|e| e.to_string())?;
+            if !report.ok() || !report.has_manifest || report.digest_file != Some(true) {
+                return Err(format!("expected a verified Graphite manifest, required graph entries and matching sidecar: {}", report.failures.join(", ")));
+            }
+            Ok(())
+        };
+        verify().map_err(|e| format!("refusing to replace {}: {e}", output.display()))
+    }
 }
 
 impl Stage {
@@ -97,7 +148,8 @@ impl Stage {
         let mut claim = replace::Claim::new(output)?;
         match publication {
             Publication::CreateNew => publish_container(&destination, &report.digest_file, output)?,
-            Publication::Replace => {
+            Publication::Rebuild { .. } => {
+                publication.verify_rebuild(output)?;
                 claim.replace(&destination, &report.digest_file, output, |a, b| {
                     std::fs::rename(a, b)
                 })?
@@ -167,14 +219,14 @@ impl Stage {
     }
 
     fn in_directory(parent: &Path) -> std::io::Result<Self> {
-        let mut builder = tempfile::Builder::new();
-        builder.prefix(".graphite-build-");
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            builder.permissions(std::fs::Permissions::from_mode(0o700));
-        }
-        Ok(Self(builder.tempdir_in(parent)?.keep()))
+        Ok(Self(stale::create(parent)?.keep()))
+    }
+
+    pub(crate) fn run(
+        &self,
+        command: &mut std::process::Command,
+    ) -> std::io::Result<std::process::ExitStatus> {
+        stale::run(&self.0, command)
     }
 }
 
@@ -225,6 +277,89 @@ impl Drop for Stage {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn stage_value(output: &Path, value: &str) -> Stage {
+        let stage = Stage::new(output).unwrap();
+        let input = serde_json::json!({"version":1,"methods":[], "nodes":[{"id":0,"kind":"StringConstant","value":value}],"edges":[]});
+        graphite_storage::interchange::import_json(input.to_string().as_bytes(), &stage.graph())
+            .unwrap();
+        stage
+    }
+
+    #[test]
+    fn a_build_cannot_replace_an_output_published_since_it_started() {
+        let dir = tempfile::tempdir().unwrap();
+        let output = dir.path().join("published.graphite");
+        let fresh = Publication::inspect(&output).unwrap();
+        stage_value(&output, "first")
+            .pack(&output, Publication::inspect(&output).unwrap())
+            .unwrap();
+        let digest = graphite_storage::container::digest_path(&output);
+        let contents = || {
+            (
+                std::fs::read(&output).unwrap(),
+                std::fs::read(&digest).unwrap(),
+            )
+        };
+        let first = contents();
+        let err = stage_value(&output, "late new")
+            .pack(&output, fresh)
+            .unwrap_err();
+        assert!(err.contains("already exists"));
+        assert_eq!(contents(), first);
+
+        let concurrent_rebuild = Publication::inspect(&output).unwrap();
+        stage_value(&output, "winner")
+            .pack(&output, Publication::inspect(&output).unwrap())
+            .unwrap();
+        let winner = contents();
+        assert_ne!(winner, first);
+        let err = stage_value(&output, "late rebuild")
+            .pack(&output, concurrent_rebuild)
+            .unwrap_err();
+        assert!(err.contains("output changed during this build"), "{err}");
+        assert_eq!(contents(), winner);
+    }
+
+    #[test]
+    fn rebuilding_refuses_unrelated_files_and_mismatched_digests() {
+        let dir = tempfile::tempdir().unwrap();
+        let output = dir.path().join("published.graphite");
+        let digest = graphite_storage::container::digest_path(&output);
+        let contents = || {
+            (
+                std::fs::read(&output).unwrap(),
+                std::fs::read(&digest).unwrap(),
+            )
+        };
+        std::fs::write(&output, b"unrelated").unwrap();
+        assert!(Publication::inspect(&output)
+            .unwrap_err()
+            .contains("complete graph and digest pair"));
+        std::fs::write(&digest, b"unrelated digest").unwrap();
+        let refuse = || {
+            let original = contents();
+            let error = stage_value(&output, "never published")
+                .pack(&output, Publication::inspect(&output).unwrap())
+                .unwrap_err();
+            assert!(error.contains("refusing to replace"), "{error}");
+            assert_eq!(contents(), original);
+        };
+        refuse();
+
+        let fake = dir.path().join("fake");
+        std::fs::create_dir(&fake).unwrap();
+        for entry in graphite_storage::container::REQUIRED_ENTRIES {
+            std::fs::write(fake.join(entry), b"unrelated bytes").unwrap();
+        }
+        graphite_storage::container::pack(&fake, &output).unwrap();
+        refuse();
+
+        graphite_storage::container::pack(&stage_value(&output, "previous").graph(), &output)
+            .unwrap();
+        std::fs::write(&digest, format!("{}  published.graphite\n", "0".repeat(64))).unwrap();
+        refuse();
+    }
 
     #[test]
     fn missing_parents_use_system_temp_and_leave_other_directories_alone() {
