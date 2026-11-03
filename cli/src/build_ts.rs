@@ -31,28 +31,21 @@ fn output_args(args: &[OsString]) -> Result<(PathBuf, Vec<OsString>), String> {
 /// Refuse source/config input before creating output or invoking a project launcher.
 /// Directory discovery and syntax validation belong to the frontend.
 fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
-    let mut positional = false;
-    for arg in args {
-        if !positional && arg == "--" {
-            positional = true;
-            continue;
+    if let Some(arg) = crate::build_args::walk(args).find(|arg| arg.positional) {
+        let path = Path::new(arg.raw);
+        if !path.is_dir()
+            && path
+                .extension()
+                .and_then(|e| e.to_str())
+                .is_some_and(|ext| {
+                    matches!(
+                        ext.to_ascii_lowercase().as_str(),
+                        "ts" | "tsx" | "mts" | "cts" | "jsx" | "json"
+                    )
+                })
+        {
+            return Err(format!("{} is source or configuration input. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.", path.display()));
         }
-        if !positional && arg.to_string_lossy().starts_with('-') {
-            continue;
-        }
-        let path = Path::new(arg);
-        if path.is_dir() {
-            return Ok(());
-        }
-        if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
-            if matches!(
-                extension.to_ascii_lowercase().as_str(),
-                "ts" | "tsx" | "mts" | "cts" | "jsx" | "json"
-            ) {
-                return Err(format!("{} is source or configuration input. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.", path.display()));
-            }
-        }
-        return Ok(());
     }
     Ok(())
 }
@@ -124,9 +117,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     if packed {
         stage.pack(&output, Publication::CreateNew)?;
     } else {
-        crate::build_output::create_output_parent(&output)?;
-        require_absent(&output)?;
-        std::fs::rename(&graph, &output).map_err(|e| format!("could not save graph: {e}"))?;
+        stage.publish_directory(&output)?;
     }
     println!("Saved JavaScript artifact graph to {}", output.display());
     Ok(0)
@@ -257,6 +248,22 @@ mod tests {
         env.vars
             .insert(frontend::TS_FRONTEND_VAR.into(), script.into_os_string());
         env
+    }
+
+    #[test]
+    fn artifact_validation_uses_the_first_positional_input_after_option_values() {
+        for args in [
+            os(&["--include", "foo.json", "app.js"]),
+            os(&["--fold=rules.json", "--", "-app.js"]),
+        ] {
+            assert!(validate_artifact_input(&args).is_ok());
+        }
+        let error =
+            validate_artifact_input(&os(&["--include", "foo.json", "--", "-app.ts"])).unwrap_err();
+        assert!(
+            error.starts_with("-app.ts is source or configuration input"),
+            "{error}"
+        );
     }
 
     #[cfg(unix)]

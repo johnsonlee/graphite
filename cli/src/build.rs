@@ -446,7 +446,7 @@ mod tests {
         .unwrap();
         assert!(!parent.exists());
         let pack = inv.prepare_pack().unwrap().unwrap();
-        assert_eq!(pack.stage.0.parent(), Some(temp.0.as_path()));
+        assert_eq!(pack.stage.0.parent(), Some(std::env::temp_dir().as_path()));
         assert_eq!(finish_pack(pack, 3), 3);
         assert!(std::fs::read_dir(&temp.0).unwrap().next().is_none());
         args.insert(0, "--help".into());
