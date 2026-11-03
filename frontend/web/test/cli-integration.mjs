@@ -34,6 +34,21 @@ try {
   const slice = run(['query', member, "MATCH (s:StringConstant {value:'secret'})-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(get:CallSite)-[:DATAFLOW]->(sink:CallSite) WHERE get.callee_name='get' AND sink.callee_name='sink' RETURN count(*) AS n", '--format', 'json']);
   assert.deepEqual(JSON.parse(slice.stdout).rows, [{ n: 1 }]);
 
+  const ctors = path.join(dir, 'constructors.mjs'), constructors = path.join(dir, 'constructors.graphite');
+  fs.writeFileSync(ctors, ['class C { m() {} }', 'class D { constructor(x=7) {} }', 'class E extends D {}',
+    'new C();', 'new E(5);', 'new E();', 'new Error("e");', 'function unknown(K) { new K(); }'].join('\n'));
+  run(['build', '--lang', 'js', ctors, '-o', constructors]);
+  run(['verify', constructors]);
+  const allocations = query => JSON.parse(run(['query', constructors, query, '--format', 'json']).stdout).rows;
+  const allocationCalls = allocations("MATCH (c:CallSite)-[r:CALL]->(:CallSite) RETURN c.line AS line, c.callee_class AS cls, c.callee_name AS name, r.dynamic AS dynamic ORDER BY line");
+  assert.deepEqual(allocationCalls.map(c => [c.line,c.cls,c.name,c.dynamic]), [
+    [4,'constructors.mjs.C','constructor',false], [5,'constructors.mjs.E','constructor',false],
+    [6,'constructors.mjs.E','constructor',false], [7,'external:typescript/lib/lib.es2022.error.d.ts.ErrorConstructor','constructor',true],
+    [8,'<dynamic>','K',true],
+  ]);
+  assert.deepEqual(allocations("MATCH (v:IntConstant)-[r:DATAFLOW]->(p:Parameter) WHERE r.kind='PARAMETER_PASS' RETURN v.value AS value, p.index AS i ORDER BY value"),
+    [{value:5,i:0},{value:7,i:0}]);
+
   const overflow = path.join(dir, 'overflow.mjs'), saved = path.join(dir, 'overflow.graphite');
   fs.writeFileSync(overflow, ['function take(x = -1e400) { return x; }','take(1e400);','take(-1e400);','take();'].join('\n'));
   run(['build', '--lang', 'js', overflow, '-o', saved]);

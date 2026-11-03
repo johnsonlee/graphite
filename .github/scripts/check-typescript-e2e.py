@@ -44,7 +44,7 @@ CRUD = {
 PROJECTS = {"crud": CRUD, "taskboard": TASKBOARD}
 # These operations implement app features, not framework/vendor-only behavior.
 TASKBOARD_EXPECTED = {
-    "client": [("setData", "text/plain"), ("getData", "text/plain"), ("get", "title")],
+    "client": [("setData", "text/plain"), ("getData", "text/plain"), ("get", "title"), ("useState", "todo")],
     "server": [("prepare", "UPDATE tasks SET status = ? WHERE id = ?"),
                ("prepare", "DELETE FROM comments WHERE id = ? AND user_name = ?"),
                ("prepare", "SELECT * FROM tasks ORDER BY created_at DESC, id ASC")],
@@ -77,8 +77,13 @@ function walk(dir) {
       const ast = ts.createSourceFile(file,text,ts.ScriptTarget.Latest,true,ts.ScriptKind.JS);
       if(ast.parseDiagnostics.length) throw new Error(`Invalid emitted JS: ${file}`);
       function visit(n) {
-        if(ts.isCallExpression(n) && ts.isPropertyAccessExpression(n.expression)) {
-          const callee = n.expression.name.text;
+        if(ts.isCallExpression(n)) {
+          let expr = n.expression;
+          while(ts.isParenthesizedExpression(expr) || (ts.isBinaryExpression(expr) && expr.operatorToken.kind === ts.SyntaxKind.CommaToken)) {
+            expr = ts.isParenthesizedExpression(expr) ? expr.expression : expr.right;
+          }
+          const callee = ts.isPropertyAccessExpression(expr) ? expr.name.text :
+            ts.isElementAccessExpression(expr) && ts.isStringLiteralLike(expr.argumentExpression) ? expr.argumentExpression.text : undefined;
           // Count calls, not argument positions: f('x', 'x') is one occurrence.
           const seen = new Set();
           for(const arg of n.arguments) if(ts.isStringLiteralLike(arg) || ts.isNumericLiteral(arg)) {

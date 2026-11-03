@@ -809,3 +809,72 @@ test('computed key bindings share a slot without colliding with literal spelling
   assert.equal(propertyFlows(g, 'ephemeral', 'otherKeySink'), false);
   assert.ok(propertyFlows(g, 'literal', 'namedSink'));
 });
+
+test('detached module calls keep their exported name and evaluate the original comma expression', t => {
+  const root = fixture(t, { 'entry.cjs': `
+    const react = require("missing-react");
+    function observe() { return 0; }
+    (observe(), (0, react.useState))("ext");
+    (0, react.jsx)("section");
+    (0, react["jsxDev"])("debug");
+    (react.direct)("direct");
+  ` });
+  const graph = analyze(root);
+  const sites = calls(graph);
+  assert.equal(sites.filter(call => call.callee.name === 'observe').length, 1);
+  for (const [name, value] of [['useState', 'ext'], ['jsx', 'section'], ['jsxDev', 'debug']]) {
+    const call = sites.find(call => call.callee.name === name);
+    assert.equal(call.callee.declaringClass, '<dynamic>');
+    assert.equal(call.receiver, undefined);
+    assert.equal(graph.nodes[call.arguments[0]].value, value);
+    const relation = graph.edges.find(e => e.kind === 'CALL' && e.from === call.id);
+    assert.equal(relation.isDynamic, true);
+    assert.equal(relation.isVirtual, false);
+  }
+  const direct = sites.find(call => call.callee.name === 'direct');
+  assert.equal(graph.nodes[direct.receiver].name, 'react');
+  assert.ok(graph.edges.some(e => e.from === direct.id && e.kind === 'CALL' && e.isVirtual));
+
+});
+
+test('allocations identify the constructed class while implicit constructors forward to real formals', t => {
+  const g = analyze(fixture(t, { 'classes.mjs': [
+    'class C { m() {} }', 'class D { constructor(value = 7, ...rest) {} }',
+    'class E extends D {}', 'class F extends E {}', 'class G extends E { constructor() { super(); } }',
+    'new C();', 'new E(5);', 'new E();', 'new E(undefined);', 'new E(null);', 'new F(10, 20, 30);', 'new G();',
+    'const Alias = E; new Alias(12);', 'let K = choose ? D : E; new K(15);', 'function run(unknown) { new unknown(); }',
+  ].join('\n') }));
+  const byLine = line => calls(g).find(c => c.line === line);
+  const dynamic = c => g.edges.find(e => e.from === c.id && e.to === c.id && e.kind === 'CALL').isDynamic;
+  for (const [line, cls] of [[5,'E'], [6,'C'], [7,'E'], [8,'E'], [9,'E'], [10,'E'], [11,'F'], [12,'G'], [13,'E']]) {
+    const call = byLine(line);
+    assert.equal(call.callee.declaringClass, 'classes.mjs.' + cls);
+    assert.equal(call.callee.name, 'constructor');
+    assert.equal(dynamic(call), false);
+    assert.ok(g.methods.some(m => m === call.callee));
+  }
+  for (const line of [14,15]) {
+    const call = byLine(line);
+    assert.equal(call.callee.declaringClass, '<dynamic>');
+    assert.equal(dynamic(call), true);
+  }
+  const [value, rest] = g.nodes.filter(n => n.kind === 'Parameter' && n.method.declaringClass === 'classes.mjs.D');
+  for (const [line, expected] of [[5,7], [7,5], [8,7], [9,7], [10,null], [11,10], [13,12]]) {
+    const [arg] = argumentsOf(g, byLine(line));
+    assert.equal(arg.kind === 'NullConstant' ? null : arg.value, expected);
+    assert.ok(edge(g, arg.id, value.id, 'PARAMETER_PASS'));
+  }
+  for (const arg of argumentsOf(g, byLine(11)).slice(1)) assert.ok(edge(g, arg.id, rest.id, 'PARAMETER_PASS'));
+  assert.equal(calls(g).length, 11); // ten allocations, plus the one source super() call
+  assert.equal(g.methods.filter(m => m.declaringClass === 'classes.mjs.E' && m.name === 'constructor').length, 1);
+});
+
+test('standard-library construct signatures use stable constructor names', t => {
+  const g = analyze(fixture(t, { 'builtins.js': 'new Error("e"); new Map(); new Promise(resolve => resolve());' }));
+  for (const builtin of ['Error', 'Map', 'Promise']) {
+    const call = calls(g).find(c => c.callee.declaringClass.endsWith('.' + builtin + 'Constructor'));
+    assert.ok(call, builtin);
+    assert.match(call.callee.declaringClass, /^external:typescript\/lib\/lib\./);
+    assert.equal(call.callee.name, 'constructor');
+  }
+});

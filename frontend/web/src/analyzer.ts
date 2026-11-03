@@ -113,6 +113,19 @@ ${formatDiagnostics(syntactic)}`);
   return { program: ts.createProgram(valid, options, host), root };
 }
 
+// Bundlers emit (0, module.fn)(...) to call fn without binding module as `this`.
+// Use the selected function for lookup and naming only; evaluate the original expression.
+function unparenthesized(value: ts.Expression): ts.Expression {
+  while (ts.isParenthesizedExpression(value)) value = value.expression;
+  return value;
+}
+
+function calledExpression(value: ts.Expression): ts.Expression {
+  value = unparenthesized(value);
+  while (ts.isBinaryExpression(value) && value.operatorToken.kind === ts.SyntaxKind.CommaToken) value = unparenthesized(value.right);
+  return value;
+}
+
 /** Preorder traversal with the same child order as forEachChild; a visitor can prune a subtree. */
 function visitTree(root: ts.Node, context: Context, visit: (n: ts.Node, scope: Context) => Context | undefined): void {
   const nodes = [root], scopes = [context], children: ts.Node[] = [];
@@ -140,6 +153,7 @@ class Analyzer {
   private graph: SourceGraph = { version: 1, methods: [], nodes: [], edges: [], classOrigins: [] };
   private contexts = new Map<ts.Node, Context>();
   private descriptors = new Map<ts.SignatureDeclaration, Method>();
+  private implicitConstructors = new Map<ts.ClassLikeDeclaration, Method>();
   private encodedText = new Map<string, string>();
   private encodedMethods = new WeakMap<Method, Method>();
   private droppedEdges = new Map<number, Set<string>>();
@@ -190,8 +204,8 @@ class Analyzer {
     const p = n.getSourceFile().getLineAndCharacterOfPosition(n.getStart());
     return `${p.line + 1}:${p.character + 1}`;
   }
-  private type(n: ts.Node): string {
-    return this.checker.typeToString(this.checker.getTypeAtLocation(n), n,
+  private type(n: ts.Node, type = this.checker.getTypeAtLocation(n)): string {
+    return this.checker.typeToString(type, n,
       ts.TypeFormatFlags.NoTruncation | ts.TypeFormatFlags.UseAliasDefinedOutsideCurrentScope);
   }
   private symbol(n: ts.Node): ts.Symbol | undefined {
@@ -258,11 +272,14 @@ class Analyzer {
   private name(n: ts.Node & { name?: ts.DeclarationName }): string | undefined {
     return n.name?.getText().replace(/^['"]|['"]$/g, '');
   }
+  private classOwner(n: ts.ClassLikeDeclaration | ts.InterfaceDeclaration): string {
+    return `${this.module(n)}.${this.name(n) ?? `anonymous@${this.position(n)}`}`;
+  }
   private descriptor(n: ts.SignatureDeclaration): Method {
     const cached = this.descriptors.get(n);
     if (cached) return cached;
     let owner = this.module(n);
-    let name = ts.isConstructorDeclaration(n) ? 'constructor' : this.name(n);
+    let name = ts.isConstructorDeclaration(n) || ts.isConstructSignatureDeclaration(n) ? 'constructor' : this.name(n);
     if (!name && (ts.isVariableDeclaration(n.parent) || ts.isPropertyAssignment(n.parent) || ts.isPropertyDeclaration(n.parent))) {
       name = this.name(n.parent);
     }
@@ -270,7 +287,7 @@ class Analyzer {
     let parent = n.parent;
     while (parent && !ts.isSourceFile(parent)) {
       if (ts.isClassLike(parent) || ts.isInterfaceDeclaration(parent)) {
-        owner += `.${this.name(parent) ?? `anonymous@${this.position(parent)}`}`;
+        owner = this.classOwner(parent);
         break;
       }
       if (ts.isObjectLiteralExpression(parent)) {
@@ -289,7 +306,7 @@ class Analyzer {
     const method: Method = {
       declaringClass: owner, name,
       parameterTypes: n.parameters.map(p => this.type(p)),
-      returnType: signature ? this.checker.typeToString(signature.getReturnType()) : 'unknown',
+      returnType: signature ? this.type(n, signature.getReturnType()) : 'unknown',
     };
     this.descriptors.set(n, method);
     return method;
@@ -343,17 +360,20 @@ class Analyzer {
       yield* this.targets(n.left, [...defaults, n.right]);
     } else yield { target: n, defaults };
   }
+  private registerMethod(method: Method, declaration: ts.Node): void {
+    const key = JSON.stringify([method.declaringClass, method.name, method.parameterTypes]);
+    if (this.methodKeys.has(key)) method.declaringClass += `#declaration@${this.position(declaration)}`;
+    this.methodKeys.add(JSON.stringify([method.declaringClass, method.name, method.parameterTypes]));
+    this.addMethod(method, this.module(declaration));
+  }
   private register(n: ts.Node, parent: Context): Context {
     let context = parent;
     if (isBody(n)) {
       const method = this.descriptor(n);
-      const key = JSON.stringify([method.declaringClass, method.name, method.parameterTypes]);
-      if (this.methodKeys.has(key)) method.declaringClass += `#declaration@${this.position(n)}`;
-      this.methodKeys.add(JSON.stringify([method.declaringClass, method.name, method.parameterTypes]));
       context = { method, parameters: [], body: n.body, declaration: n, defaults: this.defaults(n) };
       this.contexts.set(n, context);
       this.functions.push(context);
-      this.addMethod(method, this.module(n));
+      this.registerMethod(method, n);
       n.parameters.forEach((parameter, index) => {
         if (parameter.dotDotDotToken) context.restIndex = index;
         const id = this.node('Parameter', { index, paramType: method.parameterTypes[index], method });
@@ -368,7 +388,7 @@ class Analyzer {
     } else if (ts.isPropertyDeclaration(n) && n.name) {
       const symbol = this.symbol(n.name);
       if (symbol && !this.symbols.has(symbol)) {
-        const className = `${this.module(n)}.${this.name(n.parent) ?? 'anonymous'}`;
+        const className = this.classOwner(n.parent);
         const id = this.node('Field', { declaringClass: className, name: this.name(n), fieldType: this.type(n),
           isStatic: !!ts.getModifiers(n)?.some(m => m.kind === ts.SyntaxKind.StaticKeyword) });
         this.symbols.set(symbol, id);
@@ -539,10 +559,58 @@ class Analyzer {
       }
     }
   }
-  private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context } {
+  private allocationClass(expr: ts.Expression): ts.ClassLikeDeclaration | undefined {
+    const seen = new Set<ts.Symbol>();
+    for (;;) {
+      expr = calledExpression(expr);
+      if (ts.isClassExpression(expr)) return expr;
+      const symbol = this.referenceSymbol(expr);
+      if (!symbol || this.writes.has(symbol) || seen.has(symbol)) return undefined;
+      seen.add(symbol);
+      const declaration = symbol.valueDeclaration;
+      if (declaration && ts.isClassLike(declaration)) return declaration;
+      if (!declaration || !ts.isVariableDeclaration(declaration) || !declaration.initializer) return undefined;
+      expr = declaration.initializer;
+    }
+  }
+  private implicitConstructor(cls: ts.ClassLikeDeclaration, inherited?: Method): Method {
+    let method = this.implicitConstructors.get(cls);
+    if (!method) {
+      const type = this.checker.getTypeAtLocation(cls);
+      method = { declaringClass: this.classOwner(cls), name: 'constructor', parameterTypes: inherited?.parameterTypes ?? [],
+        returnType: this.type(cls, type.symbol ? this.checker.getDeclaredTypeOfSymbol(type.symbol) : type) };
+      this.registerMethod(method, cls);
+      this.implicitConstructors.set(cls, method);
+    }
+    return method;
+  }
+  private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context; implicit?: boolean } {
     let declaration = this.checker.getResolvedSignature(n)?.declaration;
-    const expr = ts.isPropertyAccessExpression(n.expression) ? n.expression.name : n.expression;
+    const callee = calledExpression(n.expression);
+    const expr = ts.isPropertyAccessExpression(callee) ? callee.name : callee;
     const symbol = this.symbol(expr);
+    let allocation: ts.ClassLikeDeclaration | undefined;
+    if (ts.isNewExpression(n)) allocation = this.allocationClass(n.expression);
+    else if (n.expression.kind === ts.SyntaxKind.SuperKeyword) {
+      let owner: ts.Node | undefined = n.parent;
+      while (owner && !ts.isClassLike(owner)) owner = owner.parent;
+      const base = owner?.heritageClauses?.find(clause => clause.token === ts.SyntaxKind.ExtendsKeyword)?.types[0];
+      if (base) allocation = this.allocationClass(base.expression);
+    }
+    if (allocation && !allocation.getSourceFile().isDeclarationFile && declaration?.parent !== allocation) {
+      const own = allocation.members.find(ts.isConstructorDeclaration);
+      if (own) declaration = own;
+      else {
+        // An implicit derived constructor forwards to the inherited implementation.
+        // Preserve its formal/default flows without adding a source super() call.
+        const context = declaration && this.contexts.get(declaration);
+        return { method: this.implicitConstructor(allocation, context?.method), context, implicit: true };
+      }
+    }
+    // Structurally compatible constructors can collapse to a single inferred
+    // signature even when a runtime choice determines the allocated class.
+    if (!allocation && ts.isNewExpression(n) && declaration && ts.isConstructorDeclaration(declaration))
+      declaration = undefined;
     // Overload signatures resolve to their implementation body when it is available.
     const implementation = symbol?.declarations?.find(isBody);
     if (implementation) declaration = implementation;
@@ -551,7 +619,8 @@ class Analyzer {
     if (declaration && !ts.isJSDocSignature(declaration)) return { method: this.descriptor(declaration) };
     return { method: {
       declaringClass: '<dynamic>',
-      name: ts.isPropertyAccessExpression(n.expression) ? n.expression.name.text : n.expression.getText(),
+      name: ts.isPropertyAccessExpression(callee) ? callee.name.text :
+        ts.isElementAccessExpression(callee) && ts.isStringLiteralLike(callee.argumentExpression) ? callee.argumentExpression.text : callee.getText(),
       parameterTypes: (n.arguments ?? []).map(a => this.type(a)), returnType: this.type(n),
     } };
   }
@@ -767,15 +836,21 @@ class Analyzer {
     } else if (ts.isBinaryExpression(n)) id = this.binaryValue(n, context);
     else if (ts.isCallExpression(n) || ts.isNewExpression(n)) {
       const target = this.target(n);
+      const reference = unparenthesized(n.expression);
+      let receiver: number | undefined;
+      if (ts.isPropertyAccessExpression(reference) || ts.isElementAccessExpression(reference)) {
+        const object = this.value(reference.expression, context);
+        if (ts.isCallExpression(n)) receiver = object;
+        if (ts.isElementAccessExpression(reference)) this.value(reference.argumentExpression, context);
+      } else if (!ts.isIdentifier(reference)) {
+        // Evaluate the complete callee, including calls discarded by a comma expression.
+        this.value(n.expression, context);
+      }
       const args = this.arguments(n, context, target.context);
-      const receiver = ts.isPropertyAccessExpression(n.expression) || ts.isElementAccessExpression(n.expression)
-        ? this.value(n.expression.expression, context) : undefined;
-      // Evaluating an immediately invoked expression also records any calls producing its target.
-      if (!ts.isIdentifier(n.expression) && !ts.isPropertyAccessExpression(n.expression) && !ts.isElementAccessExpression(n.expression)) this.value(n.expression, context);
       id = this.node('CallSite', { caller: context.method, callee: target.method,
         line: n.getSourceFile().getLineAndCharacterOfPosition(n.getStart()).line + 1,
         ...(receiver === undefined ? {} : { receiver }), arguments: args });
-      this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: !target.context });
+      this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: !target.context && !target.implicit });
       const rest = target.context?.restIndex;
       args.forEach((argument, index) => {
         this.edge(argument, id, 'PARAMETER_PASS');

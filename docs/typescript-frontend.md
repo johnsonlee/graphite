@@ -43,14 +43,20 @@ frontend; use the source-checkout setup above.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
-graphs. JS builds refuse existing destinations. Analysis and import use a
-temporary directory under the nearest existing output ancestor. A missing
-output parent is created only after the graph is ready to publish. Failed
+graphs. JS builds refuse existing destinations. Analysis and import use a private
+sibling directory when the output parent exists, or the system temporary directory
+when it does not. Graphite creates a missing parent only after the graph is ready
+to publish. It moves completed files onto the output filesystem, copying into a
+private sibling first if the temporary directory is on another volume. Failed
 analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
 rename that refuses to replace an existing file. It publishes the completed digest first,
 then the container, refusing either name if another writer has claimed it.
 If a process is killed between those steps, the digest can remain by itself.
+An abrupt exit can also leave a `.graphite-build-*` directory in system temp
+or beside the requested output. Graphite removes its own staging directory on
+normal exit. After an interrupted build, remove its leftover directory manually
+once the CLI and frontend have both exited; other builds may still use theirs.
 
 For an already-built Next.js application, select emitted server and browser
 artifacts separately when useful:
@@ -75,6 +81,13 @@ the class owner; nested functions and object methods retain lexical ownership.
 Changing the selected root changes path prefixes. Import aliases resolve through
 the TypeScript checker where the emitted code retains resolvable imports.
 Literal arguments appear as constant nodes and flow into call sites.
+
+For a known source class, `new C()` targets `C.constructor` even when the
+constructor is implicit. If `E` inherits its constructor from `D`, a call to
+`new E(5)` targets `E.constructor` and passes the effective argument to the
+declared parameter in `D`. Only call sites present in the artifact are emitted.
+Standard-library construct signatures, such as `new Error("e")`, also use the
+name `constructor`; their implementations are external to the artifact.
 
 For example, an emitted `all.get('*')` call can be inspected with:
 

@@ -53,7 +53,7 @@ class OperationOccurrenceTests(unittest.TestCase):
         typescript = Path(__file__).resolve().parents[2] / "frontend/web/node_modules/typescript"
         with tempfile.TemporaryDirectory(prefix="graphite-oracle-") as folder:
             Path(folder, "calls.js").write_text(
-                "sink.success('saved', 'saved'); sink.success('saved');\n")
+                "sink.success('saved', 'saved'); (0,sink.success)('saved');\n")
             result = subprocess.run(
                 ["node", "-e", module.ORACLE, str(typescript), folder,
                  json.dumps([["success", "saved"]])],
