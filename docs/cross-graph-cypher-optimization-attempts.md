@@ -3347,3 +3347,44 @@ the same pinned 64 graphs, all 73 global queries, and complete response-body
 oracles. Compare per-case p50 and p95 from twenty pressure observations per arm
 at concurrency four. Preserve each paired observation and enforce separate
 +5% CPU and RSS limits for loading and the full query mix in each pair.
+
+**Matched result and decision.** Keep the checked scalar grouping path.
+The integrated candidate `1e96a064` passed all 10,074 responses, with zero
+OOM events. The tables show milliseconds for the actual main and candidate
+pair giving each median paired difference, followed by the full range of
+the three paired differences. Each arm contributes twenty observations
+per query at concurrency four. The p50 and p95 are nearest ranks 10 and 19.
+
+| Query | p50 main → candidate (Δ [range]) | p95 main → candidate (Δ [range]) |
+|---|---:|---:|
+| shape-with-aggregate | 680.56 → 525.78 (-154.78 [-163.62, -149.57]) | 765.80 → 616.05 (-149.75 [-214.15, -62.47]) |
+| shape-order-by | 2337.87 → 1775.92 (-561.95 [-591.41, -550.43]) | 2493.42 → 1890.56 (-602.86 [-703.71, -549.11]) |
+| shape-order-by-desc | 2382.21 → 1773.49 (-608.72 [-641.13, -585.33]) | 2487.37 → 1848.97 (-638.40 [-766.37, -586.58]) |
+| shape-collect | 1778.49 → 1652.49 (-126.00 [-128.56, -80.81]) | 1973.50 → 1794.99 (-178.51 [-229.83, -59.21]) |
+| shape-with-filter | 2858.53 → 0.28 (-2858.24 [-2866.20, -2800.67]) | 2974.93 → 0.65 (-2974.28 [-3022.68, -2950.95]) |
+| shape-count-traversal | 130.19 → 84.17 (-46.02 [-49.99, -43.55]) | 182.50 → 127.55 (-54.95 [-94.76, -29.91]) |
+| schema-relationship-histogram | 124.73 → 87.26 (-37.47 [-43.76, -34.24]) | 149.74 → 109.75 (-39.99 [-44.15, -25.43]) |
+
+| Pair | Load CPU s | Load peak RSS MiB | Mixed query CPU s | Mixed query peak RSS MiB |
+|---|---:|---:|---:|---:|
+| AB | 26.632 → 22.838 | 6214.305 → 3769.039 | 257.885 → 151.595 | 12132.340 → 6555.496 |
+| BA | 23.372 → 20.532 | 6226.133 → 3775.262 | 254.520 → 151.118 | 11984.602 → 6314.664 |
+| AB | 24.819 → 22.822 | 6210.031 → 3765.871 | 256.759 → 153.981 | 12067.812 → 6278.223 |
+
+All seven listed slow cases improved at both percentiles in every pair,
+and all twelve phase-specific CPU/RSS checks were within the 5% limit.
+Across all cases, 79 of 438 individual pair-percentile comparisons
+increased. The largest positive median changes were 0.39 ms p50 and
+1.39 ms p95. Three pairs describe the variation on these warm, pinned
+inputs. The resource observations cover loading and the full mixed query
+workload. The new JS importer and its two real applications have separate
+construction and correctness evidence in the frontend guide.
+
+The Linux binary SHA-256 is
+`318c9d31335b599302ce52304fe1c3c45dbe5b7cc56ccd6c7fe2f3ddbb3ef34d`.
+The seal SHA-256 is
+`fa7eb718e29dd8ea1b589eea535498776b48351c8439933c677894e07c42f103`.
+The complete result SHA-256 is
+`1624112441c8919bda333bbb6e3b0543c5ee5b813e4296e72094fe537333ec9a`.
+The sealed `attempt053-resource/runs/055-1e96a06481017ef52bf4f2b5d7414fc14a5a03c4`
+archive retains every case, request receipt and phase resource snapshot.

@@ -6,9 +6,10 @@ directory such as `.next`, `dist` or `build`. Node.js 20 or newer runs the
 frontend; reading a saved graph requires only the Rust binary.
 
 Compile the target project first using its own build tool. Graphite neither
-runs project build scripts nor installs target dependencies. Emitted modules in directories named `cache` are included;
-only Next’s `.next/cache` compiler output is skipped alongside dependencies. Source `.ts`,
-`.tsx`, `.mts`, `.cts`, `.jsx` files and `tsconfig.json` are rejected with a
+runs project build scripts nor installs target dependencies. The directory scan
+includes `dist/cache` and `.next/server/app/cache`, and skips `.next/cache`,
+`node_modules` and `.git`. Source `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx` files
+and `tsconfig.json` are rejected with a
 compile-first message. The `ts` selector is an alias for artifact analysis,
 not a request to parse TypeScript source.
 
@@ -139,8 +140,9 @@ adapters are separate features.
 
 The TypeScript compiler API is used as a parser/checker, not as a project build
 step. Syntax and compiler-option errors fail analysis. The frontend requests
-symbols and types as it builds the graph, without type-checking the complete program. The artifact frontend does not provide
-the JVM frontend's bytecode folding, Android behavior or resource extraction.
+symbols and types as it builds the graph, without checking the whole program.
+The artifact frontend does not provide the JVM frontend's bytecode folding,
+Android behavior or resource extraction.
 
 ## Validation
 
@@ -199,6 +201,44 @@ representative multi-graph load tests whose requests actually target multiple
 graphs, following [CONVENTIONS.md](../CONVENTIONS.md) and the
 [benchmark protocol](../benchmark/README.md). Single-graph correctness runs and
 hosted timing observations do not establish performance acceptance.
+
+### PR review verification, 2026-11-04
+
+At `1e96a064`, the frontend passed 42 tests. Both applications were rebuilt
+from the same pinned JavaScript artifacts and queried across all four save
+forms. The compiled-code oracle still matched all twenty selected call
+occurrences. Per-graph CallSite counts and the resolved/dynamic split matched
+the previous build.
+
+| Application | Side | Nodes | Edges | Resolved / dynamic CallSites |
+|---|---|---:|---:|---:|
+| MIT Next 10 CRUD example | Client | 46,693 | 69,217 | 3,378 / 5,096 |
+| MIT Next 10 CRUD example | Server | 12,320 | 16,142 | 443 / 2,050 |
+| Supplementary Taskboard | Client | 85,023 | 132,212 | 5,791 / 9,825 |
+| Supplementary Taskboard | Server | 125,954 | 184,954 | 5,246 / 16,383 |
+
+Object and array spread now connect their operands directly to the
+constructed value. This changed assignments and property reads in these
+graphs. With semantic types requested lazily, inferred type strings can
+also differ from those reported during a full TypeScript diagnostics pass,
+including union order and inferred callback return types. The v3 string
+dictionary includes strings actually referenced by records and metadata.
+
+On an Apple M3 Max with 64 GiB RAM, one local release build of each client
+and server pair produced the following results. Each measurement includes two
+fresh CLI/frontend processes running sequentially on previously compiled JS,
+through publication of both containers and their digests. The JS inputs had
+already been read for hashing. Upstream Next compilation and the subsequent
+readback queries were outside the timed interval.
+
+| Application | Input JS files / MB | Paired build/save | Client / server packed MB |
+|---|---:|---:|---:|
+| CRUD | 24 / 0.70 | 3.73 s | 4.69 / 1.30 |
+| Taskboard | 69 / 2.45 | 9.61 s | 9.06 / 13.30 |
+
+Sizes are decimal MB. These are individual local observations for these
+compiled applications. Both pairs were reloaded together and queried after
+saving. The only adjacent files were the standard SHA-256 sidecars.
 
 ### Local artifact validation, 2026-11-03
 
@@ -302,8 +342,9 @@ The source assertions include exact call lines, Zod's cross-file `getErrorMap`
 target, and mitt's returned-object owner `index.ts#object@54:9#mitt@46:1`;
 that object starts on source line 54, column 9, inside `mitt` at line 46.
 Complete node and edge query results also match after each save/load path. In
-that historical source-frontend run, Zod reported 19 semantic diagnostics because target dependencies were not installed;
-those warnings are retained in the build stderr. This record reports correctness
+that historical source-frontend run, Zod reported 19 semantic diagnostics
+because target dependencies were not installed; those warnings are retained
+in the build stderr. This record reports correctness
 and graph contents, not performance measurements.
 
 The existing JVM path was also checked locally with Guava 33.6.0-jre
