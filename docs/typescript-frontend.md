@@ -43,9 +43,10 @@ frontend; use the source-checkout setup above.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
-graphs. Existing outputs are refused. Analysis and import occur in a temporary
-sibling directory; frontend failures and invalid graph output leave no saved
-graph. Packed graphs use the existing entry manifest and SHA-256 verification,
+graphs. JS builds refuse existing destinations. Analysis and import use a
+temporary directory under the nearest existing output ancestor. A missing
+output parent is created only after the graph is ready to publish. Failed
+analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
 rename that refuses to replace an existing file. It publishes the completed digest first,
 then the container, refusing either name if another writer has claimed it.
@@ -108,19 +109,28 @@ enter `function f(x = 1)` with the same parameter value but different
 `arguments.length`. Original argument arity and the special `arguments` object's
 runtime behavior are not modeled.
 
-A reassigned formal parameter has a separate mutable binding, so writes do not
-replace its incoming argument identity. Property locations and values read from
-those locations are separate nodes. These distinctions preserve dataflow without
-changing the existing persisted graph schema; they do not establish branch
-reachability or eliminate unresolved dynamic call targets.
+A reassigned formal parameter has a separate mutable binding. Property stores
+and loads share a location for a resolved receiver binding and key, including
+nested paths such as `obj.cfg.url`. Each load has its own value node.
+`obj.x` and `obj["x"]` use the same key. A computed key such as `obj[key]`
+uses the binding of `key`, so a literal property name cannot collide with it.
 
-The v3 format stores one relationship per ordered pair of nodes. If analysis
-finds two different relationships on that pair, it keeps the first and emits
-one warning with the total number skipped and the first example. For example,
-`let cur = list; for (cur of list) {}` retains the assignment from `list` to
-`cur`; an `ARRAY_LOAD` predicate cannot recover the skipped relationship.
-Identical edges are deduplicated without warning. The importer still rejects
-interchange files that contain conflicting relationships.
+Instance methods of a class share a summary for `this`, covering all instances
+of that class. Static methods use a separate class receiver. Arrows inherit
+their enclosing receiver, while an ordinary nested function has its own.
+Anonymous calls used as receivers keep separate locations. These rules support
+tracing `this.x` from a constructor to a getter without claiming that two
+object references denote the same runtime object.
+
+The v3 format stores one relationship per ordered node pair. The analyzer
+retains the highest-priority relationship independent of statement order.
+In descending priority the kinds are CALL, PARAMETER_PASS, RETURN_VALUE,
+FIELD_STORE, FIELD_LOAD, ARRAY_LOAD and ASSIGN. For the same kind, a dynamic
+flag takes precedence, then a virtual flag. A warning lists every affected
+node pair with the retained and discarded facts. For example, both `cur = list`
+and `for (cur of list) {}` produce flow from `list` to `cur`. The graph stores
+ARRAY_LOAD for that pair. Identical edges are deduplicated without warning.
+The importer rejects interchange files containing conflicting relationships.
 
 Targets from TypeScript’s standard library use the same name across npm,
 global and vendored installations, such as `external:typescript/lib/lib.dom.d.ts.Console`.
@@ -138,6 +148,11 @@ the stored representation: it does not transparently decode it. Clients must
 encode these exceptional originals in value predicates and explicitly decode
 returned values when needed; `frontend/web/src/strings.ts` defines both
 operations. The graph interchange also preserves numeric negative zero (`-0`).
+Overflowing numeric literals such as `1e400` and `-1e400` produce values with
+type `number`. Their dataflow is retained without storing an infinity constant.
+The frontend writes the JSON interchange incrementally in a bounded UTF-8
+buffer. The analyzer and the Rust importer still materialize their graph
+records in memory.
 
 Analysis is flow-insensitive and context-insensitive: values from different
 assignments or calls can share graph paths. It does not prove branch reachability
@@ -150,7 +165,9 @@ lifecycles or Next.js route semantics. Source-map reconstruction and framework
 adapters are separate features.
 
 The TypeScript compiler API is used as a parser/checker, not as a project build
-step. Syntax and compiler-option errors fail analysis. The frontend requests
+step. In a mixed directory, files with syntax errors are reported and excluded
+from analysis and import resolution. Analysis fails if no parseable artifact
+remains or the compiler options are invalid. The frontend requests
 symbols and types as it builds the graph, without checking the whole program.
 The artifact frontend does not provide the JVM frontend's bytecode folding,
 Android behavior or resource extraction.

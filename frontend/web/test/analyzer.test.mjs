@@ -644,19 +644,42 @@ test('deep emitted concatenation and comma chains keep their operands and later 
   assert.equal(graph.nodes[sites[2].arguments[0]].value, 'after');
 });
 
-test('conflicting relationships keep their first kind and report dropped occurrences once', t => {
-  const root = fixture(t, { 'main.js': `function pick(list) { let cur = list; for (cur of list) {} for (cur of list) {} return cur; } pick([1, 2]);` });
-  const warnings = [];
-  const graph = analyze(root, message => warnings.push(message));
-  const cur = graph.nodes.find(n => n.kind === 'LocalVariable' && n.name === 'cur');
-  const list = formal(graph, 'pick');
-  assert.deepEqual(graph.edges.filter(e => e.from === list.id && e.to === cur.id).map(e => e.kind), ['ASSIGN']);
-  assert.equal(new Set(graph.edges.map(e => `${e.from}:${e.to}`)).size, graph.edges.length);
-  assert.equal(warnings.length, 1);
-  assert.match(warnings[0], /skipped 2 conflicting relationship occurrences?.*kept ASSIGN, skipped ARRAY_LOAD/);
-  const again = [];
-  assert.deepEqual(analyze(root, msg => again.push(msg)), graph);
-  assert.deepEqual(again, warnings);
+test('specific edges win in either statement order and warnings identify every dropped pair', t => {
+  for (const statements of [
+    'cur = list; other = list; for (cur of list) {} for (other of list) {}',
+    'for (other of list) {} for (cur of list) {} other = list; cur = list;',
+  ]) {
+    const root = fixture(t, { 'loop.js': `function pick(list) { let cur, other; ${statements} return cur; } pick([1, 2]);` });
+    const warnings = [];
+    const graph = analyze(root, message => warnings.push(message));
+    const list = formal(graph, 'pick');
+    for (const name of ['cur', 'other']) {
+      const local = graph.nodes.find(n => n.kind === 'LocalVariable' && n.name === name);
+      assert.deepEqual(graph.edges.filter(e => e.from === list.id && e.to === local.id).map(e => e.kind), ['ARRAY_LOAD']);
+      assert.ok(warnings.includes(`  ${list.id} -> ${local.id}: kept ARRAY_LOAD, dropped ASSIGN`));
+    }
+    assert.equal(warnings.length, 3);
+    assert.match(warnings[0], /conflicting v3 relationships on 2 node pair/);
+  }
+});
+
+test('unparsable files are warned about and excluded from import resolution while valid files remain queryable', t => {
+  const root = fixture(t, {
+    'good.mjs': 'import { bad } from "./invalid.mjs"; import { keep } from "./lib.mjs"; keep("safe"); bad();',
+    'lib.mjs': 'export function keep(x) { return x; }',
+    'invalid.mjs': 'export function bad() {} const = ;',
+    'bad.js': 'function broken( {',
+  });
+  const warnings = [], graph = analyze(root, w => warnings.push(w));
+  assert.match(warnings[0], /skipped 2 unparsable JavaScript artifact.*out of 4/);
+  assert.ok(warnings.some(w => w.includes('invalid.mjs') && w.includes('error TS')));
+  assert.ok(warnings.some(w => w.includes('bad.js') && w.includes('error TS')));
+  assert.ok(graph.methods.every(m => !['invalid.mjs', 'bad.js'].includes(m.declaringClass)));
+  const keep = calls(graph).find(n => n.callee.name === 'keep');
+  assert.equal(keep.callee.declaringClass, 'lib.mjs');
+  assert.equal(graph.nodes[keep.arguments[0]].value, 'safe');
+  const bad = calls(graph).find(n => n.callee.name === 'bad');
+  assert.ok(graph.edges.some(e => e.from === bad.id && e.kind === 'CALL' && e.isDynamic));
 });
 
 test('default library methods keep npm identities when TypeScript is vendored outside node_modules', async t => {
@@ -701,4 +724,88 @@ test('CLI recognizes help/version only as options, not as an output or a positio
   const graph = JSON.parse(fs.readFileSync(path.join(root, '--version'), 'utf8'));
   assert.ok(calls(graph).some(n => n.callee.name === 'sink'));
   assert.match(spawnSync(process.execPath, [cli, 'build', '--help'], { encoding: 'utf8' }).stdout, /Usage: graphite build/);
+});
+
+function propertyFlows(g, literal, sink) {
+  const from = g.nodes.find(n => n.kind === 'StringConstant' && n.value === literal)?.id;
+  const target = calls(g).find(c => c.callee.name === sink)?.arguments[0];
+  assert.notEqual(from, undefined);
+  assert.notEqual(target, undefined);
+  const seen = new Set([from]);
+  const pending = [from];
+  while (pending.length) {
+    const id = pending.pop();
+    if (id === target) return true;
+    for (const edge of g.edges) {
+      if (edge.from === id && edge.kind !== 'CALL' && !seen.has(edge.to)) {
+        seen.add(edge.to);
+        pending.push(edge.to);
+      }
+    }
+  }
+  return false;
+}
+
+test('class receiver slots link constructor writes to call results and respect lexical this', t => {
+  const g = analyze(fixture(t, { 'app.js': `
+    class A {
+      constructor() { this.x = "secret"; }
+      get() { return this.x; }
+      arrow() { return (() => this.x)(); }
+      inner() { function unrelated() { return this.x; } return unrelated(); }
+      static write() { this.x = "static"; }
+      static read() { return this.x; }
+    }
+    class B { get() { return this.x; } }
+    const C = class { static { this.x = "class expression"; } };
+    classExpressionSink(C.x);
+    sink(new A().get()); arrowSink(new A().arrow()); innerSink(new A().inner());
+    staticSink(A.read()); otherSink(new B().get()); namedStaticSink(A.x);
+  ` }));
+  assert.ok(propertyFlows(g, 'secret', 'sink'));
+  assert.ok(propertyFlows(g, 'secret', 'arrowSink'));
+  for (const sink of ['innerSink', 'staticSink', 'otherSink', 'namedStaticSink'])
+    assert.equal(propertyFlows(g, 'secret', sink), false, sink);
+  assert.ok(propertyFlows(g, 'class expression', 'classExpressionSink'));
+  assert.ok(propertyFlows(g, 'static', 'staticSink'));
+  assert.ok(propertyFlows(g, 'static', 'namedStaticSink'));
+  assert.equal(propertyFlows(g, 'static', 'sink'), false);
+});
+
+test('nested slots preserve their root, shadowed bindings and anonymous receiver occurrences', t => {
+  const g = analyze(fixture(t, { 'app.js': `
+    const obj = {}, other = {};
+    obj.cfg.url = "nested";
+    nestedSink((obj["cfg"]).url); otherSink(other.cfg.url);
+    { const obj = {}; shadowSink(obj.cfg.url); }
+    make().cfg.url = "anonymous"; anonymousSink(make().cfg.url);
+    class C { field = "initial"; get() { return this.field; } }
+    const one = new C(), two = new C();
+    one.field = "owned"; sameField(one["field"]); otherField(two.field); throughGetter(one.get());
+  ` }));
+  assert.ok(propertyFlows(g, 'nested', 'nestedSink'));
+  assert.equal(propertyFlows(g, 'nested', 'otherSink'), false);
+  assert.equal(propertyFlows(g, 'nested', 'shadowSink'), false);
+  assert.equal(propertyFlows(g, 'anonymous', 'anonymousSink'), false);
+  assert.ok(propertyFlows(g, 'owned', 'sameField'));
+  assert.equal(propertyFlows(g, 'owned', 'otherField'), false);
+  assert.ok(propertyFlows(g, 'initial', 'otherField'));
+  assert.ok(propertyFlows(g, 'owned', 'throughGetter'));
+});
+
+test('computed key bindings share a slot without colliding with literal spellings or shadows', t => {
+  const source = 'const cfg = {}, key = getKey(); cfg[key] = "computed"; sameSink(cfg[key]);';
+  const prior = analyze(fixture(t, { 'app.js': source }));
+  const keyId = prior.nodes.find(n => n.name === 'key').id;
+  const g = analyze(fixture(t, { 'app.js': source + `
+    literalSink(cfg['@computed:${keyId}']);
+    { const key = getKey(); shadowKeySink(cfg[key]); }
+    cfg[getKey()] = "ephemeral"; otherKeySink(cfg[getKey()]);
+    cfg['name'] = 'literal'; namedSink(cfg.name);
+  ` }));
+  assert.ok(propertyFlows(g, 'computed', 'sameSink'));
+  assert.equal(propertyFlows(g, 'computed', 'literalSink'), false);
+  assert.equal(propertyFlows(g, 'computed', 'shadowKeySink'), false);
+  assert.equal(propertyFlows(g, 'ephemeral', 'otherKeySink'), false);
+  assert.ok(propertyFlows(g, 'literal', 'namedSink'));
 });

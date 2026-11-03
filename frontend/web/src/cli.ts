@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import { analyze } from './analyzer.js';
+import { writeInterchange } from './interchange.js';
 
 const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts language selector is an alias for compiled-JavaScript analysis.\nNode.js 20 or newer is required.\n`;
 function printInfo(arg: string | undefined): boolean {
@@ -33,12 +34,7 @@ function main(args: string[]): void {
   }
   if (!input || !output) throw new Error(help);
   const graph = analyze(input);
-  // JSON.stringify(-0) emits 0, which changes JavaScript's observable number
-  // semantics (Object.is and division). Preserve the legal JSON -0 token.
-  const nodes = graph.nodes.map(node => node.kind === 'DoubleConstant' && Object.is(node.value, -0)
-    ? `${JSON.stringify({ ...node, value: undefined }).slice(0, -1)},"value":-0}` : JSON.stringify(node));
-  const encoded = `{${Object.entries(graph).map(([key, value]) => `${JSON.stringify(key)}:${key === 'nodes' ? `[${nodes.join(',')}]` : JSON.stringify(value)}`).join(',')}}`;
-  fs.writeFileSync(output, encoded, { flag: 'wx' });
+  writeInterchange(output, graph);
   console.error(`Analyzed ${graph.methods.length} methods, ${graph.nodes.length} nodes, ${graph.edges.length} edges.`);
 }
 

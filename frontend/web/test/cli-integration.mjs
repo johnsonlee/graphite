@@ -23,7 +23,26 @@ try {
   const input = path.join(dir, 'main.js'), graph = path.join(dir, 'out.graphite');
   fs.writeFileSync(input, 'function pick(list) { let cur = list; for (cur of list) {} for (cur of list) {} return cur; } pick([1,2]);');
   const build = run(['build', '--lang', 'js', input, '-o', graph]);
-  assert.match(build.stderr, /skipped 2 conflicting relationship occurrences/);
+  assert.match(build.stderr, /kept ARRAY_LOAD, dropped ASSIGN/);
   const result = JSON.parse(run(['query', graph, "MATCH (p:Parameter)-[r]->(v:LocalVariable) WHERE v.name = 'cur' RETURN r.kind AS kind", '--format', 'json']).stdout);
-  assert.deepEqual(result.rows, [{ kind: 'ASSIGN' }]);
+  assert.deepEqual(result.rows, [{ kind: 'ARRAY_LOAD' }]);
+
+  const cls = path.join(dir, 'member.mjs'), member = path.join(dir, 'member.graphite');
+  fs.writeFileSync(cls, 'class A { constructor(){ this.x = "secret"; } get(){ return this.x; } } sink(new A().get())');
+  run(['build', '--lang', 'js', cls, '-o', member]);
+  run(['verify', member]);
+  const slice = run(['query', member, "MATCH (s:StringConstant {value:'secret'})-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(get:CallSite)-[:DATAFLOW]->(sink:CallSite) WHERE get.callee_name='get' AND sink.callee_name='sink' RETURN count(*) AS n", '--format', 'json']);
+  assert.deepEqual(JSON.parse(slice.stdout).rows, [{ n: 1 }]);
+
+  const overflow = path.join(dir, 'overflow.mjs'), saved = path.join(dir, 'overflow.graphite');
+  fs.writeFileSync(overflow, ['function take(x = -1e400) { return x; }','take(1e400);','take(-1e400);','take();'].join('\n'));
+  run(['build', '--lang', 'js', overflow, '-o', saved]);
+  run(['verify', saved]);
+  const rows = q => JSON.parse(run(['query', saved, q, '--format', 'json']).stdout).rows;
+  const calls = rows("MATCH (v:LocalVariable)-[r:DATAFLOW]->(c:CallSite) WHERE r.kind='PARAMETER_PASS' AND c.callee_name='take' RETURN v.id AS id, v.type AS t, c.line AS line ORDER BY line");
+  assert.deepEqual(calls.map(c => [c.line,c.t]), [[2,'number'],[3,'number'],[4,'number']]);
+  const ids = calls.map(c => c.id).sort((a,b) => a-b);
+  assert.equal(new Set(ids).size,3);
+  assert.deepEqual(rows("MATCH (v:LocalVariable)-[r:DATAFLOW]->(p:Parameter) WHERE r.kind='PARAMETER_PASS' RETURN v.id AS id, p.index AS i ORDER BY id"),ids.map(id => ({id,i:0})));
+  for (const label of ['NullConstant','DoubleConstant']) assert.deepEqual(rows(`MATCH (n:${label}) RETURN count(*) AS n`),[{n:0}]);
 } finally { fs.rmSync(dir, { recursive: true, force: true }); }

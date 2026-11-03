@@ -14,12 +14,21 @@ export interface GraphNode {
   kind: string;
   [key: string]: unknown;
 }
+// Higher ranks retain the more specific operation when v3 cannot represent both.
+const edgePriority = { ASSIGN: 0, ARRAY_LOAD: 1, FIELD_LOAD: 2, FIELD_STORE: 3, RETURN_VALUE: 4, PARAMETER_PASS: 5, CALL: 6 } as const;
+type EdgeKind = keyof typeof edgePriority;
 export interface GraphEdge {
   from: number;
   to: number;
-  kind: string;
+  kind: EdgeKind;
   isVirtual?: boolean;
   isDynamic?: boolean;
+}
+function edgeRank(edge: GraphEdge): number {
+  return edgePriority[edge.kind] * 4 + (edge.isDynamic ? 2 : 0) + (edge.isVirtual ? 1 : 0);
+}
+function edgeDescription(edge: GraphEdge): string {
+  return edge.kind + (edge.isDynamic ? ' dynamic' : '') + (edge.isVirtual ? ' virtual' : '');
 }
 export interface SourceGraph {
   version: 1;
@@ -30,6 +39,7 @@ export interface SourceGraph {
 }
 type UndefinedState = 'always' | 'never' | 'maybe';
 interface ArgumentValue { id: number; state: UndefinedState }
+interface ReceiverOwner { owner: ts.Node; instance: boolean }
 type FunctionBody = ts.FunctionLikeDeclaration & { body: ts.ConciseBody };
 interface Context { method: Method; parameters: number[]; restIndex?: number; returned?: number; body: ts.Node; declaration?: FunctionBody; defaults?: Map<number, ts.Expression> }
 const isBody = (n: ts.Node): n is FunctionBody => ts.isFunctionLike(n) && 'body' in n && !!n.body;
@@ -41,7 +51,7 @@ const formatDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => ts.formatDi
 });
 
 /** Read emitted JavaScript only. Compilation is deliberately an explicit upstream step. */
-export function project(input: string): { program: ts.Program; root: string } {
+export function project(input: string, warn: (message: string) => void = console.error): { program: ts.Program; root: string } {
   const absolute = path.resolve(input);
   const stat = fs.statSync(absolute);
   const root = stat.isDirectory() ? absolute : path.dirname(absolute);
@@ -78,8 +88,29 @@ export function project(input: string): { program: ts.Program; root: string } {
   const optionErrors = program.getOptionsDiagnostics();
   if (optionErrors.length) throw new Error(formatDiagnostics(optionErrors));
   const syntactic = program.getSyntacticDiagnostics();
-  if (syntactic.length) throw new Error(formatDiagnostics(syntactic));
-  return { program, root };
+  if (!syntactic.length) return { program, root };
+
+  const skipped = new Map<string, ts.Diagnostic[]>();
+  for (const diagnostic of syntactic) {
+    const key = diagnostic.file && host.getCanonicalFileName(ts.sys.resolvePath(diagnostic.file.fileName));
+    if (!key || !selected.has(key)) throw new Error(formatDiagnostics(syntactic));
+    const errors = skipped.get(key);
+    if (errors) errors.push(diagnostic);
+    else skipped.set(key, [diagnostic]);
+  }
+  const valid = roots.filter(file => !skipped.has(host.getCanonicalFileName(file)));
+  if (!valid.length) throw new Error(`No parseable JavaScript artifacts remain.
+${formatDiagnostics(syntactic)}`);
+  warn(`Warning: skipped ${skipped.size} unparsable JavaScript artifact(s) out of ${roots.length}.`);
+  for (const [key, errors] of skipped) {
+    selected.delete(key);
+    warn(formatDiagnostics(errors.slice(0, 1)).trimEnd());
+  }
+  // Rebuild only on this recovery path. Exclude the bad files both as roots and
+  // as dependencies, including direct reference directives as well as imports.
+  const read = host.getSourceFile.bind(host);
+  host.getSourceFile = (file, ...args) => skipped.has(host.getCanonicalFileName(ts.sys.resolvePath(file))) ? undefined : read(file, ...args);
+  return { program: ts.createProgram(valid, options, host), root };
 }
 
 /** Preorder traversal with the same child order as forEachChild; a visitor can prune a subtree. */
@@ -100,7 +131,7 @@ function visitTree(root: ts.Node, context: Context, visit: (n: ts.Node, scope: C
 
 /** A flow-insensitive value graph of emitted JS. No artifacts or build scripts are executed. */
 export function analyze(input: string, warn: (message: string) => void = console.warn): SourceGraph {
-  const { program, root } = project(input);
+  const { program, root } = project(input, warn);
   return new Analyzer(program, root, warn).run();
 }
 
@@ -111,14 +142,17 @@ class Analyzer {
   private descriptors = new Map<ts.SignatureDeclaration, Method>();
   private encodedText = new Map<string, string>();
   private encodedMethods = new WeakMap<Method, Method>();
-  private conflictingEdges = 0;
-  private firstConflict?: string;
+  private droppedEdges = new Map<number, Set<string>>();
   private functions: Context[] = [];
   private values = new Map<ts.Node, number>();
   private symbols = new Map<ts.Symbol, number>();
   private constants = new Map<string, number>();
   private properties = new Map<string, number>();
-  private edgePairs = new Map<string, GraphEdge>();
+  private readSlots = new Map<number, number>();
+  private fieldBindings = new Map<number, number>();
+  private instanceReceivers = new WeakMap<ts.Node, number>();
+  private otherReceivers = new WeakMap<ts.Node, number>();
+  private edgePairs = new Map<string, number>();
   private writes = new Map<ts.Symbol, UndefinedState>();
   private patternDefaults = new Set<ts.BinaryExpression>();
   private handledFallbacks = new Set<ts.Expression>();
@@ -193,18 +227,24 @@ class Analyzer {
     this.graph.nodes.push({ id, kind, ...fields });
     return id;
   }
-  private edge(from: number, to: number, kind: string, extra: Pick<GraphEdge, 'isVirtual' | 'isDynamic'> = {}): void {
+  private edge(from: number, to: number, kind: EdgeKind, extra: Pick<GraphEdge, 'isVirtual' | 'isDynamic'> = {}): void {
     const key = `${from}:${to}`;
-    const previous = this.edgePairs.get(key);
-    if (previous) {
+    const index = this.edgePairs.get(key);
+    if (index !== undefined) {
+      const previous = this.graph.edges[index]!;
       if (previous.kind !== kind || !!previous.isVirtual !== !!extra.isVirtual || !!previous.isDynamic !== !!extra.isDynamic) {
-        this.conflictingEdges++;
-        this.firstConflict ??= `${from} -> ${to}: kept ${previous.kind}, skipped ${kind}`;
+        const candidate = { from, to, kind, ...extra };
+        const replace = edgeRank(candidate) > edgeRank(previous);
+        const discarded = replace ? previous : candidate;
+        let dropped = this.droppedEdges.get(index);
+        if (!dropped) this.droppedEdges.set(index, dropped = new Set());
+        dropped.add(edgeDescription(discarded));
+        if (replace) this.graph.edges[index] = candidate;
       }
       return; // v3 can encode only one relationship per ordered endpoint pair.
     }
     const edge = { from, to, kind, ...extra };
-    this.edgePairs.set(key, edge);
+    this.edgePairs.set(key, this.graph.edges.length);
     this.graph.edges.push(edge);
   }
   private addMethod(method: Method, origin: string): void {
@@ -389,21 +429,82 @@ class Analyzer {
     if (id === undefined) { id = this.node(kind, value === undefined ? {} : { value }); this.constants.set(key, id); }
     return id;
   }
-  private property(n: ts.PropertyAccessExpression | ts.ElementAccessExpression, context: Context): { slot: number; receiver: number } {
-    const receiver = this.value(n.expression, context);
-    const symbol = ts.isPropertyAccessExpression(n) ? this.symbol(n.name) : undefined;
-    const declared = symbol && this.symbols.get(symbol);
-    if (declared !== undefined) return { slot: declared, receiver };
-    const name = ts.isPropertyAccessExpression(n) ? n.name.text :
-      ts.isStringLiteralLike(n.argumentExpression) || ts.isNumericLiteral(n.argumentExpression)
-        ? n.argumentExpression.text : `@computed:${this.value(n.argumentExpression, context)}`;
-    const key = JSON.stringify([receiver, name]);
-    let slot = this.properties.get(key);
-    if (slot === undefined) {
-      slot = this.node('LocalVariable', { name: `@property:${receiver}:${name}`, varType: this.type(n), method: context.method });
-      this.properties.set(key, slot);
+  private receiverOwner(n: ts.Expression): ReceiverOwner | undefined {
+    while (ts.isParenthesizedExpression(n)) n = n.expression;
+    if (ts.isIdentifier(n)) {
+      const declaration = this.symbol(n)?.valueDeclaration;
+      if (declaration && ts.isClassLike(declaration)) return { owner: declaration, instance: false };
+      if (declaration && ts.isVariableDeclaration(declaration) && ts.isVariableDeclarationList(declaration.parent) &&
+          declaration.parent.flags & ts.NodeFlags.Const && declaration.initializer && ts.isClassExpression(declaration.initializer))
+        return { owner: declaration.initializer, instance: false };
     }
-    return { slot, receiver };
+    if (n.kind !== ts.SyntaxKind.ThisKeyword) return undefined;
+    let child: ts.Node = n;
+    for (let scope: ts.Node = n.parent; scope; child = scope, scope = scope.parent) {
+      if (ts.isClassStaticBlockDeclaration(scope)) return { owner: scope.parent, instance: false };
+      const field = ts.isPropertyDeclaration(scope) && child === scope.initializer;
+      const body = isBody(scope) && !ts.isArrowFunction(scope) && (child === scope.body || ts.isParameter(child));
+      if (field || body) {
+        if (ts.isClassLike(scope.parent)) return { owner: scope.parent,
+          instance: !(ts.getCombinedModifierFlags(scope as ts.Declaration) & ts.ModifierFlags.Static) };
+        return { owner: scope, instance: false };
+      }
+      if (ts.isSourceFile(scope)) return { owner: scope, instance: false };
+    }
+    return undefined;
+  }
+  private location(value: number, owner: ReceiverOwner | undefined): number {
+    // Resolved identifiers already use their binding's value id. Each read of a
+    // nested property has a fresh value id, but refers to the same underlying slot.
+    const slot = this.readSlots.get(value);
+    if (slot !== undefined) return slot;
+    if (!owner) return value;
+    const receivers = owner.instance ? this.instanceReceivers : this.otherReceivers;
+    const existing = receivers.get(owner.owner);
+    if (existing !== undefined) return existing;
+    receivers.set(owner.owner, value);
+    return value;
+  }
+  private property(n: ts.PropertyAccessExpression | ts.ElementAccessExpression, context: Context): {
+    slot: number; receiver: number; fieldSource?: number;
+  } {
+    const receiver = this.value(n.expression, context);
+    const owner = this.receiverOwner(n.expression);
+    const base = this.location(receiver, owner);
+    let key: string | number;
+    if (ts.isPropertyAccessExpression(n)) key = n.name.text;
+    else {
+      const arg = n.argumentExpression;
+      key = ts.isStringLiteralLike(arg) || ts.isNumericLiteral(arg) ? arg.text :
+        this.location(this.value(arg, context), this.receiverOwner(arg));
+    }
+    // Literal spellings and computed binding ids have disjoint key types.
+    const identity = JSON.stringify([base, key]);
+    const symbol = typeof key === 'string' ? this.referenceSymbol(n) : undefined;
+    const declaration = symbol?.valueDeclaration;
+    const fieldSymbol = declaration && ts.isPropertyDeclaration(declaration) && this.symbol(declaration.name);
+    const field = fieldSymbol ? this.symbols.get(fieldSymbol) : undefined;
+    let bindings: number | undefined;
+    if (field !== undefined && declaration) {
+      // Initializers and stores via class 'this' may reach any named receiver.
+      // Named receiver writes may reach 'this' reads, but not unrelated roots.
+      bindings = this.fieldBindings.get(field);
+      if (bindings === undefined) {
+        bindings = this.node('LocalVariable', { name: `@field-bindings:${field}`, varType: this.type(n), method: context.method });
+        this.fieldBindings.set(field, bindings);
+      }
+      if (owner?.owner === declaration.parent &&
+          owner.instance !== !!(ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Static))
+        return { slot: field, receiver, fieldSource: bindings };
+    }
+    let slot = this.properties.get(identity);
+    if (slot === undefined) {
+      const name = typeof key === 'number' ? `@computed-property:${base}:${key}` : `@property:${base}:${key}`;
+      slot = this.node('LocalVariable', { name, varType: this.type(n), method: context.method });
+      this.properties.set(identity, slot);
+    }
+    if (bindings !== undefined) this.edge(slot, bindings, 'FIELD_LOAD');
+    return { slot, receiver, fieldSource: field };
   }
   private assigned(n: ts.Expression, context: Context): number {
     return ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? this.property(n, context).slot : this.value(n, context);
@@ -411,7 +512,7 @@ class Analyzer {
   private assignmentSymbol(n: ts.Identifier): ts.Symbol | undefined {
     return (ts.isShorthandPropertyAssignment(n.parent) && this.checker.getShorthandAssignmentValueSymbol(n.parent)) || this.symbol(n);
   }
-  private assign(n: ts.Expression, value: number, context: Context, rhs?: ts.Expression, kind = 'ASSIGN'): void {
+  private assign(n: ts.Expression, value: number, context: Context, rhs?: ts.Expression, kind: EdgeKind = 'ASSIGN'): void {
     while (ts.isParenthesizedExpression(n)) n = n.expression;
     for (const { target, defaults } of this.targets(n)) {
       const symbol = ts.isIdentifier(target) ? this.assignmentSymbol(target) : undefined;
@@ -650,8 +751,12 @@ class Analyzer {
     if (ts.isStringLiteralLike(n)) id = this.constant('StringConstant', n.text);
     else if (ts.isNumericLiteral(n) || (ts.isPrefixUnaryExpression(n) && ts.isNumericLiteral(n.operand) && (n.operator === ts.SyntaxKind.MinusToken || n.operator === ts.SyntaxKind.PlusToken))) {
       const value = ts.isNumericLiteral(n) ? Number(n.text) : Number((n.operand as ts.NumericLiteral).text) * (n.operator === ts.SyntaxKind.MinusToken ? -1 : 1);
-      if (!Number.isFinite(value)) throw new Error(`Non-finite numeric literal at ${this.module(n)}:${this.position(n)}`);
-      id = this.constant(!Object.is(value, -0) && Number.isInteger(value) && value >= -2147483648 && value <= 2147483647 ? 'IntConstant' : 'DoubleConstant', value);
+      // Overflow is valid JavaScript, but the interchange accepts only finite
+      // constants. Keep a numeric value at this expression so calls and returns
+      // still carry it instead of inventing a null constant or failing the build.
+      id = Number.isFinite(value)
+        ? this.constant(!Object.is(value, -0) && Number.isInteger(value) && value >= -2147483648 && value <= 2147483647 ? 'IntConstant' : 'DoubleConstant', value)
+        : this.node('LocalVariable', { name: `@${this.position(n)}`, varType: 'number', method: context.method });
     } else if (n.kind === ts.SyntaxKind.TrueKeyword || n.kind === ts.SyntaxKind.FalseKeyword) id = this.constant('BooleanConstant', n.kind === ts.SyntaxKind.TrueKeyword);
     else if (n.kind === ts.SyntaxKind.NullKeyword) id = this.constant('NullConstant');
     else if (ts.isIdentifier(n)) id = this.local(n, context);
@@ -680,10 +785,12 @@ class Analyzer {
       });
       if (target.context?.returned !== undefined) this.edge(target.context.returned, id, 'RETURN_VALUE');
     } else if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
-      const { slot, receiver } = this.property(n, context);
+      const { slot, receiver, fieldSource } = this.property(n, context);
       // A location and a read from that location are different values. In x.p=x,
       // loading x.p must not share endpoints with storing x into the property.
       id = this.node('LocalVariable', { name: `@read:${n.getText()}@${this.position(n)}`, varType: this.type(n), method: context.method });
+      this.readSlots.set(id, slot);
+      if (fieldSource !== undefined) this.edge(fieldSource, id, 'FIELD_LOAD');
       this.edge(slot, id, 'FIELD_LOAD');
       this.edge(receiver, id, 'FIELD_LOAD');
     } else {
@@ -773,8 +880,13 @@ class Analyzer {
         if (updated !== undefined && updated !== context.parameters[index]) this.edge(updated, context.parameters[index]!, 'PARAMETER_PASS');
       });
     }
-    if (this.conflictingEdges) this.warn(`Warning: JavaScript graph skipped ${this.conflictingEdges} conflicting relationship occurrence${this.conflictingEdges === 1 ? '' : 's'}; ` +
-      `v3 retains the first relationship per ordered node pair (first conflict: ${this.firstConflict}).`);
+    if (this.droppedEdges.size) {
+      this.warn(`Warning: conflicting v3 relationships on ${this.droppedEdges.size} node pair(s).`);
+      for (const [index, dropped] of this.droppedEdges) {
+        const edge = this.graph.edges[index]!;
+        this.warn(`  ${edge.from} -> ${edge.to}: kept ${edgeDescription(edge)}, dropped ${[...dropped].sort().join(', ')}`);
+      }
+    }
     return this.graph;
   }
 }
