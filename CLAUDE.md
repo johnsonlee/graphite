@@ -808,8 +808,10 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   with no call in sight, review of #193; `Child.value` on a field `Base` declares initialises
   `Base`, not `Child`, and javac spells a superinterface's field through the implementing
   class, so the lookup is the JVM's: the class, its superinterfaces, then its superclass, per
-  reference and before the class is deduplicated) until nothing new is reached or the
-  budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
+  reference and before the class is deduplicated), and before each class it reads the classes
+  the JVM initialises first (its superclass, and every superinterface that declares a default
+  method, JVMS 5.5: an interface initialiser runs with no call in the class's bytecode) until
+  nothing new is reached or the budget is spent; the frontier past the budget is `NOT_EXPANDED`. Callees are
   noted at call-site creation only under that scope (once per callee, by identity: descriptors
   are canonical per signature), and the expansion runs before the dispatch fixpoint, so a
   function-object class the application allocates is read through its constructor call and its
@@ -822,15 +824,28 @@ package, whatever `includePackages` says (`jarInScope`). Lessons:
   with a parameter no known caller fills ran the lambda in the graph and nothing for the other
   branch. A slot nothing flows into and nothing seeds holds a value the scope cannot name, and
   so does everything it flows into; one pass over the final flow graph marks them
-  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. A saturated
+  (`computeOpenSlots`), and a resolved call on an open slot is `DISPATCH_PARTIAL`. The closure
+  derives the override flows itself (`expandOverrideFlows`): the fixpoint records a parameter's
+  flows to its overrides only once a target reaches it, so an interface parameter that only an
+  unknown value reaches had no flow to the implementation's parameter, and `Impl.use(cb)` read
+  as complete while `Sink.use(external)` ran it too. A saturated
   holder lost its targets rather than never having any: the loss follows its flows and its
   seeds (`lostSlots`, `lostSeeds`), so `choose ? lambda : saturatedField` is partial and a call
   downstream that resolved nothing is saturated, not unresolved. With cross-method tracking
   off the same question is answered per method: a local assigned from a parameter, a field, a
   call result, an element of such an array or a copy of such a local is open (`openLocals`),
-  and a call on it that resolved a lambda is partial too. A reached
+  openness follows a store into an array to the array and its aliases whatever their type says
+  (`inheritOpenness`), and a call on it that resolved a lambda is partial too. A reached
   stdlib carries thousands of them (its own `invoke` calls on values from outside the scope),
   which is the honest answer; a test asserting the exact gap set on a real stdlib is wrong.
+- A static field reference is the field of the class that declares it, by the JVM's field
+  resolution (`resolvedFieldSignature`), for the field node and the dispatch slot alike: javac
+  spells an inherited or interface field through the class it is read from (`getstatic
+  Leaf.inherited` on a field `Top` declares), and keyed by that spelling the initialiser's
+  `FIELD_STORE` ended on `Top.inherited` while the read started on a second node `Leaf.inherited`
+  that nothing wrote (review of #193). Instance field references keep the class they spell:
+  javac spells every inherited instance field through the subclass too, so resolving them is
+  a graph-wide identity change to be measured on the corpora and declared to the gates first.
 - `Reachable.roots` restricts which application classes seed the expansion (the others are
   still read; they are the application); `BOOT-INF/classpath.idx` orders a Spring Boot jar's
   nested libraries as the launcher loads them, for the view's input locations and for the

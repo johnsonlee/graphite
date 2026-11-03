@@ -59,8 +59,12 @@ callee (class hierarchy analysis), the class every `new` names, including the fu
 classes the application allocates, and the class that declares the field every static field
 access resolves to (the JVM's field resolution: the named class, its superinterfaces, then its
 superclass; `getstatic Child.value` on a field `Base` declares initialises `Base`, not `Child`),
-since `getstatic` runs that class's initialiser without any call; then the classes those bodies
-reach, and so on. Each class is
+since `getstatic` runs that class's initialiser without any call; and, before each class it
+reads, the classes the JVM initialises first (JVMS 5.5): its superclass and every superinterface,
+direct or indirect, that declares a default method, so an interface initialiser that runs
+without a call in the class's bytecode is read too (one without a default method is not
+initialised and not read); then the classes those bodies reach, and so on. A root's own
+prerequisites are reached as well. Each class is
 read once, so the expansion terminates on any call graph, cycles included. Reading stops at
 `maxClasses` (50,000 by default); a class reached past the budget is `NOT_EXPANDED`, which a
 proof must treat as unread, never as a class with no effect, and a library class nothing reaches
@@ -130,9 +134,13 @@ graph.analysisStatus(callSite.callee)               // AnalysisStatus, or null w
   `DISPATCH_PARTIAL` (bodies were resolved and are in the graph, and a value with no known
   origin in the scope reaches the receiver as well: a parameter no known caller passes a value
   to, the result of a method outside the scope, a field nothing in the scope assigns, so an
-  alternative the scope cannot name may run too; or a holder more than 64 function values
-  reached flows into the receiver, so the values it lost may run too, and a call that resolved
-  nothing on such a receiver is `DISPATCH_SATURATED`). The call site itself is in the graph with its
+  alternative the scope cannot name may run too, through the override boundaries as well, so an
+  interface parameter one caller fills with such a value opens the parameter of every
+  implementation; or a holder more than 64 function values reached flows into the receiver, so
+  the values it lost may run too, and a call that resolved nothing on such a receiver is
+  `DISPATCH_SATURATED`). With cross-method tracking off the same question is answered within
+  the method: a receiver assigned from a parameter, a field, a call's result, an element of an
+  array such a value was stored into, or a copy of such a local is open. The call site itself is in the graph with its
   interface callee; a call on a function value absent from this map resolved to every body it
   runs that the scope holds. A value is "known" relative to the scope: a caller outside it that
   passes a value to a parameter known callers also pass values to is not represented.

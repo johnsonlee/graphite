@@ -1,6 +1,8 @@
 package io.johnsonlee.graphite.sootup
 
 import io.johnsonlee.graphite.core.CallSiteNode
+import io.johnsonlee.graphite.core.FieldNode
+import io.johnsonlee.graphite.core.ReturnNode
 import io.johnsonlee.graphite.graph.AnalysisStatus
 import io.johnsonlee.graphite.graph.ArtifactRole
 import io.johnsonlee.graphite.graph.CallSiteGap
@@ -45,6 +47,23 @@ class DependencyScopeReviewTest : DependencyScopeFixture() {
         "Leaf.java" to """
             package sample.scope.ext;
             public class Leaf extends Top { public static String own = String.valueOf(System.nanoTime()); }
+        """.trimIndent(),
+        "Defaults.java" to """
+            package sample.scope.ext;
+            public interface Defaults {
+                String seed = java.util.ResourceBundle.getBundle("messages").getString("seed");
+                default int size() { return 1; }
+            }
+        """.trimIndent(),
+        "Plain.java" to """
+            package sample.scope.ext;
+            public interface Plain { String tag = java.util.ResourceBundle.getBundle("messages").getString("tag"); }
+        """.trimIndent(),
+        "Host.java" to """
+            package sample.scope.ext;
+            public class Host implements Defaults, Plain {
+                public static String own = java.util.ResourceBundle.getBundle("messages").getString("host");
+            }
         """.trimIndent()
     )
 
@@ -61,8 +80,52 @@ class DependencyScopeReviewTest : DependencyScopeFixture() {
         "ViaBoth.java" to """
             package sample.scope.app;
             public class ViaBoth { public String read() { return sample.scope.ext.Leaf.own + sample.scope.ext.Leaf.inherited; } }
+        """.trimIndent(),
+        "ViaHost.java" to """
+            package sample.scope.app;
+            public class ViaHost { public String read() { return sample.scope.ext.Host.own; } }
         """.trimIndent()
     )
+
+    /** An interface parameter one caller fills with a value the scope cannot name, beside a direct call with a lambda. */
+    private val overrideFlowSources = mapOf(
+        "Sink.java" to """
+            package sample.scope.app;
+            public interface Sink { String use(java.util.function.Supplier<String> cb); }
+        """.trimIndent(),
+        "Impl.java" to """
+            package sample.scope.app;
+            public class Impl implements Sink { public String use(java.util.function.Supplier<String> cb) { return cb.get(); } }
+        """.trimIndent(),
+        "Callers.java" to """
+            package sample.scope.app;
+            import java.util.function.Supplier;
+            public class Callers {
+                public String viaSink(Sink s, Supplier<String> external) { return s.use(external); }
+                public String viaImpl() { return new Impl().use(() -> "k"); }
+            }
+        """.trimIndent()
+    )
+
+    /** An array element assigned a lambda or a parameter, read back through the array. */
+    private val arrayStoreSource = "Arr.java" to """
+        package sample.scope.app;
+        import java.util.function.Supplier;
+        public class Arr {
+            @SuppressWarnings("unchecked")
+            public String viaArray(Supplier<String> external, boolean flag) {
+                Supplier<String>[] values = new Supplier[1];
+                values[0] = flag ? () -> "k" : external;
+                return values[0].get();
+            }
+            @SuppressWarnings("unchecked")
+            public String viaKnownArray(boolean flag) {
+                Supplier<String>[] values = new Supplier[1];
+                values[0] = flag ? () -> "a" : () -> "b";
+                return values[0].get();
+            }
+        }
+    """.trimIndent()
 
     /** A static field more than 64 lambdas reach, read directly and merged with a known lambda. */
     private val saturatedFieldSource = "Sat.java" to """
@@ -184,6 +247,76 @@ class DependencyScopeReviewTest : DependencyScopeFixture() {
         val viaBoth = completenessFor("ViaBoth")
         assertEquals(AnalysisStatus.ANALYZED, viaBoth.classStatus("$ext.Leaf"), "its own field initialises it")
         assertEquals(AnalysisStatus.ANALYZED, viaBoth.classStatus("$ext.Top"), "a second field through the same class resolves on its own")
+    }
+
+    @Test
+    fun `initialising a class initialises the superinterfaces that declare a default method`() {
+        val extClasses = compile(fieldOwnerSources, "ext-init")
+        val extJar = jar(extClasses.parent.resolve("ext-1.0.jar"), extClasses, "sample/scope/ext/")
+        val input = bootJar(extraAppSources = fieldReadSources, extraLibs = listOf(extJar))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.ViaHost"))
+        )
+        val completeness = assertNotNull(load(input, config).analysisCompleteness())
+        val ext = "sample.scope.ext"
+        assertEquals(AnalysisStatus.ANALYZED, completeness.classStatus("$ext.Host"), "its own field initialises it")
+        val defaults = completeness.classStatus("$ext.Defaults")
+        assertEquals(AnalysisStatus.ANALYZED, defaults, "a superinterface with a default method is initialised first")
+        assertEquals(AnalysisStatus.EXCLUDED_BY_SCOPE, completeness.classStatus("$ext.Plain"), "one without is not")
+    }
+
+    @Test
+    fun `a static field read through a subclass shares the declaring class's field node`() {
+        val extClasses = compile(fieldOwnerSources, "ext-field")
+        val extJar = jar(extClasses.parent.resolve("ext-1.0.jar"), extClasses, "sample/scope/ext/")
+        val input = bootJar(extraAppSources = fieldReadSources, extraLibs = listOf(extJar))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            dependencyBodies = DependencyBodyScope.Reachable(roots = listOf("$appPackage.ViaLeaf"))
+        )
+        val graph = load(input, config)
+        val field = graph.nodes<FieldNode>().single { it.descriptor.name == "inherited" }
+        assertEquals("sample.scope.ext.Top", field.descriptor.declaringClass.className, "the class that declares it, not the one spelled")
+        val read = method("$appPackage.ViaLeaf", "read", returns = "java.lang.String")
+        val returned = graph.nodes<ReturnNode>().single { it.method == read }
+        assertTrue(reaches(graph, field.id, returned.id), "the initialiser's store and the application's read meet on that node")
+    }
+
+    @Test
+    fun `an interface parameter nothing known reaches opens every implementation's parameter`() {
+        val input = bootJar(extraAppSources = overrideFlowSources)
+        val graph = load(input, LoaderConfig(includePackages = listOf(appPackage), includeLibraries = true, buildCallGraph = false))
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val calls = graph.nodes<CallSiteNode>().toList()
+        val get = calls.single { it.caller.declaringClass.className == "$appPackage.Impl" && it.callee.name == "get" }
+        assertEquals(1, calls.count { it.origin == get.id }, "the lambda the direct call passes is dispatched")
+        assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[get.id.value], "the interface call's value is not")
+    }
+
+    @Test
+    fun `an array holding a value the method cannot name keeps a gap with tracking off`() {
+        val input = bootJar(extraAppSources = mapOf(arrayStoreSource))
+        val config = LoaderConfig(
+            includePackages = listOf(appPackage),
+            includeLibraries = true,
+            buildCallGraph = false,
+            trackCrossMethodFunctionalDispatch = false
+        )
+        val graph = load(input, config)
+        val completeness = assertNotNull(graph.analysisCompleteness())
+        val calls = graph.nodes<CallSiteNode>().toList()
+        fun get(caller: String) = calls.single { it.caller.name == caller && it.callee.name == "get" }
+        fun bodies(caller: String) = calls.count { it.origin == get(caller).id }
+        assertEquals(1, bodies("viaArray"), "the lambda stored into the array is dispatched")
+        val mixed = get("viaArray").id.value
+        assertEquals(CallSiteGap.DISPATCH_PARTIAL, completeness.callSiteGaps[mixed], "the parameter stored into it is not")
+        assertEquals(2, bodies("viaKnownArray"))
+        assertNull(completeness.callSiteGaps[get("viaKnownArray").id.value], "every element is a lambda of the method")
     }
 
     @Test

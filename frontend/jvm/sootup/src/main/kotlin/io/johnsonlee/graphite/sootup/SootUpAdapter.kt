@@ -364,8 +364,8 @@ class SootUpAdapter(
     private var lostSlots: BitSet? = null
     /** The slots seeded from a saturated holder: the targets never arrived, see [seedSlot]. */
     private val lostSeeds = BitSet()
-    /** The declaring class each static field reference resolved to, see [noteStaticFieldAccess]. */
-    private val staticFieldOwners = HashMap<String, String>()
+    /** The signature each static field reference resolved to, see [resolvedFieldSignature]. */
+    private val resolvedStaticFields = HashMap<String, FieldSignature>()
     private val functionObjectClasses = mutableMapOf<String, Boolean>()
     private val mayHoldFunctionByType = mutableMapOf<String, Boolean>()
     // Type hierarchy of the view, for flows across override boundaries: direct subtypes of every
@@ -640,6 +640,7 @@ class SootUpAdapter(
         activeClassResolutionFailed = false
         if (application) applicationClasses += className
         activeClassSeeds = !application || reachableExpansion?.seeds(className) != false
+        initializationPrerequisites(className).forEach(::noteClassInitialized)
         processClassWithMethodCache(sootClass, extensionContext, application)
         val status = if (activeClassResolutionFailed) AnalysisStatus.RESOLUTION_FAILED else AnalysisStatus.ANALYZED
         classEvidence[className] = ClassEvidence(evidenceOrigin(sootClass), status)
@@ -704,6 +705,8 @@ class SootUpAdapter(
             val evidence = classEvidence[className] ?: return
             val reachable = evidence.status == AnalysisStatus.EXCLUDED_BY_SCOPE && isLibraryOrigin(evidence.origin)
             if (reachable && frontier.reached.add(className)) {
+                // Initialising a class initialises its prerequisites first (JVMS 5.5)
+                initializationPrerequisites(className).forEach(::reach)
                 frontier.queue += className
             }
         }
@@ -719,20 +722,67 @@ class SootUpAdapter(
     }
 
     /**
-     * Under a reachable scope, note the class a static field access the pass-2 class being
-     * read makes initialises: the class that declares the field the reference resolves to
-     * (`getstatic Child.value` on a field `Base` declares initialises `Base`, not `Child`),
-     * found by the JVM's field resolution. Each reference is resolved before the class is
-     * deduplicated, so two fields named through one class reach their two declaring classes.
+     * Under a reachable scope, note that the pass-2 class being read initialises [className]:
+     * the class that declares the field a static field access resolves to (`getstatic
+     * Child.value` on a field `Base` declares initialises `Base`, not `Child`), or the class's
+     * own initialisation prerequisites. Once per class.
      */
-    private fun noteStaticFieldAccess(fieldSig: FieldSignature) {
+    private fun noteClassInitialized(className: String) {
         if (reachableExpansion == null || !activeClassSeeds) return
-        val declaring = staticFieldOwners.getOrPut(fieldSig.toString()) {
-            lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
-                ?: fieldSig.declClassType.fullyQualifiedName
-        }
-        if (notedClasses.add(declaring)) reachedClasses += declaring
+        if (notedClasses.add(className)) reachedClasses += className
     }
+
+    /**
+     * The classes the JVM initialises before [className] (JVMS 5.5): its superclass, and every
+     * superinterface, direct or indirect, that declares a non-abstract, non-static method (a
+     * default method); an interface's superinterfaces are not initialised with it. Only classes
+     * the view holds; a superinterface outside it initialises nothing the graph could read.
+     */
+    private fun initializationPrerequisites(className: String): List<String> {
+        val sootClass = resolveClassByName(className)?.takeIf { !it.isInterface }
+        val result = LinkedHashSet<String>()
+        if (sootClass != null) {
+            sootClass.superclass.orElse(null)?.let { result += it.fullyQualifiedName }
+            sootClass.interfaces.forEach { collectDefaultBearingInterfaces(it.fullyQualifiedName, HashSet(), result) }
+        }
+        return result.toList()
+    }
+
+    /** Add [type] to [result] when it declares a default method, and visit its superinterfaces, each once. */
+    private fun collectDefaultBearingInterfaces(type: String, visited: MutableSet<String>, result: MutableSet<String>) {
+        val iface = if (visited.add(type)) resolveClassByName(type) else null
+        if (iface != null) {
+            if (iface.methods.any { !it.isAbstract && !it.isStatic }) result += type
+            iface.interfaces.forEach { collectDefaultBearingInterfaces(it.fullyQualifiedName, visited, result) }
+        }
+    }
+
+    /**
+     * The signature a static field reference resolves to: the field of the class that declares
+     * it, by the JVM's field resolution ([lookupField]), which is the identity the graph gives
+     * the field, so the store in the declaring class's initialiser and a read spelled through a
+     * subclass or an implementing class (`getstatic Child.value`) meet on one node; the
+     * reference itself when nothing the view holds declares it. An instance field reference
+     * keeps the class it spells. Cached per reference.
+     */
+    private fun resolvedFieldSignature(fieldRef: JFieldRef): FieldSignature {
+        val fieldSig = fieldRef.fieldSignature
+        return if (fieldRef is JStaticFieldRef) {
+            resolvedStaticFields.getOrPut(fieldSig.toString()) {
+                val declaring = lookupField(fieldSig.declClassType.fullyQualifiedName, fieldSig.name, fieldSig.type, HashSet())
+                if (declaring == null || declaring == fieldSig.declClassType.fullyQualifiedName) {
+                    fieldSig
+                } else {
+                    FieldSignature(view.identifierFactory.getClassType(declaring), fieldSig.subSignature)
+                }
+            }
+        } else {
+            fieldSig
+        }
+    }
+
+    /** The key of the slot a function value stored in or loaded from [fieldRef] lives in, see [resolvedFieldSignature]. */
+    private fun fieldSlotKey(fieldRef: JFieldRef): String = resolvedFieldSignature(fieldRef).toString()
 
     /**
      * The class that declares the field [fieldName] of type [type] a reference through
@@ -1390,7 +1440,7 @@ class SootUpAdapter(
         val rightOp = stmt.rightOp
         // Track function values stored to fields: `this.callback = fn`
         if (leftOp is JFieldRef && rightOp is Local) {
-            trackFlow(method, rightOp, DispatchSlot.Field(leftOp.fieldSignature.toString()))
+            trackFlow(method, rightOp, DispatchSlot.Field(fieldSlotKey(leftOp)))
         }
 
         // Track function values stored into array elements (varargs): `fns[0] = fn`
@@ -1401,6 +1451,7 @@ class SootUpAdapter(
                 arrayDynamicTargets[arrayKey] = mergeTargets(arrayDynamicTargets[arrayKey], targets)
             }
             trackFlow(method, rightOp, slotOf(method, base))
+            inheritOpenness(method, from = rightOp, to = base)
         }
 
         if (leftOp is Local && targetNode is LocalVariable) {
@@ -1416,11 +1467,11 @@ class SootUpAdapter(
                 val arrayKey = localKey(method, rightOp.base.name)
                 arrayDynamicTargets[arrayKey]?.let { targets -> mergeLocalTargets(method, leftOp, targets) }
                 trackSlotFlow(seededSlotOf(method, rightOp.base), method, leftOp)
-                markOpenLocal(method, leftOp, open = arrayKey in openLocals)
+                inheritOpenness(method, from = rightOp.base, to = leftOp)
             }
             // Field loads: `fn = this.callback`, including Kotlin's `Lambda.INSTANCE` singletons
             is JFieldRef -> {
-                trackSlotFlow(DispatchSlot.Field(rightOp.fieldSignature.toString()), method, leftOp)
+                trackSlotFlow(DispatchSlot.Field(fieldSlotKey(rightOp)), method, leftOp)
                 markOpenLocal(method, leftOp, open = true)
                 val fieldClass = rightOp.fieldSignature.declClassType.fullyQualifiedName
                 if (rightOp is JStaticFieldRef && toTypeDescriptor(rightOp.type).className == fieldClass) {
@@ -1697,7 +1748,7 @@ class SootUpAdapter(
         val leftOp = (stmt as? JAssignStmt)?.leftOp
         val resultLocal = (leftOp as? Local)?.name ?: (resultNode as? LocalVariable)?.name
         val resultSlot = when {
-            leftOp is JFieldRef -> DispatchSlot.Field(leftOp.fieldSignature.toString())
+            leftOp is JFieldRef -> DispatchSlot.Field(fieldSlotKey(leftOp))
             resultLocal != null -> DispatchSlot.Local(caller, resultLocal)
             else -> null
         }
@@ -1775,7 +1826,7 @@ class SootUpAdapter(
         // Track dynamic targets flowing directly to a field store:
         // e.g., this.mapper = invokedynamic(...) where resultNode is a FieldNode
         if (trackCrossMethodFunctionalDispatch && leftOp is JFieldRef && targets.isNotEmpty()) {
-            seedSlot(DispatchSlot.Field(leftOp.fieldSignature.toString()), targets)
+            seedSlot(DispatchSlot.Field(fieldSlotKey(leftOp)), targets)
         }
 
         // If no method handles found, fall back to creating a call site with the synthetic method
@@ -2287,7 +2338,7 @@ class SootUpAdapter(
         arrayDynamicTargets.clear()
         openLocals.clear()
         lostSeeds.clear()
-        staticFieldOwners.clear()
+        resolvedStaticFields.clear()
         functionObjectClasses.clear()
         mayHoldFunctionByType.clear()
         transitiveSubtypesByClass.clear()
@@ -2361,7 +2412,20 @@ class SootUpAdapter(
         lostSlots = closeOverFlows(lost, propagation)
     }
 
-    /** [seeds] and every slot one of them flows into, through the recorded flows and the adapters. */
+    /** Record the flows the override boundaries of slot [id] imply, once per slot, see [overrideFlows]. */
+    private fun expandOverrideFlows(id: Int, propagation: SlotPropagation) {
+        if (!propagation.expanded.get(id)) {
+            propagation.expanded.set(id)
+            overrideFlows(slots[id]).forEach { propagation.addFlow(id, slotId(it)) }
+        }
+    }
+
+    /**
+     * [seeds] and every slot one of them flows into, through the recorded flows, the override
+     * boundaries (an interface parameter nothing known reaches still reaches every
+     * implementation's parameter, so the flows the fixpoint never needed are derived here) and
+     * the adapters.
+     */
     private fun closeOverFlows(seeds: BitSet, propagation: SlotPropagation): BitSet {
         val queue = IntArrayList()
         var seed = seeds.nextSetBit(0)
@@ -2377,6 +2441,7 @@ class SootUpAdapter(
         }
         while (!queue.isEmpty) {
             val id = queue.popInt()
+            expandOverrideFlows(id, propagation)
             propagation.forEachFlow(id, ::mark)
             slotAdapters.get(id)?.forEach { mark(slotId(it.sink)) }
         }
@@ -2418,10 +2483,7 @@ class SootUpAdapter(
      */
     private fun propagateSlot(id: Int, propagation: SlotPropagation): Boolean {
         val targets = slotTargets[id]?.takeIf { it.isNotEmpty() } ?: return false
-        if (!propagation.expanded.get(id)) {
-            propagation.expanded.set(id)
-            overrideFlows(slots[id]).forEach { propagation.addFlow(id, slotId(it)) }
-        }
+        expandOverrideFlows(id, propagation)
         var backward = false
         fun deliver(next: Int, incoming: Set<DispatchTarget>) {
             if (addTargets(next, incoming)) {
@@ -2893,7 +2955,7 @@ class SootUpAdapter(
             localToParamIndex[sourceKey]?.let { localToParamIndex[targetKey] = it }
             trackSlotFlow(seededSlotOf(method, source), method, target)
         } else {
-            markOpenLocal(method, target, open = sourceKey in openLocals)
+            inheritOpenness(method, from = source, to = target)
         }
     }
 
@@ -2901,6 +2963,16 @@ class SootUpAdapter(
     private fun markOpenLocal(method: MethodDescriptor, local: Local, open: Boolean) {
         if (!trackCrossMethodFunctionalDispatch && open && mayHoldFunction(toTypeDescriptor(local.type))) {
             openLocals.add(localKey(method, local.name))
+        }
+    }
+
+    /**
+     * With cross-method tracking off, [to] holds what [from] holds (a copy, an element stored
+     * into an array, an element loaded from one): open when [from] is, whatever its type says.
+     */
+    private fun inheritOpenness(method: MethodDescriptor, from: Local, to: Local) {
+        if (!trackCrossMethodFunctionalDispatch && localKey(method, from.name) in openLocals) {
+            openLocals.add(localKey(method, to.name))
         }
     }
 
@@ -3390,8 +3462,8 @@ class SootUpAdapter(
     }
 
     private fun getOrCreateField(fieldRef: JFieldRef): FieldNode {
-        val fieldSig = fieldRef.fieldSignature
-        if (fieldRef is JStaticFieldRef) noteStaticFieldAccess(fieldSig)
+        val fieldSig = resolvedFieldSignature(fieldRef)
+        if (fieldRef is JStaticFieldRef) noteClassInitialized(fieldSig.declClassType.fullyQualifiedName)
         val key = fieldSig.toString()
         return fieldNodes.getOrPut(key) {
             val declaringClassName = fieldSig.declClassType.fullyQualifiedName
