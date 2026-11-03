@@ -3088,6 +3088,8 @@ attribution and main acceptance or use parent savings to offset a main overrun.
 The complete trusted exact-head construction/readback, query and Linux OOM
 checks remain a separate gate. Candidate pending measurement.
 
+**Measured increment and decision — retain 051 for composition.** The one attribution pair ran `5a608699` (050) then `b842d902` (051). Its 3,358 complete responses matched the real64 oracles. Loading CPU was 25.484 → 23.523 s (−1.961 s). Loading peak process RSS was 6,222.227 → 3,767.770 MiB (−2,454.457 MiB). Query peak RSS was 8,797.805 → 6,379.422 MiB (−2,418.383 MiB). Query CPU went the other way, 186.323 → 195.426 s (+9.104 s, +4.89%), inside the independent 5% bound in this pair. ASC and DESC sort p95 increased 238.977 ms and 200.829 ms, collect p95 increased 101.615 ms, and WITH-aggregate p95 increased 78.063 ms. Keep the observed memory reduction, with those adverse observations intact. One pair does not establish repeatability, and 051 alone was not compared with main in three pairs. The resource limit checks against main apply to the cumulative 052 candidate below.
+
 ### 2026-11-03 - Attempt 052: Reuse projected scalar sort keys
 
 **Trigger and hypothesis:** After 050, both real ORDER BY cases had higher
@@ -3130,3 +3132,31 @@ Assess reverse-CSR loading, both sorts, collect, filter, edge scans and the rest
 of the catalog; independently enforce CPU and RSS limits in each final pair.
 Fresh full trusted Linux construction/readback, OOM and exact-final CI gates
 remain separate. Candidate pending measurement.
+
+**Measured increment and decision — retain 052 for composition.** One separate BA attribution pair ran `46ee8322` (052) first and `b842d902` (051) second. Expressed as 051 → 052, ASC p50 was 2,419.986 → 1,819.695 ms (−600.291) and p95 was 2,811.742 → 2,363.996 ms (−447.746). DESC p50 fell 673.649 ms and p95 fell 615.304 ms. Query CPU was 196.217 → 168.774 s (−27.443 s, −13.99%). Query peak RSS was 6,261.777 → 6,438.512 MiB (+176.734 MiB, +2.82%). Loading CPU and RSS also satisfied their separate bounds. The same pair had a 193.302 ms higher collect p95 and a 20.292 ms higher relationship-histogram p95. All 3,358 requests passed. These observations support the sort increment. they are not the comparison with the accepted baseline.
+
+**Three direct comparisons with main.** Each fresh arm ran 1,679 complete requests against all 64 frozen main graphs (73 first-use, 146 warmup, 1,460 pressure, concurrency four during pressure). Main `a5c96f71` and 052 `46ee8322` ran AB / BA / AB. Each value below is a per-case nearest-rank percentile of 20 requests in one arm. All Δ values are candidate minus main. The summary is the median and range of the three paired deltas, without pooling samples.
+
+| Query / percentile | Pair 1 main → 052 ms | Pair 2 main → 052 ms | Pair 3 main → 052 ms | Median Δ [range] ms |
+|---|---:|---:|---:|---:|
+| shape-order-by p50 | 2389.118 → 1775.900 | 2359.178 → 1836.257 | 2375.429 → 1851.308 | -524.121 [-613.218, -522.921] |
+| shape-order-by p95 | 2646.180 → 1824.370 | 2450.558 → 1951.866 | 2582.027 → 1939.059 | -642.968 [-821.810, -498.692] |
+| shape-order-by-desc p50 | 2437.767 → 1783.554 | 2406.362 → 1849.486 | 2441.875 → 1853.780 | -588.096 [-654.212, -556.876] |
+| shape-order-by-desc p95 | 2681.196 → 1842.823 | 2484.589 → 1961.168 | 2697.783 → 1924.036 | -773.747 [-838.373, -523.421] |
+| shape-collect p50 | 1822.386 → 1668.232 | 1780.936 → 1769.268 | 1836.468 → 1767.202 | -69.265 [-154.154, -11.668] |
+| shape-collect p95 | 1918.251 → 1732.062 | 1913.868 → 1908.103 | 1944.701 → 1839.387 | -105.315 [-186.188, -5.766] |
+| shape-with-aggregate p50 | 751.824 → 714.998 | 724.411 → 753.679 | 734.251 → 761.078 | +26.827 [-36.825, +29.267] |
+| shape-with-aggregate p95 | 860.270 → 746.434 | 777.166 → 822.440 | 858.046 → 813.407 | -44.639 [-113.836, +45.274] |
+
+Both sorts and collect improved at p50/p95 in each final pair. Count-traversal, relationship-histogram and WITH-filter p95 median deltas were −64.420, −44.912 and −3,123.299 ms, also favorable in every pair. The material mixed case was WITH-aggregate p50, with deltas of −36.825, +29.267 and +26.827 ms. P95 was lower in two pairs but higher by 45.274 ms in the other. Retain the beneficial candidate with that uncertainty recorded. Of 438 individual final pressure p50/p95 comparisons, 94 moved upward. The complete sample records cover all cases.
+
+| Operation / metric | Pair 1 main → 052 | Pair 2 main → 052 | Pair 3 main → 052 |
+|---|---:|---:|---:|
+| loading / CPU seconds | 25.223 → 23.149 | 27.193 → 21.943 | 28.369 → 24.848 |
+| loading / peak RSS MiB | 6216.500 → 3766.680 | 6211.832 → 3772.559 | 6214.332 → 3766.855 |
+| query / CPU seconds | 265.119 → 156.420 | 258.768 → 166.978 | 265.437 → 165.190 |
+| query / peak RSS MiB | 12408.551 → 6460.379 | 12766.949 → 6367.723 | 12009.605 → 6285.758 |
+
+Loading CPU/RSS and mixed-query CPU/RSS decreased in all three final pairs, so all twelve independent 5% checks passed. Observed startup to registry readiness decreased by 1.941, 4.965 and 3.342 s. These are fixed-mix, warm-filesystem Linux observations. no individual-query resource or JVM construction bound follows from them. A final exact-revision full trusted build/save/readback, OOM and CI check remains separate. The repaired JS producer has its own unit and real-application gates.
+
+**Evidence.** The ten-arm suite SHA-256 is `177552ffac39d02beb738a2adf3438a79aa637ed3abb9046d4fda48d144feae6`. The pre-first-request execution seal SHA-256 is `9d0930cbfe20d22dc617ebd7b4423cf3685e76d8b7c696891ad7560dbacb4113`. All 16,790 requests passed the fixed oracles. One holder retained all 2,586,606 pages throughout the three groups and their post-audits, and released all 1,408 locks. The run archive under `attempt052-ten-arm/frozen/results/{attribution-050-051,attribution-051-052,acceptance-main-052}` retains the three unpooled `run-result.json` files, the complete 73-case catalog, every exported request/receipt audit, phase observations, and raw-output volume identities. `graphite-p52-ten-arm-report` contains all per-pair percentile rows, every raw request observation and all upward changes.
