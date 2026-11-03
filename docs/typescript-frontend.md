@@ -32,7 +32,7 @@ export GRAPHITE_FRONTEND_JS="$PWD/frontend/web/dist/cli.js"
 ./target/release/graphite serve --graph project:/tmp/project.graphite
 ```
 
-Place `--lang` immediately after `build`. `js`, `javascript`, `ts` and
+Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `ts` and
 `typescript` select the same frontend. With no selector, the existing JVM build
 path is preserved. Discovery uses `GRAPHITE_FRONTEND_JS`, then its compatibility
 alias `GRAPHITE_FRONTEND_TS`, then `graphite-frontend-js` or
@@ -46,8 +46,8 @@ An output without `.graphite` is a saved directory. You can subsequently use
 graphs. Existing outputs are refused. Analysis and import occur in a temporary
 sibling directory; frontend failures and invalid graph output leave no saved
 graph. Packed graphs use the existing entry manifest and SHA-256 verification,
-including the adjacent `.graphite.sha256` file. A packed JS build needs a
-filesystem that supports hard links. It publishes the completed digest first,
+including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
+rename that refuses to replace an existing file. It publishes the completed digest first,
 then the container, refusing either name if another writer has claimed it.
 If a process is killed between those steps, the digest can remain by itself.
 
@@ -113,6 +113,17 @@ replace its incoming argument identity. Property locations and values read from
 those locations are separate nodes. These distinctions preserve dataflow without
 changing the existing persisted graph schema; they do not establish branch
 reachability or eliminate unresolved dynamic call targets.
+
+The v3 format stores one relationship per ordered pair of nodes. If analysis
+finds two different relationships on that pair, it keeps the first and emits
+one warning with the total number skipped and the first example. For example,
+`let cur = list; for (cur of list) {}` retains the assignment from `list` to
+`cur`; an `ARRAY_LOAD` predicate cannot recover the skipped relationship.
+Identical edges are deduplicated without warning. The importer still rejects
+interchange files that contain conflicting relationships.
+
+Targets from TypeScript’s standard library use the same name across npm,
+global and vendored installations, such as `external:typescript/lib/lib.dom.d.ts.Console`.
 
 JavaScript strings can contain unpaired UTF-16 surrogates, which the existing
 UTF-8 string table cannot directly represent. Such strings are stored in
