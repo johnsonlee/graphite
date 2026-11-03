@@ -3327,3 +3327,23 @@ The independent decoded CSVs, hash manifest and adverse samples are in
 evidence for loading and multi-graph query execution. The complete trusted
 pipeline on the final revision separately verifies graph construction,
 readback, response integrity, stability and OOM behavior.
+
+### 2026-11-04 - Attempt 055: Validate partition record offsets and reuse scalar grouping across tags
+
+Review of attempt 054 identified two places where a missing node offset was
+treated as the first bytes of the data file. Both the general masked-key scan
+and the single-column scan now report the node ID and tag when a record is
+missing. A sorted list for one tag can use the scalar scan for any declared
+raw string field. Predicates, multiple columns, multi-tag scans and unsorted
+lists retain the general path. Source encounter order, group weights and work
+polling remain part of both implementations.
+
+A two-source fixture checks grouped counts, row order and graph provenance for
+a LocalVariable column. Corrupt type-index fixtures exercise both missing
+offset paths. All 33 partition tests passed on the CI core fixture, and all
+244 default Cypher tests and strict Clippy passed. For the integrated review
+head, repeat the fixed three AB / BA / AB comparisons with main `a5c96f71`,
+the same pinned 64 graphs, all 73 global queries, and complete response-body
+oracles. Compare per-case p50 and p95 from twenty pressure observations per arm
+at concurrency four. Preserve each paired observation and enforce separate
++5% CPU and RSS limits for loading and the full query mix in each pair.

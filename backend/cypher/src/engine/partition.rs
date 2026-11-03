@@ -52,8 +52,7 @@ use crate::eval::{is_aggregation_name, Evaluator};
 use crate::value::{EdgeRef, MethodRef, NodeRef, SourceIdx, Value};
 use crate::CypherResult;
 use graphite_storage::node::{
-    StrId, TAG_ANNOTATION_NODE, TAG_CALL_SITE_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE,
-    TAG_RETURN_NODE,
+    StrId, TAG_ANNOTATION_NODE, TAG_COUNT, TAG_FIELD_NODE, TAG_PARAMETER_NODE, TAG_RETURN_NODE,
 };
 use graphite_storage::{Edge, Graph};
 use indexmap::IndexMap;
@@ -1136,30 +1135,33 @@ impl PartitionPlan {
             (0..TAG_COUNT as u8).map(tag_columns).collect();
         // Per source: (first id, weight) per partition, keyed by (tag, column ids).
         let mut parts: Vec<Parts> = (0..ex.sources.len()).map(|_| IndexMap::new()).collect();
-        let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| {
+        let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| -> CypherResult<()> {
             let graph: &Graph = &ex.sources[source].graph;
-            let masked = |mask: u8| -> Vec<StrId> {
-                let offset = graph.node_offset(id).unwrap_or(0);
-                columns[tag as usize]
+            let masked = |mask: u8| -> CypherResult<Vec<StrId>> {
+                if mask == 0 {
+                    return Ok(Vec::new());
+                }
+                let offset = partition_node_offset(graph, tag, id)?;
+                Ok(columns[tag as usize]
                     .iter()
                     .enumerate()
                     .filter(|(i, _)| mask & (1 << i) != 0)
                     .map(|(_, (_, f))| read_string_field(graph.nodedata(), offset, *f))
-                    .collect()
+                    .collect())
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
                 Strategy::Whole => (Vec::new(), KeySet::Fixed),
-                Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
+                Strategy::Columns(mask) => (masked(mask)?, KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
-                    masked(mask),
+                    masked(mask)?,
                     KeySet::Dynamic(ex.node_keys(NodeRef {
                         source: source as SourceIdx,
                         id,
                     })),
                 ),
                 Strategy::DeclaredKeys(mask) => (
-                    masked(mask),
+                    masked(mask)?,
                     if graph
                         .node(id)
                         .is_some_and(|node| ex.declared_node_type_present(graph, &node))
@@ -1176,6 +1178,7 @@ impl PartitionPlan {
                 .entry((tag, ids, keys))
                 .and_modify(|(_, n)| *n += 1)
                 .or_insert((id, 1));
+            Ok(())
         };
         let verified = self.scan.is_some();
         match &self.scan {
@@ -1183,7 +1186,7 @@ impl PartitionPlan {
                 // The survivors of the pushdown, WHERE already applied to each.
                 plan.run_ids(ex, ev, self.where_clause.as_ref(), &mut |n| {
                     if let Some(tag) = ex.sources[n.source as usize].graph.node_tag(n.id) {
-                        note(n.source as usize, tag, n.id, &mut parts);
+                        note(n.source as usize, tag, n.id, &mut parts)?;
                     }
                     Ok(true)
                 })?;
@@ -1191,19 +1194,22 @@ impl PartitionPlan {
             None => {
                 let mut polled = 0u32;
                 for (si, s) in ex.sources.iter().enumerate() {
-                    if self.where_clause.is_none() && tags == [TAG_CALL_SITE_NODE] {
-                        let strategy = self.strategies[si][TAG_CALL_SITE_NODE as usize];
-                        if let Some(counts) = scalar_call_site_groups(
+                    if let ([tag], None) = (tags, &self.where_clause) {
+                        let strategy = self.strategies[si][*tag as usize];
+                        if let Some(counts) = scalar_column_groups(
                             ex,
                             &s.graph,
+                            *tag,
                             strategy,
-                            &columns[TAG_CALL_SITE_NODE as usize],
+                            &columns[*tag as usize],
                             &mut polled,
                         )? {
                             // Only distinct local string IDs enter the general partition map.
-                            parts[si].extend(counts.into_iter().map(|(sid, part)| {
-                                ((TAG_CALL_SITE_NODE, vec![sid], KeySet::Fixed), part)
-                            }));
+                            parts[si].extend(
+                                counts
+                                    .into_iter()
+                                    .map(|(sid, part)| ((*tag, vec![sid], KeySet::Fixed), part)),
+                            );
                             continue;
                         }
                     }
@@ -1237,7 +1243,7 @@ impl PartitionPlan {
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
-                            _ => note(si, tag, id, parts),
+                            _ => note(si, tag, id, parts)?,
                         }
                         Ok(())
                     };
@@ -1315,11 +1321,20 @@ impl PartitionPlan {
     }
 }
 
-/// Count a single CallSite column by the records' own string IDs. A persisted
-/// posting list can have the right length without describing these records.
-fn scalar_call_site_groups(
+/// Read only real node records: offset zero points into the file header.
+fn partition_node_offset(graph: &Graph, tag: u8, id: u32) -> CypherResult<usize> {
+    graph.node_offset(id).ok_or_else(|| {
+        crate::CypherError::other(format!(
+            "Corrupt type index: node {id} of tag {tag} has no node record"
+        ))
+    })
+}
+
+/// Count one declared raw string column by its records' own string IDs.
+fn scalar_column_groups(
     ex: &Executor,
     graph: &Graph,
+    tag: u8,
     strategy: Strategy,
     columns: &[(&str, StringField)],
     polled: &mut u32,
@@ -1327,20 +1342,19 @@ fn scalar_call_site_groups(
     let Strategy::Columns(mask) = strategy else {
         return Ok(None);
     };
-    if mask.count_ones() != 1 || !graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE) {
+    if mask.count_ones() != 1 || !graph.ids_by_tag_sorted(tag) {
         return Ok(None);
     }
-    let Some((_, field @ StringField::CallSite(_))) = columns.get(mask.trailing_zeros() as usize)
-    else {
+    let Some((_, field)) = columns.get(mask.trailing_zeros() as usize) else {
         return Ok(None);
     };
     let mut counts = IndexMap::new();
-    for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+    for &id in graph.ids_by_tag(tag) {
         *polled = polled.wrapping_add(1);
         if *polled & 1023 == 0 {
             ex.cancel.check()?;
         }
-        let offset = graph.node_offset(id).unwrap_or(0);
+        let offset = partition_node_offset(graph, tag, id)?;
         let sid = read_string_field(graph.nodedata(), offset, *field);
         counts.entry(sid).or_insert((id, 0)).1 += 1;
     }
@@ -2392,9 +2406,10 @@ mod tests {
         assert!(!graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE));
         let ex = executor(&graph, &["a", "b"]);
         let mut polled = 0;
-        assert!(scalar_call_site_groups(
+        assert!(scalar_column_groups(
             &ex,
             &graph,
+            TAG_CALL_SITE_NODE,
             Strategy::Columns(4),
             &tag_columns(TAG_CALL_SITE_NODE),
             &mut polled
@@ -2620,9 +2635,10 @@ mod tests {
                 .1 += 1;
         }
         let mut polled = 17;
-        let scalar = scalar_call_site_groups(
+        let scalar = scalar_column_groups(
             &ex,
             &graph,
+            TAG_CALL_SITE_NODE,
             plan.strategies[0][TAG_CALL_SITE_NODE as usize],
             &tag_columns(TAG_CALL_SITE_NODE),
             &mut polled,
@@ -2673,6 +2689,87 @@ mod tests {
     }
 
     #[test]
+    fn fixed_string_column_groups_keep_order_and_reject_missing_offsets() {
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-partition-offset-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let method = serde_json::json!({"declaringClass":"C","name":"m","parameterTypes":[],"returnType":"void"});
+        let nodes = ["z", "a", "z"]
+            .iter()
+            .enumerate()
+            .map(|(id, name)| {
+                serde_json::json!({
+                    "id":id,"kind":"LocalVariable","name":name,"varType":"string","method":method
+                })
+            })
+            .collect::<Vec<_>>();
+        let input = serde_json::json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]});
+        graphite_storage::interchange::import_json(input.to_string().as_bytes(), &dir).unwrap();
+        let single = "MATCH (n:LocalVariable) WITH n.name AS c, count(*) AS k RETURN c, k";
+        let tuple =
+            "MATCH (n:LocalVariable) WITH n.name AS c, n.type AS t, count(*) AS k RETURN c, t, k";
+        {
+            let graph = Arc::new(Graph::load(&dir).unwrap());
+            let ex = executor(&graph, &["a", "b"]);
+            let clauses = crate::parser::parse(single).unwrap();
+            let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+            let mut polled = 0;
+            let groups = scalar_column_groups(
+                &ex,
+                &graph,
+                TAG_LOCAL_VARIABLE,
+                plan.strategies[0][TAG_LOCAL_VARIABLE as usize],
+                &tag_columns(TAG_LOCAL_VARIABLE),
+                &mut polled,
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                groups
+                    .into_iter()
+                    .map(|(sid, p)| (graph.str(sid), p))
+                    .collect::<Vec<_>>(),
+                [("z", (0, 2)), ("a", (1, 1))]
+            );
+            assert_eq!(polled, 3);
+            let result = ex.execute(single, None).unwrap();
+            assert_eq!(result.rows.len(), 2);
+            for (row, (name, count)) in result.rows.iter().zip([("z", 4), ("a", 2)]) {
+                assert!(matches!(row.get("c"), Some(Value::Str(c)) if c.as_ref()==name));
+                assert!(matches!(row.get("k"), Some(Value::Int(k)) if *k==count));
+                assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+            }
+        }
+        // Node 1 is still in the type index, but its offset now marks a missing record.
+        let path = dir.join("graph.nodeoffsets");
+        let mut offsets = std::fs::read(&path).unwrap();
+        offsets[16..24].fill(0);
+        std::fs::write(path, offsets).unwrap();
+        let graph = Arc::new(Graph::load(&dir).unwrap());
+        let ex = executor(&graph, &["a"]);
+        for (query, bits) in [(single, 1), (tuple, 2)] {
+            let clauses = crate::parser::parse(query).unwrap();
+            let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+            assert!(
+                matches!(plan.strategies[0][TAG_LOCAL_VARIABLE as usize], Strategy::Columns(mask) if mask.count_ones()==bits)
+            );
+            assert_eq!(
+                ex.execute(query, None).unwrap_err().to_string(),
+                format!(
+                    "Corrupt type index: node 1 of tag {TAG_LOCAL_VARIABLE} has no node record"
+                )
+            );
+        }
+        drop((ex, graph));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
     fn scalar_column_sweep_preserves_cancellation_and_deadline_checks() {
         let Some(graph) = fixture() else { return };
         let cancelled = crate::engine::CancelToken::new();
@@ -2680,9 +2777,10 @@ mod tests {
         for token in [cancelled, crate::engine::CancelToken::with_timeout(0)] {
             let ex = executor(&graph, &["a", "b"]).with_cancel(token.clone());
             let mut polled = 1023;
-            let actual = scalar_call_site_groups(
+            let actual = scalar_column_groups(
                 &ex,
                 &graph,
+                TAG_CALL_SITE_NODE,
                 Strategy::Columns(4),
                 &tag_columns(TAG_CALL_SITE_NODE),
                 &mut polled,
