@@ -232,18 +232,21 @@ hosted timing observations do not establish performance acceptance.
 
 ### PR review verification, 2026-11-04
 
-At `1e96a064`, the frontend passed 42 tests. Both applications were rebuilt
+At `0c404165`, the frontend passed 56 tests. Both applications were rebuilt
 from the same pinned JavaScript artifacts and queried across all four save
 forms. The compiled-code oracle still matched all twenty selected call
 occurrences. Per-graph CallSite counts and the resolved/dynamic split matched
-the previous build.
+the previous build. Compared with `e33affed`, the four graphs retained
+the same method signatures, call locations and call flags. Stable property
+slots changed node counts and some field store/load edges. Neither app
+emitted a conflict or syntax warning. Dedicated fixtures cover both cases.
 
 | Application | Side | Nodes | Edges | Resolved / dynamic CallSites |
 |---|---|---:|---:|---:|
-| MIT Next 10 CRUD example | Client | 46,693 | 69,217 | 3,378 / 5,096 |
-| MIT Next 10 CRUD example | Server | 12,320 | 16,142 | 443 / 2,050 |
-| Supplementary Taskboard | Client | 85,023 | 132,212 | 5,791 / 9,825 |
-| Supplementary Taskboard | Server | 125,954 | 184,954 | 5,246 / 16,383 |
+| MIT Next 10 CRUD example | Client | 46,355 | 69,213 | 3,378 / 5,096 |
+| MIT Next 10 CRUD example | Server | 12,141 | 16,134 | 443 / 2,050 |
+| Supplementary Taskboard | Client | 84,650 | 132,248 | 5,791 / 9,825 |
+| Supplementary Taskboard | Server | 124,641 | 184,991 | 5,246 / 16,383 |
 
 Object and array spread now connect their operands directly to the
 constructed value. This changed assignments and property reads in these
@@ -261,8 +264,8 @@ readback queries were outside the timed interval.
 
 | Application | Input JS files / MB | Paired build/save | Client / server packed MB |
 |---|---:|---:|---:|
-| CRUD | 24 / 0.70 | 3.73 s | 4.69 / 1.30 |
-| Taskboard | 69 / 2.45 | 9.61 s | 9.06 / 13.30 |
+| CRUD | 24 / 0.70 | 3.78 s | 4.65 / 1.28 |
+| Taskboard | 69 / 2.45 | 9.01 s | 9.00 / 13.15 |
 
 Sizes are decimal MB. These are individual local observations for these
 compiled applications. Both pairs were reloaded together and queried after
