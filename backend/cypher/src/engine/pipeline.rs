@@ -247,8 +247,8 @@ impl Executor {
                         }
                     }
                     if !*optional {
-                        if let Some(shape) = FusedShape::detect(&clauses[i..]) {
-                            let out = self.run_fused(&matcher, &ev, rows, patterns, &shape)?;
+                        if let Some(mut shape) = FusedShape::detect(&clauses[i..]) {
+                            let out = self.run_fused(&matcher, &ev, rows, patterns, &mut shape)?;
                             return Ok(out);
                         }
                         // `MATCH [WHERE] WITH ...`: the same streaming scan, projection
@@ -487,7 +487,7 @@ impl Executor {
         ev: &Evaluator,
         rows: Vec<Row>,
         patterns: &[Pattern],
-        shape: &FusedShape,
+        shape: &mut FusedShape,
     ) -> CypherResult<QueryResult> {
         if has_unknown_label(patterns) {
             // No candidates: projection over zero rows.
@@ -578,7 +578,7 @@ impl Executor {
             }
         }
 
-        let ordered_capacity = bounded_order_capacity(shape, aggregated, patterns, &rows);
+        let ordered_capacity = prepare_bounded_order(shape, aggregated, patterns, &rows);
         let (columns, out) = self.fused_rows::<false>(
             matcher,
             ev,
@@ -1053,6 +1053,36 @@ fn bounded_order_capacity(
     };
     skip.checked_add(limit)
         .filter(|n| *n <= MAX_BOUNDED_ORDER_ROWS)
+}
+
+/// Reuse a projected property as the sort key in the heap and final sort. Admission
+/// proves scalar CallSite keys and unique visible columns; other shapes keep their
+/// original pre-projection stashes. Match expressions, not rendered column names.
+fn prepare_bounded_order(
+    shape: &mut FusedShape,
+    aggregated: bool,
+    patterns: &[Pattern],
+    seeds: &[Row],
+) -> Option<usize> {
+    let capacity = bounded_order_capacity(shape, aggregated, patterns, seeds)?;
+    let items = shape.items.as_ref()?;
+    for key in shape.order.as_mut()? {
+        if !matches!(&key.expr, Expr::Property { expr, .. } if matches!(expr.as_ref(), Expr::Variable(_)))
+        {
+            continue;
+        }
+        let mut matching = items.iter().filter(|item| item.expr == key.expr);
+        if let Some(item) = matching.next() {
+            if matching.next().is_none() {
+                key.expr = Expr::Variable(
+                    item.alias
+                        .clone()
+                        .unwrap_or_else(|| to_cypher_string(&item.expr)),
+                );
+            }
+        }
+    }
+    Some(capacity)
 }
 
 struct OrderedCandidate {
@@ -2179,6 +2209,131 @@ mod bounded_order_tests {
     }
 
     #[test]
+    fn bounded_order_reuses_only_unambiguous_projected_property_keys() {
+        for (property, descending) in [("caller_class", false), ("callee_name", true)] {
+            let dir = if descending { " DESC" } else { "" };
+            let (patterns, mut shape) = query_shape(&format!(
+                "MATCH (n:CallSite) RETURN n.{property} ORDER BY n.{property}{dir} LIMIT 200"
+            ));
+            assert_eq!(
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+                Some(200)
+            );
+            assert_eq!(
+                shape.order.unwrap(),
+                vec![OrderItem {
+                    expr: Expr::Variable(format!("n.{property}")),
+                    descending
+                }]
+            );
+        }
+        let (patterns, mut shape) = query_shape("MATCH (n:CallSite) RETURN n.callee_name AS `a.b` ORDER BY n.callee_name DESC, n.line LIMIT 3");
+        let original = shape.order.clone().unwrap();
+        assert_eq!(
+            prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+            Some(3)
+        );
+        let order = shape.order.unwrap();
+        assert_eq!(
+            order[0],
+            OrderItem {
+                expr: Expr::Variable("a.b".into()),
+                descending: true
+            }
+        );
+        assert_eq!(order[1], original[1]);
+        for (projection, order, capacity) in [
+            ("n.id AS a, n.id AS b", "n.id", Some(3)),
+            (
+                "n.callee_name AS `n.caller_class`",
+                "n.caller_class",
+                Some(3),
+            ),
+            ("n.caller_class AS a, n.id AS a", "n.caller_class", None),
+            ("rand() AS random", "rand()", None),
+            ("n.id + 1 AS x", "n.id + 1", None),
+        ] {
+            let (patterns, mut shape) = query_shape(&format!(
+                "MATCH (n:CallSite) RETURN {projection} ORDER BY {order} LIMIT 3"
+            ));
+            let before = shape.order.clone();
+            assert_eq!(
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+                capacity
+            );
+            assert_eq!(shape.order, before);
+        }
+        let (patterns, mut shape) =
+            query_shape("MATCH (n:CallSite) RETURN n.id AS id ORDER BY n.id LIMIT 3");
+        shape.items.as_mut().unwrap()[0].alias = Some(INTERNAL_PROVENANCE_KEY.into());
+        let before = shape.order.clone();
+        assert_eq!(
+            prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]),
+            None
+        );
+        assert_eq!(shape.order, before);
+    }
+
+    #[test]
+    fn projected_property_keeps_nulls_and_ties_in_encounter_order() {
+        let ex = Executor::new(vec![], false);
+        let ev = Evaluator::new(&ex, &ex.params);
+        for (dir, ids) in [("", [1, 3, 0]), (" DESC", [0, 2, 1])] {
+            let (patterns, mut shape) = query_shape(&format!("MATCH (n:CallSite) RETURN n.callee_name AS name, n.id AS id ORDER BY n.callee_name{dir} LIMIT 3"));
+            let full_order = shape.order.clone().unwrap();
+            let capacity =
+                prepare_bounded_order(&mut shape, false, &patterns, &[Row::new()]).unwrap();
+            let order = shape.order.as_deref().unwrap();
+            let items = shape.items.as_deref().unwrap();
+            let names = item_names(items);
+            let mut top = BoundedOrderedRows::new(capacity, order);
+            let mut full = Vec::new();
+            for (id, name) in [Value::Null, Value::str("a"), Value::Null, Value::str("a")]
+                .into_iter()
+                .enumerate()
+            {
+                let node = [
+                    ("callee_name".to_string(), name),
+                    ("id".to_string(), Value::Int(id as i64)),
+                ]
+                .into_iter()
+                .collect();
+                let row = [("n".to_string(), Value::map(node))].into_iter().collect();
+                let project = |order: &[OrderItem]| {
+                    project_row(
+                        &ev,
+                        &row,
+                        Some(items),
+                        &names,
+                        Some(order),
+                        false,
+                        false,
+                        &mut names.clone(),
+                    )
+                    .unwrap()
+                };
+                let projected = project(order);
+                assert!(!projected.keys().any(|k| k.starts_with(ORDER_STASH_PREFIX)));
+                top.push(projected);
+                full.push(project(&full_order));
+            }
+            let ids_from = |rows: &[Row]| -> Vec<i64> {
+                rows.iter()
+                    .take(capacity)
+                    .map(|row| match row["id"] {
+                        Value::Int(id) => id,
+                        _ => panic!("integer id expected"),
+                    })
+                    .collect()
+            };
+            let actual = order_rows(&ev, top.into_encounter_order(), order).unwrap();
+            let expected = order_rows(&ev, full, &full_order).unwrap();
+            assert_eq!(ids_from(&actual), ids_from(&expected));
+            assert_eq!(ids_from(&actual), ids);
+        }
+    }
+
+    #[test]
     fn admission_proves_integer_sort_keys_and_literal_bounded_counts() {
         let prefix = "MATCH (n:CallSiteNode) RETURN n.id AS id, n.ordinal AS ordinal";
         assert_eq!(
@@ -2651,8 +2806,8 @@ mod bounded_order_tests {
             "Late error must occur after a better candidate"
         );
         for limit in [0, 1] {
-            for key in ["n.id", "'same'"] {
-                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY key LIMIT {limit}");
+            for (key, order) in [("n.id", "key"), ("'same'", "key"), ("'same'", "n.id")] {
+                let query = format!("MATCH (n:CallSiteNode) RETURN n.id AS id, {key} AS key, CASE WHEN n.id = {last} THEN missing_function(n.id) ELSE 0 END AS payload ORDER BY {order} LIMIT {limit}");
                 assert_eq!(capacity(&query), Some(limit));
                 let reference = full_sort(&ex, &query).unwrap_err();
                 let actual = ex.execute(&query, None).unwrap_err();
@@ -2826,6 +2981,8 @@ mod bounded_order_tests {
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_descriptor AS descriptor ORDER BY descriptor DESC, n.caller_signature LIMIT 20",
             "MATCH (n:CallSiteNode) RETURN n.id AS id, n.callee_signature AS signature ORDER BY signature, n.caller_descriptor DESC LIMIT 20",
             "MATCH (n:CallSiteNode) RETURN n.callee_name AS name ORDER BY name LIMIT 0",
+            "MATCH (n:CallSite) RETURN n.caller_class ORDER BY n.caller_class LIMIT 200",
+            "MATCH (n:CallSite) RETURN n.callee_name ORDER BY n.callee_name DESC LIMIT 200",
         ];
         for query in cases {
             let (patterns, shape) = query_shape(query);

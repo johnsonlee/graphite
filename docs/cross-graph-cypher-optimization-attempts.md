@@ -3087,3 +3087,46 @@ Verify residency around each arm; retain all samples/failures. Do not pool
 attribution and main acceptance or use parent savings to offset a main overrun.
 The complete trusted exact-head construction/readback, query and Linux OOM
 checks remain a separate gate. Candidate pending measurement.
+
+### 2026-11-03 - Attempt 052: Reuse projected scalar sort keys
+
+**Trigger and hypothesis:** After 050, both real ORDER BY cases had higher
+concurrent p50 than main in each pair. The ascending query projects and sorts
+by `n.caller_class`, the descending query by `n.callee_name`. In the admitted
+bounded-sort path, each matching CallSite evaluated that property to project
+it, then evaluated the same property again to stash an order key. The heap and
+final sort consumed the stash; neither needed a second property lookup.
+The real fixture contains 5,051,914 call sites. This source-level observation
+is not proof of how much of the measured delta the duplicate evaluation caused.
+
+**Change:** After the existing bounded-order admission succeeds, rewrite only
+an order key that is a variable's property and exactly matches one unique
+projected expression. The internal key becomes the actual projected column
+name (including its alias); heap selection and final sort use the same effective
+order. This does not change query text or the shared parsed AST. Unsupported,
+volatile, ambiguous, nonmatching, aggregate and DISTINCT paths retain their
+previous behavior. Every candidate row is still projected and checked, including
+losing rows and LIMIT-zero probes. Direction, ties, null semantics, pagination,
+provenance, errors, cancellation and work checks are unchanged.
+
+**Evidence before timing:** On the integrated candidate, all 607 default Rust
+workspace tests passed (one original ignored), with strict workspace Clippy and
+formatting. Fifteen bounded-order tests ran against the CI JVM graph, including
+full-sort comparisons for the exact 200-row ascending/descending queries,
+multiple graphs, aliases, ties/nulls, mixed order keys, rejecting ambiguous
+names and preserving late errors. The JS frontend at `7f5b40a6` also passed
+39 tests and the two-application build/save/query checks independently.
+
+**Identity and protocol:** Parent `95d16cd6` includes 051's native change and
+the separately verified JavaScript binding-state repair. Candidate is the commit
+containing this record. Use the 050/051 attribution pair, the 052/051 attribution
+pair (candidate first), then three main/052 pairs (AB / BA / AB), all on the same
+64 committed-reference graph inputs, 73 trusted cases and continuously held
+file pages. Each arm runs 1,679 verified requests at concurrency four with twenty
+pressure samples per case. Seal all identities before the first arm. Keep the
+one-pair incremental evidence separate from main acceptance and keep every
+adverse case/failure. No timing from synthetic or single-graph fixtures.
+Assess reverse-CSR loading, both sorts, collect, filter, edge scans and the rest
+of the catalog; independently enforce CPU and RSS limits in each final pair.
+Fresh full trusted Linux construction/readback, OOM and exact-final CI gates
+remain separate. Candidate pending measurement.
