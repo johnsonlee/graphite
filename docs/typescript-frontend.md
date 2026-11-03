@@ -44,17 +44,19 @@ frontend; use the source-checkout setup above.
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
 graphs. JS builds refuse existing destinations. Analysis and import use a private
-sibling directory when the output parent exists, or the system temporary directory
-when it does not. Graphite creates a missing parent only after the graph is ready
-to publish. It moves completed files onto the output filesystem, copying into a
-private sibling first if the temporary directory is on another volume. Failed
+sibling directory when the output parent exists. For a missing parent, Graphite
+uses system temp only if an empty directory can be renamed from there into the
+nearest existing output ancestor; otherwise it stages in that ancestor. Graphite
+creates the final parent only after the graph is ready. Directory publication
+requires a filesystem that supports atomic rename without replacing an existing
+destination, including an empty directory. Failed
 analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. A packed JS build uses hard links or an atomic
 rename that refuses to replace an existing file. It publishes the completed digest first,
 then the container, refusing either name if another writer has claimed it.
 If a process is killed between those steps, the digest can remain by itself.
 An abrupt exit can also leave a `.graphite-build-*` directory in system temp
-or beside the requested output. Graphite removes its own staging directory on
+or under the nearest existing output ancestor. Graphite removes its own staging directory on
 normal exit. After an interrupted build, remove its leftover directory manually
 once the CLI and frontend have both exited; other builds may still use theirs.
 
@@ -81,6 +83,12 @@ the class owner; nested functions and object methods retain lexical ownership.
 Changing the selected root changes path prefixes. Import aliases resolve through
 the TypeScript checker where the emitted code retains resolvable imports.
 Literal arguments appear as constant nodes and flow into call sites.
+
+When the checker cannot resolve a call, the frontend retains an identifier,
+a property name or a literal element key. Other callee expressions such as
+`(t.default || t)(x)` use `<call>` as their method name. The containing
+method and artifact line locate the call. Nested calls in the callee expression
+still appear separately.
 
 For a known source class, `new C()` targets `C.constructor` even when the
 constructor is implicit. If `E` inherits its constructor from `D`, a call to
@@ -145,8 +153,15 @@ and `for (cur of list) {}` produce flow from `list` to `cur`. The graph stores
 ARRAY_LOAD for that pair. Identical edges are deduplicated without warning.
 The importer rejects interchange files containing conflicting relationships.
 
-Targets from TypeScript’s standard library use the same name across npm,
-global and vendored installations, such as `external:typescript/lib/lib.dom.d.ts.Console`.
+Targets from TypeScript’s standard library use the global symbol and namespace
+under `external:typescript/lib`. For example, `new Error("e")` has
+`callee_class = 'external:typescript/lib.ErrorConstructor'`, and
+`Intl.getCanonicalLocales` has `callee_class = 'external:typescript/lib.Intl'`.
+Merged interface declarations share an owner even when their methods are
+defined in different library files. Graphs built with the earlier frontend
+retain file-based values such as `external:typescript/lib/lib.dom.d.ts.Console`.
+Rebuilding produces `external:typescript/lib.Console`. Update filters on
+`callee_class` when moving queries to rebuilt graphs.
 
 JavaScript strings can contain unpaired UTF-16 surrogates, which the existing
 UTF-8 string table cannot directly represent. Such strings are stored in
@@ -163,9 +178,10 @@ returned values when needed; `frontend/web/src/strings.ts` defines both
 operations. The graph interchange also preserves numeric negative zero (`-0`).
 Overflowing numeric literals such as `1e400` and `-1e400` produce values with
 type `number`. Their dataflow is retained without storing an infinity constant.
-The frontend writes the JSON interchange incrementally in a bounded UTF-8
-buffer. The analyzer and the Rust importer still materialize their graph
-records in memory.
+The frontend serializes one JSON record at a time and encodes it into a 64 KiB
+UTF-8 buffer using bounded input windows. A large literal still needs its JSON
+record string in memory, but not a second record-sized UTF-8 buffer. The analyzer
+and the Rust importer still materialize their graph records in memory.
 
 Analysis is flow-insensitive and context-insensitive: values from different
 assignments or calls can share graph paths. It does not prove branch reachability

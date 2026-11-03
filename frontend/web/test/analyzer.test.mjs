@@ -6,7 +6,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import ts from 'typescript';
-import { analyze } from '../dist/analyzer.js';
+import { analyze, project } from '../dist/analyzer.js';
 
 function fixture(t, files) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'graphite-js-test-'));
@@ -682,7 +682,7 @@ test('unparsable files are warned about and excluded from import resolution whil
   assert.ok(graph.edges.some(e => e.from === bad.id && e.kind === 'CALL' && e.isDynamic));
 });
 
-test('default library methods keep npm identities when TypeScript is vendored outside node_modules', async t => {
+test('library symbol identities survive vendoring and different target library declarations', async t => {
   const root = fixture(t, { 'main.mjs': `export function log(s) { console.log(s); console.log(s); return Promise.resolve(s); }` });
   const expected = analyze(root);
   const sandbox = fixture(t, { 'frontend/package.json': '{"type":"module"}' });
@@ -692,16 +692,34 @@ test('default library methods keep npm identities when TypeScript is vendored ou
   fs.mkdirSync(path.join(frontend, 'node_modules'));
   fs.symlinkSync(vendored, path.join(frontend, 'node_modules', 'typescript'), 'junction');
   fs.cpSync(new URL('../dist/', import.meta.url), path.join(frontend, 'dist'), { recursive: true });
-  const { analyze: relocated } = await import(pathToFileURL(path.join(frontend, 'dist', 'analyzer.js')).href);
+  const { analyze: relocated, project: vendoredProject } = await import(pathToFileURL(path.join(frontend, 'dist', 'analyzer.js')).href);
   const actual = relocated(root);
   assert.deepEqual(actual, expected);
   const [first, second, promise] = calls(actual);
-  assert.equal(first.callee.declaringClass, 'external:typescript/lib/lib.dom.d.ts.Console');
-  assert.equal(promise.callee.declaringClass, 'external:typescript/lib/lib.es2015.promise.d.ts.PromiseConstructor');
+  assert.equal(first.callee.declaringClass, 'external:typescript/lib.Console');
+  assert.equal(promise.callee.declaringClass, 'external:typescript/lib.PromiseConstructor');
   assert.strictEqual(first.callee, second.callee, 'repeated calls share one encoded external descriptor');
   assert.strictEqual(first.caller, actual.methods.find(m => m.name === 'log'), 'definitions and references agree');
   assert.ok(Object.isFrozen(first.callee) && Object.isFrozen(first.callee.parameterTypes));
   assert.ok(!JSON.stringify(actual).includes(sandbox));
+
+  // Substitute the real ES5 default library in the isolated compiler copy.
+  // Confirm that the checker actually resolved a different declaration.
+  const errors = fixture(t, { 'errors.mjs': 'new Error("e");' });
+  function signatureFile(load) {
+    const { program } = load(errors);
+    const file = program.getSourceFile(program.getRootFileNames()[0]);
+    const ctor = file.statements[0].expression;
+    return path.basename(program.getTypeChecker().getResolvedSignature(ctor).declaration.getSourceFile().fileName);
+  }
+  const lib = path.join(vendored, 'lib');
+  const defaultLib = target => path.join(lib, ts.getDefaultLibFileName({ target }));
+  fs.copyFileSync(defaultLib(ts.ScriptTarget.ES5), defaultLib(ts.ScriptTarget.ESNext));
+  assert.notEqual(signatureFile(project), signatureFile(vendoredProject));
+  for (const graph of [analyze(errors), relocated(errors)]) {
+    const [ctor] = calls(graph);
+    assert.deepEqual([ctor.callee.declaringClass, ctor.callee.name], ['external:typescript/lib.ErrorConstructor', 'constructor']);
+  }
 });
 
 test('escaped literal parameter types survive a binding reassignment without being re-escaped', async t => {
@@ -874,7 +892,39 @@ test('standard-library construct signatures use stable constructor names', t => 
   for (const builtin of ['Error', 'Map', 'Promise']) {
     const call = calls(g).find(c => c.callee.declaringClass.endsWith('.' + builtin + 'Constructor'));
     assert.ok(call, builtin);
-    assert.match(call.callee.declaringClass, /^external:typescript\/lib\/lib\./);
+    assert.match(call.callee.declaringClass, /^external:typescript\/lib\./);
     assert.equal(call.callee.name, 'constructor');
   }
+});
+
+test('library namespace members and global functions keep distinct symbol owners', t => {
+  const g = analyze(fixture(t, { 'globals.js': 'Intl.getCanonicalLocales("en"); new Intl.Collator(); parseInt("2");' }));
+  assert.deepEqual(calls(g).map(c => [c.callee.declaringClass,c.callee.name]), [
+    ['external:typescript/lib.Intl','getCanonicalLocales'], ['external:typescript/lib.Intl.CollatorConstructor','constructor'],
+    ['external:typescript/lib','parseInt'],
+  ]);
+});
+
+test('unknown expression callees share a marker while preserving arguments, receivers and evaluation', t => {
+  const g = analyze(fixture(t, { 'dynamic.mjs': [
+    'async function run(t, a, b, c) {',
+    '  (t.default || t)("fallback");',
+    '  (a ? b : c)("choice");',
+    '  (await load())("awaited");',
+    '  t[key()]("element");',
+    '  new (a ? b : c)("allocation");',
+    '  t.named("member"); t["literal"]("literal"); new b("binding");',
+    '}',
+  ].join('\n') }));
+  const sites = calls(g), markers = sites.filter(c => c.callee.name === '<call>');
+  assert.deepEqual(markers.map(c => [c.line, g.nodes[c.arguments[0]].value, c.receiver !== undefined]), [
+    [2,'fallback',false], [3,'choice',false], [4,'awaited',false], [5,'element',true], [6,'allocation',false],
+  ]);
+  for (const c of markers) {
+    assert.equal(c.callee.declaringClass, '<dynamic>');
+    const e = g.edges.find(e => e.from === c.id && e.kind === 'CALL');
+    assert.equal(e.isDynamic, true);
+    assert.equal(e.isVirtual, c.receiver !== undefined);
+  }
+  for (const name of ['load','key','named','literal','b']) assert.equal(sites.filter(c => c.callee.name === name).length, 1);
 });

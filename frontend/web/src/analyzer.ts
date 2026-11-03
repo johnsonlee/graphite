@@ -190,12 +190,23 @@ class Analyzer {
   }
   private module(n: ts.Node): string {
     const source = n.getSourceFile();
+    if (source.isDeclarationFile && this.program.isSourceFileDefaultLibrary(source)) {
+      // Global library symbols and namespaces may be declared or augmented in
+      // different lib files according to the compiler target and version.
+      const names: string[] = [];
+      for (let parent = n.parent; parent && !ts.isSourceFile(parent); parent = parent.parent) {
+        if (ts.isModuleDeclaration(parent) && !(parent.flags & ts.NodeFlags.GlobalAugmentation))
+          names.push(parent.name.text);
+        if (ts.isTypeLiteralNode(parent)) {
+          const declaration = parent.parent;
+          if (ts.isVariableDeclaration(declaration) || ts.isTypeAliasDeclaration(declaration) || ts.isPropertySignature(declaration))
+            names.push(this.name(declaration)!);
+        }
+      }
+      return ['external:typescript/lib', ...names.reverse()].join('.');
+    }
     const file = source.fileName;
     const normalized = file.split(path.sep).join('/');
-    if (source.isDeclarationFile && this.program.isSourceFileDefaultLibrary(source)) {
-      // Use the npm spelling even when TypeScript is installed globally or vendored.
-      return `external:typescript/lib/${path.posix.basename(normalized)}`;
-    }
     const dependency = normalized.lastIndexOf('/node_modules/');
     if (dependency >= 0) return `external:${normalized.slice(dependency + '/node_modules/'.length)}`;
     return path.relative(this.root, file).split(path.sep).join('/');
@@ -617,10 +628,14 @@ class Analyzer {
     const context = declaration ? this.contexts.get(declaration) : undefined;
     if (context) return { method: context.method, context };
     if (declaration && !ts.isJSDocSignature(declaration)) return { method: this.descriptor(declaration) };
+    let name = '<call>';
+    if (ts.isIdentifier(callee)) name = callee.text;
+    else if (ts.isPropertyAccessExpression(callee)) name = callee.name.text;
+    else if (ts.isElementAccessExpression(callee) && ts.isStringLiteralLike(callee.argumentExpression)) name = callee.argumentExpression.text;
+    else if (callee.kind === ts.SyntaxKind.ImportKeyword || callee.kind === ts.SyntaxKind.SuperKeyword || callee.kind === ts.SyntaxKind.ThisKeyword)
+      name = callee.getText();
     return { method: {
-      declaringClass: '<dynamic>',
-      name: ts.isPropertyAccessExpression(callee) ? callee.name.text :
-        ts.isElementAccessExpression(callee) && ts.isStringLiteralLike(callee.argumentExpression) ? callee.argumentExpression.text : callee.getText(),
+      declaringClass: '<dynamic>', name,
       parameterTypes: (n.arguments ?? []).map(a => this.type(a)), returnType: this.type(n),
     } };
   }

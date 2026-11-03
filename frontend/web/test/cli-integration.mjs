@@ -43,11 +43,27 @@ try {
   const allocationCalls = allocations("MATCH (c:CallSite)-[r:CALL]->(:CallSite) RETURN c.line AS line, c.callee_class AS cls, c.callee_name AS name, r.dynamic AS dynamic ORDER BY line");
   assert.deepEqual(allocationCalls.map(c => [c.line,c.cls,c.name,c.dynamic]), [
     [4,'constructors.mjs.C','constructor',false], [5,'constructors.mjs.E','constructor',false],
-    [6,'constructors.mjs.E','constructor',false], [7,'external:typescript/lib/lib.es2022.error.d.ts.ErrorConstructor','constructor',true],
+    [6,'constructors.mjs.E','constructor',false], [7,'external:typescript/lib.ErrorConstructor','constructor',true],
     [8,'<dynamic>','K',true],
   ]);
   assert.deepEqual(allocations("MATCH (v:IntConstant)-[r:DATAFLOW]->(p:Parameter) WHERE r.kind='PARAMETER_PASS' RETURN v.value AS value, p.index AS i ORDER BY value"),
     [{value:5,i:0},{value:7,i:0}]);
+
+  const dyn = path.join(dir, 'dynamic.mjs'), dynamic = path.join(dir, 'dynamic.graphite');
+  fs.writeFileSync(dyn, ['async function invoke(t, a, b, c) {',
+    '  (t.default || t)("fallback"); (a ? b : c)("choice");', '  (await load())("awaited");',
+    '  t[key()]("element"); new (a ? b : c)("allocation");', '}',
+    'Intl.getCanonicalLocales("en");', '[1].map(x => x); [1].find(x => x);'].join('\n'));
+  run(['build', '--lang', 'js', dyn, '-o', dynamic]);
+  run(['verify', dynamic]);
+  const dynamicRows = query => JSON.parse(run(['query', dynamic, query, '--format', 'json']).stdout).rows;
+  assert.deepEqual(dynamicRows("MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite)-[r:CALL]->(:CallSite) WHERE c.callee_name='<call>' RETURN s.value AS arg, r.virtual AS receiver, r.dynamic AS dyn ORDER BY arg"),
+    ['allocation','awaited','choice','element','fallback'].map(arg => ({ arg, receiver:arg === 'element', dyn:true })));
+  assert.deepEqual(dynamicRows("MATCH (c:CallSite) WHERE c.callee_name='load' OR c.callee_name='key' RETURN c.callee_name AS n ORDER BY n"),
+    [{ n:'key' },{ n:'load' }]);
+  assert.deepEqual(dynamicRows("MATCH (c:CallSite) WHERE c.callee_class STARTS WITH 'external:typescript/lib' RETURN c.callee_class AS cls, c.callee_name AS n ORDER BY cls, n"),
+    [{ cls:'external:typescript/lib.Array', n:'find' },{ cls:'external:typescript/lib.Array', n:'map' },
+      { cls:'external:typescript/lib.Intl', n:'getCanonicalLocales' }]);
 
   const overflow = path.join(dir, 'overflow.mjs'), saved = path.join(dir, 'overflow.graphite');
   fs.writeFileSync(overflow, ['function take(x = -1e400) { return x; }','take(1e400);','take(-1e400);','take();'].join('\n'));

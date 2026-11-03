@@ -37,6 +37,28 @@ test('bounded short writes round-trip every array, UTF-8 data and signed zero', 
   assert.deepEqual(JSON.parse(fs.readFileSync(output,'utf8')), graph);
 });
 
+test('one large inline literal has linear encoder input and preserves pairs across windows', t => {
+  const output = temp(t);
+  const node = { id: 0, kind: 'StringConstant', value: '' };
+  const prefix = JSON.stringify(node).indexOf('""') + 1;
+  // Put the first emoji across a natural input window, then change alignment
+  // repeatedly with ASCII, BMP, supplementary characters and JSON escapes.
+  node.value = 'A'.repeat(Math.floor(64 * 1024 / 3) - prefix - 1) + '🙂' + 'A界🙂"\\'.repeat(256 * 1024);
+  const graph = { version: 1, methods: [], nodes: [node], edges: [], classOrigins: [] };
+  const expected = JSON.stringify(graph);
+  let offered = 0, largest = 0;
+  const encode = TextEncoder.prototype.encodeInto;
+  t.mock.method(TextEncoder.prototype, 'encodeInto', function (input, destination) {
+    offered += input.length;
+    largest = Math.max(largest, input.length);
+    return encode.call(this, input, destination);
+  });
+  writeInterchange(output, graph);
+  assert.ok(largest <= 64 * 1024, 'the encoder never receives a record-sized suffix');
+  assert.ok(offered <= 2 * expected.length, 'total input offered, including retries, is linear');
+  assert.equal(fs.readFileSync(output, 'utf8'), expected);
+});
+
 test('I/O failure or no forward progress closes the file and removes partial output', t => {
   const original = fs.writeSync;
   for (const mode of ['error','zero']) {

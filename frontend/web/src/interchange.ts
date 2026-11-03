@@ -14,6 +14,7 @@ function encodeNode(node: GraphNode): string {
 function writeRecords(fd: number, graph: SourceGraph): void {
   const buffer = Buffer.allocUnsafe(64 * 1024);
   const encoder = new TextEncoder();
+  const windowUnits = Math.floor(buffer.length / 3);
   let used = 0;
   function flush(): void {
     let offset = 0;
@@ -27,11 +28,18 @@ function writeRecords(fd: number, graph: SourceGraph): void {
   function emit(text: string): void {
     let pos = 0;
     while (pos < text.length) {
-      const { read, written } = encoder.encodeInto(text.slice(pos), buffer.subarray(used));
+      // Each UTF-16 code unit takes at most three UTF-8 bytes (a pair takes four).
+      // Thus an entire window fits after a flush, and each unit is offered at most twice.
+      let end = Math.min(text.length, pos + windowUnits);
+      if (end < text.length) {
+        const last = text.charCodeAt(end - 1), next = text.charCodeAt(end);
+        if (last >= 0xd800 && last <= 0xdbff && next >= 0xdc00 && next <= 0xdfff) end--;
+      }
+      const window = text.slice(pos, end);
+      const { read, written } = encoder.encodeInto(window, buffer.subarray(used));
       pos += read;
       used += written;
-      // A scalar may need more bytes than remain in the buffer.
-      if (pos < text.length || used === buffer.length) flush();
+      if (read < window.length || used === buffer.length) flush();
     }
   }
   function array<T>(field: string, values: readonly T[], encode: (value: T) => string): void {
