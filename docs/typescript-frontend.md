@@ -89,6 +89,13 @@ Default expressions not reached by a resolved call remain visible as possible
 argument flow for external entry points and callbacks; no source invocation is
 invented for them.
 
+For resolved calls, `CallSite.arguments` records effective values after the
+parameter prologue, rather than the original JavaScript argument list. This is
+dataflow normalization, not an executable source rewrite: `f()` and `f(1)` can
+enter `function f(x = 1)` with the same parameter value but different
+`arguments.length`. Original argument arity and the special `arguments` object's
+runtime behavior are not modeled.
+
 A reassigned formal parameter has a separate mutable binding, so writes do not
 replace its incoming argument identity. Property locations and values read from
 those locations are separate nodes. These distinctions preserve dataflow without
@@ -181,6 +188,42 @@ representative multi-graph load tests whose requests actually target multiple
 graphs, following [CONVENTIONS.md](../CONVENTIONS.md) and the
 [benchmark protocol](../benchmark/README.md). Single-graph correctness runs and
 hosted timing observations do not establish performance acceptance.
+
+### Local artifact validation, 2026-11-03
+
+Production code at `3a127f70` passed 30 frontend tests and 589 Rust workspace
+tests (one existing test ignored), strict workspace Clippy and formatting checks.
+The pinned application revisions above produced these saved graphs:
+
+| Application | Side | Nodes | Edges |
+|---|---|---:|---:|
+| MIT Next 10 CRUD example | Client | 46,676 | 69,136 |
+| MIT Next 10 CRUD example | Server | 12,343 | 16,140 |
+| Supplementary Taskboard | Client | 84,984 | 131,731 |
+| Supplementary Taskboard | Server | 125,758 | 183,841 |
+
+Complete node and relationship query results matched across saved directories,
+packed containers, unpacked directories and directly built containers. Twenty
+selected application call occurrences matched the independent emitted-code
+oracle in all four forms. Subsequent harness checks require exact occurrence
+counts, including multiple calls on one minified line. HTTP queries loaded both
+client and server graphs and matched the per-graph results. Saved default-value
+fixtures preserved the effective arguments `shared`, `shared` and `null`.
+
+A separate native comparison ran main `a5c96f71` and candidate `3a127f70` over
+the same 64 historical persisted JAR graphs. The trusted main controller's 73
+query cases produced identical complete responses for all 8,638 requests across
+the two versions; the 1,408 input files remained unchanged. This establishes
+loading/query compatibility, not current JVM build/save coverage.
+
+Performance acceptance remains unresolved. At concurrency four with 20 pressure
+samples per case, the filtered query's p95 increased from 3426.559 ms to
+3494.756 ms (+68.196 ms), while other major slow queries improved in that run.
+CPU/RSS samples were within the resource allowances, but sampling cannot prove
+true peak RSS or complete CPU bounds, and equal filesystem-cache residency was
+not established. Earlier runs using different historical graph layouts, and a
+failed resource monitor, remain diagnostic evidence only. These observations
+are not a no-regression claim or a substitute for the required Linux CI gate.
 
 ## Historical source-prototype evidence
 

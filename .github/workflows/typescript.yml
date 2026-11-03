@@ -17,8 +17,6 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v7
-    - name: Test compiled-operation evidence checks
-      run: python3 .github/scripts/test-typescript-e2e.py
     - name: Setup historical runtime for pinned Next 10 fixture
       uses: actions/setup-node@v6
       with:
@@ -36,6 +34,8 @@ jobs:
       run: |
         npm ci
         npm test
+    - name: Test compiled-operation oracle and evidence checks
+      run: python3 .github/scripts/test-typescript-e2e.py
     - name: Setup Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Cache cargo

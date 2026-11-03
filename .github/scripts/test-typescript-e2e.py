@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Pure correctness checks for the compiled-operation evidence validator."""
+"""Correctness checks for the compiled-operation oracle and evidence validator."""
 import importlib.util
+import json
 from pathlib import Path
+import subprocess
+import tempfile
 import unittest
 
 spec = importlib.util.spec_from_file_location(
@@ -45,6 +48,22 @@ class OperationOccurrenceTests(unittest.TestCase):
         operation = {**self.operation, "value": 1}
         with self.assertRaises(AssertionError):
             module.check_operation_occurrences(operation, [{**self.row, "value": True}] * 2)
+
+    def test_oracle_counts_same_line_calls_not_repeated_argument_positions(self):
+        typescript = Path(__file__).resolve().parents[2] / "frontend/web/node_modules/typescript"
+        with tempfile.TemporaryDirectory(prefix="graphite-oracle-") as folder:
+            Path(folder, "calls.js").write_text(
+                "sink.success('saved', 'saved'); sink.success('saved');\n")
+            result = subprocess.run(
+                ["node", "-e", module.ORACLE, str(typescript), folder,
+                 json.dumps([["success", "saved"]])],
+                check=True, capture_output=True, text=True)
+        self.assertEqual(json.loads(result.stdout), [{
+            "callee": "success", "value": "saved", "locations": [
+                {"file": "calls.js", "line": 1},
+                {"file": "calls.js", "line": 1},
+            ],
+        }])
 
 
 if __name__ == "__main__":
