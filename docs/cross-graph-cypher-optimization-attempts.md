@@ -2643,3 +2643,108 @@ and do not present this as precise tail estimation or saturation evidence.
 **Decision:** candidate pending independent review and real64 measurements.
 Correctness and deterministic work reduction alone do not establish performance
 acceptance. Fresh final-revision correctness/completion/OOM CI remains required.
+
+**Measured candidate:** `d27e054c7f39edb1ec0f7c837fc18331f63c63f4`, release
+SHA-256 `3a78fa0c4658dec52c19fe8dd7afa736d614a2eadd3f294584bc86032b7b6e0d`.
+Independent review found no concrete semantic defect. A subsequent correctness
+replay passed 52 checks on both real Next/React applications: complete saved node
+and relationship results, application operations, and changed WITH/filter HTTP
+queries against both the parent and an independent generic pipeline. All servers
+and validation work stopped before measurement.
+
+**Execution/evidence:** the two predeclared pairs completed without errors;
+all 1,408 files remained byte-identical. One verified cache helper held all
+647,282 fixture pages resident across the four arms and released every mapping
+and lock afterward. Kernel wait4 records joined to all eight independently
+observed production server PIDs. Each pair passed all eight trusted controller
+checks; all 17,356 complete request bodies matched their own and cross-revision
+oracles, with zero scope, sample-count or percentile-recomputation errors.
+Each unoptimized arm issued 4,319 requests and each optimized arm 4,359:
+the unchanged controller adds 40 isolated samples once the filter case falls
+below its 100 ms selection threshold. This difference was declared before the
+run. Raw evidence is in `attempt047/run`; complete separate analyses and every
+positive delta are retained in `attempt047-analysis` under the validation root.
+
+**Parent attribution (3a127f70 to d27e054c):**
+
+| Case | Base P50 ms | Candidate P50 ms | Delta ms | Base P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| WITH filter | 2927.137 | 0.500 | -2926.636 | 3450.237 | 0.570 | -3449.667 |
+| Sort | 2515.344 | 2467.353 | -47.991 | 2559.821 | 2519.551 | -40.270 |
+| Descending sort | 2606.854 | 2558.498 | -48.356 | 2661.498 | 2619.791 | -41.707 |
+| Collect | 2004.158 | 1896.134 | -108.023 | 2150.299 | 1976.447 | -173.851 |
+| WITH aggregate | 671.527 | 652.149 | -19.378 | 697.742 | 669.425 | -28.317 |
+| Group count | 352.217 | 324.610 | -27.607 | 374.336 | 336.024 | -38.312 |
+| Distinct | 315.595 | 285.892 | -29.702 | 346.102 | 297.487 | -48.615 |
+
+**Cumulative main comparison (a5c96f71 to d27e054c):**
+
+| Case | Base P50 ms | Candidate P50 ms | Delta ms | Base P95 ms | Candidate P95 ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| WITH filter | 2706.350 | 0.467 | -2705.883 | 3381.610 | 0.580 | -3381.029 |
+| Sort | 2454.534 | 2647.910 | +193.376 | 2564.151 | 2839.790 | +275.638 |
+| Descending sort | 2547.118 | 2739.374 | +192.256 | 2593.889 | 2840.789 | +246.900 |
+| Collect | 1918.783 | 2007.168 | +88.385 | 1985.413 | 2122.977 | +137.564 |
+| WITH aggregate | 677.310 | 675.661 | -1.649 | 711.286 | 707.826 | -3.460 |
+| Group count | 359.860 | 347.116 | -12.744 | 390.367 | 378.436 | -11.931 |
+| Distinct | 320.438 | 299.889 | -20.549 | 384.333 | 330.665 | -53.668 |
+
+| Pair / server | Base lifetime CPU s | Candidate CPU s | Delta s | Base lifetime peak RSS MiB | Candidate RSS MiB | Delta MiB |
+|---|---:|---:|---:|---:|---:|---:|
+| Parent / primary | 326.675 | 251.331 | -75.344 | 10022.109 | 7047.391 | -2974.719 |
+| Parent / capacity recovery | 21.080 | 21.016 | -0.064 | 3384.125 | 4187.406 | +803.281 |
+| Main / primary | 318.986 | 267.109 | -51.877 | 10282.984 | 6414.500 | -3868.484 |
+| Main / capacity recovery | 20.682 | 20.973 | +0.291 | 5882.250 | 4006.422 | -1875.828 |
+
+Primary lifetime CPU/RSS decreased in both comparisons; these totals do not
+prove independent loading/query operation bounds. Auxiliary lifetime RSS rose
+803.281 MiB (+23.74%) against the parent and fell 1,875.828 MiB (-31.89%)
+against main. Keep both observations; primary savings do not offset the first
+overrun, and neither observation establishes its cause. This auxiliary check
+loads all 64 graphs but executes constant `RETURN 1` requests plus validation
+errors. It is correctness coverage, not a representative graph-query performance
+workload. Both arms have matching replies and final counters; no forced
+saturation, timeout or cancellation occurred in these auxiliary requests.
+
+| Pair | Base ready ms | Candidate ready ms | Delta ms | Base pressure-stage ms | Candidate pressure-stage ms | Delta ms |
+|---|---:|---:|---:|---:|---:|---:|
+| Parent | 22294.405 | 20529.509 | -1764.896 | 60404.625 | 42447.918 | -17956.707 |
+| Main | 20212.872 | 19562.033 | -650.839 | 56433.490 | 44924.090 | -11509.400 |
+
+Pressure-stage spans include controller validation/write gaps; they are not
+full build/save/query end-to-end measurements or substitutes for p50/p95.
+All first-use, isolated and pressure samples remain separate. Sampled loading
+RSS increased by 162,152,448 bytes (+5.0016%) in the parent pair and
+1,958,002,688 bytes (+60.68%) in the main pair. These are observations from
+the existing polling boundary, not independently delimited loading peaks;
+they cannot establish resource acceptance. Read-only boundary audit found that
+the parent pair's candidate maximum and main pair's baseline maximum were sampled
+after registry readiness, so their labels can include first-query work. However,
+the main pair's candidate maximum of 5,184,700,416 bytes occurs at least 2.468 s
+before registry readiness. That observation survives the boundary audit; it
+cannot be removed by relabeling the last sample. Exact lifecycle counters do not
+repair the missing exact phase peaks. The separate capacity check also overwrites
+its intermediate idle snapshot with the final snapshot; runtime assertions passed,
+but that intermediate raw counter snapshot is not retained by the trusted harness.
+
+**Bounded timeline audit:** existing request-cycle windows show that removing the
+long filter request changes the mix of overlapping queries. Both optimized arms
+have the same cross-round sort overlap pattern, while the second optimized arm's
+sort/descending-sort/collect p95 exceeds the first identical binary's by
+320.239/220.998/146.530 ms. The slowdown develops around pressure rounds 5–6;
+the overlap pattern changes from round 1. Thus the changed overlap alone does not
+explain the difference, and client-cycle windows are not server admission times.
+The shared scalar row consumer adds an optional-filter check; sort passes None,
+while collect's aggregation loop returns before that per-row branch. Source
+similarity does not prove equal generated code or runtime cost. The audit retains
+all request vectors and is not a new performance run or causal exoneration.
+
+**Decision after measurement:** retain the independently verified reduction in
+work and large filter-query latency improvement as a positive intermediate
+candidate, not cumulative acceptance. The main comparison still has materially
+higher sort/descending-sort/collect p50 and p95, despite lower total CPU, peak
+RSS and pressure-stage time. All smaller positive deltas also remain recorded.
+Do not pool the two pairs, offset adverse metrics, infer causation from one
+ordered comparison or repeat runs to choose a favorable statistic. Per-operation
+resources, current construction/build/save coverage and final Linux CI remain
+unverified. No new PR or no-regression claim follows from this experiment.

@@ -225,6 +225,22 @@ not established. Earlier runs using different historical graph layouts, and a
 failed resource monitor, remain diagnostic evidence only. These observations
 are not a no-regression claim or a substitute for the required Linux CI gate.
 
+Candidate `d27e054c` subsequently adds a narrowly guarded scalar WITH/filter/LIMIT
+optimization. All 595 Rust workspace tests passed (one existing ignored test),
+along with strict Clippy and formatting. Fifty-two query replay checks on the
+same real client/server graphs passed, including complete saved node/edge
+oracles and independent generic-query comparisons for the changed execution path.
+
+Two predeclared real64 comparisons used the exact same files with their pages
+held resident throughout all four arms. All 17,356 complete responses matched.
+Against main, the filter query's p95 fell from 3381.610 ms to 0.580 ms, but sort,
+descending-sort and collect p95 increased by 275.638, 246.900 and 137.564 ms.
+Primary server lifetime CPU/RSS decreased; loading resource bounds remain
+unresolved, including an observed pre-query RSS increase. This is a retained
+positive intermediate result, not no-regression acceptance. The full protocol,
+both comparisons, resource limitations and keep decision are recorded in
+[Attempt 047](cross-graph-cypher-optimization-attempts.md#2026-11-03---attempt-047-stop-scalar-with-filters-after-enough-accepted-rows).
+
 ## Historical source-prototype evidence
 
 The previous source-analysis prototype used mitt 3.0.1 at
