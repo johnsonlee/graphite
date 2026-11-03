@@ -166,7 +166,7 @@ fn execute(env: &Env, args: &[OsString]) -> Result<i32, String> {
     let reader =
         std::fs::File::open(&json).map_err(|e| format!("could not read frontend graph: {e}"))?;
     let graph = stage.0.join("saved");
-    graphite_storage::interchange::import_json(reader, &graph)
+    graphite_storage::interchange::import_json(std::io::BufReader::new(reader), &graph)
         .map_err(|e| format!("invalid frontend graph: {e}"))?;
     if packed {
         // Keep the final basename: the sidecar records it for sha256sum verification.
