@@ -28,11 +28,12 @@ try {
   assert.deepEqual(result.rows, [{ kind: 'ARRAY_LOAD' }]);
 
   const cls = path.join(dir, 'member.mjs'), member = path.join(dir, 'member.graphite');
-  fs.writeFileSync(cls, 'class A { constructor(){ this.x = "secret"; } get(){ return this.x; } } sink(new A().get())');
+  const memberSource = 'class A { constructor(){ this.x = "secret"; } get(){ return this.x; } } sink(new A().get())';
+  fs.writeFileSync(cls, memberSource);
   run(['build', '--lang', 'js', cls, '-o', member]);
   run(['verify', member]);
-  const slice = run(['query', member, "MATCH (s:StringConstant {value:'secret'})-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(get:CallSite)-[:DATAFLOW]->(sink:CallSite) WHERE get.callee_name='get' AND sink.callee_name='sink' RETURN count(*) AS n", '--format', 'json']);
-  assert.deepEqual(JSON.parse(slice.stdout).rows, [{ n: 1 }]);
+  const slice = run(['query', member, "MATCH (s:StringConstant {value:'secret'})-[:DATAFLOW]->(:LocalVariable)-[:DATAFLOW]->(read:LocalVariable)-[:DATAFLOW]->(:Return)-[:DATAFLOW]->(get:CallSite)-[:DATAFLOW]->(sink:CallSite) WHERE get.callee_name='get' AND sink.callee_name='sink' RETURN read.name AS read", '--format', 'json']);
+  assert.deepEqual(JSON.parse(slice.stdout).rows, [{ read: `@read:x@1:${memberSource.lastIndexOf('this.x') + 'this.'.length + 1}` }]);
 
   const ctors = path.join(dir, 'constructors.mjs'), constructors = path.join(dir, 'constructors.graphite');
   fs.writeFileSync(ctors, ['class C { m() {} }', 'class D { constructor(x=7) {} }', 'class E extends D {}',

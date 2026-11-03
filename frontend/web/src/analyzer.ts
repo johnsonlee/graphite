@@ -516,7 +516,7 @@ class Analyzer {
     return value;
   }
   private property(n: ts.PropertyAccessExpression | ts.ElementAccessExpression, context: Context): {
-    slot: number; receiver: number; fieldSource?: number;
+    slot: number; receiver: number; key: string | number; fieldSource?: number;
   } {
     const receiver = this.value(n.expression, context);
     const owner = this.receiverOwner(n.expression);
@@ -545,7 +545,7 @@ class Analyzer {
       }
       if (owner?.owner === declaration.parent &&
           owner.instance !== !!(ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Static))
-        return { slot: field, receiver, fieldSource: bindings };
+        return { slot: field, receiver, key, fieldSource: bindings };
     }
     let slot = this.properties.get(identity);
     if (slot === undefined) {
@@ -554,7 +554,7 @@ class Analyzer {
       this.properties.set(identity, slot);
     }
     if (bindings !== undefined) this.edge(slot, bindings, 'FIELD_LOAD');
-    return { slot, receiver, fieldSource: field };
+    return { slot, receiver, key, fieldSource: field };
   }
   private assigned(n: ts.Expression, context: Context): number {
     return ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n) ? this.property(n, context).slot : this.value(n, context);
@@ -891,10 +891,12 @@ class Analyzer {
       });
       if (target.context?.returned !== undefined) this.edge(target.context.returned, id, 'RETURN_VALUE');
     } else if (ts.isPropertyAccessExpression(n) || ts.isElementAccessExpression(n)) {
-      const { slot, receiver, fieldSource } = this.property(n, context);
+      const { slot, receiver, key, fieldSource } = this.property(n, context);
       // A location and a read from that location are different values. In x.p=x,
       // loading x.p must not share endpoints with storing x into the property.
-      id = this.node('LocalVariable', { name: `@read:${n.getText()}@${this.position(n)}`, varType: this.type(n), method: context.method });
+      const label = typeof key === 'number' ? '<computed>' : key.length > 64 ? '<long-key>' : key;
+      const token = ts.isPropertyAccessExpression(n) ? n.name : n.argumentExpression;
+      id = this.node('LocalVariable', { name: `@read:${label}@${this.position(token)}`, varType: this.type(n), method: context.method });
       this.readSlots.set(id, slot);
       if (fieldSource !== undefined) this.edge(fieldSource, id, 'FIELD_LOAD');
       this.edge(slot, id, 'FIELD_LOAD');

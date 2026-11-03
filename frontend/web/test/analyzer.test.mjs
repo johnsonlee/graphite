@@ -295,7 +295,7 @@ export const results=[a(),b(),c(),d()];
   assert.equal(writes.length, 4);
   for (const call of writes) {
     const [actual] = argumentsOf(g, call);
-    const read = g.nodes.find(n => n.method?.name === call.caller.name && n.name?.startsWith('@read:o.x'));
+    const read = g.nodes.find(n => n.method?.name === call.caller.name && n.name?.startsWith('@read:x@'));
     assert.ok(flowsTo(g, read.id, actual.id));
     assert.ok(edge(g, fallback.id, actual.id, 'ASSIGN'));
     assert.ok(edge(g, actual.id, call.id, 'PARAMETER_PASS'));
@@ -996,4 +996,28 @@ test('invalid imported JS is skipped without pulling in modules reachable only f
   const graph=analyze(path.join(root,'entry.mjs'), text=>warnings.push(text));
   assert.ok(warnings.some(text=>text.includes('broken.mjs')));
   assert.deepEqual(graph.classOrigins.map(o=>o.origin).sort(), ['entry.mjs','good.mjs']);
+});
+
+test('property reads keep short key locations for wrapper bodies, long chains and computed keys', t => {
+  const comment = 'wrapper body '.repeat(3000);
+  const longKey = 'key'.repeat(500);
+  const chain = 'root' + '.next'.repeat(80);
+  const source = [
+    `const invoke = (function(factory) { /* ${comment} */ return factory(); }).call;`,
+    `function walk(root) { ${chain}.leaf = "deep"; return ${chain}.leaf; }`,
+    'deepSink(walk({}));',
+    'function dynamic(obj, key) { obj[key] = "stored"; return obj[key]; }',
+    'dynamicSink(dynamic({}, unknownKey));',
+    `function large(obj) { obj["${longKey}"] = "large"; return obj["${longKey}"]; }`,
+    'largeSink(large({}));',
+  ].join('\n');
+  const g = analyze(fixture(t, { 'bundle.js':source }));
+  const reads = g.nodes.filter(n => n.name?.startsWith('@read:'));
+  const expected = ['call','next','leaf','<computed>','<long-key>'];
+  assert.deepEqual(new Set(reads.map(n => /^@read:(.+)@\d+:\d+$/.exec(n.name)?.[1])), new Set(expected));
+  assert.equal(new Set(reads.map(n => n.name)).size, reads.length);
+  assert.ok(reads.every(n => n.name.length < 40));
+  assert.ok(propertyFlows(g,'deep','deepSink'));
+  assert.ok(propertyFlows(g,'stored','dynamicSink'));
+  assert.ok(propertyFlows(g,'large','largeSink'));
 });
