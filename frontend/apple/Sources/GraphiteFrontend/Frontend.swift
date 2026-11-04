@@ -66,6 +66,9 @@ public struct BuildOptions {
     /// Source roots (directories or files) to walk for `.swift`, `.m`, `.mm` and `.h` files
     /// instead of what the package or project implies.
     public var sources: [String] = []
+    /// Explicit built application/extension bundles to inventory. These do not imply
+    /// a proven relationship between a code call and any resource value.
+    public var resourceBundles: [String] = []
     public var skipBuild = false
     public var configuration = "debug"
     public var environment = ProcessInfo.processInfo.environment
@@ -88,6 +91,7 @@ public struct BuildResult {
     public var summary: EmitSummary
     public var files: Int
     public var filesWithOccurrences: Int
+    public var resourceOmissions: [AppleResources.Omission]
     public var indexStore: String
 }
 
@@ -155,13 +159,19 @@ public struct Frontend {
         header.options["files"] = String(files.count)
         header.options["swift_files"] = String(swiftFiles.count)
         header.options["objc_files"] = String(files.count - swiftFiles.count)
+        if !options.resourceBundles.isEmpty {
+            header.options["resource_bundles"] = String(decoding: try JSONSerialization.data(
+                withJSONObject: options.resourceBundles.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path }
+            ), as: UTF8.self)
+        }
         let writer = try IRWriter(url: output, header: header)
         let emitter = Emitter(writer: writer, model: model, facts: facts, demangled: demangled)
         progress(Progress(phase: "emit", done: 0, total: 1))
-        let summary = try emitter.emit()
+        let summary = try emitter.emit(resourceBundles: options.resourceBundles.map { URL(fileURLWithPath: $0) })
         progress(Progress(phase: "emit", done: 1, total: 1))
         return BuildResult(
-            summary: summary, files: files.count, filesWithOccurrences: model.filesWithOccurrences.count, indexStore: storePath
+            summary: summary, files: files.count, filesWithOccurrences: model.filesWithOccurrences.count,
+            resourceOmissions: emitter.resourceOmissions, indexStore: storePath
         )
     }
 

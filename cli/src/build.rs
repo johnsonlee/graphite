@@ -1186,6 +1186,50 @@ mod tests {
     }
 
     #[test]
+    fn selected_resource_bundles_are_options_not_positional_inputs() {
+        let args = os(&[
+            "--resource-bundle",
+            "/built/Probe.app",
+            "--resource-bundle",
+            "/built/Share.appex",
+            "Probe.xcworkspace",
+            "-o",
+            "probe.graphite",
+        ]);
+        assert_eq!(choose(&args).unwrap().lang, "apple");
+        let build = split_apple_args(&args).unwrap();
+        assert_eq!(build.input, Some(PathBuf::from("Probe.xcworkspace")));
+        assert_eq!(
+            build.passthrough,
+            os(&[
+                "--resource-bundle",
+                "/built/Probe.app",
+                "--resource-bundle",
+                "/built/Share.appex",
+            ])
+        );
+        let fe = Frontend {
+            lang: "apple",
+            launch: Launch::Executable("graphite-frontend-apple".into()),
+            found_via: "test",
+        };
+        assert_eq!(
+            apple_invocation(&fe, &build, Path::new("probe.ir")).args,
+            os(&[
+                "build",
+                "--out",
+                "probe.ir",
+                "--project",
+                "Probe.xcworkspace",
+                "--resource-bundle",
+                "/built/Probe.app",
+                "--resource-bundle",
+                "/built/Share.appex",
+            ])
+        );
+    }
+
+    #[test]
     fn apple_arguments_are_split_into_input_output_and_passthrough() {
         let build = split_apple_args(&os(&[
             "--lang",

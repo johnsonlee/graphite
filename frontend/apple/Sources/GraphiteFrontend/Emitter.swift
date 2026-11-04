@@ -10,6 +10,8 @@ public struct EmitSummary: Equatable {
     public var constants = 0
     public var annotations = 0
     public var typeRelations = 0
+    public var resourceFiles = 0
+    public var resourceValues = 0
     public var nodes: UInt64 = 0
     public var edges: UInt64 = 0
     public var strings: UInt64 = 0
@@ -49,6 +51,7 @@ public final class Emitter {
     private let supertypesByUSR: [String: [String]]
     private let declaredTypesByName: [String: TypeDecl]
     public private(set) var summary = EmitSummary()
+    public private(set) var resourceOmissions: [AppleResources.Omission] = []
 
     public init(writer: IRWriter, model: IndexModel, facts: [String: SyntaxFacts], demangled: [String: String]) {
         self.writer = writer
@@ -70,12 +73,30 @@ public final class Emitter {
         supertypesByUSR = Dictionary(grouping: model.supertypes, by: \.subtype).mapValues { $0.map(\.supertype.usr) }
     }
 
-    public func emit() throws -> EmitSummary {
+    public func emit(resourceBundles: [URL] = []) throws -> EmitSummary {
         try emitTypes()
         try emitMembers()
         try emitTypeRelations()
         try emitCalls()
         try emitAnnotations()
+        var seenPaths = Set<String>()
+        var seenIdentifiers = Set<String>()
+        for bundle in resourceBundles {
+            let path = bundle.resolvingSymlinksInPath().standardizedFileURL.path
+            guard seenPaths.insert(path).inserted else { continue }
+            let omissions = try AppleResources.read(bundle: bundle) { file, values in
+                if file.format == "plist" && !seenIdentifiers.insert(file.source).inserted {
+                    throw AppleResources.Invalid(description: "multiple selected resource bundles have identifier \(file.source); choose one build variant per identifier")
+                }
+                try writer.addNode(.resourceFile(file))
+                summary.resourceFiles += 1
+                for value in values {
+                    try writer.addNode(.resourceValue(value))
+                    summary.resourceValues += 1
+                }
+            }
+            resourceOmissions += omissions
+        }
         try writer.finish()
         summary.nodes = writer.nodeCount
         summary.edges = writer.edgeCount
