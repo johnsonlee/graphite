@@ -111,6 +111,13 @@ a property name or a literal element key. Other callee expressions such as
 method and artifact line locate the call. Nested calls in the callee expression
 still appear separately.
 
+A CALL edge to a known source implementation or a standard-library binding
+such as `console.log` or `new Error` has `dynamic = false`. The library body
+need not be present. A callback known only by its type (for example a parameter
+typed as `typeof console.log`) can share the same signature but still has
+`dynamic = true`, as does an unresolved call. The independent `virtual` flag
+records whether the call retained a receiver.
+
 For a known source class, `new C()` targets `C.constructor` even when the
 constructor is implicit. If `E` inherits its constructor from `D`, a call to
 `new E(5)` targets `E.constructor` and passes the effective argument to the

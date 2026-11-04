@@ -611,7 +611,21 @@ class Analyzer {
     }
     return method;
   }
-  private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context; implicit?: boolean } {
+  // A signature describes a type: a callback typed ErrorConstructor can still
+  // invoke a different constructor. Only mark the actual library binding known.
+  private libraryCallee(expr: ts.Expression): boolean {
+    const seen = new Set<ts.Symbol>();
+    for (;;) {
+      const symbol = this.referenceSymbol(calledExpression(expr));
+      if (!symbol || this.writes.has(symbol) || seen.has(symbol)) return false;
+      seen.add(symbol);
+      if (symbol.declarations?.some(d => this.program.isSourceFileDefaultLibrary(d.getSourceFile()))) return true;
+      const declaration = symbol.valueDeclaration;
+      if (!declaration || !ts.isVariableDeclaration(declaration) || !declaration.initializer) return false;
+      expr = declaration.initializer;
+    }
+  }
+  private target(n: ts.CallExpression | ts.NewExpression): { method: Method; context?: Context; dynamic: boolean } {
     let declaration = this.checker.getResolvedSignature(n)?.declaration;
     const callee = calledExpression(n.expression);
     const expr = ts.isPropertyAccessExpression(callee) ? callee.name : callee;
@@ -631,7 +645,7 @@ class Analyzer {
         // An implicit derived constructor forwards to the inherited implementation.
         // Preserve its formal/default flows without adding a source super() call.
         const context = declaration && this.contexts.get(declaration);
-        return { method: this.implicitConstructor(allocation, context?.method), context, implicit: true };
+        return { method: this.implicitConstructor(allocation, context?.method), context, dynamic: false };
       }
     }
     // Structurally compatible constructors can collapse to a single inferred
@@ -642,8 +656,8 @@ class Analyzer {
     const implementation = symbol?.declarations?.find(isBody);
     if (implementation) declaration = implementation;
     const context = declaration ? this.contexts.get(declaration) : undefined;
-    if (context) return { method: context.method, context };
-    if (declaration && !ts.isJSDocSignature(declaration)) return { method: this.descriptor(declaration) };
+    if (context) return { method: context.method, context, dynamic: false };
+    if (declaration && !ts.isJSDocSignature(declaration)) return { method: this.descriptor(declaration), dynamic: !this.libraryCallee(callee) };
     let name = '<call>';
     if (ts.isIdentifier(callee)) name = callee.text;
     else if (ts.isPropertyAccessExpression(callee)) name = callee.name.text;
@@ -653,7 +667,7 @@ class Analyzer {
     return { method: {
       declaringClass: '<dynamic>', name,
       parameterTypes: (n.arguments ?? []).map(a => this.type(a)), returnType: this.type(n),
-    } };
+    }, dynamic: true };
   }
   private referenceSymbol(n: ts.Expression): ts.Symbol | undefined {
     if (ts.isIdentifier(n)) return this.symbol(n);
@@ -881,7 +895,7 @@ class Analyzer {
       id = this.node('CallSite', { caller: context.method, callee: target.method,
         line: n.getSourceFile().getLineAndCharacterOfPosition(n.getStart()).line + 1,
         ...(receiver === undefined ? {} : { receiver }), arguments: args });
-      this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: !target.context && !target.implicit });
+      this.edge(id, id, 'CALL', { isVirtual: receiver !== undefined, isDynamic: target.dynamic });
       const rest = target.context?.restIndex;
       args.forEach((argument, index) => {
         this.edge(argument, id, 'PARAMETER_PASS');

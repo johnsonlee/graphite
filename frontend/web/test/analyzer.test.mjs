@@ -456,9 +456,57 @@ test('frontend CLI preserves an existing output and refuses unsupported options'
   assert.equal(result.status, 1);
   assert.equal(fs.readFileSync(path.join(root, 'output.json'), 'utf8'), 'preserve');
   result = spawnSync(process.execPath, [cli, 'build', root, '--fold', 'x', '-o', path.join(root, 'new.json')], { encoding: 'utf8' });
-  assert.equal(result.status, 1);
+  assert.equal(result.status, 2);
   assert.match(result.stderr, /Unsupported .* frontend option: --fold/);
   assert.ok(!fs.existsSync(path.join(root, 'new.json')));
+});
+
+test('usage failures report a concise cause and exit 2; input failures exit 1', t => {
+  const root = fixture(t, { 'broken.js': 'function {', 'main.js':'console.log("hello")' });
+  const cli = path.resolve('dist/cli.js');
+  const probe = args => spawnSync(process.execPath, [cli, ...args], { cwd: root, encoding: 'utf8' });
+  for (const [args, cause] of [
+    [[], 'Expected the build command'], [['query'], 'Unsupported frontend command'],
+    [['build', '-o', 'out'], 'Expected one emitted JavaScript input'],
+    [['build', 'main.js'], 'Output is required'],
+    [['build', 'main.js', '-o'], '-o requires a path'],
+    [['build', 'main.js', '--output='], '--output requires a path'],
+    [['build', 'main.js', '--output', '--'], '--output requires a path'],
+    [['build', 'main.js', '-o', 'out', '--output=other'], 'Output specified more than once'],
+    [['build', 'main.js', 'second.js', '-o', 'out'], 'Expected exactly one'],
+  ]) {
+    const result = probe(args);
+    assert.equal(result.status, 2, result.stderr);
+    assert.ok(result.stderr.startsWith('Error: ' + cause));
+    assert.match(result.stderr, /Usage: graphite build/);
+    assert.equal(result.stdout, '');
+  }
+  const malformed = probe(['build', 'broken.js', '-o', 'out']);
+  assert.equal(malformed.status, 1);
+  assert.doesNotMatch(malformed.stderr, /Usage: graphite build/);
+  assert.ok(!fs.existsSync(path.join(root, 'out')));
+});
+
+test('library bindings have known call targets without bodies, but callable types alone do not identify a target', t => {
+  const g = analyze(fixture(t, { 'external.mjs': [
+    'console.log(1);', 'console["warn"](2);', 'Promise.resolve(3);', 'new Error("e");', 'new Map();',
+    'const log = console.log; const logAgain = log; logAgain(4);', '(0, console.log)(5);',
+    '/** @param {typeof console.log} cb */ function viaParameter(cb) { cb("typed"); }',
+    '(choice ? console.log : console.warn)("runtime");',
+    'let changed = console.log; changed = console.warn; changed("mutable");',
+    'function unknown(console) { console.log("shadow"); }',
+    '/** @param {ErrorConstructor} C */ function allocation(C) { new C("runtime"); }',
+  ].join('\n') }));
+  const actual = calls(g).map(c => {
+    const e = g.edges.find(e => e.from === c.id && e.kind === 'CALL');
+    return [c.line, c.callee.declaringClass, e.isDynamic, e.isVirtual];
+  }).sort((a,b) => a[0] - b[0]);
+  assert.deepEqual(actual.map(([line,,dyn,virt]) => [line,dyn,virt]), [
+    [1,false,true],[2,false,true],[3,false,true],[4,false,false],[5,false,false],[6,false,false],[7,false,false],
+    [8,true,false],[9,true,false],[10,true,false],[11,true,true],[12,true,false],
+  ]);
+  for (const [line,owner] of actual) if ([1,2,3,4,5,6,7,12].includes(line))
+    assert.ok(owner.startsWith('external:typescript/lib.'), String(line));
 });
 
 test('compiler-lowered ES5 defaults are lifted to explicit actuals', t => {

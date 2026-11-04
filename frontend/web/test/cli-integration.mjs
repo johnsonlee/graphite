@@ -27,6 +27,14 @@ try {
   const result = JSON.parse(run(['query', graph, "MATCH (p:Parameter)-[r]->(v:LocalVariable) WHERE v.name = 'cur' RETURN r.kind AS kind", '--format', 'json']).stdout);
   assert.deepEqual(result.rows, [{ kind: 'ARRAY_LOAD' }]);
 
+  const usage = spawnSync(cli, ['build','--lang','js','-o',path.join(dir,'missing.graphite')], {
+    encoding:'utf8', env:{ ...process.env, GRAPHITE_FRONTEND_JS:frontend },
+  });
+  assert.equal(usage.status, 2, usage.stderr);
+  assert.match(usage.stderr, /Expected one emitted JavaScript input/);
+  assert.match(usage.stderr, /Usage: graphite build/);
+  assert.ok(!fs.existsSync(path.join(dir,'missing.graphite')));
+
   const cls = path.join(dir, 'member.mjs'), member = path.join(dir, 'member.graphite');
   const memberSource = 'class A { constructor(){ this.x = "secret"; } get(){ return this.x; } } sink(new A().get())';
   fs.writeFileSync(cls, memberSource);
@@ -44,7 +52,7 @@ try {
   const allocationCalls = allocations("MATCH (c:CallSite)-[r:CALL]->(:CallSite) RETURN c.line AS line, c.callee_class AS cls, c.callee_name AS name, r.dynamic AS dynamic ORDER BY line");
   assert.deepEqual(allocationCalls.map(c => [c.line,c.cls,c.name,c.dynamic]), [
     [4,'constructors.mjs.C','constructor',false], [5,'constructors.mjs.E','constructor',false],
-    [6,'constructors.mjs.E','constructor',false], [7,'external:typescript/lib.ErrorConstructor','constructor',true],
+    [6,'constructors.mjs.E','constructor',false], [7,'external:typescript/lib.ErrorConstructor','constructor',false],
     [8,'<dynamic>','K',true],
   ]);
   assert.deepEqual(allocations("MATCH (v:IntConstant)-[r:DATAFLOW]->(p:Parameter) WHERE r.kind='PARAMETER_PASS' RETURN v.value AS value, p.index AS i ORDER BY value"),
@@ -65,6 +73,24 @@ try {
   assert.deepEqual(dynamicRows("MATCH (c:CallSite) WHERE c.callee_class STARTS WITH 'external:typescript/lib' RETURN c.callee_class AS cls, c.callee_name AS n ORDER BY cls, n"),
     [{ cls:'external:typescript/lib.Array', n:'find' },{ cls:'external:typescript/lib.Array', n:'map' },
       { cls:'external:typescript/lib.Intl', n:'getCanonicalLocales' }]);
+
+  const bindings = path.join(dir,'bindings.mjs'), libraryGraph = path.join(dir,'bindings.graphite');
+  fs.writeFileSync(bindings, [
+    'console.log("direct");', 'const log = console.log; log("alias");',
+    '/** @param {typeof console.log} callback */ function via(callback) { callback("typed"); }',
+    'function unknown(obj) { obj.log("unknown"); }',
+    '/** @param {ErrorConstructor} C */ function make(C) { new C("runtime"); }',
+  ].join('\n'));
+  run(['build','--lang','js',bindings,'-o',libraryGraph]);
+  run(['verify',libraryGraph]);
+  const flags = JSON.parse(run(['query',libraryGraph,
+    "MATCH (s:StringConstant)-[:DATAFLOW]->(c:CallSite)-[r:CALL]->(:CallSite) RETURN s.value AS arg,c.callee_class AS cls,r.dynamic AS dyn,r.virtual AS virt ORDER BY arg",
+    '--format','json']).stdout).rows;
+  assert.deepEqual(flags.map(r => [r.arg,r.cls,r.dyn,r.virt]), [
+    ['alias','external:typescript/lib.Console',false,false], ['direct','external:typescript/lib.Console',false,true],
+    ['runtime','external:typescript/lib.ErrorConstructor',true,false], ['typed','<dynamic>',true,false],
+    ['unknown','<dynamic>',true,true],
+  ]);
 
   const short = path.join(dir, 'shorthand'), shorthand = path.join(dir, 'shorthand.graphite');
   fs.mkdirSync(short);

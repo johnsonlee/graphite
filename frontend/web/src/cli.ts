@@ -11,9 +11,12 @@ function printInfo(arg: string | undefined): boolean {
   return true;
 }
 
+class UsageError extends Error {}
+
 function main(args: string[]): void {
   if (printInfo(args[0])) return;
-  if (args.shift() !== 'build') throw new Error(help);
+  const command = args.shift();
+  if (command !== 'build') throw new UsageError(command ? `Unsupported frontend command: ${command}` : 'Expected the build command.');
   let input: string | undefined;
   let output: string | undefined;
   let positional = false;
@@ -22,17 +25,19 @@ function main(args: string[]): void {
     if (!positional && printInfo(arg)) return;
     if (!positional && arg === '--') { positional = true; continue; }
     if (!positional && (arg === '-o' || arg === '--output')) {
-      if (output !== undefined) throw new Error('Output specified more than once.');
+      if (output !== undefined) throw new UsageError('Output specified more than once.');
       output = args[++i];
-      if (!output) throw new Error(`${arg} requires a path.`);
+      if (!output || output === '--') throw new UsageError(`${arg} requires a path.`);
     } else if (!positional && arg.startsWith('--output=')) {
-      if (output !== undefined) throw new Error('Output specified more than once.');
+      if (output !== undefined) throw new UsageError('Output specified more than once.');
       output = arg.slice('--output='.length);
-    } else if (!positional && arg.startsWith('-')) throw new Error(`Unsupported JavaScript frontend option: ${arg}`);
-    else if (input !== undefined) throw new Error('Expected exactly one input project.');
+      if (!output) throw new UsageError('--output requires a path.');
+    } else if (!positional && arg.startsWith('-')) throw new UsageError(`Unsupported JavaScript frontend option: ${arg}`);
+    else if (input !== undefined) throw new UsageError('Expected exactly one emitted JavaScript input.');
     else input = arg;
   }
-  if (!input || !output) throw new Error(help);
+  if (!input) throw new UsageError('Expected one emitted JavaScript input.');
+  if (!output) throw new UsageError('Output is required (-o or --output).');
   const graph = analyze(input);
   writeInterchange(output, graph);
   console.error(`Analyzed ${graph.methods.length} methods, ${graph.nodes.length} nodes, ${graph.edges.length} edges.`);
@@ -42,5 +47,6 @@ try {
   main(process.argv.slice(2));
 } catch (error) {
   console.error(`Error: ${error instanceof Error ? error.message : String(error)}`);
-  process.exitCode = 1;
+  if (error instanceof UsageError) process.stderr.write(`\n${help}`);
+  process.exitCode = error instanceof UsageError ? 2 : 1;
 }
