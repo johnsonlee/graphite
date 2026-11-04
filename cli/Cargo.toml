@@ -17,8 +17,6 @@ clap.workspace = true
 sha2.workspace = true
 same-file = "1.0"
 tempfile = { version = "3.27", default-features = false }
-flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
-tar = { version = "0.4", default-features = false }
 semver = "1"
 
 # jemalloc has no MSVC build; those targets keep the system allocator.

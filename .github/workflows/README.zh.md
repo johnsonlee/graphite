@@ -95,7 +95,7 @@ server 和真实 64 图负载。JAR benchmark 的最大 JVM 堆固定为 4 GiB�
 
 `publish.yml` 在发布 job 运行前，先验证以 `v` 开头的 SemVer 标签。验证后执行
 Maven 发布及四个平台的 Linux/macOS 二进制构建。release job 收集二进制、构建
-JVM JAR 和自带运行依赖的 JS 前端包、校验产物并生成 Homebrew formula。Docker 和 Homebrew job 使用这些
+JVM JAR 和各平台的独立 JS 前端可执行文件、校验产物并生成 Homebrew formula。Docker 和 Homebrew job 使用这些
 release 产物。
 
 标签 push 和 `repository_dispatch: publish` 是真实发布路径，会更新 Sonatype、

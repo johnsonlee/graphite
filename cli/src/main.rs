@@ -116,7 +116,7 @@ enum FrontendCommand {
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
         version: Option<String>,
-        /// Install even when the release publishes no checksum
+        /// Allow a legacy JVM release with no published checksum (JVM only)
         #[arg(long)]
         skip_checksum: bool,
     },

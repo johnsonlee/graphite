@@ -416,7 +416,7 @@ artifact in its language's own ecosystem, and the CLI fetches, verifies and runs
 | Frontend | Artifact | Published to | Runtime it needs |
 |---|---|---|---|
 | jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
-| js (aliases ts, es) | `graphite-frontend-js.tgz` with the compiled frontend, TypeScript and library declarations | GitHub Release asset with a SHA-256 checksum | Node 20+ |
+| js (aliases ts, es) | `graphite-frontend-js-<target>` with Bun, TypeScript and library declarations | GitHub Release executable and SHA-256 checksum per platform | Bundled Bun runtime |
 | apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
 
 For the shipped JS frontend, `graphite frontend install js` (aliases `ts` and `es`) fetches

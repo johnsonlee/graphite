@@ -14,7 +14,7 @@ pub fn select_language(args: &[OsString]) -> Result<(Lang, Vec<OsString>), Strin
     let value = opt
         .value
         .and_then(|v| v.to_str())
-        .ok_or("--lang requires jvm, js or ts")?;
+        .ok_or("--lang requires jvm, js, ts or es")?;
     Ok((Lang::parse(value)?, opt.without(args)))
 }
 
@@ -57,7 +57,10 @@ fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
 fn command(env: &Env) -> Result<Command, String> {
     let frontend = frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?;
     if matches!(frontend.launch, Launch::Jar(_)) {
-        return Err("JavaScript artifact analysis requires a Node.js frontend".into());
+        return Err(
+            "JavaScript artifact analysis requires a JavaScript frontend executable or script"
+                .into(),
+        );
     }
     let mut command = frontend.command(env)?;
     command.arg("build");
@@ -137,6 +140,7 @@ mod tests {
         for selector in [
             os(&["--lang", "js"]),
             os(&["--lang=javascript"]),
+            os(&["--lang=es"]),
             os(&["--lang", "ts"]),
             os(&["--lang=typescript"]),
         ] {

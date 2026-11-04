@@ -100,7 +100,7 @@ report re-rendering commands are in the [benchmark README](../../benchmark/READM
 
 `publish.yml` validates the `v`-prefixed SemVer tag before publishing jobs run. Maven
 publication and the four Linux/macOS binary builds follow validation. The release job
-collects binaries, builds the JVM JAR and the self-contained JS frontend archive, verifies assets and renders the Homebrew formula.
+collects binaries, builds the JVM JAR and the standalone JS frontend binaries, verifies assets and renders the Homebrew formula.
 Docker and Homebrew jobs consume those release assets.
 
 Tag pushes and `repository_dispatch: publish` are real publication paths: Sonatype,

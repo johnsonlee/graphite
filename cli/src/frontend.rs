@@ -1,7 +1,7 @@
 //! Locating and describing frontends.
 //!
 //! Frontends turn compiled artifacts into graphs. The JVM frontend runs SootUp;
-//! the JavaScript frontend analyzes emitted JS under Node.js using the TypeScript API.
+//! the JavaScript frontend analyzes emitted JS using a bundled TypeScript compiler.
 //! This module locates their launchers and runtimes and reports what it found. Nothing here touches the real environment directly: every lookup goes through
 //! [`Env`], so the search order is unit-tested against fake homes and PATHs.
 
@@ -16,6 +16,7 @@ pub(crate) enum Lang {
     Js,
 }
 
+const MANAGED_FRONTENDS: &str = "~/.graphite/frontends";
 const JS_ALIASES: &[&str] = &["javascript", "ts", "typescript", "es"];
 
 impl Lang {
@@ -99,7 +100,7 @@ pub enum Launch {
     Jar(PathBuf),
     /// A JavaScript entry point, run as `node <script> <args>`.
     Node(PathBuf),
-    /// An executable (`graphite-frontend-jvm` launcher), run directly.
+    /// A native frontend or a user-supplied launcher, run directly.
     Executable(PathBuf),
 }
 
@@ -127,6 +128,11 @@ impl Frontend {
                 cmd.arg(script);
                 cmd
             }
+            Launch::Executable(program)
+                if self.lang == "js" && self.found_via == MANAGED_FRONTENDS =>
+            {
+                managed_js_command(program)
+            }
             Launch::Executable(program) => Command::new(program),
         })
     }
@@ -147,8 +153,61 @@ pub const JVM_FRONTEND_JAR: &str = "graphite-frontend-jvm.jar";
 /// The asset name on a GitHub release.
 pub const JVM_RELEASE_ASSET: &str = "graphite.jar";
 
-pub const JS_RELEASE_ASSET: &str = "graphite-frontend-js.tgz";
-pub const JS_INSTALLED_ENTRY: &str = "package/dist/cli.js";
+pub(crate) fn managed_js_command(program: &Path) -> std::process::Command {
+    let mut cmd = std::process::Command::new(program);
+    // Keep the embedded runtime in application mode. User Bun flags can
+    // otherwise launch the Bun CLI or preload code.
+    cmd.env_remove("BUN_BE_BUN").env_remove("BUN_OPTIONS");
+    cmd
+}
+
+/// A static Graphite CLI can run on either Linux libc. Select the frontend
+/// whose ELF interpreter is available on this host, independently of how the
+/// Rust binary was linked.
+pub fn js_release_asset() -> Result<String, String> {
+    js_release_asset_for(std::env::consts::OS, std::env::consts::ARCH, |loader| {
+        Path::new(loader).is_file()
+    })
+}
+
+fn js_release_asset_for(
+    os: &str,
+    arch: &str,
+    exists: impl Fn(&str) -> bool,
+) -> Result<String, String> {
+    let target = match (os, arch) {
+        ("macos", "aarch64" | "x86_64") => format!("{arch}-apple-darwin"),
+        ("linux", "aarch64" | "x86_64") => {
+            let gnu = if arch == "aarch64" {
+                "/lib/ld-linux-aarch64.so.1"
+            } else {
+                "/lib64/ld-linux-x86-64.so.2"
+            };
+            let musl = format!("/lib/ld-musl-{arch}.so.1");
+            let musl_available = exists(&musl);
+            // Alpine's gcompat and older libc6-compat expose a GNU loader path
+            // that launches musl. Select the native binary on those hosts.
+            let native_musl =
+                musl_available && (exists("/etc/alpine-release") || exists("/lib/libgcompat.so.0"));
+            let libc = if !native_musl && exists(gnu) {
+                "gnu"
+            } else if musl_available {
+                "musl"
+            } else {
+                return Err(format!(
+                    "no compatible JS frontend for {os}/{arch}: expected {gnu} or {musl}"
+                ));
+            };
+            format!("{arch}-unknown-linux-{libc}")
+        }
+        _ => {
+            return Err(format!(
+            "no JS frontend release for {os}/{arch}; use {JS_FRONTEND_VAR} to supply a frontend"
+        ))
+        }
+    };
+    Ok(format!("graphite-frontend-js-{target}"))
+}
 
 /// Pin the emitted-JavaScript frontend entry point or executable launcher.
 pub const JS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_JS";
@@ -157,7 +216,7 @@ pub const TS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_TS";
 /// Pin the Node.js runtime used for a JavaScript entry point.
 pub const NODE_VAR: &str = "GRAPHITE_NODE";
 
-fn is_launcher(path: &Path) -> bool {
+pub(crate) fn is_launcher(path: &Path) -> bool {
     let Ok(meta) = path.metadata() else {
         return false;
     };
@@ -214,17 +273,20 @@ pub fn locate_js(env: &Env) -> Option<Frontend> {
             let installed = env.frontends_dir()?.join("js");
             Some(Frontend {
                 lang: "js",
-                launch: Launch::Node(newest_installed(&installed, JS_INSTALLED_ENTRY, |name| {
-                    semver::Version::parse(name).ok()
-                })?),
-                found_via: "~/.graphite/frontends",
+                launch: Launch::Executable(newest_installed(
+                    &installed,
+                    &js_release_asset().ok()?,
+                    is_launcher,
+                    |name| semver::Version::parse(name).ok(),
+                )?),
+                found_via: MANAGED_FRONTENDS,
             })
         })
 }
 
 pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
     env.var_path(NODE_VAR).or_else(|| env.which("node")).ok_or_else(|| {
-        format!("node not found. The JavaScript artifact frontend needs Node.js: put node on PATH or set {NODE_VAR}.")
+        format!("node not found. This JavaScript entry point needs Node.js: put node on PATH or set {NODE_VAR}.")
     })
 }
 
@@ -281,13 +343,13 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
         });
     }
     let installed = env.frontends_dir()?.join("jvm");
-    let jar = newest_installed(&installed, JVM_FRONTEND_JAR, |name| {
+    let jar = newest_installed(&installed, JVM_FRONTEND_JAR, Path::is_file, |name| {
         Some(VersionKey::parse(name))
     })?;
     Some(Frontend {
         lang: "jvm",
         launch: Launch::Jar(jar),
-        found_via: "~/.graphite/frontends",
+        found_via: MANAGED_FRONTENDS,
     })
 }
 
@@ -296,6 +358,7 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
 fn newest_installed<K: Ord>(
     dir: &Path,
     entry_point: &str,
+    usable: fn(&Path) -> bool,
     version_key: impl Fn(&str) -> Option<K>,
 ) -> Option<PathBuf> {
     std::fs::read_dir(dir)
@@ -304,7 +367,7 @@ fn newest_installed<K: Ord>(
         .filter_map(|entry| {
             let path = entry.path().join(entry_point);
             let version = version_key(&entry.file_name().to_string_lossy())?;
-            path.is_file().then_some((version, path))
+            usable(&path).then_some((version, path))
         })
         .max()
         .map(|(_, path)| path)
@@ -547,25 +610,70 @@ mod tests {
     }
 
     #[test]
-    fn js_discovery_picks_the_newest_complete_release_and_keeps_launcher_overrides() {
+    fn js_assets_match_supported_hosts_and_prefer_an_available_gnu_interpreter() {
+        for (arch, gnu) in [
+            ("aarch64", "/lib/ld-linux-aarch64.so.1"),
+            ("x86_64", "/lib64/ld-linux-x86-64.so.2"),
+        ] {
+            let musl = format!("/lib/ld-musl-{arch}.so.1");
+            let darwin_asset = js_release_asset_for("macos", arch, |_| false).unwrap();
+            assert_eq!(
+                darwin_asset,
+                format!("graphite-frontend-js-{arch}-apple-darwin")
+            );
+            for (paths, libc) in [
+                (vec![gnu], "gnu"),
+                (vec![musl.as_str()], "musl"),
+                (vec![gnu, &musl], "gnu"),
+                (vec![gnu, &musl, "/etc/alpine-release"], "musl"),
+                (vec![gnu, &musl, "/lib/libgcompat.so.0"], "musl"),
+            ] {
+                assert_eq!(
+                    js_release_asset_for("linux", arch, |path| paths.contains(&path)).unwrap(),
+                    format!("graphite-frontend-js-{arch}-unknown-linux-{libc}")
+                );
+            }
+            let missing = js_release_asset_for("linux", arch, |_| false).unwrap_err();
+            assert!(missing.contains(gnu) && missing.contains(&musl));
+        }
+        for (os, arch) in [("windows", "x86_64"), ("linux", "riscv64")] {
+            assert!(js_release_asset_for(os, arch, |_| true)
+                .unwrap_err()
+                .contains(&format!("{os}/{arch}")));
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn js_discovery_picks_the_newest_complete_host_executable_and_keeps_overrides() {
+        use std::os::unix::fs::PermissionsExt;
+        let Ok(asset) = js_release_asset() else {
+            return;
+        };
         let root = tempfile::tempdir().unwrap();
         let mut env = Env {
             home: Some(root.path().into()),
             ..Default::default()
         };
         let base = env.frontends_dir().unwrap().join("js");
+        let executable = |file: PathBuf| {
+            touch(&file);
+            std::fs::set_permissions(&file, std::fs::Permissions::from_mode(0o755)).unwrap();
+        };
         for v in ["2.5.0", "2.6.0-rc.2", "2.6.0-rc.10", ".tmp-install"] {
-            touch(&base.join(v).join(JS_INSTALLED_ENTRY));
+            executable(base.join(v).join(&asset));
         }
-        touch(&base.join("9.0.0/partial"));
+        touch(&base.join("9.0.0").join(&asset)); // incomplete or non-executable
+        executable(base.join("9.1.0/graphite-frontend-js-foreign-target"));
+        touch(&base.join("9.2.0/package/dist/cli.js"));
         assert_eq!(
             locate_js(&env).unwrap().path(),
-            base.join("2.6.0-rc.10").join(JS_INSTALLED_ENTRY)
+            base.join("2.6.0-rc.10").join(&asset)
         );
-        let stable = base.join("2.6.0+release").join(JS_INSTALLED_ENTRY);
-        touch(&stable);
+        let stable = base.join("2.6.0+release").join(&asset);
+        executable(stable.clone());
         let managed = locate_js(&env).unwrap();
-        assert_eq!(managed.launch, Launch::Node(stable));
+        assert_eq!(managed.launch, Launch::Executable(stable));
         assert_eq!(managed.found_via, "~/.graphite/frontends");
         let pinned = root.path().join("custom.js");
         touch(&pinned);

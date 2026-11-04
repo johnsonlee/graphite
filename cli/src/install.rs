@@ -10,6 +10,7 @@ mod js;
 
 use crate::frontend::{self, Env, Lang};
 use sha2::{Digest, Sha256};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -24,7 +25,8 @@ pub fn install(
         .map_err(|e| format!("invalid release version '{version}': {e}"))?;
     match lang {
         Lang::Jvm => install_jvm(env, version, skip_checksum),
-        Lang::Js => js::install_js(env, version, skip_checksum),
+        Lang::Js if skip_checksum => Err("--skip-checksum is only supported for legacy JVM releases; install the JS frontend without this flag".into()),
+        Lang::Js => js::install_js(env, version),
     }
 }
 
@@ -47,9 +49,20 @@ pub fn parse_sha256_file(text: &str) -> Option<String> {
 }
 
 pub fn sha256_of(path: &Path) -> Result<String, String> {
-    let bytes = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let mut file = std::fs::File::open(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let mut sha = Sha256::new();
+    let mut buffer = [0_u8; 64 * 1024];
+    loop {
+        let count = file
+            .read(&mut buffer)
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+        if count == 0 {
+            break;
+        }
+        sha.update(&buffer[..count]);
+    }
     const HEX: &[u8; 16] = b"0123456789abcdef";
-    let digest = Sha256::digest(bytes);
+    let digest = sha.finalize();
     let mut hex = String::with_capacity(digest.len() * 2);
     for &byte in digest.iter() {
         hex.push(char::from(HEX[usize::from(byte >> 4)]));
@@ -117,7 +130,9 @@ fn download_verified(
                 .ok_or_else(|| format!("{sum_url} does not contain a sha256 digest"))?;
             let actual = sha256_of(asset)?;
             if actual != expected {
-                return Err(format!("checksum mismatch for {url}: expected {expected}, got {actual}"));
+                return Err(format!(
+                    "checksum mismatch for {url}: expected {expected}, got {actual}"
+                ));
             }
             Ok(())
         }
@@ -126,7 +141,7 @@ fn download_verified(
             Ok(())
         }
         Err(error) => Err(format!(
-            "{error}. Releases before checksums were published can be installed with --skip-checksum."
+            "{error}. A SHA-256 checksum is required for this release asset."
         )),
     }
 }
