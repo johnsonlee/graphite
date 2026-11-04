@@ -44,6 +44,21 @@
         "strings": 111202
       },
       "reason": "The candidate changes source/header discovery and signature extraction. On the same pinned Signal 7.70.1.917 corpus and Xcode 16.4 runner, the observed baseline has 2594 files and 357780 nodes; the candidate has 3853 files and 449760 nodes. Full shapes were separately verified in calibration run 37798249852. They represent different work and cannot establish a paired performance comparison."
+    },
+    "0818c68ecd084e14e80a978f7940c6d9d03e1a9a": {
+      "shape": {
+        "files": 2594,
+        "types": 6718,
+        "methods": 31695,
+        "fields": 27524,
+        "callSites": 156129,
+        "constants": 34428,
+        "annotations": 4943,
+        "nodes": 357780,
+        "edges": 169184,
+        "strings": 111202
+      },
+      "reason": "Expected shape reused from baseline 332c0d8a6fec650a6e7979e3dce37aa1a891c03a, measured in hosted calibration run 37798249852. Baseline 0818c68ecd084e14e80a978f7940c6d9d03e1a9a has the identical frontend/apple Git tree (1deb1cade3b2a13bef8af3cd6d9c57a42d6fece4). This is source-equivalence provenance, not a new calibration or performance measurement. The gate must still validate its actual emitted shape; baseline and candidate perform different work, so this remains a ceilings-only transition."
     }
   }
 }

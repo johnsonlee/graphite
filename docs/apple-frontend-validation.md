@@ -481,3 +481,19 @@ comment are tracked on [PR #176](https://github.com/johnsonlee/graphite/pull/176
 Consult that live check for the final PR head; this report does not substitute a static
 calibration result for the required gate. Passing the gate's own thresholds would not
 override the stricter local performance conclusions above.
+
+## Base branch synchronization (2026-11-05)
+
+PR #176 now targets base `0818c68ecd084e14e80a978f7940c6d9d03e1a9a`.
+The target branch rewrote its history after the original `332c0d8a` baseline.
+All 17 follow-up commits were rebased onto that updated branch. The rebased tree
+retains every previous follow-up change and adds only the target branch's six
+upstream JVM/CODEOWNERS/documentation changes.
+
+The two baseline revisions have identical Apple source trees
+(`1deb1cade3b2a13bef8af3cd6d9c57a42d6fece4`). SwiftPM and Signal manifests
+therefore retain their historical baseline pins and additionally select the same
+expected shape for the new full baseline SHA. The gate still validates the actual
+emitted shape. This source-equivalence check is not a new calibration or performance
+result; original evidence, thresholds and unresolved performance conclusions remain
+as recorded above.
