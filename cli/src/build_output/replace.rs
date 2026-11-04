@@ -1,6 +1,5 @@
 //! Serialize frontend publishers of one packed graph. Back up only its digest:
 //! the container itself is untouched until the final atomic rename.
-use super::publish_new_file;
 use same_file::Handle;
 use std::fs::{self, File};
 use std::io::{self, Write};
@@ -105,52 +104,41 @@ impl Claim {
         staged: &Path,
         staged_digest: &Path,
         output: &Path,
+        (old_output, old_digest): (&Handle, &Handle),
         rename: impl Fn(&Path, &Path) -> io::Result<()>,
     ) -> Result<(), String> {
         let digest = graphite_storage::container::digest_path(output);
         let inspect =
             |p: &Path| regular(p).map_err(|e| format!("could not inspect {}: {e}", p.display()));
-        let old_output = inspect(output)?;
-        let old_digest = inspect(&digest)?;
         let backup = self.dir.join("previous.sha256");
         let new_digest = Handle::from_path(staged_digest).map_err(|e| e.to_string())?;
-        let permissions = old_digest
-            .as_ref()
-            .map(|previous| self.backup_digest(&digest, previous))
-            .transpose()
+        let permissions = self
+            .backup_digest(&digest, old_digest)
             .map_err(|e| format!("could not back up {}: {e}", digest.display()))?;
 
-        let publish = |from: &Path, to: &Path, old: Option<&Handle>| {
+        let publish = |from: &Path, to: &Path, old: &Handle| {
             if !self.owns_dir().map_err(|e| e.to_string())? {
                 return Err(format!("publication claim changed: {}", self.dir.display()));
             }
-            if let Some(id) = old {
-                if inspect(to)?.as_ref() != Some(id) {
-                    return Err(format!(
-                        "destination changed during publication: {}",
-                        to.display()
-                    ));
-                }
-                rename(from, to).map_err(|e| format!("could not publish {}: {e}", to.display()))
-            } else {
-                publish_new_file(from, to, &|a, b| fs::hard_link(a, b))
+            if inspect(to)?.as_ref() != Some(old) {
+                return Err(format!(
+                    "destination changed during publication: {}",
+                    to.display()
+                ));
             }
+            rename(from, to).map_err(|e| format!("could not publish {}: {e}", to.display()))
         };
-        publish(staged_digest, &digest, old_digest.as_ref())?;
-        if let Err(error) = publish(staged, output, old_output.as_ref()) {
+        publish(staged_digest, &digest, old_digest)?;
+        if let Err(error) = publish(staged, output, old_output) {
             let rollback = (|| {
                 if regular(&digest)?.as_ref() != Some(&new_digest) {
                     return Err(io::Error::other("another writer changed the digest"));
                 }
-                if let Some(p) = permissions {
-                    if !self.owns_dir()? || regular(&backup)?.as_ref() != self.backup.as_ref() {
-                        return Err(io::Error::other("digest backup changed"));
-                    }
-                    fs::set_permissions(&backup, p)?;
-                    fs::rename(&backup, &digest)
-                } else {
-                    fs::remove_file(&digest)
+                if !self.owns_dir()? || regular(&backup)?.as_ref() != self.backup.as_ref() {
+                    return Err(io::Error::other("digest backup changed"));
                 }
+                fs::set_permissions(&backup, permissions)?;
+                fs::rename(&backup, &digest)
             })();
             if let Err(e) = rollback {
                 self.retain = true;
@@ -233,19 +221,32 @@ mod tests {
         let candidate = packed(&tmp.path().join("candidate"), "replacement");
         let sidecar = container::digest_path(&candidate);
         let new_digest = fs::read(&sidecar).unwrap();
+        let old_container = regular(&old).unwrap().unwrap();
+        let old_digest = regular(&digest).unwrap().unwrap();
         let err = Claim::new(&old)
             .unwrap()
-            .replace(&candidate, &sidecar, &old, |a, b| {
-                if b == old {
-                    assert_eq!(fs::read(&digest)?, new_digest);
-                    assert_eq!(fs::read(&old)?, before.0);
-                    return Err(io::Error::new(
-                        io::ErrorKind::PermissionDenied,
-                        "container is busy",
-                    ));
-                }
-                fs::rename(a, b)
-            })
+            .replace(
+                &candidate,
+                &sidecar,
+                &old,
+                (&old_container, &old_digest),
+                |a, b| {
+                    if b == old {
+                        // A late CreateNew publisher cannot claim the existing digest,
+                        // even between the two rebuild renames.
+                        assert!(super::super::packed::publish(&candidate, &digest, &old)
+                            .unwrap_err()
+                            .contains("already exists"));
+                        assert_eq!(fs::read(&digest)?, new_digest);
+                        assert_eq!(fs::read(&old)?, before.0);
+                        return Err(io::Error::new(
+                            io::ErrorKind::PermissionDenied,
+                            "container is busy",
+                        ));
+                    }
+                    fs::rename(a, b)
+                },
+            )
             .unwrap_err();
         assert!(err.contains("container is busy"));
         assert_eq!(
@@ -257,9 +258,13 @@ mod tests {
         let retry = packed(&tmp.path().join("retry"), "replacement");
         Claim::new(&old)
             .unwrap()
-            .replace(&retry, &container::digest_path(&retry), &old, |a, b| {
-                fs::rename(a, b)
-            })
+            .replace(
+                &retry,
+                &container::digest_path(&retry),
+                &old,
+                (&old_container, &regular(&digest).unwrap().unwrap()),
+                |a, b| fs::rename(a, b),
+            )
             .unwrap();
         verify(&old, "replacement");
         assert!(!old.with_added_extension("lock").exists());
@@ -270,6 +275,8 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let old = packed(&tmp.path().join("old"), "previous");
         let digest = container::digest_path(&old);
+        let old_container = regular(&old).unwrap().unwrap();
+        let old_digest = regular(&digest).unwrap().unwrap();
         fs::remove_file(&digest).unwrap();
         fs::create_dir(&digest).unwrap();
         fs::write(digest.join("keep"), "other data").unwrap();
@@ -281,10 +288,11 @@ mod tests {
                 &candidate,
                 &container::digest_path(&candidate),
                 &old,
+                (&old_container, &old_digest),
                 |a, b| fs::rename(a, b),
             )
             .unwrap_err();
-        assert!(err.contains("not a regular file"));
+        assert!(err.contains("could not back up"));
         assert_eq!(fs::read(&old).unwrap(), bytes);
         assert_eq!(
             fs::read_to_string(digest.join("keep")).unwrap(),
@@ -300,27 +308,17 @@ mod tests {
         let candidate = packed(&tmp.path().join("candidate"), "new");
         fs::remove_file(&candidate).unwrap();
         let digest = container::digest_path(&output);
-        assert!(Claim::new(&output)
-            .unwrap()
-            .replace(
-                &candidate,
-                &container::digest_path(&candidate),
-                &output,
-                |a, b| fs::rename(a, b)
-            )
-            .is_err());
+        assert!(super::super::packed::publish(
+            &candidate,
+            &container::digest_path(&candidate),
+            &output
+        )
+        .is_err());
         assert!(
             !output.exists() && !digest.exists() && !output.with_added_extension("lock").exists()
         );
         let candidate = packed(&tmp.path().join("retry"), "new");
-        Claim::new(&output)
-            .unwrap()
-            .replace(
-                &candidate,
-                &container::digest_path(&candidate),
-                &output,
-                |a, b| fs::rename(a, b),
-            )
+        super::super::packed::publish(&candidate, &container::digest_path(&candidate), &output)
             .unwrap();
         verify(&output, "new");
     }
@@ -413,6 +411,10 @@ mod tests {
                 &candidate,
                 &container::digest_path(&candidate),
                 &output,
+                (
+                    &regular(&output).unwrap().unwrap(),
+                    &regular(&digest).unwrap().unwrap(),
+                ),
                 |a, b| {
                     assert!(Claim::new(&output).is_err());
                     if b == output {

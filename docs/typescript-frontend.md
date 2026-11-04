@@ -62,16 +62,24 @@ directory creation, then links or copies the completed graph files into it. The
 directory can be visible during this fallback. Readers can load the graph only
 after its node-data header is published last. An interrupted fallback can leave
 an incomplete directory; inspect it and remove it before retrying. Failed
-analysis or invalid interchange leaves the destination and its parents untouched. Packed graphs use the existing entry manifest and SHA-256 verification,
+analysis or invalid interchange leaves the destination and its parents untouched.
+
+Packed graphs use the existing entry manifest and SHA-256 verification,
 including the adjacent `.graphite.sha256` file. Both JS and JVM builds can rebuild
 an existing `.graphite` output. The publisher verifies its manifest and matching
 sidecar and checks that neither file was replaced during analysis. An unrelated
 file, incomplete pair or mismatched digest stays untouched. A new build claims
-the digest first, then publishes the container. During a rebuild the publisher
+the digest first, then publishes the container. If neither hard links nor
+exclusive rename work on the output filesystem, it creates each file exclusively
+and copies the staged bytes. The packed file is visible but cannot be opened by
+Graphite until its ZIP end record is committed. An interruption can leave a
+sidecar or an unreadable partial container. Confirm the publisher has exited
+and inspect the files before removing them and retrying. During a rebuild the publisher
 backs up the old digest and restores it if the container rename fails. A reader
 checking the two files between renames can see a transient digest mismatch.
 Use a joined option such as `--output=--sample.graphite` for a filename starting
 with a dash. A separate output flag requires a path.
+
 An interrupted build can leave a private `.graphite-build-<pid>-*` directory
 beside the output, under its nearest existing ancestor or in system temp. On Linux and macOS, the
 next build that stages in that location removes marked stages only after both

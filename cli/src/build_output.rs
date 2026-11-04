@@ -3,6 +3,7 @@
 use std::path::{Path, PathBuf};
 
 mod directory;
+mod packed;
 mod replace;
 mod stale;
 
@@ -20,59 +21,6 @@ fn create_output_parent(output: &Path) -> Result<(), String> {
             .map_err(|e| format!("could not create {}: {e}", parent.display()))?;
     }
     Ok(())
-}
-
-/// Both staged files are complete. Claim the digest first so a visible container
-/// always has its matching digest, even when multiple builds race.
-fn publish_container(staged: &Path, staged_digest: &Path, output: &Path) -> Result<(), String> {
-    publish_with(staged, staged_digest, output, |from, to| {
-        std::fs::hard_link(from, to)
-    })
-}
-
-fn publish_with(
-    staged: &Path,
-    staged_digest: &Path,
-    output: &Path,
-    hard_link: impl Fn(&Path, &Path) -> std::io::Result<()>,
-) -> Result<(), String> {
-    let digest = graphite_storage::container::digest_path(output);
-    publish_new_file(staged_digest, &digest, &hard_link)?;
-    if let Err(error) = publish_new_file(staged, output, &hard_link) {
-        std::fs::remove_file(&digest)
-            .map_err(|e| format!("{error}; could not remove {}: {e}", digest.display()))?;
-        return Err(error);
-    }
-    Ok(())
-}
-
-fn publish_new_file(
-    from: &Path,
-    to: &Path,
-    hard_link: &impl Fn(&Path, &Path) -> std::io::Result<()>,
-) -> Result<(), String> {
-    let exists = || format!("output already exists: {}", to.display());
-    match hard_link(from, to) {
-        Ok(()) => Ok(()),
-        Err(e) if e.kind() == std::io::ErrorKind::AlreadyExists => Err(exists()),
-        Err(link_error) => {
-            // Same-filesystem staging allows an exclusive native rename on
-            // macOS, Linux, and Windows even where hard links are disabled.
-            let staged = tempfile::TempPath::try_from_path(from)
-                .map_err(|e| format!("could not access {}: {e}", from.display()))?;
-            staged.persist_noclobber(to).map_err(|e| {
-                if e.error.kind() == std::io::ErrorKind::AlreadyExists {
-                    exists()
-                } else {
-                    format!(
-                        "could not publish {}: {link_error} (hard link); {} (no-clobber persist)",
-                        to.display(),
-                        e.error
-                    )
-                }
-            })
-        }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -145,14 +93,21 @@ impl Stage {
         let report = graphite_storage::container::pack(&self.graph(), &destination)
             .map_err(|e| format!("could not pack {}: {e}", output.display()))?;
         create_output_parent(output)?;
-        let mut claim = replace::Claim::new(output)?;
         match publication {
-            Publication::CreateNew => publish_container(&destination, &report.digest_file, output)?,
-            Publication::Rebuild { .. } => {
+            Publication::CreateNew => packed::publish(&destination, &report.digest_file, output)?,
+            Publication::Rebuild {
+                ref container,
+                ref digest,
+            } => {
+                let mut claim = replace::Claim::new(output)?;
                 publication.verify_rebuild(output)?;
-                claim.replace(&destination, &report.digest_file, output, |a, b| {
-                    std::fs::rename(a, b)
-                })?
+                claim.replace(
+                    &destination,
+                    &report.digest_file,
+                    output,
+                    (container, digest),
+                    |a, b| std::fs::rename(a, b),
+                )?
             }
         }
         crate::pack::print_report(&report, output);
@@ -161,7 +116,7 @@ impl Stage {
 
     pub(crate) fn publish_directory(&self, output: &Path) -> Result<(), String> {
         create_output_parent(output)?;
-        directory::publish(&self.graph(), output, rename_directory_exclusive).map_err(|e| {
+        directory::publish(&self.graph(), output, rename_exclusive).map_err(|e| {
             if e.kind() == std::io::ErrorKind::AlreadyExists {
                 format!("output already exists: {}", output.display())
             } else {
@@ -236,17 +191,17 @@ impl Stage {
     target_os = "android",
     target_os = "redox"
 ))]
-fn rename_directory_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
+fn rename_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
     use rustix::fs::{renameat_with, RenameFlags, CWD};
     Ok(renameat_with(CWD, from, CWD, to, RenameFlags::NOREPLACE)?)
 }
 
 #[cfg(windows)]
-fn rename_directory_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
+fn rename_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
     // On Windows persist_noclobber uses MoveFileExW without REPLACE_EXISTING or COPY_ALLOWED.
-    tempfile::TempPath::try_from_path(from)?
-        .persist_noclobber(to)
-        .map_err(|e| e.error)
+    let mut staged = tempfile::TempPath::try_from_path(from)?;
+    staged.disable_cleanup(true); // The stage owns the source even if the rename fails.
+    staged.persist_noclobber(to).map_err(|e| e.error)
 }
 
 #[cfg(not(any(
@@ -256,10 +211,10 @@ fn rename_directory_exclusive(from: &Path, to: &Path) -> std::io::Result<()> {
     target_os = "android",
     target_os = "redox"
 )))]
-fn rename_directory_exclusive(_: &Path, _: &Path) -> std::io::Result<()> {
+fn rename_exclusive(_: &Path, _: &Path) -> std::io::Result<()> {
     Err(std::io::Error::new(
         std::io::ErrorKind::Unsupported,
-        "exclusive directory rename is unavailable",
+        "exclusive rename is unavailable",
     ))
 }
 
@@ -471,7 +426,7 @@ mod tests {
         };
         let unsupported = |_: &Path, _: &Path| Err(std::io::ErrorKind::Unsupported.into());
         pack();
-        publish_with(&staged, &checksum, &output, unsupported).unwrap();
+        packed::publish_with(&staged, &checksum, &output, unsupported, rename_exclusive).unwrap();
         assert_eq!(std::fs::read(&output).unwrap(), data);
         assert_eq!(std::fs::read_to_string(&digest).unwrap(), checksum_data);
 
@@ -479,14 +434,20 @@ mod tests {
         std::fs::remove_file(&digest).unwrap();
         std::fs::write(&output, b"another writer").unwrap();
         pack();
-        assert!(publish_with(&staged, &checksum, &output, unsupported).is_err());
+        assert!(
+            packed::publish_with(&staged, &checksum, &output, unsupported, rename_exclusive)
+                .is_err()
+        );
         assert_eq!(std::fs::read(&output).unwrap(), b"another writer");
         assert!(!digest.exists());
 
         std::fs::remove_file(&output).unwrap();
         std::fs::write(&digest, b"another digest").unwrap();
         pack();
-        assert!(publish_with(&staged, &checksum, &output, unsupported).is_err());
+        assert!(
+            packed::publish_with(&staged, &checksum, &output, unsupported, rename_exclusive)
+                .is_err()
+        );
         assert!(!output.exists());
         assert_eq!(std::fs::read(&digest).unwrap(), b"another digest");
     }
@@ -506,7 +467,7 @@ mod tests {
         let barrier = std::sync::Barrier::new(2);
         let publish = |(file, checksum): &(PathBuf, PathBuf)| {
             barrier.wait();
-            publish_container(file, checksum, &output)
+            packed::publish(file, checksum, &output)
         };
         let (first, second) = std::thread::scope(|scope| {
             let first = scope.spawn(|| publish(&staged[0]));
@@ -530,7 +491,7 @@ mod tests {
         let retry_digest = root.0.join("retry.sha256");
         std::fs::write(&retry_file, b"competing retry").unwrap();
         std::fs::write(&retry_digest, b"digest of competing retry").unwrap();
-        assert!(publish_container(&retry_file, &retry_digest, &output).is_err());
+        assert!(packed::publish(&retry_file, &retry_digest, &output).is_err());
         assert_eq!(std::fs::read_to_string(&output).unwrap(), winner);
         assert!(!digest.exists());
     }

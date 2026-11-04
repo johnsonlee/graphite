@@ -60,7 +60,7 @@ fn probe_unsupported(
         .is_err_and(|e| e.kind() == io::ErrorKind::InvalidInput || rename_unsupported(&e)))
 }
 
-fn rename_unsupported(e: &io::Error) -> bool {
+pub(super) fn rename_unsupported(e: &io::Error) -> bool {
     if e.kind() == io::ErrorKind::Unsupported {
         return true;
     }
