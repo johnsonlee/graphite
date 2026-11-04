@@ -30,7 +30,18 @@ public final class Emitter {
     private var qualifiedNames: [String: String] = [:]
     private var descriptors: [String: GraphiteIRMethodRef] = [:]
     private lazy var typeNames: [String: String] = declaredTypeNames()
-    private var declarations: [SourcePosition: (className: String, member: String)] = [:]
+    private struct AnnotationTarget: Hashable {
+        let className: String
+        let member: String
+    }
+    private var declarations: [SourcePosition: [AnnotationTarget]] = [:]
+
+    private func recordDeclaration(at position: SourcePosition, className: String, member: String) {
+        let target = AnnotationTarget(className: className, member: member)
+        if !declarations[position, default: []].contains(target) {
+            declarations[position, default: []].append(target)
+        }
+    }
     /// The model's declarations indexed once, so name resolution stays linear overall.
     private let typesByUSR: [String: TypeDecl]
     private let membersByContainer: [String: [MemberDecl]]
@@ -302,7 +313,7 @@ public final class Emitter {
         for type in model.types where type.kind != .extension {
             let name = qualifiedName(ofType: type.symbol.usr)
             try writer.addClassOrigin(className: name, source: type.module)
-            declarations[type.position] = (name, "<class>")
+            recordDeclaration(at: type.position, className: name, member: "<class>")
             summary.types += 1
         }
     }
@@ -318,7 +329,7 @@ public final class Emitter {
             } else {
                 declaring = member.module
             }
-            declarations[member.position] = (declaring, member.symbol.name)
+            recordDeclaration(at: member.position, className: declaring, member: member.symbol.name)
             switch member.kind {
             case .method, .initializer, .deinitializer, .function:
                 try writer.addMethod(descriptor(for: member.symbol, module: member.module, container: member.container, at: member.position, declaredAt: member.declaration))
@@ -420,19 +431,21 @@ public final class Emitter {
     private func emitAnnotations() throws {
         for (_, fileFacts) in facts.sorted(by: { $0.key < $1.key }) {
             for attribute in fileFacts.attributes {
-                guard let target = declarations[attribute.position] else { continue }
-                var annotation = GraphiteIRAnnotation()
-                annotation.name = attribute.name
-                annotation.className = target.className
-                annotation.memberName = target.member
-                if let arguments = attribute.arguments {
-                    var named = GraphiteIRNamedValue()
-                    named.name = "arguments"
-                    named.value.stringValue = arguments
-                    annotation.values = [named]
+                guard let targets = declarations[attribute.position] else { continue }
+                for target in targets {
+                    var annotation = GraphiteIRAnnotation()
+                    annotation.name = attribute.name
+                    annotation.className = target.className
+                    annotation.memberName = target.member
+                    if let arguments = attribute.arguments {
+                        var named = GraphiteIRNamedValue()
+                        named.name = "arguments"
+                        named.value.stringValue = arguments
+                        annotation.values = [named]
+                    }
+                    try writer.addNode(.annotation(annotation))
+                    summary.annotations += 1
                 }
-                try writer.addNode(.annotation(annotation))
-                summary.annotations += 1
             }
         }
     }

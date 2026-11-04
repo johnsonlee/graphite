@@ -21,11 +21,12 @@ let package = Package(
             name: "GraphiteIR",
             dependencies: [.product(name: "SwiftProtobuf", package: "swift-protobuf")]
         ),
+        .target(name: "CGraphiteIndex", linkerSettings: [.linkedLibrary("dl", .when(platforms: [.linux]))]),
         // Index store reader, SwiftSyntax literal pass and the Graph IR emitter.
         .target(
             name: "GraphiteFrontend",
             dependencies: [
-                "GraphiteIR",
+                "GraphiteIR", "CGraphiteIndex",
                 .product(name: "IndexStoreDB", package: "indexstore-db"),
                 .product(name: "SwiftSyntax", package: "swift-syntax"),
                 .product(name: "SwiftParser", package: "swift-syntax"),

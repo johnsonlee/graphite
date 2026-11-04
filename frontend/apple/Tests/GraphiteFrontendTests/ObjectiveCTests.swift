@@ -130,7 +130,7 @@ final class ObjectiveCTests: XCTestCase {
     func testTheStoreYieldsTheClassItsMembersAndItsCalls() throws {
         let library = try XCTUnwrap(IndexReader.locateLibrary(environment: ProcessInfo.processInfo.environment))
         let reader = try IndexReader(storePath: Self.storePath, libraryPath: library)
-        let model = reader.read(files: try Frontend.sourceFiles(under: [Self.root.path]))
+        let model = try reader.read(files: Frontend.sourceFiles(under: [Self.root.path]))
         // The `@interface` in the header and the `@implementation` are one class; the
         // protocol, which has no definition, is declared once; the category is an extension.
         // The anonymous struct has no name of its own in the index (the emitter names it by
