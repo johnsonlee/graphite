@@ -79,13 +79,52 @@ configuration and DerivedData path, then rebuild. Sources excluded from a target
 need not all have occurrences; a declaration-only graph can legitimately have no
 call-site nodes.
 
+## Inventory a selected built application's resources
+
+Select the actual built product, not its source directory or a directory containing
+several products. Bundles are explicit inputs: the frontend does not infer them by
+scanning Pods, caches or all of DerivedData.
+
+```bash
+"$graphite" build ~/src/MyApp -o ~/graphs/myapp-with-resources.graphite \
+  --skip-build --derived-data ~/graphs/MyApp-DerivedData \
+  --resource-bundle "$HOME/graphs/MyApp-DerivedData/Build/Products/Debug-iphonesimulator/MyApp.app"
+```
+
+Repeat `--resource-bundle` for separately selected `.appex` products with different
+bundle identifiers. Selecting the same product twice is deduplicated; selecting two
+build variants with the same identifier is rejected. Inventory paths include the
+bundle identifier so identically named files and keys in different bundles stay
+distinct. `profile` records the locale without changing its spelling.
+
+The frontend inventories `Info.plist` and the selected bundle's immediate
+`*.lproj/*.strings` tables. Supported scalar and list values retain their types.
+GraphStore v3 cannot preserve dictionaries, including dictionaries nested in lists;
+plist dates and binary data also lack a supported persisted representation here.
+Those complete top-level keys are omitted with a diagnostic, and the frontend
+returns partial-graph status 3. The CLI preserves the existing graph by default.
+Read the omissions before explicitly adding `--allow-partial` to import the
+remaining inventory. This flag does not restore the omitted values.
+
+```bash
+"$graphite" query ~/graphs/myapp-with-resources.graphite \
+  "MATCH (r:ResourceValue) WHERE r.profile = 'en' RETURN r.path, r.key, r.value LIMIT 20" -f json
+```
+
+Inventory nodes do not prove that a particular call looks up a resource: no resource
+lookup edges are inferred. This IR path also does not populate the raw-resource byte
+accessor, so use Cypher for these values rather than assuming `/api/resources` can
+serve the original files.
+
 ## Current analysis boundary
 
 Nonliteral arguments retain their source text and position; this is not complete
 assignment, field or return-value dataflow. Objective-C expression literals and Apple
-resource extraction remain additional analysis work. C/Objective-C declaration
+resource-to-code lookup relationships remain additional analysis work. C/Objective-C declaration
 enrichment is a lightweight parser, including C++ language-linkage blocks, rather
-than a complete preprocessor. Conditional macro-dependent types can remain unknown.
+than a complete preprocessor. Indexed explicit Objective-C method signatures can be
+recovered at verified source anchors when conditional bodies prevent a whole-file
+parse. Conditional macro-dependent or split signatures can remain unknown.
 See [the validation report](apple-frontend-validation.md) for retained evidence and
 the separately reported performance limitations. Building one application here is a
 correctness check, not performance acceptance.

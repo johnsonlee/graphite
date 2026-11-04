@@ -1,5 +1,42 @@
 # Apple frontend follow-up validation
 
+## Selected bundle resources and indexed method anchors (2026-11-05)
+
+The existing IR now accepts explicitly selected built `.app`/`.appex` resources
+through `--resource-bundle`. The
+[resource evidence](apple-frontend-evidence/2026-11-05/resource-summary.json)
+records a full Signal build/import/pack with its simulator bundle: 91 resource
+files and 123,844 retained values, producing 545,197 nodes and 189,838 edges.
+The exact English localization `DATABASE_VIEW_OVERLAY_TITLE = Optimizing Database`
+and all 49 representable Info.plist entries match the original bundle, including
+their scalar/list types. Bundle identity and locale remain attached to the values.
+This inventories selected packaged resources; it does not infer lookup edges or
+populate the original-resource byte accessor.
+
+The end-to-end check exposed an existing storage limitation: GraphStore v3 converts
+map values to strings. The [rejected result](apple-frontend-evidence/2026-11-05/resource-rejected-map-loss.json)
+is retained rather than treated as a successful round trip. The frontend now omits
+whole dictionary-valued entries (also dictionaries inside lists) with a diagnostic;
+dates/data also remain unsupported. It returns partial status 3 so the CLI refuses
+import unless `--allow-partial` is explicit. The Signal resource run explicitly
+accepted this boundary and diagnosed five omitted dictionary entries. Tests verify
+that refusal preserves an existing valid graph and acceptance retains supported
+values. This does not claim complete plist representation or change the v3 format.
+
+The four previously missing SSZipArchive signatures are now independently verified
+in a persisted graph against Clang AST output. The fallback uses the index's exact
+source location, full selector and instance/class method role, and only recovers
+complete explicit signatures. It does not guess preprocessing branches or macros.
+The [four exact assertions](apple-frontend-evidence/2026-11-05/objc-method-anchors-verification.json)
+cover `_dateWithMSDOSFormat:`, `_gregorian`, `zipInfo:setAttributesOfItemAtPath:` and
+`zipInfo:setDate:`. The older inventories below remain historical observations.
+
+Current local checks pass 75 Swift tests (including the real Signal bundle), 56 CLI
+tests and CLI Clippy. These construction and resource checks are correctness-only,
+not performance measurements. The unresolved baseline index/shape mismatch remains
+under a separate manually enabled correctness investigation; no pin or threshold
+is bypassed.
+
 ## iOS application construction update (2026-11-05)
 
 The existing Graph IR pipeline now accepts an app directory, selects its workspace
@@ -489,8 +526,9 @@ additional language handling rather than a performance threshold change.
 The final [dry-run release](https://github.com/johnsonlee/graphite/actions/runs/37798249852)
 at `1ba3808f` succeeded. The
 [archived audit](apple-frontend-evidence/2026-10-08/hosted-calibration-37798249852/audit.json)
-contains every job outcome, artifact identity and full job log. Production frontend
-code is unchanged since `357a6206`; later commits adjust validation controls and evidence.
+contains every job outcome, artifact identity and full job log. That rehearsal used
+production frontend code from `357a6206`; it predates the November correctness and
+resource changes described above.
 
 - All four native CLI builds and all three shipped Apple frontend builds succeeded.
 - Final tarball installation/build/import/query smoke tests passed on Linux x86_64 and macOS arm64/x86_64.

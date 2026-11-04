@@ -1,0 +1,19 @@
+{
+  "status": "rejected semantic round trip; not accepted resource completeness evidence",
+  "query": "MATCH (r:ResourceValue) WHERE r.path = 'org.whispersystems.signal/Info.plist' AND r.key = 'NSAppTransportSecurity' RETURN r.key, r.value",
+  "actual": {
+    "columns": [
+      "r.key",
+      "r.value"
+    ],
+    "rows": [
+      {
+        "r.key": "NSAppTransportSecurity",
+        "r.value": "{NSExceptionDomains={amazonaws.com={NSIncludesSubdomains=true, NSThirdPartyExceptionRequiresForwardSecrecy=false}, api-staging.backup.signal.org={NSExceptionAllowsInsecureHTTPLoads=true, NSThirdPartyExceptionRequiresForwardSecrecy=false}, api.backup.signal.org={NSExceptionAllowsInsecureHTTPLoads=true, NSThirdPartyExceptionRequiresForwardSecrecy=false}, signal.org={NSExceptionAllowsInsecureHTTPLoads=true, NSIncludesSubdomains=true}}}"
+      }
+    ],
+    "rowCount": 1
+  },
+  "expectedValueType": "dictionary",
+  "cause": "current JVM v3 persistence falls back to Map.toString; emitter now diagnoses and omits dictionaries with partial status instead"
+}

@@ -1,0 +1,17 @@
+{
+  "scope": "selected built bundle inventory in v3; explicitly allowed partial resource values, not full plist dictionary support",
+  "resourceFiles": 91,
+  "resourceValues": 123844,
+  "totalNodes": 545197,
+  "totalEdges": 189838,
+  "rawResourcesAccessor": false,
+  "inferredLookupEdges": 0,
+  "retainedTypedInfoKeys": 49,
+  "dictionaryKeysOmitted": 5,
+  "partialWithoutPermissionExit": 3,
+  "existingGraphPreserved": true,
+  "frontendSha256": "f59439a148560bc1e0f0cddc80cf133d2a607ce4c6e25cf09c08c58768822923",
+  "nativeCliSha256": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5",
+  "graphSha256": "024f6f1b800955ab07901cc5878dc97e51dcca83aaa897e752204f593df582c6",
+  "performanceAcceptance": false
+}

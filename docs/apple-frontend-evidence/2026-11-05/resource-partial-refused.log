@@ -1,0 +1,19 @@
+Running /Users/johnsonlee/.codex/worktrees/19db/graphite/frontend/apple/.build/release/graphite-frontend-apple build
+{"phase": "swift package describe", "done": 0, "total": 1}
+{"phase": "swift package describe", "done": 1, "total": 1}
+{"phase": "index", "done": 0, "total": 4}
+{"phase": "index", "done": 4, "total": 4}
+{"phase": "syntax", "done": 1, "total": 4}
+{"phase": "syntax", "done": 2, "total": 4}
+{"phase": "syntax", "done": 3, "total": 4}
+{"phase": "syntax", "done": 4, "total": 4}
+{"phase": "demangle", "done": 0, "total": 115}
+{"phase": "demangle", "done": 115, "total": 115}
+{"phase": "emit", "done": 0, "total": 1}
+{"phase": "emit", "done": 1, "total": 1}
+graphite-frontend-apple 0.1.0: 4 files, 11 types, 15 methods, 13 fields, 24 call sites, 15 constants, 3 annotations; 71 nodes, 28 edges, 84 strings -> /Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/resource-partial-contract/refused.graphite.ir-6492.graphite-ir
+resource inventory: 1 files, 2 values
+warning: resource org.example.Partial/Info.plist key UnsupportedDictionary omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists
+warning: resource org.example.Partial/Info.plist key UnsupportedDictionaryList omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists
+warning: resource org.example.Partial/Info.plist key UnsupportedDate omitted: plist date has no IR value type
+Error: the frontend wrote a partial graph; pass --allow-partial to import it anyway

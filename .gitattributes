@@ -2,3 +2,4 @@
 docs/apple-frontend-evidence/**/*.json linguist-generated=true
 docs/apple-frontend-evidence/**/*.jsonl linguist-generated=true
 docs/apple-frontend-evidence/**/*.log linguist-generated=true
+docs/apple-frontend-evidence/**/*.ast.txt linguist-generated=true
