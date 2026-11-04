@@ -139,19 +139,28 @@ other.
 
 ## Frontend Support
 
-The current released frontend reads JVM and Android artifacts. Graph building
+The JVM frontend reads JVM and Android artifacts. Building these graphs
 requires Java; APK analysis also requires Android platform jars. These inputs
 can be analyzed without their source checkout.
 
 The **JavaScript artifact frontend** accepts emitted `.js`, `.mjs` and `.cjs`
 files or a compiled artifact directory such as `.next`, `dist` or `build` via
-`graphite build --lang js` (`--lang ts` is an alias). A single-file entry follows
+`graphite build --lang js` (`ts` and `es` are aliases). A single-file entry follows
 resolved JavaScript dependencies under its parent directory. Pass a directory
 to include unrelated entries as well. Compile the target project first with its
-own build tools. Build the frontend from
-`frontend/web` and set `GRAPHITE_FRONTEND_JS` to its `dist/cli.js` entry point.
-It requires Node.js for analysis and uses the same Rust query/server and
-`.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
+own build tools. On macOS or Linux (x86-64 or ARM64), install the frontend
+for your Graphite release and build the graph:
+
+```sh
+graphite frontend install js
+graphite build --lang js ./dist -o project.graphite
+graphite verify project.graphite
+```
+
+`graphite frontend install ts` and `graphite frontend install es` install the same executable.
+It includes the Bun runtime, TypeScript parser and standard library declarations,
+so building a graph requires no separate Node.js, Bun or npm installation. Saved graphs use
+the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
 See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).
 
 **In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)
@@ -747,7 +756,7 @@ graph, one Rust *backend*, which stores, serves, and queries those graphs, and o
 ```
 graphite/
 ├── frontend/
-│   ├── web/                # Compiled JavaScript artifact frontend (Node.js)
+│   ├── web/                # JavaScript artifact frontend (standalone release binary)
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)

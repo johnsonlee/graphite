@@ -153,7 +153,7 @@ pub(crate) fn language_option(args: &[OsString]) -> Result<Option<Arg<'_>>, Stri
         args,
         &["--lang"],
         "specify --lang only once",
-        "--lang requires jvm, js or ts",
+        "--lang requires jvm, js, ts or es",
     )
 }
 

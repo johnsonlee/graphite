@@ -93,24 +93,20 @@ Graphite 使用**面向读取的 Cypher 子集**进行查询。`graphite` 二进
 
 ## 前端支持
 
-当前发布的前端支持读取 JVM 和 Android 产物。构建图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
+JVM 前端支持读取 JVM 和 Android 产物。构建这些图需要 Java；分析 APK 还需要 Android 平台 jar。分析这些输入时，无需检出其源代码。
 
-**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。在 Graphite 源码仓库中构建 `frontend/web`，并通过 `GRAPHITE_FRONTEND_JS` 指定其 `dist/cli.js` 入口（兼容 `GRAPHITE_FRONTEND_TS`）。分析需要 Node.js 20 或更新版本；保存的图可直接使用相同的 Rust 查询、服务和 `.graphite` 容器命令：
+**JavaScript 产物前端**通过 `graphite build --lang js` 分析编译后的 `.js`、`.mjs`、`.cjs` 文件及 `.next`、`dist`、`build` 等产物目录；`--lang ts` 和 `--lang es` 是同一前端的别名。指定单个文件时，Graphite 会继续分析该文件所在目录及子目录中能解析到的 JavaScript 依赖。要同时分析无引用关系的其他入口，请指定目录。请先用目标项目自己的构建工具完成编译。TS/TSX/JSX 源码和 `tsconfig.json` 不作为分析输入。在 macOS 或 Linux（x86-64、ARM64）上，用当前 Graphite 发行版的 CLI 安装前端即可建图，无需另装 Node.js、Bun 或 npm。
 
 ```bash
-npm ci --prefix frontend/web
-npm test --prefix frontend/web
-cargo build --release --locked -p graphite-cli
-export GRAPHITE_FRONTEND_JS="$PWD/frontend/web/dist/cli.js"
-
-./target/release/graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
-./target/release/graphite verify /tmp/project.graphite
-./target/release/graphite query /tmp/project.graphite \
+graphite frontend install js
+graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
+graphite verify /tmp/project.graphite
+graphite query /tmp/project.graphite \
   "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
   --format json
 ```
 
-分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。此产物前端需单独构建，JVM 的 Homebrew 安装不会自动安装它。
+分析不会运行目标项目的脚本或安装其依赖。图中的名称和行号对应编译后的代码，不会还原源码类型、React 生命周期或 Next.js 路由语义。默认参数、特殊 UTF-16 字符串的查询表示，以及 MIT 开源 Next/React CRUD 应用和额外公开 Taskboard 应用的端到端验证步骤，详见 [JavaScript 产物前端文档](docs/typescript-frontend.md)。`graphite frontend install ts` 和 `graphite frontend install es` 安装同一个可执行文件，其中包含 Bun 运行时、TypeScript 解析器及其标准库声明。
 
 **开发中：** [Swift / iOS 支持（#154）](https://github.com/johnsonlee/graphite/pull/154) 正在新增面向 Swift 包和 Xcode 项目的 Apple 前端，通过 Graph IR 接入共享程序图。这项工作尚未合并。语言前端为 Graphite 的结构化上下文与查询工具扩展输入途径。
 
@@ -548,7 +544,7 @@ Graphite 由按语言划分的*前端*、一个 Rust *后端*和一个 Rust *CLI
 ```
 graphite/
 ├── frontend/
-│   ├── web/                # JavaScript 编译产物前端（Node.js）
+│   ├── web/                # JavaScript 编译产物前端（发布为独立可执行文件）
 │   └── jvm/                # JVM frontend (Kotlin, Gradle projects keep their short names)
 │       ├── core/           # Graph interface, nodes, edges, analysis
 │       ├── cypher/         # Cypher query engine (ANTLR parser + executor)

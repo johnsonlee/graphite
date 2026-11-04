@@ -2,8 +2,8 @@
 
 The JavaScript frontend analyzes compiled output from JavaScript and TypeScript
 projects. It accepts emitted `.js`, `.mjs` and `.cjs` files, or an artifact
-directory such as `.next`, `dist` or `build`. Node.js 20 or newer runs the
-frontend; reading a saved graph requires only the Rust binary.
+directory such as `.next`, `dist` or `build`. The release frontend embeds its JavaScript runtime.
+Reading a saved graph requires only the Rust CLI.
 
 A single-file input uses its parent directory as the artifact root. Starting
 at that file, Graphite follows imports, re-exports and literal module references
@@ -18,36 +18,48 @@ runs project build scripts nor installs target dependencies. The directory scan
 includes `dist/cache` and `.next/server/app/cache`, and skips `.next/cache`,
 `node_modules` and `.git`. Source `.ts`, `.tsx`, `.mts`, `.cts`, `.jsx` files
 and `tsconfig.json` are rejected with a
-compile-first message. The `ts` selector is an alias for artifact analysis,
+compile-first message. The `ts` and `es` selectors are aliases for artifact analysis,
 not a request to parse TypeScript source.
 
-## Build and query
+## Install, build and query
 
-Prepare Graphite's frontend and CLI from a source checkout:
+On x86-64 or ARM64 macOS and Linux, `graphite frontend install js` downloads
+the executable for the CLI's release and the host platform. It verifies the
+published SHA-256 checksum before installing the file under
+`~/.graphite/frontends/js/<version>/graphite-frontend-js-<target>`.
+The executable includes Bun, TypeScript and its standard library declarations.
+The installation uses `curl`; building graphs requires no external JS runtime
+or package manager. Linux releases provide separate GNU and musl binaries.
+On minimal musl systems such as Alpine, install the system C++ runtime
+(`apk add libstdc++`) if it is missing. The binaries target native execution.
+In a local test, an x86-64 musl binary run through QEMU on an ARM64 host
+started the Bun CLI instead of the frontend. Choose the ARM64 release when
+running directly on an ARM64 host.
 
 ```bash
-npm ci --prefix frontend/web
-npm test --prefix frontend/web
-cargo build --release --locked -p graphite-cli
-export GRAPHITE_FRONTEND_JS="$PWD/frontend/web/dist/cli.js"
-
-./target/release/graphite frontend describe js
-./target/release/graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
-./target/release/graphite verify /tmp/project.graphite
-./target/release/graphite query /tmp/project.graphite \
+graphite frontend install js
+graphite frontend describe js
+graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
+graphite verify /tmp/project.graphite
+graphite query /tmp/project.graphite \
   "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
   --format json
-./target/release/graphite serve --graph project:/tmp/project.graphite
+graphite serve --graph project:/tmp/project.graphite
 ```
 
-Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `ts` and
+Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `es`, `ts` and
 `typescript` select the same frontend. With no selector, the existing JVM build
 path is preserved. Discovery uses `GRAPHITE_FRONTEND_JS`, then its compatibility
 alias `GRAPHITE_FRONTEND_TS`, then `graphite-frontend-js` or
-`graphite-frontend-ts` on `PATH`. `GRAPHITE_NODE` selects the Node executable for
-a JavaScript entry point. The npm package provides both launcher names.
-`frontend install jvm` and the JVM Homebrew installation do not install this
-frontend; use the source-checkout setup above.
+`graphite-frontend-ts` on `PATH`, then the highest installed release version under
+`~/.graphite/frontends/js/`. `graphite frontend install ts` and `graphite frontend install es` use that same
+installation. For an unversioned development CLI, pass the release version
+explicitly with `graphite frontend install js --version <version>`.
+The managed binary runs directly. For a source build, `GRAPHITE_NODE`
+selects the Node.js runtime for the configured script entry point. With Node.js
+20+ installed, run `npm ci --prefix frontend/web`
+and `npm run build --prefix frontend/web`, then set `GRAPHITE_FRONTEND_JS` to
+the absolute path of `frontend/web/dist/cli.js`.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM
@@ -259,7 +271,7 @@ forms and Next API routes that persist users to a file. The harness checks its
 license and archive hashes, and keeps its upstream configuration and dependency
 lock unchanged. This historical Next 10 build requires the official Node.js
 14.17.0 executable, passed with `--legacy-build-node`; that executable is used
-only to prepare the fixture. Graphite analysis still uses Node.js 20 or newer.
+only to prepare the fixture. The source-checkout validation harness uses Node.js 20 or newer for analysis.
 
 The supplementary modern fixture is the public
 [nextjs/async-react-demo Taskboard](https://github.com/nextjs/async-react-demo/tree/ec5b60f6362e956fea5a91fddfc0527c48d2a36f)

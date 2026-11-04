@@ -9,7 +9,7 @@ on:
   # A dry run: every job builds and verifies what a tag would publish, from the commit
   # the workflow is started on, and publishes nothing to any remote: Maven artifacts go
   # to the runner's local repository (signed when the GPG secrets are available), the
-  # binaries, graphite.jar and the rendered formula are checked and kept as the
+  # binaries, frontend packages and the rendered formula are checked and kept as the
   # `release-<tag>` artifact, the formula is installed from those assets on a
   # macOS runner, and both image architectures are built but not pushed. Not covered:
   # the Sonatype upload itself, the GitHub Release, the tap push and the registry
@@ -216,9 +216,64 @@ jobs:
         path: release-assets/*
         if-no-files-found: error
 
+  js-frontends:
+    needs: validate
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: macos-15-intel, target: x86_64-apple-darwin }
+          - { os: macos-latest, target: aarch64-apple-darwin }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-gnu }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-gnu }
+          - { os: ubuntu-latest, target: x86_64-unknown-linux-musl }
+          - { os: ubuntu-24.04-arm, target: aarch64-unknown-linux-musl }
+    runs-on: ${{ matrix.os }}
+    env:
+      RELEASE_VERSION: ${{ needs.validate.outputs.version }}
+      TARGET: ${{ matrix.target }}
+    steps:
+    - uses: actions/checkout@v7
+      with:
+        ref: ${{ github.event_name == 'workflow_dispatch' && github.sha || env.RELEASE_TAG }}
+    - uses: oven-sh/setup-bun@v2
+      with:
+        bun-version-file: .github/scripts/package.json
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '20.19.6'
+        package-manager-cache: false
+    - name: Compile the standalone JS frontend and prepare its expected graph
+      working-directory: frontend/web
+      run: |
+        npm ci
+        npm run package:release -- "$TARGET"
+        mkdir -p "$RUNNER_TEMP/standalone"
+        cp "release-assets/graphite-frontend-js-$TARGET" "$RUNNER_TEMP/standalone/frontend"
+        cp test/standalone.sh "$RUNNER_TEMP/standalone/"
+        cd "$RUNNER_TEMP/standalone"
+        printf '%s\n' 'console.log("built"); Promise.resolve([1].map(n => n));' > app.mjs
+        node "$GITHUB_WORKSPACE/frontend/web/dist/cli.js" build app.mjs -o expected.json
+    - name: Run the executable on its target without Node or Bun on PATH
+      run: |
+        cd "$RUNNER_TEMP/standalone"
+        if [[ "$TARGET" == *-musl ]]; then
+          docker run --rm -v "$PWD:/check" -w /check alpine:3.22 sh -ec \
+            'apk add --no-cache libstdc++ && sh standalone.sh "$1"' sh "$RELEASE_VERSION"
+        else
+          sh standalone.sh "$RELEASE_VERSION"
+        fi
+    - uses: actions/upload-artifact@v7
+      with:
+        name: js-frontend-${{ matrix.target }}
+        path: frontend/web/release-assets/graphite-frontend-js-${{ matrix.target }}*
+        if-no-files-found: error
+
   # ---- GitHub Release ----
   # Everything this job does before the last step is preparation that can be repeated:
-  # build the jar, collect the binaries, verify the checksums, render the formula, keep
+  # build the frontends, collect the binaries, verify the checksums, render the formula, keep
   # them all as the `release-<tag>` artifact. The last step is the only one that changes
   # remote state, and it is re-runnable too: this repository has immutable releases, so
   # `.github/scripts/release/publish.ts` builds the release as a draft, makes the draft's
@@ -229,7 +284,7 @@ jobs:
   # ever being asked to modify an immutable release. (v3.0.0-alpha2 was left without
   # assets by creating the release published first and uploading afterwards.)
   release:
-    needs: [validate, binaries]
+    needs: [validate, binaries, js-frontends]
     permissions:
       contents: write
     runs-on: ubuntu-latest
@@ -257,6 +312,12 @@ jobs:
         mkdir -p release-assets
         cp frontend/jvm/query/build/libs/graphite.jar release-assets/graphite.jar
         (cd release-assets && sha256sum graphite.jar > graphite.jar.sha256)
+    - name: Collect the standalone JavaScript frontends
+      uses: actions/download-artifact@v8
+      with:
+        pattern: js-frontend-*
+        path: release-assets
+        merge-multiple: true
     - name: Collect the Rust binaries
       uses: actions/download-artifact@v8
       with:
@@ -272,6 +333,14 @@ jobs:
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
+        for TARGET in x86_64-unknown-linux-gnu aarch64-unknown-linux-gnu x86_64-unknown-linux-musl aarch64-unknown-linux-musl x86_64-apple-darwin aarch64-apple-darwin; do
+          sha256sum -c "graphite-frontend-js-${TARGET}.sha256"
+        done
+    - name: Install the JavaScript frontend with the release CLI and query a saved graph
+      run: |
+        tar -xzf "release-assets/graphite-${RELEASE_VERSION}-x86_64-unknown-linux-musl.tar.gz" -C "$RUNNER_TEMP" graphite
+        python3 .github/scripts/check-js-frontend-install.py --cli "$RUNNER_TEMP/graphite" \
+          --assets release-assets --version "$RELEASE_VERSION" --target x86_64-unknown-linux-gnu
     # The formula is rendered and syntax-checked before anything is published, on every
     # run; the tap job pushes it after the release exists, and only for a stable tag.
     - name: Render the Homebrew formula

@@ -61,8 +61,8 @@ struct Cli {
 enum Command {
     /// Build a JVM or compiled JavaScript graph. Run `graphite help build` for shell options
     #[command(
-        override_usage = "graphite build [--lang <jvm|js|ts>] [FRONTEND_ARGS]...",
-        after_help = "Use --lang js (or ts) for compiled JavaScript artifacts. The JVM frontend is the default. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
+        override_usage = "graphite build [--lang <jvm|js|ts|es>] [FRONTEND_ARGS]...",
+        after_help = "Use --lang js (aliases: ts, es) for compiled JavaScript artifacts. The JVM frontend is the default. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
     )]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
@@ -106,17 +106,17 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm or js (ts is an alias)
+        /// Frontend language: jvm or js (ts and es are aliases)
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm or js (ts is an alias)
+        /// Frontend language: jvm or js (ts and es are aliases)
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
         version: Option<String>,
-        /// Install even when the release publishes no checksum
+        /// Allow a legacy JVM release with no published checksum (JVM only)
         #[arg(long)]
         skip_checksum: bool,
     },
@@ -200,13 +200,13 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             }
             match frontend::locate_js(env) {
                 Some(fe) => println!(
-                    "js\t{}\t{}\t(via {}; alias: ts)",
+                    "js\t{}\t{}\t(via {}; aliases: ts, es)",
                     frontend_version(env, &fe).unwrap_or_else(|| "unknown".into()),
                     fe.path().display(),
                     fe.found_via
                 ),
                 None => println!(
-                    "js\tnot installed\t-\t(set GRAPHITE_FRONTEND_JS to frontend/web/dist/cli.js; alias: ts)"
+                    "js\tnot installed\t-\t(graphite frontend install js; aliases: ts, es)"
                 ),
             }
             Ok(())
@@ -231,9 +231,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            if frontend::Lang::parse(&lang)? == frontend::Lang::Js {
-                return Err(frontend::js_install_message(env));
-            }
+            let lang = frontend::Lang::parse(&lang)?;
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
                 None if option_env!("GRAPHITE_VERSION").is_some() => VERSION.to_string(),
@@ -244,7 +242,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                     )
                 }
             };
-            install::install_jvm(env, &version, skip_checksum).map(|_| ())
+            install::install(env, lang, &version, skip_checksum).map(|_| ())
         }
     }
 }
