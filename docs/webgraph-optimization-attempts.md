@@ -22812,3 +22812,138 @@ record scan over all CallSites, so the observed change alone does not establish 
 A concrete next reduction can reuse the same validated group metadata for first-seen IDs,
 while leaving complete cross-source provenance merging intact.
 
+### Attempt161 — use validated CallSite groups for multi-graph DISTINCT (2026-11-05)
+
+**Predeclared hypothesis and acceptance.** Address the material DISTINCT p95 residual without
+abandoning the beneficial prior increments. Only for multi-source CallSite DISTINCT of one of
+the four raw string fields, reuse the validated CSR groups' first-node order rather than
+reading every raw CallSite. Keep the original raw scan as fallback and differential oracle;
+retain the shared global value merge, complete source provenance, alias ordering and LIMIT.
+Never stop a cross-source provenance scan merely because LIMIT output values have been found.
+No result cache, heap increase or feature relaxation is introduced.
+
+The incremental parent is measured `7b3cddd35b33bd656636ac8e21cc3cdf42c7d9b6`; the cumulative
+baseline remains `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. First establish exact-result,
+malformed/empty-domain, ordering, error and cancellation equivalence with correctness-only
+fixtures and the complete real64 result oracle, then rerun the relevant Cypher module and lint.
+Final acceptance uses the same 73-case, four-worker real64 ABBA query protocol and retained
+samples; specifically require DISTINCT p50 and p95 improvements in both directions, while
+preserving the requested WITH/ordered/aggregate benefits. Do not stabilize tiny cases by
+rerunning for favorable statistics. Use the separately smoke-tested zero-query loading-only
+operation on the final frozen binary to close the demonstrated resource-boundary/cache gap;
+retain query CPU conservative bounds, all per-operation +5% constraints, every earlier failure
+and all non-target/mixed observations. Construction is unchanged and not remeasured.
+
+**Implementation and pre-measurement verification.** Separate the optional validated CSR
+producer from the original raw grouped counter. Multi-source CallSite DISTINCT takes the
+validated producer's first-seen keys; unavailable proofs use its own verbatim raw DISTINCT
+loop. Thus non-CallSite fields, single-source early termination and malformed-record behavior
+remain on their original path. The global merge/sort/provenance/LIMIT implementation is shared
+with the independent raw-only oracle.
+
+Five new core-fixture differential checks pass: all four fields, first encounter and alias
+ordering, complete later-source provenance, LIMIT/probe, cancellation/timeout, single-source
+raw work, and malformed/empty/duplicate/unsorted/phantom/omitted CSR domains. Late bad SIDs and
+both truncated-record outcomes preserve the original success or panic text. The complete
+Cypher library passes 257 tests with the core and all dedicated wire/inherited REQUIRE fixtures;
+module all-target Clippy denies warnings. No fixture supplies performance evidence.
+
+The final appended correctness-only test loads the actual 64 graphs once, proves all four
+properties on all sources, and compares complete typed raw-oracle rows/order/provenance plus
+all finite-limit/probe variants without repeatedly rescanning the raw graphs for each LIMIT.
+Its release result, final workspace lint, frozen identity and ABBA observations follow.
+
+
+**Verified frozen candidate.** Revision `f121b96f2c77a3ed634a47ab5899c8f0d8b2de55`,
+source tree `2435e7b93ad7853553cbf421b20df18ead82bd6c`, product identity
+`4878a3d213678b959622a81feda2812897795bb5f1aeb0eca4c408e288b4ae9f`, CLI SHA-256
+`a42de16715f6549283ffd054bb4f59498ededf3525fac1b8aad22a65ffe01b79`.
+The actual real64 release correctness test passes all 64 combinations and all 256 property/source
+proofs; complete raw typed-oracle rows/provenance are retained in
+`/tmp/graphite-distinct-csr-real64.json` (SHA-256
+`f823ab933e61896c2dd7c979b0b32af9329144d09985c5a9d406a9727115a1bd`). Final workspace
+all-target/all-feature Clippy, formatting, diff checks and release CLI compilation pass.
+The verification receipt distinguishes the 257-test full library run before the opt-in test
+was appended from the actual real64 release execution and final lint of the appended test;
+it does not invent a later full-library rerun. Root and isolated production/test source hashes
+match exactly. Receipts: `/tmp/graphite-distinct-csr-verification.json` and
+`/tmp/graphite-query-opt-distinct-workspace-clippy.log`.
+
+Both complete query driver runs exit0, all trusted correctness/capacity checks pass, and the
+independent audit validates 17,516 complete typed/provenance response bodies, the original
+73-query catalog and unchanged complete-consumption sampling. One BA launcher transcription
+omits an argv item and is rejected before producer/output/server/sample creation; its explicit
+zero-sample failure receipt remains. The successful BA is launched from the predeclared JSON
+argv rather than another transcription. Neither query arm nor any measured request is rerun
+or excluded. Evidence: `/tmp/graphite-query-opt-attempt161/{ab,ba,audit-abba}`.
+
+| Pressure metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| WITH filter p50 | 2,791.776 → 0.377 ms | -2,791.399 ms | 2,728.288 → 0.367 ms | -2,727.921 ms |
+| WITH filter p95 | 3,002.179 → 0.644 ms | -3,001.535 ms | 2,976.856 → 0.530 ms | -2,976.326 ms |
+| ASC p50 | 2,484.903 → 0.706 ms | -2,484.197 ms | 2,529.454 → 0.721 ms | -2,528.733 ms |
+| ASC p95 | 2,544.102 → 0.824 ms | -2,543.278 ms | 2,604.261 → 0.766 ms | -2,603.495 ms |
+| DESC p50 | 2,571.573 → 0.437 ms | -2,571.136 ms | 2,586.597 → 0.454 ms | -2,586.143 ms |
+| DESC p95 | 2,660.579 → 0.555 ms | -2,660.024 ms | 2,670.457 → 0.618 ms | -2,669.839 ms |
+| collect p50 | 2,021.026 → 1,825.857 ms | -195.169 ms | 1,972.808 → 1,796.869 ms | -175.939 ms |
+| collect p95 | 2,076.506 → 1,883.776 ms | -192.730 ms | 2,046.460 → 1,862.046 ms | -184.414 ms |
+| grouped count p50 | 336.715 → 169.486 ms | -167.228 ms | 337.992 → 176.400 ms | -161.592 ms |
+| grouped count p95 | 366.158 → 250.917 ms | -115.241 ms | 351.481 → 219.359 ms | -132.122 ms |
+| DISTINCT p50 | 302.060 → 189.955 ms | -112.105 ms | 293.072 → 190.516 ms | -102.556 ms |
+| DISTINCT p95 | 315.018 → 233.914 ms | -81.103 ms | 307.842 → 213.144 ms | -94.699 ms |
+| WITH aggregate p50 | 634.657 → 621.157 ms | -13.500 ms | 648.948 → 621.501 ms | -27.447 ms |
+| WITH aggregate p95 | 669.208 → 792.080 ms | +122.872 ms | 700.941 → 656.389 ms | -44.552 ms |
+
+DISTINCT sequence-first worsens 359.955→412.476 / 382.432→450.124 ms; the first-use proof
+and altered concurrent sequence are included, not hidden behind warm percentiles. Grouped
+count sequence-first improves 349.742→321.504 / 373.852→359.847 ms. WITH/ASC/DESC candidate
+first-use remains 110.578/112.086, 119.959/122.170 and 242.719/249.662 ms respectively.
+These interleaved sequence observations are not independent cold-request distributions.
+Query-window wall is 71.264→24.915 s and 71.113→24.950 s, with sampled query peak RSS
+16.092→9.961 GB / 16.230→9.815 GB. Original partial sampled CPU values remain unmodified.
+
+**Independent operation resource proof.** The previously smoke-tested loading-only producer
+uses full 1,408-file/10,591,394,466-byte cache preparation, matched metrics-enabled servers,
+complete real64 readiness semantics and zero Cypher requests (own GET ledger plus guard
+counters). Each exact child is reaped through wait4 after the driver sends SIGTERM; signal15 /
+returnCode−15 is the production server's expected termination, not a fabricated normal exit0.
+Kernel lifecycle CPU/RSS covers startup, readiness validation and controlled shutdown and is
+explicitly a conservative wider boundary than loading alone.
+
+The first original baseline-a succeeds. The next candidate preflight fails before spawn:
+a plain bind probe mistakes the prior connection's TIME_WAIT for an active listener. Preserve
+that entire failed result. A minimal pre-start-only fix requires connect_ex ECONNREFUSED,
+rejects active listeners/timeouts/other errors, and records the outcome; two socket handoff
+self-tests verify it. A continuation verifies and hashes the original successful baseline-a
+receipt/inputs/metadata/zero-query/termination evidence, then executes only the remaining
+candidate-a, candidate-b, baseline-b. No successful baseline is repeated or selected. The
+continued result lists the original preflight failure and reference; original observations
+are unchanged. Evidence: `loading-abba` and `loading-abba-continued` under Attempt161, plus
+`/tmp/graphite-query-opt-loading-only/{protocol.json,port-preflight-only.patch}`.
+
+All ten predeclared independent resource checks pass in both orders. Ready CPU changes
+−0.841%/+0.404%; whole-lifecycle kernel CPU −0.567%/+0.207%; kernel peak RSS
+−0.0005%/+0.0654%. More strongly, candidate whole-lifecycle upper bounds versus baseline
+strictly pre-readiness-body-consumption lower bounds prove the original pure-loading limits:
+RSS conservative difference +0.151%/+0.855%, CPU −0.197%/+0.544%, all below5%. These are
+sufficient inequalities, not estimates of an exact pure-loading delta. The loader never uses
+query savings to compensate for loading resource increases.
+
+Independent query CPU proof retains original APFS birth/mtime/host16-logical-CPU witness and
+raw sample hashes. Baseline query-only lower bounds 299.430/297.090 s exceed candidate entire
+server-lifecycle upper bounds 134.430/133.202 s; ratios0.448953/0.448357 prove the query CPU
++5% limits despite both omitted sampling edges. Query RSS uses its original declared sampled
+peak statistic; loading kernel RSS is not substituted for query RSS. The captured timestamp
+receipt permits later recomputation without trusting newly restored APFS birthtimes:
+`/tmp/graphite-query-opt-loading-only/query-cpu-{input-stat,conservative-bounds}-161.json`.
+
+**Decision.** Retain the verified DISTINCT, requested three-step and earlier grouped-count
+benefits. This is still an intermediate cumulative candidate: WITH aggregate p95 remains
+mixed (+122.872/−44.552 ms), so do not claim all-case query recovery. All45 consistent
+case/stage/metric increases remain in `audit-abba/consistent-regressions.{json,md}`. In
+particular label/key histogram p95 increases +0.093/+0.048 and +2.014/+0.256 ms; do not erase
+these observations or repeat tiny cases to find favorable percentiles. Parent comparison is
+cross-run descriptive attribution, not a replacement matching baseline. Construction is
+unchanged; no single-graph performance, saturation/throughput or hosted Linux OOM claim is made.
+The concrete next target is the still-linear simple WITH grouped-count pipeline, using existing
+validated CSR counts only when its entire source domain is proved, otherwise generic fallback.

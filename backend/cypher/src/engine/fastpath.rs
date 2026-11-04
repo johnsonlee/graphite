@@ -248,33 +248,48 @@ fn indexed_call_site_property_counts(
     graph: &Graph,
     field: usize,
 ) -> CypherResult<IndexMap<StrId, i64>> {
+    match validated_call_site_property_counts(ex, graph, field)? {
+        Some(counts) => Ok(counts),
+        None => raw_call_site_property_counts(ex, graph, field),
+    }
+}
+
+// Keep validation separate from the raw counter: DISTINCT must preserve its own
+// original raw fallback, including single-source finite-LIMIT early termination.
+fn validated_call_site_property_counts(
+    ex: &Executor,
+    graph: &Graph,
+    field: usize,
+) -> CypherResult<Option<IndexMap<StrId, i64>>> {
     ex.cancel.check()?;
     // A leftover accelerator must not contribute rows to an empty matcher domain.
     if graph.count_by_tag(TAG_CALL_SITE_NODE) == 0 {
-        return Ok(IndexMap::new());
+        return Ok(Some(IndexMap::new()));
     }
     let Some(index) = graph.validated_ordered_call_site(field, || ex.cancel.check())? else {
-        return raw_call_site_property_counts(ex, graph, field);
+        return Ok(None);
     };
     let Some(groups) = index.property_values(field, false) else {
-        return raw_call_site_property_counts(ex, graph, field);
+        return Ok(None);
     };
     let mut counts = Vec::new();
     for (key, nodes) in groups {
         ex.tick()?;
         // Validation proves every group nonempty and the complete count in range.
         let Some(first) = nodes.first() else {
-            return raw_call_site_property_counts(ex, graph, field);
+            return Ok(None);
         };
         counts.push((first, key, nodes.len() as i64));
     }
     ex.cancel.check()?;
     counts.sort_unstable_by_key(|(first, _, _)| *first);
     ex.cancel.check()?;
-    Ok(counts
-        .into_iter()
-        .map(|(_, key, count)| (key, count))
-        .collect())
+    Ok(Some(
+        counts
+            .into_iter()
+            .map(|(_, key, count)| (key, count))
+            .collect(),
+    ))
 }
 
 /// The original raw counter, deliberately retained as both malformed/legacy
@@ -314,6 +329,19 @@ const CALL_SITE_FIELDS: [&str; 4] = ["caller_class", "caller_name", "callee_clas
 pub fn distinct_string_property(
     ex: &Executor,
     clauses: &[Clause],
+) -> CypherResult<Option<QueryResult>> {
+    distinct_string_property_with_ids(ex, clauses, indexed_distinct_string_ids)
+}
+
+type DistinctStringIds =
+    fn(&Executor, &Graph, u8, StringField, bool, Option<usize>) -> CypherResult<Vec<StrId>>;
+
+// Global row order, value deduplication, source provenance, sorting and LIMIT are
+// shared with the retained raw-only oracle; only the per-source ID producer varies.
+fn distinct_string_property_with_ids(
+    ex: &Executor,
+    clauses: &[Clause],
+    ids_for: DistinctStringIds,
 ) -> CypherResult<Option<QueryResult>> {
     let patterns = match clauses.first() {
         Some(Clause::Match {
@@ -380,31 +408,7 @@ pub fn distinct_string_property(
     let mut rows: Vec<Row> = Vec::new();
     for s in &ex.sources {
         let graph = &s.graph;
-        let data = graph.nodedata();
-        let mut seen: std::collections::HashSet<StrId> = std::collections::HashSet::new();
-        let mut ids: Vec<StrId> = Vec::new();
-        for &id in graph.ids_by_tag(tag) {
-            ex.tick()?;
-            let offset = match graph.node_offset(id) {
-                Some(o) => o,
-                None => continue,
-            };
-            let key = read_string_field(data, offset, field);
-            if seen.insert(key) {
-                ids.push(key);
-                // Without ORDER BY, the first k distinct values in scan order suffice.
-                if !sorted {
-                    if let Some(l) = limit {
-                        if ids.len() >= l && ex.sources.len() == 1 {
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if sorted {
-            ids.sort_unstable();
-        }
+        let ids = ids_for(ex, graph, tag, field, sorted, limit)?;
         for key in ids {
             let mut row = Row::new();
             row.insert(column.clone(), Value::str(graph.str(key)));
@@ -452,6 +456,69 @@ pub fn distinct_string_property(
         compact: None,
         more: false,
     }))
+}
+
+/// Multi-source CallSite DISTINCT needs every source's distinct values, including
+/// later contributions to already-selected rows' provenance. Enumerate complete
+/// validated CSR groups, never limit the contributing graph set or posting runs.
+fn indexed_distinct_string_ids(
+    ex: &Executor,
+    graph: &Graph,
+    tag: u8,
+    field: StringField,
+    sorted: bool,
+    limit: Option<usize>,
+) -> CypherResult<Vec<StrId>> {
+    if ex.sources.len() > 1 && tag == TAG_CALL_SITE_NODE {
+        if let StringField::CallSite(property) = field {
+            if let Some(counts) = validated_call_site_property_counts(ex, graph, property)? {
+                let mut ids: Vec<_> = counts.into_keys().collect();
+                if sorted {
+                    ids.sort_unstable();
+                }
+                return Ok(ids);
+            }
+        }
+    }
+    raw_distinct_string_ids(ex, graph, tag, field, sorted, limit)
+}
+
+/// The original DISTINCT per-source scan. Retain it verbatim for unproved,
+/// non-CallSite and single-source queries, and as the complete-results oracle.
+fn raw_distinct_string_ids(
+    ex: &Executor,
+    graph: &Graph,
+    tag: u8,
+    field: StringField,
+    sorted: bool,
+    limit: Option<usize>,
+) -> CypherResult<Vec<StrId>> {
+    let data = graph.nodedata();
+    let mut seen: std::collections::HashSet<StrId> = std::collections::HashSet::new();
+    let mut ids: Vec<StrId> = Vec::new();
+    for &id in graph.ids_by_tag(tag) {
+        ex.tick()?;
+        let offset = match graph.node_offset(id) {
+            Some(o) => o,
+            None => continue,
+        };
+        let key = read_string_field(data, offset, field);
+        if seen.insert(key) {
+            ids.push(key);
+            // Without ORDER BY, the first k distinct values in scan order suffice.
+            if !sorted {
+                if let Some(l) = limit {
+                    if ids.len() >= l && ex.sources.len() == 1 {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    if sorted {
+        ids.sort_unstable();
+    }
+    Ok(ids)
 }
 
 /// Offset of a single-string-id property within a node record, when one exists.
@@ -568,3 +635,7 @@ fn trailing_order_and_limit(rest: &[Clause]) -> (Option<&[OrderItem]>, Option<us
 #[cfg(test)]
 #[path = "grouped_count_tests.rs"]
 mod grouped_count_tests;
+
+#[cfg(test)]
+#[path = "distinct_csr_tests.rs"]
+mod distinct_csr_tests;
