@@ -18,6 +18,7 @@ import io.johnsonlee.graphite.core.StringConstant
 import io.johnsonlee.graphite.core.TypeDescriptor
 import io.johnsonlee.graphite.core.checkThreadInterrupted
 import io.johnsonlee.graphite.graph.ClassOverview
+import io.johnsonlee.graphite.graph.EnumValueIndexSource
 import io.johnsonlee.graphite.graph.Graph
 import io.johnsonlee.graphite.graph.DeclaredTypeBinding
 import io.johnsonlee.graphite.graph.DeclaredTypeTable
@@ -174,6 +175,7 @@ internal class MappedWebGraphBackedGraph(
     /** The saver's per-node and per-method presence answers, bound to the same table; absent for older graphs. */
     private val declaredPresence: Lazy<DeclaredPresence?> = lazyOf(null)
 ) : Graph,
+    EnumValueIndexSource,
     NodePropertyTextCandidates,
     NodeIdCandidateLookup,
     StreamingMethodLookup,
@@ -2181,6 +2183,8 @@ internal class MappedWebGraphBackedGraph(
 
     override fun enumValues(enumClass: String, enumName: String): List<Any?>? =
         metadata.value.enumValues["$enumClass#$enumName"]
+
+    override fun enumValueIndex(): Map<String, List<Any?>> = metadata.value.enumValues
 
     override fun memberAnnotations(className: String, memberName: String): Map<String, Map<String, Any?>> =
         metadata.value.memberAnnotations["$className#$memberName"] ?: emptyMap()
