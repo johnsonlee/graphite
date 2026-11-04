@@ -22947,3 +22947,183 @@ cross-run descriptive attribution, not a replacement matching baseline. Construc
 unchanged; no single-graph performance, saturation/throughput or hosted Linux OOM claim is made.
 The concrete next target is the still-linear simple WITH grouped-count pipeline, using existing
 validated CSR counts only when its entire source domain is proved, otherwise generic fallback.
+
+
+### Attempt162 — answer proved simple WITH grouped counts from CSR metadata (2026-11-05)
+
+**Predeclared hypothesis and acceptance.** Close the material residual in the actual catalog
+query `MATCH (n:CallSite) WITH n.callee_class AS c, count(*) AS k WHERE k > 5 RETURN c, k LIMIT 50`.
+The present partition/aggregate path still reads every CallSite and creates per-source column
+partitions before counting. Reduce this work by using the existing CSR counts and stable global
+group merge only when all nonempty source domains have complete, total-property proofs.
+
+Limit eligibility to multiple sources, one bare CallSite node pattern, a WITH containing one
+of the four raw string fields and count(*), explicit distinct non-internal aliases, and RETURN
+of exactly those two bare aliases. Permit no MATCH predicate, relationships, maps, path,
+ordering, SKIP, extra clauses or arbitrary projection. The only optional WITH predicate is
+count-alias greater than a nonnegative integer literal (covering the actual k>5); other shapes
+remain generic. Any unproved source returns the entire plan to the original partition/generic
+execution before generating rows, preserving its late errors. Reuse the existing global grouped
+merge and original WITH evaluator/final projection, evaluate/filter every group before literal
+LIMIT, and leave Executor's probe rewrite/trim unchanged. No raw grouped-counter fallback may
+replace generic WITH error semantics. Single-source behavior remains generic.
+
+The parent is measured `f121b96f2c77a3ed634a47ab5899c8f0d8b2de55` (root documentation-only
+amend `2446e681020ca42a1e2886ffd37898858df7845c`); final cumulative baseline remains
+`a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. First prove complete typed row/order/count/source,
+predicate, column, LIMIT/probe, cancellation, late-error and fallback equivalence against the
+original generic/partition path, then relevant module/lint gates and one real64 correctness
+load. Preserve unchanged storage/JVM/declaration correctness rather than repeating those
+expensive closures. Declare/freeze source and producer identities before final real64 query
+ABBA plus independent loading-only ABBA, using the already verified complete cache/probe/
+resource-boundary controls. Require WITH-aggregate p50/p95 improvement in both directions,
+retain all previous benefits and independent CPU/RSS +5% limits, every sample/failure and
+all non-target uncertainty. No tiny-case stabilization, single-graph performance, enlarged
+budget/heap, new cache or construction-performance claim is authorized.
+
+**Implementation and pre-measurement verification.** The new pipeline child module admits
+only the declared total shape and first proves every nonempty source before invoking the
+unchanged grouped merge. An additional checked total-cardinality bound preserves generic
+integer overflow behavior by declining inputs that cannot fit i64. Empty domains ignore stale
+accelerators. The original evaluator filters global counts; the original projector produces
+columns/provenance; all filtering/projection precedes LIMIT. The test-only thread-local gate
+has RAII panic restoration and disables only this new plan, allowing identical ASTs through
+the original Partition/generic execution. No gate or branch is compiled into production.
+
+Five new differential checks pass, including all four fields, explicit columns/first-seen
+ordering, duplicate source IDs/Arcs, full provenance, count thresholds that pass only after
+cross-source merging, LIMIT0/probe/maxRows, single-source and unsupported-shape fallback,
+cancellation/timeout and malformed late-error/panic equivalence. The original path is also
+checked without partitioning. All264 Cypher library tests pass with the core plus dedicated
+wire/inherited REQUIRE fixtures; module and final workspace all-target/all-feature Clippy,
+formatting, diff checks and release CLI compilation pass.
+
+One release correctness-only load of the actual64 graphs proves all256 source/property pairs,
+compares complete original Partition/generic typed rows/counts/order/provenance for all four
+fields, and checks all16 declared bounded predicate/LIMIT/probe cases, including the exact
+catalog query. Original complete group counts are125,966/222,177/124,987/236,512; global k>5
+retains83,653/107,485/56,210/45,021. These are correctness counts, not performance evidence.
+Receipt: `/tmp/graphite-grouped-with-real64.json`, SHA-256
+`710ec89f1894c7fe17104f689e7be218948389ec98c340ffd381a17df2526cd5`.
+Root and isolated pipeline/new-module/final-test sources match exactly. All verification
+processes terminate before measurement. Frozen identity and matching real64 measurements follow.
+
+
+**Frozen candidate and final local evidence.** Measured revision
+`b592a301bfc29aad7b95079bbd1861a46d9b76f4`, source tree
+`f76f4ef603e54c1c947afd9be70d5a36f7a1d842`, product identity
+`664a179d6f6486b5724c714cb8a50c20ca31666d3728da2cc3048c859c7248d6`, CLI SHA-256
+`54ae1f47975ba7f70fb6cc2420b622dbad94eb99ba6b37830f301212325ad294`.
+All final source/test hashes match the isolated verification, with actual strict264-test and
+real64 release executions, final workspace lint/format and release build receipts. See
+`/tmp/graphite-grouped-with-verification.json` and the final workspace/build logs.
+
+Both query orders complete with all eight trusted correctness/coverage/capacity checks passing;
+independent audit checks all17,516 complete response bodies and exact73 query texts, typed rows,
+provenance and real64 scope with zero errors. Both launchers consume finalized JSON argv
+without transcription. No success, sample or failure is repeated or excluded. Preserve the
+same reader-cache preconditioning, concurrency4, first-use1/warmup2/pressure20 and adaptive
+isolated40 protocol, per-case nearest-rank percentiles and full-body-consumption boundaries.
+Existing user work is left running and captured in host snapshots (including mediaanalysisd
+and qemu activity); report AB/BA variability rather than claiming a quiescent host.
+
+| Pressure metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| WITH filter p50 | 2,733.660 → 0.484 ms | -2,733.176 ms | 2,823.732 → 0.353 ms | -2,823.379 ms |
+| WITH filter p95 | 3,022.040 → 0.870 ms | -3,021.169 ms | 3,090.164 → 0.402 ms | -3,089.762 ms |
+| ASC p50 | 2,594.116 → 0.871 ms | -2,593.245 ms | 2,514.811 → 0.717 ms | -2,514.094 ms |
+| ASC p95 | 2,757.329 → 1.362 ms | -2,755.967 ms | 2,637.703 → 0.755 ms | -2,636.948 ms |
+| DESC p50 | 2,671.836 → 0.574 ms | -2,671.262 ms | 2,621.842 → 0.426 ms | -2,621.416 ms |
+| DESC p95 | 2,832.437 → 0.763 ms | -2,831.673 ms | 2,801.332 → 0.713 ms | -2,800.619 ms |
+| collect p50 | 1,978.405 → 1,875.339 ms | -103.066 ms | 1,950.595 → 1,736.958 ms | -213.638 ms |
+| collect p95 | 2,098.362 → 2,057.076 ms | -41.286 ms | 2,138.533 → 1,809.424 ms | -329.109 ms |
+| grouped count p50 | 347.566 → 182.663 ms | -164.903 ms | 344.947 → 169.532 ms | -175.415 ms |
+| grouped count p95 | 411.566 → 260.183 ms | -151.384 ms | 413.571 → 215.361 ms | -198.210 ms |
+| DISTINCT p50 | 305.649 → 203.620 ms | -102.029 ms | 297.628 → 190.832 ms | -106.797 ms |
+| DISTINCT p95 | 328.556 → 281.510 ms | -47.046 ms | 372.649 → 231.064 ms | -141.585 ms |
+| WITH aggregate p50 | 719.537 → 151.053 ms | -568.484 ms | 656.590 → 140.449 ms | -516.141 ms |
+| WITH aggregate p95 | 855.784 → 230.775 ms | -625.010 ms | 797.608 → 191.941 ms | -605.667 ms |
+
+All seven baseline≥100ms cases improve both pressure p50 and p95 in both directions. In
+particular the material WITH-aggregate residual is eliminated under the declared repeated
+multi-graph workload, without sacrificing the retained prior increments. The cross-run parent161
+comparison is descriptive only: WITH-aggregate p95 changes −561.305/−464.449 ms; original a5
+paired comparisons above remain the acceptance reference.
+
+| Sequence-first request | AB base → candidate ms | BA base → candidate ms |
+| --- | ---: | ---: |
+| WITH filter | 2,782.818 → 107.686 | 2,966.295 → 106.568 |
+| ASC | 2,458.057 → 123.551 | 2,541.196 → 121.023 |
+| DESC | 2,529.445 → 238.923 | 2,661.789 → 251.038 |
+| collect | 1,908.092 → 1,877.595 | 2,004.068 → 1,664.075 |
+| grouped count | 357.654 → 332.469 | 376.154 → 332.727 |
+| DISTINCT | 381.605 → 415.432 | 377.238 → 439.727 |
+| WITH aggregate | 632.214 → 157.812 | 865.400 → 149.422 |
+
+These are single interleaved sequence-first observations with all proof work included, not
+independent cold-request distributions. DISTINCT still costs +33.827/+62.488 ms on first use;
+retain this overhead and do not label it recovered. Query-window wall improves
+72.869→23.976 s / 72.471→21.928 s. Observed sampled server startup-through-query-end improves
+92.232→45.056 s / 92.802→41.265 s; it is not an exact lifecycle boundary. The controller's
+startup-through-first-complete-oracle instead mixes: 22,671.527→23,086.052 ms (+414.525) /
+23,823.678→21,130.979 ms (−2,692.699). Its filesystem preparation covers reader inputs, not
+the complete fingerprint loading domain, so retain it as a diagnostic rather than infer
+independent loading recovery. Do not hide the positive AB startup increment behind a pipeline
+sum. The separate loading workload below controls its complete domain.
+
+**Final independent resource constraints.** The legacy monitor again labels a first query
+slice as loading: its original AB partial sampled loading CPU20.130→22.100 s (+9.786%) FAIL
+is retained unchanged, as are all raw resource samples. It is not relabeled PASS. The original
+collector's demonstrated boundary defect is handled by the separately predeclared, smoke-tested
+zero-query producer and conservative CPU interval proofs, not by a favorable query rerun.
+
+The independent loading producer uses four fresh real64 servers in ABBA order, matched
+metrics/readiness settings, full1,408-file/10,591,394,466-byte mincore100% preparation, exact
+per-graph/aggregate registry semantics and zero Cypher proved by ledger and metrics. It uses
+the verified connect_ex preflight and exact wait4/SIGTERM15−15 semantics; no continuation,
+retry or older loading sample is used in Attempt162. All ten independent constraints pass.
+Ready CPU changes −1.778%/−1.831%, lifecycle kernel CPU −1.743%/−1.811%, kernel RSS
+−0.05735%/+0.03132%. The stricter pure-loading proofs compare candidate lifecycle upper
+bounds to baseline wholly pre-consumed-response lower bounds: RSS≤+0.261526%/+0.777025%,
+CPU≤−1.415235%/−1.567177%, independently below5% in each direction. These sufficient
+inequalities are explicitly not point estimates of an exact pure-loading delta.
+
+| Query resource proof | AB baseline → candidate | BA baseline → candidate |
+| --- | ---: | ---: |
+| Query-only CPU lower bound → candidate whole-server CPU upper bound | 299.930 → ≤124.146 s | 301.210 → ≤122.258 s |
+| CPU conservative ratio | ≤0.413916 | ≤0.405891 |
+| Original100ms sampled query peak RSS | 15.121 → 9.588 GB | 18.128 → 9.317 GB |
+
+Each query CPU bound includes the candidate's entire startup/shutdown lifecycle and possible
+unobserved CPU tails, not just its favorable partial query samples. Original APFS stat/birth,
+raw journal hashes and16-logical-CPU witness are captured once for reproducible bounds after
+archive restoration. Independent RSS review proves each selected sampled maximum equals that
+process's complete sampled lifecycle maximum and its entire ps observation interval lies
+inside registry readiness through the last scope response. This remains100ms sampled RSS,
+not kernel-exact query peak; kernel loading RSS is never substituted. Controls/proofs:
+`/tmp/graphite-query-opt-attempt162-controls/query-{cpu-input-stat,cpu-conservative-bounds,rss-window-audit}-162.json`.
+No loading overrun is offset by query gains, and no resource/heap limit is relaxed. No JVM,
+construction or single-graph performance run is added; the existing4GiB JAR correctness closure
+and unchanged storage/declaration evidence are retained.
+
+**Retain, with explicit remaining limits.** The requested WITH streaming → ordered index read →
+aggregate-state sequence and its material grouped-count/DISTINCT/WITH-aggregate follow-ups
+are implemented and verified. Keep all cumulative benefits. This is local real64 workload
+evidence, not a claim that all73 case latencies or a hosted release gate pass. All64 consistent
+case/stage/metric increases (pressure9, isolated55) remain in
+`audit-abba/consistent-regressions.{json,md}`. The largest consistent pressure increase is
+regex p95 +0.827/+0.168 ms; ID lookup and one-hop p95 also increase sub-millisecond. Largest
+isolated increase is coalesce p95 in BA +0.655 ms. Label/key histograms remain mixed:
+p95 AB+3.057/+3.836 ms and BA−0.063/−2.433 ms. Preserve these, the DISTINCT first-use cost,
+variability and all original collector/startup failures rather than repeat tiny cases to select
+favorable statistics. No saturation/throughput, disk-cold, whole-application corpus, construction
+speedup or hosted Linux OOM acceptance is claimed.
+
+Raw evidence and the exact final report are under
+`/tmp/graphite-query-opt-attempt162` and `/tmp/graphite-query-opt-attempt162-controls`.
+Permanent evidence archives, checked by full decompression and per-member SHA/byte verification,
+are retained at `/Users/johnsonlee/.codex/benchmarks/graphite-query-pipeline-20261105`:
+Attempts157–159,160,161,162 remain separate immutable archives, alongside checkpoint provenance,
+all measured source refs and prerequisite-bound git bundles. Final controls retain original
+failed labels and all timestamps needed for later independent recomputation. Final code differs
+from measured b592 only by this documentation update; no PR has been created or hosted gate run.

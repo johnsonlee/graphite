@@ -21,6 +21,9 @@ use std::sync::Arc;
 mod aggregate_state;
 use aggregate_state::AggregateState;
 
+#[path = "grouped_with.rs"]
+mod grouped_with;
+
 pub type Row = IndexMap<String, Value>;
 
 /// Hidden row key carrying cross-graph provenance (sorted unique graph ids as a list of strings).
@@ -216,6 +219,9 @@ impl Executor {
     fn run_segment(&self, clauses: &[Clause]) -> CypherResult<QueryResult> {
         // Index-only shapes are answered before any row work begins.
         if !super::optimizations_disabled() {
+            if let Some(result) = grouped_with::try_execute(self, clauses)? {
+                return Ok(result);
+            }
             if let Some(r) = super::fastpath::count_star(self, clauses)? {
                 return Ok(r);
             }
