@@ -1,6 +1,7 @@
 //! `graphite build` and `graphite import`: shells over the frontends.
 //!
-//! The shell dispatches JVM artifacts, explicit JavaScript artifacts, and Swift packages or Xcode projects.
+//! The shell dispatches JVM artifacts, explicitly selected JavaScript artifacts,
+//! and Swift packages or Xcode apps. An app directory resolves to its workspace or project.
 //! Apple frontends write protobuf IR, which the JVM importer persists.
 //!
 //! One output form is the shell's too: when `-o` names a `.graphite` file, the frontend
@@ -184,10 +185,10 @@ pub struct Choice {
 }
 
 /// Choose the frontend: `--lang`, then `--frontend`, then the first input argument.
-fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), String> {
-    let (lang, forwarded) = crate::build_ts::select_language(args)?;
+fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), (i32, String)> {
+    let (lang, forwarded) = crate::build_ts::select_language(args).map_err(|e| (2, e))?;
     let explicit_language = forwarded.len() != args.len();
-    let option = crate::build_args::frontend_option(&forwarded)?;
+    let option = crate::build_args::frontend_option(&forwarded).map_err(|e| (2, e))?;
     let frontend = option
         .as_ref()
         .map(|opt| PathBuf::from(opt.value.expect("validated frontend")));
@@ -196,15 +197,23 @@ fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), String>
     } else if frontend.is_some() {
         "apple"
     } else {
-        crate::build_args::walk(&forwarded)
-            .find(|opt| opt.positional)
-            .map_or("jvm", |opt| lang_of_input(Path::new(opt.raw)))
+        match crate::build_args::walk(&forwarded).find(|opt| opt.positional) {
+            Some(input)
+                if resolve_apple_input(Path::new(input.raw))
+                    .map_err(|e| (1, e))?
+                    .is_some() =>
+            {
+                "apple"
+            }
+            _ => "jvm",
+        }
     };
     if frontend.is_some() && lang == "js" {
-        return Err(
+        return Err((
+            2,
             "--frontend requires a JVM or Apple frontend, not a JavaScript interchange adapter"
                 .into(),
-        );
+        ));
     }
     let forwarded = option
         .map(|opt| opt.without(&forwarded))
@@ -212,19 +221,50 @@ fn select_frontend(args: &[OsString]) -> Result<(Choice, Vec<OsString>), String>
     Ok((Choice { lang, frontend }, forwarded))
 }
 
-/// The frontend an input belongs to when nothing says otherwise.
-pub fn lang_of_input(input: &Path) -> &'static str {
-    let name = input
-        .file_name()
-        .map(|n| n.to_string_lossy())
-        .unwrap_or_default();
-    if name == "Package.swift" || input.join("Package.swift").is_file() {
-        return "apple";
+/// Resolve the positional Apple input for both frontend selection and invocation.
+/// An app directory can contain a workspace and its projects: open the workspace,
+/// just as a developer would, without picking projects out of subdirectories.
+fn resolve_apple_input(input: &Path) -> Result<Option<PathBuf>, String> {
+    if is_xcode_project(input)
+        || input
+            .file_name()
+            .is_some_and(|name| name == "Package.swift")
+        || input.join("Package.swift").is_file()
+    {
+        return Ok(Some(input.to_owned()));
     }
-    if is_xcode_project(input) {
-        return "apple";
+    if !input.is_dir() {
+        return Ok(None);
     }
-    "jvm"
+    let read_error = |e| format!("could not inspect build input {}: {e}", input.display());
+    let mut workspaces = Vec::new();
+    let mut projects = Vec::new();
+    for entry in std::fs::read_dir(input).map_err(read_error)? {
+        let path = entry.map_err(read_error)?.path();
+        match path.extension().and_then(|ext| ext.to_str()) {
+            Some("xcworkspace") if path.is_dir() => workspaces.push(path),
+            Some("xcodeproj") if path.is_dir() => projects.push(path),
+            _ => {}
+        }
+    }
+    let mut candidates = if workspaces.is_empty() {
+        projects
+    } else {
+        workspaces
+    };
+    if candidates.len() <= 1 {
+        return Ok(candidates.pop());
+    }
+    candidates.sort();
+    Err(format!(
+        "multiple Xcode inputs in {}; pass one of these paths to `graphite build`:\n  {}",
+        input.display(),
+        candidates
+            .iter()
+            .map(|p| p.display().to_string())
+            .collect::<Vec<_>>()
+            .join("\n  ")
+    ))
 }
 
 /// An `.xcodeproj` or `.xcworkspace` path (a trailing slash allowed).
@@ -271,7 +311,8 @@ pub fn split_apple_args(args: &[OsString]) -> Result<AppleBuild, String> {
         } else if matches!(arg.name, Some("--lang" | "--frontend" | "-o" | "--output")) {
             continue;
         } else if arg.positional && !sources && input.is_none() {
-            input = Some(PathBuf::from(arg.raw));
+            let path = Path::new(arg.raw);
+            input = Some(resolve_apple_input(path)?.unwrap_or_else(|| path.to_owned()));
         } else {
             sources |= arg.name == Some("--sources");
             passthrough.extend_from_slice(&args[arg.range]);
@@ -449,9 +490,9 @@ pub fn run(env: &Env, args: &[OsString]) -> i32 {
     };
     let (choice, args) = match select_frontend(args) {
         Ok(selected) => selected,
-        Err(message) => {
+        Err((code, message)) => {
             eprintln!("Error: {message}");
-            return 2;
+            return code;
         }
     };
     match choice.lang {
@@ -681,7 +722,9 @@ mod tests {
     }
 
     fn choose(args: &[OsString]) -> Result<Choice, String> {
-        super::select_frontend(args).map(|(choice, _)| choice)
+        super::select_frontend(args)
+            .map(|(choice, _)| choice)
+            .map_err(|(_, message)| message)
     }
 
     fn invocation(env: &Env, fe: &Frontend, args: &[OsString]) -> Result<Invocation, String> {
@@ -1075,6 +1118,74 @@ mod tests {
     }
 
     #[test]
+    fn app_directory_uses_its_workspace_or_project_as_the_actual_frontend_argument() {
+        let root =
+            std::env::temp_dir().join(format!("graphite-ios-directory-{}", std::process::id()));
+        std::fs::create_dir_all(root.join("Pods/Vendor.xcodeproj")).unwrap();
+        std::fs::write(root.join("NotABundle.xcworkspace"), b"ordinary file").unwrap();
+        let args = vec![
+            root.clone().into_os_string(),
+            "-o".into(),
+            "app.graphite".into(),
+        ];
+        assert_eq!(choose(&args).unwrap().lang, "jvm");
+        let project = root.join("App.xcodeproj");
+        let workspace = root.join("App.xcworkspace");
+        let fe = Frontend {
+            lang: "apple",
+            launch: Launch::Executable("graphite-frontend-apple".into()),
+            found_via: "test",
+        };
+        for (create, flag, expected) in [
+            (&project, "--project", &project),
+            (&workspace, "--project", &workspace),
+            (&root.join("Package.swift"), "--package", &root),
+        ] {
+            if flag == "--package" {
+                std::fs::write(create, b"// swift-tools-version:5.10").unwrap();
+            } else {
+                std::fs::create_dir(create).unwrap();
+            }
+            assert_eq!(choose(&args).unwrap().lang, "apple");
+            let build = split_apple_args(&args).unwrap();
+            let inv = apple_invocation(&fe, &build, Path::new("graph.ir"));
+            let mut expected_args = os(&["build", "--out", "graph.ir", flag]);
+            expected_args.push(expected.clone().into_os_string());
+            assert_eq!(inv.args, expected_args);
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn ambiguous_app_directory_lists_eligible_paths_and_never_falls_back_to_jvm() {
+        let root =
+            std::env::temp_dir().join(format!("graphite-ios-ambiguous-{}", std::process::id()));
+        std::fs::create_dir(&root).unwrap();
+        let args = vec![
+            root.clone().into_os_string(),
+            "-o".into(),
+            "app.graphite".into(),
+        ];
+        for ext in ["xcodeproj", "xcworkspace"] {
+            let a = root.join(format!("Client.{ext}"));
+            let b = root.join(format!("Server.{ext}"));
+            for path in [&b, &a] {
+                std::fs::create_dir(path).unwrap();
+            }
+            let err = choose(&args).unwrap_err();
+            assert!(err.contains("pass one of these paths to `graphite build`"));
+            assert!(err.ends_with(&format!("\n  {}\n  {}", a.display(), b.display())));
+            assert_eq!(split_apple_args(&args).unwrap_err(), err);
+            assert_eq!(run(&env_with(&[("PATH", "/nonexistent")]), &args), 1);
+            let mut explicit = os(&["--lang=jvm"]);
+            explicit.extend(args.iter().cloned());
+            assert_eq!(choose(&explicit).unwrap().lang, "jvm");
+            assert_eq!(resolve_apple_input(&a).unwrap(), Some(a));
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
     fn apple_arguments_are_split_into_input_output_and_passthrough() {
         let build = split_apple_args(&os(&[
             "--lang",
@@ -1173,7 +1284,7 @@ mod tests {
         let build = split_apple_args(&os(&["--index-store", "/s", "-o", "/g"])).unwrap();
         let inv = apple_invocation(&fe, &build, &ir);
         assert!(!inv.args.iter().any(|a| a == "--package"));
-        assert_eq!(lang_of_input(Path::new("lib.aar")), "jvm");
+        assert_eq!(choose(&os(&["lib.aar"])).unwrap().lang, "jvm");
 
         // An Xcode project or workspace is passed as --project, with its build options.
         let build = split_apple_args(&os(&[
@@ -1203,7 +1314,7 @@ mod tests {
             "/dd",
         ]));
         assert_eq!(inv.args, expected);
-        assert_eq!(lang_of_input(Path::new("Acme.xcodeproj/")), "apple");
+        assert_eq!(choose(&os(&["Acme.xcodeproj/"])).unwrap().lang, "apple");
         assert_eq!(
             choose(&os(&["--scheme", "Acme", "Acme.xcodeproj", "-o", "g"]))
                 .unwrap()
