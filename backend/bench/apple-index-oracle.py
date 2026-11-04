@@ -21,6 +21,10 @@ UnitCallback = c.CFUNCTYPE(c.c_bool, Object, Text)
 ObjectCallback = c.CFUNCTYPE(c.c_bool, Object, Object)
 
 
+class IncompleteTraversal(RuntimeError):
+    pass
+
+
 class Store:
     def __init__(self, library, store):
         self.lib = c.CDLL(str(library))
@@ -36,6 +40,7 @@ class Store:
         bind("error_get_description", c.c_char_p, Object)
         bind("error_dispose", None, Object)
         bind("store_units_apply_f", c.c_bool, Object, c.c_uint, Object, UnitCallback)
+        bind("record_reader_symbols_apply_f", c.c_bool, Object, c.c_bool, Object, ObjectCallback)
         for name in ("unit_reader_dependencies_apply_f", "record_reader_occurrences_apply_f", "occurrence_relations_apply_f"):
             bind(name, c.c_bool, Object, Object, ObjectCallback)
         for name in ("unit_reader_get_working_dir", "unit_reader_get_module_name", "unit_dependency_get_filepath",
@@ -78,7 +83,7 @@ class Store:
         if failures:
             raise failures[0]
         if not finished:
-            raise RuntimeError(f"index traversal did not finish: {apply.__name__}")
+            raise IncompleteTraversal(f"index traversal did not finish: {apply.__name__}")
 
     def records(self, selected):
         result = set()
@@ -126,7 +131,14 @@ class Store:
                          "symbol": self.symbol(self.occurrence_get_symbol(occ)),
                          "relations": sorted(relations, key=lambda r: json.dumps(r, sort_keys=True))})
         try:
-            self.visit(self.record_reader_occurrences_apply_f, occurrence, ObjectCallback, reader)
+            try:
+                self.visit(self.record_reader_occurrences_apply_f, occurrence, ObjectCallback, reader)
+            except IncompleteTraversal:
+                # A compiler record containing no symbols has no occurrence
+                # block. Check its symbol table before accepting an empty result.
+                stop_at_first = ObjectCallback(lambda _ctx, _symbol: False)
+                if rows or not self.record_reader_symbols_apply_f(reader, True, None, stop_at_first):
+                    raise
             return rows
         finally:
             self.record_reader_dispose(reader)

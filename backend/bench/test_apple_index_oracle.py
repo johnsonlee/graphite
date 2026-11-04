@@ -25,6 +25,19 @@ class OracleTests(unittest.TestCase):
             self.shared[path] = {"usrs": self.model["usrs"][:], "types": [[owner, owner + "USR"] for owner in owners], "calls": [],
                                  "members": [[owner] for owner in owners]}
 
+    def test_absent_occurrence_block_requires_a_verified_empty_symbol_table(self):
+        store = verify.oracle.Store.__new__(verify.oracle.Store)
+        store.store = object()
+        store.record_reader_create = object()
+        store.open = lambda *args: 1
+        store.record_reader_dispose = lambda *args: None
+        store.record_reader_occurrences_apply_f = lambda *_: False
+        store.record_reader_symbols_apply_f = lambda *_: True  # no callback
+        self.assertEqual(store.facts("empty"), [])
+        store.record_reader_symbols_apply_f = lambda _, _no_cache, context, callback: callback(context, 1)
+        with self.assertRaises(verify.oracle.IncompleteTraversal):
+            store.facts("nonempty-record-with-unreadable-occurrences")
+
     def test_each_file_must_have_both_compiler_contexts_and_definitions(self):
         verify.check_model(self.expected, self.model, self.shared, self.out)
         path = next(iter(verify.SHARED))
