@@ -3,7 +3,9 @@
 The Apple frontend uses the existing compiler index store and Graph IR importer.
 It does not require the universal schema library. The resulting graph contains
 types, typed declarations, call sites and supported literal arguments, and can be
-queried or served with the native CLI.
+queried or served with the native CLI. The current integration preserves main's
+JavaScript frontend and atomic output handling. Enum declarations remain available
+after saving, including cases that have no constant-reference node.
 
 ## Prepare the tools
 
@@ -58,6 +60,9 @@ source, in addition to verifying the container's checksums.
 For a large application, the importer heap can be selected explicitly. The Signal
 validation used `JAVA_TOOL_OPTIONS=-Xmx8g` for the build command, including import;
 8 GiB is the maximum permitted JVM heap, rather than a requirement for small apps.
+
+Packed `.graphite` outputs use the CLI's atomic publication and can replace an
+existing packed graph. Directory outputs require a new target directory.
 
 The frontend builds the chosen scheme with compiler indexing enabled and code
 signing disabled, emits IR, imports it through the JVM frontend, and packs the

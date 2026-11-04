@@ -1,0 +1,35 @@
+{
+  "commit": "14ceef9c59db0f112de8890db7b539610e9e9d6b",
+  "tree": "3d00a0630f09d461d539cf58ad26f1e7b3e1fa7a",
+  "isolatedClone": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-main-rebase-d2a2/enum-metadata-jvm",
+  "jar": "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-main-rebase-d2a2/evidence/enum-declaration-roundtrip/graphite.jar",
+  "jarSHA256": "fc88002aee7c012e523ab91cb347eb3ad46552b4ca4989eb06679ec18fa2720a",
+  "graphClassSHA256BeforeAndAfter": "6fcb82ab429ff47436abbdef3fa1e756366a2e960443d5e88a42ef992b0b5344",
+  "publicGraphJavapIdentical": true,
+  "beforeFixFailure": "java.lang.AssertionError: expected:<[]> but was:<null>",
+  "tests": {
+    "io.johnsonlee.graphite.webgraph.GraphStoreTest": 172,
+    "io.johnsonlee.graphite.graph.DefaultGraphTest": 42,
+    "io.johnsonlee.graphite.graph.MmapGraphTest": 35,
+    "io.johnsonlee.graphite.ir.IrReaderTest": 9,
+    "io.johnsonlee.graphite.cli.ImportCommandTest": 5
+  },
+  "testTotal": 263,
+  "changedFiles": [
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/DefaultGraph.kt",
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/EnumValueIndexSource.kt",
+    "frontend/jvm/core/src/main/kotlin/io/johnsonlee/graphite/graph/MmapGraph.kt",
+    "frontend/jvm/core/src/test/kotlin/io/johnsonlee/graphite/graph/MmapGraphTest.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/GraphStore.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/MappedWebGraphBackedGraph.kt",
+    "frontend/jvm/webgraph/src/main/kotlin/io/johnsonlee/graphite/webgraph/WebGraphBackedGraph.kt",
+    "frontend/jvm/webgraph/src/test/kotlin/io/johnsonlee/graphite/webgraph/GraphStoreTest.kt"
+  ],
+  "unchangedSource": [
+    "frontend/apple",
+    "cli",
+    "ir",
+    "NodeSerializer v3 format"
+  ],
+  "scope": "Local build, JVM storage correctness and source compatibility."
+}

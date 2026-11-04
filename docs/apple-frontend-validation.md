@@ -1,5 +1,56 @@
 # Apple frontend follow-up validation
 
+## Current-main integration and complete enum metadata round trip (2026-11-05)
+
+PR #154 has been rebased onto `main` at `7c59d799`; PR #176 is restacked on the
+updated base. The [rebase proof](apple-frontend-evidence/2026-11-05/main-rebase-final-stack-proof.json)
+records the parent chain and exact source equivalence. Current-main JS/TS support,
+atomic output publication, the Rust benchmark controller and its correctness/OOM
+policy are preserved. Old single-corpus benchmark-gate failures and shape pins
+below are historical records, not the current hosted acceptance controller.
+
+The complete Apple source tree is unchanged from `e69f200e`. Its 82-test local run,
+Linux/macOS tests and compiler-index evidence remain applicable to that component.
+The adapted current-main CLI passes 113 tests and Clippy. A matched CLI, Apple
+frontend and current-main JVM importer also pass an
+[AcmeShop build/import/verify/query smoke](apple-frontend-evidence/2026-11-05/main-rebase-acmeshop-verification.json).
+
+The new release CLI (`0f9e2181…`), unchanged Swift binary (`4d1ec27b…`) and main-based
+JVM JAR completed the full Signal directory command through Xcode, IR import and
+packing. Existing DerivedData was reused. Complete model comparison then exposed a
+[real metadata loss](apple-frontend-evidence/2026-11-05/enum-metadata-rejected-roundtrip.json):
+10,027 enum declarations were present in IR but missing after save. They have no
+`EnumConstant` node, so the old node-only metadata collector could not find them.
+The earlier exact-query checks did not cover this inventory; they are retained
+without treating that graph as a complete semantic round trip.
+
+The bounded fix adds an optional enum-index capability to the four built-in graph
+implementations. Saving includes declaration metadata and retains the existing
+node-based fallback for legacy implementations. It preserves declared empty lists
+versus absent declarations, changes neither the v3 format nor the `Graph` JVM
+interface, and does not invent constant nodes. The [repair evidence](apple-frontend-evidence/2026-11-05/enum-metadata-repair-provenance.json)
+includes the failing regression, 263 passing tests, eager/mapped resaves and the
+unchanged `Graph.class` ABI.
+
+The fixed importer (`fc88002a…`) consumes the same sealed Signal IR, without
+rebuilding Xcode or repeating unchanged producer work. The
+[full round-trip verification](apple-frontend-evidence/2026-11-05/signal-main-full-roundtrip.json)
+compares all 560,895 nodes, 199,849 edges in both directions, 42,519 methods and
+all public metadata, including every one of the 10,027 enum cases. No model-field
+difference remains. Missing cases remain `null`; declared cases retain `[]`.
+The final graph has SHA-256
+`31788b41dc78ae25c46f2614125254bc5dfeb934d794aa51964b277ed0a2eeaf`.
+[Native verification](apple-frontend-evidence/2026-11-05/signal-main-native-verification.json)
+checks all 19 packed entries and all 11 exact queries, including 49 typed Info.plist
+values; [HTTP verification](apple-frontend-evidence/2026-11-05/signal-main-http-verification.json)
+checks two complete responses and confirms server shutdown. The existing five
+dictionary-valued plist omissions remain explicitly accepted partial inventory.
+
+These are correctness checks. Hosted current-main benchmark checks enforce
+correctness, complete execution and OOM boundaries; timings are report-only.
+Formal performance acceptance still requires representative multi-graph load tests.
+Historical performance observations below do not establish acceptance of this tree.
+
 ## Shared Swift source contexts and basic source dataflow (2026-11-05)
 
 The production reader now enumerates distinct compiler records when a selected

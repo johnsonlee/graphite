@@ -1,0 +1,204 @@
+{
+  "commands": {
+    "import": {
+      "argv": [
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/bin/graphite",
+        "import",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir",
+        "-o",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/graphs/signal.graphite"
+      ],
+      "exitCode": 0,
+      "stdout": "import.stdout",
+      "stderr": "import.stderr"
+    },
+    "javac": {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/javac",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-main-rebase-d2a2/evidence/enum-declaration-roundtrip/graphite.jar",
+        "-d",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/probe",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/probe/FlowProbe.java",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/probe/RoundTrip.java"
+      ],
+      "exitCode": 0,
+      "stdout": "javac.stdout",
+      "stderr": "javac.stderr"
+    },
+    "check-full": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/check-full.py"
+      ],
+      "exitCode": 0,
+      "stdout": "check-full.stdout",
+      "stderr": "check-full.stderr"
+    },
+    "roundtrip": {
+      "argv": [
+        "/opt/homebrew/opt/openjdk@17/bin/java",
+        "-Xmx8g",
+        "-cp",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/pr176-main-rebase-d2a2/evidence/enum-declaration-roundtrip/graphite.jar:/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/probe",
+        "RoundTrip",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/full-check/unpacked",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/roundtrip.json"
+      ],
+      "exitCode": 0,
+      "stdout": "roundtrip.stdout",
+      "stderr": "roundtrip.stderr"
+    },
+    "check-http": {
+      "argv": [
+        "/opt/homebrew/opt/python@3.14/bin/python3.14",
+        "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-enum-metadata-fixed-e2e/check-http.py"
+      ],
+      "exitCode": 0,
+      "stdout": "check-http.stdout",
+      "stderr": "check-http.stderr"
+    }
+  },
+  "passed": true,
+  "inputIR": "/Users/johnsonlee/.codex/benchmarks/apple-validation/ios-app-2026-11-05/signal-main-rebased-e2e/probe/roundtrip/signal.graphite-ir",
+  "inputSha256": "bef16c9f044459180209a4ccf950528edcb8760a396d71788e9b28d51396b172",
+  "jarSha256": "fc88002aee7c012e523ab91cb347eb3ad46552b4ca4989eb06679ec18fa2720a",
+  "graphSha256": "31788b41dc78ae25c46f2614125254bc5dfeb934d794aa51964b277ed0a2eeaf",
+  "irSummary": {
+    "strings": 130944,
+    "edges": 199849,
+    "nodes": 560895
+  },
+  "nodeIdsCompared": 560895,
+  "edgeInstancesEachDirection": 199849,
+  "enumPresence": {
+    "uniqueDeclaredCases": 10027,
+    "mappedEmptyArrays": 10027,
+    "undefinedSentinelAbsent": true
+  },
+  "otherMetadata": {
+    "methods": {
+      "savedEntries": 42519,
+      "irEntries": 42519
+    },
+    "serializedMethods": {
+      "savedEntries": 42519,
+      "irEntries": 42519
+    },
+    "classOrigins": {
+      "savedEntries": 8416,
+      "irEntries": 8416
+    },
+    "memberAnnotations": {
+      "savedEntries": 5881,
+      "irEntries": 5881
+    },
+    "artifactDependencies": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "syntheticIdentities": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "branchScopes": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "localDefinitions": {
+      "savedEntries": 0,
+      "irEntries": 0
+    },
+    "hierarchyTypeKeys": 6296,
+    "hierarchyKeysWithSupertype": 5308,
+    "hierarchyKeysWithSubtype": 1305,
+    "serializedSupertypes": {
+      "savedEntries": 5308,
+      "irEntries": 5308
+    },
+    "serializedSubtypes": {
+      "savedEntries": 1305,
+      "irEntries": 1305
+    },
+    "enumValues": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "serializedEnumEntries": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "IRRawEnumEntries": 10037,
+    "publicEnumIndexIR": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "publicEnumIndexSaved": {
+      "savedEntries": 10027,
+      "irEntries": 10027
+    },
+    "signalEnumLookup": {
+      "uniqueDeclaredCases": 10027,
+      "mappedEmptyArrays": 10027,
+      "undefinedSentinelAbsent": true
+    },
+    "declaredTypes": {
+      "types": 0,
+      "methods": 0,
+      "fields": 0,
+      "classes": 0
+    },
+    "binaryResourceAccessorEntries": {
+      "savedEntries": 0,
+      "irEntries": 0
+    }
+  },
+  "nativeExactQueries": {
+    "app_delegate": 1,
+    "sha": 1,
+    "c_types": 3,
+    "webp_fields": 2,
+    "localized": 1,
+    "typedInfo": 49,
+    "flow-formals": 4,
+    "flow-result": 1,
+    "flow-lookup": 0,
+    "flow-resource": 1,
+    "flow-preservedLocals": 5
+  },
+  "HTTPMatches": [
+    "localized",
+    "flow-result"
+  ],
+  "serverStopped": true,
+  "sha256": {
+    "bin/graphite": "0f9e2181d5aa2e2efde2e200fbc48c871d180f04452f30ed00a64104640432c9",
+    "check-full.py": "98f0ef94e7f5a857570ea4e72d3c83ac6280bf718d0ce8243fa525dd7da2d3d1",
+    "check-full.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "check-full.stdout": "85e889a679fb852f2b3df3d6744fe59b235227fe796d243d9f1ae7600f28a42c",
+    "check-http.py": "c9443df91777a483945c88014d4749def90fb7bba1638c58a027e6276a88c49e",
+    "check-http.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "check-http.stdout": "441d9898b53db867e8a71a30b45ccdc01a5aea9af15a8eb74cc053a9b7b3f290",
+    "full-verification.json": "d6d52b6579bc3c8c09266c58ed55c472f166a38873ce8b9ebec4b51bd6a1888c",
+    "graphs/signal.graphite": "31788b41dc78ae25c46f2614125254bc5dfeb934d794aa51964b277ed0a2eeaf",
+    "graphs/signal.graphite.sha256": "cc6bc5bcd7cce2f76ad6bda8e43a2824385a0d94e1af5acfef20cb4a443a6d22",
+    "http-server.log": "e5f31eb86fe55d87660b1b7de5db588623b87470a1c7f39b3cd70feb01d4b16c",
+    "http-verification.json": "a555226e82a51b2a0bc682743e015c88116ceeb566fc15cda2c64db8382af96c",
+    "import.stderr": "f90d0945aa40303d725a19a5ffa17ec83769180a445d886864c0aa7d9ed52e12",
+    "import.stdout": "e30e0af01afedc8ebfd250753596d26c7b6b99261f8361ebaf8874e3b7ce8507",
+    "invocation.json": "e4ef32aa8ae4a8fac9a72c57446815238b244760737d6227dfd05efb32d061a4",
+    "javac.stderr": "f941234c69b7cd097dbcd619321a4c81450f36ee95be10ff9865761977515126",
+    "javac.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "probe/FlowProbe.class": "33ab9a4b05041e89ee2567fedff1d028b257fc78c336f7f3b280970d260d5c3f",
+    "probe/FlowProbe.java": "9d656c8e2157675d3d6747221c1353e406e08ad6176b1bdec0d6c2842dab2635",
+    "probe/RoundTrip.class": "bbb73239e3f56e7c50e4f34e25b56e0d2f2bff34db5929095ec3e9945f5f281b",
+    "probe/RoundTrip.java": "1d2341761c1ff016fa677acdf176695addcfce6809e53d79ca48bbc72afb35e2",
+    "probe/javac.json": "6b49e56bf6398cb6b0cff23fc7489b7f09b5e923165a9cd40b4e495f055dc8cd",
+    "result.json": "ff8ae5796bcef71911ff9c5c3eaea341819c471f669549e252b830106edd4305",
+    "roundtrip.json": "5c848ed8d74bc6256245c449894392d855b041e10e524a04fa9376e57bb50fee",
+    "roundtrip.stderr": "f941234c69b7cd097dbcd619321a4c81450f36ee95be10ff9865761977515126",
+    "roundtrip.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "run.py": "020062a0028e3558ce93169d028613742e26128685ce9d2c76ad62f5fbf2a305"
+  }
+}
