@@ -58,6 +58,30 @@ fn joined(raw: &OsStr) -> Option<(&'static str, &OsStr)> {
     Some((name, value))
 }
 
+// A path may start with a dash. Only reserve names that the shell or the
+// build frontend actually recognizes, including their joined forms.
+fn build_option(value: &OsStr) -> bool {
+    let bytes = value.as_encoded_bytes();
+    if !bytes.starts_with(b"-") {
+        return false;
+    }
+    let name = bytes.split(|&byte| byte == b'=').next().unwrap_or_default();
+    VALUE_OPTIONS.iter().any(|option| name == option.as_bytes())
+        || matches!(
+            name,
+            b"-h"
+                | b"--help"
+                | b"-V"
+                | b"--version"
+                | b"-v"
+                | b"--verbose"
+                | b"--profile"
+                | b"--fold-strict"
+                | b"--interprocedural"
+                | b"--include-libs"
+        )
+}
+
 pub(crate) fn walk(args: &[OsString]) -> impl Iterator<Item = Arg<'_>> {
     let mut i = 0;
     let mut positional_only = false;
@@ -76,10 +100,7 @@ pub(crate) fn walk(args: &[OsString]) -> impl Iterator<Item = Arg<'_>> {
             let value = args
                 .get(i)
                 .filter(|next| {
-                    *next != "--"
-                        && !(matches!(name, "-o" | "--output")
-                            && next.as_encoded_bytes().starts_with(b"-")
-                            && next.len() > 1)
+                    *next != "--" && !(matches!(name, "-o" | "--output") && build_option(next))
                 })
                 .map(OsString::as_os_str);
             i += usize::from(value.is_some());
@@ -191,6 +212,13 @@ mod tests {
             let mut rewritten = args;
             rewritten[i] = arg;
             assert_eq!(rewritten, expected);
+        }
+        for path in ["-1.graphite", "-graphs", "--user-file", "-"] {
+            let args = os(&["app.jar", "-o", path]);
+            assert_eq!(
+                output_option(&args).unwrap().unwrap().value,
+                Some(OsStr::new(path))
+            );
         }
         for joined in ["-o=--help", "--output=--help"] {
             let args = os(&["input", joined]);

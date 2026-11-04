@@ -35,9 +35,9 @@ fn a_separate_output_value_cannot_consume_another_option() {
             ["-o", "--help"],
             ["-o", "-h"],
             ["-o", "--version"],
-            ["-o", "--unknown"],
-            ["-o", "-graphs"],
-            ["-o", "-1.graphite"],
+            ["-o", "--android-sdk"],
+            ["-o", "--fold-strict"],
+            ["-o", "-v"],
             ["--output=", "--help"],
         ] {
             let output = Command::new(env!("CARGO_BIN_EXE_graphite"))

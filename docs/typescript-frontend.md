@@ -79,8 +79,8 @@ sidecar or an unreadable partial container. Confirm the publisher has exited
 and inspect the files before removing them and retrying. During a rebuild the publisher
 backs up the old digest and restores it if the container rename fails. A reader
 checking the two files between renames can see a transient digest mismatch.
-Use a joined option such as `--output=--sample.graphite` for a filename starting
-with a dash. A separate output flag requires a path.
+A separate output path can start with a dash, as in `-o -1.graphite`. When
+the filename matches an actual option, use a joined value such as `--output=--help`.
 
 An interrupted build can leave a private `.graphite-build-<pid>-*` directory
 beside the output, under its nearest existing ancestor or in system temp. On Linux and macOS, the
