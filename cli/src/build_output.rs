@@ -151,21 +151,23 @@ impl Stage {
                 Err(e) => return Err(e),
                 Ok(_) => {}
             }
-            let local = Self::in_directory(dir)?;
             if ancestor == parent || dir == temp_dir {
-                return Ok(local);
+                return Self::in_directory(dir);
             }
-            // Even bind mounts with matching device IDs may reject renames. Move
-            // an empty directory before allowing the frontend to write any graph data.
-            if let Ok(temp) = Self::in_directory(temp_dir) {
-                let probe = temp.0.join("probe");
-                if std::fs::create_dir(&probe).is_ok()
-                    && rename_probe(&probe, &local.0.join("probe")).is_ok()
-                {
-                    return Ok(temp);
+            // A device ID cannot distinguish all bind mounts. Move an empty
+            // scratch directory to a private, unoccupied name on the target.
+            // Only the chosen stage parent needs an owner record or a sweep.
+            let probe = || -> std::io::Result<()> {
+                let source = tempfile::tempdir_in(temp_dir)?;
+                let target = tempfile::tempdir_in(dir)?;
+                rename_probe(source.path(), &target.path().join("probe"))
+            };
+            if probe().is_ok() {
+                if let Ok(stage) = Self::in_directory(temp_dir) {
+                    return Ok(stage);
                 }
             }
-            return Ok(local);
+            return Self::in_directory(dir);
         }
         Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
@@ -346,8 +348,12 @@ mod tests {
         std::fs::create_dir(&nearest).unwrap();
         let output = nearest.join("new/nested/app.graphite");
         let stage = Stage::for_output(&output, temp.path(), |from, to| {
-            assert!(from.is_dir() && from.starts_with(temp.path()));
-            assert!(to.starts_with(&nearest) && !to.exists());
+            assert_eq!(from.parent(), Some(temp.path()));
+            assert_eq!(std::fs::read_dir(from).unwrap().count(), 0);
+            let target = to.parent().unwrap();
+            assert_eq!(target.parent(), Some(nearest.as_path()));
+            assert_eq!(std::fs::read_dir(target).unwrap().count(), 0);
+            assert!(!to.exists());
             Err(std::io::ErrorKind::CrossesDevices.into())
         })
         .unwrap();
