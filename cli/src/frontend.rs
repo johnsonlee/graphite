@@ -145,6 +145,9 @@ pub const JVM_FRONTEND_JAR: &str = "graphite-frontend-jvm.jar";
 /// The asset name on a GitHub release.
 pub const JVM_RELEASE_ASSET: &str = "graphite.jar";
 
+pub const JS_RELEASE_ASSET: &str = "graphite-frontend-js.tgz";
+pub const JS_INSTALLED_ENTRY: &str = "package/dist/cli.js";
+
 /// Pin the emitted-JavaScript frontend entry point or executable launcher.
 pub const JS_FRONTEND_VAR: &str = "GRAPHITE_FRONTEND_JS";
 /// Compatibility alias for the same JavaScript frontend.
@@ -205,6 +208,16 @@ pub fn locate_js(env: &Env) -> Option<Frontend> {
                 found_via: "PATH",
             })
         })
+        .or_else(|| {
+            let installed = env.frontends_dir()?.join("js");
+            Some(Frontend {
+                lang: "js",
+                launch: Launch::Node(newest_installed(&installed, JS_INSTALLED_ENTRY, |name| {
+                    semver::Version::parse(name).ok()
+                })?),
+                found_via: "~/.graphite/frontends",
+            })
+        })
 }
 
 pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
@@ -213,23 +226,11 @@ pub fn locate_node(env: &Env) -> Result<PathBuf, String> {
     })
 }
 
-const JS_SETUP: &str = "Build frontend/web with `npm ci && npm run build`, then set GRAPHITE_FRONTEND_JS to its absolute dist/cli.js path; or put graphite-frontend-js on PATH. GRAPHITE_FRONTEND_TS and graphite-frontend-ts are supported aliases.";
-
 pub fn missing_js_message() -> String {
-    format!("No JavaScript artifact frontend found. {JS_SETUP}")
-}
-
-pub(crate) fn js_install_message(env: &Env) -> String {
-    let mut message =
-        String::from("Frontend install cannot download the JavaScript artifact frontend.");
-    if let Some(fe) = locate_js(env) {
-        message.push_str(&format!(
-            " Current frontend path (via {}): {}.",
-            fe.found_via,
-            fe.path().display()
-        ));
-    }
-    format!("{message} {JS_SETUP}")
+    format!(
+        "No JavaScript artifact frontend found. Install it with `graphite frontend install js`, \
+         or set {JS_FRONTEND_VAR} to a built JavaScript frontend entry point."
+    )
 }
 
 /// Find the JVM frontend. The order, first match wins:
@@ -278,7 +279,9 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
         });
     }
     let installed = env.frontends_dir()?.join("jvm");
-    let jar = newest_installed_jar(&installed)?;
+    let jar = newest_installed(&installed, JVM_FRONTEND_JAR, |name| {
+        Some(VersionKey::parse(name))
+    })?;
     Some(Frontend {
         lang: "jvm",
         launch: Launch::Jar(jar),
@@ -286,27 +289,23 @@ pub fn locate_jvm(env: &Env) -> Option<Frontend> {
     })
 }
 
-/// The jar of the highest-versioned *complete* install under `dir`, comparing dotted
-/// numeric components first and pre-release suffixes after (`2.5.0` > `2.5.0-rc.1` >
-/// `2.4.9`). A version directory without the jar (an install that failed or is still
-/// downloading) is not a candidate, so it never hides an older install that works.
-fn newest_installed_jar(dir: &Path) -> Option<PathBuf> {
-    let mut versions: Vec<(VersionKey, PathBuf)> = std::fs::read_dir(dir)
+/// Find the entry point of the highest-versioned complete install. An unfinished
+/// installation never hides a usable older frontend.
+fn newest_installed<K: Ord>(
+    dir: &Path,
+    entry_point: &str,
+    version_key: impl Fn(&str) -> Option<K>,
+) -> Option<PathBuf> {
+    std::fs::read_dir(dir)
         .ok()?
-        .filter_map(|e| e.ok())
-        .map(|e| e.path().join(JVM_FRONTEND_JAR))
-        .filter(|jar| jar.is_file())
-        .map(|jar| {
-            let version = jar
-                .parent()
-                .and_then(Path::file_name)
-                .map(|n| n.to_string_lossy().into_owned())
-                .unwrap_or_default();
-            (VersionKey::parse(&version), jar)
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let path = entry.path().join(entry_point);
+            let version = version_key(&entry.file_name().to_string_lossy())?;
+            path.is_file().then_some((version, path))
         })
-        .collect();
-    versions.sort();
-    versions.pop().map(|(_, jar)| jar)
+        .max()
+        .map(|(_, path)| path)
 }
 
 /// Sort key for a version string: numeric components, then a flag for "is a release"
@@ -543,6 +542,34 @@ mod tests {
         assert_eq!(found.launch, Launch::Executable(launcher));
         assert_eq!(found.found_via, "PATH");
         std::fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn js_discovery_picks_the_newest_complete_release_and_keeps_launcher_overrides() {
+        let root = tempfile::tempdir().unwrap();
+        let mut env = Env {
+            home: Some(root.path().into()),
+            ..Default::default()
+        };
+        let base = env.frontends_dir().unwrap().join("js");
+        for v in ["2.5.0", "2.6.0-rc.2", "2.6.0-rc.10", ".tmp-install"] {
+            touch(&base.join(v).join(JS_INSTALLED_ENTRY));
+        }
+        touch(&base.join("9.0.0/partial"));
+        assert_eq!(
+            locate_js(&env).unwrap().path(),
+            base.join("2.6.0-rc.10").join(JS_INSTALLED_ENTRY)
+        );
+        let stable = base.join("2.6.0+release").join(JS_INSTALLED_ENTRY);
+        touch(&stable);
+        let managed = locate_js(&env).unwrap();
+        assert_eq!(managed.launch, Launch::Node(stable));
+        assert_eq!(managed.found_via, "~/.graphite/frontends");
+        let pinned = root.path().join("custom.js");
+        touch(&pinned);
+        env.vars
+            .insert(TS_FRONTEND_VAR.into(), pinned.clone().into_os_string());
+        assert_eq!(locate_js(&env).unwrap().launch, Launch::Node(pinned));
     }
 
     #[test]

@@ -416,10 +416,14 @@ artifact in its language's own ecosystem, and the CLI fetches, verifies and runs
 | Frontend | Artifact | Published to | Runtime it needs |
 |---|---|---|---|
 | jvm | `graphite-frontend-jvm-<ver>.jar` (fat jar) + `graphite-frontend-jvm` launcher | GitHub Release asset; Maven Central `io.johnsonlee.graphite:frontend-jvm` (for Gradle/Maven users who embed it); Homebrew `graphite-frontend-jvm` (depends on `openjdk@17`) | JDK 17+ |
-| web | npm package `@johnsonlee/graphite-frontend-web` with a `bin` | npm; GitHub Release tarball | Node 20+ |
+| js (alias ts) | `graphite-frontend-js.tgz` with the compiled frontend, TypeScript and library declarations | GitHub Release asset with a SHA-256 checksum | Node 20+ |
 | apple | `graphite-frontend-apple` static binary (macOS x86_64/arm64) | GitHub Release asset; Homebrew | Xcode toolchain for index/SIL |
 
-How the CLI finds one, in order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
+For the shipped JS frontend, `graphite frontend install js` (or `ts`) fetches
+the package for the CLI's release by default. See the [installation and lookup
+rules](typescript-frontend.md#install-build-and-query).
+
+The proposed general frontend protocol discovers frontends in this order: `--frontend <exe>`, `GRAPHITE_FRONTEND_<LANG>`, an
 executable `graphite-frontend-<lang>` on `PATH`, then `~/.graphite/frontends/<lang>/<ver>/`.
 If none is present, `graphite build` prints the exact `graphite frontend install <lang>`
 command and exits 2; `graphite frontend install` downloads the newest release asset whose
@@ -532,7 +536,7 @@ Each is a frontend with the same three commands; none needs a backend change.
   musl, macOS x86_64/aarch64) as GitHub Release assets, the `graphite-explore` container
   image (a static binary on `distroless`), the Homebrew formula (`graphite`, no JDK
   dependency once the JVM frontend is optional), and each frontend to its ecosystem (the
-  jar to the Release and Maven Central, the Web frontend to npm, the Apple frontend to the
+  jar to the Release and Maven Central, the JS frontend to the Release, the Apple frontend to the
   Release).
 - `graphite frontend install jvm` fetches the matching frontend into `~/.graphite/frontends/`
   (Section 6.6 for the artifacts, resolution order and the compatibility contract).

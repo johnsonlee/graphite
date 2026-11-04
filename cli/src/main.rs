@@ -205,9 +205,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                     fe.path().display(),
                     fe.found_via
                 ),
-                None => println!(
-                    "js\tnot installed\t-\t(set GRAPHITE_FRONTEND_JS to frontend/web/dist/cli.js; alias: ts)"
-                ),
+                None => println!("js\tnot installed\t-\t(graphite frontend install js; alias: ts)"),
             }
             Ok(())
         }
@@ -231,9 +229,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            if frontend::Lang::parse(&lang)? == frontend::Lang::Js {
-                return Err(frontend::js_install_message(env));
-            }
+            let lang = frontend::Lang::parse(&lang)?;
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
                 None if option_env!("GRAPHITE_VERSION").is_some() => VERSION.to_string(),
@@ -244,7 +240,7 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                     )
                 }
             };
-            install::install_jvm(env, &version, skip_checksum).map(|_| ())
+            install::install(env, lang, &version, skip_checksum).map(|_| ())
         }
     }
 }

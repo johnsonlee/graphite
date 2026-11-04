@@ -139,7 +139,7 @@ other.
 
 ## Frontend Support
 
-The current released frontend reads JVM and Android artifacts. Graph building
+The JVM frontend reads JVM and Android artifacts. Building these graphs
 requires Java; APK analysis also requires Android platform jars. These inputs
 can be analyzed without their source checkout.
 
@@ -148,10 +148,18 @@ files or a compiled artifact directory such as `.next`, `dist` or `build` via
 `graphite build --lang js` (`--lang ts` is an alias). A single-file entry follows
 resolved JavaScript dependencies under its parent directory. Pass a directory
 to include unrelated entries as well. Compile the target project first with its
-own build tools. Build the frontend from
-`frontend/web` and set `GRAPHITE_FRONTEND_JS` to its `dist/cli.js` entry point.
-It requires Node.js for analysis and uses the same Rust query/server and
-`.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
+own build tools. With Node.js 20+ on `PATH`, install the frontend once for your
+Graphite release and build the graph:
+
+```sh
+graphite frontend install js
+graphite build --lang js ./dist -o project.graphite
+graphite verify project.graphite
+```
+
+`graphite frontend install ts` installs the same package. The package includes
+the TypeScript parser and its standard library declarations. Saved graphs use
+the same Rust query/server and `.graphite` container commands. TS/TSX/JSX sources and `tsconfig.json` are rejected.
 See [setup, artifact semantics and end-to-end validation](docs/typescript-frontend.md).
 
 **In progress:** [Swift / iOS support (#154)](https://github.com/johnsonlee/graphite/pull/154)

@@ -21,33 +21,36 @@ and `tsconfig.json` are rejected with a
 compile-first message. The `ts` selector is an alias for artifact analysis,
 not a request to parse TypeScript source.
 
-## Build and query
+## Install, build and query
 
-Prepare Graphite's frontend and CLI from a source checkout:
+Use a Graphite release that ships `graphite-frontend-js.tgz`. With Node.js 20+
+available, install the frontend for the CLI's version. The CLI verifies the
+archive against its published SHA-256 checksum before making it available. The
+archive includes TypeScript and its standard library declarations.
 
 ```bash
-npm ci --prefix frontend/web
-npm test --prefix frontend/web
-cargo build --release --locked -p graphite-cli
-export GRAPHITE_FRONTEND_JS="$PWD/frontend/web/dist/cli.js"
-
-./target/release/graphite frontend describe js
-./target/release/graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
-./target/release/graphite verify /tmp/project.graphite
-./target/release/graphite query /tmp/project.graphite \
+graphite frontend install js
+graphite frontend describe js
+graphite build --lang js /path/to/project/dist -o /tmp/project.graphite
+graphite verify /tmp/project.graphite
+graphite query /tmp/project.graphite \
   "MATCH (cs:CallSite) RETURN cs.caller_class, cs.caller_name, cs.callee_name, cs.line LIMIT 20" \
   --format json
-./target/release/graphite serve --graph project:/tmp/project.graphite
+graphite serve --graph project:/tmp/project.graphite
 ```
 
 Place `--lang` before or after the input, but before the `--` end-of-options separator. `js`, `javascript`, `ts` and
 `typescript` select the same frontend. With no selector, the existing JVM build
 path is preserved. Discovery uses `GRAPHITE_FRONTEND_JS`, then its compatibility
 alias `GRAPHITE_FRONTEND_TS`, then `graphite-frontend-js` or
-`graphite-frontend-ts` on `PATH`. `GRAPHITE_NODE` selects the Node executable for
-a JavaScript entry point. The npm package provides both launcher names.
-`frontend install jvm` and the JVM Homebrew installation do not install this
-frontend; use the source-checkout setup above.
+`graphite-frontend-ts` on `PATH`, then the highest installed release version under
+`~/.graphite/frontends/js/`. `graphite frontend install ts` uses that same
+installation. For an unversioned development CLI, pass the release version
+explicitly with `graphite frontend install js --version <version>`.
+`GRAPHITE_NODE` selects the Node executable for a JavaScript entry
+point. To develop the frontend from a checkout, run `npm ci --prefix frontend/web`
+and `npm run build --prefix frontend/web`, then set `GRAPHITE_FRONTEND_JS` to
+the absolute path of `frontend/web/dist/cli.js`.
 
 An output without `.graphite` is a saved directory. You can subsequently use
 `graphite pack <directory> -o <file.graphite>` and `graphite unpack` as for JVM

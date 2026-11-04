@@ -9,7 +9,7 @@ on:
   # A dry run: every job builds and verifies what a tag would publish, from the commit
   # the workflow is started on, and publishes nothing to any remote: Maven artifacts go
   # to the runner's local repository (signed when the GPG secrets are available), the
-  # binaries, graphite.jar and the rendered formula are checked and kept as the
+  # binaries, frontend packages and the rendered formula are checked and kept as the
   # `release-<tag>` artifact, the formula is installed from those assets on a
   # macOS runner, and both image architectures are built but not pushed. Not covered:
   # the Sonatype upload itself, the GitHub Release, the tap push and the registry
@@ -218,7 +218,7 @@ jobs:
 
   # ---- GitHub Release ----
   # Everything this job does before the last step is preparation that can be repeated:
-  # build the jar, collect the binaries, verify the checksums, render the formula, keep
+  # build the frontends, collect the binaries, verify the checksums, render the formula, keep
   # them all as the `release-<tag>` artifact. The last step is the only one that changes
   # remote state, and it is re-runnable too: this repository has immutable releases, so
   # `.github/scripts/release/publish.ts` builds the release as a draft, makes the draft's
@@ -257,6 +257,16 @@ jobs:
         mkdir -p release-assets
         cp frontend/jvm/query/build/libs/graphite.jar release-assets/graphite.jar
         (cd release-assets && sha256sum graphite.jar > graphite.jar.sha256)
+    - uses: actions/setup-node@v6
+      with:
+        node-version: '20.19.6'
+        package-manager-cache: false
+    - name: Package the JavaScript frontend with its locked runtime dependencies
+      working-directory: frontend/web
+      run: |
+        npm ci
+        npm run package:release
+        cp release-assets/graphite-frontend-js.tgz{,.sha256} ../../release-assets/
     - name: Collect the Rust binaries
       uses: actions/download-artifact@v8
       with:
@@ -272,6 +282,12 @@ jobs:
           sha256sum -c "graphite-${RELEASE_VERSION}-${TARGET}.tar.gz.sha256"
         done
         sha256sum -c graphite.jar.sha256
+        sha256sum -c graphite-frontend-js.tgz.sha256
+    - name: Install the JavaScript frontend with the release CLI and query a saved graph
+      run: |
+        tar -xzf "release-assets/graphite-${RELEASE_VERSION}-x86_64-unknown-linux-musl.tar.gz" -C "$RUNNER_TEMP" graphite
+        python3 .github/scripts/check-js-frontend-install.py --cli "$RUNNER_TEMP/graphite" \
+          --assets release-assets --version "$RELEASE_VERSION"
     # The formula is rendered and syntax-checked before anything is published, on every
     # run; the tap job pushes it after the release exists, and only for a stable tag.
     - name: Render the Homebrew formula

@@ -1,50 +1,24 @@
 use std::process::Command;
 
 #[test]
-fn js_install_aliases_explain_manual_setup_with_and_without_a_frontend_on_path() {
-    let bin = tempfile::tempdir().unwrap();
-    let launcher = bin.path().join(format!(
-        "graphite-frontend-js{}",
-        std::env::consts::EXE_SUFFIX
-    ));
-    for present in [false, true] {
-        if present {
-            std::fs::write(&launcher, "installed launcher").unwrap();
-            #[cfg(unix)]
-            {
-                use std::os::unix::fs::PermissionsExt;
-                std::fs::set_permissions(&launcher, std::fs::Permissions::from_mode(0o755))
-                    .unwrap();
-            }
-        }
-        for alias in ["js", "ts"] {
-            let result = Command::new(env!("CARGO_BIN_EXE_graphite"))
-                .args(["frontend", "install", alias])
-                .env_remove("GRAPHITE_FRONTEND_JS")
-                .env_remove("GRAPHITE_FRONTEND_TS")
-                .env("PATH", bin.path())
-                .output()
-                .unwrap();
-            assert!(!result.status.success());
-            let error = String::from_utf8(result.stderr).unwrap();
-            assert!(
-                error.contains("cannot download the JavaScript artifact frontend"),
-                "{error}"
-            );
-            assert!(
-                error.contains("npm ci && npm run build") && error.contains("GRAPHITE_FRONTEND_JS"),
-                "{error}"
-            );
-            assert_eq!(
-                error.contains(&launcher.display().to_string()),
-                present,
-                "{error}"
-            );
-            assert!(
-                !error.contains("No JavaScript artifact frontend found"),
-                "{error}"
-            );
-        }
+fn all_js_install_aliases_share_one_versioned_install() {
+    let home = tempfile::tempdir().unwrap();
+    let entry = home
+        .path()
+        .join(".graphite/frontends/js/2.6.0/package/dist/cli.js");
+    std::fs::create_dir_all(entry.parent().unwrap()).unwrap();
+    std::fs::write(&entry, "// installed frontend").unwrap();
+    for alias in ["js", "ts", "javascript", "typescript"] {
+        let output = Command::new(env!("CARGO_BIN_EXE_graphite"))
+            .args(["frontend", "install", alias, "--version", "v2.6.0"])
+            .env("HOME", home.path())
+            .env("PATH", home.path())
+            .output()
+            .unwrap();
+        assert!(output.status.success(), "{output:?}");
+        let message = String::from_utf8(output.stderr).unwrap();
+        assert!(message.contains("already installed"), "{message}");
+        assert!(message.contains(&entry.display().to_string()), "{message}");
     }
 }
 
@@ -57,6 +31,8 @@ fn a_source_file_is_not_an_installed_frontend() {
         Command::new(env!("CARGO_BIN_EXE_graphite"))
             .args(args)
             .current_dir(root.path())
+            .env("HOME", root.path())
+            .env_remove("GRAPHITE_FRONTEND_TS")
             .env("GRAPHITE_FRONTEND_JS", &source)
             .env("PATH", root.path())
             .output()
@@ -70,7 +46,7 @@ fn a_source_file_is_not_an_installed_frontend() {
     let build = run(&["build", "--lang", "js", "main.js", "-o", "graph"]);
     assert!(!build.status.success());
     let message = String::from_utf8(build.stderr).unwrap();
-    assert!(message.contains("npm ci && npm run build"));
+    assert!(message.contains("graphite frontend install js"));
     assert!(message.contains(&format!("GRAPHITE_FRONTEND_JS={}", source.display())));
     assert!(!root.path().join("graph").exists());
 }

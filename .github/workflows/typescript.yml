@@ -31,6 +31,9 @@ jobs:
     name: javascript-artifact-build-save-query
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # A release-style version exercises default install and packaged metadata.
+      GRAPHITE_VERSION: 0.0.0-ci.1
     steps:
     - name: Checkout
       uses: actions/checkout@v7
@@ -67,6 +70,11 @@ jobs:
       uses: Swatinem/rust-cache@v2
     - name: Build CLI
       run: cargo build --release --locked -p graphite-cli
+    - name: Package and install both frontend names in clean homes
+      run: |
+        RELEASE_VERSION="$GRAPHITE_VERSION" npm run package:release --prefix frontend/web
+        python3 .github/scripts/check-js-frontend-install.py --cli target/release/graphite \
+          --assets frontend/web/release-assets --version "$GRAPHITE_VERSION"
     - name: Check frontend discovery and persisted conflicting-edge policy through the Rust CLI
       run: node frontend/web/test/cli-integration.mjs target/release/graphite
     - name: Prepare pinned application fixtures on cache miss
