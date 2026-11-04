@@ -1,0 +1,356 @@
+{
+  "scope": "Correctness only, no timing; real wrapper source + actual compiler index + selected built Signal.app. Folded/default calls, localization lookup and arbitrary dataflow were not inferred.",
+  "signalCommit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+  "source": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-ios/SignalServiceKit/Util/OWSLocalizedString.swift",
+  "sourceSha256": "2135c102df2bbd1e271fc3e910b9e01e21d14a39680b1ed0862cd2a848d5d895",
+  "sourceLines25and26": [
+    "public func OWSLocalizedString(_ key: String, tableName: String? = nil, value: String = \"\", comment: String) -> String {",
+    "    return NSLocalizedString(key, tableName: tableName, bundle: .main.app, value: value, comment: comment)"
+  ],
+  "index": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Index.noindex/DataStore",
+  "bundle": "/Users/johnsonlee/.codex/benchmarks/apple-validation/signal-derived/Build/Products/Debug-iphonesimulator/Signal.app",
+  "frontendSha256": "87d497b9b6c9e0450f49db3aa6d64e0c4ca1178f3d16ea1f4b9627f5811baa29",
+  "jarSha256": "facf7faadd56b2928cac5cd85e7a182ba0332fc1b70d048aa8ed99e0dd2c2bd5",
+  "frontendExit": 3,
+  "resourceOmissions": [
+    "warning: resource org.whispersystems.signal/Info.plist key BuildDetails omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+    "warning: resource org.whispersystems.signal/Info.plist key CFBundleIcons omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+    "warning: resource org.whispersystems.signal/Info.plist key CFBundleIcons~ipad omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+    "warning: resource org.whispersystems.signal/Info.plist key CFBundleURLTypes omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists",
+    "warning: resource org.whispersystems.signal/Info.plist key NSAppTransportSecurity omitted: the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists"
+  ],
+  "irSha256": "1b9ca7e32a760d56ccad9d29dff96b04adc450314b8d6297af819de34d689897",
+  "ir": {
+    "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "formalTypes": [
+      "Swift.String",
+      "Swift.String?",
+      "Swift.String",
+      "Swift.String"
+    ],
+    "formalIds": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "callee": "Foundation.NSLocalizedString(_:tableName:bundle:value:comment:)(Swift.String,Swift.String?,__C.NSBundle,Swift.String,Swift.String)",
+    "line": 26,
+    "callId": 18,
+    "orderedArgumentIds": [
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "argumentBindings": [
+      {
+        "name": "key",
+        "localId": 13,
+        "assignSourceIds": [
+          2
+        ],
+        "slot": 0,
+        "type": ""
+      },
+      {
+        "name": "tableName",
+        "localId": 14,
+        "assignSourceIds": [
+          3
+        ],
+        "slot": 1,
+        "type": ""
+      },
+      {
+        "name": ".main.app",
+        "localId": 15,
+        "assignSourceIds": [],
+        "slot": 2,
+        "type": ""
+      },
+      {
+        "name": "value",
+        "localId": 16,
+        "assignSourceIds": [
+          4
+        ],
+        "slot": 3,
+        "type": ""
+      },
+      {
+        "name": "comment",
+        "localId": 17,
+        "assignSourceIds": [
+          5
+        ],
+        "slot": 4,
+        "type": ""
+      }
+    ],
+    "parameterPassSourceIds": [
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "returnNodeId": 19,
+    "returnOwner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "lookupEdgesFromCall": 0
+  },
+  "mapped": {
+    "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "formalTypes": [
+      "Swift.String",
+      "Swift.String?",
+      "Swift.String",
+      "Swift.String"
+    ],
+    "formalIds": [
+      2,
+      3,
+      4,
+      5
+    ],
+    "callee": "Foundation.NSLocalizedString(_:tableName:bundle:value:comment:)(Swift.String,Swift.String?,__C.NSBundle,Swift.String,Swift.String)",
+    "line": 26,
+    "callId": 18,
+    "orderedArgumentIds": [
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "argumentBindings": [
+      {
+        "type": "",
+        "slot": 0,
+        "assignSourceIds": [
+          2
+        ],
+        "localId": 13,
+        "name": "key"
+      },
+      {
+        "type": "",
+        "slot": 1,
+        "assignSourceIds": [
+          3
+        ],
+        "localId": 14,
+        "name": "tableName"
+      },
+      {
+        "type": "",
+        "slot": 2,
+        "assignSourceIds": [],
+        "localId": 15,
+        "name": ".main.app"
+      },
+      {
+        "type": "",
+        "slot": 3,
+        "assignSourceIds": [
+          4
+        ],
+        "localId": 16,
+        "name": "value"
+      },
+      {
+        "type": "",
+        "slot": 4,
+        "assignSourceIds": [
+          5
+        ],
+        "localId": 17,
+        "name": "comment"
+      }
+    ],
+    "parameterPassSourceIds": [
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "returnNodeId": 19,
+    "returnOwner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)",
+    "lookupEdgesFromCall": 0
+  },
+  "nativeQueries": {
+    "formals": {
+      "columns": [
+        "i",
+        "type",
+        "owner"
+      ],
+      "rows": [
+        {
+          "i": 0,
+          "type": "Swift.String",
+          "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+        },
+        {
+          "i": 1,
+          "type": "Swift.String?",
+          "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+        },
+        {
+          "i": 2,
+          "type": "Swift.String",
+          "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+        },
+        {
+          "i": 3,
+          "type": "Swift.String",
+          "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+        }
+      ],
+      "rowCount": 4
+    },
+    "result": {
+      "columns": [
+        "sourceCall",
+        "owner"
+      ],
+      "rows": [
+        {
+          "sourceCall": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "owner": "SignalServiceKit.OWSLocalizedString(_:tableName:value:comment:)(Swift.String,Swift.String?,Swift.String,Swift.String)"
+        }
+      ],
+      "rowCount": 1
+    },
+    "lookup": {
+      "columns": [
+        "caller",
+        "callee",
+        "key"
+      ],
+      "rows": [],
+      "rowCount": 0
+    },
+    "resource": {
+      "columns": [
+        "path",
+        "value"
+      ],
+      "rows": [
+        {
+          "path": "org.whispersystems.signal/en.lproj/Localizable.strings",
+          "value": "Optimizing Database"
+        }
+      ],
+      "rowCount": 1
+    },
+    "preservedLocals": {
+      "columns": [
+        "argument",
+        "type",
+        "callee",
+        "line"
+      ],
+      "rows": [
+        {
+          "argument": ".main.app",
+          "type": "",
+          "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "line": 26
+        },
+        {
+          "argument": "comment",
+          "type": "",
+          "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "line": 26
+        },
+        {
+          "argument": "key",
+          "type": "",
+          "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "line": 26
+        },
+        {
+          "argument": "tableName",
+          "type": "",
+          "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "line": 26
+        },
+        {
+          "argument": "value",
+          "type": "",
+          "callee": "NSLocalizedString(_:tableName:bundle:value:comment:)",
+          "line": 26
+        }
+      ],
+      "rowCount": 5
+    }
+  },
+  "verified": true,
+  "productionCommit": "37768dfd2fa5a5e4411445efd206f6c7c447d64c",
+  "artifacts": {
+    "frontend.command.json": "612a205e2259925023fac221b93cf99fbb838612f16cfed56c6ba3268adca5ec",
+    "frontend.stderr": "f0a9c6d457eb882e7e90e6cb0fe2e32592a41d6e77e26973a510ae7036fa5e3e",
+    "frontend.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "graph/backward.graph": "df4163f6386021674d3a125fb0358f4ca74200f6fd8b64d7da5f3744ed720ccc",
+    "graph/backward.offsets": "145db734baae1015ab8c13d46b4ee2644a7d8d5ec2d54345e8039bd78f3e72fb",
+    "graph/backward.properties": "fd91ac6b27982b56f45c16a36051d8a892337fa3353e4b89c81874c3f1667050",
+    "graph/forward.graph": "b84f20dac780a4ce03758556cc0f79f62528eb110857c98d11db2670c32c7dbd",
+    "graph/forward.offsets": "fc111a0f97d96a975e578ec714979be10ce9c080352190a2629922e66f1ba642",
+    "graph/forward.properties": "12c520d692f574a6219fdb61687912c10cdb7a362814570beee258c94b894be8",
+    "graph/graph.branchdefs": "605e03ee9708ec45eb20301b81b1c122c687f58bb295f1d46235b157866b45ad",
+    "graph/graph.callsite-string-content.identity": "bb74a04fe605f0457888aae9c752e2a0cf74744d97c1a0d0f2ca8d9543fd60c0",
+    "graph/graph.callsite-string-index": "b2144862392d02a5218a8d230f0ddcddb96c7b7d05b7fb31e00880a38e3cc7a9",
+    "graph/graph.classoverview": "dd8669e5d1b4b6a514f92e72ec081bbbf9d47a63b4e084ae7cbe07af8efd143b",
+    "graph/graph.comparisons": "16af39963fe8ae960c95d3e2a2399cd2f395a5248dcd52b5dd4d59ec528a10b8",
+    "graph/graph.labelprefix": "7087395cbe60053bffd30db95e680186b6a116f2572066e65e2176e7a7aec651",
+    "graph/graph.labels": "7db091fd42b29f113279ea072accdd03e433ec1ecd69df81562cfcce4538ecff",
+    "graph/graph.metadata": "24bfa963015d726c12adc9b2da226eb3f7809697c9e4d78ba716a7b37f774e8b",
+    "graph/graph.nodedata": "ad139e0efb57315e33e09fe96a9d085d7abed4fbb1e5170999b03ee6bc82a04e",
+    "graph/graph.nodeindex": "e56cf82899b5d7e9f7b8efd0f4ae1d4712f452db3d6bc8f5258dccb7f48f5236",
+    "graph/graph.nodeoffsets": "f99a5b9e84423798e6202071c5d3d404d2b5765a9fe3321cb1b5adb96cff3bb6",
+    "graph/graph.resources": "9481f211605f9fd6ab82e4f99e84435801d18ef4623dd8a2d3a4e5dafe357f17",
+    "graph/graph.strings": "25add27c33a4db256ec30c00bd180c3fe3a10422228fc2bc257a5ff0dfe61c88",
+    "graph/graph.strings.identity": "fff3a685433d86262b2dd1ffb357e23bf2c889109d2643e4f31cd911557683cc",
+    "graph/graph.typeindex": "efdbefdce79352c8ff7bc3b144ee135e85f77e25505776f85953306e4e1662ca",
+    "import.command.json": "499ab91a193f6cf8310d4f03414f8e472e05481c19abe7fde5ed273cac3614ce",
+    "import.stderr": "c33155f0319a2f465fd6fbe42ae3bb2e5c7ed7ec8aca051260e0443da3513832",
+    "import.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ir.command.json": "f953cacab7dfd762cf8a4797676269c36bfddfc7a48107b6919f594f83e0313e",
+    "ir.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "ir.stdout": "2a694e2257fcde926626058e3d7d5c5dfbbdce43d4d90cb0a1bdfd6d91ffa2e1",
+    "localized.graphite-ir": "1b9ca7e32a760d56ccad9d29dff96b04adc450314b8d6297af819de34d689897",
+    "mapped.command.json": "ab99beb61d52090abc8006c2fd1d0850eb3a470268c822ca6bfd0ec9f20b21a1",
+    "mapped.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "mapped.stdout": "1cc16e05d361675f8d32c150bd85ff7abccf043f3c74b0f2772163b8ecc41fe3",
+    "query-formals.command.json": "12f6024104a02a958123751bf9f2fc00db76c2a12e4356fefa8b4a181adb76c7",
+    "query-formals.json": "fc987b6c57d620a7f4032ded856ef8c34de5683fa9eb073b6c456def224646c8",
+    "query-formals.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "query-formals.stdout": "fc987b6c57d620a7f4032ded856ef8c34de5683fa9eb073b6c456def224646c8",
+    "query-lookup.command.json": "90ff8c29036b8eea2c1faa23f579590f98d65e6c99c0fe3fca4b90dd6086e1f1",
+    "query-lookup.json": "8a32203d82fe675192e71963cb5df919bc9ce268bbe2c49cd94348867796d4b5",
+    "query-lookup.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "query-lookup.stdout": "8a32203d82fe675192e71963cb5df919bc9ce268bbe2c49cd94348867796d4b5",
+    "query-preservedLocals.command.json": "02f953c484e2993f026dd55e1b734bf3756e6ef6f60f0789907a0a0141341d18",
+    "query-preservedLocals.json": "352d9e7e639f236576014d3818b3334ddf2fe38cfe365b2e7b0f24e4dbd96c7d",
+    "query-preservedLocals.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "query-preservedLocals.stdout": "352d9e7e639f236576014d3818b3334ddf2fe38cfe365b2e7b0f24e4dbd96c7d",
+    "query-resource.command.json": "a60820eb3faafa7b5ae6c117255a3c4214b4a1ddc6b90c0e4f1e544f9e310c5e",
+    "query-resource.json": "87bbe265b6438bf8a85f5a5e51e4f7efb2ba77bf39fdc105b14ee4a39e696a48",
+    "query-resource.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "query-resource.stdout": "87bbe265b6438bf8a85f5a5e51e4f7efb2ba77bf39fdc105b14ee4a39e696a48",
+    "query-result.command.json": "459f4173af99379d1460484a33783728d40b82a4a39eeac6cb5b4ec704d8b852",
+    "query-result.json": "ccc1aab5761c0e46bd51c0903471577567aba9e4fdd0cf0a666931fb5242a7b0",
+    "query-result.stderr": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "query-result.stdout": "ccc1aab5761c0e46bd51c0903471577567aba9e4fdd0cf0a666931fb5242a7b0",
+    "verified-ir.json": "e0c4ae22462ca8083f65637ba675a80011e4433dbc4d4feca0d1224cfe522938",
+    "verified-saved-graph.json": "2618197fc32d7a303571fa3f74d0673e0fd58cc5b84d9206dcead60d3b2d6549"
+  },
+  "nativeCliSha256": "40998160992bbf73baaf23115227a181d484149bbe338f91e77fb3eb0c8c5ff5",
+  "verifierSourceSha256": {
+    "check-flow.py": "c847a3fe92077ed1357de175ffeaf4f0f60f41409d958cb12ca516d67d49fb26",
+    "FlowProbe.java": "9d656c8e2157675d3d6747221c1353e406e08ad6176b1bdec0d6c2842dab2635"
+  }
+}

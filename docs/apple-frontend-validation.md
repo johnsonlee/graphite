@@ -26,6 +26,23 @@ cover repeated formals, local shadowing, closure boundaries, `Never`, C `void`
 and C `void *` results. This is partial source dataflow rather than SIL or complete
 interprocedural propagation; see [the build guide](ios-app-build.md) for limits.
 
+The release binary `87d497b9…` built the complete Signal app directory through Xcode,
+IR import and native packing, producing 560,895 nodes and 199,849 edges with selected
+bundle resources. Its [invocation](apple-frontend-evidence/2026-11-05/signal-flow-invocation.json)
+and [build log](apple-frontend-evidence/2026-11-05/signal-flow-build.log) retain the
+exact binaries and command. Independent [whole-graph verification](apple-frontend-evidence/2026-11-05/signal-flow-full-verification.json)
+checks all 19 packed entries, unpacks and reopens the graph through the production
+mapped loader, and verifies all 11 native query results, including the prior
+Swift/C signature assertions, the wrapper dataflow and 49 supported Info.plist
+values. The explicit `--allow-partial` acknowledges the same
+five omitted dictionary-valued Info.plist entries documented below.
+An independent [real-wrapper verification](apple-frontend-evidence/2026-11-05/signal-localized-flow-verification.json)
+checks `OWSLocalizedString.swift:26` through IR, production import, mapped reload and
+native queries: four formals bind only slots 0, 1, 3 and 4; slot 2 `.main.app` stays
+unknown; all five original argument references survive; the direct call returns to
+the wrapper's return endpoint. The actual English resource is queryable, and no
+resource lookup relationship is invented. These are correctness checks only.
+
 ## Selected bundle resources and indexed method anchors (2026-11-05)
 
 The existing IR now accepts explicitly selected built `.app`/`.appex` resources
