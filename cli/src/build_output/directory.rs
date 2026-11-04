@@ -107,8 +107,7 @@ fn publish_claimed(
     let ready = paths.remove(ready);
     paths.push(ready);
 
-    fs::create_dir(to)?; // The exclusive claim. Never merge into an existing directory.
-    let directory = Handle::from_path(to)?;
+    let directory = claim_directory(to, |path| Handle::from_path(path))?;
     let mut owned = Vec::new();
     for name in paths {
         if !still_owned(to, &directory, true)? {
@@ -131,6 +130,33 @@ fn publish_claimed(
         }
     }
     Ok(())
+}
+
+fn claim_directory(
+    to: &Path,
+    identify: impl FnOnce(&Path) -> io::Result<Handle>,
+) -> io::Result<Handle> {
+    fs::create_dir(to)?;
+    // stat does not need a free descriptor. It can still identify our empty
+    // directory for rollback if opening the durable handle fails with EMFILE.
+    #[cfg(unix)]
+    let created = fs::symlink_metadata(to)?;
+    identify(to).map_err(|error| {
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::MetadataExt;
+            if created.is_dir() && fs::symlink_metadata(to).is_ok_and(|now| {
+                now.is_dir() && now.dev() == created.dev() && now.ino() == created.ino()
+            }) {
+                match fs::remove_dir(to) {
+                    Ok(()) => return error,
+                    Err(e) if e.kind() == io::ErrorKind::NotFound => return error,
+                    Err(e) => return io::Error::new(error.kind(), format!("{error}; cleaning {}: {e}", to.display())),
+                }
+            }
+        }
+        io::Error::new(error.kind(), format!("{error}; could not establish ownership of {}; inspect the directory before retrying", to.display()))
+    })
 }
 
 fn publish_entry(
@@ -209,6 +235,32 @@ fn rollback(to: &Path, directory: &Handle, owned: Vec<(PathBuf, Handle)>) -> io:
 mod tests {
     use super::*;
     use graphite_storage::{Graph, NodeKind};
+
+    #[cfg(unix)]
+    #[test]
+    fn identity_failure_releases_only_the_empty_directory_we_claimed() {
+        let tmp = tempfile::tempdir().unwrap();
+        let out = tmp.path().join("out");
+        let fail = || io::Error::other("injected handle failure");
+        assert!(claim_directory(&out, |_| Err(fail())).is_err());
+        assert!(!out.exists());
+
+        assert!(claim_directory(&out, |path| {
+            fs::rename(path, tmp.path().join("moved original"))?;
+            fs::create_dir(path)?;
+            Err(fail())
+        })
+        .is_err());
+        assert!(out.is_dir());
+        fs::remove_dir(&out).unwrap();
+
+        assert!(claim_directory(&out, |path| {
+            fs::write(path.join("competing entry"), b"preserve")?;
+            Err(fail())
+        })
+        .is_err());
+        assert_eq!(fs::read(out.join("competing entry")).unwrap(), b"preserve");
+    }
 
     fn saved(dir: &Path) -> PathBuf {
         let from = dir.join("staged");
