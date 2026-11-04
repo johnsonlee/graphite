@@ -13,17 +13,15 @@ fn all_js_install_aliases_share_one_executable_and_run_without_node_on_path() {
     std::fs::create_dir(&bin).unwrap();
     let payload = home.path().join("asset");
     let receipt = home.path().join("checksum");
-    std::fs::write(
-        &payload,
-        "#!/bin/sh\n[ -z \"$BUN_BE_BUN$BUN_OPTIONS\" ] || exit 1\necho 'graphite 2.6.0'\n",
-    )
-    .unwrap();
-    use sha2::{Digest, Sha256};
-    let digest: String = Sha256::digest(std::fs::read(&payload).unwrap())
-        .iter()
-        .map(|b| format!("{b:02x}"))
-        .collect();
-    std::fs::write(&receipt, digest).unwrap();
+    let write_asset = |script: &str| {
+        use sha2::{Digest, Sha256};
+        std::fs::write(&payload, script).unwrap();
+        let digest: String = Sha256::digest(script.as_bytes())
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect();
+        std::fs::write(&receipt, digest).unwrap();
+    };
     let curl = bin.join("curl");
     std::fs::write(&curl, r#"#!/bin/sh
 case "$6" in
@@ -46,7 +44,31 @@ esac
             .output()
             .unwrap()
     };
-    let first = run(&["frontend", "install", "js", "--version", "v2.6.0"]);
+    let install = ["frontend", "install", "js", "--version", "v2.6.0"];
+    let wrong_binary = "#!/bin/sh\n: > \"$HOME/probed\"\necho 1.3.11\n";
+    write_asset(wrong_binary);
+    std::fs::write(&receipt, "0".repeat(64)).unwrap();
+    let corrupt = run(&install);
+    assert!(!corrupt.status.success());
+    assert!(String::from_utf8(corrupt.stderr)
+        .unwrap()
+        .contains("checksum mismatch"));
+    assert!(
+        !home.path().join("probed").exists(),
+        "unverified executable ran"
+    );
+
+    write_asset(wrong_binary);
+    let incompatible = run(&install);
+    assert!(!incompatible.status.success());
+    assert!(String::from_utf8(incompatible.stderr)
+        .unwrap()
+        .contains("reported \"1.3.11\", expected \"graphite 2.6.0\""));
+    assert!(home.path().join("probed").is_file());
+    assert!(!home.path().join(".graphite/frontends/js/2.6.0").exists());
+
+    write_asset("#!/bin/sh\n[ -z \"$BUN_BE_BUN$BUN_OPTIONS\" ] || exit 1\necho 'graphite 2.6.0'\n");
+    let first = run(&install);
     assert!(first.status.success(), "{first:?}");
     std::fs::remove_file(curl).unwrap(); // From here on PATH is empty of tools.
     let descriptor = run(&["frontend", "describe", "js"]);
