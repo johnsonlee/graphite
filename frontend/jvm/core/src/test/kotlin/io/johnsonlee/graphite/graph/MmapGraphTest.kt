@@ -391,6 +391,7 @@ class MmapGraphTest {
         assertNotNull(values)
         assertEquals(listOf(1, "active"), values)
         assertNull(graph.enumValues("com.example.Status", "UNKNOWN"))
+        assertEquals(mapOf("com.example.Status#ACTIVE" to values), (graph as EnumValueIndexSource).enumValueIndex())
     }
 
     @Test
