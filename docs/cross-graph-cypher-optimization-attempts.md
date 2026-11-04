@@ -3445,3 +3445,21 @@ The seal SHA-256 is
 `39dd017db58af2a0fc157307591d547c8f6173cc9a13ae537aa4dbe4880f04da`.
 The complete result SHA-256 is
 `bad0e43556e1558e099d117f09fad6c9eea5c5390e9bb722be30cd8651374366`.
+
+### 2026-11-04 - Attempt 057: check the representable CSR edge count during loading
+
+The loader computes forward row offsets from cumulative decoded edge counts.
+Its unsigned 32-bit offsets cannot represent a graph with more than
+4,294,967,295 edges. An unchecked cast could wrap and invalidate the reverse
+builder's monotonicity assumption. Check the declared count before reserving
+capacity, cap that reservation by the available labels, and check each decoded
+row boundary before appending it. This retains support for short label files
+and avoids an additional scan of the offset array.
+
+Boundary tests exercise the largest representable count and its successor
+without allocating a large graph. A persisted fixture checks inaccurate count
+hints and rejection of an oversized declaration. For the cumulative candidate,
+repeat the attempt 056 protocol against main `a5c96f71`: the same 64 pinned
+graphs in every request, 73 cases, three AB / BA / AB pairs, 20 pressure
+samples per case per arm at concurrency four, complete response consumption,
+and separate 5% CPU and peak RSS limits for loading and for the query mix.

@@ -2,10 +2,17 @@ use super::*;
 use crate::bvgraph::prefix_tests::mixed_fixture;
 
 #[test]
+fn csr_edge_count_includes_the_last_representable_offset() {
+    let max = u64::from(u32::MAX);
+    assert_eq!(csr_offset(max).unwrap(), u32::MAX);
+    assert!(matches!(csr_offset(max + 1), Err(GraphError::TooManyEdges(n)) if n == max + 1));
+}
+
+#[test]
 fn ascending_csr_preserves_complete_order_offsets_duplicates_holes_and_labels() {
     let (bv, expected) = mixed_fixture();
     let labels: Vec<u8> = (1..=44).collect();
-    let actual = build_forward_csr(&bv, &labels);
+    let actual = build_forward_csr(&bv, &labels).unwrap();
     assert_eq!(
         actual.offsets,
         vec![0, 6, 12, 17, 19, 23, 29, 35, 41, 41, 42, 44, 44, 44, 44, 44, 44]
@@ -31,19 +38,19 @@ fn ascending_csr_preserves_complete_order_offsets_duplicates_holes_and_labels() 
 #[test]
 fn short_and_excess_labels_keep_existing_padding_and_truncation_without_cross_load_state() {
     let (first, expected) = mixed_fixture();
-    let short = build_forward_csr(&first, &[7, 8]);
+    let short = build_forward_csr(&first, &[7, 8]).unwrap();
     let mut expected_labels = vec![7, 8];
     expected_labels.resize(44, 0);
     assert_eq!(short.labels, expected_labels);
     let (second, _) = mixed_fixture();
-    let long = build_forward_csr(&second, &[9; 50]);
+    let long = build_forward_csr(&second, &[9; 50]).unwrap();
     assert_eq!(long.labels, vec![9; 44]);
     assert_inverse(&short, &build_backward_csr(&short));
     assert_inverse(&long, &build_backward_csr(&long));
     assert_eq!(short.targets, expected.concat());
     assert_eq!(short.targets, long.targets);
     assert_eq!(short.offsets, long.offsets);
-    assert_eq!(build_forward_csr(&first, &[]).labels, vec![0; 44]);
+    assert_eq!(build_forward_csr(&first, &[]).unwrap().labels, vec![0; 44]);
 }
 
 fn assert_fixture_csr(path: &Path) -> Graph {

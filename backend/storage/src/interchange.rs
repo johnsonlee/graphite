@@ -768,6 +768,39 @@ mod tests {
         assert_eq!(g.node(9).unwrap().kind, NodeKind::NullConstant);
     }
     #[test]
+    fn rejects_oversized_csr_declaration_before_reserving_targets() {
+        let tmp = Temp::new();
+        let dir = tmp.0.join("saved");
+        import_json(fixture().to_string().as_bytes(), &dir).unwrap();
+        let path = dir.join("forward.properties");
+        let original = std::fs::read_to_string(&path).unwrap();
+        let replace_arcs = |n: u64| {
+            let text = original
+                .lines()
+                .map(|line| {
+                    if line.starts_with("arcs=") {
+                        format!("arcs={n}")
+                    } else {
+                        line.to_owned()
+                    }
+                })
+                .collect::<Vec<_>>()
+                .join("\n");
+            std::fs::write(&path, text).unwrap();
+        };
+        let expected = crate::Graph::load(&dir).unwrap().forward.targets;
+        for hint in [0, u64::from(u32::MAX)] {
+            replace_arcs(hint);
+            assert_eq!(crate::Graph::load(&dir).unwrap().forward.targets, expected);
+        }
+        let overflow = u64::from(u32::MAX) + 1;
+        replace_arcs(overflow);
+        assert!(
+            matches!(crate::Graph::load(&dir), Err(crate::GraphError::TooManyEdges(n)) if n == overflow)
+        );
+    }
+
+    #[test]
     fn imports_real_storage_format_and_container_with_values_and_directed_edges() {
         let tmp = Temp::new();
         let dir = tmp.0.join("saved");

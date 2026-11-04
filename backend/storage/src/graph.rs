@@ -30,6 +30,8 @@ pub enum GraphError {
     Metadata(#[from] MetadataError),
     #[error(transparent)]
     Types(#[from] crate::types::TypeError),
+    #[error("edge count {0} exceeds the u32 CSR offset limit")]
+    TooManyEdges(u64),
     #[error("bad header in {0}")]
     BadHeader(&'static str),
     #[error("unsupported format version {0} in {1}")]
@@ -295,7 +297,7 @@ impl Graph {
             load_type_index(&src.require("graph.typeindex").map_err(io)?)?;
 
         let labels = src.require("graph.labels").map_err(io)?;
-        let forward = build_forward_csr(&bv, &labels);
+        let forward = build_forward_csr(&bv, &labels)?;
         // The CSR owns its copied labels; release the source map before further loading.
         drop(labels);
         drop(bv);
@@ -1190,17 +1192,24 @@ fn load_type_index(data: &[u8]) -> Result<(Vec<Vec<NodeId>>, Vec<bool>), GraphEr
     Ok((out, sorted))
 }
 
-fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
+fn csr_offset(edges: u64) -> Result<u32, GraphError> {
+    u32::try_from(edges).map_err(|_| GraphError::TooManyEdges(edges))
+}
+
+fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Result<Csr, GraphError> {
     let n = bv.num_nodes();
-    let arcs = bv.num_arcs() as usize;
+    // The declared count is a capacity hint. A bad hint must not reserve
+    // billions of targets for a tiny graph. Short label files still pad below.
+    let arcs = (csr_offset(bv.num_arcs())? as usize).min(labels.len());
     let mut offsets = Vec::with_capacity(n + 1);
     let mut targets: Vec<u32> = Vec::with_capacity(arcs);
     let mut buf = Vec::new();
     offsets.push(0u32);
     for node in 0..n {
         bv.successors_into_with_prefix(node, &mut buf, &offsets, &targets);
+        let end = csr_offset(targets.len() as u64 + buf.len() as u64)?;
         targets.extend_from_slice(&buf);
-        offsets.push(targets.len() as u32);
+        offsets.push(end);
     }
     let mut lab = Vec::with_capacity(targets.len());
     if labels.len() >= targets.len() {
@@ -1209,11 +1218,11 @@ fn build_forward_csr(bv: &BvGraph, labels: &[u8]) -> Csr {
         lab.extend_from_slice(labels);
         lab.resize(targets.len(), 0);
     }
-    Csr {
+    Ok(Csr {
         offsets,
         targets,
         labels: lab,
-    }
+    })
 }
 
 fn build_backward_csr(fwd: &Csr) -> Csr {
