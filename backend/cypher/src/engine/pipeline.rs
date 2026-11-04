@@ -221,6 +221,11 @@ impl Executor {
             if let Some(r) = super::fastpath::distinct_string_property(self, clauses)? {
                 return Ok(r);
             }
+            if let Some(plan) = super::ordered_property::OrderedPropertyPlan::build(clauses) {
+                if let Some(result) = plan.run(self)? {
+                    return Ok(result);
+                }
+            }
         }
         let ev = Evaluator::new(self, &self.params);
         let matcher = Matcher { ex: self, ev: &ev };

@@ -22509,3 +22509,85 @@ Decision: retain the verified large WITH benefit, correct results and resource-c
 increment for composition in the requested sequence. This is not complete all-case latency
 acceptance, a construction/loading speedup claim, or hosted benchmark acceptance.
 
+### Attempt158 — merge bounded ordered CallSite reads from persisted property indexes (2026-11-05)
+
+**Predeclared hypothesis.** The bounded top-K path limits retained rows but still projects
+every CallSite. For a single indexed string order key, read each graph's existing property CSR
+in value order and merge the source cursors, stopping after SKIP/LIMIT plus the server probe.
+Support all four indexed properties, ascending/descending order, aliases and safe scalar
+projections. Ties keep source encounter order and node encounter order; descending order must
+not reverse ties. Keep complex predicates, expressions, multiple order keys, DISTINCT and
+unsupported shapes on the original path.
+
+Before emitting anything, prove every participating graph's canonical dictionary, complete
+CSR coverage and exact matcher node domain. Reject duplicate, phantom, omitted or unsorted
+type-index entries and malformed CSR data; failure declines the whole plan. Validate all four
+raw string fields, including fields projected on rows the ordered plan will omit, so it does
+not hide the eager projection's invalid-SID failures. Empty CallSite domains ignore stale CSR
+contents. Proofs are cancellable and Graph-instance cached; cancelled attempts remain retryable,
+and all first-use work remains in the query boundary.
+
+The incremental parent is WITH candidate `a266301cf1a573c1f66f34c9b5c9c169135c1021`; the
+cumulative baseline remains exact `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. Use the same
+real64 saved inputs, corrected freeze handoff, controlled-cache local Rust harness and unchanged
+73-case sampling/complete-consumption/resource constraints declared in Attempt157. Validate
+the real64 plan's source coverage before performance interpretation. Reuse unchanged frozen
+baseline/parent evidence only under matching controls; do not replace cumulative baseline
+acceptance with a parent-only comparison. Integrated verification and the measured candidate
+are recorded below.
+
+**Pre-measurement verification.** Integrated tests pass 239 Cypher and 132 Storage cases,
+workspace all-target/all-feature Clippy, formatting and the release CLI build. Real64
+correctness-only verification requires all 128 source/property proofs (two measured sort
+properties across 64 distinct graphs) to admit the index path, then compares complete ASC/DESC
+results, additional scalar columns, stable order, provenance and probe state with the full
+generic oracle. It passes: `/tmp/graphite-query-opt-ordered-real64-smoke.json`. The test collects
+no performance samples. A debug-only run was superseded after a live stack sample confirmed it
+was still decoding adjacency and the fully prepared release verifier had the shorter remaining
+critical path; its cancellation and logs remain in
+`/tmp/graphite-query-opt-ordered-debug-superseded.json`. Only the completed release verifier is
+correctness PASS. No performance inference is made from either test duration.
+
+**Measured candidate:** `79f685646fe622f99a0e435f2770388310a1dd13`, binary SHA-256
+`17ec6d52e5b39da2c02b091504a0a19f699928a9f0188162f31e9ed9846c2fe7`.
+Both ABBA driver runs exit successfully with all native correctness/capacity checks passing.
+Independent audit validates 17,516 complete body hashes/typed responses and all 73-case raw
+samples, provenance, cache inventories and preparation receipts:
+`/tmp/graphite-query-opt-attempt158/{ab,ba,audit-abba}`.
+
+| Sort metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| caller_class ASC p50 | 2,568.640 → 0.822 ms | -2,567.818 ms | 2,555.406 → 0.778 ms | -2,554.628 ms |
+| caller_class ASC p95 | 3,219.182 → 1.090 ms | -3,218.093 ms | 2,602.407 → 2.584 ms | -2,599.823 ms |
+| callee_name DESC p50 | 2,643.663 → 0.528 ms | -2,643.135 ms | 2,638.578 → 0.481 ms | -2,638.097 ms |
+| callee_name DESC p95 | 3,337.626 → 0.632 ms | -3,336.994 ms | 2,714.219 → 1.457 ms | -2,712.762 ms |
+| Complete query window | 75.028 → 27.477 s | -47.551 s | 72.165 → 27.879 s | -44.286 s |
+
+First-use sequence requests include all proof work: ASC 123.186/179.685 ms and DESC
+243.089/309.893 ms in AB/BA. They are not independently cold per-case measurements. File-cache
+preparation remains separate at 1.110–1.156 s/arm. No construction work moved into these boundaries.
+
+| Operation/resource | AB base → candidate | Delta | BA base → candidate | Delta |
+| --- | ---: | ---: | ---: | ---: |
+| Loading CPU | 20.030 → 20.460 s | +2.147% | 20.270 → 20.810 s | +2.664% |
+| Loading peak RSS | 6.613 → 6.747 GB | +2.019% | 6.612 → 6.708 GB | +1.458% |
+| Query CPU | 301.890 → 114.490 s | -62.076% | 301.020 → 120.150 s | -60.086% |
+| Query peak RSS | 15.472 → 10.688 GB | -30.915% | 15.738 → 10.858 GB | -31.004% |
+
+All eight independent resource constraints pass. Pressure p50 has 60 two-order improvements,
+12 mixed cases and one tiny two-order increase (zero parameterized-as-literal, mean
+0.268→0.277 ms, +0.009 ms). Pressure p95 has 23 improvements, 48 mixed and two two-order
+increases: localized-middle 1.031→1.783 ms (order deltas +0.243/+1.261 ms), id lookup
+1.148→1.196 ms (+0.048 ms). Isolated p50/p95 retain 20/24 two-order increases, mostly below
+one millisecond. Largest isolated p95 residuals include relationship histogram
+29.295→35.604 ms (+6.309 ms) and 27.778→27.872 ms (+0.095 ms), and wide-contains
+0.390→1.162 ms (+0.771 ms) and 0.374→0.375 ms (+0.001 ms). All observations remain in
+the audit; no favorable statistic or repeat replaces them.
+
+The parent-attribution artifact verifies the same query/input/cache controls against the
+WITH increment but explicitly labels the comparison cross-run, not paired acceptance. Its
+mean ASC p50 is 2,508.996→0.800 ms and DESC 2,590.414→0.505 ms; baseline drift and host
+activity remain visible. Decision: retain the correctness-verified, resource-compliant sorting
+increment. All-case latency acceptance and hosted acceptance remain unclaimed; carry the
+non-target tail observations into the final cumulative candidate.
+

@@ -250,6 +250,9 @@ pub struct Graph {
     declared_keys: Option<DeclaredKeySummary>,
     /// Persisted CallSite string accelerator, absent when the graph was built without it.
     call_site_index: Option<crate::callsite_index::CallSiteStringIndex>,
+    /// Per-property proof that ordered CSR postings exactly describe the matcher's
+    /// node domain. First-use validation is query work; cancelled proofs are retriable.
+    ordered_call_site_valid: [std::sync::OnceLock<bool>; 4],
     /// `CallSite.ordinal` per call site, from the `graph.callsite-ordinals` sidecar; empty
     /// for a graph written before it existed.
     call_site_ordinals: crate::node::CallSiteOrdinals,
@@ -381,6 +384,7 @@ impl Graph {
             declared: std::sync::OnceLock::new(),
             declared_keys,
             call_site_index,
+            ordered_call_site_valid: std::array::from_fn(|_| std::sync::OnceLock::new()),
             call_site_ordinals,
             property_names_in_dictionary: std::sync::OnceLock::new(),
             call_site_scalar_validity: std::sync::OnceLock::new(),
@@ -707,6 +711,99 @@ impl Graph {
     #[inline]
     pub fn call_site_index(&self) -> Option<&crate::callsite_index::CallSiteStringIndex> {
         self.call_site_index.as_ref()
+    }
+
+    /// The index is safe for bounded ordered reads only when it exactly matches
+    /// the normal matcher's complete CallSite domain. No rows may be emitted until
+    /// this proof has succeeded for every participating graph.
+    pub fn validated_ordered_call_site<E>(
+        &self,
+        property: usize,
+        mut poll: impl FnMut() -> Result<(), E>,
+    ) -> Result<Option<&crate::callsite_index::CallSiteStringIndex>, E> {
+        poll()?;
+        let Some(slot) = self.ordered_call_site_valid.get(property) else {
+            return Ok(None);
+        };
+        let Some(index) = self.call_site_index.as_ref() else {
+            return Ok(None);
+        };
+        if let Some(valid) = slot.get() {
+            return Ok(valid.then_some(index));
+        }
+        if !self.strings.try_canonical_dictionary(&mut poll)? {
+            let _ = slot.set(false);
+            return Ok(None);
+        }
+        let ids = self.ids_by_tag(TAG_CALL_SITE_NODE);
+        if ids.len() != index.call_site_count() {
+            let _ = slot.set(false);
+            return Ok(None);
+        }
+        for (at, pair) in ids.windows(2).enumerate() {
+            if at & 1023 == 0 {
+                poll()?;
+            }
+            if pair[0] >= pair[1] {
+                let _ = slot.set(false);
+                return Ok(None);
+            }
+        }
+        let mut seen = vec![0u64; self.node_capacity.div_ceil(64)];
+        let mut visited = 0usize;
+        let mut valid = index.validate_property(property, |id, sid| {
+            if visited & 1023 == 0 {
+                poll()?;
+            }
+            visited += 1;
+            if id as usize >= self.node_capacity {
+                return Ok(false);
+            }
+            let word = &mut seen[id as usize / 64];
+            let bit = 1u64 << (id % 64);
+            if *word & bit != 0 {
+                return Ok(false);
+            }
+            let Some(fields) = self.call_site_scalar_strings(id) else {
+                return Ok(false);
+            };
+            // Ordered reads skip losing rows, including their other safe scalar
+            // projections. Every raw field must therefore be a valid dictionary
+            // reference, not only the field supplying this index's sort key.
+            // On failure the caller keeps the original row evaluator and its
+            // encounter-ordered malformed-input panic/error behavior.
+            let fields = [
+                fields.caller_class,
+                fields.caller_name,
+                fields.callee_class,
+                fields.callee_name,
+            ];
+            if fields
+                .iter()
+                .any(|field| *field as usize >= self.strings.len())
+                || fields[property] != sid
+            {
+                return Ok(false);
+            }
+            *word |= bit;
+            Ok(true)
+        })?;
+        if valid {
+            for (at, &id) in ids.iter().enumerate() {
+                if at & 1023 == 0 {
+                    poll()?;
+                }
+                if id as usize >= self.node_capacity
+                    || seen[id as usize / 64] & (1u64 << (id % 64)) == 0
+                {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+        poll()?;
+        let _ = slot.set(valid);
+        Ok(valid.then_some(index))
     }
 
     #[inline]
@@ -1940,3 +2037,7 @@ mod call_site_validity_tests {
         }
     }
 }
+
+#[cfg(test)]
+#[path = "ordered_callsite_tests.rs"]
+mod ordered_callsite_tests;
