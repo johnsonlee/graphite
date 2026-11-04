@@ -12,6 +12,8 @@ public struct EmitSummary: Equatable {
     public var typeRelations = 0
     public var resourceFiles = 0
     public var resourceValues = 0
+    public var parameters = 0
+    public var returns = 0
     public var nodes: UInt64 = 0
     public var edges: UInt64 = 0
     public var strings: UInt64 = 0
@@ -31,6 +33,12 @@ public final class Emitter {
     private let demangled: [String: String]
     private var qualifiedNames: [String: String] = [:]
     private var descriptors: [String: GraphiteIRMethodRef] = [:]
+    private var descriptorReturnTypes: [String: String] = [:]
+    private var functionFlows: [String: SyntaxFunctionFlow] = [:]
+    private var parameterNodes: [String: [UInt32]] = [:]
+    private var returnNodes: [String: UInt32] = [:]
+    private var returningFunctions = Set<String>()
+    private static let valuelessReturnTypes: Set<String> = ["", "Swift.Void", "()", "void", "Swift.Never"]
     private lazy var typeNames: [String: String] = declaredTypeNames()
     private struct AnnotationTarget: Hashable {
         let className: String
@@ -77,6 +85,7 @@ public final class Emitter {
         try emitTypes()
         try emitMembers()
         try emitTypeRelations()
+        try emitFunctionParameters()
         try emitCalls()
         try emitAnnotations()
         var seenPaths = Set<String>()
@@ -352,6 +361,7 @@ public final class Emitter {
             returnType: signature?.returnType ?? ""
         )
         descriptors[symbol.usr] = ref
+        descriptorReturnTypes[symbol.usr] = signature?.returnType ?? ""
         return ref
     }
 
@@ -410,6 +420,33 @@ public final class Emitter {
         }
     }
 
+    private func emitFunctionParameters() throws {
+        for member in model.members {
+            let usr = member.symbol.usr
+            guard functionFlows[usr] == nil,
+                  let flow = facts[member.position.path]?.functionFlows[member.position],
+                  flow.calls.values.contains(where: { !$0.parameterByArgument.isEmpty || $0.returnsResult }) else { continue }
+            let method = descriptor(for: member.symbol, module: member.module, container: member.container,
+                                    at: member.position, declaredAt: member.declaration)
+            guard method.parameterTypes.count == flow.parameters.count,
+                  flow.parameters.map(\.index) == Array(0..<flow.parameters.count) else { continue }
+            var nodes: [UInt32] = []
+            for parameter in flow.parameters {
+                var node = GraphiteIRParameter()
+                node.index = UInt32(parameter.index)
+                node.type = method.parameterTypes[parameter.index]
+                node.method = method
+                nodes.append(try writer.addNode(.parameter(node)))
+                summary.parameters += 1
+            }
+            parameterNodes[usr] = nodes
+            functionFlows[usr] = flow
+            if let type = descriptorReturnTypes[usr], !Self.valuelessReturnTypes.contains(type) {
+                returningFunctions.insert(usr)
+            }
+        }
+    }
+
     private func emitCalls() throws {
         for call in model.calls {
             let callee = descriptor(for: call.callee, module: call.module)
@@ -419,6 +456,8 @@ public final class Emitter {
             } else {
                 caller = writer.methodRef(declaringClass: call.module, name: "<top-level>", parameterTypes: [], returnType: "Swift.Void")
             }
+            let callerUSR = call.caller?.usr
+            let flow = callerUSR.flatMap { functionFlows[$0]?.calls[call.position] }
             var arguments: [UInt32] = []
             if let syntax = facts[call.position.path]?.calls[call.position] {
                 let literals = Dictionary(uniqueKeysWithValues: syntax.literals.map { ($0.index, $0.value) })
@@ -431,7 +470,12 @@ public final class Emitter {
                         local.name = writer.intern(text)
                         local.type = writer.typeRef("")
                         local.method = caller
-                        arguments.append(try writer.addNode(.localVariable(local)))
+                        let reference = try writer.addNode(.localVariable(local))
+                        arguments.append(reference)
+                        if let callerUSR, let slot = flow?.parameterByArgument[index],
+                           let parameters = parameterNodes[callerUSR], parameters.indices.contains(slot) {
+                            try writer.addDataFlow(from: parameters[slot], to: reference, .assign)
+                        }
                     }
                 }
             }
@@ -443,6 +487,21 @@ public final class Emitter {
             let id = try writer.addNode(.callSite(site))
             for argument in arguments {
                 try writer.addDataFlow(from: argument, to: id, .parameterPass)
+            }
+            if let callerUSR, flow?.returnsResult == true, returningFunctions.contains(callerUSR),
+               let calleeType = descriptorReturnTypes[call.callee.usr],
+               !Self.valuelessReturnTypes.contains(calleeType) {
+                let returned: UInt32
+                if let existing = returnNodes[callerUSR] {
+                    returned = existing
+                } else {
+                    var node = GraphiteIRReturn()
+                    node.method = caller
+                    returned = try writer.addNode(.return(node))
+                    returnNodes[callerUSR] = returned
+                    summary.returns += 1
+                }
+                try writer.addDataFlow(from: id, to: returned, .returnValue)
             }
             summary.callSites += 1
         }

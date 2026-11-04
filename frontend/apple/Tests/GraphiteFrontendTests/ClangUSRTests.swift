@@ -128,6 +128,13 @@ final class ClangUSRTests: XCTestCase {
         XCTAssertEqual(ir.signature(call.caller), expected)
         XCTAssertEqual(ir.signature(call.callee), expected)
         XCTAssertEqual(call.arguments.map(ir.literal), ["<data>", "16"])
+        let definition = try XCTUnwrap(ir.edges.first { $0.to == call.arguments[0] && $0.dataFlow.kind == .assign })
+        guard case .parameter(let parameter)? = ir.nodes[definition.from]?.kind else {
+            return XCTFail("Swift parameters exposed through an ObjC USR must keep their source binding")
+        }
+        XCTAssertEqual(parameter.method, call.caller)
+        XCTAssertEqual(parameter.index, 0)
+        XCTAssertEqual(ir.type(parameter.type), "Foundation.Data")
         let fields = ir.nodes.values.compactMap { node -> GraphiteIRField? in
             if case .field(let field)? = node.kind { return field }
             return nil

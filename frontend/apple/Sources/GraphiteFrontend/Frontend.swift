@@ -159,6 +159,7 @@ public struct Frontend {
         header.options["files"] = String(files.count)
         header.options["swift_files"] = String(swiftFiles.count)
         header.options["objc_files"] = String(files.count - swiftFiles.count)
+        header.options["source_dataflow"] = "bound-parameters,direct-call-returns"
         if !options.resourceBundles.isEmpty {
             header.options["resource_bundles"] = String(decoding: try JSONSerialization.data(
                 withJSONObject: options.resourceBundles.map { URL(fileURLWithPath: $0).resolvingSymlinksInPath().path }

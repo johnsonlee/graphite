@@ -95,6 +95,9 @@ struct Build: ParsableCommand {
             if s.resourceFiles > 0 {
                 stderr.write(("resource inventory: \(s.resourceFiles) files, \(s.resourceValues) values\n").data(using: .utf8)!)
             }
+            if s.parameters > 0 || s.returns > 0 {
+                stderr.write(("source dataflow: \(s.parameters) parameters, \(s.returns) direct-call returns\n").data(using: .utf8)!)
+            }
             for omission in result.resourceOmissions {
                 stderr.write(("warning: resource \(omission.path) key \(omission.key) omitted: \(omission.reason)\n").data(using: .utf8)!)
             }

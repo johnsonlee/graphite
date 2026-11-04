@@ -48,6 +48,7 @@ struct DecodedIR {
         case .booleanConstant(let c): return "\(c.value)"
         case .nullConstant: return "nil"
         case .localVariable(let v): return "<\(str(v.name))>"
+        case .parameter(let p): return "<parameter:\(p.index)>"
         default: return "?"
         }
     }
@@ -357,7 +358,8 @@ final class FrontendTests: XCTestCase {
             let id = ir.nodes.first { $0.value.callSite == site }!.key
             for argument in site.arguments { XCTAssertTrue(flows.contains("\(argument)->\(id)")) }
         }
-        XCTAssertEqual(flows.count, ir.edges.count)
+        XCTAssertEqual(flows.count, sites.reduce(0) { $0 + $1.arguments.count })
+        XCTAssertTrue(ir.edges.allSatisfy { [.parameterPass, .assign, .returnValue].contains($0.dataFlow.kind) })
         XCTAssertEqual(sites.count, 24)
     }
 
