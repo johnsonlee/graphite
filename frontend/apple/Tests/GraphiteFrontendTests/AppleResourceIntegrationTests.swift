@@ -23,7 +23,8 @@ final class AppleResourceIntegrationTests: XCTestCase {
         let app = root.appendingPathComponent("Probe.app")
         let share = root.appendingPathComponent("Share.appex")
         try plist(["CFBundleIdentifier": "org.example.Probe", "Enabled": true, "Count": 7,
-                   "Unsupported": Date(timeIntervalSince1970: 0)], at: app.appendingPathComponent("Info.plist"))
+                   "Unsupported": Date(timeIntervalSince1970: 0), "Nested": ["value": true],
+                   "NestedInList": [["value": true]]], at: app.appendingPathComponent("Info.plist"))
         try plist(["welcome": "Hello"], at: app.appendingPathComponent("en.lproj/Localizable.strings"))
         try plist(["CFBundleIdentifier": "org.example.Probe.Share"], at: share.appendingPathComponent("Info.plist"))
         try plist(["welcome": "Share"], at: share.appendingPathComponent("en.lproj/Localizable.strings"))
@@ -35,7 +36,7 @@ final class AppleResourceIntegrationTests: XCTestCase {
         let graph = try DecodedIR(url: output)
         XCTAssertEqual(result.summary.resourceFiles, 4)
         XCTAssertEqual(result.summary.resourceValues, 6)
-        XCTAssertEqual(result.resourceOmissions.map(\.key), ["Unsupported"])
+        XCTAssertEqual(Set(result.resourceOmissions.map(\.key)), ["Unsupported", "Nested", "NestedInList"])
         XCTAssertEqual(graph.origins.map(\.className), ["Probe.Probe"])
         let files = graph.nodes.values.compactMap { node -> GraphiteIRResourceFile? in
             if case .resourceFile(let file)? = node.kind { return file }; return nil

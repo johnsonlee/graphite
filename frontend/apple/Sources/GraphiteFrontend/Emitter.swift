@@ -91,6 +91,11 @@ public final class Emitter {
                 try writer.addNode(.resourceFile(file))
                 summary.resourceFiles += 1
                 for value in values {
+                    guard !containsResourceDictionary(value.value) else {
+                        resourceOmissions.append(.init(path: value.path, key: value.key,
+                            reason: "the current persisted graph format cannot preserve dictionaries, including dictionaries nested in lists"))
+                        continue
+                    }
                     try writer.addNode(.resourceValue(value))
                     summary.resourceValues += 1
                 }
@@ -102,6 +107,14 @@ public final class Emitter {
         summary.edges = writer.edgeCount
         summary.strings = writer.stringCount
         return summary
+    }
+
+    private func containsResourceDictionary(_ value: GraphiteIRValue) -> Bool {
+        if case .mapValue? = value.value { return true }
+        if case .listValue(let list)? = value.value {
+            return list.values.contains(where: containsResourceDictionary)
+        }
+        return false
     }
 
     // MARK: Names
