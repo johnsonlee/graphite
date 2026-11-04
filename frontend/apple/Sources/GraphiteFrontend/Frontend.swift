@@ -126,8 +126,17 @@ public struct Frontend {
 
         var facts: [String: SyntaxFacts] = [:]
         let syntaxFiles = Frontend.sourceFilesForSyntax(files, model: model)
+        var indexedMethods: [String: [ObjectiveCSyntax.IndexedMethod]] = [:]
+        for member in model.members where member.kind == .method || member.kind == .initializer {
+            guard let usr = ClangUSR.parse(member.symbol.usr), let selector = usr.member,
+                  usr.memberKind == .instanceMethod || usr.memberKind == .classMethod else { continue }
+            for position in [member.position, member.declaration].compactMap({ $0 }) where !Frontend.isSwift(position.path) {
+                indexedMethods[position.path, default: []].append(.init(position: position, selector: selector, isStatic: usr.memberKind == .classMethod))
+            }
+        }
         for (index, file) in syntaxFiles.enumerated() {
-            facts[file] = Frontend.isSwift(file) ? try SyntaxFacts.parse(path: file) : try ObjectiveCSyntax.parse(path: file)
+            facts[file] = Frontend.isSwift(file) ? try SyntaxFacts.parse(path: file)
+                : try ObjectiveCSyntax.parse(path: file, indexedMethods: indexedMethods[file] ?? [])
             progress(Progress(phase: "syntax", done: index + 1, total: syntaxFiles.count))
         }
 
