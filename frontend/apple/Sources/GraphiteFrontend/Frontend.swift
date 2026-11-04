@@ -12,6 +12,7 @@ public enum FrontendError: Error, CustomStringConvertible {
     case packageUnreadable
     case noSwift
     case noSources(String)
+    case noIndexedSources(store: String, files: Int)
     case noDemangler
     case noXcodebuild
     case xcodebuildFailed(Int32)
@@ -29,6 +30,10 @@ public enum FrontendError: Error, CustomStringConvertible {
         case .packageUnreadable: return "swift package describe printed no targets"
         case .noSwift: return "no swift executable found; set GRAPHITE_SWIFT or put swift on PATH"
         case .noSources(let path): return "no Swift or Objective-C sources under \(path)"
+        case .noIndexedSources(let store, let files):
+            return "no indexed symbols for the selected sources (files: \(files), index store: \(store)); " +
+                "check that the source paths match the indexed checkout and that the index store " +
+                "was built for the intended scheme and configuration"
         case .noDemangler: return "no swift-demangle found; set GRAPHITE_SWIFT_DEMANGLE or put the toolchain on PATH"
         case .noXcodebuild: return "no xcodebuild found; an Xcode project needs Xcode (set GRAPHITE_XCODEBUILD or put it on PATH)"
         case .xcodebuildFailed(let code): return "xcodebuild failed with exit code \(code)"
@@ -82,6 +87,7 @@ public struct Progress {
 public struct BuildResult {
     public var summary: EmitSummary
     public var files: Int
+    public var filesWithOccurrences: Int
     public var indexStore: String
 }
 
@@ -113,6 +119,9 @@ public struct Frontend {
         progress(Progress(phase: "index", done: 0, total: files.count))
         let reader = try IndexReader(storePath: storePath, libraryPath: libraryPath)
         let model = try reader.read(files: files)
+        guard !model.filesWithOccurrences.isEmpty else {
+            throw FrontendError.noIndexedSources(store: storePath, files: files.count)
+        }
         progress(Progress(phase: "index", done: files.count, total: files.count))
 
         var facts: [String: SyntaxFacts] = [:]
@@ -142,7 +151,9 @@ public struct Frontend {
         progress(Progress(phase: "emit", done: 0, total: 1))
         let summary = try emitter.emit()
         progress(Progress(phase: "emit", done: 1, total: 1))
-        return BuildResult(summary: summary, files: files.count, indexStore: storePath)
+        return BuildResult(
+            summary: summary, files: files.count, filesWithOccurrences: model.filesWithOccurrences.count, indexStore: storePath
+        )
     }
 
     private func resolveInputs() throws -> (store: String, roots: [String], kind: String, path: String) {

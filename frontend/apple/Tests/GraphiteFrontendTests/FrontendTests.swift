@@ -96,6 +96,50 @@ final class SwiftPMFrontendRegressionTests: XCTestCase {
         }
     }
 
+    func testSourceSelectionRequiresIndexOccurrencesNotGraphNodes() throws {
+        try package([
+            "Package.swift": """
+            // swift-tools-version:5.10
+            import PackageDescription
+            let package = Package(name: "ScopeProbe", targets: [.target(name: "ScopeProbe")])
+            """,
+            "Sources/ScopeProbe/Marker.swift": "public protocol Marker {}",
+            "Other/Marker.swift": "public protocol Unindexed {}",
+        ]) { root in
+            let output = root.appendingPathComponent("scope.graphite-ir")
+            var options = BuildOptions()
+            options.package = root.path
+            let build = try Frontend(options: options).build(to: output)
+            let metadata = try DecodedIR(url: output)
+            XCTAssertEqual(metadata.origins.map(\.className), ["ScopeProbe.Marker"])
+            XCTAssertTrue(metadata.nodes.isEmpty)
+            XCTAssertEqual(build.filesWithOccurrences, 1)
+
+            options = BuildOptions()
+            options.indexStore = build.indexStore
+            options.sources = [root.appendingPathComponent("Other/Marker.swift").path]
+            let saved = try Data(contentsOf: output)
+            let absent = root.appendingPathComponent("unmatched.graphite-ir")
+            for target in [output, absent] {
+                XCTAssertThrowsError(try Frontend(options: options).build(to: target)) {
+                    guard case FrontendError.noIndexedSources(let store, let files) = $0 else {
+                        return XCTFail("unexpected error: \($0)")
+                    }
+                    XCTAssertEqual(store, build.indexStore)
+                    XCTAssertEqual(files, 1)
+                }
+            }
+            XCTAssertEqual(try Data(contentsOf: output), saved)
+            XCTAssertFalse(FileManager.default.fileExists(atPath: absent.path))
+
+            options.sources.append(root.appendingPathComponent("Sources/ScopeProbe/Marker.swift").path)
+            let partial = try Frontend(options: options).build(to: absent)
+            XCTAssertEqual(partial.files, 2)
+            XCTAssertEqual(partial.filesWithOccurrences, 1)
+            XCTAssertEqual(try DecodedIR(url: absent).origins.map(\.className), ["ScopeProbe.Marker"])
+        }
+    }
+
     func testSwiftPMIncludesObjectiveCHeaderDeclarationsAndNullability() throws {
         try package([
             "Package.swift": """
