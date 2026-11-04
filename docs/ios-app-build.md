@@ -118,8 +118,17 @@ serve the original files.
 
 ## Current analysis boundary
 
-Nonliteral arguments retain their source text and position; this is not complete
-assignment, field or return-value dataflow. Objective-C expression literals and Apple
+Nonliteral arguments retain their source text and argument slots. For supported
+Swift function bodies, a bare, lexically bound formal-parameter argument also has
+an `ASSIGN` edge from its `Parameter` node to the existing argument reference;
+`PARAMETER_PASS` connects that reference to the call site. An explicit `return`
+of a direct call has a `RETURN_VALUE` edge to the enclosing function's `Return`
+node when both signatures establish a value result. Unknown, `Void` and `Never`
+results do not produce that edge. Local shadowing and nested closures do not
+inherit bindings by name alone.
+
+This is partial source dataflow: assignments through local variables, field flow,
+complete interprocedural propagation, Objective-C expression literals and Apple
 resource-to-code lookup relationships remain additional analysis work. C/Objective-C declaration
 enrichment is a lightweight parser, including C++ language-linkage blocks, rather
 than a complete preprocessor. Indexed explicit Objective-C method signatures can be

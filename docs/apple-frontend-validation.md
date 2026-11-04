@@ -1,5 +1,31 @@
 # Apple frontend follow-up validation
 
+## Shared Swift source contexts and basic source dataflow (2026-11-05)
+
+The production reader now enumerates distinct compiler records when a selected
+physical Swift source was compiled in multiple contexts. It retains each module's
+USRs and includes the caller and module when deduplicating call occurrences.
+Single-record Swift and non-Swift inputs keep the existing IndexStoreDB occurrence
+path. Record failures throw rather than silently returning a first-provider graph.
+Position-based attribute emission also retains each distinct declaration owner.
+
+A real compiler-built fixture uses two targets compiling a symlinked source in two
+fresh checkout roots. Both graphs contain the two module-qualified types, fields,
+attributes and callers of the same callee at the same physical source position;
+repeated path aliases do not duplicate them. The fixture checks that each module's
+formal parameter and direct returned call stay attached to that module's method.
+The complete [81-test Swift run](apple-frontend-evidence/2026-11-05/graphite-flow-multimodule-full-tests.log)
+passes, including selected resources from the real Signal bundle. Independent
+all-record validation on the pinned Linux SwiftPM corpus remains pending; the
+historical baseline pins remain unchanged.
+
+Supported Swift bodies now emit `Parameter` → existing argument-reference `ASSIGN`
+edges and direct-call → `Return` `RETURN_VALUE` edges. Existing argument nodes,
+source expressions, positions and `PARAMETER_PASS` slots remain intact. Tests
+cover repeated formals, local shadowing, closure boundaries, `Never`, C `void`
+and C `void *` results. This is partial source dataflow rather than SIL or complete
+interprocedural propagation; see [the build guide](ios-app-build.md) for limits.
+
 ## Selected bundle resources and indexed method anchors (2026-11-05)
 
 The existing IR now accepts explicitly selected built `.app`/`.appex` resources
@@ -34,8 +60,8 @@ cover `_dateWithMSDOSFormat:`, `_gregorian`, `zipInfo:setAttributesOfItemAtPath:
 Current local checks pass 75 Swift tests (including the real Signal bundle), 56 CLI
 tests and CLI Clippy. These construction and resource checks are correctness-only,
 not performance measurements. The unresolved baseline index/shape mismatch remains
-under a separate manually enabled correctness investigation; no pin or threshold
-is bypassed.
+under a separate manually enabled correctness investigation described below; no pin
+or threshold is bypassed.
 
 ## iOS application construction update (2026-11-05)
 
@@ -66,11 +92,17 @@ These are correctness checks with no performance measurements. The October timin
 and incomplete-type inventories below describe their original revisions, not this
 new frontend. Full dataflow, Objective-C expression literals, resource extraction
 and conditional-macro-dependent declarations remain further analysis work.
-The PR's historical SwiftPM baseline shape check is still unresolved: current
-artifacts contain 21,430 strings versus the historical 21,459, and 32 fewer indexed
-symbols before emission. Existing artifacts do not identify the missing symbols.
-The [diagnosis](apple-frontend-evidence/2026-11-05/historical-baseline-shape-diagnosis.json)
-retains the evidence; no pin or threshold has been relaxed to accept the mismatch.
+The PR's historical SwiftPM baseline shape check has a verified correctness cause:
+IndexStoreDB's per-file query returns only the first compilation provider for a
+physical source shared by multiple targets. The
+[fixed-environment diagnosis](apple-frontend-evidence/2026-11-05/shared-source-baseline-findings.md)
+found three affected files. Both roots select the same 481 source files and hashes,
+but select different module contexts for those three files, producing the 21,459
+versus 21,430 string counts. All 91 side-only strings have semantic references;
+this is missing module information rather than unused-string noise. The
+[decoded evidence](apple-frontend-evidence/2026-11-05/shared-source-baseline-analysis.json)
+retains both results. The production repair and independent all-record validation
+are in progress; no pin or threshold has been relaxed.
 
 This follow-up addresses dispatch, output-directory, SwiftPM indexing/header discovery,
 real-source signature, cross-language query, and release-artifact verification gaps
