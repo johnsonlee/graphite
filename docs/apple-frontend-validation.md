@@ -1,5 +1,40 @@
 # Apple frontend follow-up validation
 
+## iOS application construction update (2026-11-05)
+
+The existing Graph IR pipeline now accepts an app directory, selects its workspace
+or project, invokes Xcode, imports the IR and packs a queryable `.graphite` file.
+See [the user guide](ios-app-build.md) and
+[current correctness evidence](apple-frontend-evidence/2026-11-05/summary.json).
+This update does not depend on universal schema integration.
+
+Three correctness gaps are addressed: app directories previously fell through to
+the JVM frontend and could silently produce a graph without the app's methods;
+an unrelated compiler index could produce a successful empty graph; and C++
+`extern "C"` linkage blocks caused C declarations to be skipped during type enrichment.
+Directory ambiguity now requires an explicit input, entirely unmatched sources fail
+before IR output, and indexed C declarations retain their source-spelled types.
+
+The final CLI/frontend built from these fixes passed 55 CLI tests, CLI Clippy,
+and 69 Swift tests. AcmeApp was built from a directory with spaces, with fresh
+DerivedData and no manual scheme/import/skip-build steps. The saved graph verified
+all 19 entries and returned the expected Swift methods, cross-language calls and
+literal arguments. Signal 7.19.1.208 also completed the full directory-input command,
+including Xcode build (reusing its existing DerivedData), import and packing:
+421,262 nodes and 189,838 edges. Its 19 entries verified; exact saved-graph assertions
+covered AppDelegate, SHA signatures, SQLite/minizip/WebP function signatures and
+WebPData fields. Signal is the real-application check; AcmeApp is a correctness fixture.
+
+These are correctness checks with no performance measurements. The October timing
+and incomplete-type inventories below describe their original revisions, not this
+new frontend. Full dataflow, Objective-C expression literals, resource extraction
+and conditional-macro-dependent declarations remain further analysis work.
+The PR's historical SwiftPM baseline shape check is still unresolved: current
+artifacts contain 21,430 strings versus the historical 21,459, and 32 fewer indexed
+symbols before emission. Existing artifacts do not identify the missing symbols.
+The [diagnosis](apple-frontend-evidence/2026-11-05/historical-baseline-shape-diagnosis.json)
+retains the evidence; no pin or threshold has been relaxed to accept the mismatch.
+
 This follow-up addresses dispatch, output-directory, SwiftPM indexing/header discovery,
 real-source signature, cross-language query, and release-artifact verification gaps
 in PR #154. SIL/dataflow expansion, resource extraction and a Rust indexer migration

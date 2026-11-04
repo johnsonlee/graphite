@@ -1,0 +1,17 @@
+{
+  "purpose": "iOS application construction correctness only; no performance measurement or acceptance",
+  "sourceHead": "8f96c98bcff165ddb03b6ea7c49c1e1eabaa5c09",
+  "signalCommit": "dc04157b3adef68af2136a12478f455e41e5d2e0",
+  "podsCommit": "77c21193e6b5e4f8cbd86abaf46631fd242322f4",
+  "signalGraphSha256": "f483043499d6bf1b29e72d6737a5cf692dbef610058525cd1e9ec9950b1fd92d",
+  "semanticAssertionsPassed": true,
+  "swiftTests": 69,
+  "cliTests": 55,
+  "remainingAnalysis": [
+    "Full assignment/field/return dataflow",
+    "Objective-C expression literal arguments",
+    "Apple resource extraction",
+    "Conditional C macro types and SSZipArchive branch-dependent bodies"
+  ],
+  "performanceAcceptance": false
+}

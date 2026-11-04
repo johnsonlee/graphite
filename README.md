@@ -308,7 +308,7 @@ command fetches it from the release:
 graphite frontend install apple      # ~/.graphite/frontends/apple/<version>/, checksum verified
 graphite frontend list               # jvm and apple, with version and where each was found
 
-# Index a package: runs `swift build`, reads its index store, writes the graph
+# Index a Swift package, or auto-select the Xcode workspace/project in an app directory
 graphite build ~/src/MyApp -o myapp.graphite
 graphite build ~/src/MyApp -o myapp.graphite --skip-build     # the package is already built
 
@@ -329,6 +329,9 @@ graphite serve --graph myapp:myapp.graphite
 `graphite build` finds the Apple frontend through `GRAPHITE_FRONTEND_APPLE`,
 `graphite-frontend-apple` next to the binary or in a sibling `libexec/`, on `PATH`, then
 `~/.graphite/frontends/apple/`.
+
+For toolchain setup, directory selection, existing DerivedData and correctness
+checks on an iOS app, see [Build an iOS application graph](docs/ios-app-build.md).
 
 Under the hood every non-JVM frontend writes a **Graph IR** (`ir/graphite_ir.proto`, a
 stream of protobuf chunks) and `graphite import <ir> -o <graph>` persists it with the

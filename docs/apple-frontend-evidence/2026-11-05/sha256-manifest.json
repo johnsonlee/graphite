@@ -1,0 +1,12 @@
+{
+  "acme-build.log": "e4abf5adf3c8dad3e227abd114676857bd5ac4fdc56353740ce65d1e5999c34a",
+  "acme-verification.json": "544991a5cc573281ce1b3c33c88f519783d3d47c0d0cb831c5ade9b6f8e6386d",
+  "c-linkage-clang-reference.json": "e915fbe67b2ce9190b775d264efc20c0285e7306134cfc49915f2ec68b779971",
+  "c-linkage-summary.json": "337d4aa625978b49be618839cdcbb60d22891a0623a9cf1f480729485d8d075a",
+  "historical-baseline-shape-diagnosis.json": "4557d07b6c8228b03f65ad3599abde2c6c8274e14c818f10342f9695ca2bf73e",
+  "signal-build.log": "2c6ba0c855d1704ad73ab45f9b8ef63bd2ea6347c399fbcd143a62a0e9858e4c",
+  "signal-invocation.json": "7236333e02fbec94308a2a05d1271cbec9c10c1842776a55baa6a25f4c6d83d9",
+  "signal-result.json": "982b9e9bfb10ffe83cad665807abcfd3fa97b37822db5ab7831157a499548a9e",
+  "signal-verification.json": "c7be37b499799604befe064a55dc1661bc7f35986106fd6afeb3c0eec29cb599",
+  "summary.json": "3f16909183fc48c6a55cd5ca9fa9d77bc6dcab46ace2454ca60f94b88fe617d4"
+}

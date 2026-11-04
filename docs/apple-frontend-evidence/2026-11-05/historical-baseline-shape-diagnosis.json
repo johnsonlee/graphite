@@ -1,0 +1,181 @@
+{
+  "scope": "Read-only comparison of preserved graph correctness evidence. No new compilation, timing, calibration, or pin changes.",
+  "calibration": {
+    "source": {
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLock": {
+        "path": "fixtures/swiftpm/Package.resolved",
+        "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+      }
+    },
+    "toolchain": {
+      "platform": "Linux-6.17.0-1022-azure-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "swift": "Swift version 6.1.3 (swift-6.1.3-RELEASE)\nTarget: x86_64-unknown-linux-gnu"
+    },
+    "frontendProgressTotals": {
+      "swift package describe": [
+        1
+      ],
+      "index": [
+        481
+      ],
+      "syntax": [
+        481
+      ],
+      "demangle": [
+        39150
+      ],
+      "emit": [
+        1
+      ]
+    },
+    "reportedShapes": [
+      {
+        "annotations": 913,
+        "callSites": 25139,
+        "constants": 3434,
+        "edges": 29000,
+        "fields": 5355,
+        "files": 481,
+        "methods": 4601,
+        "nodes": 60407,
+        "strings": 21459,
+        "types": 1752
+      }
+    ],
+    "irDigests": [
+      "2f0f170b70860f10db020178ab9d5959e73071a1f9943b5ca315c98f15b1eb3e"
+    ],
+    "records": 6,
+    "verification": {
+      "command": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import {ir} -o {out}",
+      "renderedCommand": "java -jar '/__w/graphite/graphite/dry-run/release-assets/graphite.jar' import /tmp/apple-frontend-bench-iblb8v8b/corpus.graphite-ir -o /tmp/apple-frontend-bench-iblb8v8b/verified-graph",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx2g\nReading IR from: /tmp/apple-frontend-bench-iblb8v8b/corpus.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 60407 nodes, 29000 edges, 21459 strings\nSaving to: /tmp/apple-frontend-bench-iblb8v8b/verified-graph\nDone.\n",
+      "passed": true
+    },
+    "dependencies": {
+      "https://github.com/apple/swift-argument-parser.git": "1.4.0",
+      "https://github.com/apple/swift-asn1.git": "1.7.3",
+      "https://github.com/apple/swift-certificates.git": "1.5.0",
+      "https://github.com/apple/swift-collections.git": "1.1.6",
+      "https://github.com/apple/swift-crypto.git": "3.0.0",
+      "https://github.com/apple/swift-driver.git": "release/6.1 (20cd624)",
+      "https://github.com/apple/swift-llbuild.git": "release/6.1 (4fc005b)",
+      "https://github.com/apple/swift-system.git": "1.8.1",
+      "https://github.com/apple/swift-tools-support-core.git": "release/6.1 (5cd61a7)",
+      "https://github.com/jpsim/Yams.git": "5.0.6",
+      "https://github.com/swiftlang/swift-syntax.git": "release/6.1 (cbd0366)",
+      "https://github.com/swiftlang/swift-toolchain-sqlite": "1.0.13"
+    },
+    "compileCommand": [
+      "$ swift build --package-path /__w/_temp/corpus --jobs 4 -c debug --enable-index-store --force-resolved-versions"
+    ]
+  },
+  "failingGate": {
+    "source": {
+      "kind": "real-source",
+      "repository": "https://github.com/swiftlang/swift-package-manager.git",
+      "commit": "587a4fdaebc5d7f977ac6b0a01f0e0b644b50f54",
+      "dependencyLock": {
+        "path": "fixtures/swiftpm/Package.resolved",
+        "sha256": "152f6bf2595de521b7293890504639652ff53f52084d9daea4e45a7660eb313b"
+      }
+    },
+    "toolchain": {
+      "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+      "machine": "x86_64",
+      "swift": "Swift version 6.1.3 (swift-6.1.3-RELEASE)\nTarget: x86_64-unknown-linux-gnu"
+    },
+    "frontendProgressTotals": {
+      "swift package describe": [
+        1
+      ],
+      "index": [
+        481
+      ],
+      "syntax": [
+        481
+      ],
+      "demangle": [
+        39118
+      ],
+      "emit": [
+        1
+      ]
+    },
+    "reportedShapes": [
+      {
+        "annotations": 913,
+        "callSites": 25139,
+        "constants": 3434,
+        "edges": 29000,
+        "fields": 5355,
+        "files": 481,
+        "methods": 4601,
+        "nodes": 60407,
+        "strings": 21430,
+        "types": 1752
+      }
+    ],
+    "irDigests": [
+      "826e94b25125c4df69312164693929446a3d1288eff0a1b5e0a8413b09fb14bf"
+    ],
+    "records": 4,
+    "verification": {
+      "command": "java -jar jar/graphite.jar import {ir} -o {out}",
+      "renderedCommand": "java -jar jar/graphite.jar import /tmp/apple-frontend-bench-twurtad9/corpus.graphite-ir -o /tmp/apple-frontend-bench-twurtad9/verified-graph",
+      "exitCode": 0,
+      "stdout": "",
+      "stderr": "Picked up JAVA_TOOL_OPTIONS: -Xmx2g\nReading IR from: /tmp/apple-frontend-bench-twurtad9/corpus.graphite-ir\nIR from graphite-frontend-apple 0.1.0 (swift): 60407 nodes, 29000 edges, 21430 strings\nSaving to: /tmp/apple-frontend-bench-twurtad9/verified-graph\nDone.\n",
+      "passed": true
+    },
+    "dependencies": {
+      "https://github.com/apple/swift-argument-parser.git": "1.4.0",
+      "https://github.com/apple/swift-asn1.git": "1.7.3",
+      "https://github.com/apple/swift-certificates.git": "1.5.0",
+      "https://github.com/apple/swift-collections.git": "1.1.6",
+      "https://github.com/apple/swift-crypto.git": "3.0.0",
+      "https://github.com/apple/swift-driver.git": "release/6.1 (20cd624)",
+      "https://github.com/apple/swift-llbuild.git": "release/6.1 (4fc005b)",
+      "https://github.com/apple/swift-system.git": "1.8.1",
+      "https://github.com/apple/swift-tools-support-core.git": "release/6.1 (5cd61a7)",
+      "https://github.com/jpsim/Yams.git": "5.0.6",
+      "https://github.com/swiftlang/swift-syntax.git": "release/6.1 (cbd0366)",
+      "https://github.com/swiftlang/swift-toolchain-sqlite": "1.0.13"
+    },
+    "compileCommand": [
+      "$ swift build --package-path /__w/graphite/graphite/corpus --jobs 4 -c debug --enable-index-store --force-resolved-versions"
+    ]
+  },
+  "imageDigests": {
+    "octoberCalibration": "sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db",
+    "octoberGate": "sha256:6e43114610e161e38ad41636ebcafd6940dc67dfab355eace3a0ca100b2263db",
+    "novemberGate": "sha256:92cafdba8c519c32b83d5aa50539fb3d5a534bc87c3d9437bf6e8984aa1be4f3"
+  },
+  "baselineAppleSourceTree": "1deb1cade3b2a13bef8af3cd6d9c57a42d6fece4",
+  "baselines": [
+    "332c0d8a6fec650a6e7979e3dce37aa1a891c03a",
+    "0818c68ecd084e14e80a978f7940c6d9d03e1a9a"
+  ],
+  "gateErrors": {
+    "octoberGate": [
+      "the graph shape differs from the corpus pin (strings 21459 -> 21430)"
+    ],
+    "novemberGate": [
+      "the graph shape differs from the corpus pin (strings 21459 -> 21430)"
+    ]
+  },
+  "findings": [
+    "Both PR jobs freshly prepared the compiler store (cache miss). Same October digest and baseline already reproduced 21430 at the gate path; November image drift/rebase alone are not causal explanations.",
+    "All 12 resolved upstream dependencies and the locked Package.resolved digest match. The prepared corpus path differs between calibration and both PR jobs.",
+    "Both artifacts report 481 enumerated source files, identical nine non-string shape fields, deterministic IR within each job, and successful production import/save. Neither retains an exact selected-file/header-path inventory or a per-file USR list.",
+    "Swift reader passed 39150 distinct model symbol USRs to the demangler in calibration vs 39118 in the current gate. This upstream difference exists before IR string interning/import. Matched coverage and semantic equality cannot be inferred from matched node/edge counts.",
+    "Wire IR and string tables are not in the uploaded failure/calibration artifacts; which strings differ and why are unresolved. Do not blindly replace or relax pins."
+  ],
+  "nextDiagnostic": "If authorized: single correctness-only build at each of the two observed checkout roots on the same runner and immutable image, using exact same baseline binary, repo+lock+toolchain/build commands. Capture resolved source/header paths (root-relative plus content hashes), index unit/record inventory, per-file occurrence/relation USR digests with changed entries, emitted IR/string-set diff, import/save and targeted queries on differing graph facts. No samples, timing, cache reuse, ceilings or performance verdict."
+}
