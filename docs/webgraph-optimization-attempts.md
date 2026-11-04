@@ -22591,3 +22591,113 @@ activity remain visible. Decision: retain the correctness-verified, resource-com
 increment. All-case latency acceptance and hosted acceptance remain unclaimed; carry the
 non-target tail observations into the final cumulative candidate.
 
+### Attempt159 — retain incremental aggregate states and exclusive collect prefixes (2026-11-05)
+
+**Predeclared hypothesis.** Both the streaming and batch aggregation entrances retain every
+argument and weight, then clone argument vectors during finalization. Replace common scalar
+aggregates with shared incremental states: count, encounter-ordered sum/avg and first-tie
+min/max. DISTINCT tracks first-seen keys before feeding its state. Keep full-input algorithms
+for percentile/stdev rather than changing their numerical method. Finalization remains at its
+original boundary; weighted integer checks, zero-weight AVG, debug overflow and release wrapping
+must preserve their original results and error priority.
+
+For a WITH collect whose consumers are exclusively bounded nonnegative literal slices, retain
+only the largest required prefix of non-NULL values. Still evaluate every input argument, check
+cancellation and merge provenance from every contributing graph. Any full-list, dynamic,
+negative, wildcard, WITH-filtered or otherwise unproved consumer keeps the full collection.
+Reject prefix admission for a projection that expands into multiple aggregation calls, so
+prefix slots cannot be confused with aggregate-call slots. Review/tests caught and corrected
+that mapping error and the weighted-AVG zero-count priority before performance measurement.
+
+The incremental parent is measured sorting candidate
+`79f685646fe622f99a0e435f2770388310a1dd13`; cumulative acceptance remains relative to original
+`a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`, using the same saved real64 fixture, frozen producer
+identities, controlled-cache local Rust controller and unchanged sampling/resource constraints
+as Attempts157–158. Keep all failures and each case's per-request nearest-rank distributions;
+report parent attribution separately from cumulative comparison. Construction is unchanged.
+Isolated p95 residuals from earlier increments remain visible rather than being waived.
+
+Seven independent state/prefix correctness tests already pass against the original aggregate
+functions, including f64 bits/order, NaN, mixed values, DISTINCT, NULLs, zero/negative weights,
+deferred overflow, real multi-graph prefix rows/provenance and late argument errors. Integrated
+module/workspace verification, frozen candidate identity and real64 measurements are pending.
+
+**Pre-measurement integrated verification.** The cumulative candidate passes 246 Cypher and
+132 Storage library tests with the real core correctness fixture, workspace all-target/all-feature
+Clippy, formatting and release compilation. The complete release workspace run passes 601 tests,
+with one pre-existing ignored test and no failures; its optional declaration-specific fixtures
+were initially unavailable, which is recorded rather than counted as interoperability coverage.
+
+Because aggregate state also serves declaration-property grouping/counting, restore that
+affected correctness closure before acceptance: the original two JVM persistence suites export
+five wire-version graphs and four inherited-field graphs, with 17 tests, no failures/skips, and
+4 GiB launcher/daemon/test JVMs. Eleven compilation tasks reuse unchanged cached outputs.
+The first configuration dry-run exposed an existing JGit/linked-worktree incompatibility; use
+an isolated shared standalone checkout of the same unchanged JVM dependency closure instead of
+changing repository metadata. No JVM production source changed. Actual graph version headers,
+file hashes and forward-properties bindings are checked in
+`/tmp/graphite-query-opt-types-fixtures/manifest.json` (SHA-256
+`b514fecc0c3afb06971da05abe7cbf6ecf5faecf18cf2113a0096ba2c763a5c7`).
+
+With `REQUIRE_ALL_TYPES_FIXTURES`, `REQUIRE_DUAL_TYPES_FIXTURES` and
+`REQUIRE_INHERITED_TYPES_FIXTURE` enabled, the native affected closure passes 66 further tests
+across thirteen nonempty checks: all wire versions/shared-string queries, scalar/generic
+presence and summary, grouping/counts, inherited directory/container identity and each version's
+packed/schema checks. No skip message is accepted. Receipts/logs:
+`/tmp/graphite-query-opt-aggregate-verification.json`,
+`/tmp/graphite-query-opt-aggregate-workspace-release-tests.log` and
+`/tmp/graphite-query-opt-declaration-closure.json`. All verification processes exit before the
+last performance run. These small fixtures are correctness-only and supply no performance evidence.
+
+**Measured candidate:** `240b5d120c247c5ea152ebdf52c0a54afa21fa67`, binary SHA-256
+`d0dbe4bf8127deb1d9825d10910a8cfdb293e83a304c329accae3402fe170de6`.
+Both driver runs exit successfully, with all native correctness/capacity checks passing.
+Independent audit validates 17,516 complete response bodies, exact typed semantics/provenance,
+73-case sampling and all matching warm-filecache receipts:
+`/tmp/graphite-query-opt-attempt159/{ab,ba,audit-abba}`.
+
+| Aggregate metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| collect-prefix p50 | 1,955.093 → 1,822.047 ms | -133.046 ms | 1,965.630 → 1,780.741 ms | -184.889 ms |
+| collect-prefix p95 | 2,124.412 → 1,890.238 ms | -234.174 ms | 2,062.284 → 1,843.045 ms | -219.239 ms |
+| grouped-count p50 | 338.677 → 309.720 ms | -28.957 ms | 339.669 → 314.236 ms | -25.433 ms |
+| grouped-count p95 | 359.955 → 387.764 ms | +27.809 ms | 348.844 → 375.810 ms | +26.966 ms |
+| Complete query window | 72.240 → 26.674 s | -45.566 s | 70.773 → 26.103 s | -44.670 s |
+
+First-use collect requests improve 2,232.172→1,769.462 ms and 1,960.272→1,810.549 ms.
+The WITH/ASC/DESC sequence-first requests still include their proofs (candidate WITH
+112.766/109.147 ms, ASC 122.650/121.101 ms, DESC 248.661/241.678 ms); do not mix them with
+warm repeated-request percentiles or call them independent cold starts. Preparation remains
+separate at 1.001–1.713 s/arm. Startup through first complete oracle is
+23,804.546→21,545.699 ms in AB and 22,947.061→21,299.016 ms in BA.
+
+| Operation/resource | AB base → candidate | Delta | BA base → candidate | Delta |
+| --- | ---: | ---: | ---: | ---: |
+| Loading CPU | 20.470 → 20.320 s | -0.733% | 20.750 → 20.280 s | -2.265% |
+| Loading peak RSS | 6.524 → 6.515 GB | -0.139% | 6.887 → 6.738 GB | -2.172% |
+| Query CPU | 297.770 → 113.640 s | -61.836% | 295.340 → 113.700 s | -61.502% |
+| Query peak RSS | 16.866 → 9.680 GB | -42.606% | 16.626 → 9.449 GB | -43.169% |
+
+All eight independent resource limits pass. Pressure p50 improves twice for 60 cases and mixes
+for thirteen; p95 improves twice for 21, mixes for forty and increases twice for twelve. The
+largest two-order increase is the grouped-count p95 above (+27.388 ms, +7.73% on the mean);
+other eleven consistent pressure increases are sub-millisecond (largest +0.351 ms).
+The isolated stage retains 35 p50 and 33 p95 two-order increases; its relationship histogram
+p95 increases +0.592/+2.108 ms. Wide-contains p95 mixes direction (+0.0275/-0.0358 ms), so
+neither its historical growth nor its uncertainty is erased. All eighty consistent
+case/stage/metric increases, with both directions and absolute milliseconds, are retained in
+`audit-abba/consistent-regressions.{json,md}`. No timing or failure is excluded.
+
+The same-control parent-attribution artifact is explicitly cross-run/non-paired: collect mean
+p50/p95 1,943.617/2,097.394→1,801.394/1,866.642 ms, WITH-aggregate
+648.781/741.121→624.073/703.708 ms, and grouped-count p50 318.630→311.978 ms but p95
+347.179→381.787 ms. These observations do not substitute for the original-baseline comparison.
+
+Decision: retain the verified collect/scalar-state and cumulative latency/resource benefits
+as an intermediate candidate, but do not claim cumulative query acceptance: grouped-count
+p95 regresses consistently. That query still enters the unchanged raw-record counting fast
+path, not AggregateState; mixed-load overlap or shared resources may contribute, so this does
+not establish scalar-state causality. The concrete next reduction is to derive its counts
+from the existing validated CSR groups, rather than repeat all node reads. Preserve this
+failed latency observation while composing that separate attempt.
+

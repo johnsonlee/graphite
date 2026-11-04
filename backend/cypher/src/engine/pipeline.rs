@@ -17,6 +17,10 @@ use indexmap::IndexMap;
 use std::cmp::Ordering;
 use std::sync::Arc;
 
+#[path = "aggregate_state.rs"]
+mod aggregate_state;
+use aggregate_state::AggregateState;
+
 pub type Row = IndexMap<String, Value>;
 
 /// Hidden row key carrying cross-graph provenance (sorted unique graph ids as a list of strings).
@@ -274,8 +278,20 @@ impl Executor {
                             FusedShape::detect_with(&clauses[i..])
                         {
                             let budget = compute_early_limit(&clauses[i..]);
-                            let (cols, projected) =
-                                self.run_fused_with(&matcher, &ev, rows, patterns, &shape, budget)?;
+                            let prefix_caps = if with_where.is_none() {
+                                collect_prefix_caps(&shape, &clauses[i + consumed..])
+                            } else {
+                                Vec::new()
+                            };
+                            let (cols, projected) = self.run_fused_with(
+                                &matcher,
+                                &ev,
+                                rows,
+                                patterns,
+                                &shape,
+                                budget,
+                                &prefix_caps,
+                            )?;
                             columns = cols;
                             rows = projected;
                             if let Some(w) = with_where {
@@ -592,6 +608,7 @@ impl Executor {
             budget,
             aggregated,
             ordered_capacity,
+            &[],
         )?;
         finish_fused(ev, columns, out, shape)
     }
@@ -601,6 +618,7 @@ impl Executor {
     /// loop can run the WITH's own WHERE and whatever follows over them. `budget`
     /// bounds the match the way `exec_match`'s early limit does, and is `None` unless
     /// the segment's LIMIT provably bounds it (see `compute_early_limit`).
+    #[allow(clippy::too_many_arguments)]
     fn run_fused_with(
         &self,
         matcher: &Matcher,
@@ -609,6 +627,7 @@ impl Executor {
         patterns: &[Pattern],
         shape: &FusedShape,
         budget: Option<usize>,
+        prefix_caps: &[Option<usize>],
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
         if has_unknown_label(patterns) {
             return project(
@@ -630,7 +649,17 @@ impl Executor {
             None
         };
         self.fused_rows(
-            matcher, ev, rows, patterns, shape, &scan, &hop, budget, aggregated, None,
+            matcher,
+            ev,
+            rows,
+            patterns,
+            shape,
+            &scan,
+            &hop,
+            budget,
+            aggregated,
+            None,
+            prefix_caps,
         )
     }
 
@@ -650,12 +679,14 @@ impl Executor {
         budget: Option<usize>,
         aggregated: bool,
         ordered_capacity: Option<usize>,
+        prefix_caps: &[Option<usize>],
     ) -> CypherResult<(Vec<String>, Vec<Row>)> {
         let items = shape.items.as_deref();
         if aggregated {
             // Streaming group-by.
             let items = items.unwrap();
-            let plan = AggPlan::new(items)?;
+            let mut plan = AggPlan::new(items)?;
+            plan.prefix_caps = prefix_caps.to_vec();
             let columns = item_names(items);
             let mut groups: IndexMap<Vec<Key>, GroupAcc> = IndexMap::new();
             let mut consume = |row: Row| -> CypherResult<bool> {
@@ -669,8 +700,7 @@ impl Executor {
                 let acc = groups.entry(keyv).or_insert_with(|| GroupAcc {
                     first_row: row.clone(),
                     group_values: vals,
-                    agg_inputs: vec![Vec::new(); plan.aggs.len()],
-                    agg_weights: vec![Vec::new(); plan.aggs.len()],
+                    agg_states: plan.states(),
                 });
                 let weight = row_weight(&row);
                 for (ai, agg) in plan.aggs.iter().enumerate() {
@@ -678,8 +708,7 @@ impl Executor {
                         Some(e) => ev.eval(e, &row)?,
                         None => star_input(agg, &row),
                     };
-                    acc.agg_inputs[ai].push(v);
-                    acc.agg_weights[ai].push(weight);
+                    acc.agg_states[ai].push(v, weight);
                 }
                 merge_provenance(&mut acc.first_row, &row);
                 Ok(true)
@@ -1526,14 +1555,115 @@ struct AggCall {
     arg: Option<Expr>,
 }
 
+/// A collect used exclusively through literal, bounded positive slices needs only
+/// that prefix. Still evaluate every argument and merge every graph's provenance.
+/// Any other consumer keeps the ordinary complete collection.
+fn collect_prefix_caps(shape: &FusedShape, rest: &[Clause]) -> Vec<Option<usize>> {
+    if shape.distinct || shape.order.is_some() {
+        return Vec::new();
+    }
+    let Some(items) = shape.items.as_deref() else {
+        return Vec::new();
+    };
+    let Some(Clause::Return {
+        distinct: false,
+        items: Some(output),
+    }) = rest.first()
+    else {
+        return Vec::new();
+    };
+    if !matches!(
+        &rest[1..],
+        [] | [Clause::Limit(Expr::Literal(Literal::Int(0..)))]
+    ) {
+        return Vec::new();
+    }
+    // Caps are indexed by aggregate call, not by output item. Nested aggregate
+    // projections can expand to several calls; leave those on complete state.
+    if items.iter().any(|item| {
+        contains_aggregation(&item.expr)
+            && !match &item.expr {
+                Expr::CountStar => true,
+                Expr::FunctionCall { name, .. } => is_aggregation_name(name),
+                _ => false,
+            }
+    }) {
+        return Vec::new();
+    }
+    let names = item_names(items);
+    let unique: std::collections::HashSet<_> = names.iter().collect();
+    if unique.len() != names.len() {
+        return Vec::new();
+    }
+    let mut prefixes: std::collections::HashMap<&str, usize> = items
+        .iter()
+        .zip(&names)
+        .filter_map(|(item, name)| match &item.expr {
+            Expr::FunctionCall {
+                name: function,
+                distinct: false,
+                args,
+            } if function.eq_ignore_ascii_case("collect") && args.len() == 1 => {
+                Some((name.as_str(), 0))
+            }
+            _ => None,
+        })
+        .collect();
+    if prefixes.is_empty() {
+        return Vec::new();
+    }
+    for item in output {
+        match &item.expr {
+            Expr::Literal(_) => {}
+            Expr::Variable(name) if name != "*" && !prefixes.contains_key(name.as_str()) => {}
+            Expr::Slice { expr, from, to } => {
+                let Expr::Variable(name) = expr.as_ref() else {
+                    return Vec::new();
+                };
+                let Some(cap) = prefixes.get_mut(name.as_str()) else {
+                    return Vec::new();
+                };
+                let start = match from.as_deref() {
+                    None => 0,
+                    Some(Expr::Literal(Literal::Int(n))) if *n >= 0 => *n,
+                    _ => return Vec::new(),
+                };
+                let Some(Expr::Literal(Literal::Int(end))) = to.as_deref() else {
+                    return Vec::new();
+                };
+                if *end < 0 || start.max(*end) > 65_536 {
+                    return Vec::new();
+                }
+                *cap = (*cap).max(start.max(*end) as usize);
+            }
+            _ => return Vec::new(),
+        }
+    }
+    items
+        .iter()
+        .zip(&names)
+        .filter(|(item, _)| contains_aggregation(&item.expr))
+        .map(|(_, name)| prefixes.get(name.as_str()).copied())
+        .collect()
+}
+
 struct AggPlan {
     /// Rewritten items with aggregation calls replaced by placeholders.
     rewritten: Vec<Expr>,
     aggs: Vec<AggCall>,
     group_exprs: Vec<Expr>,
+    prefix_caps: Vec<Option<usize>>,
 }
 
 impl AggPlan {
+    fn states(&self) -> Vec<AggregateState> {
+        self.aggs
+            .iter()
+            .enumerate()
+            .map(|(i, agg)| AggregateState::new(agg, self.prefix_caps.get(i).copied().flatten()))
+            .collect()
+    }
+
     fn new(items: &[ReturnItem]) -> CypherResult<AggPlan> {
         let mut aggs = Vec::new();
         let mut rewritten = Vec::new();
@@ -1558,6 +1688,7 @@ impl AggPlan {
             rewritten,
             aggs,
             group_exprs,
+            prefix_caps: Vec::new(),
         })
     }
 }
@@ -1688,9 +1819,7 @@ fn star_input(agg: &AggCall, row: &Row) -> Value {
 struct GroupAcc {
     first_row: Row,
     group_values: Vec<Value>,
-    agg_inputs: Vec<Vec<Value>>,
-    /// How many rows each input stands for; see `partition`.
-    agg_weights: Vec<Vec<i64>>,
+    agg_states: Vec<AggregateState>,
 }
 
 /// An aggregate over inputs that each stand for `weights` rows: `count` sums the
@@ -1765,20 +1894,9 @@ fn finalize_groups(
     let mut out = Vec::with_capacity(groups.len());
     let compute = |acc: GroupAcc| -> CypherResult<Row> {
         let mut tmp = acc.first_row.clone();
-        for (ai, agg) in plan.aggs.iter().enumerate() {
-            let mut inputs = acc.agg_inputs[ai].clone();
-            let weights = &acc.agg_weights[ai];
-            let v = if agg.distinct {
-                // Distinct values: what each row stood for is immaterial.
-                let mut seen = std::collections::HashSet::new();
-                inputs.retain(|v| seen.insert(value_key(v)));
-                aggregate(&agg.name, &inputs)?
-            } else if weights.iter().all(|w| *w == 1) {
-                aggregate(&agg.name, &inputs)?
-            } else {
-                aggregate_weighted(&agg.name, &inputs, weights)?
-            };
-            tmp.insert(format!("{AGG_PLACEHOLDER_PREFIX}{ai}"), v);
+        for (ai, (agg, state)) in plan.aggs.iter().zip(acc.agg_states).enumerate() {
+            let value = state.finish(agg)?;
+            tmp.insert(format!("{AGG_PLACEHOLDER_PREFIX}{ai}"), value);
         }
         let mut row = Row::new();
         let mut gi = 0;
@@ -1802,8 +1920,7 @@ fn finalize_groups(
         let acc = GroupAcc {
             first_row: Row::new(),
             group_values: vec![],
-            agg_inputs: vec![Vec::new(); plan.aggs.len()],
-            agg_weights: vec![Vec::new(); plan.aggs.len()],
+            agg_states: plan.states(),
         };
         out.push(compute(acc)?);
         return Ok(out);
@@ -1903,8 +2020,7 @@ fn project(
             let acc = groups.entry(keyv).or_insert_with(|| GroupAcc {
                 first_row: row.clone(),
                 group_values: vals,
-                agg_inputs: vec![Vec::new(); plan.aggs.len()],
-                agg_weights: vec![Vec::new(); plan.aggs.len()],
+                agg_states: plan.states(),
             });
             let weight = row_weight(&row);
             for (ai, agg) in plan.aggs.iter().enumerate() {
@@ -1912,8 +2028,7 @@ fn project(
                     Some(e) => ev.eval(e, &row)?,
                     None => star_input(agg, &row),
                 };
-                acc.agg_inputs[ai].push(v);
-                acc.agg_weights[ai].push(weight);
+                acc.agg_states[ai].push(v, weight);
             }
             merge_provenance(&mut acc.first_row, &row);
         }
@@ -2497,6 +2612,7 @@ mod bounded_order_tests {
             None,
             false,
             None,
+            &[],
         )?;
         finish_fused(&ev, columns, rows, &shape)
     }
@@ -2641,6 +2757,7 @@ mod bounded_order_tests {
                             Some(3),
                             false,
                             capacity(&query),
+                            &[],
                         )
                         .unwrap();
                     assert_eq!(
@@ -2727,6 +2844,7 @@ mod bounded_order_tests {
                     None,
                     false,
                     None,
+                    &[],
                 )
                 .unwrap();
             let expected = finish_fused(&ev, columns, rows, &shape).unwrap();
