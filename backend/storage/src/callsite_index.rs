@@ -757,6 +757,11 @@ pub struct NodePostings<'a> {
 }
 
 impl NodePostings<'_> {
+    /// The first remaining node without advancing or visiting the posting run.
+    pub fn first(&self) -> Option<u32> {
+        (!self.is_empty()).then(|| self.array.get(&self.index.map, self.pos) as u32)
+    }
+
     pub fn len(&self) -> usize {
         self.end - self.pos
     }
@@ -1277,6 +1282,13 @@ mod tests {
         };
         assert_eq!(groups(false), [(0, vec![1, 3]), (1, vec![5])]);
         assert_eq!(groups(true), [(1, vec![5]), (0, vec![1, 3])]);
+        let (_, mut nodes) = index.property_values(0, false).unwrap().next().unwrap();
+        assert_eq!((nodes.first(), nodes.len()), (Some(1), 2));
+        assert_eq!((nodes.first(), nodes.len()), (Some(1), 2));
+        assert_eq!(nodes.next(), Some(1));
+        assert_eq!((nodes.first(), nodes.len()), (Some(3), 1));
+        assert_eq!(nodes.next(), Some(3));
+        assert_eq!((nodes.first(), nodes.len()), (None, 0));
         assert!(index.property_values(4, false).is_none());
         assert!(!index
             .validate_property(4, |_, _| Ok::<_, ()>(true))

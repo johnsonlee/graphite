@@ -13,6 +13,7 @@ use crate::render::to_cypher_string;
 use crate::value::Value;
 use crate::CypherResult;
 use graphite_storage::node::{read_call_site_strings, StrId, TAG_CALL_SITE_NODE};
+use graphite_storage::Graph;
 use indexmap::IndexMap;
 
 /// `MATCH (n[:Label]) RETURN count(*)` / `count(n)` — answered from node counts.
@@ -119,6 +120,16 @@ pub fn grouped_call_site_property(
     ex: &Executor,
     clauses: &[Clause],
 ) -> CypherResult<Option<QueryResult>> {
+    grouped_call_site_property_with_counts(ex, clauses, indexed_call_site_property_counts)
+}
+
+// The row merge, count sort, LIMIT and provenance remain one shared implementation.
+// Tests supply the retained raw counter as an independent index-free oracle.
+fn grouped_call_site_property_with_counts(
+    ex: &Executor,
+    clauses: &[Clause],
+    counts_for: fn(&Executor, &Graph, usize) -> CypherResult<IndexMap<StrId, i64>>,
+) -> CypherResult<Option<QueryResult>> {
     // Shape: MATCH, RETURN, then optional ORDER BY and LIMIT.
     let (patterns, items) = match match_shape_prefix(clauses)? {
         Some(v) => v,
@@ -185,23 +196,7 @@ pub fn grouped_call_site_property(
     let mut at: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for s in &ex.sources {
         let graph = &s.graph;
-        let data = graph.nodedata();
-        let mut counts: IndexMap<StrId, i64> = IndexMap::new();
-        for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
-            ex.tick()?;
-            let offset = match graph.node_offset(id) {
-                Some(o) => o,
-                None => continue,
-            };
-            let cs = read_call_site_strings(data, offset);
-            let key = [
-                cs.caller_class,
-                cs.caller_name,
-                cs.callee_class,
-                cs.callee_name,
-            ][field];
-            *counts.entry(key).or_insert(0) += 1;
-        }
+        let counts = counts_for(ex, graph, field)?;
         for (key, count) in counts {
             let value = graph.str(key);
             if let Some(&i) = at.get(value) {
@@ -243,6 +238,70 @@ pub fn grouped_call_site_property(
         compact: None,
         more: false,
     }))
+}
+
+/// Count each string once from complete validated postings, then restore the
+/// raw type-index walk's first-seen group order before the global merge. Reading
+/// group lengths and first nodes never enumerates the posting IDs.
+fn indexed_call_site_property_counts(
+    ex: &Executor,
+    graph: &Graph,
+    field: usize,
+) -> CypherResult<IndexMap<StrId, i64>> {
+    ex.cancel.check()?;
+    // A leftover accelerator must not contribute rows to an empty matcher domain.
+    if graph.count_by_tag(TAG_CALL_SITE_NODE) == 0 {
+        return Ok(IndexMap::new());
+    }
+    let Some(index) = graph.validated_ordered_call_site(field, || ex.cancel.check())? else {
+        return raw_call_site_property_counts(ex, graph, field);
+    };
+    let Some(groups) = index.property_values(field, false) else {
+        return raw_call_site_property_counts(ex, graph, field);
+    };
+    let mut counts = Vec::new();
+    for (key, nodes) in groups {
+        ex.tick()?;
+        // Validation proves every group nonempty and the complete count in range.
+        let Some(first) = nodes.first() else {
+            return raw_call_site_property_counts(ex, graph, field);
+        };
+        counts.push((first, key, nodes.len() as i64));
+    }
+    ex.cancel.check()?;
+    counts.sort_unstable_by_key(|(first, _, _)| *first);
+    ex.cancel.check()?;
+    Ok(counts
+        .into_iter()
+        .map(|(_, key, count)| (key, count))
+        .collect())
+}
+
+/// The original raw counter, deliberately retained as both malformed/legacy
+/// fallback and the complete-results differential oracle.
+fn raw_call_site_property_counts(
+    ex: &Executor,
+    graph: &Graph,
+    field: usize,
+) -> CypherResult<IndexMap<StrId, i64>> {
+    let data = graph.nodedata();
+    let mut counts: IndexMap<StrId, i64> = IndexMap::new();
+    for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+        ex.tick()?;
+        let offset = match graph.node_offset(id) {
+            Some(o) => o,
+            None => continue,
+        };
+        let cs = read_call_site_strings(data, offset);
+        let key = [
+            cs.caller_class,
+            cs.caller_name,
+            cs.callee_class,
+            cs.callee_name,
+        ][field];
+        *counts.entry(key).or_insert(0) += 1;
+    }
+    Ok(counts)
 }
 
 const CALL_SITE_FIELDS: [&str; 4] = ["caller_class", "caller_name", "callee_class", "callee_name"];
@@ -505,3 +564,7 @@ fn trailing_order_and_limit(rest: &[Clause]) -> (Option<&[OrderItem]>, Option<us
     }
     (order, limit)
 }
+
+#[cfg(test)]
+#[path = "grouped_count_tests.rs"]
+mod grouped_count_tests;

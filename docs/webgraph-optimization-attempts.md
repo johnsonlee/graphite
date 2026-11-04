@@ -22701,3 +22701,114 @@ not establish scalar-state causality. The concrete next reduction is to derive i
 from the existing validated CSR groups, rather than repeat all node reads. Preserve this
 failed latency observation while composing that separate attempt.
 
+### Attempt160 — derive grouped counts from validated CSR group metadata (2026-11-05)
+
+**Predeclared hypothesis and acceptance.** Repair the measured grouped-count p95 regression
+without abandoning the beneficial cumulative candidate. The existing fast path still reads
+every CallSite record to build SID counts. A fully validated property CSR already gives each
+value's count and first node: read those group headers in O(number of distinct values), sort
+by first node to recover the original source/type-index first-seen order, and retain the
+existing global merge, stable count sort, provenance, LIMIT and probe behavior. No whole-result
+cache or resource-budget expansion is introduced. Legacy/malformed domains must keep the
+original raw counter, which remains the complete-result differential oracle. Empty domains
+ignore stale accelerators; invalid selected SIDs retain original panic/error priority.
+
+The incremental parent is measured `240b5d120c247c5ea152ebdf52c0a54afa21fa67`; the cumulative
+baseline remains `a5c96f71de349ac5aabd5fbcdb5ba6345a14e4ff`. Reuse fixture/binary/controller
+preparation and unchanged correctness evidence. Keep full same-host controlled-cache ABBA for
+final measurement: baseline p95 drift between the previous two runs (grouped-count mean
+395.994→354.399 ms, 41.595 ms) exceeds the regression being repaired, so two new candidate
+arms compared only with old baselines would not meet the declared matching protocol. Preserve
+all samples, failures, isolated residuals and independent +5% loading/query CPU and RSS limits.
+No microcase stabilization or favorable statistic selection is authorized.
+
+Implementation is prepared in isolation; integrated verification and measurement are pending.
+
+**Integrated verification before measurement.** The retained raw counter and unchanged global
+merge are independent complete-results oracles for the new per-source CSR counts. Tests cover
+all four fields, source order, stable ties, exact counts/provenance, LIMIT/probe/cancellation,
+empty and six malformed domains/index variants, plus selected invalid-SID panic priority and
+unselected invalid-SID successful results. Warm deterministic source-access assertions require
+one tick per distinct group and non-consuming O(1) posting first/length access, not an ID walk;
+these are correctness/path assertions, not timing or allocation evidence.
+
+Integrated release checks pass 252 Cypher and 132 Storage tests with the core plus all dedicated
+wire/Inherited REQUIRE fixtures, the inherited integration case, workspace all-target/all-feature
+Clippy, formatting and CLI compilation. Real64 release correctness-only verification admits
+all 64 target-property proofs and compares 124,987 groups / 5,051,914 CallSites against the
+retained raw oracle in 24 no-order/ASC/DESC, LIMIT and probe combinations, including complete
+typed rows, counts, source provenance and first-encounter ties. Receipts:
+`/tmp/graphite-query-opt-grouped-verification.json` and
+`/tmp/graphite-query-opt-grouped-real64-smoke.json`. All test/large-graph processes have exited.
+
+The measured grouped-count p50 and p95 must both improve relative to the matching original
+baseline in each AB/BA direction; resource or other-query savings cannot offset another grouped
+p95 regression. Keep every non-target observation visible and do not repeat tiny cases merely
+to find favorable percentiles. Exact frozen candidate and measurements follow.
+
+**Resource-boundary audit (original observations retained).** The first final AB run exposes
+an apparent loading sampled-RSS overrun, 6.512→6.930 GB (+6.409%). Investigation identifies a
+concrete collector defect: it records a process sample as loading before testing for the
+registry-ready file. The candidate's maximum "loading" sample is timestamped 81.433 ms after
+that file, when the first oracle queries are already running; the preceding pre-ready sample
+is 6.464 GB. Neither this failed label nor the original samples are edited into PASS. The same
+collector was used for earlier attempts, so their loading resource PASS labels are historical
+sampled observations, superseded pending an uncontaminated loading-only proof.
+
+The complete loading input closure also includes directory fingerprints: registry loading calls
+`container::fingerprint_of`, which recursively hashes every regular file except exact
+`META-INF/graphite.manifest`. Thus the earlier 1,152-file/7.498-GB preparation proves the graph
+reader's cache domain, not the complete loading domain (1,408 files/10.591 GB). Both measured
+servers fingerprint the additional files before readiness and repeated queries retain their
+reader-domain control; the missing loading-domain proof is not silently inferred from that.
+
+Before any replacement resource measurement, declare and smoke-test a separate loading-only
+ABBA operation using the same 64 graphs, full regular-file cache preparation and frozen binaries.
+Validate complete registry readiness, never issue Cypher, then stop the server in a controlled
+way and retain kernel wait4 maximum RSS, CPU, readiness snapshots and shutdown duration. Label
+kernel startup/ready/shutdown RSS as a conservative lifecycle upper bound rather than pretending
+it is the old 100-ms sample statistic. Preserve both readiness and lifecycle CPU and evaluate
+the independent +5% constraints without query savings. Query-window CPU also needs explicit
+bounds for the first post-ready slice assigned to loading; do not relabel its old partial
+sampled values exact. No favorable rerun or threshold relaxation is authorized.
+
+
+**Measured candidate and retained outcome.** Frozen revision
+`7b3cddd35b33bd656636ac8e21cc3cdf42c7d9b6`, source tree
+`4fb0497975040a2721ae227cb40dc594039859ba`, CLI SHA-256
+`83fb96c33c85fd1cde81944de0a59416c558c686860299b1b9a5dac4044bdf0c`.
+Both complete real64 driver runs finish successfully; independent audit checks 17,516 complete
+response bodies, exact typed rows/provenance and unchanged sampling/cache controls. Evidence:
+`/tmp/graphite-query-opt-attempt160/{ab,ba,audit-abba}`. The audit's original resource FAIL remains
+unchanged for the boundary reasons above; it is not a final performance-acceptance receipt.
+
+| Pressure metric | AB base → candidate | Absolute delta | BA base → candidate | Absolute delta |
+| --- | ---: | ---: | ---: | ---: |
+| WITH filter p50 | 2,715.683 → 0.366 ms | -2,715.317 ms | 2,691.419 → 0.359 ms | -2,691.061 ms |
+| WITH filter p95 | 2,947.558 → 0.508 ms | -2,947.051 ms | 2,918.576 → 0.429 ms | -2,918.147 ms |
+| ASC p50 | 2,524.504 → 0.723 ms | -2,523.781 ms | 2,467.755 → 0.735 ms | -2,467.020 ms |
+| ASC p95 | 2,564.478 → 0.902 ms | -2,563.576 ms | 2,522.571 → 0.878 ms | -2,521.693 ms |
+| DESC p50 | 2,601.754 → 0.453 ms | -2,601.300 ms | 2,553.592 → 0.434 ms | -2,553.158 ms |
+| DESC p95 | 2,641.649 → 0.536 ms | -2,641.113 ms | 2,612.006 → 0.614 ms | -2,611.392 ms |
+| collect p50 | 1,959.139 → 1,826.291 ms | -132.848 ms | 1,900.530 → 1,787.578 ms | -112.952 ms |
+| collect p95 | 2,032.889 → 1,898.470 ms | -134.418 ms | 1,936.845 → 1,866.813 ms | -70.032 ms |
+| grouped count p50 | 339.496 → 167.493 ms | -172.002 ms | 341.953 → 174.074 ms | -167.878 ms |
+| grouped count p95 | 348.623 → 242.106 ms | -106.517 ms | 385.608 → 265.560 ms | -120.048 ms |
+| DISTINCT p50 | 291.107 → 268.801 ms | -22.306 ms | 294.621 → 264.635 ms | -29.986 ms |
+| DISTINCT p95 | 301.648 → 346.737 ms | +45.089 ms | 351.004 → 364.020 ms | +13.016 ms |
+| WITH aggregate p95 | 673.302 → 719.403 ms | +46.101 ms | 835.931 → 713.367 ms | -122.564 ms |
+
+Sequence-first grouped count includes the validation work and worsens
+368.603→426.902 / 356.521→424.816 ms; repeated-request improvements must not hide it. Other
+sequence-first candidate requests include WITH proof at 110.834/109.400 ms, ASC at
+120.286/121.626 ms, DESC at 247.015/250.694 ms; collect improves to 1,736.677/1,723.899 ms.
+These are sequence-first observations, not independent cold starts.
+
+Retain the proven grouped-count and cumulative benefits, but do not claim all-case p95 recovery.
+DISTINCT now has a material two-direction p95 increase; WITH aggregate remains mixed rather
+than recovered in both directions. Tiny consistent increases and all isolated observations
+remain in the full audit. Inspection shows DISTINCT still takes the unchanged per-source raw
+record scan over all CallSites, so the observed change alone does not establish causality.
+A concrete next reduction can reuse the same validated group metadata for first-seen IDs,
+while leaving complete cross-source provenance merging intact.
+
