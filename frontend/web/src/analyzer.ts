@@ -270,8 +270,12 @@ class Analyzer {
   private node(kind: string, fields: Record<string, string | number | boolean | undefined | Method | number[]>): number {
     const id = this.graph.nodes.length;
     for (const [key, value] of Object.entries(fields)) {
-      if (typeof value === 'string') fields[key] = this.text(value);
-      else if (typeof value === 'object' && !Array.isArray(value)) fields[key] = this.graphMethod(value);
+      if (typeof value === 'string') {
+        // Synthetic local names identify individual positions or slots. Encode them
+        // directly so they do not occupy the cache for recurring names and types.
+        const synthetic = kind === 'LocalVariable' && key === 'name' && value.startsWith('@');
+        fields[key] = synthetic ? encodeArtifactString(value) : this.text(value);
+      } else if (typeof value === 'object' && !Array.isArray(value)) fields[key] = this.graphMethod(value);
     }
     this.graph.nodes.push({ id, kind, ...fields });
     return id;

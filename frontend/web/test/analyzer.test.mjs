@@ -638,6 +638,18 @@ test('frontend protocol preserves valid JS lone UTF16 surrogate strings reversib
   assert.notEqual(values[0], values[3]);
 });
 
+test('synthetic property reads preserve their exact UTF-16 keys, source positions and shared descriptors', async t => {
+  const { encodeArtifactString } = await import('../dist/strings.js');
+  const keys = ['\ud800', '\0js:utf16:d800', 'plain', '\ud800'];
+  const source = ['function read(obj) {', ...keys.map(k => `  sink(obj[${JSON.stringify(k)}]);`), '}'].join('\n');
+  const g = analyze(fixture(t, { 'reads.js': source }));
+  const expected = keys.map((key, i) => encodeArtifactString(`@read:${key}@${i + 2}:12`));
+  const reads = calls(g).filter(c => c.callee.name === 'sink').map(c => g.nodes[c.arguments[0]]);
+  assert.deepEqual(reads.map(n => n.name), expected);
+  assert.equal(new Set(expected).size, keys.length);
+  assert.ok(reads.every(n => n.method === reads[0].method));
+});
+
 test('default-expression calls remain visible for externally entered functions without inventing calls', t => {
   const root = fixture(t, { 'library.mjs': 'export function handle(value=readInput("external")) { return value; }' });
   const g = analyze(root);
