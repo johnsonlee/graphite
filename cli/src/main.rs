@@ -15,6 +15,9 @@
 //! - `frontend list|describe|install` manages frontends.
 
 mod build;
+mod build_args;
+mod build_output;
+mod build_ts;
 mod fold;
 mod frontend;
 mod install;
@@ -56,8 +59,11 @@ struct Cli {
 
 #[derive(Subcommand, Debug)]
 enum Command {
-    /// Build graph from JAR/WAR/APK/directory and save to disk (runs the JVM frontend)
-    #[command(disable_help_flag = true, disable_version_flag = true)]
+    /// Build a JVM or compiled JavaScript graph. Run `graphite help build` for shell options
+    #[command(
+        override_usage = "graphite build [--lang <jvm|js|ts>] [FRONTEND_ARGS]...",
+        after_help = "Use --lang js (or ts) for compiled JavaScript artifacts. The JVM frontend is the default. Place --lang and --profile before the -- separator. Arguments after -- are frontend inputs.\n\n  graphite build --lang js dist -o app.graphite\n  graphite build --profile -o app.graphite -- app.jar\n\nFor frontend options, run graphite build --help (JVM) or graphite build --lang js --help."
+    )]
     Build(BuildArgs),
     /// Execute a Cypher query against a saved graph
     Query(QueryArgs),
@@ -87,10 +93,10 @@ struct McpArgs {
     graphs: GraphArgs,
 }
 
-/// Everything after `build` belongs to the frontend, `--help` included.
+/// --lang selects a frontend anywhere before the -- separator; other arguments belong to it.
 #[derive(Parser, Debug)]
 struct BuildArgs {
-    #[arg(trailing_var_arg = true, allow_hyphen_values = true, num_args = 0..)]
+    #[arg(last = true, value_name = "FRONTEND_ARGS")]
     args: Vec<OsString>,
 }
 
@@ -100,12 +106,12 @@ enum FrontendCommand {
     List,
     /// Describe a frontend as JSON: kind, path, version, accepted inputs
     Describe {
-        /// Frontend language: jvm
+        /// Frontend language: jvm or js (ts is an alias)
         lang: String,
     },
     /// Download a frontend from a GitHub release into ~/.graphite/frontends
     Install {
-        /// Frontend language: jvm
+        /// Frontend language: jvm or js (ts is an alias)
         lang: String,
         /// Release version to install (default: this CLI's version)
         #[arg(long)]
@@ -133,10 +139,22 @@ struct QueryArgs {
     verbose: bool,
 }
 
+/// Clap owns the shell's build help. Give its last positional the original
+/// frontend argv, including any frontend `--`, as opaque OS strings.
+fn parse_cli(mut argv: Vec<OsString>) -> Result<Cli, clap::Error> {
+    if argv.get(1).is_some_and(|s| s == "build") {
+        argv.insert(2, "--".into());
+    }
+    Cli::try_parse_from(argv)
+}
+
 fn main() -> std::process::ExitCode {
     let env = frontend::Env::from_process();
     // As the Kotlin CLI: no subcommand prints the usage and exits 0.
-    let Some(command) = Cli::parse().command else {
+    let Some(command) = parse_cli(std::env::args_os().collect())
+        .unwrap_or_else(|e| e.exit())
+        .command
+    else {
         use clap::CommandFactory;
         let _ = Cli::command().print_help();
         return std::process::ExitCode::SUCCESS;
@@ -180,11 +198,28 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
                 }
                 None => println!("jvm\tnot installed\t-\t(graphite frontend install jvm)"),
             }
+            match frontend::locate_js(env) {
+                Some(fe) => println!(
+                    "js\t{}\t{}\t(via {}; alias: ts)",
+                    frontend_version(env, &fe).unwrap_or_else(|| "unknown".into()),
+                    fe.path().display(),
+                    fe.found_via
+                ),
+                None => println!(
+                    "js\tnot installed\t-\t(set GRAPHITE_FRONTEND_JS to frontend/web/dist/cli.js; alias: ts)"
+                ),
+            }
             Ok(())
         }
         FrontendCommand::Describe { lang } => {
-            require_jvm_lang(&lang)?;
-            let fe = frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?;
+            let fe = match frontend::Lang::parse(&lang)? {
+                frontend::Lang::Jvm => {
+                    frontend::locate_jvm(env).ok_or_else(build::missing_frontend_message)?
+                }
+                frontend::Lang::Js => {
+                    frontend::locate_js(env).ok_or_else(frontend::missing_js_message)?
+                }
+            };
             let version = frontend_version(env, &fe);
             let text = serde_json::to_string_pretty(&frontend::describe(&fe, version))
                 .map_err(|e| e.to_string())?;
@@ -196,7 +231,9 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
             version,
             skip_checksum,
         } => {
-            require_jvm_lang(&lang)?;
+            if frontend::Lang::parse(&lang)? == frontend::Lang::Js {
+                return Err(frontend::js_install_message(env));
+            }
             let version = match version {
                 Some(v) => v.trim_start_matches('v').to_string(),
                 None if option_env!("GRAPHITE_VERSION").is_some() => VERSION.to_string(),
@@ -212,24 +249,9 @@ fn frontend_command(env: &frontend::Env, command: FrontendCommand) -> Result<(),
     }
 }
 
-fn require_jvm_lang(lang: &str) -> Result<(), String> {
-    if lang == "jvm" {
-        Ok(())
-    } else {
-        Err(format!("unknown frontend '{lang}'; available: jvm"))
-    }
-}
-
 /// The frontend's own version, by running it with `--version` (`graphite 2.4.8`).
 fn frontend_version(env: &frontend::Env, fe: &frontend::Frontend) -> Option<String> {
-    let mut cmd = match &fe.launch {
-        frontend::Launch::Jar(jar) => {
-            let mut c = std::process::Command::new(frontend::locate_java(env).ok()?);
-            c.arg("-jar").arg(jar);
-            c
-        }
-        frontend::Launch::Executable(exe) => std::process::Command::new(exe),
-    };
+    let mut cmd = fe.command(env).ok()?;
     // A JVM started only to print its version needs no 8 GiB reservation.
     let out = cmd
         .arg("--version")
@@ -374,4 +396,93 @@ fn query(args: QueryArgs) -> Result<(), String> {
 #[allow(dead_code)]
 fn _context_marker(c: &dyn GraphContext) -> usize {
     c.source_count()
+}
+
+#[cfg(test)]
+mod cli_tests {
+    use super::*;
+
+    #[test]
+    fn build_retains_the_separator_for_shell_option_detection() {
+        for argv in [
+            vec!["--", "--lang", "js"],
+            vec!["app.js", "--", "--lang", "js"],
+            vec!["app.js", "--lang", "js", "--", "-o"],
+        ] {
+            let cli = parse_cli(
+                ["graphite", "build"]
+                    .into_iter()
+                    .chain(argv.clone())
+                    .map(OsString::from)
+                    .collect(),
+            )
+            .unwrap();
+            let Some(Command::Build(build)) = cli.command else {
+                panic!("expected build");
+            };
+            assert_eq!(
+                build.args,
+                argv.iter().map(OsString::from).collect::<Vec<_>>()
+            );
+        }
+    }
+
+    #[test]
+    fn shell_help_describes_both_frontends_and_build_help_still_delegates() {
+        let help = parse_cli(["graphite", "help", "build"].map(OsString::from).into()).unwrap_err();
+        assert_eq!(help.kind(), clap::error::ErrorKind::DisplayHelp);
+        let text = help.to_string();
+        for expected in [
+            "--lang",
+            "--profile",
+            "graphite build --help (JVM)",
+            "graphite build --lang js --help",
+            "after --",
+        ] {
+            assert!(text.contains(expected), "{text}");
+        }
+
+        for flag in ["-h", "--help"] {
+            let cli = parse_cli(["graphite", "build", flag].map(OsString::from).into()).unwrap();
+            let Some(Command::Build(build)) = cli.command else {
+                panic!("expected build")
+            };
+            assert_eq!(build.args, [OsString::from(flag)]);
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn build_parser_retains_a_non_unicode_frontend_option_value() {
+        use std::os::unix::ffi::OsStringExt;
+        let path = OsString::from_vec(vec![0xff]);
+        let cli = parse_cli(vec![
+            "graphite".into(),
+            "build".into(),
+            "-o".into(),
+            path.clone(),
+        ])
+        .unwrap();
+        let Some(Command::Build(build)) = cli.command else {
+            panic!("expected build")
+        };
+        assert_eq!(build.args, [OsString::from("-o"), path]);
+    }
+    #[test]
+    fn build_parser_preserves_the_language_selector_and_frontend_help() {
+        let cli = parse_cli(
+            ["graphite", "build", "--lang", "ts", "--help"]
+                .map(OsString::from)
+                .into(),
+        )
+        .unwrap();
+        let Some(Command::Build(args)) = cli.command else {
+            panic!("expected build");
+        };
+        assert_eq!(args.args, ["--lang", "ts", "--help"].map(OsString::from));
+        assert_eq!(
+            build_ts::select_language(&args.args).unwrap(),
+            (frontend::Lang::Js, vec![OsString::from("--help")])
+        );
+    }
 }

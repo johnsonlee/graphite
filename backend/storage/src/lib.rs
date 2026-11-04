@@ -6,6 +6,7 @@ pub mod callsite_index;
 pub mod columns;
 pub mod container;
 pub mod graph;
+pub mod interchange;
 pub mod io;
 pub mod javaser;
 pub mod metadata;

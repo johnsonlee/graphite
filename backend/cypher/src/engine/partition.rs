@@ -1135,30 +1135,33 @@ impl PartitionPlan {
             (0..TAG_COUNT as u8).map(tag_columns).collect();
         // Per source: (first id, weight) per partition, keyed by (tag, column ids).
         let mut parts: Vec<Parts> = (0..ex.sources.len()).map(|_| IndexMap::new()).collect();
-        let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| {
+        let note = |source: usize, tag: u8, id: u32, parts: &mut Vec<Parts>| -> CypherResult<()> {
             let graph: &Graph = &ex.sources[source].graph;
-            let masked = |mask: u8| -> Vec<StrId> {
-                let offset = graph.node_offset(id).unwrap_or(0);
-                columns[tag as usize]
+            let masked = |mask: u8| -> CypherResult<Vec<StrId>> {
+                if mask == 0 {
+                    return Ok(Vec::new());
+                }
+                let offset = partition_node_offset(graph, tag, id)?;
+                Ok(columns[tag as usize]
                     .iter()
                     .enumerate()
                     .filter(|(i, _)| mask & (1 << i) != 0)
                     .map(|(_, (_, f))| read_string_field(graph.nodedata(), offset, *f))
-                    .collect()
+                    .collect())
             };
             let (ids, keys) = match self.strategies[source][tag as usize] {
                 Strategy::Whole => (Vec::new(), KeySet::Fixed),
-                Strategy::Columns(mask) => (masked(mask), KeySet::Fixed),
+                Strategy::Columns(mask) => (masked(mask)?, KeySet::Fixed),
                 // The key set is what `keys(n)` returns for the node, read the same way.
                 Strategy::Keys(mask) => (
-                    masked(mask),
+                    masked(mask)?,
                     KeySet::Dynamic(ex.node_keys(NodeRef {
                         source: source as SourceIdx,
                         id,
                     })),
                 ),
                 Strategy::DeclaredKeys(mask) => (
-                    masked(mask),
+                    masked(mask)?,
                     if graph
                         .node(id)
                         .is_some_and(|node| ex.declared_node_type_present(graph, &node))
@@ -1175,6 +1178,7 @@ impl PartitionPlan {
                 .entry((tag, ids, keys))
                 .and_modify(|(_, n)| *n += 1)
                 .or_insert((id, 1));
+            Ok(())
         };
         let verified = self.scan.is_some();
         match &self.scan {
@@ -1182,7 +1186,7 @@ impl PartitionPlan {
                 // The survivors of the pushdown, WHERE already applied to each.
                 plan.run_ids(ex, ev, self.where_clause.as_ref(), &mut |n| {
                     if let Some(tag) = ex.sources[n.source as usize].graph.node_tag(n.id) {
-                        note(n.source as usize, tag, n.id, &mut parts);
+                        note(n.source as usize, tag, n.id, &mut parts)?;
                     }
                     Ok(true)
                 })?;
@@ -1190,6 +1194,25 @@ impl PartitionPlan {
             None => {
                 let mut polled = 0u32;
                 for (si, s) in ex.sources.iter().enumerate() {
+                    if let ([tag], None) = (tags, &self.where_clause) {
+                        let strategy = self.strategies[si][*tag as usize];
+                        if let Some(counts) = scalar_column_groups(
+                            ex,
+                            &s.graph,
+                            *tag,
+                            strategy,
+                            &columns[*tag as usize],
+                            &mut polled,
+                        )? {
+                            // Only distinct local string IDs enter the general partition map.
+                            parts[si].extend(
+                                counts
+                                    .into_iter()
+                                    .map(|(sid, part)| ((*tag, vec![sid], KeySet::Fixed), part)),
+                            );
+                            continue;
+                        }
+                    }
                     // The walk the matcher makes over the same types, a type
                     // enumerated whole standing in with its first node only: the
                     // nodes after it change nothing the walk would meet first.
@@ -1220,7 +1243,7 @@ impl PartitionPlan {
                                     (id, s.graph.count_by_tag(tag) as i64),
                                 );
                             }
-                            _ => note(si, tag, id, parts),
+                            _ => note(si, tag, id, parts)?,
                         }
                         Ok(())
                     };
@@ -1296,6 +1319,46 @@ impl PartitionPlan {
         }
         Ok(out)
     }
+}
+
+/// Read only real node records: offset zero points into the file header.
+fn partition_node_offset(graph: &Graph, tag: u8, id: u32) -> CypherResult<usize> {
+    graph.node_offset(id).ok_or_else(|| {
+        crate::CypherError::other(format!(
+            "Corrupt type index: node {id} of tag {tag} has no node record"
+        ))
+    })
+}
+
+/// Count one declared raw string column by its records' own string IDs.
+fn scalar_column_groups(
+    ex: &Executor,
+    graph: &Graph,
+    tag: u8,
+    strategy: Strategy,
+    columns: &[(&str, StringField)],
+    polled: &mut u32,
+) -> CypherResult<Option<IndexMap<StrId, (u32, i64)>>> {
+    let Strategy::Columns(mask) = strategy else {
+        return Ok(None);
+    };
+    if mask.count_ones() != 1 || !graph.ids_by_tag_sorted(tag) {
+        return Ok(None);
+    }
+    let Some((_, field)) = columns.get(mask.trailing_zeros() as usize) else {
+        return Ok(None);
+    };
+    let mut counts = IndexMap::new();
+    for &id in graph.ids_by_tag(tag) {
+        *polled = polled.wrapping_add(1);
+        if *polled & 1023 == 0 {
+            ex.cancel.check()?;
+        }
+        let offset = partition_node_offset(graph, tag, id)?;
+        let sid = read_string_field(graph.nodedata(), offset, *field);
+        counts.entry(sid).or_insert((id, 0)).1 += 1;
+    }
+    Ok(Some(counts))
 }
 
 /// Whether a type's id list is ascending, so the matcher's merged walk over such
@@ -1493,6 +1556,47 @@ struct EdgeSlot {
     first: (u32, u32),
 }
 
+const NO_TAG: u8 = u8::MAX;
+
+/// Tags for the node IDs a hop can reach. A sorted type index tells us which
+/// leading IDs cannot match, without walking the list just to find its minimum.
+struct TargetTags {
+    start: usize,
+    tags: Vec<u8>,
+}
+
+impl TargetTags {
+    fn new<'a>(
+        capacity: usize,
+        lists: impl Iterator<Item = (u8, &'a [u32], bool)> + Clone,
+    ) -> Self {
+        let mut start = capacity;
+        for (_, ids, sorted) in lists.clone() {
+            if !sorted {
+                start = 0;
+                break;
+            }
+            if let Some(&first) = ids.first() {
+                start = start.min(first as usize);
+            }
+        }
+        let mut tags = vec![NO_TAG; capacity - start];
+        for (tag, ids, _) in lists {
+            for &id in ids {
+                tags[id as usize - start] = tag;
+            }
+        }
+        Self { start, tags }
+    }
+
+    fn get(&self, id: u32) -> u8 {
+        match (id as usize).checked_sub(self.start) {
+            Some(i) => self.tags[i], // Keep the original upper bound at node_capacity.
+            None => NO_TAG,
+        }
+    }
+}
+
 /// Count one graph's edges by (source tag, label byte, target tag) in a flat table
 /// of 16 x 256 x 16 slots, keeping each slot's earliest (node, position) so the
 /// partitions can be met in the order the pipeline meets them. Whether a label
@@ -1525,16 +1629,12 @@ fn sweep_edges(
     let mut counts: Vec<i64> = vec![0; SLOTS];
     let mut firsts: Vec<u64> = vec![0; SLOTS];
     let mut met: Vec<usize> = Vec::new();
-    // A target's tag, for the targets the pattern admits, in one byte per node id:
-    // the type index is read once, in order, instead of two dependent reads of the
-    // node table per edge.
-    const NO_TAG: u8 = u8::MAX;
-    let mut tag_of = vec![NO_TAG; graph.node_capacity()];
-    for &tag_b in tags_b {
-        for &id in graph.ids_by_tag(tag_b) {
-            tag_of[id as usize] = tag_b;
-        }
-    }
+    let tag_of = TargetTags::new(
+        graph.node_capacity(),
+        tags_b
+            .iter()
+            .map(|&tag| (tag, graph.ids_by_tag(tag), graph.ids_by_tag_sorted(tag))),
+    );
     let mut polled = 0u32;
     for &tag_a in tags_a {
         for &id in graph.ids_by_tag(tag_a) {
@@ -1561,7 +1661,7 @@ fn sweep_edges(
                 if *ok == 2 {
                     continue;
                 }
-                let tag_b = tag_of[other as usize];
+                let tag_b = tag_of.get(other);
                 if tag_b == NO_TAG {
                     continue;
                 }
@@ -1595,6 +1695,43 @@ mod tests {
     use crate::engine::{QueryResult, Source};
     use graphite_storage::node::{TAG_CALL_SITE_NODE, TAG_LOCAL_VARIABLE};
     use std::sync::Arc;
+
+    #[test]
+    fn target_tags_skip_only_the_proven_empty_prefix() {
+        let table = TargetTags::new(
+            12,
+            [(4, &[8, 8, 10][..], true), (3, &[10, 11], true)].into_iter(),
+        );
+        assert_eq!(table.tags.len(), 4);
+        assert_eq!(
+            (0..12).map(|id| table.get(id)).collect::<Vec<_>>(),
+            [NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, NO_TAG, 4, NO_TAG, 3, 3]
+        );
+        let empty = TargetTags::new(12, [(7, &[][..], true)].into_iter());
+        assert!(empty.tags.is_empty());
+        assert_eq!(empty.get(11), NO_TAG);
+        let unsorted = TargetTags::new(
+            12,
+            [(3, &[10, 11][..], true), (4, &[8, 1], false)].into_iter(),
+        );
+        assert_eq!(unsorted.tags.len(), 12);
+        assert_eq!(
+            (unsorted.get(0), unsorted.get(1), unsorted.get(8)),
+            (NO_TAG, 4, 4)
+        );
+    }
+
+    #[test]
+    fn target_tags_keep_the_capacity_bound_for_indices_and_edges() {
+        assert!(
+            std::panic::catch_unwind(|| TargetTags::new(4, [(3, &[9][..], true)].into_iter()))
+                .is_err()
+        );
+        let shifted = TargetTags::new(4, [(3, &[2][..], true)].into_iter());
+        assert!(std::panic::catch_unwind(|| shifted.get(4)).is_err());
+        let empty = TargetTags::new(4, [(3, &[][..], true)].into_iter());
+        assert!(std::panic::catch_unwind(|| empty.get(4)).is_err());
+    }
 
     fn expr(text: &str) -> Expr {
         let clauses = crate::parser::parse(&format!("RETURN {text}")).unwrap();
@@ -2266,6 +2403,20 @@ mod tests {
             !ascending(graph.ids_by_tag(TAG_LOCAL_VARIABLE)),
             "the copy should be out of id order"
         );
+        assert!(!graph.ids_by_tag_sorted(TAG_CALL_SITE_NODE));
+        let ex = executor(&graph, &["a", "b"]);
+        let mut polled = 0;
+        assert!(scalar_column_groups(
+            &ex,
+            &graph,
+            TAG_CALL_SITE_NODE,
+            Strategy::Columns(4),
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled
+        )
+        .unwrap()
+        .is_none());
+        assert_eq!(polled, 0);
         let hops = [
             "MATCH (a)<-[r]-(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC",
             "MATCH (a)-[r]->(b) RETURN labels(a) AS a, type(r) AS t, labels(b) AS b, count(*) AS c ORDER BY c DESC",
@@ -2287,6 +2438,60 @@ mod tests {
             }
         }
         std::fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
+    fn shifted_target_tags_preserve_hop_representatives_counts_and_provenance() {
+        use graphite_storage::node::{TAG_COUNT, TAG_STRING_CONSTANT};
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-hop-targets-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let data = br#"{"version":1,"methods":[],"nodes":[
+            {"id":0,"kind":"IntConstant","value":0},{"id":1,"kind":"IntConstant","value":1},
+            {"id":2,"kind":"StringConstant","value":"left"},{"id":3,"kind":"NullConstant"},
+            {"id":4,"kind":"StringConstant","value":"right"}],"edges":[
+            {"from":0,"to":1,"kind":"ASSIGN"},{"from":0,"to":2,"kind":"ASSIGN"},
+            {"from":0,"to":4,"kind":"ASSIGN"},{"from":1,"to":3,"kind":"ASSIGN"},
+            {"from":3,"to":4,"kind":"RETURN_VALUE"},{"from":4,"to":1,"kind":"ASSIGN"}]}"#;
+        graphite_storage::interchange::import_json(&data[..], &dir).unwrap();
+        let graph = Arc::new(Graph::load(&dir).unwrap());
+        let ex = executor(&graph, &["a", "b"]);
+        let plain = executor(&graph, &["a", "b"]).without_partitioning();
+        let all: Vec<_> = (0..TAG_COUNT as u8).collect();
+        let slots = sweep_edges(
+            &ex,
+            &graph,
+            &all,
+            &[TAG_STRING_CONSTANT],
+            &[],
+            Direction::Outgoing,
+            None,
+        )
+        .unwrap();
+        let mut counts: Vec<_> = slots.into_iter().map(|s| (s.first, s.count)).collect();
+        counts.sort_unstable();
+        // The skipped edge 0→1 still occupies position zero. The matching 0→2
+        // represents two edges in its slot; the null node opens a different slot.
+        assert_eq!(counts, [((0, 1), 2), ((3, 0), 1)]);
+        for (arrow, expected_count) in [("-[r]->", 6), ("<-[r]-", 2)] {
+            let query = format!("MATCH (a){arrow}(b:StringConstant) RETURN count(*) AS n");
+            let clauses = crate::parser::parse(&query).unwrap();
+            assert!(PartitionPlan::build(&ex, &clauses).is_some());
+            let actual = ex.execute(&query, None).unwrap();
+            assert_eq!(
+                render(&actual),
+                render(&plain.execute(&query, None).unwrap())
+            );
+            assert!(matches!(actual.rows[0].get("n"), Some(Value::Int(n)) if *n == expected_count));
+            assert_eq!(QueryResult::graph_ids(&actual.rows[0]), ["a", "b"]);
+        }
+        drop((plain, ex, graph));
+        std::fs::remove_dir_all(dir).unwrap();
     }
 
     /// Across graphs, a type met in every graph is one row weighing them all and
@@ -2400,6 +2605,190 @@ mod tests {
         // How far the type compresses is the graph's business: a graph whose
         // annotations all differ has one row per annotation, and is right to.
         assert_eq!(rows.len(), distinct.rows.len());
+    }
+
+    #[test]
+    fn grouped_with_counts_match_decoded_calls_in_first_seen_order() {
+        let Some(graph) = fixture() else { return };
+        let ex = executor(&graph, &["a", "b"]);
+        let q = "MATCH (n:CallSite) WITH n.callee_class AS c, count(*) AS k WHERE k > 5 RETURN c, k LIMIT 50";
+        let clauses = crate::parser::parse(q).unwrap();
+        let (plan, consumed) = PartitionPlan::build(&ex, &clauses).unwrap();
+        assert_eq!(consumed, 1);
+        assert!(plan.scan.is_none());
+        for strategy in &plan.strategies {
+            assert!(
+                matches!(strategy[TAG_CALL_SITE_NODE as usize], Strategy::Columns(mask) if mask.count_ones() == 1)
+            );
+        }
+
+        // Derive the oracle from decoded call records, not partition keys or the index.
+        let mut counts = IndexMap::<String, (u32, i64)>::new();
+        for &id in graph.ids_by_tag(TAG_CALL_SITE_NODE) {
+            let graphite_storage::NodeKind::CallSite { callee, .. } = graph.node(id).unwrap().kind
+            else {
+                panic!("expected CallSite")
+            };
+            counts
+                .entry(graph.str(callee.declaring_class).to_owned())
+                .or_insert((id, 0))
+                .1 += 1;
+        }
+        let mut polled = 17;
+        let scalar = scalar_column_groups(
+            &ex,
+            &graph,
+            TAG_CALL_SITE_NODE,
+            plan.strategies[0][TAG_CALL_SITE_NODE as usize],
+            &tag_columns(TAG_CALL_SITE_NODE),
+            &mut polled,
+        )
+        .unwrap()
+        .expect("the CI fixture must exercise the scalar path");
+        assert_eq!(
+            polled as usize,
+            17 + graph.ids_by_tag(TAG_CALL_SITE_NODE).len()
+        );
+        assert_eq!(scalar.len(), counts.len());
+        for ((sid, part), (class, expected)) in scalar.iter().zip(&counts) {
+            assert_eq!(graph.str(*sid), class);
+            assert_eq!(part, expected);
+        }
+        let ev = Evaluator::new(&ex, &ex.params);
+        let partitions = plan.rows(&ex, &ev).unwrap();
+        assert_eq!(partitions.len(), 2 * counts.len());
+        assert!(counts.values().any(|&(_, weight)| weight > 1));
+        for (source, rows) in partitions.chunks_exact(counts.len()).enumerate() {
+            for (row, &(first, weight)) in rows.iter().zip(counts.values()) {
+                assert!(
+                    matches!(row.get("n"), Some(Value::Node(n)) if n.source as usize == source && n.id == first)
+                );
+                assert_eq!(row_weight(row), weight);
+                assert_eq!(
+                    QueryResult::graph_ids(row),
+                    [ex.sources[source].id.as_ref()]
+                );
+            }
+        }
+
+        let expected: Vec<_> = counts
+            .into_iter()
+            .map(|(c, (_, k))| (c, 2 * k))
+            .filter(|(_, k)| *k > 5)
+            .take(50)
+            .collect();
+        assert!(!expected.is_empty());
+        let result = ex.execute(q, None).unwrap();
+        assert_eq!(result.columns, ["c", "k"]);
+        assert_eq!(result.rows.len(), expected.len());
+        for (row, (class, count)) in result.rows.iter().zip(expected) {
+            assert!(matches!(row.get("c"), Some(Value::Str(c)) if c.as_ref() == class));
+            assert!(matches!(row.get("k"), Some(Value::Int(k)) if *k == count));
+            assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+        }
+    }
+
+    #[test]
+    fn fixed_string_column_groups_keep_order_and_reject_missing_offsets() {
+        let dir = std::env::temp_dir().join(format!(
+            "graphite-partition-offset-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        let method = serde_json::json!({"declaringClass":"C","name":"m","parameterTypes":[],"returnType":"void"});
+        let nodes = ["z", "a", "z"]
+            .iter()
+            .enumerate()
+            .map(|(id, name)| {
+                serde_json::json!({
+                    "id":id,"kind":"LocalVariable","name":name,"varType":"string","method":method
+                })
+            })
+            .collect::<Vec<_>>();
+        let input = serde_json::json!({"version":1,"methods":[method],"nodes":nodes,"edges":[]});
+        graphite_storage::interchange::import_json(input.to_string().as_bytes(), &dir).unwrap();
+        let single = "MATCH (n:LocalVariable) WITH n.name AS c, count(*) AS k RETURN c, k";
+        let tuple =
+            "MATCH (n:LocalVariable) WITH n.name AS c, n.type AS t, count(*) AS k RETURN c, t, k";
+        {
+            let graph = Arc::new(Graph::load(&dir).unwrap());
+            let ex = executor(&graph, &["a", "b"]);
+            let clauses = crate::parser::parse(single).unwrap();
+            let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+            let mut polled = 0;
+            let groups = scalar_column_groups(
+                &ex,
+                &graph,
+                TAG_LOCAL_VARIABLE,
+                plan.strategies[0][TAG_LOCAL_VARIABLE as usize],
+                &tag_columns(TAG_LOCAL_VARIABLE),
+                &mut polled,
+            )
+            .unwrap()
+            .unwrap();
+            assert_eq!(
+                groups
+                    .into_iter()
+                    .map(|(sid, p)| (graph.str(sid), p))
+                    .collect::<Vec<_>>(),
+                [("z", (0, 2)), ("a", (1, 1))]
+            );
+            assert_eq!(polled, 3);
+            let result = ex.execute(single, None).unwrap();
+            assert_eq!(result.rows.len(), 2);
+            for (row, (name, count)) in result.rows.iter().zip([("z", 4), ("a", 2)]) {
+                assert!(matches!(row.get("c"), Some(Value::Str(c)) if c.as_ref()==name));
+                assert!(matches!(row.get("k"), Some(Value::Int(k)) if *k==count));
+                assert_eq!(QueryResult::graph_ids(row), ["a", "b"]);
+            }
+        }
+        // Node 1 is still in the type index, but its offset now marks a missing record.
+        let path = dir.join("graph.nodeoffsets");
+        let mut offsets = std::fs::read(&path).unwrap();
+        offsets[16..24].fill(0);
+        std::fs::write(path, offsets).unwrap();
+        let graph = Arc::new(Graph::load(&dir).unwrap());
+        let ex = executor(&graph, &["a"]);
+        for (query, bits) in [(single, 1), (tuple, 2)] {
+            let clauses = crate::parser::parse(query).unwrap();
+            let (plan, _) = PartitionPlan::build(&ex, &clauses).unwrap();
+            assert!(
+                matches!(plan.strategies[0][TAG_LOCAL_VARIABLE as usize], Strategy::Columns(mask) if mask.count_ones()==bits)
+            );
+            assert_eq!(
+                ex.execute(query, None).unwrap_err().to_string(),
+                format!(
+                    "Corrupt type index: node 1 of tag {TAG_LOCAL_VARIABLE} has no node record"
+                )
+            );
+        }
+        drop((ex, graph));
+        std::fs::remove_dir_all(dir).unwrap();
+    }
+
+    #[test]
+    fn scalar_column_sweep_preserves_cancellation_and_deadline_checks() {
+        let Some(graph) = fixture() else { return };
+        let cancelled = crate::engine::CancelToken::new();
+        cancelled.cancel();
+        for token in [cancelled, crate::engine::CancelToken::with_timeout(0)] {
+            let ex = executor(&graph, &["a", "b"]).with_cancel(token.clone());
+            let mut polled = 1023;
+            let actual = scalar_column_groups(
+                &ex,
+                &graph,
+                TAG_CALL_SITE_NODE,
+                Strategy::Columns(4),
+                &tag_columns(TAG_CALL_SITE_NODE),
+                &mut polled,
+            )
+            .unwrap_err();
+            assert_eq!(actual.to_string(), token.error().unwrap().to_string());
+            assert_eq!(polled, 1024);
+        }
     }
 
     /// A column-level segment enumerates one row per distinct tuple of the columns

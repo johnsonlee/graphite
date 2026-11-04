@@ -76,7 +76,12 @@ impl StringSeedPlan {
             conjuncts(clause, &mut parts);
         }
         for conjunct in parts {
-            if let Some(scan) = ScanPlan::build(std::slice::from_ref(&single), Some(conjunct)) {
+            if let Some(scan) = ScanPlan::build(std::slice::from_ref(&single), Some(conjunct))
+                .filter(ScanPlan::fully_planned)
+            {
+                // Inline properties can make a relaxed scan eligible even when
+                // this conjunct needs a later node or relationship binding. Only
+                // fully planned predicates may run before the walk.
                 return Some(Self {
                     scan,
                     conjunct: Some(conjunct.clone()),

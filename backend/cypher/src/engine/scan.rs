@@ -544,6 +544,13 @@ impl ScanPlan {
         })
     }
 
+    /// Every predicate was planned against the scanned node. A relaxed plan can
+    /// require bindings that only exist after a relationship walk, so it cannot
+    /// supply a pre-walk predicate to StringSeedPlan.
+    pub(super) fn fully_planned(&self) -> bool {
+        !self.relaxed
+    }
+
     /// Whether a survivor a stream reports as verified may skip the WHERE clause: never
     /// when a conjunct was dropped from the plan.
     fn verified(&self, stream_verified: bool) -> bool {

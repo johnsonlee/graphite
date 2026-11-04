@@ -20,3 +20,9 @@ target/
 
 # Python bytecode caches written by the CI gate tests
 __pycache__/
+
+# In-flight frontend build publication directories
+.graphite-build-*/
+
+# Transient packed-output publication claims
+*.graphite.lock/
