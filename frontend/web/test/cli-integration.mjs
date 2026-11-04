@@ -35,6 +35,38 @@ try {
   assert.match(usage.stderr, /Usage: graphite build/);
   assert.ok(!fs.existsSync(path.join(dir,'missing.graphite')));
 
+  const inspectArgs = (program, args) => spawnSync(program, args, {
+    encoding:'utf8', cwd:dir, env:{ ...process.env, GRAPHITE_FRONTEND_JS:frontend },
+  });
+  for (const name of ['app.txt','app.ts','app.json','no-extension']) fs.writeFileSync(path.join(dir,name), 'invalid artifact');
+  for (const [inputs,reason] of [
+    ...['app.txt','app.json','app.ts','missing.ts','no-extension'].map(input => [[input], /Compile the project first/]),
+    [['main.js','app.ts'], /Expected exactly one emitted JavaScript input/],
+    [['app.ts','main.js'], /Expected exactly one emitted JavaScript input/],
+    [['--fold','app.ts','main.js'], /Unsupported JavaScript frontend option: --fold/],
+  ]) {
+    const direct = inspectArgs(process.execPath, [frontend,'build','-o','bad.json',...inputs]);
+    const shell = inspectArgs(cli, ['build','--lang','js','-o','bad.graphite',...inputs]);
+    for (const result of [direct,shell]) {
+      assert.equal(result.status, 2, result.stderr);
+      assert.match(result.stderr, reason);
+    }
+    assert.equal(direct.stderr.split('\n')[0], shell.stderr.split('\n')[0]);
+  }
+  assert.ok(!fs.existsSync(path.join(dir,'bad.json')) && !fs.existsSync(path.join(dir,'bad.graphite')));
+  for (const name of ['.next','output.ts']) {
+    const dotted = path.join(dir,name);
+    fs.mkdirSync(dotted);
+    fs.writeFileSync(path.join(dotted,'app.js'), 'sink("artifact")');
+    const direct = inspectArgs(process.execPath, [frontend,'build','-o',name+'.json','--',name]);
+    assert.equal(direct.status, 0, direct.stderr);
+    assert.ok(JSON.parse(fs.readFileSync(path.join(dir,name+'.json'),'utf8')).nodes.some(n => n.value === 'artifact'));
+    const saved = path.join(dir,name+'.graphite');
+    run(['build','--lang','js','-o',saved,'--',dotted]);
+    const values = JSON.parse(run(['query',saved,'MATCH (s:StringConstant) RETURN s.value AS value','--format','json']).stdout);
+    assert.deepEqual(values.rows,[{ value:'artifact' }]);
+  }
+
   const cls = path.join(dir, 'member.mjs'), member = path.join(dir, 'member.graphite');
   const memberSource = 'class A { constructor(){ this.x = "secret"; } get(){ return this.x; } } sink(new A().get())';
   fs.writeFileSync(cls, memberSource);

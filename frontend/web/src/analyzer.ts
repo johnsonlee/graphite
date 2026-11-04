@@ -50,10 +50,15 @@ const formatDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => ts.formatDi
   getNewLine: () => '\n',
 });
 
+export class UsageError extends Error {}
+
 /** Read emitted JavaScript only. Compilation is deliberately an explicit upstream step. */
 export function project(input: string, warn: (message: string) => void = console.error) {
   const absolute = path.resolve(input);
-  const stat = fs.statSync(absolute);
+  const stat = fs.statSync(absolute, { throwIfNoEntry: false });
+  if (!stat?.isDirectory() && !artifactExtension.test(absolute) && (stat || path.extname(absolute)))
+    throw new UsageError(`${input} is not a compiled JavaScript artifact. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.`);
+  if (!stat) throw new Error(`Input path does not exist: ${input}`);
   const root = stat.isDirectory() ? absolute : path.dirname(absolute);
   const files: string[] = [];
   const collect = (directory: string): void => {
@@ -67,8 +72,8 @@ export function project(input: string, warn: (message: string) => void = console
     }
   };
   if (stat.isDirectory()) collect(absolute);
-  else if (artifactExtension.test(absolute)) files.push(absolute);
-  else throw new Error(`Expected compiled JavaScript (.js/.mjs/.cjs), not ${input}. Compile the JS/TS project first and pass its output directory.`);
+  else if (stat.isFile()) files.push(absolute);
+  else throw new Error(`Expected a regular file or artifact directory: ${input}`);
   if (!files.length) throw new Error(`No compiled JavaScript artifacts found in ${input}. Compile the project first.`);
   const options: ts.CompilerOptions = {
     target: ts.ScriptTarget.ESNext, module: ts.ModuleKind.NodeNext,

@@ -29,9 +29,13 @@ fn output_args(args: &[OsString]) -> Result<(PathBuf, Vec<OsString>), String> {
 }
 
 /// Refuse source/config input before creating output or invoking a project launcher.
-/// Directory discovery and syntax validation belong to the frontend.
+/// Let the frontend diagnose option combinations, arity and other file extensions.
 fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
-    if let Some(arg) = crate::build_args::walk(args).find(|arg| arg.positional) {
+    let mut forwarded = crate::build_args::walk(args);
+    if let Some(arg) = forwarded
+        .next()
+        .filter(|arg| arg.positional && forwarded.next().is_none())
+    {
         let path = Path::new(arg.raw);
         if !path.is_dir()
             && path
@@ -44,7 +48,7 @@ fn validate_artifact_input(args: &[OsString]) -> Result<(), String> {
                     )
                 })
         {
-            return Err(format!("{} is source or configuration input. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.", path.display()));
+            return Err(format!("{} is not a compiled JavaScript artifact. Compile the project first, then pass emitted .js/.mjs/.cjs files or its .next/dist/build artifact directory. Graphite does not run project builds.", path.display()));
         }
     }
     Ok(())
@@ -248,19 +252,16 @@ mod tests {
     }
 
     #[test]
-    fn artifact_validation_uses_the_first_positional_input_after_option_values() {
+    fn only_an_unambiguous_source_input_is_preflighted() {
         for args in [
             os(&["--include", "foo.json", "app.js"]),
             os(&["--fold=rules.json", "--", "-app.js"]),
+            os(&["--include", "foo.json", "--", "-app.ts"]),
+            os(&["app.ts", "other.js"]),
         ] {
             assert!(validate_artifact_input(&args).is_ok());
         }
-        let error =
-            validate_artifact_input(&os(&["--include", "foo.json", "--", "-app.ts"])).unwrap_err();
-        assert!(
-            error.starts_with("-app.ts is source or configuration input"),
-            "{error}"
-        );
+        assert!(validate_artifact_input(&os(&["--", "-app.ts"])).is_err());
     }
 
     #[cfg(unix)]

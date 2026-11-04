@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
-import { analyze } from './analyzer.js';
+import { analyze, UsageError } from './analyzer.js';
 import { writeInterchange } from './interchange.js';
 
 const help = `Graphite JavaScript artifact frontend\n\nUsage: graphite build --lang js <artifact-directory|output.js|output.mjs|output.cjs> -o <graph>\nFrontend protocol: graphite-frontend-js build <input> --output <interchange.json>\n\nCompile your JS/TS project first, then pass its .next, dist or build output.\nUses TypeScript's parser/checker; never executes project code or build scripts.\nThe ts language selector is an alias for compiled-JavaScript analysis.\nNode.js 20 or newer is required.\n`;
@@ -10,8 +10,6 @@ function printInfo(arg: string | undefined): boolean {
   else return false;
   return true;
 }
-
-class UsageError extends Error {}
 
 function main(args: string[]): void {
   if (printInfo(args[0])) return;
